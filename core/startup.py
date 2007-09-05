@@ -20,11 +20,11 @@
 """
 
 import os
-import core.config
+import core.config as config
 if os.getenv("MEDIATUM_CONFIG"):
-    core.config.initialize(os.getenv("MEDIATUM_CONFIG"))
+    config.initialize(os.getenv("MEDIATUM_CONFIG"))
 else:
-    core.config.initialize("mediatum.cfg")
+    config.initialize("mediatum.cfg")
 
 import utils.log
 utils.log.initialize()
@@ -92,7 +92,7 @@ tree.registerNodeClass("maskitem", Maskitem)
 from objtypes import workflow
 workflow.register()
 
-for k,v in core.config.getsubset("plugins").items():
+for k,v in config.getsubset("plugins").items():
     print 'Initializing plugin "'+k+'"'
     m = __import__(v)
 

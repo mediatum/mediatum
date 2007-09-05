@@ -22,7 +22,7 @@ import config
 import logging
 import tree
 import sys
-import log
+from utils.log import logException
 
 logb = logging.getLogger('backend')
 
@@ -51,7 +51,7 @@ class AccessData:
                     return 1
             return 0
         except ACLParseException:
-            log.logException("Error while parsing ACL clause")
+            logException("Error while parsing ACL clause")
             # if we can't parse the acl rule, we assume no access
             return 0
 

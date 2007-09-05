@@ -23,8 +23,8 @@
 #   - description text
 #
 
-from config import *
-from utils import *
+import core.config as config
+from utils.utils import Option
 import tree
 import acl
 

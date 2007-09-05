@@ -1,0 +1,28 @@
+<tal:block metal:define-macro="editorfield">
+    <select class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width)+'px'; name name; id name;">
+        <tal:block tal:repeat="v valuelist">
+            <option tal:condition="python:v[0]=='option' and value == v[2]" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]" selected="selected"/>
+            <option tal:condition="python:v[0]=='option' and value != v[2]" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]"/>
+            <optgroup tal:condition="python:v[0]=='optgroup'" tal:replace="raw python:v[1]"/>
+        </tal:block>
+    </select>
+    <tal:block tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
+        <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/>
+        <small style="color: silver" i18n:translate="editor_overwrite">&uuml;berschreiben</small>
+    </tal:block>
+</tal:block>
+
+
+<select metal:define-macro="searchfield" tal:attributes="name name; id name;" class="searchfield">
+    <tal:block tal:repeat="v valuelist">
+        <option tal:condition="python:v[2]==value" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]" selected="selected"/>
+        <option tal:condition="python:v[2]!=value" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]"/>
+        <optgroup tal:condition="python:v[0]=='optgroup'" tal:replace="raw python:v[1]"/>
+    </tal:block>
+</select>
+
+
+<div metal:define-macro="maskeditor" style="display:none" name="div_list" id="div_list">
+    <div class="label" i18n:translate="mask_edit_list_values">Listenwerte:</div>
+    <textarea name="list_value" rows="4" style="width:250px"><tal:block tal:replace="value"/></textarea>
+</div>

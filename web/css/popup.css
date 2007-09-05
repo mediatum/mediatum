@@ -1,0 +1,42 @@
+html{
+	margin: 0;
+	font-family: sans-serif;
+}
+
+table.maintable{
+	height: 100%;
+	width: 100%;
+}
+
+table.maintable tr.headline{
+	height: 15px;
+}
+
+table.maintable tr.content{
+
+}
+
+table.maintable tr.bottom{
+	height: 15px;
+	text-align: center;
+}
+
+
+select.sel{
+	height: 300px;
+	width: 380px;
+}
+
+button{
+	width: 70px;
+	margin: 10px;
+}
+
+a{
+    color: silver;
+    text-decoration: none;
+}
+
+a:hover{
+    color: black;
+}

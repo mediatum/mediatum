@@ -1,0 +1,43 @@
+
+<tal:block metal:define-macro="edit_sort">
+    <script tal:condition="python:runscript==True" language="javascript">
+        parent.reloadTree('');
+    </script>
+    <h3 i18n:translate="edit_sort_header">Manuell sortieren</h3>
+    <form name="searchform">
+        <input type="hidden" name="tab" value="tab_subfolder"/>
+        <input tal:attributes="value python:node.id" type="hidden" name="id"/>
+            <table id="sorttable">
+                <tr>
+                    <th id="sorttable" i18n:translate="edit_sort_name">Name</th>
+                    <th id="sorttable" width="40px" i18n:translate="edit_sort_position">Position</th>
+                    <th id="sorttable" width="40px">&nbsp;</th>
+                    <th id="sorttable" width="40px">&nbsp;</th>
+                </tr>
+                <tr tal:repeat="child nodelist">
+                    <td id="sorttable" tal:content="python:child.name"/>
+                    <td id="sorttable" align="right" tal:content="python: nodelist.index(child)+1"/>
+                    <td id="sorttable" align="center">
+                        <input tal:condition="python: nodelist.index(child)>0" tal:attributes="name python:'up_'+str(nodelist.index(child))" i18n:attributes="title edit_sort_up_title" title="nach oben" type="image" src="/img/uparrow.png"/>
+                        <tal:block tal:condition="python: nodelist.index(child)==0" tal:replace="raw python:'&nbsp;'"/>
+                    </td>
+                    <td id="sorttable" align="center">
+                        <input tal:condition="python:nodelist.index(child)<len(nodelist)-1" tal:attributes="name python:'down_'+str(nodelist.index(child))" i18n:attributes="title edit_sort_down_title" title="nach unten" type="image" src="/img/downarrow.png"/>
+                        <tal:block tal:condition="python:nodelist.index(child)==len(nodelist)-1" tal:replace="raw python:'&nbsp;'"/>
+                    </td>
+                </tr>
+            </table>
+    </form>
+
+    <h3 i18n:translate="edit_sort_header_auto">Automatisch sortieren</h3>
+    <form>
+        <input type="hidden" name="tab" value="tab_subfolder">
+        <input tal:attributes="value python:node.id" type="hidden" name="id"/>
+        <p><span i18n:translate="edit_sort_label">Nach</span> 
+            <select name="resort">
+                <option value="name" i18n:translate="edit_sort_name">Name</option>
+            </select> 
+        <input i18n:attributes="value edit_sort_sort" type="submit" name="autosort" value="Sortieren"/>
+        </p>
+</tal:block>
+

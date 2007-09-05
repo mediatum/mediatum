@@ -1,0 +1,287 @@
+"""
+ mediatum - a multimedia content repository
+
+ Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
+ Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+import time
+
+class DateTime:
+    def __init__(self,year,month,day,hour,minute,second):
+        self.year = year
+        self.month = month
+        self.day = day
+        self.hour = hour
+        self.minute = minute
+        self.second = second
+        self.has_year = year>0
+        self.has_month = month>0
+        self.has_day = day>0
+        self.has_time = hour or minute or second
+    def split(self):
+        return (self.year,self.month,self.day,self.hour,self.minute,self.second)
+    def int(self):
+        # for sorting
+        return self.second+60*(self.minute+60*(self.hour+24*(self.day+32*(self.month+366*self.year))))
+    def daynum(self):
+        return self.year*32*12 + self.month*32 + self.day
+    def __str__(self):
+        return format_date(self)
+    def add(self,seconds):
+        d = DateTime(self.year,self.month,self.day,self.hour,self.minute,self.second)
+        l = [0,31,28,31,30,31,30,31,31,30,31,30,31]
+        d.second += seconds % 60; seconds /= 60
+        d.minute += seconds % 60; seconds /= 60
+        d.hour += seconds % 24; seconds /= 24
+        d.day += seconds % (l[self.month]+1); seconds /= (l[self.month]+1) # no clip years
+        d.month += seconds % 12; seconds /= 12
+        d.year += seconds
+        return d
+
+def format_date(t=None, format=None):
+    if t is None:
+        t = now()
+    if not format:
+        return "%0.4d-%0.2d-%0.2dT%0.2d:%0.2d:%0.2d" % (t.year, t.month, t.day, t.hour, t.minute, t.second)
+    else:
+        i = 0
+        result = ""
+        l = len(format)
+        while i < l:
+            if format[i] == '%':
+                i = i + 1
+                if format[i] == 'Y':
+                    result += "%0.4d" % t.year
+                elif format[i] == 'y':
+                    result += "%0.2d" % (t.year % 100)
+                elif format[i] == 'm':
+                    result += "%0.2d" % t.month
+                elif format[i] == 'd':
+                    result += "%0.2d" % t.day
+                elif format[i] == 'H':
+                    result += "%0.2d" % t.hour
+                elif format[i] == 'M':
+                    result += "%0.2d" % t.minute
+                elif format[i] == 'S':
+                    result += "%0.2d" % t.second
+                else:
+                    raise ValueError('Invalid format: %'+format[i])
+                i += 1
+            elif format[i] in "dmyHMS":
+                nr = 0
+                c = format[i]
+                while i < l and c==format[i]:
+                    i += 1
+                    nr = nr + 1
+                val = 0
+                if   c == 'y': val = t.year
+                elif c == 'm': val = t.month
+                elif c == 'd': val = t.day
+                elif c == 'H': val = t.hour
+                elif c == 'M': val = t.minute
+                elif c == 'S': val = t.second
+                result += ("%%0.%dd" % nr) % val
+            else:
+                result += format[i]
+                i += 1
+        return result
+
+def split_date(t):
+    return t.split()
+
+def make_date(year,month,day,hour=0,minute=0,second=0):
+    return DateTime(year,month,day,hour,minute,second)
+
+def now():
+    t = time.localtime(time.time())
+    return DateTime(t[0],t[1],t[2],t[3],t[4],t[5])
+
+STANDARD_FORMAT = '%Y-%m-%dT%H:%M:%S'
+
+def parse_date(string,format=None):
+    string = string.strip()
+    if format is None:
+        try:
+            return parse_date(string,format=STANDARD_FORMAT)
+        except:
+            try:
+                return parse_date(string,format='%Y-%m-%d')
+            except:
+                return parse_date(string,format='%d.%m.%YT%H:%M:%S')
+    i = 0
+    pos = 0
+    slen = len(string)
+    l = len(format)
+    year,month,day,hour,minute,second = 0,0,0,0,0,0
+    hasyear = 0
+    hasmonth = 0
+    hasday = 0
+    hastime = 0
+    while i < l:
+        if pos>=slen:
+            raise ValueError('Unexpected end of value string: "'+string+'"')
+        if format[i] == '%':
+            i = i + 1
+            if format[i] == 'Y':
+                year = int(string[pos:pos+4])
+                hasyear = 1
+                pos+=4
+            elif format[i] == 'y':
+                y = int(string[pos:pos+2])
+                if y > 50: year = 1900+y
+                else:      year = 2000+y
+                hasyear = 1
+                pos+=2
+            elif format[i] == 'm':
+                if string[pos:pos+2].isdigit():
+                    month = int(string[pos:pos+2])
+                    hasmonth = 1
+                    pos+=2
+                elif string[pos:pos+1].isdigit():
+                    month = int(string[pos:pos+1])
+                    hasmonth = 1
+                    pos+=1
+                else:
+                    month = 0
+            elif format[i] == 'd':
+                 if string[pos:pos+2].isdigit():
+                    day = int(string[pos:pos+2])
+                    hasday = 1
+                    pos+=2
+                 elif string[pos:pos+1].isdigit():
+                    day = int(string[pos:pos+1])
+                    hasday = 1
+                    pos+=1
+                 else:
+                    day = 0
+            elif format[i] == 'H':
+                hour = int(string[pos:pos+2])
+                hastime = 1
+                pos+=2
+            elif format[i] == 'M':
+                minute = int(string[pos:pos+2])
+                hastime = 1
+                pos+=2
+            elif format[i] == 'S':
+                second = int(string[pos:pos+2])
+                hastime = 1
+                pos+=2
+            else:
+                raise ValueError('Invalid format: %'+format[i])
+            i = i + 1
+        elif format[i] in "dmyYHMS":
+            nr = 0
+            c = format[i]
+            while i < l and c==format[i]:
+                i += 1
+                nr = nr + 1
+            
+            if not string[pos:pos+nr].isdigit():
+                nr -=1
+
+            val = int(string[pos:pos+nr])
+            pos = pos+nr
+            if   c == 'y': 
+                year = val
+                hasyear = 1
+            elif c == 'm': 
+                month = val
+                hasmonth = 1
+            elif c == 'd': 
+                day = val
+                hasday = 1
+            elif c == 'H': 
+                hour = val
+                hastime = 1
+            elif c == 'M': 
+                minute = val
+                hastime = 1
+            elif c == 'S': 
+                second = val
+                hastime = 1
+        else:
+            if not format[i] == string[pos]:
+                raise ValueError('Char not matched: '+format[i])
+            i += 1
+            pos += 1
+    if pos<slen:
+        raise ValueError("trailing characters: "+string[pos:])
+    date = DateTime(year,month,day,hour,minute,second)
+    if format != STANDARD_FORMAT:
+        date.has_time = hastime
+        date.has_year = hasyear
+        date.has_month = hasmonth
+        date.has_day = hasday
+    if not validateDate(date):
+        raise ValueError("invalid date: "+str(date))
+    return date
+
+def validateDate(d):
+    if d.has_year:
+        if not d.year:
+            return False
+    if d.has_month:
+        if d.month>12 or d.month<1:
+            return False
+
+    if d.has_day:
+        if d.day<1:
+            return False
+        if d.day>31:
+            return False
+
+    if d.has_month and d.has_day:
+        if d.month in (4,6,9,11) and d.day>30:
+            return False
+        elif d.has_year and d.month==2:
+            leapyear = (d.year%4==0 and d.year%100!=0) or (d.year%400==0)
+            if ((leapyear and d.day>29) or (not leapyear and d.day>28)):
+                return False
+    return True
+
+""" validate given date-string """
+def validateDateString(value, format=None):
+    try:
+        d = parse_date(value, format)
+    except ValueError:
+        return False
+    return validateDate(d)
+
+
+if __name__ == "__main__":
+    print format_date()
+    print parse_date('1004-03-01T23:59:59',"%Y-%m-%dT%H:%M:%S").split()
+    print parse_date('04-03-01T23:59:59',"%y-%m-%dT%H:%M:%S").split()
+    print make_date(2001,3,31,23,59,59).split()
+    print split_date(parse_date('1004-03-01T23:59:59',"%Y-%m-%dT%H:%M:%S"))
+    print format_date(format="%y-%m-%dTTT%H:%M:%S")
+    
+    print parse_date("01.01.2001 00:00:00", "%d.%m.%Y %H:%M:%S").split()
+    print format_date(now(), "dd.mm.yyyy hh:mm:ss")
+    
+    parse_date('01.01.2001 00:00:00', "%d.%m.%Y %H:%M:%S")
+    print format_date(parse_date('01.02.2003 04:05:06', "dd.mm.yyyy HH:MM:SS"), 'dd.mm.yyyy HH:MM:SS')
+    print format_date(parse_date('3.3.1978', 'dd.mm.yyyy'))
+    print format_date(parse_date('3.3.1978', '%d.%m.%Y'))
+    try:
+        print format_date(parse_date('3.3.1978', '%d.%m.%Y'))
+    except:
+        print "ok"
+    try:
+        parse_date('', 'dd.mm.yyyy')
+    except ValueError:
+        print "ok"
+

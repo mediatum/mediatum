@@ -1,0 +1,103 @@
+"""
+ mediatum - a multimedia content repository
+
+ Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
+ Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+import athana
+import acl
+import tree
+import logging
+import users
+from edit_common import *
+
+from acl_web import makeList
+from utils import removeEmptyStrings
+
+log = logging.getLogger('edit')
+acl_types = ["read", "write", "data"]
+
+
+def show_acl_editor(req, ids):
+    
+    idstr=""
+    for id in ids:
+        if idstr:
+            idstr+=","
+        idstr+=id
+
+    access = acl.AccessData(req)
+
+    if "save" in req.params:
+        userdir = getHomeDir(users.getUserFromRequest(req))
+        logging.getLogger('usertracing').info(access.user.name + " change access "+idstr)
+        for type in acl_types:
+            rights = req.params.get("left"+type, "").replace(";",",")
+            for id in ids:
+                node = tree.getNode(id)
+                error = 0
+                if access.hasWriteAccess(node) and userdir.id != node.id:
+                    node.setAccess(type, rights)
+                else:
+                    error = 1
+                if error:
+                    req.writeTAL("edit/edit.html", {}, macro="access_error")
+                    return
+
+
+    runsubmit = "\nfunction runsubmit(){\n"
+    for type in acl_types:
+        runsubmit +="\tmark(document.myform.left"+type+");\n"
+    runsubmit +="\tdocument.myform.submit();\n}\n"
+
+    ret = ""
+    for type in acl_types:
+        overload = 0
+        if type in ("read","data"):
+            overload = 1
+        
+        s = None
+        parent_rights = {}
+        for id in ids:
+            node = tree.getNode(id)
+            r = node.getAccess(type)
+            if r is None:
+                r = ""
+            log.debug(node.name+" "+type+" "+r)
+            if not s or r == s:
+                s = r
+            else:
+                s = ""
+            def addNode(node):
+                for p in node.getParents():
+                    aclright = p.getAccess(type)
+                    for right in removeEmptyStrings((aclright or "").split(",")):
+                        parent_rights[right] = None
+                    if aclright and overload:
+                        return
+                    else:
+                        addNode(p)
+            addNode(node)
+
+        rights = removeEmptyStrings(s.split(","))
+
+        ret += req.getTAL("edit/edit_acls.html", makeList(req, type, rights, parent_rights.keys(), overload, type=type), macro="edit_acls_selectbox")
+
+    req.writeTAL("edit/edit_acls.html", {"runsubmit":runsubmit, "idstr":idstr, "content":ret}, macro="edit_acls")
+    return athana.HTTP_OK
+
+def edit_acls(req, ids):
+    return show_acl_editor(req, ids)

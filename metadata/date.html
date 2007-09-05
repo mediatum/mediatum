@@ -1,0 +1,34 @@
+
+<tal:block metal:define-macro="editorfield">
+    <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-100)+'px'; name name; id name; value value; maxlenght python:str(len(value))"/>
+    <small tal:content="python:'('+field.getValues()+')'"/>
+
+    <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
+        <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/>
+        <small style="color: silver" i18n:translate="editor_overwrite">&uuml;berschreiben</small>
+   </span>
+
+</tal:block>
+
+
+<table metal:define-macro="searchfield" cellspacing="0px" cellpadding="0px" border="0">
+    <tr>
+            <td>&nbsp;&nbsp;<span i18n:translate="editor_from">von</span>: </td>
+            <td> <input tal:attributes="name python:name+'-from'; id python:name+'-from'; value python:value[0]" type="text" style="width:140px" class="searchfield"/></td>
+    </tr>
+    <tr>
+            <td>&nbsp;&nbsp;<span i18n:translate="editor_to">bis</span>: </td>
+            <td> <input tal:attributes="name python:name+'-to'; id python:name+'-to'; value python:value[1]" type="text" style="width:140px" class="searchfield"/></td>
+    </tr>
+    <tr>
+            <td colspan="2" align="right"><small><tal:block i18n:translate="editor_input_format"/><tal:block tal:content="python:field.getValues()"/></small></td>
+    </tr>
+</table>
+
+
+<div metal:define-macro="maskeditor" style="display:none" name="div_date" id="div_date">
+    <div class="label" i18n:translate="mask_edit_date_format">Datums-/Zeitformat:</div>
+    <select id="date_value" name="date_value" style="width:250px;">
+        <option tal:repeat="option dateoption" tal:attributes="value python:option.getShortName(); selected python:{'False':None, 'True':'selected'}[str(option.getShortName()==value)]" tal:content="python:option.getName()" i18n:translate=""/>
+    </select>
+</div>

@@ -1,0 +1,225 @@
+body
+{
+   color: #000000;
+   margin: 0px;
+   font-family: Verdana, Arial, Helvetica, sans-serif;
+   font-size: 12px;
+   font-weight : normal;
+   text-decoration: none;
+   text-align: left;
+   vertical-align: top;
+}
+
+p.popup{
+	font-size: 10px;
+}
+
+a.nav:link, a.nav:visited
+{
+	text-decoration: none;
+	color: white;
+	font-weight: bold;
+}
+a.nav:hover, a.nav:active
+{
+	text-decoration:none;
+	color:#CC6600;
+	font-weight:bold;
+}
+
+a.actpage:link, a.actpage:visited{
+	text-decoration: none;
+	color: #000000;
+	font-weight: bold;
+}
+
+
+a:link, a:visited
+{
+	text-decoration: none;
+	color: #6E5A46;
+	font-weight: bold;
+}
+a:hover, a:active
+{
+	text-decoration:none;
+	color:#CC6600;
+	font-weight:bold;
+}
+
+td{
+	vertical-align:top;
+	white-space: nowrap;
+}
+
+th{
+	background-color: #CCCCCC;
+	height: 20px;
+	padding: 1px 10px 1px 5px;
+	border-bottom: 1px #7d85a6 solid;
+	font-variant: small-caps;
+	white-space: nowrap;
+	vertical-align: middle;
+}
+
+td.norm{
+	height: 15px;
+	background-color: white;
+	vertical-align: middle;
+	padding: 1px 5px 1px 5px;
+	border-bottom: 1px #7d85a6 solid;
+}
+
+td.silver{
+	height: 15px;
+	background-color: #EFEFEF;
+	vertical-align: middle;
+	padding: 1px 5px 1px 5px;
+	border-bottom: 1px #7d85a6 solid;
+}
+
+
+table.overview{
+	width: 100%;
+	font-size: 10px;
+	font-weight: lighter;
+	text-decoration: none;
+	border-collapse: collapse;
+}
+
+td.navigation{
+	background-color: #7d85a6;
+	width: 100px
+}
+
+td.header{
+	background-image: url(/img/mediatum_line.png);
+	background-repeat:repeat-x;
+	white-space: nowrap;
+}
+
+table.overview td{
+	color: black;
+}
+
+table.files{
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 10px;
+	font-weight: normal;
+	text-decoration: none;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+table.files th{
+	color: black;
+    font-weight: bold;
+    background-color: white;
+    border-style: none;
+    text-align: left;
+}
+table.files td{
+	color: black;
+    text-align: left;
+}
+
+button{
+	background-color: #7d85a6;
+	color: white;
+	border: 1px #7d85a6 solid;
+	cursor:pointer
+}
+
+form{
+	background-color: white;
+	border: 1px silver solid;
+    margin: 2px 10px 0px 0px;
+    padding: 2px 0px 10px 0px;
+}
+
+form.edit{
+	border-width: 0px;
+    border-style: none;
+}
+
+p.error{
+	background: #FFE7E7;
+	color: #AF0101; 
+	padding: 7px;
+    border: 1px solid #AF0101;
+	margin-left: 20px;
+	margin-right: 20px;
+	vertical-align: middle;
+}
+
+span.required{
+	color: #ff0000
+}
+
+textarea {
+	background-color: white;
+	font-size: 13px;
+	border: silver 1px solid;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+}
+
+input.text{
+	border: silver 1px solid;
+}
+
+td.banner{
+	background-color: #7d85a6;
+	color: #FFFAEB;
+	font-size: 10px;
+	font-weight: lighter;
+	text-decoration: none;	
+}
+
+
+a.navi ,
+a.navi:visited,
+a.navi:link
+{
+	color: #FFFAEB;
+	text-decoration: none;
+	font-weight: lighter;
+}
+
+a.navi:hover {
+	font-weight: normal;
+	color: #CC6600;
+}
+
+p.descbox {
+    font-size: 10px;
+    line-height: 11px;
+    margin-top: 10px;
+}
+
+h4.admin{
+	font-size: 25px;
+	padding: 0px 0px 0px 0px;
+	margin: 0px;
+	text-align: right;
+}
+
+label{
+	width: 10em;
+	float: left;
+	text-align: left;
+	margin-right: 1em;
+	display: block
+}
+
+button.opbutton{
+	margin: 1px;
+	width: 19px;
+	height: 19px;
+}
+
+table.xmlmeta{
+	width: 100%;
+}
+
+table.xmlmeta td.label{
+	font-size: 12px
+}

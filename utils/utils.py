@@ -1,0 +1,367 @@
+"""
+ mediatum - a multimedia content repository
+
+ Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
+ Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+import stat
+import traceback
+import sys
+import os
+import string
+import md5
+
+def esc(s):
+    return s.replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;").replace(">", "&gt;")
+
+def u(s):
+    try:
+        return s.encode("utf-8")
+    except:
+        try:
+            return s.decode("latin-1").encode("utf-8")
+        except:
+            return s
+
+def iso2utf8(s):
+    return unicode(s,"latin-1").encode("utf-8")
+
+def splitpath(path):
+    try:
+        i = path.rindex("/")
+        return path[0:i],path[i+1:]
+    except:
+        return "",path
+
+def splitfilename(path):
+    try:
+        i = path.rindex(".")
+        return path[0:i],path[i+1:]
+    except:
+        return path,""
+
+def isnewer(path1, path2):
+    try:
+        l1 = os.stat(path1)
+        l2 = os.stat(path2)
+        return l1[8] >= l2[8]
+    except:
+        return 0
+
+
+class Link:
+    def __init__(self, link, title, label, target="_self"):
+        self.link = link
+        self.title = title
+        self.label = label
+        self.target = target
+
+    def getTitle(self):
+        return self.title
+    
+def format_filesize(size):
+    if size<1024:
+        return "%d Bytes" % size
+    elif size<1048576:
+        return "%d KBytes" % (size/1024)
+    elif size<1073741824:
+        return "%d MBytes" % (size/1048576)
+    else:
+        return "%d GBytes" % (size/1073741824)
+
+def get_hash(filename):
+    try:
+        fi = open(filename,"rb")
+        s = fi.read()
+        fi.close()
+        return md5.md5(s).hexdigest()
+    except IOError:
+        return md5.md5("").hexdigest()
+
+def get_filesize(filename):
+    try:
+        stat = os.stat(filename)
+        return stat[6]
+    except:
+        print "Error:", sys.exc_info()[0], sys.exc_info()[1]
+        traceback.print_tb(sys.exc_info()[2])
+
+        print "Warning: File",filename,"not found"
+        return 0
+
+ae = u"\u00e4".encode("utf-8")
+Ae = u"\u00c4".encode("utf-8")
+ss = u"\u00df".encode("utf-8")
+ue = u"\u00fc".encode("utf-8")
+Ue = u"\u00dc".encode("utf-8")
+oe = u"\u00f6".encode("utf-8")
+Oe = u"\u00d6".encode("utf-8")
+
+def normalize_utf8(s):
+    s = s.replace(ae,"ae").replace(ue,"ue").replace(oe,"oe") \
+         .replace(Ae,"Ae").replace(Ue,"Ue").replace(Oe,"Oe") \
+         .replace(ss,"ss")
+    return s.lower()
+
+import locale
+def compare_utf8(s1,s2):
+    return locale.strcoll(normalize_utf8(s1),normalize_utf8(s2))
+
+
+class Option:
+    def __init__(self, name="", shortname="", value="", imgsource=""):
+        self.name = name
+        self.shortname = shortname
+        self.value = value
+        self.imgsource = imgsource
+
+    def getName(self):
+        return self.name
+    def setName(self, value):
+        self.name = value
+
+    def getShortName(self):
+        return self.shortname
+    def setShortName(self, value):
+        self.shortname = value
+    	
+    def getValue(self):
+        return self.value
+    def setValue(self, value):
+        self.value = value
+
+    def getImagesource(self):
+        return self.imgsource
+    def setImagesource(self, value):
+        self.imagesource = value
+    	        
+def getCollection(node):
+    def p(node):
+        import tree
+        if node in tree.getRoot("collections").getChildren():
+        
+            return node
+        for pp in node.getParents():
+            n = p(pp)
+            if n:
+                return n
+        return None
+    collection = p(node)
+    if collection is None:
+        import tree
+        collection = tree.getRoot("collections")
+    return collection
+
+def ArrayToString(pieces, glue=""):
+    return string.join(pieces,glue)
+
+def formatException():
+    s = "Exception "+str(sys.exc_info()[0])
+    info = sys.exc_info()[1]
+    if info:
+        s += " "+str(info)
+    s += "\n"
+    for l in traceback.extract_tb(sys.exc_info()[2]):
+        s += "  File \"%s\", line %d, in %s\n" % (l[0],l[1],l[2])
+        s += "    %s\n" % l[3]
+    return s
+
+def join_paths(p1,p2):
+    if p1.endswith("/"):
+        if p2.startswith("/"):
+            return p1[:-1] + p2
+        else:
+            return p1 + p2
+    else:
+        if p2.startswith("/"):
+            return p1 + p2
+        else:
+            return p1 + "/" + p2
+
+def highlight(string, words, left, right):
+    string = string.replace("\n"," ") .replace("\r"," ") .replace("\t"," ")
+    stringl = string.lower()
+    pos = 0
+    while pos < len(string):
+        firstindex = 1048576
+        firstword = None
+        for word in words:
+            i = stringl.find(word, pos)
+            if i>=0 and firstindex > i:
+                firstword = word
+                firstindex = i
+        if firstindex == 1048576:
+            break
+        si = string.find(' ', firstindex)
+        if si < 0:
+            si = len(string)
+        string = string[0:firstindex] + left + string[firstindex:si] + right + string[si:]
+        pos = si + len(left) + len(right)
+    return string
+
+
+#
+# mimetype validator
+#
+def getMimeType(filename):
+    
+    filename = filename.lower()
+    mimetype = "application/x-download"
+    type = "file"
+    if filename.endswith(".jpg") or filename.endswith(".jpeg"):
+        mimetype = "image/jpeg"
+        type = "image"
+    elif filename.endswith(".gif"):
+        mimetype = "image/gif"
+        type = "image"
+    elif filename.endswith(".png"):
+        mimetype = "image/png"
+        type = "image"
+    elif filename.endswith(".bmp"):
+        mimetype = "image/x-ms-bmp"
+        type = "image"
+    elif filename.endswith(".tif"):
+        mimetype = "image/tiff"
+        type = "image"
+    elif filename.endswith(".pdf"):
+        mimetype = "application/pdf"
+        type = "doc"
+    elif filename.endswith(".ps"):
+        mimetype = "application/postscript"
+        type = "doc"
+    elif filename.endswith(".zip"):
+        mimetype = "application/zip"
+        type = "zip"
+    elif filename.endswith(".avi"):
+        mimetype = "video/x-msvideo"
+        type = "video"
+    elif filename.endswith(".flv"):
+        mimetype = "video/x-flv"
+        type = "video"
+    elif filename.endswith(".doc"):
+        mimetype = "application/msword"
+        type = "doc"
+    elif filename.endswith(".ppt"):
+        mimetype = "application/mspowerpoint"
+        type = "ppt"
+
+    else:
+        mimetype = "other"
+        type = "other"
+
+    return mimetype, type
+
+
+def formatTechAttrs(attrs):
+    ret = {}
+    for sects in attrs.keys():
+        for item in attrs[sects].keys():
+            ret[item]=attrs[sects][item]
+    return ret
+
+#splits a name into title, forename, lastname
+def splitname_old(fullname):
+    firstname=lastname=title=""
+    pos = 0
+    parts = fullname.split(" ")
+    lastname = parts.pop()
+    firstname = parts.pop()
+    while len(parts) and not (parts[-1].endswith(".") or parts[-1].endswith(")") or parts[-1].startswith("(")):
+        firstname = parts.pop()+" "+firstname
+    title = " ".join(parts)
+    return title,firstname,lastname
+
+def splitname(fullname):
+    fullname = fullname.strip()
+    
+    firstname=lastname=title=""
+
+    if fullname[-1] == ')':
+        pos = len(fullname)-1
+        brackets = 1
+        while pos>0:
+            pos = pos - 1
+            if fullname[pos]=='(':
+                brackets = brackets - 1
+            if fullname[pos]==')':
+                brackets = brackets + 1
+            if brackets < 1:
+                break
+        title = fullname[pos+1:-1]
+        fullname = fullname[:pos]
+
+    fullname = fullname.strip()
+    if "," in fullname:
+        parts = fullname.split(",")
+        lastname = parts[0].strip()
+        firstname = ",".join(parts[1:]).strip()
+    else:
+        parts = fullname.split(" ")
+        lastname = parts.pop().strip()
+        firstname = " ".join(parts).strip()
+    
+    return title,firstname,lastname
+
+#
+# returns formated string for long text
+#
+def formatLongText(value, field):
+    try:
+        if len(value)>500:
+            return '<div id="'+field.getName()+'_full" style="display:none">'+value+'&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="Text reduzieren" onclick="expandLongMetatext(\''+field.getName()+'\')">&laquo;</a></div><div id="'+field.getName()+'_more">'+value[:500]+'...&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="gesamten Text zeigen" onclick="expandLongMetatext(\''+field.getName()+'\')">&raquo;</a></div>'
+        else:
+            return value
+    except:
+        return value
+
+
+def removeEmptyStrings(list):
+    list2 = []
+    for r in list:
+        if r:
+            list2 += [r]
+    return list2
+
+def clean_path(path):
+    newpath = ""
+    lastc = None
+    for c in path:
+        if c not in "/abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-.0123456789":
+            c = "_"
+        if c == "." and lastc == ".":
+            return "illegal_filename"
+        if c == "/" and lastc == "/":
+            return "illegal_filename"
+        lastc = c
+        newpath += c
+    return newpath
+
+
+if __name__ == "__main__":
+    def tt(s):
+        t,f,l = splitname(s)
+        print "Title:",t,"| Vorname:",f,"| Nachname:",l
+    tt("Hans Maier (Prof. Dr.)")
+    tt("Hans Peter-Juergen Maier (Prof. Dr.)")
+    tt("Hans Peter-Juergen Maier (Prof. Dr. (univ))")
+    tt("Hans Peter-Juergen Maier (Prof. Dr. (Uni Berlin))")
+
+    print clean_path("../../etc/passwd")
+    print clean_path("../etc/passwd")
+    print clean_path("test.txt")
+    print clean_path("../test.txt")
+    print clean_path("//etc/passwd")
+    print clean_path("test^^.txt")

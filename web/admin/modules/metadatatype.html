@@ -1,0 +1,738 @@
+<metal:block metal:define-macro="view_type">
+    <script type="text/javascript">
+        function openwindow(url)
+        {
+            popup = window.open(url, "popup", "resizable=1,width=700,height=450,scrollbars");
+            popup.focus();
+        }
+    </script>
+    <p><a i18n:translate="admin_overview" href=".">zur &Uuml;bersicht</a></p>
+    <form name="useroverview" method="post" action="#" enctype="multipart/form-data" tal:attributes="action page">
+        <table class="overview">
+            <tr>
+                <td colspan="9"><h3 i18n:translate="admin_meta_existing">Vorhandene Metadatenschemata</h3></td>
+            </tr>
+            <tr>
+                <th>&nbsp;</th>
+                <th tal:repeat="col sortcol">
+                    <a tal:attributes="href python:col.link; title python:col.title" tal:content="structure python:col.label"/>  
+                </th>
+                <th>&nbsp;</th>
+                <th>
+                    <a i18n:attributes="title admin_meta_exportall_title" href="/admin/export/metatype/all" target="_blank" title="Alle Metadatenschemata exportieren">
+                            <img src="/img/export.png" border="0"/>
+                    </a>
+                </th>
+                <th align="right">
+                    <input i18n:attributes="title admin_meta_create" type="image" src="/img/install.png" name="new" title="Neues Metadatenschema anlegen"/>
+                </th>
+            </tr>
+            <tr tal:condition="python:len(metadatatypes)==0">
+                <td colspan="10"><small i18n:translate="admin_meta_nometa">- keine Metadatenschemata vorhanden -</small></td>
+            </tr>
+            
+            <tal:block tal:define="start python:pages.getStart(); end python:pages.getEnd()" tal:repeat="metadatatype python:metadatatypes[start:end]">
+            <tr tal:define="cssclass python:metadatatypes.index(metadatatype)%2 and 'norm' or 'silver'">
+                <td tal:attributes="class cssclass" tal:content="python:str(metadatatypes.index(metadatatype)+1)+'.'"/>
+                <td tal:attributes="class cssclass" tal:content="python:metadatatype.getName()"/>
+                <td tal:attributes="class cssclass" tal:content="python:metadatatype.getLongName()"/>
+                <td tal:condition="python:len(metadatatype.getDescription())<=10" tal:attributes="class cssclass" tal:content="python:metadatatype.getDescription()"/>
+                <td tal:condition="python:len(metadatatype.getDescription())>10" tal:attributes="class cssclass; title python:metadatatype.getDescription()" tal:content="python:metadatatype.getDescription()[:9]+'...'"/>
+                <td tal:attributes="class cssclass">
+                    &nbsp;&nbsp;&nbsp;<img tal:condition="python:metadatatype.isActive()" i18n:attributes="title admin_meta_active_title" src="/img/haken.gif"/>
+                </td>
+                <td tal:attributes="class cssclass">
+                    <tal:block tal:repeat="t python:metadatatype.getDatatypes()">
+                        <tal:block tal:repeat="clstype datatypes" i18n:translate="">
+                            <tal:block tal:condition="python: clstype.getId()==t" tal:replace="python:clstype.getLongName()"/>
+                        </tal:block>
+                    </tal:block>
+                </td>
+                <td tal:attributes="class cssclass">
+                    &nbsp;&nbsp;
+                    <img tal:condition="python:metadatatype.getAccess('read')" i18n:attributes="title admin_meta_acl_title" src="/img/archive.png"/>
+                    <img tal:condition="python:metadatatype.getAccess('read')==''" i18n:attributes="title admin_meta_acl_title" src="/img/mark_empty.png"/>
+                </td>
+                <td tal:attributes="class cssclass">
+                    <input tal:attributes="name python:'detaillist_'+metadatatype.getName()" i18n:attributes="title admin_meta_editdetail" type="image" src="/img/rightarrow.png" title="Felder anzeigen/bearbeiten"/>&nbsp;
+                    <input tal:attributes="name python:'masks_'+metadatatype.getName()" i18n:attributes="title admin_meta_maskdetail_title" type="image" src="/img/styles.png" title="Masken anzeigen/bearbeiten"/>
+                </td>
+                <td tal:attributes="class cssclass">
+                    <a tal:attributes="href python:'./metatype/'+metadatatype.getName()+'/overview?style=popup'" i18n:attributes="title admin_meta_fieldoverview_title" target="_blank" title="&Uuml;bersicht &uuml;ber definierte Felder anzeigen">
+                        <img src="/img/search.gif" border="0"/>
+                    </a>
+                    
+                    <a tal:attributes="href python:'/admin/export/metatype/'+metadatatype.getName()" i18n:attributes="title admin_meta_export_title" target="_blank" title="Metadatenschema exportieren">
+                        <img src="/img/export.png" border="0"/>
+                    </a>
+                </td>
+                <td tal:attributes="class cssclass">
+                    <input tal:attributes="name python:'edit_'+metadatatype.getName()" i18n:attributes="title admin_meta_edit_title" type="image" src="/img/edit.png" title="Metadatenschema bearbeiten"/>
+
+                    <tal:block tal:condition="python:metadatatype.getNumNodes()==0">
+                        &nbsp;&nbsp;<input tal:attributes="name python:'delete_'+metadatatype.getName(); onclick python:'return questionDelName(\''+metadatatype.getLongName() + ' ('+ metadatatype.getName()+')\')'" i18n:attributes="title admin_meta_delete_title" type="image" src="/img/delete.png" title="Metadatenschema l&ouml;schen"/>
+                    </tal:block>          
+                </td>
+            </tr>
+            </tal:block>
+
+            <tr>
+                <th colspan="5">
+                    <small>
+                        <span i18n:translate="admin_meta_footer">
+                            <span i18n:name="number" tal:content="python:str(len(metadatatypes))"/>
+                        </span>
+                        <span tal:content="structure python:pages.printPageList()"/>
+                    </small>
+                </th>
+                <th colspan="5" align="right"><small tal:content="structure python:pages.printPageAll()"/></th>
+            </tr>
+            <tr>
+                <td colspan="4">&nbsp;</td>
+                <td colspan="6" align="right">
+                    <br/>
+                    <table style="width:100px">
+                        <tr>
+                            <td align="left">
+                                <fieldset>
+                                    <tal:block i18n:translate="admin_meta_msg1">Schema-Import aus XML-Datei</tal:block>:<br>
+                                    <input name="file" type="file" size="50" maxlength="100000"/>
+                                    <br/><button i18n:attributes="title admin_meta_import_title" i18n:translate="admin_meta_import" type="submit" name="submit" value="submit" title="Importieren">Importieren</button>
+                                </fieldset>
+                            </td>
+                        </tr>
+                    </table>                            
+                </td>
+            </tr>
+        </table>
+        <p>
+            <small>(<span i18n:translate="admin_meta_msg2">nur Metadatentypen, die keine Objekte enthalten, k&ouml;nnen gel&ouml;scht werden</span>)</small>
+        </p>
+    </form>
+</metal:block>
+
+<metal:block metal:define-macro="modify_type" tal:define="id python:metadatatype.getName()">
+    <script>
+        function selectacl(objname){
+            obj = document.getElementById(objname);
+            for (i=0; i<obj.length; i++){
+		        obj.options[i].selected=true;
+	        }
+        }
+    </script>
+    <p><a tal:attributes="href python:'./metatype'+page" i18n:translate="admin_overview">zur &Uuml;bersicht</a></p>
+    <form tal:attributes="action page" name="editmetatype" method="post">                    
+        <table>
+            <tr>
+                <td colspan="2">
+                    <h3 tal:condition="python:id==''" i18n:translate="admin_meta_create">Neues Metadatenschema anlegen</h3>
+                    <h3 tal:condition="python:id!=''" i18n:translate="admin_meta_edit_title">Metadatenschema bearbeiten</h3>
+                </td>
+            </tr>
+            <tr tal:condition="python:error>0">
+                <td colspan="2">
+                    <p tal:condition="python:error==1" i18n:translate="admin_meta_error_1" class="error">Nicht alle Pflichtfelder wurden ausgef&uuml;llt.</p>
+                    <p tal:condition="python:error==2" i18n:translate="admin_meta_error_2" class="error">Ein Metadatentyp mit gleichem Namen ist bereits vorhanden.</p>
+                    <p tal:condition="python:error==3" i18n:translate="admin_meta_error_3" class="error">Ein Metadatenschema mit gleichem Namen ist bereits f&uuml;r diesen Metadatentyp vorhanden.</p>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_meta_id">ID</tal:block>: <span class="required">*</span></td>
+                <td>
+                    <input tal:attributes="value python:metadatatype.getName()" type="text" style="width:300px" name="mname" maxlenght=50/>
+                    <input tal:attributes="value original_name" type="hidden" name="mname_orig"/>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_meta_name">Name</tal:block>: <span class="required">*</span></td>
+                <td><input tal:attributes="value python:metadatatype.getLongName()" type="text" style="width:300px" name="mlongname" maxlenght=100/></td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_meta_description">Beschreibung</tal:block>:</td>
+                <td><textarea tal:content="python:metadatatype.getDescription()" name="description" rows="4" cols="35"/><td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_meta_active">Aktiv</tal:block>:</td>
+                <td>
+                    <input tal:attributes="checked python:{'False':None,'True':'checked'}[str(metadatatype.isActive())]" type="checkbox" name="mactive" value="1"/>
+                    <small>(<span i18n:translate="admin_meta_msg3">nur aktive Metadatenschemata werden f&uuml;r Uploads herangezogen</span>)</small>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_meta_datatype">Datentypen</tal:block>: <span class="required">*</span></td>
+                <td>
+                    <select name="mdatatypes" multiple="multiple" style="width:300px" size="5">
+                        <option tal:repeat="datatype datatypes" tal:attributes="value python:datatype.getName(); selected python:{'False':None,'True':'selected'}[str(datatype.getName() in metadatatype.getDatatypes())]" tal:content="python:datatype.getLongName()" i18n:translate=""/>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_meta_rights">Berechtigungen</tal:block>:</td>
+                <td>
+                    <table border="0px" cellpadding="0px" cellspacing="0px">
+                        <tr>
+                            <td align="left" valign="top">
+                                <select tal:content="raw python:acl['val_left']" tal:attributes="name python:'left'+acl['name'];id python:'left'+acl['name']; ondblclick python:'moveRight(document.editmetatype.left'+acl['name']+',document.editmetatype.right'+acl['name']+')'" style="width:320px" size="6" multiple="multiple">
+                                </select>
+                            </td>
+                            <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
+                                <input tal:attributes="onclick python:'moveLeft(document.editmetatype.left'+acl['name']+',document.editmetatype.right'+acl['name']+')'" type="button" value="<<"/>
+                                <br>
+                                <input tal:attributes="onclick python:'moveRight(document.editmetatype.left'+acl['name']+',document.editmetatype.right'+acl['name']+')'" type="button" value=">>"/>
+                            </td>
+                            <td align="left" valign="top">
+                                <select tal:content="raw python:acl['val_right']" tal:attributes="name python:'right'+acl['name'];  ondblclick python:'moveLeft(document.editmetatype.left'+acl['name']+',document.editmetatype.right'+acl['name']+')'" style="width:320px" size="6" multiple="multiple">
+                                </select>
+                            </td>
+                        </tr>
+                    </table> 
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td><small>(<span class="required">* </span><span i18n:translate="admin_mandatory_info">Pflichtfeld, darf nicht leer sein</span>)</small></td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>
+                    <button i18n:translate="admin_save" i18n:attributes="title admin_save_title" tal:attributes="onclick python:'selectacl(\'left'+acl['name']+'\')';"  type="submit" name="submit" value="submit" title="&Auml;nderungen speichern">Speichern</button>&nbsp;&nbsp;
+                    <button i18n:translate="admin_cancel" i18n:attributes="title admin_cancel_title" type="submit" name="cancel" value="cancel" title="Zur&uuml;ck zur &Uuml;bersicht" onclick="setCancel()">Abbrechen</button>
+                </td>
+            </tr>
+        </table>
+        <input tal:attributes="value python:{'True':'save_new','False':'save_edit'}[str(id=='')]" type="hidden" name="form_op" id="form_op" />
+    </form>
+</metal:block>
+
+
+<metal:block metal:define-macro="view_field">
+    <p><a tal:attributes="href python:'./metatype'+page" i18n:translate="admin_overview">zur &Uuml;bersicht</a></p>
+    <script type="text/javascript">
+        function openwindow(url)
+        {
+            popup = window.open(url, "popup", "resizable=1,width=700,height=450,scrollbars");
+            popup.focus();
+        }
+    </script>
+
+    <form name="fieldoverview" method="post" action="#" tal:attributes="action page">
+        <table class="overview">
+            <tr>
+                <td colspan="10">
+                    <h3 i18n:translate="admin_metafield_header">
+                        Felder des Metadatenschemas '<span tal:content="python:metadatatype.getName()" i18n:name="name"/>'
+                    </h3>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="10">
+                    <a tal:attributes="href python:'./metatype/'+metadatatype.getName()+'/overview?style=popup'" i18n:translate="admin_metafield_fieldlist" target="_blank">Feldliste anzeigen</a>
+                </td>
+            </tr>
+            <tr>
+                <th>&nbsp;</th>
+                <th tal:repeat="col sortcol">
+                    <a tal:attributes="href python:col.link+'&detailof='+metadatatype.getName(); title python:col.title" tal:content="structure python:col.label"/>
+                </th>
+                <th>
+                    <table>
+                        <tr>
+                            <td tal:repeat="fieldoption fieldoptions" width="20px" align="center">
+                                <img tal:attributes="src python:fieldoption.getImagesource(); title python:fieldoption.getName()" i18n:attributes="title"/>
+                            </td>
+                        </tr>
+                    </table>
+                </th>
+                <th tal:condition="python:order[0:1]==0 or order==''">
+                    <tal:block i18n:translate="admin_metafield_order">Reihenfolge</tal:block> <img src="/img/az.png" border="0" />
+                </th>
+                <th tal:condition="python:order[0:1]!=0 and order!=''">
+                    <a tal:attributes="href python:'./metatype?detailof='+metadatatype.getName()+page" i18n:attributes="title admin_sort_label" title="Werte nach aktueller Spalte sortieren"><tal:block i18n:translate="admin_metafield_order">Reihenfolge</tal:block></a>
+                </th>
+                <th align="right">
+                    <input tal:attributes="name python:'newdetail_'+metadatatype.getName()" i18n:attributes="title admin_metafield_new_title" type="image" src="/img/install.png" title="Neues Metadatenfeld anlegen">
+                </th>
+            </tr>
+            <tr tal:condition="python:not metafields or len(metafields)==0">
+                <td colspan="7"><small i18n:translate="admin_metafield_nofield">- keine Metadatenfelder vorhanden -</small></td>
+            </tr>
+                <tal:block tal:define="start python:pages.getStart(); end python:pages.getEnd()" tal:repeat="metafield python:metafields[start:end]">
+                    <tr tal:define="cssclass python:metafields.index(metafield)%2 and 'norm' or 'silver'">
+                        <td tal:attributes="class cssclass" tal:content="python:str(metafields.index(metafield)+1) +'.'"/>
+                        <td tal:attributes="class cssclass" tal:content="python:str(metafield.getName())"/>
+                        <td tal:attributes="class cssclass" tal:content="python:str(metafield.getLabel())"/>
+                        <td tal:attributes="class cssclass" tal:content="python:fieldtypes[str(metafield.getFieldtype())]" i18n:translate=""/>
+  
+                        <td tal:attributes="class cssclass" tal:define="flist python:metafield.getFieldOptionList()">
+                            <table>
+                                <tr>
+                                    <td tal:repeat="fieldoption fieldoptions" width="20px" align="center">
+                                        <img tal:define="index python:fieldoptions.index(fieldoption)" tal:condition="python:flist[index]" tal:attributes="title python:flist[index] and fieldoption.getName() or ''; src python:flist[index] and '/img/haken.gif' or '/img/mark_empty.gif'" i18n:attributes="title"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td tal:define="index python:metafields.index(metafield); count python:len(metafields)" tal:attributes="class cssclass">
+                            &nbsp;&nbsp;&nbsp;
+                            <tal:block tal:condition="python:index>=0 and index<count-1">    
+                                <input tal:condition="python:order[0:1]!='0' and order!=''" tal:attributes="name python:'downdetail_'+metadatatype.getName()+'|'+metafield.getName()" disabled type="image" src="/img/downarrowdisabled.png"/>
+
+                                <input tal:condition="python:order[0:1]=='0' or order==''" tal:attributes="name python:'downdetail_'+metadatatype.getName()+'|'+metafield.getName()" i18n:attributes="title admin_metafield_down_title" type="image" src="/img/downarrow.png" title="Feld nach unten"/>
+                            </tal:block>
+                            <tal:block tal:condition="python:index==count-1">
+                                &nbsp;&nbsp;&nbsp;
+                            </tal:block>
+                            &nbsp;
+                            <tal:block tal:condition="python:index>0 and index<=count">
+                                <input tal:condition="python:order[0:1]!='0' and order!=''" tal:attributes="name python:'updetail_'+metadatatype.getName()+'|'+metafield.getName()" disabled type="image" src="/img/uparrowdisabled.png"/>
+                            
+                                <input tal:condition="python:order[0:1]=='0' or order==''" tal:attributes="name python:'updetail_'+metadatatype.getName()+'|'+metafield.getName()" i18n:attributes="title admin_metafield_up_title" type="image" src="/img/uparrow.png" title="Feld nach oben"/>
+                            </tal:block>
+                        </td>
+
+                        <td tal:attributes="class cssclass">
+                            <input tal:attributes="name python:'editdetail_'+metadatatype.getName()+'|'+metafield.getName()" i18n:attributes="title admin_metafield_edit_title" type="image" src="/img/edit.png" title="Metadatenfeld bearbeiten"/>&nbsp;&nbsp;
+                            <input tal:attributes="name python:'deletedetail_'+metadatatype.getName()+'|'+metafield.getName(); onclick python:'return questionDelName(\''+metafield.getLabel() + ' (' +metafield.getName()+')\')'" i18n:attributes="title admin_metafield_delete_title" type="image" src="/img/delete.png" alt="Metadatenfeld l&ouml;schen"/>
+                        </td>
+                    </tr>
+                </tal:block>
+                <tr>
+                    <th colspan="4">
+                        <small>
+                            <span i18n:translate="admin_metafield_footer">
+                                <span i18n:name="number" tal:content="python:str(len(metafields))"/>
+                            </span>
+                            <span tal:content="structure python:pages.printPageList()"/>
+                        </small>
+                    </th>
+                    <th align="right" colspan="3"><small tal:content="structure python:pages.printPageAll()"/></th>
+                </tr>
+                <tr>
+                    <td colspan="7">
+                        (<span i18n:translate="admin_metafield_msg1">Die Reihenfolge der Felder kann nur ge&auml;ndert werden, wenn nach der Spalte 'Reihenfolge' sortiert worden ist. Dann erscheinen die Pfeile in Farbe</span>)
+                    </td>
+                </tr>
+            </table>
+        <br />
+    </form>
+</metal:block>
+
+<metal:block metal:define-macro="modify_field" tal:define="id python:metafield.getName()">
+    <script type="text/javascript">
+        function openwindow(url) {
+          popup = window.open(url, "popup", "width=400,height=450,scrollbars");
+          popup.focus();
+        }
+    </script>
+    <p>
+        <a tal:attributes="href python:'./metatype?detailof='+metadatatype.getName()+page" i18n:translate="admin_overview">zur &Uuml;bersicht</a>
+    </p>
+    <form tal:attributes="action page" name="addmfield" id="addmfield" method="post" action="#" onload="metatypechange(document)">
+        <table>
+            <tr>
+                <td colspan="2">
+                    <h3 tal:condition="python:id==''" i18n:translate="admin_metafield_new_header">Neues Metadatenfeld im Schema '<span tal:content="python:metadatatype.getName()" i18n:name="name"/>' erstellen</h3>
+
+                    <h3 tal:condition="python:id!=''" i18n:translate="admin_metafield_edit_header">Metadatenfeld '<span tal:content="id" i18n:name="field"/>' des Metadatenschemas '<span tal:content="python:metadatatype.getName()" i18n:name="name"/>' bearbeiten</h3>
+                </td>
+            </tr>
+            <tr tal:condition="python:error>0">
+                <td colspan="2">
+                    <p tal:condition="python:error==1" i18n:translate="admin_mandatory_error" class="error">Nicht alle Pflichtfelder wurden ausgef&uuml;llt.</p>
+                    <p tal:condition="python:error==2" i18n:translate="admin_duplicate_error" class="error">Ein Objekt mit gleichem Namen ist bereits vorhanden.</p>
+                    <p tal:condition="python:error==3" i18n:translate="admin_metafield_error_1" class="error">Ein Metadatenfeld mit gleichem Namen ist bereits f&uuml;r dieses Metadatenschema vorhanden.</p>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_metafield_name">Name</tal:block>: <span class="required">*</span></td>
+                <td>
+                    <input tal:attributes="value python:metafield.getName()" type="text" name="mname" maxlenght=50 style="width:390px;"/>
+                    <input tal:attributes="value python:metadatatype.getName()" type="hidden" name="pid"/>
+                    <input tal:attributes="value python:metafield.getName()" type="hidden" name="mname_orig"/>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_metafield_label">Label</tal:block>: <span class="required">*</span></td>
+                <td>
+                    <input tal:attributes="value python:metafield.getLabel()" type="text" name="mlabel" maxlenght=50 style="width:390px;"/>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_metafield_type">Typ</tal:block>: <span class="required">*</span></td>
+                <td>
+                    <select name="mtype" id="mtype" onchange="metatypechange(document)">
+                        <option tal:repeat="key python:fieldtypes.keys()" tal:attributes="value key; selected python:{'False':None, 'True':'selected'}[str(metafield.getFieldtype()==key)]" tal:content="python:fieldtypes[key]" i18n:translate=""/>
+                    </select>
+                    &nbsp;&nbsp;&nbsp;
+                    <button tal:attributes="onclick python:'openwindow(\'./metatype/info?style=popup\')'" i18n:attributes="title admin_metafield_help_title" type="button" title="Hilfe anzeigen">i</button>
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>
+                    <div style="display:none" name="div_memo" id="div_memo">
+                        <tal:block i18n:translate="admin_memofield_maxlength">Maximall&auml;nge</tal:block>:<br>
+                        <input tal:attributes="value python:metafield.getValues()" type="text" name="memo_value" style="width:390px;"/>
+                        <br>
+                    </div>
+                    
+                    <div style="display:none" name="div_list" id="div_list">
+                        <tal:block i18n:translate="admin_metafield_listvalues">Listenwerte</tal:block>:<br>
+                        <textarea name="list_value" rows="4" style="width:390px;">
+<tal:block tal:content="python:metafield.getValues()"/></textarea>
+                        <br>
+                    </div>
+                    
+                    <div style="display:none" name="div_mlist" id="div_mlist">
+                        <tal:block i18n:translate="admin_metafield_listvalues">Listenwerte</tal:block>:<br>
+                        <textarea tal:content="python:metafield.getValues()" name="mlist_value" rows="4" style="width:100%"/>
+                        <br>
+                    </div>
+                    
+                    <div style="display:none" name="div_date" id="div_date">
+                        <tal:block i18n:translate="admin_metafield_dateformat">Datums-/Zeitformat</tal:block>:<br>
+                        <select id="date_value" name="date_value" style="width:390px;">
+                            <option tal:repeat="dateoption dateoptions" tal:attributes="value python:dateoption.getShortName(); selected python:{'False':None,'True':'selected'}[str(dateoption.getShortName()==str(metafield.getValues()))]" tal:content="python:dateoption.getName()" i18n:translate=""/>
+                       </select>
+                    </div>
+
+                    <div style="display:none" id="div_union">
+                        <tal:block i18n:translate="admin_metafield_fields">Metadatenfelder</tal:block>:<br>
+                        <select id="union_value" name="union_value" style="width:390px;" size="5" multiple="multiple">
+                            <option tal:repeat="index python:list(metafields)" tal:content="python:metafields[index].getLabel()" tal:attributes="value python:metafields[index].getName(); selected python:{'False':None,'True':'selected'}[str(metafields[index].getName() in metafield.getValueList())]" i18n:translate=""/>
+                        </select>
+                    </div>
+
+                    <div style="display:none" id="div_meta">
+                        <tal:block i18n:translate="admin_metafields_techfields">Technisches Metadatenfeld</tal:block>:<br>
+                        <select id="meta_value" name="meta_value" style="width:390px;">
+                            <optgroup tal:repeat="key python:datatypes.keys()" tal:attributes="label key">
+                                 <option tal:repeat="item python:datatypes[key].keys()" tal:attributes="value item; selected python:{'False':None,'True':'selected'}[str(item in metafield.getValueList())]" tal:content="structure python:datatypes[key][item]"/>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div style="display:none" id="div_url">
+                        <table>
+                            <tr>
+                                <td><tal:block i18n:translate="admin_metafield_link">Link</tal:block>:</td>
+                                <td>
+                                    <input tal:attributes="value python:valuelist[0]" type="text" name="url_value" style="width:200px;"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><tal:block i18n:translate="admin_metafield_urltext">Angezeigter Text</tal:block>:</td>
+                                <td>
+                                    <input tal:attributes="value python:valuelist[1]" type="text" name="url_value" value=""  style="width:200px;"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><tal:block i18n:translate="admin_metafield_icon">Icon</tal:block>:</td>
+                                <td>
+                                    <select onchange="showPreview(document, this.value)" name="url_value">
+                                        <option value="" i18n:translate="admin_metafield_noicon">-kein Icon-</option>
+
+                                        <option tal:repeat="index python:list(icons)" tal:attributes="value python:icons[index]; selected python:{'False':None,'True':'selected'}[str(valuelist[2]==icons[index])]" tal:content="index" value="_value_"/>  
+                                    </select>
+                                    <tal:block i18n:translate="admin_metafield_preview">Vorschau</tal:block>: <img src="/img/emtyDot1Pix.gif" id="image_preview"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    &nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_metafield_description">Beschreibung</tal:block>:</td>
+                <td>
+                    <textarea tal:content="python:metafield.getDescription()" name="mdescription" rows="4" style="width:390px;"/>
+                    <br>
+                    <small style="color: silver">(<span i18n:translate="admin_metafield_msg2">Die Beschreibung wird als Hilfetext im Metadateneditor angezeigt</span>)</small>
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>
+                    <fieldset style="width:390px;">
+                        <legend i18n:translate="admin_metafield_options">Optionen</legend>
+                        <tal:block  tal:repeat="fieldoption fieldoptions">
+                            <input tal:define="index python:fieldoptions.index(fieldoption)" tal:attributes="name python:'option_'+fieldoption.getValue(); value python:fieldoption.getValue(); checked python:{'False':None,'True':'checked'}[str(metafield.getFieldOptionList()[index])]" type="checkbox">
+                            <span tal:content="python:fieldoption.getName()" i18n:translate=""/>
+                            <br>
+                            </tal:block>
+                    </fieldset>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    &nbsp;
+                    <input tal:attributes="value python:str(metafield.getOrderPos())" type="hidden" name="orderpos" />
+                </td>
+                <td>
+                    <small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info">Pflichtfeld, darf nicht leer sein</span>)</small>
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>
+                    <button i18n:translate="admin_save" i18n:attributes="title admin_save_title" type="submit" name="submit" value="submit" title="&Auml;nderungen speichern">Speichern</button>&nbsp;&nbsp;
+                    <button i18n:translate="admin_cancel" i18n:attributes="title admin_cancel_title" type="submit" name="cancel" value="cancel" title="Zur&uuml;ck zur &Uuml;bersicht" onclick="setCancel()">Abbrechen</button>
+                </td>
+            </tr>
+        </table>
+        <input tal:attributes="value python:id=='' and 'save_newdetail' or 'save_editdetail'" type="hidden" name="form_op" id="form_op"/>
+    </form>
+    <script>
+       metatypechange(document);
+    </script>
+</metal:block>
+
+<metal:block metal:define-macro="view_mask">
+    <p><a tal:attributes="href python:'./metatype'+page" i18n:translate="admin_overview">zur &Uuml;bersicht</a></p>
+    <script type="text/javascript">
+        function openwindow(url)
+        {
+            popup = window.open(url, "popup", "resizable=1,width=700,height=450,scrollbars");
+            popup.focus();
+        }
+    </script>
+
+    <form name="fieldoverview" method="post" action="#" tal:attributes="action page">
+        <table class="overview">
+            <tr>
+                <td colspan="5">
+                    <h3 i18n:translate="admin_mask_header">Masken des Metadatenschemas '<span tal:content="python:metadatatype.getName()" i18n:name="name"/>'</h3>
+                </td>
+            </tr>
+            <tr>
+                <th>&nbsp;</th>
+                <th tal:repeat="col sortcol">
+                    <a tal:attributes="href python:col.link+'&maskof='+metadatatype.getName(); title python:col.title" tal:content="structure python:col.label" i18n:translate=""/>
+                </th>
+                <th align="right">
+                    <input tal:attributes="name python:'automask_'+metadatatype.getName()" i18n:attributes="title admin_mask_createstd_title" type="image" src="/img/styles.png" title="Standardmaske automatisch anlegen">&nbsp;&nbsp;&nbsp;&nbsp;
+                    <input tal:attributes="name python:'newmask_'+metadatatype.getName()" i18n:attributes="title admin_mask_create_title" type="image" src="/img/install.png" title="Neues Maske anlegen">
+                </th>
+            </tr>
+            <tr tal:condition="python:not masks or len(masks)==0">
+                <td colspan="5"><small i18n:translate="admin_mask_nomask">- keine Masken vorhanden -</small></td>
+            </tr>
+                <tal:block tal:define="start python:pages.getStart(); end python:pages.getEnd()" tal:repeat="mask python:masks[start:end]">
+                    <tr tal:define="cssclass python:masks.index(mask)%2 and 'norm' or 'silver'">
+                        <td tal:attributes="class cssclass" tal:content="python:str(masks.index(mask)+1) +'.'"/>
+                        <td tal:attributes="class cssclass" tal:content="python:mask.getName()"/>
+                        <td tal:attributes="class cssclass" tal:content="python:masktypes[mask.getMasktype()]" i18n:translate=""/>
+                        <td tal:attributes="class cssclass" tal:content="python:mask.getDescription()"/>
+                        <td tal:attributes="class cssclass">
+                            <a tal:attributes="onclick python:'javascript:openPopupWithScroll(\'/admin/metatype/'+metadatatype.getName()+'/'+mask.getName()+'/editor?style=popup\',\'editor\',800,600)'" href="#"><img i18n:attributes="title admin_mask_edit_field" src="/img/rightarrow.png" title="Maskenfelder bearbeiten" border="0"/></a>&nbsp;
+                            <input tal:attributes="name python:'copymask_'+metadatatype.getName()+'|'+mask.getName()" i18n:attributes="title admin_mask_clone_title" type="image" src="/img/clone.png" title="Maske klonen"/>&nbsp;&nbsp;                               
+                            <input tal:attributes="name python:'editmask_'+metadatatype.getName()+'|'+mask.getName()" i18n:attributes="title admin_mask_edit_title" type="image" src="/img/edit.png" title="Maske bearbeiten"/>&nbsp;&nbsp;
+                            <input tal:attributes="name python:'deletemask_'+metadatatype.getName()+'|'+mask.getName(); onclick python:'return questionDelName(\''+mask.getName()+'\')'" i18n:attributes="title admin_mask_delete_title" type="image" src="/img/delete.png" title="Maske l&ouml;schen"/>
+                        </td>
+                    </tr>
+                </tal:block>
+                <tr>
+                    <th colspan="3">
+                        <small>
+                            <span i18n:translate="admin_mask_footer">
+                                <span i18n:name="number" tal:content="python:str(len(masks))"/>
+                            </span>
+                            <span tal:content="structure python:pages.printPageList()"/>
+                        </small>
+                    </th>
+                    <th align="right" colspan="2"><small tal:content="structure python:pages.printPageAll()"/></th>
+                </tr>
+                <tr>
+                    <td colspan="4">
+                        &nbsp;
+                    </td>
+                </tr>
+            </table>
+        <br />
+    </form>
+</metal:block>
+
+<metal:block metal:define-macro="modify_mask">
+    <p><a tal:attributes="href python:'./metatype'+page" i18n:translate="admin_overview">zur &Uuml;bersicht</a></p>
+    <form tal:attributes="action page" name="editmetatype" method="post">                    
+        <table>
+            <tr>
+                <td colspan="2">
+                    <h3 tal:condition="python:str(id)==''" i18n:translate="admin_mask_create">Neue Maske anlegen</h3>
+                    <h3 tal:condition="python:id!=''" i18n:translate="admin_mask_edit">Maske bearbeiten</h3>
+                </td>
+            </tr>
+            <tr tal:condition="python:error>0">
+                <td colspan="2">
+                    <p tal:condition="python:error==1" class="error" i18n:translate="admin_mandatory_error">Nicht alle Pflichtfelder wurden ausgef&uuml;llt.</p>
+                    <p tal:condition="python:error==2" class="error" i18n:translate="admin_duplicate_error">Eine Objekt mit gleichem Namen ist bereits vorhanden.</p>
+                    <p tal:condition="python:error==3" class="error" i18n:translate="admin_mask_error_1">Ein Maske mit gleichem Namen ist bereits f&uuml;r dieses Metadatenschema vorhanden.</p>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_mask_name">Name</tal:block>: <span class="required">*</span></td>
+                <td>
+                    <input tal:attributes="value python:mask.getName()" type="text" style="width:300px" name="mname"/>
+                    <input tal:attributes="value python:mask.getName()" type="hidden" name="morig_name"/>
+                    <input tal:attributes="value pid" type="hidden" name="mpid"/>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_mask_type">Maskentyp</tal:block>:</td>
+                <td>
+                    <select name="mtype">
+                        <option tal:repeat="key python:masktypes.keys()" tal:attributes="value key; selected python:{'False':None,'True':'selected'}[str(mask.getMasktype()==str(key))]" tal:content="python:masktypes[key]" i18n:translate=""/>
+                    </select>
+                 <td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_mask_description">Beschreibung</tal:block>:</td>
+                <td><textarea tal:content="python:mask.getDescription()" name="mdescription" rows="4" cols="35"/>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td><small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info">Pflichtfeld, darf nicht leer sein</span>)</small></td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>
+                    <button i18n:translate="admin_save" i18n:attributes="title admin_save_title" type="submit" name="submit" value="submit" title="&Auml;nderungen speichern">Speichern</button>&nbsp;&nbsp;
+                    <button i18n:translate="admin_cancel" i18n:attributes="title admin_cancel_title" type="submit" name="cancel" value="cancel" title="Zur&uuml;ck zur &Uuml;bersicht" onclick="setCancel()">Abbrechen</button>
+                </td>
+            </tr>
+        </table>
+        <input tal:attributes="value python:mtype.getName()" type="hidden" name="maskof"/>
+        <input tal:attributes="value python:id=='' and 'save_newmask' or 'save_editmask'" type="hidden" name="form_op" id="form_op"/>
+    </form>
+</metal:block>
+
+
+<metal:block metal:define-macro="show_info">
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+    <html>
+        <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+            <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+
+            <title i18n:translate="admin_infopopup_title">Info</title>
+            <link rel="stylesheet" href="/css/admin.css">
+        </head>
+
+        <body>
+            <table cellpadding="20" cellspacing="0" width="100%" class="header">
+                <tr>
+                    <td class="header" i18n:translate="admin_infopopup_header">M&ouml;gliche Typen</td>
+                </tr>
+                <tr>
+                    <td>
+                        <p tal:repeat="fieldtype python:list(fieldtypes)" class="popup">
+                            &raquo; <b tal:content="python:fieldtypes[fieldtype]" i18n:translate=""/>:<br/>
+                            <span tal:content="python:fieldtypes[fieldtype]+'_desc'" i18n:translate="" style="margin-left:30px;"/>
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </body>
+    </html>
+</metal:block>
+
+<metal:block metal:define-macro="show_fieldoverview">
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+    <html>
+        <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+            <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+
+            <title i18n:translate="admin_defpopup_title">Metadatenschema-Info</title>
+            <link rel="stylesheet" href="/css/admin.css">
+        
+            
+            <style type="text/css">
+                body{
+                    margin: 10px;
+                }
+                table.list{
+                    width: 100%;
+                    border: 1px solid silver;
+                }
+
+                table.list td.list{
+                    border: 1px solid silver;
+                }
+            </style>
+        </head>
+        <body>
+            <h3 i18n:translate="admin_defpopup_header">Metadatenschema '<span tal:content="python:metadatatype.getName()" i18n:name="name"/>'</h3>
+            <a href="#" onclick="window.print()"><img i18n:attributes="title admin_print_title" src="/img/print.png" title="Aktuelle Seite drucken" border="0px"/></a>
+            <table class="list" cellspacing="0px">
+                <tr>
+                    <th>ID</th>
+                    <th i18n:translate="admin_defpopup_name">Name</th>
+                    <th>Typ</th>
+                    <th>
+                        <table>
+                            <tr>
+                                <tal:block tal:repeat="fieldoption fieldoptions">
+                                    <td width="20px" align="center"><img tal:attributes="src python:fieldoption.getImagesource(); title python:fieldoption.getName()" i18n:attributes="title"/></td>
+                                </tal:block>
+                            </tr>
+                        </table>
+                    </th>
+                    <th i18n:translate="admin_defpopup_description">Beschreibung</th>
+                </tr>
+                <tr tal:repeat="metafield metafields">
+                    <td tal:content="python:metafield.getName()" class="list"/>
+                    <td tal:content="python:metafield.getLabel()" class="list"/>
+                    <td tal:content="python:fieldtypes[metafield.getFieldtype()]" i18n:translate="" class="list"/>
+                    
+                    <td tal:define="flist python:metafield.getFieldOptionList()" class="list">
+                        <table>
+                            <tr>
+                                <tal:block tal:repeat="fieldoption fieldoptions">
+                                    <td tal:define="index python:fieldoptions.index(fieldoption)" width="20px" align="center">
+                                        <img tal:condition="python:flist[index]" tal:attributes="title python:flist[index] and fieldoption.getName() or ''; src python:flist[index] and '/img/haken.gif' or '/img/mark_empty.gif'" i18n:attributes="title"/>
+                                    </td>
+                                </tal:block>
+                            </tr>
+                        </table>
+                    </td>
+                    <td class="list">
+                        <span tal:content="structure python:len(metafield.getDescription())>15 and metafield.getDescription()[:15]+'...' or metafield.getDescription()+'&nbsp;'"/>
+                    </td>
+                </tr>
+            </table>
+        </body>
+    </html>
+</metal:block>
+
+
+<html metal:define-macro="editor_popup">
+    <head>
+        <script type="text/javascript" language="javascript" src="/js/metaeditor.js">selected==false;</script>
+        <link rel="stylesheet" href="/css/editor.css">
+        <title i18n:translate="mask_editor_title">Maskeneditor</title>
+    </head>
+    <body class="form">
+        <tal:block tal:replace="raw editor"/>
+
+        <tal:block tal:condition="python:edit==''">
+            <form method="post" name="op">
+                <div id="selection_div">
+                    <span i18n:translate="mask_editor_chosen_element">gew&auml;hlte Elemente:</span>
+                    <select id="selection" name="group_type">
+                        <option value="vgroup" i18n:translate="mask_editor_into_vert_group">in neuer vertikaler Gruppe gruppieren</option>
+                        <option value="hgroup" i18n:translate="mask_editor_into_hor_group">in neuer horizontaler Gruppe gruppieren</option>
+                    </select> <input i18n:attributes="title mask_editor_group_title" type="image" name="make_group" src="/img/rightarrow.png" title="Gruppieren" onclick="getSellist()"/>
+                    <input type="hidden" name="sel_id" id="sel_id"/>
+                    <input type="hidden" name="op" value="group"/>
+                    <br/>
+                    <br/>
+                </div>
+            </form>
+            <div align="center">
+                <button type="button" onclick="self.close()" style="width:100px" i18n:translate="mask_editor_ok"> OK </button>
+            </div>
+        </tal:block>
+    </body>
+</html>

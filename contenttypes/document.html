@@ -1,0 +1,118 @@
+
+<tal:block metal:define-macro="metadatavalues" tal:repeat="value values">
+    <p tal:replace="raw value"/><br/>
+</tal:block>
+
+<tal:block metal:define-macro="metadatavalues_line" tal:repeat="value values">
+    <p tal:replace="raw value"/>. 
+</tal:block>
+
+
+<div metal:define-macro="showbig" id="object_main">
+    <div style="width: 100%; text-align:right">
+        <a tal:attributes="href python:'javascript:shoppingBag(\''+str(node.id)+'\')'" href="javascript:shoppingBag(nodeid)">
+            <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png" title="Objekt zur Merkliste hinzuf&uuml;gen"/></a>
+        <a tal:attributes="href python:'/print/'+str(node.id)" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
+    </div>
+    <div tal:condition="python: len(node.getFiles())>0" id="object_image">
+        <tal:block tal:condition="python:canseeoriginal">
+        <a tal:attributes="href python:'/doc/'+str(node.id)+'/document.pdf'" i18n:attributes="title doc_fulltext_title" target="pdfdocument" title="Volltext in neuem Fenster &ouml;ffnen">
+            <img tal:attributes="src python:'/thumb2/'+str(node.id)" style="cursor:pointer" border="0" width="300"/>
+        </a>
+        </tal:block>
+        <tal:block tal:condition="python:not canseeoriginal">
+            <img tal:attributes="src python:'/thumb2/'+str(node.id)" border="0" width="300"/>
+        </tal:block>
+        <br/>
+        <div tal:condition="python:len(attachment)>0" id="object_attachment">
+            <a tal:attributes="onclick python:'javascript:openPopup(\'/attachmentbrowser?id='+str(node.id)+'&path='+path+'\', \'Attachment\', 400, 400)'" i18n:translate="doc_att_browser" href="#" >Attachment-Browser &ouml;ffnen...</a>
+        </div>
+        
+    </div>
+
+    <div tal:condition="python: len(node.getFiles())==0" id="object_meta" style="margin-left:0px" tal:content="raw metadata"/>
+    <div tal:condition="python: len(node.getFiles())>0" id="object_meta" tal:content="raw metadata"/>
+</div>
+
+
+<form metal:define-macro="uploadform" action="upload_new" method="post" enctype="multipart/form-data" style="padding:4px">
+    <h3>Hier k&ouml;nnen Sie PDF-Dateien auf den Server laden.</h3>
+    <p>
+        <b>Daten hochladen:</b>
+    </p>
+    <p>Dazu Metadatenschema ausw&auml;hlen, den "Durchsuchen"-Button klicken, Datei ausw&auml;hlen und "Hochladen" klicken.</p>
+    <p>
+        <label>Metadatenschema:</label>
+        <select name="datatype" style="width:400px">
+            
+            <tal:block tal:repeat="metadatatype metadatatypes">
+                <option tal:condition="python:metadatatype.isActive() and 'document' in metadatatype.getDatatypes()" tal:attributes="value python:'document/'+metadatatype.getName()" tal:content="python:metadatatype.getLongName()"/>
+            </tal:block>
+
+        </select>
+    </p>
+    <p>
+        <label>Datei:</label> 
+        <input type="file" name="file" style="width:400px" accept="application/pdf"/>
+    </p>        
+    <p>
+        <label>&nbsp;</label>
+        <input type="submit" name="submit" value="Hochladen"/>
+    </p>
+</form>
+
+
+<html metal:define-macro="attachmentbrowser">
+    <head>
+        <title>Attachment-Browser</title>
+        <link rel="stylesheet" href="/css/tum.css"/>
+        <link rel="stylesheet" href="/css/admin.css"/>
+    </head>
+    <body style="margin:5px">
+        <h3>Attachment-Browser</h3>
+        <form>
+
+            <table class="overview">
+                <tr>
+                    <th width="30px">Typ</th>
+                    <th align="left">Name</th>
+                    <th align="right">Gr&ouml;&szlig;e</th>
+                </tr>
+
+                <tal:block tal:repeat="file files">
+                    <tr tal:define="cssclass python:files.index(file)%2 and 'norm' or 'silver'">
+                        
+                        <tal:block tal:condition="python:file['type']=='dir' or file['type']=='back'">
+                            <td tal:attributes="class cssclass" align="center">
+                                <a tal:attributes="href python:'/attachmentbrowser?id='+str(id)+'&path='+file['req_path']">
+                                    <img tal:attributes="src python:'/img/'+file['icon']" border="0"/>
+                                </a>
+                            </td>
+                            <td valign="top" tal:attributes="class cssclass"><a tal:attributes="href python:'/attachmentbrowser?id='+str(id)+'&path='+file['req_path']" tal:content="python:file['name']"/></td>
+
+                            <td tal:attributes="class cssclass">&nbsp;</td>
+                        </tal:block>
+
+
+                        <tal:block tal:condition="python:file['type']!='dir' and file['type']!='back'">
+                            <td tal:attributes="class cssclass" align="center">
+                                <a tal:attributes="href python:'/attfile/'+file['path']" href="" target="_blank">
+                                    <img tal:attributes="src python:'/img/'+file['icon']" src="" border="0">
+                                </a>
+                            </td>
+                            <td tal:attributes="class cssclass"><a tal:attributes="href python:'attfile/'+str(id)+'/'+file['path']" target="_blank" tal:content="python:file['name']"/></td>
+
+                            <td tal:attributes="class cssclass" align="right"><small tal:content="python:file['size']"/>&nbsp;</td>
+                        </tal:block>
+
+                    </tr>
+                </tal:block>
+                <tr>
+                    <th colspan="2" tal:content="python:'('+str(len(files))+' Dateien)'" align="left"/>
+                    <th tal:content="sum_size" align="right"/>
+                </tr>
+            </table>
+        </form>
+        
+    </body>
+</html>

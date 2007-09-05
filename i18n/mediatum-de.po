@@ -1,0 +1,2124 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2007-03-08 15:16+0100\n"
+"Last-Translator: Arne Seifert <seifert@ub.tum.de>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "en"
+msgstr "Englisch"
+
+msgid "de"
+msgstr "Deutsch"
+
+msgid "welcome"
+msgstr "Willkommen auf mediaTUM"
+
+msgid "username:"
+msgstr "Benutzername:"
+
+msgid "password:"
+msgstr "Password:"
+
+msgid "new_password:"
+msgstr "Neues Passwort:"
+
+msgid "invalid"
+msgstr "Ungültig"
+
+msgid "main_title"
+msgstr "mediatum - digital collection management"
+
+msgid "header_slogan"
+msgstr "mediatum - digital collection management"
+
+msgid "show in new window"
+msgstr "In neuem Fenster anzeigen"
+
+msgid "main_title_tum"
+msgstr "mediaTUM - Der Medienserver der TU München"
+
+msgid "header_slogan_tum"
+msgstr "mediaTUM - Der Medienserver der TU München"
+
+msgid "bib_link_title"
+msgstr "Zum Bibliotheksportal"
+
+msgid "header_shoopingbag_alt"
+msgstr "Merkliste"
+
+msgid "header_shoopingbag_title"
+msgstr "Merkliste anzeigen"
+
+msgid "sub_header_user"
+msgstr "Benutzer"
+
+msgid "footer_impressum"
+msgstr "Impressum"
+
+msgid "permission_denied"
+msgstr "Zugriff verweigert"
+
+msgid "login_error_1"
+msgstr "Die Anmeldung ist fehlgeschlagen! Benutzername oder Passwort falsch."
+
+msgid "login_submit"
+msgstr "Anmelden"
+
+msgid "login_reset"
+msgstr "Abbrechen"
+
+msgid "login_save"
+msgstr "Speichern"
+
+msgid "login_currentuser_msg"
+msgstr "Sie sind derzeit angemeldet als: [ ${name} ]"
+
+msgid "login_change_err_1"
+msgstr "Das Ursprungspasswort stimmt nicht mit dem gespeicherten überein"
+
+msgid "login_change_err_2"
+msgstr "Das neue Passwort und die Wiederholung sind nicht identisch"
+
+msgid "login_change_err_3"
+msgstr "Ihr Benutzerkonto besitzt noch das Standardpasswort. Bitte ändern Sie dieses ab, um Missbrauch vorzubeugen."
+
+msgid "login_act_pwd:"
+msgstr "Aktuelles Passwort:"
+
+msgid "password_repeat:"
+msgstr "Neues Passwort (Wiederholung):"
+
+msgid "hint"
+msgstr "Hinweis: "
+
+msgid "close_window"
+msgstr "Fenster schließen"
+
+msgid "startpage"
+msgstr "Startseite"
+
+msgid "occurences:"
+msgstr "Vorkommen:"
+
+msgid "printview"
+msgstr "Druckansicht"
+
+msgid "sort_label"
+msgstr "Sortieren nach:"
+
+# sub_header
+msgid "sub_header_logout_title"
+msgstr "Abmelden"
+
+msgid "sub_header_logout"
+msgstr "Logout"
+
+msgid "sub_header_login_title"
+msgstr "Anmelden"
+
+msgid "sub_header_login"
+msgstr "Login"
+
+msgid "sub_header_administration_title"
+msgstr "Zur Administrationsoberfläche wechseln"
+
+msgid "sub_header_administration"
+msgstr "Administration"
+
+msgid "sub_header_edit_title"
+msgstr "Zur Bearbeitungsoberfläche wechseln"
+
+msgid "sub_header_edit"
+msgstr "Bearbeiten"
+
+msgid "sub_header_inquest_title"
+msgstr "Zur Rechercheoberfläche wechseln"
+
+msgid "sub_header_inquest"
+msgstr "Recherche"
+
+msgid "sub_header_workflow_title"
+msgstr "Zu den Workflows wechseln"
+
+msgid "sub_header_workflow"
+msgstr "Workflows"
+
+msgid "sub_header_changepwd_title"
+msgstr "Passwort ändern"
+
+msgid "sub_header_changepwd"
+msgstr "Passwort ändern"
+
+msgid "search_title"
+msgstr "Suche starten"
+
+msgid "search"
+msgstr "Suchen"
+
+msgid "xsearch"
+msgstr "Erweiterte Suche"
+
+msgid "all_metafields"
+msgstr "Alle Metadaten"
+
+msgid "search_result_header"
+msgstr "Ihr(e) Suchbegriff(e) " ${searchstring} " wurde(n) in folgenden Kollektionen gefunden:"
+
+msgid "reset_field_title"
+msgstr "Alle Felder zurücksetzen"
+
+msgid "reset_field"
+msgstr "Reset"
+
+msgid "search_simple"
+msgstr "Einfache Suche"
+
+msgid "collections"
+msgstr "Kollektionen"
+
+msgid "collection_title"
+msgstr "Kollektion anzeigen"
+
+msgid "fold"
+msgstr "Zuklappen"
+
+msgid "unfold"
+msgstr "Aufklappen"
+
+msgid "search_list_title"
+msgstr "Zurück zur Trefferliste"
+
+msgid "search_hit"
+msgstr "Treffer"
+
+### datatypes ###
+msgid "Dissertation"
+msgstr "Dissertationen/Habilitationen"
+
+msgid "WorkflowStep_ShowData"
+msgstr "Editor (Workflow)"
+
+msgid "WorkflowStep_Protect"
+msgstr "Rechteänderung (Workflow)"
+
+msgid "WorkflowStep_SendEmail"
+msgstr "Email-Senden (Workflow)"
+
+msgid "Image"
+msgstr "Bildobjekte"
+
+msgid "Video"
+msgstr "Videoobjekte"
+
+msgid "UserGroup"
+msgstr "BenutzerGruppen (Systemtyp)"
+
+msgid "WorkflowStep_Publish"
+msgstr "Publizieren (Workflow)"
+
+msgid "Metadatatype"
+msgstr "Metadatenschema (Systemtyp)"
+
+msgid "Metadatafield"
+msgstr "Metadatenfeld (Systemtyp)"
+
+msgid "WorkflowStep_TextPage"
+msgstr "Textseite (Workflow)"
+
+msgid "WorkflowStep_Delete"
+msgstr "Löschen (Workflow)"
+
+msgid "WorkflowStep"
+msgstr "Workflowschritt (Systemtyp)"
+
+msgid "Maskitem"
+msgstr "Maskenfeld (Systemtyp)"
+
+msgid "WorkflowStep_Start"
+msgstr "Initialschritt (Workflow)"
+
+msgid "Document"
+msgstr "Dokumente"
+
+msgid "Workflow"
+msgstr "Workflow (Systemtyp)"
+
+msgid "WorkflowStep_Jahrbuch"
+msgstr "Transfer Jahrbuch (Workflow)"
+
+msgid "Collection"
+msgstr "Kollektion (Systemtyp)"
+
+msgid "WorkflowStep_AddURN"
+msgstr "URN erzeugen (Workflow)"
+
+msgid "User"
+msgstr "Benutzer (Systemtyp)"
+
+msgid "Workflows"
+msgstr "Workflows (Systemtyp)"
+
+msgid "WorkflowStep_Upload"
+msgstr "Upload (Workflow)"
+
+msgid "Default"
+msgstr "Standardtyp (Systemtyp)"
+
+msgid "Mask"
+msgstr "Maske (Systemtyp)"
+
+msgid "WorkflowStep_EditMetadata"
+msgstr "Metadateneditor (Workflow)"
+
+msgid "Directory"
+msgstr "Verzeichnis (Systemtyp)"
+
+msgid "WorkflowStep_End"
+msgstr "Endknoten (Workflow)"
+
+msgid "Root"
+msgstr "Root-Knoten (Systemtyp)"
+
+### workflow types ###
+msgid "workflowstep-addurn"
+msgstr "URN-erzeugen"
+
+msgid "workflowstep-delete"
+msgstr "Eintrag löschen"
+
+msgid "workflowstep-edit"
+msgstr "Knotenbearbeitung"
+
+msgid "workflowstep-jahrbuch"
+msgstr "Datenexport (Jahrbuch)"
+
+msgid "workflowstep-protect"
+msgstr "ACL Änderungen"
+
+msgid "workflowstep-send_email"
+msgstr "Email senden"
+
+msgid "workflowstep-showdata"
+msgstr "Metadateneditor"
+
+msgid "workflowstep-start"
+msgstr "Startknoten"
+
+msgid "workflowstep-upload"
+msgstr "Uploadknoten"
+
+msgid "workflowstep-publish"
+msgstr "Freischaltung"
+
+msgid "workflowstep-wait"
+msgstr "Warten"
+
+msgid "workflowstep-end"
+msgstr "Endknoten"
+
+### fieldtypes ####
+msgid "fieldtype_text"
+msgstr "Text"
+
+msgid "fieldtype_text_desc"
+msgstr "Normales Texteingabefeld"
+
+msgid "fieldtype_number"
+msgstr "Zahl"
+
+msgid "fieldtype_number_desc"
+msgstr "Feld zur Eingabe eines Zahlenwertes"
+
+msgid "fieldtype_list"
+msgstr "Werteliste"
+
+msgid "fieldtype_list_desc"
+msgstr "Werte-Auswahlfeld als Drop-Down Liste"
+
+msgid "fieldtype_mlist"
+msgstr "Mehrfachauswahl"
+
+msgid "fieldtype_mlist_desc"
+msgstr "Werte-Auswahlfeld als Multiselect-Liste"
+
+msgid "fieldtype_ilist"
+msgstr "Werteliste mit Index"
+
+msgid "fieldtype_ilist_desc"
+msgstr "Eingabefeld mit Index als Popup"
+
+msgid "fieldtype_memo"
+msgstr "Memofeld"
+
+msgid "fieldtype_memo_desc"
+msgstr "Texteingabefeld beliebiger Länge"
+
+msgid "fieldtype_check"
+msgstr "Checkbox"
+
+msgid "fieldtype_check_desc"
+msgstr "Checkbox Auswahl (für Ja/Nein-Werte)"
+
+msgid "fieldtype_date"
+msgstr "Datum"
+
+msgid "fieldtype_date_desc"
+msgstr "Datumsauswahl (Tag / Monat / Jahr)"
+
+msgid "fieldtype_meta"
+msgstr "Technisches Metadatum"
+
+msgid "fieldtype_meta_desc"
+msgstr "Technisches Metadatum (automatisch vom System erstellt)"
+
+msgid "fieldtype_union"
+msgstr "Kombinationsfeld"
+
+msgid "fieldtype_union_desc"
+msgstr "kann aus beliebigen Metadatenfeldern bestehen"
+
+msgid "fieldtype_url"
+msgstr "URL"
+
+msgid "fieldtype_url_desc"
+msgstr "externer Link (neues Fenster)"
+
+### views ###
+msgid "view_list_add_shoppingbag"
+msgstr "Objekt zur Merkliste hinzufügen"
+
+msgid "view_list_att_title"
+msgstr "Attachment zu Dokument vorhanden"
+
+### object views ###
+msgid "image_high_res_title"
+msgstr "Hochaufgelöste Version herunterladen"
+
+msgid "doc_fulltext_title"
+msgstr "Volltext in neuem Fenster öffnen"
+
+msgid "doc_att_browser"
+msgstr "Attachment-Browser &ouml;ffnen..."
+
+### admin area ###
+msgid "admin_print_title"
+msgstr "Aktuelle Seite drucken"
+
+msgid "admin_menu_1"
+msgstr "Benutzerverwaltung"
+
+msgid "admin_menu_1_1"
+msgstr "Benutzergruppe"
+
+msgid "admin_menu_1_2"
+msgstr "Benutzer"
+
+msgid "admin_menu_2"
+msgstr "Zugriffsrechte"
+
+msgid "admin_menu_2_1"
+msgstr "ACL Editor"
+
+msgid "admin_menu_3"
+msgstr "Datentypen"
+
+msgid "admin_menu_3_1"
+msgstr "Metadatentypen"
+
+msgid "admin_menu_4"
+msgstr "Workflows"
+
+msgid "admin_menu_4_1"
+msgstr "Workflow"
+
+msgid "admin_menu_5"
+msgstr "System-Einstellungen"
+
+msgid "admin_menu_5_1"
+msgstr "Log-Dateien"
+
+msgid "admin_error"
+msgstr "Sie besitzen nicht die notwendigen Rechte, um den Administrationsbereich zu betreten.<br/> Falls Sie nicht angemeldet sein sollten, können Sie das ${link}"
+
+msgid "admin_linktext"
+msgstr "hier"
+
+msgid "admin_overview"
+msgstr "zur Übersicht"
+
+msgid "admin_allelements_title"
+msgstr "Alle Elemente anzeigen"
+
+msgid "admin_allelements"
+msgstr "alle anzeigen"
+
+msgid "admin_pageelements_title"
+msgstr "Elemente seitenweise anzeigen"
+
+msgid "admin_pageelements"
+msgstr "seitenweise anzeigen"
+
+msgid "admin_page"
+msgstr "Seite"
+
+msgid "admin_sort_label"
+msgstr "Werte nach aktueller Spalte sortieren"
+
+msgid "admin_mandatory_error"
+msgstr "Nicht alle Pflichtfelder wurden ausgefüllt."
+
+msgid "admin_duplicate_error"
+msgstr "Ein Objekt mit selbem Namen ist bereits vorhanden."
+
+msgid "admin_mandatory_info"
+msgstr "Pflichtfeld, darf nicht leer sein"
+
+msgid "admin_save_title"
+msgstr "Änderungen speichern"
+
+msgid "admin_save"
+msgstr "Speichern"
+
+msgid "admin_cancel_title"
+msgstr "Zurück zur Übersicht"
+
+msgid "admin_cancel"
+msgstr "Abbrechen"
+
+msgid "admin_header"
+msgstr "mediaTUM Administration Interface"
+
+msgid "admin_title"
+msgstr "mediaTUM Administration Interface"
+
+### usergroup ###
+msgid "admin_usergroup_existing"
+msgstr "Vorhandene Benutzergruppen"
+
+msgid "admin_usergroup_nogroups"
+msgstr "- keine Benutzergruppen vorhanden -"
+
+msgid "admin_usergroup_edit"
+msgstr "Benutzergruppe bearbeiten"
+
+msgid "admin_usergroup_delete"
+msgstr "Benutzergruppe löschen"
+
+msgid "admin_usergroup_create"
+msgstr "Neue Benutzergruppe anlegen"
+
+msgid "admin_usergroup_footer"
+msgstr "${number} Gruppen"
+
+msgid "admin_usergroup_col_1"
+msgstr "Benutzergruppe"
+
+msgid "admin_usergroup_col_2"
+msgstr "# User"
+
+msgid "usergroup_option_1"
+msgstr "Editorrechte"
+
+msgid "usergroup_option_2"
+msgstr "Workflowrechte"
+
+msgid "admin_usergroup_msg1"
+msgstr "Nur Gruppen, die keine Benutzer enthalten, können gelöscht werden"
+
+msgid "admin_usergroup_new_label"
+msgstr "Neue Benutzergruppe anlegen"
+
+msgid "admin_usergroup_edit_label"
+msgstr "Benutzergruppe bearbeiten"
+
+msgid "admin_usergroup_group"
+msgstr "Gruppe"
+
+msgid "admin_usergroup_description"
+msgstr "Beschreibung"
+
+msgid "admin_usergroup_options"
+msgstr "Optionen"
+
+msgid "admin_usergroup_aclrule"
+msgstr "Access Regel für diese Gruppe erstellen"
+
+### user ###
+msgid "user_option_1"
+msgstr "Passwort änderbar"
+
+msgid "admin_user_existing"
+msgstr "Vorhandene Benutzer"
+
+msgid "admin_user_create"
+msgstr "Neuen Benutzer anlegen"
+
+msgid "admin_user_nousers"
+msgstr "- keine Benutzer vorhanden -"
+
+msgid "admin_user_stdpwd_title"
+msgstr "Standardpasswort"
+
+msgid "admin_user_nostdpwd_title"
+msgstr "Passwort geändert"
+
+msgid "admin_user_sendmail_title"
+msgstr "Benutzer eine Mail schicken"
+
+msgid "admin_user_edit_title"
+msgstr "Benutzer bearbeiten"
+
+msgid "admin_user_delete_title"
+msgstr "Benutzer löschen"
+
+msgid "admin_user_footer"
+msgstr "${number} Benutzer"
+
+msgid "admin_user_col_1"
+msgstr "Benutzername"
+
+msgid "admin_user_col_2"
+msgstr "Email"
+
+msgid "admin_user_col_3"
+msgstr "Gruppe(n)"
+
+msgid "admin_user_col_4"
+msgstr "Std. Passwort"
+
+msgid "admin_user_new_label"
+msgstr "Neuen Benutzer anlegen"
+
+msgid "admin_user_edit_label"
+msgstr "Benutzer bearbeiten"
+
+msgid "admin_user_username"
+msgstr "Benutzername"
+
+msgid "admin_user_email"
+msgstr "Email"
+
+msgid "admin_user_groups"
+msgstr "Benutzergruppe(n)"
+
+msgid "admin_user_pwdchange_title"
+msgstr "Passwort zurücksetzen"
+
+msgid "admin_new_pwd"
+msgstr "Neues Passwort"
+
+msgid "admin_user_msg1"
+msgstr "bei leerem Feld wird automatisch das Standardpasswort verwendet"
+
+msgid "admin_user_msg2"
+msgstr "Hinweis: Bei Anklicken des "Senden" Knopfes wird das Passwort des Users auf das Standardpasswort zurückgesetzt."
+
+msgid "admin_user_options"
+msgstr "Optionen"
+
+msgid "admin_user_sender"
+msgstr "Absender"
+
+msgid "admin_user_subject"
+msgstr "Subject"
+
+msgid "admin_user_text"
+msgstr "Text"
+
+msgid "admin_user_send"
+msgstr "Senden"
+
+msgid "admin_user_sendmail_title"
+msgstr "Email absenden"
+
+### acl ###
+msgid "admin_acl_existing"
+msgstr "Vorhandene Regeln"
+
+msgid "admin_acl_col_1"
+msgstr "Name"
+
+msgid "admin_acl_col_2"
+msgstr "Regel"
+
+msgid "admin_acl_col_3"
+msgstr "Beschreibung"
+
+msgid "admin_acl_create"
+msgstr "Neue Regel anlegen"
+
+msgid "admin_acl_noacl"
+msgstr "- keine Regeln vorhanden -"
+
+msgid "admin_acl_edit_title"
+msgstr "Regel bearbeiten"
+
+msgid "admin_acl_delete_title"
+msgstr "Regel löschen"
+
+msgid "admin_acl_footer"
+msgstr "${number} Regeln"
+
+msgid "admin_acl_rulename"
+msgstr "Regelname"
+
+msgid "admin_acl_description"
+msgstr "Beschreibung"
+
+msgid "admin_acl_rule"
+msgstr "Regel"
+
+msgid "admin_acl_popup_title"
+msgstr "Regel bearbeiten/bestellen"
+
+### acl editor ###
+msgid "admin_acl_editor_title"
+msgstr "Administration Interface - Regeleditor"
+
+msgid "admin_acl_editor_header"
+msgstr "Regeleditor"
+
+msgid "admin_acl_editor_rulename"
+msgstr "Regel"
+
+msgid "admin_acl_editor_edit_rule"
+msgstr "Regel bearbeiten"
+
+msgid "admin_acl_editor_rename_title"
+msgstr "Regel übernehmen"
+
+msgid "admin_acl_editor_rename"
+msgstr "Übernehmen"
+
+msgid "admin_acl_editor_partlist_title"
+msgstr "Regel in Teileliste übertragen"
+
+msgid "admin_acl_editor_partlist"
+msgstr "in Teileliste"
+
+msgid "admin_acl_editor_argument"
+msgstr "Argument"
+
+msgid "admin_acl_editor_partlist_label"
+msgstr "Teileliste"
+
+msgid "admin_acl_editor_clearlist_title"
+msgstr "Löscht alle Einträge aus der Tileliste"
+
+msgid "admin_acl_editor_clearlist"
+msgstr "alle löschen"
+
+msgid "admin_acl_editor_copy_title"
+msgstr "Kopiert selektierten Eintrag in den Bearbeitungsbereich"
+
+msgid "admin_acl_editor_copy"
+msgstr "Selektion bearbeiten"
+
+msgid "admin_acl_editor_ruletype"
+msgstr "Regelart"
+
+msgid "admin_acl_editor_op1"
+msgstr "Wert 1"
+
+msgid "admin_acl_editor_op2"
+msgstr "Wert 2"
+
+msgid "admin_acl_editor_buttonok"
+msgstr " OK "
+
+msgid "admin_acl_editor_buttoncancel"
+msgstr " Abbrechen "
+
+msgid "admin_acl_editor_user"
+msgstr "User"
+
+msgid "admin_acl_editor_group"
+msgstr "Group"
+
+msgid "admin_acl_editor_operator"
+msgstr "Operator"
+
+msgid "admin_acl_editor_date"
+msgstr "Datum"
+
+msgid "admin_acl_editor_format"
+msgstr "Format"
+
+msgid "admin_acl_editor_ip"
+msgstr "IP"
+
+### metadatatype ###
+msgid "metafield_option1"
+msgstr "Suchfeld"
+
+msgid "metafield_option2"
+msgstr "Sortierfeld"
+
+msgid "admin_meta_existing"
+msgstr "Vorhandene Metadatenschemata"
+
+msgid "admin_meta_create"
+msgstr "Neues Metadatenschema anlegen"
+
+msgid "admin_meta_exportall_title"
+msgstr "Alle Metadatenschemata exportieren"
+
+msgid "admin_meta_nometa"
+msgstr "- keine Metadatenschemata vorhanden -"
+
+msgid "admin_meta_editdetail"
+msgstr "Felder anzeigen/bearbeiten"
+
+msgid "admin_meta_maskdetail_title"
+msgstr "Masken anzeigen/bearbeiten"
+
+msgid "admin_meta_fieldoverview_title"
+msgstr "Feldübersicht über definierte Felder anzeigen"
+
+msgid "admin_meta_export_title"
+msgstr "Metadatenschema exportieren"
+
+msgid "admin_meta_edit_title"
+msgstr "Metadatenschema bearbeiten"
+
+msgid "admin_meta_delete_title"
+msgstr "Metadatenschema löschen"
+
+msgid "admin_meta_footer"
+msgstr "${number} Metadatenschemata"
+
+msgid "admin_meta_msg1"
+msgstr "Schema-Import aus XML-Datei"
+
+msgid "admin_meta_msg2"
+msgstr "nur Metadatenschemata, die keine Objekte enthalten, können gelöscht werden"
+
+msgid "admin_meta_msg3"
+msgstr "nur aktive Metadatenschemata werden für Uploads herangezogen"
+
+msgid "admin_meta_import_title"
+msgstr "aus Datei Importieren"
+
+msgid "admin_meta_import"
+msgstr "Importieren"
+
+msgid "admin_meta_col_1"
+msgstr "ID"
+
+msgid "admin_meta_col_2"
+msgstr "Name"
+
+msgid "admin_meta_col_3"
+msgstr "Beschreibung"
+
+msgid "admin_meta_col_4"
+msgstr "Aktiv"
+
+msgid "admin_meta_col_5"
+msgstr "Datentypen"
+
+msgid "admin_meta_col_6"
+msgstr "ACL"
+
+msgid "admin_meta_error_1"
+msgstr "Nicht alle Pflichtfelder wurden ausgefüllt."
+
+msgid "admin_meta_error_2"
+msgstr "Ein Metadatenschema mit gleichem Namen ist bereits vorhanden."
+
+msgid "admin_meta_error_3"
+msgstr "Ein Metadatenschema mit gleichem Namen ist bereits für diesen Metadatentyp vorhanden."
+
+msgid "admin_meta_id"
+msgstr "ID"
+
+msgid "admin_meta_name"
+msgstr "Name"
+
+msgid "admin_meta_description"
+msgstr "Beschreibung"
+
+msgid "admin_meta_rights"
+msgstr "Berechtigung"
+
+msgid "admin_meta_active"
+msgstr "Aktiv"
+
+msgid "admin_meta_datatype"
+msgstr "Datentypen"
+
+msgid "admin_meta_acl_title"
+msgstr "Metadatenschema besitzt ACL-Regel"
+
+msgid "admin_meta_active_title"
+msgstr "Metadatendefinition ist aktiv"
+
+msgid "admin_metafield_header"
+msgstr "Felder des Metadatenschemas '${name}'"
+
+msgid "admin_metafield_fieldlist"
+msgstr "Feldliste anzeigen"
+
+msgid "admin_metafield_col_1"
+msgstr "Name"
+
+msgid "admin_metafield_col_2"
+msgstr "Label"
+
+msgid "admin_metafield_col_3"
+msgstr "Feldtyp"
+
+msgid "admin_metafield_order"
+msgstr "Reihenfolge"
+
+msgid "admin_metafield_new_title"
+msgstr "Neues Metadatenfeld anlegen"
+
+msgid "admin_metafield_nofield"
+msgstr "- keine Metadatenfelder vorhanden -"
+
+msgid "admin_metafield_down_title"
+msgstr "Feld nach unten"
+
+msgid "admin_metafield_up_title"
+msgstr "Feld nach oben"
+
+msgid "admin_metafield_edit_title"
+msgstr "Metadatenfeld bearbeiten"
+
+msgid "admin_metafield_delete_title"
+msgstr "Metadatenfeld löschen"
+
+msgid "admin_metafield_footer"
+msgstr "${number} Felder"
+
+msgid "admin_metafield_msg1"
+msgstr "Die Reihenfolge der Felder kann nur geändert werden, wenn nach der Spalte 'Reihenfolge' sortiert worden ist. Dann erscheinen die Pfeile in Farbe"
+
+msgid "admin_metafield_msg2"
+msgstr "Die Beschreibung wird als Hilfetext im Metadateneditor angezeigt"
+
+msgid "admin_metafield_new_header"
+msgstr "Neues Metadatenfeld im Schema '${name}' erstellen"
+
+msgid "admin_metafield_edit_header"
+msgstr "Metadatenfeld '${field}' des Metadatenschemas '${name}' bearbeiten"
+
+msgid "admin_metafield_error_1"
+msgstr "Ein Metadatenfeld mit gleichem Namen ist bereits für dieses Metadatenschema vorhanden."
+
+msgid "admin_metafield_name"
+msgstr "Name"
+
+msgid "admin_metafield_label"
+msgstr "Label"
+
+msgid "admin_metafield_type"
+msgstr "Typ"
+
+msgid "admin_metafield_help_title"
+msgstr "Hilfe anzeigen"
+
+msgid "admin_metafield_listvalues"
+msgstr "Listenwerte"
+
+msgid "admin_metafield_dateformat"
+msgstr "Datums-/Zeitformat"
+
+msgid "admin_memofield_maxlength"
+msgstr "Maximallänge"
+
+msgid "metafield_dateformat_std"
+msgstr "Standardformat (dd.mm.yyyy)"
+
+msgid "metafield_dateformat_year"
+msgstr "Jahr (yyyy)"
+
+msgid "metafield_dateformat_time"
+msgstr "Uhrzeit (hh:mm:ss)"
+
+msgid "metafield_dateformat_month"
+msgstr "Monat (mm)"
+
+msgid "metafield_dateformat_yearmonth"
+msgstr "Jahr, Monat (yyyy-mm)"
+
+msgid "admin_metafield_fields"
+msgstr "Metadatenfelder"
+
+msgid "admin_metafields_techfields"
+msgstr "Technisches Metadatenfeld"
+
+msgid "admin_metafield_link"
+msgstr "Link"
+
+msgid "admin_metafield_urltext"
+msgstr "Angezeigter Text"
+
+msgid "admin_metafield_icon"
+msgstr "Icon"
+
+msgid "admin_metafield_noicon"
+msgstr "-kein Icon-"
+
+msgid "admin_metafield_preview"
+msgstr "Vorschau"
+
+msgid "admin_metafield_description"
+msgstr "Beschreibung"
+
+msgid "admin_metafield_options"
+msgstr "Optionen"
+
+### meta masks ###
+msgid "admin_mask_header"
+msgstr "Masken des Metadatenschemas '${name}'"
+
+msgid "admin_mask_col_1"
+msgstr "Name"
+
+msgid "admin_mask_col_2"
+msgstr "Maskentyp"
+
+msgid "admin_mask_col_3"
+msgstr "Beschreibung"
+
+msgid "admin_mask_createstd_title"
+msgstr "Standardmaske automatisch anlegen"
+
+msgid "admin_mask_create_title"
+msgstr "Neues Maske anlegen"
+
+msgid "admin_mask_create"
+msgstr "Neue Maske anlegen"
+
+msgid "admin_mask_nomask"
+msgstr "- keine Masken vorhanden -"
+
+msgid "admin_mask_edit_field"
+msgstr "Maskenfelder bearbeiten"
+
+msgid "admin_mask_clone_title"
+msgstr "Maske klonen"
+
+msgid "admin_mask_edit_title"
+msgstr "Maske bearbeiten"
+
+msgid "admin_mask_edit"
+msgstr "Maske bearbeiten"
+
+msgid "admin_mask_delete_title"
+msgstr "Maske löschen"
+
+msgid "admin_mask_footer"
+msgstr "${number} Masken"
+
+msgid "admin_mask_error_1"
+msgstr "Ein Maske mit gleichem Namen ist bereits für dieses Metadatenschema vorhanden."
+
+msgid "admin_mask_name"
+msgstr "Name"
+
+msgid "admin_mask_type"
+msgstr "Maskentyp"
+
+msgid "admin_mask_description"
+msgstr "Beschreibung"
+
+msgid "masktype_empty"
+msgstr "-kein Typ-"
+
+msgid "masktype_edit"
+msgstr "Editormaske"
+
+msgid "masktype_search"
+msgstr "Suchmaske"
+
+msgid "masktype_short"
+msgstr "Kurzanzeige"
+
+msgid "masktype_full"
+msgstr "Vollansicht"
+
+### metatype info popup ###
+msgid "admin_infopopup_title"
+msgstr "Info"
+
+msgid "admin_infopopup_header"
+msgstr "Mögliche Typen"
+
+### metatype definition overview popup ###
+msgid "admin_defpopup_title"
+msgstr "Metadatenschema-Info"
+
+msgid "admin_defpopup_header"
+msgstr "Metadatenschema '${name}'"
+
+msgid "admin_defpopup_name"
+msgstr "Name"
+
+msgid "admin_defpopup_description"
+msgstr "Beschreibung"
+
+### admin logfiles ###
+msgid "admin_log_everything"
+msgstr "Komplett"
+
+msgid "admin_log_database"
+msgstr "Datenbank"
+
+msgid "admin_log_backend"
+msgstr "Backend"
+
+msgid "admin_log_frontend"
+msgstr "Frontend"
+
+msgid "admin_log_editor"
+msgstr "Editor"
+
+msgid "admin_log_usertracing"
+msgstr "User"
+
+msgid "admin_log_athana"
+msgstr "Athana"
+
+msgid "admin_log_existing"
+msgstr "Vorhandene Logdateien"
+
+msgid "admin_log_name"
+msgstr "Name"
+
+msgid "admin_log_path"
+msgstr "Pfad"
+
+msgid "admin_log_filesize"
+msgstr "Dateigröße"
+
+msgid "admin_log_nofiles"
+msgstr "- keine Logdateien vorhanden -"
+
+msgid "admin_log_show_title"
+msgstr "Logfile anzeigen"
+
+msgid "admin_log_footer"
+msgstr "${number} Dateien"
+
+msgid "admin_log_refresh"
+msgstr "Aktualisieren"
+
+### workflows ###
+msgid "admin_wf_existing"
+msgstr "Vorhandene Workflows"
+
+msgid "admin_wf_col_1"
+msgstr "Name"
+
+msgid "admin_wf_col_2"
+msgstr "Beschreibung"
+
+msgid "admin_wf_exportall_title"
+msgstr "Alle Workflowdefinitionen exportieren"
+
+msgid "admin_wf_create_title"
+msgstr "Neuen Workflow anlegen"
+
+msgid "admin_wf_nowf"
+msgstr "- keine Workflows vorhanden -"
+
+msgid "admin_wf_nodeedit_title"
+msgstr "Workflow-Knoten anzeigen/bearbeiten"
+
+msgid "admin_wf_graphic_title"
+msgstr "Workflowdefinition anzeigen (Grafik)"
+
+msgid "admin_wf_export_title"
+msgstr "Workflowdefinition exportieren"
+
+msgid "admin_wf_edit_title"
+msgstr "Workflow bearbeiten"
+
+msgid "admin_wf_delete_title"
+msgstr "Workflow löschen"
+
+msgid "admin_wf_footer"
+msgstr "${number} Workflows"
+
+msgid "admin_fw_msg1"
+msgstr "Workflow-Import aus XML-Datei"
+
+msgid "admin_wf_import"
+msgstr "Importieren"
+
+msgid "admin_wf_import_title"
+msgstr "Importieren"
+
+msgid "admin_wf_create_header"
+msgstr "Neuen Workflow anlegen"
+
+msgid "admin_wf_edit_header"
+msgstr "Workflow bearbeiten"
+
+msgid "admin_wf_writerights"
+msgstr "Schreibrechte"
+
+msgid "admin_wf_nolimit"
+msgstr "-keine Einschränkungen-"
+
+msgid "admin_wf_description"
+msgstr "Beschreibung"
+
+msgid "admin_wf_header"
+msgstr "Knoten des Workflows '${name}'"
+
+msgid "admin_wf_showdef"
+msgstr "Workflowdefinition anzeigen"
+
+msgid "admin_wfstep_col_1"
+msgstr "Name"
+
+msgid "admin_wfstep_col_2"
+msgstr "Knotentyp"
+
+msgid "admin_wfstep_col_3"
+msgstr "True"
+
+msgid "admin_wfstep_col_4"
+msgstr "False"
+
+msgid "admin_wfstep_col_5"
+msgstr "Beschreibung"
+
+msgid "admin_wfstep_new_title"
+msgstr "Neuen Knoten anlegen"
+
+msgid "admin_wfstep_nostep"
+msgstr "- keine Workflow-Knoten vorhanden -"
+
+msgid "admin_wfstep_chars"
+msgstr "${number} Zeichen"
+
+msgid "admin_wfstep_edit"
+msgstr "Knoten bearbeiten"
+
+msgid "admin_wfstep_delete"
+msgstr "Knoten löschen"
+
+msgid "admin_wfstep_footer"
+msgstr "${number} Knoten"
+
+msgid "admin_wfstep_create_header"
+msgstr "Neuen Workflowknoten anlegen"
+
+msgid "admin_wfstep_edit_header"
+msgstr "Workflowknoten bearbeiten"
+
+msgid "admin_wfstep_name"
+msgstr "Name"
+
+msgid "admin_wfstep_adminstep"
+msgstr "Adminstep"
+
+msgid "admin_wfstep_msg1"
+msgstr "wird in der Workflow-Übersicht markiert"
+
+msgid "admin_wfstep_nodetype"
+msgstr "Knotentyp"
+
+msgid "admin_wfstep_comment"
+msgstr "Kommentar"
+
+msgid "admin_wfstep_truelabel"
+msgstr "Label für 'True'-Operation"
+
+msgid "admin_wfstep_truenode"
+msgstr "Knoten für 'True'-Kante"
+
+msgid "admin_wfstep_nonode"
+msgstr "-kein Knoten-"
+
+msgid "admin_wfstep_falselabel"
+msgstr "Label für 'False'-Operation"
+
+msgid "admin_wfstep_falsenode"
+msgstr "Knoten für 'False'-Kante"
+
+msgid "admin_wfstep_additional"
+msgstr "Zusätzliche Daten für den gewählten Knotentyp"
+
+msgid "admin_wf_definition"
+msgstr "Workflow Definition"
+
+### workflows ###
+msgid "wf_edit_header"
+msgstr "Workflows, die von Ihnen bearbeitet werden können"
+
+msgid "wf_edit_name"
+msgstr "Name"
+
+msgid "wf_edit_description"
+msgstr "Beschreibung"
+
+msgid "wf_list_header"
+msgstr "${number}  Objekte im Workflow '"
+
+msgid "wf_list_objects"
+msgstr "${number} Objekte"
+
+msgid "wf_show_details_title"
+msgstr "Details anzeigen"
+
+msgid "wf_step_msg1"
+msgstr "Vielen Dank für Ihre Eingabe/Bearbeitung.<br/>Das Objekt ${name} wurde gespeichert und befindet sich jetzt im Verarbeitungsschritt ${link}."
+
+msgid "wf_step_ready"
+msgstr "Fertig"
+
+msgid "wf_node_msg1"
+msgstr "Das Objekt ${name} wird gerade verarbeitet."
+
+msgid "wf_node_msg2"
+msgstr "Der momentane Bearbeitungsschritt (${name}) läßt keinen manuellen Eingriff (mehr) zu."
+
+msgid "workflow_msg3"
+msgstr "Objekte in Schritt ${name}:"
+
+msgid "workflow_msg4"
+msgstr "Das Objekt ${name} wurde fertiggestellt und hat den Workflow verlassen."
+
+msgid "workflow_msg5"
+msgstr "Falls von Ihrer Seite noch einmal Arbeit an diesem Objekt notwendig sein sollte, werden wir uns per Mail bei Ihnen melden."
+
+msgid "workflow_msg6"
+msgstr "Bei Fragen oder Problemen erreichen Sie unser Support-Team unter ${email}"
+
+msgid "workflow_label_id"
+msgstr "ID"
+
+msgid "workflow_label_date"
+msgstr "Datum"
+
+msgid "workflow_label_name"
+msgstr "Name"
+
+msgid "workflow_label_step"
+msgstr "Schritt"
+
+msgid "workflow_label_editor"
+msgstr "Editor"
+
+msgid "workflow_label_forward"
+msgstr "Weiterleiten"
+
+msgid "workflow_show_step"
+msgstr "Schritt anzeigen"
+
+msgid "workflow_footer"
+msgstr "${number} Elemente im aktuellen Workflowschritt"
+
+msgid "workflow_error_msg"
+msgstr "Bitte füllen Sie die fehlenden Pflichtfelder aus bzw. kontrollieren Sie die fehlerhaften Eingaben."
+
+msgid "workflow_create_object"
+msgstr "Neues Objekt anlegen"
+
+msgid "workflow_start_submit"
+msgstr "Erzeugen"
+
+msgid "workflow_email_msg_1"
+msgstr "Folgender Fehler ist beim Versenden aufgetreten:"
+
+msgid "workflow_email_resend"
+msgstr "Erneut versenden"
+
+msgid "workflow_filelist_type"
+msgstr "Typ"
+
+msgid "workflow_filelist_size"
+msgstr "Größe"
+
+msgid "workflow_filelist_mimetype"
+msgstr "Mimetype"
+
+msgid "workflow_filelist_open_title"
+msgstr "Datei anzeigen"
+
+msgid "workflow_filelist_delete_title"
+msgstr "Datei löschen"
+
+msgid "workflow_add_file"
+msgstr "Neue Datei hinzufügen:"
+
+msgid "workflow_upload_button"
+msgstr "Hochladen"
+
+msgid "workflow_ready_msg"
+msgstr "Das Objekt ${name} ist am Ende des Workflows angekommen."
+
+msgid "workflow_step_ready_msg"
+msgstr "Das Objekt ${name} ist am Ende des Workflows angekommen."
+
+### shoppingbag popup ###
+msgid "popup_shoppinbag_msg1"
+msgstr "Bilder k&ouml;nnen per Drag&Drop in eine Anwendung (z.B. Powerpoint) durch Ziehen exportiert werden:"
+
+msgid "popup_shoppingbag_msg2"
+msgstr "Dokumente können direkt geöffnet werden:"
+
+msgid "popup_shoppingbag_msg3"
+msgstr "Keine Objekte in Ihrer Merkliste vorhanden"
+
+msgid "popup_shoppingbag_delete_title"
+msgstr "Merkliste leeren"
+
+msgid "popup_shoppingbag_delete"
+msgstr "Merkliste leeren"
+
+msgid "popup_shoppingbag_movefiles"
+msgstr "Files werden verschoben..."
+
+msgid "popup_shoppingbag_add_msg"
+msgstr "Objekt wurde hinzugefügt"
+
+msgid "popup_shoppingbag_add_msg1"
+msgstr "(Fenster schlie&szlig;t nach 3 Sekunden)"
+
+### popup help###
+msgid "popup_help_title"
+msgstr "Hilfe zum Metadatenfeld "${name}""
+
+### index popup ###
+msgid "popup_index_header"
+msgstr "Vorhandene Indexwerte"
+
+msgid "popup_ok"
+msgstr "OK"
+
+msgid "popup_cancel"
+msgstr "Abbrechen"
+
+msgid "popup_listvalue_title"
+msgstr "Listenwerte als Popup anzeigen"
+
+msgid "popup_listvalue"
+msgstr "Listenwerte anzeigen"
+
+msgid "popup_indexnumber"
+msgstr "Wert(e) selektiert"
+
+### edit area ###
+msgid "edit_error"
+msgstr "Fehler"
+
+msgid "edit_nobase"
+msgstr "Kein Basisverzeichnis ausgewählt (${msg})"
+
+msgid "edit_main_title"
+msgstr "mediatum"
+
+msgid "edit_main_noframe"
+msgstr "Ihr Browser unterstützt keine Frames."
+
+msgid "edit_save"
+msgstr "Speichern"
+
+msgid "title edit_save_title"
+msgstr "Änderungen speichern"
+
+msgid "edit_ok"
+msgstr "OK"
+
+msgid "edit_error_msg1"
+msgstr "Ordner konnte nicht erstellt werden: Der Üergeordnete Ordner ist schreibgeschützt."
+
+msgid "edit_action_msg"
+msgstr "Die Aktion ${action} wird ausgeführt"
+
+msgid "edit_nopermission"
+msgstr "Keine Berechtigung"
+
+msgid "edit_noselection"
+msgstr "nichts ausgewählt"
+
+msgid "edit_taboverview_header"
+msgstr "Ausgewählt/in Bearbeitung:"
+
+msgid "edit_actual_dir"
+msgstr "Aktuelles Verzeichnis:"
+
+msgid "edit_tabarea_msg1"
+msgstr "Die folgende Ansicht zeigt, wie dieses Objekt innerhalb der normalen Rechercheoberfläche aussehen könnte. (Die tatsächliche Ansicht ist möglicherweise etwas anders, je nachdem welches Design bzw. welcher Skin eingerichtet ist)"
+
+msgid "edit_tabarea_msg2"
+msgstr "Durch das Anklicken von Links auf dieser Seite verlassen Sie die Editieroberfläche."
+
+msgid "edit_files"
+msgstr "Dateien:"
+
+msgid "edit_dir"
+msgstr "Ordner:"
+
+msgid "edit_action_file_upload"
+msgstr "Hochladen"
+
+msgid "edit_action_file_move"
+msgstr "Verschieben nach..."
+
+msgid "edit_action_file_copy"
+msgstr "Kopieren nach..."
+
+msgid "edit_action_file_delete"
+msgstr "Löschen"
+
+msgid "edit_action_file_edit"
+msgstr "Gleichzeitig Bearbeiten"
+
+msgid "edit_action_file_editsingle"
+msgstr "Einzeln Bearbeiten"
+
+msgid "edit_action_dir_new"
+msgstr "Neu Anlegen"
+
+msgid "edit_action_dir_edit"
+msgstr "Bearbeiten"
+
+msgid "edit_action_dir_move"
+msgstr "Verschieben nach..."
+
+msgid "edit_action_dir_sort"
+msgstr "Unterordner sortieren"
+
+msgid "edit_action_dir_copy"
+msgstr "Kopieren nach..."
+
+msgid "edit_action_dir_del"
+msgstr "Löschen"
+
+### edit tabs ###
+msgid "tab_upload"
+msgstr "Upload"
+
+msgid "tab_html"
+msgstr "HTML"
+
+msgid "tab_html_title"
+msgstr "HTML-Seiten bearbeiten"
+
+msgid "tab_upload_title"
+msgstr "Upload-Bereich anzeigen"
+
+msgid "tab_meta"
+msgstr "Metadaten"
+
+msgid "tab_meta_title"
+msgstr "Metadateneditor anzeigen"
+
+msgid "tab_content"
+msgstr "Inhalt"
+
+msgid "tab_content_title"
+msgstr "Inhalt anzeigen"
+
+msgid "tab_search"
+msgstr "Suche"
+
+msgid "tab_search_title"
+msgstr "Suche anzeigen"
+
+msgid "tab_subfolder"
+msgstr "Unterordner Sortieren"
+
+msgid "tab_subfolder_title"
+msgstr "Unterordner Sortieren"
+
+msgid "tab_acls"
+msgstr "Berechtigungen"
+
+msgid "tab_acls_title"
+msgstr "Berechtigungen bearbeiten"
+
+msgid "tab_license"
+msgstr "Lizensierung"
+
+msgid "tab_license_title"
+msgstr "Lizensierungsliste anzeigen"
+
+msgid "tab_techmeta"
+msgstr "Technische Metadaten"
+
+msgid "tab_techmeta_title"
+msgstr "Technische Metadaten anzeigen"
+
+msgid "tab_view"
+msgstr "Aussehen"
+
+msgid "tab_view_title"
+msgstr "Vorschau auf späteres Aussehen in Recherche"
+
+msgid "tab_workflow"
+msgstr "Workflow"
+
+msgid "tab_workflow_title"
+msgstr "Workflow anzeigen"
+
+msgid "tab_classes"
+msgstr "Klassifikationen"
+
+msgid "tab_classes_title"
+msgstr "Klassifizierung anzeigen"
+
+### edit acls ###
+msgid "edit_acls_righttype_read"
+msgstr "Usergruppen, die diese Objekte sehen dürfen:"
+
+msgid "edit_acls_righttype_write"
+msgstr "Usergruppen, die diese Objekte bearbeiten dürfen:"
+
+msgid "edit_acls_righttype_data"
+msgstr "Usergruppen, die Originale (TIFF/JPG/PNG/BMP in Originalgröße, PDF Files etc.) herunterladen dürfen:"
+
+### classes ###
+msgid "edit_classes_class_title"
+msgstr "Klassifizieren"
+
+msgid "edit_classes_disclass_title"
+msgstr "Klassifikation entfernen"
+
+msgid "edit_classes_open_title"
+msgstr "Aufklappen"
+
+msgid "edit_classes_close_title"
+msgstr "Zuklappen"
+
+### edit upload ###
+msgid "edit_upload_msg1"
+msgstr "Sie besitzen nicht die Berechtigung Objekte in das System einzustellen. Bitte wenden Sich an Ihren Administrator"
+
+msgid "edit_upload_obj_selection"
+msgstr "Objekttyp-Auswahl"
+
+msgid "edit_upload_msg2"
+msgstr "Ein Archiv kann aus verschiedenen Objekttypen bestehen. Bitte wählen Sie aus der Liste unten den gew&uuml;nschten Typ aus.<br/>Für jeden Objekttyp stehen spezielle Upload-Formulare zur Verfügung, die die entsprechende Funktionalität bieten."
+
+msgid "edit_upload_obj_sel"
+msgstr "Objekttyp wählen:"
+
+msgid "edit_upload_selecttion_value"
+msgstr "Auswählen"
+
+msgid "edit_upload_header1"
+msgstr "Sie können '${objtype}' ins System hochladen"
+
+msgid "edit_upload_msg3"
+msgstr "Dazu wählen Sie die ensprechende Datei auf Ihrem Computer aus ("Durchsuchen"-Button) und bestätigen Sie mit "Hochladen"."
+
+msgid "edit_upload_msg4"
+msgstr "Wollen Sie mehrere Dateien auf einmal hochladen, so verpacken Sie diese bitte lokal bei sich in ein .ZIP Archiv (z.B. mit <a target="newwindow" href="http://www.winzip.com/">WinZip</a>), und laden dann das .ZIP Archiv hoch."
+
+msgid "edit_upload_scheme"
+msgstr "Metadatenschema:"
+
+msgid "edit_upload_file"
+msgstr "Datei"
+
+msgid "edit_upload_upload_label"
+msgstr "Hochladen"
+
+### workflow ###
+msgid "edit_workflow_msg1"
+msgstr "Das aktuelle Objekt ist in keinem Workflow eingebunden. Um es in einen Workflow zuzuordnen, w&auml;hlen Sie einen aus der Liste und bestätigen mit 'Speichern'."
+
+msgid "edit_wirfklows_wf"
+msgstr "Workflows"
+
+msgid "edit_workflow_msg2"
+msgstr "Aktuelle Position im Workflow: ${name}"
+
+msgid "edit_workflow_msg3"
+msgstr "Folgende Operationen sind möglich:"
+
+msgid "edit_workflow_delete"
+msgstr "Entfernen"
+
+msgid "edit_workflow_delfromwf"
+msgstr "Aus Workflow entfernen"
+
+msgid "edit_object_not_viewable"
+msgstr "Dieses Objekt hat keine Ansicht"
+
+msgid "edit_save_title"
+msgstr "Speichern"
+
+msgid "delete_folder_question"
+msgstr "Wenn Sie diesen Ordner löschen, sind alle Dateien und Unterverzeichnisse darin unwiderruflich verloren. Löschen durchführen?"
+
+msgid "select_target_dir"
+msgstr "Zielverzeichnis aussuchen:"
+
+msgid "fieldsmissing"
+msgstr "Nicht alle Pflichtfelder wurden korrekt bef&uuml;llt."
+
+msgid "saved_in_inconsistent_data"
+msgstr "Eine Kopie wurde im Ordner 'Inkonsistente Daten' gespeichert."
+
+msgid "no more entries"
+msgstr "Diese Datei war keinem Verzeichnis mehr zugeordnet."
+
+msgid "no_file_transferred"
+msgstr "Es wurde keine Datei auf den Server &uuml;bertragen."
+
+# new 14-05-2007
+msgid "edit_create_new_folder"
+msgstr "Ordner konnte nicht erstellt werden: Der Übergeordnete Ordner ist schreibgeschützt."
+
+msgid "edit_tree_editor_title"
+msgstr "Tree Editor"
+
+msgid "edit_access_error"
+msgstr "Nicht berechtigt"
+
+msgid "edit_common_mark"
+msgstr "Markieren"
+
+msgid "edit_common_mark_all"
+msgstr "Alles markieren"
+
+msgid "edit_common_dismark"
+msgstr "Markierung aufheben"
+
+msgid "edit_common_mark_invert"
+msgstr "Markierung invertieren"
+
+msgid "edit_common_meta_error"
+msgstr "Metadaten inkonsistent"
+
+msgid "edit_common_bigview_title"
+msgstr "Großansicht"
+
+msgid "edit_common_edit_meta"
+msgstr "Metadaten bearbeiten"
+
+msgid "edit_editor_save"
+msgstr "Speichern"
+
+msgid "edit_editor_save_title"
+msgstr "Änderungen speichern"
+
+msgid "edit_editor_delete"
+msgstr "HTML-Daten löschen"
+
+msgid "edit_editor_delete_title"
+msgstr "HTML-Daten löschen"
+
+msgid "edit_editor_header"
+msgstr "Im Augenblick sind folgende Daten f&uuml;r dieses Archiv hinterlegt:"
+
+msgid "edit_files_filetype_error"
+msgstr "Austausch nicht möglich, da die Dateitypen nicht übereinstimmen."
+
+msgid "edit_files_type"
+msgstr "Typ"
+
+msgid "edit_files_size"
+msgstr "Größe"
+
+msgid "edit_files_mimetype"
+msgstr "Mimetype"
+
+msgid "edit_files_location"
+msgstr "Lokation / Name"
+
+msgid "edit_files_options"
+msgstr "Optionen"
+
+msgid "edit_files_opne_title"
+msgstr "Öffnen"
+
+msgid "edit_files_change"
+msgstr "Digitales Objekt austauschen"
+
+msgid "edit_files_add_obj"
+msgstr "Digitales Objekt hinzufügen"
+
+msgid "edit_files_reprocess"
+msgstr "Digitales Objekt erneut verarbeiten"
+
+msgid "edit_files_reprocess_info"
+msgstr "(dabei werden alle Operationen ausgeführt, die notwendig sind, um Technische-Metadaten und die Thumbnails zu erzeugen)"
+
+msgid "edit_files_obsolete"
+msgstr "nicht verwendete Metadatenfelder"
+
+msgid "edit_files_obsolete_del_title"
+msgstr "Attribut löschen"
+
+msgid "edit_files_metafields"
+msgstr "Metadatenfelder"
+
+msgid "edit_files_tech_meta"
+msgstr "technische Metadatenfelder"
+
+msgid "edit_files_del_tech_meta"
+msgstr "Technische Metadaten löschen"
+
+msgid "edit_license_info"
+msgstr "Mit dem folgenden Link können Sie Prüfsummenlisten Ihrer Objekte generieren, um diese z.B. in ausgedruckter Form an Vertragswerke anzuheften:"
+
+msgid "edit_license_gen"
+msgstr "Objektlisten generieren"
+
+msgid "edit_license_obj_list"
+objstr "Objektliste"
+
+msgid "edit_license_name"
+msgstr "Name"
+
+msgid "edit_license_file"
+msgstr "File"
+
+msgid "edit_license_hash"
+msgstr "Prüfsumme"
+
+msgid "edit_license_size"
+msgstr "Größe"
+
+msgid "edit_meta_info1"
+msgstr "Für diesen Knotentyp sind keine Metadaten verfügbar, die editiert werden können."
+
+msgid "edit_meta_mask_selection"
+msgstr "Maskenauswahl"
+
+msgid "edit_meta_save"
+msgstr "Speichern"
+
+msgid "edit_meta_reset"
+msgstr "Zurücksetzen"
+
+msgid "edit_mask_required"
+msgstr "Pflichtfeld, darf nicht leer sein"
+
+msgid "edit_meta_created"
+msgstr "erstellt"
+
+msgid "edit_meta_changed"
+msgstr "zuletzt geändert"
+
+msgid "edit_sort_header"
+msgstr "Manuell sortieren"
+
+msgid "edit_sort_label"
+msgstr "Nach"
+
+msgid "edit_sort_position"
+msgstr "Position"
+
+msgid "edit_sort_name"
+msgstr "Name"
+
+msgid "edit_sort_down_title"
+msgstr "nach unten"
+
+msgid "edit_sort_up_title"
+msgstr "nach oben"
+
+msgid "edit_sort_header_auto"
+msgstr "Automatisch sortieren"
+
+msgid "edit_sort_sort"
+msgstr "Sortieren"
+
+msgid "edit_search_start"
+msgstr "Neue Suche starten"
+
+msgid "edit_search_search_for"
+msgstr "Suche nach/in:"
+
+msgid "edit_search_type"
+msgstr "Typ:"
+
+msgid "edit_search_fields"
+msgstr "Suchfelder:"
+
+msgid "edit_search_all_fields"
+msgstr "Alle Metadaten:"
+
+msgid "edit_search_search"
+msgstr "Suchen"
+
+msgid "edit_search_reset"
+msgstr "Reset"
+
+msgid "edit_search_index"
+msgstr "Letzte Suchindex-Aktualisierung:"
+
+msgid "edit_flush"
+msgstr "System Caches wurden geleert"
+
+msgid "Text-Ansicht"
+msgstr "Text-Ansicht"
+
+msgid "Thumbnail-Ansicht"
+msgstr "Thumbnail-Ansicht"
+
+msgid "Listen-Ansicht"
+msgstr "Listen-Ansicht"
+
+msgid "print_view_header"
+msgstr "mediaTUM-Objekt"
+
+msgid "print_view_page"
+msgstr "Seite"
+
+msgid "print_preview_occurences"
+msgstr "Vorkommen"
+
+msgid "sort_label"
+msgstr "Sortieren nach:"
+
+# mask editor #
+msgid "mask_editor_title"
+msgstr "Maskeneditor"
+
+msgid "mask_editor_chosen_element"
+msgstr "gewählte Elemente:"
+
+msgid "mask_editor_into_vert_group"
+msgstr "in neuer vertikaler Gruppe gruppieren"
+
+msgid "mask_editor_into_hor_group"
+msgstr "in neuer horizontaler Gruppe gruppieren"
+
+msgid "mask_editor_group_title"
+msgstr "Gruppieren"
+
+msgid "mask_editor_ok"
+msgstr " OK "
+
+msgid "mask_editor_cancel"
+msgstr "Abbrechen"
+
+msgid "mask_editor_field_definition"
+msgstr "Felddefinition "
+
+msgid "mask_editor_new_line_title"
+msgstr "Neue Zeile einfügen"
+
+msgid "mask_editor_no_fields"
+msgstr "- keine Felder definiert -"
+
+msgid "mask_editor_add_choose_fieldtype"
+msgstr "Feldtyp wählen"
+
+msgid "mask_editor_field_selection"
+msgstr "Feldtypauswahl:"
+
+msgid "mask_editor_normal_field"
+msgstr "Normales Feld"
+
+msgid "mask_editor_vert_group"
+msgstr "Vertikale Feldgruppe"
+
+msgid "mask_editor_hor_group"
+msgstr "Horizontale Feldgruppe"
+
+msgid "mask_editor_label"
+msgstr "Label"
+
+msgid "mask_editor_msg1"
+msgstr "Für Maskenfelder stehen verschiedene Typen zur Verfügung, die jeweils unterschiedliche Darstellungen erlauben. Standard ist das 'Normale Feld'"
+
+msgid "mask_edit_up_title"
+msgstr "nach oben"
+
+msgid "mask_edit_down_title"
+msgstr "nach unten"
+
+msgid "mask_edit_edit_row"
+msgstr "Zeile bearbeiten"
+
+msgid "mask_edit_delete_row"
+msgstr "Zeile löschen"
+
+msgid "mask_edit_edit_field"
+msgstr "Feld bearbeiten"
+
+msgid "mask_edit_create_field"
+msgstr "Neues Feld anlegen"
+
+msgid "mask_edit_position"
+msgstr "Position (vor):"
+
+msgid "mask_edit_end"
+msgstr "-am Ende-"
+
+msgid "mask_edit_field_selection"
+msgstr "Feldauswahl:"
+
+msgid "mask_edit_existing_field"
+msgstr "vorhandenes Feld"
+
+msgid "mask_edit_field"
+msgstr "Feld:"
+
+msgid "mask_edit_new_field"
+msgstr "neues Feld"
+
+msgid "mask_edit_nameid"
+msgstr "Name/ID (englisch):"
+
+msgid "mask_edit_type"
+msgstr "Typ:"
+
+msgid "mask_edit_help"
+msgstr "Hilfetext:"
+
+msgid "mask_edit_max_length"
+msgstr "Maximallänge"
+
+msgid "mask_edit_list_values"
+msgstr "Listenwerte:"
+
+msgid "mask_edit_date_format"
+msgstr "Datums-/Zeitformat:"
+
+msgid "mask_edit_tech_meta"
+msgstr "Technisches Metadatenfeld:"
+
+msgid "mask_edit_link"
+msgstr "Link:"
+
+msgid "mask_edit_linktext"
+msgstr "Angezeigter Text:"
+
+msgid "mask_edit_icon"
+msgstr "Icon:"
+
+msgid "mask_edit_noicon"
+msgstr "-kein Icon-"
+
+msgid "mask_edit_preview"
+msgstr "Vorschau:"
+
+msgid "mask_edit_required"
+msgstr "Pflichtfeld:"
+
+msgid "mask_edit_required_info"
+msgstr "(wird nur bei <b>Editormasken</b> im Editor validiert)"
+
+msgid "mask_edit_field_width"
+msgstr "Feldbreite:"
+
+msgid "mask_edit_width_info"
+msgstr "Pixel (Datumsfelder mind. 200)"
+
+msgid "mask_edit_default"
+msgstr "Default-Wert:"
+
+msgid "mask_edit_unit"
+msgstr "Einheit:"
+
+msgid "mask_edit_save"
+msgstr "Speichern"
+
+msgid "mask_edit_cancel"
+msgstr "Abbrechen"
+
+msgid "mask_edit_new_hor_field"
+msgstr "Neues horizontales Feld anlegen"
+
+msgid "mask_edit_edit_hor_field"
+msgstr "Horizontales Feld bearbeiten"
+
+msgid "mask_edit_row_label"
+msgstr "Zeilenlabel:"
+
+msgid "mask_edit_fields"
+msgstr "Felder:"
+
+msgid "mask_edit_insert_field_title"
+msgstr "Neues Feld einfügen"
+
+msgid "mask_edit_new_vert_field"
+msgstr "Neues vertikales Feld anlegen"
+
+msgid "mask_edit_edit_vert_field"
+msgstr "Vertikales Feld bearbeiten"
+
+msgid "mask_edit_field_msg"
+msgstr "(werden aus anderer Ebene kopiert)"
+
+msgid "mask_edit_edit_label"
+msgstr "Label bearbeiten"
+
+msgid "mask_edit_new_label"
+msgstr "Neues Label anlegen"
+
+msgid "mask_edit_label"
+msgstr "Label:"
+
+msgid "mask_edit_multi_label"
+msgstr "Attributvorkommen in Schema: "
+
+msgid "user_directory"
+msgstr "Arbeitsverzeichnis"
+
+msgid "user_upload"
+msgstr "Uploads"
+
+msgid "user_faulty"
+msgstr "Inkonsistente Daten"
+
+msgid "editor_overwrite"
+msgstr "überschreiben"
+
+msgid "editor_from"
+msgstr "von"
+
+msgid "editor_to"
+msgstr "bis"
+
+msgid "editor_input_format"
+msgstr "Eingabeformat: "
+
+msgid "editor_index"
+msgstr "Index"
+
+msgid "editor_index_title"
+msgstr "Indexwerte anzeigen"
+
+msgid "editor_memo_label"
+msgstr "Zeichen übrig"
+
+msgid "editor_metadata_field"
+msgstr "Metadatenfeld"
+
+msgid "popup_help_header"
+msgstr "Hilfe"
+
+msgid "popup_full_view"
+msgstr "Vollansicht"
+
+msgid "popup_fullview_decrease"
+msgstr "Verkleinern"
+
+msgid "popup_fullview_increase"
+msgstr "Vergrößern"
+
+msgid "popup_fullview_original"
+msgstr "Originalgröße"
+
+msgid "edit_search_reset_msg"
+msgstr "Suchformular zurückgesetzt"
+
+msgid "edit_search_noresult_msg"
+msgstr "Ihre Suche erbrachte keine Resultate"
+
+msgid "PostprocessingError_document"
+msgstr "Der Upload des Dokuments konnte nicht durchgeführt werden.<br>Bitte überprüfen Sie, ob das PDF evtl. kopiergeschützt oder beschädigt ist."
+
+msgid "Your browser doesn't support cookies"
+msgstr "Ihr Browser unterstützt leider keine Cookies. Möglicherweise ist der Cookie-Support im Browser abgeschaltet. Ohne Cookies werden Sie auf späteren Seiten evtl. auf Probleme stoßen."

@@ -1,0 +1,47 @@
+<form metal:define-macro="edit_noworkflow" tal:attributes="action link" method="post" style="padding:10px">
+    <p i18n:translate="edit_workflow_msg1">Das aktuelle Objekt ist in keinem Workflow eingebunden. Um es in einen Workflow zuzuordnen, w&auml;hlen Sie einen aus der Liste und best&auml;tigen mit 'Speichern'.</p>
+    <p>
+        <label><tal:block i18n:translate="edit_wirfklows_wf">Workflows</tal:block>:</label>
+        <select name="workflow">
+            <option tal:repeat="workflow workflows" talAttributes="value python:workflow.getId()" tal:content="python:workflow.getName()"/>
+        </select>
+    </p>
+    <p>
+        <label>&nbsp;</label>
+        <button i18n:translate="edit_save" type="submit" name="add_workflow" onclick="setWorkflow()">Speichern</button>
+        <input type="hidden" id="form_op" name="form_op">
+    </p>
+</form>
+
+
+
+<form metal:define-macro="edit_workflow" tal:attributes="action link" method="post" style="padding:10px">
+    <h3>Workflow: <span tal:replace="python:workflowstep.getName()"/></h3>
+
+    <p i18n:translate="edit_workflow_msg2">Aktuelle Position im Workflow: <b i18n:name="name"><span tal:replace="python:workflowstep.getName()"/></b></p>
+    <b i18n:translate="edit_workflow_msg3">Folgende Operationen sind m&ouml;glich:</b>
+
+    <ul>
+        <li tal:condition="python:workflowstep.getTrueId()" style="margin: 10px">
+            <span tal:replace="python:workflowstep.getTrueLabel()"/>
+            <button i18n:translate="edit_ok" tal:attributes="name python:'true_'+str(workflow.getId())" type="submit" value="true" onclick="nextWorkflowStep('true')" style="margin-left: 10px">OK</button>
+        </li>
+
+        <li tal:condition="python:workflowstep.getFalseId()" style="margin: 10px">
+            <span tal:replace="python:workflowstep.getFalseLabel()"/>
+            <button i18n:translate="edit_ok" tal:attributes="name python:'false_'+str(workflow.getId())" type="submit" value="false" onclick="nextWorkflowStep('false')" style="margin-left: 10px">OK</button>
+        </li>
+
+        <li style="margin: 10px">
+            <span i18n:translate="edit_workflow_delete">Entfernen</span>
+            <button i18n:translate="edit_workflow_delfromwf" tal:attributes="name python:'delete_'+str(workflow.getId())" type="submit" value="false" onclick="nextWorkflowStep('delete')" style="margin-left: 10px">Aus Workflow entfernen</button>
+        </li>
+    </ul>
+
+    <img tal:attributes="src python:'/workflowimage?id='+str(workflowstep.id)+'&wid='+str(workflow.getId())"/>
+    <input type="hidden" id="form_op" name="form_op">
+</form>
+
+<tal:block metal:define-macro="forward_error">
+    <i>Can't forward nodes- not all in the same workflow</i>
+</tal:block>

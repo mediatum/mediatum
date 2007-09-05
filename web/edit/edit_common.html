@@ -1,0 +1,73 @@
+
+<tal:block metal:define-macro="show_nodelist">
+    <p>
+        <b i18n:translate="edit_common_mark">Markieren</b><b>:</b>
+        <br/>
+        <select onChange="doaction(this);" name="selection" style="width:250px">
+            <option value="empty">---</option>
+            <option value="markall" i18n:translate="edit_common_mark_all">Alles markieren</option>
+            <option value="marknone" i18n:translate="edit_common_dismark">Markierung aufheben</option>
+            <option value="invert" i18n:translate="edit_common_mark_invert">Markierung invertieren</option>
+        </select>
+    </p>
+    <script tal:content="script_array"/>
+    <script>
+
+        function doaction(action) { 
+            if(action.value == 'markall') {
+                for(var a in allobjects) {
+                    allobjects[a] = 1;
+                    document.getElementById('check'+a).checked = true;
+                }
+            } else if(action.value == "marknone") {
+                for(var a in allobjects) {
+                    allobjects[a] = 0;
+                    document.getElementById('check'+a).checked = false;
+                }
+            } else if(action.value == "invert") {
+                for(var a in allobjects) {
+                    elem = document.getElementById('check'+a);
+                    if(elem.checked) {
+                        allobjects[a] = 0;
+                        document.getElementById('check'+a).checked = false;
+                    } else {
+                        allobjects[a] = 1;
+                        document.getElementById('check'+a).checked = true;
+                    }
+                }
+            }
+            action.value = "empty";
+        }
+
+        function checkObject(field) {
+            if(field.checked) {
+                allobjects[field.name] = 1;
+            } else {
+                allobjects[field.name] = 0;
+            }
+        }
+    </script>
+
+    <tal:block tal:repeat="node nodelist">
+        <div tal:attributes="class python:{'True':'showcontent', 'False':'showcontent_error'}[str(str('')==str(node.getAttribute('faulty')))]">
+            <div style="position:absolute; left:0px; top:0px; width:296px; height:20px">
+                <input tal:attributes="name python:node.id; id python:'check'+node.id" onChange="checkObject(this)" type="checkbox"/> <span i18n:translate="edit_common_mark">Markieren</span>
+            </div>
+            <div style="position:absolute; left:3px; top:25px; width:148px; height:148px;">
+                <a tal:attributes="href python:'edit_content?id='+str(node.id)+'&tab=tab_view'" i18n:attributes="title edit_common_bigview_title" title="Gro&szlig;ansicht">
+                    <tal:block tal:condition="python:hasattr(node, 'show_node_image')" tal:replace="raw python:node.show_node_image()"/>
+                    <img tal:condition="python:not hasattr(node, 'show_node_image')" src="/img/questionmark.png"/>
+                </a>
+            </div>
+            <div tal:attributes="onClick python:'document.location.href=\'edit_content?id='+str(node.id)+'&tab=tab_meta\''" style="position:absolute; left:148px; top:20px; width:148px; height:148px; overflow: hidden; cursor: pointer" i18n:attributes="title edit_common_edit_meta" title="Metadaten bearbeiten">
+                <p class="descbox">
+                    <tal:block tal:condition="python:hasattr(node, 'show_node_text')" tal:replace="raw python:node.show_node_text(None)"/>
+                    <tal:block tal:condition="python:not hasattr(node, 'show_node_text')" tal:replace="raw python:node.getName()"/>
+                </p>
+            </div>
+        </div>
+    </tal:block>
+
+    <div style="clear: both;font-size: 1px;"/>
+
+</tal:block>

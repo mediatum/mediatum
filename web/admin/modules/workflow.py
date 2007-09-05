@@ -1,0 +1,286 @@
+"""
+ mediatum - a multimedia content repository
+
+ Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
+ Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+import sys, traceback
+import athana
+import logging
+import tree
+import acl
+
+from acl import AccessRule, getRuleList
+from workflows import *
+from admin.adminutils import *
+from metadatatypes import parseEditorData
+from tree import getType
+from objtypes.metadatatype import Metadatafield
+from translation import t, lang
+
+
+""" standard validator to execute correct method """
+def reformatname(name):
+    return name.replace('_','')
+
+def validate(req, op):
+
+    path = req.path[1:].split("/")
+    if len(path)==3 and path[2]=="overview":
+        return WorkflowPopup(req)
+
+    try:
+        # import workflow from xml-file
+        importfile = req.params.get("file")
+        if importfile.tempname!="":
+            xmlimport(req, importfile.tempname)
+    except:
+        None
+
+    if req.params.get("form_op","") == "update":
+        return WorkflowStepDetail(req, req.params["wid"], req.params["nname"],-1)
+        
+    try:
+        try:
+            req.params["detaillist_" + req.params["detailof"] + ".x"] = 1
+        except:
+            None
+
+        for key in req.params.keys():
+            if key.startswith("new_"):
+                # create new workflow
+                return WorkflowDetail(req, "")
+
+            elif key.startswith("edit_"):
+                # edit workflow
+                return WorkflowDetail(req, str(key[key.index("_")+1:-2]))
+
+            elif key.startswith("delete_"):
+                # delete workflow
+                deleteWorkflow(key[7:-2])
+                break
+
+            if key.startswith("newdetail_"):
+                # create new workflow
+                print "newdetail"
+                return WorkflowStepDetail(req, req.params["wid"], "")
+
+            elif key.startswith("editdetail_"):
+                # edit workflowstep
+                return WorkflowStepDetail(req, key[key.index("_")+1:-2].split("_")[0], key[key.index("_")+1:-2].split("_")[1])
+
+            elif key.startswith("deletedetail_"):
+                # delete workflow step id: deletedetail_[workflowid]_[stepid]
+                deleteWorkflowStep(key[key.index("_")+1:-2].split("_")[0], key[key.index("_")+1:-2].split("_")[1])              
+                break
+
+            elif key == "form_op":
+                if req.params["form_op"] == "save_new":
+                    # save workflow values
+
+                    if str(req.params["name"])=="":
+                        return WorkflowDetail(req, "", 1) # no name was given
+                    else:
+                        addWorkflow(req.params["name"], req.params["description"])
+                    break
+
+
+                elif req.params["form_op"] == "save_edit":
+                    # save workflow values
+
+                    if str(req.params["name"])=="":
+                        return WorkflowDetail(req, "", 1) # no name was given
+                    else:
+                        updateWorkflow(req.params["name"], req.params["description"], req.params["id"], writeaccess=req.params.get("writeaccess",""))
+                    break
+                
+                elif req.params["form_op"] == "save_newdetail":
+                    # save workflowstep values -> create
+                    if str(req.params["nname"])=="":
+                        return WorkflowStepDetail(req, req.params.get("wid",""), "", 1)
+
+                    else:
+                        wnode = createWorkflowStep(name=reformatname(req.params["nname"]), type=req.params["ntype"], trueid=req.params["ntrueid"], falseid=req.params["nfalseid"], truelabel=req.params["ntruelabel"], falselabel=req.params["nfalselabel"], comment=req.params["ncomment"], adminstep=req.params.get("adminstep",""))
+                        getWorkflow(req.params["wid"]).addStep(wnode)
+                        if "metaDataEditor" in req.params:
+                            parseEditorData(req, wnode)
+                        return WorkflowStepList(req, req.params["wid"])
+                
+                elif req.params["form_op"] == "save_editdetail":
+                    # update workflowstep
+
+                    if req.params["nname"]=="": # no Name was given
+                        return WorkflowStepDetail(req, req.params["wid"], req.params["wnid"], 1)
+                    else:
+                        wnode = updateWorkflowStep(getWorkflow(req.params["wid"]), oldname=req.params.get("wnodeid",""), newname=reformatname(req.params["nname"]), type=req.params["ntype"], trueid=req.params["ntrueid"], falseid=req.params["nfalseid"], truelabel=req.params["ntruelabel"], falselabel=req.params["nfalselabel"], comment=req.params["ncomment"], adminstep=req.params.get("adminstep",""))
+                        if "metaDataEditor" in req.params:
+                            parseEditorData(req, wnode)
+
+                        req.params["detaillist_"+req.params["wid"]+".x"] = "1"
+                        req.params["detailof"] = req.params["wid"]
+                        return WorkflowStepList(req, req.params["wid"])
+                
+            elif key.startswith("detaillist_"):
+                #show nodes for given workflow
+                req.params["detailof"] = key[11:-2]
+                return WorkflowStepList(req, req.params["detailof"])
+                    
+        return view(req)
+    except:
+        print sys.exc_info()[0], sys.exc_info()[1]
+        traceback.print_tb(sys.exc_info()[2])
+
+
+""" overview of all defined workflows
+    parameter: req=request """
+def view(req):
+    workflows = list(getWorkflowList())
+    pages = Overview(req, list(workflows))
+    order = req.params.get("order","")
+
+    # sorting
+    if order != "":
+        if int(order[0:1])==1:
+            workflows.sort(lambda x, y: cmp(x.getName(),y.getName()))
+        elif int(order[0:1])==2:
+            workflows.sort(lambda x, y: cmp(x.getDescription(),y.getDescription()))
+        if int(order[1:])==1:
+            workflows.reverse()
+
+    v = getAdminStdVars(req)
+    v["sortcol"] = pages.OrderColHeader([t(lang(req), "admin_wf_col_1"), t(lang(req), "admin_wf_col_2")])
+    v["workflows"] = workflows
+    v["pages"] = pages
+    return req.getTAL("admin/modules/workflow.html", v, macro="view")
+   
+""" edit form for given workflow (create/update)
+    parameter: req=request, id=workflowid (name), err=error code as integer """
+def WorkflowDetail(req, id, err=0):
+    if err==0 and id=="":
+        # new workflow
+        workflow = tree.Node("", type="workflow")
+
+    elif id!="" and err==0:
+        # edit workflow
+        workflow = getWorkflow(id)
+        
+    else:
+        # error
+        workflow = tree.Node("", type="workflow")
+        workflow.setName(req.params.get("name", ""))
+        workflow.setDescription(req.params.get("description", ""))
+        workflow.setAccess("write", req.params.get("writeaccess", ""))
+        
+    v = getAdminStdVars(req)
+    v["workflow"] = workflow
+    v["error"] = err
+    v["rules"] = getRuleList()
+    return req.getTAL("admin/modules/workflow.html", v, macro="modify")
+
+""" overview of all steps for given workflow
+    parameter: req=request, wid=wordflow id (name) """
+def WorkflowStepList(req, wid):
+    global _cssclass, _page
+    workflow = getWorkflow(wid)
+    workflowsteps = list(workflow.getSteps())
+    pages = Overview(req, workflowsteps)
+    order = req.params.get("order","")
+
+    # sorting
+    if order != "":
+        if int(order[0])==0:
+            workflowsteps.sort(lambda x, y: cmp(x.getName().lower(),y.getName().lower()))
+        elif int(order[0])==1:
+            workflowsteps.sort(lambda x, y: cmp(x.getTypeName(),y.getTypeName()))
+        elif int(order[0])==2:
+            workflowsteps.sort(lambda x, y: cmp(x.getTrueId(),y.getTrueId()))
+        elif int(order[0])==3:
+            workflowsteps.sort(lambda x, y: cmp(x.getFalseId(),y.getFalseId()))
+        elif int(order[0])==4:
+            workflowsteps.sort(lambda x, y: cmp(len(x.get("description")),len(y.get("description"))))            
+        if int(order[1])==1:
+            workflowsteps.reverse()
+    else:
+        workflowsteps.sort(lambda x, y: cmp(x.getName().lower(),y.getName().lower()))
+
+    v = getAdminStdVars(req)
+    v["sortcol"] = pages.OrderColHeader([t(lang(req),"admin_wfstep_col_1"), t(lang(req),"admin_wfstep_col_2"), t(lang(req),"admin_wfstep_col_3"), t(lang(req),"admin_wfstep_col_4"), t(lang(req),"admin_wfstep_col_5")])
+    v["workflow"] = workflow
+    v["workflowsteps"] = workflowsteps
+    v["pages"] = pages
+    return req.getTAL("admin/modules/workflow.html", v, macro="view_step")
+
+""" edit form for workflowstep for given workflow and given step
+    parameter: req=request, wid=workflowid(name), wnid=workflow step id (name), err=error code as integer """
+def WorkflowStepDetail(req, wid, wnid, err=0):
+    
+    workflow = getWorkflow(wid)
+    nodelist = workflow.getSteps()
+    v = getAdminStdVars(req)
+       
+    if err==0 and wnid=="":
+        # new workflowstep
+        workflowstep = createWorkflowStep(name="", trueid="", falseid="", truelabel="", falselabel="", comment="")
+        workflowstep.id = ""
+
+    elif err==-1:
+        # update steptype
+        err=0
+        workflowstep = createWorkflowStep(name=req.params.get("nname",""), type=req.params.get("ntype","workflowstep"), trueid=req.params.get("ntrueid",""), falseid=req.params.get("nfalseid",""), truelabel=req.params.get("ntruelabel",""), falselabel=req.params.get("nfalselabel",""),  comment=req.params.get("ncomment",""))
+        if req.params.get("wnid","")=="":
+            workflowstep.id = ""
+
+    elif wnid!="":
+        #edit field
+        workflowstep = workflow.getStep(wnid)
+
+    else:
+        #error while filling values
+        type =req.params.get("ntype","workflowstep")
+        if type=="":
+            type="workflowstep"
+        workflowstep = createWorkflowStep(name=req.params.get("nname",""), type=type, trueid=req.params.get("ntrueid",""), falseid=req.params.get("nfalseid",""), truelabel=req.params.get("ntruelabel",""), falselabel=req.params.get("nfalselabel",""),  comment=req.params.get("ncomment",""))
+
+    if req.params.get("nytype","")!="":
+        workflowstep.setType(req.params.get("nytype",""))
+
+    v_part={}
+    v_part["fields"] = workflowstep.metaFields() or []
+    v_part["node"] = workflowstep
+    v_part["hiddenvalues"] = {"wnodeid":workflowstep.name}
+    v["editor"] =  req.getTAL("admin/modules/workflow.html", v_part, macro="view_editor")
+    v["workflow"] = workflow
+    v["workflowstep"] = workflowstep
+    v["nodelist"] = nodelist
+    v["workflowtypes"] = getWorkflowTypes()
+    v["error"] = err
+    v["update_type"] = req.params.get("ntype","")
+
+    return req.getTAL("admin/modules/workflow.html", v, macro="modify_step")
+    
+""" popup window with image of workflow given by id
+    parameter: req=request """
+def WorkflowPopup(req):
+    path = req.path[1:].split("/")
+    return req.getTAL("admin/modules/workflow.html", {"id":path[1]}, macro="view_popup")
+        
+""" export workflow-definition (XML) """
+def export(req, name):
+    return exportWorkflow(name)
+
+""" import definition from file """
+def xmlimport(req, filename):
+    importWorkflow(filename)

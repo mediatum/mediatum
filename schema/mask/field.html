@@ -1,0 +1,100 @@
+
+<tal:block metal:define-macro="metaeditor">
+    <div class="back">
+        <h3 tal:condition="python:op=='edit'" i18n:translate="mask_edit_edit_field">Feld bearbeiten</h3>
+        <h3 tal:condition="python:op=='new'" i18n:translate="mask_edit_create_field">Neues Feld anlegen</h3>
+        <br/>
+        <br/>
+        <div class="label">Label: <span class="required">*</span></div>
+        <input tal:attributes="value python:item.getLabel()" type="text" name="label" style="width:500px"/>
+        <br/>
+
+        <tal:block tal:condition="python:op=='new'">
+            <div class="label" i18n:translate="mask_edit_position">Position (vor):</div> 
+            <select name="insertposition" style="width:500px">
+                <option value="end" selected="selected" i18n:translate="mask_edit_end">-am Ende-</option>
+                <tal:block tal:repeat="field fields">
+                    <option tal:condition="python:hasattr(field.getField(),'getFieldtype')" tal:attributes="value python:field.id" tal:content="python:field.getLabel()+' ('+field.getField().getFieldtype()+')'"/>
+
+                    <option tal:condition="python:not hasattr(field.getField(),'getFieldtype')" tal:attributes="value python:field.id" tal:content="python:field.getLabel()+' ('+field.get('type')+')'"/>
+                </tal:block>
+            </select>
+            <br/>
+         </tal:block>
+
+        <div class="label" i18n:translate="mask_edit_field_selection">Feldauswahl:</div> 
+
+        <tal:block tal:condition="python:op=='new'">
+            <fieldset>
+                <input type=radio name="fieldtype" value="common" checked="checked"/> 
+                <span i18n:translate="mask_edit_existing_field">vorhandenes Feld</span>
+                <br/>
+                <div class="label" i18n:translate="mask_edit_field">Feld:</div>
+
+                <select tal:condition="python:len(metafields)>0" name="field" style="width:250px;">
+                    <tal:block tal:repeat="metafield metafields">
+                        <option tal:attributes="value python:metafield.id" tal:content="python:metafield.getName()+' ('+metafield.getFieldtype()+')'"/>
+                    </tal:block>
+                </select>
+
+                <span tal:condition="python:len(metafields)==0" style="color:red" i18n:translate="mask_editor_no_fields">- keine Felder definiert -</span>
+                <br/>
+                <br/>
+                <input type=radio name="fieldtype" value="new"/> <span i18n:translate="mask_edit_new_field">neues Feld</span><br/>
+                <div class="label" i18n:translate="mask_edit_nameid">Name/ID (englisch):</div> 
+                <input type="text" name="fieldname" style="width:250px;"/>
+                <br/>
+                <div class="label" i18n:translate="mask_edit_type">Typ:</div> 
+                <select name="newfieldtype" id="newfieldtype" style="width:250px;" onchange="metatypechange(document)">
+                    <tal:block tal:repeat="key python:list(fieldtypes)">
+                        <option tal:condition="python:not fieldtypes[key].isContainer()" tal:attributes="value key" tal:content="python:fieldtypes[key].getName()" i18n:translate=""/>
+                    </tal:block>
+                </select>
+                <br/>
+                <tal:block tal:repeat="values add_values" tal:content="raw values"/>
+            </fieldset>
+            <br/>
+        </tal:block>
+
+        <tal:block tal:condition="python:op=='edit'">
+            <select name="field" style="width:250px;" id="newfieldtype" onchange="editmetatypechange(document)">
+                <tal:block tal:repeat="metafield metafields">
+                    <option tal:condition="python:item.getField() and item.getField().id==metafield.id and item.getField()!=None" tal:attributes="value python:metafield.id" tal:content="python:metafield.getLabel()+' ('+metafield.getFieldtype()+')'" selected="selected"/>
+                    <option tal:condition="python:(not item.getField() or item.getField().id!=metafield.id) and item.getField()!=None" tal:attributes="value python:metafield.id" tal:content="python:metafield.getLabel()+' ('+metafield.getFieldtype()+')'"/>
+                </tal:block>
+            </select>
+            <br/>
+            <tal:block tal:repeat="values add_values" tal:content="raw values"/>
+            <br/>
+            <script>
+                editmetatypechange(document);
+            </script>
+        </tal:block>
+
+        <div class="label" i18n:translate="mask_edit_help">Hilfetext: </div>
+        <textarea tal:content="python:item.getDescription()" name="description" rows="4" style="width:500px;"/>
+        <br/>
+        <div class="label" i18n:translate="mask_edit_required">Pflichtfeld:</div> 
+        <input tal:condition="python:item.getRequired()==1" type="checkbox" name="required" value="1" checked="checked">
+        <input tal:condition="python:item.getRequired()!=1" type="checkbox" name="required" value="1">
+        <small i18n:translate="mask_edit_required_info">(wird nur bei <b>Editormasken</b> im Editor validiert)</small>
+        <br/>
+        <div class="label" i18n:translate="mask_edit_field_width">Feldbreite:</div>
+        <input tal:attributes="value python:str(item.getWidth())" type="text" name="width" style="width:100px"/> 
+        <span i18n:translate="mask_edit_width_info">Pixel (Datumsfelder mind. 200)</span>
+        <br/>
+        <div class="label" i18n:translate="mask_edit_default">Default-Wert:</div>
+        <input tal:attributes="value python:str(item.getDefault())" type="text" name="default" style="width:500px"/>
+        <br/>
+        <div class="label" i18n:translate="mask_edit_unit">Einheit:</div>
+        <input tal:attributes="value python:str(item.getUnit())" type="text" name="unit" style="width:500px"/>
+        <br/>
+         <input tal:attributes="value python:str(item.id)" type="hidden" name="id"/>
+        <input tal:attributes="value pid" type="hidden" name="pid"/>
+        <input type="hidden" name="type" value="field"/>
+        <br/>&nbsp;<br/><div class="label">&nbsp;</div>
+        <button type="submit" name="saveedit" i18n:translate="mask_edit_save">Speichern</button>
+        &nbsp;&nbsp;<button type="submit" onclick="setCancel(document.myform.op)" i18n:translate="mask_edit_cancel">Abbrechen</button>
+        <input tal:attributes="value python:op" type="hidden" name="op"/>
+    </div>
+</tal:block>

@@ -1,0 +1,212 @@
+body {
+   background-color: #ffffff;
+   color: #000000;
+   font-family: Verdana, Arial, Helvetica, sans-serif;
+   font-weight : normal;
+   text-decoration: none;
+   text-align: left;
+   font-size: 11px;
+   margin: 0px;
+   padding: 0px;
+}
+
+body.form {
+   background-color: ButtonFace;
+}
+
+h1 { 
+     font-size: 14px;
+     margin:5px;
+}
+
+img{
+    border: 0px;
+}
+
+div.field {
+    background: #FFFFFF;
+    border: solid silver 1px;
+    margin: 1px;
+    width: 600px;
+    height: 20px;
+    float: left;
+    font-size: 12px;
+}
+
+div.label {
+    width: 200px;
+    float:left;
+    display: inline;
+}
+
+div.hgroup_label {
+    display: inline;
+}
+
+div.row {
+    border: solid white 1px;
+    margin: 2px;
+    width: 100%;
+    white-space: nowrap;
+    cursor:hand;
+}
+
+span.required {
+    color: #ff0000;
+}
+
+div.back {
+    background: #FFFFFF;
+    padding: 7px;
+    border: 1px solid silver;
+    margin-left: 20px;
+    margin-right: 20px;
+
+}
+
+#editor_content {
+    margin-left:220px;
+    top:0px;
+}
+
+
+#description {
+    float:left;
+}
+
+#hitem {
+    display: inline;
+    float:left;
+    margin-right: 5px;
+}
+
+#selection {
+    font-size:10px;
+}
+
+#selection_div {
+    border-top:1px solid silver;
+    margin: 3px;
+    display: none;
+    padding: 3px;
+}
+h4.admin {
+    font-size: 25px;
+    padding: 0px 0px 0px 0px;
+    margin: 0px;
+    text-align: right;
+}
+td.banner {
+    background-color: #7d85a6;
+    color: #FFFAEB;
+    font-size: 10px;
+    font-weight: lighter;
+    text-decoration: none;  
+}
+
+a:link, a:visited {
+    text-decoration: none;
+    color: #6E5A46;
+    font-weight: bold;
+}
+a:hover, a:active {
+    text-decoration:none;
+    color:#CC6600;
+    font-weight:bold;
+}
+
+td {
+    vertical-align:top;
+    white-space: nowrap;
+    font-size: 11px;
+}
+
+th {
+    vertical-align:top;
+    white-space: nowrap;
+    font-size: 11px;
+        font-weight: bold;
+}
+div.showcontent_error{
+    float:left;
+    width:296px;
+    height:168px;
+    position:relative;
+    left: 0px;
+    top: 0px;
+    border: 1px solid #FF0000;
+    background:#FFE7E7;
+    margin: 2px
+}
+
+div.showcontent{
+    float:left;
+    width:296px;
+    height:168px;
+    position:relative;
+    left: 0px;
+    top: 0px;
+    border: 1px solid #808080;
+    margin: 2px
+}
+
+p.error{
+    background: #FFE7E7;
+    color: #AF0101; 
+    padding: 7px;
+    border: 1px solid #AF0101;
+    margin-left: 20px;
+    margin-right: 20px;
+    vertical-align: middle;
+}
+
+
+/* everything below here should be in something like common.css */
+
+div.mask_row {
+    margin-bottom: 6px;
+}
+
+div.mask_label {
+    width: 200px;
+    float: left;
+}
+div.mask_value {
+    margin-left:220px;
+    top:0px;
+}
+img.thumbnail{
+    border:0px;
+    position:relative;
+    top: 0px;
+    left: 0px;
+    width:128px;
+    height:128px
+}
+.descbox {
+    font-size: 10px;
+    line-height: 11px;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
+    margin-top: 10px;
+}
+#object_main{
+    padding: 5px;
+}
+
+#object_image {
+    float: left;
+    width: 300px;
+}
+
+#object_meta{
+    margin-left: 310px;
+}
+
+#object_basket{
+    margin: 5px;
+    clear: both;
+}
+
+textarea{
+    font-family: arial, helvetica, sans-serif;
+}

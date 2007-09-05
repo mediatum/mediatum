@@ -1,0 +1,237 @@
+"""
+ mediatum - a multimedia content repository
+
+ Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
+ Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+import athana
+from utils import *
+from tree import Node, getNode
+
+from objtypes.metadatatype import getMetaFieldTypeNames, getMetaFieldTypes, getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY
+from metadatatypes import dateoption
+from translation import *
+from objtypes.metatype import Metatype
+
+class m_field(Metatype):
+
+    def getFormHTML(self, field, nodes, req, sub=False):
+        """ create editor field (editarea)""" 
+        element = field.getField()
+        ret = ''
+        label = ''
+        description = '<div id="description"></div>'
+        unit = ''
+        
+        if not sub:
+            label += '<div class="label">'+field.getLabel()+':'
+            if (int(field.getRequired())>0):
+                label += ' <span class="required">*</span>'
+            label += '</div>'
+        else:
+            if field.getLabel()!="":
+                label += field.getLabel() + ': '
+                if int(field.getRequired())>0:
+                    label += '<span class="required">*</span> '
+
+        if field.getDescription()!="":
+            description = '<div id="description"><a href="#" onclick="openPopup(\'/popup_help?id='+element.id+'&maskid='+field.id+'\', \'\', 400, 250)"><img src="/img/tooltip.png" border="0"/></a></div>'
+        
+
+        if not sub:
+            if str(element.id) in req.params.get("errorlist",[]):
+                ret += '<div class="editorerror">'
+            else:
+                ret += '<div class="editorrow">'
+
+        ret += label+description   
+
+        val = nodes[0].get(element.getName())
+        lock = 0
+        for node in nodes[1:]:
+            if val!=node.get(element.getName()):
+                val = "? "
+                lock = 1
+                break
+        
+        if val=="" and field.getDefault()!="":
+           val = field.getDefault()
+        
+        t = getMetadataType(element.get("type"))
+        
+        if field.getUnit()!="":
+            unit += field.getUnit()
+        
+        ret += '<div id="editor_content">'+t.getEditorHTML(element, value=val, width=field.getWidth(), name=element.getName(), lock=lock, language=lang(req))+unit+'</div>'
+        if not sub:
+            ret += '</div>'
+        return ret
+
+
+    """ create view format """
+    def getViewHTML(self, field, nodes, flags, language=None):
+        element = field.getField()
+        t = getMetadataType(element.get("type"))
+        unit = ''
+        if field.getUnit()!="":
+            unit = ' ' + field.getUnit()
+
+        if flags & VIEW_DATA_ONLY:
+            value = str(t.getFormatedValue(element, nodes[0], language)[1]) + str(unit)
+        else:
+            value = str(formatLongText(t.getFormatedValue(element, nodes[0], language)[1], element)) + str(unit)  
+
+        label = '&nbsp;'
+        if field.getLabel()!="":
+            label = field.getLabel() + ': '
+        
+        if flags & VIEW_DATA_ONLY:
+            # return a valuelist
+            return [element.getName(), value, element.getLabel(), element.get("type")]
+
+        elif flags & VIEW_SUB_ELEMENT:
+            # element in h-group
+            return label + value
+
+        elif flags & VIEW_HIDE_EMPTY and value.strip()=="":
+            # hide empty elements
+            return ''
+
+        else:
+            # standard view
+            ret = '<div class="mask_row"><div>'
+            ret += '<div class="mask_label">'+label+'</div>\n<div class="mask_value">'+value+'&nbsp;</div>\n'
+            ret += '</div></div>'
+            return ret
+
+    def getMetaHTML(self, parent, index, sub=False, language=None, itemlist=[], ptype="", fieldlist={}):
+        """ return formated row for metaeditor """
+        
+        if len(itemlist)>0:
+            # parent still not existing
+            item = getNode(itemlist[index])
+            pitems = len(itemlist)
+        else:
+            item = parent.getChildren().sort()[index]
+            ptype = parent.get("type")
+            pitems = len(parent.getChildren())
+        
+        field = item.getField()
+        ret = ''
+        label = ''
+        description = ''
+        f = getMetadataType(field.get("type"))
+        fieldstring = f.getEditorHTML(field, width=item.getWidth(), value=item.getDefault(), language=language) + ' ' + item.getUnit()
+        
+        if item.getDescription()!="":
+            description = '<div id="description"><a href="#" onclick="openPopup(\'/popup_help?id='+field.id+'&maskid='+item.id+'\', \'\', 400, 250)"> <img src="/img/tooltip.png" border="0"/></a></div>'
+        
+        if len(item.getLabel())>0:
+            if ptype in("vgroup","hgroup") or sub==False:
+                if (item.getRequired()>0):
+                    label = '<div class="label">' + item.getLabel() + ': <span class="required">*</span></div>'+description
+                else:
+                    label = '<div class="label">' + item.getLabel() + ': </div>'+description
+            else:
+                if (item.getRequired()>0):
+                    label = item.getLabel() + ': <span class="required">*</span> '
+                else:
+                    label = item.getLabel() + ': '
+        if not sub:
+            #if ptype not in ("vgroup", "hgroup", "field"):
+            ret += '<div id="'+item.id+'" class="row" onmouseover="pick(this)" onmouseout="unpick(this)" onclick="select(this)">'
+            #else:
+            #    ret += '<div id="'+item.id+'" class="row" onmouseover="pick(this)" onmouseout="unpick(this)">'
+
+        if len(label)>0:
+            ret += label + '<div id="editor_content">'+fieldstring+'</div>'
+        else:
+            ret += fieldstring
+
+        if field.getName() in fieldlist.keys():
+            if len(fieldlist[field.getName()])>1:
+                ret += '<div style="color:#ff6666;margin-left: 20px"><div class="label">&nbsp;</div><small><span i18n:translate="mask_edit_multi_label">Attributvorkommen in Schema: </span>'
+                for scheme in fieldlist[field.getName()]:
+                    ret += scheme.getName()
+                    if fieldlist[field.getName()].index(scheme) < len(fieldlist[field.getName()])-1:
+                        ret += ', ';
+                ret += '</small></div>'
+
+        if not sub:
+            ret += '<div align="right" id="'+item.id+'_sub" style="display:none" class="edit_tools"><small style="color:silver">('+(item.get("type"))+')</small>'
+            if index>0:
+                ret += '<input type="image" src="/img/uparrow.png" name="up_'+str(item.id)+'" i18n:attributes="title mask_edit_up_title"/>'
+            else:
+                ret += '&nbsp;&nbsp;&nbsp;'
+            if index<pitems-1:
+                ret += '<input type="image" src="/img/downarrow.png" name="down_'+str(item.id)+'" i18n:attributes="title mask_edit_down_title"/>'
+            else:
+                ret += '&nbsp;&nbsp;&nbsp;'
+            ret += ' <input type="image" src="/img/edit.png" name="edit_'+str(item.id)+'" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/img/delete.png" name="delete_'+str(item.id)+'" i18n:attributes="title mask_edit_delete_row" onClick="return questionDel()"/></div>'
+            ret += '</div>'
+        return ret
+
+
+
+    def getMetaEditor(self, item, req):
+        """ editor mask for field definition """
+        attr = {}
+        fields = []
+
+        metadatatype = req.params.get("metadatatype")
+        for t in metadatatype.getDatatypes():
+            node = Node(type=t)
+            attr.update(node.getTechnAttributes())
+
+        if req.params.get("op","")=="new":
+            pidnode = getNode(req.params.get("pid"))
+            if pidnode.get("type") in ("vgroup", "hgroup"):
+                for field in pidnode.getAllChildren():
+                    if field.getType().getName()=="maskitem" and field.id!=pidnode.id:
+                        fields.append(field)
+            else:
+                for m in metadatatype.getMasks():
+                    if str(m.id)==str(req.params.get("pid")):
+                        for field in m.getChildren():
+                            fields.append(field)
+        fields.sort(lambda x, y: cmp(x.getOrderPos(),y.getOrderPos()))
+
+        add_values = []
+        val = ""
+        if item.getField():
+            val = item.getField().getValues()
+        for t in getMetaFieldTypeNames():
+            f = getMetadataType(t)
+            add_values.append(f.getMaskEditorHTML(val, metadatatype=metadatatype, language=lang(req)))
+
+        v = {}
+        v["op"] = req.params.get("op","")
+        v["pid"] = req.params.get("pid","")
+        v["item"] = item
+        v["metafields"] = req.params.get("metadatatype","").getMetaFields()
+        v["fields"] = fields
+        v["fieldtypes"] = getMetaFieldTypes()
+        v["dateoption"] = dateoption
+        v["t_attrs"] = attr
+        v["icons"] = {"externer Link":"/img/extlink.png", "Email":"/img/email.png"}
+        v["add_values"] = add_values
+        return req.getTAL("metatypes/mask/m_field.html",v,macro="metaeditor") 
+
+    def isContainer(self):
+        return True
+
+    def getName(self):
+        return "fieldtype_field"

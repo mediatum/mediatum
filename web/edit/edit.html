@@ -1,0 +1,209 @@
+<tal:block metal:define-macro="edit_tabs">
+    <table cellpadding="0" cellspacing="0" width="100%" height="110px" border="0">
+        <tr>
+            <td bgcolor="#7d85a6" align="right" class="banner">
+                <small>
+                    [<span i18n:translate="sub_header_user">Benutzer</span>: <span tal:content="python:user.getName()"></span>
+                    <tal:block tal:repeat="menuitem menuitems">
+                        | <a tal:define="ltitle python:menuitem.title" tal:attributes="href python:menuitem.link; title ltitle; target python:menuitem.target">
+                        <span tal:define="l python:menuitem.label" tal:content="structure l"/>
+                        </a>
+                    </tal:block>]
+                    &nbsp;&nbsp;&nbsp;
+                </small>
+            </td>
+        </tr>
+        <tr>
+            <td valign="bottom">
+                <table cellpadding="0" cellspacing="0" width="100%" height="100%" border="0">
+                    <tr>
+                        <td tal:attributes="colspan python:str(len(tabs)*4+2)" bgcolor="#7d85a6">
+                            <h4 class="admin">mediaTUM Editor Interface&nbsp;&nbsp;</h4>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td bgcolor="#7d85a6" rowspan="5" width="20px" valign="bottom" align="right"><img src="/img/s.gif" width="2px" height="1px"/></td>
+                        <td tal:attributes="colspan python:str(len(tabs)*4)" bgcolor="#7d85a6" height="2px"><img src="/img/s.gif" width="1px" height="5px"/></td>
+                        <td bgcolor="#7d85a6" rowspan="5" valign="bottom" align="right"><small><b>ID:</b>&nbsp;<span tal:replace="python:str(ids)"/>&nbsp;</small></td>
+                     </tr>
+                     <tr>
+                        <tal:block tal:repeat="tab tabs">
+                            <td tal:attributes="bgcolor python:currenttab==tab and '#ffffff' or '#e8e8e8'" bgcolor="#ffffff" rowspan="2" valign="top" align="left"><img src="/img/ltab.gif" width="5" height="5" /></td>
+                            <td tal:attributes="bgcolor python:currenttab==tab and '#ffffff' or '#e8e8e8'"><img src="/img/s.gif" width="1" height="2" /></td>
+                            <td tal:attributes="bgcolor python:currenttab==tab and '#ffffff' or '#e8e8e8'" rowspan="2" valign="top" align="right"><img src="/img/rtab.gif" width="5" height="5" /></td>
+                            <td bgcolor="#7d85a6" rowspan="4"><img src="/img/s.gif" width="2" height="1" /></td>
+                        </tal:block>
+
+                    </tr>
+                    <tr>
+                        <td  tal:repeat="tab tabs" tal:attributes="bgcolor python:currenttab==tab and '#ffffff' or '#e8e8e8'" bgcolor="#ffffff" valign="bottom" align="center">
+                            <a tal:condition="python:currenttab!=tab" tal:attributes="title python:tab+'_title'; href python:'edit_content?id='+idstr+'&tab='+tab" i18n:attributes="title">
+                                <font size="2" tal:content="tab" i18n:translate=""/>
+                            </a>
+                            <font tal:condition="python:currenttab==tab" tal:content="tab" i18n:translate="" size="2"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td tal:repeat="tab tabs" tal:attributes="bgcolor python:currenttab==tab and '#ffffff' or '#e8e8e8'" colspan="3"><img src="/img/s.gif" width="2" height="1"/></td>
+                    </tr>
+                    <tr>
+                        <td tal:repeat="tab tabs" tal:attributes="bgcolor python:currenttab==tab and '#ffffff' or '#7d85a6'" colspan="3" bgcolor="#ffffff"><img src="/img/s.gif" width="2" height="1"/></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</tal:block>
+
+
+<tal:block metal:define-macro="edit_errorpage">
+    <html>
+        <body>
+            <h1 tal:content="errormsg"/>
+        </body>
+    </html>
+</tal:block>
+
+
+
+<html metal:define-macro="edit_main">
+    <head>
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+        <title i18n:translate="edit_main_title">mediatum</title>
+        <link rel="stylesheet" href="/css/editor.css">
+        <script type="text/javascript" src="/js/admin.js">
+        </script>
+        <script type="text/javascript" tal:content="raw script">
+        </script>
+
+    <frameset cols="273,*" frameborder="1" framespacing="1" name="frame">
+        <frameset rows="260,*" frameborder="0" framespacing="1">
+            <frame tal:attributes="src python:'edit_buttons?id='+str(id)" frameborder="0" framespacing="0" marginheight="0" marginwidth="0" name="buttons" scrolling="no"/>
+            <frame  tal:attributes="src python:'edit_tree?id='+str(id)" frameborder="0" framespacing="0" marginheight="0" marginwidth="0" name="tree"/>
+        </frameset>
+        <frame tal:attributes="src python:'edit_content?id='+str(id)+str(tab)" frameborder="1" framespacing="1" name="content"/>
+        <noframes>
+            <br/><center i18n:translate="edit_main_noframe">Ihr Browser unterst&uuml;tzt keine Frames.</center>
+        </noframes>
+    </frameset>
+</html>
+
+
+<html metal:define-macro="edit_action_error">
+    <body>
+        <h1 i18n:translate="edit_error">Fehler</h1>
+        <i i18n:translate="edit_nobase">Kein Basisverzeichnis ausgew&auml;hlt (<span tal:content="edit_action_error" i18n:name="msg"/>)</i>
+    </body>
+</html>
+
+
+<html metal:define-macro="edit_action_new_error">
+    <head>
+        <script language="javascript">
+            opener.reloadURL('edit?id="""+node.id+"""');
+        </script>
+    </head>
+    <body>
+        <h2 i18n:translate="edit_error">Fehler</h2>
+        <span i18n:translate="edit_create_new_folder">Ordner konnte nicht erstellt werden: Der &Uuml;bergeordnete Ordner ist schreibgesch&uuml;tzt.</span>
+    </body>
+</html>
+
+<html metal:define-macro="edit_tree">
+    <head>
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+        <title i18n:translate="edit_tree_editor_title">Tree Editor</title>
+        <link rel="stylesheet" href="/css/editor.css">
+      
+        <style type="text/css">
+            body{
+                /* scrollbar */
+                scrollbar-face-color: #FFFFFF;
+                scrollbar-shadow-color: #FFFFFF;
+                scrollbar-highlight-color: #FFFFFF;
+                scrollbar-3dlight-color: #7d85a6;
+                scrollbar-darkshadow-color: #7d85a6;
+                scrollbar-track-color: #7d85a6;
+                scrollbar-arrow-color: #7d85a6;
+            }
+            a.canread:link, a.canread:visited, a.canread:hover, a.canread:active
+            {
+                color: #606060;
+                text-decoration: none;
+                font-weight: normal;
+            }
+            a.canwrite:link, a.canwrite:visited, a.canwrite:hover, a.canwrite:active
+            {
+                color: #000000;
+                text-decoration: none;
+                font-weight: normal;
+            }
+            div.line {
+                height:16px; 
+                width:100%;
+                font-size: 12px;
+                /*border-style: solid;
+                border-width: 0px;
+                border-top-width: 1px;
+                border-color: #808080;*/
+                overflow: hidden;
+            }
+            div.type {
+                float:left; 
+                height:16px; 
+                width:100px;
+                font-size: 12px;
+            }
+            div.name {
+                float:left;
+                height:16px; 
+                width:1024px;
+                overflow:hidden;
+                font-size: 12px;
+            }
+            div.box {
+                float: left;
+                width: 16px;
+                height: 20px;
+            }
+            div.operations {
+                float:right; 
+                height:16px; 
+                width:128px; 
+            }
+            div.metadata {
+                font-size: 12px;
+                background-color: #f0f0f0;
+            }
+            div.flush {
+                clear:both;
+                font-size:1px;
+            }
+            span.key {
+                width:128px; 
+            }
+            span.value {
+            }
+        </style>
+      
+        <script tal:content="raw script" language="javascript">
+        </script>
+
+
+    </head>
+    <body tal:content="raw content" tal:attributes="onload python:'location.hash='+scrollid" bgcolor="#ffffff">
+
+
+    </body>
+</html>
+
+<tal:block metal:define-macro="access_error">
+    <i i18n:translate="edit_access_error">Nicht berechtigt</i>
+</tal:block>
+
+
+<p metal:define-macro="flush" i18n:translate="edit_flush">
+    System Caches wurden geleert
+</p>

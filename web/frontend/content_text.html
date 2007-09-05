@@ -1,0 +1,19 @@
+
+<div tal:repeat="file python:files" class="preview_text" style="height: auto; padding-bottom: 10px;" onmouseover="this.style.backgroundColor='#cccccc'" onmouseout="this.style.backgroundColor='white'">
+    <div style="margin:3px;">
+    [<a tal:attributes="href python:file.getLink()" tal:content="python:str(file.nr+1)"></a>]
+    </div>
+    <div style="margin-left: 30px; margin-top: 5px">
+        <a tal:attributes="href python:file.getLink()" style="white-space:normal">
+            <tal:block tal:replace="raw python:file.node.show_node_text(macro='metadatavalues_line')"/>
+        </a>
+    </div>
+    <div tal:attributes="onclick python:'shoppingBag(\''+str(file.node.id)+'\')'" style="position:absolute; right:0px; top:3px; width:20px; height:20px; overflow:hidden; cursor: pointer;">
+        <img i18n:attributes="title view_list_add_shoppingbag" src="/img/favourite_add.png" title="Objekt zur Merkliste hinzuf&uuml;gen"/>
+    </div>
+
+    <div tal:condition="python:file.attachment" style="position:absolute; right:25px; top:5px; overflow:hidden;">
+        <img i18n:attributes="title view_list_att_title" src="/img/attach.png" title="Attachment zu Dokument vorhanden"/>
+    </div>
+    <div class="break" tal:content="python:''"/>
+</div>

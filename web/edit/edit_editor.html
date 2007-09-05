@@ -1,0 +1,25 @@
+
+<tal:block metal:define-macro="edit_editor">
+    <script language="javascript">
+        function questionDel(){
+            return confirm(unescape("Sollen die HTML-Daten wirklich gel%F6scht werden?"));
+        }
+    </script>
+
+    <form tal:attributes="action python:'?id='+id+'&tab=tab_html'" method="post">
+        <tal:block metal:use-macro="header"/>
+        <tal:block tal:replace="raw python:oFCKeditor.Create()"/>
+
+        <p align="center">
+            <input tal:attributes="value path" type="hidden" name="file_path"/>
+            <input i18n:attributes="value edit_editor_save; title edit_editor_save_title" type="submit" value="Speichern" name="save_page" title="&Auml;nderungen speichern"/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <input i18n:attributes="value edit_editor_delete; title edit_editor_delete_title" type="submit" value="HTML-Daten l&ouml;schen" name="delete_page" title="HTML-Daten l&ouml;schen" onclick="return questionDel()"/>
+        </p>
+    </form>
+</tal:block>
+
+<p metal:define-macro="header" i18n:translate="edit_editor_header">
+    Im Augenblick sind folgende Daten f&uuml;r dieses Archiv hinterlegt:
+</p>
+

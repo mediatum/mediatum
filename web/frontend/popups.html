@@ -1,0 +1,221 @@
+<metal:block metal:define-macro="index">
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+    <html>
+        <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+            <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+            <title i18n:translate="popup_index_header">Vorhandene Indexwerte</title>
+            <script>
+                function trim(str)
+                {
+                    return str.replace(/^\s*|\s*$/g,"");
+                }
+
+                function pick(value)
+                {
+                    val = "";
+                    if (window.opener && !window.opener.closed){
+                        el = document.getElementById('values');
+                        for (i=0; i<el.options.length; i++){
+                            if (el.options[i].selected) {
+                                if(val.length) {
+                                    val += ";";
+                                }
+                                val += el.options[i].value;
+                            }
+                        }
+                        doc = window.opener.document;
+                        doc.getElementById(value).value=val;
+                    }
+                    window.close();
+                }
+                        
+                function getValue(value){
+                    if (window.opener && !window.opener.closed){
+                        doc = window.opener.document;
+                        arr = doc.getElementById(value);
+                        if (arr){
+                            arr = arr.value.split(";");
+                        }else{
+                            return;
+                        }
+                        selObj = document.getElementById('values');
+                        for (i=0; i<selObj.length; i++) {
+                            for(j=0; j<arr.length; j++) {
+                                if (trim(arr[j]) == selObj.options[i].value){
+                                    selObj.options[i].selected= true;
+                                }
+                            }
+                        }
+                        setNumber();
+                    }
+                }
+
+                function setNumber(){
+                    c = 0;
+                    selObj = document.getElementById('values');
+                    for (i=0; i<selObj.length; i++) {
+                        if (selObj.options[i].selected){
+                            c++;
+                        }
+                    }
+                    obj = document.getElementById('count');
+                    obj.firstChild.data = c;
+                }
+
+                function showValues(){
+                    txt = "";
+                    selObj = document.getElementById('values');
+                    for (i=0; i<selObj.length; i++) {
+                        if (selObj.options[i].selected){
+                            txt += "- " + selObj.options[i].value + "\n";
+                        }
+                    }
+                    alert(txt);
+                }
+
+            </script>
+            <link href="/css/popup.css" rel="stylesheet" type="text/css">
+        </head>
+        <body class="form" tal:attributes="onload python:'getValue(\''+fieldname+'\')'">
+            <form>
+                <table class="maintable">
+                    <tr class="headline">
+                        <th><span i18n:translate="popup_index_header">Vorhandene Indexwerte</span>:</th>
+                    </tr>
+                    <tr>
+                        <td class="content">
+                            <select multiple id="values" class="sel" onchange="setNumber()">
+                                <tal:block tal:repeat="word index">
+                                    <option tal:condition="python:word and len(word)" tal:attributes="value word" tal:content="word"/>
+                                </tal:block>
+                            </select>
+                            <div style="text-align:right;float:right">
+                                <small style="font-size:9px"><span id="count">2</span> <span i18n:translate="popup_indexnumber">Wert(e) selektiert</span></small>
+                            </div>
+                            <div style="font-size:9px"><a i18n:attributes="title popup_listvalue_title" i18n:translate="popup_listvalue" href="#" onclick="showValues()" title="Listenwerte als Popup anzeigen">Listenwerte anzeigen</a></div>
+                        </td>
+                    </tr>
+                    <tr class="bottom">
+                        <td>
+                            <button tal:attributes="onclick python:'pick(\''+fieldname+'\')'" i18n:translate="popup_ok" type="button">OK</button> <button i18n:translate="popup_cancel" type="button" onclick="window.close()">Abbrechen</button>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </body>
+    </html>
+</metal:block>
+
+<metal:block metal:define-macro="shoppingbag">
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+    <html tal:omit-tag xmlns:tal="http://xml.zope.org/namespaces/tal" xmlns:metal="http://xml.zope.org/namespaces/metal">
+        <head>
+            <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+            <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+            <link rel="stylesheet" href="/css/shoppingbag.css"/>
+            <link rel="stylesheet" href="/css/tum.css"/>
+            <script type="text/javascript" language="javascript" src="/js/mediaTUM.js">
+            </script>
+            <title i18n:translate="header_shoopingbag_alt">Merkliste</title>
+        </head>
+        <body style="margin:5px;">
+            <div tal:condition="python:len(files)>0">
+                 
+                <div tal:condition="python:image==True" i18n:translate="popup_shoppinbag_msg1">Bilder k&ouml;nnen per Drag&amp;Drop in eine Anwendung (z.B. Powerpoint) durch Ziehen exportiert werden:</div>
+                <tal:block tal:repeat="file files">
+                    <div tal:condition="python: file.getType().getTypeName()=='image'" tal:define="width python:file.get('width');height 	python:file.get('height')" class="imagebox" style="float:left;margin:5px;border:1px solid black;">
+                        <img tal:attributes="src python:'/images/'+str(file.id)" style="height:88px;border:0px"/>
+                    </div>
+                </tal:block>
+
+                <div tal:condition="python:document==True" style="clear:both" i18n:translate="popup_shoppingbag_msg2">Dokumente k&ouml;nnen direkt ge&ouml;ffnet werden:</div>
+                <tal:block tal:repeat="file files">
+                    <div tal:condition="python: file.getType().getTypeName() in ('document', 'dissertation')" style="float:left;margin:5px;border:1px solid silver;">
+                        <img tal:attributes="src python:'/thumbs/'+str(file.id); onClick python:'fullSizePopup('+str(file.id)+', 400, 400)'" height="90" width="90" border="0" style="cursor: hand"/>
+                    </div>
+                </tal:block>
+
+                <div style="width:100%;clear:both;text-align:center;padding-top:10px;">
+                    <form method="post" name="myform">
+                        <a href="#" onclick="document.myform.submit()"><img i18n:attributes="title popup_shoppingbag_delete_title" src="/img/delete.png" title="Merkliste leeren" border="0"/><span i18n:translate="popup_shoppingbag_delete">Merkliste leeren</span></a>
+                        <input type="hidden" name="shoppingbag" value="clear"/>
+                    </form>
+                </div>
+            </div>
+
+            <div tal:condition="python:len(files)==0" class="message" align="center">
+                <p>&nbsp;</p>
+                <p>&nbsp;</p>
+                <p>&nbsp;</p>
+                <p i18n:translate="popup_shoppingbag_msg3">Keine Objekte in Ihrer Merkliste vorhanden</p>
+                <p>&nbsp;</p>
+                <p><a i18n:translate="close_window" href="#" onclick="self.close()">Fenster schlie&szlig;en</a></p>
+            </div>
+        </body>
+    </html>
+</metal:block>
+
+
+<metal:block metal:define-macro="shoppingbag_error">
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+    <html tal:omit-tag xmlns:tal="http://xml.zope.org/namespaces/tal" xmlns:metal="http://xml.zope.org/namespaces/metal">
+        <body>
+            <script language="javascript">
+                window.close();
+                opener.reloadPage();
+            </script>
+            <p i18n:translate="popup_shoppingbag_movefiles">Files werden verschoben...</p>
+        </body>
+    </html>
+</metal:block>
+
+<metal:block metal:define-macro="shoppingbag_add">
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+    <html>
+        <head>
+            <title i18n:translate="header_shoopingbag_alt">Merkliste</title>
+            <link rel="stylesheet" href="/css/tum.css"/>
+        </head>        
+        <body>
+            <p>&nbsp;</p>
+            <p style="text-align:center" i18n:translate="popup_shoppingbag_add_msg">Objekt wurde hinzugef&uuml;gt</p>
+            <script language="javascript">
+                setTimeout('window.close();',3000); 
+            </script>
+            <p style="text-align:center"><small i18n:translate="popup_shoppingbag_add_msg1">(Fenster schlie&szlig;t nach 3 Sekunden)</small></p>
+        </body>
+    </html>
+</metal:block>
+
+<metal:block metal:define-macro="show_help">
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+    <html>
+        <head>
+            <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+            <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+            <title i18n:translate="popup_help_header">Hilfe</title>
+            <link rel="stylesheet" href="/css/tum.css"/>
+            <style type="text/css">
+                body {
+                    margin: 5px;
+                    padding: 0px;
+                }
+            </style>
+        </head>
+        <body>
+            <div style="width:100%; height:30px">
+                <h2 i18n:translate="popup_help_title">Hilfe zum Metadatenfeld "<b tal:content="python:field.getLabel()" i18n:name="name"/>"</h2>
+            </div>
+            <div style="width:100%; height:150px">
+                <br/>
+                <p tal:content="raw python:field.getDescription()"/>
+            </div>
+            <div style="width:100%; height:50px" valign="bottom">
+                <p align="center">
+                    <button i18n:translate="close_window" type="button" onclick="self.close()">Fenster schlie&szlig;en</button>
+                </p>
+            </div>
+        </body>
+    </html>
+</metal:block>

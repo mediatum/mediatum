@@ -1,0 +1,60 @@
+
+<tal:block metal:define-macro="edit_license_info">
+    <p i18n:translate="edit_license_info">Mit dem folgenden Link k&ouml;nnen Sie Pr&uuml;fsummenlisten Ihrer Objekte generieren, um diese z.B. in ausgedruckter Form an Vertragswerke anzuheften:</p>
+    <a tal:attributes="href python:'/edit/objlist?id='+node.id" target="licensewindow" i18n:translate="edit_license_gen">Objektlisten generieren</a>
+</tal:block>
+
+<tal:block metal:define-macro="edit_license">
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+     <html>
+         <head>
+            <style type="text/css">
+                table {
+                    padding: 0px;
+                    spacing: 0px;
+                    border: 1px solid black;
+                }
+                th {
+                    font-family: Lucida Console, Courier;
+                    text-weight: bold;
+                    font-size: 12px;
+                    text-align: left;
+                    border: 1px solid black;
+                    padding: 2px;
+                }
+                td {
+                    font-family: Lucida Console, Courier;
+                    text-weight: normal;
+                    font-size: 12px;
+                    text-align: left;
+                    border: 1px solid black;
+                    padding: 2px;
+                    white-space: nowrap;
+                }
+            </style>
+            <title i18n:translate="edit_license_obj_list">Objektliste</title>
+         </head>
+         <body>
+            <table cellspacing="0">
+                <tr>
+                    <th i18n:translate="edit_license_name">Name</th>
+                    <th i18n:translate="edit_license_file">File</th>
+                    <th i18n:translate="edit_license_hash">Pr&uuml;fsumme</th>
+                    <th i18n:translate="edit_license_size">Gr&ouml;&szlig;e</th>
+                </tr>
+
+                <tal:block tal:repeat="child python:node.getAllChildren()">
+                    <tal:block tal:repeat="file python:child.getFiles()">
+                        <tr tal:condition="python:file.type=='original'">
+                            <td tal:content="python:child.getName()"/>
+                            <td tal:content="python:file.path"/>
+                            <td tal:content="python:file.getHash()"/>
+                            <td style="text-align: right" tal:content="python:file.getSize()"/>
+                        </tr>
+                    </tal:block>
+                </tal:block>
+
+            </table>
+        </body>
+    </html>
+</tal:block>

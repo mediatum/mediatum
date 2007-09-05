@@ -1,0 +1,52 @@
+
+<tal:block metal:define-macro="upload_form">
+    <tal:block tal:condition="error">
+        <p tal:content="error" i18n:translate="" class="error" style="text-align:center"/>
+    </tal:block>
+
+    <tal:block tal:condition="python:len(schemes)==0" i18n:translate="edit_upload_msg1">
+        Sie besitzen nicht die Berechtigung Objekte in das System einzustellen. Bitte wenden Sich an Ihren Administrator
+    </tal:block>
+
+    <!-- first step: object selection -->
+    <form tal:condition="python:objtype=='' and len(schemes)!=0" tal:attributes="action python:'/edit/edit_content?id='+id" method="post" style="margin:5px">
+        <h3 i18n:translate="edit_upload_obj_selection">Objekttyp-Auswahl</h3>
+        <p i18n:translate="edit_upload_msg2">Ein Archiv kann aus verschiedenen Objekttypen bestehen. Bitte w&auml;hlen Sie aus der Liste unten den gew&uuml;nschten Typ aus.<br/>
+        F&uuml;r jeden Objekttyp stehen spezielle Upload-Formulare zur Verf&uuml;gung, die die entsprechende Funktionalit&auml;t bieten.</p>
+        <p><label i18n:translate="edit_upload_obj_sel">Objekttyp w&auml;hlen:</label>       
+            <select name="objtype">
+                <option tal:repeat="datatype datatypes" tal:attributes="value python:datatype.getName()" tal:content="python:datatype.getLongName()" i18n:translate=""/>
+            </select>
+        </p>
+        <p><label>&nbsp;</label><input i18n:attributes="value edit_upload_selecttion_value" type="submit" name="submit" value="Ausw&auml;hlen"/></p>
+    </form>
+
+    <form tal:condition="python:objtype!=''" action="upload_new" method="post" enctype="multipart/form-data" style="padding:4px">
+        <h3><span i18n:translate="edit_upload_header1">Sie k&ouml;nnen <span tal:content="python:objtype.getLongName()" i18n:name="objtype" i18n:translate=""/> ins System hochladen</span> &nbsp;&nbsp;
+            <a href="#" onclick="openSearchPopup('edit_content?tab=Upload&type=help&id=1&objtype=image', 'help', 350, 350)">
+                <img src="/img/tooltip.png" border="0"/>
+            </a>
+        </h3>
+        <p i18n:translate="edit_upload_msg3">Dazu w&auml;hlen Sie die ensprechende Datei auf Ihrem Computer aus ("Durchsuchen"-Button) und best&auml;tigen Sie mit "Hochladen".</p>
+        <p i18n:translate="edit_upload_msg4">Wollen Sie mehrere Dateien auf einmal hochladen, so verpacken Sie diese bitte lokal bei sich in ein .ZIP Archiv (z.B. mit <a target="newwindow" href="http://www.winzip.com/">WinZip</a>), und laden dann das .ZIP Archiv hoch.</p>
+        
+        <div class="label" i18n:translate="edit_upload_scheme">Metadatenschema:</div>
+        
+        <tal:block tal:condition="python:len(schemes)==1">
+            <b tal:content="python:schemes[0].getLongName()"></b>
+            <input tal:attributes="value python:objtype.getName()+'/'+schemes[0].getName()" type="hidden" name="datatype">
+        </tal:block>
+
+        <select tal:condition="python:len(schemes)>1" name="datatype" style="width:400px">
+            <option tal:repeat="scheme schemes" tal:content="python:scheme.getLongName()" tal:attributes="value python:objtype.getName()+'/'+scheme.getName()"/>
+        </select>
+
+        <p/>
+        <div class="label"><tal:block i18n:translate="edit_upload_file">Datei</tal:block>:</div>
+        <input type="file" name="file" style="width:400px"/>
+        <p/>
+        <div class="label">&nbsp;</div>
+        <input i18n:attributes="value edit_upload_upload_label" type="submit" name="submit" value="Hochladen"/>
+    </form>
+
+</tal:block>

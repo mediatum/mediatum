@@ -1,0 +1,10 @@
+<tal:block metal:define-macro="editorfield">
+    <input type="checkbox" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width)+'px'; name name; id name; checked python:{'False':None,'True':'checked'}[str(str(value)==str(1))]" value="1"/>
+
+    <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
+        <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/>
+        <small style="color: silver" i18n:translate="editor_overwrite">&uuml;berschreiben</small>
+   </span>
+</tal:block>
+
+<input metal:define-macro="searchfield" type="checkbox" tal:attributes="name name; id name; checked python:{'False':None,'True':'checked'}[str(str(value)==str(1))]" value="1"/>

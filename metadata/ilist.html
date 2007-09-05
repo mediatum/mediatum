@@ -1,0 +1,17 @@
+<tal:block metal:define-macro="editorfield">
+    <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-50)+'px'; name name; id name; value value"/>
+    &nbsp;
+    <button tal:attributes="name python:'indexbutton_'+name; onclick python:'openPopup(\'/popup_index?pid='+field.getName()+'&type='+field.getFieldtype()+'&name='+name+'\', \'\', 400, 400)'" style="width: 44px" type="button" title="Indexwerte anzeigen"  i18:attributes="title editor_index_title" i18n:translate="editor_index">Index</button>
+
+    <tal:block tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
+        <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/>
+        <small style="color: silver" i18n:translate="editor_overwrite">&uuml;berschreiben</small>
+   </tal:block>
+</tal:block>
+
+
+<select metal:define-macro="searchfield" tal:attributes="name name; id name" class="searchfield">
+    <option tal:repeat="v python:valuelist" tal:attributes="value python:v; selected python:{'True':'selected', 'False':None}[str(value==v)]" tal:content="raw python:v"/>
+</select>
+
+

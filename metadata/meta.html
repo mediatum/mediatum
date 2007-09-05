@@ -1,0 +1,18 @@
+
+<tal:block metal:define-macro="editorfield">
+    <i>[<span i18n:translate="editor_metadata_field">Metadatenfeld</span>: <span tal:replace="python:field.getValues()"/>]</i> <span tal:content="value"/>
+</tal:block>
+
+<tal:block metal:define-macro="searchfield">
+    <input tal:attributes="name name; id name; value value" type="text" style="width:174px;" class="searchfield"/>
+</tal:block>
+
+
+<div metal:define-macro="maskeditor" style="display:none" name="div_meta" id="div_meta">
+    <div class="label" i18n:translate="mask_edit_tech_meta">Technisches Metadatenfeld:</div>
+    <select id="meta_value" name="meta_value" style="width:250px;">
+        <optgroup tal:repeat="t_attr python:list(t_attrs)" tal:attributes="label python:t_attr">
+            <option tal:repeat="val python:list(t_attrs[t_attr].keys())" tal:attributes="value val; selected python:{'True':'selected', 'False':None}[str(value==val)]" tal:content="raw python:t_attrs[t_attr][val]"/>
+        </optgroup>
+    </select>
+</div>

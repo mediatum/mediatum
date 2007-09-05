@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+<html>
+    
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+
+        <title i18n:translate="main_title">main title</title>
+
+        <link rel="stylesheet" href="/css/tum.css"/>
+        <script type="text/javascript" language="javascript" src="/js/mediaTUM.js">
+        </script>
+    </head>
+
+    <body>
+        <div id="main">
+            <!-- header -->
+            <div id="header">
+                <h1><a href="">&nbsp;</a></h1>
+                <h2>&nbsp;</h2>
+                <h3>&nbsp;</h3>
+                <h4>&nbsp;</h4>
+                <p i18n:attributes="title bib_link_title" id="biblogo"><a href="">&nbsp;</a></p>
+                <p id="claim" i18n:translate="header_slogan"></p>
+            </div>
+
+            <div id="sub_header">
+                <a i18n:attributes="alt header_shoopingbag_alt; title header_shoopingbag_title" id="shopping_bag" alt="Favoriten" title="Favoriten anzeigen" href="javascript:shoppingbag(300,300)">
+                    <img border="0" src="/img/favourite.png">
+                </a>
+                <span i18n:translate="sub_header_user">Benutzer</span>: <span tal:content="python:user.getName()"></span>
+                <tal:block tal:repeat="menuitem python:userlinks.getLinks()">
+                    | <a tal:define="ltitle python:menuitem.title" tal:attributes="href python:menuitem.link; title ltitle">
+                    <span tal:define="l python:menuitem.label" tal:content="structure l"/>
+                    </a>
+                </tal:block>
+
+                <div id="language_switch" tal:condition="python:len(language['name'])>1">
+                    <form name="chooser" action="" method="post">
+                        <a tal:repeat="lang python:language['name']" tal:attributes="class python:language['actlang']==lang and 'selected_language' or ''; href python:'?language='+lang" tal:content="lang" i18n:translate="" />
+                    </form>
+                </div>
+                
+            </div>
+    
+            <div class="pathbar">&nbsp;</div>
+
+
+
+            <!-- main-content -->
+            <table id="layouttable">
+                <tbody>
+                    <tr tal:condition="python:show_navbar">
+                        <td id="portal-column-one">
+                            <tal:block metal:use-macro="frame_navbar.html/navbar"/>
+                        </td>
+                        <td tal:content="raw content" id="portal-column-content"/>
+                    </tr>
+
+                    <tr tal:condition="python:not show_navbar">
+                        <td id="portal-column-one">
+                            &nbsp;
+                        </td>
+                        <td tal:content="raw content" id="portal-column-content"/>
+                    </tr>
+                    
+                </tbody>
+            </table>
+
+            <!-- footer -->
+            <div id="footer">
+                <span class="footer_left">
+                    This is the default mediatum design. To change it, edit the html files in design/mediatum.
+                </span>
+                <span class="footer_right">
+                    <a i18n:translate="footer_impressum" href="/file/604993/impressum.html">Impressum</a>&nbsp;|&nbsp;<span tal:content="t">time</span>
+                </span>
+            </div>
+        </div>
+    </body>
+</html>
+

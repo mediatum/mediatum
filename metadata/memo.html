@@ -1,0 +1,28 @@
+
+<tal:block metal:define-macro="editorfield">
+    <textarea class="memo_text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name name; onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:'width:'+str(width)+'px'" rows="4">
+<tal:block tal:replace="python:value"/></textarea>
+    <div tal:attributes="style python:'width:'+str(width)+'px'">
+        <div tal:condition="python:field.getValues()!=''" style="text-align:right;padding-right:7px; margin-bottom:7px">
+            <small>
+                <span tal:attributes="id python:'number'+str(name)" tal:content="python:int(field.getValues())-len(value)"/> 
+                <span i18n:translate="editor_memo_label">Zeichen &uuml;brig</span>
+            </small>
+        </div>
+    </div>
+    <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
+        <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/>
+        <small style="color: silver" i18n:translate="editor_overwrite">&uuml;berschreiben</small>
+   </span>
+</tal:block>
+
+
+<tal:block metal:define-macro="searchfield">
+    <input tal:attributes="name name; id name; value value" type="text" style="width:174px;" class="searchfield"/>
+</tal:block>
+
+
+<div metal:define-macro="maskeditor" style="display:none" name="div_memo" id="div_memo">
+    <div class="label" i18n:translate="mask_edit_max_length">Maximall&auml;nge</div>
+    <input tal:attributes="value value" type="text" name="memo_value" rows="4" style="width:250px"/>
+</div>

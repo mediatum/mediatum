@@ -1,0 +1,46 @@
+<tal:block metal:define-macro="edit_acls">
+    <script tal:content="runsubmit" language="javascript">
+        function runsubmit()
+        {
+            document.myform.submit();
+        }
+    </script>
+
+    <form class="edit" name="myform">
+        <input type="hidden" name="save" value="save"/>
+        <input type="hidden" name="tab" value="tab_acls"/>
+
+        <p><input i18n:attributes="value edit_save_title" type="button" name="Speichern" value="&Auml;nderungen speichern" onClick="runsubmit()"/></p>
+
+        <tal:block tal:replace="raw content"/>
+        <p>
+            <input tal:attributes="value idstr" type="hidden" name="id"/>
+            <input i18n:attributes="value edit_save_title" type="button" name="Speichern" value="&Auml;nderungen speichern" onClick="runsubmit()">
+        </p>
+    </form>
+</tal:block>
+
+<tal:block metal:define-macro="edit_acls_selectbox">
+    <tal:block tal:condition="python:type=='read'" i18n:translate="edit_acls_righttype_read">Usergruppen, die diese Objekte sehen d&uuml;rfen:</tal:block>
+    <tal:block tal:condition="python:type=='write'" i18n:translate="edit_acls_righttype_write">Usergruppen, die diese Objekte bearbeiten d&uuml;rfen:</tal:block>
+    <tal:block tal:condition="python:type=='data'" i18n:translate="edit_acls_righttype_data">Usergruppen, die Bildoriginale (TIFF/JPG/PNG/BMP in Originalgr&ouml;&szlig;e) herunterladen d&uuml;rfen:</tal:block>
+
+    <table>
+        <tr>
+            <td align="left" valign="top">
+                <select tal:content="raw val_left" tal:attributes="name python:'left'+name; ondblclick python:'moveRight(document.myform.left'+name+',document.myform.right'+name+')'" style="width:320px" size="6" multiple="multiple">
+                </select>
+            </td>
+            <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
+                <input tal:attributes="onclick python:'moveLeft(document.myform.left'+name+',document.myform.right'+name+')'" type="button" value="<<"/>
+                <br>
+                <input tal:attributes="onclick python:'moveRight(document.myform.left'+name+',document.myform.right'+name+')'" type="button" value=">>"/>
+            </td>
+            <td align="left" valign="top">
+                <select tal:content="raw val_right" tal:attributes="name python:'right'+name;  ondblclick python:'moveLeft(document.myform.left'+name+',document.myform.right'+name+')'" style="width:320px" size="6" multiple="multiple">
+                </select>
+            </td>
+        </tr>
+    </table>
+    <br/>
+</tal:block>

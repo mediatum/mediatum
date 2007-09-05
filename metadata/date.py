@@ -1,0 +1,79 @@
+"""
+ mediatum - a multimedia content repository
+
+ Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
+ Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+import athana
+import date
+from date import *
+from translation import *
+from metadatatypes import dateoption
+from objtypes.metatype import Metatype
+
+class m_date(Metatype):
+
+    def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
+        global dateoption
+
+        d = field.getSystemFormat(str(field.getValues()))
+            
+        if value=="?":
+            value = date.format_date(date.now(), d.getValue())
+        try:
+            value = date.format_date(date.parse_date(value),  d.getValue())
+        except:
+            pass
+
+        return athana.getTAL("m_date.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
+
+
+    def getSearchHTML(self, field, value="", width=174, name="", language=None):
+        return athana.getTAL("m_date.html",{"field":field, "value":value.split(";"), "name":name, "width":width}, macro="searchfield", language=language)
+
+
+    def getFormatedValue(self, field, node, language=None):
+        value = node.get(field.getName())
+        
+        if not value or value=="0000-00-00T00:00:00": # dummy for unknown
+            return (field.getLabel(),"")
+        else:
+            try:
+                d = parse_date(value)
+            except ValueError:
+                return (field.getLabel(),value)
+            value = format_date(d, format=field.getValues())
+        return (field.getLabel(), value)
+
+
+    def getFormatedValueForDB(self, field, value, language=None):
+        f = field.getSystemFormat(str(field.getValues()))
+        if not f:
+            return ""
+        try:
+            d = parse_date(str(value),f.getValue())
+        except ValueError:
+            return ""
+        if not validateDate(d):
+            return ""
+        return format_date(d, format='%Y-%m-%dT%H:%M:%S')
+
+
+    def getMaskEditorHTML(self, value="", metadatatype=None, language=None):
+        return athana.getTAL("m_date.html", {"value":value, "dateoption":dateoption}, macro="maskeditor", language=language)
+
+    def getName(self):
+        return "fieldtype_date"

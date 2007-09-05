@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.1 2007/09/05 09:48:22 kramm Exp $'
+RCS_ID =  '$Id: athana.py,v 1.2 2007/09/05 14:42:18 kramm Exp $'
 
 import sys
 
@@ -5817,6 +5817,7 @@ def join_paths(p1,p2):
 translators = []
 macroresolvers = []
 ftphandlers = []
+contexts = []
 
 def getMacroFile(filename):
     global macrofile_callback
@@ -5835,13 +5836,17 @@ def getMacroFile(filename):
     raise IOError("No such file: "+filename2)
 
 class WebContext:
-    def __init__(self, name):
+    def __init__(self, name, root=None):
         self.name = name
         self.files = []
         self.modules = {}
         self.startupfile = None
-    def addFile(self, file):
+        if root:
+            self.root = qualify_path(root)
+    def addFile(self, filename):
+        file = WebFile(self, filename)
         self.files += [file]
+        return file
     def setRoot(self, root):
         self.root = qualify_path(root)
         while self.root.startswith("./"):
@@ -5989,10 +5994,12 @@ class WebContext:
         return lambda req: call_and_close(function,req)
 
 class FileStore:
-    def __init__(self, name):
+    def __init__(self, name, root=None):
         self.name = name
         self.dirs = []
         self.handlers = []
+        if root:
+            self.dirs += [root]
     def initialize(self):
         for dir in self.dirs:
             if zipfile.is_zipfile(GLOBAL_ROOT_DIR + dir[:-1]) and dir.lower().endswith("zip/"):
@@ -6025,8 +6032,10 @@ class WebFile:
         self.macroresolvers = []
         self.translators = []
         self.ftpclasses = []
-    def addHandler(self, handler):
+    def addHandler(self, function):
+        handler = WebHandler(self, function)
         self.handlers += [handler]
+        return handler
     def addFTPHandler(self, ftpclass):
         self.ftpclasses += [ftpclass]
     def addMacroResolver(self, handler):
@@ -6057,13 +6066,12 @@ class WebPattern:
         return self.pattern
 
 def read_ini_file(filename):
-    global GLOBAL_TEMP_DIR,GLOBAL_ROOT_DIR,number_of_threads,multithreading_enabled
+    global GLOBAL_TEMP_DIR,GLOBAL_ROOT_DIR,number_of_threads,multithreading_enabled,contexts
     lineno = 0
     fi = open(filename, "rb")
     file = None
     function = None
     context = None
-    contexts = []
     GLOBAL_ROOT_DIR = '/'
     for line in fi.readlines():
         lineno=lineno+1
@@ -6115,14 +6123,12 @@ def read_ini_file(filename):
                 filestore.addRoot(value)
         elif key == "file":
             filename = value
-            file = WebFile(context, filename)
-            context.addFile(file)
+            context.addFile(filename)
         elif key == "ftphandler":
             file.addFTPHandler(value)
         elif key == "handler":
             function = value
-            handler = WebHandler(file, function)
-            file.addHandler(handler)
+            file.addHandler(function)
         elif key == "macroresolver":
             file.addMacroResolver(value)
         elif key == "translator":
@@ -6134,7 +6140,6 @@ def read_ini_file(filename):
         else:
             raise "Syntax error in line "+str(lineno)+" of file "+filename+":\n"+line
     fi.close()
-    return contexts
 
 def headers_to_map(mylist):
     headers={}
@@ -6664,8 +6669,39 @@ class zip_filesystem:
         return '<zipfile fs root:%s wd:%s>' % (self.filename, self.wd)
 
 
+def setBase(base):
+    GLOBAL_ROOT_DIR = qualify_path(base)
+   
+def setTempDir(tempdir):
+    GLOBAL_TEMP_DIR = qualify_path(tempdir)
+    
+def addMacroResolver(m):
+    global macroresolvers
+    macroresolvers += [m]
+
+def addTranslator(m):
+    global translators
+    translators += [m]
+
+def addFTPHandler(m):
+    global ftphandlers
+    ftphandlers += [m]
+
+def addContext(webpath, localpath):
+    global contexts
+    c = WebContext(webpath, localpath)
+    contexts += [c]
+    return c
+
+def addFileStore(webpath, localpath):
+    global contexts
+    if len(webpath) and webpath[0] != '/':
+        webpath = "/" + webpath 
+    c = FileStore(webpath, localpath)
+    contexts += [c]
+    return c
         
-def start_server(INIFILE, WEBLOG, TEMPDIR, PORT):
+def start_server(INIFILE=None, WEBLOG=None, TEMPDIR="/tmp/", PORT=8081, contexts=None):
     global GLOBAL_TEMP_DIR,lg,lgerr
    
     GLOBAL_TEMP_DIR = TEMPDIR
@@ -6678,7 +6714,8 @@ def start_server(INIFILE, WEBLOG, TEMPDIR, PORT):
         lg = logging_logger()
         lgerr = logging_logger("errors")
 
-    contexts = read_ini_file(INIFILE)
+    if INIFILE:
+        contexts = read_ini_file(INIFILE)
 
     print "-"*72
     if multithreading_enabled:

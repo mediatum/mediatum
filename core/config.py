@@ -23,7 +23,8 @@ import os
 import sys
 import athana
 
-basedir = os.path.dirname(athana.__file__)
+basedir = os.path.dirname(athana.__file__).rsplit(os.sep,1)[0] 
+
 print "Base path is at",basedir
 print "Python Version is",sys.version.split("\n")[0]
 

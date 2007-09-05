@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
 import gfx
 import logging
-from SortedDict import SortedDict
+from utils.dicts import SortedDict
 import random
 import Image
 import ImageDraw

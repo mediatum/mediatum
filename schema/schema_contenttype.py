@@ -18,17 +18,17 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-from utils import *
-import core.tree
+#from utils import *
+import core.tree as tree
 import logging
-import core.config
+import core.config as config
 import sys, types
 import traceback
 import utils.dicts
-from core.translation import *
+#from translation import *
 
-from metadatatypes import *
-from date import validateDateString
+#from schema import *
+from utils.date import validateDateString
 
 
 log = logging.getLogger('backend')

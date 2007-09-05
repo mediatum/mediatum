@@ -17,20 +17,20 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import config
+import core.config as config
 import Image
-import tree
-import users
-import metadatatypes
-import athana
-import acl
+import core.tree as tree
+import core.users as users
+import schema
+import core.athana as athana
+import core.acl
 import random
 import os
 
-from utils import *
-from tree import Node,FileNode
-from date import *
-from metadatatypes import loadTypesFromDB, VIEW_DATA_ONLY,VIEW_HIDE_EMPTY
+#from utils import *
+from core.tree import Node,FileNode
+#from utils.date import *
+from schema.schema import loadTypesFromDB, VIEW_DATA_ONLY,VIEW_HIDE_EMPTY
 
 """ make thumbnail (jpeg 128x128) """
 def makeThumbNail(image, thumb):

@@ -17,12 +17,12 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import tree
+import core.tree as tree
 
-from acl import AccessData
+from core.acl import AccessData
 import re
 import os
-import athana
+import core.athana
 
 
 SRC_PATTERN = re.compile('src="([^":/]*)"')

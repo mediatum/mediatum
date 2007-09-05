@@ -17,19 +17,19 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import config
-import tree
-import metadatatypes
-import athana
-import acl
+import core.config as config
+import core.tree as tree
+import schema
+import core.athana as athana
+import core.acl as acl
 import os
 
-from utils import *
-from date import *
-from tree import Node,FileNode
-from metadatatypes import loadTypesFromDB, VIEW_HIDE_EMPTY,VIEW_DATA_ONLY
-from translation import lang
-from mod.pdf import parsepdf
+#from utils import *
+#from date import *
+from core.tree import Node,FileNode
+from schema.schema import loadTypesFromDB, VIEW_HIDE_EMPTY,VIEW_DATA_ONLY
+from core.translation import lang
+from lib.pdf import parsepdf
 
 fileicons = {'directory':'mmicon_dir.gif', 'application/pdf':'mmicon_pdf.gif', 'image/jpeg':'mmicon_jpg.gif', 'image/gif':'mmicon_gif.gif', 'image/png':'mmicon_png.gif', 'image/tiff':'mmicon_tiff.gif', 'image/x-ms-bmp':'mmicon_bmp.gif', 'application/postscript':'mmicon_ps.gif', 'application/zip':'mmicon_zip.gif', 'other':'mmicon_file.gif' , "back": "mmicon_back.gif", "application/mspowerpoint":"mmicon_ppt.gif", "application/msword":"mmicon_doc.gif", "video/x-msvideo":"mmicon_avi.gif"}
 

@@ -55,7 +55,7 @@ acl.setImplementation(acl_db)
 #        exec('from objtypes.' + datatype.getName() + ' import ' + datatype.getClassname())
 #        exec('tree.registerNodeClass("' +datatype.getName()+ '", '+ datatype.getClassname()+')')
 
-from objtypes.directory import Directory
+from contenttypes.directory import Directory
 tree.registerNodeClass("directory", Directory)
 
 # only for compatibility with older databases
@@ -65,32 +65,32 @@ tree.registerNodeClass("collections", Directory)
 tree.registerNodeClass("home", Directory)
 tree.registerNodeClass("navitem", Directory)
 
-from objtypes.image import Image
+from contenttypes.image import Image
 tree.registerNodeClass("image", Image)
-from objtypes.document import Document
+from contenttypes.document import Document
 tree.registerNodeClass("document", Document)
-from objtypes.flash import Flash
+from contenttypes.flash import Flash
 tree.registerNodeClass("flash", Flash)
-from objtypes.video import Video
+from contenttypes.video import Video
 tree.registerNodeClass("video", Video)
 #from objtypes.person import Person
 #tree.registerNodeClass("person", Person)
 #from objtypes.yearbook import Yearbook
 #tree.registerNodeClass("yearbook", Yearbook)
-from objtypes.user import User
+from core.user import User
 tree.registerNodeClass("user", User)
-from objtypes.usergroup import UserGroup
+from core.usergroup import UserGroup
 tree.registerNodeClass("usergroup", UserGroup)
-from objtypes.default import Default
+from contenttypes.default import Default
 tree.registerNodeClass("default", Default)
-from objtypes.metadatatype import Metadatatype, Metadatafield, Mask, Maskitem
+from schema.schema_contenttype import Metadatatype, Metadatafield, Mask, Maskitem
 tree.registerNodeClass("metadatatype", Metadatatype)
 tree.registerNodeClass("metafield", Metadatafield)
 tree.registerNodeClass("mask", Mask)
 tree.registerNodeClass("maskitem", Maskitem)
 
-from objtypes import workflow
-workflow.register()
+#from objtypes import workflow
+#workflow.register()
 
 for k,v in config.getsubset("plugins").items():
     print 'Initializing plugin "'+k+'"'

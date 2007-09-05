@@ -19,4 +19,6 @@
 """
 
 import core.athana
-core.athana.mainfunction()
+import core.webconfig
+import core.startup
+core.webconfig.startWebServer()

@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.5 2007/09/05 16:06:28 kramm Exp $'
+RCS_ID =  '$Id: athana.py,v 1.6 2007/09/05 16:08:07 kramm Exp $'
 
 import sys
 
@@ -6056,7 +6056,9 @@ class WebHandler:
         self.function = function
         self.patterns = []
     def addPattern(self, pattern):
-        self.patterns += [pattern]
+        p = WebPattern(self,pattern)
+        self.patterns += [p]
+        return p
 
 class WebPattern:
     def __init__(self, handler, pattern):
@@ -6139,9 +6141,7 @@ def read_ini_file(filename):
         elif key == "translator":
             file.addTranslator(value)
         elif key == "pattern":
-            patternstr = value
-            pattern = WebPattern(handler, patternstr)
-            handler.addPattern(pattern)
+            handler.addPattern(value)
         else:
             raise "Syntax error in line "+str(lineno)+" of file "+filename+":\n"+line
     fi.close()

@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.3 2007/09/05 14:51:33 kramm Exp $'
+RCS_ID =  '$Id: athana.py,v 1.4 2007/09/05 15:51:10 kramm Exp $'
 
 import sys
 
@@ -5998,8 +5998,10 @@ class FileStore:
         self.name = name
         self.dirs = []
         self.handlers = []
-        if root:
+        if type(root) == type(""):
             self.dirs += [root]
+        elif type(root) == type([]):
+            self.dirs += root
     def initialize(self):
         for dir in self.dirs:
             if zipfile.is_zipfile(GLOBAL_ROOT_DIR + dir[:-1]) and dir.lower().endswith("zip/"):
@@ -6693,11 +6695,11 @@ def addContext(webpath, localpath):
     contexts += [c]
     return c
 
-def addFileStore(webpath, localpath):
+def addFileStore(webpath, localpaths):
     global contexts
     if len(webpath) and webpath[0] != '/':
         webpath = "/" + webpath 
-    c = FileStore(webpath, localpath)
+    c = FileStore(webpath, localpaths)
     contexts += [c]
     return c
 

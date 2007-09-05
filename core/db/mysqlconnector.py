@@ -30,8 +30,8 @@ from database import initDatabaseValues
 if __name__ == "__main__":
     sys.path += [".."]
 
-import config
-from utils import *
+import core.config as config
+from utils.utils import *
 
 debug = 0
 

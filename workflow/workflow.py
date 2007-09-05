@@ -29,11 +29,11 @@ import logging
 
 from utils.utils import *
 from core.tree import nodeclasses
-from xmlnode import getNodeXML, readNodeXML
+from core.xmlnode import getNodeXML, readNodeXML
 
-import date
+import utils.date as date
 import core.acl as acl
-from scheme.scheme import showEditor,parseEditorData,getMetaType,VIEW_HIDE_EMPTY
+from schema.schema import showEditor,parseEditorData,getMetaType,VIEW_HIDE_EMPTY
 from core.translation import t,lang
 
 import utils.fileutils as fileutils

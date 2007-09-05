@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.2 2007/09/05 14:42:18 kramm Exp $'
+RCS_ID =  '$Id: athana.py,v 1.3 2007/09/05 14:51:33 kramm Exp $'
 
 import sys
 
@@ -6700,9 +6700,19 @@ def addFileStore(webpath, localpath):
     c = FileStore(webpath, localpath)
     contexts += [c]
     return c
+
+def setThreads(number):
+    global number_of_threads
+    global multithreading_enabled
+    if number>1:
+        multithreading_enabled=1
+        number_of_threads=number
+    else:
+        multithreading_enabled=0
+        number_of_threads=1
         
-def start_server(INIFILE=None, WEBLOG=None, TEMPDIR="/tmp/", PORT=8081, contexts=None):
-    global GLOBAL_TEMP_DIR,lg,lgerr
+def run(INIFILE=None, WEBLOG=None, TEMPDIR="/tmp/", PORT=8081):
+    global GLOBAL_TEMP_DIR,lg,lgerr,contexts
    
     GLOBAL_TEMP_DIR = TEMPDIR
     
@@ -6715,7 +6725,7 @@ def start_server(INIFILE=None, WEBLOG=None, TEMPDIR="/tmp/", PORT=8081, contexts
         lgerr = logging_logger("errors")
 
     if INIFILE:
-        contexts = read_ini_file(INIFILE)
+        contexts += read_ini_file(INIFILE)
 
     print "-"*72
     if multithreading_enabled:
@@ -6799,7 +6809,7 @@ def mainfunction():
         print getTAL(options.talfile, {"mynone":None})
         sys.exit(0)
 
-    start_server(INIFILE=init_file, WEBLOG=log_file, TEMPDIR=temp_path, PORT=int(port))
+    run(INIFILE=init_file, WEBLOG=log_file, TEMPDIR=temp_path, PORT=int(port))
 
 if __name__ == '__main__':
     import athana

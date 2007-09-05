@@ -17,10 +17,10 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import users
-import config
+import core.users
+import core.config
 import logging
-import tree
+import core.tree
 import sys
 from utils.log import logException
 

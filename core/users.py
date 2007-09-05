@@ -17,13 +17,14 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 from utils.utils import Option
 import config
 import translation
 import usergroups
 import md5
-import tree
-import translation
+import core.tree
+import core.translation
 import random
 
 

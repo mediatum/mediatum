@@ -19,13 +19,13 @@
 """
 import os
 from utils import *
-import tree
+import core.tree
 import logging
-import config
+import core.config
 import sys, types
 import traceback
-import SortedDict
-from translation import *
+import utils.dicts
+from core.translation import *
 
 from metadatatypes import *
 from date import validateDateString

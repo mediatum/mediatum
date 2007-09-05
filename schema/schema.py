@@ -18,17 +18,17 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
-import date
+import utils.date
 import logging
-import search.query
+import core.search.query
 import xml
 import traceback
-import tree
+import core.tree
 
-from utils import *
-from tree import nodeclasses
-from config import *
-from xmlnode import getNodeXML, readNodeXML
+from utils.utils import *
+from core.tree import nodeclasses
+from core.config import *
+from core.xmlnode import getNodeXML, readNodeXML
 
 log = logging.getLogger('backend')
 

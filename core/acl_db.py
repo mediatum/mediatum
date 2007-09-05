@@ -19,9 +19,9 @@
 """
 import re
 
-from db import database
-from acl import AccessRule,AccessCondition,prefix2conditionclass,ACLParseException
-from parsers.boolean import BoolParser
+from core.db import database
+from core.acl import AccessRule,AccessCondition,prefix2conditionclass,ACLParseException
+from utils.boolparser import BoolParser
 
 class ACLAndCondition(AccessCondition):
     def __init__(self, a,b):

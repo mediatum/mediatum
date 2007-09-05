@@ -19,11 +19,11 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from utils import *
+#from utils import *
 from db import database
 import logging
 import sys
-import tree
+import core.tree as tree
 from utils.dicts import MaxSizeDict
 import config
 from search.query import subnodes
@@ -31,7 +31,7 @@ from search.parser import searchParser
 import thread
 import traceback
 nodeclasses = {}
-import metadatatypes
+import schema
 
 _root = None
 conn = None

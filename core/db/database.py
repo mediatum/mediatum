@@ -30,13 +30,13 @@ def getConnection():
         type = config.get("database.type","") 
         if type == "sqlite" or type == "sqllite":
             print "Initializing sqlite database"
-            from db import sqliteconnector
+            from core.db import sqliteconnector
             _db = sqliteconnector.SQLiteConnector
             _dbconn = _db()
             _db = lambda: _dbconn
         else:
             print "Initializing mysql database"
-            from db import mysqlconnector
+            from core.db import mysqlconnector
             _db = mysqlconnector.MYSQLConnector
     return _db()
 

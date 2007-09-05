@@ -28,8 +28,8 @@ import schema.schema as schema
 import logging
 import thread
 import traceback
-import date
-from utils import *
+import utils.date
+#from utils.utils import *
 
 log = logging.getLogger("backend")
 search_lock = thread.allocate_lock()

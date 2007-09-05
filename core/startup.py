@@ -33,8 +33,8 @@ log = logging.getLogger('backend')
 
 import sys
 import os
-import core.tree
-import core.acl
+import core.tree as tree
+import core.acl as acl
 
 log.info("Initializing backend...")
 
@@ -43,9 +43,9 @@ log.info("Initializing backend...")
 #import acl_xml
 #acl.setImplementation(acl_xml)
 
-import core.tree_db
+import core.tree_db as tree_db
 tree.setImplementation(tree_db)
-import core.acl_db
+import core.acl_db as acl_db
 acl.setImplementation(acl_db)
 
 

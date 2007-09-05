@@ -19,6 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import os
 import sys
 import logging
 import traceback
@@ -30,13 +31,13 @@ try:
 except:
     from pysqlite2 import dbapi2 as sqlite
 
-from time import *
-from database import initDatabaseValues
+#from time import *
+from core.db.database import initDatabaseValues
 
 if __name__ == "__main__":
     sys.path += [".."]
 
-import config
+import core.config as config
 from utils import *
 
 debug = 0

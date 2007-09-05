@@ -22,8 +22,8 @@ import core.athana as athana
 def startWebServer():
     athana.setBase(".")
     athana.setTempDir("/tmp/")
-    athana.addMacroResolver("config.resolve_filename")
-    athana.addTranslator("translation.translate")
+    athana.addMacroResolver("core.config.resolve_filename")
+    athana.addTranslator("core.translation.translate")
 
     context = athana.addContext("/", ".")
 

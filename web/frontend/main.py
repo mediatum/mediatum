@@ -17,15 +17,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import athana
-import tree
+import core.athana
+import core.tree
 import os
 import re
 
-from utils import *
-from acl import AccessData
-from frontend.frame import getNavigationFrame
-from frontend.content import getContentArea,ContentNode
+from utils.utils import *
+from core.acl import AccessData
+from web.frontend.frame import getNavigationFrame
+from web.frontend.content import getContentArea,ContentNode
 
 def display(req):
     content = getContentArea(req)

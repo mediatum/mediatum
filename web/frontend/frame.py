@@ -17,19 +17,19 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import tree
+import core.tree
 import sys
 import traceback
-import users
-import config
+import core.users
+import core.config
 import time
-import athana
+import core.athana
 import os
-from SortedDict import SortedDict
-from objtypes.metadatatype import getMetadataType
+from utils.dicts import SortedDict
+from schema.schema_contenttype import getMetadataType
 
-from frontend.browsingtree import browsingtree, cleartree
-from translation import *
+from web.frontend.browsingtree import browsingtree, cleartree
+from core.translation import *
 
 
 import search.query

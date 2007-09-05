@@ -18,15 +18,15 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import re
-import tree
+import core.tree
 import os
-import config
+import core.config
 from utils import *
 import random
 import zipfile
-import acl
-from acl import AccessData
-from tree import getNode
+import core.acl
+from core.acl import AccessData
+from core.tree import getNode
 
 
 IMGNAME = re.compile("/?(attachment|doc|images|thumbs|thumb2|file)/([^/]*)(/(.*))?$")

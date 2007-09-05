@@ -20,21 +20,21 @@
 """
 
 import os
-import config
+import core.config
 if os.getenv("MEDIATUM_CONFIG"):
-    config.initialize(os.getenv("MEDIATUM_CONFIG"))
+    core.config.initialize(os.getenv("MEDIATUM_CONFIG"))
 else:
-    config.initialize("mediatum.cfg")
+    core.config.initialize("mediatum.cfg")
 
-import log
-log.initialize()
+import utils.log
+utils.log.initialize()
 import logging
 log = logging.getLogger('backend')
 
 import sys
 import os
-import tree
-import acl
+import core.tree
+import core.acl
 
 log.info("Initializing backend...")
 
@@ -43,9 +43,9 @@ log.info("Initializing backend...")
 #import acl_xml
 #acl.setImplementation(acl_xml)
 
-import tree_db
+import core.tree_db
 tree.setImplementation(tree_db)
-import acl_db
+import core.acl_db
 acl.setImplementation(acl_db)
 
 
@@ -92,7 +92,7 @@ tree.registerNodeClass("maskitem", Maskitem)
 from objtypes import workflow
 workflow.register()
 
-for k,v in config.getsubset("plugins").items():
+for k,v in core.config.getsubset("plugins").items():
     print 'Initializing plugin "'+k+'"'
     m = __import__(v)
 

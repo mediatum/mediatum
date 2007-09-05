@@ -17,7 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import config
+import core.config
 import logging
 import logging.handlers
 import sys
@@ -29,7 +29,7 @@ def initialize():
     log_screen.setLevel(logging.INFO)
 
     log_everything = logging.getLogger('everything')
-    filename = config.get('logging.file.everything',None)
+    filename = core.config.get('logging.file.everything',None)
     if filename:
         l = logging.handlers.RotatingFileHandler(filename, maxBytes=33554432, backupCount=20)
         l.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
@@ -42,7 +42,7 @@ def initialize():
 
     for name in ["database","backend","frontend","editor","usertracing","athana","errors"]:
         log = logging.getLogger(name)
-        filename = config.get("logging.file."+name, None)
+        filename = core.config.get("logging.file."+name, None)
         if filename:
             l = logging.handlers.RotatingFileHandler(filename, maxBytes=33554432, backupCount=20)
             l.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))

@@ -17,14 +17,14 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import tree
-import config
+import core.tree as tree
+import core.config as config
 import mgquery
 import os
-from db import database
+import core.db.database as database
 import time
 import sys
-import metadatatypes
+import schema.schema as schema
 import logging
 import thread
 import traceback
@@ -214,7 +214,7 @@ def UTF8ToLatin(v):
 
 def _makeMetadataNumbers():
     print "Making Metadatafield-Index"
-    m = metadatatypes.loadTypesFromDB()
+    m = schema.loadTypesFromDB()
     for metatype in m:
         for field in metatype.getMetaFields():
             if field.getFieldtype() in ["list","mlist"] and field.Searchfield():

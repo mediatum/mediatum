@@ -24,7 +24,7 @@ from db import database
 import logging
 import sys
 import tree
-from SortedDict import MaxSizeDict
+from utils.dicts import MaxSizeDict
 import config
 from search.query import subnodes
 from search.parser import searchParser

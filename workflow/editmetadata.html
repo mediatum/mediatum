@@ -1,0 +1,20 @@
+<tal:block metal:define-macro="workflow_metadateneditor">
+    <form class="edit" action="/mask" method="post">
+        <h2 tal:content="name"/>
+        <span tal:replace="raw error"/>
+        <input tal:attributes="value key" type="hidden" name="key"/>
+        <input type="hidden" name="metaDataEditor" value="metaDataEditor"/>
+        <table style="width:800px" cellspacing="0" cellpadding="0">
+            <tr>
+                <td tal:content="raw mask" align="left"/>
+            <tr>
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td style="text-align:left"><div class="label">&nbsp;</div><img src="/img/emtyDot1Pix.gif" style="width:16px"/>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info"/>)</td>
+            </tr>
+            <tal:block tal:content="raw buttons"/>
+        </table>
+    </form>
+</tal:block>

@@ -1,0 +1,30 @@
+<tal:block metal:define-macro="workflow_upload">
+    <div style="width:800px;text-align: left;margin-top:20px;margin-bottom:20px">
+        <tal:block tal:replace="raw prefix"/>
+    </div>
+
+    <p tal:condition="python:len(error)>0" tal:content="structure error" class="error"/>
+
+    <form action="/mask" method="post">
+        <tal:block tal:replace="raw filelist"/>
+        <input type="hidden" name="id" tal:attributes="value id">
+        <input type="hidden" name="obj" tal:attributes="value obj">
+    </form>
+
+    <h2 i18n:translate="workflow_add_file">Neue Datei hinzuf&uuml;gen:</h2>
+
+    <form action="/mask" method="post" enctype="multipart/form-data" style="padding:4px">
+        <div>
+            <input type="file" name="file"/>
+            <input i18n:attributes="value workflow_upload_button" type="submit" name="submit" value="Hochladen"/>
+        </div>
+        
+        <div style="width:800px;text-align: left;margin-top:20px;margin-bottom:20px">
+            <tal:block tal:replace="raw suffix"/>
+        </div>
+
+        <table>
+            <tal:block tal:replace="raw python:buttons"/>
+        </table>
+    </form>
+</tal:block>

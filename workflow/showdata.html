@@ -1,0 +1,44 @@
+<table metal:define-macro="workflow_filelist" id="workflowtable">
+    <tr tal:condition="python:len(files)!=0">
+        <th i18n:translate="workflow_filelist_type">Typ</th>
+        <th i18n:translate="workflow_filelist_size">Gr&ouml;&szlig;e</th>
+        <th i18n:translate="workflow_filelist_mimetype">Mimetype</th>
+        <th i18n:translate="workflow_filelist_loc">Lokation / Name</th>
+        <th tal:condition="delbutton">&nbsp;</th>
+    </tr>
+    <tr tal:repeat="file files">
+        <td tal:content="python:file.type"/>
+        <td tal:content="python:str(file.getSize())+' bytes'" style="text-align:right;width:100px"/>
+        <td tal:content="python:file.mimetype"/>
+        <td>
+            <a i18n:attributes="title workflow_filelist_open_title" title="Datei anzeigen" target="filewindow" 
+             tal:attributes="href python:'/file/'+node.id+'/'+file.getName()" 
+             tal:content="python:file.path"/>
+        </td>
+        <td tal:condition="delbutton">
+            <input tal:attributes="name python:'delete_'+file.getName()" i18n:attributes="title workflow_filelist_delete_title" onclick="return questionDel()" type="image" src="/img/delete.png"/>
+        </td>
+    </tr>
+</table>
+
+<tal:block metal:define-macro="workflow_showdata">
+    <p tal:content="raw python:prefix"/>
+        <table>
+            <tr>
+                <td tal:repeat="field fields" valign="top" align="left" width="400">
+                    <tal:block tal:replace="raw field"/>
+                </td>
+            </tr>
+        </table>
+
+        <tal:block tal:replace="raw filelist"/>
+       
+        <p tal:content="raw python:suffix"/>
+        
+        <form action="/mask" method="post">
+            <table style="width:100%">
+            <input tal:attributes="value key" type="hidden" name="key"/>
+            <tal:block tal:replace="raw buttons"/>
+            </table>
+        </form>
+</tal:block>

@@ -50,4 +50,5 @@ workflow=admin@mediatum.org
 
 [i18n]
 languages=en
-en=/some/path/to/translation.file
+en=mediatum-en.po
+de=mediatum-de.po

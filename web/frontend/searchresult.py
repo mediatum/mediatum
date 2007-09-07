@@ -83,7 +83,7 @@ def simple_search(req):
                 ids = []
                 for node in result:
                     ids.append(node.id)
-                from frontend.content import ContentList
+                from web.frontend.content import ContentList
                 c = ContentList(tree.NodeList(ids),collection,words)
                 c.linkname = "Suchergebnis"
                 c.linktarget = ""

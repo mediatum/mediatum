@@ -29,7 +29,7 @@ import logging
 import thread
 import traceback
 import utils.date
-#from utils.utils import *
+from utils.utils import ArrayToString
 
 log = logging.getLogger("backend")
 search_lock = thread.allocate_lock()

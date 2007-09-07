@@ -73,17 +73,14 @@ from contenttypes.flash import Flash
 tree.registerNodeClass("flash", Flash)
 from contenttypes.video import Video
 tree.registerNodeClass("video", Video)
-#from objtypes.person import Person
-#tree.registerNodeClass("person", Person)
-#from objtypes.yearbook import Yearbook
-#tree.registerNodeClass("yearbook", Yearbook)
 from core.user import User
 tree.registerNodeClass("user", User)
 from core.usergroup import UserGroup
 tree.registerNodeClass("usergroup", UserGroup)
 from contenttypes.default import Default
 tree.registerNodeClass("default", Default)
-from schema.schema_contenttype import Metadatatype, Metadatafield, Mask, Maskitem
+
+from schema.schema import Metadatatype, Metadatafield, Mask, Maskitem
 tree.registerNodeClass("metadatatype", Metadatatype)
 tree.registerNodeClass("metafield", Metadatafield)
 tree.registerNodeClass("mask", Mask)

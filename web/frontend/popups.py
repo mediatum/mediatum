@@ -61,7 +61,7 @@ def put_into_shoppingbag(req):
     f += files
     req.session["shoppingbag"] = f
 
-    req.writeTAL("popups.html", {}, macro="shoppingbag_add")
+    req.writeTAL("web/frontend/popups.html", {}, macro="shoppingbag_add")
     return athana.HTTP_OK
 
 
@@ -92,7 +92,7 @@ def show_shoppingbag(req):
     v["image"] = img
     v["document"] = doc
 
-    req.writeTAL("popups.html", v, macro="shoppingbag")
+    req.writeTAL("web/frontend/popups.html", v, macro="shoppingbag")
     return athana.HTTP_OK
 
 #
@@ -106,7 +106,7 @@ def show_index(req):
         index = search.query.getGlobalIndex(name)
         index.sort(lambda x,y: cmp(x.lower(), y.lower()))
 
-        req.writeTAL("popups.html", {"index":index, "fieldname":fieldname}, macro="index")
+        req.writeTAL("web/frontend/popups.html", {"index":index, "fieldname":fieldname}, macro="index")
         return athana.HTTP_OK
     except:
         print "missing request parameter"
@@ -121,7 +121,7 @@ def show_help(req):
     else:
         field = getNode(req.params.get("id",""))
 
-    req.writeTAL("popups.html", {"field":field}, macro="show_help")
+    req.writeTAL("web/frontend/popups.html", {"field":field}, macro="show_help")
 
 
 #

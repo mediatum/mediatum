@@ -44,9 +44,9 @@ class SearchResult:
 
     def html(self,req):
         if len(self.resultlist) == 0:
-            return req.getTAL("searchresult.html", {"query":self.query, "r":self, "collections":self.collections, "language":lang(req)}, macro="noresult")
+            return req.getTAL("web/frontend/searchresult.html", {"query":self.query, "r":self, "collections":self.collections, "language":lang(req)}, macro="noresult")
         else: #len(self.resultlist) > 1:
-            return req.getTAL("searchresult.html", {"query":self.query,"collections":self.collections,"reslist":self.resultlist,"r":self, "language":lang(req)}, macro="listcollections")
+            return req.getTAL("web/frontend/searchresult.html", {"query":self.query,"collections":self.collections,"reslist":self.resultlist,"r":self, "language":lang(req)}, macro="listcollections")
 
 def protect(s):
     return '"'+s.replace('"','')+'"'

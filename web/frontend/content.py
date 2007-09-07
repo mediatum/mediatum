@@ -183,7 +183,7 @@ class ContentList(Content):
 
     def html(self,req):
         if self.content:
-            headline = athana.getTAL("content_nav.html", {"nav": self}, macro="navheadline", language=lang(req))
+            headline = athana.getTAL("web/frontend/content_nav.html", {"nav": self}, macro="navheadline", language=lang(req))
             return headline + self.content.html(req)
 
         nav_list = list()
@@ -234,7 +234,7 @@ class ContentList(Content):
             liststyle = self.liststyle
             print "Use default style",self.liststyle
 
-        filesHTML = req.getTAL("content_nav.html", {
+        filesHTML = req.getTAL("web/frontend/content_nav.html", {
                  "nav_list":nav_list, "nav_page":nav_page, "act_page":self.page, 
                  "sortfield":self.sortfield, "sortfields":self.getSortFields(),
                  "files":tal_files, "maxresult":len(self.files), "op":""}, macro="files")
@@ -300,7 +300,7 @@ class ContentNode(Content):
         paths = ""
         if not self.node.can_open():
             plist = getPaths(self.node, AccessData(req))
-            paths = athana.getTAL("content_nav.html", {"paths": plist}, macro="paths", language=lang(req))
+            paths = athana.getTAL("web/frontend/content_nav.html", {"paths": plist}, macro="paths", language=lang(req))
         return self.node.show_node_big(req) + paths
 
 def fileIsNotEmpty(file):
@@ -344,7 +344,7 @@ class ContentError(Content):
         self.error = error
 
     def html(self,req):
-        return athana.getTAL("frontend/content_error.html", {"error":self.error}, language=lang(req))
+        return athana.getTAL("web/frontend/content_error.html", {"error":self.error}, language=lang(req))
 
 class ContentArea(Content):
     def __init__(self):
@@ -405,7 +405,7 @@ class ContentArea(Content):
         if "raw" in req.params:
             path = ""
         else:
-            path = req.getTAL("content_nav.html", {"path": self.getPath(), "styles":styles, "logo":self.collectionlogo}, macro="path")
+            path = req.getTAL("web/frontend/content_nav.html", {"path": self.getPath(), "styles":styles, "logo":self.collectionlogo}, macro="path")
         return path + '\n<!-- CONTENT START -->\n<div id="nodes">' +  self.content.html(req) + '</div>\n<!-- CONTENT END -->\n'
 
 class CollectionLogo(Content):

@@ -35,7 +35,7 @@ def display_login(req, error=None):
     user = users.getUserFromRequest(req)
    
     v = {"error":error, "user":user}
-    contentHTML = req.getTAL("login.html", v, macro="login")
+    contentHTML = req.getTAL("web/frontend/login.html", v, macro="login")
     navframe.write(req, contentHTML)
     return athana.HTTP_OK
 
@@ -49,7 +49,7 @@ def display_changepwd(req, error=None):
     user = users.getUserFromRequest(req)
 
     v = {"error":error, "user":user}
-    contentHTML = req.getTAL("login.html", v, macro="change_pwd")
+    contentHTML = req.getTAL("web/frontend/login.html", v, macro="change_pwd")
     navframe.write(req, contentHTML)
     return athana.HTTP_OK
 

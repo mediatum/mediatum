@@ -399,7 +399,7 @@ class NavigationFrame:
     def write(self, req, contentHTML, show_navbar=1):
         self.params["content"] = contentHTML
         self.params["show_navbar"] = show_navbar
-        return req.writeTAL("frame.html", self.params)
+        return req.writeTAL("web/frontend/frame.html", self.params)
 
 
 def getNavigationFrame(req):

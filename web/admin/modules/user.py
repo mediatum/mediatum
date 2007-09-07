@@ -19,26 +19,25 @@
 """
 import sys, types
 import traceback
-import athana
+import core.athana as athana
 import logging
-import config
-import tree
-import acl
-import mail
+import core.config as config
+import core.tree as tree
+import core.acl as acl
+import utils.mail as mail
+import core.users as users
 
-from users import *
-from usergroups import *
-from admin.adminutils import *
-from translation import lang
+from core.usergroups import loadGroupsFromDB
+from core.users import loadUsersFromDB, useroption, getUser, update_user, existUser, create_user, makeRandomPassword, deleteUser
 
-
+from web.admin.adminutils import Overview, getAdminStdVars
+from core.translation import lang, t
 
 #
 # standard validator
 #
 def validate(req, op):
     try:
-        print req.params
         for key in req.params.keys():
             if key.startswith("new"):
                 # create new user
@@ -123,13 +122,13 @@ def view(req):
             users.reverse()
     else:
         users.sort(lambda x, y: cmp(x.getName().lower(),y.getName().lower()))
-
+    
     v = getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader([t(lang(req),"admin_user_col_1"), t(lang(req),"admin_user_col_2"), t(lang(req),"admin_user_col_3"), t(lang(req),"admin_user_col_4")])
     v["options"] = list(useroption)
     v["users"] = users
     v["pages"] = pages
-    return req.getTAL("admin/modules/user.html", v, macro="view")
+    return req.getTAL("web/admin/modules/user.html", v, macro="view")
 
 #
 # edit/create user
@@ -170,7 +169,7 @@ def editUser_mask(req, id, err=0):
     v["ugroups"] = ugroups
     v["useroption"] = useroption
     v["id"] = id
-    return req.getTAL("admin/modules/user.html", v, macro="modify")
+    return req.getTAL("web/admin/modules/user.html", v, macro="modify")
     
 def sendmailUser_mask(req, id, err=0):
 
@@ -186,7 +185,7 @@ def sendmailUser_mask(req, id, err=0):
         text = req.params["text"]
         text = text.replace("[wird eingesetzt]", password)
         mail.sendmail(req.params["from"],req.params["email"],req.params["subject"],text)
-        return req.getTAL("admin/modules/user.html", v, macro="sendmaildone")
+        return req.getTAL("web/admin/modules/user.html", v, macro="sendmaildone")
 
     user = getUser(id)
     
@@ -209,9 +208,9 @@ def sendmailUser_mask(req, id, err=0):
                 x["collections"].append(node.name+" (nur lesen)")
 
 
-    v["mailtext"] = req.getTAL("admin/modules/user.html", x, macro="emailtext").strip()
+    v["mailtext"] = req.getTAL("web/admin/modules/user.html", x, macro="emailtext").strip()
     v["email"] = user.getEmail()
     v["userid"] = user.getName()
 
-    return req.getTAL("admin/modules/user.html", v, macro="sendmail")
+    return req.getTAL("web/admin/modules/user.html", v, macro="sendmail")
 

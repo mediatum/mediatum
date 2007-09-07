@@ -11,7 +11,7 @@
                     <a tal:attributes="href python:col.link; title python:col.title" tal:content="structure python:col.label"/>
                 </th>
                 <th>
-                    <tal:block metal:use-macro="admin/web/frame.html/optionheader"/>
+                    <tal:block metal:use-macro="web/admin/frame.html/optionheader"/>
                 </th>
                 <th align="right">&nbsp;</th>
                 <th align="right">
@@ -22,14 +22,14 @@
                 <td colspan="8"><small i18n:translate="admin_user_nousers">- keine Benutzer vorhanden -</small></td>
             </tr>
             <tal:block tal:define="start python:pages.getStart();end python:pages.getEnd()" tal:repeat="user python:users[start:end]">
-                <tr tal:define="cssclass python:users.index(user)%2 and 'norm' or 'silver'">	
+                <tr tal:define="cssclass python:users.index(user)%2 and 'norm' or 'silver'">
                     <td tal:attributes="class cssclass" tal:content="python:str(users.index(user)+1)+'.'"/>
                                             <td tal:attributes="class cssclass" tal:content="python:user.getName()"/>
                     <td tal:attributes="class cssclass" tal:content="python:user.getEmail()"/>
                     <td tal:attributes="class cssclass">
                         <tal:block tal:repeat="group python:user.getGroups()">
                             <span tal:content="group"/><span tal:condition="python:user.getGroups().index(group)<len(user.getGroups())-1">, </span>
-                        </tal:block>									
+                        </tal:block>
                     </td>
                     <td tal:condition="python:user.stdPassword()" tal:attributes="class cssclass">
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img i18n:attributes="title admin_user_stdpwd_title" src="/img/unarchive.png" title="Standardpasswort" />
@@ -72,8 +72,8 @@
 
 
 <metal:block metal:define-macro="modify">
-    <p><a i18n:translate="admin_overview" href="./user">zur &Uuml;bersicht</a></p>					
-    <form tal:attributes="action page" name="edituser" method="post">					
+    <p><a i18n:translate="admin_overview" href="./user">zur &Uuml;bersicht</a></p>
+    <form tal:attributes="action page" name="edituser" method="post">
         <table>
             <tr>
                 <td colspan="2">
@@ -158,12 +158,12 @@
 
 <metal:block metal:define-macro="sendmaildone" tal:define="id python:user.getName()">
     <p>Mail wurde verschickt.</p>
-    <p><a tal:attributes="href python:'./user'+page" i18n:translate="admin_overview">zur &Uuml;bersicht</a></p>					
+    <p><a tal:attributes="href python:'./user'+page" i18n:translate="admin_overview">zur &Uuml;bersicht</a></p>
 </metal:block>
 
 <metal:block metal:define-macro="sendmail">
-    <p><a tal:attributes="href python:'./user'+page" i18n:translate="admin_overview">zur &Uuml;bersicht</a></p>					
-    <form tal:attributes="action page" name="mailuser" method="post">					
+    <p><a tal:attributes="href python:'./user'+page" i18n:translate="admin_overview">zur &Uuml;bersicht</a></p>
+    <form tal:attributes="action page" name="mailuser" method="post">
         <input type="hidden" name="sendmail_execute" value=".">
         <input type="hidden" name="userid" tal:attributes="value userid">
         <table>       

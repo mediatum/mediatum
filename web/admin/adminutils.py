@@ -145,16 +145,20 @@ def findmodule(type):
     global mymodules
     if type in mymodules:
         return mymodules[type]
+        
+    print mymodules
 
     try:
-        m = __import__("admin.modules." + type)
-        m = eval("m.modules."+type)
+        m = __import__("web.admin.modules." + type)
+        #m = eval("m.modules."+type)
+        m = eval("m.admin.modules."+type)
     except:
         print "Warning: couldn't load module for type",type
         print sys.exc_info()[0], sys.exc_info()[1]
         traceback.print_tb(sys.exc_info()[2])
-        m = __import__("admin.modules.default")
-        m = eval("m.modules.default")
+        import web.admin.modules.default
+        m = __import__("web.admin.modules.default")
+        m = eval("m.admin.modules.default")
 
     mymodules[type] = m
     return m
@@ -164,10 +168,11 @@ def show_content(req, op):
     user = users.getUserFromRequest(req)
 
     if not user.inGroup("Administration"):
-        return req.getTAL("admin/web/frame.html", {}, macro="errormessage")
+        return req.getTAL("web/admin/frame.html", {}, macro="errormessage")
     else:
         if op == "":
             op = "default"
+        print op
         module = findmodule(op.split("_")[0])
 
         try:
@@ -189,7 +194,6 @@ class Menu:
         self.item.append((self.name+"_"+str(len(self.item)+1), link))
     def getItemList(self):
         return self.item
-	
 
 
 def adminNavigation():
@@ -214,5 +218,5 @@ def adminNavigation():
     submenu = Menu("admin_menu_5")
     submenu.addItem("/admin/logfile")
     menu.append(submenu)
- 	
+
     return menu

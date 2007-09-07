@@ -41,7 +41,7 @@ def show_node(req):
 
     if len(p)>0:
         if style == "":
-            req.writeTAL("admin/web/frame.html", v, macro="frame")
+            req.writeTAL("web/admin/frame.html", v, macro="frame")
         else:
             req.write(v["content"])
     return athana.HTTP_OK

@@ -17,11 +17,12 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import athana
-import config
+import core.athana as athana
+import core.config as config
 import os
-from utils import *
-from admin.adminutils import *
+
+from utils.utils import format_filesize, get_filesize
+from web.admin.adminutils import Overview,getAdminStdVars
 
 class LogFile:
     def __init__(self, name, path):
@@ -65,7 +66,7 @@ def view(req, op):
     v = getAdminStdVars(req)
     v["filelist"] = filelist
     v["pages"] = pages
-    text = req.getTAL("admin/modules/logfile.html", v, macro="view")
+    text = req.getTAL("web/admin/modules/logfile.html", v, macro="view")
 
     # refresh part
     if "name" in req.params.keys():
@@ -82,7 +83,7 @@ def view(req, op):
 
     # return form with file-content
     if logfile!=None:
-        text += req.getTAL("admin/modules/logfile.html", {"logfile":logfile, "content":getFileContent(logfile.getPath())}, macro="detail")
+        text += req.getTAL("web/admin/modules/logfile.html", {"logfile":logfile, "content":getFileContent(logfile.getPath())}, macro="detail")
     return text
 
 def getFileContent(path):

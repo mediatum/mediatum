@@ -19,12 +19,14 @@
 """
 import sys, types
 import traceback
-import athana
+import core.tree as tree
+import core.athana as athana
 import logging
+import core.usergroups as usergroups
 
-from admin.adminutils import *
-from usergroups import *
-from translation import t, lang
+from web.admin.adminutils import Overview, getAdminStdVars
+from core.usergroups import groupoption, loadGroupsFromDB, getGroup, existGroup, create_group, createAcRule, deleteGroup, getNumUsers
+from core.translation import t, lang
 
 
 #
@@ -100,7 +102,7 @@ def view(req):
     v["options"] = list(groupoption)
     v["groups"] = groups
     v["pages"] = pages
-    return req.getTAL("admin/modules/usergroup.html", v, macro="view")
+    return req.getTAL("/web/admin/modules/usergroup.html", v, macro="view")
 
 #
 # edit/create usergroup
@@ -132,5 +134,5 @@ def editGroup_mask(req, id, err=0):
     v["error"] = err
     v["group"] = group
     v["groupoption"] = groupoption
-    return req.getTAL("admin/modules/usergroup.html", v, macro="modify")
+    return req.getTAL("/web/admin/modules/usergroup.html", v, macro="modify")
     

@@ -11,7 +11,7 @@
                     <a tal:attributes="href python:col.link; title python:col.title" tal:content="structure python:col.label"/>
                 </th>
                 <th>
-                    <tal:block metal:use-macro="admin/web/frame.html/optionheader"/>
+                    <tal:block metal:use-macro="web/admin/frame.html/optionheader"/>
                 </th>
 
                 <th align="right">
@@ -64,7 +64,7 @@
 </metal:block>
 
 <metal:block metal:define-macro="modify" tal:define="id python:group.getName()">
-    <p><a i18n:translate="admin_overview" href="./usergroup">zur &Uuml;bersicht</a></p>					
+    <p><a i18n:translate="admin_overview" href="./usergroup">zur &Uuml;bersicht</a></p>
     <form tal:attributes="action page" name="editgroup" method="post">
         <table>
             <tr>

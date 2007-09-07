@@ -17,9 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from translation import lang
+from core.translation import lang
 
 
 def validate(req, op):
-    return req.getTAL("admin/modules/default.html", {}, macro="view_"+lang(req))
+    return req.getTAL("/web/admin/modules/default.html", {}, macro="view_"+lang(req))
 

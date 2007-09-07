@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.6 2007/09/05 16:08:07 kramm Exp $'
+RCS_ID =  '$Id: athana.py,v 1.7 2007/09/07 09:42:39 kramm Exp $'
 
 import sys
 
@@ -5859,8 +5859,6 @@ class WebContext:
     def _make_inifiles(self, root, path):
         dirs = path.split("/")
         path = root
-        for f in self.files:
-            print f.filename
         for dir in dirs:
             path = join_paths(path, dir)
             inifile = join_paths(path, "__init__.py")
@@ -5915,7 +5913,6 @@ class WebContext:
         self.id_to_function = {}
         for file in self.files:
             filename = file.getFileName()
-            lg.log("loading module "+filename)
             m = self._load_module(filename)
             
             global macroresolvers,translators,ftphandlers

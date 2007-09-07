@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import config
-from utils import *
+from utils.utils import join_paths
 import os
 import stat
 import time

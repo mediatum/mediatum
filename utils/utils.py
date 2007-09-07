@@ -40,10 +40,12 @@ def iso2utf8(s):
     return unicode(s,"latin-1").encode("utf-8")
 
 def splitpath(path):
-    try:
-        i = path.rindex("/")
+    while path.endswith("/") or path.endswith("\\"):
+        path = path[:-1]
+    i = max(path.rfind("/"),path.rfind("\\"))
+    if i>=0:
         return path[0:i],path[i+1:]
-    except:
+    else:
         return "",path
 
 def splitfilename(path):

@@ -94,7 +94,7 @@ def startWebServer():
     file.addHandler("oaiRequest").addPattern(".*")
 
     # === static files ===
-    athana.addFileStore("/module/", "mod/FCKeditor/files.zip")
+    athana.addFileStore("/module/", "lib/FCKeditor/files.zip")
     athana.addFileStore("/css/", "web/css/")
     athana.addFileStore("/img/", ["web/img/", "img"])
     athana.addFileStore("/js/", ["web/js/", "js"])

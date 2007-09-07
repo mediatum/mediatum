@@ -50,5 +50,5 @@ workflow=admin@mediatum.org
 
 [i18n]
 languages=en
-en=mediatum-en.po
-de=mediatum-de.po
+en=i18n/mediatum-de.po
+de=i18n/mediatum-en.po

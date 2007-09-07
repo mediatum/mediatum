@@ -18,15 +18,15 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-from utils import *
+from utils.utils import join_paths
 import logging
-import tree
+import core.tree
 import time
-import config
+import core.config
 
 def importFile(realname,tempname):
     path,filename = os.path.split(tempname)
-    uploaddir = join_paths(config.get("paths.datadir"),"incoming")
+    uploaddir = join_paths(core.config.get("paths.datadir"),"incoming")
     try:os.mkdir(uploaddir)
     except: pass
     uploaddir = join_paths(uploaddir, time.strftime("%Y-%b"))
@@ -49,5 +49,5 @@ def importFile(realname,tempname):
     
     mimetype, type = getMimeType(r)
 
-    return tree.FileNode(name=destname,mimetype=mimetype,type=type)
+    return core.tree.FileNode(name=destname,mimetype=mimetype,type=type)
 

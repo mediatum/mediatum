@@ -92,9 +92,15 @@ tree.registerNodeClass("maskitem", Maskitem)
 #from objtypes import workflow
 #workflow.register()
 
+from utils.utils import splitpath
+
 for k,v in config.getsubset("plugins").items():
     print 'Initializing plugin "'+k+'"'
-    m = __import__(v)
+    path,module = splitpath(v)
+    if path and path not in sys.path:
+        sys.path += [path]
+    print path,module
+    m = __import__(module)
 
 if "athana" in sys.argv[0].lower():
     print "Precaching occurences"

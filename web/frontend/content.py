@@ -23,10 +23,9 @@ import core.tree as tree
 import os
 import re
 
-from utils.utils import getCollection
+from utils.utils import getCollection,Link
 from core.acl import AccessData
 from web.frontend.searchresult import simple_search, extended_search
-#from core.translation import *
 
 class Content:
     def feedback(self,req):

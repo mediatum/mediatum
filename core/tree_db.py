@@ -31,7 +31,7 @@ from search.parser import searchParser
 import thread
 import traceback
 nodeclasses = {}
-import schema
+import schema.schema as schema
 
 _root = None
 conn = None
@@ -139,7 +139,7 @@ class NodeType(tree.NodeType):
 
         try:
             if self.metadatatypename:
-                return metadatatypes.getMetaType(self.metadatatypename).getMetaFields(type)
+                return schema.getMetaType(self.metadatatypename).getMetaFields(type)
             else:
                 return []
         except AttributeError:
@@ -148,8 +148,8 @@ class NodeType(tree.NodeType):
     def getMetaField(self, name):
         if self.metadatatypename:
             try:
-                metadatatype = metadatatypes.getMetaType(self.metadatatypename)
-                return metadatatypes.getMetaType(self.metadatatypename).getMetaField(name)
+                metadatatype = schema.getMetaType(self.metadatatypename)
+                return schema.getMetaType(self.metadatatypename).getMetaField(name)
             except AttributeError:
                 return None
         else:
@@ -167,7 +167,7 @@ class NodeType(tree.NodeType):
     def getMasks(self):
         try:
             if self.metadatatypename:
-                return metadatatypes.getMetaType(self.metadatatypename).getMasks()
+                return schema.getMetaType(self.metadatatypename).getMasks()
             else:
                 return []
         except AttributeError:
@@ -177,7 +177,7 @@ class NodeType(tree.NodeType):
     def getMask(self, name):
         try:
             if self.metadatatypename:
-                return metadatatypes.getMetaType(self.metadatatypename).getMask(name)
+                return schema.getMetaType(self.metadatatypename).getMask(name)
             else:
                 return []
         except AttributeError:
@@ -191,7 +191,7 @@ class NodeType(tree.NodeType):
 
     def getDescription(self):
         if self.metadatatypename:
-            mtype = metadatatypes.getMetaType(self.metadatatypename)
+            mtype = schema.getMetaType(self.metadatatypename)
             if mtype:
                 return mtype.getDescription()
             else:

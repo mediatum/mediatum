@@ -23,7 +23,7 @@ import core.tree as tree
 import os
 import re
 
-#from utils import *
+from utils.utils import getCollection
 from core.acl import AccessData
 from web.frontend.searchresult import simple_search, extended_search
 #from core.translation import *

@@ -150,8 +150,8 @@ class Option:
     	        
 def getCollection(node):
     def p(node):
-        import tree
-        if node in tree.getRoot("collections").getChildren():
+        import core.tree
+        if node in core.tree.getRoot("collections").getChildren():
         
             return node
         for pp in node.getParents():
@@ -161,8 +161,8 @@ def getCollection(node):
         return None
     collection = p(node)
     if collection is None:
-        import tree
-        collection = tree.getRoot("collections")
+        import core.tree
+        collection = core.tree.getRoot("collections")
     return collection
 
 def ArrayToString(pieces, glue=""):

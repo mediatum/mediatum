@@ -17,10 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.users
-import core.config
+import core.users as users
 import logging
-import core.tree
+import core.tree as tree
 import sys
 from utils.log import logException
 

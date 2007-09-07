@@ -23,7 +23,7 @@ import logging
 import core.search.query
 import xml
 import traceback
-import core.tree
+import core.tree as tree
 
 from utils.utils import *
 from core.tree import nodeclasses

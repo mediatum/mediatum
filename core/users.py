@@ -23,7 +23,7 @@ import config
 import translation
 import usergroups
 import md5
-import core.tree
+import core.tree as tree
 import core.translation
 import random
 

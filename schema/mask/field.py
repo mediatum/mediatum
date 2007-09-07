@@ -17,14 +17,14 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import athana
-from utils import *
-from tree import Node, getNode
+import core.athana as athana
+#from utils.utils import *
+from core.tree import Node, getNode
 
-from objtypes.metadatatype import getMetaFieldTypeNames, getMetaFieldTypes, getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY
-from metadatatypes import dateoption
-from translation import *
-from objtypes.metatype import Metatype
+from schema.schema import getMetaFieldTypeNames, getMetaFieldTypes, getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, dateoption
+#from metadatatypes import dateoption
+from core.translation import lang
+from core.metatype import Metatype
 
 class m_field(Metatype):
 

@@ -17,11 +17,10 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from objtypes.metadatatype import getMetadataType, VIEW_DATA_ONLY
-from tree import Node, getNode
-from metadatatypes import getAllMetaFields
-from translation import lang
-from objtypes.metatype import Metatype
+from schema.schema import getMetadataType, getAllMetaFields, VIEW_DATA_ONLY
+from core.tree import Node, getNode
+from core.translation import lang
+from core.metatype import Metatype
 
 class m_vgroup(Metatype):
 

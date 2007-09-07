@@ -18,15 +18,14 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from utils.utils import Option
-import config
-import translation
+import core.config as config
 import usergroups
 import md5
 import core.tree as tree
 import core.translation
 import random
 
+from utils.utils import Option
 
 useroption = []
 useroption += [Option("user_option_1", "editpwd", "c", "img/changepwd_opt.png")]

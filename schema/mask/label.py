@@ -17,9 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from objtypes.metadatatype import VIEW_DATA_ONLY,VIEW_DEFAULT
-from tree import Node, getNode
-from objtypes.metatype import Metatype
+from schema.schema import VIEW_DATA_ONLY, VIEW_DEFAULT
+from core.tree import Node, getNode
+from core.metatype import Metatype
 
 class m_label(Metatype):
 

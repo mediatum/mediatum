@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-from utils.utils import join_paths
+from utils import join_paths #fixme: should be utils.utils
 import logging
 import core.tree
 import time

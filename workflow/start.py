@@ -18,6 +18,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from workflow.upload import WorkflowStep
+
 class WorkflowStep_Start(WorkflowStep):
     def show_workflow_step(self, req):
 

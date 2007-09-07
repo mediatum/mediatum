@@ -801,6 +801,7 @@ def register():
     tree.registerNodeClass("workflows", Workflows)
     tree.registerNodeClass("workflow", Workflow)
     tree.registerNodeClass("workflowstep", WorkflowStep)
+    from workflow.start import WorkflowStep_Start
     tree.registerNodeClass("workflowstep-start", WorkflowStep_Start)
     registerStep("workflowstep-start")
     tree.registerNodeClass("workflowstep-end", WorkflowStep_End)
@@ -823,3 +824,4 @@ def register():
     registerStep("workflowstep-textpage")
     tree.registerNodeClass("workflowstep-publish", WorkflowStep_Publish)
     registerStep("workflowstep-publish")
+

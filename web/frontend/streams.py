@@ -21,7 +21,7 @@ import re
 import core.tree
 import os
 import core.config
-from utils import *
+#from utils import *
 import random
 import zipfile
 import core.acl

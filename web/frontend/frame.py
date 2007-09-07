@@ -17,27 +17,25 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.tree
+import core.tree as tree
 import sys
 import traceback
-import core.users
-import core.config
+import core.users as users
+import core.config as config
 import time
-import core.athana
+import core.athana as athana
 import os
 from utils.dicts import SortedDict
 from schema.schema_contenttype import getMetadataType
 
 from web.frontend.browsingtree import browsingtree, cleartree
 from core.translation import *
+import core.search.query
 
-
-import search.query
-
-from SortedDict import *
-from utils import getCollection, Link, iso2utf8
-from acl import AccessData
-from translation import translate, lang
+from utils.dicts import SortedDict
+from utils.utils import getCollection, Link, iso2utf8
+from core.acl import AccessData
+from core.translation import translate, lang
 
 class Portlet:
     def __init__(self):

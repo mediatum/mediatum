@@ -58,8 +58,8 @@ def startWebServer():
     file.addHandler("logout").addPattern("/logout")
     file.addHandler("display_changepwd").addPattern("/display_changepwd")
     file.addHandler("changepwd_submit").addPattern("/changepwd_submit")
-    file = context.addFile("web/frontend/usersettings.py")
-    file.addHandler("user_settings").addPattern("/user")
+    #file = context.addFile("web/frontend/usersettings.py")
+    #file.addHandler("user_settings").addPattern("/user")
 
     # === admin area ===
     context = athana.addContext("/admin", ".")

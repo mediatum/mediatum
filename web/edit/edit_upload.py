@@ -17,25 +17,25 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import athana
+import core.athana as athana
 import os
-import users
-import tree
+import core.users as users
+import core.tree as tree
 import re
-import date
-import config
+import utils.date
+import core.config as config
 import zipfile
 import random 
-from utils import *
-from edit_common import *
+#from utils import *
+#from edit_common import *
 import logging
-from workflows import *
-from datatypes import *
-from fileutils import *
+#from workflows import *
+#from datatypes import *
+#from fileutils import *
 
-from tree import Node
-from acl import AccessData
-from metadatatypes import loadTypesFromDB
+from core.tree import Node
+from core.acl import AccessData
+from schema.schema import loadTypesFromDB
 
 
 def elemInList(list, name):

@@ -17,11 +17,11 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import athana
-import acl
-import tree
+import core.athana as athana
+import core.acl as acl
+import core.tree as tree
 import logging
-from acl import AccessData
+from core.acl import AccessData
 
 log = logging.getLogger('edit')
 utrace = logging.getLogger('usertracing')

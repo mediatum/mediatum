@@ -17,20 +17,20 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import athana
-import tree
-import search.query
-import config
+import core.athana as athana
+import core.tree as tree
+import core.search.query
+import core.config as config
 
-from tree import getNode
-from frontend import shoppingbag
-from metadatatypes import *
-from mod.pdf import printview
+from core.tree import getNode
+from web.frontend import shoppingbag
+#from schema.schema import *
+from lib.pdf import printview
 
-from objtypes.metadatatype import VIEW_DATA_ONLY,VIEW_HIDE_EMPTY
-from frontend.content import getPaths
-from acl import AccessData
-from translation import t,lang
+from schema.schema import VIEW_DATA_ONLY,VIEW_HIDE_EMPTY
+from web.frontend.content import getPaths
+from core.acl import AccessData
+from core.translation import t,lang
 
 #
 # execute fullsize method from node-type

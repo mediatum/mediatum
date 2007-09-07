@@ -17,13 +17,13 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import tree
-import athana
+import core.tree as tree
+import core.athana as athana
 import sys
-import date
+import utils.date as date
 import logging
-from acl import AccessData
-from translation import lang
+from core.acl import AccessData
+from core.translation import lang
 
 
 class SearchResult:

@@ -17,14 +17,14 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import tree
-from utils import *
-from date import *
+import core.tree as tree
+#from utils import *
+#from date import *
 import os
-import users
-import config
+import core.users as users
+import core.config as config
 import logging
-import acl
+import core.acl as acl
 
 allow_delete_unused = 0
 

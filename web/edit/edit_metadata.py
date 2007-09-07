@@ -17,15 +17,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from acl import AccessData
-from edit_common import *
-from utils import *
-import users
+from core.acl import AccessData
+#from edit_common import *
+#from utils import *
+import core.users as users
 
-from date import *
+#from date import *
 import logging
-from metadatatypes import *
-from translation import lang, t
+#from metadatatypes import *
+from core.translation import lang, t
 
 def edit_metadata(req, ids):
     access = AccessData(req)

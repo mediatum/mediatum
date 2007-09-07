@@ -19,7 +19,7 @@
 """
 import os
 import Image,ImageDraw
-import config
+import core.config as config
 
 
 from reportlab.platypus import Paragraph, BaseDocTemplate, SimpleDocTemplate, FrameBreak, Table, TableStyle, Image as PdfImage,Frame,PageBreak,PageTemplate
@@ -29,8 +29,8 @@ from reportlab.lib.units import cm
 from reportlab.rl_config import defaultPageSize
 from reportlab.pdfgen import canvas
 
-from utils import u, esc
-from translation import t
+from utils.utils import u, esc
+from core.translation import t
 
 (PAGE_WIDTH, PAGE_HEIGHT) = defaultPageSize
 

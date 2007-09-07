@@ -277,3 +277,49 @@ if __name__ == "__main__":
     assert p.parse("ip 131.159.16.0/24").has_access(a,None)
     assert not p.parse("ip 131.159.17.0/24").has_access(a,None)
     assert p.parse("ip 131.159.16.10 or ip 131.159.16.11 or ip 131.159.16.12 or ip 131.159.16.13 or ip 131.159.16.14").has_access(a,None)
+    
+    
+    
+def makeList(req, name, rights, readonlyrights, overload=0, type=""):
+    rightsmap = {}
+    rorightsmap = {}
+    for r in rights:
+        rightsmap[r] = None
+    
+    rulelist = acl.getRuleList()
+
+    val_left = ""
+    val_right = ""
+
+    if not (len(rightsmap)>0 and overload):
+        # inherited standard rules
+        for rule in rulelist:
+            if rule.getName() in readonlyrights:
+                val_left += """<optgroup label="%s"></optgroup>""" % (rule.getDescription())
+                rorightsmap[rule.getName()] = 1
+
+        # inherited implicit rules
+        for rule in readonlyrights:
+            if rule not in rorightsmap:
+                val_left += """<optgroup label="%s"></optgroup>""" % (rule)
+    else:
+        print rightsmap
+    
+    # node-level standard rules
+    for rule in rulelist:
+        if rule.getName() in rightsmap:
+            val_left += """<option value="%s">%s</option>""" % (rule.getName(),rule.getDescription())
+            rightsmap[rule.getName()] = 1
+
+    # node-level implicit rules
+    for r in rightsmap.keys():
+        if not rightsmap[r] and r not in rorightsmap:
+            val_left += """<option value="%s">%s</option>""" % (r,r)
+
+    
+    for rule in rulelist:
+        if rule.getName() not in rightsmap and rule.getName() not in rorightsmap:
+            val_right += """<option value="%s">%s</option>""" % (rule.getName(),rule.getDescription())
+
+    return {"name":name, "val_left":val_left, "val_right":val_right, "type":type}
+

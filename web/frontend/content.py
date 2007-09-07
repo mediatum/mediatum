@@ -18,16 +18,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import athana
-import tree
+import core.athana as athana
+import core.tree as tree
 import os
 import re
 
-from utils import *
-from acl import AccessData
-from frontend.common import Content
-from frontend.searchresult import simple_search, extended_search
-from translation import *
+#from utils import *
+from core.acl import AccessData
+from web.frontend.searchresult import simple_search, extended_search
+#from core.translation import *
 
 class Content:
     def feedback(self,req):

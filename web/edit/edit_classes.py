@@ -17,9 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import tree
-from edit_common import *
-from translation import t, lang
+import core.tree as tree
+#from edit_common import *
+from core.translation import t, lang
 
 
 def edit_classes(req, ids):

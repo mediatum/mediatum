@@ -17,14 +17,14 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import athana
-import config
+import core.athana as athana
+import core.config as config
 import random
-import users
+import core.users as users
 
 from version import mediatum_version
-from utils import *
-from admin.adminutils import findmodule, show_content, adminNavigation
+#from utils import *
+from web.admin.adminutils import findmodule, show_content, adminNavigation
 
 """ opens administration window with content """
 def show_node(req):

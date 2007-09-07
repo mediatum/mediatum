@@ -22,16 +22,16 @@ import os
 import re
 import time
 import urllib
-import tree
-import config
-import users
-import translation
-import athana
-import log
-from acl import AccessData
-from utils import *
+import core.tree as tree
+import core.config as config
+import core.users as users
+import core.translation
+import core.athana as athana
+import utils.log
+from core.acl import AccessData
+#from utils import *
 
-from edit_common import *
+#from edit_common import *
 from edit_acls import edit_acls
 from edit_metadata import edit_metadata
 from edit_classes import edit_classes
@@ -42,7 +42,7 @@ from edit_sort import edit_sort
 from edit_editor import edit_editor
 from edit_workflow import edit_workflow
 from edit_license import edit_license
-from translation import lang, t
+from core.translation import lang, t
 
 
 def frameset(req):

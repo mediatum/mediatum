@@ -20,11 +20,11 @@
 import cgi
 import re
 import os
-import config
-from tree import FileNode
+import core.config as config
+from core.tree import FileNode
 
-from mod.FCKeditor import fckeditor
-from acl import AccessData
+from lib.FCKeditor import fckeditor
+from core.acl import AccessData
 
 def edit_editor(req, node, filenode):
     access = AccessData(req)

@@ -17,9 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import tree
-import workflows
-from acl import AccessData
+import core.tree as tree
+#import workflows
+from core.acl import AccessData
 
 def edit_workflow(req, ids):
     access = AccessData(req)

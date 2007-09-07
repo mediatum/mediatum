@@ -17,15 +17,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import tree
+import core.tree as tree
 import socket
 import random
-import config
-import date
-from SortedDict import MaxSizeDict
-from date import *
-from utils import *
-import acl
+import core.config as config
+import utils.date
+from utils.dicts import MaxSizeDict
+from utils.date import now
+#from utils import *
+import core.acl as acl
 
 errordesc = {
  "badArgument": "The request includes illegal arguments, is missing required arguments, includes a repeated argument, or values for arguments have an illegal syntax.",

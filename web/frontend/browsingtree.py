@@ -18,13 +18,13 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import time
-import users
-import tree
-import config
+import core.users as users
+import core.tree as tree
+import core.config as tree
 
-from utils import esc,getCollection
-from translation import t, lang
-from acl import AccessData
+from utils.utils import esc,getCollection
+from core.translation import t, lang
+from core.acl import AccessData
 import logging
 
 log = logging.getLogger('frontend')

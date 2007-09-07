@@ -17,14 +17,14 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import athana
-import acl
-import tree
+import core.athana as athana
+import core.acl as acl
+import core.tree as tree
 import logging
-import date
-from acl import AccessData
+import utils.date
+from core.acl import AccessData
 import string
-from edit_common import *
+#from edit_common import *
 
 log = logging.getLogger('edit')
 utrace = logging.getLogger('usertracing')

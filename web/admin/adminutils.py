@@ -17,14 +17,14 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import config
+import core.config as config
 import math
-import users
+import core.users as users
 import sys
 import traceback
 
-from utils import Link
-from translation import t, lang
+from utils.utils import Link
+from core.translation import t, lang
 
 def getAdminStdVars(req):
     if req.params.get("page","")=="0":

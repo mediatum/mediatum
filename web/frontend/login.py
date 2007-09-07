@@ -17,13 +17,13 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import users
-import athana
-import config
-import tree
+import core.users as users
+import core.athana as athana
+import core.config as config
+import core.tree as tree
 import logging
-from frontend.frame import getNavigationFrame
-from translation import *
+from web.frontend.frame import getNavigationFrame
+#from translation import *
 
 #
 # login form

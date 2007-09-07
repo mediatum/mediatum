@@ -17,15 +17,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import athana
-import acl
-import tree
+import core.athana as athana
+import core.acl as acl
+import core.tree as tree
 import logging
-import users
-from edit_common import *
+import core.users as users
+#from edit_common import *
 
-from acl_web import makeList
-from utils import removeEmptyStrings
+from core.acl_db import makeList
+from utils.utils import removeEmptyStrings
 
 log = logging.getLogger('edit')
 acl_types = ["read", "write", "data"]

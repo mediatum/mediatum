@@ -25,7 +25,7 @@ import logging
 import traceback
 import thread
 
-from database import initDatabaseValues
+from core.db.database import initDatabaseValues
 
 if __name__ == "__main__":
     sys.path += [".."]

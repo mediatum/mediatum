@@ -20,7 +20,6 @@
 import sys
 import utils.date
 import logging
-import core.search.query
 import xml
 import traceback
 import core.tree as tree

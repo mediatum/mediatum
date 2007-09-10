@@ -20,6 +20,13 @@
 import core.athana as athana
 
 def initContexts():
+    athana.setBase(".")
+    athana.setTempDir("/tmp/")
+    from core.config import resolve_filename
+    from core.translation import translate
+    athana.addMacroResolver(resolve_filename)
+    athana.addTranslator(translate)
+    
     context = athana.addContext("/", ".")
     # === public area ===
     file = context.addFile("web/frontend/streams.py")
@@ -94,19 +101,12 @@ def initContexts():
     athana.addContext("/flush", ".").addFile("core/webconfig.py").addHandler("flush").addPattern("/py")
    
 def flush(req):
-    athana.flushContexts()
+    athana.flush()
     import core.startup
     initContexts()
     req.write("flushed")
 
 def startWebServer():
-    athana.setBase(".")
-    athana.setTempDir("/tmp/")
-    from core.config import resolve_filename
-    from core.translation import translate
-    athana.addMacroResolver(resolve_filename)
-    athana.addTranslator(translate)
-    
     initContexts()
 
     athana.setThreads(8)

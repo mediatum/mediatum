@@ -39,7 +39,7 @@ class Flash(tree.Node):
 
     """ format big view with standard template """
     def show_node_big(node, req):
-        return req.getTAL("objtypes/flash.html", node._prepareData(req), macro="showbig")
+        return req.getTAL("contenttypes/flash.html", node._prepareData(req), macro="showbig")
 
     """ returns preview image """
     def show_node_image(node):
@@ -60,7 +60,7 @@ class Flash(tree.Node):
                 if field[0].startswith("subject"):
                     value = '<b>'+value+'</b>'
                 metatext.append(value)       
-        return athana.getTAL("objtypes/flash.html", {"values":metatext}, macro=macro, language=language)
+        return athana.getTAL("contenttypes/flash.html", {"values":metatext}, macro=macro, language=language)
 
 
     def can_open(node):
@@ -84,5 +84,5 @@ class Flash(tree.Node):
             if filenode.getType()=="original":
                 f =  "/file/" + str(node.id) + "/" + str(splitpath(filenode.getPath())[1])
                 break
-        req.writeTAL("objtypes/flash.html", {"path":f}, macro="fullsize")
+        req.writeTAL("contenttypes/flash.html", {"path":f}, macro="fullsize")
     

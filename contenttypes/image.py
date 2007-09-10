@@ -159,7 +159,7 @@ class Image(tree.Node):
     
     """ format big view with standard template """
     def show_node_big(node, req):
-        return req.getTAL("objtypes/image.html", node._prepareData(req), macro="showbig")
+        return req.getTAL("contenttypes/image.html", node._prepareData(req), macro="showbig")
     
     """ format node image with standard template """
     def show_node_image(node, language=None):
@@ -183,7 +183,7 @@ class Image(tree.Node):
         else:
             print 'mask "smallview" not defined for nodetype', node.getTypeName()
             metatext.append('&lt;smallview mask not defined&gt;')
-        return athana.getTAL("objtypes/image.html", {"values":metatext}, macro=macro, language=language)
+        return athana.getTAL("contenttypes/image.html", {"values":metatext}, macro=macro, language=language)
 
     def can_open(node):
         return 0
@@ -375,9 +375,9 @@ class Image(tree.Node):
  
     """ upload functionallity """
     def upload_form(node, req):
-        req.writeTAL("objtypes/image.html", {"metadatatypes":loadTypesFromDB()}, macro="uploadform")
+        req.writeTAL("contenttypes/image.html", {"metadatatypes":loadTypesFromDB()}, macro="uploadform")
 
     """ fullsize popup-window for image node """
     def popup_fullsize(node, req):
-        req.writeTAL("objtypes/image.html", {"key":req.params.get("id", "")}, macro="imageviewer")
+        req.writeTAL("contenttypes/image.html", {"key":req.params.get("id", "")}, macro="imageviewer")
         

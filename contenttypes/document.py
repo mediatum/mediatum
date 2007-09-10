@@ -54,7 +54,7 @@ class Document(tree.Node):
      
     """ format big view with standard template """
     def show_node_big(node, req):
-        return req.getTAL("objtypes/document.html", node._prepareData(req), macro="showbig")
+        return req.getTAL("contenttypes/document.html", node._prepareData(req), macro="showbig")
     
     """ format node image with standard template """
     def show_node_image(node):
@@ -75,7 +75,7 @@ class Document(tree.Node):
                         value = '<span class="author">'+value+'</span>'
                     metatext.append(value)
 
-        return athana.getTAL("objtypes/document.html", {"values":metatext}, macro=macro, language=language)
+        return athana.getTAL("contenttypes/document.html", {"values":metatext}, macro=macro, language=language)
 
     def can_open(node):
         return 0
@@ -172,7 +172,7 @@ class Document(tree.Node):
 
     """ show uploadform for metadatatype 'document' """
     def upload_form(node, req):
-        req.writeTAL("objtypes/document.html", {"metadatatypes": loadTypesFromDB()}, macro="uploadform")
+        req.writeTAL("contenttypes/document.html", {"metadatatypes": loadTypesFromDB()}, macro="uploadform")
 
     """ popup window for actual nodetype """
     def popup_fullsize(node, req):
@@ -245,6 +245,6 @@ class Document(tree.Node):
     """ format attachment browser """
     def getAttachmentBrowser(node, req):
         f, s = node.filebrowser(req)
-        req.writeTAL("objtypes/document.html", {"files":f, "sum_size":s, "id": req.params.get("id",""), "path":req.params.get("path", "")}, macro="attachmentbrowser")
+        req.writeTAL("contenttypes/document.html", {"files":f, "sum_size":s, "id": req.params.get("id",""), "path":req.params.get("path", "")}, macro="attachmentbrowser")
 
 

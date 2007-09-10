@@ -45,7 +45,7 @@ class Video(tree.Node):
 
     """ format big view with standard template """
     def show_node_big(node, req):
-        return req.getTAL("objtypes/video.html", node._prepareData(req), macro="showbig")
+        return req.getTAL("contenttypes/video.html", node._prepareData(req), macro="showbig")
 
     """ returns preview image """
     def show_node_image(node):
@@ -95,7 +95,7 @@ class Video(tree.Node):
                 if field[0].startswith("subject"):
                     value = '<b>'+value+'</b>'
                 metatext.append(value)       
-        return athana.getTAL("objtypes/video.html", {"values":metatext}, macro=macro, language=language)
+        return athana.getTAL("contenttypes/video.html", {"values":metatext}, macro=macro, language=language)
 
 
     def can_open(node):
@@ -126,4 +126,4 @@ class Video(tree.Node):
                     playList: [{ url: '""" +f+"""' }],
                     showPlayListButtons: true
                     }"""
-        req.writeTAL("objtypes/video.html", {"playervalues":f, "node":node}, macro="fullsize_flv")
+        req.writeTAL("contenttypes/video.html", {"playervalues":f, "node":node}, macro="fullsize_flv")

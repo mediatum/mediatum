@@ -72,11 +72,11 @@ class Directory(tree.Node):
     
     """ format node image with standard template """
     def show_node_image(node,language=None):
-        return athana.getTAL("objtypes/directory.html", {"node":node}, macro="thumbnail",language=language)
+        return athana.getTAL("contenttypes/directory.html", {"node":node}, macro="thumbnail",language=language)
      
     """ format text view with standard template """
     def show_node_text(node, words=None,language=None, macro="metadatavalues"):
-        return athana.getTAL("objtypes/directory.html", {"node":node}, macro=macro,language=language)
+        return athana.getTAL("contenttypes/directory.html", {"node":node}, macro=macro,language=language)
 
     def can_open(node):
         return 1

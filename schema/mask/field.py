@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.athana as athana
-#from utils.utils import *
+from utils.utils import formatLongText
 import core.tree as tree
 from core.tree import Node, getNode
 

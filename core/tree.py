@@ -19,6 +19,7 @@
 """
 from utils import *
 import config
+import os
 nodeclasses = {}
 nodefunctions = {}
 

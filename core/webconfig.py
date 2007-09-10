@@ -74,7 +74,7 @@ def startWebServer():
     # === edit area ===
     context = athana.addContext("/edit", ".")
     file = context.addFile("web/edit/edit.py")
-    file.addHandler("frameset")
+    handler = file.addHandler("frameset")
     handler.addPattern("/")
     handler.addPattern("/edit")
     file.addHandler("flush").addPattern("/flush")

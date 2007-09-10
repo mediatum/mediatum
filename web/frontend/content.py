@@ -79,9 +79,9 @@ class ContentListStyle:
     def getTemplate(self):
         return self.template
 
-liststyles=[ContentListStyle("list","Listen-Ansicht","list.png","frontend/content_list.html"),
-            ContentListStyle("thumbnail","Thumbnail-Ansicht","thumb.png","frontend/content_thumb.html"),
-            ContentListStyle("text","Text-Ansicht","text.png","frontend/content_text.html"),
+liststyles=[ContentListStyle("list","Listen-Ansicht","list.png","web/frontend/content_list.html"),
+            ContentListStyle("thumbnail","Thumbnail-Ansicht","thumb.png","web/frontend/content_thumb.html"),
+            ContentListStyle("text","Text-Ansicht","text.png","web/frontend/content_text.html"),
            ]
            #ContentListStyle("dummystyle","dummystyle","","")
 

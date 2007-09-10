@@ -63,7 +63,7 @@ class WorkflowStep_Upload(WorkflowStep):
         prefix = self.get("prefix")
         suffix = self.get("suffix")
 
-        return req.getTAL("objtypes/workflow.html", {"obj": node.id, "id": self.id,"prefix": prefix, "suffix": suffix, "filelist": filelist, "node": node, "buttons": self.tableRowButtons(node), "error":error}, macro="workflow_upload")
+        return req.getTAL("workflow/workflow.html", {"obj": node.id, "id": self.id,"prefix": prefix, "suffix": suffix, "filelist": filelist, "node": node, "buttons": self.tableRowButtons(node), "error":error}, macro="workflow_upload")
 
     def metaFields(self):
         ret = list()

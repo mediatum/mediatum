@@ -60,7 +60,7 @@ class WorkflowStep_Start(WorkflowStep):
         cookie_test();
         </script>""" % cookie_error
 
-        return req.getTAL("objtypes/workflow.html", {"types":types, "id":self.id, "js":js}, macro="workflow_start")
+        return req.getTAL("workflow/start.html", {"types":types, "id":self.id, "js":js}, macro="workflow_start")
         
     def metaFields(self):
         ret = list()

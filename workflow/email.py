@@ -98,7 +98,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
             to = node.get("mailtmp.to")
             text = node.get("mailtmp.text")
             subject = node.get("mailtmp.subject")
-            return req.getTAL("objtypes/workflow.html", {"page":"node?id="+self.id+"&obj="+node.id, "from":xfrom, "to":to, "text":text, "subject":subject}, macro="sendmail")
+            return req.getTAL("workflow/mail.html", {"page":"node?id="+self.id+"&obj="+node.id, "from":xfrom, "to":to, "text":text, "subject":subject}, macro="sendmail")
 
     def metaFields(self):
         ret = list()

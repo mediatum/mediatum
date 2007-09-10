@@ -19,7 +19,7 @@
 """
 
 def mkfilelist(node, deletebutton=0, language=None, request=None):
-    return request.getTAL("objtypes/workflow.html", {"files":node.getFiles(), "node":node, "delbutton":deletebutton} , macro="workflow_filelist")
+    return request.getTAL("workflow/showdata.html", {"files":node.getFiles(), "node":node, "delbutton":deletebutton} , macro="workflow_filelist")
     
 
 class WorkflowStep_ShowData(WorkflowStep):
@@ -58,7 +58,7 @@ class WorkflowStep_ShowData(WorkflowStep):
         if node.getFiles():
             filelist = mkfilelist(node, request=req)
 
-        return req.getTAL("objtypes/workflow.html", {"key": key, "filelist": filelist, "fields": fieldmap, "prefix": prefix, "suffix": suffix, "buttons": self.tableRowButtons(node)}, macro="workflow_showdata")
+        return req.getTAL("workflow/showdata.html", {"key": key, "filelist": filelist, "fields": fieldmap, "prefix": prefix, "suffix": suffix, "buttons": self.tableRowButtons(node)}, macro="workflow_showdata")
 
 
     def metaFields(self):

@@ -550,7 +550,7 @@ class Workflows(tree.Node):
             if access.hasWriteAccess(workflow):
                 list += [workflow]
 
-        return req.getTAL("objtypes/workflow.html", {"list":list}, macro="workflowlist")
+        return req.getTAL("workflow/workflow.html", {"list":list}, macro="workflowlist")
 
     def can_open(node):
         return 1
@@ -572,7 +572,7 @@ class Workflow(tree.Node):
         if not access.hasWriteAccess(node):
             return '<i>' + t(lang(req),"permission_denied") + '</i>'
 
-        return req.getTAL("objtypes/workflow.html", {"workflow": node}, macro="object_list")
+        return req.getTAL("workflow/workflow.html", {"workflow": node}, macro="object_list")
 
     def getId(self):
         return self.getName()
@@ -652,7 +652,7 @@ class WorkflowStep(tree.Node):
 
                 link = '('+self.name+')'
                 
-                return req.getTAL("objtypes/workflow.html", {"node": node, "link":link, "email":config.get("email.workflow")}, macro="workflow_step")
+                return req.getTAL("workflow/workflow.html", {"node": node, "link":link, "email":config.get("email.workflow")}, macro="workflow_step")
 
             present = 0
             for p in node.getParents():
@@ -696,7 +696,7 @@ class WorkflowStep(tree.Node):
             return self.forwardAndShow(node, False, req)
 
         # to be overloaded
-        return req.getTAL("objtypes/workflow.html", {"node": node, "name":self.name}, macro="workflow_node")
+        return req.getTAL("workflow/workflow.html", {"node": node, "name":self.name}, macro="workflow_node")
      
 
     def show_workflow_step(self, req):
@@ -704,7 +704,7 @@ class WorkflowStep(tree.Node):
         if not access.hasWriteAccess(self):
             return '<i>'+t(lang(req),"permission_denied")+'</i>'
         
-        return req.getTAL("objtypes/workflow.html", {"step": self, "nodelink": "/mask?id="+self.id+"&obj=", "format_date": date.format_date, "parse_date": date.parse_date}, macro="workflow_show")
+        return req.getTAL("workflow/workflow.html", {"step": self, "nodelink": "/mask?id="+self.id+"&obj=", "format_date": date.format_date, "parse_date": date.parse_date}, macro="workflow_show")
     
     def show_node_image(node):
         return """<img border="0" src="/img/directory.png">"""
@@ -743,7 +743,7 @@ class WorkflowStep(tree.Node):
         newnode = self.forward(node, op)
 
         if newnode is None:
-            return req.getTAL("objtypes/workflow.html", {"node":node}, macro="workflow_forward")
+            return req.getTAL("workflow/workflow.html", {"node":node}, macro="workflow_forward")
 
         if link is None:
             newloc = req.makeLink("/mask", {"id":newnode.id, "obj":node.id})
@@ -751,7 +751,7 @@ class WorkflowStep(tree.Node):
             newloc = link
         redirect = 1
         if redirect == 0:
-            return req.getTAL("objtypes/workflow.html", {"newnodename":newnode.name, "email":config.get("email.workflow")}, macro="workflow_forward2")
+            return req.getTAL("workflow/workflow.html", {"newnodename":newnode.name, "email":config.get("email.workflow")}, macro="workflow_forward2")
         else:
             return """<script language="javascript">document.location.href = "%s";</script>""" % newloc
 

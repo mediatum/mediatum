@@ -40,7 +40,7 @@ class WorkflowStep_EditMetadata(WorkflowStep):
                 error = '<p class="error">'+ t(lang(req),"workflow_error_msg")+'</p>'
                 req.params["errorlist"] = missing
         
-        return req.getTAL("objtypes/workflow.html", {"name":self.getName(), "error":error, "key":key, "mask":mask.getFormHTML([node],req), "buttons":self.tableRowButtons(node)}, macro="workflow_metadateneditor")
+        return req.getTAL("workflow/editmetadata.html", {"name":self.getName(), "error":error, "key":key, "mask":mask.getFormHTML([node],req), "buttons":self.tableRowButtons(node)}, macro="workflow_metadateneditor")
     
     def metaFields(self):
         ret = list()

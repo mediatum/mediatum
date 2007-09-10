@@ -19,16 +19,8 @@
 """
 import core.athana as athana
 
-def startWebServer():
-    athana.setBase(".")
-    athana.setTempDir("/tmp/")
-    from core.config import resolve_filename
-    from core.translation import translate
-    athana.addMacroResolver(resolve_filename)
-    athana.addTranslator(translate)
-
+def initContexts():
     context = athana.addContext("/", ".")
-
     # === public area ===
     file = context.addFile("web/frontend/streams.py")
     file.addHandler("send_image").addPattern("/images/.*")
@@ -98,6 +90,24 @@ def startWebServer():
     athana.addFileStore("/css/", "web/css/")
     athana.addFileStore("/img/", ["web/img/", "img"])
     athana.addFileStore("/js/", ["web/js/", "js"])
+
+    athana.addContext("/flush", ".").addFile("core/webconfig.py").addHandler("flush").addPattern("/py")
+   
+def flush(req):
+    athana.flushContexts()
+    import core.startup
+    initContexts()
+    req.write("flushed")
+
+def startWebServer():
+    athana.setBase(".")
+    athana.setTempDir("/tmp/")
+    from core.config import resolve_filename
+    from core.translation import translate
+    athana.addMacroResolver(resolve_filename)
+    athana.addTranslator(translate)
+    
+    initContexts()
 
     athana.setThreads(8)
 

@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.7 2007/09/07 09:42:39 kramm Exp $'
+RCS_ID =  '$Id: athana.py,v 1.8 2007/09/10 13:19:29 kramm Exp $'
 
 import sys
 
@@ -5793,8 +5793,6 @@ GLOBAL_ROOT_DIR="no-root-dir-set"
 verbose = 0
 multithreading_enabled = 0
 number_of_threads = 32
-lg = None
-lgerr = None
 
 def qualify_path(p):
     if p[-1] != '/':
@@ -5834,139 +5832,93 @@ def getMacroFile(filename):
     if os.path.isfile(filename2):
         return filename2
     raise IOError("No such file: "+filename2)
+   
+
+global_modules={}
+
+def _make_inifiles(root, path):
+    dirs = path.split("/")
+    path = root
+    for dir in dirs:
+        path = join_paths(path, dir)
+        inifile = join_paths(path, "__init__.py")
+        # create missing __init__.py
+        if not os.path.isfile(inifile):
+            if lg:
+                lg.log("creating file "+inifile)
+            open(inifile, "wb").close()
+
+def _load_module(filename):
+    global global_modules
+    b = BASENAME.match(filename)
+    # filename e.g. /my/modules/test.py
+    # b.group(1) = /my/modules/
+    # b.group(2) = test.py
+    if b is None:
+        raise "Internal error with filename "+filename
+    module = b.group(2)
+    if module is None:
+        raise "Internal error with filename "+filename
+            
+    while filename.startswith("./"):
+        filename = filename[2:]
+
+    if filename in global_modules:
+        return global_modules[filename]
+
+    dir = os.path.dirname(filename)
+    path = dir.replace("/",".")
+
+    _make_inifiles(GLOBAL_ROOT_DIR, dir)
+
+    # strip tailing/leading dots
+    while len(path) and path[0] == '.':
+        path = path[1:]
+    while len(path) and path[-1] != '.':
+        path = path + "."
+   
+    module2 = (path + module)
+    if lg:
+        lg.log("Loading module "+module2)
+
+    m = __import__(module2)
+    try:
+        i = module2.index(".")
+        m = eval("m."+module2[i+1:])
+        global_modules[filename] = m
+    except:
+        pass
+    return m
+
 
 class WebContext:
     def __init__(self, name, root=None):
         self.name = name
         self.files = []
-        self.modules = {}
         self.startupfile = None
         if root:
             self.root = qualify_path(root)
+        self.pattern_to_function = {}
+        self.id_to_function = {}
+
     def addFile(self, filename):
         file = WebFile(self, filename)
         self.files += [file]
         return file
+
     def setRoot(self, root):
         self.root = qualify_path(root)
         while self.root.startswith("./"):
             self.root = self.root[2:]
+
     def setStartupFile(self, startupfile):
         self.startupfile = startupfile
+        lg.log("  executing startupfile")
+        self._load_module(self.startupfile)
+
     def getStartupFile(self):
         return self.startupfile
 
-    def _make_inifiles(self, root, path):
-        dirs = path.split("/")
-        path = root
-        for dir in dirs:
-            path = join_paths(path, dir)
-            inifile = join_paths(path, "__init__.py")
-            # create missing __init__.py
-            if not os.path.isfile(inifile):
-                lg.log("creating file "+inifile)
-                open(inifile, "wb").close()
-
-    def _load_module(self, filename):
-        b = BASENAME.match(filename)
-        if b is None:
-            raise "Internal error with filename "+filename
-        module = b.group(2)
-        if module is None:
-            raise "Internal error with filename "+filename
-                
-        if module in self.modules:
-            return self.modules[module]
-
-        while filename.startswith("./"):
-            filename = filename[2:]
-
-        dir = os.path.dirname(filename)
-        path = dir.replace("/",".")
-
-        self._make_inifiles(GLOBAL_ROOT_DIR, dir)
-
-        # strip tailing/leading dots
-        while len(path) and path[0] == '.':
-            path = path[1:]
-        while len(path) and path[-1] != '.':
-            path = path + "."
-       
-        module2 = (path + module)
-        lg.log("Loading module "+module2)
-
-        m = __import__(module2)
-        try:
-            i = module2.index(".")
-            m = eval("m."+module2[i+1:])
-            self.modules[module] = m
-        except:
-            pass
-        return m
-
-    def initialize(self):
-        if self.startupfile:
-            lg.log("  executing startupfile")
-            self._load_module(self.startupfile)
-
-        self.pattern_to_function = {}
-        self.id_to_function = {}
-        for file in self.files:
-            filename = file.getFileName()
-            m = self._load_module(filename)
-            
-            global macroresolvers,translators,ftphandlers
-
-            for ftpclass in file.ftpclasses:
-                try:
-                    c = eval("m."+ftpclass)
-                    if c is None:
-                        raise
-                    ftphandlers += [c]
-                except:
-                    lgerr.log("Error in FTP Handler:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
-                    traceback.print_tb(sys.exc_info()[2],None,lgerr)
-                    raise "No such function "+macroresolver+" in file "+filename
-
-            for macroresolver in file.macroresolvers:
-                try:
-                    f = eval("m."+macroresolver)
-                    if f is None: 
-                        raise
-                    macroresolvers += [f]
-                except:
-                    lgerr.log("Error in Macro Resolver:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
-                    traceback.print_tb(sys.exc_info()[2],None,lgerr)
-                    raise "No such function "+macroresolver+" in file "+filename
-
-            for translator in file.translators:
-                try:
-                    f = eval("m."+translator)
-                    if f is None: 
-                        raise
-                    translators += [f]
-                except:
-                    lgerr.log("Error in Macro Resolver:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
-                    traceback.print_tb(sys.exc_info()[2],None,lgerr)
-                    raise "No such function "+translator+" in file "+filename
-
-            for handler in file.handlers:
-                try:
-                    f = eval("m."+handler.function)
-                    if f is None: 
-                        raise
-                except:
-                    lgerr.log("Error in Handler:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
-                    traceback.print_tb(sys.exc_info()[2],None,lgerr)
-                    raise "No such function "+handler.function+" in file "+filename
-
-                for pattern in handler.patterns:
-                    patternstr = pattern.getPatternString()
-                    desc = "pattern %s, file %s, function %s" % (patternstr,filename,handler.function)
-                    desc2 = "file %s, function %s" % (filename,handler.function)
-                    self.pattern_to_function[pattern.getPattern()] = (f,desc)
-                    self.id_to_function["/"+handler.function] = (f,desc2)
-       
     def match(self, path):
         function = None
         for pattern,call in self.pattern_to_function.items():
@@ -5996,18 +5948,12 @@ class WebContext:
 class FileStore:
     def __init__(self, name, root=None):
         self.name = name
-        self.dirs = []
         self.handlers = []
         if type(root) == type(""):
-            self.dirs += [root]
+            self.addRoot(root)
         elif type(root) == type([]):
-            self.dirs += root
-    def initialize(self):
-        for dir in self.dirs:
-            if zipfile.is_zipfile(GLOBAL_ROOT_DIR + dir[:-1]) and dir.lower().endswith("zip/"):
-                self.handlers += [default_handler (zip_filesystem (GLOBAL_ROOT_DIR + dir[:-1]))]
-            else:
-                self.handlers += [default_handler (os_filesystem (GLOBAL_ROOT_DIR + dir))]
+            for dir in root:
+                self.addRoot(dir)
 
     def match(self, path):
         return lambda req: self.findfile(req)
@@ -6018,11 +5964,14 @@ class FileStore:
                 return handler.handle_request(request)
         return request.error(404, "File "+request.path+" not found")
 
-    def addRoot(self, root):
-        root = qualify_path(root)
-        while root.startswith("./"):
-            root = root[2:]
-        self.dirs += [root]
+    def addRoot(self, dir):
+        dir = qualify_path(dir)
+        while dir.startswith("./"):
+            dir = dir[2:]
+        if zipfile.is_zipfile(GLOBAL_ROOT_DIR + dir[:-1]) and dir.lower().endswith("zip/"):
+            self.handlers += [default_handler (zip_filesystem (GLOBAL_ROOT_DIR + dir[:-1]))]
+        else:
+            self.handlers += [default_handler (os_filesystem (GLOBAL_ROOT_DIR + dir))]
 
 class WebFile:
     def __init__(self, context, filename):
@@ -6030,20 +5979,53 @@ class WebFile:
         if filename[0] == '/':
             filename = filename[1:]
         self.filename = filename
+        self.m = _load_module(filename)
         self.handlers = []
-        self.macroresolvers = []
-        self.translators = []
-        self.ftpclasses = []
+
     def addHandler(self, function):
         handler = WebHandler(self, function)
         self.handlers += [handler]
         return handler
+
     def addFTPHandler(self, ftpclass):
-        self.ftpclasses += [ftpclass]
-    def addMacroResolver(self, handler):
-        self.macroresolvers += [handler]
+        global ftphandlers
+        m = self.m
+        try:
+            c = eval("m."+ftpclass)
+            if c is None:
+                raise
+            ftphandlers += [c]
+        except:
+            lgerr.log("Error in FTP Handler:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
+            traceback.print_tb(sys.exc_info()[2],None,lgerr)
+            raise "No such function "+ftpclass+" in file "+self.filename
+
+    def addMacroResolver(self, macroresolver):
+        global macroresolvers
+        m = self.m
+        try:
+            f = eval("m."+macroresolver)
+            if f is None: 
+                raise
+            macroresolvers += [f]
+        except:
+            lgerr.log("Error in Macro Resolver:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
+            traceback.print_tb(sys.exc_info()[2],None,lgerr)
+            raise "No such function "+macroresolver+" in file "+self.filename
+
     def addTranslator(self, handler):
-        self.translators += [handler]
+        global translators
+        m = self.m
+        try:
+            f = eval("m."+translator)
+            if f is None: 
+                raise
+            translators += [f]
+        except:
+            lgerr.log("Error in Macro Resolver:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
+            traceback.print_tb(sys.exc_info()[2],None,lgerr)
+            raise "No such function "+translator+" in file "+self.filename
+
     def getFileName(self):
         return self.context.root + self.filename
 
@@ -6051,10 +6033,22 @@ class WebHandler:
     def __init__(self, file, function):
         self.file = file
         self.function = function
-        self.patterns = []
+        m = file.m
+        try:
+            self.f = eval("m."+function)
+            if self.f is None: 
+                raise
+        except:
+            lgerr.log("Error in Handler:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
+            traceback.print_tb(sys.exc_info()[2],None,lgerr)
+            raise "No such function "+function+" in file "+self.file.filename
+
     def addPattern(self, pattern):
         p = WebPattern(self,pattern)
-        self.patterns += [p]
+        desc = "pattern %s, file %s, function %s" % (pattern,self.file.filename,self.function)
+        desc2 = "file %s, function %s" % (self.file.filename,self.function)
+        self.file.context.pattern_to_function[p.getPattern()] = (self.f,desc)
+        self.file.context.id_to_function["/"+self.function] = (self.f,desc2)
         return p
 
 class WebPattern:
@@ -6523,7 +6517,7 @@ class AthanaHandler:
                 self.queuelock.release()
             return
         else:
-            lg.log("Request %s matches no pattern" % request.path)
+            lg.log("Request %s matches no pattern (context: %s)" % (request.path,context.name))
             return request.error(404, "File %s not found" % request.path)
         
     def callhandler(self, function, req):
@@ -6578,6 +6572,9 @@ class logging_logger:
         self.logger.info(message.rstrip())
     def error (self, message):
         self.logger.error(message.rstrip())
+
+lg = logging_logger()
+lgerr = logging_logger("errors")
 
 class zip_filesystem:
     def __init__(self, filename):
@@ -6697,6 +6694,11 @@ def addContext(webpath, localpath):
     contexts += [c]
     return c
 
+def flushContexts():
+    global contexts,global_modules
+    contexts[:] = []
+    global_modules.clear()
+
 def addFileStore(webpath, localpaths):
     global contexts
     if len(webpath) and webpath[0] != '/':
@@ -6715,37 +6717,9 @@ def setThreads(number):
         multithreading_enabled=0
         number_of_threads=1
         
-def run(INIFILE=None, WEBLOG=None, TEMPDIR="/tmp/", PORT=8081):
-    global GLOBAL_TEMP_DIR,lg,lgerr,contexts
-   
-    GLOBAL_TEMP_DIR = TEMPDIR
-    
-    if WEBLOG is not None:
-        fi = open(WEBLOG, "wb")
-        lg = file_logger (fi)
-        lgerr = lg
-    else:
-        lg = logging_logger()
-        lgerr = logging_logger("errors")
-
-    if INIFILE:
-        contexts += read_ini_file(INIFILE)
-
-    print "-"*72
-    if multithreading_enabled:
-        print "Starting Athana (%d threads)..." % number_of_threads
-    else:
-        print "Starting Athana..."
-    print "Init-File:",INIFILE
-    print "Log-File:",WEBLOG
-    print "Temp-Path:",TEMPDIR
-    print "-"*72
-
-    for context in contexts:
-        context.initialize()
-
+def run(port=8081):
     ph = AthanaHandler(contexts)
-    hs = http_server ('', PORT, logger_object = lg)
+    hs = http_server ('', port, logger_object = lg)
     hs.install_handler (ph)
 
     if len(ftphandlers) > 0:
@@ -6773,7 +6747,7 @@ def setTempDir(path):
     GLOBAL_TEMP_DIR = path
 
 def mainfunction():
-    global verbose,port,init_file,log_file,temp_path,multithreading_enabled,number_of_threads
+    global verbose,port,init_file,log_file,temp_path,multithreading_enabled,number_of_threads,GLOBAL_TEMP_DIR,contexts,lg,lgerr
     os.putenv('ATHANA_VERSION',ATHANA_VERSION)
 
     from optparse import OptionParser
@@ -6802,10 +6776,10 @@ def mainfunction():
     if options.verbose != None : verbose = 2
     if options.quiet != None : verbose = 0
     if options.debug != None : verbose = 3
-    if options.port != None : port = options.port
+    if options.port != None : port = int(options.port)
     if options.init != None : init_file = options.init
     if options.log != None : log_file = options.log
-    if options.temp != None : temp_path = options.temp
+    if options.temp != None : GLOBAL_TEMP_DIR = options.temp
     if options.multithreading_enabled : multithreading_enabled = 1
     if options.threads != None : number_of_threads = options.threads
 
@@ -6813,7 +6787,25 @@ def mainfunction():
         print getTAL(options.talfile, {"mynone":None})
         sys.exit(0)
 
-    run(INIFILE=init_file, WEBLOG=log_file, TEMPDIR=temp_path, PORT=int(port))
+    if inifile:
+        contexts += read_ini_file(inifile)
+    
+    if logfile is not None:
+        fi = open(logfile, "wb")
+        lg = file_logger (fi)
+        lgerr = lg
+
+    print "-"*72
+    if multithreading_enabled:
+        print "Starting Athana (%d threads)..." % number_of_threads
+    else:
+        print "Starting Athana..."
+    print "Init-File:",init_file
+    print "Log-File:",log_file
+    print "Temp-Path:",GLOBAL_TEMP_DIR
+    print "-"*72
+
+    run(port)
 
 if __name__ == '__main__':
     import athana

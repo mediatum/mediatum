@@ -21,9 +21,9 @@ import core.config as config
 import Image
 import core.tree as tree
 import core.users as users
-import schema
+from schema.schema import loadTypesFromDB
 import core.athana as athana
-import core.acl
+import core.acl as acl
 import random
 import os
 

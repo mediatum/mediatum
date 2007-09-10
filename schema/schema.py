@@ -27,6 +27,7 @@ import core.tree as tree
 import core.config as config
 
 from utils.utils import *
+from utils.date import *
 from core.tree import nodeclasses, Node
 from core.config import *
 from core.xmlnode import getNodeXML, readNodeXML

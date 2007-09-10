@@ -18,8 +18,9 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.tree as tree
-#from edit_common import *
+from edit_common import writetree
 from core.translation import t, lang
+from core.acl import AccessData
 
 
 def edit_classes(req, ids):

@@ -19,7 +19,7 @@
 """
 import core.athana as athana
 import utils.date as date
-from utils.date import format_date, parse_date, now
+from utils.date import format_date, parse_date, now, validateDate
 from schema.schema import dateoption
 from core.metatype import Metatype
 

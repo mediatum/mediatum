@@ -21,8 +21,8 @@ import sys, types
 import traceback
 import core.acl as acl
 
-#from users import *
-#from usergroups import *
+from core.users import loadUsersFromDB
+from core.usergroups import loadGroupsFromDB
 from core.acl import AccessRule
 from web.admin.adminutils import Overview, getAdminStdVars
 from core.translation import t, lang
@@ -100,7 +100,7 @@ def view(req):
     v["sortcol"] = pages.OrderColHeader([t(lang(req),"admin_acl_col_1"), t(lang(req),"admin_acl_col_2"), t(lang(req),"admin_acl_col_3")])
     v["rules"] = rules
     v["pages"] = pages
-    return req.getTAL("admin/modules/acls.html", v, macro="view")
+    return req.getTAL("web/admin/modules/acls.html", v, macro="view")
 
 #
 # edit rule
@@ -122,7 +122,7 @@ def editRule_mask(req, id, err=0):
     v = getAdminStdVars(req)
     v["error"] = err
     v["rule"] = rule
-    return req.getTAL("admin/modules/acls.html", v, macro="modify")
+    return req.getTAL("web/admin/modules/acls.html", v, macro="modify")
 
 #
 # open ACL-Editor
@@ -144,6 +144,6 @@ def showEditor(req):
     v["datestr"] = """\"<table border=\\"0\\"><tr><td rowspan=\\"2\\" valign=\\"top\\">"""+t(lang(req),"admin_acl_editor_operator")+""":</td><td rowspan=\\"2\\"><select name=\\"ruleop\\" id=\\"ruleop\\" size=\\"4\\" ONCLICK=setValue(this) ><option value=\\"<= \\">&lt=</option><option value=\\">= \\">&gt=</option><option value=\\"< \\">&lt</option><option value=\\"> \\">&gt</option></select></td><td valign=\\"top\\">"""+t(lang(req),"admin_acl_editor_date")+""":</td><td><input type=\\"text\\" name=\\"date\\" id=\\"datevalue\\" size=\\"10\\" maxlength=\\"10\\"><button name=\\"dateselect\\" type=\\"button\\" ONCLICK=setValue(this)>"""+t(lang(req),"admin_acl_editor_buttonok")+"""</button></td>    </tr><tr><td align=\\"right\\" colspan=\\"2\\"><small>"""+t(lang(req),"admin_acl_editor_format")+""": dd.mm.yyyy</small></td></tr></table>\""""
     v["ipstr"] = """\"<table border=\\"0\\"><tr><td valign=\\"top\\">"""+t(lang(req),"admin_acl_editor_ip")+""":</td><td><input type=\\"text\\" name=\\"ipvalue\\" id=\\"ipvalue\\" size=\\"15\\"><button name=\\"ipselect\\" type=\\"button\\" ONCLICK=setValue(this)>"""+t(lang(req),"admin_acl_editor_buttonok")+"""</button></td></tr><tr><td align=\\"right\\" colspan=\\"2\\"><small>"""+t(lang(req),"admin_acl_editor_format")+""": xxx.xxx.xxx.xxx</small></td></tr></table>\""""
    
-    return req.getTAL("admin/modules/acls.html", v, macro="acleditor")
+    return req.getTAL("web/admin/modules/acls.html", v, macro="acleditor")
 
     

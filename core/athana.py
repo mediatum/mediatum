@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.9 2007/09/10 13:40:27 kramm Exp $'
+RCS_ID =  '$Id: athana.py,v 1.10 2007/09/10 13:54:46 kramm Exp $'
 
 import sys
 
@@ -6367,8 +6367,7 @@ SESSION_PATTERN = re.compile("^;[a-z0-9]{6}-[a-z0-9]{6}-[a-z0-9]{6}$")
 use_cookies = 1
 
 class AthanaHandler:
-    def __init__(self, contexts):
-        self.contexts = contexts
+    def __init__(self):
         self.sessions = {}
         self.queue = []
         self.queuelock = thread.allocate_lock()
@@ -6482,7 +6481,8 @@ class AthanaHandler:
 
         maxlen = -1
         context = None
-        for c in self.contexts:
+        global contexts
+        for c in contexts:
             #lg.debug("Compare context "+c.name+" with request "+path)
             if path.startswith(c.name) and len(c.name)>maxlen:
                 context = c
@@ -6704,9 +6704,12 @@ def addContext(webpath, localpath):
     contexts += [c]
     return c
 
-def flushContexts():
-    global contexts,global_modules
+def flush():
+    global contexts,translators,ftphandlers,macroresolvers,global_modules
     contexts[:] = []
+    translators[:] = []
+    ftphandlers[:] = []
+    macroresolvers[:] = []
     global_modules.clear()
     _purge_all_modules()
 
@@ -6729,7 +6732,7 @@ def setThreads(number):
         number_of_threads=1
         
 def run(port=8081):
-    ph = AthanaHandler(contexts)
+    ph = AthanaHandler()
     hs = http_server ('', port, logger_object = lg)
     hs.install_handler (ph)
 

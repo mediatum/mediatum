@@ -82,7 +82,7 @@ def edit_upload(req, ids):
                 _schemes.append(scheme)
         schemes = _schemes
 
-    req.write(req.getTAL("edit/edit_upload.html",{"id":req.params.get("id"),"datatypes":dtypes, "schemes":schemes, "objtype":objtype, "error":req.params.get("error")},macro="upload_form"))
+    req.write(req.getTAL("web/edit/edit_upload.html",{"id":req.params.get("id"),"datatypes":dtypes, "schemes":schemes, "objtype":objtype, "error":req.params.get("error")},macro="upload_form"))
         
     showdir(req, uploaddir)
     return athana.HTTP_OK
@@ -157,7 +157,7 @@ def upload_new(req):
 """ popup with type information"""
 def upload_help(req):
     try:
-        req.writeTAL("objtype/"+req.params.get("objtype", "") +".html", {}, macro="upload_help")
+        req.writeTAL("contenttype/"+req.params.get("objtype", "") +".html", {}, macro="upload_help")
     except:
         None
     

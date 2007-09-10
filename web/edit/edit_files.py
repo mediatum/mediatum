@@ -33,7 +33,7 @@ def edit_files(req, ids):
     
     access = acl.AccessData(req)
     if not access.hasWriteAccess(node):
-        req.writeTAL("edit/edit.html", {}, macro="access_error")
+        req.writeTAL("web/edit/edit.html", {}, macro="access_error")
         return
 
     mime = ""
@@ -62,7 +62,7 @@ def edit_files(req, ids):
             mimetype, type = getMimeType(r)
 
             if mime!=mimetype and mime!="":
-                req.writeTAL("edit/edit_files.html",{},macro="filetype_error")
+                req.writeTAL("web/edit/edit_files.html",{},macro="filetype_error")
             
             else:
                 for nfile in node.getFiles():
@@ -134,7 +134,7 @@ def edit_files(req, ids):
              node.removeAttribute(key)
         technfields={}
 
-    req.writeTAL("edit/edit_files.html", {"id":req.params.get("id","0"), "tab":req.params.get("tab", ""), "node":node, "obsoletefields":obsoletefields, "allow_delete_unused":allow_delete_unused, "metafields":metafields, "fields":fields, "technfields":technfields, "tattr":tattr,"fd":formatdate, "gf":getFormat}, macro="edit_files_file")
+    req.writeTAL("web/edit/edit_files.html", {"id":req.params.get("id","0"), "tab":req.params.get("tab", ""), "node":node, "obsoletefields":obsoletefields, "allow_delete_unused":allow_delete_unused, "metafields":metafields, "fields":fields, "technfields":technfields, "tattr":tattr,"fd":formatdate, "gf":getFormat}, macro="edit_files_file")
 
 
 def getFormat(fields, name):

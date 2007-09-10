@@ -26,7 +26,7 @@ def edit_workflow(req, ids):
     node = tree.getNode(ids[0])
 
     if not access.hasWriteAccess(node):
-        req.writeTAL("edit/edit.html", {}, macro="access_error")
+        req.writeTAL("web/edit/edit.html", {}, macro="access_error")
         return
 
     workflow = None
@@ -49,7 +49,7 @@ def edit_workflow(req, ids):
     
     if not_all_workflows_match:
         if forward_command in ["true","false","addworkflow"]:
-            req.writeTAL("edit/edit_workflow.html", {}, macro="forward_error")
+            req.writeTAL("web/edit/edit_workflow.html", {}, macro="forward_error")
             return
         # show only nodes without a workflow
         return edit_workflow(req, ids_without_workflow)
@@ -89,8 +89,8 @@ def edit_workflow(req, ids):
 
  
 def hasWorkflow(req, ids, workflow, workflowstep):
-    req.writeTAL("edit/edit_workflow.html",{"link":"?ids="+(",".join(ids))+"&tab=Workflow", "workflow":workflow, "workflowstep":workflowstep}, macro="edit_workflow")     
+    req.writeTAL("web/edit/edit_workflow.html",{"link":"?ids="+(",".join(ids))+"&tab=Workflow", "workflow":workflow, "workflowstep":workflowstep}, macro="edit_workflow")     
 
 def noWorkflow(req, ids):
-    req.writeTAL("edit/edit_workflow.html",{"link":"?ids="+(",".join(ids))+"&tab=Workflow", "workflows":workflows.getWorkflowList()}, macro="edit_noworkflow")     
+    req.writeTAL("web/edit/edit_workflow.html",{"link":"?ids="+(",".join(ids))+"&tab=Workflow", "workflows":workflows.getWorkflowList()}, macro="edit_noworkflow")     
    

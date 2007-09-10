@@ -83,7 +83,7 @@ def search_results(req,id):
     req.session["nodelist"] = EditorNodeList(nodes)
 
     if len(nodes):
-        req.writeTAL("edit/edit_search.html", {"id":id}, macro="start_new_search")
+        req.writeTAL("web/edit/edit_search.html", {"id":id}, macro="start_new_search")
         shownodelist(req, nodes)
     else:
         search_form(req, id, "edit_search_noresult_msg")
@@ -100,7 +100,7 @@ def search_form(req, id, message=None):
         except: pass
 
     if message:
-        req.writeTAL("edit/edit_search.html", {"message":message}, macro="write_message")
+        req.writeTAL("web/edit/edit_search.html", {"message":message}, macro="write_message")
 
     if "Reset" in req.params:
         try: del req.session["esearchvals"]
@@ -154,7 +154,7 @@ def search_form(req, id, message=None):
     except:
         indexdate = None
 
-    req.writeTAL("edit/edit_search.html",{"node":node, "occur":occur, "mtypelist":mtypelist, "objtype":objtype, "searchvalues":searchvalues.get(str(otype)+".full", ""), "script":script, "indexdate":indexdate, "formlist":formlist},macro="search_form")
+    req.writeTAL("web/edit/edit_search.html",{"node":node, "occur":occur, "mtypelist":mtypelist, "objtype":objtype, "searchvalues":searchvalues.get(str(otype)+".full", ""), "script":script, "indexdate":indexdate, "formlist":formlist},macro="search_form")
 
     return
 

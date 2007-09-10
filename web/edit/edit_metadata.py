@@ -67,7 +67,7 @@ def edit_metadata(req, ids):
     mask = node.getType().getMask(maskname)
 
     if not mask:
-        req.writeTAL("edit/edit_metadata.html", {}, macro="no_mask")
+        req.writeTAL("web/edit/edit_metadata.html", {}, macro="no_mask")
         return
 
     if "edit_metadata" in req.params:
@@ -77,7 +77,7 @@ def edit_metadata(req, ids):
 
         for node in nodes:
             if not access.hasWriteAccess(node) or node.id == userdir.id:
-                req.writeTAL("edit/edit.html", {}, macro="access_error")
+                req.writeTAL("web/edit/edit.html", {}, macro="access_error")
                 return
 
         logging.getLogger('usertracing').info(access.user.name + " change metadata "+idstr)
@@ -142,4 +142,4 @@ def edit_metadata(req, ids):
                     datestr = node.get("creationtime")
                 creation_date.append([node.get("creator"), datestr])
 
-    req.writeTAL("edit/edit_metadata.html", {"reload_script":reload_script, "idstr":idstr, "masklist":masklist, "maskname":maskname, "maskform":mask.getFormHTML(nodes, req), "creation_date":creation_date, "update_date":update_date}, macro="edit_metadata")
+    req.writeTAL("web/edit/edit_metadata.html", {"reload_script":reload_script, "idstr":idstr, "masklist":masklist, "maskname":maskname, "maskform":mask.getFormHTML(nodes, req), "creation_date":creation_date, "update_date":update_date}, macro="edit_metadata")

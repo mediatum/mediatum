@@ -32,7 +32,7 @@ def edit_sort(req, ids):
     runscript = False
 
     if not access.hasWriteAccess(node):
-        req.writeTAL("edit/edit.html", {}, macro="access_error")
+        req.writeTAL("web/edit/edit.html", {}, macro="access_error")
         return
 
     up,down = -1,-1
@@ -83,5 +83,5 @@ def edit_sort(req, ids):
         except:
             pass
 
-    req.writeTAL("edit/edit_sort.html", {"node":node, "nodelist":nodelist, "runscript":runscript}, macro="edit_sort")
+    req.writeTAL("web/edit/edit_sort.html", {"node":node, "nodelist":nodelist, "runscript":runscript}, macro="edit_sort")
     return

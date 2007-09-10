@@ -24,7 +24,7 @@ from core.acl import AccessData
 
 def edit_license(req, ids):
     node = tree.getNode(ids[0])
-    req.writeTAL("edit/edit_license.html", {"node":node}, macro="edit_license_info")
+    req.writeTAL("web/edit/edit_license.html", {"node":node}, macro="edit_license_info")
 
 def objlist(req):
     node = tree.getNode(req.params["id"])
@@ -36,4 +36,4 @@ def objlist(req):
     if not access.hasWriteAccess(node):
         return
 
-    req.writeTAL("edit/edit_license.html", {"node":node}, macro="edit_license")
+    req.writeTAL("web/edit/edit_license.html", {"node":node}, macro="edit_license")

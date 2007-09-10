@@ -69,9 +69,9 @@ def edit_editor(req, node, filenode):
         oFCKeditor.BasePath = "/module/"
         oFCKeditor.Value = getFiletemplate(req, node, path, {})
 
-        req.writeTAL("edit/edit_editor.html", {"id":req.params.get('id'), "oFCKeditor":oFCKeditor, "path":path}, macro="edit_editor")
+        req.writeTAL("web/edit/edit_editor.html", {"id":req.params.get('id'), "oFCKeditor":oFCKeditor, "path":path}, macro="edit_editor")
     else:
-        req.writeTAL("edit/edit_editor.html", {}, macro="header")
+        req.writeTAL("web/edit/edit_editor.html", {}, macro="header")
         req.write(getFiletemplate(req, node, path, {}))
 
 

@@ -106,7 +106,7 @@ def shownodelist(req,nodes):
         script_array += "allobjects['"+child.id+"'] = 0;\n"
         nodelist.append(child)
 
-    req.writeTAL("edit/edit_common.html", {"nodelist":nodelist, "script_array":script_array}, macro="show_nodelist")
+    req.writeTAL("web/edit/edit_common.html", {"nodelist":nodelist, "script_array":script_array}, macro="show_nodelist")
 
 
 def isUnFolded(unfoldedids, id):

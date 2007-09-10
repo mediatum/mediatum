@@ -51,7 +51,7 @@ def frameset(req):
 
     user = users.getUserFromRequest(req)
     if not user.isEditor():
-        req.writeTAL("edit/edit.html", {}, macro="access_error")
+        req.writeTAL("web/edit/edit.html", {}, macro="access_error")
         return
 
     uploaddir = getUploadDir(user)
@@ -176,7 +176,7 @@ def frameset(req):
             }
             """
 
-    req.writeTAL("edit/edit.html", {"id":id, "tab":(tab and "&tab="+tab) or "", "script":script}, macro="edit_main")
+    req.writeTAL("web/edit/edit.html", {"id":id, "tab":(tab and "&tab="+tab) or "", "script":script}, macro="edit_main")
 
 def handletabs(req, ids, tabs):
     user = users.getUserFromRequest(req)
@@ -203,7 +203,7 @@ def handletabs(req, ids, tabs):
         idstr+=id
     currenttab = req.params.get("tab", tabs[0])
     
-    req.writeTAL("edit/edit.html", {"user":user, "menuitems":l, "tabs":tabs, "ids":ids, "idstr":idstr, "currenttab":currenttab}, macro="edit_tabs")
+    req.writeTAL("web/edit/edit.html", {"user":user, "menuitems":l, "tabs":tabs, "ids":ids, "idstr":idstr, "currenttab":currenttab}, macro="edit_tabs")
 
     return currenttab
 
@@ -291,7 +291,7 @@ def action(req):
     try:
         src = tree.getNode(srcid)
     except:
-        req.writeTAL("/edit/edit.html", {"edit_action_error":srcid}, macro="edit_action_error")
+        req.writeTAL("web/edit/edit.html", {"edit_action_error":srcid}, macro="edit_action_error")
         return
    
     newfolder = req.params.get("newfolder", "")
@@ -823,7 +823,7 @@ def showtree(req):
     writetree(req, tree.getRoot("collections"), f, "", openednodes=o, sessionkey="lefttreenodes", omitroot=0)
     writetree(req, tree.getRoot("navigation"), f, "", openednodes=o, sessionkey="lefttreenodes", omitroot=1)
 
-    req.writeTAL("edit/edit.html", {"script":script, "scrollid":scrollid, "content":c[0]}, macro="edit_tree")
+    req.writeTAL("web/edit/edit.html", {"script":script, "scrollid":scrollid, "content":c[0]}, macro="edit_tree")
 
 def flush(req):
     tree.flush()

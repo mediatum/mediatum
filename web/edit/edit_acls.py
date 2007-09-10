@@ -54,7 +54,7 @@ def show_acl_editor(req, ids):
                 else:
                     error = 1
                 if error:
-                    req.writeTAL("edit/edit.html", {}, macro="access_error")
+                    req.writeTAL("web/edit/edit.html", {}, macro="access_error")
                     return
 
 
@@ -94,9 +94,9 @@ def show_acl_editor(req, ids):
 
         rights = removeEmptyStrings(s.split(","))
 
-        ret += req.getTAL("edit/edit_acls.html", makeList(req, type, rights, parent_rights.keys(), overload, type=type), macro="edit_acls_selectbox")
+        ret += req.getTAL("web/edit/edit_acls.html", makeList(req, type, rights, parent_rights.keys(), overload, type=type), macro="edit_acls_selectbox")
 
-    req.writeTAL("edit/edit_acls.html", {"runsubmit":runsubmit, "idstr":idstr, "content":ret}, macro="edit_acls")
+    req.writeTAL("web/edit/edit_acls.html", {"runsubmit":runsubmit, "idstr":idstr, "content":ret}, macro="edit_acls")
     return athana.HTTP_OK
 
 def edit_acls(req, ids):

@@ -34,7 +34,7 @@ def edit_classes(req, ids):
         parent = tree.getNode(pid)
         for node in nodes:
             if not access.hasWriteAccess(node):
-                req.writeTAL("edit/edit.html", {}, macro="access_error")
+                req.writeTAL("web/edit/edit.html", {}, macro="access_error")
                 return
         changed = 1
         if not pid:
@@ -53,7 +53,7 @@ def edit_classes(req, ids):
         parent = tree.getNode(pid)
         for node in nodes:
             if not access.hasWriteAccess(node):
-                req.writeTAL("edit/edit.html", {}, macro="access_error")
+                req.writeTAL("web/edit/edit.html", {}, macro="access_error")
                 return
 
         changed = 1
@@ -76,7 +76,7 @@ def edit_classes(req, ids):
             faultydir = getFaultyDir(users.getUserFromRequest(req))
             faultydir.addChild(node)
             if not wrote_nomoreentries_msg:
-                req.writeTAL("edit/edit_classes.html", {"lang":lang(req)}, macro="entry_error")
+                req.writeTAL("web/edit/edit_classes.html", {"lang":lang(req)}, macro="entry_error")
                 wrote_nomoreentries_msg=1
 
     if changed:

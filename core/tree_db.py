@@ -19,7 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-#from utils import *
+from utils.utils import compare_utf8
 from core.db import database
 import logging
 import sys

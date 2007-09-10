@@ -22,7 +22,7 @@ import core.tree as tree
 from core.acl import AccessData
 import core.users as users
 from core.translation import translate, getDefaultLanguage
-
+from utils.utils import compare_utf8
 
 class EditorNodeList:
     def __init__(self, nodes):

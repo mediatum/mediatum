@@ -18,13 +18,12 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from core.acl import AccessData
-#from edit_common import *
-#from utils import *
+from edit_common import getFaultyDir
 import core.users as users
+from utils.date import format_date,parse_date
+import core.tree as tree
 
-#from date import *
 import logging
-#from metadatatypes import *
 from core.translation import lang, t
 
 def edit_metadata(req, ids):

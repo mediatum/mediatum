@@ -29,7 +29,7 @@ import core.translation
 import core.athana as athana
 import utils.log
 from core.acl import AccessData
-#from utils import *
+from utils.utils import Link
 
 from edit_common import *
 from edit_acls import edit_acls

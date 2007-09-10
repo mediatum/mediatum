@@ -22,7 +22,7 @@ import core.tree as tree
 from core.acl import AccessData
 import re
 import os
-import core.athana
+import core.athana as athana
 
 
 SRC_PATTERN = re.compile('src="([^":/]*)"')

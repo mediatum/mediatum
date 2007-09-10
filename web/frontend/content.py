@@ -25,6 +25,7 @@ import re
 
 from utils.utils import getCollection,Link
 from core.acl import AccessData
+from core.translation import lang
 from web.frontend.searchresult import simple_search, extended_search
 
 class Content:

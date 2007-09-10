@@ -473,7 +473,7 @@ def content(req):
               <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
               <meta content="text/html;charset=UTF-8" http-equiv="content-type">
               <link rel="stylesheet" href="/css/editor.css">
-              <script type="text/javascript" src="/js/mediaTUM.js"></script>
+              <script type="text/javascript" src="/js/mediatum.js"></script>
             </head>""")
         req.write("""<body>""")
     else:
@@ -485,7 +485,7 @@ def content(req):
               <link rel="stylesheet" href="/css/editor.css">
               <script type="text/javascript" src="/js/editor.js"></script>
               <script type="text/javascript" src="/js/admin.js"></script>
-              <script type="text/javascript" src="/js/mediaTUM.js"></script>
+              <script type="text/javascript" src="/js/mediatum.js"></script>
               <script language="javascript"> 
                   var allobjects = new Array();
               """)
@@ -548,10 +548,10 @@ def content(req):
         if current != "tab_view":
             req.write("""<script language="javascript">\n""")
             req.write("""clearObjects();\n""")
-            try:
-                req.write("""parent.setSrc('"""+tree.getNode(ids[0]).getParents()[0].id+"""');""")
-            except:
-                pass
+            #try:
+            #    req.write("""parent.setSrc('"""+tree.getNode(ids[0]).getParents()[0].id+"""');""")
+            #except:
+            #    pass
 
             for id in ids:
                 req.write("""allobjects['%s'] = 1;\n""" % id)

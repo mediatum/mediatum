@@ -31,7 +31,7 @@ import utils.log
 from core.acl import AccessData
 #from utils import *
 
-#from edit_common import *
+from edit_common import *
 from edit_acls import edit_acls
 from edit_metadata import edit_metadata
 from edit_classes import edit_classes

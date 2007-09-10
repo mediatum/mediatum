@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.8 2007/09/10 13:19:29 kramm Exp $'
+RCS_ID =  '$Id: athana.py,v 1.9 2007/09/10 13:40:27 kramm Exp $'
 
 import sys
 
@@ -5890,6 +5890,16 @@ def _load_module(filename):
         pass
     return m
 
+system_modules = sys.modules.copy()
+stdlib, x = os.path.split(os.__file__)
+def _purge_all_modules():
+    for m,mod in sys.modules.items():
+        if m not in system_modules:
+            if hasattr(mod, "__file__"):
+                f = mod.__file__
+                path, x = os.path.split(f)
+                if not path.startswith(stdlib):
+                    del sys.modules[m]
 
 class WebContext:
     def __init__(self, name, root=None):
@@ -6698,6 +6708,7 @@ def flushContexts():
     global contexts,global_modules
     contexts[:] = []
     global_modules.clear()
+    _purge_all_modules()
 
 def addFileStore(webpath, localpaths):
     global contexts

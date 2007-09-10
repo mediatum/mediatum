@@ -18,10 +18,10 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import re
-import tree
-from acl import AccessData
-import users
-from translation import translate, getDefaultLanguage
+import core.tree as tree
+from core.acl import AccessData
+import core.users as users
+from core.translation import translate, getDefaultLanguage
 
 
 class EditorNodeList:

@@ -21,7 +21,7 @@ import core.athana as athana
 import core.acl as acl
 import core.tree as tree
 import logging
-import utils.date
+import utils.date as date
 from core.acl import AccessData
 import string
 #from edit_common import *

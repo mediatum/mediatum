@@ -17,22 +17,22 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import athana
-from objtypes.metatype import Metatype
+import core.athana as athana
+from core.metatype import Metatype
 
 class m_memo(Metatype):
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
-        return athana.getTAL("m_memo.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
+        return athana.getTAL("metadata/memo.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
 
     def getSearchHTML(self, field, value="", width=174, name="", language=None):
-        return athana.getTAL("m_memo.html",{"field":field, "value":value, "name":name}, macro="searchfield", language=language)
+        return athana.getTAL("metadata/memo.html",{"field":field, "value":value, "name":name}, macro="searchfield", language=language)
 
     def getFormatedValue(self, field, node, language=None):
         value = node.get(field.getName()).replace(";","; ")
         return (field.getLabel(), value)
 
     def getMaskEditorHTML(self, value="", metadatatype=None, language=None):
-        return athana.getTAL("m_memo.html", {"value":value}, macro="maskeditor", language=language)
+        return athana.getTAL("metadata/memo.html", {"value":value}, macro="maskeditor", language=language)
 
     def getName(self):
         return "fieldtype_memo"

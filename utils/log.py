@@ -21,6 +21,7 @@ import core.config
 import logging
 import logging.handlers
 import sys
+import traceback
 
 def initialize():
     log_screen = logging.getLogger('screen')

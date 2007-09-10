@@ -116,8 +116,8 @@
         function selectacl(objname){
             obj = document.getElementById(objname);
             for (i=0; i<obj.length; i++){
-		        obj.options[i].selected=true;
-	        }
+                obj.options[i].selected=true;
+            }
         }
     </script>
     <p><a tal:attributes="href python:'./metatype'+page" i18n:translate="admin_overview">zur &Uuml;bersicht</a></p>
@@ -262,6 +262,7 @@
                         <td tal:attributes="class cssclass" tal:content="python:str(metafield.getName())"/>
                         <td tal:attributes="class cssclass" tal:content="python:str(metafield.getLabel())"/>
                         <td tal:attributes="class cssclass" tal:content="python:fieldtypes[str(metafield.getFieldtype())]" i18n:translate=""/>
+                        <!--<td tal:attributes="class cssclass" tal:content="python:metafield.getFieldtype()" i18n:translate=""/>-->
   
                         <td tal:attributes="class cssclass" tal:define="flist python:metafield.getFieldOptionList()">
                             <table>

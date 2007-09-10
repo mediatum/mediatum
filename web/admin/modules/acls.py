@@ -19,13 +19,13 @@
 """
 import sys, types
 import traceback
-import acl
+import core.acl as acl
 
-from users import *
-from usergroups import *
-from acl import AccessRule
-from admin.adminutils import *
-from translation import t, lang
+#from users import *
+#from usergroups import *
+from core.acl import AccessRule
+from web.admin.adminutils import Overview, getAdminStdVars
+from core.translation import t, lang
 
 
 

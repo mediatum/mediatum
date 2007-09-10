@@ -17,9 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from utils import *
-import tree
-from tree import nodeclasses
+#from utils import *
+import core.tree as tree
+from core.tree import nodeclasses
 
 class Datatype:
     def __init__(self, id, name, classname, comment=""):

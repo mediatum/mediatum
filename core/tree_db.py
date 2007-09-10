@@ -20,14 +20,14 @@
 """
 
 #from utils import *
-from db import database
+from core.db import database
 import logging
 import sys
 import core.tree as tree
 from utils.dicts import MaxSizeDict
-import config
-from search.query import subnodes
-from search.parser import searchParser
+import core.config as config
+from core.search.query import subnodes
+from core.search.parser import searchParser
 import thread
 import traceback
 nodeclasses = {}

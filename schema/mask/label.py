@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import core.tree as tree
 from schema.schema import VIEW_DATA_ONLY, VIEW_DEFAULT
 from core.tree import Node, getNode
 from core.metatype import Metatype
@@ -66,7 +67,7 @@ class m_label(Metatype):
         metadatatype = req.params.get("metadatatype")
         
         if req.params.get("op","")=="new":
-            pidnode = getNode(req.params.get("pid"))
+            pidnode = tree.getNode(req.params.get("pid"))
             if pidnode.get("type") in ("vgroup", "hgroup"):
                 for field in pidnode.getAllChildren():
                     if field.getType().getName()=="maskitem" and field.id!=pidnode.id:
@@ -83,10 +84,10 @@ class m_label(Metatype):
         v["pid"] = req.params.get("pid","")
         v["item"] = item
         v["fields"] = fields
-        return req.getTAL("metatypes/mask/m_label.html",v,macro="metaeditor") 
+        return req.getTAL("schema/mask/label.html",v,macro="metaeditor") 
 
     def isContainer(self):
         return True
 
     def getName(self):
-        return "fieldtype_label"
+        return "maskfieldtype_label"

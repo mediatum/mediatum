@@ -17,9 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import athana
-from utils import esc
-from objtypes.metatype import Metatype
+import core.athana as athana
+from utils.utils import esc
+from core.metatype import Metatype
 
 
 class m_list(Metatype):
@@ -67,11 +67,11 @@ class m_list(Metatype):
         return valuelist
 
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
-        return athana.getTAL("m_list.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field, "valuelist":self.formatValues(field)}, macro="editorfield", language=language)
+        return athana.getTAL("metadata/list.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field, "valuelist":self.formatValues(field)}, macro="editorfield", language=language)
 
 
     def getSearchHTML(self, field, value="", width=174, name="", language=None):
-        return athana.getTAL("m_list.html",{"field":field, "value":value, "width":width, "name":name, "valuelist":self.formatValues(field)}, macro="searchfield", language=language)
+        return athana.getTAL("metadata/list.html",{"field":field, "value":value, "width":width, "name":name, "valuelist":self.formatValues(field)}, macro="searchfield", language=language)
 
 
     def getFormatedValue(self, field, node, language=None):
@@ -79,7 +79,7 @@ class m_list(Metatype):
         return (field.getLabel(), value)
 
     def getMaskEditorHTML(self, value="", metadatatype=None, language=None):
-        return athana.getTAL("m_list.html", {"value":value}, macro="maskeditor", language=language)
+        return athana.getTAL("metadata/list.html", {"value":value}, macro="maskeditor", language=language)
 
     def getName(self):
         return "fieldtype_list"

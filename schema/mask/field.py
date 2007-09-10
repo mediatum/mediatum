@@ -19,6 +19,7 @@
 """
 import core.athana as athana
 #from utils.utils import *
+import core.tree as tree
 from core.tree import Node, getNode
 
 from schema.schema import getMetaFieldTypeNames, getMetaFieldTypes, getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, dateoption
@@ -193,11 +194,11 @@ class m_field(Metatype):
 
         metadatatype = req.params.get("metadatatype")
         for t in metadatatype.getDatatypes():
-            node = Node(type=t)
+            node = tree.Node(type=t)
             attr.update(node.getTechnAttributes())
 
         if req.params.get("op","")=="new":
-            pidnode = getNode(req.params.get("pid"))
+            pidnode = tree.getNode(req.params.get("pid"))
             if pidnode.get("type") in ("vgroup", "hgroup"):
                 for field in pidnode.getAllChildren():
                     if field.getType().getName()=="maskitem" and field.id!=pidnode.id:
@@ -228,10 +229,10 @@ class m_field(Metatype):
         v["t_attrs"] = attr
         v["icons"] = {"externer Link":"/img/extlink.png", "Email":"/img/email.png"}
         v["add_values"] = add_values
-        return req.getTAL("metatypes/mask/m_field.html",v,macro="metaeditor") 
+        return req.getTAL("schema/mask/field.html",v,macro="metaeditor") 
 
     def isContainer(self):
         return True
 
     def getName(self):
-        return "fieldtype_field"
+        return "maskfieldtype_field"

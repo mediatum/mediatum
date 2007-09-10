@@ -17,9 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import athana
-from utils import esc
-from objtypes.metatype import Metatype
+import core.athana as athana
+from utils.utils import esc
+from core.metatype import Metatype
 
 class m_mlist(Metatype):
 
@@ -68,10 +68,10 @@ class m_mlist(Metatype):
 
         
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):    
-        return athana.getTAL("m_mlist.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field, "valuelist":self.formatValues(field,value)}, macro="editorfield", language=language)
+        return athana.getTAL("metadata/mlist.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field, "valuelist":self.formatValues(field,value)}, macro="editorfield", language=language)
 
     def getSearchHTML(self, field, value="", width=174, name="", language=None):
-        return athana.getTAL("m_mlist.html",{"field":field, "value":value, "width":width, "name":name, "valuelist":self.formatValues(field,value)}, macro="searchfield", language=language)
+        return athana.getTAL("metadata/mlist.html",{"field":field, "value":value, "width":width, "name":name, "valuelist":self.formatValues(field,value)}, macro="searchfield", language=language)
 
     def getFormatedValue(self, field, node, language=None):
         value = esc(node.get(field.getName()).replace(";","; "))
@@ -81,7 +81,7 @@ class m_mlist(Metatype):
         return value.replace("; ",";")
 
     def getMaskEditorHTML(self, value="", metadatatype=None, language=None):
-        return athana.getTAL("m_mlist.html", {"value":value}, macro="maskeditor", language=language)
+        return athana.getTAL("metadata/mlist.html", {"value":value}, macro="maskeditor", language=language)
 
     def getName(self):
         return "fieldtype_mlist"

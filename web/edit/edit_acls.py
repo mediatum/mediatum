@@ -22,9 +22,9 @@ import core.acl as acl
 import core.tree as tree
 import logging
 import core.users as users
+from web.common.acl_web import makeList
 #from edit_common import *
 
-from core.acl_db import makeList
 from utils.utils import removeEmptyStrings
 
 log = logging.getLogger('edit')

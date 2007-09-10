@@ -19,15 +19,17 @@
 """
 import sys
 import traceback
+import core.tree as tree
 
-from metadatatypes import *
-from datatypes import *
-from admin.adminutils import *
-from tree import Node, getNode
-from acl_web import makeList
-from utils import removeEmptyStrings 
-from translation import lang
-from objtypes.metadatatype import getMetaFieldTypeNames
+#from schema.schema import *
+from schema.schema import loadTypesFromDB
+from core.datatypes import loadAllDatatypes
+from web.admin.adminutils import Overview, getAdminStdVars
+from core.tree import Node, getNode
+from web.common.acl_web import makeList
+from utils.utils import removeEmptyStrings 
+from core.translation import lang, t
+from schema.schema import getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask
 
 _masktypes = {"":"masktype_empty","edit":"masktype_edit", "search":"masktype_search", "shortview":"masktype_short", "fullview":"masktype_full"}
 
@@ -308,7 +310,7 @@ def view(req):
     v["metadatatypes"] = mtypes
     v["datatypes"] = loadAllDatatypes()
     v["pages"] = pages
-    return req.getTAL("admin/modules/metadatatype.html", v, macro="view_type")
+    return req.getTAL("web/admin/modules/metatype.html", v, macro="view_type")
     
 """ form for metadata (edit/new) """
 def MetatypeDetail(req, id, err=0):
@@ -347,7 +349,7 @@ def MetatypeDetail(req, id, err=0):
     rights = removeEmptyStrings(rule)
     v["acl"] =  makeList(req, "read", rights, {}, overload=0, type="read")
 
-    return req.getTAL("admin/modules/metadatatype.html", v, macro="modify_type")
+    return req.getTAL("web/admin/modules/metatype.html", v, macro="modify_type")
    
 """ list all fields of given metadatatype """
 def showDetailList(req, id):
@@ -379,9 +381,10 @@ def showDetailList(req, id):
     v["metafields"] = metafields
     v["fieldoptions"] = fieldoption
     v["fieldtypes"] = getMetaFieldTypeNames()
+    print "\n\nfieldtypes:", v["fieldtypes"]
     v["pages"] = pages
     v["order"] = order
-    return req.getTAL("admin/modules/metadatatype.html", v, macro="view_field")
+    return req.getTAL("web/admin/modules/metatype.html", v, macro="view_field")
 
 """ form for field of given metadatatype (edit/new) """
 def FieldDetail(req, pid, id, err=0):
@@ -442,7 +445,7 @@ def FieldDetail(req, pid, id, err=0):
         v["valuelist"] = field.getValueList()
         while len(v["valuelist"])!=3:
             v["valuelist"].append("")
-    return req.getTAL("admin/modules/metadatatype.html", v, macro="modify_field")
+    return req.getTAL("web/admin/modules/metatype.html", v, macro="modify_field")
 
 """ mask overview """
 def showMaskList(req, id):
@@ -473,7 +476,7 @@ def showMaskList(req, id):
     v["masks"] = masks
     v["pages"] = pages
     v["order"] = order
-    return req.getTAL("admin/modules/metadatatype.html", v, macro="view_mask")
+    return req.getTAL("web/admin/modules/metatype.html", v, macro="view_mask")
 
 """ mask details """
 def MaskDetails(req, pid, id, err=0):
@@ -501,11 +504,11 @@ def MaskDetails(req, pid, id, err=0):
     v["masktypes"] = _masktypes
     v["id"] = id
 
-    return req.getTAL("admin/modules/metadatatype.html", v, macro="modify_mask")
+    return req.getTAL("web/admin/modules/metatype.html", v, macro="modify_mask")
 
 """ popup info form """
 def showInfo(req):
-    return req.getTAL("admin/modules/metadatatype.html", {"fieldtypes":getMetaFieldTypeNames()}, macro="show_info")
+    return req.getTAL("web/admin/modules/metatype.html", {"fieldtypes":getMetaFieldTypeNames()}, macro="show_info")
 
 """ popup form with field definition """
 def showFieldOverview(req):
@@ -520,7 +523,7 @@ def showFieldOverview(req):
     v["fieldoptions"] = fieldoption
     v["fieldtypes"] = getMetaFieldTypeNames()
 
-    return req.getTAL("admin/modules/metadatatype.html", v, macro="show_fieldoverview")
+    return req.getTAL("web/admin/modules/metatype.html", v, macro="show_fieldoverview")
 
 """ export metadatatype-definition (XML) """
 def export(req, name):
@@ -538,10 +541,8 @@ def showEditor(req):
     req.params["metadatatype"] = mtype
     for key in req.params.keys():
         if req.params.get("op","")=="cancel":
-            try:
+            if "savedetail" in req.params.keys():
                 del req.params["savedetail"]
-            except:
-                pass
             break
 
         if key.startswith("up_"):
@@ -574,10 +575,8 @@ def showEditor(req):
             if req.params.get("type")in("vgroup","hgroup"):
                 req.params["type"] = "field"
                 req.params["op"] = "new"
-            try:
+            if "savedetail" in req.params.keys():
                 del req.params["savedetail"]
-            except:
-                pass
             break
 
     if req.params.get("op","")=="group":
@@ -706,7 +705,7 @@ def showEditor(req):
         # show metaEditor
         v["editor"] = req.getTALstr(editor.getMetaMask(language=lang(req)), {})
 
-    return req.getTAL("admin/modules/metadatatype.html", v, macro="editor_popup")
+    return req.getTAL("web/admin/modules/metatype.html", v, macro="editor_popup")
 
 
 def changeOrder(parent, up, down):

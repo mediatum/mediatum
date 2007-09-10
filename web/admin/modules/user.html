@@ -57,15 +57,16 @@
                 </tr>
             </tal:block>
             <tr>
-                <th colspan="5"><small>
-                    <span i18n:translate="admin_user_footer">
-                        <span i18n:name="number" tal:content="python:str(len(users))"/>
-                    </span>
-                    <span tal:content="structure python:pages.printPageList()"/></small>
+                <th colspan="5">
+                    <small>
+                        <span i18n:translate="admin_user_footer">
+                            <span i18n:name="number" tal:content="python:str(len(users))"/>
+                        </span>
+                        <span tal:content="raw python:pages.printPageList()"/>
+                    </small>
                 </th>
                 <th colspan="5" align="right"><small tal:content="raw python:pages.printPageAll()"/></th>
             </tr>
-        </table>
         <br>
     </form>
 </metal:block>

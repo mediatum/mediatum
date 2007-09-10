@@ -25,13 +25,11 @@ import core.config as config
 import time
 import core.athana as athana
 import os
-from utils.dicts import SortedDict
-from schema.schema_contenttype import getMetadataType
-
-from web.frontend.browsingtree import browsingtree, cleartree
-from core.translation import *
 import core.search.query
 
+from utils.dicts import SortedDict
+from schema.schema import getMetadataType
+from web.frontend.browsingtree import browsingtree, cleartree
 from utils.dicts import SortedDict
 from utils.utils import getCollection, Link, iso2utf8
 from core.acl import AccessData

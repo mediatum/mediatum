@@ -72,19 +72,15 @@ class Overview:
 
     def printPageList(self):
         order = self.req.params.get("order","")
-        detail=""
-        try:
-            detail = "&detailof=" + self.req.params["detailof"]
-        except:
-            None
+        detail=''
+        if "detailof" in self.req.params.keys():
+            detail = '&detailof=' + self.req.params.get("detailof")
+        
+        if "maskof" in self.req.params.keys():
+            detail = '&maskof=' + self.req.params.get("maskof","")
 
-        try:
-            detail = "&maskof=" + self.req.params["maskof"]
-        except:
-            None
-
-        if order!="":
-            detail +="&order="+order
+        if "order" in self.req.params.keys():
+            detail +='&order='+self.req.params.get("order")
 
         ret = ""
         if self.page>0:
@@ -96,7 +92,7 @@ class Overview:
                 else:
                     ret += ' <a href="/admin/'+self.path+'?page='+str(p)+detail+'" title="'+t(self.language,"admin_page")+' '+str(p)+'">'+str(p)+'</a> '
                 p += 1
-            ret += "] "
+            ret += '] '
         return ret
 
 

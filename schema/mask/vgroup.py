@@ -147,10 +147,10 @@ class m_vgroup(Metatype):
         v["details"] = details
         v["fields"] = fields
         v["selid"] = req.params.get("sel_id", "")
-        return req.getTAL("metatypes/mask/m_vgroup.html",v,macro="metaeditor") 
+        return req.getTAL("schema/mask/vgroup.html",v,macro="metaeditor") 
 
     def isContainer(self):
         return True
 
     def getName(self):
-        return "fieldtype_vgroup"
+        return "maskfieldtype_vgroup"

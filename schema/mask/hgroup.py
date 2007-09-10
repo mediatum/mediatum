@@ -147,10 +147,10 @@ class m_hgroup(Metatype):
         v["details"] = details
         v["fields"] = fields
         v["selid"] = req.params.get("sel_id", "")
-        return req.getTAL("metatypes/mask/m_hgroup.html",v,macro="metaeditor") 
+        return req.getTAL("schema/mask/hgroup.html",v,macro="metaeditor") 
 
     def isContainer(self):
         return True
 
     def getName(self):
-        return "fieldtype_hgroup"
+        return "maskfieldtype_hgroup"

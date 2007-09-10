@@ -17,17 +17,18 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import athana
-from tree import Node
-from objtypes.metatype import Metatype
+import core.athana as athana
+import core.tree as tree
+from core.tree import Node
+from core.metatype import Metatype
 
 class m_meta(Metatype):
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
-        return athana.getTAL("m_meta.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
+        return athana.getTAL("metadata/meta.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
 
 
     def getSearchHTML(self, field, value="", width=174, name="", language=None):
-        return athana.getTAL("m_meta.html",{"field":field, "value":value, "name":name}, macro="searchfield", language=language)
+        return athana.getTAL("metadata/meta.html",{"field":field, "value":value, "name":name}, macro="searchfield", language=language)
 
 
     def getFormatedValue(self, field, node, language=None):
@@ -39,10 +40,10 @@ class m_meta(Metatype):
         
         if metadatatype:
             for t in metadatatype.getDatatypes():
-                node = Node(type=t)
+                node = tree.Node(type=t)
                 attr.update(node.getTechnAttributes())
 
-        return athana.getTAL("m_meta.html", {"value":value, "t_attrs":attr}, macro="maskeditor", language=language)
+        return athana.getTAL("metadata/meta.html", {"value":value, "t_attrs":attr}, macro="maskeditor", language=language)
 
     def getName(self):
         return "fieldtype_meta"

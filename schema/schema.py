@@ -27,8 +27,8 @@ import core.tree as tree
 import core.config as config
 
 from utils.utils import *
-from core.tree import nodeclasses
-#from core.config import *
+from core.tree import nodeclasses, Node
+from core.config import *
 from core.xmlnode import getNodeXML, readNodeXML
 
 log = logging.getLogger('backend')
@@ -669,6 +669,7 @@ class Metadatafield(tree.Node):
 
         return t.getFormatedValue(self, node, language=language)
 
+   
 class Mask(tree.Node):
 
     def getFormHTML(self, nodes, req):
@@ -803,7 +804,7 @@ class Mask(tree.Node):
 
         if req.params.get("op","")=="new" and req.params.get("type","")!="":
             # add field
-            item = Maskitem(name="", type="maskitem")
+            item = tree.Node(name="", type="maskitem")
             t = getMetadataType(req.params.get("type"))
             if req.params.get("type","")=="hgroup":
                 req.params["edit"] = item
@@ -863,7 +864,7 @@ class Mask(tree.Node):
         self.set("masktype", value)
 
     def addMaskitem(self, label, type, fieldid, pid):
-        item = Maskitem(name=label, type="maskitem") 
+        item = tree.Node(name=label, type="maskitem") 
         item.set("type", type)
         
         if fieldid!=0:
@@ -946,6 +947,7 @@ class Maskitem(tree.Node):
     def setUnit(self, value):
         self.set("unit", str(value))
 
+     
         
 mytypes = {}
 
@@ -963,23 +965,21 @@ def pluginModule(module):
         if name.startswith("m_") and type(obj) == type(Dummyclass):
             pluginClass(obj)
 
-def init():
+def init(path):
     global mytypes
     ret = {}
-    for root, dirs, files in os.walk(os.path.join(config.basedir, 'schema')):
+    for root, dirs, files in path:
         for name in files:
-            #if name.startswith("m_") and name.endswith(".py"):
             if name.endswith(".py") and name!="__init__.py":
                 name = name[:-3]
-                if root.endswith('metatypes'):
-                    pluginModule(__import__("schema."+name).__dict__[name])
+                if root.endswith('metadata'):
+                    pluginModule(__import__("metadata."+name).__dict__[name])
                 if root.endswith('mask'):
                     pluginModule(__import__("schema.mask."+name).__dict__["mask"].__dict__[name])
 
-
 def getMetadataType(mtype):
     global mytypes
-    init()
+    init(os.walk(os.path.join(config.basedir, 'schema/mask')))
     if mtype in mytypes:
         return mytypes[mtype]()
     else:
@@ -988,9 +988,10 @@ def getMetadataType(mtype):
 def getMetaFieldTypeNames():
     ret = {}
     global mytypes
-    init()
+    init(os.walk(os.path.join(config.basedir, 'metadata')))
     for key in mytypes.keys():
-        ret[key] = "fieldtype_"+key
+        if "meta" in str(mytypes[key]):
+            ret[key] = "fieldtype_"+key
     return ret
 
 def getMetaFieldTypes():
@@ -1000,4 +1001,5 @@ def getMetaFieldTypes():
         ret[t] = getMetadataType(t)
     return ret
 
-init()
+init(os.walk(os.path.join(config.basedir, 'schema/mask')))
+init(os.walk(os.path.join(config.basedir, 'metadata')))

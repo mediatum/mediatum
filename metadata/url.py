@@ -17,10 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import athana
+import core.athana as athana
 import re
-from translation import *
-from objtypes.metatype import Metatype
+from core.metatype import Metatype
 
 class m_url(Metatype):
 
@@ -32,11 +31,11 @@ class m_url(Metatype):
         if len(val)!=2:
             val = ("","")
 
-        return athana.getTAL("m_url.html", {"lock":lock, "value":val, "fielddef":fielddef, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
+        return athana.getTAL("metadata/url.html", {"lock":lock, "value":val, "fielddef":fielddef, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
 
 
     def getSearchHTML(self, field, value="", width=174, name="", language=None):
-        return athana.getTAL("m_url.html",{"field":field, "value":value, "name":name}, macro="searchfield", language=language)
+        return athana.getTAL("metadata/url.html",{"field":field, "value":value, "name":name}, macro="searchfield", language=language)
 
     #
     # format node value depending on field definition
@@ -90,7 +89,7 @@ class m_url(Metatype):
         value = value.split("\r\n")
         while len(value)<3:
             value.append("")
-        return athana.getTAL("m_url.html", {"value":value, "icons":{"externer Link":"/img/extlink.png", "Email":"/img/email.png"}}, macro="maskeditor", language=language)
+        return athana.getTAL("metadata/url.html", {"value":value, "icons":{"externer Link":"/img/extlink.png", "Email":"/img/email.png"}}, macro="maskeditor", language=language)
 
     def getName(self):
         return "fieldtype_url"

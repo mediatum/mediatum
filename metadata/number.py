@@ -17,18 +17,18 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import athana
-from utils import esc
-from objtypes.metatype import Metatype
+import core.athana as athana
+from utils.utils import esc
+from core.metatype import Metatype
 
 class m_number(Metatype):
 
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
-        return athana.getTAL("m_number.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
+        return athana.getTAL("metadata/number.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
 
 
     def getSearchHTML(self, field, value="", width=174, name="", language=None):
-        return athana.getTAL("m_number.html",{"field":field, "value":value, "name":name}, macro="searchfield", language=language)
+        return athana.getTAL("metadata/number.html",{"field":field, "value":value, "name":name}, macro="searchfield", language=language)
 
     def getFormatedValue(self, field, node, language=None):
         value = esc(node.get(field.getName()).replace(";","; "))

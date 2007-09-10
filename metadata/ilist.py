@@ -17,21 +17,21 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import athana
-import search.query
-from utils import esc
-from objtypes.metatype import Metatype
+import core.athana as athana
+import core.search.query
+from utils.utils import esc
+from core.metatype import Metatype
 
 class m_ilist(Metatype):
 
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
-        return athana.getTAL("m_ilist.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
+        return athana.getTAL("metadata/ilist.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
 
 
     def getSearchHTML(self, field, value="", width=174, name="", language=None):
         valuelist = search.query.getGlobalIndex(field.getName())
         valuelist.sort(lambda x,y: cmp(x.lower(), y.lower()))
-        return athana.getTAL("m_ilist.html",{"field":field, "value":value, "name":name, "width":width, "valuelist":valuelist}, macro="searchfield", language=language)
+        return athana.getTAL("metadata/ilist.html",{"field":field, "value":value, "name":name, "width":width, "valuelist":valuelist}, macro="searchfield", language=language)
 
 
     def getFormatedValue(self, field, node, language=None):

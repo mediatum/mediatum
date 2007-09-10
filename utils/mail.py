@@ -18,9 +18,9 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import smtplib
-import users
-import config
-from utils import *
+import core.users
+import core.config as config
+#from utils import *
 
 def sendmail(fromemail, email, subject, text):
 

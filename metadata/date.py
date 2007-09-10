@@ -17,12 +17,11 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import athana
-import date
-from date import *
-from translation import *
-from metadatatypes import dateoption
-from objtypes.metatype import Metatype
+import core.athana as athana
+import utils.date as date
+from utils.date import format_date, parse_date, now
+from schema.schema import dateoption
+from core.metatype import Metatype
 
 class m_date(Metatype):
 
@@ -38,11 +37,11 @@ class m_date(Metatype):
         except:
             pass
 
-        return athana.getTAL("m_date.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
+        return athana.getTAL("metadata/date.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
 
 
     def getSearchHTML(self, field, value="", width=174, name="", language=None):
-        return athana.getTAL("m_date.html",{"field":field, "value":value.split(";"), "name":name, "width":width}, macro="searchfield", language=language)
+        return athana.getTAL("metadata/date.html",{"field":field, "value":value.split(";"), "name":name, "width":width}, macro="searchfield", language=language)
 
 
     def getFormatedValue(self, field, node, language=None):
@@ -73,7 +72,7 @@ class m_date(Metatype):
 
 
     def getMaskEditorHTML(self, value="", metadatatype=None, language=None):
-        return athana.getTAL("m_date.html", {"value":value, "dateoption":dateoption}, macro="maskeditor", language=language)
+        return athana.getTAL("metadata/date.html", {"value":value, "dateoption":dateoption}, macro="maskeditor", language=language)
 
     def getName(self):
         return "fieldtype_date"

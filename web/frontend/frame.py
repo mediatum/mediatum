@@ -33,7 +33,7 @@ from web.frontend.browsingtree import browsingtree, cleartree
 from utils.dicts import SortedDict
 from utils.utils import getCollection, Link, iso2utf8
 from core.acl import AccessData
-from core.translation import translate, lang
+from core.translation import translate, lang, t
 
 class Portlet:
     def __init__(self):

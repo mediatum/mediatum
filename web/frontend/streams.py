@@ -18,13 +18,13 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import re
-import core.tree
+import core.tree as tree
 import os
-import core.config
+import core.config as config
 #from utils import *
 import random
 import zipfile
-import core.acl
+import core.acl as acl
 from core.acl import AccessData
 from core.tree import getNode
 

@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from workflow import WorkflowStep
+import core.tree as tree
 
 class WorkflowStep_EditMetadata(WorkflowStep):
     def show_workflow_node(self, node, req):

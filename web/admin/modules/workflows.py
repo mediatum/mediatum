@@ -166,7 +166,7 @@ def view(req):
     v["sortcol"] = pages.OrderColHeader([t(lang(req), "admin_wf_col_1"), t(lang(req), "admin_wf_col_2")])
     v["workflows"] = workflows
     v["pages"] = pages
-    return req.getTAL("admin/modules/workflow.html", v, macro="view")
+    return req.getTAL("web/admin/modules/workflows.html", v, macro="view")
    
 """ edit form for given workflow (create/update)
     parameter: req=request, id=workflowid (name), err=error code as integer """
@@ -190,7 +190,7 @@ def WorkflowDetail(req, id, err=0):
     v["workflow"] = workflow
     v["error"] = err
     v["rules"] = getRuleList()
-    return req.getTAL("admin/modules/workflow.html", v, macro="modify")
+    return req.getTAL("web/admin/modules/workflows.html", v, macro="modify")
 
 """ overview of all steps for given workflow
     parameter: req=request, wid=wordflow id (name) """
@@ -223,7 +223,7 @@ def WorkflowStepList(req, wid):
     v["workflow"] = workflow
     v["workflowsteps"] = workflowsteps
     v["pages"] = pages
-    return req.getTAL("admin/modules/workflow.html", v, macro="view_step")
+    return req.getTAL("web/admin/modules/workflows.html", v, macro="view_step")
 
 """ edit form for workflowstep for given workflow and given step
     parameter: req=request, wid=workflowid(name), wnid=workflow step id (name), err=error code as integer """
@@ -263,7 +263,7 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
     v_part["fields"] = workflowstep.metaFields() or []
     v_part["node"] = workflowstep
     v_part["hiddenvalues"] = {"wnodeid":workflowstep.name}
-    v["editor"] =  req.getTAL("admin/modules/workflow.html", v_part, macro="view_editor")
+    v["editor"] =  req.getTAL("web/admin/modules/workflows.html", v_part, macro="view_editor")
     v["workflow"] = workflow
     v["workflowstep"] = workflowstep
     v["nodelist"] = nodelist
@@ -271,13 +271,13 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
     v["error"] = err
     v["update_type"] = req.params.get("ntype","")
 
-    return req.getTAL("admin/modules/workflow.html", v, macro="modify_step")
+    return req.getTAL("web/admin/modules/workflows.html", v, macro="modify_step")
     
 """ popup window with image of workflow given by id
     parameter: req=request """
 def WorkflowPopup(req):
     path = req.path[1:].split("/")
-    return req.getTAL("admin/modules/workflow.html", {"id":path[1]}, macro="view_popup")
+    return req.getTAL("web/admin/modules/workflows.html", {"id":path[1]}, macro="view_popup")
         
 """ export workflow-definition (XML) """
 def export(req, name):

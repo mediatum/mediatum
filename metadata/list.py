@@ -37,9 +37,9 @@ class m_list(Metatype):
         if len(numbers) != len(l):
             numbers = [-1]*len(l)
         
-        if field.getRequired() and len(l) and l[0]:
-            l = [""] + l
-            numbers = [-1] + numbers
+        #if field.getRequired() and len(l) and l[0]:
+        #    l = [""] + l
+        #    numbers = [-1] + numbers
 
         for val,num in zip(l,numbers):
             indent = 0

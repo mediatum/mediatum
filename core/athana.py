@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.10 2007/09/10 13:54:46 kramm Exp $'
+RCS_ID =  '$Id: athana.py,v 1.11 2007/09/11 15:16:27 kramm Exp $'
 
 import sys
 
@@ -6179,7 +6179,9 @@ class AthanaFile:
         self.fi.write(data)
     def close(self):
         self.fi.close()
-        self.parammap[self.fieldname] = self
+        # only append file to parameters if it contains some data
+        if self.filename or self.filesize:
+            self.parammap[self.fieldname] = self
         del self.fieldname
         del self.parammap
         del self.fi

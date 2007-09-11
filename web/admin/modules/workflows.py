@@ -22,12 +22,10 @@ import core.athana as athana
 import core.tree as tree
 import core.acl as acl
 import logging
-#from workflow import workflow
-
 
 from core.acl import AccessRule, getRuleList
-from workflow.workflow import getWorkflowList
-from web.admin.adminutils import *
+from workflow.workflow import getWorkflowList, getWorkflow, updateWorkflow, addWorkflow, deleteWorkflow, getWorkflowTypes, updateWorkflowStep, createWorkflowStep, deleteWorkflowStep, exportWorkflow, importWorkflow
+from web.admin.adminutils import Overview, getAdminStdVars
 from schema.schema import parseEditorData
 from core.tree import getType
 from schema.schema import Metadatafield
@@ -35,31 +33,24 @@ from core.translation import t, lang
 
 
 """ standard validator to execute correct method """
-def reformatname(name):
-    return name.replace('_','')
-
 def validate(req, op):
 
     path = req.path[1:].split("/")
     if len(path)==3 and path[2]=="overview":
         return WorkflowPopup(req)
-
-    try:
-        # import workflow from xml-file
+        
+    if "file" in req.params and req.params["file"].filesize>0:
+        # import scheme from xml-file
         importfile = req.params.get("file")
         if importfile.tempname!="":
             xmlimport(req, importfile.tempname)
-    except:
-        None
 
     if req.params.get("form_op","") == "update":
         return WorkflowStepDetail(req, req.params["wid"], req.params["nname"],-1)
         
     try:
-        try:
-            req.params["detaillist_" + req.params["detailof"] + ".x"] = 1
-        except:
-            None
+        if "detailof" in req.params.keys():
+            req.params["detaillist_" + req.params.get("detailof") + ".x"] = 1
 
         for key in req.params.keys():
             if key.startswith("new_"):
@@ -68,7 +59,7 @@ def validate(req, op):
 
             elif key.startswith("edit_"):
                 # edit workflow
-                return WorkflowDetail(req, str(key[key.index("_")+1:-2]))
+                return WorkflowDetail(req, str(key[5:-2]))
 
             elif key.startswith("delete_"):
                 # delete workflow
@@ -77,16 +68,15 @@ def validate(req, op):
 
             if key.startswith("newdetail_"):
                 # create new workflow
-                print "newdetail"
                 return WorkflowStepDetail(req, req.params["wid"], "")
 
             elif key.startswith("editdetail_"):
                 # edit workflowstep
-                return WorkflowStepDetail(req, key[key.index("_")+1:-2].split("_")[0], key[key.index("_")+1:-2].split("_")[1])
+                return WorkflowStepDetail(req, key[11:-2].split("|")[0], key[11:-2].split("|")[1])
 
             elif key.startswith("deletedetail_"):
-                # delete workflow step id: deletedetail_[workflowid]_[stepid]
-                deleteWorkflowStep(key[key.index("_")+1:-2].split("_")[0], key[key.index("_")+1:-2].split("_")[1])              
+                # delete workflow step id: deletedetail_[workflowid]|[stepid]        
+                deleteWorkflowStep(key[13:-2].split("|")[0], key[13:-2].split("|")[1])
                 break
 
             elif key == "form_op":
@@ -115,7 +105,7 @@ def validate(req, op):
                         return WorkflowStepDetail(req, req.params.get("wid",""), "", 1)
 
                     else:
-                        wnode = createWorkflowStep(name=reformatname(req.params["nname"]), type=req.params["ntype"], trueid=req.params["ntrueid"], falseid=req.params["nfalseid"], truelabel=req.params["ntruelabel"], falselabel=req.params["nfalselabel"], comment=req.params["ncomment"], adminstep=req.params.get("adminstep",""))
+                        wnode = createWorkflowStep(name=req.params["nname"], type=req.params["ntype"], trueid=req.params["ntrueid"], falseid=req.params["nfalseid"], truelabel=req.params["ntruelabel"], falselabel=req.params["nfalselabel"], comment=req.params["ncomment"], adminstep=req.params.get("adminstep",""))
                         getWorkflow(req.params["wid"]).addStep(wnode)
                         if "metaDataEditor" in req.params:
                             parseEditorData(req, wnode)
@@ -127,7 +117,7 @@ def validate(req, op):
                     if req.params["nname"]=="": # no Name was given
                         return WorkflowStepDetail(req, req.params["wid"], req.params["wnid"], 1)
                     else:
-                        wnode = updateWorkflowStep(getWorkflow(req.params["wid"]), oldname=req.params.get("wnodeid",""), newname=reformatname(req.params["nname"]), type=req.params["ntype"], trueid=req.params["ntrueid"], falseid=req.params["nfalseid"], truelabel=req.params["ntruelabel"], falselabel=req.params["nfalselabel"], comment=req.params["ncomment"], adminstep=req.params.get("adminstep",""))
+                        wnode = updateWorkflowStep(getWorkflow(req.params["wid"]), oldname=req.params.get("wnodeid",""), newname=req.params["nname"], type=req.params["ntype"], trueid=req.params["ntrueid"], falseid=req.params["nfalseid"], truelabel=req.params["ntruelabel"], falselabel=req.params["nfalselabel"], comment=req.params["ncomment"], adminstep=req.params.get("adminstep",""))
                         if "metaDataEditor" in req.params:
                             parseEditorData(req, wnode)
 

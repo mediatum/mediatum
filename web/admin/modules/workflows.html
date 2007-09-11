@@ -12,7 +12,7 @@
                 </th>
                 <th colspan="2">&nbsp;</th>
                 <th style="width:20px">
-                    <a i18n:attributes="title admin_wf_exportall_title" href="/admin/export/workflow/all" target="_blank" title="Alle Workflowdefinitionen exportieren">
+                    <a i18n:attributes="title admin_wf_exportall_title" href="/admin/export/workflows/all" target="_blank" title="Alle Workflowdefinitionen exportieren">
                         <img src="/img/export.png" border="0">
                     </a>
                 </th>
@@ -34,9 +34,9 @@
                     <input tal:attributes="name python:'detaillist_'+str(workflow.getId())" i18n:attributes="title admin_wf_nodeedit_title" type="image" src="/img/rightarrow.png" title="Workflow-Knoten anzeigen/bearbeiten">
                 </td>
                 <td tal:attributes="class cssclass">
-                    <a tal:attributes="href python:'./workflow/' +workflow.getName()+'/overview?style=popup'" i18n:attributes="title admin_wf_graphic_title" target="_blank" title="Workflowdefinition anzeigen (Grafik)"><img src="/img/search.gif" border="0"/></a>
+                    <a tal:attributes="href python:'./workflows/' +workflow.getName()+'/overview?style=popup'" i18n:attributes="title admin_wf_graphic_title" target="_blank" title="Workflowdefinition anzeigen (Grafik)"><img src="/img/search.gif" border="0"/></a>
                                                         
-                    <a tal:attributes="href python:'/admin/export/workflow/' +workflow.getId()" i18n:attributes="title admin_wf_export_title" target="_blank" title="Workflowdefinition exportieren"><img src="/img/export.png" border="0"/></a>
+                    <a tal:attributes="href python:'/admin/export/workflows/' +workflow.getId()" i18n:attributes="title admin_wf_export_title" target="_blank" title="Workflowdefinition exportieren"><img src="/img/export.png" border="0"/></a>
                 </td>
                 <td tal:attributes="class cssclass">
                     <input tal:attributes="name python:'edit_'+str(workflow.getId())" i18n:attributes="title admin_wf_edit_title" type="image" src="/img/edit.png" title="Workflow bearbeiten"/>
@@ -79,7 +79,7 @@
 </metal:block>
 
 <metal:block metal:define-macro="modify" tal:define="id python:workflow.getId()">
-    <p><a tal:attributes="href python:'./workflow'+page" i18n:translate="admin_overview">zur &Uuml;bersicht</a></p>
+    <p><a tal:attributes="href python:'./workflows'+page" i18n:translate="admin_overview">zur &Uuml;bersicht</a></p>
     <form tal:attributes="action page" name="editworkflow" method="post" action="#">
         <table>
             <tr>
@@ -132,13 +132,13 @@
 </metal:block>
 
 <metal:block metal:define-macro="view_step">
-    <p><a href="./workflow" i18n:translate="admin_overview">zur &Uuml;bersicht</a></p>
+    <p><a href="./workflows" i18n:translate="admin_overview">zur &Uuml;bersicht</a></p>
     <form tal:attributes="action page" name="metafields" method="post" action="#">
         <table class="overview">
             <tr>
                 <td colspan="8">
                     <h3 i18n:translate="admin_wf_header">Knoten des Workflows '<span tal:content="python:workflow.getName()" i18n:name="name"/>'</h3>
-                    <a tal:attributes="href python:'./workflow/'+workflow.getName()+'/overview?style=popup'" i18n:attributes="title admin_wf_graphic_title" target="_blank" title="Workflowdefinition anzeigen (Grafik)" i18n:translate="admin_wf_showdef">Workflowdefinition anzeigen</a>
+                    <a tal:attributes="href python:'./workflows/'+workflow.getName()+'/overview?style=popup'" i18n:attributes="title admin_wf_graphic_title" target="_blank" title="Workflowdefinition anzeigen (Grafik)" i18n:translate="admin_wf_showdef">Workflowdefinition anzeigen</a>
                 </td>
             </tr>
             <tr>
@@ -177,9 +177,9 @@
                 </td>
 
                  <td tal:attributes="class cssclass">
-                    <input tal:attributes="name python:'editdetail_'+str(workflow.getId())+'_'+str(workflowstep.getId())" i18n:attributes="title admin_wfstep_edit" type="image" src="/img/edit.png" title="Knoten bearbeiten"/>
+                    <input tal:attributes="name python:'editdetail_'+str(workflow.getId())+'|'+str(workflowstep.getId())" i18n:attributes="title admin_wfstep_edit" type="image" src="/img/edit.png" title="Knoten bearbeiten"/>
                     &nbsp;&nbsp;
-                    <input tal:attributes="name python:'deletedetail_'+str(workflow.getId())+'_'+str(workflowstep.getId()); onclick python:'return questionDelName(\''+workflowstep.getName()+'\')'" i18n:attributes="title admin_wfstep_delete" type="image" src="/img/delete.png" title="Knoten l&ouml;schen"/>
+                    <input tal:attributes="name python:'deletedetail_'+str(workflow.getId())+'|'+str(workflowstep.getId()); onclick python:'return questionDelName(\''+workflowstep.getName()+'\')'" i18n:attributes="title admin_wfstep_delete" type="image" src="/img/delete.png" title="Knoten l&ouml;schen"/>
                 </td>
             </tr>
             </tal:block>
@@ -212,7 +212,7 @@
             document.forms.addmfield.submit();
         }
     </script>
-    <p><a tal:attributes="href python:'./workflow?detailof='+str(workflow.getId())+page" i18n:translate="admin_overview">zur &Uuml;bersicht</a></p>
+    <p><a tal:attributes="href python:'./workflows?detailof='+str(workflow.getId())+page" i18n:translate="admin_overview">zur &Uuml;bersicht</a></p>
     <form tal:attributes="action page" name="addmfield" id="addmfield" method="post" action="#">
         <table>
             <tr>

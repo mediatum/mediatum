@@ -206,7 +206,7 @@ def adminNavigation():
     menu.append(submenu)
 
     submenu = Menu("admin_menu_4")
-    submenu.addItem("/admin/workflow")
+    submenu.addItem("/admin/workflows")
     menu.append(submenu)
 
     submenu = Menu("admin_menu_5")

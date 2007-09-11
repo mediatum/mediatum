@@ -186,7 +186,7 @@ class WorkflowImage:
         self.YSTEP = 200
         self.YSIZE = 150
 
-        self.FONT = os.path.join(os.path.join(config.basedir, "admin"), "arial.ttf")
+        self.FONT = os.path.join(config.basedir, "utils/font.ttf")
         self.im = Image.new("RGB", ((self.maxy+1)*self.XSTEP, (self.maxx+1)*self.YSTEP), (255, 255, 255))
         self.draw = ImageDraw.ImageDraw(self.im)
         
@@ -518,27 +518,22 @@ def exportWorkflow(name):
         return getNodeXML(tree.getRoot("workflows"))
     else:
         return getNodeXML(getWorkflow(name))
-
-
+  
 
 """ import workflow from file """
 def importWorkflow(filename):
-    try:
-        n = readNodeXML(filename)
-        importlist = list()
-        if n.getType().getName()=="workflow":
-            importlist.append(n)
-        elif n.getType().getName()=="workflows":
-            for ch in n.getChildren():
-                importlist.append(ch)
+    n = readNodeXML(filename)
+    importlist = list()
+    if n.getType().getName()=="workflow":
+        importlist.append(n)
+    elif n.getType().getName()=="workflows":
+        for ch in n.getChildren():
+            importlist.append(ch)
 
-        workflows = tree.getRoot("workflows")
-        for w in importlist:
-            w.setName("import-"+w.getName())
-            workflows.addChild(w)
-    except:
-        pass
-
+    workflows = tree.getRoot("workflows")
+    for w in importlist:
+        w.setName("import-"+w.getName())
+        workflows.addChild(w)
 
 class Workflows(tree.Node):
     def show_node_big(node, req):

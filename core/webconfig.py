@@ -62,13 +62,14 @@ def initContexts():
     #file = context.addFile("web/frontend/usersettings.py")
     #file.addHandler("user_settings").addPattern("/user")
 
+    file = context.addFile("workflow/workflow.py")
+    file.addHandler("createWorkflowImage").addPattern("/workflowimage")
+
     # === admin area ===
     context = athana.addContext("/admin", ".")
     file = context.addFile("web/admin/main.py")
     file.addHandler("show_node").addPattern("/.*")
     file.addHandler("export").addPattern("/export/.*")
-    #file = context.addFile("workflows.py")
-    #file.addHandler("createWorkflowImage").addPattern("/workflowimage")
 
     # === edit area ===
     context = athana.addContext("/edit", ".")

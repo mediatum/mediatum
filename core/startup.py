@@ -38,22 +38,10 @@ import core.acl as acl
 
 log.info("Initializing backend...")
 
-#import tree_xml
-#tree.setImplementation(tree_xml)
-#import acl_xml
-#acl.setImplementation(acl_xml)
-
 import core.tree_db as tree_db
 tree.setImplementation(tree_db)
 import core.acl_db as acl_db
 acl.setImplementation(acl_db)
-
-
-#def initDatatypes():
-#    datatypes = loadAllDatatypes()
-#    for datatype in datatypes:
-#        exec('from objtypes.' + datatype.getName() + ' import ' + datatype.getClassname())
-#        exec('tree.registerNodeClass("' +datatype.getName()+ '", '+ datatype.getClassname()+')')
 
 from contenttypes.directory import Directory
 tree.registerNodeClass("directory", Directory)
@@ -86,8 +74,8 @@ tree.registerNodeClass("metafield", Metadatafield)
 tree.registerNodeClass("mask", Mask)
 tree.registerNodeClass("maskitem", Maskitem)
 
-#from objtypes import workflow
-#workflow.register()
+from workflow import workflow
+workflow.register()
 
 from utils.utils import splitpath
 

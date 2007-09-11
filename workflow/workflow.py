@@ -196,12 +196,12 @@ class WorkflowImage:
     #
     def getStartStep(self):
         followers = {}
-        for step in self.steplist:      	
+        for step in self.steplist:
             if step.getTrueId():
                 followers[step.getTrueId()] = None
             if step.getFalseId():
                 followers[step.getFalseId()] = None
-        for step in self.steplist:      	
+        for step in self.steplist:
             if step.id not in followers:
                 return step
         return None # circular workflow- shouldn't happen
@@ -338,8 +338,7 @@ class WorkflowImage:
         x1 = fix[0] + (x[0]-fix[0])*math.cos(angle) + (x[1]-fix[1])*math.sin(angle)
         y1 = fix[1] + (x[0]-fix[0])*math.sin(angle) - (x[1]-fix[1])*math.cos(angle)
         return round(y1), round(x1)
-    	
-
+ 
     """ draws the connection of two 2given steps
         parameter: f=coordinates from, t=coordinates to, col=color """
     def drawArrow(self, f=(0,0), t=(0,0), text="", type="true"):
@@ -801,27 +800,36 @@ def register():
     tree.registerNodeClass("workflows", Workflows)
     tree.registerNodeClass("workflow", Workflow)
     tree.registerNodeClass("workflowstep", WorkflowStep)
-    from workflow.start import WorkflowStep_Start
+    from start import WorkflowStep_Start
     tree.registerNodeClass("workflowstep-start", WorkflowStep_Start)
     registerStep("workflowstep-start")
+    from end import WorkflowStep_End
     tree.registerNodeClass("workflowstep-end", WorkflowStep_End)
     registerStep("workflowstep-end")
+    from editmetadata import WorkflowStep_EditMetadata
     tree.registerNodeClass("workflowstep-edit", WorkflowStep_EditMetadata)
     registerStep("workflowstep-edit")
+    from upload import WorkflowStep_Upload
     tree.registerNodeClass("workflowstep-upload", WorkflowStep_Upload)
     registerStep("workflowstep-upload")
+    from delete import WorkflowStep_Delete
     tree.registerNodeClass("workflowstep-delete", WorkflowStep_Delete)
     registerStep("workflowstep-delete")
+    from email import WorkflowStep_SendEmail
     tree.registerNodeClass("workflowstep-send_email", WorkflowStep_SendEmail)
     registerStep("workflowstep-send_email")
+    from showdata import WorkflowStep_ShowData
     tree.registerNodeClass("workflowstep-showdata", WorkflowStep_ShowData)
     tree.registerNodeClass("workflowstep-wait", WorkflowStep_ShowData)
     registerStep("workflowstep-showdata")
     registerStep("workflowstep-wait")
+    from protect import WorkflowStep_Protect
     tree.registerNodeClass("workflowstep-protect", WorkflowStep_Protect)
     registerStep("workflowstep-protect")
+    from textpage import WorkflowStep_TextPage
     tree.registerNodeClass("workflowstep-textpage", WorkflowStep_TextPage)
     registerStep("workflowstep-textpage")
+    from publish import WorkflowStep_Publish
     tree.registerNodeClass("workflowstep-publish", WorkflowStep_Publish)
     registerStep("workflowstep-publish")
 

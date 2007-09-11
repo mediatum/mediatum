@@ -18,18 +18,20 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys, traceback
-import athana
+import core.athana as athana
+import core.tree as tree
+import core.acl as acl
 import logging
-import tree
-import acl
+#from workflow import workflow
 
-from acl import AccessRule, getRuleList
-from workflows import *
-from admin.adminutils import *
-from metadatatypes import parseEditorData
-from tree import getType
-from objtypes.metadatatype import Metadatafield
-from translation import t, lang
+
+from core.acl import AccessRule, getRuleList
+from workflow.workflow import getWorkflowList
+from web.admin.adminutils import *
+from schema.schema import parseEditorData
+from core.tree import getType
+from schema.schema import Metadatafield
+from core.translation import t, lang
 
 
 """ standard validator to execute correct method """

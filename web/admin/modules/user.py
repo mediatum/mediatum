@@ -147,7 +147,6 @@ def editUser_mask(req, id, err=0):
         user = getUser(id)
 
     else:
-        print "error"
         #error while filling values
         option = ""
         for key in req.params.keys():

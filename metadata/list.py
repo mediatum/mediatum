@@ -18,9 +18,11 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.athana as athana
+import core.tree as tree
+
 from utils.utils import esc
 from core.metatype import Metatype
-
+#from core.tree import getNode
 
 class m_list(Metatype):
     def formatValues(self, field):
@@ -73,10 +75,8 @@ class m_list(Metatype):
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
         return athana.getTAL("metadata/list.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field, "valuelist":self.formatValues(field)}, macro="editorfield", language=language)
 
-
     def getSearchHTML(self, field, value="", width=174, name="", language=None):
         return athana.getTAL("metadata/list.html",{"field":field, "value":value, "width":width, "name":name, "valuelist":self.formatValues(field)}, macro="searchfield", language=language)
-
 
     def getFormatedValue(self, field, node, language=None):
         value = esc(node.get(field.getName()))

@@ -141,8 +141,6 @@ def findmodule(type):
     global mymodules
     if type in mymodules:
         return mymodules[type]
-        
-    print mymodules
 
     try:
         m = __import__("web.admin.modules." + type)

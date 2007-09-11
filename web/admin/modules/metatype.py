@@ -21,7 +21,6 @@ import sys
 import traceback
 import core.tree as tree
 
-#from schema.schema import *
 from schema.schema import loadTypesFromDB
 from core.datatypes import loadAllDatatypes
 from web.admin.adminutils import Overview, getAdminStdVars
@@ -29,14 +28,13 @@ from core.tree import Node, getNode
 from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings 
 from core.translation import lang, t
-from schema.schema import getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask
+from schema.schema import getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
 
 _masktypes = {"":"masktype_empty","edit":"masktype_edit", "search":"masktype_search", "shortview":"masktype_short", "fullview":"masktype_full"}
 
 """ standard method for admin module """
 def validate(req, op):
     path = req.path[1:].split("/")
-
     if len(path)==3 and path[2]=="overview":
         return showFieldOverview(req)
 
@@ -45,32 +43,22 @@ def validate(req, op):
 
     if len(path)==2 and path[1]=="info":
         return showInfo(req)
-
-    try:
+    
+    if "file" in req.params and req.params["file"].filesize>0:
         # import scheme from xml-file
         importfile = req.params.get("file")
         if importfile.tempname!="":
             xmlimport(req, importfile.tempname)
-    except:
-        None
+    
     try:
-        try:
+        if "detailof" in req.params.keys():
             req.params["detaillist_" + req.params["detailof"] + ".x"] = 1
-        except:
-            None
-
-        try:
-            if req.params.get("form_op","")=="":
-                req.params["masks_" + req.params["maskof"] + ".x"] = 1
-        except:
-            None
         
-
-        try:
-            if req.params.get("form_op","")=="cancel":
-                req.params["masks_"+ req.params["maskof"]+".x"] = 0
-        except:
-            None
+        if "maskof" in req.params.keys() and req.params.get("form_op","")=="":
+            req.params["masks_" + req.params["maskof"] + ".x"] = 1
+        
+        if "maskof" in req.params.keys() and req.params.get("form_op","")=="cancel":
+            req.params["masks_"+ req.params["maskof"]+".x"] = 0
 
         for key in req.params.keys():
             # change field order up
@@ -207,12 +195,11 @@ def validate(req, op):
                         except:
                             _option = ""
 
-                        try:
+                        _fieldvalue = ""
+                        if 'mtype' in req.params.keys() and req.params.get('mtype') + "_value" in req.params.keys():
                             _fieldvalue = str(req.params[req.params['mtype'] + "_value"])
-                        except:
-                            _fieldvalue = ""
+                        
                         updateMetaField(req.params["pid"], req.params["mname"], req.params["mlabel"], req.params["orderpos"], req.params["mtype"], _option, req.params["mdescription"], _fieldvalue, orig_name=req.params["mname"])
-
                         req.params["detailof"] = req.params["pid"]
                         return showDetailList(req, req.params["pid"])
                     break
@@ -224,11 +211,10 @@ def validate(req, op):
                         return FieldDetail(req, req.params["pid"], "", 1)
 
                     else:
-                        try:
-                            _len = int(req.params["mlength"])
-                        except:
-                            _len = 0
-                            
+                        _len = 0
+                        if req.params.get("mlength","").isdigit():
+                            _len = int(req.params.get("mlength","0"))
+
                         try:
                             _option =""
                             for key in req.params.keys():
@@ -237,10 +223,9 @@ def validate(req, op):
                         except:
                             _option = ""
 
-                        try:
+                        _fieldvalue = ""
+                        if req.params.get('mtype','') + "_value" in req.params.keys():
                             _fieldvalue = str(req.params[req.params['mtype'] + "_value"])
-                        except:
-                            _fieldvalue = ""
 
                         updateMetaField(req.params["pid"], req.params["mname"], req.params["mlabel"], req.params["orderpos"], req.params["mtype"], _option, req.params["mdescription"], _fieldvalue, orig_name=req.params["mname_orig"])
 
@@ -381,7 +366,6 @@ def showDetailList(req, id):
     v["metafields"] = metafields
     v["fieldoptions"] = fieldoption
     v["fieldtypes"] = getMetaFieldTypeNames()
-    print "\n\nfieldtypes:", v["fieldtypes"]
     v["pages"] = pages
     v["order"] = order
     return req.getTAL("web/admin/modules/metatype.html", v, macro="view_field")
@@ -405,10 +389,10 @@ def FieldDetail(req, pid, id, err=0):
          
     else:
         # error filling values
-        try:
-            _fieldvalue = str(req.params[req.params['mtype'] + "_value"])
-        except:
-            _fieldvalue = ""
+        _fieldvalue = ""
+        if req.params.get('mtype','') + "_value" in req.params.keys():
+            _fieldvalue = str(req.params[req.params.get('mtype','') + "_value"])
+        
         field = tree.Node(req.params["mname"], type="metafield")
         field.setLabel(req.params["mlabel"])
         field.setOrderPos(req.params["orderpos"])
@@ -564,7 +548,6 @@ def showEditor(req):
             break
 
         if key.startswith("new_"):
-
             req.params["edit"] = " "
             break
 

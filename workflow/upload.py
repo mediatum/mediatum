@@ -17,7 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from upload import WorkflowStep #relative import
+#from upload import WorkflowStep #relative import
+from workflow import WorkflowStep
 
 class WorkflowStep_Upload(WorkflowStep):
    

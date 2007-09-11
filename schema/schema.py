@@ -185,7 +185,6 @@ def updateMetaField(parent, name, label, orderpos, fieldtype, option="", descrip
 def deleteMetaField(pid, name):
     metadatatype = getMetaType(pid)
     field = getMetaField(pid, name)
-
     metadatatype.removeChild(field)
     
     i=0
@@ -670,7 +669,7 @@ class Metadatafield(tree.Node):
 
         return t.getFormatedValue(self, node, language=language)
 
-   
+        
 class Mask(tree.Node):
 
     def getFormHTML(self, nodes, req):
@@ -786,6 +785,7 @@ class Mask(tree.Node):
         fieldlist = getAllMetaFields()
         for item in self.getChildren().sort():
             t = getMetadataType(item.get("type"))
+            print item.id
             ret += t.getMetaHTML(self, i, language=language, fieldlist=fieldlist) # get formated line specific of type (e.g. field)
             i += 1
         ret += '</form>'

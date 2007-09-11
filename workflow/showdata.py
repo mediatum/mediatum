@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from workflow import WorkflowStep
 
 def mkfilelist(node, deletebutton=0, language=None, request=None):
     return request.getTAL("workflow/showdata.html", {"files":node.getFiles(), "node":node, "delbutton":deletebutton} , macro="workflow_filelist")

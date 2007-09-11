@@ -17,9 +17,10 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import tree
-from utils import *
+import core.tree as tree
 import xml.parsers.expat
+
+from utils.utils import esc
 
 def writexml(self, fi, indent=None, written=None):
     if written is None:

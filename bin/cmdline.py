@@ -21,12 +21,12 @@
 import sys
 sys.path += ["../", "."]
 
-import startup
-import tree
+import core.startup as startup
+import core.tree as tree
 import re
 import string
-import xmlnode
-import metadatatypes
+import core.xmlnode as xmlnode
+import schema.schema
 
 path = []
 node = tree.getRoot()
@@ -175,7 +175,10 @@ def cd(id):
     global node,lastnodes
     newnode = findNode(node, id)
     if id == "..":
-        node = lastnodes.pop()
+        try:
+            node = lastnodes.pop()
+        except IndexError:
+            print "root node reached"
         return
 
     if newnode:

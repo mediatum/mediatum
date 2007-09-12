@@ -20,16 +20,16 @@
 """
 import sys
 sys.path += ["."]
-import startup
+
+import core.startup as startup
 import logging
-from utils import *
-import config
+import core.config as config
 import os
-from db import database
+from core.db import database
 
 db = database.getConnection()
 
-write=0
+write = 0 # parameter: 0=simulate operation, 1=write operation
 
 rootid = None
 used_ids={}

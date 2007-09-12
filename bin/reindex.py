@@ -20,8 +20,8 @@
 """
 import sys
 sys.path += ["../", "."]
-import startup
-import search.query
+import core.startup as startup
+import core.search.query
 
-search.query.makeSearchIndex()
+core.search.query.makeSearchIndex()
 

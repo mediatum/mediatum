@@ -382,7 +382,7 @@ def _makeCollectionIndices():
         elif type=="list" or type=="mlist" or type=="ilist":
             itype = "makeClassIndex"
 
-        command = "%s %s %s %s %s %s" % (sys.executable, os.path.join(config.basedir,"search/runindexer.py"),itype,file,tmpdir,basename)
+        command = "%s %s %s %s %s %s" % (sys.executable, os.path.join(config.basedir,"core/search/runindexer.py"),itype,file,tmpdir,basename)
         exit_status = os.system(command)
         if exit_status:
             print "Exit status "+str(exit_status)+" of subprocess "+command

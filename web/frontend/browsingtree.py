@@ -20,7 +20,7 @@
 import time
 import core.users as users
 import core.tree as tree
-import core.config as tree
+import core.config as config
 
 from utils.utils import esc,getCollection
 from core.translation import t, lang
@@ -81,6 +81,7 @@ def writetree2(req, node, f, content, unfoldedids=None):
             unfoldedids = req.session["unfoldedids"]
             len(unfoldedids)
         except:
+            print "error1"
             req.session["unfoldedids"] = unfoldedids = {}
     else:
         u = unfoldedids.copy()
@@ -93,6 +94,7 @@ def writetree2(req, node, f, content, unfoldedids=None):
         unfoldedids[unfold] = 1
         openParents(unfoldedids, tree.getNode(unfold))
     except:
+        print "error2"
         pass
     
     try:
@@ -100,6 +102,7 @@ def writetree2(req, node, f, content, unfoldedids=None):
         unfoldedids[fold] = 0
         openParents(unfoldedids, tree.getNode(fold))
     except:
+        print "error3"
         pass
         
     accessdata = AccessData(req)
@@ -133,11 +136,13 @@ def cleartree():
     None
 
 def browsingtree(req):
-    try:
-        content=""
-        mynode = tree.getNode(req.params.get("collection",1))
-        currentdir = tree.getNode(req.params["dir"])
-        content=writetree(req, mynode, currentdir, content)
-        return content
-    except:
-        return ""
+    #try:
+    content=""
+    print req.params.get("collection",1)
+    mynode = tree.getNode(req.params.get("collection",1))
+    currentdir = tree.getNode(req.params["dir"])
+    content=writetree(req, mynode, currentdir, content)
+    return content
+    #except:
+    #    print "error4"
+    #    return ""

@@ -407,7 +407,7 @@ button#reset-button{
 }
 
 #portal-column-content div.preview_list{
-    margin: 2px 4px 2px 0px; width:98%; border:1px solid silver; position:relative; left:0px; top:0px; height:134px;
+    margin: 2px 4px 2px 0px; width:98%; border:1px solid silver; position:relative; left:0px; top:0px; height:134px;overflow:hidden;
 }
 
 #portal-column-content div#nodes  div.preview_list a{

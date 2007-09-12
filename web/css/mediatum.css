@@ -60,7 +60,7 @@ textarea{
 }
 
 #sub_header #language_switch {
-    right: 55px; top: 90px; position: absolute
+    right: 55px; top: 40px; position: absolute
 }
 
 #sub_header #language_switch A.selected_language {

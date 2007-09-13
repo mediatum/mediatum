@@ -31,7 +31,8 @@ def getAdminStdVars(req):
         page = "?page=0"
     else:
         page = ""
-    return {"user": users.getUserFromRequest(req), "page":page, "op":req.params.get("op","")}
+    user = users.getUserFromRequest(req)
+    return {"user": user, "page":page, "op":req.params.get("op","")}
 
 def getOptionHeader(options):
     ret = '<table><tr>'
@@ -192,25 +193,28 @@ class Menu:
 
 def adminNavigation():
     menu = list()
-    submenu = Menu("admin_menu_1")
-    submenu.addItem("/admin/usergroup")
-    submenu.addItem("/admin/user")
-    menu.append(submenu)
+    try:    
+        submenu = Menu("admin_menu_1")
+        submenu.addItem("/admin/usergroup")
+        submenu.addItem("/admin/user")
+        menu.append(submenu)
 
-    submenu = Menu("admin_menu_2")
-    submenu.addItem("/admin/acls")
-    menu.append(submenu)
+        submenu = Menu("admin_menu_2")
+        submenu.addItem("/admin/acls")
+        menu.append(submenu)
 
-    submenu = Menu("admin_menu_3")
-    submenu.addItem("/admin/metatype")
-    menu.append(submenu)
+        submenu = Menu("admin_menu_3")
+        submenu.addItem("/admin/metatype")
+        menu.append(submenu)
 
-    submenu = Menu("admin_menu_4")
-    submenu.addItem("/admin/workflows")
-    menu.append(submenu)
+        submenu = Menu("admin_menu_4")
+        submenu.addItem("/admin/workflows")
+        menu.append(submenu)
 
-    submenu = Menu("admin_menu_5")
-    submenu.addItem("/admin/logfile")
-    menu.append(submenu)
-
+        submenu = Menu("admin_menu_5")
+        submenu.addItem("/admin/logfile")
+        submenu.addItem("/admin/flush")
+        menu.append(submenu)
+    except TypeError:
+        pass
     return menu

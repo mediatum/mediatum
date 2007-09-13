@@ -17,7 +17,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import os
 import core.athana as athana
+import core.config as config
 
 def initContexts():
     athana.setBase(".")
@@ -77,7 +79,7 @@ def initContexts():
     handler = file.addHandler("frameset")
     handler.addPattern("/")
     handler.addPattern("/edit")
-    file.addHandler("flush").addPattern("/flush")
+    #file.addHandler("flush").addPattern("/flush")
     file.addHandler("showtree").addPattern("/edit_tree")
     file.addHandler("error").addPattern("/edit_error")
     file.addHandler("buttons").addPattern("/edit_buttons")
@@ -99,13 +101,13 @@ def initContexts():
     athana.addFileStore("/img/", ["web/img/", "img"])
     athana.addFileStore("/js/", ["web/js/", "js"])
 
-    athana.addContext("/flush", ".").addFile("core/webconfig.py").addHandler("flush").addPattern("/py")
+    #athana.addContext("/flush", ".").addFile("core/webconfig.py").addHandler("flush").addPattern("/py")
    
 def flush(req):
     athana.flush()
     import core.startup
     initContexts()
-    req.write("flushed")
+    print "all caches cleared"
 
 def startWebServer():
     initContexts()

@@ -30,6 +30,7 @@ def initialize():
     log_screen.setLevel(logging.INFO)
 
     log_everything = logging.getLogger('everything')
+    log_everything.handlers = []
     filename = core.config.get('logging.file.everything',None)
     if filename:
         l = logging.handlers.RotatingFileHandler(filename, maxBytes=33554432, backupCount=20)
@@ -43,6 +44,7 @@ def initialize():
 
     for name in ["database","backend","frontend","editor","usertracing","athana","errors"]:
         log = logging.getLogger(name)
+        log.handlers = []
         filename = core.config.get("logging.file."+name, None)
         if filename:
             l = logging.handlers.RotatingFileHandler(filename, maxBytes=33554432, backupCount=20)

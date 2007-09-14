@@ -1,5 +1,7 @@
 [host]
 name=enter-your-hostname-into-mediatum-cfg
+port=8081
+threads=8
 
 [config]
 reindex_time=3600
@@ -8,7 +10,6 @@ reindex_time=3600
 datadir=/data/
 searchstore=/data/search/
 tempdir=/tmp/
-
 
 [database]
 type=sqlite

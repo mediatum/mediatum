@@ -112,7 +112,6 @@ def flush(req):
 def startWebServer():
     initContexts()
 
-    athana.setThreads(8)
-
-    athana.run(8081)
+    athana.setThreads(int(config.get("host.threads","8")))
+    athana.run(int(config.get("host.port","8081")))
 

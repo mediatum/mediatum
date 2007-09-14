@@ -31,6 +31,18 @@ class m_text(Metatype):
 
     def getFormatedValue(self, field, node, language=None):
         value = esc(node.get(field.getName()).replace(";","; "))
+        
+        # replace variables
+        for var in re.findall( r'&lt;(.+?)&gt;', value ):
+            if var=="att:id":
+                value = value.replace("&lt;"+var+"&gt;", node.id)
+            elif var.startswith("att:"):
+                val = node.get(var[4:])
+                if val=="":
+                    val = "____"
+
+                value = value.replace("&lt;"+var+"&gt;", val)
+
         return (field.getLabel(), value)
 
     def getFormatedValueForDB(self, field, value):

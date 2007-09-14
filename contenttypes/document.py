@@ -24,7 +24,7 @@ import core.athana as athana
 import core.acl as acl
 import os
 
-#from utils import *
+from utils.utils import getMimeType, format_filesize
 #from date import *
 from core.tree import Node,FileNode
 from schema.schema import loadTypesFromDB, VIEW_HIDE_EMPTY,VIEW_DATA_ONLY
@@ -50,6 +50,16 @@ class Document(tree.Node):
         obj['attachment'] = files
         obj['sum_size'] = sum_size
         obj['canseeoriginal'] = access.hasAccess(node,"data")
+        if "style" in req.params.keys():
+            req.session["full_style"] = req.params.get("style", "full_standard")
+        elif "full_style" not in req.session.keys():
+            if "contentarea" in req.session.keys():
+                col = req.session["contentarea"].collection
+                req.session["full_style"] = col.get("style_full")
+            else:
+                req.session["full_style"] = "full_standard"
+       
+        obj['style'] = req.session["full_style"]
         return obj
      
     """ format big view with standard template """

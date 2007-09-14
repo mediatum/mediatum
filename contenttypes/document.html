@@ -10,10 +10,19 @@
 
 <div metal:define-macro="showbig" id="object_main">
     <div style="width: 100%; text-align:right">
-        <a tal:attributes="href python:'javascript:shoppingBag(\''+str(node.id)+'\')'" href="javascript:shoppingBag(nodeid)">
-            <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png" title="Objekt zur Merkliste hinzuf&uuml;gen"/></a>
+        <a tal:attributes="href python:'node?id='+str(node.id)+'&style=full_standard'" style="text-decoration:none">
+            <img src="/img/doc_default.png" title="Default-Ansicht f&uuml;r Dokumente"/>
+        </a>
+        <a tal:attributes="href python:'node?id='+str(node.id)+'&style=full_text'" style="text-decoration:none">
+            <img src="/img/doc_text.png" title="Text-Ansicht f&uuml;r Dokumente"/>
+        </a>
+        &nbsp;&nbsp;&nbsp;
+        <a tal:attributes="href python:'javascript:shoppingBag(\''+str(node.id)+'\')'" href="javascript:shoppingBag(nodeid)" style="text-decoration:none">
+            <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png" title="Objekt zur Merkliste hinzuf&uuml;gen"/>
+        </a>
         <a tal:attributes="href python:'/print/'+str(node.id)" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
     </div>
+    <tal:block tal:condition="python: style!='full_text'">
     <div tal:condition="python: len(node.getFiles())>0" id="object_image">
         <tal:block tal:condition="python:canseeoriginal">
         <a tal:attributes="href python:'/doc/'+str(node.id)+'/document.pdf'" i18n:attributes="title doc_fulltext_title" target="pdfdocument" title="Volltext in neuem Fenster &ouml;ffnen">
@@ -27,11 +36,19 @@
         <div tal:condition="python:len(attachment)>0" id="object_attachment">
             <a tal:attributes="onclick python:'javascript:openPopup(\'/attachmentbrowser?id='+str(node.id)+'&path='+path+'\', \'Attachment\', 400, 400)'" i18n:translate="doc_att_browser" href="#" >Attachment-Browser &ouml;ffnen...</a>
         </div>
-        
     </div>
-
     <div tal:condition="python: len(node.getFiles())==0" id="object_meta" style="margin-left:0px" tal:content="raw metadata"/>
     <div tal:condition="python: len(node.getFiles())>0" id="object_meta" tal:content="raw metadata"/>
+    </tal:block>
+    <tal:block tal:condition="python: style=='full_text'">
+        <div id="object_meta" style="margin-left:0px" tal:content="raw metadata"/>
+        
+        <tal:block tal:condition="python: len(node.getFiles())>0">
+            <hr/>
+            <a tal:attributes="href python:'/doc/'+str(node.id)+'/document.pdf'" target="pdfdocument" i18n:attributes="title doc_fulltext_title"><img src="/img/pdf.gif"/></a>
+        </tal:block>
+    </tal:block>
+
 </div>
 
 

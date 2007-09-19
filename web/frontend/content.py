@@ -25,7 +25,7 @@ import re
 
 from utils.utils import getCollection,Link
 from core.acl import AccessData
-from core.translation import lang
+from core.translation import lang,t
 from web.frontend.searchresult import simple_search, extended_search
 
 class Content:
@@ -58,6 +58,10 @@ class SingleFile:
         self.nr = nr
         self.num = num
         self.file = file
+    def getShoppingBagLink(self):
+        return 'shoppingBag(\''+str(self.node.id)+'\')'
+    def getMetadata(self,seperator="."):
+        return self.node.show_node_text(seperator=seperator)
     def getLink(self):
         return '/node?id='+self.file.id
 

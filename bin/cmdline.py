@@ -21,12 +21,12 @@
 import sys
 sys.path += ["../", "."]
 
-import core.startup as startup
+import core.startup
 import core.tree as tree
 import re
 import string
 import core.xmlnode as xmlnode
-import schema.schema
+import schema.schema as metadatatypes
 
 path = []
 node = tree.getRoot()

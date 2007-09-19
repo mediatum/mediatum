@@ -85,6 +85,7 @@ def simple_search(req):
                     ids.append(node.id)
                 from web.frontend.content import ContentList
                 c = ContentList(tree.NodeList(ids),collection,words)
+                c.feedback(req)
                 c.linkname = "Suchergebnis"
                 c.linktarget = ""
                 resultlist += [c]
@@ -181,6 +182,7 @@ def extended_search(req):
             ids.append(node.id)
         from frontend.content import ContentList
         c = ContentList(tree.NodeList(ids),collection,querytext.strip())
+        c.feedback(req)
         c.linkname = "Suchergebnis"
         c.linktarget = ""
         return c

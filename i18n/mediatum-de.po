@@ -1841,6 +1841,9 @@ msgstr "zuletzt geändert"
 msgid "edit_sort_header"
 msgstr "Manuell sortieren"
 
+msgid "edit_sort_header2"
+msgstr "Kollektions Sortierung"
+
 msgid "edit_sort_label"
 msgstr "Nach"
 
@@ -2153,3 +2156,14 @@ msgstr "Der Upload des Dokuments konnte nicht durchgeführt werden.<br>Bitte üb
 
 msgid "Your browser doesn't support cookies"
 msgstr "Ihr Browser unterstützt leider keine Cookies. Möglicherweise ist der Cookie-Support im Browser abgeschaltet. Ohne Cookies werden Sie auf späteren Seiten evtl. auf Probleme stoßen."
+
+msgid "off"
+msgstr "aus"
+
+msgid "tab_sortfiles"
+msgstr "Files Sortieren"
+
+msgid "descending"
+msgstr " (absteigend)"
+
+

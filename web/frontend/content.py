@@ -97,6 +97,7 @@ class ContentList(Content):
     def __init__(self,files,collection=None,words=None):
         self.nr = -1
         self.page = 0
+        self.lang = "en"
         self.words = words
         self.files = files
         self.num = len(files)
@@ -146,7 +147,12 @@ class ContentList(Content):
     def feedback(self,req):
         myid = req.params.get("id")
         if myid:
-            self.nr = self.id2pos[myid]
+            try:
+                self.nr = self.id2pos[myid]
+            except KeyError:
+                pass # happens for first node (the directory)
+
+        self.lang = lang(req)
 
         if "page" in req.params:
             self.page = int(req.params.get("page"))
@@ -175,10 +181,20 @@ class ContentList(Content):
     
     def getSortFields(self):
         sortfields = []
+        class SortChoice:
+            def __init__(self, label, value, descending):
+                self.label = label
+                self.value = value
+                self.descending = descending
+            def getLabel(self):
+                return self.label
+            def getName(self):
+                return self.value
         if len(self.files):
             for field in self.files[0].getType().getMetaFields():
                 if "o" in field.getOption():
-                    sortfields.append(field)
+                    sortfields += [SortChoice(field.getLabel(), field.getName(),0)]
+                    sortfields += [SortChoice(field.getLabel()+t(self.lang, "descending"), "-"+field.getName(),1)]
         return sortfields
 
 
@@ -333,6 +349,7 @@ def mkContentNode(req):
             if c.type != "directory":
                 ids += [c.id]
         c = ContentList(tree.NodeList(ids),getCollection(node))
+        c.feedback(req)
         c.node = node
         return c
     else:

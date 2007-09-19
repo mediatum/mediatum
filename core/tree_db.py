@@ -163,6 +163,15 @@ class NodeType(tree.NodeType):
             if field.Searchfield():
                 sfields += [field]
         return sfields
+    
+    def getSortFields(self):
+        sfields = []
+        fields = self.getMetaFields()
+        fields.sort(lambda x, y: cmp(x.getOrderPos(),y.getOrderPos()))
+        for field in fields:
+            if field.Sortfield():
+                sfields += [field]
+        return sfields
 
     def getMasks(self):
         try:
@@ -235,9 +244,19 @@ sortorders = {}
 
 def createSortOrder(field):
     log.info("retrieving sort order for field "+field)
+    reverse=0
+    if field[0]=='-':
+        field = field[1:]
+        reverse=1
+
     idlist = list(conn.getSortOrder(field))
-    def mycmp(n1,n2):
-        return compare_utf8(n1[1],n2[1])
+
+    if reverse:
+        def mycmp(n1,n2):
+            return compare_utf8(n2[1],n1[1])
+    else:
+        def mycmp(n1,n2):
+            return compare_utf8(n1[1],n2[1])
     idlist.sort(mycmp)
 
     i = 0

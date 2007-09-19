@@ -621,6 +621,8 @@ class Metadatafield(tree.Node):
     def setValues(self, value):
         self.set("valuelist", value)
 
+    def Sortfield(self):
+        return "o" in self.getOption()
     def Searchfield(self):
         return "s" in self.getOption()
     

@@ -39,6 +39,9 @@ errordesc = {
  "noPermission": "The requested records are protected",
 }
 
+EARLIEST_YEAR=1960
+CHUNKSIZE=10
+
 #-----
 #class Export:
 #    def __init__(self, metaDataPrefix, schema, nameSpace):
@@ -161,8 +164,8 @@ def Identify(req):
             <repositoryName>"""+root.getName()+"""</repositoryName>
             <baseURL>"""+request+"""</baseURL>
             <protocolVersion>2.0</protocolVersion>
-            <adminEmail>mediatum@ub.tum.de</adminEmail>
-            <earliestDatestamp>1980-01-01T12:00:00Z</earliestDatestamp>
+            <adminEmail>"""+config.get("email.admin")+"""</adminEmail>
+            <earliestDatestamp>"""+str(EARLIEST_YEAR-1)+"""-01-01T12:00:00Z</earliestDatestamp>
             <deletedRecord>no</deletedRecord>
             <granularity>YYYY-MM-DDThh:mm:ssZ</granularity>
        </Identify>""")
@@ -178,7 +181,7 @@ def writeRecord(req, node, metadataformat):
     if updatetime:
         d = ISO8601(date.parse_date(updatetime))
     else:
-        d = ISO8601()
+        d = ISO8601(DateTime(EARLIEST_YEAR-1,12,31,23,59,59))
 
     req.write(""" 
            <record>
@@ -238,11 +241,10 @@ def retrieveNodes(access, collectionid, date_from=None, date_to=None):
     return nodes
 
 
-tokenpositions = MaxSizeDict(16)
-chunksize = 200
+tokenpositions = MaxSizeDict(32)
 
 def getNodes(req):
-    global tokenpositions,chunksize
+    global tokenpositions,CHUNKSIZE
     access = acl.AccessData(req)
     nodes = None
     try:
@@ -267,14 +269,22 @@ def getNodes(req):
     if nodes is None:
         string_from,string_to = None,None
         try:
-            date_from = parseDate(req.params["from"])
             string_from = req.params["from"]
+            date_from = parseDate(string_from)
+            if date_from.year<EARLIEST_YEAR:
+                date_from=DateTime(0,0,0,0,0,0)
         except:
             if "from" in req.params:
                 return None,"badArgument",None
             date_from = None
         try:
             date_to = parseDate(req.params["until"])
+            if not date_to.has_time:
+                date_to.hour = 23
+                date_to.minute = 59
+                date_to.second = 59
+            if date_to.year<EARLIEST_YEAR-1:
+                raise
             string_to = req.params["until"]
         except:
             if "until" in req.params:
@@ -294,15 +304,15 @@ def getNodes(req):
             # collection doesn't exist
             return None,"badArgument",None
     
-    tokenpositions[token] = pos + chunksize, nodes, metadataformat
+    tokenpositions[token] = pos + CHUNKSIZE, nodes, metadataformat
 
     tokenstring = '<resumptionToken expirationDate="'+ISO8601(date.now().add(3600*24))+'" '+ \
                    'completeListSize="'+str(len(nodes))+'" cursor="'+str(pos)+'">'+token+'</resumptionToken>'
-    if pos + chunksize > len(nodes):
+    if pos + CHUNKSIZE > len(nodes):
         tokenstring = None
         del tokenpositions[token]
 
-    return nodes[pos:pos+chunksize], tokenstring, metadataformat
+    return nodes[pos:pos+CHUNKSIZE], tokenstring, metadataformat
 
 def ListIdentifiers(req):
     nodes, tokenstring, metadataformat = getNodes(req)

@@ -1829,6 +1829,9 @@ msgstr "last edit"
 msgid "edit_sort_header"
 msgstr "Sort manually"
 
+msgid "edit_sort_header2"
+msgstr "Sort collections"
+
 msgid "edit_sort_label"
 msgstr "Sort field"
 
@@ -2142,3 +2145,13 @@ msgstr "Document could not be uploaded into the system.<br>This may be caused by
 
 msgid "Your browser doesn't support cookies"
 msgstr "Your browser doesn't support cookies. Maybe the 'Allow Cookies' option in your browser is deactivated. Please switch on Cookies again to proceed."
+
+msgid "off"
+msgstr "off"
+
+msgid "tab_sortfiles"
+msgstr "Sort Files"
+
+msgid "descending"
+msgstr " (descending)"
+

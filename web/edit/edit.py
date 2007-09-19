@@ -38,7 +38,7 @@ from edit_classes import edit_classes
 from edit_files import edit_files
 from edit_upload import edit_upload, upload_help
 from edit_search import edit_search
-from edit_sort import edit_sort
+from edit_sort import edit_sort,edit_sortfiles
 from edit_editor import edit_editor
 from edit_workflow import edit_workflow
 from edit_license import edit_license
@@ -523,7 +523,13 @@ def content(req):
 
     node = tree.getNode(ids[0])
     if isDirectory(node):
-        tabs = ["tab_content", "tab_html", "tab_search", "tab_subfolder", "tab_meta", "tab_acls", "tab_license", "tab_techmeta", "tab_view"]
+        tabs = ["tab_content", "tab_html", "tab_search", "tab_subfolder"]
+        try:
+            if node.getParents()[0].type == "collections":
+                tabs += ["tab_sortfiles"] 
+        except IndexError: # if this is the root node
+            pass
+        tabs += ["tab_meta", "tab_acls", "tab_license", "tab_techmeta", "tab_view"]
         
         if node.name=="Uploads":
             tabs = ["tab_upload"] + tabs[1:]
@@ -619,6 +625,8 @@ def content(req):
         edit_search(req,ids)
     elif current == "tab_subfolder":
         edit_sort(req,ids)
+    elif current == "tab_sortfiles":
+        edit_sortfiles(req,ids)
     elif current == "tab_classes":
         edit_classes(req,ids)
     elif current == "tab_license":

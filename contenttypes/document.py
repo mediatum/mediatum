@@ -37,6 +37,7 @@ fileicons = {'directory':'mmicon_dir.gif', 'application/pdf':'mmicon_pdf.gif', '
 class Document(tree.Node):
 
     def _prepareData(node, req, words=""):
+
         access = acl.AccessData(req)       
         mask = node.getType().getMask("nodebig")
         obj = {}

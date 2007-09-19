@@ -51,6 +51,13 @@ class Document(tree.Node):
         obj['attachment'] = files
         obj['sum_size'] = sum_size
         obj['canseeoriginal'] = access.hasAccess(node,"data")
+
+        if "oogle" not in req.request_headers.get("user-agent",""):
+            obj['print_url'] = '/print/'+str(node.id)
+        else:
+            #don't confuse search engines with the PDF link
+            obj['print_url'] = None
+
         if "style" in req.params.keys():
             req.session["full_style"] = req.params.get("style", "full_standard")
         elif "full_style" not in req.session.keys():

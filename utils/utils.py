@@ -341,7 +341,7 @@ def clean_path(path):
     newpath = ""
     lastc = None
     for c in path:
-        if c not in "/abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-.0123456789":
+        if c not in "/abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-.0123456789 ":
             c = "_"
         if c == "." and lastc == ".":
             return "illegal_filename"

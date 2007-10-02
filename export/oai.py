@@ -23,9 +23,9 @@ import random
 import core.config as config
 import utils.date
 from utils.dicts import MaxSizeDict
-from utils.date import now
-#from utils import *
+import utils.date as date
 import core.acl as acl
+from utils.utils import esc
 
 errordesc = {
  "badArgument": "The request includes illegal arguments, is missing required arguments, includes a repeated argument, or values for arguments have an illegal syntax.",
@@ -96,12 +96,12 @@ def parseDate(string):
     if string.endswith("Z"):
         string = string[:-1]
     try:
-        return parse_date(string, "%Y-%m-%d")
+        return date.parse_date(string, "%Y-%m-%d")
     except:
         try:
-            return parse_date(string, "%Y-%m-%dT%H:%M:%S")
+            return date.parse_date(string, "%Y-%m-%dT%H:%M:%S")
         except:
-            return parse_date(string[12:], "%Y-%m-%d")
+            return date.parse_date(string[12:], "%Y-%m-%d")
 
 def checkParams(req, list):
     params = req.params.copy()

@@ -8,7 +8,9 @@
             <img tal:condition="python: not logo.getURL()" tal:attributes="src python:logo.getPath()" style="margin-left: 30px;"/>
     </div>
 
-    <a tal:condition="python:len(styles)>1" tal:repeat="style styles" tal:attributes="href python:'/?style='+style.getName();title python:style.getLabel()" i18n:attributes="title" id="view_switch">
+    <a tal:condition="python:len(styles)>1" tal:repeat="style styles" 
+       tal:attributes="href python:'/?style='+style.getName()+params;title python:style.getLabel()" 
+       i18n:attributes="title" id="view_switch">
         <img tal:attributes="src python:'/img/'+style.getIcon()"/>
     </a>
 

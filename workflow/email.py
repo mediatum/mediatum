@@ -19,6 +19,13 @@
 """
 import core.tree as tree
 from workflow import WorkflowStep
+import core.athana as athana
+from core.translation import t,lang
+from utils.utils import formatException
+import core.config as config
+import logging
+import utils.mail as mail
+log = logging.getLogger('backend')
 
 def getTALtext(text, context):
     text = '<body xmlns:tal="http://xml.zope.org/namespaces/tal">'+text+'</body>'
@@ -100,7 +107,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
             to = node.get("mailtmp.to")
             text = node.get("mailtmp.text")
             subject = node.get("mailtmp.subject")
-            return req.getTAL("workflow/mail.html", {"page":"node?id="+self.id+"&obj="+node.id, "from":xfrom, "to":to, "text":text, "subject":subject}, macro="sendmail")
+            return req.getTAL("workflow/email.html", {"page":"node?id="+self.id+"&obj="+node.id, "from":xfrom, "to":to, "text":text, "subject":subject}, macro="sendmail")
 
     def metaFields(self):
         ret = list()

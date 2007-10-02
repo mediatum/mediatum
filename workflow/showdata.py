@@ -19,6 +19,8 @@
 """
 import core.tree as tree
 from workflow import WorkflowStep
+from core.translation import t,lang
+from schema.schema import getMetaType,VIEW_HIDE_EMPTY
 
 def mkfilelist(node, deletebutton=0, language=None, request=None):
     return request.getTAL("workflow/showdata.html", {"files":node.getFiles(), "node":node, "delbutton":deletebutton} , macro="workflow_filelist")

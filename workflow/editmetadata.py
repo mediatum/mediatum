@@ -19,6 +19,8 @@
 """
 from workflow import WorkflowStep
 import core.tree as tree
+from core.translation import t,lang
+from schema.schema import getMetaType
 
 class WorkflowStep_EditMetadata(WorkflowStep):
     def show_workflow_node(self, node, req):

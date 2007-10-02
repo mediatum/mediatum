@@ -21,6 +21,7 @@
 import Image, ImageDraw, ImageFont
 import StringIO
 import traceback, sys
+import random
 
 import core.config as config
 import core.tree as tree
@@ -434,7 +435,7 @@ class WorkflowImage:
         
         # true
         if step.getTrueId() and (step.getName() not in self.errorlist):
-           self.drawArrow((x,y), self.getPosition(step.getTrueId()), labeltrue, "true")
+            self.drawArrow((x,y), self.getPosition(step.getTrueId()), labeltrue, "true")
 
         # false
         if step.getFalseId() and (step.getName() not in self.errorlist):
@@ -540,7 +541,7 @@ class Workflows(tree.Node):
         access = acl.AccessData(req)
 
         list = []
-        for workflow in workflows.getWorkflowList():
+        for workflow in getWorkflowList():
             if access.hasWriteAccess(workflow):
                 list += [workflow]
 
@@ -672,7 +673,7 @@ class WorkflowStep(tree.Node):
         return 1
 
     def show_workflow_notexist(self, node, req):
-        step = workflows.getNodeWorkflowStep(node)
+        step = getNodeWorkflowStep(node)
 
         link = ""
         if step:
@@ -731,7 +732,7 @@ class WorkflowStep(tree.Node):
             op = "true"
         elif op==False:
             op = "false"
-        return workflows.runWorkflowStep(node, op)
+        return runWorkflowStep(node, op)
    
     def forwardAndShow(self, node, op, req, link=None):
         newnode = self.forward(node, op)

@@ -20,6 +20,7 @@
 import core.athana as athana
 from utils.utils import esc
 from core.metatype import Metatype
+import re
 
 class m_text(Metatype):
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):

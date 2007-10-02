@@ -127,6 +127,7 @@ class MYSQLConnector:
         self.dblock.acquire()
         try:
             if debug:
+                log.debug(sql)
                 c = self.db.cursor()
                 c.execute("explain "+sql)
                 result = c.fetchall()
@@ -139,7 +140,6 @@ class MYSQLConnector:
                     print sql
                     print "========================================================================"
 
-            log.debug(sql)
         finally:
             self.dblock.release()
 
@@ -149,7 +149,9 @@ class MYSQLConnector:
 
     def runQueryNoError(self, sql):
         print sql
-        log.debug(sql)
+        global debug
+        if debug:
+            log.debug(sql)
         try:
             return self.execute(sql)
         except MySQLdb.OperationalError, nr:

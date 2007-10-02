@@ -373,6 +373,7 @@ class ContentArea(Content):
         self.content = ContentNode(tree.getRoot("collections"))
         self.collection = None
         self.collectionlogo = None
+        self.params = ""
     
     def getPath(self):
         path = []
@@ -409,6 +410,8 @@ class ContentArea(Content):
             self.collection = self.content.collection
             if self.collection:
                 self.collectionlogo = CollectionLogo(self.collection)
+        if hasattr(self.content,"getParams"):
+            self.params = '&'+self.content.getParams()
 
     def actNode(self):
         try:
@@ -427,7 +430,7 @@ class ContentArea(Content):
         if "raw" in req.params:
             path = ""
         else:
-            path = req.getTAL("web/frontend/content_nav.html", {"path": self.getPath(), "styles":styles, "logo":self.collectionlogo}, macro="path")
+            path = req.getTAL("web/frontend/content_nav.html", {"params": self.params, "path": self.getPath(), "styles":styles, "logo":self.collectionlogo}, macro="path")
         return path + '\n<!-- CONTENT START -->\n<div id="nodes">' +  self.content.html(req) + '</div>\n<!-- CONTENT END -->\n'
 
 class CollectionLogo(Content):

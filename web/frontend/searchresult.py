@@ -25,28 +25,35 @@ import logging
 from core.acl import AccessData
 from core.translation import lang
 
-
 class SearchResult:
     def __init__(self,resultlist,query,collections=[]):
         self.resultlist = resultlist
         self.query = query
         self.collections = collections
+        self.active = -1
+        for result in resultlist:
+            result.parent = self
 
     def feedback(self,req):
-        if "dir" in req.params:
-            id = req.params["dir"]
-            for item in self.resultlist:
-                if item.collection.id == id:
-                    return item # switch to collection node
+        if "scoll" in req.params:
+            id = req.params["scoll"]
+            for nr in range(len(self.resultlist)):
+                if self.resultlist[nr].collection.id == id:
+                    self.active = nr
+        elif self.active>=0:
+            return self.resultlist[self.active].feedback(req)
 
     def getLink(self,collection):
-        return 'node?dir='+collection.id
+        return 'node?scoll='+collection.id
 
     def html(self,req):
-        if len(self.resultlist) == 0:
-            return req.getTAL("web/frontend/searchresult.html", {"query":self.query, "r":self, "collections":self.collections, "language":lang(req)}, macro="noresult")
-        else: #len(self.resultlist) > 1:
-            return req.getTAL("web/frontend/searchresult.html", {"query":self.query,"collections":self.collections,"reslist":self.resultlist,"r":self, "language":lang(req)}, macro="listcollections")
+        if self.active<0:
+            if len(self.resultlist) == 0:
+                return req.getTAL("web/frontend/searchresult.html", {"query":self.query, "r":self, "collections":self.collections, "language":lang(req)}, macro="noresult")
+            else: #len(self.resultlist) > 1:
+                return req.getTAL("web/frontend/searchresult.html", {"query":self.query,"collections":self.collections,"reslist":self.resultlist,"r":self, "language":lang(req)}, macro="listcollections")
+        else:
+            return self.resultlist[self.active].html(req)
 
 def protect(s):
     return '"'+s.replace('"','')+'"'

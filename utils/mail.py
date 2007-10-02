@@ -24,8 +24,7 @@ import core.config as config
 
 def sendmail(fromemail, email, subject, text):
 
-    server = smtplib.SMTP(config.get("server.mail"))
-    server.set_debuglevel(1)
+    testing = config.get("host.type") == "testing"
 
     fromaddr = fromemail
 
@@ -51,5 +50,10 @@ def sendmail(fromemail, email, subject, text):
 
     msg = """From: %s\nTo: %s\nSubject: %s\n\n%s""" % (fromaddr, toaddrs_string, subject, text)
     print "Sending mail from %s to %s" % (fromaddr, toaddrs)
-    server.sendmail(fromaddr, toaddrs, msg)
-    server.quit()
+    if not testing:
+        server = smtplib.SMTP(config.get("server.mail"))
+        server.set_debuglevel(1)
+        server.sendmail(fromaddr, toaddrs, msg)
+        server.quit()
+    else:
+        print msg

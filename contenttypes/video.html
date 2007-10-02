@@ -1,14 +1,3 @@
-
-<metal:block metal:define-macro="metadatavalues" tal:repeat="value values">
-    <p tal:replace="raw value"/><br/>
-</metal:block>
-
-
-<tal:block metal:define-macro="metadatavalues_line" tal:repeat="value values">
-    <p tal:replace="raw value"/>. 
-</tal:block>
-
-
 <metal:block metal:define-macro="showbig">
     <div style="width: 100%; text-align:right">
         <a tal:attributes="href python:'javascript:shoppingBag(\''+str(node.id)+'\')'" href="javascript:shoppingBag(nodeid)">

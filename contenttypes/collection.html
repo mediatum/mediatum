@@ -4,11 +4,6 @@
     <small tal:content="python:node.name" style="font-size:10px;"/>
 </metal:block>
 
-<metal:block metal:define-macro="metadatavalues">
-    <b>Ordner:</b> <span tal:content="python:node.name"/><br>
-    <b>Files:</b> <span tal:content="python:str(node.getNumChildren())"/><br>
-</metal:block>
-
 <span metal:define-macro="nodesmall" tal:content="python:node.name"/>
 
 <metal:block metal:define-macro="showbig">

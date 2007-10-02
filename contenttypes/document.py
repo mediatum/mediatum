@@ -24,17 +24,17 @@ import core.athana as athana
 import core.acl as acl
 import os
 
-from utils.utils import getMimeType, format_filesize
-#from date import *
+from utils.utils import getMimeType, format_filesize,splitfilename, u
 from core.tree import Node,FileNode
 from schema.schema import loadTypesFromDB, VIEW_HIDE_EMPTY,VIEW_DATA_ONLY
 from core.translation import lang
 from lib.pdf import parsepdf
+import default
 
 fileicons = {'directory':'mmicon_dir.gif', 'application/pdf':'mmicon_pdf.gif', 'image/jpeg':'mmicon_jpg.gif', 'image/gif':'mmicon_gif.gif', 'image/png':'mmicon_png.gif', 'image/tiff':'mmicon_tiff.gif', 'image/x-ms-bmp':'mmicon_bmp.gif', 'application/postscript':'mmicon_ps.gif', 'application/zip':'mmicon_zip.gif', 'other':'mmicon_file.gif' , "back": "mmicon_back.gif", "application/mspowerpoint":"mmicon_ppt.gif", "application/msword":"mmicon_doc.gif", "video/x-msvideo":"mmicon_avi.gif"}
 
 """ document class """
-class Document(tree.Node):
+class Document(default.Default):
 
     def _prepareData(node, req, words=""):
 
@@ -51,6 +51,8 @@ class Document(tree.Node):
         obj['attachment'] = files
         obj['sum_size'] = sum_size
         obj['canseeoriginal'] = access.hasAccess(node,"data")
+        obj['documentlink'] = '/doc/'+str(node.id)+'/'+str(node.id)+'.pdf'
+        obj['documentthumb'] = '/thumb2/'+str(node.id)
 
         if "oogle" not in req.request_headers.get("user-agent",""):
             obj['print_url'] = '/print/'+str(node.id)
@@ -78,23 +80,6 @@ class Document(tree.Node):
     def show_node_image(node):
         return '<img src="/thumbs/'+node.id+'" class="thumbnail" border="0"/>'
     
-    """ format preview node text """
-    def show_node_text(node, words=None, language=None, macro="metadatavalues"):
-        metatext = list()
-        mask = node.getType().getMask("nodesmall")
-        if mask:
-            for field in mask.getViewHTML([node], VIEW_DATA_ONLY):
-                value = field[1]
-                if words!=None:
-                    value = highlight(value, words, '<font class="hilite">', "</font>")
-
-                if value:
-                    if field[0].startswith("author"):
-                        value = '<span class="author">'+value+'</span>'
-                    metatext.append(value)
-
-        return athana.getTAL("contenttypes/document.html", {"values":metatext}, macro=macro, language=language)
-
     def can_open(node):
         return 0
 

@@ -24,10 +24,10 @@ import core.athana as athana
 #from utils import *
 #from date import *
 from core.tree import Node,FileNode
- 
+import default 
 
 """ flash class """
-class Flash(tree.Node):
+class Flash(default.Default):
 
     def _prepareData(node, req, words=""):
         mask = node.getType().getMask("nodebig")
@@ -44,25 +44,7 @@ class Flash(tree.Node):
     """ returns preview image """
     def show_node_image(node):
         return '<img src="/thumbs/'+node.id+'" class="thumbnail" border="0"/>'
-    
      
-    """ format preview node text """
-    def show_node_text(node, words=None, language=None, macro="metadatavalues"):
-        metatext = list()
-        mask = node.getType().getMask("nodesmall")
-
-        for field in mask.getViewHTML([node], 4):  # values only
-            value = field[1]
-            if words!=None:
-                value = highlight(value, words, '<font class="hilite">', "</font>")
-
-            if value:
-                if field[0].startswith("subject"):
-                    value = '<b>'+value+'</b>'
-                metatext.append(value)       
-        return athana.getTAL("contenttypes/flash.html", {"values":metatext}, macro=macro, language=language)
-
-
     def can_open(node):
         return 0
 

@@ -23,7 +23,7 @@ from core.acl import AccessData
 import re
 import os
 import core.athana as athana
-
+import default
 
 SRC_PATTERN = re.compile('src="([^":/]*)"')
 
@@ -58,7 +58,7 @@ def includetemplate(node, file, substitute):
     return ret
 
 """ directory class """
-class Directory(tree.Node):
+class Directory(default.Default):
 
     """ format big view with standard template """
     def show_node_big(node, req):
@@ -74,10 +74,6 @@ class Directory(tree.Node):
     def show_node_image(node,language=None):
         return athana.getTAL("contenttypes/directory.html", {"node":node}, macro="thumbnail",language=language)
      
-    """ format text view with standard template """
-    def show_node_text(node, words=None,language=None, macro="metadatavalues"):
-        return athana.getTAL("contenttypes/directory.html", {"node":node}, macro=macro,language=language)
-
     def can_open(node):
         return 1
 

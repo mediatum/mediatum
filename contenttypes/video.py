@@ -29,9 +29,10 @@ import Image
 from core.tree import Node,FileNode
 from lib.flv.parse import getFLVSize
 from contenttypes.image import makeThumbNail,makePresentationFormat
+import default
 
 """ video class """
-class Video(tree.Node):
+class Video(default.Default):
 
     def _prepareData(node, req, words=""):
         access = acl.AccessData(req)
@@ -81,23 +82,6 @@ class Video(tree.Node):
                     node.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
                     node.addFile(FileNode(name=thumbname2, type="presentation", mimetype="image/jpeg"))
      
-    """ format preview node text """
-    def show_node_text(node, words=None, language=None, macro="metadatavalues"):
-        metatext = list()
-        mask = node.getType().getMask("nodesmall")
-
-        for field in mask.getViewHTML([node], 4):  # values only
-            value = field[1]
-            if words!=None:
-                value = highlight(value, words, '<font class="hilite">', "</font>")
-
-            if value:
-                if field[0].startswith("subject"):
-                    value = '<b>'+value+'</b>'
-                metatext.append(value)       
-        return athana.getTAL("contenttypes/video.html", {"values":metatext}, macro=macro, language=language)
-
-
     def can_open(node):
         return 0
 

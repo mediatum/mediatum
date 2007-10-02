@@ -26,6 +26,7 @@ import core.athana as athana
 import core.acl as acl
 import random
 import os
+import default
 
 #from utils import *
 from core.tree import Node,FileNode
@@ -131,7 +132,7 @@ def getImageDimensions(image):
 
 
 """ image class for internal image-type """
-class Image(tree.Node):
+class Image(default.Default):
 
     # prepare hash table with values for TAL-template
     def _prepareData(node, req):
@@ -165,26 +166,6 @@ class Image(tree.Node):
     def show_node_image(node, language=None):
     	return '<img src="/thumbs/'+node.id+'" class="thumbnail" border="0"/>'
     
-    """ format preview node text """
-    def show_node_text(node, words=None, language=None, macro="metadatavalues"):
-        metatext = list()
-        mask = node.getType().getMask("nodesmall")
-        
-        if mask:
-            for field in mask.getViewHTML([node], VIEW_DATA_ONLY):  # values only
-                value = field[1]
-                if words!=None:
-                    value = highlight(value, words, '<font class="hilite">', "</font>")
-
-                if value:
-                    if field[0].startswith("subject"):
-                        value = '<b>'+value+'</b>'
-                    metatext.append(value)
-        else:
-            print 'mask "smallview" not defined for nodetype', node.getTypeName()
-            metatext.append('&lt;smallview mask not defined&gt;')
-        return athana.getTAL("contenttypes/image.html", {"values":metatext}, macro=macro, language=language)
-
     def can_open(node):
         return 0
 

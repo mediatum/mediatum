@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.tree as tree
+from schema.schema import loadTypesFromDB, VIEW_HIDE_EMPTY,VIEW_DATA_ONLY
 
 class Default(tree.Node):
     def show_node_big(node, req):
@@ -26,9 +27,27 @@ class Default(tree.Node):
     def show_node_image(node):
         return """<img border="0" src="/img/questionmark.png">"""
 
-    def show_node_text(node, words=None):
-        return """<p class=\"descbox\"><b>Name:</b> "+node.name+"<br></p>""";
-       
+    """ format preview node text """
+    def show_node_text(node, words=None, language=None, seperator="<br />"):
+        metatext = list()
+        mask = node.getType().getMask("nodesmall")
+        if mask:
+            for field in mask.getViewHTML([node], VIEW_DATA_ONLY):
+                value = field[1]
+                if words!=None:
+                    value = highlight(value, words, '<font class="hilite">', "</font>")
+
+                if value:
+                    if field[0].startswith("author"):
+                        value = '<span class="author">'+value+'</span>'
+                    if field[0].startswith("subject"):
+                        value = '<b>'+value+'</b>'
+                    metatext.append(value)
+        else:
+            metatext.append('&lt;smallview mask not defined&gt;')
+
+        return seperator.join(metatext)
+    
     def can_open(node):
         return 0
 

@@ -1,13 +1,3 @@
-
-<tal:block metal:define-macro="metadatavalues" tal:repeat="value values">
-    <p tal:replace="raw value"/><br/>
-</tal:block>
-
-<tal:block metal:define-macro="metadatavalues_line" tal:repeat="value values">
-    <p tal:replace="raw value"/>. 
-</tal:block>
-
-
 <div metal:define-macro="showbig" id="object_main">
     <div style="width: 100%; text-align:right">
         <a tal:attributes="href python:'node?id='+str(node.id)+'&style=full_standard'" style="text-decoration:none">
@@ -20,17 +10,17 @@
         <a tal:attributes="href python:'javascript:shoppingBag(\''+str(node.id)+'\')'" href="javascript:shoppingBag(nodeid)" style="text-decoration:none">
             <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png" title="Objekt zur Merkliste hinzuf&uuml;gen"/>
         </a>
-        <a tal:attributes="href python:'/print/'+str(node.id)" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
+        <a tal:condition="print_url" tal:attributes="href python:print_url" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
     </div>
     <tal:block tal:condition="python: style!='full_text'">
     <div tal:condition="python: len(node.getFiles())>0" id="object_image">
         <tal:block tal:condition="python:canseeoriginal">
-        <a tal:attributes="href python:'/doc/'+str(node.id)+'/document.pdf'" i18n:attributes="title doc_fulltext_title" target="pdfdocument" title="Volltext in neuem Fenster &ouml;ffnen">
-            <img tal:attributes="src python:'/thumb2/'+str(node.id)" style="cursor:pointer" border="0" width="300"/>
+        <a tal:attributes="href documentlink" i18n:attributes="title doc_fulltext_title" target="pdfdocument" title="Volltext in neuem Fenster &ouml;ffnen">
+            <img tal:attributes="src documentthumb" style="cursor:pointer" border="0" width="300"/>
         </a>
         </tal:block>
         <tal:block tal:condition="python:not canseeoriginal">
-            <img tal:attributes="src python:'/thumb2/'+str(node.id)" border="0" width="300"/>
+            <img tal:attributes="src documentthumb" border="0" width="300"/>
         </tal:block>
         <br/>
         <div tal:condition="python:len(attachment)>0" id="object_attachment">

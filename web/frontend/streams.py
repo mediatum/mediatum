@@ -167,7 +167,6 @@ def send_attfile(req):
     if not access.hasAccess(node,"data") and node.type != "directory":
         return 403
     filename = clean_path("/".join(f[1:]))
-    filename.replace('%20', ' ')
     path = join_paths(config.get("paths.datadir"), filename)
     mime, type= getMimeType(filename)
     return req.sendFile(path, mime)

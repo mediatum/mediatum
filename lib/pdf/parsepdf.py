@@ -91,7 +91,7 @@ def parsePDF(filename, tempdir, thumb128, thumb300, fulltext, infoname):
         txt.save(fulltext)
 
 def parsePDF2(filename, basedir, tempdir, thumb128, thumb300, fulltext, infodict):
-    command = "%s %s %s %s %s %s %s %s %s" % (sys.executable, os.path.join(basedir,"mod/pdf/parsepdf.py"),
+    command = "%s %s %s %s %s %s %s %s %s" % (sys.executable, os.path.join(basedir,"lib/pdf/parsepdf.py"),
             basedir, filename, tempdir, thumb128, thumb300, fulltext, infodict)
     exit_status = os.system(command)
     if exit_status:

@@ -16,6 +16,8 @@ h1,h2,h3,h4,h5,h6,ul,li,table,td,input,form {margin:0;padding:0;}
 
 h1 h2 h3 h4 h4 h5 {font-weight: bold;line-height: 16px;}
 
+li{margin-left:20px;}
+
 textarea{
     font-family: arial, helvetica, sans-serif;
 }

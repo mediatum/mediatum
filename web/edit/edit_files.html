@@ -72,6 +72,32 @@
 
         <form method="post" action="edit_content?id='+ids[0]+'&tab=tab_techmeta" name="meta">
             <table class="files">
+                <tr>
+                    <th colspan="3" i18n:translate="edit_nodeinformation"/>
+                </tr>
+                <tr>
+                    <td i18n:translate="edit_id"/>
+                    <td colspan="2" tal:content="python:str(node.id)"/>
+                </tr>
+                <tal:block tal:define="type python:node.getType().getName()" tal:condition="python:type.find('/')>0">
+                    <tr>
+                        <td i18n:translate="edit_objecttype"/>
+                        <td colspan="2" tal:content="python:type.split('/')[0]"/>
+                        
+                    </tr>
+                    <tr>
+                        <td i18n:translate="edit_schema"/>
+                        <td colspan="2" tal:content="python:type.split('/')[1]"/>
+                    <tr>
+                </tal:block>
+                <tal:block tal:define="type python:node.getType().getName()" tal:condition="python:type.find('/')<0">
+                    <tr>
+                        <td i18n:translate="edit_objecttype"/>
+                        <td colspan="2" tal:content="type"/>
+                        
+                    </tr>
+                </tal:block>
+                
                 <tr tal:condition="python:len(list(obsoletefields))>0">
                     <th colspan="3" i18n:translate="edit_files_obsolete">nicht verwendete Metadatenfelder</th>
                 </tr>

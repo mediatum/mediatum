@@ -433,9 +433,6 @@ msgstr "system"
 msgid "admin_menu_5_1"
 msgstr "log files"
 
-msgid "admin_menu_5_2"
-msgstr "Caches"
-
 msgid "admin_error"
 msgstr "You're not allowed to access the administration area.<br/> You can logon here: ${link}"
 
@@ -1105,34 +1102,6 @@ msgstr "${number} files"
 msgid "admin_log_refresh"
 msgstr "refresh"
 
-### flush ###
-msgid "admin_flush_operations"
-msgstr "Possible operations"
-
-msgid "admin_flush_data_label"
-msgstr "clear data cache"
-
-msgid "admin_flush_data_title"
-msgstr "clear data cache"
-
-msgid "admin_flush_data_description"
-msgstr "Already loaded nodes will be stored in data cache.<br>If manipulations took place directly at the data base,<br> these caches must be cleared, so that changes become effective."
-
-msgid "admin_flush_data_cleared"
-msgstr "Data cache has been cleared."
-
-msgid "admin_flush_all_label"
-msgstr "clear all caches"
-
-msgid "admin_flush_all_title"
-msgstr "clear all caches"
-
-msgid "admin_flush_all_description"
-msgstr "Python classes will be stored into caches at run-time. <br> After changes at the source code this caches must be cleared, so that changes become effective."
-
-msgid "admin_flush_all_cleared"
-msgstr "All chaches have been cleared."
-
 ### workflows ###
 msgid "admin_wf_existing"
 msgstr "Existing workflows"
@@ -1433,6 +1402,18 @@ msgid "popup_indexnumber"
 msgstr "values selected"
 
 ### edit area ###
+msgid "edit_nodeinformation"
+msgstr "node-information"
+
+msgid "edit_id"
+msgstr "id"
+
+msgid "edit_objecttype"
+msgstr "object type"
+
+msgid "edit_schema"
+msgstr "meta schmeme"
+
 msgid "edit_error"
 msgstr "Error"
 
@@ -1828,9 +1809,6 @@ msgstr "last edit"
 
 msgid "edit_sort_header"
 msgstr "Sort manually"
-
-msgid "edit_sort_header2"
-msgstr "Sort collections"
 
 msgid "edit_sort_label"
 msgstr "Sort field"

@@ -190,7 +190,7 @@ class Image(default.Default):
             if orig == 0:
                 for f in node.getFiles():
                     if f.type == "image":
-                        if f.mimetype=="image/tiff" or ((f.mimetype is None or f.mimetype == "application/x-download") and f.path.lower().endswith("tif")):
+                        if f.mimetype=="image/tiff" or ((f.mimetype is None or f.mimetype == "application/x-download") and (f.path.lower().endswith("tif") or f.path.lower().endswith("tiff"))):
                             # move old file to "original", create a new png to be used as "image"
                             node.removeFile(f)
 

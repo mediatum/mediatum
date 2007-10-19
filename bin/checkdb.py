@@ -21,7 +21,7 @@
 import sys
 sys.path += ["."]
 
-import core.startup as startup
+import core
 import logging
 import core.config as config
 import os

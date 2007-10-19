@@ -153,6 +153,17 @@ def getType(name):
 
 sortorders = {}
 
+changed_metadata_nodes = {}
+last_changed_metadata_node = None
+def flush_changed_metadata():
+    for nid in changed_metadata_nodes.keys():
+        searchIndexer.node_changed(getNode(nid))
+    changed_metadata_nodes.clear()
+    last_changed_metadata_node = None
+def changed_metadata(node):
+    changed_metadata_nodes[node.id] = None
+    last_changed_metadata_node = node.id
+
 def createSortOrder(field):
     log.info("retrieving sort order for field "+field)
     reverse=0
@@ -280,6 +291,7 @@ class Node:
 
     def _makePersistent(self):
         if self.id is None:
+            changed_metadata(self)
             tree_lock.acquire()
             try:
                 self.id = db.createNode(self.name,self.type)
@@ -304,6 +316,7 @@ class Node:
 
     """ set the node name """
     def setName(self,name):  
+        changed_metadata(self)
         self.name = name
         if self.id:
             db.setNodeName(self.id,name)
@@ -338,6 +351,7 @@ class Node:
 
     """ set the node type (as string) """
     def setTypeName(self,type):
+        changed_metadata(self)
         self.type = type
         if self.id:
             db.setNodeType(self.id,type)
@@ -429,12 +443,14 @@ class Node:
 
     """ add a FileNode to this node """
     def addFile(self, file):
+        changed_metadata(self)
         self._makePersistent()
         db.addFile(self.id,file.path,file.type,file.mimetype)
 
 
     """ remove a FileNode from this node """
     def removeFile(self, file):
+        changed_metadata(self)
         self._makePersistent()
         db.removeFile(self.id,file.path)
 
@@ -552,6 +568,7 @@ class Node:
 
     """ get a metadate """
     def get(self, name):
+        flush_changed_metadata()
         if name == "nodename":
             return self.getName()
         if self.attributes is None:
@@ -562,6 +579,9 @@ class Node:
 
     """ set a metadate """
     def set(self, name, value):
+        if self.id != last_changed_metadata_node:
+            flush_changed_metadata()
+        changed_metadata(self)
         if name == "nodename":
             return self.setName(value)
         if self.attributes is None:
@@ -594,6 +614,7 @@ class Node:
 
 
     def removeAttribute(self, name):
+        changed_metadata(self)
         if self.attributes:
             try: del self.attributes[name]
             except KeyError: pass
@@ -620,6 +641,7 @@ class Node:
     
     """ run a search query. returns a list of nodes """
     def search(self, q):
+        flush_changed_metadata()
         log.info("search: "+q)
         self._makePersistent()
         qq = searchParser.parse(q)
@@ -680,6 +702,7 @@ def registerNodeFunction(name, nodefunction):
 schema = None
 subnodes = None
 searchParser = None
+searchIndexer = None
 def initialize(load=1):
     global db,_root,nodes_cache,testmode
     nodes_cache = MaxSizeDict(int(config.get("db.cache_size","100000")), keep_weakrefs=1)
@@ -687,11 +710,13 @@ def initialize(load=1):
     db = database.getConnection()
     if load:
         getRoot()
-    global schema, subnodes, searchParser
+    global schema, subnodes, searchParser,searchIndexer
     import schema.schema as schema
     schema = schema
     from core.search.query import subnodes
     subnodes = subnodes
     from core.search.parser import searchParser
     searchParser = searchParser
+    from core.search.dbindexer import searchIndexer as searchIndexer2
+    searchIndexer = searchIndexer2
 

@@ -25,7 +25,6 @@ import logging
 import traceback
 import thread
 
-import sqlite3 as sqlite
 try:
     import sqlite3 as sqlite
 except:

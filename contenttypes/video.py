@@ -24,8 +24,7 @@ import core.acl as acl
 import os
 import Image
 
-#from utils import *
-#from date import *
+from utils.utils import splitfilename
 from core.tree import Node,FileNode
 from lib.flv.parse import getFLVSize
 from contenttypes.image import makeThumbNail,makePresentationFormat

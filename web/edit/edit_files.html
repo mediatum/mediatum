@@ -38,17 +38,19 @@
                         &nbsp;
                     </td>
                 </tr>
-
-                <tr>
-                    <td colspan="5">
-                        <p>&nbsp;</p>
-                        <b i18n:translate="edit_files_change">Digitales Objekt austauschen</b><b>:</b>
-                        <p><input name="updatefile" type="file" size="50"/></p>
-                        <p><button i18n:attributes="title edit_files_change" i18n:translate="edit_files_change" type="submit" name="addfile" value="submit" title="Digitales Objekt austauschen">Digitales Objekt austauschen</button></p>
-                    </td>
-                </tr>
             </table>
+            
+            <hr>
+
+            <b i18n:translate="edit_files_change">Digitales Objekt austauschen</b><b>:</b>
+            <p><input type="radio" name="change_file" value="yes"><tal:block i18n:translate="edit_files_change"/><br />
+               <input type="radio" name="change_file" value="no"><tal:block i18n:translate="edit_files_add_obj"/><br />
+            </p>
+            <p><input name="updatefile" type="file" size="50"/></p>
+            <p><button i18n:attributes="title submit" i18n:translate="submit" type="submit" name="addfile" value="submit" title="">.</button></p>
         </tal:block>
+            
+        <hr>
 
         <tal:block tal:condition="python:len(files)==0">
             <table class="files">
@@ -64,11 +66,14 @@
             </table>
         </tal:block>
 
+        <hr>
 
         <form tal:attributes="action python:'edit_content?id='+str(id)+'&tab='+tab" method="post">
             <p><input i18n:attributes="value edit_files_reprocess" type="submit" value="Digitales Objekt erneut verarbeiten" name="postprocess"></p>
             <p><small i18n:translate="edit_files_reprocess_info">(dabei werden alle Operationen ausgef&uuml;hrt, die notwendig sind, um Technische-Metadaten und die Thumbnails zu erzeugen)</small></p>
         </form>
+        
+        <hr>
 
         <form method="post" action="edit_content?id='+ids[0]+'&tab=tab_techmeta" name="meta">
             <table class="files">
@@ -79,7 +84,7 @@
                     <td i18n:translate="edit_id"/>
                     <td colspan="2" tal:content="python:str(node.id)"/>
                 </tr>
-                <tal:block tal:define="type python:node.getType().getName()" tal:condition="python:type.find('/')>0">
+                <tal:block tal:define="type python:node.type" tal:condition="python:type.find('/')>0">
                     <tr>
                         <td i18n:translate="edit_objecttype"/>
                         <td colspan="2" tal:content="python:type.split('/')[0]"/>

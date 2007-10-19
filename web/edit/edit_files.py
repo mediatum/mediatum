@@ -18,8 +18,9 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.tree as tree
-from utils.utils import formatTechAttrs
+from utils.utils import formatTechAttrs,getMimeType
 from utils.date import format_date
+from utils.fileutils import importFile
 import os
 import core.users as users
 import core.config as config
@@ -38,22 +39,25 @@ def edit_files(req, ids):
 
     mime = ""
 
+
     if req.params.get("postprocess","")!="":
         if hasattr(node,"event_files_changed"):
             node.event_files_changed()
 
     if req.params.get("addfile","")!="":
-        print req.params["updatefile"].filename
+        only_add = req.params.get("change_file", "no") == "no"
+
         user = users.getUserFromRequest(req)
         file = req.params.get("updatefile")
 
         for nfile in node.getFiles():
-            if nfile.getType()=="original":
+            if nfile.getType()=="original" or nfile.getType()=="doc":
                 mime = nfile.getMimeType()
 
-        if file.filename=="":
-            for nfile in node.getFiles():
-                node.removeFile(nfile)
+        if not file or file.filename=="":
+            if not only_add:
+                for nfile in node.getFiles():
+                    node.removeFile(nfile)
         else:
             r = file.filename.lower()
             mimetype = "application/x-download"
@@ -61,35 +65,18 @@ def edit_files(req, ids):
             
             mimetype, type = getMimeType(r)
 
-            if mime!=mimetype and mime!="":
+            if mime!=mimetype and mime!="" and not only_add:
                 req.writeTAL("web/edit/edit_files.html",{},macro="filetype_error")
-            
             else:
-                for nfile in node.getFiles():
-                    node.removeFile(nfile)
+                if not only_add:
+                    for nfile in node.getFiles():
+                        node.removeFile(nfile)
 
-                path, filename = os.path.split(file.tempname)
-                uploaddir = join_paths(config.get("paths.datadir"),"incoming")
-                try: os.mkdir(uploaddir)
-                except: pass
-                
-                uploaddir = join_paths(uploaddir, time.strftime("%Y-%b"))
-                try: os.mkdir(uploaddir)
-                except: pass
-                        
                 logging.getLogger('usertracing').info(user.name + " upload "+file.filename+" ("+file.tempname+")")
-
-                destname = join_paths(uploaddir, filename)
-                if os.sep == '/':
-                    ret = os.system("cp "+file.tempname+" "+destname)
-                else:
-                    cmd = "copy "+file.tempname+" "+(os.path.split(destname)[0])
-                    ret = os.system(cmd.replace('/','\\'))
-
-                if ret:
-                    raise IOError("Couldn't copy "+file.tempname+" to "+destname+" (error: "+str(ret)+")")
-
-                file=tree.FileNode(name=destname,mimetype=mimetype, type=type)
+                file = importFile(file.filename,file.tempname)
+                if only_add and mime:
+                    file.type = "extra"
+                
                 node.addFile(file)
                 if hasattr(node,"event_files_changed"):
                     node.event_files_changed()
@@ -98,8 +85,6 @@ def edit_files(req, ids):
     for key in req.params.keys():
         if key.startswith("attr_"):
             node.removeAttribute(key[5:-2])
-    
-    
 
     fields = node.getType().getMetaFields()
     fieldnames = []

@@ -28,9 +28,8 @@ import random
 import os
 import default
 
-#from utils import *
+from utils.utils import get_filesize,splitfilename,isnewer
 from core.tree import Node,FileNode
-#from utils.date import *
 from schema.schema import loadTypesFromDB, VIEW_DATA_ONLY,VIEW_HIDE_EMPTY
 
 """ make thumbnail (jpeg 128x128) """
@@ -218,15 +217,10 @@ class Image(default.Default):
             # retrieve technical metadata.
             for f in node.getFiles():
                 if f.type == "image":
-                    try:
-                        width,height = getImageDimensions(f.getPath())
-                        node.set("origwidth", width)
-                        node.set("origheight", height)
-                        node.set("origsize", get_filesize(f.getPath()))
-                    except:
-                        # happens if this is not actually an image, but a pdf or some other datafile
-                        print sys.exc_info()[0], sys.exc_info()[1]
-                        traceback.print_tb(sys.exc_info()[2])
+                    width,height = getImageDimensions(f.getPath())
+                    node.set("origwidth", width)
+                    node.set("origheight", height)
+                    node.set("origsize", get_filesize(f.getPath()))
 
             if thumb == 0:
                 for f in node.getFiles():

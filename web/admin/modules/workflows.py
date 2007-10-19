@@ -196,7 +196,7 @@ def WorkflowStepList(req, wid):
         if int(order[0])==0:
             workflowsteps.sort(lambda x, y: cmp(x.getName().lower(),y.getName().lower()))
         elif int(order[0])==1:
-            workflowsteps.sort(lambda x, y: cmp(x.getTypeName(),y.getTypeName()))
+            workflowsteps.sort(lambda x, y: cmp(x.getContentType(),y.getContentType()))
         elif int(order[0])==2:
             workflowsteps.sort(lambda x, y: cmp(x.getTrueId(),y.getTrueId()))
         elif int(order[0])==3:

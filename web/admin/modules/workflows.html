@@ -161,7 +161,7 @@
             fname python:workflowstep.getFalseId() or '-'">
                 <td tal:attributes="class cssclass" tal:content="python:str(workflowsteps.index(workflowstep)+1)+'.'"/>
                 <td tal:attributes="class cssclass" tal:content="python:workflowstep.getName()"/>
-                <td tal:attributes="class cssclass" tal:content="python:workflowstep.getTypeName()" i18n:translate=""/>
+                <td tal:attributes="class cssclass" tal:content="python:workflowstep.getContentType()" i18n:translate=""/>
                 <td tal:attributes="class cssclass">
                     <span tal:condition="python:workflowstep.getTrueId()" tal:replace="python:tname"/>
                     <span tal:condition="python:not workflowstep.getTrueId()"/>

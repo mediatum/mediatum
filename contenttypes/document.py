@@ -39,7 +39,7 @@ class Document(default.Default):
     def _prepareData(node, req, words=""):
 
         access = acl.AccessData(req)       
-        mask = node.getType().getMask("nodebig")
+        mask = node.getMask("nodebig")
         obj = {}
         if mask:
             obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY, lang(req)) # hide empty elements

@@ -74,6 +74,15 @@ tree.registerNodeClass("metafield", Metadatafield)
 tree.registerNodeClass("mask", Mask)
 tree.registerNodeClass("maskitem", Maskitem)
 
+import schema.schema as schema
+tree.registerNodeFunction("getMetaFields", schema.node_getMetaFields)
+tree.registerNodeFunction("getMetaField", schema.node_getMetaField)
+tree.registerNodeFunction("getSearchFields", schema.node_getSearchFields)
+tree.registerNodeFunction("getSortFields", schema.node_getSortFields)
+tree.registerNodeFunction("getMasks", schema.node_getMasks)
+tree.registerNodeFunction("getMask", schema.node_getMask)
+tree.registerNodeFunction("getDescription", schema.node_getDescription)
+
 from workflow import workflow
 workflow.register()
 
@@ -85,10 +94,6 @@ for k,v in config.getsubset("plugins").items():
     if path and path not in sys.path:
         sys.path += [path]
     m = __import__(module)
-
-if "athana" in sys.argv[0].lower():
-    print "Precaching occurences"
-    tree.getRoot().getAllOccurences()
 
 import search.query
 search.query.startThread()

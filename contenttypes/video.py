@@ -36,7 +36,7 @@ class Video(default.Default):
 
     def _prepareData(node, req, words=""):
         access = acl.AccessData(req)
-        mask = node.getType().getMask("nodebig")
+        mask = node.getMask("nodebig")
         obj = {}
         obj['metadata'] = mask.getViewHTML([node], 2) # hide empty elements
         obj['node'] = node  

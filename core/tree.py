@@ -20,6 +20,7 @@
 """
 
 from utils.utils import compare_utf8,get_filesize
+from utils.log import logException
 from core.db import database
 import logging
 import sys
@@ -33,7 +34,7 @@ nodeclasses = {}
 nodefunctions = {}
 
 _root = None
-conn = None
+db = None
 bulk = 0
 testmode = 0
 nocache = 0
@@ -53,7 +54,8 @@ class WatchLock:
         self.nr = self.nr - 1
         self.lock.release()
     def acquire(self):
-        if self.nr >= 1:
+        global testmode
+        if testmode and self.nr >= 1:
             try:
                 raise ""
             except:
@@ -68,7 +70,7 @@ class WatchLock:
 tree_lock = WatchLock()
 
 def getRootID():
-    id = conn.getRootID()
+    id = db.getRootID()
     return id
 
 def getGlobalRoot():
@@ -140,119 +142,6 @@ class FileNode:
     def getName(self):
         return os.path.basename(self.path)
 
-class NodeType:
-
-    def __init__(self, name):
-        self.name = name
-        if name.find("/")>0:
-            self.type = name[:name.index("/")]
-            self.metadatatypename = name[name.index("/")+1:]
-        else:
-            self.type = name
-            self.metadatatypename = name
-
-    def getMetaFields(self,type=None):
-        try:
-            return self.metaFields()
-        except:
-            pass
-
-        try:
-            if self.metadatatypename:
-                return schema.getMetaType(self.metadatatypename).getMetaFields(type)
-            else:
-                return []
-        except AttributeError:
-            return []
-    
-    def getMetaField(self, name):
-        if self.metadatatypename:
-            try:
-                metadatatype = schema.getMetaType(self.metadatatypename)
-                return schema.getMetaType(self.metadatatypename).getMetaField(name)
-            except AttributeError:
-                return None
-        else:
-            return None
-
-    def getSearchFields(self):
-        sfields = []
-        fields = self.getMetaFields()
-        fields.sort(lambda x, y: cmp(x.getOrderPos(),y.getOrderPos()))
-        for field in fields:
-            if field.Searchfield():
-                sfields += [field]
-        return sfields
-    
-    def getSortFields(self):
-        sfields = []
-        fields = self.getMetaFields()
-        fields.sort(lambda x, y: cmp(x.getOrderPos(),y.getOrderPos()))
-        for field in fields:
-            if field.Sortfield():
-                sfields += [field]
-        return sfields
-
-    def getMasks(self):
-        try:
-            if self.metadatatypename:
-                return schema.getMetaType(self.metadatatypename).getMasks()
-            else:
-                return []
-        except AttributeError:
-            return []
-
-
-    def getMask(self, name):
-        try:
-            if self.metadatatypename:
-                return schema.getMetaType(self.metadatatypename).getMask(name)
-            else:
-                return []
-        except AttributeError:
-            return []
-
-    def getName(self):
-        return self.name
-
-    """ get the node type (as string) """
-    def getTypeName(self):
-        return self.type
-
-    def getDescription(self):
-        if self.metadatatypename:
-            mtype = schema.getMetaType(self.metadatatypename)
-            if mtype:
-                return mtype.getDescription()
-            else:
-                return ""
-
-    def __getattr__(self, name):
-        global nodeclasses
-        cls = self.__class__
-        if name in cls.__dict__:
-            return cls.__dict__[name]
-        elif name in self.__dict__:
-            return self.__dict__[name]
-        else:
-            if self.type in nodeclasses:
-                cls = nodeclasses[self.type]
-                def r(cls):
-                    if name in cls.__dict__:
-                        return lambda *x,**y: cls.__dict__[name](self, *x,**y)
-                    else:
-                        for base in cls.__bases__:
-                            ret = r(base)
-                            if ret:
-                                return ret
-                        return None
-                ret = r(nodeclasses[self.type])
-                if ret:
-                    return ret
-                raise AttributeError("NodeType of type '"+str(self.type)+"' has no attribute '"+name+"'")
-            else:
-                raise AttributeError("NodeType of type '"+str(self.type)+"' has no attribute '"+name+"' (type not overloaded)")
-
 nodetypes = {}
 
 def getType(name):
@@ -271,7 +160,7 @@ def createSortOrder(field):
         field = field[1:]
         reverse=1
 
-    idlist = list(conn.getSortOrder(field))
+    idlist = list(db.getSortOrder(field))
 
     if reverse:
         def mycmp(n1,n2):
@@ -375,7 +264,7 @@ class Node:
             if type == "root":
                 self._makePersistent()
         else:
-            dbnode = conn.getNode(dbid)
+            dbnode = db.getNode(dbid)
             if not dbnode:
                 raise NoSuchNodeError(dbid)
             id,name,type,read,write,data,orderpos = dbnode
@@ -393,17 +282,17 @@ class Node:
         if self.id is None:
             tree_lock.acquire()
             try:
-                self.id = conn.createNode(self.name,self.type)
+                self.id = db.createNode(self.name,self.type)
                 if not nocache:
                     nodes_cache[long(self.id)] = self
                 for name,value in self.attributes.items():
-                    conn.setAttribute(self.id, name, value, check=(not bulk))
+                    db.setAttribute(self.id, name, value, check=(not bulk))
                 if self.read_access:
-                    conn.setNodeReadAccess(self.id,self.read_access)
+                    db.setNodeReadAccess(self.id,self.read_access)
                 if self.write_access:
-                    conn.setNodeWriteAccess(self.id,self.write_access)
+                    db.setNodeWriteAccess(self.id,self.write_access)
                 if self.data_access:
-                    conn.setNodeDataAccess(self.id,self.data_access)
+                    db.setNodeDataAccess(self.id,self.data_access)
             finally:
                 tree_lock.release()
 
@@ -417,7 +306,7 @@ class Node:
     def setName(self,name):  
         self.name = name
         if self.id:
-            conn.setNodeName(self.id,name)
+            db.setNodeName(self.id,name)
 
     """ get the position of this node """
     def getOrderPos(self):
@@ -427,22 +316,40 @@ class Node:
     def setOrderPos(self,orderpos):  
         self._makePersistent()
         self.orderpos = orderpos
-        conn.setNodeOrderPos(self.id,orderpos)
+        db.setNodeOrderPos(self.id,orderpos)
 
     """ get the node type """
     def getType(self):
-        return getType(self.type)
+        return self
 
-    def getTypeName(self):
-        return self.type
+    """ get the node object/document type """
+    def getContentType(self):
+        if '/' in self.type:
+            return self.type[0:self.type.find('/')]
+        else:
+            return self.type
+
+    """ get the node schema """
+    def getSchema(self):
+        if '/' in self.type:
+            return self.type[self.type.find('/')+1:]
+        else:
+            return ""
 
     """ set the node type (as string) """
     def setTypeName(self,type):
         self.type = type
         if self.id:
-            conn.setNodeType(self.id,type)
+            db.setNodeType(self.id,type)
             self._flushOccurences()
 
+    def setSchema(self,schema):
+        doctype = self.getContentType()
+        self.setTypeName(doctype+"/"+schema)
+
+    def setContentType(self,doctype):
+        schema = self.getSchema()
+        self.setTypeName(doctype+"/"+schema)
 
     """ get a named access right (e.g. read, write, etc.)"""
     def getAccess(self, type):
@@ -460,15 +367,15 @@ class Node:
             if type == "read":
                 self.read_access = access
                 if self.id:
-                    conn.setNodeReadAccess(self.id,access)
+                    db.setNodeReadAccess(self.id,access)
             elif type == "write":
                 self.write_access = access
                 if self.id:
-                    conn.setNodeWriteAccess(self.id,access)
+                    db.setNodeWriteAccess(self.id,access)
             elif type == "data":
                 self.data_access = access
                 if self.id:
-                    conn.setNodeDataAccess(self.id,access)
+                    db.setNodeDataAccess(self.id,access)
         finally:
             tree_lock.release()
 
@@ -495,7 +402,7 @@ class Node:
         if self.id == child.id or self.id in child._getAllChildIDs():
             raise InvalidOperationError()
 
-        conn.addChild(self.id,child.id,check=(not bulk))
+        db.addChild(self.id,child.id,check=(not bulk))
         self._flushOccurences()
         return child
 
@@ -506,14 +413,14 @@ class Node:
         child._makePersistent()
         self._flush()
         child._flush()
-        conn.removeChild(self.id,child.id)
+        db.removeChild(self.id,child.id)
         self._flushOccurences()
 
 
     """ get all FileNode subnodes of this node """
     def getFiles(self):
         self._makePersistent()
-        dbfiles = conn.getFiles(self.id)
+        dbfiles = db.getFiles(self.id)
         files = []
         for filename,type,mimetype in dbfiles:
             files += [FileNode(filename,type,mimetype)]
@@ -523,13 +430,13 @@ class Node:
     """ add a FileNode to this node """
     def addFile(self, file):
         self._makePersistent()
-        conn.addFile(self.id,file.path,file.type,file.mimetype)
+        db.addFile(self.id,file.path,file.type,file.mimetype)
 
 
     """ remove a FileNode from this node """
     def removeFile(self, file):
         self._makePersistent()
-        conn.removeFile(self.id,file.path)
+        db.removeFile(self.id,file.path)
 
 
     def _mkCache(self, source):
@@ -554,16 +461,16 @@ class Node:
         try:
             if nocache:
                 if parents:
-                    return conn.getParents(self.id)
+                    return db.getParents(self.id)
                 else:
-                    return conn.getChildren(self.id)
+                    return db.getChildren(self.id)
             if self.id is None:
                 return []
 
             if childids_cache is None or parentids_cache is None:
                 # create and fill caches
-                childids_cache = self._mkCache(conn.getMappings(1))
-                parentids_cache = self._mkCache(conn.getMappings(-1))
+                childids_cache = self._mkCache(db.getMappings(1))
+                parentids_cache = self._mkCache(db.getMappings(-1))
 
             if parents:
                 cache = parentids_cache
@@ -575,9 +482,9 @@ class Node:
                 return []
             if idlist is None:
                 if parents:
-                    idlist = cache[long(self.id)] = conn.getParents(self.id)
+                    idlist = cache[long(self.id)] = db.getParents(self.id)
                 else:
-                    idlist = cache[long(self.id)] = conn.getChildren(self.id)
+                    idlist = cache[long(self.id)] = db.getChildren(self.id)
             return idlist
         finally:
             tree_lock.release()
@@ -593,7 +500,7 @@ class Node:
             raise NoSuchNodeError("child:None")
         if not self.id:
             raise NoSuchNodeError("child of None")
-        id = conn.getNamedNode(self.id,name)
+        id = db.getNamedNode(self.id,name)
         if not id:
             print "subnode of ",self.id,self.name," with name '" + str(name) + "' not found"
             raise NoSuchNodeError("child:"+str(name))
@@ -624,14 +531,14 @@ class Node:
             map[id] = None
             if childids_cache is None or parentids_cache is None:
                 # create and fill caches
-                childids_cache = self._mkCache(conn.getMappings(1))
-                parentids_cache = self._mkCache(conn.getMappings(-1))
+                childids_cache = self._mkCache(db.getMappings(1))
+                parentids_cache = self._mkCache(db.getMappings(-1))
             try:
                 idlist = childids_cache[long(id)]
             except KeyError:
                 idlist = []
             if idlist is None:
-                idlist = childids_cache[long(id)] = conn.getChildren(id)
+                idlist = childids_cache[long(id)] = db.getChildren(id)
             for id in idlist:
                 self._getAllChildIDs(str(id),map,1)
             return map
@@ -650,7 +557,7 @@ class Node:
         if self.attributes is None:
             if not self.id:
                 raise "Internal Error"
-            self.attributes = conn.getAttributes(self.id)
+            self.attributes = db.getAttributes(self.id)
         return self.attributes.get(name, "")
 
     """ set a metadate """
@@ -664,7 +571,7 @@ class Node:
             self.attributes[name] = value
 
         if self.id:
-            conn.setAttribute(self.id, name, value,check=(not bulk))
+            db.setAttribute(self.id, name, value,check=(not bulk))
 
         try: del sortorders[name]
         except: pass
@@ -674,7 +581,7 @@ class Node:
         if self.attributes is None:
             if not self.id:
                 raise "Internal Error"
-            self.attributes = conn.getAttributes(self.id)
+            self.attributes = db.getAttributes(self.id)
         return self.attributes.items()
 
 
@@ -691,29 +598,26 @@ class Node:
             try: del self.attributes[name]
             except KeyError: pass
         if self.id:
-            conn.removeAttribute(self.id, name)
+            db.removeAttribute(self.id, name)
 
     def _flushOccurences(self):
         self.occurences = None
         for p in self.getParents():
             p._flushOccurences()
 
-    def _getAllOccurences(self):
+    def getAllOccurences(self):
         if self.occurences is None:
             self.occurences = {}
-            if not testmode:
-                for c in self.getChildren():
-                    for k,v in c._getAllOccurences().items():
-                        try: self.occurences[k] += v
-                        except KeyError: self.occurences[k] = v
-            try: self.occurences[self.type] += 1
-            except KeyError: self.occurences[self.type] = 1
-        return self.occurences
+            self.occurences2node = {}
+            for node in self.getAllChildren():
+                schema = node.getSchema()
+                if schema not in self.occurences:
+                    self.occurences[schema] = 1
+                    self.occurences2node[schema] = node
+                else:
+                    self.occurences[schema] += 1
+        return dict([(self.occurences2node[s],v) for s,v in self.occurences.items()])
     
-    """ get the number of descendants of all types (hashtable) """
-    def getAllOccurences(self):
-        return dict([(getType(o),num) for o,num in self._getAllOccurences().items()])
-
     """ run a search query. returns a list of nodes """
     def search(self, q):
         log.info("search: "+q)
@@ -725,44 +629,41 @@ class Node:
         return NodeList(result.getIDs(), result.getDescription())
 
     def __getattr__(self, name):
-        global nodefunctions
+        global nodefunctions,nodeclasses
         cls = self.__class__
         if name in cls.__dict__:
             return cls.__dict__[name]
-        elif name in self.__dict__:
+        if name in self.__dict__:
             return self.__dict__[name]
-        elif name in nodefunctions:
+        if self.getContentType() in nodeclasses:
+            cls = nodeclasses[self.getContentType()]
+            def r(cls):
+                if name in cls.__dict__:
+                    return lambda *x,**y: cls.__dict__[name](self, *x,**y)
+                else:
+                    for base in cls.__bases__:
+                        ret = r(base)
+                        if ret:
+                            return ret
+                    return None
+            ret = r(nodeclasses[self.getContentType()])
+            if ret:
+                return ret
+        if name in nodefunctions:
             return lambda *x,**y: nodefunctions[name](self, *x,**y)
+        if self.getContentType() in nodeclasses:
+            raise AttributeError("Node of type '"+self.type+"' has no attribute '"+name+"'")
         else:
-            type = self.type
-            if '/' in type:
-                type = type[0:type.find('/')]
-            if type in nodeclasses:
-                cls = nodeclasses[type]
-                def r(cls):
-                    if name in cls.__dict__:
-                        return lambda *x,**y: cls.__dict__[name](self, *x,**y)
-                    else:
-                        for base in cls.__bases__:
-                            ret = r(base)
-                            if ret:
-                                return ret
-                        return None
-                ret = r(nodeclasses[type])
-                if ret:
-                    return ret
-                raise AttributeError("Node of type '"+type+"' has no attribute '"+name+"'")
-            else:
-                raise AttributeError("Node of type '"+type+"' has no attribute '"+name+"' (type not overloaded)")
+            raise AttributeError("Node of type '"+self.type+"' has no attribute '"+name+"' (type not overloaded)")
 
 def flush():
-    global childids_cache,nodes_cache,parentids_cache,_root,conn,sortorders
+    global childids_cache,nodes_cache,parentids_cache,_root,db,sortorders
     tree_lock.acquire()
     try:
         childids_cache = None
         nodes_cache = MaxSizeDict(int(config.get("db.cache_size","100000")), keep_weakrefs=1)
         parentids_cache = None
-        conn = database.getConnection()
+        db = database.getConnection()
         sortorders = {}
         _root = None
     finally:
@@ -772,18 +673,18 @@ def registerNodeClass(type, nodeclass):
     global nodeclasses
     nodeclasses[type] = nodeclass
 
-def registerNodeFunction(nodefunction):
+def registerNodeFunction(name, nodefunction):
     global nodefunctions
-    nodefunctions[nodefunction.__name__] = nodefunction
+    nodefunctions[name] = nodefunction
 
 schema = None
 subnodes = None
 searchParser = None
 def initialize(load=1):
-    global conn,_root,nodes_cache,testmode
+    global db,_root,nodes_cache,testmode
     nodes_cache = MaxSizeDict(int(config.get("db.cache_size","100000")), keep_weakrefs=1)
     testmode = config.get("host.type", "") == "testing"
-    conn = database.getConnection()
+    db = database.getConnection()
     if load:
         getRoot()
     global schema, subnodes, searchParser

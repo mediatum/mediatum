@@ -169,14 +169,14 @@
                  
                 <div tal:condition="python:image==True" i18n:translate="popup_shoppinbag_msg1">Bilder k&ouml;nnen per Drag&amp;Drop in eine Anwendung (z.B. Powerpoint) durch Ziehen exportiert werden:</div>
                 <tal:block tal:repeat="file files">
-                    <div tal:condition="python: file.getType().getTypeName()=='image'" tal:define="width python:file.get('width');height 	python:file.get('height')" class="imagebox" style="float:left;margin:5px;border:1px solid black;">
+                    <div tal:condition="python: file.getContentType()=='image'" tal:define="width python:file.get('width');height 	python:file.get('height')" class="imagebox" style="float:left;margin:5px;border:1px solid black;">
                         <img tal:attributes="src python:'/images/'+str(file.id)" style="height:88px;border:0px"/>
                     </div>
                 </tal:block>
 
                 <div tal:condition="python:document==True" style="clear:both" i18n:translate="popup_shoppingbag_msg2">Dokumente k&ouml;nnen direkt ge&ouml;ffnet werden:</div>
                 <tal:block tal:repeat="file files">
-                    <div tal:condition="python: file.getType().getTypeName() in ('document', 'dissertation')" style="float:left;margin:5px;border:1px solid silver;">
+                    <div tal:condition="python: file.getContentType() in ('document', 'dissertation')" style="float:left;margin:5px;border:1px solid silver;">
                         <img tal:attributes="src python:'/thumbs/'+str(file.id); onClick python:'fullSizePopup('+str(file.id)+', 400, 400)'" height="90" width="90" border="0" style="cursor: hand"/>
                     </div>
                 </tal:block>

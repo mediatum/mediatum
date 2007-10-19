@@ -539,7 +539,7 @@ class Metadatatype(tree.Node):
     def getMetaFields(self,type=None):
         fields = []
         for item in self.getChildren().sort():
-            if item.getTypeName()=="metafield":
+            if item.getContentType()=="metafield":
                 if not type or type in item.getOption():
                     fields.append(item)
         return fields
@@ -554,7 +554,7 @@ class Metadatatype(tree.Node):
     def getMasks(self):
         masks = []
         for item in self.getChildren().sort():
-            if item.getTypeName()=="mask":
+            if item.getContentType()=="mask":
                 masks.append(item)
         return masks
 
@@ -1003,6 +1003,73 @@ def getMetaFieldTypes():
     for t in mytypes:
         ret[t] = getMetadataType(t)
     return ret
+    
+def node_getMetaFields(node,type=None):
+    try:
+        return node.metaFields()
+    except:
+        pass
+
+    try:
+        if node.getSchema():
+            return getMetaType(node.getSchema()).getMetaFields(type)
+        else:
+            return []
+    except AttributeError:
+        return []
+  
+def node_getMetaField(node, name):
+    if node.getSchema():
+        try:
+            metadatatype = getMetaType(node.getSchema())
+            return getMetaType(node.getSchema()).getMetaField(name)
+        except AttributeError:
+            return None
+    else:
+        return None
+
+def node_getSearchFields(node):
+    sfields = []
+    fields = node.getMetaFields()
+    fields.sort(lambda x, y: cmp(x.getOrderPos(),y.getOrderPos()))
+    for field in fields:
+        if field.Searchfield():
+            sfields += [field]
+    return sfields
+
+def node_getSortFields(node):
+    sfields = []
+    fields = node.getMetaFields()
+    fields.sort(lambda x, y: cmp(x.getOrderPos(),y.getOrderPos()))
+    for field in fields:
+        if field.Sortfield():
+            sfields += [field]
+    return sfields
+
+def node_getMasks(node):
+    try:
+        if node.getSchema():
+            return getMetaType(node.getSchema()).getMasks()
+        else:
+            return []
+    except AttributeError:
+        return []
+
+
+def node_getMask(node, name):
+    if node.getSchema():
+        return getMetaType(node.getSchema()).getMask(name)
+    else:
+        raise ValueError("Node of type '"+node.getSchema()+"' has no mask")
+
+def node_getDescription(node):
+    if node.getSchema():
+        mtype = getMetaType(node.getSchema())
+        if mtype:
+            return mtype.getDescription()
+        else:
+            return ""
+
 
 init(os.walk(os.path.join(config.basedir, 'schema/mask')))
 init(os.walk(os.path.join(config.basedir, 'metadata')))

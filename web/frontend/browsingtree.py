@@ -114,7 +114,7 @@ def writetree(req, mynode, currentdir, content):
     def makeLink(req,node,type):
         count = 0
         for n_t,num in node.getAllOccurences().items():
-            if n_t.getTypeName() != "directory":
+            if n_t.getContentType() != "directory":
                 count += num
 
         items = " (" + str(count) + ")"        

@@ -125,7 +125,7 @@ def get(key):
         print node.getName(value)
         return
     elif key=="objtype":
-        print node.getTypeName(value)
+        print "objtype:",node.getContentType()+"schema:"+node.getSchema()
         return
     elif key.startswith("acl."):
         print node.getAccess(key[4:])

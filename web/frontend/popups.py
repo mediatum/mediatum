@@ -82,9 +82,9 @@ def show_shoppingbag(req):
 
     for file in files:
         node = tree.getNode(file)
-        if node.getType().getTypeName()=="image":
+        if node.getContentType()=="image":
             img = True
-        if node.getType().getTypeName() in("document", "dissertation"):
+        if node.getContentType() in("document", "dissertation"):
             doc = True
         f.append(node)
 
@@ -145,7 +145,7 @@ def show_printview(req):
     style = int(req.params.get("style",2))
     
     # nodetype
-    mtype = getMetaType(node.getTypeName()[node.getTypeName().find("/")+1:])
+    mtype = getMetaType(node.getSchema())
     
     for m in mtype.getMasks():
         if m.getMasktype()=="fullview":

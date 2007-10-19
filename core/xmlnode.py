@@ -142,7 +142,7 @@ class _NodeLoader:
                 val = ""
             self.nodes[-1].set(self.attributename, val+data.encode("utf-8"))
 
-tree.registerNodeFunction(writexml)
+tree.registerNodeFunction("writexml", writexml)
 
 def readNodeXML(filename):
     n = _NodeLoader(filename)

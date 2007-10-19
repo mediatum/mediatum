@@ -137,7 +137,7 @@ class Image(default.Default):
     # prepare hash table with values for TAL-template
     def _prepareData(node, req):
         #tifs
-        mask = node.getType().getMask("nodebig")
+        mask = node.getMask("nodebig")
 
         tif = ""        
         try: 

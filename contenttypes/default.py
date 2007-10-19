@@ -30,7 +30,7 @@ class Default(tree.Node):
     """ format preview node text """
     def show_node_text(node, words=None, language=None, seperator="<br />"):
         metatext = list()
-        mask = node.getType().getMask("nodesmall")
+        mask = node.getMask("nodesmall")
         if mask:
             for field in mask.getViewHTML([node], VIEW_DATA_ONLY):
                 value = field[1]

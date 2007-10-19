@@ -21,9 +21,12 @@
 
 import re
 import os
-import core.startup
+import core
 import core.config as config
-import sqlite3 as sqlite
+try:
+    import sqlite3 as sqlite
+except:
+    from pysqlite2 import dbapi2 as sqlite
 import core.tree as tree
 
 from utils.utils import iso2utf8, esc
@@ -227,7 +230,13 @@ class DbIndexer:
         for item in res.fetchall():
             print item
         
-    
+
+class SearchIndexer:
+    def node_changed(self,node):
+        # TODO: implement this
+        pass
+
+searchIndexer = SearchIndexer()
     
 #id = DbIndexer()
 #id.runIndexer() # create index

@@ -31,9 +31,7 @@ from core.datatypes import loadAllDatatypes
 from edit_common import *
 import utils.date as date
 
-#from utils import *
-#from workflows import *
-#from fileutils import *
+from utils.fileutils import importFile
 
 from core.tree import Node
 from core.acl import AccessData

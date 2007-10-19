@@ -21,7 +21,7 @@
 import sys
 sys.path += ["../", "."]
 
-import core.startup
+import core
 import core.tree as tree
 import re
 import string

@@ -24,7 +24,6 @@ import os
 import core.db.database as database
 import time
 import sys
-import schema.schema as schema
 import logging
 import thread
 import traceback
@@ -214,6 +213,7 @@ def UTF8ToLatin(v):
 
 def _makeMetadataNumbers():
     print "Making Metadatafield-Index"
+    import schema.schema as schema
     m = schema.loadTypesFromDB()
     for metatype in m:
         for field in metatype.getMetaFields():

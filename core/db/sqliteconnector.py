@@ -67,6 +67,7 @@ class SQLiteConnector:
             return True
         except sqlite.OperationalError:
             self.createTables()
+            initDatabaseValues(self)
             self.commit()
         return False
 

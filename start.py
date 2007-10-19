@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import core
 import core.athana
 import core.webconfig
-import core.startup
 core.webconfig.startWebServer()

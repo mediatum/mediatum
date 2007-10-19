@@ -21,7 +21,7 @@ import re
 import core.tree as tree
 import os
 import core.config as config
-from utils import get_filesize,join_paths
+from utils.utils import get_filesize,join_paths
 import random
 import zipfile
 import core.acl as acl

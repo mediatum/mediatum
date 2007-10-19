@@ -40,9 +40,6 @@ log.info("Initializing backend...")
 
 tree.initialize()
 
-import core.acl_db as acl_db
-acl.setImplementation(acl_db)
-
 from contenttypes.directory import Directory
 tree.registerNodeClass("directory", Directory)
 

@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.11 2007/09/11 15:16:27 kramm Exp $'
+RCS_ID =  '$Id: athana.py,v 1.12 2007/10/19 16:16:30 kramm Exp $'
 
 import sys
 
@@ -3143,7 +3143,10 @@ def unpack_rfc850 (m):
 def build_http_date (when):
     return time.strftime ('%a, %d %b %Y %H:%M:%S GMT', time.gmtime(when))
 
+time_offset = 0
+
 def parse_http_date (d):
+    global time_offset
     d = string.lower (d)
     tz = time.timezone
     m = rfc850_reg.match (d)
@@ -3159,7 +3162,17 @@ def parse_http_date (d):
     # out the DST discrepancy
     if time.daylight and time.localtime(retval)[-1] == 1: # DST correction
         retval = retval + (tz - time.altzone)
-    return retval
+    return retval - time_offset
+
+def check_date():
+    global time_offset
+    tmpfile = join_paths(GLOBAL_TEMP_DIR, "datetest.tmp")
+    open(tmpfile,"wb").close()
+    time1 = os.stat(tmpfile)[stat.ST_MTIME]
+    os.unlink(tmpfile)
+    time2 = parse_http_date(build_http_date(time.time()))
+    time_offset = time2-time1
+    print time_offset
 
 # producers
 
@@ -3188,6 +3201,7 @@ class file_producer:
     def __init__ (self, file):
         self.done = 0
         self.file = file
+        print "starting file transfer"
 
     def more (self):
         if self.done:
@@ -3821,13 +3835,14 @@ class http_request:
             return
         if length_match and ims_date:
             if mtime <= ims_date and not force:
-                print "File "+path+" was not modified since "+str(ims_date)+" (current filedate is "+str(mtime)+")"
+                print "File "+path+" was not modified since "+str(ims_date)+" (current filedate is "+str(mtime)+")-> 304"
                 self.reply_code = 304
                 return
         try:
             file = open (path, 'rb')
         except IOError:
             self.error (404)
+            print "404"
             return
 
         self.reply_headers['Last-Modified'] = build_http_date (mtime)
@@ -6734,6 +6749,7 @@ def setThreads(number):
         number_of_threads=1
         
 def run(port=8081):
+    check_date()
     ph = AthanaHandler()
     hs = http_server ('', port, logger_object = lg)
     hs.install_handler (ph)

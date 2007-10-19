@@ -21,7 +21,7 @@ import re
 import core.tree as tree
 import os
 import core.config as config
-#from utils import *
+from utils import get_filesize,join_paths
 import random
 import zipfile
 import core.acl as acl
@@ -120,7 +120,10 @@ def send_file(req):
         return 403
     for f in n.getFiles():
         if os.path.basename(f.path) == filename:
-            return req.sendFile(f.getPath(), f.getMimeType())
+            if(get_filesize(f.getPath()) > 16*1048576):
+                return req.sendFile(f.getPath(), "application/x-download")
+            else:
+                return req.sendFile(f.getPath(), f.getMimeType())
     print "Document",req.path,"not found"
     return 404
 
@@ -169,4 +172,8 @@ def send_attfile(req):
     filename = clean_path("/".join(f[1:]))
     path = join_paths(config.get("paths.datadir"), filename)
     mime, type= getMimeType(filename)
-    return req.sendFile(path, mime)
+
+    if(get_filesize(filename) > 16*1048576):
+        return req.sendFile(path, "application/x-download")
+    else:
+        return req.sendFile(path, mime)

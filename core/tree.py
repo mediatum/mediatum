@@ -717,6 +717,6 @@ def initialize(load=1):
     subnodes = subnodes
     from core.search.parser import searchParser
     searchParser = searchParser
-    from core.search.dbindexer import searchIndexer as searchIndexer2
+    from core.search.indexer import searchIndexer as searchIndexer2
     searchIndexer = searchIndexer2
 

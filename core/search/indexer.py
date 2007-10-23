@@ -32,8 +32,6 @@ import core.tree as tree
 from utils.utils import iso2utf8, esc
 from schema.schema import node_getSearchFields
 
-
-
 MAX_SEARCH_FIELDS = 32
 DB_NAME = 'searchindex.db'
 FULLTEXT_INDEX_MODE = 0
@@ -44,6 +42,8 @@ class SearchIndexer:
         global MAX_SEARCH_FIELDS
         global DB_NAME
         global FULLTEXT_INDEX_MODE
+        
+        self.tablenames = ["fullsearchmeta", "searchmeta", "textsearchmeta"]
     
         s = ''
         for i in range(1, MAX_SEARCH_FIELDS):
@@ -53,11 +53,14 @@ class SearchIndexer:
         self.db = sqlite.connect(config.get("paths.searchstore") + DB_NAME, check_same_thread=False)
         self.cur = self.db.cursor()
         
+        self.schemafields = {}
+        
         try:
             # simple search table
             self.cur.execute('CREATE VIRTUAL TABLE fullsearchmeta USING fts2(id, type, schema, value)')
             # extended search table
-            self.cur.execute('CREATE VIRTUAL TABLE searchmeta USING fts2(id, type, schema, fieldnames, '+s+')')
+            self.cur.execute('CREATE VIRTUAL TABLE searchmeta USING fts2(id, type, schema, '+s+')')
+            self.cur.execute('CREATE VIRTUAL TABLE searchmeta_def USING fts2(name, position, attrname)')
             # fulltext search table
             self.cur.execute('CREATE VIRTUAL TABLE textsearchmeta USING fts2(id, type, schema, value)')
             
@@ -65,36 +68,51 @@ class SearchIndexer:
             print "searchdatabase already initialised"
         self.db.commit()
         
+    def getAllTableNames(self):
+        ret = []
+        for table in self.tablenames:
+            ret.append(table)
+            for table_add in ['content', 'segdir', 'segments']:
+                ret.append(table+'_'+table_add)
+        return ret
+    
+    
     def clearIndex(self):
         print "\nclearing index tables..."
-        for table in ["fullsearchmeta", "fullsearchmeta_content", "fullsearchmeta_segdir", "fullsearchmeta_segments", 
-                      "searchmeta", "searchmeta_content", "searchmeta_segdir", "searchmeta_segments",
-                      "textsearchmeta", "textsearchmeta_content", "textsearchmeta_segdir", "textsearchmeta_segments"]:
+        for table in self.getAllTableNames():
             try:
                 self.cur.execute("delete from "+ table)
             except:
                 print " - table", table, "not found"
+        self.cur.execute("DELETE FROM searchmeta_def")
         self.db.commit()
         print "...cleared"
         
     def dropIndex(self):
         print "\ndropping index tables..."
-        for table in ["fullsearchmeta", "fullsearchmeta_content", "fullsearchmeta_segdir", "fullsearchmeta_segments", 
-                      "searchmeta", "searchmeta_content", "searchmeta_segdir", "searchmeta_segments",
-                      "textsearchmeta", "textsearchmeta_content", "textsearchmeta_segdir", "textsearchmeta_segments"
-                      ]:
+        for table in self.getAllTableNames():
             try:
                 self.cur.execute("drop table "+table)
             except sqlite.OperationalError:
                 print " - table", table, "not found"
         self.db.commit()
-        print "...dropped"     
+        print "...dropped"
+        
+    def getDefForSchema(self, schema):
+        ret = {}
+        res = self.cur.execute('SELECT position, attrname FROM searchmeta_def WHERE name="'+str(schema)+'" ORDER BY position')
+        
+        for id, attr in res.fetchall():
+            ret[id] = attr
+        return ret
+        
+        
         
         
     def nodeToSimpleSearch(self, node):
         # build simple search index from node
         try:
-            sql = 'INSERT INTO fullsearchmeta (id, type, schema, value) VALUES("'+ str(node.id)+'", "'+node.getType().type+'", "'+node.getType().metadatatypename+'", "'+ str(node.name) + '| '
+            sql = 'INSERT INTO fullsearchmeta (id, type, schema, value) VALUES("'+ str(node.id)+'", "'+node.getContentType()+'", "'+node.getSchema()+'", "'+ str(node.name) + '| '
             # attributes
             for key,value in node.items():
                 sql += str(esc(iso2utf8(value)))+'| '
@@ -112,16 +130,27 @@ class SearchIndexer:
     
     def nodeToExtSearch(self, node):
         # build extended search index from node
+        if len(node_getSearchFields(node))==0:
+            # stop if schema has no searchfields
+            return True
+            
         v_list = {}
+        fieldnames = {}
         i = 1
-        fieldnames = ''
         for field in node_getSearchFields(node):
             v_list[str(i)] = node.get(field.getName())
-            fieldnames += field.getName() + '|'
+            fieldnames[str(i)] = field.getName()
             i+=1
-        fieldnames = fieldnames[:-1]
+        
+        # save definition
+        if node.getSchema() not in self.schemafields.keys():
+            self.schemafields[node.getSchema()] = fieldnames
+            for id in fieldnames.keys():
+                sql = 'INSERT INTO searchmeta_def (name, position, attrname) VALUES("'+node.getSchema()+'", "'+id+'", "'+fieldnames[id]+'")'
+                self.cur.execute(sql)
+            sql = ''
             
-        sql = 'INSERT INTO searchmeta (id, type, schema, fieldnames, '
+        sql = 'INSERT INTO searchmeta (id, type, schema, '
         values = ''
         
         try:
@@ -131,10 +160,10 @@ class SearchIndexer:
                     values += '"'+iso2utf8(esc(v_list[key]))+ '", '
                 sql = sql[:-2]
                 values = values[:-2]
-                sql = sql+') VALUES("'+ str(node.id)+'", "'+node.getType().type+'", "'+node.getType().metadatatypename+'", "'+fieldnames+'", ' + values + ')'
+                sql = sql+') VALUES("'+ str(node.id)+'", "'+node.getContentType()+'", "'+node.getSchema()+'", ' + values + ')'
             else:
                 sql = sql[:-2]
-                sql = sql+') VALUES("'+ str(node.id)+'", "'+node.getType().type+'", "'+node.getType().metadatatypename+'", "'+fieldnames+'")'
+                sql = sql+') VALUES("'+ str(node.id)+'", "'+node.getContentType()+'", "'+node.getSchema()+'")'
             self.cur.execute(sql)
             return True
         except:
@@ -219,8 +248,8 @@ class SearchIndexer:
         
         nodes=0
         for node in root.getAllChildren():
-            if not self.nodeToSimpleSearch(node):
-                errorindexfull.append(node.id)
+            #if not self.nodeToSimpleSearch(node):
+            #    errorindexfull.append(node.id)
                 
             if not self.nodeToExtSearch(node):
                 errorindexext.append(node.id)
@@ -245,18 +274,11 @@ class SearchIndexer:
             print "   Fulltext Search Index:\n    error(s) in node with id:"
             for item in errorindextext:
                 print "    -", item
-                
-    def getDefForScheme(self, schema):
-        res = self.cur.execute("SELECT fieldnames FROM searchmeta where schema='"+schema.getName()+"'")
-        for item in res.fetchall():
-            return item.split('|')
-        
-    
-    
+
     
     def runQuery(self):
-        #sql = "select id, field4 from searchmeta where type='image' and scheme='lt' and field4 < '2007-01-01T00:00:00' order by field4 desc"
-        sql = "select id, field9 from searchmeta where type='document' and scheme='diss' and field9 < '2000' order by field9 desc"
+        #sql = "select id, field4 from searchmeta where type='image' and schema='lt' and field4 < '2007-01-01T00:00:00' order by field4 desc"
+        sql = "select id, field9 from searchmeta where type='document' and schema='diss' and field9 < '2000' order by field9 desc"
         res = self.cur.execute(sql)
         for item in res.fetchall():
             print item
@@ -274,7 +296,8 @@ class SearchIndexer:
 searchIndexer = SearchIndexer()
 
 if __name__ == "__main__":
-    searchIndexer.runIndexer()
+    #searchIndexer.runIndexer()
+    print searchIndexer.getDefForSchema("hb")
 
 
 

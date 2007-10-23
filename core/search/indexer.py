@@ -30,17 +30,20 @@ except:
 import core.tree as tree
 
 from utils.utils import iso2utf8, esc
+from schema.schema import node_getSearchFields
 
 
 
 MAX_SEARCH_FIELDS = 32
 DB_NAME = 'searchindex.db'
+FULLTEXT_INDEX_MODE = 0
 
-class DbIndexer:
+class SearchIndexer:
 
     def __init__(self):
         global MAX_SEARCH_FIELDS
         global DB_NAME
+        global FULLTEXT_INDEX_MODE
     
         s = ''
         for i in range(1, MAX_SEARCH_FIELDS):
@@ -52,11 +55,11 @@ class DbIndexer:
         
         try:
             # simple search table
-            self.cur.execute('CREATE VIRTUAL TABLE fullsearchmeta USING fts2(id, type, scheme, value)')
+            self.cur.execute('CREATE VIRTUAL TABLE fullsearchmeta USING fts2(id, type, schema, value)')
             # extended search table
-            self.cur.execute('CREATE VIRTUAL TABLE searchmeta USING fts2(id, type, scheme, fieldnames, '+s+')')
+            self.cur.execute('CREATE VIRTUAL TABLE searchmeta USING fts2(id, type, schema, fieldnames, '+s+')')
             # fulltext search table
-            self.cur.execute('CREATE VIRTUAL TABLE textsearchmeta USING fts2(id, type, scheme, value)')
+            self.cur.execute('CREATE VIRTUAL TABLE textsearchmeta USING fts2(id, type, schema, value)')
             
         except sqlite.OperationalError:
             print "searchdatabase already initialised"
@@ -91,7 +94,7 @@ class DbIndexer:
     def nodeToSimpleSearch(self, node):
         # build simple search index from node
         try:
-            sql = 'INSERT INTO fullsearchmeta (id, type, scheme, value) VALUES("'+ str(node.id)+'", "'+node.getType().type+'", "'+node.getType().metadatatypename+'", "'+ str(node.name) + '| '
+            sql = 'INSERT INTO fullsearchmeta (id, type, schema, value) VALUES("'+ str(node.id)+'", "'+node.getType().type+'", "'+node.getType().metadatatypename+'", "'+ str(node.name) + '| '
             # attributes
             for key,value in node.items():
                 sql += str(esc(iso2utf8(value)))+'| '
@@ -112,13 +115,14 @@ class DbIndexer:
         v_list = {}
         i = 1
         fieldnames = ''
-        for field in node.getType().getSearchFields():
+        #for field in node.getType().getSearchFields():
+        for node in node_getSearchFields(node):
             v_list[str(i)] = node.get(field.getName())
             fieldnames += field.getName() + '|'
             i+=1
         fieldnames = fieldnames[:-1]
             
-        sql = 'INSERT INTO searchmeta (id, type, scheme, fieldnames, '
+        sql = 'INSERT INTO searchmeta (id, type, schema, fieldnames, '
         values = ''
         
         try:
@@ -145,6 +149,10 @@ class DbIndexer:
     """
     def nodeToFulltextSearch(self, node, mode=0):
         # build fulltext index from node
+        
+        if not node.getContentType()=="document":
+            # only build fulltext of document nodes
+            return True
         
         for file in node.getFiles():
             if file.getType() == "fulltext" and os.path.exists(file.getPath()):
@@ -175,7 +183,7 @@ class DbIndexer:
 
                 if len(content)>0:
                     try:
-                        sql = 'INSERT INTO textsearchmeta (id, type, scheme, value) VALUES("'+str(node.id)+'", "'+str(node.getType().type)+'", "'+str(node.getType().metadatatypename)+'", "'+iso2utf8(esc(content))+'")'
+                        sql = 'INSERT INTO textsearchmeta (id, type, schema, value) VALUES("'+str(node.id)+'", "'+str(node.getType().type)+'", "'+str(node.getType().metadatatypename)+'", "'+iso2utf8(esc(content))+'")'
                         self.cur.execute(sql)
                     except:
                         return False
@@ -183,6 +191,23 @@ class DbIndexer:
                     print "no Content"
         return True
     
+    def updateNode(self, node):
+        self.removeNode(node)
+        if not self.nodeToSimpleSearch(node):
+            print "error updating simple search index for node", node.id
+        if not self.nodeToExtSearch(node):
+            print "error updating extended search index for node", node.id
+        if not self.nodeToFulltextSearch(node):
+            print "error updating fulltext search index for node", node.id
+        self.db.commit()
+        print "index updated for node", node.id
+
+        
+    def removeNode(self, node):
+        for table in self.tablenames:
+            self.cur.execute("DELETE FROM "+table+" WHERE id="+str(node.id))
+        self.db.commit()
+        print "node", node.id, "removed from index"
         
     def runIndexer(self):
         errorindexfull = []
@@ -201,8 +226,8 @@ class DbIndexer:
             if not self.nodeToExtSearch(node):
                 errorindexext.append(node.id)
  
-            if not self.nodeToFulltextSearch(node):
-                errorindextext.append(node.id)              
+            #if not self.nodeToFulltextSearch(node):
+            #    errorindextext.append(node.id)              
             nodes+=1
         
         self.db.commit()
@@ -222,6 +247,13 @@ class DbIndexer:
             for item in errorindextext:
                 print "    -", item
                 
+    def getDefForScheme(self, schema):
+        res = self.cur.execute("SELECT fieldnames FROM searchmeta where schema='"+schema.getName()+"'")
+        for item in res.fetchall():
+            return item.split('|')
+        
+    
+    
     
     def runQuery(self):
         #sql = "select id, field4 from searchmeta where type='image' and scheme='lt' and field4 < '2007-01-01T00:00:00' order by field4 desc"
@@ -231,15 +263,18 @@ class DbIndexer:
             print item
         
 
-class SearchIndexer:
     def node_changed(self,node):
-        # TODO: implement this
-        pass
+        index.updateNode(node)
+        
+        
+    def searchfields_changed(self, node):
+        #TODO 
+        None
+
 
 searchIndexer = SearchIndexer()
-    
-#id = DbIndexer()
-#id.runIndexer() # create index
-#id.dropIndex()  #  drop tables
-#id.runQuery() # run different queries
+
+searchIndexer.runIndexer()
+
+
 

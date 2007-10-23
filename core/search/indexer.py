@@ -271,8 +271,10 @@ class SearchIndexer:
         #TODO 
         None
 
+    
+searchIndexer = SearchIndexer()
+
 if __name__ == "__main__":
-    searchIndexer = SearchIndexer()
     searchIndexer.runIndexer()
 
 

@@ -115,8 +115,7 @@ class SearchIndexer:
         v_list = {}
         i = 1
         fieldnames = ''
-        #for field in node.getType().getSearchFields():
-        for node in node_getSearchFields(node):
+        for field in node_getSearchFields(node):
             v_list[str(i)] = node.get(field.getName())
             fieldnames += field.getName() + '|'
             i+=1

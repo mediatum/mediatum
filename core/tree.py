@@ -165,8 +165,9 @@ def flush_changed_metadata():
     changed_metadata_nodes.clear()
     last_changed_metadata_node = None
 def changed_metadata(node):
-    changed_metadata_nodes[node.id] = None
-    last_changed_metadata_node = node.id
+    if node.id:
+        changed_metadata_nodes[node.id] = None
+        last_changed_metadata_node = node.id
 
 def createSortOrder(field):
     log.info("retrieving sort order for field "+field)

@@ -156,6 +156,10 @@ sortorders = {}
 changed_metadata_nodes = {}
 last_changed_metadata_node = None
 def flush_changed_metadata():
+    global searchIndexer
+    if not searchIndexer:
+        from core.search.indexer import searchIndexer as searchIndexer2
+        searchIndexer = searchIndexer2
     for nid in changed_metadata_nodes.keys():
         searchIndexer.node_changed(getNode(nid))
     changed_metadata_nodes.clear()
@@ -710,13 +714,11 @@ def initialize(load=1):
     db = database.getConnection()
     if load:
         getRoot()
-    global schema, subnodes, searchParser,searchIndexer
+    global schema, subnodes, searchParser
     import schema.schema as schema
     schema = schema
     from core.search.query import subnodes
     subnodes = subnodes
     from core.search.parser import searchParser
     searchParser = searchParser
-    from core.search.indexer import searchIndexer as searchIndexer2
-    searchIndexer = searchIndexer2
 

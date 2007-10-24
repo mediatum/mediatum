@@ -92,6 +92,10 @@ class MYSQLConnector:
             try:
                 return MySQLdb.escape(s,self.db.converter)
             except:
+                #TODO: this should not be necessary.
+                #maybe switch to
+                #       cursor.execute("select whatever from whomever where something = %s", my_parameter)
+                #?
                 return "'" + s.replace('"','\\"').replace('\'','\\\'').replace('\\','\\\\') + "'"
 
     def execute(self,sql):

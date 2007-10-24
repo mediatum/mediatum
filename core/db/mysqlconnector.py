@@ -92,7 +92,7 @@ class MYSQLConnector:
             try:
                 return MySQLdb.escape(s,self.db.converter)
             except:
-                return s.replace('"','\\"').replace('\'','\\\'').replace('\\','\\\\')
+                return "'" + s.replace('"','\\"').replace('\'','\\\'').replace('\\','\\\\') + "'"
 
     def execute(self,sql):
         self.dblock.acquire()

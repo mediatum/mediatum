@@ -86,7 +86,13 @@ class MYSQLConnector:
         return self.db
 
     def esc(self,s):
-        return self.db.escape(s)
+        try:
+            return self.db.escape(s)
+        except:
+            try:
+                return MySQLdb.escape(s,self.db.converter)
+            except:
+                return s.replace('"','\\"').replace('\'','\\\'').replace('\\','\\\\')
 
     def execute(self,sql):
         self.dblock.acquire()

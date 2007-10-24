@@ -105,7 +105,7 @@ def initContexts():
    
 def flush(req):
     athana.flush()
-    import core.startup
+    import core.__init__
     initContexts()
     print "all caches cleared"
 

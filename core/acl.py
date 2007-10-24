@@ -29,6 +29,9 @@ from utils.boolparser import BoolParser
 
 logb = logging.getLogger('backend')
 
+rules = {}
+conn = database.getConnection()
+
 class AccessData:
     def __init__(self, req=None, user=None, ip=None):
         if req is not None:
@@ -335,11 +338,8 @@ p = ACLParser()
 def parse(r):
     return p.parse(r)
 
-conn = None
-rules = {}
-
 def getRule(name):
-    global rules
+    global conn, rules
     try:
         return rules[name]
     except KeyError:
@@ -367,6 +367,7 @@ def getRuleList():
     global conn
     rlist = []
     dbrules = conn.getRuleList()
+    
     for rule in dbrules:
         rlist += [AccessRule(str(rule[0]), str(rule[2]), str(rule[1]))]
     return rlist

@@ -156,6 +156,7 @@ sortorders = {}
 changed_metadata_nodes = {}
 last_changed_metadata_node = None
 def flush_changed_metadata():
+    return # disable new search index for now
     global searchIndexer
     if not searchIndexer:
         from core.search.indexer import searchIndexer as searchIndexer2

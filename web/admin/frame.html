@@ -6,7 +6,7 @@
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
             <meta content="text/html;charset=UTF-8" http-equiv="content-type">
 
-            <title i18n:translate="admin_title">mediaTUM</title>
+            <title i18n:translate="admin_title">TEXT</title>
 
             <link rel="stylesheet" href="/css/admin.css"/>
             <script type="text/javascript" language="javascript" src="/js/admin.js">
@@ -26,19 +26,19 @@
                         <table height="100%">
                             <tr>
                                 <td align="right" class="banner">
-                                    <small>[ <span i18n:translate="sub_header_user">Benutzer</span>: <span tal:replace="raw python:user.getName()"/>
-                                    <span tal:condition="python:guestuser==user.getName()"> | <a i18n:attributes="title sub_header_login_title" i18n:translate="sub_header_login" href="/login" class="navi" title="Anmelden">Login</a> </span>
-                                    <span tal:condition="python:guestuser!=user.getName()"> | <a i18n:attributes="title sub_header_logout_title" i18n:translate="sub_header_logout" href="/logout" class="navi" title="Abmelden">Logout</a> </span>
+                                    <small>[ <span i18n:translate="sub_header_user">TEXT</span>: <span tal:replace="raw python:user.getName()"/>
+                                    <span tal:condition="python:guestuser==user.getName()"> | <a i18n:attributes="title sub_header_login_title" i18n:translate="sub_header_login" href="/login" class="navi">TEXT</a> </span>
+                                    <span tal:condition="python:guestuser!=user.getName()"> | <a i18n:attributes="title sub_header_logout_title" i18n:translate="sub_header_logout" href="/logout" class="navi">TEXT</a> </span>
 
-                                    | <a i18n:attributes="title sub_header_inquest_title" i18n:translate="sub_header_inquest" class="navi" href="/" title="Zur Rechercheoberfl&auml;che wechseln">Recherche</a>
-                                    <span tal:condition="python:user.isEditor()"> | <a i18n:attributes="title sub_header_edit_title" i18n:translate="sub_header_edit" href="/edit/edit" class="navi" title="Zur Bearbeitungsoberfl&auml;che wechseln">Bearbeiten</a> </span>
+                                    | <a i18n:attributes="title sub_header_inquest_title" i18n:translate="sub_header_inquest" class="navi" href="/" title="TEXT">TEXT</a>
+                                    <span tal:condition="python:user.isEditor()"> | <a i18n:attributes="title sub_header_edit_title" i18n:translate="sub_header_edit" href="/edit/edit" class="navi">TEXT</a> </span>
 
-                                    <span tal:condition="python:'c' in user.getOption()">| <a i18n:attributes="title sub_header_changepwd_title" i18n:translate="sub_header_changepwd" href="/display_changepwd" class="navi" target="_parent" title="Passwort &auml;ndern">Passwort &auml;ndern</a> </span>]&nbsp;&nbsp;&nbsp;</small>
+                                    <span tal:condition="python:'c' in user.getOption()">| <a i18n:attributes="title sub_header_changepwd_title" i18n:translate="sub_header_changepwd" href="/display_changepwd" class="navi" target="_parent">TEXT</a> </span>]&nbsp;&nbsp;&nbsp;</small>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    <h4 i18n:translate="admin_header" class="admin">mediaTUM Administration Interface</h4>
+                                    <h4 i18n:translate="admin_header" class="admin">TEXT</h4>
                                 </td>
                             </tr>
                             <tr>
@@ -81,7 +81,7 @@
     <br/>
     <br/>
     <p i18n:translate="admin_error" class="error" style="text-align:center">
-        Sie besitzen nicht die notwendigen Rechte, um den Administrationsbereich zu betreten. Falls Sie nicht angemeldet sein sollten, k&ouml;nnen Sie das <span i18n:name="link"><a i18n:translate="admin_linktext" href="../login">hier</a></span>
+        TEXT <span i18n:name="link"><a i18n:translate="admin_linktext" href="../login">TEXT</a></span>
     </p>
 </metal:block>
 

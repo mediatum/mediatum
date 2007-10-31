@@ -51,14 +51,14 @@
                         <span i18n:translate="admin_usergroup_footer">
                             <span i18n:name="number" tal:content="python:str(len(groups))"/>
                         </span>
-                        <span tal:content="python:pages.printPageList()"/>
+                        <span tal:content="raw python:pages.printPageList()"/>
                     </small>
                 </th>
                 <th colspan="2" align="right"><small tal:content="structure python:pages.printPageAll()"/></th>
             </tr>
         </table>
         <p>
-            <small>(<span i18n:translate="admin_usergroup_msg1">nur Gruppen, die keine Benutzer enthalten, k&ouml;nnen gel&ouml;scht werden</span>)</small>
+            <small>(<span i18n:translate="">admin_usergroup_msg1</span>)</small>
         </p>
     </form>
 </metal:block>

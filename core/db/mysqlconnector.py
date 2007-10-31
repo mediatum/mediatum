@@ -78,6 +78,7 @@ class MYSQLConnector:
                 #self.db.ping()
                 ok = 1
         except MySQLdb.OperationalError, nr:
+            ok = 0
             log.warning("Pinging failed ("+str(nr)+")... reconnecting to ["+self.user+"@"+self.database+"]")
             self.db = None
 

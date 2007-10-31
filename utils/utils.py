@@ -76,13 +76,13 @@ class Link:
     
 def format_filesize(size):
     if size<1024:
-        return "%d Bytes" % size
+        return "%d Byte" % size
     elif size<1048576:
-        return "%d KBytes" % (size/1024)
+        return "%d KByte" % (size/1024)
     elif size<1073741824:
-        return "%d MBytes" % (size/1048576)
+        return "%d MByte" % (size/1048576)
     else:
-        return "%d GBytes" % (size/1073741824)
+        return "%d GByte" % (size/1073741824)
 
 def get_hash(filename):
     try:

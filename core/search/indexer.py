@@ -26,7 +26,10 @@ import core.config as config
 try:
     import sqlite3 as sqlite
 except:
-    from pysqlite2 import dbapi2 as sqlite
+    try:
+        from pysqlite2 import dbapi2 as sqlite
+    except:
+        pass # skip this import for now
 import core.tree as tree
 
 from utils.utils import iso2utf8, esc

@@ -2147,4 +2147,15 @@ msgstr "Files Sortieren"
 msgid "descending"
 msgstr " (absteigend)"
 
+msgid "images"
+msgstr "Bilder"
+
+msgid "documents"
+msgstr "Dokumente (allgemein)"
+
+msgid "dissertations"
+msgstr "Dokumente (Dissertationen)"
+
+msgid "videos"
+msgstr "Videos"
 

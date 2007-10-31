@@ -816,6 +816,9 @@ msgstr "Datatypes"
 msgid "admin_meta_col_6"
 msgstr "ACL"
 
+msgid "admin_meta_col_7"
+msgstr "Searchindex"
+
 msgid "admin_meta_error_1"
 msgstr "Not all required fields were filled in."
 
@@ -824,6 +827,12 @@ msgstr "Name already assigned."
 
 msgid "admin_meta_error_3"
 msgstr "Name already assigned."
+
+msgid "admin_meta_index_state_ok"
+msgstr "OK"
+
+msgid "admin_meta_index_state_title"
+msgstr "index for schema corrupt"
 
 msgid "admin_meta_id"
 msgstr "ID"
@@ -1052,6 +1061,13 @@ msgstr "metadata scheme '${name}'"
 
 msgid "admin_defpopup_name"
 msgstr "Name"
+
+msgid "admin_defpopup_id"
+msgstr "ID"
+
+msgid "admin_defpopup_type"
+msgstr "Type"
+
 
 msgid "admin_defpopup_description"
 msgstr "Description"

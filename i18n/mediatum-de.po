@@ -825,6 +825,9 @@ msgstr "Datentypen"
 msgid "admin_meta_col_6"
 msgstr "ACL"
 
+msgid "admin_meta_col_7"
+msgstr "Suchindex"
+
 msgid "admin_meta_error_1"
 msgstr "Nicht alle Pflichtfelder wurden ausgefüllt."
 
@@ -833,6 +836,12 @@ msgstr "Ein Metadatenschema mit gleichem Namen ist bereits vorhanden."
 
 msgid "admin_meta_error_3"
 msgstr "Ein Metadatenschema mit gleichem Namen ist bereits für diesen Metadatentyp vorhanden."
+
+msgid "admin_meta_index_state_ok"
+msgstr "OK"
+
+msgid "admin_meta_index_state_title"
+msgstr "Index für Schema nicht synchron"
 
 msgid "admin_meta_id"
 msgstr "ID"
@@ -1061,6 +1070,12 @@ msgstr "Metadatenschema '${name}'"
 
 msgid "admin_defpopup_name"
 msgstr "Name"
+
+msgid "admin_defpopup_id"
+msgstr "ID"
+
+msgid "admin_defpopup_type"
+msgstr "Typ"
 
 msgid "admin_defpopup_description"
 msgstr "Beschreibung"

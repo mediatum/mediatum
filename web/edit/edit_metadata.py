@@ -63,7 +63,8 @@ def edit_metadata(req, ids):
         idstr+=id
 
     maskname = req.params.get("mask", node.get("edit.lastmask") or "editmask")
-    node.set("edit.lastmask", maskname)
+    for n in nodes:
+        n.set("edit.lastmask", maskname)
     mask = node.getType().getMask(maskname)
 
     if not mask:

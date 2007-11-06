@@ -31,6 +31,7 @@ from utils.date import *
 from core.tree import nodeclasses, Node
 from core.config import *
 from core.xmlnode import getNodeXML, readNodeXML
+from core.db.database import getConnection
 
 log = logging.getLogger('backend')
 
@@ -484,6 +485,7 @@ def importMetaSchema(filename):
         m.setName("import-"+m.getName())
         metadatatypes.addChild(m)
 
+
 #
 # metadatatype
 #
@@ -572,6 +574,24 @@ class Metadatatype(tree.Node):
             if "upload_form" in obj.__dict__:
                 return True
         return False
+        
+    
+    def searchIndexCorrupt(self):
+        from core.search.indexer import searchIndexer
+        search_def=[]
+        for node in node_getSearchFields(self):
+            search_def.append(node.getName())
+        search_def = set(search_def)
+        index_def = set(searchIndexer.getDefForSchema(self.name).values())
+        if len(search_def)>len(index_def):
+            return True
+        else:
+            if search_def.union(index_def)==set([]) or index_def.difference(search_def)==set([]):
+                return False
+        return True
+            
+    def getAllItems(self):
+        return tree.NodeList(getConnection().getNodeIDsForSchema(schema=self.getName(), datatype="*"))
 
 
 """ fields for metadata """
@@ -725,7 +745,7 @@ class Mask(tree.Node):
     def getMaskFields(self):
         ret = []
         for field in self.getAllChildren():
-            if field.getType().getName()=="maskitem":
+            if field.getContentType()=="maskitem":
                 ret.append(field)
         return ret
 
@@ -740,7 +760,7 @@ class Mask(tree.Node):
                     if node.get(field.getName())=="":
                         ret.append(field.id)
 
-                if field and field.getType().getName()=="metafield" and field.getFieldtype()=="date":
+                if field and field.getContentType()=="metafield" and field.getFieldtype()=="date":
                     if not node.get(field.getName())=="" and not validateDateString(node.get(field.getName())):
                         ret.append(field.id)
         return ret
@@ -755,7 +775,7 @@ class Mask(tree.Node):
                     if node.get(field.getName())=="":
                         ret.append(node.id)
 
-                if field and field.getType().getName()=="metafield" and field.getFieldtype()=="date":
+                if field and field.getContentType()=="metafield" and field.getFieldtype()=="date":
                     #if not validateDateString(node.get(field.getName())):
                     if not node.get(field.getName())=="" and not validateDateString(node.get(field.getName())):
                         ret.append(node.id)
@@ -767,7 +787,7 @@ class Mask(tree.Node):
         for node in nodes:
             for item in self.getMaskFields():
                 field = item.getField()
-                if field and field.getType().getName()=="metafield" and req.params.get(field.getName(),"")!="? ":
+                if field and field.getContentType()=="metafield" and req.params.get(field.getName(),"")!="? ":
                     t = getMetadataType(field.get("type"))
                     if field.getName() in req.params.keys():
                         value = t.getFormatedValueForDB(field, req.params.get(field.getName()))
@@ -787,7 +807,6 @@ class Mask(tree.Node):
         fieldlist = getAllMetaFields()
         for item in self.getChildren().sort():
             t = getMetadataType(item.get("type"))
-            print item.id
             ret += t.getMetaHTML(self, i, language=language, fieldlist=fieldlist) # get formated line specific of type (e.g. field)
             i += 1
         ret += '</form>'

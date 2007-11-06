@@ -975,6 +975,9 @@ msgstr "Description"
 msgid "admin_metafield_options"
 msgstr "Options"
 
+msgid "admin_index_update_msg"
+msgstr "Search index is updated. This can take one moment."
+
 ### meta masks ###
 msgid "admin_mask_header"
 msgstr "Masks of metadata scheme '${name}'"
@@ -1894,6 +1897,12 @@ msgstr "page"
 
 msgid "print_preview_occurences"
 msgstr "Occurences"
+
+msgid "full_standard_doc_title"
+msgstr "Default view for documents"
+
+msgid "full_text_doc_title"
+msgstr "Text view for documents"
 
 msgid "sort_label"
 msgstr "sort by:"

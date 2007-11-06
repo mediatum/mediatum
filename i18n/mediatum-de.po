@@ -984,6 +984,9 @@ msgstr "Beschreibung"
 msgid "admin_metafield_options"
 msgstr "Optionen"
 
+msgid "admin_index_update_msg"
+msgstr "Der Suchindex wird aktualisiert. Dies kann einen Moment dauern."
+
 ### meta masks ###
 msgid "admin_mask_header"
 msgstr "Masken des Metadatenschemas '${name}'"
@@ -1896,6 +1899,12 @@ msgstr "Thumbnail-Ansicht"
 
 msgid "Listen-Ansicht"
 msgstr "Listen-Ansicht"
+
+msgid "full_standard_doc_title"
+msgstr "Default-Ansicht für Dokumente"
+
+msgid "full_text_doc_title"
+msgstr "Text-Ansicht für Dokumente"
 
 msgid "print_view_header"
 msgstr "mediaTUM-Objekt"

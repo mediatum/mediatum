@@ -2176,3 +2176,18 @@ msgstr "The name may only consist of the characters a to z, A to Z, 0 to 9 as we
 msgid "admin_meta_error_4"
 msgstr "The name may only consist of the characters a to z, A to Z, 0 to 9 as well as '-' and '_' !"
 
+# attachment browser
+msgid "att_browser_title"
+msgstr "Attachment-Browser"
+
+msgid "att_browser_type"
+msgstr "Type"
+
+msgid "att_browser_name"
+msgstr "Name"
+
+msgid "att_browser_size"
+msgstr "Size"
+
+msgid "att_browser_files"
+msgstr "(${c} Dateien)"

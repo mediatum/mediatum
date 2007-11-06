@@ -2192,3 +2192,18 @@ msgstr "Der Name darf ausschliesslich aus den Zeichen a bis z, A bis Z, 0 bis 9 
 msgid "admin_mask_error_2"
 msgstr "Der Name darf ausschliesslich aus den Zeichen a bis z, A bis Z, 0 bis 9 sowie '-' und '_' bestehen!"
 
+# attachment browser
+msgid "att_browser_title"
+msgstr "Attachment-Browser"
+
+msgid "att_browser_type"
+msgstr "Typ"
+
+msgid "att_browser_name"
+msgstr "Name"
+
+msgid "att_browser_size"
+msgstr "Größe"
+
+msgid "att_browser_files"
+msgstr "(${c} Dateien)"

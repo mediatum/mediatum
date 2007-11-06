@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import core.config as config
 import stat
 import traceback
 import sys
@@ -97,12 +98,11 @@ def get_filesize(filename):
     try:
         stat = os.stat(filename)
         return stat[6]
-    except:
-        print "Error:", sys.exc_info()[0], sys.exc_info()[1]
-        traceback.print_tb(sys.exc_info()[2])
-
-        print "Warning: File",filename,"not found"
-        return 0
+    except OSError:
+        stat = os.stat(config.settings["paths.datadir"]+"/"+filename)
+        return stat[6]
+    print "Warning: File",filename,"not found"
+    return 0
 
 ae = u"\u00e4".encode("utf-8")
 Ae = u"\u00c4".encode("utf-8")

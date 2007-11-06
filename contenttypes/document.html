@@ -1,21 +1,21 @@
 <div metal:define-macro="showbig" id="object_main">
     <div style="width: 100%; text-align:right">
         <a tal:attributes="href python:'node?id='+str(node.id)+'&style=full_standard'" style="text-decoration:none">
-            <img src="/img/doc_default.png" title="Default-Ansicht f&uuml;r Dokumente"/>
+            <img i18n:attributes="title full_standard_doc_title" src="/img/doc_default.png"/>
         </a>
         <a tal:attributes="href python:'node?id='+str(node.id)+'&style=full_text'" style="text-decoration:none">
-            <img src="/img/doc_text.png" title="Text-Ansicht f&uuml;r Dokumente"/>
+            <img i18n:attributes="title full_text_doc_title" src="/img/doc_text.png"/>
         </a>
         &nbsp;&nbsp;&nbsp;
         <a tal:attributes="href python:'javascript:shoppingBag(\''+str(node.id)+'\')'" href="javascript:shoppingBag(nodeid)" style="text-decoration:none">
-            <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png" title="Objekt zur Merkliste hinzuf&uuml;gen"/>
+            <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png"/>
         </a>
         <a tal:condition="print_url" tal:attributes="href python:print_url" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
     </div>
     <tal:block tal:condition="python: style!='full_text'">
     <div tal:condition="python: len(node.getFiles())>0" id="object_image">
         <tal:block tal:condition="python:canseeoriginal">
-        <a tal:attributes="href documentlink" i18n:attributes="title doc_fulltext_title" target="pdfdocument" title="Volltext in neuem Fenster &ouml;ffnen">
+        <a tal:attributes="href documentlink" i18n:attributes="title doc_fulltext_title" target="pdfdocument">
             <img tal:attributes="src documentthumb" style="cursor:pointer" border="0" width="300"/>
         </a>
         </tal:block>
@@ -24,7 +24,7 @@
         </tal:block>
         <br/>
         <div tal:condition="python:len(attachment)>0" id="object_attachment">
-            <a tal:attributes="onclick python:'javascript:openPopup(\'/attachmentbrowser?id='+str(node.id)+'&path='+path+'\', \'Attachment\', 400, 400)'" i18n:translate="doc_att_browser" href="#" >Attachment-Browser &ouml;ffnen...</a>
+            <a tal:attributes="onclick python:'javascript:openPopup(\'/attachmentbrowser?id='+str(node.id)+'&path='+path+'\', \'Attachment\', 400, 400)'" i18n:translate="doc_att_browser" href="#" >TEXT</a>
         </div>
     </div>
     <div tal:condition="python: len(node.getFiles())==0" id="object_meta" style="margin-left:0px" tal:content="raw metadata"/>
@@ -33,8 +33,10 @@
 
     <tal:block tal:condition="python: style=='full_text'">
         <div id="object_meta" style="margin-left:0px" tal:content="raw metadata"/>
-        
-        <tal:block tal:condition="python: len(node.getFiles())>0">
+        <div tal:condition="python:len(attachment)>0" id="object_attachment">
+            <a tal:attributes="onclick python:'javascript:openPopup(\'/attachmentbrowser?id='+str(node.id)+'&path='+path+'\', \'Attachment\', 400, 400)'" i18n:translate="doc_att_browser" href="#" >TEXT</a>
+        </div>
+        <tal:block tal:condition="python:canseeoriginal">
             <hr/>
             <a tal:attributes="href python:'/doc/'+str(node.id)+'/document.pdf'" target="pdfdocument" i18n:attributes="title doc_fulltext_title"><img src="/img/pdf.gif"/></a>
         </tal:block>
@@ -42,48 +44,21 @@
 </div>
 
 
-<form metal:define-macro="uploadform" action="upload_new" method="post" enctype="multipart/form-data" style="padding:4px">
-    <h3>Hier k&ouml;nnen Sie PDF-Dateien auf den Server laden.</h3>
-    <p>
-        <b>Daten hochladen:</b>
-    </p>
-    <p>Dazu Metadatenschema ausw&auml;hlen, den "Durchsuchen"-Button klicken, Datei ausw&auml;hlen und "Hochladen" klicken.</p>
-    <p>
-        <label>Metadatenschema:</label>
-        <select name="datatype" style="width:400px">
-            
-            <tal:block tal:repeat="metadatatype metadatatypes">
-                <option tal:condition="python:metadatatype.isActive() and 'document' in metadatatype.getDatatypes()" tal:attributes="value python:'document/'+metadatatype.getName()" tal:content="python:metadatatype.getLongName()"/>
-            </tal:block>
-
-        </select>
-    </p>
-    <p>
-        <label>Datei:</label> 
-        <input type="file" name="file" style="width:400px" accept="application/pdf"/>
-    </p>        
-    <p>
-        <label>&nbsp;</label>
-        <input type="submit" name="submit" value="Hochladen"/>
-    </p>
-</form>
-
-
 <html metal:define-macro="attachmentbrowser">
     <head>
-        <title>Attachment-Browser</title>
+        <title i18n:translate="att_browser_title">TEXT</title>
         <link rel="stylesheet" href="/css/tum.css"/>
         <link rel="stylesheet" href="/css/admin.css"/>
     </head>
     <body style="margin:5px">
-        <h3>Attachment-Browser</h3>
+        <h3 i18n:translate="att_browser_title"></h3>
         <form>
 
             <table class="overview">
                 <tr>
-                    <th width="30px">Typ</th>
-                    <th align="left">Name</th>
-                    <th align="right">Gr&ouml;&szlig;e</th>
+                    <th width="30px" i18n:translate="att_browser_type">TEXT</th>
+                    <th align="left" i18n:translate="att_browser_name">TEXT</th>
+                    <th align="right" i18n:translate="att_browser_size">TEXT</th>
                 </tr>
 
                 <tal:block tal:repeat="file files">
@@ -115,7 +90,7 @@
                     </tr>
                 </tal:block>
                 <tr>
-                    <th colspan="2" tal:content="python:'('+str(len(files))+' Dateien)'" align="left"/>
+                    <th i18n:translate="att_browser_files" colspan="2" align="left"><span i18n:name="c" tal:content="python:str(len(files))">TEXT</span></th>
                     <th tal:content="sum_size" align="right"/>
                 </tr>
             </table>

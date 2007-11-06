@@ -70,7 +70,10 @@ class m_url(Metatype):
             fielddef = fielddef.split(";")
             
             if str(fielddef[0]).find("____")>=0:
-                value = str(fielddef[1])
+                if str(fielddef[0]).find("____")>=0:
+                    value = ""
+                else:
+                    value = str(fielddef[1])
             else:
                 try:
                     value = '<a href="'+str(fielddef[0])+'" target="_blank" title="'+t(language,'show in new window')+'">'+str(fielddef[1])+'</a>' 

@@ -21,7 +21,7 @@ import re
 import core.tree as tree
 import os
 import core.config as config
-from utils.utils import get_filesize,join_paths
+from utils.utils import get_filesize,join_paths, clean_path, getMimeType
 import random
 import zipfile
 import core.acl as acl
@@ -172,7 +172,6 @@ def send_attfile(req):
     filename = clean_path("/".join(f[1:]))
     path = join_paths(config.get("paths.datadir"), filename)
     mime, type= getMimeType(filename)
-
     if(get_filesize(filename) > 16*1048576):
         return req.sendFile(path, "application/x-download")
     else:

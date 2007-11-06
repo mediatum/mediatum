@@ -2149,3 +2149,21 @@ msgstr "Sort Files"
 msgid "descending"
 msgstr " (descending)"
 
+msgid "documents"
+msgstr "documents"
+
+msgid "dissertations"
+msgstr "documents (Ph.D. theses)"
+
+msgid "videos"
+msgstr "videos"
+
+msgid "admin_mask_error_2"
+msgstr "The name may only consist of the characters a to z, A to Z, 0 to 9 as well as '-' and '_' !"
+
+msgid "admin_metafield_error_2"
+msgstr "The name may only consist of the characters a to z, A to Z, 0 to 9 as well as '-' and '_' !"
+
+msgid "admin_meta_error_4"
+msgstr "The name may only consist of the characters a to z, A to Z, 0 to 9 as well as '-' and '_' !"
+

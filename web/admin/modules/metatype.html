@@ -134,6 +134,7 @@
                     <p tal:condition="python:error==1" i18n:translate="admin_meta_error_1" class="error">Nicht alle Pflichtfelder wurden ausgef&uuml;llt.</p>
                     <p tal:condition="python:error==2" i18n:translate="admin_meta_error_2" class="error">Ein Metadatentyp mit gleichem Namen ist bereits vorhanden.</p>
                     <p tal:condition="python:error==3" i18n:translate="admin_meta_error_3" class="error">Ein Metadatenschema mit gleichem Namen ist bereits f&uuml;r diesen Metadatentyp vorhanden.</p>
+                    <p tal:condition="python:error==4" i18n:translate="admin_meta_error_4" class="error">Der Name darf nur aus den Zeichen a-z, A-Z, 0-9 sowie - und _ bestehen.</p>
                 </td>
             </tr>
             <tr>
@@ -342,6 +343,7 @@
                     <p tal:condition="python:error==1" i18n:translate="admin_mandatory_error" class="error">Nicht alle Pflichtfelder wurden ausgef&uuml;llt.</p>
                     <p tal:condition="python:error==2" i18n:translate="admin_duplicate_error" class="error">Ein Objekt mit gleichem Namen ist bereits vorhanden.</p>
                     <p tal:condition="python:error==3" i18n:translate="admin_metafield_error_1" class="error">Ein Metadatenfeld mit gleichem Namen ist bereits f&uuml;r dieses Metadatenschema vorhanden.</p>
+                    <p tal:condition="python:error==4" i18n:translate="admin_metafield_error_2" class="error">Der Name darf nur aus den Zeichen a-z, A-Z, 0-9 sowie - und _ bestehen.</p>
                 </td>
             </tr>
             <tr>
@@ -569,6 +571,7 @@
                     <p tal:condition="python:error==1" class="error" i18n:translate="admin_mandatory_error">Nicht alle Pflichtfelder wurden ausgef&uuml;llt.</p>
                     <p tal:condition="python:error==2" class="error" i18n:translate="admin_duplicate_error">Eine Objekt mit gleichem Namen ist bereits vorhanden.</p>
                     <p tal:condition="python:error==3" class="error" i18n:translate="admin_mask_error_1">Ein Maske mit gleichem Namen ist bereits f&uuml;r dieses Metadatenschema vorhanden.</p>
+                    <p tal:condition="python:error==4" class="error" i18n:translate="admin_mask_error_2">Der Name darf nur aus den Zeichen a-z, A-Z, 0-9 sowie - und _ bestehen.</p>
                 </td>
             </tr>
             <tr>

@@ -32,6 +32,14 @@ from schema.schema import getMetaFieldTypeNames, getMetaType, updateMetaType, ex
 
 _masktypes = {"":"masktype_empty","edit":"masktype_edit", "search":"masktype_search", "shortview":"masktype_short", "fullview":"masktype_full"}
 
+""" checks a string whether it only contains the alphanumeric chars as well as "-" """
+def checkString(string):
+    result = re.match("([\w\-]+)", string)
+    if result != None and result.group(0) == string:
+       return True
+    return False
+
+
 """ standard method for admin module """
 def validate(req, op):
     path = req.path[1:].split("/")
@@ -140,6 +148,10 @@ def validate(req, op):
                         
                     elif existMetaType(req.params["mname"]):
                         return MetatypeDetail(req, "", 2) # metadata still existing
+                    
+                    elif checkString(str(req.params["mname"])) == False:
+                         return MetatypeDetail(req, "", 4) # if the name contains wrong characters
+
                     else:
                         if "mactive" in req.params:
                             _active = 1
@@ -162,6 +174,10 @@ def validate(req, op):
                         
                     elif req.params["mname_orig"] != req.params["mname"] and existMetaType(req.params["mname"]):
                         return MetatypeDetail(req, req.params["mname_orig"], 2) # metadata still existing
+
+                    elif checkString(str(req.params["mname"])) == False:
+                         return MetatypeDetail(req, req.params["mname_orig"], 4) # if the name contains wrong characters
+
                     else:
                         if "mactive" in req.params:
                             _active = 1
@@ -185,6 +201,9 @@ def validate(req, op):
                         
                     elif req.params["mname"]=="" or req.params["mlabel"] == "":                            
                         return FieldDetail(req, req.params["pid"], "", 1)
+                    elif checkString(req.params["mname"]) == False:
+                         return FieldDetail(req, req.params["pid"], "", 4) # if the name contains wrong characters
+
                     else:
                         # save new field
                         try:
@@ -210,6 +229,9 @@ def validate(req, op):
                     if req.params["mname"]=="" or req.params["mlabel"] == "":
                         return FieldDetail(req, req.params["pid"], "", 1)
 
+                    elif checkString(req.params["mname"]) == False:
+                         return FieldDetail(req, req.params["pid"],"", 4) # if the name contains wrong characters
+                    
                     else:
                         _len = 0
                         if req.params.get("mlength","").isdigit():
@@ -234,8 +256,11 @@ def validate(req, op):
                     break
 
                 elif req.params["form_op"]=="save_editmask":
+
                     if req.params["mname"]=="":
                         MaskDetails(req, req.params.get("mpid",""), req.params.get("morig_name",""), err=1)
+                    elif checkString(req.params["mname"]) == False:
+                         return MaskDetails(req, req.params.get("mpid",""), req.params.get("morig_name",""), err=4) # if the name contains wrong characters
                     else:
                         mtype = getMetaType(req.params.get("mpid",""))
                         mask = mtype.getMask(req.params.get("morig_name",""))
@@ -248,8 +273,11 @@ def validate(req, op):
                     break
 
                 elif req.params["form_op"]=="save_newmask":
+
                     if req.params["mname"]=="":
                         return MaskDetails(req, req.params.get("mpid",""), "", err=1)
+                    elif checkString(req.params["mname"]) == False:
+                         return MaskDetails(req, req.params.get("mpid",""), req.params.get("morig_name",""), err=4) # if the name contains wrong characters
                     else:
                         mtype = getMetaType(req.params.get("mpid",""))
                         mask = tree.Node(req.params.get("mname",""), type="mask")

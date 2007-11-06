@@ -135,7 +135,7 @@ def show_attachmentbrowser(req):
     if not access.hasAccess(node,"data"):
         req.write(t(req, "permission_denied"))
         return
-    if node.getType().getName().startswith("document") or node.getType().getName().startswith("dissertation"):
+    if node.getContentType().startswith("document") or node.getContentType().startswith("dissertation"):
         node.getAttachmentBrowser(req)
         
     

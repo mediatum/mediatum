@@ -48,12 +48,21 @@ class Document(default.Default):
         obj['node'] = node  
         obj['path'] = req and req.params.get("path","") or ""
         files, sum_size = node.filebrowser(req)
+        
+        doc_exist = False
+        for f in node.getFiles():
+            if f.type=="doc":
+                doc_exist = True
+            
         obj['attachment'] = files
         obj['sum_size'] = sum_size
-        obj['canseeoriginal'] = access.hasAccess(node,"data")
-        obj['documentlink'] = '/doc/'+str(node.id)+'/'+str(node.id)+'.pdf'
-        obj['documentthumb'] = '/thumb2/'+str(node.id)
-
+        
+        if doc_exist:
+            obj['canseeoriginal'] = access.hasAccess(node,"data")
+            obj['documentlink'] = '/doc/'+str(node.id)+'/'+str(node.id)+'.pdf'
+        else:
+            obj['canseeoriginal']= False
+        obj['documentthumb'] = '/thumb2/'+str(node.id) 
         if "oogle" not in req.request_headers.get("user-agent",""):
             obj['print_url'] = '/print/'+str(node.id)
         else:
@@ -87,7 +96,7 @@ class Document(default.Default):
         return node.name
 
     def getSysFiles(node):
-        return ["doc","thumb","presentati","fulltext","fileinfo"]
+        return ["doc","thumb", "thumb2","presentati","fulltext","fileinfo"]
 
        
     """ postprocess method for object type 'document'. called after object creation """
@@ -224,6 +233,9 @@ class Document(default.Default):
             ret.append(file)
 
         for name in os.listdir(config.settings["paths.datadir"] + path+"/"):
+            
+            if name.endswith(".thumb") or name.endswith(".thumb2"):
+                continue
             file = {}
 
             file_path = os.path.join(config.settings["paths.datadir"] +path, name)

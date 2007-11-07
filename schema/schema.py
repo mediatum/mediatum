@@ -794,6 +794,14 @@ class Mask(tree.Node):
                         node.set(field.getName(), value)
                     elif field.getFieldtype() == "check":
                         node.set(field.getName(), 0)
+                    
+                    ''' raise event for metafield-type '''
+                    if hasattr(t,"event_metafield_changed"):
+                        t.event_metafield_changed(node)
+            ''' raise event for node '''
+            if hasattr(node,"event_metadata_changed"):
+                node.event_metadata_changed()
+
         return nodes
 
     ''' show maskeditor - definition '''

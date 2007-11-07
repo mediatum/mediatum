@@ -39,4 +39,8 @@ class Metatype:
 
     def getName(self):
         return ""
+        
+    ''' events '''
+    def event_metafield_changed(self, node):
+        None
 

@@ -92,7 +92,6 @@ def getRoot(name=None):
 
 def getNode(id):
     global nodes_cache,nocache
-
     try:
         long(id)
     except ValueError:
@@ -353,7 +352,7 @@ class Node:
         if '/' in self.type:
             return self.type[self.type.find('/')+1:]
         else:
-            return ""
+            return self.type
 
     """ set the node type (as string) """
     def setTypeName(self,type):

@@ -23,6 +23,7 @@ import core.users as users
 from utils.date import format_date,parse_date
 from utils.utils import formatException
 import core.tree as tree
+from schema.schema import node_getMask
 
 import logging
 from core.translation import lang, t
@@ -65,7 +66,8 @@ def edit_metadata(req, ids):
     maskname = req.params.get("mask", node.get("edit.lastmask") or "editmask")
     for n in nodes:
         n.set("edit.lastmask", maskname)
-    mask = node.getType().getMask(maskname)
+    mask = node_getMask(node, node.getSchema())
+
 
     if not mask:
         req.writeTAL("web/edit/edit_metadata.html", {}, macro="no_mask")

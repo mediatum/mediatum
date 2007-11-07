@@ -797,7 +797,7 @@ class Mask(tree.Node):
                     
                     ''' raise event for metafield-type '''
                     if hasattr(t,"event_metafield_changed"):
-                        t.event_metafield_changed(node)
+                        t.event_metafield_changed(node, field)
             ''' raise event for node '''
             if hasattr(node,"event_metadata_changed"):
                 node.event_metadata_changed()

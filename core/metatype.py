@@ -41,6 +41,6 @@ class Metatype:
         return ""
         
     ''' events '''
-    def event_metafield_changed(self, node):
+    def event_metafield_changed(self, node, field):
         None
 

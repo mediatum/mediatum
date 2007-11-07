@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.12 2007/10/19 16:16:30 kramm Exp $'
+RCS_ID =  '$Id: athana.py,v 1.13 2007/11/07 09:28:31 seiferta Exp $'
 
 import sys
 
@@ -3155,7 +3155,10 @@ def parse_http_date (d):
     else:
         m = rfc822_reg.match (d)
         if m and m.end() == len(d):
-            retval = int (time.mktime (unpack_rfc822(m)) - tz)
+            try:
+                retval = int (time.mktime (unpack_rfc822(m)) - tz)
+            except OverflowError:
+                return 0
         else:
             return 0
     # Thanks to Craig Silverstein <csilvers@google.com> for pointing

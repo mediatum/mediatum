@@ -89,11 +89,6 @@ def edit_metadata(req, ids):
             node.set("updatetime", str(format_date()))
 
         nodes = mask.updateNode(nodes, req)
-        for node in nodes:
-            if hasattr(node,"event_metadata_changed"):
-                node.event_metadata_changed()
-            else:
-                print formatException()
         
         errorlist = mask.validateNodelist(nodes)
 

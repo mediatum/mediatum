@@ -1442,6 +1442,9 @@ msgstr "No base directory selected (${msg})"
 msgid "edit_main_title"
 msgstr "mediatum"
 
+msgid "edit_objectname"
+msgstr "Name"
+
 msgid "edit_main_noframe"
 msgstr "Your Browser doesn't support frames."
 

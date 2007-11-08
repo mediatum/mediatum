@@ -1441,6 +1441,9 @@ msgstr "Objekttyp"
 msgid "edit_schema"
 msgstr "Metadatenschema"
 
+msgid "edit_objectname"
+msgstr "Name"
+
 msgid "edit_error"
 msgstr "Fehler"
 

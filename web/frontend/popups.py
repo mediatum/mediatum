@@ -31,6 +31,7 @@ from schema.schema import VIEW_DATA_ONLY,VIEW_HIDE_EMPTY
 from web.frontend.content import getPaths
 from core.acl import AccessData
 from core.translation import t,lang
+import core.search as search
 
 #
 # execute fullsize method from node-type

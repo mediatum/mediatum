@@ -1,6 +1,6 @@
 
 <p metal:define-macro="filetype_error" style="color:red" i18n:translate="edit_files_filetype_error">
-    Austausch nicht m&ouml;glich, da die Dateitypen nicht &uuml;bereinstimmen.
+    TEXT
 </p>
 
 
@@ -11,11 +11,11 @@
         <tal:block tal:condition="python:len(files)>0">
             <table class="files">
                 <tr>
-                    <th i18n:translate="edit_files_type">Typ</th>
-                    <th i18n:translate="edit_files_size">Gr&ouml;&szlig;e</th>
-                    <th i18n:translate="edit_files_mimetype">Mimetype</th>
-                    <th i18n:translate="edit_files_location">Lokation / Name</th>
-                    <th i18n:translate="edit_files_options">Optionen</th>
+                    <th i18n:translate="edit_files_type">TEXT</th>
+                    <th i18n:translate="edit_files_size">TEXT</th>
+                    <th i18n:translate="edit_files_mimetype">TEXT</th>
+                    <th i18n:translate="edit_files_location">TEXT</th>
+                    <th i18n:translate="edit_files_options">TEXT</th>
                 </tr>
 
                 <tr tal:repeat="file files">
@@ -23,7 +23,7 @@
                     <td tal:content="python:file.getSize()"/>
                     <td tal:content="python:file.mimetype"/>
                     <td>
-                        <a tal:attributes="href python:'/file/'+str(node.id)+'/'+file.getName()" tal:content="python:file.path" i18n:attributes="title edit_files_opne_title" title="&Ouml;ffnen" target="filewindow"/>
+                        <a tal:attributes="href python:'/file/'+str(node.id)+'/'+file.getName()" tal:content="python:file.path" i18n:attributes="title edit_files_opne_title" target="filewindow"/>
                     </td>
 
                     <td tal:condition="python:file.type=='doc'" tal:define="value python:node.get('pdf_encrypted')">
@@ -42,12 +42,12 @@
             
             <hr>
 
-            <b i18n:translate="edit_files_change">Digitales Objekt austauschen</b><b>:</b>
-            <p><input type="radio" name="change_file" value="yes"><tal:block i18n:translate="edit_files_change"/><br />
-               <input type="radio" name="change_file" value="no"><tal:block i18n:translate="edit_files_add_obj"/><br />
+            <b i18n:translate="edit_files_change">TEXT</b><b>:</b>
+            <p><input type="radio" name="change_file" value="yes"/><tal:block i18n:translate="edit_files_change"/><br />
+               <input type="radio" name="change_file" value="no"/><tal:block i18n:translate="edit_files_add_obj"/><br />
             </p>
             <p><input name="updatefile" type="file" size="50"/></p>
-            <p><button i18n:attributes="title submit" i18n:translate="submit" type="submit" name="addfile" value="submit" title="">.</button></p>
+            <p><button i18n:attributes="title edit_upload_upload_label" i18n:translate="edit_upload_upload_label" type="submit" name="addfile" value="submit">TEXT</button></p>
         </tal:block>
             
         <hr>
@@ -56,10 +56,10 @@
             <table class="files">
                 <tr>
                     <td>
-                        <p><b i18n:translate="edit_files_add_obj">Digitales Objekt hinzuf&uuml;gen</b><b>:</b></p>
+                        <p><b i18n:translate="edit_files_add_obj">TEXT</b><b>:</b></p>
                         <p><input name="updatefile" type="file" size="50"></p>
                         <p>
-                            <button i18n:attributes="title edit_files_add_obj" i18n:translate="edit_files_add_obj" type="submit" name="addfile" value="submit" title="Digitales Objekt hinzuf&uuml;gen">Digitales Objekt hinzuf&uuml;gen</button>
+                            <button i18n:attributes="title edit_files_add_obj" i18n:translate="edit_files_add_obj" type="submit" name="addfile" value="submit">TEXT</button>
                         </p>
                     </td>
                 </tr>
@@ -69,8 +69,8 @@
         <hr>
 
         <form tal:attributes="action python:'edit_content?id='+str(id)+'&tab='+tab" method="post">
-            <p><input i18n:attributes="value edit_files_reprocess" type="submit" value="Digitales Objekt erneut verarbeiten" name="postprocess"></p>
-            <p><small i18n:translate="edit_files_reprocess_info">(dabei werden alle Operationen ausgef&uuml;hrt, die notwendig sind, um Technische-Metadaten und die Thumbnails zu erzeugen)</small></p>
+            <p><input i18n:attributes="value edit_files_reprocess" type="submit" name="postprocess"></p>
+            <p><small i18n:translate="edit_files_reprocess_info">TEXT</small></p>
         </form>
         
         <hr>
@@ -97,14 +97,14 @@
                 </tal:block>
                 <tal:block tal:define="type python:node.getType().getName()" tal:condition="python:type.find('/')<0">
                     <tr>
-                        <td i18n:translate="edit_objecttype"/>
+                        <td i18n:translate="edit_objectname"/>
                         <td colspan="2" tal:content="type"/>
                         
                     </tr>
                 </tal:block>
                 
                 <tr tal:condition="python:len(list(obsoletefields))>0">
-                    <th colspan="3" i18n:translate="edit_files_obsolete">nicht verwendete Metadatenfelder</th>
+                    <th colspan="3" i18n:translate="edit_files_obsolete">TEXT</th>
                 </tr>
 
                 <tal:block tal:repeat="key python:list(obsoletefields)">
@@ -113,14 +113,14 @@
                         <td style="color: red; white-space:normal" tal:content="python:str(node.get(str(key)))"/>
 
                         <td tal:condition="python:allow_delete_unused">
-                            <input tal:attributes="name python:'attr_'+str(key)" i18n:attributes="title edit_files_obsolete_del_title" type="image" src="/img/delete.png" onClick="return questionDel()" title="Attribut l&ouml;schen"/>
+                            <input tal:attributes="name python:'attr_'+str(key)" i18n:attributes="title edit_files_obsolete_del_title" type="image" src="/img/delete.png" onClick="return questionDel()"/>
                         </td>
                         <td tal:condition="python:not allow_delete_unused">&nbsp;</td>
                     </tr>
                 </tal:block>
 
                 <tr>
-                    <th colspan="3" i18n:translate="edit_files_metafields">Metadatenfelder</th>
+                    <th colspan="3" i18n:translate="edit_files_metafields">TEXT</th>
                 </tr>
 
                 <tr tal:repeat="key python: list(metafields)">
@@ -131,7 +131,7 @@
                 </tr>
 
                 <tr>
-                    <th colspan="3" i18n:translate="edit_files_tech_meta">technische Metadatenfelder</th>
+                    <th colspan="3" i18n:translate="edit_files_tech_meta">TEXT</th>
                 </tr>
 
                 <tr tal:repeat="key python:list(technfields)">
@@ -143,7 +143,7 @@
 
                 <tr tal:condition="python:len(technfields)>0">
                     <td colspan="3">
-                        <button name="deltechn" type="submit" onclick="document.meta.type.value='technical'" i18n:translate="edit_files_del_tech_meta">Technische Metadaten l&ouml;schen</button>
+                        <button name="deltechn" type="submit" onclick="document.meta.type.value='technical'" i18n:translate="edit_files_del_tech_meta">TEXT</button>
                     </td>
                 </tr>
             </table>

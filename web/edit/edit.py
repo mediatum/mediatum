@@ -44,6 +44,8 @@ from edit_workflow import edit_workflow
 from edit_license import edit_license
 from core.translation import lang, t
 
+from edit_common import EditorNodeList
+
 
 def frameset(req):
     id = req.params.get("id", tree.getRoot().id)

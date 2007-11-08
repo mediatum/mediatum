@@ -21,6 +21,7 @@ import core.athana as athana
 import core.search.query
 from utils.utils import esc
 from core.metatype import Metatype
+import core.search as search
 
 class m_ilist(Metatype):
 

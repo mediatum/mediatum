@@ -26,6 +26,7 @@ import logging
 import sys
 import os
 from utils.dicts import MaxSizeDict
+from utils.utils import get_hash
 import core.config as config
 import thread
 import traceback

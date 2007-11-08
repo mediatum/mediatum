@@ -64,10 +64,10 @@ def edit_metadata(req, ids):
         idstr+=id
 
     maskname = req.params.get("mask", node.get("edit.lastmask") or "editmask")
+
     for n in nodes:
         n.set("edit.lastmask", maskname)
-    mask = node_getMask(node, node.getSchema())
-
+    mask = node_getMask(node, maskname)
 
     if not mask:
         req.writeTAL("web/edit/edit_metadata.html", {}, macro="no_mask")

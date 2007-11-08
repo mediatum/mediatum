@@ -1417,6 +1417,12 @@ msgstr "Show list values as popup"
 msgid "popup_listvalue"
 msgstr "show list values"
 
+msgid "popup_clearselection"
+msgstr "clear selection"
+
+msgid "popup_clearselection_title"
+msgstr "Unselect all values"
+
 msgid "popup_indexnumber"
 msgstr "values selected"
 

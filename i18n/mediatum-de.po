@@ -1425,6 +1425,12 @@ msgstr "Listenwerte als Popup anzeigen"
 msgid "popup_listvalue"
 msgstr "Listenwerte anzeigen"
 
+msgid "popup_clearselection"
+msgstr "Auwahl aufheben"
+
+msgid "popup_clearselection_title"
+msgstr "Auswahlliste leeren"
+
 msgid "popup_indexnumber"
 msgstr "Wert(e) selektiert"
 

@@ -95,14 +95,16 @@ def get_hash(filename):
         return md5.md5("").hexdigest()
 
 def get_filesize(filename):
-    try:
+    if os.path.exists(filename):
         stat = os.stat(filename)
         return stat[6]
-    except OSError:
+    elif os.path.exists(config.settings["paths.datadir"]+"/"+filename):
         stat = os.stat(config.settings["paths.datadir"]+"/"+filename)
         return stat[6]
-    print "Warning: File",filename,"not found"
-    return 0
+    else:
+        print "Warning: File",filename,"not found"
+        return 0
+
 
 ae = u"\u00e4".encode("utf-8")
 Ae = u"\u00c4".encode("utf-8")

@@ -1800,7 +1800,7 @@ msgid "edit_license_gen"
 msgstr "Create object list"
 
 msgid "edit_license_obj_list"
-objstr "Object list"
+msgstr "Object list"
 
 msgid "edit_license_name"
 msgstr "Name"

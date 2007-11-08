@@ -1811,7 +1811,7 @@ msgid "edit_license_gen"
 msgstr "Objektlisten generieren"
 
 msgid "edit_license_obj_list"
-objstr "Objektliste"
+msgstr "Objektliste"
 
 msgid "edit_license_name"
 msgstr "Name"

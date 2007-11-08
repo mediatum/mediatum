@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.tree as tree
-from edit_common import writetree
+from edit_common import writetree, getFaultyDir
 from core.translation import t, lang
 from core.acl import AccessData
 
@@ -110,21 +110,22 @@ def edit_classes(req, ids):
         req.write('<a name="node%s"></a>' % node.id)
         req.write('<div class="line">')
         req.write(' <div class="name" style="padding-left: '+str(indent)+'px">')
+        title = 'title="'+t(lang(req),"edit_classes_class_title")+'"'
         if type == 1:
             l = req.makeSelfLink({"unmark":"", "mark":"", "tree_unfold":"", "tree_fold":node.id})
             req.write('<a title="'+t(lang(req), "edit_classes_close_title")+'" href="%s"><img src="/img/edit_box1.gif" border="0"></a>' % (l+"#node"+node.id))
+            title = 'title="'+t(lang(req),"edit_classes_disclass_title")+'"'
         elif type == 2:
             l = req.makeSelfLink({"unmark":"", "mark":"", "tree_unfold":node.id, "tree_fold":""})
             req.write('<a title="'+t(lang(req), "edit_classes_open_title")+'" href="%s"><img src="/img/edit_box2.gif" border="0"></a>' % (l+"#node"+node.id))
         elif type == 3:
             req.write('<img src="/img/edit_box3.gif" border="0">')
-        
+
         nodename = node.name
         try: nodename = node.getLabel()
         except: 
             log.logException()
 
-        title = 'title="'+t(lang(req),"edit_classes_disclass_title")+'"'
         if node.id in parents:
             if node.id in superparents and type==2:
                 req.write('<font color="#3030ef">&nbsp;<b>'+nodename+'</b></font>')

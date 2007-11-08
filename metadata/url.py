@@ -20,6 +20,7 @@
 import core.athana as athana
 import re
 from core.metatype import Metatype
+from core.translation import t
 
 class m_url(Metatype):
 
@@ -70,16 +71,20 @@ class m_url(Metatype):
             fielddef = fielddef.split(";")
             
             if str(fielddef[0]).find("____")>=0:
-                if str(fielddef[0]).find("____")>=0:
-                    value = ""
-                else:
-                    value = str(fielddef[1])
+                fielddef[0] = ''               
+            if str(fielddef[1]).find("____")>=0:
+                fielddef[1] = ''
+            
+            
+            if fielddef[0]=='' and fielddef[1]=='': # link + text empty
+                value = ''
+            elif fielddef[0]=='' and fielddef[1]!='': # link empty, text not empty
+                value = fielddef[1]
+            elif fielddef[0]!='' and fielddef[1]=='':
+                value = ''
             else:
-                try:
-                    value = '<a href="'+str(fielddef[0])+'" target="_blank" title="'+t(language,'show in new window')+'">'+str(fielddef[1])+'</a>' 
-                except:
-                    value = '<a href="'+str(fielddef[0])+'" target="_blank">'+str(fielddef[1])+'</a>'
-                
+                value = '<a href="'+str(fielddef[0])+'" target="_blank" title="'+t(language,'show in new window')+'">'+str(fielddef[1])+'</a>' 
+
             if fielddef[2]!="":
                 value += ' <img src="'+str(fielddef[2])+'"/>'
 

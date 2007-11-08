@@ -144,11 +144,12 @@ class FileNode:
 
 nodetypes = {}
 
+' TODO update for current tree implementation'
 def getType(name):
     if name in nodetypes:
         return nodetypes[name]
     else:
-        nodetypes[name] = NodeType(name)
+        nodetypes[name] = name
         return nodetypes[name]
 
 sortorders = {}
@@ -354,6 +355,17 @@ class Node:
             return self.type[self.type.find('/')+1:]
         else:
             return self.type
+           
+
+    def getSchemaObject(self, schemaname=""):
+        from schema.schema import getMetaType
+        if schemaname=="":
+            return getMetaType(self.getSchema())
+        else:
+            try:
+                return getMetaType(str(schemaname))
+            except:
+                return getMetaType(self.getSchema())
 
     """ set the node type (as string) """
     def setTypeName(self,type):

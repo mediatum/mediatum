@@ -24,7 +24,7 @@ import logging
 import utils.date as date
 from core.acl import AccessData
 import string
-#from edit_common import *
+from edit_common import EditorNodeList, shownodelist
 
 log = logging.getLogger('edit')
 utrace = logging.getLogger('usertracing')
@@ -45,8 +45,8 @@ def search_results(req,id):
 
     node = tree.getNode(id)
     objtype = req.params["objtype"]
-
-    type = tree.getType(objtype)
+    
+    type = node.getSchemaObject(objtype)
     query = ""
 
     if "full" in req.params:
@@ -57,7 +57,7 @@ def search_results(req,id):
                 if query:
                     query += " and "
                 query += "full=" + protect(word)
-
+ 
     for field in type.getMetaFields():
         if field.Searchfield():
             name=field.getName()
@@ -119,19 +119,19 @@ def search_form(req, id, message=None):
     for mtype,num in occur.items():
         if num>0 and mtype.getDescription():
             if otype is None:
-                otype = mtype.getName()
+                otype = mtype.getContentType()
             if mtype.getName() not in itemlist:
                 itemlist += [mtype.getName()]
                 mtypelist.append(mtype)
 
-                if objtype == mtype.getName():
+                if objtype == mtype.getSchema():
                     otype = objtype
             else:
                 log.warning("Warning: Unknown metadatatype: "+mtype.getName())
 
     formlist = []
     if otype:
-        type = tree.getType(otype)
+        type = node.getSchemaObject(otype)
         for field in type.getMetaFields():
             if field.Searchfield() and field.getFieldtype()!="date":
                 value = searchvalues.get(otype+"."+field.getName(),"")
@@ -165,4 +165,5 @@ def edit_search(req, ids):
         search_results(req,ids[0])
     else:
         search_form(req,ids[0])
+
 

@@ -18,8 +18,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.tree as tree
-#from utils import *
-#from date import *
 from core.acl import AccessData
 
 def edit_license(req, ids):

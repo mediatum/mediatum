@@ -1,7 +1,7 @@
 
 <tal:block metal:define-macro="start_new_search">
     <hr/>
-    <a tal:attributes="href python:'?id='+id+'&tab=tab_search'" i18n:translate="edit_search_start">Neu Suchen starten</a>
+    <a tal:attributes="href python:'?id='+id+'&tab=tab_search'" i18n:translate="edit_search_start">TEXT</a>
     <hr/>
 </tal:block>
 
@@ -16,25 +16,25 @@
         <table>
             <tr>
                 <td colspan="2">
-                    <b i18n:translate="edit_search_search_for">Suche nach/in:</b>
+                    <b i18n:translate="edit_search_search_for">TEXT</b>
                 </td>
             </tr>
             <tr>
-                <td class="search" style="font-size:12px" i18n:translate="edit_search_type">Typ:</td>
+                <td class="search" style="font-size:12px" i18n:translate="edit_search_type">TEXT</td>
                 <td>
                     <select onChange="document.searchform.search.value='reload';document.searchform.submit()" name="objtype" style="width:640px">
                         <tal:block tal:repeat="mtype mtypelist">
-                            <option tal:attributes="value python:mtype.getName(); selected python:{'False':None,'True':'selected'}[str(mtype.getName()==objtype)]" tal:content="python:mtype.getDescription()"/>
+                            <option tal:attributes="value python:mtype.getSchema(); selected python:{'False':None,'True':'selected'}[str(mtype.getSchema()==objtype)]" tal:content="python:mtype.getDescription()"/>
                         </tal:block>
                     </select>
                 </td>
             <tr>
                 <td colspan="2">
-                    <b i18n:translate="edit_search_fields">Suchfelder:</b>
+                    <b i18n:translate="edit_search_fields">TEXT</b>
                 </td>
             </tr>
             <tr>
-                <td class="search" style="font-size:12px" i18n:translate="edit_search_all_fields">Alle Metadaten:</td>
+                <td class="search" style="font-size:12px" i18n:translate="edit_search_all_fields">TEXT</td>
                 <td>
                     <input tal:attributes="value searchvalues" type="text" style="width: 640px" name="full" id="full">
                 </td>
@@ -47,8 +47,8 @@
                 <td>&nbsp;</td>
                 <td align="center">
                     <input name="search" value="run" type="hidden">
-                    <input i18n:attributes="value edit_search_search" type="submit" name="Suchen" value="Suchen">&nbsp;&nbsp;&nbsp;
-                    <input i18n:attributes="value edit_search_reset" type="submit" name="Reset" value="Reset">
+                    <input i18n:attributes="value edit_search_search" type="submit" name="Suchen"/>&nbsp;&nbsp;&nbsp;
+                    <input i18n:attributes="value edit_search_reset" type="submit" name="Reset"/>
                 </td>
             </tr>
         </table>
@@ -56,6 +56,6 @@
     <tal:block tal:replace="raw script"/>
 
     <p tal:condition="python: indexdate"><span i18n:translate="edit_search_index">
-        Letzte Suchindex-Aktualisierung:</span> <b tal:content="indexdate"></b>
+        TEXT</span> <b tal:content="indexdate"></b>
     </p>
 </tal:block>

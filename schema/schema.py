@@ -1085,7 +1085,10 @@ def node_getMasks(node):
 
 def node_getMask(node, name):
     if node.getSchema():
-        return getMetaType(node.getSchema()).getMask(name)
+        try:
+            return getMetaType(node.getSchema()).getMask(name)
+        except AttributeError:
+            return None
     else:
         raise ValueError("Node of type '"+node.getSchema()+"' has no mask")
 

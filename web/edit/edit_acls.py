@@ -23,7 +23,7 @@ import core.tree as tree
 import logging
 import core.users as users
 from web.common.acl_web import makeList
-#from edit_common import *
+from edit_common import getHomeDir
 
 from utils.utils import removeEmptyStrings
 

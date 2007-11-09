@@ -66,11 +66,11 @@ def initContexts():
     file = context.addFile("workflow/workflow.py")
     file.addHandler("createWorkflowImage").addPattern("/workflowimage")
 
-    file = context.addFile("stats/contenttypes.py")
-    file.addHandler("contenttypes").addPattern("/contenttypes.png")
-    file = context.addFile("stats/dbstats.py")
-    file.addHandler("dbstats").addPattern("/dbstats")
-    file.addHandler("mimetypes").addPattern("/mimetypes.png")
+    #file = context.addFile("stats/contenttypes.py")
+    #file.addHandler("contenttypes").addPattern("/contenttypes.png")
+    #file = context.addFile("stats/dbstats.py")
+    #file.addHandler("dbstats").addPattern("/dbstats")
+    #file.addHandler("mimetypes").addPattern("/mimetypes.png")
 
     # === admin area ===
     context = athana.addContext("/admin", ".")

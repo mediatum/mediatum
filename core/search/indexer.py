@@ -33,7 +33,6 @@ except:
 import core.tree as tree
 
 from utils.utils import iso2utf8, esc
-from schema.schema import node_getSearchFields
 
 MAX_SEARCH_FIELDS = 32
 DB_NAME = 'searchindex.db'
@@ -133,7 +132,7 @@ class SearchIndexer:
     
     def nodeToExtSearch(self, node):
         # build extended search index from node
-        if len(node_getSearchFields(node))==0:
+        if len(node.getSearchFields())==0:
             # stop if schema has no searchfields
             return True
             

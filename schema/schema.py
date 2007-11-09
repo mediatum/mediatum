@@ -1099,6 +1099,15 @@ def node_getDescription(node):
             return mtype.getDescription()
         else:
             return ""
+    
+def node_getSchemaObject(node, schemaname=""):
+    if schemaname=="":
+        return getMetaType(node.getSchema())
+    else:
+        try:
+            return getMetaType(str(schemaname))
+        except:
+            return getMetaType(node.getSchema())
 
 
 init(os.walk(os.path.join(config.basedir, 'schema/mask')))

@@ -356,17 +356,6 @@ class Node:
         else:
             return self.type
            
-
-    def getSchemaObject(self, schemaname=""):
-        from schema.schema import getMetaType
-        if schemaname=="":
-            return getMetaType(self.getSchema())
-        else:
-            try:
-                return getMetaType(str(schemaname))
-            except:
-                return getMetaType(self.getSchema())
-
     """ set the node type (as string) """
     def setTypeName(self,type):
         changed_metadata(self)

@@ -37,19 +37,25 @@
     </tal:block>
     </div>
    
-    <tal:block tal:repeat="sortfields sortfieldslist">
-    <div tal:condition="python:len(sortfields)>0" style="position:absolute;top:0px;left:0px">
+    <div tal:condition="python:sortfieldslist" style="position:absolute;top:0px;left:0px">
     <form>
-        <small><tal:block i18n:translate="sort_label"/></small>
-        <select name="sortfield" style="font-size: 9px" onchange="submit()">
-            <option value="" tal:condition="python:sortfield"></option>
-            <option value="" selected="selected" tal:condition="python:not sortfield"></option>
-            <option tal:repeat="field sortfields" tal:content="python:field.getLabel()" 
-                    tal:attributes="value python:field.getName(); selected python:field.selected"/>
+	<table cellspacing="0" cellpadding="0">
+	<tal:block tal:repeat="i python:range(len(sortfieldslist))">
+	<tr>
+	<td>
+        <small tal:condition="python:i==0"><tal:block i18n:translate="sort_label"/></small>
+        <small tal:condition="python:i>0"><tal:block i18n:translate="sort_label2"/></small>
+	</td><td>
+        <select tal:attributes="name python:'sortfield'+str(i)" style="font-size: 9px" onchange="submit()">
+            <option tal:repeat="field python:sortfieldslist[i]" tal:content="python:field.getLabel()" 
+                    tal:attributes="value python:field.getName(); selected python:field.selected()"/>
         </select>
+	</td>
+	</tr>
+	</tal:block>
+	</table>
     </form>
     </div>
-    </tal:block>
 
 </div>
 

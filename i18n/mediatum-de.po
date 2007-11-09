@@ -111,6 +111,9 @@ msgstr "Druckansicht"
 msgid "sort_label"
 msgstr "Sortieren nach:"
 
+msgid "sort_label2"
+msgstr "und:"
+
 # sub_header
 msgid "sub_header_logout_title"
 msgstr "Abmelden"

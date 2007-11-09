@@ -97,6 +97,8 @@ def getListStyle(name):
                 return style
     return liststyles[0]
 
+SORT_FIELDS=2
+
 class ContentList(Content):
     def __init__(self,files,collection=None,words=None):
         self.nr = -1
@@ -108,8 +110,8 @@ class ContentList(Content):
         self.collection = collection
         self.content = None
         self.id2pos = {}
-        self.sortfields = [self.collection.get("sortfield"),self.collection.get("sortfield")]
-        if self.sortfield:
+        self.sortfields = [self.collection.get("sortfield")]*SORT_FIELDS
+        if self.sortfields[0]:
             self.files.sort(self.sortfields)
         liststylename = self.collection.get("style")
         if liststylename:
@@ -165,7 +167,7 @@ class ContentList(Content):
         if "back" in req.params:
             self.nr = -1
 
-        for i in range(2):
+        for i in range(SORT_FIELDS):
             if ("sortfield%d"%i) in req.params:
                 self.sortfields[i] = req.params["sortfield%d"%i]
                 self.files.sort(self.sortfields)
@@ -185,36 +187,40 @@ class ContentList(Content):
             return self.content.feedback(req)
     
     def getSortFieldsList(self):
+        class SortChoice:
+            def __init__(self, label, value, descending, selected):
+                self.label = label
+                self.value = value
+                self.descending = descending
+                self.isselected = self.value == selected
+            def getLabel(self):
+                return self.label
+            def getName(self):
+                return self.value
+            def selected(self):
+                if self.isselected:
+                    return "selected"
+                else:
+                    return None
         l = []
         ok = 0
-        for i in range(2):
+        for i in range(SORT_FIELDS):
             sortfields = []
-            class SortChoice:
-                def __init__(self, label, value, descending, selected):
-                    self.label = label
-                    self.value = value
-                    self.descending = descending
-                    self.isselected = self.value == selected
-                def getLabel(self):
-                    return self.label
-                def getName(self):
-                    return self.value
-                def selected(self):
-                    if self.selected:
-                        return "selected"
-                    else:
-                        return None
             if len(self.files):
+                if not self.sortfields[i]:
+                    sortfields += [SortChoice("","",0,"")]
+                else:
+                    sortfields += [SortChoice("","",0,"not selected")]
                 for field in self.files[0].getMetaFields():
                     if "o" in field.getOption():
                         sortfields += [SortChoice(field.getLabel(), field.getName(),0,self.sortfields[i])]
                         sortfields += [SortChoice(field.getLabel()+t(self.lang, "descending"), "-"+field.getName(),1,self.sortfields[i])]
             l += [sortfields]
-            if sortfields:
+            if len(sortfields)>1:
                 ok = 1
         if not ok:
             return []
-        else
+        else:
             return l
 
 

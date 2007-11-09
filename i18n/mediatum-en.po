@@ -1916,6 +1916,9 @@ msgstr "Text view for documents"
 msgid "sort_label"
 msgstr "sort by:"
 
+msgid "sort_label2"
+msgstr "and:"
+
 
 # mask editor #
 msgid "mask_editor_title"

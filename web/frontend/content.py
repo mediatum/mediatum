@@ -108,9 +108,9 @@ class ContentList(Content):
         self.collection = collection
         self.content = None
         self.id2pos = {}
-        self.sortfield = self.collection.get("sortfield")
+        self.sortfields = [self.collection.get("sortfield"),self.collection.get("sortfield")]
         if self.sortfield:
-            self.files.sort(self.sortfield)
+            self.files.sort(self.sortfields)
         liststylename = self.collection.get("style")
         if liststylename:
             self.liststyle = getListStyle(liststylename)
@@ -165,9 +165,10 @@ class ContentList(Content):
         if "back" in req.params:
             self.nr = -1
 
-        if "sortfield" in req.params:
-            self.sortfield = req.params["sortfield"]
-            self.files.sort(self.sortfield)
+        for i in range(2):
+            if ("sortfield%d"%i) in req.params:
+                self.sortfields[i] = req.params["sortfield%d"%i]
+                self.files.sort(self.sortfields)
 
         if self.nr>=0 and self.nr<self.num:
             self.content = ContentNode(self.files[self.nr],self.nr,self.num,self.words)
@@ -184,25 +185,37 @@ class ContentList(Content):
             return self.content.feedback(req)
     
     def getSortFieldsList(self):
-        sortfields = []
-        class SortChoice:
-            def __init__(self, label, value, descending):
-                self.label = label
-                self.value = value
-                self.descending = descending
-            def getLabel(self):
-                return self.label
-            def getName(self):
-                return self.value
-        if len(self.files):
-            for field in self.files[0].getMetaFields():
-                if "o" in field.getOption():
-                    sortfields += [SortChoice(field.getLabel(), field.getName(),0)]
-                    sortfields += [SortChoice(field.getLabel()+t(self.lang, "descending"), "-"+field.getName(),1)]
-        if not sortfields:
+        l = []
+        ok = 0
+        for i in range(2):
+            sortfields = []
+            class SortChoice:
+                def __init__(self, label, value, descending, selected):
+                    self.label = label
+                    self.value = value
+                    self.descending = descending
+                    self.isselected = self.value == selected
+                def getLabel(self):
+                    return self.label
+                def getName(self):
+                    return self.value
+                def selected(self):
+                    if self.selected:
+                        return "selected"
+                    else:
+                        return None
+            if len(self.files):
+                for field in self.files[0].getMetaFields():
+                    if "o" in field.getOption():
+                        sortfields += [SortChoice(field.getLabel(), field.getName(),0,self.sortfields[i])]
+                        sortfields += [SortChoice(field.getLabel()+t(self.lang, "descending"), "-"+field.getName(),1,self.sortfields[i])]
+            l += [sortfields]
+            if sortfields:
+                ok = 1
+        if not ok:
             return []
         else
-            return [sortfields,sortfields] #sort primary, secondary
+            return l
 
 
     def html(self,req):
@@ -260,7 +273,7 @@ class ContentList(Content):
 
         filesHTML = req.getTAL("web/frontend/content_nav.html", {
                  "nav_list":nav_list, "nav_page":nav_page, "act_page":self.page, 
-                 "sortfield":self.sortfield, "sortfieldslist":self.getSortFieldsList(),
+                 "sortfields":self.sortfields, "sortfieldslist":self.getSortFieldsList(),
                  "files":tal_files, "maxresult":len(self.files), "op":""}, macro="files")
 
         contentList = req.getTAL(liststyle.getTemplate(), {

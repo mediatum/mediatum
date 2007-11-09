@@ -45,7 +45,7 @@
             <option value="" tal:condition="python:sortfield"></option>
             <option value="" selected="selected" tal:condition="python:not sortfield"></option>
             <option tal:repeat="field sortfields" tal:content="python:field.getLabel()" 
-                    tal:attributes="value python:field.getName(); selected python:[None,'selected'][field.getName()==sortfield]"/>
+                    tal:attributes="value python:field.getName(); selected python:field.selected"/>
         </select>
     </form>
     </div>

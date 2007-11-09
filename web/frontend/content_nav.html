@@ -23,7 +23,7 @@
 </div>
 
 <div metal:define-macro="files" id="portal-pages" style="position:relative;top:0px;left:0px;">
-    <div tal:condition="python:len(list(nav_list))>1 or len(sortfields)>0">
+    <div tal:condition="python:len(list(nav_list))>1 or len(sortfieldslist)>0">
 	&nbsp;
     </div>
 
@@ -36,7 +36,8 @@
         <span tal:condition="python:page=='...'" tal:replace="python:' ...'"/>
     </tal:block>
     </div>
-    
+   
+    <tal:block tal:repeat="sortfields sortfieldslist">
     <div tal:condition="python:len(sortfields)>0" style="position:absolute;top:0px;left:0px">
     <form>
         <small><tal:block i18n:translate="sort_label"/></small>
@@ -48,6 +49,7 @@
         </select>
     </form>
     </div>
+    </tal:block>
 
 </div>
 

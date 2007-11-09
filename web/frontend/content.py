@@ -183,7 +183,7 @@ class ContentList(Content):
         if self.content:
             return self.content.feedback(req)
     
-    def getSortFields(self):
+    def getSortFieldsList(self):
         sortfields = []
         class SortChoice:
             def __init__(self, label, value, descending):
@@ -195,11 +195,14 @@ class ContentList(Content):
             def getName(self):
                 return self.value
         if len(self.files):
-            for field in self.files[0].getType().getMetaFields():
+            for field in self.files[0].getMetaFields():
                 if "o" in field.getOption():
                     sortfields += [SortChoice(field.getLabel(), field.getName(),0)]
                     sortfields += [SortChoice(field.getLabel()+t(self.lang, "descending"), "-"+field.getName(),1)]
-        return sortfields
+        if not sortfields:
+            return []
+        else
+            return [sortfields,sortfields] #sort primary, secondary
 
 
     def html(self,req):
@@ -257,7 +260,7 @@ class ContentList(Content):
 
         filesHTML = req.getTAL("web/frontend/content_nav.html", {
                  "nav_list":nav_list, "nav_page":nav_page, "act_page":self.page, 
-                 "sortfield":self.sortfield, "sortfields":self.getSortFields(),
+                 "sortfield":self.sortfield, "sortfieldslist":self.getSortFieldsList(),
                  "files":tal_files, "maxresult":len(self.files), "op":""}, macro="files")
 
         contentList = req.getTAL(liststyle.getTemplate(), {

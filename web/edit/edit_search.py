@@ -25,6 +25,7 @@ import utils.date as date
 from core.acl import AccessData
 import string
 from edit_common import EditorNodeList, shownodelist
+from schema.schema import getMetaType
 
 log = logging.getLogger('edit')
 utrace = logging.getLogger('usertracing')
@@ -45,8 +46,8 @@ def search_results(req,id):
 
     node = tree.getNode(id)
     objtype = req.params["objtype"]
+    type = getMetaType(objtype)
     
-    type = node.getSchemaObject(objtype)
     query = ""
 
     if "full" in req.params:

@@ -114,27 +114,27 @@ def search_form(req, id, message=None):
     
     f = []
     otype = None
-    itemlist = []
     mtypelist = []
+    itemlist = {}
     for mtype,num in occur.items():
+        print mtype.getContentType(),mtype.getSchema()
         if num>0 and mtype.getDescription():
             if otype is None:
-                otype = mtype.getContentType()
-            if mtype.getName() not in itemlist:
-                itemlist += [mtype.getName()]
+                otype = mtype
+            if mtype.getSchema() not in itemlist:
+                itemlist[mtype.getSchema()] = None
                 mtypelist.append(mtype)
 
                 if objtype == mtype.getSchema():
-                    otype = objtype
+                    otype = mtype
             else:
                 log.warning("Warning: Unknown metadatatype: "+mtype.getName())
 
     formlist = []
     if otype:
-        type = node.getSchemaObject(otype)
-        for field in type.getMetaFields():
+        for field in otype.getMetaFields():
             if field.Searchfield() and field.getFieldtype()!="date":
-                value = searchvalues.get(otype+"."+field.getName(),"")
+                value = searchvalues.get(otype.getSchema()+"."+field.getName(),"")
                 formlist.append([field, value])
                 if field.getFieldtype()=="list" or field.getFieldtype()=="mlist":
                     f.append(field.getName())

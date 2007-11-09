@@ -79,7 +79,6 @@ tree.registerNodeFunction("getSortFields", schema.node_getSortFields)
 tree.registerNodeFunction("getMasks", schema.node_getMasks)
 tree.registerNodeFunction("getMask", schema.node_getMask)
 tree.registerNodeFunction("getDescription", schema.node_getDescription)
-tree.registerNodeFunction("getSchemaObject", schema.node_getSchemaObject)
 
 from workflow import workflow
 workflow.register()

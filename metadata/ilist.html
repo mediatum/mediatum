@@ -5,7 +5,7 @@
 
     <tal:block tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
         <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/>
-        <small style="color: silver" i18n:translate="editor_overwrite">&uuml;berschreiben</small>
+        <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
    </tal:block>
 </tal:block>
 

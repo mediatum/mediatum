@@ -1,15 +1,15 @@
 
 <div metal:define-macro="metaeditor" class="back">  
-    <h3 tal:condition="python:op=='new'" i18n:translate="mask_edit_new_vert_field">Neues vertikales Feld anlegen</h3>
-    <h3 tal:condition="python:op=='edit'" i18n:translate="mask_edit_edit_vert_field">Vertikales Feld bearbeiten</h3>
+    <h3 tal:condition="python:op=='new'" i18n:translate="mask_edit_new_vert_field">TEXT</h3>
+    <h3 tal:condition="python:op=='edit'" i18n:translate="mask_edit_edit_vert_field">TEXT</h3>
     <br/>
-    <div class="label" i18n:translate="mask_edit_row_label">Zeilenlabel: </div>
+    <div class="label" i18n:translate="mask_edit_row_label">TEXT</div>
     <input tal:attributes="value python:item.getLabel()" type="text" name="label" id="label" style="width:500px"/>
     
     <tal:block tal:condition="python:op=='new'">
-        <div class="label" i18n:translate="mask_edit_position">Position (vor): </div>
+        <div class="label" i18n:translate="mask_edit_position">TEXT</div>
         <select name="insertposition" style="width:500px">
-            <option value="end" selected="selected" i18n:translate="mask_edit_end">-am Ende-</option>
+            <option value="end" selected="selected" i18n:translate="mask_edit_end">TEXT</option>
             <tal:block tal:repeat="field fields">
                 <option tal:condition="python:hasattr(field.getField(),'getFieldtype')" tal:attributes="value python:field.id" tal:content="python:field.getLabel()+' ('+field.getField().getFieldtype()+')'"/>
 
@@ -18,14 +18,14 @@
         </select>
         <br/>
         <hr/>
-        <h4 tal:condition="python:len(details)>0"><span i18n:translate="mask_edit_fields">Felder:</span> <small i18n:translate="mask_edit_field_msg">(werden aus anderer Ebene kopiert)</small></h4>
+        <h4 tal:condition="python:len(details)>0"><span i18n:translate="mask_edit_fields">TEXT</span> <small i18n:translate="mask_edit_field_msg">TEXT</small></h4>
     </tal:block>
     
     <tal:block tal:condition="python:op=='edit'">
         <hr>
-        <h4 i18n:translate="mask_edit_fields">Felder:</h4>
+        <h4 i18n:translate="mask_edit_fields">TEXT</h4>
         <div align="right">
-            <input tal:attributes="name python:'newdetail_'+str(item.id)" type="image" src="/img/install.png" onclick="document.myform.type.value=''" i18n:attributes="title mask_edit_insert_field_title" title="Neues Feld einf&uuml;gen"/>
+            <input tal:attributes="name python:'newdetail_'+str(item.id)" type="image" src="/img/install.png" onclick="document.myform.type.value=''" i18n:attributes="title mask_edit_insert_field_title"/>
         </div>
     </tal:block>
     <tal:block tal:replace="raw details"/>
@@ -37,6 +37,6 @@
     <br/>&nbsp;
     <br/>
     <div class="label">&nbsp;</div>
-    <button type="submit" name="savedetail" i18n:translate="mask_edit_save">Speichern</button>
-    &nbsp;&nbsp;<button type="submit" onclick="setCancel(document.myform.op)" i18n:translate="mask_edit_cancel">Abbrechen</button>
+    <button type="submit" name="savedetail" i18n:translate="mask_edit_save">TEXT</button>
+    &nbsp;&nbsp;<button type="submit" onclick="setCancel(document.myform.op)" i18n:translate="mask_edit_cancel">TEXT</button>
 </div>

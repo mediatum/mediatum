@@ -1,15 +1,15 @@
 
 <div metal:define-macro="metaeditor" class="back">
-    <h3 tal:condition="python:op=='edit'" i18n:translate="mask_edit_edit_label">Label bearbeiten</h3>
-    <h3 tal:condition="python:op=='new'" i18n:translate="mask_edit_new_label">Neues Label anlegen</h3>
+    <h3 tal:condition="python:op=='edit'" i18n:translate="mask_edit_edit_label">TEXT</h3>
+    <h3 tal:condition="python:op=='new'" i18n:translate="mask_edit_new_label">TEXT</h3>
     <br/>
     <br/>
-    <div class="label" i18n:translate="mask_edit_label">Label: </div><input tal:attributes="value python:item.getLabel()" type="text" name="label" style="width:500px"/>
+    <div class="label" i18n:translate="mask_edit_label">TEXT</div><input tal:attributes="value python:item.getLabel()" type="text" name="label" style="width:500px"/>
     <br/>
     <tal:block tal:condition="python:op=='new'">
-        <div class="label" i18n:translate="mask_edit_position">Position (vor): </div>
+        <div class="label" i18n:translate="mask_edit_position">TEXT</div>
         <select name="insertposition" style="width:500px">
-            <option value="end" selected="selected" i18n:translate="mask_edit_end">-am Ende-</option>
+            <option value="end" selected="selected" i18n:translate="mask_edit_end">TEXT</option>
             <tal:block tal:repeat="field fields">
                 <option tal:condition="python:hasattr(field.getField(),'getFieldtype')" tal:attributes="value python:field.id" tal:content="python:field.getLabel()+' ('+field.getField().getFieldtype()+')'"/>
 
@@ -25,7 +25,7 @@
     <input type="hidden" name="field" value="0"/>
     <br/>&nbsp;<br/>
     <div class="label">&nbsp;</div>
-    <button type="submit" name="saveedit" i18n:translate="mask_edit_save">Speichern</button>
-    &nbsp;&nbsp;<button type="submit" onclick="setCancel(document.myform.op)" i18n:translate="mask_edit_cancel">Abbrechen</button>
+    <button type="submit" name="saveedit" i18n:translate="mask_edit_save">TEXT</button>
+    &nbsp;&nbsp;<button type="submit" onclick="setCancel(document.myform.op)" i18n:translate="mask_edit_cancel">TEXT</button>
     <input tal:attributes="value op" type="hidden" name="op"/>
 </div>

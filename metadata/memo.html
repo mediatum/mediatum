@@ -6,7 +6,7 @@
         <div tal:condition="python:field.getValues()!=''" style="text-align:right;padding-right:7px; margin-bottom:7px">
             <small>
                 <span tal:attributes="id python:'number'+str(name)" tal:content="python:int(field.getValues())-len(value)"/> 
-                <span i18n:translate="editor_memo_label">Zeichen &uuml;brig</span>
+                <span i18n:translate="editor_memo_label">TEXT</span>
             </small>
         </div>
     </div>
@@ -23,6 +23,6 @@
 
 
 <div metal:define-macro="maskeditor" style="display:none" name="div_memo" id="div_memo">
-    <div class="label" i18n:translate="mask_edit_max_length">Maximall&auml;nge</div>
+    <div class="label" i18n:translate="mask_edit_max_length">TEXT</div>
     <input tal:attributes="value value" type="text" name="memo_value" rows="4" style="width:250px"/>
 </div>

@@ -1,9 +1,9 @@
 <table metal:define-macro="workflow_filelist" id="workflowtable">
     <tr tal:condition="python:len(files)!=0">
-        <th i18n:translate="workflow_filelist_type">Typ</th>
-        <th i18n:translate="workflow_filelist_size">Gr&ouml;&szlig;e</th>
-        <th i18n:translate="workflow_filelist_mimetype">Mimetype</th>
-        <th i18n:translate="workflow_filelist_loc">Lokation / Name</th>
+        <th i18n:translate="workflow_filelist_type">TEXT</th>
+        <th i18n:translate="workflow_filelist_size">TEXT</th>
+        <th i18n:translate="workflow_filelist_mimetype">TEXT</th>
+        <th i18n:translate="workflow_filelist_loc">TEXT</th>
         <th tal:condition="delbutton">&nbsp;</th>
     </tr>
     <tr tal:repeat="file files">
@@ -11,7 +11,7 @@
         <td tal:content="python:str(file.getSize())+' bytes'" style="text-align:right;width:100px"/>
         <td tal:content="python:file.mimetype"/>
         <td>
-            <a i18n:attributes="title workflow_filelist_open_title" title="Datei anzeigen" target="filewindow" 
+            <a i18n:attributes="title workflow_filelist_open_title" target="filewindow" 
              tal:attributes="href python:'/file/'+node.id+'/'+file.getName()" 
              tal:content="python:file.path"/>
         </td>

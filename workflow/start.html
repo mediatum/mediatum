@@ -1,16 +1,16 @@
 <tal:block metal:define-macro="workflow_start">
-    <h2 i18n:translate="workflow_create_object">Neues Objekt anlegen</h2>
+    <h2 i18n:translate="workflow_create_object">TEXT</h2>
 
     <tal:block tal:content="raw js"/>
 
     <form action="/mask" method="post">
-        <input type="hidden" name="id" tal:attributes="value python:id">
+        <input type="hidden" name="id" tal:attributes="value python:id"/>
         <select>
         <tal:block tal:repeat="metadatatype types">
             <option tal:attributes="value python:metadatatype.getName()" 
                     tal:content="python:metadatatype.getLongName()"/>
         </tal:block>
         </select>
-        <input i18n:attributes="value workflow_start_submit" type="submit" name="Erstellen" value="Erzeugen">
+        <input i18n:attributes="value workflow_start_submit" type="submit" name="Erstellen"/>
     </form>
 </tal:block>

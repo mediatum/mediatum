@@ -2,15 +2,15 @@
 </metal:block>
 
 <center metal:define-macro="workflowlist">
-    <h2><tal:block i18n:translate="wf_edit_header">Workflows, die von Ihnen bearbeitet werden k&ouml;nnen</tal:block>:</h2>
+    <h2><tal:block i18n:translate="wf_edit_header">TEXT</tal:block>:</h2>
     <table id="workflowtable" cellspacing="0px">
         <tr>
-            <th i18n:translate="wf_edit_name">Name</th>
-            <th i18n:translate="wf_edit_description">Beschreibung</th>
+            <th i18n:translate="wf_edit_name">TEXT</th>
+            <th i18n:translate="wf_edit_description">TEXT</th>
         </tr>
         <tr tal:repeat="w list">
             <td>
-                <a tal:content="python:w.getName()" tal:attributes="href python:'/publish/'+w.getName()" i18n:attributes="title wf_show_details_title" title="Details anzeigen"/>
+                <a tal:content="python:w.getName()" tal:attributes="href python:'/publish/'+w.getName()" i18n:attributes="title wf_show_details_title"/>
             </td>
             <td tal:content="raw python:w.getDescription() or '&nbsp;'"/>
         </tr>
@@ -18,7 +18,7 @@
 </center>
 
 <center metal:define-macro="object_list">
-    <h2><span i18n:translate="wf_list_header"><span tal:content="python:str(len(workflow.getNodeList()))" i18n:name="number"/> Objekte im Workflow 
+    <h2><span i18n:translate="wf_list_header"><span tal:content="python:str(len(workflow.getNodeList()))" i18n:name="number"/> TEXT
         </span><a tal:attributes="href python:workflow.getLink()"><span tal:replace="python:workflow.getName()"/></a>': 
         <span tal:replace="python:workflow.getDescription()"/>
     </h2>
@@ -26,44 +26,44 @@
         <tal:block tal:repeat="step python:workflow.getSteps()">
         <tr tal:attributes="bgcolor python:step.get('adminstep') and '#bec2d3' or None">
             <td align="left"><b tal:content="python:step.getName()"></b></td>
-            <td align="left"><a tal:attributes="href python:step.getLink()" i18n:translate="wf_list_objects"><span tal:content="python:str(len(step.getChildren()))" i18n:name="number"/> Objekte</a></td>
+            <td align="left"><a tal:attributes="href python:step.getLink()" i18n:translate="wf_list_objects"><span tal:content="python:str(len(step.getChildren()))" i18n:name="number"/> TEXT</a></td>
         </tr>
         </tal:block>
     </table>
 </center>
 
 <center metal:define-macro="workflow_step">
-    <h2 i18n:translate="wf_step_ready">Fertig</h2>
+    <h2 i18n:translate="wf_step_ready">TEXT</h2>
     <p i18n:translate="wf_step_msg1">
-        Vielen Dank f&uuml;r Ihre Eingabe/Bearbeitung. 
-        <br>Das Objekt <span tal:content="python:node.id +' '+node.name" i18n:name="name"/> 
-        wurde gespeichert und befindet sich jetzt im Verarbeitungsschritt 
+        TEXT
+        <br><span tal:content="python:node.id +' '+node.name" i18n:name="name"/> 
+        TEXT 
         <span tal:replace="link" i18n:name="link"/>.
     </p>
 
-    <p i18n:translate="workflow_msg5">Falls von Ihrer Seite noch einmal Arbeit an diesem Objekt notwendig sein sollte, werden wir uns per Mail bei Ihnen melden.</p>
+    <p i18n:translate="workflow_msg5">TEXT</p>
 
-    <p i18n:translate="workflow_msg6">Bei Fragen oder Problemen erreichen Sie unser Support-Team unter <span i18n:name="email" tal:replace="email"/></p>
+    <p i18n:translate="workflow_msg6">TEXT <span i18n:name="email" tal:replace="email"/></p>
 </center>
 
 <tal:block metal:define-macro="workflow_node">
     <p>
-        <b i18n:translate="wf_node_msg1">Das Objekt <span tal:content="python:node.id+' '+node.name" i18n:name="name"/> wird gerade verarbeitet.</b>
+        <b i18n:translate="wf_node_msg1">TEXT <span tal:content="python:node.id+' '+node.name" i18n:name="name"/></b>
     </p>
-    <p i18n:translate="wf_node_msg2">Der momentane Bearbeitungsschritt (<span tal:content="name" i18n:name="name"/>) l&auml;sst keinen manuellen Eingriff (mehr) zu.</p>
+    <p i18n:translate="wf_node_msg2">TEXT<span tal:content="name" i18n:name="name"/></p>
 </tal:block>
 
 
 <tal:block metal:define-macro="workflow_show">
-    <h2 i18n:translate="workflow_msg3">Objekte in Schritt <span tal:content="python:step.name" i18n:name="name"/>:</h2>
+    <h2 i18n:translate="workflow_msg3">TEXT <span tal:content="python:step.name" i18n:name="name"/>:</h2>
     <table id="workflowtable" cellspacing="0px">
         <tr>
-            <th i18n:translate="workflow_label_id">ID</th>
-            <th i18n:translate="workflow_label_date">Datum</th>
-            <th i18n:translate="workflow_label_name">Name</th>
-            <th i18n:translate="workflow_label_step">Schritt</th>
-            <th i18n:translate="workflow_label_editor">Editor</th>
-            <th colspan="2" i18n:translate="workflow_label_forward">Weiterleiten</th>
+            <th i18n:translate="workflow_label_id">TEXT</th>
+            <th i18n:translate="workflow_label_date">TEXT</th>
+            <th i18n:translate="workflow_label_name">TEXT</th>
+            <th i18n:translate="workflow_label_step">TEXT</th>
+            <th i18n:translate="workflow_label_editor">TEXT</th>
+            <th colspan="2" i18n:translate="workflow_label_forward">TEXT</th>
         </tr>
         <tr tal:repeat="node python:step.getChildren().sort('name')">
             <tal:block tal:define="cssclass python:list(step.getChildren().sort('name')).index(node)%2 and 'norm' or 'silver'">
@@ -71,8 +71,8 @@
                 <td tal:attributes="class cssclass" tal:content="python:format_date(parse_date(node.get('creationtime')),'dd.mm.yyyy HH:MM:SS')"/>
                 <td tal:attributes="class cssclass" tal:content="python:node.getName()"/>
 
-                <td tal:attributes="class cssclass"><a tal:attributes="href python:nodelink+node.id" i18n:translate="workflow_show_step">Schritt anzeigen</a></td>
-                <td tal:attributes="class cssclass"><a target="editorwindow" tal:attributes="href python:'/edit/edit?id='+node.id" i18n:translate="sub_header_edit">Bearbeiten</a></td>
+                <td tal:attributes="class cssclass"><a tal:attributes="href python:nodelink+node.id" i18n:translate="workflow_show_step">TEXT</a></td>
+                <td tal:attributes="class cssclass"><a target="editorwindow" tal:attributes="href python:'/edit/edit?id='+node.id" i18n:translate="sub_header_edit">TEXT</a></td>
 
                 <td tal:attributes="class cssclass"><a tal:attributes="href python:nodelink+node.id+'&forcefalse=1'" tal:content="raw python:step.getFalseLabel() or '&nbsp;'"/></td>
                 <td tal:attributes="class cssclass"><a tal:attributes="href python:nodelink+node.id+'&forcetrue=1'" tal:content="raw python:step.getTrueLabel() or '&nbsp;'"/></td>
@@ -82,7 +82,7 @@
             <th colspan="7" align="right">
                 <small i18n:translate="workflow_footer">
                     <small tal:content="python:str(len(list(step.getChildren())))" i18n:name="number"/>
-                    Elemente im aktuellen Workflowschritt
+                    TEXT
                 </small>
             </th>
         </tr>
@@ -92,23 +92,21 @@
 
 
 <tal:block metal:define-macro="workflow_forward">
-    <h2 i18n:translate="wf_step_ready">Fertig</h2>
+    <h2 i18n:translate="wf_step_ready">TEXT</h2>
     <p i18n:translate="workflow_msg4">
-        Das Objekt <span tal:content="python:node.id" i18n:name="name"/> 
-        wurde fertiggestellt und hat den Workflow verlassen.
+        TEXT <span tal:content="python:node.id" i18n:name="name"/> 
     </p>
 </tal:block>
 
 
 <tal:block metal:define-macro="workflow_forward2">
-    <h2 i18n:translate="wf_step_ready">Fertig</h2>
+    <h2 i18n:translate="wf_step_ready">TEXT</h2>
 
-    <p i18n:translate="wf_step_msg1">Vielen Dank f&uuml;r Ihre Eingabe/Bearbeitung. <br>Das Objekt wurde
-    gespeichert und befindet sich jetzt im n&auml;chsten Verarbeitungsschritt.<tal:block i18n:name="name"/></p>
+    <p i18n:translate="wf_step_msg1">TEXT<tal:block i18n:name="name"/></p>
     
-    <p i18n:translate="workflow_msg5">Falls von Ihrer Seite noch einmal Arbeit an diesem Objekt notwendig sein sollte, werden wir uns per Mail bei Ihnen melden.</p>
+    <p i18n:translate="workflow_msg5">TEXT</p>
 
-    <p i18n:translate="workflow_msg6">Bei Fragen oder Problemen erreichen Sie unser Support-Team unter <span tal:content="email" i18n:name="email"/></p>
+    <p i18n:translate="workflow_msg6">TEXT <span tal:content="email" i18n:name="email"/></p>
 
 </tal:block>
 

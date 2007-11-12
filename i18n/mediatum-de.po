@@ -2222,3 +2222,24 @@ msgstr "Größe"
 
 msgid "att_browser_files"
 msgstr "(${c} Dateien)"
+
+msgid "video_plugin_info"
+msgstr "(zum Abspielen ben&ouml;tigen Sie ein Flash-Plugin)"
+
+msgid "video_showvideo"
+msgstr "Video ansehen"
+
+msgid "flash_showvideo"
+msgstr "Video ansehen"
+
+msgid "editor_main_header"
+msgstr "mediaTUM Editor Interface"
+
+msgid "search_result_text"
+msgstr "Gesucht wurde in folgenden Kollektionen:"
+
+msgid "error_msg_objectnotfound"
+msgstr "Fehler auf der Seite, das gewünschte Objekt konnte nicht gefunden werden"
+
+msgid "home_link"
+msgstr "zur Startseite"

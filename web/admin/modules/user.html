@@ -1,9 +1,9 @@
 <metal:block metal:define-macro="view">
-    <p><a i18n:translate="admin_overview" href=".">zur &Uuml;bersicht</a></p>
+    <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form name="useroverview" method="post" action="#" tal:attributes="action page">
         <table class="overview">
             <tr>
-                <td colspan="8"><h3 i18n:translate="admin_user_existing">Vorhandene Benutzer</h3></td>
+                <td colspan="8"><h3 i18n:translate="admin_user_existing">TEXT</h3></td>
             </tr>
             <tr>
                 <th>&nbsp;</th>
@@ -15,11 +15,11 @@
                 </th>
                 <th align="right">&nbsp;</th>
                 <th align="right">
-                    <input i18n:attributes="title admin_user_create" type="image" src="/img/install.png" name="new" title="Neuen Benutzer anlegen"/>
+                    <input i18n:attributes="title admin_user_create" type="image" src="/img/install.png" name="new"/>
                 </th>
             </tr>
             <tr tal:condition="python:len(users)==0">
-                <td colspan="8"><small i18n:translate="admin_user_nousers">- keine Benutzer vorhanden -</small></td>
+                <td colspan="8"><small i18n:translate="admin_user_nousers">TEXT</small></td>
             </tr>
             <tal:block tal:define="start python:pages.getStart();end python:pages.getEnd()" tal:repeat="user python:users[start:end]">
                 <tr tal:define="cssclass python:users.index(user)%2 and 'norm' or 'silver'">
@@ -32,10 +32,10 @@
                         </tal:block>
                     </td>
                     <td tal:condition="python:user.stdPassword()" tal:attributes="class cssclass">
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img i18n:attributes="title admin_user_stdpwd_title" src="/img/unarchive.png" title="Standardpasswort" />
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img i18n:attributes="title admin_user_stdpwd_title" src="/img/unarchive.png"/>
                     </td>
                     <td tal:condition="python:not user.stdPassword()" tal:attributes="class cssclass">
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img i18n:attributes="title admin_user_nostdpwd_title" src="/img/archive.png" title="Passwort ge&auml;ndert" />
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img i18n:attributes="title admin_user_nostdpwd_title" src="/img/archive.png"/>
                     </td>
                     <td tal:attributes="class cssclass">
                         <table>
@@ -48,11 +48,11 @@
                         </table>
                     </td>
                     <td tal:attributes="class cssclass">
-                        <input tal:attributes="name python:str('sendmail_'+user.getName())" i18n:attributes="title admin_user_sendmail_title" type="image" src="/img/email.png" title="Benutzer eine Mail schicken"/>
+                        <input tal:attributes="name python:str('sendmail_'+user.getName())" i18n:attributes="title admin_user_sendmail_title" type="image" src="/img/email.png"/>
                     </td>
                     <td tal:attributes="class cssclass" class="_norm_">
-                        <input tal:attributes="name python:str('edit_'+user.getName())" i18n:attributes="title admin_user_edit_title" type="image" src="/img/edit.png" title="Benutzer bearbeiten"/>&nbsp;&nbsp;
-                        <input tal:attributes="name python:str('delete_'+user.getName()); onclick python:'return questionDelName(\''+user.getName()+'\')'" i18n:attributes="title admin_user_delete_title" type="image" src="/img/delete.png" title="Benutzer l&ouml;schen"/>
+                        <input tal:attributes="name python:str('edit_'+user.getName())" i18n:attributes="title admin_user_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
+                        <input tal:attributes="name python:str('delete_'+user.getName()); onclick python:'return questionDelName(\''+user.getName()+'\')'" i18n:attributes="title admin_user_delete_title" type="image" src="/img/delete.png"/>
                     </td>
                 </tr>
             </tal:block>
@@ -73,23 +73,23 @@
 
 
 <metal:block metal:define-macro="modify">
-    <p><a i18n:translate="admin_overview" href="./user">zur &Uuml;bersicht</a></p>
+    <p><a i18n:translate="admin_overview" href="./user">TEXT</a></p>
     <form tal:attributes="action page" name="edituser" method="post">
         <table>
             <tr>
                 <td colspan="2">
-                    <h3 tal:condition="python:id==''" i18n:translate="admin_user_new_label">Neuen Benutzer anlegen</h3>
-                    <h3 tal:condition="python:id!=''" i18n:translate="admin_user_edit_label">Benutzer bearbeiten</h3>
+                    <h3 tal:condition="python:id==''" i18n:translate="admin_user_new_label">TEXT</h3>
+                    <h3 tal:condition="python:id!=''" i18n:translate="admin_user_edit_label">TEXT</h3>
                 </td>
             </tr>
             <tr tal:condition="python:error>0">
                 <td colspan="2">
-                    <p tal:condition="python:error==1" i18n:translate="admin_mandatory_error" class="error">Nicht alle Pflichtfelder wurden ausgef&uuml;llt.</p>
-                    <p tal:condition="python:error==2" i18n:translate="admin_duplicate_error" class="error">Ein Objekt mit gleichem Namen ist bereits vorhanden.</p>
+                    <p tal:condition="python:error==1" i18n:translate="admin_mandatory_error" class="error">TEXT</p>
+                    <p tal:condition="python:error==2" i18n:translate="admin_duplicate_error" class="error">TEXT</p>
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_user_username">Benutzername</tal:block>: <span class="required">*</span></td>
+                <td><tal:block i18n:translate="admin_user_username">TEXT</tal:block>: <span class="required">*</span></td>
                 <td tal:condition="python:id!=''">
                     <input tal:attributes="value python:user.getName()" type="hidden" name="username" maxlength="50" size="50"/>
                     <input tal:attributes="value python:user.getName()" type="text" name="username_new" maxlength="50" size="50"/>
@@ -99,13 +99,13 @@
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_user_email">Email</tal:block>: <span class="required">*</span></td>
+                <td><tal:block i18n:translate="admin_user_email">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
                     <input tal:attributes="value python:user.getEmail()" type="text" name="email" maxlength=50 size="50"/>
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_user_groups">Benutzergruppe(n)</tal:block>: <span class="required">*</span></td>
+                <td><tal:block i18n:translate="admin_user_groups">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
                     <select name="usergroups" multiple="multiple">
                         <tal:block tal:repeat="group groups">
@@ -118,16 +118,16 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <input tal:attributes="name python:'reset_'+user.getName()" i18n:attributes="title admin_user_pwdchange_title" type="image" src="/img/reset_pwd.png" title="Passwort zur&uuml;cksetzen" />
-                    <tal:block i18n:translate="admin_new_pwd">Neues Passwort</tal:block>: <input type="password" name="change_passwd" /><br>
-                    <small>(<span i18n:translate="admin_user_msg1">bei leerem Feld wird automatisch das Standardpasswort verwendet</span>)</small>
+                    <input tal:attributes="name python:'reset_'+user.getName()" i18n:attributes="title admin_user_pwdchange_title" type="image" src="/img/reset_pwd.png"/>
+                    <tal:block i18n:translate="admin_new_pwd">TEXT</tal:block>: <input type="password" name="change_passwd" /><br>
+                    <small>(<span i18n:translate="admin_user_msg1">TEXT</span>)</small>
                 </td>
             </tr>
             <tr>
                 <td>&nbsp;</td>
                 <td>
                     <fieldset>
-                        <legend i18n:translate="admin_user_options">Optionen</legend>
+                        <legend i18n:translate="admin_user_options">TEXT</legend>
                         <tal:block tal:define="options useroption" tal:repeat="option options">
                             <input tal:condition="python:user.getOptionList()[option.getName()]"
                                 tal:attributes="name python:'option_'+option.getValue(); value python:'option_'+option.getValue()" type="checkbox" name="" value="" checked="checked">
@@ -143,13 +143,13 @@
             </tr>
             <tr>
                 <td>&nbsp;</td>
-                <td><small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info">Pflichtfeld, darf nicht leer sein</span>)</small></td>
+                <td><small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info">TEXT</span>)</small></td>
             </tr>
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" type="submit" name="submit" value="submit" title="&Auml;nderungen speichern">Speichern</button>&nbsp;&nbsp;
-                    <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" title="Zur&uuml;ck zur &Uuml;bersicht" onclick="setCancel()">Abbrechen</button>
+                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
+                    <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
                 </td>
             </tr>
         </table>
@@ -158,53 +158,53 @@
 </metal:block>
 
 <metal:block metal:define-macro="sendmaildone" tal:define="id python:user.getName()">
-    <p>Mail wurde verschickt.</p>
-    <p><a tal:attributes="href python:'./user'+page" i18n:translate="admin_overview">zur &Uuml;bersicht</a></p>
+    <p i18n:translate="admin_user_emailsend">TEXT</p>
+    <p><a tal:attributes="href python:'./user'+page" i18n:translate="admin_overview">TEXT</a></p>
 </metal:block>
 
 <metal:block metal:define-macro="sendmail">
-    <p><a tal:attributes="href python:'./user'+page" i18n:translate="admin_overview">zur &Uuml;bersicht</a></p>
+    <p><a tal:attributes="href python:'./user'+page" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="mailuser" method="post">
         <input type="hidden" name="sendmail_execute" value=".">
         <input type="hidden" name="userid" tal:attributes="value userid">
         <table>       
             <tr>
                 <td colspan="2">
-                    <h3 i18n:translate="admin_user_sendmail_title">Benutzer eine Mail schicken</h3>
+                    <h3 i18n:translate="admin_user_sendmail_title">TEXT</h3>
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_user_sender">Absender</tal:block>: <span class="required">*</span></td>
+                <td><tal:block i18n:translate="admin_user_sender">TEXT</tal:block>: <span class="required">*</span></td>
                 <td><input type="text" name="from" value="mediatum2@ub.tum.de" maxlength=50 size="50" /></td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_user_email">Email</tal:block>: <span class="required">*</span></td>
+                <td><tal:block i18n:translate="admin_user_email">TEXT</tal:block>: <span class="required">*</span></td>
                 <td><input tal:attributes="value email" type="text" name="email" maxlength=50 size="50" /></td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_user_subject">Subject</tal:block>: <span class="required">*</span></td>
+                <td><tal:block i18n:translate="admin_user_subject">TEXT</tal:block>: <span class="required">*</span></td>
                 <td><input type="text" name="subject" value="mediaTUM Account" maxlength=50 size="50" /></td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_user_text">Text</tal:block>: <span class="required">*</span></td>
+                <td><tal:block i18n:translate="admin_user_text">TEXT</tal:block>: <span class="required">*</span></td>
                 <td><textarea name="text" tal:content="raw mailtext" cols="100" rows="30"/></td>
             </tr>
             <tr>
                 <td>&nbsp;</td>
-                <td><small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info">Pflichtfeld, darf nicht leer sein</span>)</small></td>
+                <td><small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info">TEXT</span>)</small></td>
             </tr>
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <p class="important" i18n:translate="admin_user_msg2">Hinweis: Bei Anklicken des "Senden" Knopfes wird das Passwort des Users auf das Standardpasswort zur&uuml;ckgesetzt.</p>
+                    <p class="important" i18n:translate="admin_user_msg2">TEXT</p>
                     <p>&nbsp;</p>
                 </td>
             </tr>
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:translate="admin_user_send" i18n:attributes="title admin_user_sendmail_title" type="submit" name="submit" value="submit" title="Email absenden" >Senden</button>&nbsp;&nbsp;
-                    <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" title="Zur&uuml;ck zur &Uuml;bersicht" onclick="setCancel()">Abbrechen</button>
+                    <button i18n:translate="admin_user_send" i18n:attributes="title admin_user_sendmail_title" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
+                    <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
                 </td>
             </tr>
         </table>

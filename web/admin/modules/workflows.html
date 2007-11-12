@@ -1,28 +1,28 @@
 <metal:block metal:define-macro="view">
-    <p><a i18n:translate="admin_overview" href=".">zur &Uuml;bersicht</a></p>
+    <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form tal:attributes="action python:page" name="addnewworkflow" method="post" action="#" enctype="multipart/form-data">
         <table class="overview">
             <tr>
-                <td colspan="7"><h3 i18n:translate="admin_wf_existing">Vorhandene Workflows</h3></td>
+                <td colspan="7"><h3 i18n:translate="admin_wf_existing">TEXT</h3></td>
             </tr>
             <tr>
                 <th>&nbsp;</th>
                 <th tal:repeat="col sortcol">
-                    <a tal:attributes="href python:col.link; title python:col.title" tal:content="structure python:col.label">column-header</a>	
+                    <a tal:attributes="href python:col.link; title python:col.title" tal:content="structure python:col.label">TEXT</a>	
                 </th>
                 <th colspan="2">&nbsp;</th>
                 <th style="width:20px">
-                    <a i18n:attributes="title admin_wf_exportall_title" href="/admin/export/workflows/all" target="_blank" title="Alle Workflowdefinitionen exportieren">
+                    <a i18n:attributes="title admin_wf_exportall_title" href="/admin/export/workflows/all" target="_blank">
                         <img src="/img/export.png" border="0">
                     </a>
                 </th>
                 <th style="width:20px" align="right">
-                    <input i18n:attributes="title admin_wf_create_title" type="image" src="/img/install.png" name="new_" title="Neuen Workflow anlegen"/>
+                    <input i18n:attributes="title admin_wf_create_title" type="image" src="/img/install.png" name="new_"/>
                 </th>
             </tr>
             
             <tr tal:condition="python:len(workflows)==0">
-                <td colspan="7"><small i18n:translate="admin_wf_nowf">- keine Workflows vorhanden -</small></td>
+                <td colspan="7"><small i18n:translate="admin_wf_nowf">TEXT</small></td>
             </tr>
             <tal:block tal:repeat="workflow python:workflows[start:end]" tal:define="start python:pages.getStart(); end python:pages.getEnd()">
             <tr tal:define="cssclass python:workflows.index(workflow)%2 and 'norm' or 'silver'">
@@ -31,17 +31,17 @@
                 <td tal:attributes="class cssclass" tal:content="python:workflow.getDescription()"/>
                 <td tal:attributes="class cssclass">&nbsp;</td>
                 <td tal:attributes="class cssclass">
-                    <input tal:attributes="name python:'detaillist_'+str(workflow.getId())" i18n:attributes="title admin_wf_nodeedit_title" type="image" src="/img/rightarrow.png" title="Workflow-Knoten anzeigen/bearbeiten">
+                    <input tal:attributes="name python:'detaillist_'+str(workflow.getId())" i18n:attributes="title admin_wf_nodeedit_title" type="image" src="/img/rightarrow.png"/>
                 </td>
                 <td tal:attributes="class cssclass">
-                    <a tal:attributes="href python:'./workflows/' +workflow.getName()+'/overview?style=popup'" i18n:attributes="title admin_wf_graphic_title" target="_blank" title="Workflowdefinition anzeigen (Grafik)"><img src="/img/search.gif" border="0"/></a>
+                    <a tal:attributes="href python:'./workflows/' +workflow.getName()+'/overview?style=popup'" i18n:attributes="title admin_wf_graphic_title" target="_blank"><img src="/img/search.gif" border="0"/></a>
                                                         
-                    <a tal:attributes="href python:'/admin/export/workflows/' +workflow.getId()" i18n:attributes="title admin_wf_export_title" target="_blank" title="Workflowdefinition exportieren"><img src="/img/export.png" border="0"/></a>
+                    <a tal:attributes="href python:'/admin/export/workflows/' +workflow.getId()" i18n:attributes="title admin_wf_export_title" target="_blank"><img src="/img/export.png" border="0"/></a>
                 </td>
                 <td tal:attributes="class cssclass">
-                    <input tal:attributes="name python:'edit_'+str(workflow.getId())" i18n:attributes="title admin_wf_edit_title" type="image" src="/img/edit.png" title="Workflow bearbeiten"/>
+                    <input tal:attributes="name python:'edit_'+str(workflow.getId())" i18n:attributes="title admin_wf_edit_title" type="image" src="/img/edit.png"/>
                     &nbsp;&nbsp;
-                    <input tal:attributes="name python:'delete_'+str(workflow.getId()); onclick python:'return questionDelName(\''+workflow.getName()+'\')'" i18n:attributes="title admin_wf_delete_title" type="image" src="/img/delete.png" title="Workflow l&ouml;schen"/>
+                    <input tal:attributes="name python:'delete_'+str(workflow.getId()); onclick python:'return questionDelName(\''+workflow.getName()+'\')'" i18n:attributes="title admin_wf_delete_title" type="image" src="/img/delete.png"/>
                 </td>
             </tr>
             </tal:block>
@@ -64,9 +64,9 @@
                         <tr>
                             <td align="left">
                                 <fieldset>
-                                    <tal:block i18n:translate="admin_fw_msg1">Workflow-Import aus XML-Datei</tal:block>:<br>
+                                    <tal:block i18n:translate="admin_fw_msg1">TEXT</tal:block>:<br>
                                     <input name="file" type="file" size="50" maxlength="100000"/>
-                                    <br/><button i18n:translate="admin_wf_import" i18n:attributes="title admin_wf_import_title" type="submit" name="submit" value="submit" title="Importieren">Importieren</button>
+                                    <br/><button i18n:translate="admin_wf_import" i18n:attributes="title admin_wf_import_title" type="submit" name="submit" value="submit">TEXT</button>
                                 </fieldset>
                             </td>
                         </tr>
@@ -79,50 +79,50 @@
 </metal:block>
 
 <metal:block metal:define-macro="modify" tal:define="id python:workflow.getId()">
-    <p><a tal:attributes="href python:'./workflows'+page" i18n:translate="admin_overview">zur &Uuml;bersicht</a></p>
+    <p><a tal:attributes="href python:'./workflows'+page" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="editworkflow" method="post" action="#">
         <table>
             <tr>
                 <td colspan="2">
-                    <h3 tal:condition="python:id==''" i18n:translate="admin_wf_create_header">Neuen Workflow anlegen</h3>
-                    <h3 tal:condition="python:id!=''" i18n:translate="admin_wf_edit_header">Workflow bearbeiten</h3>
+                    <h3 tal:condition="python:id==''" i18n:translate="admin_wf_create_header">TEXT</h3>
+                    <h3 tal:condition="python:id!=''" i18n:translate="admin_wf_edit_header">TEXT</h3>
                 </td>
             </tr>
             <tr tal:condition="python:error>0">
                 <td colspan="2">
-                    <p tal:condition="python:error==1" class="error" i18n:translate="admin_mandatory_error">Nicht alle Pflichtfelder wurden ausgef&uuml;llt.</p>
-                    <p tal:condition="python:error==2" class="error" i18n:translate="admin_duplicate_error">Ein Objekt mit gleichem Namen ist bereits vorhanden.</p>
+                    <p tal:condition="python:error==1" class="error" i18n:translate="admin_mandatory_error">TEXT</p>
+                    <p tal:condition="python:error==2" class="error" i18n:translate="admin_duplicate_error">TEXT</p>
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_wf_name">Name</tal:block>: <span class="required">*</span></td>
+                <td><tal:block i18n:translate="admin_wf_name">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
                     <input tal:attributes="value python:workflow.getName()" type="text" name="name" maxlenght=64 style="width:400px"/>
                     <input tal:attributes="value python:workflow.getId()" type="hidden" name="id"/>
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_wf_writerights">Schreibrechte</tal:block>:</td>
+                <td><tal:block i18n:translate="admin_wf_writerights">TEXT</tal:block>:</td>
                 <td>
                     <select name="writeaccess" style="width:400px">
-                            <option value="" i18n:translate="admin_wf_nolimit">-keine Einschr&auml;nkungen-</option>
+                            <option value="" i18n:translate="admin_wf_nolimit">TEXT</option>
                             <option tal:repeat="rule python:list(rules)" tal:attributes="selected python:{'True':'selected','False':None}[str(workflow.getAccess('write')==rule.getName())]; value python:rule.getName()" tal:content="python:rule.getDescription()"/>
                     </select>
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_wf_description">Beschreibung</tal:block>:</td>
+                <td><tal:block i18n:translate="admin_wf_description">TEXT</tal:block>:</td>
                 <td><textarea tal:content="python:workflow.getDescription()" name="description" rows="4" style="width:400px"/><td>
             </tr>
             <tr>
                 <td>&nbsp;</td>
-                <td><small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info">Pflichtfeld, darf nicht leer sein</span>)</small></td>
+                <td><small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info">TEXT</span>)</small></td>
             </tr>
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" type="submit" name="submit" value="submit" title="&Auml;nderungen speichern">Speichern</button>&nbsp;&nbsp;
-                    <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" title="Zur&uuml;ck zur &Uuml;bersicht" onclick="setCancel()">Abbrechen</button>
+                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
+                    <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
                 </td>
             </tr>
         </table>
@@ -132,13 +132,13 @@
 </metal:block>
 
 <metal:block metal:define-macro="view_step">
-    <p><a href="./workflows" i18n:translate="admin_overview">zur &Uuml;bersicht</a></p>
+    <p><a href="./workflows" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="metafields" method="post" action="#">
         <table class="overview">
             <tr>
                 <td colspan="8">
-                    <h3 i18n:translate="admin_wf_header">Knoten des Workflows '<span tal:content="python:workflow.getName()" i18n:name="name"/>'</h3>
-                    <a tal:attributes="href python:'./workflows/'+workflow.getName()+'/overview?style=popup'" i18n:attributes="title admin_wf_graphic_title" target="_blank" title="Workflowdefinition anzeigen (Grafik)" i18n:translate="admin_wf_showdef">Workflowdefinition anzeigen</a>
+                    <h3 i18n:translate="admin_wf_header">TEXT '<span tal:content="python:workflow.getName()" i18n:name="name"/>'</h3>
+                    <a tal:attributes="href python:'./workflows/'+workflow.getName()+'/overview?style=popup'" i18n:attributes="title admin_wf_graphic_title" target="_blank" i18n:translate="admin_wf_showdef">TEXT</a>
                 </td>
             </tr>
             <tr>
@@ -147,12 +147,12 @@
                     <a tal:attributes="href python:col.link+'&detailof='+workflow.getId(); title python:col.title" tal:content="structure python:col.label"/>
                 </th>
                 <th align="right">
-                    <input tal:attributes="name python:'newdetail_'+str(workflow.getId())" i18n:attributes="title admin_wfstep_new_title" type="image" src="/img/install.png" title="Neuen Knoten anlegen">
+                    <input tal:attributes="name python:'newdetail_'+str(workflow.getId())" i18n:attributes="title admin_wfstep_new_title" type="image" src="/img/install.png">
                 </th>
             </tr>
 
             <tr tal:condition="python:len(workflowsteps)==0">
-                <td colspan="8"><small i18n:translate="admin_wfstep_nostep">- keine Workflow-Knoten vorhanden -</small></td>
+                <td colspan="8"><small i18n:translate="admin_wfstep_nostep">TEXT</small></td>
             </tr>
 
             <tal:block tal:define="start python:pages.getStart(); end python:pages.getEnd()" tal:repeat="workflowstep python:workflowsteps[start:end]">
@@ -177,9 +177,9 @@
                 </td>
 
                  <td tal:attributes="class cssclass">
-                    <input tal:attributes="name python:'editdetail_'+str(workflow.getId())+'|'+str(workflowstep.getId())" i18n:attributes="title admin_wfstep_edit" type="image" src="/img/edit.png" title="Knoten bearbeiten"/>
+                    <input tal:attributes="name python:'editdetail_'+str(workflow.getId())+'|'+str(workflowstep.getId())" i18n:attributes="title admin_wfstep_edit" type="image" src="/img/edit.png"/>
                     &nbsp;&nbsp;
-                    <input tal:attributes="name python:'deletedetail_'+str(workflow.getId())+'|'+str(workflowstep.getId()); onclick python:'return questionDelName(\''+workflowstep.getName()+'\')'" i18n:attributes="title admin_wfstep_delete" type="image" src="/img/delete.png" title="Knoten l&ouml;schen"/>
+                    <input tal:attributes="name python:'deletedetail_'+str(workflow.getId())+'|'+str(workflowstep.getId()); onclick python:'return questionDelName(\''+workflowstep.getName()+'\')'" i18n:attributes="title admin_wfstep_delete" type="image" src="/img/delete.png"/>
                 </td>
             </tr>
             </tal:block>
@@ -187,7 +187,7 @@
                 <th colspan="4">
                     <small>
                         <span i18n:translate="admin_wfstep_footer">
-                            <span i18n:name="number" tal:content="python:str(len(workflowsteps))"/> Knoten
+                            <span i18n:name="number" tal:content="python:str(len(workflowsteps))"/> TEXT
                         </span>
                         <span tal:content="structure python:pages.printPageList()"/>
                     </small>
@@ -212,35 +212,35 @@
             document.forms.addmfield.submit();
         }
     </script>
-    <p><a tal:attributes="href python:'./workflows?detailof='+str(workflow.getId())+page" i18n:translate="admin_overview">zur &Uuml;bersicht</a></p>
+    <p><a tal:attributes="href python:'./workflows?detailof='+str(workflow.getId())+page" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="addmfield" id="addmfield" method="post" action="#">
         <table>
             <tr>
                 <td colspan="2">
-                    <h3 tal:condition="python:id==''" i18n:translate="admin_wfstep_create_header">Neuen Workflowknoten erstellen</h3>
-                    <h3 tal:condition="python:id!=''" i18n:translate="admin_wfstep_edit_header">Workflowknoten bearbeiten</h3>
+                    <h3 tal:condition="python:id==''" i18n:translate="admin_wfstep_create_header">TEXT</h3>
+                    <h3 tal:condition="python:id!=''" i18n:translate="admin_wfstep_edit_header">TEXT</h3>
                 </td>
             </tr>
             <tr tal:condition="python:error>0">
                 <td colspan="2">
-                    <p tal:condition="python:error==1" i18n:translate="admin_mandatory_error" class="error">Nicht alle Pflichtfelder wurden ausgef&uuml;llt.</p>
-                    <p tal:condition="python:error==2" i18n:translate="admin_duplicate_error" class="error">Ein Objekt mit gleichem Namen ist bereits vorhanden.</p>
+                    <p tal:condition="python:error==1" i18n:translate="admin_mandatory_error" class="error">TEXT</p>
+                    <p tal:condition="python:error==2" i18n:translate="admin_duplicate_error" class="error">TEXT</p>
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_wfstep_name">Name</tal:block>: <span class="required">*</span></td>
+                <td><tal:block i18n:translate="admin_wfstep_name">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
                     <input tal:attributes="value python:workflowstep.name" style="width:400px" type="text" name="nname" maxlenght=64/>	
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_wfstep_adminstep">Adminstep</tal:block>:</td>
+                <td><tal:block i18n:translate="admin_wfstep_adminstep">TEXT</tal:block>:</td>
                 <td>
-                    <input tal:attributes="checked python:{0:None,1:'checked'}[workflowstep.isAdminStep()]" type="checkbox" name="adminstep" value="1"/> <small>(<span i18n:translate="admin_wfstep_msg1">wird in der Workflow-&Uuml;bersicht markiert</span>)</small>
+                    <input tal:attributes="checked python:{0:None,1:'checked'}[workflowstep.isAdminStep()]" type="checkbox" name="adminstep" value="1"/> <small>(<span i18n:translate="admin_wfstep_msg1">TEXT</span>)</small>
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_wfstep_nodetype">Knotentyp</tal:block>:</td>
+                <td><tal:block i18n:translate="admin_wfstep_nodetype">TEXT</tal:block>:</td>
                 <td>
                     <select style="width:400px" name="ntype" onchange="sendForm()">
                         <tal:block tal:repeat="key python:list(workflowtypes)" tal:define="typename python:workflowstep.getTypeName()">
@@ -251,18 +251,18 @@
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_wfstep_comment">Kommentar</tal:block>:</td>
+                <td><tal:block i18n:translate="admin_wfstep_comment">TEXT</tal:block>:</td>
                 <td><textarea tal:content="python:workflowstep.getComment()" name="ncomment" style="width:400px" rows="5"/></td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_wfstep_truelabel">Label f&uuml;r 'True'-Operation</tal:block>:</td>
+                <td><tal:block i18n:translate="admin_wfstep_truelabel">TEXT</tal:block>:</td>
                 <td><textarea tal:content="python:workflowstep.getTrueLabel()" name="ntruelabel" style="width:400px"/></td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_wfstep_truenode">Knoten f&uuml;r 'True'-Kante</tal:block>:</td>
+                <td><tal:block i18n:translate="admin_wfstep_truenode">TEXT</tal:block>:</td>
                 <td>
                     <select style="width:400px" name="ntrueid">
-                        <option value="" i18n:translate="admin_wfstep_nonode">-kein Knoten-</option>
+                        <option value="" i18n:translate="admin_wfstep_nonode">TEXT</option>
                         <tal:block tal:repeat="node nodelist">
                             <option tal:condition="python:workflowstep.getTrueId()==node.getName()" tal:attributes="value python:node.getName()" tal:content="python:node.getName()" selected="selected"/>
                             <option tal:condition="python:workflowstep.getTrueId()!=node.getName()" tal:attributes="value python:node.getName()" tal:content="python:node.getName()"/>
@@ -271,14 +271,14 @@
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_wfstep_falselabel">Label f&uuml;r 'False'-Operation</tal:block>:</td>
+                <td><tal:block i18n:translate="admin_wfstep_falselabel">TEXT</tal:block>:</td>
                 <td><textarea tal:content="python:workflowstep.getFalseLabel()" name="nfalselabel" style="width:400px"/></td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_wfstep_falsenode">Knoten f&uuml;r 'False'-Kante</tal:block>:</td>
+                <td><tal:block i18n:translate="admin_wfstep_falsenode">TEXT</tal:block>:</td>
                 <td>
                     <select style="width:400px" name="nfalseid">
-                        <option value="" i18n:translate="admin_wfstep_nonode">-kein Knoten-</option>
+                        <option value="" i18n:translate="admin_wfstep_nonode">TEXT</option>
                         <tal:block tal:repeat="node nodelist">
                             <option tal:condition="python:workflowstep.getFalseId()==node.getName()" tal:attributes="value python:node.getName()" tal:content="python:node.getName()" selected="selected"/>
                             <option tal:condition="python:workflowstep.getFalseId()!=node.getName()" tal:attributes="value python:node.getName()" tal:content="python:node.getName()"/>
@@ -289,13 +289,13 @@
             <div tal:replace="structure editor"/>
             <tr>
                 <td>&nbsp;</td>
-                <td><small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info">Pflichtfeld, darf nicht leer sein</span>)</small></td>
+                <td><small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info">TEXT</span>)</small></td>
             </tr>
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" type="submit" name="submitbutton" value="submit" title="&Auml;nderungen speichern">Speichern</button>&nbsp;&nbsp;
-                    <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" title="Zur&uuml;ck zur &Uuml;bersicht" onclick="setCancel()">Abbrechen</button>
+                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" type="submit" name="submitbutton" value="submit">TEXT</button>&nbsp;&nbsp;
+                    <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
                 </td>
             </tr>
         </table>         
@@ -307,7 +307,7 @@
 
 <metal:block metal:define-macro="view_editor">
     <tr tal:condition="python:len(fields)>0">
-            <td colspan="2"><b i18n:translate="admin_wfstep_additional">Zus&auml;tzliche Daten f&uuml;r den gew&auml;hlten Knotentyp</b>:</td>
+            <td colspan="2"><b i18n:translate="admin_wfstep_additional">TEXT</b>:</td>
     </tr>
     <tal:block tal:repeat="field fields">
         <tr tal:define="name python:field.getFieldtype()=='meta' and field.getValue() or field.getName(); value python:node.get(name)">
@@ -334,7 +334,7 @@
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
             <meta content="text/html;charset=UTF-8" http-equiv="content-type">
             <link rel="stylesheet" href="/css/admin.css">
-            <title i18n:translate="admin_wf_definition">Workflow Definition</title>
+            <title i18n:translate="admin_wf_definition">TEXT</title>
         </head>
         <body style="margin:5px">
             <img tal:attributes="src python:'/workflowimage?wid='+id" align="center" valign="center"/>

@@ -1,20 +1,20 @@
 <metal:block metal:define-macro="view">
-    <p><a i18n:translate="admin_overview" href=".">zur &Uuml;bersicht</a></p>
+    <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form tal:attributes="action page" name="rules" method="post" action="#">
         <table class="overview">
             <tr>
-                <td colspan="5"><h3 i18n:translate="admin_acl_existing">Vorhandene Regeln</h3></td>
+                <td colspan="5"><h3 i18n:translate="admin_acl_existing">TEXT</h3></td>
             </tr>
             <tr>
                 <th>&nbsp;</th>
                 <th tal:repeat="col sortcol">
                     <a tal:attributes="href python:col.link; title python:col.title" tal:content="structure python:col.label"/>
                 </th>
-                <th align="right"><input i18n:attributes="title admin_acl_create" type="image" src="/img/install.png" name="new" title="Neue Regel anlegen"/></th>
+                <th align="right"><input i18n:attributes="title admin_acl_create" type="image" src="/img/install.png" name="new"/></th>
             </tr>
 
             <tr tal:condition="python:len(rules)==0">
-                <td colspan="5"><small i18n:translate="admin_acl_noacl">- keine Regeln vorhanden -</small></td>
+                <td colspan="5"><small i18n:translate="admin_acl_noacl">TEXT</small></td>
             </tr>
                 <tal:block tal:define="start python:pages.getStart(); end python:pages.getEnd()" tal:repeat="rule python:rules[start:end]">
                 <tr tal:define="cssclass python:rules.index(rule)%2 and 'norm' or 'silver'">
@@ -23,8 +23,8 @@
                     <td tal:attributes="class cssclass" tal:content="python:rule.getRuleStr()"/>
                     <td tal:attributes="class cssclass" tal:content="python:rule.getDescription()"/>
                     <td tal:attributes="class cssclass">
-                        <input tal:attributes="name python:'edit_'+rule.getName()" i18n:attributes="title admin_acl_edit_title" type="image" src="/img/edit.png" title="Regel bearbeiten"/>&nbsp;&nbsp;
-                        <input tal:attributes="name python:'delete_'+rule.getName(); onclick python:'return questionDelName(\''+rule.getName()+'\')'" i18n:attributes="title admin_acl_delete_title" type="image" src="/img/delete.png" title="Regel l&ouml;schen" onClick="return questionDel()"/>
+                        <input tal:attributes="name python:'edit_'+rule.getName()" i18n:attributes="title admin_acl_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
+                        <input tal:attributes="name python:'delete_'+rule.getName(); onclick python:'return questionDelName(\''+rule.getName()+'\')'" i18n:attributes="title admin_acl_delete_title" type="image" src="/img/delete.png" onClick="return questionDel()"/>
                     </td>
                 </tr>
                 </tal:block>
@@ -51,41 +51,41 @@
             popup.focus();
         }
     </script>
-    <p><a i18n:translate="admin_overview" href="./acls">zur &Uuml;bersicht</a></p>	
+    <p><a i18n:translate="admin_overview" href="./acls">TEXT</a></p>	
     <form tal:attributes="action page" name="editRule" method="post">
         <table>
             <tr>
                 <td colspan="2">
-                    <h3 tal:condition="python:id==''" i18n:translate="admin_acl_existing">Neue Regel anlegen</h3>
-                    <h3 tal:condition="python:id!=''" i18n:translate="admin_acl_create">Regel bearbeiten</h3>
+                    <h3 tal:condition="python:id==''" i18n:translate="admin_acl_existing">TEXT</h3>
+                    <h3 tal:condition="python:id!=''" i18n:translate="admin_acl_create">TEXT</h3>
                 </td>
             </tr>
             <tr tal:condition="python:error>0">
                 <td colspan="2">
-                    <p tal:condition="python:error==1" i18n:translate="admin_mandatory_error" class="error">Nicht alle Pflichtfelder wurden ausgef&uuml;llt.</p>
-                    <p tal:condition="python:error==2" i18n:translate="admin_duplicate_error" class="error">Ein Objekt mit gleichem Namen ist bereits vorhanden.</p>
+                    <p tal:condition="python:error==1" i18n:translate="admin_mandatory_error" class="error">TEXT</p>
+                    <p tal:condition="python:error==2" i18n:translate="admin_duplicate_error" class="error">TEXT</p>
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_acl_rulename">Regelname</tal:block>:</td>
+                <td><tal:block i18n:translate="admin_acl_rulename">TEXT</tal:block>:</td>
                 <td>
                     <span tal:condition="python:error==0" tal:replace="python:rule.getName()"/>
                     <input tal:attributes="value python:rule.getName(); type python:id=='' and 'text' or 'hidden'" name="rulename"/>
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_acl_description">Beschreibung</tal:block>:</td>
+                <td><tal:block i18n:translate="admin_acl_description">TEXT</tal:block>:</td>
                 <td>
                     <textarea tal:content="python:rule.getDescription()" name="description" rows="4" cols="35"/>
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_acl_rule">Regel</tal:block>: <span class="required">*</span></td>
+                <td><tal:block i18n:translate="admin_acl_rule">TEXT</tal:block>: <span class="required">*</span></td>
                 <td width="30px">
                     <table>
                         <tr>
                             <td>
-                                <button i18n:attributes="title admin_acl_popup_title" type="button" onclick="openwindow('acls?style=editor')" title="Regel bearbeiten/erstellen">...</button>
+                                <button i18n:attributes="title admin_acl_popup_title" type="button" onclick="openwindow('acls?style=editor')">...</button>
                             </td>
                             <td>
                                 <div tal:content="python:rule.getRuleStr()" class="field" id="rule_show"/>
@@ -97,13 +97,13 @@
             </tr>
             <tr>
                 <td>&nbsp;</td>
-                <td colspan="2"><small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info">Pflichtfeld, darf nicht leer sein</span>)</small></td>
+                <td colspan="2"><small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info">TEXT</span>)</small></td>
             </tr>
             <tr>
                 <td>&nbsp;</td>
                 <td colspan="2">
-                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" type="submit" name="submit" value="submit" title="&Auml;nderungen speichern">Speichern</button>&nbsp;&nbsp;
-                    <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" title="Zur&uuml;ck zur &Uuml;bersicht" onclick="setCancel()">Abbrechen</button>
+                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
+                    <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
                 </td>
             </tr>
         </table>
@@ -116,28 +116,28 @@
     <html>
         <head>
             <META http-equiv="content-type" content="text/html; charset=UTF-8">
-            <title i18n:translate="admin_acl_editor_title">Administration Interface - Regeleditor</title>
+            <title i18n:translate="admin_acl_editor_title">TEXT</title>
 
             <link rel="stylesheet" href="/css/editor.css">
             <script type="text/javascript" language="javascript" src="/js/editor.js">
             </script>
         </head>
         <body class="form" tal:attributes="onload python:'init('+userstr+', '+groupstr+', '+datestr+', '+ipstr+')'">
-            <h1 i18n:translate="admin_acl_editor_header">Regeleditor</h1>
+            <h1 i18n:translate="admin_acl_editor_header">TEXT</h1>
 
-            <p><tal:block i18n:translate="admin_acl_editor_rulename">Regel</tal:block>: <span id="MainRule">...</span></p>
+            <p><tal:block i18n:translate="admin_acl_editor_rulename">TEXT</tal:block>: <span id="MainRule">...</span></p>
           
             <form name="form_input" method="post">
                 <div style="margin:2px">
                     <div style="float:right">
-                        <button i18n:attributes="title admin_acl_editor_rename_title" i18n:translate="admin_acl_editor_rename" type="button" onclick="changePart()" title="Regel &uuml;bernehmen" style="width:120px">&Uuml;bernehmen</button>
+                        <button i18n:attributes="title admin_acl_editor_rename_title" i18n:translate="admin_acl_editor_rename" type="button" onclick="changePart()" style="width:120px">TEXT</button>
                     </div>
-                    <div><tal:block i18n:translate="admin_acl_editor_edit_rule">Regel bearbeiten</tal:block>:</div>
+                    <div><tal:block i18n:translate="admin_acl_editor_edit_rule">TEXT</tal:block>:</div>
                 </div>
 
                 <div style="clear:both;margin:2px">
                     <div style="float:right">
-                        <button i18n:attributes="title admin_acl_editor_partlist_title" i18n:translate="admin_acl_editor_partlist" align="right" type="button" onclick="setPart()" title="Regel in Teileliste &uuml;bertragen" style="width:120px">in Teileliste</button>
+                        <button i18n:attributes="title admin_acl_editor_partlist_title" i18n:translate="admin_acl_editor_partlist" align="right" type="button" onclick="setPart()" style="width:120px">TEXT</button>
                     </div>
                     <div>
                         <div class="field" id="rule_part"/>
@@ -149,7 +149,7 @@
                             <table border=0px>
                                 <tr>
                                     <td style="vertical-align:top">
-                                        <tal:block i18n:translate="admin_acl_editor_argument">Argument</tal:block>:
+                                        <tal:block i18n:translate="admin_acl_editor_argument">TEXT</tal:block>:
                                     </td>
                                     <td>
                                         <select name="rulearg" id="rulearg" size="4" onclick="setValue(this)">
@@ -168,11 +168,11 @@
                             </span>
                         </td>
                         <td rowspan="2" valign="top">
-                            <tal:block i18n:translate="admin_acl_editor_partlist_label">Teileliste</tal:block>:<br>
+                            <tal:block i18n:translate="admin_acl_editor_partlist_label">TEXT</tal:block>:<br>
                             <select name="parts" id="parts" size="10" style="width:100%" onclick="setOperator()" ondoubleclick=""/>
                             <br>
-                            <button i18n:translate="admin_acl_editor_clearlist" i18n:attributes="title admin_acl_editor_clearlist_title" onclick="clearParts()" type="button" title="L&ouml;scht alle Eintr&auml;ge aus der Tileliste" style="width:120px">alle l&ouml;schen</button>
-                            <button i18n:translate="admin_acl_editor_copy" i18n:attributes="title admin_acl_editor_copy_title" onclick="getSelectedValue()" type="button" title="Kopiert selektierten Eintrag in den Bearbeitungsbereich">Selektion bearbeiten</button>
+                            <button i18n:translate="admin_acl_editor_clearlist" i18n:attributes="title admin_acl_editor_clearlist_title" onclick="clearParts()" type="button" style="width:120px">TEXT</button>
+                            <button i18n:translate="admin_acl_editor_copy" i18n:attributes="title admin_acl_editor_copy_title" onclick="getSelectedValue()" type="button">TEXT</button>
                         </td>
                     </tr>
                     <tr>
@@ -180,7 +180,7 @@
                             <table>
                                 <tr>
                                     <td valign="top">
-                                        <tal:block i18n:translate="admin_acl_editor_ruletype">Regelart</tal:block>:
+                                        <tal:block i18n:translate="admin_acl_editor_ruletype">TEXT</tal:block>:
                                     </td>
                                     <td>
                                         <select name="ruletype" id="ruletype" size="4" onclick="setValue(this)">
@@ -193,11 +193,11 @@
                             </table>
                         </td>
                         <td valign="top" colspan="2">
-                            <input type="radio" name="op" value="op1" id="op" checked="checked"/> <tal:block i18n:translate="admin_acl_editor_op1">Wert 1</tal:block> [op1]: 
+                            <input type="radio" name="op" value="op1" id="op" checked="checked"/> <tal:block i18n:translate="admin_acl_editor_op1">TEXT</tal:block> [op1]: 
                             <input type="text" name="value1" id="value1"/>
 
                             <br>
-                            <input type="radio" name="op" value="op2" id="op"/> <tal:block i18n:translate="admin_acl_editor_op2">Wert 2</tal:block> [op2]: 
+                            <input type="radio" name="op" value="op2" id="op"/> <tal:block i18n:translate="admin_acl_editor_op2">TEXT</tal:block> [op2]: 
                             <input type="text" name="value2" id="value2"/>
                         </td>
                     </tr>
@@ -205,8 +205,8 @@
                         <td colspan="3">&nbsp;</td>
                         <td align="right">
                             &nbsp;<br>&nbsp;<br>
-                            <button i18n:translate="admin_acl_editor_buttonok" type="button" onclick="setReturn()" style="width:120px"> OK </button>&nbsp;&nbsp;&nbsp;
-                            <button i18n:translate="admin_acl_editor_buttoncancel" type="button" onclick="window.close()" style="width:120px">  Abbrechen  </button>
+                            <button i18n:translate="admin_acl_editor_buttonok" type="button" onclick="setReturn()" style="width:120px">TEXT</button>&nbsp;&nbsp;&nbsp;
+                            <button i18n:translate="admin_acl_editor_buttoncancel" type="button" onclick="window.close()" style="width:120px">TEXT</button>
                         </td>
                     </tr>
                 </table>

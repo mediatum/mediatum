@@ -5,7 +5,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta content="text/html;charset=UTF-8" http-equiv="content-type">
 
-        <title i18n:translate="main_title">main title</title>
+        <title i18n:translate="main_title">TEXT</title>
 
         <link rel="stylesheet" href="/css/mediatum.css"/>
         <script type="text/javascript" language="javascript" src="/js/mediatum.js">
@@ -28,7 +28,7 @@
                 <a i18n:attributes="alt header_shoopingbag_alt; title header_shoopingbag_title" id="shopping_bag" alt="Favoriten" title="Favoriten anzeigen" href="javascript:shoppingbag(300,300)">
                     <img border="0" src="/img/favourite.png">
                 </a>
-                <span i18n:translate="sub_header_user">Benutzer</span>: <span tal:content="python:user.getName()"></span>
+                <span i18n:translate="sub_header_user">TEXT</span>: <span tal:content="python:user.getName()"></span>
                 <tal:block tal:repeat="menuitem python:userlinks.getLinks()">
                     | <a tal:define="ltitle python:menuitem.title" tal:attributes="href python:menuitem.link; title ltitle">
                     <span tal:define="l python:menuitem.label" tal:content="structure l"/>
@@ -73,7 +73,7 @@
                     This is the default mediatum design. To change it, edit the html files in web/frontend/mediatum.
                 </span>
                 <span class="footer_right">
-                    <a i18n:translate="footer_impressum" href="/file/604993/impressum.html">Impressum</a>&nbsp;|&nbsp;<span tal:content="t">time</span>
+                    <a i18n:translate="footer_impressum" href="/file/604993/impressum.html">Impressum</a>&nbsp;|&nbsp;<span tal:content="t">TEXT</span>
                 </span>
             </div>
         </div>

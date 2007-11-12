@@ -14,7 +14,7 @@
         <img tal:attributes="src python:'/img/'+style.getIcon()"/>
     </a>
 
-    <a i18n:translate="startpage" href="/">Startseite</a>
+    <a i18n:translate="startpage" href="/">TEXT</a>
     <tal:block tal:repeat="dir python:path">
         <a tal:condition="python:dir.link!=''" tal:content="python:dir.title" tal:attributes="href python:dir.link" class="breadcrumb_link"/>
         <span tal:condition="python:dir.link==''" tal:content="python:dir.title" id="last_breadcrumb_link"/>
@@ -24,7 +24,7 @@
 
 <div metal:define-macro="files" id="portal-pages" style="position:relative;top:0px;left:0px;">
     <div tal:condition="python:len(list(nav_list))>1 or len(sortfieldslist)>0">
-	&nbsp;
+    &nbsp;
     </div>
 
     <div tal:condition="python:len(list(nav_list))>1">
@@ -39,21 +39,21 @@
    
     <div tal:condition="python:sortfieldslist" style="position:absolute;top:0px;left:0px">
     <form>
-	<table cellspacing="0" cellpadding="0">
-	<tal:block tal:repeat="i python:range(len(sortfieldslist))">
-	<tr>
-	<td>
+    <table cellspacing="0" cellpadding="0">
+    <tal:block tal:repeat="i python:range(len(sortfieldslist))">
+    <tr>
+    <td>
         <small tal:condition="python:i==0"><tal:block i18n:translate="sort_label"/></small>
         <small tal:condition="python:i>0"><tal:block i18n:translate="sort_label2"/></small>
-	</td><td>
+    </td><td>
         <select tal:attributes="name python:'sortfield'+str(i)" style="font-size: 9px" onchange="submit()">
             <option tal:repeat="field python:sortfieldslist[i]" tal:content="python:field.getLabel()" 
                     tal:attributes="value python:field.getName(); selected python:field.selected()"/>
         </select>
-	</td>
-	</tr>
-	</tal:block>
-	</table>
+    </td>
+    </tr>
+    </tal:block>
+    </table>
     </form>
     </div>
 
@@ -68,7 +68,7 @@
                 <a tal:attributes="href python:nav.link_prev()"><img border="0" src="/img/pageleft.gif"/></a>
             </td>
             <td width="100%" align="center">
-                <a tal:attributes="href python:nav.link_back()" i18n:translate="search_list_title">Zur&uuml;ck zur Trefferliste</a>
+                <a tal:attributes="href python:nav.link_back()" i18n:translate="search_list_title">TEXT</a>
                 <br><div tal:replace="python:nav.actual()"/>
             </td>
             <td align="right" valign="top" nowrap>
@@ -82,7 +82,7 @@
 
 
 <div metal:define-macro="paths" id="paths">
-    <b i18n:translate="occurences:">Vorkommen:</b><br/>
+    <b i18n:translate="occurences:">TEXT</b><br/>
     <ul tal:repeat="path paths">
         <li>
         <tal:block tal:repeat="step path">

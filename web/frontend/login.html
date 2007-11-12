@@ -1,26 +1,26 @@
 <div id="object_main" metal:define-macro="login" style="margin-left:20px">
     <p>&nbsp;</p>
     <p tal:condition="error" i18n:translate="login_error_1" class="error" style="text-align:center">
-        Die Anmeldung ist fehlgeschlagen! Benutzername oder Passwort falsch.
+        TEXT
     </p>
     <br/>
     <form method="post" action="login_submit" class="login" name="login" >
         <div class="label">&nbsp;</div>
         <span i18n:translate="login_currentuser_msg">
-            Sie sind derzeit angemeldet als: [ <span tal:content="python:user.getName()" i18n:name="name" class="username">username</span> ]
+            TEXT [ <span tal:content="python:user.getName()" i18n:name="name" class="username">username</span> ]
         </span>
         <br/><br/>
-        <div i18n:translate="username:" class="label">Benutzername:</div>
+        <div i18n:translate="username:" class="label">TEXT</div>
         <input maxlength="30" class="text" type="text" name="user">
         <br/>
-        <div i18n:translate="password:" class="label">Passwort:</div>
+        <div i18n:translate="password:" class="label">TEXT</div>
         <input maxlength="30" class="text" type="password" name="password">
         <br/><br/>
 
         <div class="label">&nbsp;</div>
-        <input i18n:attributes="value login_submit" name="LoginSubmit" value="Anmelden" class="submitbutton" type="submit">
+        <input i18n:attributes="value login_submit" name="LoginSubmit" value="Anmelden" class="submitbutton" type="submit"/>
         &nbsp;
-        <input i18n:attributes="value login_reset" name="LoginReset" value="Abbrechen" class="submitbutton" type="reset">
+        <input i18n:attributes="value login_reset" name="LoginReset" value="Abbrechen" class="submitbutton" type="reset"/>
     </form>   
     <script>
         function setFocus(){document.login.user.focus();}
@@ -31,23 +31,23 @@
 <div id="object_main" metal:define-macro="change_pwd" style="margin-left:20px">
     <p>&nbsp;</p>
     <tal:block tal:condition="python:error>0">
-        <p tal:condition="python:error==1" i18n:translate="login_change_err_1" class="error" style="text-align:center">Das Ursprungspasswort stimmt nicht mit dem gespeicherten &uuml;berein</p>
-        <p tal:condition="python:error==2" i18n:translate="login_change_err_2" class="error" style="text-align:center">Das neue Passwort und die Wiederholung sind nicht identisch</p>
-        <p tal:condition="python:error==3" i18n:translate="login_change_err_3" class="error" style="text-align:center">Ihr Benutzerkonto besitzt noch das Standardpasswort. Bitte &auml;ndern Sie dieses ab, um Missbrauch vorzubeugen.</p>
+        <p tal:condition="python:error==1" i18n:translate="login_change_err_1" class="error" style="text-align:center">TEXT</p>
+        <p tal:condition="python:error==2" i18n:translate="login_change_err_2" class="error" style="text-align:center">TEXT</p>
+        <p tal:condition="python:error==3" i18n:translate="login_change_err_3" class="error" style="text-align:center">TEXT</p>
     </tal:block>
 
     <form method="post" action="changepwd_submit" class="login" name="login">
-        <div i18n:translate="login_act_pwd:" class="label">Aktuelles Passwort:</div>
-        <input maxlength="30" class="text" type="password" name="password_old">
+        <div i18n:translate="login_act_pwd:" class="label">TEXT</div>
+        <input maxlength="30" class="text" type="password" name="password_old"/>
         <br/>
-        <div i18n:translate="new_password:" class="label">Passwort:</div>
-        <input maxlength="30" class="text" type="password" name="password_new1">
+        <div i18n:translate="new_password:" class="label">TEXT</div>
+        <input maxlength="30" class="text" type="password" name="password_new1"/>
         <br/>
-        <div i18n:translate="password_repeat:" class="label">Wiederholung:</div>
-        <input maxlength="30" class="text" type="password" name="password_new2">
+        <div i18n:translate="password_repeat:" class="label">TEXT</div>
+        <input maxlength="30" class="text" type="password" name="password_new2"/>
         <br/><br/>
         <div class="label">&nbsp;</div>
-        <input i18n:attributes="value login_save" name="ChangeSubmit" value="Speichern" class="submitbutton" type="submit">
+        <input i18n:attributes="value login_save" name="ChangeSubmit" value="Speichern" class="submitbutton" type="submit"/>
     </form>
     <script>
         function setFocus(){document.login.password_old.focus();}

@@ -6,9 +6,9 @@
                 <input tal:attributes="value python:search.query()" id="search-field" name="query" style="width:180px"/>
                 <input type="hidden" name="searchmode" value="simple"/>
                 <input type="hidden" value="1" tal:attributes="name python:'c_'+search.collection.id" tal:condition="python:search.insideCollection()"/>
-                <input i18n:attributes="value search; title search_title" id="search-button" type="submit" name="start_search" value="Suchen"/>
+                <input i18n:attributes="value search; title search_title" id="search-button" type="submit" name="start_search"/>
             
-                <a tal:condition="python:search.hasExtendedSearch()" tal:attributes="href python:search.searchLinkExtended()" i18n:translate="xsearch" id="advancedsearchlink">Erweiterte Suche</a>   
+                <a tal:condition="python:search.hasExtendedSearch()" tal:attributes="href python:search.searchLinkExtended()" i18n:translate="xsearch" id="advancedsearchlink">TEXT</a>   
             </form>
 
             <form tal:condition="python:search.isExtended()" action="/node" name="xsearch" id="search-box" action="/xsearch" method="post" accept-charset="utf-8">
@@ -21,8 +21,8 @@
                         <td valign="top">
                             <select tal:attributes="name python:'field'+str(i)" onchange="chg()">
                                 
-                                <option tal:condition="python:search.names[i]=='full'" i18n:translate="all_metafields" selected="selected" value="full">Alle Metadaten</option>
-                                <option tal:condition="python:search.names[i]!='full'" i18n:translate="all_metafields" value="full">Alle Metadaten</option>
+                                <option tal:condition="python:search.names[i]=='full'" i18n:translate="all_metafields" selected="selected" value="full">TEXT</option>
+                                <option tal:condition="python:search.names[i]!='full'" i18n:translate="all_metafields" value="full">TEXT</option>
                                 <tal:block tal:repeat="a python:search.getSearchFields().keys()">
                                     <option tal:condition="python:search.names[i]==a" tal:attributes="value a" tal:content="python:search.getSearchFields()[a]" selected="selected"></option>
                                     <option tal:condition="python:search.names[i]!=a" tal:attributes="value a" tal:content="python:search.getSearchFields()[a]"></option>
@@ -34,12 +34,12 @@
 
                     <tr>
                         <td colspan="2" align="right">
-                            <button i18n:attributes="title reset_field_title" i18n:translate="reset_field" type="button" onclick="clearFields()" title="Felder zur&uuml;cksetzen" id="reset-button">Reset</button>&nbsp;&nbsp;<button i18n:translate="search" i18n:attributes="title search_title" type="submit" name="Suche" title="Suche starten" id="xsearch-button">Suche</button>
+                            <button i18n:attributes="title reset_field_title" i18n:translate="reset_field" type="button" onclick="clearFields()" id="reset-button">TEXT</button>&nbsp;&nbsp;<button i18n:translate="search" i18n:attributes="title search_title" type="submit" name="Suche" id="xsearch-button">TEXT</button>
                         </td>
                     </tr>
                 </table>
 
-                <a tal:attributes="href python:search.searchLinkSimple()" i18n:translate="search_simple" id="advancedsearchlink">Einfache Suche</a>
+                <a tal:attributes="href python:search.searchLinkSimple()" i18n:translate="search_simple" id="advancedsearchlink">TEXT</a>
             </form>
         </span>
 
@@ -49,15 +49,15 @@
         <ul id="navigationlist">
             <li tal:define="col python:navigation['collection']; browse python:navigation['browse']">
                 <tal:block tal:repeat="data python:col.getCollections()">
-                    <a tal:condition="python:data.name=='collections'" tal:attributes="href python:col.getFoldUnfoldLink()+'&id='+data.id" tal:content="python:data.getLabel()">root</a>
+                    <a tal:condition="python:data.name=='collections'" tal:attributes="href python:col.getFoldUnfoldLink()+'&id='+data.id" tal:content="python:data.getLabel()">TEXT</a>
                     <a tal:condition="python:data.name=='collections'" tal:attributes="href python:col.getFoldUnfoldLink()+'&id='+data.id;class python:col.isFolded() and 'collapsed' or 'expanded';title python:col.isFolded() and 'unfold' or 'fold'" i18n:attributes="title">-</a>
 
                     <ul tal:condition="python:not col.isFolded() and data.name!='collections'" class="nav_depth02">
                         <li tal:attributes="class python:browse.collection.id==data.id and 'selected' or ''">
 
-                            <a tal:content="python:data.getLabel()" tal:attributes="href python:browse.DirOpen() and 'node?id='+data.id+'&fold='+data.id or 'node?dir='+data.id+'&id='+data.id+'&unfold='+data.id; class python:data.getName()==col.getCurrent().getName() and 'linkselected' or ''" i18n:attributes="title collection_title">text</a>
+                            <a tal:content="python:data.getLabel()" tal:attributes="href python:browse.DirOpen() and 'node?id='+data.id+'&fold='+data.id or 'node?dir='+data.id+'&id='+data.id+'&unfold='+data.id; class python:data.getName()==col.getCurrent().getName() and 'linkselected' or ''" i18n:attributes="title collection_title">TEXT</a>
 
-                            <a tal:condition="python:browse.collection.id==data.id" tal:attributes="href python:browse.DirOpen() and 'node?id='+data.id+'&fold='+data.id or 'node?dir='+data.id+'&id='+data.id+'&unfold='+data.id ;class python:browse.DirOpen() and 'expanded' or 'collapsed';title python:browse.DirOpen() and 'fold' or 'unfold'" i18n:attributes="title">symbol</a>
+                            <a tal:condition="python:browse.collection.id==data.id" tal:attributes="href python:browse.DirOpen() and 'node?id='+data.id+'&fold='+data.id or 'node?dir='+data.id+'&id='+data.id+'&unfold='+data.id ;class python:browse.DirOpen() and 'expanded' or 'collapsed';title python:browse.DirOpen() and 'fold' or 'unfold'" i18n:attributes="title">TEXT</a>
 
                             <ul class="nav_depth03" tal:condition="python:(browse.DirOpen() and str(browse.collection.id)==str(data.id))">
                                 <tal:block tal:replace="raw python:browse.getBrowsingTree()"/>
@@ -73,7 +73,7 @@
         <ul id="navigationlist">
             <li tal:define="nav python:navigation['navitem']">
                 <tal:block tal:repeat="data python:nav.ni_data">
-                    <a tal:condition="python:data.type=='navitem'" tal:attributes="href python:'&id='+data.id" tal:content="python:data.getName()">root</a>
+                    <a tal:condition="python:data.type=='navitem'" tal:attributes="href python:'&id='+data.id" tal:content="python:data.getName()">TEXT</a>
                     <a tal:condition="python:data.type=='navitem'" tal:attributes="href python:'&id='+data.id;class python:nav.isFolded() and 'collapsed' or 'expanded';title python:nav.isFolded() and 'unfold' or 'fold'" i18n:attributes="title">-</a>
                 </tal:block>
             </li>

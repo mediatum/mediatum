@@ -87,7 +87,6 @@
     </tal:block>
 </tal:block>
 
-<!-- Suchergebnis f&uuml;r "<tal:block tal:replace="query">_query_</tal:block>": -->
 
 <!-- search results in more than 1 collections -->
 <tal:block metal:define-macro="listcollections" xmlns:tal="http://xml.zope.org/namespaces/tal" xmlns:metal="http://xml.zope.org/namespaces/metal">
@@ -95,7 +94,7 @@
         <br/>
         <h2>Suchresultate</h2>
         <p i18n:translate="search_result_header">
-            Ihr(e) Suchbegriff(e) "<b tal:content="query" i18n:name="searchstring"/>" wurde(n) in folgenden Kollektionen gefunden:
+            TEXT"<b tal:content="query" i18n:name="searchstring"/>" TEXT
         </p>
         <table cellspacing="5px" cellpadding="5px">
             <tr tal:repeat="coll python:reslist">
@@ -109,12 +108,12 @@
                     <span tal:replace="python:str(coll.length())"/>
                 </td>
                 <td i18n:translate="search_hit">
-                    Treffer
+                    TEXT
                 </td>
             </tr>
         </table>
         <br/>
-        <h2>Gesucht wurde in folgenden Kollektionen:</h2>
+        <h2 i18n:translate="search_result_text">TEXT</h2>
         <ol type="square">
             <li tal:repeat="col python:collections">
                 <a tal:content="python:col.getName()" tal:attributes="href python:'/node?id='+str(col.id)+'&dir='+str(col.id)"/>

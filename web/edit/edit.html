@@ -3,7 +3,7 @@
         <tr>
             <td bgcolor="#7d85a6" align="right" class="banner">
                 <small>
-                    [<span i18n:translate="sub_header_user">Benutzer</span>: <span tal:content="python:user.getName()"></span>
+                    [<span i18n:translate="sub_header_user">TEXT</span>: <span tal:content="python:user.getName()"></span>
                     <tal:block tal:repeat="menuitem menuitems">
                         | <a tal:define="ltitle python:menuitem.title" tal:attributes="href python:menuitem.link; title ltitle; target python:menuitem.target">
                         <span tal:define="l python:menuitem.label" tal:content="structure l"/>
@@ -18,7 +18,7 @@
                 <table cellpadding="0" cellspacing="0" width="100%" height="100%" border="0">
                     <tr>
                         <td tal:attributes="colspan python:str(len(tabs)*4+2)" bgcolor="#7d85a6">
-                            <h4 class="admin">mediaTUM Editor Interface&nbsp;&nbsp;</h4>
+                            <h4 class="admin" i18n:translate="editor_main_header">TEXT</h4>
                         </td>
                     </tr>
                     <tr>
@@ -70,7 +70,7 @@
     <head>
         <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta content="text/html;charset=UTF-8" http-equiv="content-type">
-        <title i18n:translate="edit_main_title">mediatum</title>
+        <title i18n:translate="edit_main_title">TEXT</title>
         <link rel="stylesheet" href="/css/editor.css">
         <script type="text/javascript" src="/js/admin.js">
         </script>
@@ -84,7 +84,7 @@
         </frameset>
         <frame tal:attributes="src python:'edit_content?id='+str(id)+str(tab)" frameborder="1" framespacing="1" name="content"/>
         <noframes>
-            <br/><center i18n:translate="edit_main_noframe">Ihr Browser unterst&uuml;tzt keine Frames.</center>
+            <br/><center i18n:translate="edit_main_noframe">TEXT</center>
         </noframes>
     </frameset>
 </html>
@@ -92,8 +92,8 @@
 
 <html metal:define-macro="edit_action_error">
     <body>
-        <h1 i18n:translate="edit_error">Fehler</h1>
-        <i i18n:translate="edit_nobase">Kein Basisverzeichnis ausgew&auml;hlt (<span tal:content="edit_action_error" i18n:name="msg"/>)</i>
+        <h1 i18n:translate="edit_error">TEXT</h1>
+        <i i18n:translate="edit_nobase">TEXT<span tal:content="edit_action_error" i18n:name="msg"/></i>
     </body>
 </html>
 
@@ -105,8 +105,8 @@
         </script>
     </head>
     <body>
-        <h2 i18n:translate="edit_error">Fehler</h2>
-        <span i18n:translate="edit_create_new_folder">Ordner konnte nicht erstellt werden: Der &Uuml;bergeordnete Ordner ist schreibgesch&uuml;tzt.</span>
+        <h2 i18n:translate="edit_error">TEXT</h2>
+        <span i18n:translate="edit_create_new_folder">TEXT</span>
     </body>
 </html>
 
@@ -114,7 +114,7 @@
     <head>
         <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta content="text/html;charset=UTF-8" http-equiv="content-type">
-        <title i18n:translate="edit_tree_editor_title">Tree Editor</title>
+        <title i18n:translate="edit_tree_editor_title">TEXT</title>
         <link rel="stylesheet" href="/css/editor.css">
       
         <style type="text/css">
@@ -200,10 +200,10 @@
 </html>
 
 <tal:block metal:define-macro="access_error">
-    <i i18n:translate="edit_access_error">Nicht berechtigt</i>
+    <i i18n:translate="edit_access_error">TEXT</i>
 </tal:block>
 
 
 <p metal:define-macro="flush" i18n:translate="edit_flush">
-    System Caches wurden geleert
+    TEXT
 </p>

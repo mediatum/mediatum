@@ -12,14 +12,14 @@
 
         <p align="center">
             <input tal:attributes="value path" type="hidden" name="file_path"/>
-            <input i18n:attributes="value edit_editor_save; title edit_editor_save_title" type="submit" value="Speichern" name="save_page" title="&Auml;nderungen speichern"/>
+            <input i18n:attributes="value edit_editor_save; title edit_editor_save_title" type="submit" name="save_page"/>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <input i18n:attributes="value edit_editor_delete; title edit_editor_delete_title" type="submit" value="HTML-Daten l&ouml;schen" name="delete_page" title="HTML-Daten l&ouml;schen" onclick="return questionDel()"/>
+            <input i18n:attributes="value edit_editor_delete; title edit_editor_delete_title" type="submit" name="delete_page" onclick="return questionDel()"/>
         </p>
     </form>
 </tal:block>
 
 <p metal:define-macro="header" i18n:translate="edit_editor_header">
-    Im Augenblick sind folgende Daten f&uuml;r dieses Archiv hinterlegt:
+    TEXT
 </p>
 

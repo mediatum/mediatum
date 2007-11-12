@@ -639,6 +639,9 @@ msgstr "Senden"
 msgid "admin_user_sendmail_title"
 msgstr "Email absenden"
 
+msgid "admin_user_emailsend"
+msgstr "Email wurde verschickt."
+
 ### acl ###
 msgid "admin_acl_existing"
 msgstr "Vorhandene Regeln"

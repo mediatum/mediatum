@@ -1,7 +1,7 @@
 <metal:block metal:define-macro="showbig">
     <div style="width: 100%; text-align:right">
         <a tal:attributes="href python:'javascript:shoppingBag(\''+str(node.id)+'\')'" href="javascript:shoppingBag(nodeid)">
-            <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png" title="Objekt zur Merkliste hinzuf&uuml;gen"/></a>
+            <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png"/></a>
         <a tal:attributes="href python:'/print/'+str(node.id)" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
     </div>
     <div id="object_main">
@@ -9,15 +9,10 @@
             <img tal:condition="python:canseeoriginal" tal:attributes="src python:'/thumb2/'+str(node.id); onClick python:'fullSizePopup('+str(node.id)+', '+str(node.get('vid-width'))+', '+str(int(node.get('vid-height'))+30)+')'" style="cursor:pointer" border="0" width="300" src="/thumb2/_"/>
             <img tal:condition="python:not canseeoriginal" tal:attributes="src python:'/thumb2/'+str(node.id)" border="0" width="300"/>
             <br/>
-            <p><small>(zum Abspielen ben&ouml;tigen Sie ein Flash-Plugin)</small></p>
+            <p><small i18n:translate="video_plugin_info">TEXT</small></p>
         </div>
         <div id="object_meta" tal:content="raw metadata"/>
     </div>
-</metal:block>
-
-
-<metal:block metal:define-macro="uploadform">
-    <!-- no longer needed -->
 </metal:block>
 
 
@@ -26,7 +21,7 @@
     <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
         <head>
             <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
-            <title>Video ansehen</title>
+            <title i18n:translate="video_showvideo">TEXT</title>
             <style>
                 html, body{
                     margin:0px;

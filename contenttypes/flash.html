@@ -8,21 +8,17 @@
         <div id="object_image">
             <img tal:attributes="src python:'/thumb2/'+str(node.id); onClick python:'fullSizePopup('+str(node.id)+', 320, 240)'" style="cursor:pointer" border="0" width="300" src="/thumb2/_"/>
             <br/>
-            <p><small>(zum Abspielen ben&ouml;tigen Sie ein Flash-Plugin)</small></p>
+            <p><small i18n:translate="video_plugin_info">TEXT</small></p>
         </div>
         <div id="object_meta" tal:content="raw metadata"/>
     </div>
 </metal:block>
 
 
-<metal:block metal:define-macro="uploadform">
-    <!-- no longer needed -->
-</metal:block>
-
 
 <html metal:define-macro="fullsize">
     <head>
-        <title>Flash File ansehen</title>
+        <title i18n:translate="flash_showvideo">TEXT</title>
     </head>
     <body marginheight=0 marginwidth=0 topmargin=0 leftmargin=0>
         <table width="100%" height="100%">

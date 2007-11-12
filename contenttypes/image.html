@@ -1,7 +1,7 @@
 <metal:block metal:define-macro="showbig">
     <div style="width: 100%; text-align:right">
         <a tal:attributes="href python:'javascript:shoppingBag(\''+str(node.id)+'\')'" href="javascript:shoppingBag(nodeid)">
-            <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png" title="Objekt zur Merkliste hinzuf&uuml;gen"/></a>
+            <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png"/></a>
         <a tal:attributes="href python:'/print/'+str(node.id)" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
     </div>
     <div id="object_main">
@@ -10,7 +10,7 @@
                 <img tal:attributes="src python:'/thumb2/'+str(node.id); onClick python:'fullSizePopup('+str(node.id)+', ' + str(node.get('width')) +', ' + str(node.get('height')) +')'" style="cursor:pointer; width:300px;border:1px double silver;" border="1px" />
             </a>
             <div tal:condition="python:tif!=''" id="object_highresolution">
-                &nbsp;&nbsp;<a tal:attributes="href python:'/file/'+str(node.id)+'/'+str(tif)" href="#" i18n:translate="image_high_res_title">Hochaufgel&ouml;ste Version herunterladen</a>
+                &nbsp;&nbsp;<a tal:attributes="href python:'/file/'+str(node.id)+'/'+str(tif)" href="#" i18n:translate="image_high_res_title">TEXT</a>
             </div>
         </div>
         <div id="object_image" tal:condition="python:not canseeoriginal">
@@ -30,7 +30,7 @@
 
 <html metal:define-macro="imageviewer">
     <head>
-        <title i18n:translate="popup_full_view">Vollansicht</title>
+        <title i18n:translate="popup_full_view">TEXT</title>
 
         <style type="text/css">
             #div_image{

@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.13 2007/11/07 09:28:31 seiferta Exp $'
+RCS_ID =  '$Id: athana.py,v 1.14 2007/11/13 07:13:40 mediatum Exp $'
 
 import sys
 
@@ -3204,7 +3204,6 @@ class file_producer:
     def __init__ (self, file):
         self.done = 0
         self.file = file
-        print "starting file transfer"
 
     def more (self):
         if self.done:

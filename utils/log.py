@@ -26,6 +26,7 @@ import traceback
 def initialize():
     log_screen = logging.getLogger('screen')
     l = logging.StreamHandler(sys.stdout)
+    log_screen.handlers = []
     log_screen.addHandler(l)
     log_screen.setLevel(logging.INFO)
 

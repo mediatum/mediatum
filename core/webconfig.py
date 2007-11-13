@@ -110,8 +110,8 @@ def initContexts():
    
 def flush(req):
     athana.flush()
-    import core.__init__
     initContexts()
+    import core.__init__
     print "all caches cleared"
 
 def startWebServer():

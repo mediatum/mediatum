@@ -56,4 +56,7 @@ class Default(tree.Node):
 
     def getTechnAttributes(node):
         return {}
+        
+    def has_object(node):
+        return True
 

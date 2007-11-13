@@ -49,15 +49,15 @@ class Document(default.Default):
         obj['path'] = req and req.params.get("path","") or ""
         files, sum_size = node.filebrowser(req)
         
-        doc_exist = False
-        for f in node.getFiles():
-            if f.type=="doc":
-                doc_exist = True
+        #doc_exist = False
+        #for f in node.getFiles():
+        #    if f.type=="doc":
+        #        doc_exist = True
             
         obj['attachment'] = files
         obj['sum_size'] = sum_size
         
-        if doc_exist:
+        if node.has_object():
             obj['canseeoriginal'] = access.hasAccess(node,"data")
             obj['documentlink'] = '/doc/'+str(node.id)+'/'+str(node.id)+'.pdf'
         else:
@@ -91,6 +91,12 @@ class Document(default.Default):
     
     def can_open(node):
         return 0
+    
+    def has_object(node):
+        for f in node.getFiles():
+            if f.type=="doc":
+                return True
+        return False
 
     def getLabel(node):
         return node.name
@@ -261,5 +267,4 @@ class Document(default.Default):
     def getAttachmentBrowser(node, req):
         f, s = node.filebrowser(req)
         req.writeTAL("contenttypes/document.html", {"files":f, "sum_size":s, "id": req.params.get("id",""), "path":req.params.get("path", "")}, macro="attachmentbrowser")
-
 

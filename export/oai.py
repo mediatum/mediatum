@@ -25,7 +25,7 @@ import utils.date
 from utils.dicts import MaxSizeDict
 import utils.date as date
 import core.acl as acl
-from utils.utils import esc
+from utils.utils import esc,getCollection
 
 errordesc = {
  "badArgument": "The request includes illegal arguments, is missing required arguments, includes a repeated argument, or values for arguments have an illegal syntax.",

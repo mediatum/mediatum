@@ -2274,3 +2274,6 @@ msgstr "Fehler auf der Seite, das gewünschte Objekt konnte nicht gefunden werde
 
 msgid "home_link"
 msgstr "zur Startseite"
+
+msgid "content_text_file_title"
+msgstr "digitales Objekt vorhanden"

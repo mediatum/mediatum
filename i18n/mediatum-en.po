@@ -2265,3 +2265,5 @@ msgstr "Error on page, object not found"
 msgid "home_link"
 msgstr "Home"
 
+msgid "content_text_file_title"
+msgstr "digital object available"

@@ -73,6 +73,7 @@ class MYSQLConnector:
             self.dblock.release()
 
     def _reconnect(self):
+        ok = 0
         try:
             if self.db:
                 #self.db.ping()

@@ -73,8 +73,8 @@ def send_thumbnail(req):
             if os.path.isfile(f.getPath()):
                 return req.sendFile(f.getPath(), f.getMimeType())
             else:
-                return req.sendFile(config.basedir + "/img/questionmark.png", "image/png", force=1)
-    return req.sendFile(config.basedir + "/img/questionmark.png", "image/png", force=1)
+                return req.sendFile(config.basedir + "/web/img/questionmark.png", "image/png", force=1)
+    return req.sendFile(config.basedir + "/web/img/questionmark.png", "image/png", force=1)
 
 def send_thumbnail2(req):
     try:

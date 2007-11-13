@@ -15,5 +15,9 @@
     <div tal:condition="python:file.attachment" style="position:absolute; right:25px; top:5px; overflow:hidden;">
         <img i18n:attributes="title view_list_att_title" src="/img/attach.png"/>
     </div>
+    
+    <div tal:condition="python:file.node.has_object()" style="position:absolute; right:38px; top:5px; overflow:hidden;">
+        <img i18n:attributes="title content_text_file_title" src="/img/file.gif"/>
+    </div>
     <div class="break" tal:content="python:''"/>
 </div>

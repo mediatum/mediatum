@@ -439,6 +439,9 @@ msgstr "system"
 msgid "admin_menu_5_1"
 msgstr "log files"
 
+msgid "admin_menu_5_2"
+msgstr "caches"
+
 msgid "admin_error"
 msgstr "You're not allowed to access the administration area.<br/> You can logon here: ${link}"
 
@@ -1271,6 +1274,34 @@ msgstr "Additional information for current node type"
 
 msgid "admin_wf_definition"
 msgstr "Workflow definition"
+
+### flush ###
+msgid "admin_flush_operations"
+msgstr "Possible operations"
+
+msgid "admin_flush_data_label"
+msgstr "clear data cache"
+
+msgid "admin_flush_data_title"
+msgstr "clear data cache"
+
+msgid "admin_flush_data_description"
+msgstr "Already loaded nodes will be stored in data cache.<br>If manipulations took place directly at the data base,<br> these caches must be cleared, so that changes become effective."
+
+msgid "admin_flush_data_cleared"
+msgstr "Data cache has been cleared."
+
+msgid "admin_flush_all_label"
+msgstr "clear all caches"
+
+msgid "admin_flush_all_title"
+msgstr "clear all caches"
+
+msgid "admin_flush_all_description"
+msgstr "Python classes will be stored into caches at run-time. <br> After changes at the source code this caches must be cleared, so that changes become effective."
+
+msgid "admin_flush_all_cleared"
+msgstr "All chaches have been cleared."
 
 ### workflows ###
 msgid "wf_edit_header"

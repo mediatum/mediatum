@@ -85,7 +85,16 @@ def validate(req, op):
             # create new field
             elif key.startswith("newdetail_"):
                 return FieldDetail(req, str(key[10:-2]), "")
-
+                
+            elif key.startswith("indexupdate_"):
+                schema = tree.getNode(key[12:-2])
+                s = schema.getAllItems()
+                try:
+                    from core.search.indexer import searchIndexer
+                    searchIndexer.updateNodes(schema.getAllItems())
+                except:
+                    print "### dummy ###"
+                break
             
             elif key.startswith("editmask_"):
                 return MaskDetails(req, key[9:-2].split("|")[0], key[9:-2].split("|")[1], err=0)
@@ -314,13 +323,15 @@ def view(req):
             mtypes.sort(lambda x, y: cmp(x.getDatatypeString().lower(),y.getDatatypeString().lower()))
         elif int(order[0:1])==5:
             mtypes.sort(lambda x, y: cmp(x.metadatatype.getAccess("read"),y.metadatatype.getAccess("read")))
+        elif int(order[0:1])==6:
+            mtypes.sort(lambda x, y: cmp(x.searchIndexCorrupt(),y.searchIndexCorrupt()))
         if int(order[1:])==1:
             mtypes.reverse()
     else:
         mtypes.sort(lambda x, y: cmp(x.getName().lower(),y.getName().lower()))
 
     v = getAdminStdVars(req)
-    v["sortcol"] = pages.OrderColHeader([t(lang(req),"admin_meta_col_1"),t(lang(req),"admin_meta_col_2"),t(lang(req),"admin_meta_col_3"),t(lang(req),"admin_meta_col_4"),t(lang(req),"admin_meta_col_5"),t(lang(req),"admin_meta_col_6")])
+    v["sortcol"] = pages.OrderColHeader([t(lang(req),"admin_meta_col_1"),t(lang(req),"admin_meta_col_2"),t(lang(req),"admin_meta_col_3"),t(lang(req),"admin_meta_col_4"),t(lang(req),"admin_meta_col_5"),t(lang(req),"admin_meta_col_6"),t(lang(req),"admin_meta_col_7")])
     v["metadatatypes"] = mtypes
     v["datatypes"] = loadAllDatatypes()
     v["pages"] = pages

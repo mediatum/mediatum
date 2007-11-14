@@ -385,6 +385,9 @@ msgstr "url"
 msgid "fieldtype_url_desc"
 msgstr "external link (new window)"
 
+msgid "fieldtype_watermark"
+msgstr "watermark"
+
 ### views ###
 msgid "view_list_add_shoppingbag"
 msgstr "Add object to list of favourites"

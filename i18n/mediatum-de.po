@@ -391,6 +391,9 @@ msgstr "URL"
 msgid "fieldtype_url_desc"
 msgstr "externer Link (neues Fenster)"
 
+msgid "fieldtype_watermark"
+msgstr "Wasserzeichen"
+
 ### views ###
 msgid "view_list_add_shoppingbag"
 msgstr "Objekt zur Merkliste hinzufügen"

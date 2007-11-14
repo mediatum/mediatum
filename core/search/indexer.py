@@ -23,6 +23,8 @@ import re
 import os
 import core
 import core.config as config
+import core.tree as tree
+
 try:
     import sqlite3 as sqlite
 except:
@@ -36,7 +38,7 @@ from utils.utils import iso2utf8, esc
 
 MAX_SEARCH_FIELDS = 32
 DB_NAME = 'searchindex.db'
-FULLTEXT_INDEX_MODE = 0
+FULLTEXT_INDEX_MODE = 1
 
 class SearchIndexer:
 
@@ -107,9 +109,7 @@ class SearchIndexer:
         for id, attr in res.fetchall():
             ret[id] = attr
         return ret
-        
-        
-        
+
         
     def nodeToSimpleSearch(self, node):
         # build simple search index from node
@@ -129,7 +129,7 @@ class SearchIndexer:
         except:
             return False
 
-    
+            
     def nodeToExtSearch(self, node):
         # build extended search index from node
         if len(node.getSearchFields())==0:
@@ -137,24 +137,16 @@ class SearchIndexer:
             return True
             
         v_list = {}
-        fieldnames = {}
         i = 1
         for field in node_getSearchFields(node):
             v_list[str(i)] = node.get(field.getName())
-            fieldnames[str(i)] = field.getName()
             i+=1
         
         # save definition
-        if node.getSchema() not in self.schemafields.keys():
-            self.schemafields[node.getSchema()] = fieldnames
-            for id in fieldnames.keys():
-                sql = 'INSERT INTO searchmeta_def (name, position, attrname) VALUES("'+node.getSchema()+'", "'+id+'", "'+fieldnames[id]+'")'
-                self.cur.execute(sql)
-            sql = ''
+        self.nodeToSchemaDef(node)
             
         sql = 'INSERT INTO searchmeta (id, type, schema, '
         values = ''
-        
         try:
             if len(v_list) > 0:
                 for key in v_list:
@@ -170,28 +162,46 @@ class SearchIndexer:
             return True
         except:
             return False
+      
+      
+    def nodeToSchemaDef(self, node):
+        fieldnames = {}
+        i = 1
+        for field in node_getSearchFields(node):
+            fieldnames[str(i)] = field.getName()
+            i+=1
+
+        sql = 'DELETE FROM searchmeta_def WHERE name="' + node.getSchema()+'"'
+        self.cur.execute(sql)
+        for id in fieldnames.keys():
+            sql = 'INSERT INTO searchmeta_def (name, position, attrname) VALUES("'+node.getSchema()+'", "'+id+'", "'+fieldnames[id]+'")'
+            self.cur.execute(sql)
+            
+        
             
     """
-        mode values:
+        FULLTEXT_INDEX_MODE values:
             0: index fulltext without changes
             1: optimize fulltext (each word once)
             2: each word once with number of occurences
     """
-    def nodeToFulltextSearch(self, node, mode=0):
+    def nodeToFulltextSearch(self, node):
         # build fulltext index from node
         
         if not node.getContentType()=="document":
             # only build fulltext of document nodes
             return True
+        r = re.compile("[a-zA-Z0-9äöüÄÖÜ]+")
         
         for file in node.getFiles():
+            w = ''
             if file.getType() == "fulltext" and os.path.exists(file.getPath()):
                 data = {}
                 content = ''
                 f = open(file.getPath())
                 try:
                     for line in f:
-                        if mode==0:
+                        if FULLTEXT_INDEX_MODE==0:
                             content += line
                         else:
                             for w in re.findall(r, line):
@@ -204,80 +214,76 @@ class SearchIndexer:
                 finally:
                     f.close()
 
-                if mode==1:
+                if FULLTEXT_INDEX_MODE==1:
                     for key in data.keys():
                         content += key + " "
-                elif mode==2:
+                elif FULLTEXT_INDEX_MODE==2:
                     for key in data.keys():
                         content += key + " ["+ str(data[key])+"] "
-
+                sql = ""
                 if len(content)>0:
                     try:
-                        sql = 'INSERT INTO textsearchmeta (id, type, schema, value) VALUES("'+str(node.id)+'", "'+str(node.getType().type)+'", "'+str(node.getType().metadatatypename)+'", "'+iso2utf8(esc(content))+'")'
+                        sql = 'INSERT INTO textsearchmeta (id, type, schema, value) VALUES("'+str(node.id)+'", "'+str(node.getContentType())+'", "'+str(node.getSchema())+'", "'+iso2utf8(esc(content))+'")'
                         self.cur.execute(sql)
                     except:
+                        print "error", node.id,"\n"
                         return False
                 else:
                     print "no Content"
         return True
     
+    
     def updateNode(self, node):
         self.removeNode(node)
-        if not self.nodeToSimpleSearch(node):
-            print "error updating simple search index for node", node.id
-        if not self.nodeToExtSearch(node):
-            print "error updating extended search index for node", node.id
-        if not self.nodeToFulltextSearch(node):
-            print "error updating fulltext search index for node", node.id
-        self.db.commit()
-        print "index updated for node", node.id
+        err = {}
+        err['simple'] = []
+        err['ext'] = []
+        err['text'] = []
 
-        
-    def removeNode(self, node):
+        if not self.nodeToSimpleSearch(node):
+            err['simple'].append(node.id)
+        if not self.nodeToExtSearch(node):
+            err['ext'].append(node.id)
+        if not self.nodeToFulltextSearch(node):
+            err['text'].append(node.id)
+        self.db.commit()
+        return err
+
+
+    def updateNodes(self, nodelist):
+        print "\nupdating node index..."
+        err = {}
+        schemas = {}
+        for node in nodelist:
+            try:
+                if node.getSchema() not in schemas.keys():
+                    schemas[node.getSchema()] = node
+                err = self.updateNode(node)
+            except core.tree.NoSuchNodeError:
+                print "error for id", node.id
+        for key in schemas:
+            self.nodeToSchemaDef(schemas[key])
+        print "...finished"
+        return err
+    
+    
+    """
+        mode:
+            0: no printout
+    """
+    def removeNode(self, node, mode=0):
         for table in self.tablenames:
             self.cur.execute("DELETE FROM "+table+" WHERE id="+str(node.id))
         self.db.commit()
-        print "node", node.id, "removed from index"
-        
+        if mode!=0:
+            print "node", node.id, "removed from index"
+
     def runIndexer(self):
-        errorindexfull = []
-        errorindexext = []
-        errorindextext = []
-        
+        err = []
         root = tree.getRoot()
-        self.clearIndex()
-        print "\nbuilding indices..."
-        
-        nodes=0
-        for node in root.getAllChildren():
-            #if not self.nodeToSimpleSearch(node):
-            #    errorindexfull.append(node.id)
-                
-            if not self.nodeToExtSearch(node):
-                errorindexext.append(node.id)
- 
-            #if not self.nodeToFulltextSearch(node):
-            #    errorindextext.append(node.id)              
-            nodes+=1
-        
-        self.db.commit()
-        print "  import of", nodes, "nodes finished with",len(errorindexfull)+len(errorindexext)+len(errorindextext), "error(s)."
-        if len(errorindexfull)>0:
-            print "   Simple Search Index:\n    error(s) in node with id:"
-            for item in errorindexfull:
-                print "    -", item
-                
-        if len(errorindexext)>0:
-            print "   Extended Search Index:\n    error(s) in node with id:"
-            for item in errorindexext:
-                print "    -", item
+        err = self.updateNodes(root.getAllChildren())
+        print err
 
-        if len(errorindextext)>0:
-            print "   Fulltext Search Index:\n    error(s) in node with id:"
-            for item in errorindextext:
-                print "    -", item
-
-    
     def runQuery(self):
         #sql = "select id, field4 from searchmeta where type='image' and schema='lt' and field4 < '2007-01-01T00:00:00' order by field4 desc"
         sql = "select id, field9 from searchmeta where type='document' and schema='diss' and field9 < '2000' order by field9 desc"
@@ -298,8 +304,8 @@ class SearchIndexer:
 searchIndexer = SearchIndexer()
 
 if __name__ == "__main__":
-    #searchIndexer.runIndexer()
-    print searchIndexer.getDefForSchema("hb")
+    searchIndexer.runIndexer()
+    #print searchIndexer.getDefForSchema("hb")
 
 
 

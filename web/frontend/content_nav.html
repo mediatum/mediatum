@@ -22,39 +22,43 @@
     <div style="clear:both"><span tal:replace="nothing"/></div>
 </div>
 
-<div metal:define-macro="files" id="portal-pages" style="position:relative;top:0px;left:0px;">
-    <div tal:condition="python:len(list(nav_list))>1 or len(sortfieldslist)>0">
-    &nbsp;
-    </div>
+<div metal:define-macro="files" id="portal-pages">
 
-    <div tal:condition="python:len(list(nav_list))>1">
-    <tal:block tal:repeat="page python:list(nav_list)">
-        <tal:block tal:condition="python:page!='...'" tal:define="page_no python:nav_page[int(nav_list.index(page))]">
-            &nbsp;
-            <tal:block tal:condition="python:act_page==page_no" tal:replace="python:'['"/><a tal:attributes="href page" tal:content="python:str(page_no+1)"/><tal:block tal:condition="python:act_page==page_no" tal:replace="python:']'"/>
-        </tal:block>
-        <span tal:condition="python:page=='...'" tal:replace="python:' ...'"/>
-    </tal:block>
+    <div tal:condition="python:sortfieldslist" id="sortdiv">
+        <form>
+            <table cellspacing="0" cellpadding="0">
+                <tal:block tal:repeat="i python:range(len(sortfieldslist))">
+                <tr>
+                    <td>
+                        <small tal:condition="python:i==0" i18n:translate="sort_label">TEXT</small>
+                        <small tal:condition="python:i>0" i18n:translate="sort_label2">TEXT</small>
+                    </td>
+                    <td>
+                        <select tal:attributes="name python:'sortfield'+str(i)" style="font-size: 9px" onchange="submit()">
+                            <option tal:repeat="field python:sortfieldslist[i]" tal:content="python:field.getLabel()" 
+                                tal:attributes="value python:field.getName(); selected python:field.selected()"/>
+                        </select>
+                    </td>
+                </tr>
+                </tal:block>
+            </table>
+        </form>
     </div>
-   
-    <div tal:condition="python:sortfieldslist" style="position:absolute;top:0px;left:0px">
-    <form>
-    <table cellspacing="0" cellpadding="0">
-    <tal:block tal:repeat="i python:range(len(sortfieldslist))">
-    <tr>
-    <td>
-        <small tal:condition="python:i==0"><tal:block i18n:translate="sort_label"/></small>
-        <small tal:condition="python:i>0"><tal:block i18n:translate="sort_label2"/></small>
-    </td><td>
-        <select tal:attributes="name python:'sortfield'+str(i)" style="font-size: 9px" onchange="submit()">
-            <option tal:repeat="field python:sortfieldslist[i]" tal:content="python:field.getLabel()" 
-                    tal:attributes="value python:field.getName(); selected python:field.selected()"/>
-        </select>
-    </td>
-    </tr>
-    </tal:block>
-    </table>
-    </form>
+    
+    <div id="pages">
+        <div tal:condition="python:len(list(nav_list))>1 or len(sortfieldslist)>0">
+        &nbsp;
+        </div>
+
+        <div tal:condition="python:len(list(nav_list))>1">
+        <tal:block tal:repeat="page python:list(nav_list)">
+            <tal:block tal:condition="python:page!='...'" tal:define="page_no python:nav_page[int(nav_list.index(page))]">
+                &nbsp;
+                <tal:block tal:condition="python:act_page==page_no" tal:replace="python:'['"/><a tal:attributes="href page" tal:content="python:str(page_no+1)"/><tal:block tal:condition="python:act_page==page_no" tal:replace="python:']'"/>
+            </tal:block>
+            <span tal:condition="python:page=='...'" tal:replace="python:' ...'"/>
+        </tal:block>
+        </div>
     </div>
 
 </div>

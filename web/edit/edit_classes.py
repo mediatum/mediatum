@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.tree as tree
+import core.users as users
 from edit_common import writetree, getFaultyDir
 from core.translation import t, lang
 from core.acl import AccessData

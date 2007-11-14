@@ -1,0 +1,170 @@
+"""
+ mediatum - a multimedia content repository
+
+ Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
+ Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+import core.athana as athana
+from utils.utils import esc
+from core.metatype import Metatype
+import re
+import contenttypes.image
+from core.tree import registerNodeClass, FileNode
+import Image, ImageFont, ImageDraw, ImageEnhance
+import sys
+import time
+import traceback
+from utils.utils import splitfilename
+import core.config as config
+
+FONTPATH = "/utils/ArenaBlack.ttf"
+FONTSIZE = 40
+
+class m_watermark(Metatype):
+    """ This class implements the metatype watermark and everything that is needed to handle it """
+    def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
+        return athana.getTAL("metadata/watermark.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
+
+    def getSearchHTML(self, field, value="", width=174, name="", language=None):
+        return athana.getTAL("metadata/watermark.html",{"field":field, "value":value, "name":name}, macro="searchfield", language=language)
+
+    def getFormatedValue(self, field, node, language=None):
+        value = esc(node.get(field.getName()).replace(";","; "))
+        # replace variables
+        for var in re.findall( r'&lt;(.+?)&gt;', value ):
+            if var=="att:id":
+                value = value.replace("&lt;"+var+"&gt;", node.id)
+            elif var.startswith("att:"):
+                val = node.get(var[4:])
+                if val=="":
+                    val = "____"
+
+                value = value.replace("&lt;"+var+"&gt;", val)
+
+        return (field.getLabel(), value)
+
+    def getFormatedValueForDB(self, field, value):
+        try:
+            return value.replace("; ",";")
+        except:
+            return value
+
+    def getName(self):
+        return "fieldtype_watermark"
+
+    ''' generate watermark '''
+    def reduce_opacity(self, im, opacity):
+        """Reduces the opacity of an image. Opacity must be between 0 and 1"""
+        if im.mode != 'RGBA':
+            im = im.convert('RGBA')
+        else:
+            im = im.copy()
+        alpha = im.split()[3]
+        alpha = ImageEnhance.Brightness(alpha).enhance(opacity)
+        im.putalpha(alpha)
+        return im
+    
+    def watermark(self, image, imagewm, text, opacity):
+        """ Creates a watermark, defined by an arbitrary string and draws it on an image"""
+        global FONTPATH, FONTSIZE
+        im = None
+        draw = None
+        mark = None
+        layer = None
+        drawwater = None
+        try:
+            try:
+                im = Image.open(image)
+                im = im.copy()
+                if im.mode != 'RGBA':
+                    print "Converting image to RGBA!"
+                    im = im.convert('RGBA')
+                draw = ImageDraw.Draw(im)
+                
+                #Load a custom font
+                font = None
+                try:
+                    font = ImageFont.truetype(config.basedir+FONTPATH, FONTSIZE)
+                except Exception, inst:
+                    print "Loading of custom font failed: ", inst
+                    print " --> using default!"
+                    font = ImageFont.load_default()
+                
+                #Now measure size of text if it would be created with the new font and create a custom bitmap    
+                text_size = draw.textsize(text, font=font)
+                mark = Image.new("RGBA", text_size, (0,0,0,0))
+                layer = Image.new("RGBA", im.size, (0,0,0,0))
+                
+                #Create drawing object and draw text on bitmap
+                drawwater = ImageDraw.Draw(mark)
+                drawwater.text((0, 0), text, font=font, fill = (0,0,0,255))
+    
+                pos_x = 0
+                pos_y = 0
+                width = mark.size[0]
+                height = mark.size[1]
+                
+                if mark.size[0] > im.size[0]:
+                    width = im.size[0]
+                    
+                if mark.size[1] > im.size[1]:
+                    height = im.size[1]
+                
+                mark = mark.resize((width, height))
+              
+                pos_x = im.size[0]/2-width/2
+                pos_y = im.size[1]/2-height/2
+                #Paste mark on layer
+                layer.paste(mark, (pos_x, pos_y))
+                layer = self.reduce_opacity(layer, opacity)
+                              
+                im = Image.composite(layer, im, layer)
+                im.save(imagewm, "JPEG")
+                print "Finished creating watermark..."
+                
+            except Exception, inst:
+                print "Exception while creating the watermark: ", inst
+                traceback.print_exc(file=sys.stdout)
+                im = image;
+        finally:
+            print "Cleaning up after watermark creation"
+            del draw
+            del drawwater
+            del mark
+            del layer
+        return im
+
+    ''' events '''
+    def event_metafield_changed(self, node, field):
+        
+        if "image" in node.type:
+            items = node.items()
+            #check if there is an original file and modify it in case
+            for f in node.getFiles():
+                if f.type == "original":
+                    path,ext = splitfilename(f.getPath())
+                    pngname = path+"_wm.jpg"
+
+                    for file in node.getFiles():
+                        if file.getType() == "original_wm":
+                            node.removeFile(file)
+                            break
+                    self.watermark(f.getPath(), pngname, node.get(field.getName()), 0.6)
+                    node.addFile(FileNode(name=pngname, type="original_wm", mimetype="image/jpeg"))
+                    print "watermark created for original file"
+
+
+

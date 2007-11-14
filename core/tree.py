@@ -245,13 +245,18 @@ class NodeList:
             # lists.
             return nodes
         else:
+            if not field:
+                return self
             if type(field) == type(""):
                 field = [field]
             sortlists = []
             for f in field:
-                if f not in sortorders:
-                    sortorders[f] = createSortOrder(f)
-                sortlists.append(sortorders[f])
+                if f:
+                    if f not in sortorders:
+                        sortorders[f] = createSortOrder(f)
+                    sortlists.append(sortorders[f])
+            if not sortorders:
+                return self
 
             def fieldcmp(id1,id2):
                 for s in sortlists:

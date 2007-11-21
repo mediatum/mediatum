@@ -23,6 +23,7 @@ import core.tree as tree
 import logging
 from core.acl import AccessData
 from utils.utils import getCollection
+from core.translation import t
 
 log = logging.getLogger('edit')
 utrace = logging.getLogger('usertracing')

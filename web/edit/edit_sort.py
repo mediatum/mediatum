@@ -111,7 +111,7 @@ def edit_sortfiles(req,ids):
 
     sortfields = [SortChoice(t(req,"off"),"")]
     for ntype,num in c.getAllOccurences().items():
-        req.write(ntype.getName() +" " +str(num)+"<br/>")
+        #req.write(ntype.getName() +" " +str(num)+"<br/>")
         if ntype.getSortFields():
             for sortfield in ntype.getSortFields():
                 sortfields += [SortChoice(sortfield.getLabel(), sortfield.getName())]

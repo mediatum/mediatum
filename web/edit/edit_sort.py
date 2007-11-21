@@ -92,7 +92,7 @@ def edit_sortfiles(req,ids):
     access = AccessData(req)
     node = tree.getNode(ids[0])
     if not access.hasWriteAccess(node):
-        req.writeTAL("edit/edit.html", {}, macro="access_error")
+        req.writeTAL("web/edit/edit.html", {}, macro="access_error")
         return
 
     c = getCollection(node)
@@ -118,5 +118,5 @@ def edit_sortfiles(req,ids):
                 sortfields += [SortChoice(sortfield.getLabel()+t(req,"descending"), "-"+sortfield.getName())]
             break
 
-    req.writeTAL("edit/edit_sort.html", {"node":node, "collection_sortfield":collection_sortfield,
+    req.writeTAL("web/edit/edit_sort.html", {"node":node, "collection_sortfield":collection_sortfield,
                                          "sortchoices":sortfields}, macro="edit_autosort")

@@ -43,6 +43,12 @@ FULLTEXT_INDEX_MODE = 1
 class SearchIndexer:
 
     def __init__(self):
+        try:
+            self.init()
+        except:
+            print "sqlite indexer failed"
+
+    def init(self):
         global MAX_SEARCH_FIELDS
         global DB_NAME
         global FULLTEXT_INDEX_MODE

@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.14 2007/11/13 07:13:40 mediatum Exp $'
+RCS_ID =  '$Id: athana.py,v 1.15 2007/11/23 10:13:32 kramm Exp $'
 
 import sys
 
@@ -3169,7 +3169,7 @@ def parse_http_date (d):
 
 def check_date():
     global time_offset
-    tmpfile = join_paths(GLOBAL_TEMP_DIR, "datetest.tmp")
+    tmpfile = join_paths(GLOBAL_TEMP_DIR, "datetest"+str(random.random())+".tmp")
     open(tmpfile,"wb").close()
     time1 = os.stat(tmpfile)[stat.ST_MTIME]
     os.unlink(tmpfile)

@@ -222,7 +222,7 @@ def retrieveNodes(access, collectionid, date_from=None, date_to=None):
     else:
         collection = tree.getRoot("collections")
     
-    query = "schema=diss"
+    query = "objtype=dissertation and schema=diss"
 
     if date_from:
         if query:

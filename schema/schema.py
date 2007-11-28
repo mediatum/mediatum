@@ -474,9 +474,9 @@ def exportMetaScheme(name):
 def importMetaSchema(filename):
     n = readNodeXML(filename)
     importlist = list()
-    if n.getType().getName()=="metadatatype":
+    if n.getContentType()=="metadatatype":
         importlist.append(n)
-    elif n.getType().getName()=="metadatatypes":
+    elif n.getContentType()=="metadatatypes":
         for ch in n.getChildren():
             importlist.append(ch)
 

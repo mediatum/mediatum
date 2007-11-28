@@ -2270,3 +2270,6 @@ msgstr "Home"
 
 msgid "content_text_file_title"
 msgstr "digital object available"
+
+msgid "file_processingerror"
+msgstr "Error while processing file! Please check processed file."

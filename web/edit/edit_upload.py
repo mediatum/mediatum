@@ -37,6 +37,7 @@ from core.tree import Node
 from core.acl import AccessData
 from schema.schema import loadTypesFromDB
 
+from core.translation import translate, lang
 
 def elemInList(list, name):
     for item in list:
@@ -66,6 +67,9 @@ def edit_upload(req, ids):
                 for t in datatypes:
                     if t.getName()==dtype and not elemInList(dtypes, t.getName()):
                         dtypes.append(t)
+                        
+    dtypes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(),translate(y.getLongName(), request=req).lower()))
+
     objtype = ""
     if len(dtypes)==1:
         objtype = dtypes[0]
@@ -73,7 +77,7 @@ def edit_upload(req, ids):
         for t in datatypes:
             if t.getName()==req.params.get("objtype",""):
                 objtype = t
-    
+
     # filter schemes for special datatypes
     if req.params.get("objtype","")!="":
         _schemes = []
@@ -81,6 +85,7 @@ def edit_upload(req, ids):
             if req.params.get("objtype","") in scheme.getDatatypes():
                 _schemes.append(scheme)
         schemes = _schemes
+        schemes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(),translate(y.getLongName(), request=req).lower()))
 
     req.write(req.getTAL("web/edit/edit_upload.html",{"id":req.params.get("id"),"datatypes":dtypes, "schemes":schemes, "objtype":objtype, "error":req.params.get("error")},macro="upload_form"))
         

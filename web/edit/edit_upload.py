@@ -125,35 +125,38 @@ def importFileIntoNode(user,realname,tempname,datatype, workflow=0):
     n.set("creator", user.getName())
     n.set("creationtime", date.format_date())
     if hasattr(n,"event_files_changed"):
-        try:
-            n.event_files_changed()
-        except "PostprocessingError":
-            raise "PostprocessingError"
+        #try:
+        n.event_files_changed()
+        #except "PostprocessingError":
+        #    raise "PostprocessingError"
 
     uploaddir = getUploadDir(user)
     uploaddir.addChild(n)
 
 def upload_new(req):
     user = users.getUserFromRequest(req)
-    file = req.params["file"]
-    workflow = "" #int(req.params["workflow"])
-    del req.params["file"]
-
     datatype = req.params.get("datatype", "image")
-
     uploaddir = getUploadDir(user)
-    if file.filesize>0:
-        try:
-            importFileIntoNode(user, file.filename, file.tempname, datatype, workflow)
-            req.request["Location"] = req.makeLink("content", {"id":uploaddir.id})
-        except "PostprocessingError":
-            req.request["Location"] = req.makeLink("content", {"id":uploaddir.id, "error":"PostprocessingError_"+datatype[:datatype.find("/")]})
-    else:
-        # upload without file
-        importFileIntoNode(user, "", "", datatype, workflow)
-        req.request["Location"] = req.makeLink("content", {"id":uploaddir.id})
+    workflow = "" #int(req.params["workflow"])
+    
+    if "file" in req.params.keys():
+        file = req.params["file"]
+        del req.params["file"]
+        if file.filesize>0:
+            try:
+                importFileIntoNode(user, file.filename, file.tempname, datatype, workflow)
+                req.request["Location"] = req.makeLink("content", {"id":uploaddir.id})
+            except:
+                req.request["Location"] = req.makeLink("content", {"id":uploaddir.id, "error":"PostprocessingError_"+datatype[:datatype.find("/")]})
+
+            return athana.HTTP_MOVED_TEMPORARILY;
+
+    # upload without file
+    importFileIntoNode(user, "", "", datatype, workflow)
+    req.request["Location"] = req.makeLink("content", {"id":uploaddir.id})
     return athana.HTTP_MOVED_TEMPORARILY;
 
+    
 """ popup with type information"""
 def upload_help(req):
     try:

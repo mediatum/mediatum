@@ -31,7 +31,7 @@ allow_delete_unused = 0
 
 def edit_files(req, ids):
     node = tree.getNode(ids[0])
-    
+    update_error = False
     access = acl.AccessData(req)
     if not access.hasWriteAccess(node):
         req.writeTAL("web/edit/edit.html", {}, macro="access_error")
@@ -42,7 +42,10 @@ def edit_files(req, ids):
 
     if req.params.get("postprocess","")!="":
         if hasattr(node,"event_files_changed"):
-            node.event_files_changed()
+            try:
+                node.event_files_changed()
+            except "PostprocessingError":
+                update_error = True
 
     if req.params.get("addfile","")!="":
         only_add = req.params.get("change_file", "no") == "no"
@@ -79,7 +82,11 @@ def edit_files(req, ids):
                 
                 node.addFile(file)
                 if hasattr(node,"event_files_changed"):
-                    node.event_files_changed()
+                    try:
+                        node.event_files_changed()
+                    except "PostprocessingError":
+                        update_error = True
+                    
         
     # delete attribute
     for key in req.params.keys():
@@ -119,7 +126,7 @@ def edit_files(req, ids):
              node.removeAttribute(key)
         technfields={}
 
-    req.writeTAL("web/edit/edit_files.html", {"id":req.params.get("id","0"), "tab":req.params.get("tab", ""), "node":node, "obsoletefields":obsoletefields, "allow_delete_unused":allow_delete_unused, "metafields":metafields, "fields":fields, "technfields":technfields, "tattr":tattr,"fd":formatdate, "gf":getFormat}, macro="edit_files_file")
+    req.writeTAL("web/edit/edit_files.html", {"id":req.params.get("id","0"), "tab":req.params.get("tab", ""), "node":node, "obsoletefields":obsoletefields, "allow_delete_unused":allow_delete_unused, "metafields":metafields, "fields":fields, "technfields":technfields, "tattr":tattr,"fd":formatdate, "gf":getFormat, "update_error":update_error}, macro="edit_files_file")
 
 
 def getFormat(fields, name):

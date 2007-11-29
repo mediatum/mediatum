@@ -12,9 +12,12 @@
          <div style="float:left; margin: 3px;">
             <a tal:attributes="href python:file.getLink()" tal:content="raw python:file.node.show_node_image()" target="_parent"/>
         </div>
-        <div>
+        
+        <div style="margin-left:132px; position: absolute">
             <p tal:replace="python:'['+str(file.nr+1)+'/'+str(file.num)+']'"/><br/>
+            <div style="overflow:hidden; width:130px">
             <a tal:attributes="href python:file.getLink()" style="white-space:normal" tal:content="raw python:file.node.show_node_text()"/>
+            </div>
         </div>
     </div>
     <div class="break"/>

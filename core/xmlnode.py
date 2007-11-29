@@ -51,7 +51,7 @@ def writexml(self, fi, indent=None, written=None):
         fi.write((" "*indent) + "<child id=\"%s\"/>\n" % str(c.id))
     indent -= 4
     fi.write((" "*indent) + '</node>'+"\n")
-    for c in self.getChildren():
+    for c in self.getChildren().sort():
         if c.id not in written:
             written[c.id] = None
             c.writexml(fi, indent)

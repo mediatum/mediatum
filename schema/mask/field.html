@@ -26,7 +26,7 @@
 
         <tal:block tal:condition="python:op=='new'">
             <fieldset>
-                <input type=radio name="fieldtype" value="common" checked="checked"/> 
+                <input type="radio" name="fieldtype" value="common" checked="checked"/> 
                 <span i18n:translate="mask_edit_existing_field">TEXT</span>
                 <br/>
                 <div class="label" i18n:translate="mask_edit_field">TEXT</div>
@@ -40,14 +40,14 @@
                 <span tal:condition="python:len(metafields)==0" style="color:red" i18n:translate="mask_editor_no_fields">TEXT</span>
                 <br/>
                 <br/>
-                <input type=radio name="fieldtype" value="new"/> <span i18n:translate="mask_edit_new_field">TEXT</span><br/>
+                <input type="radio" name="fieldtype" value="new"/> <span i18n:translate="mask_edit_new_field">TEXT</span><br/>
                 <div class="label" i18n:translate="mask_edit_nameid">TEXT</div> 
                 <input type="text" name="fieldname" style="width:250px;"/>
                 <br/>
                 <div class="label" i18n:translate="mask_edit_type">TEXT</div> 
                 <select name="newfieldtype" id="newfieldtype" style="width:250px;" onchange="metatypechange(document)">
-                    <tal:block tal:repeat="key python:list(fieldtypes)">
-                        <option tal:condition="python:not fieldtypes[key].isContainer()" tal:attributes="value key" tal:content="python:fieldtypes[key].getName()" i18n:translate=""/>
+                    <tal:block tal:repeat="fieldtype fieldtypes">
+                        <option tal:condition="python:not fieldtype.isContainer()" tal:attributes="value python:fieldtype.getID()" tal:content="python:fieldtype.getName()" i18n:translate=""/>
                     </tal:block>
                 </select>
                 <br/>

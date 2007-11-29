@@ -23,8 +23,7 @@ import core.tree as tree
 from core.tree import Node, getNode
 
 from schema.schema import getMetaFieldTypeNames, getMetaFieldTypes, getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, dateoption
-#from metadatatypes import dateoption
-from core.translation import lang
+from core.translation import lang, translate
 from core.metatype import Metatype
 
 class m_field(Metatype):
@@ -218,13 +217,19 @@ class m_field(Metatype):
             f = getMetadataType(t)
             add_values.append(f.getMaskEditorHTML(val, metadatatype=metadatatype, language=lang(req)))
 
+        metafields = req.params.get("metadatatype","").getMetaFields()
+        metafields.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))
+        
+        metafieldtypes = getMetaFieldTypes().values()
+        metafieldtypes.sort(lambda x, y: cmp(translate(x.getName(), request=req).lower(), translate(y.getName(), request=req).lower()))
+        
         v = {}
         v["op"] = req.params.get("op","")
         v["pid"] = req.params.get("pid","")
         v["item"] = item
-        v["metafields"] = req.params.get("metadatatype","").getMetaFields()
+        v["metafields"] = metafields
         v["fields"] = fields
-        v["fieldtypes"] = getMetaFieldTypes()
+        v["fieldtypes"] = metafieldtypes
         v["dateoption"] = dateoption
         v["t_attrs"] = attr
         v["icons"] = {"externer Link":"/img/extlink.png", "Email":"/img/email.png"}

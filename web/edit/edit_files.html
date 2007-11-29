@@ -7,7 +7,10 @@
 <tal:block metal:define-macro="edit_files_file">
     <br/>
     <form tal:attributes="action python:'edit_content?id='+str(id)+'&tab='+tab" tal:define="files python:node.getFiles()" method="post" enctype="multipart/form-data">
-    
+        <tal:block tal:condition="python:update_error">
+            <p class="error" i18n:translate="file_processingerror">TEXT</p>
+        </tal:block>
+        
         <tal:block tal:condition="python:len(files)>0">
             <table class="files">
                 <tr>

@@ -28,7 +28,7 @@ from core.tree import Node, getNode
 from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings 
 from core.translation import lang, t
-from schema.schema import getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
+from schema.schema import getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, deleteMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
 import re
 
 _masktypes = {"":"masktype_empty","edit":"masktype_edit", "search":"masktype_search", "shortview":"masktype_short", "fullview":"masktype_full"}

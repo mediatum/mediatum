@@ -408,7 +408,7 @@ def deleteRule(rulename):
     except:
         None
         
-        
+
 # returns a list of all not defined rulenames used in nodes
 def getMissingRuleNames():
     global conn
@@ -417,6 +417,7 @@ def getMissingRuleNames():
         if not existRule(rule):
             ret.append(rule)
     return ret
+
     
 def resetNodeRule(rulename):
     global conn

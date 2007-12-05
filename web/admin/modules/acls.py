@@ -31,7 +31,6 @@ from core.translation import t, lang
 
 def validate(req, op):
     try:
-
         for key in req.params.keys():
             if key == "style" and req.params.get("style","")=="editor":
                 return showEditor(req)
@@ -48,7 +47,12 @@ def validate(req, op):
                 # delete rule
                 acl.deleteRule(str(key[7:-2]))
                 break
-
+                
+            elif key.startswith("reset_"):
+                # remove not defined rule names from nodes
+                acl.resetNodeRule(key[6:-2])
+                break
+                
             elif key == "form_op":
                 if req.params["form_op"] == "save_new":
                     # save rule values
@@ -100,6 +104,7 @@ def view(req):
     v["sortcol"] = pages.OrderColHeader([t(lang(req),"admin_acl_col_1"), t(lang(req),"admin_acl_col_2"), t(lang(req),"admin_acl_col_3")])
     v["rules"] = rules
     v["pages"] = pages
+    v["missing_rules"] = acl.getMissingRuleNames()
     return req.getTAL("web/admin/modules/acls.html", v, macro="view")
 
 #

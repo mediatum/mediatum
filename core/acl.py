@@ -179,6 +179,10 @@ class AccessRule:
 
     def getParsedRule(self):
         return self.parsedRule
+        
+    def ruleUsage(self):
+        global conn
+        return conn.ruleUsage(self.name)
 
 
 class ACLAndCondition(AccessCondition):
@@ -320,7 +324,6 @@ class ACLParser(BoolParser):
         for prefix,pclass in prefix2conditionclass.items():
             if s2.startswith(prefix):
                 return pclass(s2)
-        print s
         raise ACLParseException("syntax error: " + s);
 
     def default():
@@ -348,9 +351,14 @@ def getRule(name):
             r = name[1:-1]
             description,text = r,r
         else:
-            description,text = conn.getRule(name)
+            try:
+                description, text = conn.getRule(name)
+            except "RuleNotFoundError":
+                print "rule not found, access denied"
+                description = "( not true )"
+                text = "dummy_rule"
 
-        rule = AccessRule(name,description,text)
+        rule = AccessRule(name, description, text)
         rulestr = rule.getRuleStr()
         
         if rulestr:
@@ -393,12 +401,27 @@ def existRule(rulename):
 
 def deleteRule(rulename):
     global conn, rules
+    conn.resetNodeRule(rulename)
     conn.deleteRule(rulename)
     try:
         rules.pop(rulename)
     except:
         None
-
+        
+        
+# returns a list of all not defined rulenames used in nodes
+def getMissingRuleNames():
+    global conn
+    ret = []
+    for rule in conn.getAllDBRuleNames(): # saved rulenames in nodes
+        if not existRule(rule):
+            ret.append(rule)
+    return ret
+    
+def resetNodeRule(rulename):
+    global conn
+    conn.resetNodeRule(rulename)
+    
 def flush():
     global rules
     rules.clear()

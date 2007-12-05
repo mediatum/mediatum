@@ -1,10 +1,24 @@
 <metal:block metal:define-macro="view">
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
+    
+    
+    
     <form tal:attributes="action page" name="rules" method="post" action="#">
         <table class="overview">
             <tr>
                 <td colspan="5"><h3 i18n:translate="admin_acl_existing">TEXT</h3></td>
             </tr>
+            <tr tal:condition="python: len(missing_rules)>0">
+                <td colspan="5">
+                    <p class="error"><tal:block i18n:translate="admin_acl_missing_header">TEXT</tal:block><br/><br/>
+                    <tal:block tal:repeat="missing_rule missing_rules">
+                        <b>- <span tal:content="missing_rule"></span> <input tal:attributes="name python:'reset_'+missing_rule" i18n:attributes="title admin_acl_reset_title" type="image" src="/img/delete.png"/></b><br/>
+                    </tal:block>
+                    </p>
+                    <br/>
+                </td>
+            </tr>
+            
             <tr>
                 <th>&nbsp;</th>
                 <th tal:repeat="col sortcol">
@@ -24,7 +38,7 @@
                     <td tal:attributes="class cssclass" tal:content="python:rule.getDescription()"/>
                     <td tal:attributes="class cssclass">
                         <input tal:attributes="name python:'edit_'+rule.getName()" i18n:attributes="title admin_acl_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
-                        <input tal:attributes="name python:'delete_'+rule.getName(); onclick python:'return questionDelName(\''+rule.getName()+'\')'" i18n:attributes="title admin_acl_delete_title" type="image" src="/img/delete.png" onClick="return questionDel()"/>
+                        <input tal:condition="python: rule.ruleUsage()>0" tal:attributes="name python:'delete_'+rule.getName(); onclick python:'return questionDelName(\''+rule.getName()+'\')'" i18n:attributes="title admin_acl_delete_title" type="image" src="/img/delete.png" onClick="return questionDel()"/>
                     </td>
                 </tr>
                 </tal:block>

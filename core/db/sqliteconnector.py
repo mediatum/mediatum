@@ -159,9 +159,9 @@ class SQLiteConnector:
         if len(rule)==1:
             return rule[0][2], rule[0][1]
         elif len(rule)>1:
-            raise "Duplicate rule "+str(name)
+            raise "DuplicateRuleError"
         else:
-            raise "no such rule "+str(name)
+            raise "RuleNotFoundError"
     
     def getRuleList(self):
         return self.runQuery("select name, description, rule from nodeaccess order by name")
@@ -169,7 +169,6 @@ class SQLiteConnector:
     def updateRule(self, rule):
         #try:
         sql = "update nodeaccess set rule='"+rule.getRuleStr()+"', description='"+rule.getDescription()+"' where name='" + rule.getName()+"'"
-        print sql
         self.runQuery(sql)
         return True
         #except:
@@ -189,6 +188,25 @@ class SQLiteConnector:
         except:
             return False
 
+    def getAllDBRuleNames(self):
+        ret = {}
+        for field in ["readaccess", "writeaccess", "dataaccess"]:
+            for names in self.runQuery('select distinct('+field+') from node where '+field+' not like "{%"'):
+                rules = names[0].split(",")
+                for rule in rules:
+                    if rule!="":
+                        ret[rule]=""
+        return ret.keys()   
+        
+    def ruleUsage(self, rulename):
+        result = self.runQuery('select count(*) from node where readaccess="'+rulename+'" or writeaccess="'+rulename+'" or dataaccess="'+rulename+'"')
+        return int(result[0][0])
+        
+    def resetNodeRule(self, rulename):
+        for field in ["readaccess", "writeaccess", "dataaccess"]:
+            self.runQuery('update node set '+field+'="" where '+field+'="'+rulename+'"')
+            
+            
     """ node section """
     def getRootID(self):
         nodes = self.runQuery("select id from node where type='root'")

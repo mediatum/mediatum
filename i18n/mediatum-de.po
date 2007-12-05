@@ -688,6 +688,12 @@ msgstr "Regel"
 msgid "admin_acl_popup_title"
 msgstr "Regel bearbeiten/bestellen"
 
+msgid "admin_acl_reset_title"
+msgstr "Regeleinträge löschen"
+
+msgid "admin_acl_missing_header"
+msgstr "Folgende Regeldefinitionen fehlen, werden aber genutzt:"
+
 ### acl editor ###
 msgid "admin_acl_editor_title"
 msgstr "Administration Interface - Regeleditor"

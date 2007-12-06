@@ -61,12 +61,33 @@ def edit_metadata(req, ids):
         if len(nodes)==0 or nodes[0].type == node.type:
             nodes += [node]
         idstr+=id
+    
+    masklist = []
+    default = None
+    for m in node.getType().getMasks():
+        if m.getMasktype()!="edit":
+            continue
+        if m.getDefaultMask():
+            default = m
+        masklist.append(m)
 
-    maskname = req.params.get("mask", node.get("edit.lastmask") or "editmask")
+    
+    maskname = req.params.get("mask" node.get("edit.lastmask"))
+    
+    if maskname="":
+        for m in masklist:
+            if m.getDefaultMask():
+                maskname = m.getName()
+                break
+    
+    mask = node.getMask(maskname)
+    
+    if not mask:
+        mask = default
+        maskname = default.getName()
 
     for n in nodes:
         n.set("edit.lastmask", maskname)
-    mask = node.getMask(maskname)
 
     if not mask:
         req.writeTAL("web/edit/edit_metadata.html", {}, macro="no_mask")
@@ -110,12 +131,6 @@ def edit_metadata(req, ids):
 
     if "edit_metadata" in req.params or node.get("faulty")=="true":
         req.params["errorlist"] = mask.validate(nodes)
-
-    masklist = []
-    for m in node.getType().getMasks():
-        if m.get("masktype")!="edit":
-            continue
-        masklist.append(m)
 
     update_date = []
     if len(nodes)==1:

@@ -74,7 +74,7 @@ def edit_metadata(req, ids):
     
     maskname = req.params.get("mask", node.get("edit.lastmask"))
     
-    if maskname="":
+    if maskname=="":
         for m in masklist:
             if m.getDefaultMask():
                 maskname = m.getName()

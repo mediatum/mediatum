@@ -892,6 +892,24 @@ class Mask(tree.Node):
         return self.get("masktype")
     def setMasktype(self, value):
         self.set("masktype", value)
+        
+    def getLanguage(self):
+        if self.get("language") =="":
+            return "no"
+        return self.get("language") 
+    def setLanguage(self, value):
+        self.set("language", value)
+        
+    def getDefaultMask(self):
+        if self.get("defaultmask")=="True":
+            return True
+        return False    
+    def setDefaultMask(self, value):
+        if value:
+            self.set("defaultmask", "True")
+        else:
+            self.set("defaultmask", "False")
+            
 
     def addMaskitem(self, label, type, fieldid, pid):
         item = tree.Node(name=label, type="maskitem") 

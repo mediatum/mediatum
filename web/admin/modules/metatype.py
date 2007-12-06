@@ -30,6 +30,7 @@ from utils.utils import removeEmptyStrings
 from core.translation import lang, t
 from schema.schema import getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, deleteMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
 import re
+import core.config as config
 
 _masktypes = {"":"masktype_empty","edit":"masktype_edit", "search":"masktype_search", "shortview":"masktype_short", "fullview":"masktype_full"}
 
@@ -113,7 +114,10 @@ def validate(req, op):
 
             elif key.startswith("deletemask_"):
                 mtype = getMetaType(key[11:-2].split("|")[0])
-                mtype.removeChild(mtype.getMask(key[11:-2].split("|")[1]))
+                if key[11:-2].split("|")[1].isdigit():
+                    mtype.removeChild(tree.getNode(key[11:-2].split("|")[1]))
+                else:
+                    mtype.removeChild(mtype.getMask(key[11:-2].split("|")[1]))
                 return showMaskList(req, key[11:-2].split("|")[0])
 
             elif key.startswith("copymask_"):
@@ -266,7 +270,6 @@ def validate(req, op):
                     break
 
                 elif req.params["form_op"]=="save_editmask":
-
                     if req.params["mname"]=="":
                         MaskDetails(req, req.params.get("mpid",""), req.params.get("morig_name",""), err=1)
                     elif checkString(req.params["mname"]) == False:
@@ -277,7 +280,8 @@ def validate(req, op):
                         mask.setName(req.params.get("mname"))
                         mask.setDescription(req.params.get("mdescription"))
                         mask.setMasktype(req.params.get("mtype"))
-                        
+                        mask.setLanguage(req.params.get("mlanguage", ""))
+                        mask.setDefaultMask("mdefault" in req.params.keys())
                         return showMaskList(req, str(req.params.get("mpid","")))
                     operation += 1
                     break
@@ -294,6 +298,8 @@ def validate(req, op):
                         mask.setDescription(req.params.get("mdescription",""))
                         mask.set("type", "vgroup")
                         mask.setMasktype(req.params.get("mtype"))
+                        mask.setLanguage(req.params.get("mlanguage", ""))
+                        mask.setDefaultMask("mdefault" in req.params.keys())
                         mtype.addChild(mask)
 
                         return showMaskList(req, str(req.params.get("mpid","")))
@@ -479,6 +485,11 @@ def showMaskList(req, id):
     masks = metadatatype.getMasks()
     pages = Overview(req, masks)
     order = req.params.get("order","")
+    
+    defaults = {}
+    for mask in masks:
+        if mask.getDefaultMask():
+            defaults[mask.getMasktype()] = mask.id
 
     # sorting
     if order != "":
@@ -488,18 +499,24 @@ def showMaskList(req, id):
             masks.sort(lambda x, y: cmp(x.getMasktype(),y.getMasktype()))
         elif int(order[0:1])==2:
             masks.sort(lambda x, y: cmp(x.getDescription(),y.getDescription()))
+        elif int(order[0:1])==3:
+            masks.sort(lambda x, y: cmp(x.getDefaultMask(),y.getDefaultMask()))
+        elif int(order[0:1])==4:
+            masks.sort(lambda x, y: cmp(x.getLanguage(),y.getLanguage()))
         if int(order[1:])==1:
             masks.reverse()
     else:
         masks.sort(lambda x, y: cmp(x.getOrderPos(),y.getOrderPos()))
 
     v = getAdminStdVars(req)
-    v["sortcol"] = pages.OrderColHeader([t(lang(req),"admin_mask_col_1"),t(lang(req),"admin_mask_col_2"),t(lang(req),"admin_mask_col_3")])
+    v["sortcol"] = pages.OrderColHeader([t(lang(req),"admin_mask_col_1"),t(lang(req),"admin_mask_col_2"),t(lang(req),"admin_mask_col_3"),t(lang(req),"admin_mask_col_4"),t(lang(req),"admin_mask_col_5")])
     v["metadatatype"] = metadatatype
     v["masktypes"] = _masktypes
+    v["lang_icons"] = {"de":"/img/flag_de.gif", "en":"/img/flag_en.gif", "no":"/img/emtyDot1Pix.gif"}
     v["masks"] = masks
     v["pages"] = pages
     v["order"] = order
+    v["defaults"] = defaults
     return req.getTAL("web/admin/modules/metatype.html", v, macro="view_mask")
 
 """ mask details """
@@ -513,13 +530,19 @@ def MaskDetails(req, pid, id, err=0):
 
     elif id!="" and err==0:
         # edit mask
-        mask = mtype.getMask(id)
+        if id.isdigit():
+            mask = tree.getNode(id)
+        else:
+            mask = mtype.getMask(id)
 
     else:
         # error filling values
         mask = tree.Node(req.params.get("mname",""), type="mask")
         mask.setDescription(req.params.get("mdescription",""))
         mask.setMasktype(req.params.get("mtype"))
+        mask.setLanguage(req.params.get("mlanguage", ""))
+        mask.setDefaultMask(req.params.get("mdefault", False))
+        
     v = getAdminStdVars(req)
     v["mask"] = mask
     v["mtype"] = mtype
@@ -527,6 +550,7 @@ def MaskDetails(req, pid, id, err=0):
     v["pid"] = pid
     v["masktypes"] = _masktypes
     v["id"] = id
+    v["langs"] = config.get("i18n.languages").split(",")
 
     return req.getTAL("web/admin/modules/metatype.html", v, macro="modify_mask")
 

@@ -72,7 +72,7 @@ def edit_metadata(req, ids):
         masklist.append(m)
 
     
-    maskname = req.params.get("mask" node.get("edit.lastmask"))
+    maskname = req.params.get("mask", node.get("edit.lastmask"))
     
     if maskname="":
         for m in masklist:

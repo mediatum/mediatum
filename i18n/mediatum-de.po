@@ -1060,6 +1060,21 @@ msgstr "Maskentyp"
 msgid "admin_mask_description"
 msgstr "Beschreibung"
 
+msgid "admin_mask_col_4"
+msgstr "Std. Maske"
+
+msgid "admin_mask_col_5"
+msgstr "Sprache"
+
+msgid "admin_mask_default"
+msgstr "Standard Maske"
+
+msgid "admin_mask_language"
+msgstr "Sprache"
+
+msgid "admin_mask_type_text"
+msgstr "Es wurden nicht für alle Maskentypen Standardmasken definiert."
+
 msgid "masktype_empty"
 msgstr "-kein Typ-"
 

@@ -1054,6 +1054,21 @@ msgstr "Mask type"
 msgid "admin_mask_description"
 msgstr "Description"
 
+msgid "admin_mask_col_4"
+msgstr "Default"
+
+msgid "admin_mask_col_5"
+msgstr "Language"
+
+msgid "admin_mask_default"
+msgstr "Default Mask"
+
+msgid "admin_mask_language"
+msgstr "Language"
+
+msgid "admin_mask_type_text"
+msgstr "For some masktype are no default masks defined."
+
 msgid "masktype_empty"
 msgstr "-no type-"
 

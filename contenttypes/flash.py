@@ -21,7 +21,7 @@ import core.config as config
 import core.tree as tree
 import core.athana as athana
 
-from utils import splitpath
+from utils.utils import splitpath
 from core.tree import Node,FileNode
 import default 
 

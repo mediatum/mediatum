@@ -27,7 +27,7 @@ import sys
 import logging
 import thread
 import traceback
-import utils.date
+import utils.date as date
 from utils.utils import ArrayToString
 
 log = logging.getLogger("backend")

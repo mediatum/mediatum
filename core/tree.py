@@ -19,7 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from utils.utils import compare_utf8,get_filesize
+from utils.utils import compare_utf8,get_filesize, compare_digit
 from utils.log import logException
 from core.db import database
 import logging
@@ -182,10 +182,16 @@ def createSortOrder(field):
 
     if reverse:
         def mycmp(n1,n2):
-            return compare_utf8(n2[1],n1[1])
+            if str(n1[1]).isdigit() and str(n2[1]).isdigit():
+                return compare_digit(n2[1],n1[1])
+            else:
+                return compare_utf8(n2[1],n1[1])
     else:
         def mycmp(n1,n2):
-            return compare_utf8(n1[1],n2[1])
+            if str(n1[1]).isdigit() and str(n2[1]).isdigit():
+                return compare_digit(n1[1],n2[1])
+            else:
+                return compare_utf8(n1[1],n2[1])
     idlist.sort(mycmp)
 
     i = 0
@@ -214,6 +220,9 @@ class NodeList:
         elif i >= self.len:
             raise IndexError(str(i)+" >= "+str(self.len))
         return getNode(str(self.ids[i]))
+    def getIDs(self):
+        return list(self.ids)
+        
     def getDescription(self):
         return self.description
     def sort(self,field="orderpos"):
@@ -619,11 +628,8 @@ class Node:
 
     def setAttribute(self, name, value):
         self.set(name,value)
-    
-
     def getAttribute(self, name):
         return self.get(name)
-
 
     def removeAttribute(self, name):
         changed_metadata(self)

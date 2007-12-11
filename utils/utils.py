@@ -124,6 +124,11 @@ import locale
 def compare_utf8(s1,s2):
     return locale.strcoll(normalize_utf8(s1),normalize_utf8(s2))
 
+    
+def compare_digit(s1,s2):
+    if int(s1)<int(s2):
+        return -1
+    return 1
 
 class Option:
     def __init__(self, name="", shortname="", value="", imgsource=""):

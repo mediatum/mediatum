@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.15 2007/11/23 10:13:32 kramm Exp $'
+RCS_ID =  '$Id: athana.py,v 1.16 2007/12/12 11:50:37 kramm Exp $'
 
 import sys
 
@@ -6469,8 +6469,10 @@ class AthanaHandler:
                 cookiestr = cookiestr[:-1]
             items = cookiestr.split(';')
             for a in items:
-                key,value = a.strip().split('=')
-                cookies[key] = value
+                keyvalue = a.strip().split('=')
+                if len(keyvalue)==2:
+                    key,value = keyvalue
+                    cookies[key] = value
 
         request.Cookies = cookies
 

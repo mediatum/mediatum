@@ -181,7 +181,7 @@ def writeRecord(req, node, metadataformat):
     if updatetime:
         d = ISO8601(date.parse_date(updatetime))
     else:
-        d = ISO8601(DateTime(EARLIEST_YEAR-1,12,31,23,59,59))
+        d = ISO8601(date.DateTime(EARLIEST_YEAR-1,12,31,23,59,59))
 
     req.write(""" 
            <record>
@@ -272,7 +272,7 @@ def getNodes(req):
             string_from = req.params["from"]
             date_from = parseDate(string_from)
             if date_from.year<EARLIEST_YEAR:
-                date_from=DateTime(0,0,0,0,0,0)
+                date_from=date.DateTime(0,0,0,0,0,0)
         except:
             if "from" in req.params:
                 return None,"badArgument",None

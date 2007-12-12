@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.16 2007/12/12 11:50:37 kramm Exp $'
+RCS_ID =  '$Id: athana.py,v 1.17 2007/12/12 11:52:41 kramm Exp $'
 
 import sys
 
@@ -6241,7 +6241,8 @@ class simple_input_collector:
         data = d.split('&')
         for e in data:
             if '=' in e:
-                key,value = e.split('=')
+                i = e.index('=')
+                key,value = e[:i],e[i+1:]
                 key = urllib.unquote_plus(key)
                 try:
                     oldvalue = parameters[key]+";"

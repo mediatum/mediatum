@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.17 2007/12/12 11:52:41 kramm Exp $'
+RCS_ID =  '$Id: athana.py,v 1.18 2007/12/12 11:58:54 kramm Exp $'
 
 import sys
 
@@ -6279,7 +6279,8 @@ class upload_input_collector:
         parmap = {}
         for a in params:
             if '=' in a:
-                key,value = a.split('=')
+                i = a.index('=')
+                key,value = a[:i],a[i+1:]
                 if value.startswith('"') and value.endswith('"'):
                     value = value[1:-1]
                 parmap[key] = value
@@ -6455,7 +6456,8 @@ class AthanaHandler:
                 query=query[1:]
             query = query.split('&')
             for e in query:
-                key,value = e.split('=')
+                i = e.index('=')
+                key,value = e[:i],e[i+1:]
                 key = urllib.unquote_plus(key)
                 try:
                     oldvalue = parameters[key]+";"
@@ -6470,9 +6472,9 @@ class AthanaHandler:
                 cookiestr = cookiestr[:-1]
             items = cookiestr.split(';')
             for a in items:
-                keyvalue = a.strip().split('=')
-                if len(keyvalue)==2:
-                    key,value = keyvalue
+                i = a.index('=')
+                if i>0:
+                    key,value = a[:i],a[i+1:]
                     cookies[key] = value
 
         request.Cookies = cookies

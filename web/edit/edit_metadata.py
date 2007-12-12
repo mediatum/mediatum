@@ -82,7 +82,7 @@ def edit_metadata(req, ids):
     
     mask = node.getMask(maskname)
     
-    if not mask:
+    if not mask and default:
         mask = default
         maskname = default.getName()
 

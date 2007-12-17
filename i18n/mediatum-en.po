@@ -524,6 +524,9 @@ msgstr "user group"
 msgid "admin_usergroup_col_2"
 msgstr "# users"
 
+msgid "admin_usergroup_col_3"
+msgstr "# schemas"
+
 msgid "usergroup_option_1"
 msgstr "editor rights"
 

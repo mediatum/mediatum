@@ -17,10 +17,12 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import tree
+import core.tree as tree
+from schema.schema import loadTypesFromDB
+from core.acl import AccessData
 
 from utils import *
-from usergroups import groupoption
+from core.usergroups import groupoption
 
 class UserGroup(tree.Node):
 
@@ -54,6 +56,17 @@ class UserGroup(tree.Node):
         ret = []
         for user in self.getChildren().sort():
             ret.append(user.getName())
-        
         return ", ".join(ret)
-    	
+    
+    def getSchemas(self):
+        schemas = loadTypesFromDB()
+        users = self.getChildren()
+        
+        schemalist = {}
+        for user in users:
+            for schema in AccessData(user=user).filter(loadTypesFromDB()):
+                if schema.isActive():
+                    schemalist[schema.getName()] = ""
+        schemalist = schemalist.keys()
+        schemalist.sort()
+        return list(schemalist)

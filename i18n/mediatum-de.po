@@ -530,6 +530,9 @@ msgstr "Benutzergruppe"
 msgid "admin_usergroup_col_2"
 msgstr "# User"
 
+msgid "admin_usergroup_col_3"
+msgstr "# Schemata"
+
 msgid "usergroup_option_1"
 msgstr "Editorrechte"
 

@@ -91,9 +91,7 @@ def view(req):
         if int(order[0:1])==0:
             groups.sort(lambda x, y: cmp(x.getName().lower(),y.getName().lower())) 
         elif int(order[0:1])==1:
-            groups.sort(lambda x, y: cmp(getNumUsers(x.getName()),getNumUsers(y.getName())))  
-        elif int(order[0:1])==2:
-            groups.sort(lambda x, y: cmp(len(x.getSchemas()),len(y.getSchemas())))
+            groups.sort(lambda x, y: cmp(getNumUsers(x.getName()),getNumUsers(y.getName())))        
         if int(order[1:])==1:
             groups.reverse()
     else:

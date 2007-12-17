@@ -53,7 +53,7 @@ def initContexts():
     file.addHandler("show_index").addPattern("/popup_index")
     file.addHandler("show_help").addPattern("/popup_help")
     file.addHandler("show_attachmentbrowser").addPattern("/attachmentbrowser")
-    file.addHandler("show_printview").addPattern("/print")
+    file.addHandler("show_printview").addPattern("/print/.*")
     file = context.addFile("web/frontend/login.py")
     file.addHandler("display_login").addPattern("/login")
     file.addHandler("login_submit").addPattern("/login_submit")
@@ -110,6 +110,7 @@ def initContexts():
    
 def flush(req):
     athana.flush()
+    import core.__init__ as c
     initContexts()
     import core.__init__
     print "all caches cleared"

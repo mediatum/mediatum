@@ -35,7 +35,7 @@ groupoption += [Option("usergroup_option_1", "editor", "e", "img/edit_opt.png"),
 """ load all groups from db """
 def loadGroupsFromDB():
     groups = tree.getRoot("usergroups")
-    return groups.getChildren()
+    return groups.getChildren().sort("name")
 
 """ get group from db """
 def getGroup(id):

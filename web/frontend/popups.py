@@ -25,6 +25,7 @@ import core.config as config
 from core.tree import getNode
 from web.frontend import shoppingbag
 #from schema.schema import *
+from schema.schema import getMetaType
 from lib.pdf import printview
 
 from schema.schema import VIEW_DATA_ONLY,VIEW_HIDE_EMPTY

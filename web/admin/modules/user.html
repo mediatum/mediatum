@@ -51,8 +51,8 @@
                         <input tal:attributes="name python:str('sendmail_'+user.getName())" i18n:attributes="title admin_user_sendmail_title" type="image" src="/img/email.png"/>
                     </td>
                     <td tal:attributes="class cssclass" class="_norm_">
-                        <input tal:attributes="name python:str('edit_'+user.getName())" i18n:attributes="title admin_user_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
-                        <input tal:attributes="name python:str('delete_'+user.getName()); onclick python:'return questionDelName(\''+user.getName()+'\')'" i18n:attributes="title admin_user_delete_title" type="image" src="/img/delete.png"/>
+                        <input tal:attributes="name python:str('edit_'+str(user.id))" i18n:attributes="title admin_user_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
+                        <input tal:attributes="name python:str('delete_'+str(user.id)); onclick python:'return questionDelName(\''+user.getName()+'\')'" i18n:attributes="title admin_user_delete_title" type="image" src="/img/delete.png"/>
                     </td>
                 </tr>
             </tal:block>

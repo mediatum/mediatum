@@ -54,10 +54,15 @@ def loadUsersFromDB():
 """ returns user object from db """
 def getUser(id):
     users = tree.getRoot("users")
-    try:
-        return users.getChild(id)
-    except tree.NoSuchNodeError,e:
-        return None
+    
+    if id.isdigit():
+        return tree.getNode(id)
+    else:
+        try:
+            return users.getChild(id)
+        except tree.NoSuchNodeError,e:
+            return None
+
 
 def getUserFromRequest(req):
     try:

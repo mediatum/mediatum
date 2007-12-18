@@ -25,7 +25,7 @@
 
 import core.config as config
 from utils.utils import Option
-import tree
+import core.tree as tree
 import acl
 
 groupoption = []
@@ -39,8 +39,11 @@ def loadGroupsFromDB():
 
 """ get group from db """
 def getGroup(id):
-    groups = tree.getRoot("usergroups")
-    return groups.getChild(id)
+    if id.isdigit():
+        return tree.getNode(id)
+    else:
+        groups = tree.getRoot("usergroups")
+        return groups.getChild(id)
 
 """ create new group in db """
 def create_group(name,description="",option=""):

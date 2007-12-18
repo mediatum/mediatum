@@ -26,8 +26,8 @@
                 <tr tal:define="cssclass python:groups.index(group)%2 and 'norm' or 'silver'">
                     <td tal:attributes="class cssclass" tal:content="python:str(groups.index(group)+1)+'.'"/>
                     <td tal:attributes="class cssclass" tal:content="python:group.getName()"/>
-                    <td tal:attributes="class cssclass;title python:group.getUserNames(); style python:'cursor:hand'" tal:content="structure python:'&nbsp;&nbsp;&nbsp;&nbsp;'+str(len(group.getChildren()))"/>
-                    <td tal:attributes="class cssclass; title python:', '.join(group.getSchemas()); style python:'cursor:hand'" tal:content="python:str(len(group.getSchemas()))"></td>
+                    <td tal:attributes="class cssclass;title python:group.getUserNames()" style="cursor:hand;width:50px" tal:content="structure python:'&nbsp;&nbsp;&nbsp;&nbsp;'+str(len(group.getChildren()))"/>
+                    <td tal:attributes="class cssclass; title python:', '.join(group.getSchemas())" style="cursor:hand;text-align:right;width:50px" tal:content="python:str(len(group.getSchemas()))"></td>
                     <td tal:attributes="class cssclass">
                         <table>
                             <tr>
@@ -41,8 +41,8 @@
                         </table>
                     </td>
                     <td tal:attributes="class cssclass" style="width: 80px">
-                        <input i18n:attributes="title admin_usergroup_edit" tal:attributes="name python:str('edit_'+group.getName())" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
-                        <input tal:condition="python:len(group.getChildren())==0" tal:attributes="name python:str('delete_'+group.getName()); onclick python:'return questionDelName(\''+group.getName()+'\')'" i18n:attributes="title admin_usergroup_delete" type="image" src="/img/delete.png"/>
+                        <input i18n:attributes="title admin_usergroup_edit" tal:attributes="name python:str('edit_'+str(group.id))" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
+                        <input tal:condition="python:len(group.getChildren())==0" tal:attributes="name python:str('delete_'+str(group.id)); onclick python:'return questionDelName(\''+group.getName()+'\')'" i18n:attributes="title admin_usergroup_delete" type="image" src="/img/delete.png"/>
                     </td>
                 </tr>
             </tal:block>

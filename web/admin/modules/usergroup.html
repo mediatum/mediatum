@@ -19,14 +19,15 @@
                 </th>
             </tr>
             <tr tal:condition="python:len(groups)==0">
-                <td colspan="5"><small i18n:translate="admin_usergroup_nogroups">TEXT</small></td>
+                <td colspan="6"><small i18n:translate="admin_usergroup_nogroups">TEXT</small></td>
             </tr>
             
             <tal:block tal:define="start python:pages.getStart(); end python:pages.getEnd()" tal:repeat="group python:groups[start:end]">
                 <tr tal:define="cssclass python:groups.index(group)%2 and 'norm' or 'silver'">
                     <td tal:attributes="class cssclass" tal:content="python:str(groups.index(group)+1)+'.'"/>
-                                            <td tal:attributes="class cssclass" tal:content="python:group.getName()"/>
+                    <td tal:attributes="class cssclass" tal:content="python:group.getName()"/>
                     <td tal:attributes="class cssclass;title python:group.getUserNames(); style python:'cursor:hand'" tal:content="structure python:'&nbsp;&nbsp;&nbsp;&nbsp;'+str(len(group.getChildren()))"/>
+                    <td tal:attributes="class cssclass; title python:', '.join(group.getSchemas()); style python:'cursor:hand'" tal:content="python:str(len(group.getSchemas()))"></td>
                     <td tal:attributes="class cssclass">
                         <table>
                             <tr>
@@ -54,7 +55,7 @@
                         <span tal:content="raw python:pages.printPageList()"/>
                     </small>
                 </th>
-                <th colspan="2" align="right"><small tal:content="structure python:pages.printPageAll()"/></th>
+                <th colspan="3" align="right"><small tal:content="structure python:pages.printPageAll()"/></th>
             </tr>
         </table>
         <p>

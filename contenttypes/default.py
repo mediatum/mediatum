@@ -59,4 +59,20 @@ class Default(tree.Node):
         
     def has_object(node):
         return True
+        
+    def getFullView(node, language):
+        masks = node.getMasks(type="fullview", language=language)
+        if len(masks)>1:
+            for m in masks:
+                if m.getLanguage()==lang(req):
+                    return m
+            if not mask:
+                for m in masks:
+                    if m.getLanguage() in ["","no"]:
+                        return m
+        elif len(masks)==0:
+            return tree.Node("", type="mask")
+        else:
+            return masks[0]
+
 

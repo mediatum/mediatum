@@ -30,6 +30,7 @@ import default
 
 from utils.utils import get_filesize,splitfilename,isnewer
 from core.tree import Node,FileNode
+from core.translation import lang
 from schema.schema import loadTypesFromDB, VIEW_DATA_ONLY,VIEW_HIDE_EMPTY
 
 """ make thumbnail (jpeg 128x128) """
@@ -136,7 +137,7 @@ class Image(default.Default):
     # prepare hash table with values for TAL-template
     def _prepareData(node, req):
         #tifs
-        mask = node.getMask("nodebig")
+        mask = node.getFullView(lang(req))
 
         tif = ""        
         try: 

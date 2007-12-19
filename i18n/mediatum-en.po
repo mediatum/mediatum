@@ -1887,6 +1887,9 @@ msgstr "For this node type there aren't editable metadata fields available"
 msgid "edit_meta_mask_selection"
 msgstr "Mask selection"
 
+msgid "edit_mask"
+msgstr "Mask"
+
 msgid "edit_meta_save"
 msgstr "Save"
 

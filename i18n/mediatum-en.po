@@ -57,6 +57,12 @@ msgstr "User"
 msgid "footer_impressum"
 msgstr "imprint"
 
+msgid "help_link"
+msgstr "Help"
+
+msgid "help_title"
+msgstr "Goto Help"
+
 msgid "permission_denied"
 msgstr "access denied"
 

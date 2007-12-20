@@ -60,6 +60,12 @@ msgstr "Benutzer"
 msgid "footer_impressum"
 msgstr "Impressum"
 
+msgid "help_link"
+msgstr "Hilfe"
+
+msgid "help_title"
+msgstr "Hilfe anzeigen"
+
 msgid "permission_denied"
 msgstr "Zugriff verweigert"
 

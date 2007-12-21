@@ -88,7 +88,7 @@ class Searchlet(Portlet):
         datatypes = []
         for mtype,num in self.collection.getAllOccurences().items():
             if num>0:
-                if mtype.name not in ("directory", "collection"):
+                if mtype.getContentType() not in ("directory", "collection"):
                     datatypes += [mtype]
 
         self.datatype = None
@@ -98,7 +98,6 @@ class Searchlet(Portlet):
                 self.searchfields[field.name] = field.getLabel()
             if len(self.searchfields):
                 break
-        
         self.names = [None,None,None,None]
 
     def feedback(self, req):

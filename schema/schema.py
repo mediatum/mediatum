@@ -553,20 +553,29 @@ class Metadatatype(tree.Node):
             print "metadatafield '" + str(name) + "' not found"
             return None
 
-    def getMasks(self):
+    def getMasks(self, type="", language=""):
         masks = []
         for item in self.getChildren().sort():
             if item.getContentType()=="mask":
-                masks.append(item)
+                if type=="":
+                    if item.getLanguage() in [language,"no"]:
+                        masks.append(item)
+                elif type==item.getMasktype():
+                    if item.getLanguage() in [language,"no"]:
+                        masks.append(item)
         return masks
 
     def getMask(self, name):
         try:
-            return self.getChild(name)
+            if name.isdigit():
+                return tree.getNode(name)
+            else:
+                return self.getChild(name)
         except tree.NoSuchNodeError:
             print "mask '" + str(name) + "' not found"
             return None
-          
+       
+        
     def hasUploadForm(self):
         global nodeclasses
         for dtype in self.getDatatypes():
@@ -583,7 +592,7 @@ class Metadatatype(tree.Node):
             search_def.append(node.getName())
         search_def = set(search_def)
         index_def = set(searchIndexer.getDefForSchema(self.name).values())
-        if len(search_def)>len(index_def):
+        if len(search_def)>len(index_def) and len(self.getAllItems())>0:
             return True
         else:
             if search_def.union(index_def)==set([]) or index_def.difference(search_def)==set([]):
@@ -591,7 +600,11 @@ class Metadatatype(tree.Node):
         return True
             
     def getAllItems(self):
-        return tree.NodeList(getConnection().getNodeIDsForSchema(schema=self.getName(), datatype="*"))
+        ret = []
+        l = getConnection().getNodeIDsForSchema(self.getName())
+        for i in l:
+            ret.append(i[0])
+        return tree.NodeList(ret)
 
 
 """ fields for metadata """
@@ -1091,10 +1104,10 @@ def node_getSortFields(node):
             sfields += [field]
     return sfields
 
-def node_getMasks(node):
+def node_getMasks(node, type="", language=""):
     try:
         if node.getSchema():
-            return getMetaType(node.getSchema()).getMasks()
+            return getMetaType(node.getSchema()).getMasks(type=type, language=language)
         else:
             return []
     except AttributeError:

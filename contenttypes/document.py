@@ -64,7 +64,7 @@ class Document(default.Default):
         else:
             obj['canseeoriginal']= False
         obj['documentthumb'] = '/thumb2/'+str(node.id) 
-        if "oogle" not in req.request_headers.get("user-agent",""):
+        if "oogle" not in (req.get_header("user-agent") or ""):
             obj['print_url'] = '/print/'+str(node.id)
         else:
             #don't confuse search engines with the PDF link

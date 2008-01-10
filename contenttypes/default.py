@@ -19,6 +19,7 @@
 """
 import core.tree as tree
 from schema.schema import loadTypesFromDB, VIEW_HIDE_EMPTY,VIEW_DATA_ONLY
+from core.translation import lang
 
 class Default(tree.Node):
     def show_node_big(node, req):

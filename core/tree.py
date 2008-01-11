@@ -675,6 +675,9 @@ class Node:
             return cls.__dict__[name]
         if name in self.__dict__:
             return self.__dict__[name]
+        return self.getoverloadedfunction(name)
+
+    def getoverloadedfunction(self, name):
         if self.getContentType() in nodeclasses:
             cls = nodeclasses[self.getContentType()]
             def r(cls):

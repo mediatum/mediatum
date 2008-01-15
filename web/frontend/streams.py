@@ -31,6 +31,11 @@ from core.tree import getNode
 
 IMGNAME = re.compile("/?(attachment|doc|images|thumbs|thumb2|file)/([^/]*)(/(.*))?$")
 
+def incUsage(node):
+    nr = int(node.get("hit_statistic.file") or "0")
+    nr = nr + 1
+    node.set("hit_statistic.file", str(nr))
+
 def splitpath(path):
     m = IMGNAME.match(path)
     if m is None:
@@ -60,6 +65,7 @@ def send_rawimage(req):
         return 403
     for f in n.getFiles():
         if f.type == "original":
+            incUsage(n)
             return req.sendFile(f.getPath(), f.getMimeType())
     return 404
 
@@ -102,6 +108,7 @@ def send_doc(req):
         return 403
     for f in n.getFiles():
         if f.type == "doc":
+            incUsage(n)
             if(get_filesize(f.getPath()) > 16*1048576):
                 return req.sendFile(f.getPath(), "application/x-download")
             else:
@@ -120,6 +127,7 @@ def send_file(req):
         return 403
     for f in n.getFiles():
         if os.path.basename(f.path) == filename:
+            incUsage(n)
             if(get_filesize(f.getPath()) > 16*1048576):
                 return req.sendFile(f.getPath(), "application/x-download")
             else:

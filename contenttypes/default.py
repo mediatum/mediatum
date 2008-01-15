@@ -65,7 +65,7 @@ class Default(tree.Node):
         masks = node.getMasks(type="fullview", language=language)
         if len(masks)>1:
             for m in masks:
-                if m.getLanguage()==lang(req):
+                if m.getLanguage()==language:
                     return m
             if not mask:
                 for m in masks:

@@ -24,6 +24,7 @@ import sys
 import os
 import string
 import md5
+import re
 
 def esc(s):
     return s.replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;").replace(">", "&gt;")
@@ -327,13 +328,44 @@ def splitname(fullname):
     
     return title,firstname,lastname
 
+
+# get missing html close tags
+def tag_check(content):
+    r = re.compile("<[^>]*>")
+    tags = r.findall(content)
+    res = []
+    last = ""
+    for tag in tags:
+        if tag in ("<br>", "<br/>"):
+            continue
+        
+        if len(res)>0:
+            last = res[-1]
+        else:
+            last = ""
+   
+        if last==tag:
+            res = res[:-1]
+        else:
+            res.append(tag.replace("<", "</"))
+    res.reverse()
+    return res  
+
 #
 # returns formated string for long text
 #
 def formatLongText(value, field):
     try:
         if len(value)>500:
-            return '<div id="'+field.getName()+'_full" style="display:none">'+value+'&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="Text reduzieren" onclick="expandLongMetatext(\''+field.getName()+'\')">&laquo;</a></div><div id="'+field.getName()+'_more">'+value[:500]+'...&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="gesamten Text zeigen" onclick="expandLongMetatext(\''+field.getName()+'\')">&raquo;</a></div>'
+            val = value[:500]
+            for item in tag_check(value[:500]):
+                if item.find("/")>0:
+                    val += item
+                else:
+                    val = item+value
+                
+                
+            return '<div id="'+field.getName()+'_full" style="display:none">'+value+'&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="Text reduzieren" onclick="expandLongMetatext(\''+field.getName()+'\')">&laquo;</a></div><div id="'+field.getName()+'_more">'+val+'...&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="gesamten Text zeigen" onclick="expandLongMetatext(\''+field.getName()+'\')">&raquo;</a></div>'
         else:
             return value
     except:
@@ -361,6 +393,24 @@ def clean_path(path):
         newpath += c
     return newpath
 
+    
+def union(definition): # or
+    if not definition:
+        return []
+    result = definition[0] 
+    for item in definition[1:]:
+        result += filter(lambda x:x not in result,item)  
+    return list(result)
+
+    
+def intersection(definition): # and
+    if not definition: 
+        return [] 
+    result = definition[0]   
+    for item in definition[1:]:
+        result = filter(lambda x:x in result,item)
+    return result
+    
 
 if __name__ == "__main__":
     def tt(s):

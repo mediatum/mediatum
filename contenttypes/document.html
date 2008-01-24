@@ -13,6 +13,8 @@
         <a tal:condition="print_url" tal:attributes="href python:print_url" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
     </div>
     <tal:block tal:condition="python: style!='full_text'">
+    <div tal:condition="python: len(node.getFiles())==0" id="object_meta" style="margin-left:0px" tal:content="raw metadata"/>
+    <div tal:condition="python: len(node.getFiles())>0" id="object_meta" tal:content="raw metadata"/>
     <div tal:condition="python: len(node.getFiles())>0" id="object_image">
         <tal:block tal:condition="python:canseeoriginal">
         <a tal:attributes="href documentlink" i18n:attributes="title doc_fulltext_title" target="pdfdocument">
@@ -27,8 +29,7 @@
             <a tal:attributes="onclick python:'javascript:openPopup(\'/attachmentbrowser?id='+str(node.id)+'&path='+path+'\', \'Attachment\', 400, 400)'" i18n:translate="doc_att_browser" href="#" >TEXT</a>
         </div>
     </div>
-    <div tal:condition="python: len(node.getFiles())==0" id="object_meta" style="margin-left:0px" tal:content="raw metadata"/>
-    <div tal:condition="python: len(node.getFiles())>0" id="object_meta" tal:content="raw metadata"/>
+    
     </tal:block>
 
     <tal:block tal:condition="python: style=='full_text'">

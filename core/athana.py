@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.18 2007/12/12 11:58:54 kramm Exp $'
+RCS_ID =  '$Id: athana.py,v 1.19 2008/02/06 10:49:42 kramm Exp $'
 
 import sys
 
@@ -6826,8 +6826,8 @@ def mainfunction():
         print getTAL(options.talfile, {"mynone":None})
         sys.exit(0)
 
-    if inifile:
-        contexts += read_ini_file(inifile)
+    if init_file:
+        contexts += read_ini_file(init_file)
     
     if logfile is not None:
         fi = open(logfile, "wb")

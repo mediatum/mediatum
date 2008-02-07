@@ -40,7 +40,7 @@
         </div>
         <tal:block tal:condition="python:canseeoriginal">
             <hr/>
-            <a tal:attributes="href python:'/doc/'+str(node.id)+'/document.pdf'" target="pdfdocument" i18n:attributes="title doc_fulltext_title"><img src="/img/pdf.gif"/></a>
+            <a tal:attributes="href python:'/doc/'+str(node.id)+'/'+str(node.id)+'.pdf'" target="pdfdocument" i18n:attributes="title doc_fulltext_title"><img src="/img/pdf.gif"/></a>
         </tal:block>
     </tal:block>
 </div>

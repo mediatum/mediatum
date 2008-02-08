@@ -31,6 +31,9 @@ import logging
 import sys
 import os
 
+class EncryptedException:
+    pass
+
 def parsePDF(filename, tempdir, thumb128, thumb300, fulltext, infoname):
     gfx.verbose(0)
     pdf = gfx.open("pdf", filename)
@@ -71,6 +74,8 @@ def parsePDF(filename, tempdir, thumb128, thumb300, fulltext, infoname):
     infodict["change"] = pdf.getInfo("oktochange")
     infodict["addNotes"] = pdf.getInfo("oktoaddnotes")
     infodict["version"] = pdf.getInfo("version")
+    if "copy:no" in infodict["encrypted"]:
+        raise EncryptedException()
                 
     fi = open(infoname, "wb")
     for k,v in infodict.items():
@@ -93,9 +98,11 @@ def parsePDF(filename, tempdir, thumb128, thumb300, fulltext, infoname):
 def parsePDF2(filename, basedir, tempdir, thumb128, thumb300, fulltext, infodict):
     command = "%s %s %s %s %s %s %s %s %s" % (sys.executable, os.path.join(basedir,"lib/pdf/parsepdf.py"),
             basedir, filename, tempdir, thumb128, thumb300, fulltext, infodict)
-    exit_status = os.system(command)
+    exit_status = os.system(command) >> 8
     if exit_status:
         logging.getLogger('errors').error("Exit status "+str(exit_status)+" of subprocess "+command)
+    if exit_status == 111:
+        raise EncryptedException()
 
 """  create preview image for given pdf """
 def makeThumbs(src, thumb128, thumb300):
@@ -126,5 +133,8 @@ def makeThumbs(src, thumb128, thumb300):
 
 if __name__ == "__main__":
     import sys
-    parsePDF(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7])
+    try:
+        parsePDF(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7])
+    except EncryptedException:
+        sys.exit(111)
 

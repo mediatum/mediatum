@@ -24,7 +24,7 @@ import core.athana as athana
 import core.acl as acl
 import os
 
-from utils.utils import getMimeType, format_filesize,splitfilename, u
+from utils.utils import getMimeType, format_filesize,splitfilename, u, EncryptionException
 from core.tree import Node,FileNode
 from schema.schema import loadTypesFromDB, VIEW_HIDE_EMPTY,VIEW_DATA_ONLY
 from core.translation import lang
@@ -147,7 +147,10 @@ class Document(default.Default):
                 fulltextname = path + ".txt"
                 infoname = path + ".info"
                 tempdir = config.get("paths.tempdir")
-                pdfdata = parsepdf.parsePDF2(doc.getPath(), config.basedir, tempdir, thumbname, thumb2name, fulltextname, infoname)
+                try:
+                    pdfdata = parsepdf.parsePDF2(doc.getPath(), config.basedir, tempdir, thumbname, thumb2name, fulltextname, infoname)
+                except parsepdf.EncrypedException:
+                    raise EncryptionException()
 
                 if not os.path.isfile(infoname):
                     raise "PostprocessingError"

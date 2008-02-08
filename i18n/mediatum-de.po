@@ -173,7 +173,7 @@ msgid "xsearch"
 msgstr "Erweiterte Suche"
 
 msgid "all_metafields"
-msgstr "Alle Metadaten"
+msgstr "Alle Daten"
 
 msgid "search_result_header"
 msgstr "Ihr(e) Suchbegriff(e) " ${searchstring} " wurde(n) in folgenden Kollektionen gefunden:"
@@ -2241,6 +2241,9 @@ msgstr "Ihre Suche erbrachte keine Resultate"
 msgid "PostprocessingError_document"
 msgstr "Der Upload des Dokuments konnte nicht durchgeführt werden.<br>Bitte überprüfen Sie, ob das PDF evtl. kopiergeschützt oder beschädigt ist."
 
+msgid "EncryptionError_document"
+msgstr "Der Upload des Dokuments konnte nicht durchgeführt werden., da Ihr PDF kopiergeschüTzt ist. Bitte entfernen Sie den Schutz und versuchen den Upload erneut.."
+
 msgid "Your browser doesn't support cookies"
 msgstr "Ihr Browser unterstützt leider keine Cookies. Möglicherweise ist der Cookie-Support im Browser abgeschaltet. Ohne Cookies werden Sie auf späteren Seiten evtl. auf Probleme stoßen."
 
@@ -2316,3 +2319,6 @@ msgstr "digitales Objekt vorhanden"
 
 msgid "file_processingerror"
 msgstr "Fehler bei Dateiverarbeitung! Bitte überprüfen Sie die zu bearbeitende Datei"
+
+msgid "searchresult"
+msgstr "Suchresultate"

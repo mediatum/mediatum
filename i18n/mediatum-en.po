@@ -57,12 +57,6 @@ msgstr "User"
 msgid "footer_impressum"
 msgstr "imprint"
 
-msgid "help_link"
-msgstr "Help"
-
-msgid "help_title"
-msgstr "Goto Help"
-
 msgid "permission_denied"
 msgstr "access denied"
 
@@ -1893,9 +1887,6 @@ msgstr "For this node type there aren't editable metadata fields available"
 msgid "edit_meta_mask_selection"
 msgstr "Mask selection"
 
-msgid "edit_mask"
-msgstr "Mask"
-
 msgid "edit_meta_save"
 msgstr "Save"
 
@@ -2234,6 +2225,9 @@ msgstr "Your search resulted in no hits."
 msgid "PostprocessingError_document"
 msgstr "Document could not be uploaded into the system.<br>This may be caused by a possibly copy-protected or damaged PDF file."
 
+msgid "EncryptionError_document"
+msgstr "This document couldn't be uploaded- the PDF is copy-protected. Please remove the encryption and try uploading it again."
+
 msgid "Your browser doesn't support cookies"
 msgstr "Your browser doesn't support cookies. Maybe the 'Allow Cookies' option in your browser is deactivated. Please switch on Cookies again to proceed."
 
@@ -2306,3 +2300,9 @@ msgstr "digital object available"
 
 msgid "file_processingerror"
 msgstr "Error while processing file! Please check processed file."
+
+msgid "admin_meta_col_8"
+msgstr "# Nodes"
+
+msgid "searchresult"
+msgstr "Searchresult"

@@ -30,7 +30,7 @@ import logging
 from core.datatypes import loadAllDatatypes
 from edit_common import *
 import utils.date as date
-from utils.utils import join_paths, EncryptionException
+from utils.utils import join_paths, EncryptionException,formatException
 from utils.fileutils import importFile
 
 from core.tree import Node
@@ -130,10 +130,7 @@ def importFileIntoNode(user,realname,tempname,datatype, workflow=0):
     n.set("creator", user.getName())
     n.set("creationtime", date.format_date())
     if hasattr(n,"event_files_changed"):
-        #try:
         n.event_files_changed()
-        #except "PostprocessingError":
-        #    raise "PostprocessingError"
 
     uploaddir = getUploadDir(user)
     uploaddir.addChild(n)
@@ -154,6 +151,7 @@ def upload_new(req):
             except EncryptionException:
                 req.request["Location"] = req.makeLink("content", {"id":uploaddir.id, "error":"EncryptionError_"+datatype[:datatype.find("/")]})
             except:
+                print formatException()
                 req.request["Location"] = req.makeLink("content", {"id":uploaddir.id, "error":"PostprocessingError_"+datatype[:datatype.find("/")]})
 
             return athana.HTTP_MOVED_TEMPORARILY;

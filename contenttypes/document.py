@@ -149,7 +149,8 @@ class Document(default.Default):
                 tempdir = config.get("paths.tempdir")
                 try:
                     pdfdata = parsepdf.parsePDF2(doc.getPath(), config.basedir, tempdir, thumbname, thumb2name, fulltextname, infoname)
-                except parsepdf.EncrypedException:
+                except parsepdf.EncryptedException:
+                    print "*** encrypted ***"
                     raise EncryptionException()
 
                 if not os.path.isfile(infoname):

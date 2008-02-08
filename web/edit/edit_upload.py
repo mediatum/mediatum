@@ -30,7 +30,7 @@ import logging
 from core.datatypes import loadAllDatatypes
 from edit_common import *
 import utils.date as date
-from utils.utils import join_paths
+from utils.utils import join_paths, EncryptionException
 from utils.fileutils import importFile
 
 from core.tree import Node
@@ -151,6 +151,8 @@ def upload_new(req):
             try:
                 importFileIntoNode(user, file.filename, file.tempname, datatype, workflow)
                 req.request["Location"] = req.makeLink("content", {"id":uploaddir.id})
+            except EncryptionException:
+                req.request["Location"] = req.makeLink("content", {"id":uploaddir.id, "error":"EncryptionError_"+datatype[:datatype.find("/")]})
             except:
                 req.request["Location"] = req.makeLink("content", {"id":uploaddir.id, "error":"PostprocessingError_"+datatype[:datatype.find("/")]})
 

@@ -23,6 +23,7 @@ import core.users as users
 import core.tree as tree
 import re
 import utils.date
+from utils.log import logException
 import core.config as config
 import zipfile
 import random 
@@ -151,7 +152,7 @@ def upload_new(req):
             except EncryptionException:
                 req.request["Location"] = req.makeLink("content", {"id":uploaddir.id, "error":"EncryptionError_"+datatype[:datatype.find("/")]})
             except:
-                print formatException()
+                logException("error during upload")
                 req.request["Location"] = req.makeLink("content", {"id":uploaddir.id, "error":"PostprocessingError_"+datatype[:datatype.find("/")]})
 
             return athana.HTTP_MOVED_TEMPORARILY;

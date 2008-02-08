@@ -37,6 +37,10 @@ class EncryptedException:
 def parsePDF(filename, tempdir, thumb128, thumb300, fulltext, infoname):
     gfx.verbose(0)
     pdf = gfx.open("pdf", filename)
+    
+    if pdf.getInfo("oktocopy") != "yes":
+        raise EncryptedException()
+
     png = gfx.ImageList()
     txt = gfx.PlainText()
 
@@ -74,8 +78,6 @@ def parsePDF(filename, tempdir, thumb128, thumb300, fulltext, infoname):
     infodict["change"] = pdf.getInfo("oktochange")
     infodict["addNotes"] = pdf.getInfo("oktoaddnotes")
     infodict["version"] = pdf.getInfo("version")
-    if "copy:no" in infodict["encrypted"]:
-        raise EncryptedException()
                 
     fi = open(infoname, "wb")
     for k,v in infodict.items():

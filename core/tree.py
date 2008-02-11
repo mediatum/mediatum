@@ -310,6 +310,7 @@ class Node:
             self.orderpos = orderpos
             self.attributes = None
         self.occurences = {}
+        self.occurences2node = {}
 
     def _makePersistent(self):
         if self.id is None:
@@ -642,6 +643,7 @@ class Node:
 
     def _flushOccurences(self):
         self.occurences = {}
+        self.occurences2node = {}
         for p in self.getParents():
             p._flushOccurences()
 

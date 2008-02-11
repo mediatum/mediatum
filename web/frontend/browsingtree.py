@@ -110,10 +110,11 @@ def writetree2(req, node, f, content, unfoldedids=None):
     return content
 
 def writetree(req, mynode, currentdir, content):
+    accessdata = AccessData(req)
     
     def makeLink(req,node,type):
         count = 0
-        for n_t,num in node.getAllOccurences().items():
+        for n_t,num in node.getAllOccurences(accessdata).items():
             if n_t.getContentType() != "directory":
                 count += num
 

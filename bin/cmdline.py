@@ -23,10 +23,13 @@ sys.path += ["../", "."]
 
 import core
 import core.tree as tree
+import core.acl as acl
 import re
 import string
 import core.xmlnode as xmlnode
 import schema.schema as metadatatypes
+
+rootaccess = acl.getRootAccess()
 
 path = []
 node = tree.getRoot()
@@ -195,8 +198,8 @@ def create(type,name):
     "print Node",name,"created:",n.id
 
 def searchfields():
-    global node
-    occurs = node.getAllOccurences()
+    global node,rootaccess
+    occurs = node.getAllOccurences(rootaccess)
     searchfields = []
     for mtype,num in occurs.items():
         print mtype.getName(), "(%d)" % num

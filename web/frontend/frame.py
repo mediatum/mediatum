@@ -32,7 +32,7 @@ from schema.schema import getMetadataType
 from web.frontend.browsingtree import browsingtree, cleartree
 from utils.dicts import SortedDict
 from utils.utils import getCollection, Link, iso2utf8
-from core.acl import AccessData
+from core.acl import AccessData,getRootAccess
 from core.translation import translate, lang, t
 
 class Portlet:
@@ -86,7 +86,7 @@ class Searchlet(Portlet):
         # get searchfields for collection
         self.searchfields = SortedDict()
         datatypes = []
-        for mtype,num in self.collection.getAllOccurences().items():
+        for mtype,num in self.collection.getAllOccurences(getRootAccess()).items():
             if num>0:
                 if mtype.getContentType() not in ("directory", "collection"):
                     datatypes += [mtype]

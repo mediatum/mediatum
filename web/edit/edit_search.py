@@ -91,7 +91,7 @@ def search_results(req,id):
 
 def search_form(req, id, message=None):
     node = tree.getNode(id)
-    occur = node.getAllOccurences()
+    occur = node.getAllOccurences(AccessData(req))
 
     objtype = req.params.get("objtype", None)
     if objtype:

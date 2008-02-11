@@ -110,7 +110,7 @@ def edit_sortfiles(req,ids):
     req.write("<h2>"+c.getName()+"</h2>")
 
     sortfields = [SortChoice(t(req,"off"),"")]
-    for ntype,num in c.getAllOccurences().items():
+    for ntype,num in c.getAllOccurences(AccessData(req)).items():
         #req.write(ntype.getName() +" " +str(num)+"<br/>")
         if ntype.getSortFields():
             for sortfield in ntype.getSortFields():

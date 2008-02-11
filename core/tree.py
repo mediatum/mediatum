@@ -644,7 +644,8 @@ class Node:
         for p in self.getParents():
             p._flushOccurences()
 
-    def getAllOccurences(self):
+    def getAllOccurences(self, access):
+        username = access
         if self.occurences is None:
             self.occurences = {}
             self.occurences2node = {}

@@ -114,7 +114,7 @@ def extended_search(req):
             collection = tree.getNode(coll.id)
             break
 
-    occurs = collection.getAllOccurences()
+    occurs = collection.getAllOccurences(AccessData(req))
     sfields=[]
 
     # get all searchfields

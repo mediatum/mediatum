@@ -21,6 +21,7 @@
 import core.users as users
 import logging
 import core.tree as tree
+import core.config as config
 import sys
 from utils.log import logException
 import re
@@ -134,6 +135,9 @@ class AccessData:
 
         logb.info("Filtering "+str(len(nodelist))+" nodes for read-access: "+str(len(newlist))+" nodes")
         return newlist
+
+def getRootAccess():
+    return AccessData(user=config.get('user.adminuser', 'Administrator'))
 
 prefix2conditionclass = {}
 

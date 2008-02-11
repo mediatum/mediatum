@@ -38,7 +38,7 @@ def isUnFolded(unfoldedids, id):
 
 def writenode(req, node, unfoldedids, f, indent, accessdata):
     isunfolded = isUnFolded(unfoldedids, node.id)
-    
+
     num = 0
     for c in node.getChildren():
         if c.can_open():
@@ -54,7 +54,7 @@ def writenode(req, node, unfoldedids, f, indent, accessdata):
     if req.params.get("dir",1)==node.id:
         css = "current"
 
-    
+
     if not accessdata.hasReadAccess(node):
         return ""
     if not (node.type == "directory" or node.type == "collection" or node.type == "root"):
@@ -68,9 +68,9 @@ def writenode(req, node, unfoldedids, f, indent, accessdata):
     return ret
 
 def writetree2(req, node, f, content, unfoldedids=None):
-    
+
     user = users.getUserFromRequest(req)
-    
+
     def openParents(unfoldedids, node):
         for p in node.getParents():
             unfoldedids[p.id] = 1
@@ -94,16 +94,16 @@ def writetree2(req, node, f, content, unfoldedids=None):
         openParents(unfoldedids, tree.getNode(unfold))
     except:
         pass
-    
+
     try:
         fold = req.params["fold"]
         unfoldedids[fold] = 0
         openParents(unfoldedids, tree.getNode(fold))
     except:
         pass
-        
+
     accessdata = AccessData(req)
-   
+
     for c in node.getChildren().sort():
         content += writenode(req, c, unfoldedids, f, 10, accessdata)
 
@@ -111,14 +111,14 @@ def writetree2(req, node, f, content, unfoldedids=None):
 
 def writetree(req, mynode, currentdir, content):
     accessdata = AccessData(req)
-    
+
     def makeLink(req,node,type):
         count = 0
         for n_t,num in node.getAllOccurences(accessdata).items():
             if n_t.getContentType() != "directory":
                 count += num
 
-        items = " (" + str(count) + ")"        
+        items = " (" + str(count) + ")"
         link = 'node?id='+node.id+'&dir='+node.id
 
         if type == 1:

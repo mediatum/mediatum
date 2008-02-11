@@ -27,11 +27,18 @@ from utils.log import logException
 import re
 from core.db import database
 from utils.boolparser import BoolParser
+import thread
 
 logb = logging.getLogger('backend')
 
 rules = {}
 conn = database.getConnection()
+
+aclrule2privilege = {}
+aclrule2privilege_length = 0
+aclrule2privilege_count = 0
+        
+acllock = thread.allocate_lock()
 
 class AccessData:
     def __init__(self, req=None, user=None, ip=None):
@@ -41,9 +48,41 @@ class AccessData:
         else:
             self.user = user
             self.ip = ip or "127.0.0.1"
+        self.level = None
+
+    def getPrivilegeLevel(self):
+        acllock.acquire()
+        try:
+            global aclrule2privilege
+            if self.level is None:
+                if self.user.isAdmin():
+                    self.level = 0
+                else:
+                    string = ""
+                    for acl in conn.getActiveACLs():
+                        if getRule(clause).getParsedRule().has_access(self, tree.getRoot()):
+                            string += "0"
+                        else:
+                            string += "1"
+                    if len(string) != aclrule2privilege_length:
+                        aclrule2privilege.clear()
+                        aclrule2privilege_length = len(string)
+                        aclrule2privilege_count = 1
+                    if string in aclrule2privilege:
+                        self.level = aclrule2privilege[string]
+                    else:
+                        self.level = aclrule2privilege_count
+                        aclrule2privilege_count = aclrule2privilege_count + 1
+
+            return self.level
+        finally:
+            acllock.release()
 
     def getUser(self):
         return self.user
+
+    def getUserName(self):
+        return self.user.getName()
 
     def _checkRights(self, rights, fnode):
         # fnode is the node against which certain rules

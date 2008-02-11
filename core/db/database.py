@@ -61,8 +61,10 @@ def initDatabaseValues(conn):
     conn.runQuery("insert into nodemapping (nid,cid) values(1,10)")
     conn.runQuery("insert into nodemapping (nid,cid) values(1,11)")
     conn.runQuery("insert into nodemapping (nid,cid) values(1,12)")
-    
-    conn.runQuery("insert into node (id,name,type) values(6,'Administrator', 'user')")
+   
+    adminuser = config.get("user.adminuser", "Administrator")
+    admingroup = config.get("user.admingroup", "Administration")
+    conn.runQuery("insert into node (id,name,type) values(6,'"+adminuser+"', 'user')")
     conn.runQuery("insert into nodemapping (nid,cid) values(2,6)")
     conn.runQuery("insert into nodeattribute (nid,name,value) values(6,'password',"+ \
                   "'226fa8e6cbb1f4e25019e2645225fd47')") #xadmin1
@@ -73,7 +75,7 @@ def initDatabaseValues(conn):
     conn.runQuery("insert into nodeattribute (nid,name,value) values(7,'email','guest@mediatum')")
     conn.runQuery("insert into nodemapping (nid,cid) values(2,7)")
     conn.runQuery("insert into nodemapping (nid,cid) values(13,7)")
-    conn.runQuery("insert into node (id,name,type) values(8,'"+config.get("user.admingroup","Adminitratrion")+"', 'usergroup')")
+    conn.runQuery("insert into node (id,name,type) values(8,'"+admingroup+"', 'usergroup')")
     conn.runQuery("insert into nodeattribute (nid,name,value) values(8,'opts','ew')")
     conn.runQuery("insert into nodemapping (nid,cid) values(5,8)")
     conn.runQuery("insert into nodemapping (nid,cid) values(8,6)")

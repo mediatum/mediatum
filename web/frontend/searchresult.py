@@ -24,9 +24,11 @@ import utils.date as date
 import logging
 from core.acl import AccessData
 from core.translation import lang
+from utils.utils import intersection
+from core.tree import subnodes, searcher
 
 class SearchResult:
-    def __init__(self,resultlist,query,collections=[]):
+    def __init__(self, resultlist, query, collections=[]):
         self.resultlist = resultlist
         self.query = query
         self.collections = collections
@@ -48,23 +50,32 @@ class SearchResult:
 
     def html(self,req):
         if self.active<0:
-            if len(self.resultlist) == 0:
+            if len(self.resultlist) ==0:
                 return req.getTAL("web/frontend/searchresult.html", {"query":self.query, "r":self, "collections":self.collections, "language":lang(req)}, macro="noresult")
-            else: #len(self.resultlist) > 1:
-                return req.getTAL("web/frontend/searchresult.html", {"query":self.query,"collections":self.collections,"reslist":self.resultlist,"r":self, "language":lang(req)}, macro="listcollections")
+            else:
+                if len(self.resultlist)==1:
+                    return self.resultlist[self.active].html(req)
+                else:
+                    return req.getTAL("web/frontend/searchresult.html", {"query":self.query,"collections":self.collections,"reslist":self.resultlist,"r":self, "language":lang(req)}, macro="listcollections")
         else:
             return self.resultlist[self.active].html(req)
 
 def protect(s):
     return '"'+s.replace('"','')+'"'
+    
 
 # method handles all parts of the simple search
 def simple_search(req):
-    access = AccessData(req)
-    q = req.params.get("query","")
-    
-    # test whether this query is restricted to a number of collections
+    from web.frontend.content import ContentList
+    res = []
+    words = []
+    collections = []
     collection_ids = {}
+    
+    access = AccessData(req)
+    q = req.params.get("query", "")
+
+    # test whether this query is restricted to a number of collections
     for key,value in req.params.items():
         if key.startswith("c_"):
             collection_ids[key[2:]] = 1
@@ -73,38 +84,44 @@ def simple_search(req):
         for collection in access.filter(tree.getRoot("collections").getChildren()):
             collection_ids[collection.id] = 1
 
-    print collection_ids
     logging.getLogger('usertracing').info(access.user.name + " search for '"+q+"'")
     # now retrieve all results in all collections
-    resultlist = []
-    collections = []
+    
     for collection in tree.getRoot("collections").getChildren():
         if collection.id in collection_ids:
             collections.append(collection)
-            result = collection.search(protect(q))
-            words = result.getDescription().split(" ")
-            if words == ['']:
-                words = []
-            result = access.filter(result)
-            if len(result):
-                ids = []
-                for node in result:
-                    ids.append(node.id)
-                from web.frontend.content import ContentList
-                c = ContentList(tree.NodeList(ids),collection,words)
-                c.feedback(req)
-                c.linkname = "Suchergebnis"
-                c.linktarget = ""
-                resultlist += [c]
- 
-    if len(resultlist) == 1:
-        return resultlist[0]
+
+    if "act_node" in req.params and tree.getNode(req.params.get("act_node")).getContentType()!="collections":
+        # actual node is a collection or directory
+        result = tree.getNode(req.params.get("act_node")).search('full='+q)
+        if len(result)>0:
+            cl = ContentList(tree.NodeList(result), collection, words)
+            cl.feedback(req)
+            cl.linkname = "Suchergebnis"
+            cl.linktarget = ""
+            res.append(cl)
     else:
-        return SearchResult(resultlist,q, collections)
+        # actual node ist collections-node
+        for collection in collections:
+            result = collection.search('full='+q)
+
+            if len(result)>0:
+                cl = ContentList(tree.NodeList(result), collection, words)
+                cl.feedback(req)
+                cl.linkname = "Suchergebnis"
+                cl.linktarget = ""
+                res.append(cl)
+    return SearchResult(res, q, collections)
+
 
 # method handles all parts of the extended search
 def extended_search(req):
+    from web.frontend.content import ContentList
+    sfields=[]
+    q_str = ''
+    q_user = ''
     access = AccessData(req)
+    metatype = None
     
     collectionid = req.params.get("collection",tree.getRoot().id)
     try:
@@ -123,77 +140,52 @@ def extended_search(req):
             for f in mtype.getSearchFields():
                 sfields.append(f)
 
-    query = ""
-    querytext = ""
-
-    metatype = None
     for i in range(1,3+1):       
-        f=req.params.get("field"+str(i),"").strip()
+        f = req.params.get("field"+str(i),"").strip()
         for sfield in sfields:
             if sfield.getName() == f:
                 metatype = sfield
-
+                
         if "query"+str(i)+"-from" in req.params and metatype and metatype.getFieldtype()=="date":
-            # date field
-            fld=metatype
-
-            date_from = 0
-            date_to = 2097151
+            date_from = "0000-00-00T00:00:00"
+            date_to = "0000-00-00T00:00:00"
+            fld = metatype
             if str(req.params["query"+str(i)+"-from"])!="":
-                date_from = date.parse_date(str(req.params["query"+str(i)+"-from"]), fld.getValues()).daynum()
+                date_from = date.format_date(date.parse_date(str(req.params["query"+str(i)+"-from"]), fld.getValues()), "%Y-%m-%dT%H:%M:%S")
             if str(req.params["query"+str(i)+"-to"])!="":
-                date_to = date.parse_date(str(req.params["query"+str(i)+"-to"]), fld.getValues()).daynum()
+                date_to = date.format_date(date.parse_date(str(req.params["query"+str(i)+"-to"]), fld.getValues()), "%Y-%m-%dT%H:%M:%S")
 
-            if query:
-                query+=" and "
-            query += "%s=%d-%d" % (f,date_from, date_to)
-        
-        elif metatype and metatype.getFieldtype() in ["list","mlist","ilist"]:
-            q = req.params["query"+str(i)].strip()
-            if q:
-                if query:
-                    query+=" and "
-                query += "%s=%s" % (f,protect(q))
-                querytext += q + " "
+            if date_from=="0000-00-00T00:00:00" and date_to!=date_from: # from value
+                q_str += f+ ' <= '+date_to+' and '
+                q_user += f+ ' <= "'+str(req.params["query"+str(i)+"-to"])+'" and '
+            elif date_to=="0000-00-00T00:00:00" and date_to!=date_from: # to value
+                q_str += f+ ' >= '+date_from+' and '
+                q_user += f+ ' >= "'+str(req.params["query"+str(i)+"-from"])+'" and '
+            else:
+                q_str += '('+f+' >= '+date_from+' and '+f+' <= '+date_to+') and '
+                q_user += '('+f+' zwischen "'+str(req.params["query"+str(i)+"-from"])+'" und '+f+' <= "'+str(req.params["query"+str(i)+"-to"])+'") and '
+                
         else:
-            # normal field
-            try:
-                q = req.params["query"+str(i)].strip()
-                if q !="":
-                    for word in q.split(" "):
-                        if word:
-                            if query:
-                                query+=" and "
-                            query += "%s=%s" % (f,protect(word))
-                    querytext += q + " "
-            except:
-                q = ""
-    try:
-        type = req.params["type"]
-        if query:
-            query += " and "
-        query += "objtype=%s" % type
-    except KeyError:
-        pass
+            q = req.params.get("query"+str(i),"").strip()
+            if q !="":
+                q_str += f + '=' + protect(q)+' and '
+                q_user += f + '=' + protect(q)+' and '
 
-    logging.getLogger('usertracing').info(access.user.name + " xsearch for '"+query+"'")
+    q_str = q_str[:-5]
+    q_user = q_user[:-5]
 
-    result = collection.search(query)
-    words = result.getDescription().split(' ')
-    if words == ['']:
-        words = []
-    result = access.filter(result)
-    if len(result):
-        ids = []
-        for node in result:
-            ids.append(node.id)
-        from web.frontend.content import ContentList
-        c = ContentList(tree.NodeList(ids),collection,querytext.strip())
-        c.feedback(req)
-        c.linkname = "Suchergebnis"
-        c.linktarget = ""
-        return c
+    if "act_node" in req.params and req.params.get("act_node")!=str(collection.id):
+        result = tree.getNode(req.params.get("act_node")).search(q_str)
     else:
-        return SearchResult([],querytext.strip())
-
+        result = collection.search(q_str)
+    logging.getLogger('usertracing').info(access.user.name + " xsearch for '"+q_user+"'")
+    
+    if len(result)>0:
+        cl = ContentList(tree.NodeList(result), collection, q_user.strip())
+        cl.feedback(req)
+        cl.linkname = ""
+        cl.linktarget = ""
+        return cl
+    else:
+        return SearchResult([],q_user.strip())
 

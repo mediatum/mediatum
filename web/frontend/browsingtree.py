@@ -135,7 +135,6 @@ def cleartree():
 
 def browsingtree(req):
     content=""
-    print req.params.get("collection",1)
     mynode = tree.getNode(req.params.get("collection",1))
     currentdir = tree.getNode(req.params["dir"])
     content=writetree(req, mynode, currentdir, content)

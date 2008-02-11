@@ -62,7 +62,7 @@ class SearchFieldCondition:
         self.value = value
     def __str__(self):
         return self.field+" "+self.op+" "+self.value
-    def execute(self):
+    def execute(self, attrs=None):
         if self.op and self.op != "=":
             if self.op == ">=":
                 v1 = parse_date(self.value).daynum()
@@ -86,7 +86,7 @@ class SearchParser(BoolParser):
     def parseSimpleCondition(self,s):
         s2 = s.lower()
         m = pattern_op.match(s)
-        if m:
+        if m and m.group(3).find(" ")==-1:
             field = m.group(1)
             op = m.group(2)
             value = m.group(3)

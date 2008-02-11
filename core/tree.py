@@ -19,7 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from utils.utils import compare_utf8,get_filesize, compare_digit
+from utils.utils import compare_utf8,get_filesize, compare_digit, intersection
 from utils.log import logException
 from core.db import database
 import logging
@@ -157,15 +157,15 @@ sortorders = {}
 changed_metadata_nodes = {}
 last_changed_metadata_node = None
 def flush_changed_metadata():
-    return # disable new search index for now
-    global searchIndexer
-    if not searchIndexer:
-        from core.search.indexer import searchIndexer as searchIndexer2
-        searchIndexer = searchIndexer2
+  
+    global searcher
+
     for nid in changed_metadata_nodes.keys():
-        searchIndexer.node_changed(getNode(nid))
+        searcher.node_changed(getNode(nid))
+
     changed_metadata_nodes.clear()
     last_changed_metadata_node = None
+    
 def changed_metadata(node):
     if node.id:
         changed_metadata_nodes[node.id] = None
@@ -220,8 +220,9 @@ class NodeList:
         elif i >= self.len:
             raise IndexError(str(i)+" >= "+str(self.len))
         return getNode(str(self.ids[i]))
+    
     def getIDs(self):
-        return list(self.ids)
+        return self.ids
         
     def getDescription(self):
         return self.description
@@ -339,7 +340,6 @@ class Node:
 
     """ set the node name """
     def setName(self,name):  
-        changed_metadata(self)
         self.name = name
         if self.id:
             db.setNodeName(self.id,name)
@@ -589,9 +589,14 @@ class Node:
     def getAllChildren(self):
         return NodeList(self._getAllChildIDs().keys())
 
+        
+    def event_metadata_changed(self):
+        global searcher
+        searcher.node_changed(self)
+        
+    
     """ get a metadate """
     def get(self, name):
-        flush_changed_metadata()
         if name == "nodename":
             return self.getName()
         if self.attributes is None:
@@ -602,9 +607,6 @@ class Node:
 
     """ set a metadate """
     def set(self, name, value):
-        if self.id != last_changed_metadata_node:
-            flush_changed_metadata()
-        changed_metadata(self)
         if name == "nodename":
             return self.setName(value)
         if self.attributes is None:
@@ -634,7 +636,6 @@ class Node:
         return self.get(name)
 
     def removeAttribute(self, name):
-        changed_metadata(self)
         if self.attributes:
             try: del self.attributes[name]
             except KeyError: pass
@@ -664,14 +665,16 @@ class Node:
     
     """ run a search query. returns a list of nodes """
     def search(self, q):
-        flush_changed_metadata()
-        log.info("search: "+q)
+        global searcher, subnodes
+        log.info('search: '+q+' for node '+str(self.id))
         self._makePersistent()
-        qq = searchParser.parse(q)
-        qresult = qq.execute()
-        nodes = subnodes(self)
-        result = qresult.intersect(nodes)
-        return NodeList(result.getIDs(), result.getDescription())
+        items = subnodes(self)
+        
+        if type(items)!= list:
+            items = items.getIDs()
+        q = q.replace("\"","'")
+        return intersection([items, searcher.query(q)])
+
 
     def __getattr__(self, name):
         global nodefunctions,nodeclasses
@@ -680,9 +683,6 @@ class Node:
             return cls.__dict__[name]
         if name in self.__dict__:
             return self.__dict__[name]
-        return self.getoverloadedfunction(name)
-
-    def getoverloadedfunction(self, name):
         if self.getContentType() in nodeclasses:
             cls = nodeclasses[self.getContentType()]
             def r(cls):
@@ -728,7 +728,8 @@ def registerNodeFunction(name, nodefunction):
 schema = None
 subnodes = None
 searchParser = None
-searchIndexer = None
+searcher = None
+
 def initialize(load=1):
     global db,_root,nodes_cache,testmode
     nodes_cache = MaxSizeDict(int(config.get("db.cache_size","100000")), keep_weakrefs=1)
@@ -736,11 +737,27 @@ def initialize(load=1):
     db = database.getConnection()
     if load:
         getRoot()
-    global schema, subnodes, searchParser
+    global schema, subnodes, searchParser, searcher
     import schema.schema as schema
     schema = schema
-    from core.search.query import subnodes
-    subnodes = subnodes
-    from core.search.parser import searchParser
-    searchParser = searchParser
+
+    if config.get("config.searcher","")=="fts3": # use fts3
+        print "fts3 searcher initialized"
+        from core.search.ftsquery import subnodes, ftsSearcher
+        from core.search.ftsparser import ftsSearchParser
+        
+        subnodes = subnodes
+        searchParser = ftsSearchParser
+        searcher = ftsSearcher
+        
+    else: # use magpy
+        print "magpy searcher initialized"
+        from core.search.query import subnodes, mgSearcher
+        from core.search.parser import searchParser
+        
+        subnodes = subnodes
+        searchParser = searchParser
+        searcher = mgSearcher
+    
+    
 

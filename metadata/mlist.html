@@ -12,7 +12,7 @@
    </tal:block>
 </tal:block>
 
-
+<p tal:content="value"></p>
 <select metal:define-macro="searchfield" tal:attributes="name name; id name" class="searchfield">
     <tal:block tal:repeat="v valuelist">
         <option tal:condition="python:v[0]=='optionselected' and v[2] in value.split(';') and value!=''" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]" selected="selected"/>

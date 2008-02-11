@@ -64,14 +64,17 @@ class m_list(Metatype):
             try:
                 if int(num)<0:
                     raise ""
-                num = " ("+str(num)+")"
+                elif int(num)==0:
+                    num = ""
+                else:
+                    num = " ("+str(num)+")"
             except:
                 num = ""
                 
             val = esc(val)
 
             if not canbeselected:
-                valuelist.append(("optgroup", "<optgroup label=\""+indentstr+val+"\">"))
+                valuelist.append(("optgroup", "<optgroup label=\""+indentstr+val+"\">","", ""))
             else:
                 valuelist.append(("option", indentstr, val, num))
         return valuelist

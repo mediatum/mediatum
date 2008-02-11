@@ -282,7 +282,7 @@ def showlist():
     print "known commands:"
     for name,command in commands.items():
         print "\t-", name, " ".join(['<'+a+'>' for a in command.args])
-
+ 
 def changescheme(collection_id, newschemename, write=0):
     """ changes all elements (except directories) to given metascheme """
     node = tree.getNode(collection_id)
@@ -301,6 +301,14 @@ def changescheme(collection_id, newschemename, write=0):
                 i+=1
                 print "\t node to change %s current scheme '%s'" % (n.id, n.type)
     print "  %s node(s) affected (%s errors)" % (i,j)
+
+def reindex():
+    global node
+    from core.tree import searcher
+    print searcher
+    nodes = node.getAllChildren()
+    print "reindex started for",len(nodes), "nodes"
+    searcher.reindex(nodelist=nodes)
    
 def event(etype="meta"):
     if etype=="meta":
@@ -338,6 +346,7 @@ commands = {
  "checkmasks": Command(checkmasks, []),
  "fixmask": Command(fixmask, []),
  "clonemask": Command(clonemask, ["oldmask","newmask"]),
+ "reindex":Command(reindex, []),
  "?":Command(showlist,[]),
  "changescheme":Command(changescheme,["collection_id", "newschemename", "write"])
 };

@@ -574,8 +574,7 @@ class Metadatatype(tree.Node):
         except tree.NoSuchNodeError:
             print "mask '" + str(name) + "' not found"
             return None
-       
-        
+          
     def hasUploadForm(self):
         global nodeclasses
         for dtype in self.getDatatypes():
@@ -586,18 +585,24 @@ class Metadatatype(tree.Node):
         
     
     def searchIndexCorrupt(self):
-        from core.search.indexer import searchIndexer
+        from core.tree import searcher
         search_def=[]
         for node in node_getSearchFields(self):
             search_def.append(node.getName())
         search_def = set(search_def)
-        index_def = set(searchIndexer.getDefForSchema(self.name).values())
-        if len(search_def)>len(index_def) and len(self.getAllItems())>0:
+        
+        try:
+            index_def = searcher.getDefForSchema(self.name)
+            index_def = set(index_def.values())
+            if len(search_def)>len(index_def) and len(self.getAllItems())>0:
+                return True
+            else:
+                if search_def.union(index_def)==set([]) or index_def.difference(search_def)==set([]):
+                    return False
             return True
-        else:
-            if search_def.union(index_def)==set([]) or index_def.difference(search_def)==set([]):
-                return False
-        return True
+        except AttributeError:
+            return False
+
             
     def getAllItems(self):
         ret = []

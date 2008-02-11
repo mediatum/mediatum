@@ -60,6 +60,7 @@ class m_mlist(Metatype):
             if not canbeselected:
                 valuelist.append(("optgroup", "<optgroup label=\""+indentstr+val+"\">"))
             else:
+                value=value.replace('\'', '')
                 if value != '' and val in value.split(';'):
                     valuelist.append(("optionselected", indentstr, val, num))
                 else:

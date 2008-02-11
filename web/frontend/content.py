@@ -113,6 +113,10 @@ class ContentList(Content):
         self.sortfields = [self.collection.get("sortfield")]*SORT_FIELDS
         if self.sortfields[0]:
             self.files.sort(self.sortfields)
+        
+        print "\n\nsortfields:",self.sortfields
+            
+            
         liststylename = self.collection.get("style")
         if liststylename:
             self.liststyle = getListStyle(liststylename)
@@ -225,6 +229,7 @@ class ContentList(Content):
 
 
     def html(self,req):
+
         if self.content:
             headline = athana.getTAL("web/frontend/content_nav.html", {"nav": self}, macro="navheadline", language=lang(req))
             return headline + self.content.html(req)
@@ -273,14 +278,13 @@ class ContentList(Content):
 
         liststyle = req.session.get("liststyle-"+self.collection.id, "") # user/session setting for liststyle?
         if not liststyle:
-            # no, use collection default
+            # no liststsyle, use collection default
             liststyle = self.liststyle
-            print "Use default style",self.liststyle
 
         filesHTML = req.getTAL("web/frontend/content_nav.html", {
                  "nav_list":nav_list, "nav_page":nav_page, "act_page":self.page, 
                  "sortfields":self.sortfields, "sortfieldslist":self.getSortFieldsList(),
-                 "files":tal_files, "maxresult":len(self.files), "op":""}, macro="files")
+                 "files":tal_files, "maxresult":len(self.files), "op":"", "query":req.params.get("query", "")}, macro="files")
 
         contentList = req.getTAL(liststyle.getTemplate(), {
                 "nav_list":nav_list, "nav_page":nav_page, "act_page":self.page, 
@@ -318,7 +322,7 @@ def getPaths(node, access):
                 if node is tree.getRoot("collections") or node.type=="root":
                     paths.reverse()
                     if len(paths)>1:
-                        list.append(paths[1:])
+                        list.append(paths)
                     paths =[]
     if len(list)>0:
         return list
@@ -452,7 +456,8 @@ class ContentArea(Content):
         if "raw" in req.params:
             path = ""
         else:
-            path = req.getTAL("web/frontend/content_nav.html", {"params": self.params, "path": self.getPath(), "styles":styles, "logo":self.collectionlogo}, macro="path")
+            path = req.getTAL("web/frontend/content_nav.html", {"params": self.params, "path": self.getPath(), "styles":styles, "logo":self.collectionlogo, "searchmode":req.params.get("searchmode","")}, macro="path")
+
         return path + '\n<!-- CONTENT START -->\n<div id="nodes">' +  self.content.html(req) + '</div>\n<!-- CONTENT END -->\n'
 
 class CollectionLogo(Content):

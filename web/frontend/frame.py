@@ -39,6 +39,7 @@ class Portlet:
     def __init__(self):
         self.folded = 0
         self.name = "common"
+        self.user = users.getUser(config.get("user.guestuser", ""))
     def isFolded(self):
         return self.folded
     def close(self):
@@ -52,6 +53,7 @@ class Portlet:
     def canOpen(self):
         return 1
     def feedback(self,req):
+        self.user = users.getUserFromRequest(req)
         r = req.params.get(self.name,"")
         if r == "unfold":
             self.open()
@@ -93,6 +95,8 @@ class Searchlet(Portlet):
 
         self.datatype = None
         for mtype in datatypes:
+            if mtype.getContentType()=="directory":
+                continue
             self.datatype = mtype
             for field in self.datatype.getSearchFields():
                 self.searchfields[field.name] = field.getLabel()
@@ -396,6 +400,7 @@ class NavigationFrame:
     def write(self, req, contentHTML, show_navbar=1):
         self.params["content"] = contentHTML
         self.params["show_navbar"] = show_navbar
+        self.params["act_node"] = req.params.get("id", req.params.get("dir", ""))
         return req.writeTAL("web/frontend/frame.html", self.params)
 
 

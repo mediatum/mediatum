@@ -19,7 +19,6 @@
 """
 import core.tree as tree
 import core.config as config
-import mgquery
 import os
 import core.db.database as database
 import time
@@ -29,7 +28,12 @@ import thread
 import traceback
 import utils.date as date
 from utils.utils import ArrayToString
-
+try:
+    import mgquery
+except ImportError:
+    print "\n\n\nImport Error:\nModule magpy can not be found on the system, check your configuration.\n"
+    sys.exit()
+    
 log = logging.getLogger("backend")
 search_lock = thread.allocate_lock()
 
@@ -125,7 +129,7 @@ class _Searcher:
             return []
         return self.searcher.getIndex()
 
-    def search(self,q):
+    def search(self, q):
         
         if not self.searcher:
             return QueryResult(self)
@@ -149,6 +153,29 @@ class _Searcher:
 
 
 searchers = {}
+
+# new
+
+class MgSearcher:
+
+    def query(self, q=""):
+        from core.tree import searchParser
+        q=q.replace("'","")
+        qq = searchParser.parse(q)
+        qresult = qq.execute()
+        return qresult.getIDs()
+    
+    def reindex(self, option="", nodelist=None):
+        makeSearchIndex()
+
+    def node_changed(self, node):
+        # magpy can not re-index single node
+        print "node_change magpy"
+        return
+
+
+mgSearcher = MgSearcher() 
+# new
 
 def _getSearcher(name):
     global searchers

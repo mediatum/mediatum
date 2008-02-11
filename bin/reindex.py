@@ -21,7 +21,7 @@
 import sys
 sys.path += ["../", "."]
 import core
-import core.search.query
+import core.tree
+from core.tree import searcher
 
-core.search.query.makeSearchIndex()
-
+searcher.reindex(option = "init")

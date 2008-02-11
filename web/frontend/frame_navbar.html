@@ -7,14 +7,15 @@
                 <input type="hidden" name="searchmode" value="simple"/>
                 <input type="hidden" value="1" tal:attributes="name python:'c_'+search.collection.id" tal:condition="python:search.insideCollection()"/>
                 <input i18n:attributes="value search; title search_title" id="search-button" type="submit" name="start_search"/>
-            
                 <a tal:condition="python:search.hasExtendedSearch()" tal:attributes="href python:search.searchLinkExtended()" i18n:translate="xsearch" id="advancedsearchlink">TEXT</a>   
+                <input type="hidden" name="act_node" tal:attributes="value python:act_node"/>
             </form>
 
             <form tal:condition="python:search.isExtended()" action="/node" name="xsearch" id="search-box" action="/xsearch" method="post" accept-charset="utf-8">
                 <input type="hidden" name="submittype" value="search"/>
                 <input type="hidden" name="searchmode" value="extended"/>
                 <input type="hidden" name="collection" tal:attributes="value python:search.collection.id"/>
+                <input type="hidden" name="act_node" tal:attributes="value python:act_node"/>
                 <table>
 
                     <tr tal:repeat="i python:[1,2,3]">
@@ -69,7 +70,7 @@
         </ul>
     </div>
 
-    <div class="portlet">
+    <!--<div class="portlet">
         <ul id="navigationlist">
             <li tal:define="nav python:navigation['navitem']">
                 <tal:block tal:repeat="data python:nav.ni_data">
@@ -78,6 +79,6 @@
                 </tal:block>
             </li>
         </ul>
-    </div>
+    </div>-->
 </div>
 

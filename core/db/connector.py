@@ -70,7 +70,7 @@ class Connector:
         mylist = self.runQuery("select distinct readaccess from node where readaccess not like '{user %}'")
         acls = []
         for acl in mylist:
-            acls += acl.split(',')
+            acls += acl[0].split(',')
         return acls
 
     def getFiles(self, nodeid):

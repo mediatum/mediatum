@@ -309,6 +309,7 @@ class Node:
             self.data_access = data
             self.orderpos = orderpos
             self.attributes = None
+        self.occurences = {}
 
     def _makePersistent(self):
         if self.id is None:
@@ -640,23 +641,23 @@ class Node:
             db.removeAttribute(self.id, name)
 
     def _flushOccurences(self):
-        self.occurences = None
+        self.occurences = {}
         for p in self.getParents():
             p._flushOccurences()
 
     def getAllOccurences(self, access):
-        username = access
-        if self.occurences is None:
-            self.occurences = {}
-            self.occurences2node = {}
+        level = access.getPrivilegeLevel()
+        if level not in self.occurences:
+            self.occurences[level] = {}
+            self.occurences2node[level] = {}
             for node in self.getAllChildren():
                 schema = node.getSchema()
-                if schema not in self.occurences:
-                    self.occurences[schema] = 1
-                    self.occurences2node[schema] = node
+                if schema not in self.occurences[level]:
+                    self.occurences[level][schema] = 1
+                    self.occurences2node[level][schema] = node
                 else:
-                    self.occurences[schema] += 1
-        return dict([(self.occurences2node[s],v) for s,v in self.occurences.items()])
+                    self.occurences[level][schema] += 1
+        return dict([(self.occurences2node[level][s],v) for s,v in self.occurences[level].items()])
     
     """ run a search query. returns a list of nodes """
     def search(self, q):

@@ -59,7 +59,7 @@ class AccessData:
                     self.level = 0
                 else:
                     string = ""
-                    for acl in conn.getActiveACLs():
+                    for clause in conn.getActiveACLs():
                         if getRule(clause).getParsedRule().has_access(self, tree.getRoot()):
                             string += "0"
                         else:

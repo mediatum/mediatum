@@ -24,6 +24,7 @@ from time import *
 import logging
 import traceback
 import thread
+from connector import Connector
 
 from core.db.database import initDatabaseValues
 
@@ -37,7 +38,7 @@ debug = 0
 
 log = logging.getLogger('database')
 
-class MYSQLConnector:
+class MYSQLConnector(Connector):
 
     def __init__(self):
         config.initialize()
@@ -215,11 +216,7 @@ class MYSQLConnector:
         self.runQueryNoError("drop table nodeattribute")
         self.runQueryNoError("drop table nodemapping")
         log.info("tables deleted")
-
-
-    #
-    # acl rule section
-    #
+    
     def getRule(self, name):
         rule = self.runQuery("select name, description, rule from access where name=" + self.esc(name))
         if len(rule)==1:
@@ -228,6 +225,7 @@ class MYSQLConnector:
             raise "DuplicateRuleError"
         else:
             raise "RuleNotFoundError"
+    
 
     def getRuleList(self):
         return self.runQuery("select name, description, rule from access order by name")
@@ -342,32 +340,7 @@ class MYSQLConnector:
             
         #log.info("node "+id+" ("+name+") created")
         return str(id)
-  
-
-    def setNodeName(self, id, name):
-        self.runQuery("update node set name = "+self.esc(name)+" where id = "+id)
-
-
-    def setNodeOrderPos(self, id, orderpos):
-        self.runQuery("update node set orderpos = "+str(orderpos)+" where id = "+id)
-
-
-    def setNodeReadAccess(self, id, access):
-        self.runQuery("update node set readaccess = "+self.esc(access)+" where id = "+id)
-
-
-    def setNodeWriteAccess(self, id, access):
-        self.runQuery("update node set writeaccess = "+self.esc(access)+" where id = "+id)
-
-
-    def setNodeDataAccess(self, id, access):
-        self.runQuery("update node set dataaccess = "+self.esc(access)+" where id = "+id)
-
-
-    def setNodeType(self, id, type):
-        self.runQuery("update node set type = "+self.esc(type)+" where id = "+id)
-
-
+    
     def addChild(self, nodeid, childid, check=1):
         if check:
             if childid == nodeid:
@@ -379,44 +352,6 @@ class MYSQLConnector:
         self.setNodeOrderPos(childid, self.mkOrderPos())
         self.runQuery("insert into nodemapping (nid, cid) values(" + nodeid + ", " + childid + ")")
 
-
-    def removeChild(self, nodeid, childid):
-        self.runQuery("delete from nodemapping where nid=" + nodeid + " and cid=" + childid)
-
-
-    def getChildren(self, nodeid):
-        t = self.runQuery("select cid from nodemapping where nid="+nodeid+" order by cid")
-        idlist = []
-        for id in t:
-            idlist += [str(id[0])]
-        return idlist
-
-
-    def getParents(self, nodeid):
-        t = self.runQuery("select nid from nodemapping where cid="+nodeid)
-        idlist = []
-        for id in t:
-            idlist += [str(id[0])]
-        return idlist
-
-
-    def getAttributes(self, nodeid):
-        t = self.runQuery("select name,value from nodeattribute where nid=" + nodeid)
-        attributes = {}
-        for name,value in t:
-            if value:
-                attributes[name] = value
-        return attributes
-
-
-    def getMetaFields(self, name):
-        t = self.runQuery("select value from nodeattribute where name=" + self.esc(name))
-        return t
-
-    def getSortOrder(self, field):
-        return self.runQuery("select nid,value from nodeattribute where name="+self.esc(field))
-   
-
     def setAttribute(self, nodeid, attname, attvalue, check=1):
         if attvalue is None:
             raise "Attribute value is None"
@@ -427,23 +362,7 @@ class MYSQLConnector:
                 return
         self.runQuery("insert into nodeattribute (nid, name, value) values(" + nodeid + ", " + self.esc(attname) + ", " + self.esc(attvalue) + ")")
 
-
-    def removeAttribute(self, nodeid, attname):
-        self.runQuery("delete from nodeattribute where nid=" + nodeid + " and name=" + self.esc(attname))
-
-    
-    def getFiles(self, nodeid):
-        t = self.runQuery("select filename,type,mimetype from nodefile where nid="+nodeid)
-        return t
-
-
     def addFile(self, nodeid, path, type, mimetype):
         self.runQuery("insert into nodefile (nid, filename, type, mimetype) values(" + nodeid + \
                     ", " + self.esc(path) + ", '" + type + "', '" + mimetype+ "')")
-
-
-    def removeFile(self, nodeid, path):
-        self.runQuery("delete from nodefile where nid = "+nodeid+" and filename="+self.esc(path))
-
-
 

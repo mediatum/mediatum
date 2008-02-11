@@ -24,6 +24,7 @@ import sys
 import logging
 import traceback
 import thread
+from connector import Connector
 
 try:
     import sqlite3 as sqlite
@@ -43,7 +44,7 @@ debug = 0
 log = logging.getLogger('database')
 
 
-class SQLiteConnector:
+class SQLiteConnector(Connector):
 
     def __init__(self,db=None):
         config.initialize()
@@ -151,11 +152,9 @@ class SQLiteConnector:
             return self.runQuery("select nid,cid from nodemapping order by nid,cid")
         else:
             return self.runQuery("select cid,nid from nodemapping order by cid,nid")
-
-
-    """ ACL rule section """
+    
     def getRule(self, name):
-        rule = self.runQuery("select name, description, rule from nodeaccess where name='" + name + "'")
+        rule = self.runQuery("select name, description, rule from nodeaccess where name=" + self.esc(name))
         if len(rule)==1:
             return rule[0][2], rule[0][1]
         elif len(rule)>1:
@@ -256,25 +255,7 @@ class SQLiteConnector:
         self.runQuery("insert into node (name,type,orderpos) values(?,?,?)",(name,type,orderpos))
         res = self.runQuery("select max(id) from node")
         return str(res[0][0])
-
-    def setNodeName(self, id, name):
-        self.runQuery("update node set name ='"+name+"' where id="+id)
-
-    def setNodeOrderPos(self, id, orderpos):
-        self.runQuery("update node set orderpos="+str(orderpos)+" where id="+id)
-
-    def setNodeReadAccess(self, id, access):
-        self.runQuery("update node set readaccess='"+access+"' where id="+id)
-
-    def setNodeWriteAccess(self, id, access):
-        self.runQuery("update node set writeaccess='"+access+"' where id="+id)
-
-    def setNodeDataAccess(self, id, access):
-        self.runQuery("update node set dataaccess='"+access+"' where id="+id)
-
-    def setNodeType(self, id, type):
-        self.runQuery("update node set type='"+type+"' where id="+id)
-
+    
     def addChild(self, nodeid, childid, check=1):
         if check:
             if childid == nodeid:
@@ -286,37 +267,6 @@ class SQLiteConnector:
         self.setNodeOrderPos(childid, self.mkOrderPos())
         self.runQuery("insert into nodemapping (nid, cid) values(?,?)",(nodeid,childid))
 
-    def removeChild(self, nodeid, childid):
-        self.runQuery("delete from nodemapping where nid=" + nodeid + " and cid=" + childid)
-
-    def getChildren(self, nodeid):
-        t = self.runQuery("select cid from nodemapping where nid="+nodeid+" order by cid")
-        idlist = []
-        for id in t:
-            idlist += [str(id[0])]
-        return idlist
-
-    def getParents(self, nodeid):
-        t = self.runQuery("select nid from nodemapping where cid="+nodeid)
-        idlist = []
-        for id in t:
-            idlist += [str(id[0])]
-        return idlist
-
-    def getAttributes(self, nodeid):
-        t = self.runQuery("select name,value from nodeattribute where nid=" + nodeid)
-        attributes = {}
-        for name,value in t:
-            if value:
-                attributes[name] = value
-        return attributes
-
-    def getMetaFields(self, name):
-        return self.runQuery("select value from nodeattribute where name='"+name+"'")
-    
-    def getSortOrder(self, field):
-        return self.runQuery("select nid,value from nodeattribute where name="+self.esc(field))
-
     def setAttribute(self, nodeid, attname, attvalue, check=1):
         if attvalue is None:
             raise "Attribute value is None"
@@ -327,14 +277,8 @@ class SQLiteConnector:
                 return
         self.runQuery("insert into nodeattribute (nid, name, value) values(?,?,?)", (nodeid,attname,attvalue))
 
-    def removeAttribute(self, nodeid, attname):
-        self.runQuery("delete from nodeattribute where nid="+nodeid+" and name='"+attname+"'")
-
-    def getFiles(self, nodeid):
-        return self.runQuery("select filename,type,mimetype from nodefile where nid="+nodeid)
-
     def addFile(self, nodeid, path, type, mimetype):
         self.runQuery("insert into nodefile (nid, filename, type, mimetype) values(?,?,?,?)", (nodeid,path,type,mimetype))
 
-    def removeFile(self, nodeid, path):
-        self.runQuery("delete from nodefile where nid="+nodeid+" and filename='"+path+"'")
+
+

@@ -31,10 +31,11 @@ log = logging.getLogger('edit')
 utrace = logging.getLogger('usertracing')
 
 def protect(s):
-    return '"'+s.replace('"','')+'"'
+    return '"'+s.replace('"','').replace('\'','')+'"'
 
 def search_results(req,id):
     access = AccessData(req)
+    print req.params
 
     if "Reset" in req.params:
         return search_form(req, id, "edit_search_reset_msg")
@@ -62,8 +63,9 @@ def search_results(req,id):
     for field in type.getMetaFields():
         if field.Searchfield():
             name=field.getName()
-            if name in req.params:
+            if name in req.params and req.params.get(name,"").replace("'",'').replace('"','').strip()!="":
                 value = req.params[name].strip()
+                
                 if value:
                     searchvalues[objtype + "." + field.getName()] = value
                     if field.getFieldtype()=="list" or field.getFieldtype()=="ilist" or field.getFieldtype()=="mlist":
@@ -71,16 +73,17 @@ def search_results(req,id):
                             query += " and "
                         query += name + "=" + protect(value)
                     else:
-                        for word in value.split(" "):
-                            if word:
-                                if query:
-                                    query += " and "
-                                query += name + "=" + protect(word)
+                        query += name + "=" + protect(value)
+                        # for word in value.split(" "):
+                            # if word:
+                                # if query:
+                                    # query += " and "
+                                # query += name + "=" + protect(word)
 
+    query += ' and schema="'+req.params.get("objtype","*")+'"'
+                                
     utrace.info(access.user.name + " search for "+query)
-
-    nodes = node.search(query)
-    
+    nodes = tree.NodeList(node.search(query))
     req.session["nodelist"] = EditorNodeList(nodes)
 
     if len(nodes):
@@ -118,14 +121,12 @@ def search_form(req, id, message=None):
     mtypelist = []
     itemlist = {}
     for mtype,num in occur.items():
-        print mtype.getContentType(),mtype.getSchema()
         if num>0 and mtype.getDescription():
             if otype is None:
                 otype = mtype
-            if mtype.getSchema() not in itemlist:
+            if mtype.getSchema() not in itemlist and mtype.type.find("directory")==-1:
                 itemlist[mtype.getSchema()] = None
                 mtypelist.append(mtype)
-
                 if objtype == mtype.getSchema():
                     otype = mtype
             else:
@@ -154,9 +155,7 @@ def search_form(req, id, message=None):
         indexdate = date.format_date(date.parse_date(tree.getRoot().get("lastindexerrun")), "%Y-%m-%d %H:%M:%S")
     except:
         indexdate = None
-
     req.writeTAL("web/edit/edit_search.html",{"node":node, "occur":occur, "mtypelist":mtypelist, "objtype":objtype, "searchvalues":searchvalues.get(str(otype)+".full", ""), "script":script, "indexdate":indexdate, "formlist":formlist},macro="search_form")
-
     return
 
 

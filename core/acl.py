@@ -55,24 +55,28 @@ class AccessData:
         try:
             global aclrule2privilege,aclrule2privilege_length,aclrule2privilege_count
             if self.level is None:
+                logb.info("Calculating access privilege level for user "+self.getUserName())
                 if self.user.isAdmin():
                     self.level = 0
                 else:
                     string = ""
                     for clause in conn.getActiveACLs():
                         if getRule(clause).getParsedRule().has_access(self, tree.getRoot()):
-                            string += "0"
-                        else:
                             string += "1"
+                        else:
+                            string += "0"
                     if len(string) != aclrule2privilege_length:
                         aclrule2privilege.clear()
                         aclrule2privilege_length = len(string)
                         aclrule2privilege_count = 1
                     if string in aclrule2privilege:
+                        logb.info("(Existing) access string is "+string)
                         self.level = aclrule2privilege[string]
                     else:
+                        logb.info("(New) access string is "+string)
                         self.level = aclrule2privilege_count
                         aclrule2privilege_count = aclrule2privilege_count + 1
+                logb.info("Level for user "+self.getUserName()+" is "+str(self.level))
 
             return self.level
         finally:

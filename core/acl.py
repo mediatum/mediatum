@@ -60,7 +60,9 @@ class AccessData:
                     self.level = 0
                 else:
                     string = ""
-                    for clause in conn.getActiveACLs():
+                    acls = conn.getActiveACLs()
+                    acls.sort()
+                    for clause in acls:
                         if getRule(clause).getParsedRule().has_access(self, tree.getRoot()):
                             string += "1"
                         else:
@@ -75,6 +77,7 @@ class AccessData:
                     else:
                         logb.info("(New) access string is "+string)
                         self.level = aclrule2privilege_count
+                        aclrule2privilege[string] = self.level
                         aclrule2privilege_count = aclrule2privilege_count + 1
                 logb.info("Level for user "+self.getUserName()+" is "+str(self.level))
 

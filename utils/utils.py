@@ -411,6 +411,11 @@ def intersection(definition): # and
         result = filter(lambda x:x in result,item)
     return result
     
+class EncryptionException:
+    pass
+
+class FileException:
+    pass
 
 if __name__ == "__main__":
     def tt(s):

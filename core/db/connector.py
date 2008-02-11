@@ -67,8 +67,12 @@ class Connector:
         return self.runQuery("select nid,value from nodeattribute where name="+self.esc(field))
 
     def getActiveACLs(self):
-        acls = self.runQuery("select distinct readaccess from node where readaccess not like '{user %}'")
-        for acl in acls:
+        mylist = self.runQuery("select distinct readaccess from node where readaccess not like '{user %}'")
+        acls = []
+        for acl in mylist:
+            acls += acl.split(',')
+        return acls
+
     def getFiles(self, nodeid):
         return self.runQuery("select filename,type,mimetype from nodefile where nid="+nodeid)
     def removeFile(self, nodeid, path):

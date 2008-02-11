@@ -53,7 +53,7 @@ class AccessData:
     def getPrivilegeLevel(self):
         acllock.acquire()
         try:
-            global aclrule2privilege
+            global aclrule2privilege,aclrule2privilege_length,aclrule2privilege_count
             if self.level is None:
                 if self.user.isAdmin():
                     self.level = 0
@@ -467,8 +467,11 @@ def resetNodeRule(rulename):
     conn.resetNodeRule(rulename)
     
 def flush():
-    global rules
+    global rules, aclrule2privilege, aclrule2privilege_length, aclrule2privilege_count
     rules.clear()
+    aclrule2privilege.clear()
+    aclrule2privilege_length = 0
+    aclrule2privilege_count = 0
 
 def initialize():
     global conn

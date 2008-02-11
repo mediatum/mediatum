@@ -19,6 +19,7 @@ type=sqlite
 #cache_size=100000
 
 [user]
+adminuser=Administrator
 guestuser=Gast
 admingroup=Administration
 passwd=ABC

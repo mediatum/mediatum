@@ -652,7 +652,8 @@ class Node:
         if level not in self.occurences:
             self.occurences[level] = {}
             self.occurences2node[level] = {}
-            for node in self.getAllChildren():
+            nodelist = access.filter(self.getAllChildren())
+            for node in nodelist:
                 schema = node.getSchema()
                 if schema not in self.occurences[level]:
                     self.occurences[level][schema] = 1

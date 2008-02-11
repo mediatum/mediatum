@@ -431,10 +431,12 @@ def updateRule(rule):
     global conn, rules
     conn.updateRule(rule)
     rules[rule.getName()] = rule
+    flush()
 
 def addRule(rule):
     global conn
     conn.addRule(rule)
+    flush()
 
 def existRule(rulename):
     global conn
@@ -454,6 +456,7 @@ def deleteRule(rulename):
         rules.pop(rulename)
     except:
         None
+    flush()
         
 
 # returns a list of all not defined rulenames used in nodes

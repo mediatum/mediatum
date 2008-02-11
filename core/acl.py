@@ -176,7 +176,7 @@ class AccessData:
         return newlist
 
 def getRootAccess():
-    return AccessData(user=config.get('user.adminuser', 'Administrator'))
+    return AccessData(user=users.getUser(config.get('user.adminuser', 'Administrator')))
 
 prefix2conditionclass = {}
 

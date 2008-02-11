@@ -37,6 +37,7 @@ conn = database.getConnection()
 aclrule2privilege = {}
 aclrule2privilege_length = 0
 aclrule2privilege_count = 0
+userip2level = {}
         
 acllock = thread.allocate_lock()
 
@@ -53,35 +54,37 @@ class AccessData:
     def getPrivilegeLevel(self):
         acllock.acquire()
         try:
-            global aclrule2privilege,aclrule2privilege_length,aclrule2privilege_count
-            if self.level is None:
-                logb.info("Calculating access privilege level for user "+self.getUserName())
-                if self.user.isAdmin():
-                    self.level = 0
-                else:
-                    string = ""
-                    acls = conn.getActiveACLs()
-                    acls.sort()
-                    for clause in acls:
-                        if getRule(clause).getParsedRule().has_access(self, tree.getRoot()):
-                            string += "1"
-                        else:
-                            string += "0"
-                    if len(string) != aclrule2privilege_length:
-                        aclrule2privilege.clear()
-                        aclrule2privilege_length = len(string)
-                        aclrule2privilege_count = 1
-                    if string in aclrule2privilege:
-                        logb.info("(Existing) access string is "+string)
-                        self.level = aclrule2privilege[string]
+            global aclrule2privilege,aclrule2privilege_length,aclrule2privilege_count,userip2level
+            key = self.getUserName()+"#"+self.ip
+            if key in userip2level:
+                return userip2level[key]
+            logb.info("Calculating access privilege level for user "+self.getUserName())
+            if self.user.isAdmin():
+                level = 0
+            else:
+                string = ""
+                acls = conn.getActiveACLs()
+                acls.sort()
+                for clause in acls:
+                    if getRule(clause).getParsedRule().has_access(self, tree.getRoot()):
+                        string += "1"
                     else:
-                        logb.info("(New) access string is "+string)
-                        self.level = aclrule2privilege_count
-                        aclrule2privilege[string] = self.level
-                        aclrule2privilege_count = aclrule2privilege_count + 1
-                logb.info("Level for user "+self.getUserName()+" is "+str(self.level))
-
-            return self.level
+                        string += "0"
+                if len(string) != aclrule2privilege_length:
+                    aclrule2privilege.clear()
+                    aclrule2privilege_length = len(string)
+                    aclrule2privilege_count = 1
+                if string in aclrule2privilege:
+                    logb.info("(Existing) access string is "+string)
+                    level = aclrule2privilege[string]
+                else:
+                    logb.info("(New) access string is "+string)
+                    level = aclrule2privilege_count
+                    aclrule2privilege[string] = level
+                    aclrule2privilege_count = aclrule2privilege_count + 1
+            userip2level[key] = level
+            logb.info("Level for user "+self.getUserName()+" is "+str(level))
+            return level
         finally:
             acllock.release()
 
@@ -477,9 +480,10 @@ def resetNodeRule(rulename):
     conn.resetNodeRule(rulename)
     
 def flush():
-    global rules, aclrule2privilege, aclrule2privilege_length, aclrule2privilege_count
+    global rules, aclrule2privilege, aclrule2privilege_length, aclrule2privilege_count,userip2level
     rules.clear()
     aclrule2privilege.clear()
+    userip2level.clear()
     aclrule2privilege_length = 0
     aclrule2privilege_count = 0
 

@@ -280,5 +280,7 @@ class SQLiteConnector(Connector):
     def addFile(self, nodeid, path, type, mimetype):
         self.runQuery("insert into nodefile (nid, filename, type, mimetype) values(?,?,?,?)", (nodeid,path,type,mimetype))
 
+    def getNodeIDsForSchema(self, schema, datatype="*"):
+        return self.runQuery('select id from node where type like "%/'+schema+'" or type ="'+schema+'"')
 
 

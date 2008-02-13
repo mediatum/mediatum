@@ -366,3 +366,5 @@ class MYSQLConnector(Connector):
         self.runQuery("insert into nodefile (nid, filename, type, mimetype) values(" + nodeid + \
                     ", " + self.esc(path) + ", '" + type + "', '" + mimetype+ "')")
 
+    def getNodeIDsForSchema(self, schema, datatype="*"):
+        return self.runQuery('select id from node where type like "%/'+schema+'" or type ="'+schema+'"')

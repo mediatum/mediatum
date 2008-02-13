@@ -791,6 +791,9 @@ class WorkflowStep(tree.Node):
             result += '&nbsp;'
         result += '</td></tr>'
         return result
+        
+    def getTypeName(self):
+        return self.getName()
 
 def register():
     tree.registerNodeClass("workflows", Workflows)

@@ -104,6 +104,7 @@ def simple_search(req):
         # actual node ist collections-node
         for collection in collections:
             result = collection.search('full='+q)
+            result = access.filter(result)
 
             if len(result)>0:
                 cl = ContentList(tree.NodeList(result), collection, words)
@@ -179,7 +180,7 @@ def extended_search(req):
     else:
         result = collection.search(q_str)
     logging.getLogger('usertracing').info(access.user.name + " xsearch for '"+q_user+"'")
-    
+    result = access.filter(result)
     if len(result)>0:
         cl = ContentList(tree.NodeList(result), collection, q_user.strip())
         cl.feedback(req)

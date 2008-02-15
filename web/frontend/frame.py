@@ -34,6 +34,7 @@ from utils.dicts import SortedDict
 from utils.utils import getCollection, Link, iso2utf8
 from core.acl import AccessData,getRootAccess
 from core.translation import translate, lang, t
+from core.metatype import Context
 
 class Portlet:
     def __init__(self):
@@ -76,6 +77,7 @@ class Searchlet(Portlet):
         self.collection = collection
         self.datatype = None
         self.values = [None,"","",""]
+        self.req = None
         self.initialize()
 
     def insideCollection(self):
@@ -106,6 +108,7 @@ class Searchlet(Portlet):
 
     def feedback(self, req):
         Portlet.feedback(self,req)
+        self.req = req
         if "searchmode" in req.params:
             if req.params["searchmode"] == "simple":
                 self.extended = 0
@@ -160,8 +163,11 @@ class Searchlet(Portlet):
         if f is None: # All Metadata
             # quick&dirty
             f = getMetadataType("text")
-            return f.getSearchHTML(f,self.values[i], width, "query"+str(i), language=self.language)
-        return f.getSearchHTML(self.values[i], width, "query"+str(i), language=self.language)
+            return f.getSearchHTML(Context(f,value=self.values[i], width=width, name="query"+str(i), collection=self.req.params.get('collection'), user=users.getUserFromRequest(self.req), ip=self.req.ip ))
+            #return f.getSearchHTML(f,self.values[i], width, "query"+str(i), language=self.language, request = self.req)
+        
+        return f.getSearchHTML(Context(None,value=self.values[i], width=width, name="query"+str(i), collection=self.req.params.get('collection'), user=users.getUserFromRequest(self.req), ip=self.req.ip ))
+        #return f.getSearchHTML(self.values[i], width, "query"+str(i), language=self.language, request=self.req)
 
 class Browselet(Portlet):
     def __init__(self, collection):

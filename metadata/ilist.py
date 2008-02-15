@@ -33,8 +33,13 @@ class m_ilist(Metatype):
 
     def getSearchHTML(self, context):
         n = tree.getNode(context.collection)
-        valuelist = n.getAllAttributeValues(context.field.getName(), context.access)      
-        return athana.getTAL("metadata/ilist.html",{"context":context, "valuelist":valuelist}, macro="searchfield", language=context.language)
+        valuelist = n.getAllAttributeValues(context.field.getName(), context.access)
+        keys = valuelist.keys()
+        keys.sort()
+        v = []
+        for key in keys:
+            v.append((key, valuelist[key]))
+        return athana.getTAL("metadata/ilist.html",{"context":context, "valuelist":v}, macro="searchfield", language=context.language)
 
 
     def getFormatedValue(self, field, node, language=None):

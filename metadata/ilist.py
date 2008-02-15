@@ -18,10 +18,12 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.athana as athana
-import core.search.query
-from utils.utils import esc
-from core.metatype import Metatype
 import core.search as search
+import core.search.query
+import core.tree as tree
+from utils.utils import esc
+from core.metatype import Metatype, Context
+
 
 class m_ilist(Metatype):
 
@@ -29,10 +31,10 @@ class m_ilist(Metatype):
         return athana.getTAL("metadata/ilist.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
 
 
-    def getSearchHTML(self, field, value="", width=174, name="", language=None):
-        valuelist = search.query.getGlobalIndex(field.getName())
-        valuelist.sort(lambda x,y: cmp(x.lower(), y.lower()))
-        return athana.getTAL("metadata/ilist.html",{"field":field, "value":value, "name":name, "width":width, "valuelist":valuelist}, macro="searchfield", language=language)
+    def getSearchHTML(self, context):
+        n = tree.getNode(context.collection)
+        valuelist = n.getAllAttributeValues(context.field.getName(), context.access)      
+        return athana.getTAL("metadata/ilist.html",{"context":context, "valuelist":valuelist}, macro="searchfield", language=context.language)
 
 
     def getFormatedValue(self, field, node, language=None):

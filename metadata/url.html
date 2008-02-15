@@ -1,5 +1,5 @@
 <tal:block metal:define-macro="editorfield">
-        <span i18n:translate="mask_edit_link">Link:</span>
+        <span i18n:translate="mask_edit_link">TEXT</span>
         <tal:block tal:condition="python:fielddef[0]==''">
             <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-50)+'px'; name name; id name; value python:str(value[0])"/>
             <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
@@ -24,7 +24,7 @@
 </tal:block>
 
 
-<input metal:define-macro="searchfield" tal:attributes="name name; id name; value value" type="text" style="width:174px;" class="searchfield"/>
+<input metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name; value python:context.value" type="text" style="width:174px;" class="searchfield"/>
 
 
 <div metal:define-macro="maskeditor" style="display:none" id="div_url" name="div_url">

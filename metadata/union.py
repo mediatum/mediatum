@@ -25,8 +25,8 @@ class m_union(Metatype):
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
         return "" # Union fields should not be edited in the editor
 
-    def getSearchHTML(self, field, value="", width=174, name="", language=None):
-        return athana.getTAL("metadata/text.html",{"field":field, "value":value, "name":name}, macro="searchfield", language=language)
+    def getSearchHTML(self, context):
+        return athana.getTAL("metadata/text.html",{"context":context}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None):
         value = esc(node.get(field.getName()).replace(";","; "))

@@ -14,14 +14,14 @@
 <table metal:define-macro="searchfield" cellspacing="0px" cellpadding="0px" border="0">
     <tr>
             <td>&nbsp;&nbsp;<span i18n:translate="editor_from">TEXT</span>: </td>
-            <td> <input tal:attributes="name python:name+'-from'; id python:name+'-from'; value python:value[0]" type="text" style="width:140px" class="searchfield"/></td>
+            <td> <input tal:attributes="name python:context.name+'-from'; id python:context.name+'-from'; value python:context.value[0]" type="text" style="width:140px" class="searchfield"/></td>
     </tr>
     <tr>
             <td>&nbsp;&nbsp;<span i18n:translate="editor_to">TEXT</span>: </td>
-            <td> <input tal:attributes="name python:name+'-to'; id python:name+'-to'; value python:value[1]" type="text" style="width:140px" class="searchfield"/></td>
+            <td> <input tal:attributes="name python:context.name+'-to'; id python:context.name+'-to'; value python:context.value[1]" type="text" style="width:140px" class="searchfield"/></td>
     </tr>
     <tr>
-            <td colspan="2" align="right"><small><tal:block i18n:translate="editor_input_format"/><tal:block tal:content="python:field.getValues()"/></small></td>
+            <td colspan="2" align="right"><small><tal:block i18n:translate="editor_input_format"/><tal:block tal:content="python:context.field.getValues()"/></small></td>
     </tr>
 </table>
 

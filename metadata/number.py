@@ -19,7 +19,7 @@
 """
 import core.athana as athana
 from utils.utils import esc
-from core.metatype import Metatype
+from core.metatype import Metatype, Context
 
 class m_number(Metatype):
 
@@ -27,8 +27,8 @@ class m_number(Metatype):
         return athana.getTAL("metadata/number.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
 
 
-    def getSearchHTML(self, field, value="", width=174, name="", language=None):
-        return athana.getTAL("metadata/number.html",{"field":field, "value":value, "name":name}, macro="searchfield", language=language)
+    def getSearchHTML(self, context):
+        return athana.getTAL("metadata/number.html",{"context":context}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None):
         value = esc(node.get(field.getName()).replace(";","; "))

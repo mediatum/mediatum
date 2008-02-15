@@ -40,8 +40,9 @@ class m_date(Metatype):
         return athana.getTAL("metadata/date.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
 
 
-    def getSearchHTML(self, field, value="", width=174, name="", language=None):
-        return athana.getTAL("metadata/date.html",{"field":field, "value":value.split(";"), "name":name, "width":width}, macro="searchfield", language=language)
+    def getSearchHTML(self, context):
+        context.value = context.value.split(";")
+        return athana.getTAL("metadata/date.html",{"context":context}, macro="searchfield", language=context.language)
 
 
     def getFormatedValue(self, field, node, language=None):

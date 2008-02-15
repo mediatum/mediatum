@@ -35,8 +35,8 @@ class m_url(Metatype):
         return athana.getTAL("metadata/url.html", {"lock":lock, "value":val, "fielddef":fielddef, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
 
 
-    def getSearchHTML(self, field, value="", width=174, name="", language=None):
-        return athana.getTAL("metadata/url.html",{"field":field, "value":value, "name":name}, macro="searchfield", language=language)
+    def getSearchHTML(self, context):
+        return athana.getTAL("metadata/url.html",{"context":context}, macro="searchfield", language=context.language)
 
     #
     # format node value depending on field definition

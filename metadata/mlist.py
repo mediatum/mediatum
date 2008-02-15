@@ -18,24 +18,23 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.athana as athana
+import core.tree as tree
 from utils.utils import esc
-from core.metatype import Metatype
+from core.metatype import Metatype, Context
 
 class m_mlist(Metatype):
 
-    def formatValues(self, field, value):
-        valuelist = list()
+    def formatValues(self, context):
+        valuelist = []
 
-        l = field.getValueList()
-        if field.getFieldValueNum() is not None:
-            numbers = field.getFieldValueNum().split(";")
-        else:
-            numbers = []
+        items = {}
+        try:
+            n = tree.getNode(context.collection)
+            items = n.getAllAttributeValues(context.field.getName(), context.access)
+        except tree.NoSuchNodeError:
+            None
 
-        if len(numbers) != len(l):
-            numbers = [-1]*len(l)
-
-        for val,num in zip(l,numbers):
+        for val in context.field.getValueList():
             indent = 0
             canbeselected = 0
             while val.startswith("*"):
@@ -49,30 +48,35 @@ class m_mlist(Metatype):
             if indent>0:
                 indent = indent-1
             indentstr = "&nbsp;"*(2*indent)
+            
+            if val in items.keys():
+                num = int(items[val])
 
             try:
                 if int(num)<0:
                     raise ""
-                num = " ("+str(num)+")"
+                elif int(num)==0:
+                    num = ""
+                else:
+                    num = " ("+str(num)+")"
             except:
                 num = ""
+                
+            val = esc(val)
 
             if not canbeselected:
-                valuelist.append(("optgroup", "<optgroup label=\""+indentstr+val+"\">"))
+                valuelist.append(("optgroup", "<optgroup label=\""+indentstr+val+"\">","", ""))
             else:
-                value=value.replace('\'', '')
-                if value != '' and val in value.split(';'):
-                    valuelist.append(("optionselected", indentstr, val, num))
-                else:
-                    valuelist.append(("option", indentstr, val, num))
+                valuelist.append(("option", indentstr, val, num))
         return valuelist
 
         
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):    
-        return athana.getTAL("metadata/mlist.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field, "valuelist":self.formatValues(field,value)}, macro="editorfield", language=language)
+        context = Context(field, value=value, width=width, name=name, lock=lock, language=language)
+        return athana.getTAL("metadata/mlist.html", {"context":context, "valuelist":self.formatValues(context)}, macro="editorfield", language=language)
 
-    def getSearchHTML(self, field, value="", width=174, name="", language=None):
-        return athana.getTAL("metadata/mlist.html",{"field":field, "value":value, "width":width, "name":name, "valuelist":self.formatValues(field,value)}, macro="searchfield", language=language)
+    def getSearchHTML(self, context):
+        return athana.getTAL("metadata/mlist.html",{"context":context, "valuelist":self.formatValues(context)}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None):
         value = esc(node.get(field.getName()).replace(";","; "))

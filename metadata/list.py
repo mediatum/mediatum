@@ -21,31 +21,22 @@ import core.athana as athana
 import core.tree as tree
 
 from utils.utils import esc
-from core.metatype import Metatype
+from core.metatype import Metatype, Context
+
 #from core.tree import getNode
 
 class m_list(Metatype):
-    def formatValues(self, field):
-        valuelist = list()
+    def formatValues(self, context):
+        valuelist = []
 
-        l = field.getValueList()
-        if field.getFieldValueNum() is not None:
-            numbers = field.getFieldValueNum().split(";")
-        else:
-            numbers = []
+        items = {}
+        try:
+            n = tree.getNode(context.collection)
+            items = n.getAllAttributeValues(context.field.getName(), context.access)
+        except tree.NoSuchNodeError:
+            None
 
-        if len(numbers) != len(l):
-            numbers = [-1]*len(l)
-        
-        #if field.getRequired() and len(l) and l[0]:
-        #    l = [""] + l
-        #    numbers = [-1] + numbers
-
-        #if field.getRequired() and len(l) and l[0]:
-        #    l = [""] + l
-        #    numbers = [-1] + numbers
-
-        for val,num in zip(l,numbers):
+        for val in context.field.getValueList():
             indent = 0
             canbeselected = 0
             while val.startswith("*"):
@@ -58,8 +49,11 @@ class m_list(Metatype):
                 canbeselected = 1
             if indent>0:
                 indent = indent-1
-            #indentstr = "&nbsp;"*(2*indent)
             indentstr = "&nbsp;"*(2*indent)
+            
+            num =0
+            if val in items.keys():
+                num = int(items[val])
 
             try:
                 if int(num)<0:
@@ -80,10 +74,11 @@ class m_list(Metatype):
         return valuelist
 
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
-        return athana.getTAL("metadata/list.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field, "valuelist":self.formatValues(field)}, macro="editorfield", language=language)
+        context = Context(field, value=value, width=width, name=name, lock=lock, language=language)
+        return athana.getTAL("metadata/list.html", {"context":context, "valuelist":self.formatValues(context)}, macro="editorfield", language=language)
 
-    def getSearchHTML(self, field, value="", width=174, name="", language=None):
-        return athana.getTAL("metadata/list.html",{"field":field, "value":value, "width":width, "name":name, "valuelist":self.formatValues(field)}, macro="searchfield", language=language)
+    def getSearchHTML(self, context):
+        return athana.getTAL("metadata/list.html",{"context":context, "valuelist":self.formatValues(context)}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None):
         value = esc(node.get(field.getName()))

@@ -7,4 +7,4 @@
    </span>
 </tal:block>
 
-<input metal:define-macro="searchfield" type="checkbox" tal:attributes="name name; id name; checked python:{'False':None,'True':'checked'}[str(str(value)==str(1))]" value="1"/>
+<input metal:define-macro="searchfield" type="checkbox" tal:attributes="name python:context.name; id python:context.name; checked python:{'False':None,'True':'checked'}[str(str(context.value)==str(1))]" value="1"/>

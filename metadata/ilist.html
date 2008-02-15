@@ -9,9 +9,9 @@
    </tal:block>
 </tal:block>
 
-
-<select metal:define-macro="searchfield" tal:attributes="name name; id name" class="searchfield">
-    <option tal:repeat="v python:valuelist" tal:attributes="value python:'\''+v+'\''; selected python:{'True':'selected', 'False':None}[str(value=='\''+v+'\'')]" tal:content="raw python:v"/>
+<select metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name" class="searchfield">
+    <tal:block tal:repeat="val python:list(valuelist)">
+        <option tal:condition="python:valuelist[val]>0" tal:attributes="value python:'\''+val+'\''; selected python:{'True':'selected', 'False':None}[str(context.value=='\''+val+'\'')]" tal:content="raw python:val+ ' ('+str(valuelist[val])+')'"/>
+        <option tal:condition="python:valuelist[val]==0" tal:attributes="value python:'\''+val+'\''; selected python:{'True':'selected', 'False':None}[str(context.value=='\''+val+'\'')]" tal:content="raw python:val"/>
+    </tal:block>
 </select>
-
-

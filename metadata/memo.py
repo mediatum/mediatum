@@ -24,8 +24,8 @@ class m_memo(Metatype):
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
         return athana.getTAL("metadata/memo.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
 
-    def getSearchHTML(self, field, value="", width=174, name="", language=None):
-        return athana.getTAL("metadata/memo.html",{"field":field, "value":value, "name":name}, macro="searchfield", language=language)
+    def getSearchHTML(self, context):
+        return athana.getTAL("metadata/memo.html",{"context":context}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None):
         value = node.get(field.getName()).replace(";","; ")

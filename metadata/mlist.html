@@ -1,4 +1,5 @@
-<tal:block metal:define-macro="editorfield">
+
+<!--<tal:block metal:define-macro="editorfield">
     <select class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width)+'px'; name name; id name;" multiple>
         <tal:block tal:repeat="v valuelist">
             <option tal:condition="python:v[0]=='optionselected'" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]" selected="selected"/>
@@ -10,13 +11,28 @@
         <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/>
         <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
    </tal:block>
+</tal:block>-->
+
+
+<tal:block metal:define-macro="editorfield">
+    <select class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[int(context.lock)]; style python:'width:'+str(context.width)+'px'; name python: context.name; id python: context.name;" multiple>
+        <tal:block tal:repeat="v valuelist">
+            <option tal:condition="python:v[0]=='optionselected'" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]" selected="selected"/>
+            <option tal:condition="python:v[0]=='option'" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]"/>
+            <optgroup tal:condition="python:v[0]=='optgroup'" tal:replace="raw python:v[1]"/>
+        </tal:block>
+    </select>
+    <tal:block tal:condition="python:context.lock!=0" tal:attributes="id python:'lockspan_'+context.name">&nbsp;
+        <input tal:attributes="name python:'lock_'+context.name; id python:'lock_'+context.name; onclick python:'handlelock(\''+context.name+'\')'" type="checkbox"/>
+        <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
+   </tal:block>
 </tal:block>
 
-<p tal:content="value"></p>
-<select metal:define-macro="searchfield" tal:attributes="name name; id name" class="searchfield">
+
+<select metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name" class="searchfield">
     <tal:block tal:repeat="v valuelist">
-        <option tal:condition="python:v[0]=='optionselected' and v[2] in value.split(';') and value!=''" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]" selected="selected"/>
-        <option tal:condition="python:v[0]=='option' and v[2] not in (value.split(';') or value=='')" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]"/>
+        <option tal:condition="python:v[0]=='optionselected' and v[2] in context.value.split(';') and context.value!=''" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]" selected="selected"/>
+        <option tal:condition="python:v[0]=='option' and v[2] not in (context.value.split(';') or context.value=='')" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]"/>
         
         <optgroup tal:condition="python:v[0]=='optgroup'" tal:replace="raw python:v[1]"/>
     </tal:block>

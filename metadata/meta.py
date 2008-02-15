@@ -27,8 +27,8 @@ class m_meta(Metatype):
         return athana.getTAL("metadata/meta.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
 
 
-    def getSearchHTML(self, field, value="", width=174, name="", language=None):
-        return athana.getTAL("metadata/meta.html",{"field":field, "value":value, "name":name}, macro="searchfield", language=language)
+    def getSearchHTML(self, context):
+        return athana.getTAL("metadata/meta.html",{"context":context}, macro="searchfield", language=context.language)
 
 
     def getFormatedValue(self, field, node, language=None):

@@ -18,11 +18,29 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import core.acl as acl
+
+class Context:
+
+    def __init__(self, field, value="", width=400, name="", lock=0, language=None, collection=None, user=None, ip=""):
+        self.field = field
+        self.value=value
+        self.width = width
+        self.name = name
+        self.language = language
+        self.collection = collection
+        self.ip = ip
+        self.user = user
+        self.access = acl.AccessData(user=user)
+        self.lock = lock
+
+        
 class Metatype:
+
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
         return ""
 
-    def getSearchHTML(self, field, value="", width=174, name="", language=None):
+    def getSearchHTML(self, context):
         None
 
     def getFormatedValue(self, field, node, language=None):

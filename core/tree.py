@@ -279,6 +279,9 @@ class NodeList:
                 return 0
             self.ids.sort(fieldcmp)
             return self
+            
+    def filter(self, access):
+        return access.filter(self)
 
 class Node:
     def __init__(self, name="<unbenannt>", type=None, dbid=None):
@@ -704,6 +707,33 @@ class Node:
         else:
             raise AttributeError("Node of type '"+self.type+"' has no attribute '"+name+"' (type not overloaded)")
 
+    
+    # fill hashmap with idlists of listvalues
+    def getAllAttributeValues(self, attribute, access):
+        if not hasattr(self, 'attrlist') or attribute not in self.attrlist.keys():
+            self.attrlist = {}
+            self.attrlist[attribute] = {}
+            
+            # current attribute not listed -> create id list
+            if not "all" in self.attrlist[attribute].keys():
+                self.attrlist[attribute]["all"] = {}            
+                ret = {}
+                for node in self.getAllChildren():
+                    v = node.get(attribute)
+                    if v not in ret.keys():
+                        ret[v] =[]
+                    ret[v].append(node.id)
+
+                for key in ret.keys():
+                    self.attrlist[attribute]["all"][key] = NodeList(ret[key], key)
+
+        if not str(access.getPrivilegeLevel()) in self.attrlist[attribute].keys():
+            self.attrlist[attribute][str(access.getPrivilegeLevel())] = {}
+            for item in self.attrlist[attribute]["all"].keys():
+                self.attrlist[attribute][str(access.getPrivilegeLevel())][item] = len(self.attrlist[attribute]["all"][item].filter(access))
+        return self.attrlist[attribute][str(access.getPrivilegeLevel())]
+
+            
 def flush():
     global childids_cache,nodes_cache,parentids_cache,_root,db,sortorders
     tree_lock.acquire()

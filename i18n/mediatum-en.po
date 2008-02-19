@@ -2306,3 +2306,9 @@ msgstr "# Nodes"
 
 msgid "searchresult"
 msgstr "Searchresult"
+
+msgid "If you experience problems opening this document, please try"
+msgstr "If you experience problems opening this document, please try"
+
+msgid "this link"
+msgstr "this link"

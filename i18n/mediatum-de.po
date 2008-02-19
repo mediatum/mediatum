@@ -2322,3 +2322,9 @@ msgstr "Fehler bei Dateiverarbeitung! Bitte überprüfen Sie die zu bearbeitende
 
 msgid "searchresult"
 msgstr "Suchresultate"
+
+msgid "If you experience problems opening this document, please try"
+msgstr "Wenn Sie Schwierigkeiten haben, dieses Dokument zu öffnen, versuchen Sie auch bitte"
+
+msgid "this link"
+msgstr "diesen Link"

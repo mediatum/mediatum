@@ -32,6 +32,7 @@ from core.tree import nodeclasses, Node
 from core.config import *
 from core.xmlnode import getNodeXML, readNodeXML
 from core.db.database import getConnection
+from core.metatype import Context
 
 log = logging.getLogger('backend')
 
@@ -558,10 +559,10 @@ class Metadatatype(tree.Node):
         for item in self.getChildren().sort():
             if item.getContentType()=="mask":
                 if type=="":
-                    if item.getLanguage() in [language,"no"]:
+                    if item.getLanguage() in [language,"no"] or language=="":
                         masks.append(item)
                 elif type==item.getMasktype():
-                    if item.getLanguage() in [language,"no"]:
+                    if item.getLanguage() in [language,"no"] or language=="":
                         masks.append(item)
         return masks
 
@@ -694,12 +695,13 @@ class Metadatafield(tree.Node):
             t = getMetadataType("default")
         return t.getEditorHTML(self, val, width, name, lock, language=language)
 
-    def getSearchHTML(self, val="", width=174, name="", language=None):
+    def getSearchHTML(self, context):
         try:
             t = getMetadataType(self.getFieldtype())
         except LookupError:
             t = getMetadataType("default")
-        return t.getSearchHTML(self, val, width, name, language=language)
+        context.field = self
+        return t.getSearchHTML(context)
 
     def getFormatedValue(self, node, language=None):
         try:
@@ -708,7 +710,6 @@ class Metadatafield(tree.Node):
             t = getMetadataType("default")
 
         return t.getFormatedValue(self, node, language=language)
-
         
 class Mask(tree.Node):
 

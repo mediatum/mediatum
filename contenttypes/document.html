@@ -16,9 +16,13 @@
     
     <div tal:condition="python: len(node.getFiles())>0" id="object_image">
         <tal:block tal:condition="python:canseeoriginal">
-        <a tal:attributes="href documentlink" i18n:attributes="title doc_fulltext_title" target="pdfdocument">
-            <img tal:attributes="src documentthumb" style="cursor:pointer" border="0" width="300"/>
-        </a>
+           <a tal:attributes="href documentlink" i18n:attributes="title doc_fulltext_title" target="pdfdocument">
+               <img tal:attributes="src documentthumb" style="cursor:pointer" border="0" width="300"/>
+           </a>
+           <tal:block tal:condition="documentdownload" i18n:translate="">
+               If you experience problems opening this document, please try 
+           </tal:block>
+            <a tal:attributes="href documentdownload" i18n:translate="">this link</a>.
         </tal:block>
         <tal:block tal:condition="python:not canseeoriginal">
             <img tal:attributes="src documentthumb" border="0" width="300"/>

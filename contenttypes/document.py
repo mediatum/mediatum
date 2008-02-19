@@ -61,14 +61,17 @@ class Document(default.Default):
         if node.has_object():
             obj['canseeoriginal'] = access.hasAccess(node,"data")
             obj['documentlink'] = '/doc/'+str(node.id)+'/'+str(node.id)+'.pdf'
+            obj['documentdownload'] = '/download/'+str(node.id)+'/'+str(node.id)+'.pdf'
         else:
             obj['canseeoriginal']= False
         obj['documentthumb'] = '/thumb2/'+str(node.id) 
+
         if "oogle" not in (req.get_header("user-agent") or ""):
             obj['print_url'] = '/print/'+str(node.id)
         else:
             #don't confuse search engines with the PDF link
             obj['print_url'] = None
+            obj['documentdownload'] = None
 
         if "style" in req.params.keys():
             req.session["full_style"] = req.params.get("style", "full_standard")

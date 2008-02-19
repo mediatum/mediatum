@@ -125,15 +125,27 @@ def send_file(req, download=0):
         return 404
     if not access.hasAccess(n,"data") and n.type not in ["directory","collections"]:
         return 403
+    file = None
+    # try full filename
     for f in n.getFiles():
         if os.path.basename(f.path) == filename:
             incUsage(n)
-            if(download or get_filesize(f.getPath()) > 16*1048576):
-                return req.sendFile(f.getPath(), "application/x-download")
-            else:
-                return req.sendFile(f.getPath(), f.getMimeType())
-    print "Document",req.path,"not found"
-    return 404
+            file = f
+            break
+    # try only extension
+    if not file:
+        for f in n.getFiles():
+            if os.path.splitext(f.path)[1] == os.path.splitext(filename)[1]:
+                incUsage(n)
+                file = f
+                break
+    if not file:
+        print "Document",req.path,"not found"
+        return 404
+    if(download or get_filesize(file.getPath()) > 16*1048576):
+        return req.sendFile(file.getPath(), "application/x-download")
+    else:
+        return req.sendFile(file.getPath(), file.getMimeType())
 
 def send_file_as_download(req):
     return send_file(req, download=1)

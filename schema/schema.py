@@ -551,7 +551,7 @@ class Metadatatype(tree.Node):
         try:
             return self.getChild(name)
         except tree.NoSuchNodeError:
-            print "metadatafield '" + str(name) + "' not found"
+            # *shrug*
             return None
 
     def getMasks(self, type="", language=""):

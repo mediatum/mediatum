@@ -29,7 +29,7 @@ from core.acl import AccessData
 from core.tree import getNode
 
 
-IMGNAME = re.compile("/?(attachment|doc|images|thumbs|thumb2|file)/([^/]*)(/(.*))?$")
+IMGNAME = re.compile("/?(attachment|doc|images|thumbs|thumb2|file|download)/([^/]*)(/(.*))?$")
 
 def incUsage(node):
     nr = int(node.get("hit_statistic.file") or "0")
@@ -116,7 +116,7 @@ def send_doc(req):
     print "Document",req.path,"not found"
     return 404
 
-def send_file(req):
+def send_file(req, download=0):
     access = AccessData(req)
     id,filename = splitpath(req.path)
     try:
@@ -128,12 +128,15 @@ def send_file(req):
     for f in n.getFiles():
         if os.path.basename(f.path) == filename:
             incUsage(n)
-            if(get_filesize(f.getPath()) > 16*1048576):
+            if(download or get_filesize(f.getPath()) > 16*1048576):
                 return req.sendFile(f.getPath(), "application/x-download")
             else:
                 return req.sendFile(f.getPath(), f.getMimeType())
     print "Document",req.path,"not found"
     return 404
+
+def send_file_as_download(req):
+    send_file(req, download=1)
 
 def send_attachment(req):
     access = AccessData(req)

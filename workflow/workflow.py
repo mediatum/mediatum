@@ -525,12 +525,12 @@ def exportWorkflow(name):
 def importWorkflow(filename):
     n = readNodeXML(filename)
     importlist = list()
-    if n.getType().getName()=="workflow":
+    
+    if n.getContentType() == "workflow":
         importlist.append(n)
-    elif n.getType().getName()=="workflows":
+    elif n.getContentType()=="workflows":
         for ch in n.getChildren():
             importlist.append(ch)
-
     workflows = tree.getRoot("workflows")
     for w in importlist:
         w.setName("import-"+w.getName())
@@ -831,4 +831,3 @@ def register():
     from publish import WorkflowStep_Publish
     tree.registerNodeClass("workflowstep-publish", WorkflowStep_Publish)
     registerStep("workflowstep-publish")
-

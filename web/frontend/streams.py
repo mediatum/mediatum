@@ -136,7 +136,7 @@ def send_file(req, download=0):
     return 404
 
 def send_file_as_download(req):
-    send_file(req, download=1)
+    return send_file(req, download=1)
 
 def send_attachment(req):
     access = AccessData(req)

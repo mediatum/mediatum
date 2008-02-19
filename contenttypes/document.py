@@ -39,7 +39,7 @@ class Document(default.Default):
     def _prepareData(node, req, words=""):
 
         access = acl.AccessData(req)     
-        mask = node.getFullView(lang(req))
+        mask = node.getMask("nodebig")
   
         obj = {}
         if mask:

@@ -143,6 +143,7 @@ def send_file(req, download=0):
         print "Document",req.path,"not found"
         return 404
     if(download or get_filesize(file.getPath()) > 16*1048576):
+        req.reply_headers["Content-Disposition"] = "attachment; filename="+filename
         return req.sendFile(file.getPath(), "application/x-download")
     else:
         return req.sendFile(file.getPath(), file.getMimeType())

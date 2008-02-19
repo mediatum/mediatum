@@ -4,7 +4,8 @@
         <span tal:replace="raw error"/>
         <input tal:attributes="value key" type="hidden" name="key"/>
         <input type="hidden" name="metaDataEditor" value="metaDataEditor"/>
-        <table style="width:800px" cellspacing="0" cellpadding="0">
+	<div style="position:relative">
+        <table style="width:100%; position:relative" cellspacing="0" cellpadding="0">
             <tr>
                 <td tal:content="raw mask" align="left"/>
             <tr>
@@ -16,5 +17,6 @@
             </tr>
             <tal:block tal:content="raw buttons"/>
         </table>
+	</div>
     </form>
 </tal:block>

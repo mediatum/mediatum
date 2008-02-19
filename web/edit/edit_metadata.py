@@ -62,24 +62,17 @@ def edit_metadata(req, ids):
             nodes += [node]
         idstr+=id
     
-    masklist = []
+    masklist = node.getType().getMasks(type="edit")
     default = None
-    for m in node.getType().getMasks():
-        if m.getMasktype()!="edit":
-            continue
+    for m in masklist:
         if m.getDefaultMask():
             default = m
-        masklist.append(m)
-
-    
-    maskname = req.params.get("mask", node.get("edit.lastmask"))
+            break
+    maskname = req.params.get("mask", node.get("edit.lastmask") or "editmask")
     
     if maskname=="":
-        for m in masklist:
-            if m.getDefaultMask():
-                maskname = m.getName()
-                break
-    
+        maskname = default.getName()
+
     mask = node.getMask(maskname)
     
     if not mask and default:

@@ -27,7 +27,7 @@ import logging
 import thread
 import traceback
 import utils.date as date
-from utils.utils import ArrayToString
+from utils.utils import ArrayToString,formatException
 try:
     import mgquery
 except ImportError:

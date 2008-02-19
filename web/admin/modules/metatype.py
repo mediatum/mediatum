@@ -339,7 +339,7 @@ def view(req):
         mtypes.sort(lambda x, y: cmp(x.getName().lower(),y.getName().lower()))
 
     v = getAdminStdVars(req)
-    v["sortcol"] = pages.OrderColHeader([t(lang(req),"admin_meta_col_1"),t(lang(req),"admin_meta_col_2"),t(lang(req),"admin_meta_col_3"),t(lang(req),"admin_meta_col_4"),t(lang(req),"admin_meta_col_5"),t(lang(req),"admin_meta_col_6"),t(lang(req),"admin_meta_col_7"), t(lang(req),"admin_meta_col_8")])
+    v["sortcol"] = pages.OrderColHeader([t(lang(req),"admin_meta_col_1"),t(lang(req),"admin_meta_col_2"),t(lang(req),"admin_meta_col_3"),t(lang(req),"admin_meta_col_4"),t(lang(req),"admin_meta_col_5"),t(lang(req),"admin_meta_col_6"),t(lang(req),"admin_meta_col_7")])
     v["metadatatypes"] = mtypes
     v["datatypes"] = loadAllDatatypes()
     v["pages"] = pages

@@ -114,9 +114,6 @@ class ContentList(Content):
         if self.sortfields[0]:
             self.files.sort(self.sortfields)
         
-        print "\n\nsortfields:",self.sortfields
-            
-            
         liststylename = self.collection.get("style")
         if liststylename:
             self.liststyle = getListStyle(liststylename)

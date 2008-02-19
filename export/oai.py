@@ -174,9 +174,7 @@ def Identify(req):
 DATEFIELD="updatetime"
 
 def writeRecord(req, node, metadataformat):
-
     collection = getCollection(node)
-
     updatetime = node.get(DATEFIELD)
     if updatetime:
         d = ISO8601(date.parse_date(updatetime))
@@ -264,7 +262,6 @@ def getNodes(req):
         if not checkMetaDataFormat(metadataformat):
             print "ListRecords: metadataPrefix missing"
             return None,"badArgument",None
-
       
     if nodes is None:
         string_from,string_to = None,None
@@ -311,8 +308,7 @@ def getNodes(req):
     if pos + CHUNKSIZE > len(nodes):
         tokenstring = None
         del tokenpositions[token]
-
-    return nodes[pos:pos+CHUNKSIZE], tokenstring, metadataformat
+    return tree.NodeList(nodes[pos:pos+CHUNKSIZE]), tokenstring, metadataformat
 
 def ListIdentifiers(req):
     nodes, tokenstring, metadataformat = getNodes(req)

@@ -37,6 +37,7 @@ def initContexts():
     file.addHandler("send_thumbnail2").addPattern("/thumb2/.*")
     file.addHandler("send_doc").addPattern("/doc/.*")
     file.addHandler("send_file").addPattern("/file/.*")
+    file.addHandler("send_file_as_download").addPattern("/download/.*")
     file.addHandler("send_attachment").addPattern("/attachment/.*")
     file.addHandler("send_attfile").addPattern("/attfile/.*")
     file = context.addFile("web/frontend/main.py")

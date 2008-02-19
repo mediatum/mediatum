@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.19 2008/02/06 10:49:42 kramm Exp $'
+RCS_ID =  '$Id: athana.py,v 1.20 2008/02/19 12:36:54 mediatum Exp $'
 
 import sys
 
@@ -3837,7 +3837,7 @@ class http_request:
             return
         if length_match and ims_date:
             if mtime <= ims_date and not force:
-                print "File "+path+" was not modified since "+str(ims_date)+" (current filedate is "+str(mtime)+")-> 304"
+                #print "File "+path+" was not modified since "+str(ims_date)+" (current filedate is "+str(mtime)+")-> 304"
                 self.reply_code = 304
                 return
         try:
@@ -4467,7 +4467,7 @@ class default_handler:
                 request.reply_code = 304
                 request.done()
                 self.cache_counter.increment()
-                print "File "+path+" was not modified since "+str(ims_date)+" (current filedate is "+str(mtime)+")"
+                #print "File "+path+" was not modified since "+str(ims_date)+" (current filedate is "+str(mtime)+")"
                 return
         try:
             file = self.filesystem.open (path, 'rb')
@@ -6472,6 +6472,7 @@ class AthanaHandler:
                 cookiestr = cookiestr[:-1]
             items = cookiestr.split(';')
             for a in items:
+                a = a.strip()
                 i = a.index('=')
                 if i>0:
                     key,value = a[:i],a[i+1:]
@@ -6496,6 +6497,7 @@ class AthanaHandler:
                 self.sessions[sessionid] = session
         else:
             sessionid = self.create_session_id()
+            print "Creating new session", sessionid
             session = Session(sessionid)
             self.sessions[sessionid] = session
 

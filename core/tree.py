@@ -656,7 +656,9 @@ class Node:
         if level not in self.occurences:
             self.occurences[level] = {}
             self.occurences2node[level] = {}
-            nodelist = access.filter(self.getAllChildren())
+            nodelist = self.getAllChildren()
+            if level>0:
+                nodelist = access.filter(nodelist)
             for node in nodelist:
                 schema = node.getSchema()
                 if schema not in self.occurences[level]:
@@ -710,13 +712,14 @@ class Node:
     
     # fill hashmap with idlists of listvalues
     def getAllAttributeValues(self, attribute, access):
+        ALL = -1
         if not hasattr(self, 'attrlist') or attribute not in self.attrlist.keys():
             self.attrlist = {}
             self.attrlist[attribute] = {}
             
             # current attribute not listed -> create id list
-            if not "all" in self.attrlist[attribute].keys():
-                self.attrlist[attribute]["all"] = {}            
+            if not ALL in self.attrlist[attribute].keys():
+                self.attrlist[attribute][ALL] = {}            
                 ret = {}
                 for node in self.getAllChildren():
                     v = node.get(attribute)
@@ -725,13 +728,18 @@ class Node:
                     ret[v].append(node.id)
 
                 for key in ret.keys():
-                    self.attrlist[attribute]["all"][key] = NodeList(ret[key], key)
+                    self.attrlist[attribute][ALL][key] = NodeList(ret[key], key)
 
-        if not str(access.getPrivilegeLevel()) in self.attrlist[attribute].keys():
-            self.attrlist[attribute][str(access.getPrivilegeLevel())] = {}
-            for item in self.attrlist[attribute]["all"].keys():
-                self.attrlist[attribute][str(access.getPrivilegeLevel())][item] = len(self.attrlist[attribute]["all"][item].filter(access))
-        return self.attrlist[attribute][str(access.getPrivilegeLevel())]
+        level = access.getPrivilegeLevel()
+        if not level in self.attrlist[attribute].keys():
+            self.attrlist[attribute][level] = {}
+            for item in self.attrlist[attribute][ALL].keys():
+                if level==0:
+                    l = self.attrlist[attribute][ALL][item]
+                else:
+                    l = self.attrlist[attribute][ALL][item].filter(access)
+                self.attrlist[attribute][level][item] = len(l)
+        return self.attrlist[attribute][level]
 
             
 def flush():

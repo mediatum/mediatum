@@ -596,6 +596,9 @@ class Node:
     def event_metadata_changed(self):
         global searcher
         searcher.node_changed(self)
+        f = self.getoverloadedfunction("event_metadata_changed")
+        if f:
+            f()
         
     
     """ get a metadate """
@@ -680,14 +683,16 @@ class Node:
         q = q.replace("\"","'")
         return intersection([items, searcher.query(q)])
 
-
     def __getattr__(self, name):
-        global nodefunctions,nodeclasses
         cls = self.__class__
         if name in cls.__dict__:
             return cls.__dict__[name]
         if name in self.__dict__:
             return self.__dict__[name]
+        return self.getoverloadedfunction(name)
+
+    def getoverloadedfunction(self, name):
+        global nodefunctions,nodeclasses
         if self.getContentType() in nodeclasses:
             cls = nodeclasses[self.getContentType()]
             def r(cls):

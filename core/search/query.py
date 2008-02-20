@@ -21,6 +21,7 @@ import core.tree as tree
 import core.config as config
 import os
 import core.db.database as database
+import core.acl as acl
 import time
 import sys
 import logging
@@ -417,7 +418,7 @@ def _makeCollectionIndices():
             #raise "Exit status "+str(exit_status)+" of subprocess "+command
         #mgindexer.makeindex(file, tmpdir, name) 
 
-    occurs = tree.getRoot().getAllOccurences()
+    occurs = tree.getRoot().getAllOccurences(acl.getRootAccess())
     searchfields = []
     for mtype,num in occurs.items():
         if num>0:

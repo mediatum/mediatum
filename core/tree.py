@@ -700,7 +700,7 @@ class Node:
                     return lambda *x,**y: cls.__dict__[name](self, *x,**y)
                 else:
                     for base in cls.__bases__:
-                        if base.__name__!="Node":
+                        if base.__name__!=self.__class__.__name__:
                             ret = r(base)
                             if ret:
                                 return ret

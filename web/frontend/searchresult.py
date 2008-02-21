@@ -95,7 +95,7 @@ def simple_search(req):
         # actual node is a collection or directory
         result = tree.getNode(req.params.get("act_node")).search('full='+q)
         result = access.filter(result)
-		if len(result)>0:
+        if len(result)>0:
             cl = ContentList(tree.NodeList(result), collection, words)
             cl.feedback(req)
             cl.linkname = "Suchergebnis"

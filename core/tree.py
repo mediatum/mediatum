@@ -689,7 +689,13 @@ class Node:
             return cls.__dict__[name]
         if name in self.__dict__:
             return self.__dict__[name]
-        return self.getoverloadedfunction(name)
+        f = self.getoverloadedfunction(name)
+        if f:
+            return f
+        if self.getContentType() in nodeclasses:
+            raise AttributeError("Node of type '"+self.type+"' has no attribute '"+name+"'")
+        else:
+            raise AttributeError("Node of type '"+self.type+"' has no attribute '"+name+"' (type not overloaded)")
 
     def getoverloadedfunction(self, name):
         global nodefunctions,nodeclasses
@@ -710,10 +716,7 @@ class Node:
                 return ret
         if name in nodefunctions:
             return lambda *x,**y: nodefunctions[name](self, *x,**y)
-        if self.getContentType() in nodeclasses:
-            raise AttributeError("Node of type '"+self.type+"' has no attribute '"+name+"'")
-        else:
-            raise AttributeError("Node of type '"+self.type+"' has no attribute '"+name+"' (type not overloaded)")
+        return None
 
     
     # fill hashmap with idlists of listvalues

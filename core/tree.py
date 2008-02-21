@@ -700,9 +700,10 @@ class Node:
                     return lambda *x,**y: cls.__dict__[name](self, *x,**y)
                 else:
                     for base in cls.__bases__:
-                        ret = r(base)
-                        if ret:
-                            return ret
+                        if base.__name__!="Node":
+                            ret = r(base)
+                            if ret:
+                                return ret
                     return None
             ret = r(nodeclasses[self.getContentType()])
             if ret:

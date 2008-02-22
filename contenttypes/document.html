@@ -16,13 +16,13 @@
     
     <div tal:condition="python: len(node.getFiles())>0" id="object_image">
         <tal:block tal:condition="python:canseeoriginal">
-           <a tal:attributes="href documentlink" i18n:attributes="title doc_fulltext_title" target="pdfdocument">
-               <img tal:attributes="src documentthumb" style="cursor:pointer" border="0" width="300"  alt="Thumbnail not found"/>
-           </a>
-	   <p></p>
-           <tal:block tal:condition="documentdownload" i18n:translate="">
-               If you experience problems opening this document, please try 
-           </tal:block>
+            <a tal:attributes="href documentlink" i18n:attributes="title doc_fulltext_title" target="pdfdocument">
+                <img tal:attributes="src documentthumb" style="cursor:pointer" border="0" width="300"  alt="Thumbnail not found"/>
+            </a>
+            <p></p>
+            <tal:block tal:condition="documentdownload" i18n:translate="">
+                If you experience problems opening this document, please try 
+            </tal:block>
             <a tal:attributes="href documentdownload" i18n:translate="">this link</a>.
         </tal:block>
         <tal:block tal:condition="python:not canseeoriginal">
@@ -40,12 +40,18 @@
 
     <tal:block tal:condition="python: style=='full_text'">
         <div id="object_meta" style="margin-left:0px" tal:content="raw metadata"/>
+        <hr/>
         <div tal:condition="python:len(attachment)>0" id="object_attachment">
             <a tal:attributes="onclick python:'javascript:openPopup(\'/attachmentbrowser?id='+str(node.id)+'&path='+path+'\', \'Attachment\', 400, 400)'" i18n:translate="doc_att_browser" href="#" >TEXT</a>
+        <p></p>
         </div>
         <tal:block tal:condition="python:canseeoriginal">
-            <hr/>
             <a tal:attributes="href python:'/doc/'+str(node.id)+'/'+str(node.id)+'.pdf'" target="pdfdocument" i18n:attributes="title doc_fulltext_title"><img src="/img/pdf.gif"/></a>
+            <p></p>
+            <tal:block tal:condition="documentdownload" i18n:translate="">
+                If you experience problems opening this document, please try 
+            </tal:block>
+            <a tal:attributes="href documentdownload" i18n:translate="">this link</a>.
         </tal:block>
     </tal:block>
 </div>

@@ -22,7 +22,7 @@ msgid "username:"
 msgstr "Benutzername:"
 
 msgid "password:"
-msgstr "Password:"
+msgstr "Passwort:"
 
 msgid "new_password:"
 msgstr "Neues Passwort:"

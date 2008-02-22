@@ -136,6 +136,9 @@ def cleartree():
 def browsingtree(req):
     content=""
     mynode = tree.getNode(req.params.get("collection",1))
-    currentdir = tree.getNode(req.params["dir"])
+    try:
+        currentdir = tree.getNode(req.params["dir"])
+    except tree.NoSuchNodeError:
+        currentdir = tree.getRoot("collections")
     content=writetree(req, mynode, currentdir, content)
     return content

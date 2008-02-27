@@ -56,7 +56,7 @@
 
 <tal:block metal:define-macro="workflow_show">
     <h2 i18n:translate="workflow_msg3">TEXT <span tal:content="python:step.name" i18n:name="name"/>:</h2>
-    <table id="workflowtable" cellspacing="0px">
+    <table id="workflowtable" cellspacing="0px" tal:define="mylist python:step.getChildren().sort('name')">
         <tr>
             <th i18n:translate="workflow_label_id">TEXT</th>
             <th i18n:translate="workflow_label_date">TEXT</th>
@@ -65,8 +65,8 @@
             <th i18n:translate="workflow_label_editor">TEXT</th>
             <th colspan="2" i18n:translate="workflow_label_forward">TEXT</th>
         </tr>
-        <tr tal:repeat="node python:step.getChildren().sort('name')">
-            <tal:block tal:define="cssclass python:list(step.getChildren().sort('name')).index(node)%2 and 'norm' or 'silver'">
+        <tr tal:repeat="i python:range(len(mylist))">
+            <tal:block tal:define="cssclass python:i%2 and 'norm' or 'silver';node python:mylist[i]">
                 <td tal:attributes="class cssclass" tal:content="python:node.id"/>
                 <td tal:attributes="class cssclass" tal:content="python:format_date(parse_date(node.get('creationtime')),'dd.mm.yyyy HH:MM:SS')"/>
                 <td tal:attributes="class cssclass" tal:content="python:node.getName()"/>

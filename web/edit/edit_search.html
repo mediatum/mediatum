@@ -41,7 +41,7 @@
             </tr>
             <tr tal:repeat="formitem python:formlist">
                 <td class="search" style="font-size:12px" tal:content="python:formitem[0].getLabel()+':'"/>
-                <td tal:content="raw python:formitem[0].getSearchHTML(formitem[1],640,formitem[0].getName())"/>
+                <td tal:content="raw python:formitem[0].searchitem"/>
             </tr>
             <tr>
                 <td>&nbsp;</td>

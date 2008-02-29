@@ -26,6 +26,12 @@ from core.acl import AccessData
 import string
 from edit_common import EditorNodeList, shownodelist
 from schema.schema import getMetaType
+import core.metatype as metatype
+from core.metatype import Context
+import core.translation as translation
+from core.translation import lang
+import core.users as users
+from core.users import getUserFromRequest
 
 log = logging.getLogger('edit')
 utrace = logging.getLogger('usertracing')
@@ -137,6 +143,10 @@ def search_form(req, id, message=None):
         for field in otype.getMetaFields():
             if field.Searchfield() and field.getFieldtype()!="date":
                 value = searchvalues.get(otype.getSchema()+"."+field.getName(),"")
+                
+                c = Context(field, value, width=640, name=field.getName(), collection=req.params.get("id"), language=lang(req), user=getUserFromRequest(req))
+                field.searchitem = field.getSearchHTML(c)
+                
                 formlist.append([field, value])
                 if field.getFieldtype()=="list" or field.getFieldtype()=="mlist":
                     f.append(field.getName())

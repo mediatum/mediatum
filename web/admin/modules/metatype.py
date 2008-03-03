@@ -35,9 +35,9 @@ import core.config as config
 
 _masktypes = {"":"masktype_empty","edit":"masktype_edit", "search":"masktype_search", "shortview":"masktype_short", "fullview":"masktype_full"}
 
-""" checks a string whether it only contains the alphanumeric chars as well as "-" """
+""" checks a string whether it only contains the alphanumeric chars as well as "-" "." """
 def checkString(string):
-    result = re.match("([\w\-]+)", string)
+    result = re.match("([\w\-.]+)", string)
     if result != None and result.group(0) == string:
        return True
     return False

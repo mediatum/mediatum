@@ -2272,7 +2272,7 @@ msgid "admin_metafield_error_4"
 msgstr "Der Name darf ausschliesslich aus den Zeichen a bis z, A bis Z, 0 bis 9 sowie '-', '_' und '.' bestehen!"
 
 msgid "admin_metafield_error_2"
-msgstr "Der Name darf ausschliesslich aus den Zeichen a bis z, A bis Z, 0 bis 9 sowie '-' und '_' bestehen!"
+msgstr "Der Name darf ausschliesslich aus den Zeichen a bis z, A bis Z, 0 bis 9 sowie '-', '_' und '.' bestehen!"
 
 msgid "admin_mask_error_2"
 msgstr "Der Name darf ausschliesslich aus den Zeichen a bis z, A bis Z, 0 bis 9 sowie '-' und '_' bestehen!"

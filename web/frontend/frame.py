@@ -163,10 +163,10 @@ class Searchlet(Portlet):
         if f is None: # All Metadata
             # quick&dirty
             f = getMetadataType("text")
-            return f.getSearchHTML(Context(f,value=self.values[i], width=width, name="query"+str(i), collection=self.req.params.get('collection'), user=users.getUserFromRequest(self.req), ip=self.req.ip ))
+            return f.getSearchHTML(Context(f,value=self.values[i], width=width, name="query"+str(i), language=lang(self.req), collection=self.req.params.get('collection'), user=users.getUserFromRequest(self.req), ip=self.req.ip ))
             #return f.getSearchHTML(f,self.values[i], width, "query"+str(i), language=self.language, request = self.req)
         
-        return f.getSearchHTML(Context(None,value=self.values[i], width=width, name="query"+str(i), collection=self.req.params.get('collection'), user=users.getUserFromRequest(self.req), ip=self.req.ip ))
+        return f.getSearchHTML(Context(None,value=self.values[i], width=width, name="query"+str(i), language=lang(self.req), collection=self.req.params.get('collection'), user=users.getUserFromRequest(self.req), ip=self.req.ip ))
         #return f.getSearchHTML(self.values[i], width, "query"+str(i), language=self.language, request=self.req)
 
 class Browselet(Portlet):

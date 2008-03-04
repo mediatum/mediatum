@@ -81,8 +81,8 @@ def translate(key, language=None, request=None):
        return key
 
 def lang(req):
-    if "language" in req.params and req.params["language"]:
-        req.session["language"] = req.params["language"]
+    if "change_language" in req.params and req.params["change_language"]:
+        req.session["language"] = req.params["change_language"]
         return req.session["language"]
     elif "language" in req.session and req.session["language"]:
         return req.session["language"]

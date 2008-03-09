@@ -28,7 +28,7 @@ import random
 import os
 import default
 
-from utils.utils import get_filesize,splitfilename,isnewer
+from utils.utils import splitfilename,isnewer
 from core.tree import Node,FileNode
 from core.translation import lang
 from schema.schema import loadTypesFromDB, VIEW_DATA_ONLY,VIEW_HIDE_EMPTY
@@ -190,7 +190,7 @@ class Image(default.Default):
             if orig == 0:
                 for f in node.getFiles():
                     if f.type == "image":
-                        if f.mimetype=="image/tiff" or ((f.mimetype is None or f.mimetype == "application/x-download") and (f.path.lower().endswith("tif") or f.path.lower().endswith("tiff"))):
+                        if f.mimetype=="image/tiff" or ((f.mimetype is None or f.mimetype == "application/x-download") and (f.getName().lower().endswith("tif") or f.getName().lower().endswith("tiff"))):
                             # move old file to "original", create a new png to be used as "image"
                             node.removeFile(f)
 
@@ -221,11 +221,11 @@ class Image(default.Default):
                     width,height = getImageDimensions(f.getPath())
                     node.set("origwidth", width)
                     node.set("origheight", height)
-                    node.set("origsize", get_filesize(f.getPath()))
+                    node.set("origsize", f.getSize())
 
             if thumb == 0:
                 for f in node.getFiles():
-                    print "look for image",f.type,"|%s|" % f.path
+                    print "look for image",f.type,"|%s|" % f.getPath()
                     if f.type == "image":
                         path,ext = splitfilename(f.getPath())
                         thumbname = path+".thumb"
@@ -234,7 +234,7 @@ class Image(default.Default):
                         makeThumbNail(f.getPath(), thumbname)
                         makePresentationFormat(f.getPath(), thumbname2)
                         if f.mimetype is None:
-                            if f.path.lower().endswith("jpg"):
+                            if f.getName().lower().endswith("jpg"):
                                 f.mimetype = "image/jpeg"
                             else:
                                 f.mimetype = "image/tiff"

@@ -126,13 +126,13 @@ class FileNode:
     def __init__(self, name, type, mimetype):
         if name.startswith(config.settings["paths.datadir"]):
             name = name[len(config.settings["paths.datadir"]):]
-        self.path = name
+        self._path = name
         self.type = type
         self.mimetype = mimetype
     def getType(self):
         return self.type
     def getPath(self):
-        return config.settings["paths.datadir"] + self.path
+        return config.settings["paths.datadir"] + self._path
     def getMimeType(self):
         return self.mimetype
     def getSize(self):
@@ -140,7 +140,7 @@ class FileNode:
     def getHash(self):
         return get_hash(self.getPath())
     def getName(self):
-        return os.path.basename(self.path)
+        return os.path.basename(self._path)
 
 nodetypes = {}
 
@@ -471,14 +471,14 @@ class Node:
     def addFile(self, file):
         changed_metadata(self)
         self._makePersistent()
-        db.addFile(self.id,file.path,file.type,file.mimetype)
+        db.addFile(self.id,file._path,file.type,file.mimetype)
 
 
     """ remove a FileNode from this node """
     def removeFile(self, file):
         changed_metadata(self)
         self._makePersistent()
-        db.removeFile(self.id,file.path)
+        db.removeFile(self.id,file._path)
 
 
     def _mkCache(self, source):

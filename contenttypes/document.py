@@ -215,7 +215,7 @@ class Document(default.Default):
         path = ""
         for f in node.getFiles():
             if f.getType() == "attachment":
-                path = f.path
+                path = f._path
                 break
         
         if path == "":
@@ -225,7 +225,7 @@ class Document(default.Default):
                 if f.getType() not in node.getSysFiles():
                     file["mimetype"], file["type"] = getMimeType(f.getName())
                     file["icon"] = fileicons[file["mimetype"]]
-                    file["path"] = f.path
+                    file["path"] = f._path
                     file["name"] = f.getName()
                     file["size"] = format_filesize(os.path.getsize(f.getPath()))
                     filesize += os.path.getsize(f.getPath())

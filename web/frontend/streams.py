@@ -21,7 +21,7 @@ import re
 import core.tree as tree
 import os
 import core.config as config
-from utils.utils import get_filesize,join_paths, clean_path, getMimeType
+from utils.utils import get_filesize, join_paths, clean_path, getMimeType
 import random
 import zipfile
 import core.acl as acl
@@ -109,7 +109,7 @@ def send_doc(req):
     for f in n.getFiles():
         if f.type == "doc":
             incUsage(n)
-            if(get_filesize(f.getPath()) > 16*1048576):
+            if(f.getSize() > 16*1048576):
                 return req.sendFile(f.getPath(), "application/x-download")
             else:
                 return req.sendFile(f.getPath(), f.getMimeType())
@@ -128,21 +128,21 @@ def send_file(req, download=0):
     file = None
     # try full filename
     for f in n.getFiles():
-        if os.path.basename(f.path) == filename:
+        if f.getName() == filename:
             incUsage(n)
             file = f
             break
     # try only extension
     if not file:
         for f in n.getFiles():
-            if os.path.splitext(f.path)[1] == os.path.splitext(filename)[1]:
+            if os.path.splitext(f.getName())[1] == os.path.splitext(filename)[1]:
                 incUsage(n)
                 file = f
                 break
     if not file:
         print "Document",req.path,"not found"
         return 404
-    if(download or get_filesize(file.getPath()) > 16*1048576):
+    if(download or file.getSize() > 16*1048576):
         req.reply_headers["Content-Disposition"] = "attachment; filename="+filename
         return req.sendFile(file.getPath(), "application/x-download")
     else:

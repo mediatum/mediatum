@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.20 2008/02/19 12:36:54 mediatum Exp $'
+RCS_ID =  '$Id: athana.py,v 1.21 2008/03/10 13:13:20 kramm Exp $'
 
 import sys
 
@@ -5868,6 +5868,7 @@ def _make_inifiles(root, path):
 def _load_module(filename):
     global global_modules
     b = BASENAME.match(filename)
+    
     # filename e.g. /my/modules/test.py
     # b.group(1) = /my/modules/
     # b.group(2) = test.py
@@ -6006,7 +6007,7 @@ class WebFile:
         if filename[0] == '/':
             filename = filename[1:]
         self.filename = filename
-        self.m = _load_module(filename)
+        self.m = _load_module(join_paths(context.root,filename))
         self.handlers = []
 
     def addHandler(self, function):
@@ -6148,12 +6149,12 @@ def read_ini_file(filename):
                 filestore.addRoot(value)
         elif key == "file":
             filename = value
-            context.addFile(filename)
+            file = context.addFile(filename)
         elif key == "ftphandler":
             file.addFTPHandler(value)
         elif key == "handler":
             function = value
-            file.addHandler(function)
+            handler = file.addHandler(function)
         elif key == "macroresolver":
             file.addMacroResolver(value)
         elif key == "translator":
@@ -6163,6 +6164,7 @@ def read_ini_file(filename):
         else:
             raise "Syntax error in line "+str(lineno)+" of file "+filename+":\n"+line
     fi.close()
+    return context
 
 def headers_to_map(mylist):
     headers={}
@@ -6829,10 +6831,10 @@ def mainfunction():
         sys.exit(0)
 
     if init_file:
-        contexts += read_ini_file(init_file)
+        contexts += [read_ini_file(init_file)]
     
-    if logfile is not None:
-        fi = open(logfile, "wb")
+    if log_file is not None:
+        fi = open(log_file, "wb")
         lg = file_logger (fi)
         lgerr = lg
 

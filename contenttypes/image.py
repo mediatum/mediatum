@@ -77,7 +77,7 @@ def makePresentationFormat(image, thumb):
         #pic = Image.open(tmppnm)
         #pic.load()
         #os.unlink(tmppnm)
-        os.system("convert "+image+" "+tmppng)
+        os.system("convert "+image+" -depth 8 -colorspace rgb "+tmppng)
         pic = Image.open(tmppng)
         pic.load()
         os.unlink(tmppng)
@@ -114,7 +114,7 @@ def makeOriginalFormat(image, thumb):
         #pic.load()
         #os.unlink(tmppnm)
         tmppng = "/tmp/img"+str(random.random())+".png"
-        os.system("convert  -depth 8 -colorspace rgb "+image+" "+tmppng)
+        os.system("convert "+image+" -depth 8 -colorspace rgb "+tmppng)
         pic = Image.open(tmppng)
         pic.load()
         os.unlink(tmppng)

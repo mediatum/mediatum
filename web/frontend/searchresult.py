@@ -54,10 +54,12 @@ class SearchResult:
                 return req.getTAL("web/frontend/searchresult.html", {"query":self.query, "r":self, "collections":self.collections, "language":lang(req)}, macro="noresult")
             else:
                 if len(self.resultlist)==1:
+                    self.resultlist[self.active].feedback(req)
                     return self.resultlist[self.active].html(req)
                 else:
                     return req.getTAL("web/frontend/searchresult.html", {"query":self.query,"collections":self.collections,"reslist":self.resultlist,"r":self, "language":lang(req)}, macro="listcollections")
         else:
+            self.resultlist[self.active].feedback(req)
             return self.resultlist[self.active].html(req)
 
 def protect(s):

@@ -70,7 +70,8 @@ def makePresentationFormat(image, thumb):
     try:
         pic = Image.open(image)
         pic.load()
-    except IOError:
+        pic = pic.convert("RGB")
+    except (IOError, ValueError):
         # happens for some TIF files... FIXME: enhance Python's imagelib
         tmppnm = "/tmp/img"+str(random.random())+".pnm"
         #os.system("tifftopnm "+image+" > "+tmppnm)
@@ -80,9 +81,8 @@ def makePresentationFormat(image, thumb):
         os.system("convert "+image+" -depth 8 -colorspace rgb "+tmppng)
         pic = Image.open(tmppng)
         pic.load()
+        pic = pic.convert("RGB")
         os.unlink(tmppng)
-
-    pic = pic.convert("RGB")
 
     width = pic.size[0]
     height = pic.size[1]
@@ -106,7 +106,8 @@ def makeOriginalFormat(image, thumb):
     try:
         pic = Image.open(image)
         pic.load()
-    except IOError:
+        pic = pic.convert("RGB")
+    except (IOError, ValueError):
         # happens for some TIF files... FIXME: enhance Python's imagelib
         #tmppnm = "/tmp/img"+str(random.random())+".pnm"
         #os.system("tifftopnm "+image+" > "+tmppnm)
@@ -117,9 +118,9 @@ def makeOriginalFormat(image, thumb):
         os.system("convert "+image+" -depth 8 -colorspace rgb "+tmppng)
         pic = Image.open(tmppng)
         pic.load()
+        pic = pic.convert("RGB")
         os.unlink(tmppng)
 
-    pic = pic.convert("RGB")
     pic.save(thumb,"png")
                     
 """ evaluate image dimensions for given file """

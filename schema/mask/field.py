@@ -22,7 +22,7 @@ from utils.utils import formatLongText
 import core.tree as tree
 from core.tree import Node, getNode
 
-from schema.schema import getMetaFieldTypeNames, getMetaFieldTypes, getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, dateoption
+from schema.schema import getMetaFieldTypeNames, getMetaFieldTypes, getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_EXPORT, dateoption
 from core.translation import lang, translate
 from core.metatype import Metatype
 
@@ -109,7 +109,8 @@ class m_field(Metatype):
         elif flags & VIEW_HIDE_EMPTY and value.strip()=="":
             # hide empty elements
             return ''
-
+        elif flags & VIEW_DATA_EXPORT:
+            return element.get("type")
         else:
             # standard view
             ret = '<div class="mask_row"><div>'
@@ -133,13 +134,19 @@ class m_field(Metatype):
         ret = ''
         label = ''
         description = ''
-        f = getMetadataType(field.get("type"))
-        fieldstring = f.getEditorHTML(field, width=item.getWidth(), value=item.getDefault(), language=language) + ' ' + item.getUnit()
+
+        if field:
+            f = getMetadataType(field.getContentType())
+            fieldstring = f.getEditorHTML(field, width=item.getWidth(), value=item.getDefault(), language=language) + ' ' + item.getUnit()
+        else:
+            attribute = tree.getNode(item.get("attribute"))
+            field = item
+            fieldstring = getMetadataType("mappingfield").getEditorHTML(field, width=item.getWidth(), value=attribute.getName(), language=language) + ' ' + item.getUnit()
         
         if item.getDescription()!="":
             description = '<div id="description"><a href="#" onclick="openPopup(\'/popup_help?id='+field.id+'&maskid='+item.id+'\', \'\', 400, 250)"> <img src="/img/tooltip.png" border="0"/></a></div>'
-        
-        if len(item.getLabel())>0:
+
+        if len(item.getLabel())>0 and item.getLabel()!="mapping":
             if ptype in("vgroup","hgroup") or sub==False:
                 if (item.getRequired()>0):
                     label = '<div class="label">' + item.getLabel() + ': <span class="required">*</span></div>'+description
@@ -150,11 +157,10 @@ class m_field(Metatype):
                     label = item.getLabel() + ': <span class="required">*</span> '
                 else:
                     label = item.getLabel() + ': '
+        else:
+            label = '<div class="label">&nbsp;</div>'
         if not sub:
-            #if ptype not in ("vgroup", "hgroup", "field"):
             ret += '<div id="'+item.id+'" class="row" onmouseover="pick(this)" onmouseout="unpick(this)" onclick="select(this)">'
-            #else:
-            #    ret += '<div id="'+item.id+'" class="row" onmouseover="pick(this)" onmouseout="unpick(this)">'
 
         if len(label)>0:
             ret += label + '<div id="editor_content">'+fieldstring+'</div>'
@@ -190,6 +196,16 @@ class m_field(Metatype):
         """ editor mask for field definition """
         attr = {}
         fields = []
+        pidnode = None
+        
+        if not "pid" in req.params.keys():
+            for p in item.getParents():
+                try:
+                    if p.getMasktype()=="export":
+                        pidnode = p
+                        break
+                except:
+                    continue
 
         metadatatype = req.params.get("metadatatype")
         for t in metadatatype.getDatatypes():
@@ -198,7 +214,7 @@ class m_field(Metatype):
 
         if req.params.get("op","")=="new":
             pidnode = tree.getNode(req.params.get("pid"))
-            if pidnode.get("type") in ("vgroup", "hgroup"):
+            if pidnode.getMasktype() in ("vgroup", "hgroup"):
                 for field in pidnode.getAllChildren():
                     if field.getType().getName()=="maskitem" and field.id!=pidnode.id:
                         fields.append(field)
@@ -207,22 +223,24 @@ class m_field(Metatype):
                     if str(m.id)==str(req.params.get("pid")):
                         for field in m.getChildren():
                             fields.append(field)
+
         fields.sort(lambda x, y: cmp(x.getOrderPos(),y.getOrderPos()))
 
         add_values = []
         val = ""
         if item.getField():
             val = item.getField().getValues()
+        
         for t in getMetaFieldTypeNames():
             f = getMetadataType(t)
             add_values.append(f.getMaskEditorHTML(val, metadatatype=metadatatype, language=lang(req)))
 
-        metafields = req.params.get("metadatatype","").getMetaFields()
+        metafields = metadatatype.getMetaFields()
         metafields.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))
         
         metafieldtypes = getMetaFieldTypes().values()
         metafieldtypes.sort(lambda x, y: cmp(translate(x.getName(), request=req).lower(), translate(y.getName(), request=req).lower()))
-        
+
         v = {}
         v["op"] = req.params.get("op","")
         v["pid"] = req.params.get("pid","")
@@ -234,7 +252,14 @@ class m_field(Metatype):
         v["t_attrs"] = attr
         v["icons"] = {"externer Link":"/img/extlink.png", "Email":"/img/email.png"}
         v["add_values"] = add_values
-        return req.getTAL("schema/mask/field.html",v,macro="metaeditor") 
+
+        if pidnode and pidnode.getMasktype()=="export":
+            v["mappings"] = []
+            for m in pidnode.getExportMapping():
+                v["mappings"].append(tree.getNode(m))
+            return req.getTAL("schema/mask/field.html",v,macro="metaeditor_"+pidnode.getMasktype()) 
+        else:
+            return req.getTAL("schema/mask/field.html",v,macro="metaeditor") 
 
     def isContainer(self):
         return True

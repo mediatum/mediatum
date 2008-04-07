@@ -98,3 +98,54 @@
         <input tal:attributes="value python:op" type="hidden" name="op"/>
     </div>
 </tal:block>
+
+
+<tal:block metal:define-macro="metaeditor_export">
+    <div class="back">
+        <p tal:content="python:str(item.get('fieldtype'))" />
+        <h3 tal:condition="python:op=='edit'" i18n:translate="mask_edit_edit_field">TEXT</h3>
+        <h3 tal:condition="python:op=='new'" i18n:translate="mask_edit_create_field">TEXT</h3>
+        <br/>
+        <br/>
+        <div i18n:translate="mask_edit_mappingselection" class="label">TEXT<span class="required">*</span></div>
+        <fieldset>
+            <input tal:attributes="checked python:{'False':None,'True':'checked'}[str(str(item.get('fieldtype')) in ('mapping', ''))]" type="radio" name="fieldtype" value="mapping"/> 
+            <span i18n:translate="mask_edit_mapping_field">TEXT</span><br/>
+            <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <select name="mappingfield" id="mappingfield" style="width:250px;">
+                <tal:block tal:repeat="mapping mappings">
+                    <optgroup tal:attributes="label python:mapping.getName()">
+                    <tal:block tal:repeat="mappingfield python:mapping.getFields()">
+                        <option tal:content="python:mappingfield.getName()" tal:attributes="value python:str(mappingfield.id); selected python:{'False':None,'True':'selected'}[str(str(item.id)==str(mappingfield.id))]"/>
+                    </tal:block>
+                    </optgroup>
+                </tal:block>
+            </select>
+            <br/>
+            <br/>
+            <input tal:attributes="checked python:{'False':None,'True':'checked'}[str(item.get('fieldtype')=='attribute')]" type="radio" name="fieldtype" value="attribute" />
+            <span i18n:translate="mask_edit_attribute_field">TEXT</span><br/> 
+            <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            
+            <input tal:condition="python:item.get('fieldtype')!='mapping'" tal:attributes="value python:item.get('mappingfield')" type="text" id="mappingfield" name="mappingfield" style="width:250px;"/><br/>
+            <input tal:condition="python:item.get('fieldtype')=='mapping'" value="" type="text" id="mappingfield" name="mappingfield" style="width:250px;"/><br/>
+            <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <span i18n:translate="mask_edit_attribute_description">TEXT</span>
+        </fieldset>
+        <br/>
+        <div i18n:translate="mask_edit_field" class="label">TEXT<span class="required">*</span></div>
+        <select name="attribute" id="attribute" style="width:250px;">
+            <tal:block tal:repeat="field python:metafields">
+                <option tal:content="python:field.getName()" tal:attributes="value python:str(field.id); selected python:{'False':None,'True':'selected'}[str(item.get('attribute')==str(field.id))]"/>
+            </tal:block>
+        </select>
+        
+        <input tal:attributes="value python:str(item.id)" type="hidden" name="id"/>
+        <input tal:attributes="value pid" type="hidden" name="pid"/>
+        <input type="hidden" name="type" value="field"/>
+        <br/>&nbsp;<br/><div class="label">&nbsp;</div>
+        <button type="submit" name="saveedit" i18n:translate="mask_edit_save">TEXT</button>
+        &nbsp;&nbsp;<button type="submit" onclick="setCancel(document.myform.op)" i18n:translate="mask_edit_cancel">TEXT</button>
+        <input tal:attributes="value python:op" type="hidden" name="op"/>
+    </div>
+</tal:block>

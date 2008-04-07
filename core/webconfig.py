@@ -100,6 +100,11 @@ def initContexts():
     context = athana.addContext("/oai/", ".")
     file = context.addFile("export/oai.py")
     file.addHandler("oaiRequest").addPattern(".*")
+    
+    # === Exoprt ===
+    context = athana.addContext("/export", ".")
+    file = context.addFile("export/export.py")
+    file.addHandler("export").addPattern("/.*")
 
     # === static files ===
     athana.addFileStore("/module/", "lib/FCKeditor/files.zip")

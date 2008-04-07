@@ -72,6 +72,7 @@ class Overview:
         return int(math.ceil(float(len(self.list))/float(config.settings["admin.pageitems"])))
 
     def printPageList(self):
+    
         order = self.req.params.get("order","")
         detail=''
         if "detailof" in self.req.params.keys():
@@ -167,7 +168,6 @@ def show_content(req, op):
     else:
         if op == "":
             op = "default"
-        print op
         module = findmodule(op.split("_")[0])
 
         try:
@@ -205,6 +205,7 @@ def adminNavigation():
 
         submenu = Menu("admin_menu_3")
         submenu.addItem("/admin/metatype")
+        submenu.addItem("/admin/mapping")
         menu.append(submenu)
 
         submenu = Menu("admin_menu_4")

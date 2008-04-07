@@ -1,0 +1,242 @@
+<metal:block metal:define-macro="view">
+    <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
+    <form name="mappingoverview" method="post" action="#" tal:attributes="action page">
+        <table class="overview">
+            <tr>
+                <td colspan="8"><h3 i18n:translate="admin_mapping_existing">TEXT</h3></td>
+            </tr>
+            <tr>
+                <th>&nbsp;</th>
+                <th tal:repeat="col sortcol">
+                    <a tal:attributes="href python:col.link; title python:col.title" tal:content="structure python:col.label"/>
+                </th>
+                <th>&nbsp;</th>
+                <th align="right">
+                    <input i18n:attributes="title admin_mapping_create" type="image" src="/img/install.png" name="new"/>
+                </th>
+            </tr>
+            <tr tal:condition="python:len(mappings)==0">
+                <td colspan="7"><small i18n:translate="admin_mapping_nomappings">TEXT</small></td>
+            </tr>
+            <tal:block tal:define="start python:pages.getStart();end python:pages.getEnd()" tal:repeat="mapping python:mappings[start:end]">
+                <tr tal:define="cssclass python:mappings.index(mapping)%2 and 'norm' or 'silver'">
+                    <td tal:attributes="class cssclass" tal:content="python:str(mappings.index(mapping)+1)+'.'"/>
+                    <td tal:attributes="class cssclass" tal:content="python:mapping.getName()"/>
+                    <td tal:attributes="class cssclass" tal:content="python:mapping.getNamespace()"/>
+                    <td tal:attributes="class cssclass" tal:content="python:mapping.getNamespaceUrl()"/>
+                    <td tal:attributes="class cssclass" tal:content="python:mapping.getDescription()"/>
+                    <td tal:attributes="class cssclass" tal:content="python:str(len(mapping.getFields()))"/>
+                    <td tal:attributes="class cssclass">
+                        <input tal:attributes="name python:'fieldlist_'+(mapping.id)" i18n:attributes="title admin_mapping_fieldlist_title" type="image" src="/img/rightarrow.png"/>
+                    </td>
+                    <td tal:attributes="class cssclass" class="_norm_">
+                        <input tal:attributes="name python:str('edit_'+str(mapping.id))" i18n:attributes="title admin_mapping_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
+                        <input tal:condition="python:len(mapping.getFields())==0" tal:attributes="name python:str('delete_'+str(mapping.id)); onclick python:'return questionDelName(\''+mapping.getName()+'\')'" i18n:attributes="title admin_mapping_delete_title" type="image" src="/img/delete.png"/>
+                    </td>
+                </tr>
+            </tal:block>
+            <tr>
+                <th colspan="4">
+                    <small>
+                        <span i18n:translate="admin_mapping_footer">
+                            <span i18n:name="number" tal:content="python:str(len(mappings))"/>
+                        </span>
+                        <span tal:content="raw python:pages.printPageList()"/>
+                    </small>
+                </th>
+                <th colspan="4" align="right"><small tal:content="raw python:pages.printPageAll()"/></th>
+            </tr>
+        <br>
+    </form>
+</metal:block>
+
+<metal:block metal:define-macro="modify">
+    <p><a i18n:translate="admin_overview" href="./mapping">TEXT</a></p>
+    <form tal:attributes="action page" name="editmapping" method="post">
+        <table>
+            <tr>
+                <td colspan="2">
+                    <h3 tal:condition="python:id==''" i18n:translate="admin_mapping_new_label">TEXT</h3>
+                    <h3 tal:condition="python:id!=''" i18n:translate="admin_mapping_edit_label">TEXT</h3>
+                </td>
+            </tr>
+            <tr tal:condition="python:error>0">
+                <td colspan="2">
+                    <p tal:condition="python:error==1" i18n:translate="admin_mandatory_error" class="error">TEXT</p>
+                    <p tal:condition="python:error==2" i18n:translate="admin_duplicate_error" class="error">TEXT</p>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_mapping_name">TEXT</tal:block>: <span class="required">*</span></td>
+                <td>
+                    <input tal:attributes="value python:mapping.getName()" type="text" name="name" maxlength="50" size="50"/>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_mapping_namespace">TEXT</tal:block>:</td>
+                <td>
+                    <input tal:attributes="value python:mapping.getNamespace()" type="text" name="namespace" maxlength=50 size="50"/>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_mapping_namespaceurl">TEXT</tal:block>:</td>
+                <td>
+                    <input tal:attributes="value python:mapping.getNamespaceUrl()" type="text" name="namespaceurl" maxlength=50 size="50"/>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_mapping_description">TEXT</tal:block>:</td>
+                <td>
+                    <input tal:attributes="value python:mapping.getDescription()" type="text" name="description" maxlength=50 size="50"/>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_mapping_header">TEXT</tal:block>:</td>
+                <td>
+                    <input tal:attributes="value python:mapping.getHeader()" type="text" name="header" maxlength=50 size="50"/>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_mapping_footer">TEXT</tal:block>:</td>
+                <td>
+                    <input tal:attributes="value python:mapping.getFooter()" type="text" name="footer" maxlength=50 size="50"/>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_mapping_separator">TEXT</tal:block>:</td>
+                <td>
+                    <input tal:attributes="value python:mapping.getSeparator()" type="text" name="separator" maxlength=50 size="50"/>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_mapping_standardformat">TEXT</tal:block>:</td>
+                <td>
+                    <input tal:attributes="value python:mapping.getStandardFormat()" type="text" name="standardformat" maxlength=50 size="50"/>
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td><small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info">TEXT</span>)</small></td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>
+                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
+                    <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
+                </td>
+            </tr>
+        </table>
+        <input tal:attributes="value python:id" type="hidden" name="id" id="id"/>
+        <input tal:attributes="value python:id=='' and 'save_new' or 'save_edit'" type="hidden" name="form_op" id="form_op"/>
+    </form>
+</metal:block>
+
+
+<metal:block metal:define-macro="viewlist">
+    <p><a i18n:translate="admin_overview" href="./mapping">TEXT</a></p>
+    <form name="mappingfieldoverview" method="post" action="#" tal:attributes="action page">
+        <table class="overview">
+            <tr>
+                <td colspan="7"><h3 i18n:translate="admin_mappingfield_existing">TEXT</h3></td>
+            </tr>
+            <tr>
+                <th>&nbsp;</th>
+                <th tal:repeat="col sortcol">
+                    <a tal:attributes="href python:col.link; title python:col.title" tal:content="structure python:col.label"/>
+                </th>
+                <th align="right">
+                    <input i18n:attributes="title admin_mappingfield_create" tal:attributes="name python:('newfield_'+str(mapping.id))" type="image" src="/img/install.png"/>
+                </th>
+            </tr>
+            <tr tal:condition="python:len(fields)==0">
+                <td colspan="5"><small i18n:translate="admin_mappingfield_nofields">TEXT</small></td>
+            </tr>
+            <tal:block tal:define="start python:pages.getStart();end python:pages.getEnd()" tal:repeat="field python:fields[start:end]">
+                <tr tal:define="cssclass python:fields.index(field)%2 and 'norm' or 'silver'">
+                    <td tal:attributes="class cssclass" tal:content="python:str(fields.index(field)+1)+'.'"/>
+                    <td tal:attributes="class cssclass" tal:content="python:field.getName()"/>
+                    <td tal:attributes="class cssclass" tal:content="python:field.getDescription()"/>
+                    <td tal:attributes="class cssclass">
+                        <img tal:condition="python:field.getMandatory()" src="/img/haken.gif"/>&nbsp;                    
+                    </td>
+                    <td tal:attributes="class cssclass" class="_norm_">
+                        <input tal:attributes="name python:str('editfield_'+str(field.id))" i18n:attributes="title admin_mappingfield_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
+                        <input tal:attributes="name python:str('deletefield_'+str(field.id)); onclick python:'return questionDelName(\''+field.getName()+'\')'" i18n:attributes="title admin_mappingfield_delete_title" type="image" src="/img/delete.png"/>
+                    </td>
+                </tr>
+            </tal:block>
+            <tr>
+                <th colspan="3">
+                    <small>
+                        <span i18n:translate="admin_mappingfield_footer">
+                            <span i18n:name="number" tal:content="python:str(len(fields))"/>
+                        </span>
+                        <span tal:content="raw python:pages.printPageList()"/>
+                    </small>
+                </th>
+                <th colspan="2" align="right"><small tal:content="raw python:pages.printPageAll()"/></th>
+            </tr>
+        <br>
+    </form>
+</metal:block>
+
+<metal:block metal:define-macro="modifyfield">
+    <p><a i18n:translate="admin_overview" href="./mapping">TEXT</a></p>
+    <form tal:attributes="action page" name="editmappingfield" method="post">
+        <table>
+            <tr>
+                <td colspan="2">
+                    <h3 tal:condition="python:id==''" i18n:translate="admin_mappingfield_new_label">TEXT</h3>
+                    <h3 tal:condition="python:id!=''" i18n:translate="admin_mappingfield_edit_label">TEXT</h3>
+                </td>
+            </tr>
+            <tr tal:condition="python:error>0">
+                <td colspan="2">
+                    <p tal:condition="python:error==1" i18n:translate="admin_mandatory_error" class="error">TEXT</p>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_mappingfield_name">TEXT</tal:block>: <span class="required">*</span></td>
+                <td>
+                    <input tal:attributes="value python:field.getName()" type="text" name="name" maxlength="50" size="50"/>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_mappingfield_description">TEXT</tal:block>:</td>
+                <td>
+                    <input tal:attributes="value python:field.getDescription()" type="text" name="description" maxlength=50 size="50"/>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_mappingfield_exportformat">TEXT</tal:block>:</td>
+                <td>
+                    <input tal:attributes="value python:field.getExportFormat()" type="text" name="exportformat" maxlength=50 size="50"/>
+                    <tal:block tal:condition="python:parent.getStandardFormat()!=''">
+                        <p>Parent: <span tal:content="python:parent.getStandardFormat()"/></p>
+                    </tal:block>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_mappingfield_mandatory">TEXT</tal:block>:</td>
+                <td>
+                    <input tal:attributes="checked python:{'False':None,'True':'checked'}[str(field.getMandatory())]" type="checkbox" name="mandatory" value="1">
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td><small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info">TEXT</span>)</small></td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>
+                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
+                    <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
+                </td>
+            </tr>
+        </table>
+        <input tal:attributes="value python:str(parent.id)" type="hidden" name="parent" id="parent"/>
+        <input tal:attributes="value python:id" type="hidden" name="id" id="id"/>
+        <input tal:attributes="value python:id=='' and 'save_new_field' or 'save_edit_field'" type="hidden" name="form_op" id="form_op"/>
+    </form>
+</metal:block>
+

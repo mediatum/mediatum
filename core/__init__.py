@@ -80,6 +80,10 @@ tree.registerNodeFunction("getMasks", schema.node_getMasks)
 tree.registerNodeFunction("getMask", schema.node_getMask)
 tree.registerNodeFunction("getDescription", schema.node_getDescription)
 
+from schema.mapping import Mapping, MappingField
+tree.registerNodeClass("mapping", Mapping)
+tree.registerNodeClass("mappingfield", MappingField)
+
 from workflow import workflow
 workflow.register()
 

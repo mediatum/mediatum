@@ -17,27 +17,26 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import re
 import sys
 import traceback
 import core.tree as tree
+import core.config as config
 
-from schema.schema import loadTypesFromDB
 from core.datatypes import loadAllDatatypes
 from web.admin.adminutils import Overview, getAdminStdVars
 from core.tree import Node, getNode
 from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings 
 from core.translation import lang, t
-from schema.schema import getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, deleteMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
-import re
-import core.config as config
+from schema.schema import loadTypesFromDB, getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, deleteMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
+from schema.mapping import getMappings
 
-
-_masktypes = {"":"masktype_empty","edit":"masktype_edit", "search":"masktype_search", "shortview":"masktype_short", "fullview":"masktype_full"}
+_masktypes = {"":"masktype_empty","edit":"masktype_edit", "search":"masktype_search", "shortview":"masktype_short", "fullview":"masktype_full", "export":"masktype_export"}
 
 """ checks a string whether it only contains the alphanumeric chars as well as "-" "." """
 def checkString(string):
-    result = re.match("([\w\-.]+)", string)
+    result = re.match("([\w\-]+)", string)
     if result != None and result.group(0) == string:
        return True
     return False
@@ -91,10 +90,7 @@ def validate(req, op):
             elif key.startswith("indexupdate_"):
                 schema = tree.getNode(key[12:-2])
                 s = schema.getAllItems()
-
-                
                 searchIndexer.updateNodes(schema.getAllItems())
-                
                 break
             
             elif key.startswith("editmask_"):
@@ -125,7 +121,7 @@ def validate(req, op):
                 mask = mtype.getMask(key[9:-2].split("|")[1])
                 cloneMask(mask, "copy_"+mask.getName())
                 return showMaskList(req, key[9:-2].split("|")[0])
-
+                
             # create new metadatatype
             elif key.startswith("new"):
                 return MetatypeDetail(req, "")
@@ -271,20 +267,28 @@ def validate(req, op):
 
                 elif req.params["form_op"]=="save_editmask":
                     if req.params["mname"]=="":
-                        MaskDetails(req, req.params.get("mpid",""), req.params.get("morig_name",""), err=1)
+                        return MaskDetails(req, req.params.get("mpid",""), req.params.get("morig_name",""), err=1)
                     elif checkString(req.params["mname"]) == False:
-                         return MaskDetails(req, req.params.get("mpid",""), req.params.get("morig_name",""), err=4) # if the name contains wrong characters
+                        return MaskDetails(req, req.params.get("mpid",""), req.params.get("morig_name",""), err=4) # if the name contains wrong characters
                     else:
                         mtype = getMetaType(req.params.get("mpid",""))
                         mask = mtype.getMask(req.params.get("morig_name",""))
                         mask.setName(req.params.get("mname"))
                         mask.setDescription(req.params.get("mdescription"))
                         mask.setMasktype(req.params.get("mtype"))
+                        if req.params.get("mtype")=="export":
+                            mask.setExportMapping(req.params.get("exportmapping"))
+                            mask.setExportHeader(req.params.get("exportheader"))
+                            mask.setExportFooter(req.params.get("exportfooter"))
+                            _opt = ""
+                            if "types" in req.params.keys():
+                                _opt += "t"
+                            if "notlast" in req.params.keys():
+                                _opt += "l"
+                            mask.setExportOptions(_opt)
                         mask.setLanguage(req.params.get("mlanguage", ""))
                         mask.setDefaultMask("mdefault" in req.params.keys())
                         return showMaskList(req, str(req.params.get("mpid","")))
-                    operation += 1
-                    break
 
                 elif req.params["form_op"]=="save_newmask":
 
@@ -298,6 +302,17 @@ def validate(req, op):
                         mask.setDescription(req.params.get("mdescription",""))
                         mask.set("type", "vgroup")
                         mask.setMasktype(req.params.get("mtype"))
+                        if req.params.get("mtype")=="export":
+                            mask.setExportMapping(req.params.get("exportmapping"))
+                            mask.setExportHeader(req.params.get("exportheader"))
+                            mask.setExportFooter(req.params.get("exportfooter"))
+                            _opt = ""
+                            if "types" in req.params.keys():
+                                _opt += "t"
+                            if "notlast" in req.params.keys():
+                                _opt += "l"
+                            mask.setExportOptions(_opt)
+                                
                         mask.setLanguage(req.params.get("mlanguage", ""))
                         mask.setDefaultMask("mdefault" in req.params.keys())
                         mtype.addChild(mask)
@@ -547,6 +562,7 @@ def MaskDetails(req, pid, id, err=0):
         
     v = getAdminStdVars(req)
     v["mask"] = mask
+    v["mappings"] = getMappings()
     v["mtype"] = mtype
     v["error"] = err
     v["pid"] = pid
@@ -583,7 +599,7 @@ def export(req, name):
 def xmlimport(req, filename):
     importMetaSchema(filename)
        
-def showEditor(req):
+def showEditor(req):   
     path = req.path[1:].split("/")
     mtype = getMetaType(path[1])
     editor = mtype.getMask(path[2])
@@ -642,13 +658,24 @@ def showEditor(req):
             item = tree.getNode(req.params.get("id"))
             item.setLabel(req.params.get("label", ""))
             
+            if "mappingfield" in req.params.keys():
+                # field of export mask
+                item.set("attribute", req.params.get("attribute"))
+                item.set("fieldtype", req.params.get("fieldtype"))
+                mf = req.params.get("mappingfield").split(";")
+                if req.params.get("fieldtype")=="mapping": # mapping field of mapping definition selected
+                    item.set("mappingfield", mf[0])
+                else: # attribute name as object name
+                    item.set("mappingfield", mf[1])
+            else:
+                f = tree.getNode(long(req.params.get("field")))
+            
             field = item.getChildren()
             try:
                 field = list(field)[0]
                 if str(field.id)!=str(req.params.get("field")):
                     item.removeChild(field)
-                    item.addChild(tree.getNode(long(req.params.get("field"))))
-
+                    item.addChild(f)
                 field.setValues(req.params.get(field.get("type")+"_value",""))
             except:
                 pass
@@ -657,6 +684,11 @@ def showEditor(req):
             if req.params.get("fieldtype","")=="common":
                 # existing field used
                 fieldid = long(req.params.get("field"))
+            elif "mappingfield" in req.params.keys():
+                # new mapping field
+                fieldid = ""#long(req.params.get("mappingfield"))
+                label = "mapping"
+            
             else:
                 # create new metaattribute
                 parent = req.params.get("metadatatype").getName()
@@ -672,6 +704,15 @@ def showEditor(req):
             
             item = editor.addMaskitem( label, req.params.get("type"), fieldid, req.params.get("pid","0") )
 
+            if "mappingfield" in req.params.keys():              
+                item.set("attribute", req.params.get("attribute"))
+                item.set("fieldtype", req.params.get("fieldtype"))
+                mf = req.params.get("mappingfield").split(";")
+                if req.params.get("fieldtype")=="mapping": # mapping field of mapping definition selected
+                    item.set("mappingfield", mf[0])
+                else: # attribute name as object name
+                    item.set("mappingfield", mf[1])
+             
             position = req.params.get("insertposition", "end")
             if position=="end":
                 # insert at the end of existing mask
@@ -753,7 +794,6 @@ def showEditor(req):
     else:
         # show metaEditor
         v["editor"] = req.getTALstr(editor.getMetaMask(language=lang(req)), {})
-
     return req.getTAL("web/admin/modules/metatype.html", v, macro="editor_popup")
 
 

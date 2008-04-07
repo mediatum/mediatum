@@ -69,7 +69,6 @@
                         <input tal:attributes="name python:'indexupdate_'+str(metadatatype.id)" i18n:attributes="title admin_meta_index_state_title" type="image" src="/img/update_index.gif" onclick="showInfo()"/>
                     </tal:block>
                     <tal:block tal:condition="python:not metadatatype.searchIndexCorrupt()" i18n:translate="admin_meta_index_state_ok">TEXT</tal:block>
-                
                 </td>
                 <td tal:attributes="class cssclass">
                     <input tal:attributes="name python:'detaillist_'+metadatatype.getName()" i18n:attributes="title admin_meta_editdetail" type="image" src="/img/rightarrow.png"/>&nbsp;
@@ -589,6 +588,22 @@
 </metal:block>
 
 <metal:block metal:define-macro="modify_mask">
+    <script type="text/javascript">
+    function changetype(doc){
+        obj = doc.getElementById("mtype");
+        t = obj.value;
+        
+        for(var i=0; i< obj.options.length; i++){
+            o = doc.getElementById("div_"+obj.options[i].value);
+            if (o){
+                o.style.display = "none";
+            }
+        }
+        if (doc.getElementById("div_"+obj.value)){
+            doc.getElementById("div_"+obj.value).style.display = "block";
+        }
+    }
+    </script>
     <p><a tal:attributes="href python:'./metatype'+page" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="editmetatype" method="post">
         <table>
@@ -615,12 +630,51 @@
                 </td>
             </tr>
             <tr>
-                <td><tal:block i18n:translate="admin_mask_type">TEXT</tal:block>:</td>
+                <td style="vertical-align:top"><tal:block i18n:translate="admin_mask_type">TEXT</tal:block>:</td>
                 <td>
-                    <select name="mtype" style="width:200px">
+                    <select name="mtype" style="width:200px" onchange="changetype(document, this)" onload="changetype(document)" id="mtype">
                         <option tal:repeat="key python:masktypes.keys()" tal:attributes="value key; selected python:{'False':None,'True':'selected'}[str(mask.getMasktype()==str(key))]" tal:content="python:masktypes[key]" i18n:translate=""/>
                     </select>
                  <td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div id="div_export" style="display:none">
+                        <table>
+                            <tr>
+                                <td style="width: 105px"><tal:block i18n:translate="admin_mask_exportmapping">TEXT</tal:block>:</td>
+                                <td>
+                                    <select name="exportmapping" multiple="multiple" size="5">
+                                        <option i18n:translate="admin_mask_nomapping" value="">TEXT</option>
+                                        <tal:block tal:repeat="mapping mappings">
+                                            <option tal:attributes="selected python:{'False':None,'True':'selected'}[str(mapping.id in mask.getExportMapping())]; value python:mapping.id" tal:content="python:mapping.getName()"/>
+                                        </tal:block>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><tal:block i18n:translate="admin_mask_exportheader">TEXT</tal:block>:</td>
+                                <td><input tal:attributes="value python:mask.getExportHeader()" type="text" name="exportheader" style="width:300px"/></td>
+                            </tr>
+                            <tr>
+                                <td><tal:block i18n:translate="admin_mask_exportfooter">TEXT</tal:block>:</td>
+                                <td><input tal:attributes="value python:mask.getExportFooter()" type="text" name="exportfooter" style="width:300px"/></td>
+                            </tr>
+                            <tr>
+                                <td><tal:block i18n:translate="admin_mask_exportoptions">TEXT</tal:block>:</td>
+                                <td>
+                                    <fieldset style="display:inline">
+                                        <input tal:attributes="checked python:{'False':None,'True':'checked'}[str(mask.hasExportOption('t'))]" type="checkbox" name="types" value="types"/> <tal:block i18n:translate="admin_mask_export_validatetypes">TEXT</tal:block><br/>
+                                        <input tal:attributes="checked python:{'False':None,'True':'checked'}[str(mask.hasExportOption('l'))]" type="checkbox" name="notlast" value="notlast"/> <tal:block i18n:translate="admin_mask_export_endseparator">TEXT</tal:block>
+                                    </fieldset>
+                                </td>
+                            </tr>
+                        </table>                        
+                    </div>
+                    <script>
+                        changetype(document);
+                    </script>
+                </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_mask_description">TEXT</tal:block>:</td>

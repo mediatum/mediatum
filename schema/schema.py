@@ -34,6 +34,7 @@ from core.xmlnode import getNodeXML, readNodeXML
 from core.db.database import getConnection
 from core.metatype import Context
 
+
 log = logging.getLogger('backend')
 
 requiredoption = []
@@ -56,6 +57,7 @@ VIEW_DEFAULT = 0        # default view for masks
 VIEW_SUB_ELEMENT = 1    # internal parameter
 VIEW_HIDE_EMPTY = 2     # show only fields with 'non-empty' values
 VIEW_DATA_ONLY = 4      # deliver list with values (not html)
+VIEW_DATA_EXPORT = 8    # deliver export format
 
 #
 # return metadata object by given name
@@ -171,8 +173,7 @@ def updateMetaField(parent, name, label, orderpos, fieldtype, option="", descrip
         metatype.addChild(field)
         field.setOrderPos(len(metatype.getChildren())-1)
         
-    field.set("label", label)
-    
+    field.set("label", label)   
     field.set("type", fieldtype)
     field.set("opts", option)
     field.set("valuelist", fieldvalues.replace("\r\n",";"))
@@ -731,7 +732,13 @@ class Mask(tree.Node):
         if flags & 4:
             ret = []
         else:
-            ret = ''
+            ret = ""
+
+        if flags & 8: # export mode
+            x = self.getChildren()
+            x.sort()
+            return getMetadataType("mappingfield").getViewHTML(x, nodes, flags, language=language)
+        
         for field in self.getChildren().sort():
             t = getMetadataType(field.get("type"))
             if flags & 4: # data mode
@@ -801,7 +808,7 @@ class Mask(tree.Node):
         return ret
 
 
-    ''' update given node with given reques values '''
+    ''' update given node with given request values '''
     def updateNode(self, nodes, req):
         for node in nodes:
             for item in self.getMaskFields():
@@ -822,6 +829,24 @@ class Mask(tree.Node):
                 node.event_metadata_changed()
 
         return nodes
+        
+    def getMappingHeader(self):
+        if self.getMasktype()=="export":
+            if len(self.get("exportmapping").split(";"))>1:
+                return self.getExportHeader()
+            else:
+                c = tree.getNode(self.get("exportmapping"))
+                return c.getHeader()
+        return ""
+            
+    def getMappingFooter(self):
+        if self.getMasktype()=="export":
+            if len(self.get("exportmapping").split(";"))>1:
+                return self.getExportFooter()
+            else:
+                c = tree.getNode(self.get("exportmapping"))
+                return c.getFooter()
+        return ""
 
     ''' show maskeditor - definition '''
     def getMetaMask(self, language=None):
@@ -829,13 +854,21 @@ class Mask(tree.Node):
         ret += '<div class="back"><h3 i18n:translate="mask_editor_field_definition">Felddefinition </h3><div align="right"><input type="image" src="/img/install.png" name="newdetail_'+self.id+'" i18n:attributes="title mask_editor_new_line_title"/></div><br/>'
         if len(self.getChildren())==0:
             ret += '<div i18n:translate="mask_editor_no_fields">- keine Felder definiert -</div>'
-        
+        else:
+            if self.getMappingHeader()!="":
+                ret += '<div class="label" i18n:translate="mask_edit_header">TEXT</div><div class="row">'+esc(self.getMappingHeader())+'</div>'
+            
         i=0
         fieldlist = getAllMetaFields()
         for item in self.getChildren().sort():
             t = getMetadataType(item.get("type"))
             ret += t.getMetaHTML(self, i, language=language, fieldlist=fieldlist) # get formated line specific of type (e.g. field)
             i += 1
+        
+        if len(self.getChildren())>0:        
+            if self.getMappingFooter()!="":
+                ret += '<div class="label" i18n:translate="mask_edit_footer">TEXT</div><div class="row">'+esc(self.getMappingFooter())+'</div>'
+            
         ret += '</form>'
         return ret
 
@@ -851,10 +884,15 @@ class Mask(tree.Node):
                 ret += '</form>'
                 return ret
 
-        if req.params.get("op","")=="new" and req.params.get("type","")!="":
+        if (req.params.get("op","")=="new" and req.params.get("type","")!="") or (self.getMasktype()=="export" and req.params.get("op","") in ["newdetail", "new"]):
             # add field
             item = tree.Node(name="", type="maskitem")
-            t = getMetadataType(req.params.get("type"))
+            if self.getMasktype()=="export": # export mask has no selection of fieldtype -> only field
+                t = getMetadataType("field")
+                req.params["op"] = "new"
+            else:
+                t = getMetadataType(req.params.get("type"))
+
             if req.params.get("type","")=="hgroup":
                 req.params["edit"] = item
             elif req.params.get("type","")=="vgroup":
@@ -866,7 +904,7 @@ class Mask(tree.Node):
             ret += '</form>'
             return ret
 
-        if req.params.get("type","")=="":
+        if req.params.get("type","")=="" and self.getMasktype()!="export":
             # type selection for new field
             ret = """
             <form method="post" name="myform">
@@ -911,6 +949,31 @@ class Mask(tree.Node):
         return self.get("masktype")
     def setMasktype(self, value):
         self.set("masktype", value)
+        
+    def getExportMapping(self):
+        return self.get("exportmapping").split(";")
+    def setExportMapping(self, exportmapping):
+        self.set("exportmapping", exportmapping)
+        
+    def getExportHeader(self):
+        return self.get("exportheader")
+    def setExportHeader(self, header):
+        self.set("exportheader", header)
+        
+    def getExportFooter(self):
+        return self.get("exportfooter")
+    def setExportFooter(self, footer):
+        self.set("exportfooter", footer)
+        
+    def getExportOptions(self):
+        return self.get("exportoptions")
+    def setExportOptions(self, options):
+        self.set("exportoptions", options)
+    def hasExportOption(self, option):
+        if option in self.get("exportoptions"):
+            return True
+        return False
+     
         
     def getLanguage(self):
         if self.get("language") =="":
@@ -1065,7 +1128,8 @@ def getMetaFieldTypes():
     global mytypes
     ret = {}
     for t in mytypes:
-        ret[t] = getMetadataType(t)
+        if getMetadataType(t).isFieldType():
+            ret[t] = getMetadataType(t)
     return ret
     
 def node_getMetaFields(node,type=None):

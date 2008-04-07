@@ -40,7 +40,7 @@ class Document(default.Default):
 
         access = acl.AccessData(req)     
         mask = node.getMask("nodebig")
-  
+
         obj = {}
         if mask:
             obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY, lang(req)) # hide empty elements
@@ -57,6 +57,10 @@ class Document(default.Default):
             
         obj['attachment'] = files
         obj['sum_size'] = sum_size
+        
+        obj['bibtex'] = False
+        if node.getMask("bibtex"):
+            obj['bibtex'] = True
         
         if node.has_object():
             obj['canseeoriginal'] = access.hasAccess(node,"data")

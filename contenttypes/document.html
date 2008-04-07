@@ -47,6 +47,10 @@
         </div>
         <tal:block tal:condition="python:canseeoriginal">
             <a tal:attributes="href python:'/doc/'+str(node.id)+'/'+str(node.id)+'.pdf'" target="pdfdocument" i18n:attributes="title doc_fulltext_title"><img src="/img/pdf.gif"/></a>
+            <tal:block tal:condition="bibtex">
+            &nbsp;&nbsp;&nbsp;
+            <a tal:attributes="href python:'/export/'+str(node.id)+'/bibtex'" target="bibtexdocument" i18n:attributes="title doc_fulltext_title"><img src="/img/bibtex.gif"/></a>
+            </tal:block>
             <p></p>
             <tal:block tal:condition="documentdownload" i18n:translate="">
                 If you experience problems opening this document, please try 

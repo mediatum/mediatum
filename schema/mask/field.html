@@ -116,7 +116,7 @@
                 <tal:block tal:repeat="mapping mappings">
                     <optgroup tal:attributes="label python:mapping.getName()">
                     <tal:block tal:repeat="mappingfield python:mapping.getFields()">
-                        <option tal:content="python:mappingfield.getName()" tal:attributes="value python:str(mappingfield.id); selected python:{'False':None,'True':'selected'}[str(str(item.id)==str(mappingfield.id))]"/>
+                        <option tal:content="python:mappingfield.getFullName()" tal:attributes="value python:str(mappingfield.id); selected python:{'False':None,'True':'selected'}[str(str(item.id)==str(mappingfield.id))]"/>
                     </tal:block>
                     </optgroup>
                 </tal:block>

@@ -806,6 +806,21 @@ class Mask(tree.Node):
                     if not node.get(field.getName())=="" and not validateDateString(node.get(field.getName())):
                         ret.append(node.id)
         return ret
+        
+    ''' returns True if all mandatory fields of mappingdefinition are used -> valid format'''
+    def validateMappingDef(self):
+        mandfields = []
+        if self.getMasktype()=="export":
+            for mapping in self.get("exportmapping").split(";"):
+                for c in tree.getNode(mapping).getMandatoryFields():
+                    mandfields.append(c.id)       
+        for item in self.getMaskFields():
+            try:
+                mandfields.remove(item.get("mappingfield"))
+            except ValueError: # id not in list
+                pass
+        return len(mandfields)==0
+        
 
 
     ''' update given node with given request values '''
@@ -852,6 +867,10 @@ class Mask(tree.Node):
     def getMetaMask(self, language=None):
         ret = '<form method="post" name="myform">'
         ret += '<div class="back"><h3 i18n:translate="mask_editor_field_definition">Felddefinition </h3><div align="right"><input type="image" src="/img/install.png" name="newdetail_'+self.id+'" i18n:attributes="title mask_editor_new_line_title"/></div><br/>'
+        
+        if not self.validateMappingDef():        
+            ret += '<p i18n:translate="mask_editor_export_error" class="error">TEXT</p>'
+        
         if len(self.getChildren())==0:
             ret += '<div i18n:translate="mask_editor_no_fields">- keine Felder definiert -</div>'
         else:
@@ -868,8 +887,8 @@ class Mask(tree.Node):
         if len(self.getChildren())>0:        
             if self.getMappingFooter()!="":
                 ret += '<div class="label" i18n:translate="mask_edit_footer">TEXT</div><div class="row">'+esc(self.getMappingFooter())+'</div>'
-            
         ret += '</form>'
+        ret = tran
         return ret
 
     """ """

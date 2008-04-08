@@ -132,6 +132,13 @@ class Mapping(tree.Node):
         f.sort(lambda x, y: cmp(x.getName().lower(),y.getName().lower()))
         return f
         
+    def getMandatoryFields(self):
+        ret = []
+        for f in self.getFields():
+            if f.getMandatory():
+                ret.append(f)
+        return ret
+        
     def addField(self, field):
         self.addChild(field)
         
@@ -149,6 +156,11 @@ class MappingField(tree.Node):
         return self.get("name")
     def setName(self, n):
         self.set("name", n)
+        
+    def getFullName(self):
+        if self.getMandatory():
+            return self.getName() + " *"
+        return self.getName()
 
     def getDescription(self):
         return self.get("description")
@@ -156,6 +168,8 @@ class MappingField(tree.Node):
         self.set("description", description)
         
     def getExportFormat(self):
+        if self.get("exportformat")=="":
+            return self.getMapping().getStandardFormat()
         return self.get("exportformat")
     def setExportFormat(self, exportformat):
         self.set("exportformat", exportformat)

@@ -112,6 +112,8 @@
                 <td><tal:block i18n:translate="admin_mapping_standardformat">TEXT</tal:block>:</td>
                 <td>
                     <input tal:attributes="value python:mapping.getStandardFormat()" type="text" name="standardformat" maxlength=50 size="50"/>
+                    <br/>
+                    <tal:block i18n:translate="admin_mapping_standardformat_description">TEXT</tal:block>
                 </td>
             </tr>
             <tr>
@@ -212,7 +214,7 @@
                 <td>
                     <input tal:attributes="value python:field.getExportFormat()" type="text" name="exportformat" maxlength=50 size="50"/>
                     <tal:block tal:condition="python:parent.getStandardFormat()!=''">
-                        <p>Parent: <span tal:content="python:parent.getStandardFormat()"/></p>
+                        <br/><tal:block i18n:translate="admin_mappingfield_parent">TEXT</tal:block>: <span tal:content="python:parent.getStandardFormat()"/>
                     </tal:block>
                 </td>
             </tr>

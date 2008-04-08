@@ -32,6 +32,11 @@
         <div tal:condition="python:len(attachment)>0" id="object_attachment">
             <a tal:attributes="onclick python:'javascript:openPopup(\'/attachmentbrowser?id='+str(node.id)+'&path='+path+'\', \'Attachment\', 400, 400)'" i18n:translate="doc_att_browser" href="#" >TEXT</a>
         </div>
+        <tal:block tal:condition="bibtex">
+            <br/>
+            <a tal:attributes="href python:'/export/'+str(node.id)+'/bibtex'" target="bibtexdocument" i18n:attributes="title doc_bibtex_title"><img src="/img/bibtex.gif"/></a>
+        </tal:block>
+        
     </div>
     <div tal:condition="python: len(node.getFiles())==0" id="object_meta" style="margin-left:0px" tal:content="raw metadata"/>
     <div tal:condition="python: len(node.getFiles())>0" id="object_meta" tal:content="raw metadata"/>
@@ -49,7 +54,7 @@
             <a tal:attributes="href python:'/doc/'+str(node.id)+'/'+str(node.id)+'.pdf'" target="pdfdocument" i18n:attributes="title doc_fulltext_title"><img src="/img/pdf.gif"/></a>
             <tal:block tal:condition="bibtex">
             &nbsp;&nbsp;&nbsp;
-            <a tal:attributes="href python:'/export/'+str(node.id)+'/bibtex'" target="bibtexdocument" i18n:attributes="title doc_fulltext_title"><img src="/img/bibtex.gif"/></a>
+            <a tal:attributes="href python:'/export/'+str(node.id)+'/bibtex'" target="bibtexdocument" i18n:attributes="title doc_bibtex_title"><img src="/img/bibtex.gif"/></a>
             </tal:block>
             <p></p>
             <tal:block tal:condition="documentdownload" i18n:translate="">

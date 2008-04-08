@@ -138,7 +138,7 @@ class m_field(Metatype):
         if field:
             f = getMetadataType(field.getContentType())
             fieldstring = f.getEditorHTML(field, width=item.getWidth(), value=item.getDefault(), language=language) + ' ' + item.getUnit()
-        else:
+        else: # node for export mask
             attribute = tree.getNode(item.get("attribute"))
             field = item
             fieldstring = getMetadataType("mappingfield").getEditorHTML(field, width=item.getWidth(), value=attribute.getName(), language=language) + ' ' + item.getUnit()

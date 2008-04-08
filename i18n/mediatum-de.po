@@ -414,8 +414,11 @@ msgstr "Hochaufgelöste Version herunterladen"
 msgid "doc_fulltext_title"
 msgstr "Volltext in neuem Fenster öffnen"
 
+msgid "doc_bibtex_title"
+msgstr "BibTeX Informationen in neuem Fenster öffnen"
+
 msgid "doc_att_browser"
-msgstr "Attachment-Browser &ouml;ffnen..."
+msgstr "Attachment-Browser öffnen..."
 
 ### admin area ###
 msgid "admin_print_title"
@@ -441,6 +444,9 @@ msgstr "Datentypen"
 
 msgid "admin_menu_3_1"
 msgstr "Metadatentypen"
+
+msgid "admin_menu_3_2"
+msgstr "Metadatenmapping"
 
 msgid "admin_menu_4"
 msgstr "Workflows"
@@ -1084,6 +1090,24 @@ msgstr "Sprache"
 msgid "admin_mask_type_text"
 msgstr "Es wurden nicht für alle Maskentypen Standardmasken definiert."
 
+msgid "admin_mask_exportmapping"
+msgstr "Definition"
+
+msgid "admin_mask_exportheader"
+msgstr "Kopfzeile"
+
+msgid "admin_mask_exportfooter"
+msgstr "Fusszeile"
+
+msgid "admin_mask_exportoptions"
+msgstr "Optionen"
+
+msgid "admin_mask_export_validatetypes"
+msgstr "Datentypen validieren (Text in '')"
+
+msgid "admin_mask_export_endseparator"
+msgstr "Zeilentrenner auch bei letzter Zeile"
+
 msgid "masktype_empty"
 msgstr "-kein Typ-"
 
@@ -1098,6 +1122,9 @@ msgstr "Kurzanzeige"
 
 msgid "masktype_full"
 msgstr "Vollansicht"
+
+msgid "masktype_export"
+msgstr "Export-Maske"
 
 ### metatype info popup ###
 msgid "admin_infopopup_title"
@@ -1124,6 +1151,115 @@ msgstr "Typ"
 
 msgid "admin_defpopup_description"
 msgstr "Beschreibung"
+
+### admin mappings ###
+msgid "admin_mapping_existing"
+msgstr "Vorhandene Mappingdefinitionen"
+
+msgid "admin_mapping_col_1"
+msgstr "Mappingname"
+
+msgid "admin_mapping_col_2"
+msgstr "Namespace"
+
+msgid "admin_mapping_col_3"
+msgstr "Namespace URL"
+
+msgid "admin_mapping_col_4"
+msgstr "Beschreibung"
+
+msgid "admin_mapping_col_5"
+msgstr "Felder"
+
+msgid "admin_mapping_create"
+msgstr "Neues Mapping anlegen"
+
+msgid "admin_mapping_fieldlist_title"
+msgstr "Felder anzeigen/bearbeiten"
+
+msgid "admin_mapping_edit_title"
+msgstr "Mapping bearbeiten"
+
+msgid "admin_mapping_delete_title"
+msgstr "Mapping löschen"
+
+msgid "admin_mapping_new_label"
+msgstr "Neues Mapping anlegen"
+
+msgid "admin_mapping_edit_label"
+msgstr "Mapping bearbeiten"
+
+msgid "admin_mapping_name"
+msgstr "Mapping Name"
+
+msgid "admin_mapping_namespace"
+msgstr "Namespace"
+
+msgid "admin_mapping_namespaceurl"
+msgstr "Namespace URL"
+
+msgid "admin_mapping_description"
+msgstr "Beschreibung"
+
+msgid "admin_mapping_header"
+msgstr "Kopfzeile"
+
+msgid "admin_mapping_footer"
+msgstr "Fußzeile"
+
+msgid "admin_mapping_separator"
+msgstr "Zeilentrenner"
+
+msgid "admin_mapping_standardformat"
+msgstr "Zeilenformat"
+
+msgid "admin_mapping_standardformat_description"
+msgstr "mögliche Variablen:<br/>* [value] = Attributwert<br/>* [field] = Feldname<br/>* [att:field] = Attributfeldname<br/>* [att:id] = Knoten-ID<br/>"
+
+msgid "admin_mappingfield_existing"
+msgstr "Vorhandene Mappingfelder"
+
+msgid "admin_mappingfield_col_1"
+msgstr "Name"
+
+msgid "admin_mappingfield_col_2"
+msgstr "Beschreibung"
+
+msgid "admin_mappingfield_col_3"
+msgstr "Pflichtfeld"
+
+msgid "admin_mappingfield_create"
+msgstr "Neues Mappingfeld anlegen"
+
+msgid "admin_mappingfield_edit_title"
+msgstr "Mappingfeld anlegen/bearbeiten"
+
+msgid "admin_mappingfield_delete_title"
+msgstr "Mappingfeld löschen"
+
+msgid "admin_mappingfield_new_label"
+msgstr "Neues Mappingfeld anlegen"
+
+msgid "admin_mappingfield_edit_label"
+msgstr "Mappingfeld bearbeiten"
+
+msgid "admin_mappingfield_name"
+msgstr "Mappingfeld Name"
+
+msgid "admin_mappingfield_description"
+msgstr "Beschreibung"
+
+msgid "admin_mappingfield_exportformat"
+msgstr "Zeilenformat"
+
+msgid "admin_mappingfield_mandatory"
+msgstr "Pflichtfeld"
+
+msgid "admin_mappingfield_parent"
+msgstr "Vererbt"
+
+msgid "admin_mappingfield_nofields"
+msgstr "- keine Mappingfelder definiert -"
 
 ### admin logfiles ###
 msgid "admin_log_everything"
@@ -2049,6 +2185,9 @@ msgstr "Horizontale Feldgruppe"
 msgid "mask_editor_label"
 msgstr "Label"
 
+msgid "mask_editor_export_error"
+msgstr "Nicht alle Pflichtfelder der Mappings wurden definiert. Das kann zu ungültigen Exporten führen."
+
 msgid "mask_editor_msg1"
 msgstr "Für Maskenfelder stehen verschiedene Typen zur Verfügung, die jeweils unterschiedliche Darstellungen erlauben. Standard ist das 'Normale Feld'"
 
@@ -2184,6 +2323,24 @@ msgstr "Label:"
 msgid "mask_edit_multi_label"
 msgstr "Attributvorkommen in Schema: "
 
+msgid "mask_edit_header"
+msgstr "Kopfzeile"
+
+msgid "mask_edit_footer"
+msgstr "Fusszeile"
+####
+msgid "mask_edit_mappingselection"
+msgstr "Mapping Typ:"
+
+msgid "mask_edit_mapping_field"
+msgstr "Feld aus Mapping-Definition"
+
+msgid "mask_edit_attribute_field"
+msgstr "Freie Formatbeschreibung"
+
+msgid "mask_edit_attribute_description"
+msgstr "mögliche Variablen:<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [value] = Attributwert aus 'Feld'<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [att:field] = Attributfeldname<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [att:id] = Knoten-ID<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (&lt;[att:field]&gt;[value]&lt;/[att:field]&gt;)"
+####
 msgid "user_directory"
 msgstr "Arbeitsverzeichnis"
 

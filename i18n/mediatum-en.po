@@ -402,6 +402,9 @@ msgstr "download high resolution version"
 msgid "doc_fulltext_title"
 msgstr "open fulltext in new window"
 
+msgid "doc_bibtex_title"
+msgstr "open BibTeX information in new window"
+
 msgid "doc_att_browser"
 msgstr "open attachment browser..."
 
@@ -429,6 +432,9 @@ msgstr "datatypes"
 
 msgid "admin_menu_3_1"
 msgstr "types of metadata"
+
+msgid "admin_menu_3_2"
+msgstr "mapping of metadata"
 
 msgid "admin_menu_4"
 msgstr "workflows"
@@ -1072,6 +1078,24 @@ msgstr "Language"
 msgid "admin_mask_type_text"
 msgstr "For some masktype are no default masks defined."
 
+msgid "admin_mask_exportmapping"
+msgstr "Definition"
+
+msgid "admin_mask_exportheader"
+msgstr "Header"
+
+msgid "admin_mask_exportfooter"
+msgstr "Footer"
+
+msgid "admin_mask_exportoptions"
+msgstr "Options"
+
+msgid "admin_mask_export_validatetypes"
+msgstr "validate datatypes (text in '')"
+
+msgid "admin_mask_export_endseparator"
+msgstr "line separator for last line"
+
 msgid "masktype_empty"
 msgstr "-no type-"
 
@@ -1086,6 +1110,9 @@ msgstr "short view"
 
 msgid "masktype_full"
 msgstr "full view"
+
+msgid "masktype_export"
+msgstr "export mask"
 
 ### metatype info popup ###
 msgid "admin_infopopup_title"
@@ -1110,9 +1137,118 @@ msgstr "ID"
 msgid "admin_defpopup_type"
 msgstr "Type"
 
-
 msgid "admin_defpopup_description"
 msgstr "Description"
+
+### admin mappings ###
+msgid "admin_mapping_existing"
+msgstr "Available Mapping definitions"
+
+msgid "admin_mapping_col_1"
+msgstr "Mapping Name"
+
+msgid "admin_mapping_col_2"
+msgstr "Namespace"
+
+msgid "admin_mapping_col_3"
+msgstr "Namespace URL"
+
+msgid "admin_mapping_col_4"
+msgstr "Description"
+
+msgid "admin_mapping_col_5"
+msgstr "Fields"
+
+msgid "admin_mapping_create"
+msgstr "Create new mapping"
+
+msgid "admin_mapping_fieldlist_title"
+msgstr "edit fields"
+
+msgid "admin_mapping_edit_title"
+msgstr "edit mapping"
+
+msgid "admin_mapping_delete_title"
+msgstr "delete mapping"
+
+msgid "admin_mapping_new_label"
+msgstr "Create new Mapping"
+
+msgid "admin_mapping_edit_label"
+msgstr "Edit Mapping"
+
+msgid "admin_mapping_name"
+msgstr "Mapping Name"
+
+msgid "admin_mapping_namespace"
+msgstr "Namespace"
+
+msgid "admin_mapping_namespaceurl"
+msgstr "Namespace URL"
+
+msgid "admin_mapping_description"
+msgstr "Description"
+
+msgid "admin_mapping_header"
+msgstr "Header"
+
+msgid "admin_mapping_footer"
+msgstr "Footer"
+
+msgid "admin_mapping_separator"
+msgstr "Separator"
+
+msgid "admin_mapping_standardformat"
+msgstr "Std. format"
+
+msgid "admin_mapping_standardformat_description"
+msgstr "Available Variables:<br/>* [value] = attribute value<br/>* [field] = field name<br/>* [att:field] = name of attribute field<br/>* [att:id] = node id<br/>"
+
+msgid "admin_mappingfield_existing"
+msgstr "Available Mapping fields"
+
+msgid "admin_mappingfield_col_1"
+msgstr "Name"
+
+msgid "admin_mappingfield_col_2"
+msgstr "Description"
+
+msgid "admin_mappingfield_col_3"
+msgstr "Mandatory"
+
+msgid "admin_mappingfield_create"
+msgstr "Create new Mapping field"
+
+msgid "admin_mappingfield_edit_title"
+msgstr "Edit Mapping field"
+
+msgid "admin_mappingfield_delete_title"
+msgstr "delete Mapping field"
+
+msgid "admin_mappingfield_new_label"
+msgstr "Create new Mapping field"
+
+msgid "admin_mappingfield_edit_label"
+msgstr "Edit Mapping field"
+
+msgid "admin_mappingfield_name"
+msgstr "Mapping field Name"
+
+msgid "admin_mappingfield_description"
+msgstr "Description"
+
+msgid "admin_mappingfield_exportformat"
+msgstr "Line format"
+
+msgid "admin_mappingfield_mandatory"
+msgstr "Mandatory"
+
+msgid "admin_mappingfield_parent"
+msgstr "Parent"
+
+msgid "admin_mappingfield_nofields"
+msgstr "- no Mapping fields defined -"
+
 
 ### admin logfiles ###
 msgid "admin_log_everything"
@@ -2036,6 +2172,9 @@ msgstr "horizontal group"
 msgid "mask_editor_label"
 msgstr "label"
 
+msgid "mask_editor_export_error"
+msgstr "Not all mandatory field of mapping definition are used. This can result in invalid exports."
+
 msgid "mask_editor_msg1"
 msgstr "There are different field types available for mask fields. Standard is the 'normal field'"
 
@@ -2170,6 +2309,12 @@ msgstr "Label:"
 
 msgid "mask_edit_multi_label"
 msgstr "attribute occures in scheme: "
+
+msgid "mask_edit_header"
+msgstr "Header"
+
+msgid "mask_edit_footer"
+msgstr "footer"
 
 msgid "user_directory"
 msgstr "User directory"

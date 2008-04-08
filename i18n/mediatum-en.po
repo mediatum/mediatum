@@ -1096,6 +1096,9 @@ msgstr "validate datatypes (text in '')"
 msgid "admin_mask_export_endseparator"
 msgstr "line separator for last line"
 
+msgid "admin_mask_nomapping"
+msgstr "- no mapping -"
+
 msgid "masktype_empty"
 msgstr "-no type-"
 

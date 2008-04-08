@@ -1108,6 +1108,9 @@ msgstr "Datentypen validieren (Text in '')"
 msgid "admin_mask_export_endseparator"
 msgstr "Zeilentrenner auch bei letzter Zeile"
 
+msgid "admin_mask_nomapping"
+msgstr "- kein Mapping -"
+
 msgid "masktype_empty"
 msgstr "-kein Typ-"
 

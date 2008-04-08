@@ -888,7 +888,6 @@ class Mask(tree.Node):
             if self.getMappingFooter()!="":
                 ret += '<div class="label" i18n:translate="mask_edit_footer">TEXT</div><div class="row">'+esc(self.getMappingFooter())+'</div>'
         ret += '</form>'
-        ret = tran
         return ret
 
     """ """

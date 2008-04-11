@@ -46,7 +46,7 @@ def writexml(self, fi, indent=None, written=None):
         mimetype = file.mimetype
         if mimetype is None:
             mimetype = "application/x-download"
-        fi.write((" "*indent) + '<file filename="'+esc(file.getPath())+'" mime-type="'+mimetype+'" type="'+(file.type is not None and file.type or "image")+'"/>' + "\n")
+        fi.write((" "*indent) + '<file filename="'+esc(file.getName())+'" mime-type="'+mimetype+'" type="'+(file.type is not None and file.type or "image")+'"/>' + "\n")
     for c in self.getChildren().sort():
         fi.write((" "*indent) + "<child id=\"%s\"/>\n" % str(c.id))
     indent -= 4

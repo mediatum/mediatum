@@ -137,7 +137,7 @@ def get(key):
 
 def search(query):
     global node
-    nodelist = node.search(query)
+    nodelist = tree.NodeList(node.search(query))
     print len(nodelist),"matches"
     i = 0
     for n in nodelist:

@@ -67,7 +67,7 @@ class Directory(default.Default):
         
         for f in node.getFiles():
             if f.type=="content" and f.mimetype=="text/html":
-                content = includetemplate(node, f.getPath(), {'${next}': link})
+                content = includetemplate(node, f.retrieveFile(), {'${next}': link})
         return content
     
     """ format node image with standard template """

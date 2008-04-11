@@ -146,7 +146,7 @@ class Document(default.Default):
                     node.removeFile(f)
 
         if doc:
-            path,ext = splitfilename(doc.getPath())
+            path,ext = splitfilename(doc.retrieveFile())
 
             if not (thumb and present and fulltext and fileinfo):
                 thumbname = path+".thumb"
@@ -155,7 +155,7 @@ class Document(default.Default):
                 infoname = path + ".info"
                 tempdir = config.get("paths.tempdir")
                 try:
-                    pdfdata = parsepdf.parsePDF2(doc.getPath(), config.basedir, tempdir, thumbname, thumb2name, fulltextname, infoname)
+                    pdfdata = parsepdf.parsePDF2(doc.retrieveFile(), config.basedir, tempdir, thumbname, thumb2name, fulltextname, infoname)
                 except parsepdf.EncryptedException:
                     print "*** encrypted ***"
                     raise EncryptionException()
@@ -208,7 +208,7 @@ class Document(default.Default):
     def popup_fullsize(node, req):
         for f in node.getFiles():
             if f.getType() == "doc":
-                req.sendFile(f.getPath(), f.getMimeType())
+                req.sendFile(f.retrieveFile(), f.getMimeType())
                 return
 
     """ get attachments for node (current directory) """

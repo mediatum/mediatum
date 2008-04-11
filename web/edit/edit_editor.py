@@ -33,7 +33,7 @@ def edit_editor(req, node, filenode):
         path = config.settings["paths.datadir"] + "html/" + req.params['id'] + ".html"
         node.addFile(FileNode(path, "content", "text/html"))
     else:
-        path = filenode.getPath()
+        path = filenode.retrieveFile()
 
     if access.hasWriteAccess(node):
         # save page

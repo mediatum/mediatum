@@ -55,7 +55,7 @@ class Video(default.Default):
         for f in node.getFiles():
             if f.type == "original" or f.type == "video":
                 if f.mimetype == "video/x-flv":
-                    width,height = getFLVSize(f.getPath())
+                    width,height = getFLVSize(f.retrieveFile())
                     node.set("vid-width", width)
                     node.set("vid-height", height)
 
@@ -66,14 +66,14 @@ class Video(default.Default):
                         pass
 
                     try:
-                        cmd = "ffmpeg -vframes 1 -i "+f.getPath()+" -pix_fmt rgb24 "+tempname
+                        cmd = "ffmpeg -vframes 1 -i "+f.retrieveFile()+" -pix_fmt rgb24 "+tempname
                         print cmd
                         ret = os.system(cmd)
                         if ret & 0xff00:
                             return
                     except:
                         return
-                    path,ext = splitfilename(f.getPath())
+                    path,ext = splitfilename(f.retrieveFile())
                     thumbname = path+".thumb"
                     thumbname2 = path+".thumb2"
                     makeThumbNail(tempname, thumbname)

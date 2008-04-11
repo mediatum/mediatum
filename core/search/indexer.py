@@ -213,10 +213,10 @@ class SearchIndexer:
         
         for file in node.getFiles():
             w = ''
-            if file.getType() == "fulltext" and os.path.exists(file.getPath()):
+            if file.getType() == "fulltext" and os.path.exists(file.retrieveFile()):
                 data = {}
                 content = ''
-                f = open(file.getPath())
+                f = open(file.retrieveFile())
                 try:
                     for line in f:
                         if FULLTEXT_INDEX_MODE==0:

@@ -320,26 +320,26 @@ def _makeCollectionIndices():
                 #for nfile in node.getFiles():
                 #    if nfile.type == "fulltext":
                 #        try:
-                #            fi2 = open(nfile.getPath(), "rb")
+                #            fi2 = open(nfile.retrieveFile(), "rb")
                 #            s += " "
                 #            s += fi2.read()
                 #            s += " "
                 #            fi2.close()
                 #        except IOError:
-                #            log.error("Couldn't access file "+nfile.getPath())
+                #            log.error("Couldn't access file "+nfile.getName())
             elif field == "fulltext":
                 s = ""
                 if node.type != "directory":
                     for nfile in node.getFiles():
                         if nfile.type == "fulltext":
                             try:
-                                fi2 = open(nfile.getPath(), "rb")
+                                fi2 = open(nfile.retrieveFile(), "rb")
                                 s += " "
                                 s += fi2.read()
                                 s += " "
                                 fi2.close()
                             except IOError:
-                                log.error("Couldn't access file "+nfile.getPath())
+                                log.error("Couldn't access file "+nfile.getName())
 
                 #c1 = "abcdefghijklmnop"[(int(node.id)>>28)&15]
                 #c2 = "abcdefghijklmnop"[(int(node.id)>>24)&15]
@@ -360,13 +360,13 @@ def _makeCollectionIndices():
                     for nfile in node.getFiles():
                         if nfile.type == "fulltext":
                             try:
-                                fi2 = open(nfile.getPath(), "rb")
+                                fi2 = open(nfile.retrieveFile(), "rb")
                                 s += " "
                                 s += fi2.read()
                                 s += " "
                                 fi2.close()
                             except IOError:
-                                log.error("Couldn't access file "+nfile.getPath())
+                                log.error("Couldn't access file "+nfile.getName())
 
             elif field == "objtype":
                 s = node.type

@@ -160,7 +160,7 @@ def show_printview(req):
     imagepath = None
     for file in files:
         if file.getType().startswith("presentati"):
-            imagepath = file.getPath()
+            imagepath = file.retrieveFile()
 
     req.reply_headers['Content-Type'] = "application/pdf"
     req.write(printview.getPrintView(lang(req), imagepath, mask.getViewHTML([node], VIEW_DATA_ONLY+VIEW_HIDE_EMPTY), getPaths(node, AccessData(req)), style))

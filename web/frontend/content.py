@@ -367,7 +367,7 @@ def mkContentNode(req):
     if node.type in ["directory","collection"]:
         if "files" not in req.params:
             for f in node.getFiles():
-                if f.type == "content" and f.mimetype == "text/html" and os.path.isfile(f.getPath()) and fileIsNotEmpty(f.getPath()):
+                if f.type == "content" and f.mimetype == "text/html" and os.path.isfile(f.retrieveFile()) and fileIsNotEmpty(f.retrieveFile()):
                     return ContentNode(node)
         access = AccessData(req)
         ids = []

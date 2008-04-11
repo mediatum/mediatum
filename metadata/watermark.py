@@ -156,14 +156,14 @@ class m_watermark(Metatype):
             #check if there is an original file and modify it in case
             for f in node.getFiles():
                 if f.type == "original":
-                    path,ext = splitfilename(f.getPath())
+                    path,ext = splitfilename(f.retrieveFile())
                     pngname = path+"_wm.jpg"
 
                     for file in node.getFiles():
                         if file.getType() == "original_wm":
                             node.removeFile(file)
                             break
-                    self.watermark(f.getPath(), pngname, node.get(field.getName()), 0.6)
+                    self.watermark(f.retrieveFile(), pngname, node.get(field.getName()), 0.6)
                     node.addFile(FileNode(name=pngname, type="original_wm", mimetype="image/jpeg"))
                     print "watermark created for original file"
 

@@ -195,10 +195,10 @@ class Image(default.Default):
                             # move old file to "original", create a new png to be used as "image"
                             node.removeFile(f)
 
-                            path,ext = splitfilename(f.getPath())
+                            path,ext = splitfilename(f.retrieveFile())
                             pngname = path+".png"
                             if not os.path.isfile(pngname):
-                                makeOriginalFormat(f.getPath(), pngname)
+                                makeOriginalFormat(f.retrieveFile(), pngname)
                                 
                                 width, height = getImageDimensions(pngname)
                                 node.set("width", width)
@@ -211,29 +211,29 @@ class Image(default.Default):
                                 print "Found preconverted image",pngname
 
                             node.addFile(FileNode(name=pngname, type="image", mimetype="image/png"))
-                            node.addFile(FileNode(name=f.getPath(), type="original", mimetype="image/tiff"))
+                            node.addFile(FileNode(name=f.retrieveFile(), type="original", mimetype="image/tiff"))
                             break
                         else:
-                            node.addFile(FileNode(name=f.getPath(), type="original", mimetype=f.mimetype))
+                            node.addFile(FileNode(name=f.retrieveFile(), type="original", mimetype=f.mimetype))
 
             # retrieve technical metadata.
             for f in node.getFiles():
                 if f.type == "image":
-                    width,height = getImageDimensions(f.getPath())
+                    width,height = getImageDimensions(f.retrieveFile())
                     node.set("origwidth", width)
                     node.set("origheight", height)
                     node.set("origsize", f.getSize())
 
             if thumb == 0:
                 for f in node.getFiles():
-                    print "look for image",f.type,"|%s|" % f.getPath()
+                    print "look for image",f.type,"|%s|" % f.retrieveFile()
                     if f.type == "image":
-                        path,ext = splitfilename(f.getPath())
+                        path,ext = splitfilename(f.retrieveFile())
                         thumbname = path+".thumb"
                         thumbname2 = path+".thumb2"
-                        width,height = getImageDimensions(f.getPath())
-                        makeThumbNail(f.getPath(), thumbname)
-                        makePresentationFormat(f.getPath(), thumbname2)
+                        width,height = getImageDimensions(f.retrieveFile())
+                        makeThumbNail(f.retrieveFile(), thumbname)
+                        makePresentationFormat(f.retrieveFile(), thumbname2)
                         if f.mimetype is None:
                             if f.getName().lower().endswith("jpg"):
                                 f.mimetype = "image/jpeg"
@@ -251,7 +251,7 @@ class Image(default.Default):
 
                 for file in files:
                     if file.type=="original":
-                        f = open(file.getPath(), 'rb')
+                        f = open(file.retrieveFile(), 'rb')
                         tags=EXIF.process_file(f)
 
                         tags.keys().sort()
@@ -274,7 +274,7 @@ class Image(default.Default):
 
                 for file in files:
                     if file.type=="original":
-                        tags=IPTC.getIPTCValues(file.getPath())
+                        tags=IPTC.getIPTCValues(file.retrieveFile())
                         print "ipct:"
                         print tags
                         

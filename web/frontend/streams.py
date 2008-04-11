@@ -52,7 +52,7 @@ def send_image(req):
         return 404
     for f in n.getFiles():
         if f.type == "image":
-            return req.sendFile(f.getPath(), f.getMimeType())
+            return req.sendFile(f.retrieveFile(), f.getMimeType())
     return 404
 
 def send_rawimage(req):
@@ -66,7 +66,7 @@ def send_rawimage(req):
     for f in n.getFiles():
         if f.type == "original":
             incUsage(n)
-            return req.sendFile(f.getPath(), f.getMimeType())
+            return req.sendFile(f.retrieveFile(), f.getMimeType())
     return 404
 
 def send_thumbnail(req):
@@ -76,8 +76,8 @@ def send_thumbnail(req):
         return 404
     for f in n.getFiles():
         if f.type == "thumb":
-            if os.path.isfile(f.getPath()):
-                return req.sendFile(f.getPath(), f.getMimeType())
+            if os.path.isfile(f.retrieveFile()):
+                return req.sendFile(f.retrieveFile(), f.getMimeType())
             else:
                 return req.sendFile(config.basedir + "/web/img/questionmark.png", "image/png", force=1)
     return req.sendFile(config.basedir + "/web/img/questionmark.png", "image/png", force=1)
@@ -89,11 +89,11 @@ def send_thumbnail2(req):
         return 404
     for f in n.getFiles():
         if f.type.startswith("presentat"):
-            return req.sendFile(f.getPath(), f.getMimeType())
+            return req.sendFile(f.retrieveFile(), f.getMimeType())
     #fallback
     for f in n.getFiles():
         if f.type == "image":
-            return req.sendFile(f.getPath(), f.getMimeType())
+            return req.sendFile(f.retrieveFile(), f.getMimeType())
     print "No thumb2 for id",req.path
     return 404
 
@@ -110,9 +110,9 @@ def send_doc(req):
         if f.type == "doc":
             incUsage(n)
             if(f.getSize() > 16*1048576):
-                return req.sendFile(f.getPath(), "application/x-download")
+                return req.sendFile(f.retrieveFile(), "application/x-download")
             else:
-                return req.sendFile(f.getPath(), f.getMimeType())
+                return req.sendFile(f.retrieveFile(), f.getMimeType())
     print "Document",req.path,"not found"
     return 404
 
@@ -144,9 +144,9 @@ def send_file(req, download=0):
         return 404
     if(download or file.getSize() > 16*1048576):
         req.reply_headers["Content-Disposition"] = "attachment; filename="+filename
-        return req.sendFile(file.getPath(), "application/x-download")
+        return req.sendFile(file.retrieveFile(), "application/x-download")
     else:
-        return req.sendFile(file.getPath(), file.getMimeType())
+        return req.sendFile(file.retrieveFile(), file.getMimeType())
 
 def send_file_as_download(req):
     return send_file(req, download=1)
@@ -163,7 +163,7 @@ def send_attachment(req):
     # filename is attachment.zip
     for file in node.getFiles():
         if file.type == "attachment":
-            sendZipFile(req,file.getPath())
+            sendZipFile(req,file.retrieveFile())
             break
 
 def sendZipFile(req, path):

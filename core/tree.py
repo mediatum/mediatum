@@ -140,7 +140,7 @@ class FileNode:
                   if f.add(self):
                       return
               except: 
-                  logException("file handler getPath() failed")
+                  logException("file handler add() failed")
     def _delete(self):
         for f in filehandlers:
             if hasattr(f, "delete"):
@@ -148,16 +148,16 @@ class FileNode:
                   if f.delete(self):
                       return
               except: 
-                  logException("file handler getPath() failed")
-    def getPath(self):
+                  logException("file handler delete() failed")
+    def retrieveFile(self):
         for f in filehandlers:
-            if hasattr(f, "getPath"):
+            if hasattr(f, "retrieveFile"):
                 try:
-                    path = f.getPath(self)
+                    path = f.retrieveFile(self)
                     if path:
                         return path
                 except: 
-                    logException("file handler getPath() failed")
+                    logException("file handler retrieveFile() failed")
         return config.settings["paths.datadir"] + self._path
     def getMimeType(self):
         return self.mimetype
@@ -170,17 +170,17 @@ class FileNode:
                         return size
                 except: 
                     logException("file handler getSize() failed")
-        return get_filesize(self.getPath())
+        return get_filesize(self.retrieveFile())
     def getHash(self):
         for f in filehandlers:
             if hasattr(f, "getHash"):
                 try:
-                    h = f.getPath(self)
+                    h = f.getHash(self)
                     if h:
                         return h
                 except: 
                     logException("file handler getHash() failed")
-        return get_hash(self.getPath())
+        return get_hash(self.retrieveFile())
     def getName(self):
         return os.path.basename(self._path)
 

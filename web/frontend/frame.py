@@ -31,7 +31,7 @@ from utils.dicts import SortedDict
 from schema.schema import getMetadataType
 from web.frontend.browsingtree import browsingtree, cleartree
 from utils.dicts import SortedDict
-from utils.utils import getCollection, Link, iso2utf8
+from utils.utils import getCollection, Link, iso2utf8, isCollection
 from core.acl import AccessData,getRootAccess
 from core.translation import translate, lang, t
 from core.metatype import Context
@@ -196,12 +196,12 @@ class Browselet(Portlet):
         self.browse_unfold_link = ""
         if "fold" in req.params:
             self.browse_fold_link = "&fold="+req.params["fold"]
-            if tree.getNode(req.params["fold"]) in tree.getRoot("collections").getChildren():
+            if isCollection(tree.getNode(req.params["fold"])):
                 self.dirinreq = False
 
         if "unfold" in req.params:
             self.browse_unfold_link = "&unfold="+req.params["unfold"]
-            if tree.getNode(req.params["unfold"]) in tree.getRoot("collections").getChildren():
+            if isCollection(tree.getNode(req.params["unfold"])):
                 self.dirinreq = True
 
     def canOpen(self):
@@ -234,7 +234,7 @@ class Collectionlet(Portlet):
             dirid = req.params["dir"]
             try:
                 dir = tree.getNode(dirid)
-                if dir in tree.getRoot("collections").getChildren():
+                if isCollection(dir):
                     self.collection = dir
             except tree.NoSuchNodeError:
                 pass

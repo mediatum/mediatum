@@ -33,6 +33,7 @@ import traceback
 
 nodeclasses = {}
 nodefunctions = {}
+filehandlers = []
 
 _root = None
 db = None
@@ -123,21 +124,62 @@ class InvalidOperationError:
     pass
 
 class FileNode:
-    def __init__(self, name, type, mimetype):
+    def __init__(self, name, type, mimetype, node=None):
         if name.startswith(config.settings["paths.datadir"]):
             name = name[len(config.settings["paths.datadir"]):]
         self._path = name
         self.type = type
         self.mimetype = mimetype
+        self.node = node
     def getType(self):
         return self.type
+    def _add(self):
+        for f in filehandlers:
+            if hasattr(f, "add"):
+              try:
+                  if f.add(self):
+                      return
+              except: 
+                  logException("file handler getPath() failed")
+    def _delete(self):
+        for f in filehandlers:
+            if hasattr(f, "delete"):
+              try:
+                  if f.delete(self):
+                      return
+              except: 
+                  logException("file handler getPath() failed")
     def getPath(self):
+        for f in filehandlers:
+            if hasattr(f, "getPath"):
+                try:
+                    path = f.getPath(self)
+                    if path:
+                        return path
+                except: 
+                    logException("file handler getPath() failed")
         return config.settings["paths.datadir"] + self._path
     def getMimeType(self):
         return self.mimetype
     def getSize(self):
+        for f in filehandlers:
+            if hasattr(f, "getSize"):
+                try:
+                    size = f.getSize(self)
+                    if size:
+                        return size
+                except: 
+                    logException("file handler getSize() failed")
         return get_filesize(self.getPath())
     def getHash(self):
+        for f in filehandlers:
+            if hasattr(f, "getHash"):
+                try:
+                    h = f.getPath(self)
+                    if h:
+                        return h
+                except: 
+                    logException("file handler getHash() failed")
         return get_hash(self.getPath())
     def getName(self):
         return os.path.basename(self._path)
@@ -463,7 +505,7 @@ class Node:
         dbfiles = db.getFiles(self.id)
         files = []
         for filename,type,mimetype in dbfiles:
-            files += [FileNode(filename,type,mimetype)]
+            files += [FileNode(filename,type,mimetype,self)]
         return files
     
 
@@ -472,6 +514,8 @@ class Node:
         changed_metadata(self)
         self._makePersistent()
         db.addFile(self.id,file._path,file.type,file.mimetype)
+        file.node = self
+        file._add()
 
 
     """ remove a FileNode from this node """
@@ -479,6 +523,7 @@ class Node:
         changed_metadata(self)
         self._makePersistent()
         db.removeFile(self.id,file._path)
+        file._del()
 
 
     def _mkCache(self, source):
@@ -771,6 +816,10 @@ def registerNodeClass(type, nodeclass):
 def registerNodeFunction(name, nodefunction):
     global nodefunctions
     nodefunctions[name] = nodefunction
+
+def registerFileHandler(handler):
+    global filehandlers
+    filehandlers += [handler]
 
 schema = None
 subnodes = None

@@ -63,7 +63,7 @@ class Flash(default.Default):
     def popup_fullsize(node, req):
         for filenode in node.getFiles():
             if filenode.getType()=="original":
-                f =  "/file/" + str(node.id) + "/" + str(splitpath(filenode.getPath())[1])
+                f =  "/file/" + str(node.id) + "/" + filenode.getName()
                 break
         req.writeTAL("contenttypes/flash.html", {"path":f}, macro="fullsize")
     

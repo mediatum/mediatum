@@ -100,7 +100,7 @@ class Video(default.Default):
     def popup_fullsize(node, req):
         for filenode in node.getFiles():
             if filenode.getType()=="original" or filenode.getType()=="video":
-                f =  "/file/" + str(node.id) + "/" + str(splitpath(filenode.getPath())[1])
+                f =  "/file/" + str(node.id) + "/" + filenode.getName()
                 break
         f = """config={ 
                     autoPlay: true, 

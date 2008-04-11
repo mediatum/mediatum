@@ -231,8 +231,8 @@ class Document(default.Default):
                     file["icon"] = fileicons[file["mimetype"]]
                     file["path"] = f._path
                     file["name"] = f.getName()
-                    file["size"] = format_filesize(os.path.getsize(f.getPath()))
-                    filesize += os.path.getsize(f.getPath())
+                    file["size"] = format_filesize(f.getSize())
+                    filesize += f.getSize()
                     ret.append(file)
             return ret, filesize
 

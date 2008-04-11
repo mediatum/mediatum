@@ -23,7 +23,7 @@ import core.tree as tree
 import os
 import re
 
-from utils.utils import getCollection,Link
+from utils.utils import getCollection,Link,isCollection
 from core.acl import AccessData
 from core.translation import lang,t
 from web.frontend.searchresult import simple_search, extended_search
@@ -294,7 +294,7 @@ def getPaths(node, access):
     list = []
     def r(node, path, collections):
         #if node.type == "collection":
-        if node in tree.getRoot("collections").getChildren():
+        if isCollection(node):
             collections[node.id] = node
         if node is tree.getRoot():
             return

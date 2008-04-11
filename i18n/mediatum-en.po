@@ -275,6 +275,12 @@ msgstr "metadata editor (workflow)"
 msgid "Directory"
 msgstr "directory (system type)"
 
+msgid "directory"
+msgstr "directory"
+
+msgid "collection"
+msgstr "collection"
+
 msgid "WorkflowStep_End"
 msgstr "end node (workflow)"
 

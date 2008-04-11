@@ -287,6 +287,12 @@ msgstr "Metadateneditor (Workflow)"
 msgid "Directory"
 msgstr "Verzeichnis (Systemtyp)"
 
+msgid "directory"
+msgstr "Verzeichnis"
+
+msgid "collection"
+msgstr "Kollektion"
+
 msgid "WorkflowStep_End"
 msgstr "Endknoten (Workflow)"
 

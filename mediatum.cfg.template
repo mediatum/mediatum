@@ -28,10 +28,6 @@ passwd=ABC
 [admin]
 pageitems=10
 
-[template]
-path=design/
-name=mediatum
-
 [logging]
 file.everything=/data/log/everything.log
 file.database=/data/log/database.log

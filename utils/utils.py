@@ -157,7 +157,14 @@ class Option:
         return self.imgsource
     def setImagesource(self, value):
         self.imagesource = value
-    	        
+    	
+def isCollection(node):
+    import core.tree
+    c = core.tree.getRoot("collections")
+    if node is c:
+        return True
+    return node in c.getChildren()
+
 def getCollection(node):
     def p(node):
         import core.tree

@@ -458,7 +458,7 @@ def indexer_thread(timewait):
         tree.getRoot().set("lastindexerrun",date.format_date())
 
 def startThread():
-    timewait = config.get("config.reindex_time")
+    timewait = int(config.get("config.reindex_time"))
     if timewait:
         thread_id = thread.start_new_thread(indexer_thread, (int(timewait),))
         log.info("started indexer thread. frequency "+str(timewait)+", thread id " + str(thread_id))

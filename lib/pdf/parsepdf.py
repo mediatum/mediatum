@@ -36,6 +36,7 @@ class EncryptedException:
 
 def parsePDF(filename, tempdir, thumb128, thumb300, fulltext, infoname):
     gfx.verbose(0)
+    gfx.setparameter("disable_polygon_conversion", "1")
     pdf = gfx.open("pdf", filename)
     
     if pdf.getInfo("oktocopy") != "yes":
@@ -135,6 +136,12 @@ def makeThumbs(src, thumb128, thumb300):
 
 if __name__ == "__main__":
     import sys
+
+    try:
+        import signal
+        signal.alarm(600) # try processing the file for 10 minutes - then abort
+    except:
+        pass
     try:
         parsePDF(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7])
     except EncryptedException:

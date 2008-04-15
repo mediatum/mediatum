@@ -1737,6 +1737,9 @@ msgstr "Einzeln Bearbeiten"
 msgid "edit_action_dir_new"
 msgstr "Neu Anlegen"
 
+msgid "edit_action_new"
+msgstr "Neu Anlegen"
+
 msgid "edit_action_dir_edit"
 msgstr "Bearbeiten"
 
@@ -1782,6 +1785,9 @@ msgstr "Suche"
 
 msgid "tab_search_title"
 msgstr "Suche anzeigen"
+
+msgid "tab_searchmask"
+msgstr "Suchmaske"
 
 msgid "tab_subfolder"
 msgstr "Unterordner Sortieren"

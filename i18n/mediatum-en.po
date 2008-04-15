@@ -1723,6 +1723,9 @@ msgstr "Simultaneous editing"
 msgid "edit_action_file_editsingle"
 msgstr "Single object editing"
 
+msgid "edit_action_new"
+msgstr "Create"
+
 msgid "edit_action_dir_new"
 msgstr "Create new"
 
@@ -1759,6 +1762,9 @@ msgstr "Metadata"
 
 msgid "tab_meta_title"
 msgstr "Open metadata editor"
+
+msgid "tab_searchmask"
+msgstr "Search mask"
 
 msgid "tab_content"
 msgstr "Content"

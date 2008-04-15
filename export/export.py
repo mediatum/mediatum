@@ -23,14 +23,20 @@ import core.tree as tree
 from core.tree import Node
 
 from schema.schema import getMetaType
+from core.acl import AccessData
 
 def export(req):
     p = req.path[1:].split("/")
+    access = AccessData(req)
     
     if p[0].isdigit():
         node = tree.getNode(p[0])
     else:
         raise "node not found"
+        
+    if not access.hasAccess(node, "read"):
+        req.write(t(req, "permission_denied"))
+        return
         
     mask = getMetaType(node.getSchema()).getMask(p[1])
     

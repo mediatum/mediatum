@@ -29,7 +29,7 @@ import core.translation
 import core.athana as athana
 import utils.log
 from core.acl import AccessData
-from utils.utils import Link
+from utils.utils import Link,isCollection
 
 from edit_common import *
 from edit_acls import edit_acls
@@ -39,6 +39,7 @@ from edit_files import edit_files
 from edit_upload import edit_upload, upload_help
 from edit_search import edit_search
 from edit_sort import edit_sort,edit_sortfiles
+from edit_searchmask import edit_searchmask
 from edit_editor import edit_editor
 from edit_workflow import edit_workflow
 from edit_license import edit_license
@@ -68,6 +69,8 @@ def frameset(req):
             {
                 if(_action == 'newfolder') {
                     openWindow("edit_action?newfolder=Neuer%20Ordner&src="+tree.getFolder(),300,200);
+                } else if(_action == 'newcollection') {
+                    openWindow("edit_action?newcollection=Neue%20Kollektion&src="+tree.getFolder(),300,200);
                 } else if(_action == 'sortsubfolders') {
                     this.location.href = "edit?tab=tab_subfolder&id="+tree.getFolder();
                 } else if(_action == 'edit') {
@@ -172,6 +175,7 @@ def frameset(req):
                 var src = tree.getFolder();
                 if(action=="") {
                     this.content.location.href = "edit_content?id="+folderid;
+                    this.buttons.location.href = "edit_buttons?id="+folderid;
                 } else {
                     openWindow('edit_action?src='+src+'&action='+action+'&dest='+folderid+'&ids='+idselection, 300, 200);
                 }
@@ -527,8 +531,8 @@ def content(req):
     if isDirectory(node):
         tabs = ["tab_content", "tab_html", "tab_search", "tab_subfolder"]
         try:
-            if node.getParents()[0].type == "collections":
-                tabs += ["tab_sortfiles"] 
+            if isCollection(node):
+                tabs += ["tab_sortfiles", "tab_searchmask"] 
         except IndexError: # if this is the root node
             pass
         tabs += ["tab_meta", "tab_acls", "tab_license", "tab_techmeta", "tab_view"]
@@ -629,6 +633,8 @@ def content(req):
         edit_sort(req,ids)
     elif current == "tab_sortfiles":
         edit_sortfiles(req,ids)
+    elif current == "tab_searchmask":
+        edit_searchmask(req,ids)
     elif current == "tab_classes":
         edit_classes(req,ids)
     elif current == "tab_license":
@@ -661,6 +667,11 @@ def content(req):
 
 def buttons(req):
 
+    if "id" in req.params:
+        node = tree.getNode(req.params["id"])
+    else:
+        node = None
+
     access = AccessData(req)
     if not access.user.isEditor():
         req.writeTAL('<span i18n:translate="edit_nopermission">Keine Berechtigung</span>',{})
@@ -685,6 +696,19 @@ def buttons(req):
         </head>
         <body bgcolor="#ffffff">""")
 
+    if not node:
+        dirtype = ""
+        newcoll = None
+        newdir = None
+    elif isCollection(node):
+        dirtype = t(req, "collection")+":"
+        newcoll = t(req, "edit_action_new")+": " + t(req, "collection")
+        newdir = t(req, "edit_action_new")+": " + t(req, "directory")
+    else:
+        dirtype = t(req, "directory")+":"
+        newcoll = None
+        newdir = t(req, "edit_action_new")+": " + t(req, "directory")
+
     req.writeTALstr("""
             <table cellspacing="0" cellpadding="0">
             <tr><td><a i18n:attributes="title sub_header_inquest_title" title="Zur Rechercheoberfl&auml;che wechseln" href="/" target="_parent"><img border="0" height="142" src="/img/mediatum.png"></a></td><td width="100%"><img border="0" width="100%" height="142" src="/img/mediatum_line.png"></td></tr>
@@ -700,19 +724,20 @@ def buttons(req):
                          <option value="edit" i18n:translate="edit_action_file_edit">Gleichzeitig Bearbeiten</option>
                          <option value="editsingle" i18n:translate="edit_action_file_editsingle">Einzeln Bearbeiten</option>
                      </select><br/>
-                     <b i18n:translate="edit_dir">Ordner:</b><br/>
+                     <b tal:content="type"/><br/>
                      <select id="folderaction" onChange="parent.setFolderAction(this.value)" name="folderaction" style="width:250px">
                          <option value="">---</option>
-                         <option value="newfolder" i18n:translate="edit_action_dir_new">Neu Anlegen</option>
-                         <option value="edit" i18n:translate="edit_action_dir_edit">Bearbeiten</option>
-                         <option value="move" i18n:translate="edit_action_dir_move">Verschieben nach...</option>
-                         <option value="sortsubfolders" i18n:translate="edit_action_dir_sort">Unterordner sortieren</option>
-                         <!--<option value="copy" i18n:translate="edit_action_dir_copy">Kopieren nach...</option>-->
-                         <option value="delete" i18n:translate="edit_action_dir_del">L&ouml;schen</option>
+                         <option value="newcollection" tal:condition="newdir" tal:content="newdir">_</option>
+                         <option value="newfolder" tal:condition="newcoll" tal:content="newcoll">_</option>
+                         <option value="edit" i18n:translate="edit_action_dir_edit">_</option>
+                         <option value="move" i18n:translate="edit_action_dir_move">_</option>
+                         <option value="sortsubfolders" i18n:translate="edit_action_dir_sort">_</option>
+                         <!--<option value="copy" i18n:translate="edit_action_dir_copy">_</option>-->
+                         <option value="delete" i18n:translate="edit_action_dir_del">_</option>
                      </select>
                  </form>
                  <p id="buttonmessage" style="color:red">&nbsp;</p>
-                 """,{})
+                 """,{"type": dirtype, "newdir": newdir, "newcoll": newcoll})
 
     req.write("""<hr></body></html>""")
 
@@ -807,9 +832,15 @@ def showtree(req):
         title = 'title="'+nodename + ' (ID'+node.id+')"'
 
         if access.hasWriteAccess(node):
-            color = 'class="canwrite"'
+            if isCollection(node):
+                color = 'class="coll_canwrite"'
+            else:
+                color = 'class="dir_canwrite"'
         else:
-            color = 'class="canread"'
+            if isCollection(node):
+                color = 'class="coll_canread"'
+            else:
+                color = 'class="dir_canread"'
 
         if type == 1:
             c[0] += "<a title=\""+t(lang(req),"edit_classes_close_title")+"\" href=\"javascript:openNode('"+link+"','"+node.id+"')"+"\"><img src=\"/img/edit_box1.gif\" border=\"0\"/></a>"

@@ -144,6 +144,12 @@ def show_attachmentbrowser(req):
 def show_printview(req):
     """ create a pdf preview of given node (id in path e.g. /print/[id])"""  
     node = getNode(int(req.path[1:].split("/")[1]))
+
+    access = AccessData(req)
+    if not access.hasAccess(node,"read"):
+        req.write(t(req, "permission_denied"))
+        return
+
     style = int(req.params.get("style",2))
     
     # nodetype

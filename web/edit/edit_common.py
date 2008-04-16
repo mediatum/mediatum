@@ -90,6 +90,17 @@ def getFaultyDir(user):
         faultydir = userdir.addChild(tree.Node(name=translate("user_faulty", getDefaultLanguage()), type="directory"))
     return faultydir
 
+
+def getTrashDir(user):
+    userdir = getHomeDir(user)
+    trashdir = None
+    for c in userdir.getChildren():
+        if c.name == translate("user_trash", getDefaultLanguage()):
+            trashdir = c
+    if not trashdir:
+        trashdir = userdir.addChild(tree.Node(name=translate("user_trash", getDefaultLanguage()), type="directory"))
+    return trashdir
+
 #
 def showdir(req,node):
     shownodelist(req,node.getChildren())

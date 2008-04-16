@@ -1905,6 +1905,15 @@ msgstr "Save"
 msgid "delete_folder_question"
 msgstr "If you delete this file, all files and subfolders in it will be irrevocably lost. Perform delete operation?"
 
+msgid "delete_object_question"
+msgstr "Move objects into trashbox?"
+
+msgid "edit_action_clear_trash"
+msgstr "Clear Trashbox"
+
+msgid "clear_trash_question"
+msgstr "All elements in the trashbox will be lost while clearing. Perform delete operation?"
+
 msgid "select_target_dir"
 msgstr "Select target directory:"
 
@@ -2339,6 +2348,9 @@ msgstr "Uploads"
 
 msgid "user_faulty"
 msgstr "Inconsistent data"
+
+msgid "user_trash"
+msgstr "Trashbox"
 
 msgid "editor_overwrite"
 msgstr "overwrite"

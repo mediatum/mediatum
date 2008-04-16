@@ -59,6 +59,7 @@ def frameset(req):
 
     uploaddir = getUploadDir(user)
     faultydir = getFaultyDir(user)
+    trashdir = getTrashDir(user)
 
     currentdir = tree.getNode(id)
     script="""
@@ -79,6 +80,11 @@ def frameset(req):
                     if(confirm('"""+t(lang(req), "delete_folder_question")+"""')) {
                         src = tree.getFolder();
                         openWindow('edit_action?src='+src+'&action=delete&ids='+src, 300, 200);
+                    }  
+                } else if(_action == "clear_trash") {
+                    if(confirm('"""+t(lang(req), "clear_trash_question")+"""')) {
+                        src = tree.getFolder();
+                        openWindow('edit_action?src='+src+'&action=clear_trash&ids='+src, 300, 200);
                     }
                 } else {
                     idselection = tree.getFolder();
@@ -118,8 +124,10 @@ def frameset(req):
                     if(ids == '') {
                         reloadPage(tree.getFolder(),'');
                     } else {
-                        var src = tree.getFolder();
-                        openWindow('edit_action?src='+src+'&action=delete&ids='+ids, 300, 200);
+                        if(confirm('"""+t(lang(req), "delete_object_question")+"""')) {
+                            var src = tree.getFolder();
+                            openWindow('edit_action?src='+src+'&action=delete&ids='+ids, 300, 200);
+                        }
                     }
                     return 0;
                 } else {
@@ -288,6 +296,8 @@ def nodeIsChildOfNode(node1,node2):
 
 def action(req):
     access = AccessData(req)
+    user = users.getUserFromRequest(req)
+    trashdir = getTrashDir(user)
 
     if not access.user.isEditor():
         req.write("""permission denied""")
@@ -323,7 +333,7 @@ def action(req):
             newnode = node.addChild(tree.Node(name=newfolder, type="collection"))
         else:
             newnode = node.addChild(tree.Node(name=newfolder, type="directory"))
-        user = users.getUserFromRequest(req)
+        
         newnode.set("creator", user.getName())
         newnode.set("creationtime",  str(time.strftime( '%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
         
@@ -348,8 +358,8 @@ def action(req):
         destid = None
         dest = None
         folderid = srcid
-
-    action = req.params["action"]
+    
+    action = req.params["action"] 
 
     idlist = getIDs(req)
     
@@ -369,12 +379,18 @@ def action(req):
         <body>""")
             
     req.writeTALstr('<span i18n:translate="edit_action_msg">Die Aktion <b i18n:name="action">'+ t(lang(req), action) + '</b> wird ausgef&uuml;hrt</span>',{})
-
+    
     try:
+
         print "srcid",srcid,tree.getNode(srcid).getName()
         if destid:
             print "destid",destid,tree.getNode(destid).getName()
         print "ids",idlist
+
+        if action=="clear_trash":
+            for n in trashdir.getChildren():
+                trashdir.removeChild(n)
+            print "remove all nodes from users trash"
 
         for id in idlist:
             obj = tree.getNode(id)
@@ -384,8 +400,12 @@ def action(req):
 
             if action == "delete":
                 if access.hasWriteAccess(mysrc) and access.hasWriteAccess(obj):
-                    print "Remove",obj.id,"from",mysrc.id
-                    mysrc.removeChild(obj)
+                    if mysrc.id==trashdir.id:
+                        print "source node is trashbox!"
+                    else:
+                        print "Remove",obj.id,"from",mysrc.id
+                        mysrc.removeChild(obj)
+                        trashdir.addChild(obj)
                 else:
                     print "No write access to",mysrc.id,"!"
             elif action == "move":
@@ -734,6 +754,7 @@ def buttons(req):
                          <option value="sortsubfolders" i18n:translate="edit_action_dir_sort">_</option>
                          <!--<option value="copy" i18n:translate="edit_action_dir_copy">_</option>-->
                          <option value="delete" i18n:translate="edit_action_dir_del">_</option>
+                         <option value="clear_trash" i18n:translate="edit_action_clear_trash">_</option>
                      </select>
                  </form>
                  <p id="buttonmessage" style="color:red">&nbsp;</p>

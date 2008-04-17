@@ -136,7 +136,7 @@ class m_field(Metatype):
         description = ''
 
         if field:
-            f = getMetadataType(field.getContentType())
+            f = getMetadataType(field.get("type"))
             fieldstring = f.getEditorHTML(field, width=item.getWidth(), value=item.getDefault(), language=language) + ' ' + item.getUnit()
         else: # node for export mask
             attribute = tree.getNode(item.get("attribute"))

@@ -23,7 +23,7 @@ from core.metatype import Metatype, Context
 import re
 import contenttypes.image
 from core.tree import registerNodeClass, FileNode
-import Image, ImageFont, ImageDraw, ImageEnhance
+import Image, ImageFont, ImageDraw
 import sys
 import time
 import traceback
@@ -74,6 +74,7 @@ class m_watermark(Metatype):
         else:
             im = im.copy()
         alpha = im.split()[3]
+        import ImageEnhance
         alpha = ImageEnhance.Brightness(alpha).enhance(opacity)
         im.putalpha(alpha)
         return im

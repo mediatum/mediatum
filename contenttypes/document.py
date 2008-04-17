@@ -87,11 +87,6 @@ class Document(default.Default):
                 req.session["full_style"] = "full_standard"
        
         obj['style'] = req.session["full_style"]
-        
-        obj['metis_url'] = ""
-        if node.get("metis_url")!="":
-            print "vg-wort gefunden"
-            obj['metis_url'] = node.get("metis_url")
         return obj
      
     """ format big view with standard template """

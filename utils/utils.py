@@ -159,17 +159,15 @@ class Option:
         self.imagesource = value
     	
 def isCollection(node):
-    import core.tree
-    c = core.tree.getRoot("collections")
-    if node is c:
-        return True
-    return node in c.getChildren()
+    if node.type == "collection" or node.type == "collections":
+        return 1
+    else:
+        return 0
 
 def getCollection(node):
     def p(node):
         import core.tree
-        if node in core.tree.getRoot("collections").getChildren():
-        
+        if node.type == "collection" or node.type == "collections":
             return node
         for pp in node.getParents():
             n = p(pp)

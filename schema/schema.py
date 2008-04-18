@@ -120,12 +120,6 @@ def deleteMetaType(name):
 ###################################################
 
 #
-# returns all fields for given metatype
-#
-def getFieldsForMeta(name):
-    return list(getMetaType(name).getMetaFields())
-
-#
 # returns a fieldlist with name as key and list of metatypes as value
 #
 def getAllMetaFields():
@@ -625,6 +619,12 @@ class Metadatafield(tree.Node):
         return self.get("label")
     def setLabel(self, value):
         self.set("label", value)
+
+    def getSchemaNode(node):
+        for p in node.getParents():
+            if p.type == "metadatatype":
+                return p
+        return None
 
     def getFieldtype(self):
         return self.get("type")
@@ -1149,20 +1149,24 @@ def getMetaFieldTypes():
         if getMetadataType(t).isFieldType():
             ret[t] = getMetadataType(t)
     return ret
-    
+   
+""" return fields based on the schema name """
+def getFieldsForMeta(name):
+    return list(getMetaType(name).getMetaFields())
+
+""" return fields based on node class and schema name """
 def node_getMetaFields(node,type=None):
     try:
-        return node.metaFields()
+        l = node.metaFields()
     except:
-        pass
+        l = []
 
     try:
         if node.getSchema():
-            return getMetaType(node.getSchema()).getMetaFields(type)
-        else:
-            return []
+            l += getMetaType(node.getSchema()).getMetaFields(type)
     except AttributeError:
-        return []
+        pass
+    return l
   
 def node_getMetaField(node, name):
     if node.getSchema():
@@ -1209,7 +1213,7 @@ def node_getMask(node, name):
         except AttributeError:
             return None
     else:
-        raise ValueError("Node of type '"+node.getSchema()+"' has no mask")
+        raise ValueError("Node of type '"+str(node.getSchema())+"' has no mask")
 
 def node_getDescription(node):
     if node.getSchema():

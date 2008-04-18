@@ -23,7 +23,7 @@
             </select>
         </tal:block>
         <tal:block tal:condition="python:len(masklist)==1">
-            <span i18n:translate="edit_mask">TEXT</span>: <span tal:content="python:masklist[0].getName()">TEXT</span>
+            <span i18n:translate="edit_mask">TEXT</span>: <span tal:content="python:masklist[0].getDescription()">TEXT</span>
         </tal:block>
         <hr/>
     </form>
@@ -34,7 +34,21 @@
         <input i18n:attributes="value edit_meta_reset" type="reset"/>
         <br/>
         <br/>
-        <tal:block tal:replace="raw python:maskform"/>
+        <tal:block tal:condition="maskform" tal:replace="raw python:maskform"/>
+        <tal:block tal:condition="fields">
+        <table>
+        <tal:block tal:repeat="field fields">
+            <tr tal:define="name python:field.getFieldtype()=='meta' and field.getValue() or field.getName(); value python:node.get(name)">
+                <td>
+                    <span tal:replace="python:field.getLabel()"/>:
+                </td>
+                <td>
+                    <span tal:replace="structure python:field.getEditorHTML(value,400, field.getName())"/>
+                </td>
+            </tr>
+        </tal:block>
+        </table>
+        </tal:block>
         <br/>
         <br/>
         <div class="label">&nbsp;</div>
@@ -50,6 +64,8 @@
         <input tal:attributes="value idstr" type="hidden" name="id"/>
         <input type="hidden" name="edit_metadata" value="edit_metadata"/>
     </form>
+
+
     <br>
     <small style="color: silver">
         <span tal:condition="python:len(creation_date)>0"><span i18n:translate="edit_meta_created">TEXT</span>: </span>
@@ -59,5 +75,5 @@
         <tal:block tal:repeat="u_date update_date" tal:content="raw python:u_date[0] + ' ('+u_date[1]+')' "/>
     </small>
     <br/>
-
 </tal:block>
+    

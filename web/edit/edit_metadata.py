@@ -63,18 +63,42 @@ def edit_metadata(req, ids):
         idstr+=id
     
     masklist = node.getType().getMasks(type="edit")
+
+    if hasattr(node, "metaFields"):
+        class MyMask:
+            def __init__(self, name, description, fields):
+                self.name,self.description,self.fields = name,description,fields
+            def getName(self):
+                return self.name
+            def getDescription(self):
+                return self.description
+            def getDefaultMask(self):
+                return False
+            def metaFields(self):
+                return self.fields
+            def i_am_not_a_mask():
+                pass
+        masklist = [MyMask("settings", t(req, "settings"), node.metaFields(lang(req)))] + masklist
+
     default = None
     for m in masklist:
         if m.getDefaultMask():
             default = m
             break
+    if not default and len(masklist):
+        default = masklist[0]
+
     maskname = req.params.get("mask", node.get("edit.lastmask") or "editmask")
     
     if maskname=="":
         maskname = default.getName()
 
-    mask = node.getMask(maskname)
-    
+    mask = None
+    for m in masklist:
+        if maskname == m.getName():
+            mask = m
+            break
+
     if not mask and default:
         mask = default
         maskname = default.getName()
@@ -103,9 +127,16 @@ def edit_metadata(req, ids):
             node.set("updateuser", user.getName())
             node.set("updatetime", str(format_date()))
 
-        nodes = mask.updateNode(nodes, req)
-        
-        errorlist = mask.validateNodelist(nodes)
+        if not hasattr(mask,"i_am_not_a_mask"):
+            nodes = mask.updateNode(nodes, req)
+            errorlist = mask.validateNodelist(nodes)
+        else:
+            for field in mask.metaFields():
+                value = req.params.get(field.getName(), None)
+                if value is not None:
+                    for node in nodes:
+                        node.set(field.getName(), value)
+            errorlist = []
 
         if len(errorlist)>0:
             if "Speichern" in req.params:
@@ -123,7 +154,8 @@ def edit_metadata(req, ids):
         reload_script = True
 
     if "edit_metadata" in req.params or node.get("faulty")=="true":
-        req.params["errorlist"] = mask.validate(nodes)
+        if not hasattr(mask, "i_am_not_a_mask"):
+            req.params["errorlist"] = mask.validate(nodes)
 
     update_date = []
     if len(nodes)==1:
@@ -147,4 +179,18 @@ def edit_metadata(req, ids):
                     datestr = node.get("creationtime")
                 creation_date.append([node.get("creator"), datestr])
 
-    req.writeTAL("web/edit/edit_metadata.html", {"reload_script":reload_script, "idstr":idstr, "masklist":masklist, "maskname":maskname, "maskform":mask.getFormHTML(nodes, req), "creation_date":creation_date, "update_date":update_date}, macro="edit_metadata")
+    data = {}
+    data["reload_script"] = reload_script
+    data["idstr"] = idstr
+    data["node"] = nodes[0]
+    data["masklist"] = masklist
+    data["maskname"] = maskname
+    data["creation_date"] = creation_date
+    data["update_date"] = update_date
+    if not hasattr(mask,"i_am_not_a_mask"):
+        data["maskform"] = mask.getFormHTML(nodes, req)
+        data["fields"] = None
+    else:
+        data["maskform"] = None
+        data["fields"] = mask.metaFields()
+    req.writeTAL("web/edit/edit_metadata.html", data, macro="edit_metadata")

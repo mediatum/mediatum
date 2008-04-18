@@ -309,8 +309,13 @@ def action(req):
     except:
         req.writeTAL("web/edit/edit.html", {"edit_action_error":srcid}, macro="edit_action_error")
         return
-   
+  
     newfolder = req.params.get("newfolder", "")
+    is_collection = 0
+    if not newfolder:
+        is_collection = 1
+        newfolder = req.params.get("newcollection", "")
+
     if newfolder != "":
         node = tree.getNode(srcid)
         if not access.hasWriteAccess(node):
@@ -329,10 +334,18 @@ def action(req):
             """)
             return;
 
-        if node.type == "root":
+        if node.type == "collections":
+            # always create a collection in the uppermost hierarchy- independent on
+            # what the user requested
             newnode = node.addChild(tree.Node(name=newfolder, type="collection"))
         else:
-            newnode = node.addChild(tree.Node(name=newfolder, type="directory"))
+            if is_collection:
+                if node.type != "collection" and node.type != "collections":
+                    req.writeTAL("web/edit/edit.html", {"errormsg":"can't create a collection below a node of type "+str(node.type)}, macro="edit_errorpage")
+                    return
+                newnode = node.addChild(tree.Node(name=newfolder, type="collection"))
+            else:
+                newnode = node.addChild(tree.Node(name=newfolder, type="directory"))
         
         newnode.set("creator", user.getName())
         newnode.set("creationtime",  str(time.strftime( '%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
@@ -548,20 +561,22 @@ def content(req):
         req.write("""<body style="background-color: #ffffff">""")
 
     node = tree.getNode(ids[0])
-    if isDirectory(node):
-        tabs = ["tab_content", "tab_html", "tab_search", "tab_subfolder"]
-        try:
-            if isCollection(node):
-                tabs += ["tab_sortfiles", "tab_searchmask"] 
-        except IndexError: # if this is the root node
-            pass
-        tabs += ["tab_meta", "tab_acls", "tab_license", "tab_techmeta", "tab_view"]
-        
-        if node.name=="Uploads":
-            tabs = ["tab_upload"] + tabs[1:]
-
+    if node.type == "root":
+        tabs = ["tab_globals"]
     else:
-        tabs = ["tab_meta", "tab_acls", "tab_classes", "tab_techmeta", "tab_view"]
+        if isDirectory(node):
+            tabs = ["tab_content", "tab_html", "tab_search", "tab_subfolder"]
+            try:
+                if isCollection(node):
+                    tabs += ["tab_sortfiles", "tab_searchmask"] 
+            except IndexError: # if this is the root node
+                pass
+            tabs += ["tab_meta", "tab_acls", "tab_license", "tab_techmeta", "tab_view"]
+            
+            if node.name=="Uploads":
+                tabs = ["tab_upload"] + tabs[1:]
+        else:
+            tabs = ["tab_meta", "tab_acls", "tab_classes", "tab_techmeta", "tab_view"]
         
     current = handletabs(req, ids, tabs)
 
@@ -677,6 +692,8 @@ def content(req):
         edit_metadata(req, ids)
     elif current == "tab_upload":
         edit_upload(req, ids)
+    elif current == "tab_globals":
+        req.write("")
     else:
         req.write("<b>Unknown tab</b> '%s'" % current)
     
@@ -744,11 +761,11 @@ def buttons(req):
                          <option value="edit" i18n:translate="edit_action_file_edit">Gleichzeitig Bearbeiten</option>
                          <option value="editsingle" i18n:translate="edit_action_file_editsingle">Einzeln Bearbeiten</option>
                      </select><br/>
-                     <b tal:content="type"/><br/>
+                     <b tal:attributes="alt name; title name" tal:content="type"/><br/>
                      <select id="folderaction" onChange="parent.setFolderAction(this.value)" name="folderaction" style="width:250px">
                          <option value="">---</option>
-                         <option value="newcollection" tal:condition="newdir" tal:content="newdir">_</option>
-                         <option value="newfolder" tal:condition="newcoll" tal:content="newcoll">_</option>
+                         <option value="newcollection" tal:condition="newcoll" tal:content="newcoll">_</option>
+                         <option value="newfolder" tal:condition="newdir" tal:content="newdir">_</option>
                          <option value="edit" i18n:translate="edit_action_dir_edit">_</option>
                          <option value="move" i18n:translate="edit_action_dir_move">_</option>
                          <option value="sortsubfolders" i18n:translate="edit_action_dir_sort">_</option>
@@ -758,7 +775,7 @@ def buttons(req):
                      </select>
                  </form>
                  <p id="buttonmessage" style="color:red">&nbsp;</p>
-                 """,{"type": dirtype, "newdir": newdir, "newcoll": newcoll})
+                 """,{"type": dirtype, "newdir": newdir, "newcoll": newcoll, "name": node.name})
 
     req.write("""<hr></body></html>""")
 

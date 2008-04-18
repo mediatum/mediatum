@@ -81,7 +81,7 @@ def show_node():
             print "        ",k+"="+v
     print "    Files:"
     for f in node.getFiles():
-        print "        ",f.getPath()," ",f.getType()," ",f.getMimeType()
+        print "        ",f.getName()," ",f.getType()," ",f.getMimeType()
     print "    ACLs:"
     for a in ["read","write","data"]:
         print "        ",a,node.getAccess(a)

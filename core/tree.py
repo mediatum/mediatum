@@ -415,7 +415,7 @@ class Node:
         if '/' in self.type:
             return self.type[self.type.find('/')+1:]
         else:
-            return None
+            return self.type
            
     """ set the node type (as string) """
     def setTypeName(self,type):
@@ -427,11 +427,14 @@ class Node:
 
     def setSchema(self,schema):
         doctype = self.getContentType()
-        self.setTypeName(doctype+"/"+schema)
+        if schema:
+            self.setTypeName(doctype+"/"+schema)
+        else:
+            self.setTypeName(doctype)
 
     def setContentType(self,doctype):
-        schema = self.getSchema()
-        if schema:
+        if "/" in self.type:
+            schema = self.getSchema()
             self.setTypeName(doctype+"/"+schema)
         else:
             self.setTypeName(doctype)

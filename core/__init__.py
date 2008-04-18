@@ -44,9 +44,9 @@ from contenttypes.directory import Directory
 tree.registerNodeClass("directory", Directory)
 
 # only for compatibility with older databases
-tree.registerNodeClass("root", Directory)
 tree.registerNodeClass("collection", Directory)
 tree.registerNodeClass("collections", Directory)
+tree.registerNodeClass("root", Directory)
 tree.registerNodeClass("home", Directory)
 tree.registerNodeClass("navitem", Directory)
 
@@ -88,6 +88,13 @@ from workflow import workflow
 workflow.register()
 
 from utils.utils import splitpath
+
+# make all subnodes of collections collections
+for n in tree.getRoot("collections").getChildren():
+    if "directory" in n.type:
+        print "making node",n.id,n.name,"a collection"
+        n.setContentType("collection")
+        n.setSchema(None)
 
 for k,v in config.getsubset("plugins").items():
     print 'Initializing plugin "'+k+'"'

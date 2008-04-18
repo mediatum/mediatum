@@ -2484,3 +2484,21 @@ msgstr "If you experience problems opening this document, please try"
 
 msgid "this link"
 msgstr "this link"
+
+msgid "tab_globals"
+msgstr "global settings"
+
+msgid "settings"
+msgstr "settings"
+
+msgid "don't display logo"
+msgstr "don't display logo"
+
+msgid "no extended search"
+msgstr "no extended search"
+
+msgid "full view style"
+msgstr "full view style"
+
+msgid "node name"
+msgstr "name"

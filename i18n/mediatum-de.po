@@ -2512,3 +2512,24 @@ msgstr "Wenn Sie Schwierigkeiten haben, dieses Dokument zu öffnen, versuchen Si
 
 msgid "this link"
 msgstr "diesen Link"
+
+msgid "tab_globals"
+msgstr "Globale Einstellungen"
+
+msgid "settings"
+msgstr "Einstellungen"
+
+msgid "style"
+msgstr "Aussehen"
+
+msgid "don't display logo"
+msgstr "Kein Logo Anzeigen"
+
+msgid "no extended search"
+msgstr "Keine erweiterte Suche"
+
+msgid "full view style"
+msgstr "Vollansicht Stil"
+
+msgid "node name"
+msgstr "Name"

@@ -1,0 +1,70 @@
+<tal:block i18n:translate="search mask">_</tal:block>:
+
+<form class="edit" action="edit_content" method="post" id="changeform">
+
+<p>
+<select name="searchtype" onChange="this.form.submit()">
+    <option tal:attributes="selected python:[None,'selected'][searchtype=='none']" value="none"
+            i18n:translate="none">_</option> 
+    <option tal:attributes="selected python:[None,'selected'][searchtype=='parent']" value="parent"
+            i18n:translate="from parent">_</option> 
+    <option tal:attributes="selected python:[None,'selected'][searchtype=='own']" value="own"
+            i18n:translate="define new">_</option> 
+</select>
+</p>
+
+<input type="hidden" name="tab" value="tab_searchmask"/>
+<input tal:attributes="value idstr" type="hidden" name="id"/>
+
+<tal:block tal:condition="python:searchtype=='own'">
+
+<table>
+    <tal:block tal:repeat="field searchfields">
+        <tal:block tal:condition="python:field.id!=selectedfield.id">
+            <tr>
+                <td><button tal:condition="python:field==selectedfield" name="close" src="img/boxx.gif"/></td>
+                <td tal:content="python:field.getName()"/>
+                <td>
+                    <tal:block tal:repeat="f python:field.getChildren()[0:10]">
+                        <tal:block tal:content="python:f.getSchemaNode().getName()"/>:<tal:block tal:content="python:f.getName()"/>
+                    </tal:block>
+                    <tal:block tal:condition="python:len(field.getChildren())>10">...</tal:block>
+                </td>
+            </tr>
+        </tal:block>
+        <tal:block tal:condition="python:field==selectedfield">
+            <tr>
+                <td valign="top"><button tal:condition="python:field.id!=selectedfield.id" name="open" src="img/box.gif"/></td>
+                <td colspan="2">
+                    <tal:block i18n:translate="fieldname"/><input type="text" name="fieldname"/><br/>
+
+                    <table>
+                    <tal:block tal:repeat="subfield python:field.getChildren()">
+                       <tr>
+                       <td><button tal:attributes="name python:'delete_'+subfield.id" src="img/delete.png"/></td>
+                       <td><select name="schema" onChange="this.form.submit()">
+                        <tal:block tal:repeat="schema schemas">
+                            <option tal:attributes="name python:schema.getName(); selected python:[None,'selected'][schema.id==subfield.getSchemaNode().id]"
+                                    tal:content="python:schema.get('description')"></option>
+                        </tal:block>
+                       </select></td>
+                       <td><select name="schemafield" onChange="this.form.submit()">
+                        <tal:block tal:repeat="schemafield python:subfield.getSchemaNode().getChildren()">
+                            <option tal:attributes="name python:schemafield.getName(); selected python:[None,'selected'][schemafield.id==subfield.id]"
+                                    tal:content="python:schemafield.get('description')"></option>
+                        </tal:block>
+                       </select></td>
+                       </tr>
+                    </tal:block>
+                    </table>
+                    <br>
+                    <button name="more" value="+"/>
+                </td>
+            </tr>
+        </tal:block>
+    </tal:block>
+</table>
+
+</tal:block>
+
+</form>

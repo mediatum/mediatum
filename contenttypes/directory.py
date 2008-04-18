@@ -24,6 +24,7 @@ import re
 import os
 import core.athana as athana
 import default
+from core.translation import t
 
 SRC_PATTERN = re.compile('src="([^":/]*)"')
 
@@ -76,6 +77,14 @@ class Directory(default.Default):
      
     def can_open(node):
         return 1
+    
+    def getPossibleChildContainers():
+        if self.type == "directory":
+            return ["directory"]
+        elif self.type == "collection" or self.type == "collections":
+            return ["directory","collection"]
+        else:
+            return []
 
     def getLabel(node):
         label = node.get("label")
@@ -92,3 +101,34 @@ class Directory(default.Default):
             if file.getType()=='image':
                 return "/file/"+str(node.id)+"/"+file.getName()
         return ""
+
+    def metaFields(node, lang=None):
+        ret = list()
+        if node.type.startswith("collection"):
+            field = tree.Node("style", "metafield")
+            field.set("label", t(lang,"style"))
+            field.set("type", "list")
+            field.set("valuelist", "thumbnail;list;text")
+            ret.append(field)
+
+            field = tree.Node("url", "metafield")
+            field.set("label", t(lang,"don't display logo"))
+            field.set("type", "text")
+            ret.append(field)
+            
+            field = tree.Node("no_extsearch", "metafield")
+            field.set("label", t(lang,"no extended search"))
+            field.set("type", "check")
+            ret.append(field)
+            
+            field = tree.Node("style_full", "metafield")
+            field.set("label", t(lang,"full view style"))
+            field.set("type", "list")
+            field.set("valuelist", "full_standard;full_text")
+            ret.append(field)
+
+        field = tree.Node("nodename", "metafield")
+        field.set("label", t(lang,"node name"))
+        field.set("type", "text")
+        ret.append(field)
+        return ret

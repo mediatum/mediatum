@@ -1127,7 +1127,8 @@ def init(path):
 
 def getMetadataType(mtype):
     global mytypes
-    init(os.walk(os.path.join(config.basedir, 'schema/mask')))
+    if len(mytypes)==0:
+        init(os.walk(os.path.join(config.basedir, 'schema/mask')))
     if mtype in mytypes:
         return mytypes[mtype]()
     else:
@@ -1136,7 +1137,8 @@ def getMetadataType(mtype):
 def getMetaFieldTypeNames():
     ret = {}
     global mytypes
-    init(os.walk(os.path.join(config.basedir, 'metadata')))
+    if len(mytypes)==0:
+        init(os.walk(os.path.join(config.basedir, 'metadata')))
     for key in mytypes.keys():
         if "meta" in str(mytypes[key]):
             ret[key] = "fieldtype_"+key

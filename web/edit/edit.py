@@ -897,8 +897,13 @@ def showtree(req):
     if len(node.getParents()):
         o = [node.getParents()[0]]
 
+
+    home_omitroot = 1
+    if len(access.filter(tree.getRoot("home").getChildren())) > 1:
+        home_omitroot = 0
+
     content = [""]
-    writetree(req, tree.getRoot("home"), f, "", openednodes=o, sessionkey="lefttreenodes", omitroot=1)
+    writetree(req, tree.getRoot("home"), f, "", openednodes=o, sessionkey="lefttreenodes", omitroot=home_omitroot)
     writetree(req, tree.getRoot("collections"), f, "", openednodes=o, sessionkey="lefttreenodes", omitroot=0)
     writetree(req, tree.getRoot("navigation"), f, "", openednodes=o, sessionkey="lefttreenodes", omitroot=1)
 

@@ -2533,3 +2533,36 @@ msgstr "Vollansicht Stil"
 
 msgid "node name"
 msgstr "Name"
+
+msgid "fieldname"
+msgstr "Feldname"
+
+msgid "none"
+msgstr "keine"
+
+msgid "from parent"
+msgstr "vererbt"
+
+msgid "define new"
+msgstr "neu definieren"
+
+msgid "search mask"
+msgstr "Suchmaske"
+
+msgid "search field"
+msgstr "Suchfeld"
+
+msgid "schema"
+msgstr "Schema"
+
+msgid "field"
+msgstr "Feld"
+
+msgid "append new field"
+msgstr "Neues Suchfeld anlegen"
+
+msgid "Search within the following fields:"
+msgstr "Folgende Felder durchsuchen:"
+
+msgid "add"
+msgstr "hinzufügen"

@@ -743,6 +743,12 @@ class Node:
         f = self.getoverloadedfunction(name)
         if f:
             return f
+                
+        if self.attributes is None and self.id:
+            self.attributes = db.getAttributes(self.id)
+        if name in self.attributes:
+            return self.attributes[name]
+
         if self.getContentType() in nodeclasses:
             raise AttributeError("Node of type '"+self.type+"' has no attribute '"+name+"'")
         else:

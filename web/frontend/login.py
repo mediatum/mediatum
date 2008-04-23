@@ -23,11 +23,7 @@ import core.config as config
 import core.tree as tree
 import logging
 from web.frontend.frame import getNavigationFrame
-#from translation import *
 
-#
-# login form
-#
 def display_login(req, error=None):
     navframe = getNavigationFrame(req)
     navframe.feedback(req)
@@ -39,9 +35,6 @@ def display_login(req, error=None):
     navframe.write(req, contentHTML)
     return athana.HTTP_OK
 
-#
-# display form for password change
-#
 def display_changepwd(req, error=None):
     navframe = getNavigationFrame(req)
     navframe.feedback(req)
@@ -53,9 +46,6 @@ def display_changepwd(req, error=None):
     navframe.write(req, contentHTML)
     return athana.HTTP_OK
 
-#
-# validate login
-#
 def login_submit(req):
     user = req.params.get("user",config.get("user.guestuser"))
     password = req.params.get("password","")
@@ -75,9 +65,6 @@ def login_submit(req):
     else:
         return display_login(req, "login_error")
 
-#
-# logout current user
-#
 def logout(req):
     try:
         del req.session["user"]
@@ -86,9 +73,6 @@ def logout(req):
     req.request["Location"] = req.makeLink("node", {"id":tree.getRoot("collections").id})
     return athana.HTTP_MOVED_TEMPORARILY;
 
-#
-# password change evaluation
-#
 def changepwd_submit(req):
     user = users.getUserFromRequest(req)
 

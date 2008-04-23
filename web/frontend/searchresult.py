@@ -122,8 +122,6 @@ def simple_search(req):
 def extended_search(req):
     from web.frontend.content import ContentList
     sfields=[]
-    q_str = ''
-    q_user = ''
     access = AccessData(req)
     metatype = None
     
@@ -135,48 +133,60 @@ def extended_search(req):
             collection = tree.getNode(coll.id)
             break
 
-    occurs = collection.getAllOccurences(AccessData(req))
-    sfields=[]
-
-    # get all searchfields
-    for mtype, num in occurs.items():
-        if num>0:
-            for f in mtype.getSearchFields():
-                sfields.append(f)
-
+    q_str = ''
+    q_user = ''
+    first2 = 1
     for i in range(1,3+1):       
         f = req.params.get("field"+str(i),"").strip()
-        for sfield in sfields:
-            if sfield.getName() == f:
-                metatype = sfield
-                
-        if "query"+str(i)+"-from" in req.params and metatype and metatype.getFieldtype()=="date":
-            date_from = "0000-00-00T00:00:00"
-            date_to = "0000-00-00T00:00:00"
-            fld = metatype
-            if str(req.params["query"+str(i)+"-from"])!="":
-                date_from = date.format_date(date.parse_date(str(req.params["query"+str(i)+"-from"]), fld.getValues()), "%Y-%m-%dT%H:%M:%S")
-            if str(req.params["query"+str(i)+"-to"])!="":
-                date_to = date.format_date(date.parse_date(str(req.params["query"+str(i)+"-to"]), fld.getValues()), "%Y-%m-%dT%H:%M:%S")
+        q = req.params.get("query"+str(i),"").strip()
 
-            if date_from=="0000-00-00T00:00:00" and date_to!=date_from: # from value
-                q_str += f+ ' <= '+date_to+' and '
-                q_user += f+ ' <= "'+str(req.params["query"+str(i)+"-to"])+'" and '
-            elif date_to=="0000-00-00T00:00:00" and date_to!=date_from: # to value
-                q_str += f+ ' >= '+date_from+' and '
-                q_user += f+ ' >= "'+str(req.params["query"+str(i)+"-from"])+'" and '
-            else:
-                q_str += '('+f+' >= '+date_from+' and '+f+' <= '+date_to+') and '
-                q_user += '('+f+' zwischen "'+str(req.params["query"+str(i)+"-from"])+'" und '+f+' <= "'+str(req.params["query"+str(i)+"-to"])+'") and '
-                
-        else:
+        if not q:
+            continue
+        
+        if not first2:
+            q_str += " and "
+            q_user += " and "
+        first2 = 0
+
+        if not isdigit(f):
             q = req.params.get("query"+str(i),"").strip()
-            if q !="":
-                q_str += f + '=' + protect(q)+' and '
-                q_user += f + '=' + protect(q)+' and '
+            q_str += f + '=' + protect(q)
+            q_user += f + '=' + protect(q)
+        else:
+            masknode = tree.getNode(f)
+            assert masknode.type == "searchmaskitem"
+            first = 1
+            q_str += "("
+            q_user += "("
+            for metatype in masknode.getChildren():
+                if not first:
+                    q_str += " or "
+                    q_user += " or "
+                first = 0
+                if "query"+str(i)+"-from" in req.params and metatype.getFieldtype()=="date":
+                    date_from = "0000-00-00T00:00:00"
+                    date_to = "0000-00-00T00:00:00"
+                    fld = metatype
+                    if str(req.params["query"+str(i)+"-from"])!="":
+                        date_from = date.format_date(date.parse_date(str(req.params["query"+str(i)+"-from"]), fld.getValues()), "%Y-%m-%dT%H:%M:%S")
+                    if str(req.params["query"+str(i)+"-to"])!="":
+                        date_to = date.format_date(date.parse_date(str(req.params["query"+str(i)+"-to"]), fld.getValues()), "%Y-%m-%dT%H:%M:%S")
 
-    q_str = q_str[:-5]
-    q_user = q_user[:-5]
+                    if date_from=="0000-00-00T00:00:00" and date_to!=date_from: # from value
+                        q_str += metatype.getName()+ ' <= '+date_to
+                        q_user += metatype.getName()+ ' <= "'+str(req.params["query"+str(i)+"-to"])+'"'
+                    elif date_to=="0000-00-00T00:00:00" and date_to!=date_from: # to value
+                        q_str += metatype.getName()+ ' >= '+date_from
+                        q_user += metatype.getName()+ ' >= "'+str(req.params["query"+str(i)+"-from"])+'"'
+                    else:
+                        q_str += '('+metatype.getName()+' >= '+date_from+' and '+metatype.getName()+' <= '+date_to+')'
+                        q_user += '('+metatype.getName()+' zwischen "'+str(req.params["query"+str(i)+"-from"])+'" und '+metatype.getName()+' <= "'+str(req.params["query"+str(i)+"-to"])+'")'
+                else:
+                    q = req.params.get("query"+str(i),"").strip()
+                    q_str += metatype.getName() + '=' + protect(q)
+                    q_user += metatype.getName() + '=' + protect(q)
+            q_str += ")"
+            q_user += ")"
 
     if "act_node" in req.params and req.params.get("act_node")!=str(collection.id):
         result = tree.getNode(req.params.get("act_node")).search(q_str)

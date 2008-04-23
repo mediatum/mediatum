@@ -70,6 +70,8 @@ tree.registerNodeClass("metadatatype", Metadatatype)
 tree.registerNodeClass("metafield", Metadatafield)
 tree.registerNodeClass("mask", Mask)
 tree.registerNodeClass("maskitem", Maskitem)
+from schema.searchmask import SearchMaskItem
+tree.registerNodeClass("searchmaskitem", SearchMaskItem)
 
 import schema.schema as schema
 tree.registerNodeFunction("getMetaFields", schema.node_getMetaFields)
@@ -95,6 +97,11 @@ for n in tree.getRoot("collections").getChildren():
         print "making node",n.id,n.name,"a collection"
         n.setContentType("collection")
         n.setSchema(None)
+
+if not tree.getRoot().hasChild("searchmasks"):
+    print "creating searchmasks node"
+    tree.getRoot().addChild(tree.Node(name="searchmasks", type="searchmasks"))
+
 
 for k,v in config.getsubset("plugins").items():
     print 'Initializing plugin "'+k+'"'

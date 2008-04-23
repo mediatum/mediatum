@@ -67,6 +67,23 @@ class Portlet:
         else:
             return "node?"+self.name+"=fold"
 
+def getSearchMask(collection):
+    print "getSearchMask(",collection.id
+    if collection.get("searchtype") == "none":
+        return None
+    mask = None
+    n = collection
+    if collection.get("searchtype") == "parent":
+        while len(n.getParents()):
+            if n.get("searchtype") == "own":
+                break
+    if n.get("searchtype") == "own":
+        try:
+            mask = tree.getRoot("searchmasks").getChild(n.get("searchmaskname"))
+        except tree.NoSuchNodeError:
+            mask = None
+    return mask
+
 class Searchlet(Portlet):
 
     def __init__(self, collection):
@@ -75,7 +92,8 @@ class Searchlet(Portlet):
         self.extended = 0
         self.folded = 0
         self.collection = collection
-        self.datatype = None
+        self.searchmask = getSearchMask(collection)
+
         self.values = [None,"","",""]
         self.req = None
         self.initialize()
@@ -89,21 +107,10 @@ class Searchlet(Portlet):
 
         # get searchfields for collection
         self.searchfields = SortedDict()
-        datatypes = []
-        for mtype,num in self.collection.getAllOccurences(getRootAccess()).items():
-            if num>0:
-                if mtype.getContentType() not in ("directory", "collection"):
-                    datatypes += [mtype]
 
-        self.datatype = None
-        for mtype in datatypes:
-            if mtype.getContentType()=="directory":
-                continue
-            self.datatype = mtype
-            for field in self.datatype.getSearchFields():
-                self.searchfields[field.name] = field.getLabel()
-            if len(self.searchfields):
-                break
+        if self.searchmask:
+            for field in self.searchmask.getChildren().sort():
+                self.searchfields[field.id] = field.name
         self.names = [None,None,None,None]
 
     def feedback(self, req):
@@ -121,10 +128,13 @@ class Searchlet(Portlet):
                 if newname != self.names[i]:
                     self.values[i] = ""
                 self.names[i] = newname
+
             name = self.names[i]
-            f = None
-            if self.datatype:
-                f = self.datatype.getMetaField(name)
+            if name == "full":
+                f = None
+            else:
+                f = tree.getNode(name).getFirstField()
+
             if "query"+str(i) in req.params or "query"+str(i)+"-from" in req.params:
                 if f and f.getFieldtype()=="date":
                     self.values[i] = req.params.get("query"+str(i)+"-from","") + ";" +  req.params.get("query"+str(i)+"-to","")
@@ -135,9 +145,7 @@ class Searchlet(Portlet):
             self.values[0] = req.params["query"]
 
     def hasExtendedSearch(self):
-        if self.collection.get("no_extsearch")=="1":
-            return False
-        return self.collection.type in ("collection","directory") and self.collection.get("searchstyle") != "simple"
+        return self.searchmask is not None
 
     def isSimple(self):
         return not self.extended
@@ -158,16 +166,13 @@ class Searchlet(Portlet):
         return self.searchfields
     def getSearchField(self, i, width=174):
         f = None
-        if self.datatype and str(self.names[i])!="None":
-            f = self.datatype.getMetaField(self.names[i])
+        if self.names[i] and self.names[i]!="full":
+            f = tree.getNode(self.names[i]).getFirstField()
+        g = None
         if f is None: # All Metadata
             # quick&dirty
-            f = getMetadataType("text")
-            return f.getSearchHTML(Context(f,value=self.values[i], width=width, name="query"+str(i), language=lang(self.req), collection=self.req.params.get('collection'), user=users.getUserFromRequest(self.req), ip=self.req.ip ))
-            #return f.getSearchHTML(f,self.values[i], width, "query"+str(i), language=self.language, request = self.req)
-        
-        return f.getSearchHTML(Context(None,value=self.values[i], width=width, name="query"+str(i), language=lang(self.req), collection=self.req.params.get('collection'), user=users.getUserFromRequest(self.req), ip=self.req.ip ))
-        #return f.getSearchHTML(self.values[i], width, "query"+str(i), language=self.language, request=self.req)
+            f = g = getMetadataType("text")
+        return f.getSearchHTML(Context(g,value=self.values[i], width=width, name="query"+str(i), language=lang(self.req), collection=self.req.params.get('collection'), user=users.getUserFromRequest(self.req), ip=self.req.ip))
 
 class Browselet(Portlet):
     def __init__(self, collection):

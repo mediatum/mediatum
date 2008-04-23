@@ -547,6 +547,12 @@ class Node:
             cache[long(lastid)] = list
         return cache
 
+    def hasChild(self, name):
+        try:
+            self.getChild(name)
+            return 1
+        except NoSuchNodeError:
+            return 0
 
     def _getChildIDs(self, parents=0):
         global childids_cache,parentids_cache

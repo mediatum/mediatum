@@ -93,7 +93,7 @@
                      </select></td>
                      <td><select name="schemafield">
                       <tal:block tal:condition="schema" tal:repeat="schemafield python:schema.getChildren()">
-                          <option tal:condition="python:schemafield.type == 'metafield'"
+                          <option tal:condition="python:display(schemafield)"
                                   tal:attributes="value python:schemafield.id; selected python:[None,'selected'][schemafield.id==defaultfieldid]"
                                   tal:content="python:schemafield.getName()"></option>
                       </tal:block>

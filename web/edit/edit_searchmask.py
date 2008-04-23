@@ -131,6 +131,16 @@ def edit_searchmask(req, ids):
 
     data["schema"] = myschema
 
+    def display(schemafield): 
+        if not schemafield or schemafield.type != 'metafield':
+            return 0
+        if not schemafield.Searchfield():
+            return 0
+        if schemafield.get('type')=='union':
+            return 0
+        return 1
+    data["display"] = display
+
     req.writeTAL("web/edit/edit_searchmask.html", data, macro="edit_metadata")
 
     return

@@ -1,6 +1,7 @@
 <tal:block i18n:translate="search mask">_</tal:block>:
 
-<form class="edit" action="edit_content" method="post" id="changeform">
+<form class="edit" action="edit_content" method="post" name="changeform" id="changeform">
+<input type="image" name="update" value="update" src="/img/s.gif">
 
 <p>
 <select name="searchtype" onChange="this.form.submit()">
@@ -14,54 +15,109 @@
 </p>
 
 <input type="hidden" name="tab" value="tab_searchmask"/>
+<input tal:condition="python:selectedfield" type="hidden" name="selectedfield" tal:attributes="value python:selectedfield.id"/>
 <input tal:attributes="value idstr" type="hidden" name="id"/>
 
 <tal:block tal:condition="python:searchtype=='own'">
 
 <table>
     <tal:block tal:repeat="field searchfields">
-        <tal:block tal:condition="python:field.id!=selectedfield.id">
+        <tal:block tal:condition="python:field!=selectedfield">
             <tr>
-                <td><button tal:condition="python:field==selectedfield" name="close" src="img/boxx.gif"/></td>
-                <td tal:content="python:field.getName()"/>
-                <td>
-                    <tal:block tal:repeat="f python:field.getChildren()[0:10]">
+                <td valign="center">
+                    <input type="image" tal:attributes="name python:'open_'+field.id" src="/img/boxx.gif"/>
+                </td>
+                <td valign="center" colspan="2">
+                    <tal:block tal:content="python:field.getName()"/>
+                    <tal:block tal:condition="python:field.getNumChildren()">
+                    (<tal:block tal:repeat="f python:field.getChildren()[0:10]">
+                      <tal:block tal:condition="python:f.type == 'metafield'">
                         <tal:block tal:content="python:f.getSchemaNode().getName()"/>:<tal:block tal:content="python:f.getName()"/>
+                      </tal:block>
                     </tal:block>
-                    <tal:block tal:condition="python:len(field.getChildren())>10">...</tal:block>
+                    <tal:block tal:condition="python:len(field.getChildren())>10">...</tal:block>)
+                    </tal:block>
                 </td>
             </tr>
         </tal:block>
         <tal:block tal:condition="python:field==selectedfield">
             <tr>
-                <td valign="top"><button tal:condition="python:field.id!=selectedfield.id" name="open" src="img/box.gif"/></td>
+                <td valign="top">
+                    <input type="image" name="close" value="close" src="/img/box.gif"/>
+                </td>
                 <td colspan="2">
-                    <tal:block i18n:translate="fieldname"/><input type="text" name="fieldname"/><br/>
+                    <input type="text" name="fieldname" tal:attributes="value python:field.getName()"/>
+                    <input type="image" tal:attributes="name python:'del_'+field.id" src="/img/delete.png">
+                    
+                    <table frame="box">
+                    
+                    <tr>
+                      <td colspan="3">
+                      <b i18n:translate="Search within the following fields:"/>
+                      </td>
+                    </tr>
+                    
+                    <tr>
+                      <td colspan="3">&nbsp;</td>
+                    </tr>
 
-                    <table>
-                    <tal:block tal:repeat="subfield python:field.getChildren()">
-                       <tr>
-                       <td><button tal:attributes="name python:'delete_'+subfield.id" src="img/delete.png"/></td>
-                       <td><select name="schema" onChange="this.form.submit()">
-                        <tal:block tal:repeat="schema schemas">
-                            <option tal:attributes="name python:schema.getName(); selected python:[None,'selected'][schema.id==subfield.getSchemaNode().id]"
-                                    tal:content="python:schema.get('description')"></option>
-                        </tal:block>
-                       </select></td>
-                       <td><select name="schemafield" onChange="this.form.submit()">
-                        <tal:block tal:repeat="schemafield python:subfield.getSchemaNode().getChildren()">
-                            <option tal:attributes="name python:schemafield.getName(); selected python:[None,'selected'][schemafield.id==subfield.id]"
-                                    tal:content="python:schemafield.get('description')"></option>
-                        </tal:block>
-                       </select></td>
+                    <tr tal:condition="python: not field.getNumChildren()">
+                      <td colspan="3">
+                        --- <tal:block i18n:translate="none"/> ---
+                      </td>
+                    </tr>
+
+                    <tr tal:condition="python:field.getNumChildren()">
+                      <td><b i18n:translate="schema" /></td>
+                      <td><b i18n:translate="field" /></td>
+                      <td>&nbsp;</td>
+                    </tr>
+
+                    <tal:block tal:condition="python:field.getNumChildren()" tal:repeat="subfield python:field.getChildren()">
+                       <tr tal:condition="python:subfield.type == 'metafield'">
+                       <td tal:content="python:subfield.getSchemaNode().getName()"/>
+                       <td tal:content="python:subfield.getName()"/>
+                       <td><input type="image" tal:attributes="name python:'delsub_'+subfield.id" src="/img/delete.png"/></td>
                        </tr>
                     </tal:block>
                     </table>
+
+                    <table>
+                     <tr>
+                     <td><select name="schema" onChange="this.form.submit()">
+                      <option value=""></option>
+                      <tal:block tal:repeat="schema schemas">
+                          <option tal:attributes="value python:schema.id; selected python:[None,'selected'][schema.id==defaultschemaid]"
+                                  tal:content="python:schema.getName()"></option>
+                      </tal:block>
+                     </select></td>
+                     <td><select name="schemafield">
+                      <tal:block tal:condition="schema" tal:repeat="schemafield python:schema.getChildren()">
+                          <option tal:condition="python:schemafield.type == 'metafield'"
+                                  tal:attributes="value python:schemafield.id; selected python:[None,'selected'][schemafield.id==defaultfieldid]"
+                                  tal:content="python:schemafield.getName()"></option>
+                      </tal:block>
+                     </select></td>
+                     <td><input type="submit" name="createsub" i18n:attributes="value add"/></td>
+                     </tr>
+
+                    </table>
                     <br>
-                    <button name="more" value="+"/>
                 </td>
             </tr>
         </tal:block>
+    </tal:block>
+
+    <tal:block>
+            <tr>
+                <td valign="center">
+                    <input type="image" name="newfield" value="newfield" src="/img/box3.gif"/>
+                </td>
+                <input type="hidden" name="isnewfield" id="isnewfield" value="">
+                <td valign="center" colspan="2">
+                   <span style="cursor:pointer;color:#0a5096;" onClick="document.changeform.isnewfield.value='yes';document.changeform.submit()" i18n:translate="append new field"/>
+                </td>
+            </tr>
     </tal:block>
 </table>
 

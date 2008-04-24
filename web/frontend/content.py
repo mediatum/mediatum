@@ -44,7 +44,7 @@ class SingleFile:
 
         if not self.attachment:
             for f in file.getFiles():
-                if f.getType() not in file.getSysFiles():
+                if hasattr(file,"getSysFiles") and f.getType() not in file.getSysFiles():
                     self.attachment = f
                     break
 
@@ -373,7 +373,7 @@ def mkContentNode(req):
         ids = []
         nodes = access.filter(node.getAllChildren())
         for c in nodes:
-            if c.type != "directory":
+            if c.type != "directory" and c.type != "collection":
                 ids += [c.id]
         c = ContentList(tree.NodeList(ids),getCollection(node))
         c.feedback(req)

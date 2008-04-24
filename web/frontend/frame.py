@@ -29,7 +29,7 @@ import core.search.query
 
 from utils.dicts import SortedDict
 from schema.schema import getMetadataType
-from web.frontend.browsingtree import browsingtree, cleartree
+from web.frontend.browsingtree import browsingtree
 from utils.dicts import SortedDict
 from utils.utils import getCollection, Link, iso2utf8, isCollection
 from core.acl import AccessData,getRootAccess
@@ -130,7 +130,7 @@ class Searchlet(Portlet):
                 self.names[i] = newname
 
             name = self.names[i]
-            if name == "full":
+            if name == "full" or not name:
                 f = None
             else:
                 f = tree.getNode(name).getFirstField()
@@ -215,7 +215,6 @@ class Browselet(Portlet):
         return '/treeframe?id='+self.collection.id+'&'+'currentdir='+self.currentdir.id+self.browse_fold_link+self.browse_unfold_link
 
     def buildBrowsingTree(self, req):
-        cleartree()
         self.browsingtree = browsingtree(req)
 
     def getBrowsingTree(self):
@@ -223,7 +222,43 @@ class Browselet(Portlet):
 
     def DirOpen(self):
         return self.dirinreq
-    	
+    
+class NavTreeEntry:
+    def __init__(self, col, node, indent):
+        self.col = col
+        self.node = node
+        self.id = node.id
+        self.indent = indent
+        self.defaultopen = indent==0
+        self.hassubdir = 0
+        self.folded = 1
+        self.active = 0
+        for c in self.node.getChildren():
+            if c.type == "directory":
+                self.hassubdir = 1
+                self.folded = 1
+                break
+
+    def isRoot(self):
+        return self.node.type=='collections'
+    def getFoldLink(self):
+        return "?cfold="+self.node.id+"&dir="+self.node.id+"&id="+self.node.id
+    def getUnfoldLink(self):
+        return "?cunfold="+self.node.id+"&dir="+self.node.id+"&id="+self.node.id
+    def isFolded(self):
+        return self.folded
+    def getStyle(self):
+        return "margin-left: %dpx" % (self.indent*6)
+    def getText(self):
+        return self.node.getLabel()
+    def getClass(self):
+        if self.indent > 1:
+            return "lv1"
+        else:
+            return "lv0"
+
+# NOTE: the whole collection/browsing tree stuff is horriby complex, and
+# should be rewritten from scratch
 
 class Collectionlet(Portlet):
     def __init__(self):
@@ -231,19 +266,31 @@ class Collectionlet(Portlet):
         self.name="collectionlet"
         self.collection = tree.getRoot("collections")
         self.folded = 0
+        self.m = {}
+        self.col_data = None
+        self.hassubdir = 0
+    
+        def f(m,node,indent):
+            m[node.id] = NavTreeEntry(self, node,indent)
+            for c in node.getChildren():
+                if isCollection(c):
+                    f(m, c, indent+1)
+        f(self.m, tree.getRoot("collections"), 0)
+
     def getCurrent(self):
         return self.collection
+
     def feedback(self,req):
         Portlet.feedback(self,req)
         if "dir" in req.params:
             dirid = req.params["dir"]
             try:
                 dir = tree.getNode(dirid)
-                if isCollection(dir):
-                    self.collection = dir
+                self.collection = getCollection(dir)
             except tree.NoSuchNodeError:
                 pass
-        elif "id" in req.params:
+
+        if "id" in req.params:
             id = req.params["id"]
             try:
                 node = tree.getNode(id)
@@ -251,8 +298,49 @@ class Collectionlet(Portlet):
             except tree.NoSuchNodeError:
                 pass
 
+        if "cfold" in req.params:
+            id = req.params["cfold"]
+            if id in self.m:
+                self.m[id].folded = 1
+        if "cunfold" in req.params:
+            id = req.params["cunfold"]
+            if id in self.m:
+                self.m[id].folded = 0
+
+        access = AccessData(req)
+
+        for c in self.m.values():
+            if not c.defaultopen:
+                c.folded = 1
+            c.active = 0
+        
+        if self.collection.id in self.m:
+            self.m[self.collection.id].folded = 0
+            self.m[self.collection.id].active = 1
+
+        parents = [self.collection]
+        while parents:
+            p = parents.pop()
+            if p.id in self.m:
+                self.m[p.id].folded = 0
+            parents += p.getParents()
+
         col_data = []
-        col_data = [tree.getRoot("collections")] + list(AccessData(req).filter(tree.getRoot("collections").getChildren().sort()))
+        def f(col_data,node,indent):
+            if not access.hasReadAccess(node):
+                return
+            if not node.id in self.m:
+                # some new node FIX-ME we should rebuild the tree
+                return
+               
+            data = self.m[node.id]
+            col_data += [data]
+
+            if not data.folded or data.defaultopen:
+                for c in node.getChildren().sort():
+                    if isCollection(c):
+                        f(col_data,c, indent+1)
+        f(col_data,tree.getRoot("collections"),0)
         self.col_data = col_data
 
     def getCollections(self):

@@ -57,7 +57,7 @@ def writenode(req, node, unfoldedids, f, indent, accessdata):
 
     if not accessdata.hasReadAccess(node):
         return ""
-    if not (node.type == "directory" or node.type == "collection" or node.type == "root"):
+    if node.type != "directory":
         return ""
 
     ret ='<li class="'+css+'"><div class="nav_div" style="margin-left: '+str(indent+35)+'px">'+f(req, node, type)+'</div></li>'
@@ -129,9 +129,6 @@ def writetree(req, mynode, currentdir, content):
             return '<div class="nav_img"><img src="/img/box_3.gif"/></div><div class="nav_text"><a href="'+link+'">' + node.getLabel() + " " + items+ '</a></div>'
 
     return writetree2(req, mynode, makeLink, content, {currentdir.id: 1})
-
-def cleartree():
-    None
 
 def browsingtree(req):
     content=""

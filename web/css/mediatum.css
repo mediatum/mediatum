@@ -221,70 +221,67 @@ ul#navigationlist li {
     list-style-type: none;
     position: relative
 }
-
-/*
-* html ul#navigationlist li {
-    float: left
-}
-* html ul#navigationlist li a {
-    height: 1%
-}
-* + html ul#navigationlist li {
-    display: inline
-}
-* + html ul#navigationlist li a {
-    display: inline-block
-}
-* + html ul#navigationlist li a {
-    display: block
-}*/
-
 ul#navigationlist li {
     display: inline-block;
 }
-
-ul#navigationlist li li {
-    border-top: #c4d2d8 1px solid;
-    background: url(../img/5pxgradient_nav_depth02.gif) repeat-y right 50%;
+ul#navigationlist li div a {
+    padding: 0.4em 0px 0.5em 22px;display: block;font-size: 100%;text-decoration: none;outline: none
+    color: #004682;background-color: #dbe2e9;
 }
-ul#navigationlist li li li {
-    background: url(../img/5pxgradient_nav_depth03.gif) repeat-y right 50%;
+ul#navigationlist li.lv0 {
+    background-color: #dbe2e9;
 }
-ul#navigationlist li a {
-    padding:  0.4em 0px 0.5em 22px;
-    display: block;
-    font-size: 100%;   
+ul#navigationlist li.lv0 div a {
+    padding: 0.4em 0px 0.5em 22px;display: block;font-size: 100%;text-decoration: none;outline: none
     color: #004682;    
     background-color: #dbe2e9;
-    text-decoration: none;
-    outline: none
 }
-
-li.selected a.linkselected{
+ul#navigationlist li.lv1 {
+    background-color: #eef2f5;
+}
+ul#navigationlist li.lv1 div a {
+    padding: 0.4em 0px 0.5em 22px;display: block;font-size: 100%;text-decoration: none;outline: none
+    color: #004682;    
+    background-color: #eef2f5;
+}
+div.linknotselected{
+    position: relative;
+    top: 0px; left: 0px;
+}
+div.linkselected{
     border: 1px solid #666;
     display: block;
+    position: relative;
+    top: 0px; left: 0px;
 }
-
 ul#navigationlist li ul.nav_depth03 img {
     margin-left: 10px;
 }
-
-
-ul#navigationlist li a:hover {
+ul#navigationlist li div a:hover {
     color: #469be6
 }
-
-ul#navigationlist li a.collapsed {
-    padding: 0.4em 0px 0.5em 0px; background: url(../img/nav-arrow-left-to-right.gif) no-repeat left center; left: 1px; width: 16px; text-indent: -99999px; position: absolute; top: 1px; height: 1em;
+ul#navigationlist li div a:visited {
+    color: #004682;    
 }
-ul#navigationlist li a.collapsed:hover {
+ul#navigationlist li div a.collapsed {
+    padding: 0.4em 0px 0.5em 0px; 
+    background: url(../img/nav-arrow-left-to-right.gif) no-repeat left center; 
+    width: 16px; height: 1em;
+    text-indent: -99999px; 
+    position: absolute; 
+    top: 1px; left: 1px; 
+}
+ul#navigationlist li div a.collapsed:hover {
     background-image: url(../img/nav-arrow-top-to-bottom.gif)
 }
-
-ul#navigationlist li a.expanded {
-    padding: 0.4em 0px 0.5em 0px; background: url(../img/nav-arrow-top-to-bottom.gif) no-repeat left center; left: 1px; width: 16px; text-indent: -99999px; position: absolute; top: 1px; height: 1em;
+ul#navigationlist li div a.expanded {
+    padding: 0.4em 0px 0.5em 0px; 
+    background: url(../img/nav-arrow-top-to-bottom.gif) no-repeat left center; 
+    width: 16px; height: 1em;
+    text-indent: -99999px; 
+    position: absolute; 
+    top: 1px; left: 1px; 
 }
-
 ul#navigationlist ul {
     padding: 0px 3px 0.1em 0px; margin: 0px;
 }

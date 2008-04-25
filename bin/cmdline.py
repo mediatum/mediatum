@@ -118,6 +118,9 @@ def set(key,value):
     elif key.startswith("acl."):
         node.setAccess(key[4:],value)
         return
+    elif key=="password" and node.getContentType()=="user":
+        print "error: user password can not be changed by cmdline"
+        return
     if value:
         node.set(key,value)
     else:
@@ -129,6 +132,9 @@ def get(key):
         return
     elif key=="objtype":
         print "objtype:",node.getContentType()+"schema:"+node.getSchema()
+        return
+    elif key=="password" and node.getContentType()=="user":
+        print "error: user password can not be read by cmdline"
         return
     elif key.startswith("acl."):
         print node.getAccess(key[4:])

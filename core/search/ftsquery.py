@@ -42,6 +42,7 @@ FULLTEXT_INDEX_MODE = 0
 try:
     try:
         import sqlite3 as sqlite
+        
     except:
         from pysqlite2 import dbapi2 as sqlite
 except ImportError:
@@ -382,6 +383,8 @@ class FtsSearcher:
      
     
 ftsSearcher = FtsSearcher()
+ftsSearcher.initIndexer()
+
 def protect(s):
     return s.replace('\'','"')
     

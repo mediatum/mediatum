@@ -216,39 +216,53 @@ ul#navigationlist {
     padding: 0px; margin: 0px; border-bottom: #c4d2d8 1px solid
 }
 ul#navigationlist li {
+    padding: 0px; margin:0px;
     border-top: #a3b7c7 1px solid;
     background: url(5pxgradient_nav_depth01.gif) repeat-y right 50%;
     list-style-type: none;
-    position: relative
-}
-ul#navigationlist li {
+    position: relative;
     display: inline-block;
 }
 ul#navigationlist li div a {
-    padding: 0.4em 0px 0.5em 22px;display: block;font-size: 100%;text-decoration: none;outline: none
+    margin:0px;
+    padding: 0.4em 0px 0.5em 22px;
+    display: block;font-size: 100%;text-decoration: none;outline: none;
     color: #004682;background-color: #dbe2e9;
 }
 ul#navigationlist li.lv0 {
+    padding: 0px; margin:0px;
     background-color: #dbe2e9;
 }
 ul#navigationlist li.lv0 div a {
-    padding: 0.4em 0px 0.5em 22px;display: block;font-size: 100%;text-decoration: none;outline: none
+    margin:0px;
+    padding: 0.4em 0px 0.5em 22px;display: block;font-size: 100%;text-decoration: none;outline: none;
     color: #004682;    
     background-color: #dbe2e9;
 }
 ul#navigationlist li.lv1 {
+    padding: 0px; margin:0px;
     background-color: #eef2f5;
 }
 ul#navigationlist li.lv1 div a {
-    padding: 0.4em 0px 0.5em 22px;display: block;font-size: 100%;text-decoration: none;outline: none
+    margin:0px;
+    padding: 0.4em 0px 0.5em 22px;display: block;font-size: 100%;text-decoration: none;outline: none;
     color: #004682;    
     background-color: #eef2f5;
 }
-div.linknotselected{
+li.lv0 div.linknotselected{
+    padding: 0px; margin:0px;
+    border: 1px solid #dbe2e9;
+    position: relative;
+    top: 0px; left: 0px;
+}
+li.lv1 div.linknotselected{
+    padding: 0px; margin:0px;
+    border: 1px solid #eef2f5;
     position: relative;
     top: 0px; left: 0px;
 }
 div.linkselected{
+    padding: 0px; margin:0px;
     border: 1px solid #666;
     display: block;
     position: relative;
@@ -264,6 +278,7 @@ ul#navigationlist li div a:visited {
     color: #004682;    
 }
 ul#navigationlist li div a.collapsed {
+    margin: 0px;
     padding: 0.4em 0px 0.5em 0px; 
     background: url(../img/nav-arrow-left-to-right.gif) no-repeat left center; 
     width: 16px; height: 1em;
@@ -275,6 +290,7 @@ ul#navigationlist li div a.collapsed:hover {
     background-image: url(../img/nav-arrow-top-to-bottom.gif)
 }
 ul#navigationlist li div a.expanded {
+    margin: 0px;
     padding: 0.4em 0px 0.5em 0px; 
     background: url(../img/nav-arrow-top-to-bottom.gif) no-repeat left center; 
     width: 16px; height: 1em;

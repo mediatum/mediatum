@@ -311,6 +311,7 @@ def getPaths(node, access):
     
     collections = {}
     p = r(node, [], collections)
+    omit = 0
     if p:
         for node in p:
             if access.hasReadAccess(node):
@@ -318,9 +319,11 @@ def getPaths(node, access):
                     paths.append(node)
                 if node is tree.getRoot("collections") or node.type=="root":
                     paths.reverse()
-                    if len(paths)>1:
+                    if len(paths)>1 and not omit:
                         list.append(paths)
                     paths =[]
+            else:
+                omit = 1
     if len(list)>0:
         return list
     else:
@@ -342,7 +345,7 @@ class ContentNode(Content):
         return "(%d/%d)" % (int(self.nr)+1, self.num)
     def html(self,req):
         paths = ""
-        if not self.node.can_open():
+        if not self.node.isContainer():
             plist = getPaths(self.node, AccessData(req))
             paths = athana.getTAL("web/frontend/content_nav.html", {"paths": plist}, macro="paths", language=lang(req))
         return self.node.show_node_big(req) + paths

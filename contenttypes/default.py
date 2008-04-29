@@ -49,7 +49,7 @@ class Default(tree.Node):
 
         return seperator.join(metatext)
     
-    def can_open(node):
+    def isContainer(node):
         return 0
 
     def get_name(node):

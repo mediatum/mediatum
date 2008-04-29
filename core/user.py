@@ -98,6 +98,6 @@ class User(tree.Node):
     def translate(self,key):
         return translation.translate(key=key,user=self)
 
-    def can_open(node):
+    def isContainer(node):
         return 0
 

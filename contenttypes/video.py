@@ -81,7 +81,7 @@ class Video(default.Default):
                     node.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
                     node.addFile(FileNode(name=thumbname2, type="presentation", mimetype="image/jpeg"))
      
-    def can_open(node):
+    def isContainer(node):
         return 0
 
     def getSysFiles(node):

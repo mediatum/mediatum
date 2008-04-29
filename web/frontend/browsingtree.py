@@ -41,7 +41,7 @@ def writenode(req, node, unfoldedids, f, indent, accessdata):
 
     num = 0
     for c in node.getChildren():
-        if c.can_open():
+        if c.isContainer():
             num = num + 1
 
     type = 3

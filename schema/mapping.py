@@ -145,7 +145,7 @@ class Mapping(tree.Node):
     def getFieldtype(self):
         return "mapping"
     
-    def can_open(node):
+    def isContainer(node):
         return 0
         
         

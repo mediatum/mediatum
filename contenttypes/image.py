@@ -167,7 +167,7 @@ class Image(default.Default):
     def show_node_image(node, language=None):
     	return '<img src="/thumbs/'+node.id+'" class="thumbnail" border="0"/>'
     
-    def can_open(node):
+    def isContainer(node):
         return 0
 
     def getLabel(node):

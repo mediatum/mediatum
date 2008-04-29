@@ -75,7 +75,7 @@ class Directory(default.Default):
     def show_node_image(node,language=None):
         return athana.getTAL("contenttypes/directory.html", {"node":node}, macro="thumbnail",language=language)
      
-    def can_open(node):
+    def isContainer(node):
         return 1
     
     def getPossibleChildContainers():

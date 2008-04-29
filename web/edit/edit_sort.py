@@ -59,7 +59,7 @@ def edit_sort(req, ids):
         i = 0
         for child in node.getChildren().sort():
             try:
-                if child.can_open():
+                if child.isContainer():
                     if i == up:
                         pos = i-1
                     elif i == up-1:
@@ -80,7 +80,7 @@ def edit_sort(req, ids):
 
     for child in list(node.getChildren().sort()):
         try:
-            if child.can_open():
+            if child.isContainer():
                 nodelist.append(child)
         except:
             pass

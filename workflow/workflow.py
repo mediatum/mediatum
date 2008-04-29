@@ -547,7 +547,7 @@ class Workflows(tree.Node):
 
         return req.getTAL("workflow/workflow.html", {"list":list}, macro="workflowlist")
 
-    def can_open(node):
+    def isContainer(node):
         return 1
 
     def getLabel(node):
@@ -583,7 +583,7 @@ class Workflow(tree.Node):
     def show_node_text(node, words=None):
         return ""
     
-    def can_open(node):
+    def isContainer(node):
         return 1
     def getLabel(node):
         return node.name
@@ -668,7 +668,7 @@ class WorkflowStep(tree.Node):
         else:
             return '<center>'+self.show_workflow_step(req)+'</center>'
 
-    def can_open(self):
+    def isContainer(self):
         # inhibit several content enrichment features
         return 1
 

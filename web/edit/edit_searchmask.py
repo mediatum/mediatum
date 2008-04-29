@@ -1,5 +1,6 @@
 import core.tree as tree
 import schema.schema as schema
+import schema.searchmask as searchmask
 import md5
 import random
 
@@ -36,8 +37,8 @@ def edit_searchmask(req, ids):
             searchtype = "none"
             # if a parent has a search mask, use 'inherit'
             n = node
-            while len(node.getParents()):
-                n = node.getParents()[0]
+            while len(n.getParents()):
+                n = n.getParents()[0]
                 if n.get("searchtype") == "own":
                     searchtype = "parent"
     node.set("searchtype", searchtype)
@@ -62,15 +63,9 @@ def edit_searchmask(req, ids):
     if searchtype == "own":
         maskname = node.get("searchmaskname")
         if not maskname or not root.hasChild(maskname):
-            while 1:
-                maskname = md5.md5(str(random.random())).hexdigest()[0:8]
-                if root.hasChild(maskname):
-                    continue
-                else:
-                    break
-            root.addChild(tree.Node(name=maskname, type="searchmask"))
-            node.set("searchmaskname", maskname)
-        mask = root.getChild(maskname)
+            mask = searchmask.generateMask(node)
+        else:
+            mask = root.getChild(maskname)
         
         selectedfieldid = req.params.get("selectedfield", None)
         if selectedfieldid:

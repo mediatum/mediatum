@@ -116,11 +116,6 @@ class Directory(default.Default):
             field.set("type", "text")
             ret.append(field)
             
-            field = tree.Node("no_extsearch", "metafield")
-            field.set("label", t(lang,"no extended search"))
-            field.set("type", "check")
-            ret.append(field)
-            
             field = tree.Node("style_full", "metafield")
             field.set("label", t(lang,"full view style"))
             field.set("type", "list")

@@ -77,6 +77,7 @@ def getSearchMask(collection):
         while len(n.getParents()):
             if n.get("searchtype") == "own":
                 break
+            n = n.getParents()[0]
     if n.get("searchtype") == "own":
         try:
             mask = tree.getRoot("searchmasks").getChild(n.get("searchmaskname"))

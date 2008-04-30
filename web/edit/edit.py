@@ -427,7 +427,7 @@ def action(req):
                    access.hasWriteAccess(mysrc) and \
                    access.hasWriteAccess(dest) and \
                    access.hasWriteAccess(obj) and \
-                   (dest.type=="directory" or obj.type=="directory"):
+                   isDirectory(dest):
                     if not nodeIsChildOfNode(dest,obj):
                         print "Move",obj.id,"from",mysrc.id,"to",dest.id
                         mysrc.removeChild(obj)
@@ -440,7 +440,7 @@ def action(req):
                    access.hasReadAccess(mysrc) and \
                    access.hasWriteAccess(dest) and \
                    access.hasWriteAccess(obj) and \
-                   (dest.type=="directory" or obj.type=="directory"):
+                   isDirectory(dest):
                     if not nodeIsChildOfNode(dest,obj):
                         print "Copy",obj.id,"from",mysrc.id,"to",dest.id
                         dest.addChild(obj)
@@ -711,7 +711,7 @@ def buttons(req):
 
     access = AccessData(req)
     if not access.user.isEditor():
-        req.writeTAL('<span i18n:translate="edit_nopermission">Keine Berechtigung</span>',{})
+        req.writeTALstr('<span i18n:translate="edit_nopermission">Keine Berechtigung</span>',{})
         return
 
     req.write("""
@@ -746,6 +746,11 @@ def buttons(req):
         newcoll = None
         newdir = t(req, "edit_action_new")+": " + t(req, "directory")
 
+    if node:
+        nodename = node.name
+    else:
+        nodename = ""
+
     req.writeTALstr("""
             <table cellspacing="0" cellpadding="0">
             <tr><td><a i18n:attributes="title sub_header_inquest_title" title="Zur Rechercheoberfl&auml;che wechseln" href="/" target="_parent"><img border="0" height="142" src="/img/mediatum.png"></a></td><td width="100%"><img border="0" width="100%" height="142" src="/img/mediatum_line.png"></td></tr>
@@ -775,7 +780,7 @@ def buttons(req):
                      </select>
                  </form>
                  <p id="buttonmessage" style="color:red">&nbsp;</p>
-                 """,{"type": dirtype, "newdir": newdir, "newcoll": newcoll, "name": node.name})
+                 """,{"type": dirtype, "newdir": newdir, "newcoll": newcoll, "name": nodename})
 
     req.write("""<hr></body></html>""")
 

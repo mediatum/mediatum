@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.22 2008/04/11 10:52:09 kramm Exp $'
+RCS_ID =  '$Id: athana.py,v 1.23 2008/05/05 06:06:20 mediatum Exp $'
 
 import sys
 
@@ -5952,7 +5952,7 @@ class WebContext:
             if pattern.match(path):
                 function,desc = call
                 if verbose:
-                    lg.log("Request %s matches (%s)" % (req.path, desc))
+                    lg.log("Request %s matches (%s)" % (path, desc))
         if function is None:
             for id,call in self.id_to_function.items():
                 if path == id:

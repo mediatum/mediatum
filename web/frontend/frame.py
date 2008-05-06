@@ -249,7 +249,7 @@ class NavTreeEntry:
     def isFolded(self):
         return self.folded
     def getStyle(self):
-        return "margin-left: %dpx" % (self.indent*6)
+        return "padding-left: %dpx" % (self.indent*6)
     def getText(self):
         return self.node.getLabel()
     def getClass(self):

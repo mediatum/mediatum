@@ -48,14 +48,13 @@
 
     <div class="portlet" tal:define="col python:navigation['collection']; browse python:navigation['browse']">
         <ul id="navigationlist">
-            <tal:block tal:repeat="data python:col.getCollections()">
-              <li tal:attributes="class python:data.getClass()">
-                 <div tal:attributes="style python:data.getStyle();class python:['linknotselected','linkselected'][data.active]">
+            <li tal:repeat="data python:col.getCollections()" tal:attributes="class python:data.getClass()">
+                <div tal:attributes="style python:data.getStyle();class python:['linknotselected','linkselected'][data.active]">
                     <tal:block tal:condition="python:not data.isFolded()">
                         <a tal:attributes="href python:data.getFoldLink()" 
                            tal:content="raw python:data.getText()">TEXT</a>
                         <a tal:attributes="href python:data.getFoldLink()" 
-                           i18n:attributes="title fold" class="expanded">-</a>
+                            class="expanded">-</a>
                     </tal:block>
                     <tal:block tal:condition="python:data.isFolded()">
                         <a tal:attributes="href python:data.getUnfoldLink()"
@@ -63,22 +62,11 @@
                         <a tal:attributes="href python:data.getUnfoldLink()" 
                            i18n:attributes="title unfold" class="collapsed">-</a>
                     </tal:block>
-
-                    <!--<ul tal:condition="python:not data.isFolded() and data.indent > 0" class="nav_depth02">
-                        <li tal:attributes="class python:browse.collection.id==data.id and 'selected' or ''">
-                            <a tal:content="python:data.getText()" 
-                               href = ""
-                               i18n:attributes="title collection_title">TEXT</a>
-                            <a class=expanded' i18n:attributes="title">TEXT</a>
-                        </li>
-                    </ul>
-                     -->
-                 </div>
-                 <ul class="nav_depth03" tal:condition="python:browse.collection.id==data.id and not data.isFolded() and data.hassubdir">
+                </div>
+                <ul class="nav_depth03" tal:condition="python:browse.collection.id==data.id and not data.isFolded() and data.hassubdir">
                      <tal:block tal:replace="raw python:browse.getBrowsingTree()"/>
-                 </ul >
-              </li>
-            </tal:block>
+                </ul >
+            </li>
         </ul>
     </div>
 

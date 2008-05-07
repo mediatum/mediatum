@@ -75,5 +75,8 @@ class Default(tree.Node):
             return tree.Node("", type="mask")
         else:
             return masks[0]
+            
+    def getSysFiles(node):
+        return []
 
 

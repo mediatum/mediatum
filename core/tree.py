@@ -131,6 +131,7 @@ class FileNode:
         self.type = type
         self.mimetype = mimetype
         self.node = node
+
     def getType(self):
         return self.type
     def _add(self):
@@ -529,7 +530,7 @@ class Node:
         changed_metadata(self)
         self._makePersistent()
         db.removeFile(self.id,file._path)
-        file._del()
+        file._delete()
 
 
     def _mkCache(self, source):

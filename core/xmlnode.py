@@ -19,42 +19,45 @@
 """
 import core.tree as tree
 import xml.parsers.expat
+import StringIO
 
 from utils.utils import esc, u
 
-def writexml(self, fi, indent=None, written=None):
+def writexml(node, fi, indent=None, written=None, children=True):
     if written is None:
         written = {}
     if indent is None:
         indent = 0
-    fi.write((" "*indent) + '<node name="'+esc(self.name)+'" id="'+str(self.id)+'" ')
-    if self.type is None:
-        self.type="node"
-    fi.write("type=\""+self.type+"\" ")
-    #if self.access:
-    #    fi.write("access=\""+esc(self.access)+"\" ")
+    fi.write((" "*indent) + '<node name="'+esc(node.name)+'" id="'+str(node.id)+'" ')
+    if node.type is None:
+        node.type="node"
+    fi.write("type=\""+node.type+"\" ")
+    #if node.access:
+    #    fi.write("access=\""+esc(node.access)+"\" ")
     fi.write('>'+"\n")
 
     indent += 4
         
-    for name,value in self.items():
+    for name,value in node.items():
         fi.write((" "*indent) + '<attribute name="'+esc(name)+'"><![CDATA['+str(value)+']]></attribute>'+"\n")
 
-    for file in self.getFiles():
+    for file in node.getFiles():
         if file.type == "metadata":
             continue
         mimetype = file.mimetype
         if mimetype is None:
             mimetype = "application/x-download"
         fi.write((" "*indent) + '<file filename="'+esc(file.getName())+'" mime-type="'+mimetype+'" type="'+(file.type is not None and file.type or "image")+'"/>' + "\n")
-    for c in self.getChildren().sort():
-        fi.write((" "*indent) + "<child id=\"%s\"/>\n" % str(c.id))
+    if children:
+        for c in node.getChildren().sort():
+            fi.write((" "*indent) + "<child id=\"%s\"/>\n" % str(c.id))
     indent -= 4
     fi.write((" "*indent) + '</node>'+"\n")
-    for c in self.getChildren().sort():
-        if c.id not in written:
-            written[c.id] = None
-            c.writexml(fi, indent)
+    if(children):
+        for c in node.getChildren().sort():
+            if c.id not in written:
+                written[c.id] = None
+                c.writexml(fi, indent)
 
 class _StringWriter:
     def __init__(self):
@@ -72,12 +75,11 @@ def _writeNodeXML(node, fi):
 
 class _NodeLoader:
 
-    def __init__(self,filename):
+    def __init__(self,fi):
         self.root = None
         self.nodes = []
         self.attributename = None
         self.id2node = {}
-        fi = open(filename, "rb")
         p = xml.parsers.expat.ParserCreate()
         p.StartElementHandler = lambda name, attrs: self.xml_start_element(name,attrs)
         p.EndElementHandler = lambda name: self.xml_end_element(name)
@@ -144,8 +146,14 @@ class _NodeLoader:
 
 tree.registerNodeFunction("writexml", writexml)
 
+def parseNodeXML(s):
+    file = StringIO.StringIO(s)
+    n = _NodeLoader(file)
+    return n.root
+
 def readNodeXML(filename):
-    n = _NodeLoader(filename)
+    file = open(filename, "rb")
+    n = _NodeLoader(file)
     return n.root
 
 def writeNodeXML(node, filename):
@@ -158,3 +166,7 @@ def getNodeXML(node):
     _writeNodeXML(node,wr)
     return wr.get()
 
+def getSingleNodeXML(node):
+    wr = _StringWriter()
+    writexml(node,wr,children=False)
+    return wr.get()

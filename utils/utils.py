@@ -256,10 +256,10 @@ def getMimeType(filename):
         type = "image"
     elif filename.endswith(".pdf"):
         mimetype = "application/pdf"
-        type = "doc"
+        type = "document"
     elif filename.endswith(".ps"):
         mimetype = "application/postscript"
-        type = "doc"
+        type = "document"
     elif filename.endswith(".zip"):
         mimetype = "application/zip"
         type = "zip"
@@ -271,7 +271,7 @@ def getMimeType(filename):
         type = "video"
     elif filename.endswith(".doc"):
         mimetype = "application/msword"
-        type = "doc"
+        type = "document"
     elif filename.endswith(".ppt"):
         mimetype = "application/mspowerpoint"
         type = "ppt"

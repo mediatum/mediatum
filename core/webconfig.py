@@ -20,12 +20,14 @@
 import os
 import core.athana as athana
 import core.config as config
+import core.tree as tree
 
 def initContexts():
     athana.setBase(".")
     athana.setTempDir("/tmp/")
     from core.config import resolve_filename
     from core.translation import translate
+    from core.ftp import collection_ftpserver
     athana.addMacroResolver(resolve_filename)
     athana.addTranslator(translate)
     
@@ -100,7 +102,7 @@ def initContexts():
     context = athana.addContext("/oai/", ".")
     file = context.addFile("export/oai.py")
     file.addHandler("oaiRequest").addPattern(".*")
-    
+
     # === Exoprt ===
     context = athana.addContext("/export", ".")
     file = context.addFile("export/export.py")
@@ -113,6 +115,11 @@ def initContexts():
     athana.addFileStore("/js/", ["web/js/", "js"])
 
     #athana.addContext("/flush", ".").addFile("core/webconfig.py").addHandler("flush").addPattern("/py")
+    
+    for collection in tree.getRoot("collections").getChildren():
+        if collection.get("ftp_user") and collection.get("ftp_passwd"):
+            print "set up ftp server for collection", collection.getName()
+            athana.addFTPHandler(collection_ftpserver(collection))
    
 def flush(req):
     athana.flush()
@@ -124,6 +131,7 @@ def flush(req):
 def startWebServer():
     initContexts()
 
-    athana.setThreads(int(config.get("host.threads","8")))
+
+    athana.setThreads(int(config.get("host.threads","1")))
     athana.run(int(config.get("host.port","8081")))
 

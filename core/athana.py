@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.23 2008/05/05 06:06:20 mediatum Exp $'
+RCS_ID =  '$Id: athana.py,v 1.24 2008/05/07 11:57:20 kramm Exp $'
 
 import sys
 
@@ -5362,6 +5362,7 @@ class ftp_channel (async_chat):
                     self.filesystem.unlink (file)
                     self.respond ('250 DELE command successful.')
                 except:
+                    print exception_string()
                     self.respond ('550 error deleting file.')
             else:
                 self.respond ('550 %s: No such file.' % file)
@@ -5375,6 +5376,7 @@ class ftp_channel (async_chat):
                 self.filesystem.mkdir (path)
                 self.respond ('257 MKD command successful.')
             except:
+                print exception_string()
                 self.respond ('550 error creating directory.')
 
     def cmd_rmd (self, line):
@@ -5386,6 +5388,7 @@ class ftp_channel (async_chat):
                 self.filesystem.rmdir (path)
                 self.respond ('250 RMD command successful.')
             except:
+                print exception_string()
                 self.respond ('550 error removing directory.')
 
     def cmd_user (self, line):
@@ -6586,17 +6589,20 @@ def worker_thread(server):
 class fs:
     pass
 
-class virtual_authorizer:
+class ftp_authorizer:
     def __init__ (self):
         pass
-    def authorize (self, channel, username, password):
-        channel.persona = -1, -1
-        channel.read_only = 1
-        #return 1, 'Ok.', fs()
-        return 1, 'Ok.', os_filesystem("/home/kramm")
+    def authorize(self, channel, username, password):
+        for handler in ftphandlers:
+            fs = handler.has_user(username, password)
+            if fs:
+                channel.persona = -1, -1
+                channel.read_only = 0
+                return 1, 'Ok.', fs
+        return False, "No such username/password combination", None
 
     def __repr__(self):
-        return 'virtual'
+        return 'ftp_authorizer'
 
 class logging_logger:
     def __init__(self,name="athana"):
@@ -6765,7 +6771,7 @@ def run(port=8081):
     hs.install_handler (ph)
 
     if len(ftphandlers) > 0:
-        ftp = ftp_server (virtual_authorizer(), port=8021, logger_object=lg)
+        ftp = ftp_server (ftp_authorizer(), port=8021, logger_object=lg)
 
     if multithreading_enabled: 
         threadlist = []

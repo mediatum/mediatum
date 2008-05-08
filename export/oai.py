@@ -68,7 +68,7 @@ def writeHead(req):
 
     req.write("""<?xml version="1.0" encoding="UTF-8"?>
     <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
-        <responseDate>"""+d+"""</responseDate>
+        <responseDate>"""+d+"""Z</responseDate>
         <request""")
     for n in "verb", "identifier", "metadataprefix", "from", "until", "set":
         if n in req.params:
@@ -311,6 +311,8 @@ def getNodes(req):
     return tree.NodeList(nodes[pos:pos+CHUNKSIZE]), tokenstring, metadataformat
 
 def ListIdentifiers(req):
+    if "until" in req.params.keys():
+        return writeError(req, 'badArgument')
     nodes, tokenstring, metadataformat = getNodes(req)
     if nodes is None:
         return writeError(req,tokenstring)
@@ -330,6 +332,13 @@ def ListIdentifiers(req):
     req.write("""</ListIdentifiers>""")
 
 def ListRecords(req):
+
+    eyear = str(EARLIEST_YEAR-1)+"""-01-01T12:00:00Z"""
+    if "until" in req.params.keys() and req.params.get("until")<eyear and len(req.params.get("until"))==len(eyear):
+        return writeError(req, 'noRecordsMatch')
+    if "resumptionToken" in req.params.keys() and "until" in req.params.keys():
+        return writeError(req, 'badArgument')
+        
     nodes, tokenstring, metadataformat = getNodes(req)
     if nodes is None:
         return writeError(req,tokenstring)

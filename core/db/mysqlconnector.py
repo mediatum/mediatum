@@ -99,6 +99,7 @@ class MYSQLConnector(Connector):
                 #maybe switch to
                 #       cursor.execute("select whatever from whomever where something = %s", my_parameter)
                 #?
+                s = str(s)
                 return "'" + s.replace('"','\\"').replace('\'','\\\'').replace('\\','\\\\') + "'"
 
     def execute(self,sql):

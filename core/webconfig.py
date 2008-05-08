@@ -42,6 +42,11 @@ def initContexts():
     file.addHandler("send_file_as_download").addPattern("/download/.*")
     file.addHandler("send_attachment").addPattern("/attachment/.*")
     file.addHandler("send_attfile").addPattern("/attfile/.*")
+
+    file = context.addFile("web/frontend/zoom.py")
+    file.addHandler("send_imageproperties_xml").addPattern("/tile/[0-9]*/ImageProperties.xml")
+    file.addHandler("send_tile").addPattern("/tile/[0-9]*/[^I].*")
+
     file = context.addFile("web/frontend/main.py")
     handler = file.addHandler("display")
     handler.addPattern("/")

@@ -7,13 +7,33 @@
     <div id="object_main">
 	
         <div id="object_image" tal:condition="python:canseeoriginal">
+            <tal:block tal:condition="python:zoom">
+                <object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" 
+                        codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,40,0"
+                        width="300" height="300" id="theMovie">
+                  <param name="FlashVars" 
+                         tal:attributes="value python:'zoomifyImagePath='+tileurl">
+                  <param name="MENU" value="FALSE">
+                  <param name="SRC" value="/img/zoom.swf">
+                  <embed FlashVars="zoomifyImagePath=http://localhost:8081/tile/635890/" 
+                         tal:attributes="FlashVars python:'zoomifyImagePath='+tileurl"
+                         src="/img/zoom.swf" 
+                         menu="false" 
+                         pluginspage="http://www.macromedia.com/shockwave/download/index.cgi?P1_Prod_Version=ShockwaveFlash"
+                         width="300" height="300" name="theMovie">
+                  </embed>
+                </object>
+            </tal:block>
+            <tal:block tal:condition="python:not zoom">
             <a>
                 <img tal:attributes="src python:'/thumb2/'+str(node.id); onClick python:'fullSizePopup('+str(node.id)+', ' + str(node.get('width')) +', ' + str(node.get('height')) +')'" style="cursor:pointer; width:300px;border:1px double silver;" border="1px" />
             </a>
+            </tal:block>
             <div tal:condition="python:tif!=''" id="object_highresolution">
                 &nbsp;&nbsp;<a tal:attributes="href python:'/file/'+str(node.id)+'/'+str(tif)" href="#" i18n:translate="image_high_res_title">TEXT</a>
             </div>
         </div>
+
         <div id="object_image" tal:condition="python:not canseeoriginal">
             <img tal:attributes="src python:'/thumb2/'+str(node.id)" 
                  style="width:300px; border:1px double silver;" border="1px"/>
@@ -115,7 +135,8 @@
         </script>
     </head>
         
-    <body tal:attributes="onload python:'load_image(\''+key+'\')'" style="padding: 0px; border: 0px; margin: 0px;">
+    <body tal:condition="python:not flash"
+          tal:attributes="onload python:'load_image(\''+key+'\')'" style="padding: 0px; border: 0px; margin: 0px;">
         <div id="nav" align="right" name="nav" style="position:absolute; width: 300px; height:200px; margin:5px;">
             <a href="#" onclick="zoom(1);" i18n:attributes="title popup_fullview_decrease"><img src="/img/pmud-minus.png" border="0"/></a>
             <span id="zoom_val" style="border:1px solid silver; background-color:white; width: 40px; text-align: right;">100%</span>
@@ -126,6 +147,22 @@
         <div id="div_image" name="div_image" style="height: 100%; width: 100%;">
             <img tal:attributes="src python:'images/'+key" id="myimage" width="200px"/>
         </div>
+    </body>
+    <body tal:condition="python:flash">
+        <object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" 
+                codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,40,0"
+                width="100%" height="100%" id="theMovie">
+          <param name="FlashVars" 
+                 tal:attributes="value python:'zoomifyImagePath='+tileurl">
+          <param name="MENU" value="FALSE">
+          <param name="SRC" value="/img/zoom.swf">
+          <embed tal:attributes="FlashVars python:'zoomifyImagePath='+tileurl"
+                 src="/img/zoom.swf" 
+                 menu="false" 
+                 pluginspage="http://www.macromedia.com/shockwave/download/index.cgi?P1_Prod_Version=ShockwaveFlash"
+                 width="100%" height="100%" name="theMovie">
+          </embed>
+        </object>
     </body>
 </html>
 

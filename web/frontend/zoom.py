@@ -22,12 +22,10 @@ import core.tree as tree
 import os
 import Image
 from utils.dicts import MaxSizeDict
+from utils.fileutils import importFile
 IMGNAME = re.compile("/?tile/([^/]*)(/(.*))?$")
 
-#
-# TODO: We should cache image tiles in the node, not re-extract them for
-#       every request
-#
+store = 1 # keep tiles?
 
 cache = MaxSizeDict(16) # keep at max 16 images in memory at once
 
@@ -50,12 +48,12 @@ def getImage(nid):
     node = tree.getNode(nid)
     for f in node.getFiles():
         if f.type == "image":
-            img = ZoomImage(f.retrieveFile())
+            img = ZoomImage(node, f.retrieveFile())
             cache[nid] = img
             return img
 
 class ZoomImage:
-    def __init__(self, filename):
+    def __init__(self, node, filename):
         self.img = Image.open(filename)
         self.img.load()
         l = max(self.img.size)
@@ -64,12 +62,25 @@ class ZoomImage:
             l = l/2
             self.levels = self.levels + 1
         self.width,self.height = self.img.size
+        self.node = node
+        if store:
+            self.preprocess()
+
+    def preprocess(self):
+        for level in self.levels:
+            for x in range(self.width / (1<<(self.levels-level))):
+                for y in range(self.height / (1<<(self.levels-level))):
+                    self.getTile(level, x, y)
 
     def getTile(self, level, x, y):
         if level > self.levels:
             return None
 
-        print level,x,y,self.levels
+        for f in self.node.getFiles():
+            if f.type == "tile-%d-%d-%d" % (level,x,y):
+                return f.retrieveFile()
+
+        print "Creating tile",level,"of",self.levels, "x=",x,"y=",y,"for image",self.node.id
         level = 1<<(self.levels-level)
 
         x0,y0,x1,y1 = (x*TILESIZE*level,y*TILESIZE*level,(x+1)*TILESIZE*level,(y+1)*TILESIZE*level)
@@ -88,6 +99,12 @@ class ZoomImage:
         img = self.img.crop((x0,y0,x1,y1)).resize((xl,yl))
         tmpname = os.tmpnam()+".jpg"
         img.save(tmpname)
+
+        if store:
+            file = importFile(tmpname, tmpname)
+            file.type = "tile-%d-%d-%d" % (level, x, y)
+            self.node.addFile(file)
+
         return tmpname
 
 def send_imageproperties_xml(req):

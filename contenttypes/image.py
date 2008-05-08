@@ -156,6 +156,8 @@ class Image(default.Default):
         obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY) # hide empty elements
         obj['node'] = node
         obj['tif'] = tif
+        obj['zoom'] = False 
+        obj['tileurl'] = "/tile/"+node.id+"/"
         obj['canseeoriginal'] = access.hasAccess(node,"data")
         return obj
     
@@ -356,5 +358,17 @@ class Image(default.Default):
 
     """ fullsize popup-window for image node """
     def popup_fullsize(node, req):
-        req.writeTAL("contenttypes/image.html", {"key":req.params.get("id", "")}, macro="imageviewer")
+        d = {}
+        d["key"] = req.params.get("id", "")
+        # we assume that width==origwidth, height==origheight
+        
+        d['flash'] = False
+
+        if node.get("width") and int(node.get("width"))>1000 or
+           node.get("height") and int(node.get("height"))>1000:
+               d['flash'] = True
+
+        d['tileurl'] = "/tile/"+node.id+"/"
+
+        req.writeTAL("contenttypes/image.html", d, macro="imageviewer")
         

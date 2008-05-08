@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.24 2008/05/07 11:57:20 kramm Exp $'
+RCS_ID =  '$Id: athana.py,v 1.25 2008/05/08 11:58:54 seiferta Exp $'
 
 import sys
 
@@ -6460,8 +6460,12 @@ class AthanaHandler:
                 query=query[1:]
             query = query.split('&')
             for e in query:
-                i = e.index('=')
-                key,value = e[:i],e[i+1:]
+                try:
+                    i = e.index('=')
+                    key,value = e[:i],e[i+1:]
+                except ValueError:
+                    key = e
+                    value = ""
                 key = urllib.unquote_plus(key)
                 try:
                     oldvalue = parameters[key]+";"

@@ -364,9 +364,10 @@ class Image(default.Default):
         
         d['flash'] = False
 
-        if node.get("width") and int(node.get("width"))>1000 or
+        if node.get("width") and int(node.get("width"))>1000 or \
            node.get("height") and int(node.get("height"))>1000:
-               d['flash'] = True
+               if os.path.isfile(os.path.join(config.basedir,"web/img/zoom.swf")):
+                   d['flash'] = True
 
         d['tileurl'] = "/tile/"+node.id+"/"
 

@@ -184,6 +184,9 @@ class FileNode:
         return get_hash(self.retrieveFile())
     def getName(self):
         return os.path.basename(self._path)
+        
+    def getPath(self):
+        return config.settings["paths.datadir"] + self._path
 
 nodetypes = {}
 

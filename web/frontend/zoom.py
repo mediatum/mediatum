@@ -21,6 +21,7 @@ import re
 import core.tree as tree
 import os
 import Image
+import sys
 from utils.dicts import MaxSizeDict
 from utils.fileutils import importFile
 IMGNAME = re.compile("/?tile/([^/]*)(/(.*))?$")
@@ -67,20 +68,22 @@ class ZoomImage:
             self.preprocess()
 
     def preprocess(self):
-        for level in self.levels:
-            for x in range(self.width / (1<<(self.levels-level))):
-                for y in range(self.height / (1<<(self.levels-level))):
+        for level in range(self.levels+1):
+            t = (TILESIZE<<(self.levels-level))
+            for x in range((self.width + (t-1)) / t):
+                for y in range((self.height + (t-1)) / t):
+                    print "Preprocessing tile",level,x,y
                     self.getTile(level, x, y)
 
     def getTile(self, level, x, y):
         if level > self.levels:
             return None
 
+        tileid = "tile-%d-%d-%d" % (level,x,y)
         for f in self.node.getFiles():
-            if f.type == "tile-%d-%d-%d" % (level,x,y):
+            if f.type == tileid:
                 return f.retrieveFile()
 
-        print "Creating tile",level,"of",self.levels, "x=",x,"y=",y,"for image",self.node.id
         level = 1<<(self.levels-level)
 
         x0,y0,x1,y1 = (x*TILESIZE*level,y*TILESIZE*level,(x+1)*TILESIZE*level,(y+1)*TILESIZE*level)
@@ -88,6 +91,9 @@ class ZoomImage:
             return None
         if y0 > self.img.size[1]:
             return None
+        
+        print "Creating tile",level,"of",self.levels, "x=",x,"y=",y,"for image",self.node.id
+
         if x1 > self.img.size[0]:
             x1 = self.img.size[0]
         if y1 > self.img.size[1]:
@@ -102,7 +108,7 @@ class ZoomImage:
 
         if store:
             file = importFile(tmpname, tmpname)
-            file.type = "tile-%d-%d-%d" % (level, x, y)
+            file.type = tileid
             self.node.addFile(file)
 
         return tmpname
@@ -128,7 +134,10 @@ def send_tile(req):
     if not tmpname:
         return 404
     r = req.sendFile(tmpname, "image/jpeg")
-    os.unlink(tmpname)
+   
+    if not store:
+        os.unlink(tmpname)
+
     return r
 
 

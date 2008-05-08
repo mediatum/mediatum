@@ -21,6 +21,14 @@ function openDetailWindow(fileName)
 function fullSizePopup(id, width, height)
 {
     url = '/fullsize?id='+id;
+
+    if(screen.width>100 && screen.width-100 < width) {
+        width = screen.width-100;
+    }
+    if(screen.height>100 && screen.height-100 < height) {
+        height = screen.height-100;
+    }
+
     var win1 = window.open(url,'image_fullsize','width='+width+',height='+height+',screenX=50,screenY=50,directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=yes'); 
     win1.focus();
     return win1;

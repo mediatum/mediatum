@@ -185,9 +185,6 @@ class FileNode:
     def getName(self):
         return os.path.basename(self._path)
         
-    def getPath(self):
-        return config.settings["paths.datadir"] + self._path
-
 nodetypes = {}
 
 ' TODO update for current tree implementation'

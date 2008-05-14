@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.25 2008/05/08 11:58:54 seiferta Exp $'
+RCS_ID =  '$Id: athana.py,v 1.26 2008/05/14 09:11:00 kramm Exp $'
 
 import sys
 
@@ -6388,6 +6388,7 @@ def exception_string():
 BASENAME = re.compile("([^/]*/)*([^/.]*)(.py)?")
 MULTIPART = re.compile ('multipart/form-data.*boundary=([^ ]*)', re.IGNORECASE)
 SESSION_PATTERN = re.compile("^;[a-z0-9]{6}-[a-z0-9]{6}-[a-z0-9]{6}$")
+SESSION_PATTERN2 = re.compile("[a-z0-9]{6}-[a-z0-9]{6}-[a-z0-9]{6}")
 
 use_cookies = 1
 
@@ -6445,7 +6446,7 @@ class AthanaHandler:
     def continue_request(self, request, parameters):
 
         path, params, query, fragment = request.split_uri()
-        
+
         ip = request.request_headers.get("x-forwarded-for",None)
         if ip is None:
             try: ip = request.channel.addr[0]
@@ -6549,6 +6550,9 @@ class AthanaHandler:
             request.setCookie('PSESSION', sessionid, time.time()+3600*2)
 
         request.channel.current_request = None
+        
+        if path=="/threadstatus":
+            return thread_status(request)
 
         function = context.match(path)
        
@@ -6574,21 +6578,6 @@ class AthanaHandler:
             traceback.print_tb(sys.exc_info()[2],None,lgerr)
             s = "<pre>"+exception_string()+"</pre>"
             return request.error(500,s)
-
-def worker_thread(server):
-    while 1:
-        server.queuelock.acquire()
-        if len(server.queue) == 0:
-            server.queuelock.release()
-            time.sleep(0.01)
-        else:
-            function,req = server.queue.pop()
-            server.queuelock.release()
-            try:
-                server.callhandler(function,req)
-            except:
-                lgerr.log("Error while processing request:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
-                traceback.print_tb(sys.exc_info()[2],None,lgerr)
 
 class fs:
     pass
@@ -6767,6 +6756,62 @@ def setThreads(number):
     else:
         multithreading_enabled=0
         number_of_threads=1
+
+threadlist=None
+
+def thread_status(req):
+    req.write("""<html><head><title>Athana Status</title></head><body>""")
+    if threadlist:
+        i = 1
+        for thread in threadlist:
+            req.write("<h3>Thread %d</h3>" % thread.number)
+            if thread.status == "working":
+                req.write('<p style="color: red">')
+                req.write("Working on <tt>%s</tt><br />" % str(thread.uri))
+                req.write("Since: " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(thread.lastrequest)))
+                req.write('</p>')
+            else:
+                req.write('<p style="color: green">')
+                req.write("Idle.<br />");
+                req.write("Last request <tt>%s</tt><br/>" % str(thread.uri))
+                req.write("Processed at: " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(thread.lastrequest)))
+                req.write('</p>')
+    req.write("""</body></html>""")
+    req.channel.current_request = None
+    req.reply_code = 200
+    req['Connection'] = 'close';
+    return req.done()
+
+class AthanaThread:
+    def __init__(self, server, number):
+        self.server = server
+        self.lastrequest = 0
+        self.status = "idle"
+        self.number = number
+        self.uri = ""
+
+    def worker_thread(self):
+        server = self.server
+        while 1:
+            server.queuelock.acquire()
+            if len(server.queue) == 0:
+                server.queuelock.release()
+                time.sleep(0.01)
+            else:
+                function,req = server.queue.pop()
+                self.lastrequest = time.time()
+                self.status = "working"
+                self.uri = SESSION_PATTERN.sub("xxxxxx-xxxxxx-xxxxxx", req.uri)
+                server.queuelock.release()
+                try:
+                    server.callhandler(function,req)
+                except:
+                    lgerr.log("Error while processing request:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
+                    traceback.print_tb(sys.exc_info()[2],None,lgerr)
+                self.status = "idle waiting"
+
+def runthread(athanathread):
+    athanathread.worker_thread()
         
 def run(port=8081):
     check_date()
@@ -6778,9 +6823,12 @@ def run(port=8081):
         ftp = ftp_server (ftp_authorizer(), port=8021, logger_object=lg)
 
     if multithreading_enabled: 
+        global threadlist
         threadlist = []
         for i in range(number_of_threads):
-            threadlist += [thread.start_new_thread(worker_thread, (ph,))]
+            athanathread = AthanaThread(ph, i)
+            thread.start_new_thread(runthread, (athanathread,))
+            threadlist += [athanathread]
 
     while 1:
         try:

@@ -41,20 +41,41 @@ def splitpath(path):
 
 TILESIZE = 256
 
-def getImage(nid):
+def getImage(nid, preprocess=0):
     global cache
     if nid in cache:
         return cache[nid]
 
     node = tree.getNode(nid)
-    for f in node.getFiles():
-        if f.type == "image":
-            img = ZoomImage(node, f.retrieveFile())
-            cache[nid] = img
-            return img
+    img = ZoomImage(node, preprocess)
+    cache[nid] = img
+    return img
 
 class ZoomImage:
-    def __init__(self, node, filename):
+    def __init__(self, node, preprocess=0):
+        self.node = node
+        self.width = int(self.node.get("width"))
+        self.height = int(self.node.get("height"))
+        self.levels = int(self.node.get("levels") or "0")
+        self.img = None
+        if not self.levels:
+            self.load()
+        if store and preprocess:
+            self.preprocess()
+
+    def load(self):
+        if self.img:
+            return
+
+        for f in self.node.getFiles():
+            if f.type == "image":
+                filename = f.retrieveFile()
+                break
+        else:
+            raise AttributeError("Not an image")
+        
+        print "loading image",filename
+
         self.img = Image.open(filename)
         self.img.load()
         l = max(self.img.size)
@@ -63,16 +84,13 @@ class ZoomImage:
             l = l/2
             self.levels = self.levels + 1
         self.width,self.height = self.img.size
-        self.node = node
-        if store:
-            self.preprocess()
+        self.node.set("levels", str(self.levels))
 
     def preprocess(self):
         for level in range(self.levels+1):
             t = (TILESIZE<<(self.levels-level))
             for x in range((self.width + (t-1)) / t):
                 for y in range((self.height + (t-1)) / t):
-                    print "Preprocessing tile",level,x,y
                     self.getTile(level, x, y)
 
     def getTile(self, level, x, y):
@@ -80,10 +98,15 @@ class ZoomImage:
             return None
 
         tileid = "tile-%d-%d-%d" % (level,x,y)
+
+        # TODO: this linear search is still somewhat slow
         for f in self.node.getFiles():
             if f.type == tileid:
                 return f.retrieveFile()
 
+        self.load()
+
+        l = level
         level = 1<<(self.levels-level)
 
         x0,y0,x1,y1 = (x*TILESIZE*level,y*TILESIZE*level,(x+1)*TILESIZE*level,(y+1)*TILESIZE*level)
@@ -92,7 +115,7 @@ class ZoomImage:
         if y0 > self.img.size[1]:
             return None
         
-        print "Creating tile",level,"of",self.levels, "x=",x,"y=",y,"for image",self.node.id
+        print "Creating tile",l,"of",self.levels, "x=",x,"y=",y,"for image",self.node.id
 
         if x1 > self.img.size[0]:
             x1 = self.img.size[0]
@@ -110,6 +133,7 @@ class ZoomImage:
             file = importFile(tmpname, tmpname)
             file.type = tileid
             self.node.addFile(file)
+            print "Storing tile in node"
 
         return tmpname
 
@@ -117,6 +141,7 @@ def send_imageproperties_xml(req):
     nid,data = splitpath(req.path)
     img = getImage(nid)
     req.write("""<IMAGE_PROPERTIES WIDTH="%d" HEIGHT="%d" NUMIMAGES="1" VERSION="1.8" TILESIZE="%d"/>""" % (img.width, img.height, TILESIZE))
+    print "return ImageProperties.xml"
 
 def send_tile(req):
     nid, data = splitpath(req.path)

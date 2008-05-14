@@ -76,7 +76,7 @@ def getMetaType(name):
 # load all meta-types from db
 #
 def loadTypesFromDB():
-    return list(tree.getRoot("metadatatypes").getChildren().sort())
+    return list(tree.getRoot("metadatatypes").getChildren().sort('name'))
 
 def getNumberNodes(name):
     return len(tree.getRoot("metadatatypes").search("objtype=%s*" % (name)))

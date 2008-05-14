@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.26 2008/05/14 09:11:00 kramm Exp $'
+RCS_ID =  '$Id: athana.py,v 1.27 2008/05/14 09:21:46 kramm Exp $'
 
 import sys
 
@@ -6766,16 +6766,29 @@ def thread_status(req):
         for thread in threadlist:
             req.write("<h3>Thread %d</h3>" % thread.number)
             if thread.status == "working":
-                req.write('<p style="color: red">')
+                duration = time.time() - thread.lastrequest
+                if duration > 10:
+                    req.write('<p style="color: red">')
                 req.write("Working on <tt>%s</tt><br />" % str(thread.uri))
                 req.write("Since: " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(thread.lastrequest)))
-                req.write('</p>')
+                req.write(" (%.2f seconds)" % duration)
+                if duration > 10:
+                    req.write('</p>')
             else:
-                req.write('<p style="color: green">')
+                if thread.duration < 10:
+                    req.write('<p style="color: green">')
                 req.write("Idle.<br />");
-                req.write("Last request <tt>%s</tt><br/>" % str(thread.uri))
-                req.write("Processed at: " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(thread.lastrequest)))
-                req.write('</p>')
+                if thread.lastrequest or thread.duration:
+                    req.write("Last request <tt>%s</tt><br/>" % str(thread.uri))
+                    req.write("Processed at: " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(thread.lastrequest))+"<br />")
+
+                    if thread.duration >=10:
+                        req.write('<span style="color: red">Processing time: %.2f seconds</span><br />' % thread.duration)
+                    else:
+                        req.write("Processing time: %.2f seconds <br />" % thread.duration)
+
+                    if thread.duration < 10:
+                        req.write('</p>')
     req.write("""</body></html>""")
     req.channel.current_request = None
     req.reply_code = 200
@@ -6789,6 +6802,7 @@ class AthanaThread:
         self.status = "idle"
         self.number = number
         self.uri = ""
+        self.duration = 0
 
     def worker_thread(self):
         server = self.server
@@ -6809,6 +6823,7 @@ class AthanaThread:
                     lgerr.log("Error while processing request:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
                     traceback.print_tb(sys.exc_info()[2],None,lgerr)
                 self.status = "idle waiting"
+                self.duration = time.time() - self.lastrequest
 
 def runthread(athanathread):
     athanathread.worker_thread()

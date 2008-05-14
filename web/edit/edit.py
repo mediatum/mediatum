@@ -492,10 +492,11 @@ def content(req):
     access = AccessData(req)
 
     # remove all caches for the frontend area- we might make changes there
-    try:
-        del req.session["contentarea"]
-    except:
-        pass
+    for sessionkey in ["contentarea", "navframe"]:
+        try:
+            del req.session[sessionkey]
+        except:
+            pass
 
     if not access.user.isEditor():
         req.writeTALstr('<span i18n:translate="edit_nopermission">Keine Berechtigung</span>',{})

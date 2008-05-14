@@ -75,7 +75,7 @@ def show_node():
         print "        datatype:",node.type
     print "    Metadata:"
     for k,v in node.items():
-        if len(v)>80:
+        if type(v)==type("") and len(v)>80:
             print "        ",k+"="+v[0:80]+"..."
         else:
             print "        ",k+"="+v

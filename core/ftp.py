@@ -37,7 +37,12 @@ class FileWriter:
         filenode = fileutils.importFile(self.realname, self.filename)
         self.node.addFile(filenode)
         if self.node.getContentType() == "directory" and filenode.type:
-            self.node.setTypeName(filenode.type)
+            if filenode.type == "image":
+                self.node.setTypeName("image/pub-image")
+            elif filenode.type == "document":
+                self.node.setTypeName("document/pub-book")
+            else:
+                self.node.setTypeName(filenode.type)
         self.node.event_files_changed()
 
 
@@ -176,7 +181,11 @@ class collection_ftpserver:
                 else:
                     return 0
         self.dir = d
-        self.node = self.dir[-1]
+        if len(self.dir):
+            self.node = self.dir[-1]
+        else:
+            self.dir = [collection]
+            self.node = collection
         return 1
 
     def listdir (self, path, long=0):

@@ -441,11 +441,11 @@ button#reset-button{
 }
 
 #portal-column-content #object_main{
-    padding: 5px; margin-left: 0px;
+    padding: 5px; margin-left: 0px;position:relative;
 }
 
 #portal-column-content #object_image {
-    float: left; width: 300px;
+     width: 300px;position:absolute; top:24px;left:0px;
 }
 
 #portal-column-content #object_meta{
@@ -453,20 +453,21 @@ button#reset-button{
 }
 
 #portal-column-content #object_basket{
-    margin: 5px; clear: both;
+    margin: 5px; 
 }
 
 #portal-column-content div.mask_row {
-    margin-bottom: 6px;
+    margin-bottom: 5px;clear:both;
 }
 
 #portal-column-content div.mask_label {
-    width: 200px; float: left;
+    width: 200px;float:left;position:relative;
 }
 
 #portal-column-content  div.mask_value {
-    margin-left: 200px;
+    margin-left: 202px;
 }
+
 
 #portal-column-content div#nodes div#page-nav{
     margin-left: 5px; margin-right: 10px;

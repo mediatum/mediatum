@@ -107,7 +107,7 @@ def send_doc(req):
     if not access.hasAccess(n,"data") and n.type != "directory":
         return 403
     for f in n.getFiles():
-        if f.type == "doc":
+        if f.type=="doc" or f.type=="document":
             incUsage(n)
             if(f.getSize() > 16*1048576):
                 return req.sendFile(f.retrieveFile(), "application/x-download")

@@ -102,7 +102,7 @@ class Document(default.Default):
     
     def has_object(node):
         for f in node.getFiles():
-            if f.type=="doc":
+            if f.type=="doc" or f.type=="document":
                 return True
         return False
 
@@ -110,7 +110,7 @@ class Document(default.Default):
         return node.name
 
     def getSysFiles(node):
-        return ["doc","thumb", "thumb2","presentati","fulltext","fileinfo"]
+        return ["doc","document","thumb", "thumb2","presentati","fulltext","fileinfo"]
 
        
     """ postprocess method for object type 'document'. called after object creation """
@@ -132,6 +132,8 @@ class Document(default.Default):
             elif f.type == "fileinfo":
                 fileinfo = 1
             elif f.type == "doc":
+                doc = f
+            elif f.type == "document":
                 doc = f
 
         if not doc:
@@ -207,7 +209,7 @@ class Document(default.Default):
     """ popup window for actual nodetype """
     def popup_fullsize(node, req):
         for f in node.getFiles():
-            if f.getType() == "doc":
+            if f.getType() == "doc" or f.getType() == "document":
                 req.sendFile(f.retrieveFile(), f.getMimeType())
                 return
 

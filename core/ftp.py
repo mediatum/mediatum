@@ -19,6 +19,16 @@ class MetaDataWriter(StringIO.StringIO):
         for k,v in newnode.items():
             print k,v
             self.node.set(k,v)
+        
+        # FIXME: this is logic for the local TUM university archive, and not universal
+        if "/" in newnode.type and (newnode.getSchema() not in ["lt", "diss"]):
+            self.node.setSchema(newnode.getSchema())
+        else:
+            if newnode.type == "image":
+                self.node.setSchema("pub-image")
+            elif newnode.type == "document":
+                self.node.setSchema("pub-book")
+
         self.node.event_metadata_changed()
 
 class FileWriter:
@@ -37,12 +47,7 @@ class FileWriter:
         filenode = fileutils.importFile(self.realname, self.filename)
         self.node.addFile(filenode)
         if self.node.getContentType() == "directory" and filenode.type:
-            if filenode.type == "image":
-                self.node.setTypeName("image/pub-image")
-            elif filenode.type == "document":
-                self.node.setTypeName("document/pub-book")
-            else:
-                self.node.setTypeName(filenode.type)
+            self.node.setContentType(filenode.type)
         self.node.event_files_changed()
 
 

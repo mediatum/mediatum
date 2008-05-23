@@ -45,6 +45,9 @@ class FileWriter:
     def close(self):
         self.file.close()
         filenode = fileutils.importFile(self.realname, self.filename)
+
+        for f in self.node.getFiles():
+            self.node.removeFile(f)
         self.node.addFile(filenode)
         if self.node.getContentType() == "directory" and filenode.type:
             self.node.setContentType(filenode.type)

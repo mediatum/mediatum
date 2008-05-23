@@ -1,5 +1,5 @@
-<div metal:define-macro="showbig" id="object_main">
-    <div style="width: 100%; text-align:right">
+<div metal:define-macro="showbig" id="object_main" style="min-height:400px;overflow:hidden">
+    <div style="width:100%;text-align:right">
         <img tal:condition="python:node.get('metis_url')!=''" tal:attributes="src python:node.get('metis_url')" width="1" height="1" alt="" />
         <a tal:attributes="href python:'node?id='+str(node.id)+'&style=full_standard'" style="text-decoration:none">
             <img i18n:attributes="title full_standard_doc_title" src="/img/doc_default.png"/>

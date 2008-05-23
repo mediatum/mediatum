@@ -26,7 +26,7 @@
             </tal:block>
             <tal:block tal:condition="python:not zoom">
             <a>
-                <img tal:attributes="src python:'/thumb2/'+str(node.id); onClick python:'fullSizePopup('+str(node.id)+', ' + str(node.get('width')) +', ' + str(node.get('height')) +')'" style="cursor:pointer; width:300px;border:1px double silver;" border="1px" />
+                <img tal:attributes="src python:'/thumb2/'+str(node.id); onClick python:'fullSizePopup('+str(node.id)+', ' + str(node.get('width')) +', ' + str(node.get('height')) +')'" style="cursor:pointer;border:1px double silver;" border="1px" />
             </a>
             </tal:block>
             <div tal:condition="python:tif!=''" id="object_highresolution">
@@ -36,9 +36,9 @@
 
         <div id="object_image" tal:condition="python:not canseeoriginal">
             <img tal:attributes="src python:'/thumb2/'+str(node.id)" 
-                 style="width:300px; border:1px double silver;" border="1px"/>
+                 style="width: 300px;border:1px double silver;" border="1px"/>
         </div>        
-	<div id="object_meta" tal:content="raw metadata"/>
+	<div id="object_meta" tal:content="raw metadata" style="min-height: 400px"/>
     </div>
 </metal:block>
 

@@ -102,11 +102,9 @@ class Video(default.Default):
             if filenode.getType()=="original" or filenode.getType()=="video":
                 f =  "/file/" + str(node.id) + "/" + filenode.getName()
                 break
-        f = """config={ 
-                    autoPlay: true, 
-                    loop: false, 
-                    initialScale: 'scale',
-                    playList: [{ url: '""" +f+"""' }],
-                    showPlayListButtons: true
-                    }"""
-        req.writeTAL("contenttypes/video.html", {"playervalues":f, "node":node}, macro="fullsize_flv")
+        file = f
+        script = """
+        window.onload = function() {  
+                flashembed("player", { src:'/img/FlowPlayerDark.swf', width: """+str(int(node.get('vid-width'))+64)+""", height: """+str(int(node.get('vid-height'))+53)+"""}, {config: {videoFile: '"""+file+"""'}} );
+            }"""
+        req.writeTAL("contenttypes/video.html", {"file":file, "script":script, "node":node}, macro="fullsize_flv")

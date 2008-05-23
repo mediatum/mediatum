@@ -6,7 +6,7 @@
     </div>
     <div id="object_main">
         <div id="object_image">
-            <img tal:condition="python:canseeoriginal" tal:attributes="src python:'/thumb2/'+str(node.id); onClick python:'fullSizePopup('+str(node.id)+', '+str(int(node.get('vid-width'))+64)+', '+str(int(node.get('vid-height'))+53)+')'" style="cursor:pointer;border:0px;width:300px" src="/thumb2/_"/>
+            <img tal:condition="python:canseeoriginal" tal:attributes="src python:'/thumb2/'+str(node.id); onClick python:'fullSizePopup('+str(node.id)+', '+str(int(node.get('vid-width'))+64)+', '+str(int(node.get('vid-height'))+53)+')'" style="cursor:pointer;border:0px;width:300px" alt="thumbnail" src="/thumb2/_"/>
             <img tal:condition="python:not canseeoriginal" tal:attributes="src python:'/thumb2/'+str(node.id)" style="border:0px;width:300px"/>
             <br/>
             <p><small i18n:translate="video_plugin_info">TEXT</small></p>
@@ -17,10 +17,15 @@
 
 
 <tal:block metal:define-macro="fullsize_flv">
-    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
     <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
         <head>
-            <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+            <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+
+            <script type="text/javascript" src="/js/flashembed.min.js">
+            </script>
+            
             <title i18n:translate="video_showvideo">TEXT</title>
             <style>
                 html, body{
@@ -31,17 +36,8 @@
             </style>
         </head>
         <body>
-            <object type="application/x-shockwave-flash"
-                 width="384px" 
-                 height="308px" 
-                 data="/img/FlowPlayer.swf">
-                  <param name="allowScriptAccess" value="sameDomain"/> 
-                  <param name="MOVIE" value="/img/FlowPlayer.swf">
-                  <param name="PLAY" value="true"> 
-                  <param name="LOOP" value="true"> 
-                  <param name="QUALITY" value="high"> 
-                  <param name="flashvars" tal:attributes="value playervalues"/>
-            </object>
+            <script tal:content="script"/>
+            <div id="player"/>
         </body>
     </html>
 </tal:block>

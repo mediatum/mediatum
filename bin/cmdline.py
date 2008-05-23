@@ -81,7 +81,13 @@ def show_node():
             print "        ",k+"="+v
     print "    Files:"
     for f in node.getFiles():
-        print "        ",f.getName()," ",f.getType()," ",f.getMimeType()
+        if f.getType() == "tile-0-0-0":
+            print "        ",f.getName()," ",f.getType()," ",f.getMimeType()
+            print "        ","..."
+        elif f.getType().startswith("tile-"):
+            pass
+        else:
+            print "        ",f.retrieveFile()," ",f.getType()," ",f.getMimeType()
     print "    ACLs:"
     for a in ["read","write","data"]:
         print "        ",a,node.getAccess(a)

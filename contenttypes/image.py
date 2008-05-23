@@ -32,6 +32,7 @@ from utils.utils import splitfilename,isnewer
 from core.tree import Node,FileNode
 from core.translation import lang
 from schema.schema import loadTypesFromDB, VIEW_DATA_ONLY,VIEW_HIDE_EMPTY
+from web.frontend import zoom
 
 """ make thumbnail (jpeg 128x128) """
 def makeThumbNail(image, thumb):
@@ -268,6 +269,13 @@ class Image(default.Default):
 
             except:
                 None
+
+            tileok = 0
+            for f in node.getFiles():
+                if f.type.startswith("tile"):
+                    tileok = 1
+            if not tileok:
+                zoom.getImage(node.id)
 
             # iptc
             try:

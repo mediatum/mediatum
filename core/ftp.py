@@ -65,7 +65,7 @@ class collection_ftpserver:
     def has_user(self, username, password):
         print username, password, self.user, self.passwd
         if username == self.user and password == self.passwd:
-            return self
+            return collection_ftpserver(self.collection)
         else:
             return None
 
@@ -209,7 +209,8 @@ class collection_ftpserver:
         for c in self.dir[-1].getChildren():
             l += ["drwxrwxrwx    1 1001     100          4096 Jan 10  2008 %s" % c.getName()]
         for f in self.dir[-1].getFiles():
-            l += ["-rw-rw-rw-    1 1001     100      %8d Jan 10  2008 %s" % (f.getSize(),f.getName())]
+            if not f.getType().startswith('tile'):
+                l += ["-rw-rw-rw-    1 1001     100      %8d Jan 10  2008 %s" % (f.getSize(),f.getName())]
         if not self.dir[-1].isContainer():
             l += ["-rw-rw-rw-    1 1001     100          4096 Jan 10  2008 metadata.xml"]
 

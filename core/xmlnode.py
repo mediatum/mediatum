@@ -105,7 +105,7 @@ class _NodeLoader:
             except:
                 type="directory"
             node = tree.Node(name=attrs["name"].encode("utf-8"), type=type)
-            if id not in attrs:
+            if "id" not in attrs:
                 attrs["id"] = str(random.random())
             self.id2node[attrs["id"].encode("utf-8")] = node
             node.tmpchilds = []

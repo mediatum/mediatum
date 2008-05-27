@@ -24,9 +24,9 @@ class MetaDataWriter(StringIO.StringIO):
         if "/" in newnode.type and (newnode.getSchema() not in ["lt", "diss"]):
             self.node.setSchema(newnode.getSchema())
         else:
-            if newnode.type == "image":
+            if newnode.getContentType() == "image":
                 self.node.setSchema("pub-image")
-            elif newnode.type == "document":
+            elif newnode.getContentType() == "document":
                 self.node.setSchema("pub-book")
 
         self.node.event_metadata_changed()

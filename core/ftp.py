@@ -52,6 +52,10 @@ class FileWriter:
         for f in self.node.getFiles():
             self.node.removeFile(f)
         self.node.addFile(filenode)
+
+        print "content type now",self.node.getContentType()
+        print "new content type",filenode.type
+
         if self.node.getContentType() == "directory" and filenode.type:
             self.node.setContentType(filenode.type)
         self.node.event_files_changed()

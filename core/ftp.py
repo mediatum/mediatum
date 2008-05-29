@@ -16,10 +16,11 @@ class MetaDataWriter(StringIO.StringIO):
         newnode = xmlnode.parseNodeXML(s)
         #for k,v in self.node.items():
         #    self.node.set(k, "")
+        print "type",newnode.type
         for k,v in newnode.items():
-            print k,v
+            print "metadata",k,v
             self.node.set(k,v)
-        
+
         # FIXME: this is logic for the local TUM university archive, and not universal
         if "/" in newnode.type and (newnode.getSchema() not in ["lt", "diss"]):
             self.node.setSchema(newnode.getSchema())
@@ -28,7 +29,9 @@ class MetaDataWriter(StringIO.StringIO):
                 self.node.setSchema("pub-image")
             elif newnode.getContentType() == "document":
                 self.node.setSchema("pub-book")
-
+        
+        print "-> ", self.node.type
+        
         self.node.event_metadata_changed()
 
 class FileWriter:

@@ -29,6 +29,12 @@ class MetaDataWriter(StringIO.StringIO):
                 self.node.setSchema("pub-image")
             elif newnode.getContentType() == "document":
                 self.node.setSchema("pub-book")
+            elif newnode.getContentType() == "directory":
+		if self.node.getContentType() == "image":
+                    self.node.setSchema("pub-image")
+                elif self.node.getContentType() == "document":
+                    self.node.setSchema("pub-book")
+
         
         print "-> ", self.node.type
         

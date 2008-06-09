@@ -738,7 +738,6 @@ class Node:
         
         if type(items)!= list:
             items = items.getIDs()
-        q = q.replace("\"","'")
         return intersection([items, searcher.query(q)])
 
     def __getattr__(self, name):

@@ -1,3 +1,4 @@
+# vim: set fileencoding=utf-8 :
 """
  mediatum - a multimedia content repository
 
@@ -18,6 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import re
+import sys
 
 pattern_bracket = re.compile("\\([^)(]*\\)")
 pattern_string = re.compile('"([^"]*)"')
@@ -101,7 +103,7 @@ class BoolParser:
                 break
         return s,l
 
-    def parse2(self,s,l=None,stringlist=None):
+    def parse2(self,s,l=None,stringlist=None,onlybrackets=0):
         if l is None:
             l = []
         if stringlist is None:
@@ -156,8 +158,8 @@ class BoolParser:
             return self.getNotClass()(inverse);
 
         term = self.extendClauses(s,l).strip()
-        if '(' in term:
-            return self.parse2(term,l,stringlist)
+        if '(' in term and not onlybrackets:
+            return self.parse2(term,l,stringlist,1)
         else:
             return self.parseSimpleCondition(self.extendStrings(term,stringlist))
 
@@ -211,4 +213,5 @@ if __name__ == "__main__":
             return StringCondition(s2)
     bb = StringParser()
 
+    print str(bb.parse("""test2=test(test)"""))
     print str(bb.parse('(("bla (and) bla" and user "blupp" and (("bli bla blo"))))'))

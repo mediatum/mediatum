@@ -375,7 +375,9 @@ while 1:
         cmd = s[:space]
         rest = s[space+1:].strip() + " "
 
-    if cmd in commands:
+    if cmd == "search":
+        search(rest)
+    elif cmd in commands:
         command = commands[cmd]
         pattern = re.compile(r'([^ "]+|"[^"]*"|\'[^\']*\')\s+'*len(command.args))
         p = pattern.match(rest)
@@ -386,7 +388,9 @@ while 1:
         else:
             hashtable = {}
             for (key,value) in zip(command.args,p.groups()):
-                if value[0] == '"' and value[-1] == '"':
+                if value.startswith('"""') and value.endswith('"""'):
+                    value = value[3:-3]
+                elif value[0] == '"' and value[-1] == '"':
                     value = value[1:-1]
                 elif value[0] == '\'' and value[-1] == '\'':
                     value = value[1:-1]

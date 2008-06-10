@@ -159,9 +159,13 @@ def Identify(req):
         return writeError(req, "badArgument")
     request = mklink(req)
     root = tree.getRoot()
+    if config.get("config.oaibasename")=="":
+        name = root.getName()
+    else:
+        name = config.get("config.oaibasename")
     req.write("""
         <Identify>
-            <repositoryName>"""+root.getName()+"""</repositoryName>
+            <repositoryName>"""+name+"""</repositoryName>
             <baseURL>"""+request+"""</baseURL>
             <protocolVersion>2.0</protocolVersion>
             <adminEmail>"""+config.get("email.admin")+"""</adminEmail>

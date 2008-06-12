@@ -18,7 +18,20 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import sys
+import os
+
+try:
+    import wx
+except ImportError:
+    pass
+
+if wx:
+    import gui.console as gui
+    gui.start()
+
 import core
 import core.athana
 import core.webconfig
 core.webconfig.startWebServer()
+

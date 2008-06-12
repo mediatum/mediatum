@@ -24,7 +24,7 @@ import os
 try:
     import wx
 except ImportError:
-    pass
+    wx = None
 
 if wx:
     import gui.console as gui

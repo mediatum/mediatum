@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.27 2008/05/14 09:21:46 kramm Exp $'
+RCS_ID =  '$Id: athana.py,v 1.28 2008/06/12 10:37:19 kramm Exp $'
 
 import sys
 
@@ -4198,7 +4198,10 @@ class http_server (asyncore.dispatcher):
         host, port = self.socket.getsockname()
         if not ip:
             self.log_info('Computing default hostname', 'warning')
+        try:
             ip = socket.gethostbyname (socket.gethostname())
+        except:
+            ip = "0.0.0.0"
         try:
             self.server_name = socket.gethostbyaddr (ip)[0]
         except socket.error:

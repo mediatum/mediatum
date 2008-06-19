@@ -38,7 +38,7 @@
                     <td tal:attributes="class cssclass" tal:content="python:rule.getDescription()"/>
                     <td tal:attributes="class cssclass">
                         <input tal:attributes="name python:'edit_'+rule.getName()" i18n:attributes="title admin_acl_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
-                        <input tal:condition="python: rule.ruleUsage()>0" tal:attributes="name python:'delete_'+rule.getName(); onclick python:'return questionDelName(\''+rule.getName()+'\')'" i18n:attributes="title admin_acl_delete_title" type="image" src="/img/delete.png" onClick="return questionDel()"/>
+                        <input tal:condition="python: rule.ruleUsage()==0" tal:attributes="name python:'delete_'+rule.getName(); onclick python:'return questionDelName(\''+rule.getName()+'\')'" i18n:attributes="title admin_acl_delete_title" type="image" src="/img/delete.png" onClick="return questionDel()"/>
                     </td>
                 </tr>
                 </tal:block>

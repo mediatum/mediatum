@@ -34,7 +34,9 @@
                 <tr tal:define="cssclass python:rules.index(rule)%2 and 'norm' or 'silver'">
                     <td tal:attributes="class cssclass" tal:content="python:str(rules.index(rule)+1)+'.'"/>
                     <td tal:attributes="class cssclass" tal:content="python:rule.getName()"/>
-                    <td tal:attributes="class cssclass" tal:content="python:rule.getRuleStr()"/>
+                    <td tal:condition="python:len(rule.getRuleStr())<=30" tal:attributes="class cssclass" tal:content="python:rule.getRuleStr()"/>
+                    <td tal:condition="python:len(rule.getRuleStr())>30" tal:attributes="class cssclass"><a tal:attributes="title python:rule.getRuleStr()" tal:content="python:rule.getRuleStr()[:30]+'...'" style="cursor:default"/>
+                    </td>
                     <td tal:attributes="class cssclass" tal:content="python:rule.getDescription()"/>
                     <td tal:attributes="class cssclass">
                         <input tal:attributes="name python:'edit_'+rule.getName()" i18n:attributes="title admin_acl_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;

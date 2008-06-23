@@ -174,7 +174,7 @@ class ContentList(Content):
                 self.files.sort(self.sortfields)
 
         if self.nr>=0 and self.nr<self.num:
-            self.content = ContentNode(self.files[self.nr],self.nr,self.num,self.words)
+            self.content = ContentNode(self.files[self.nr],self.nr,self.num,self.words,self.collection)
         else:
             self.content = None
         
@@ -331,14 +331,17 @@ def getPaths(node, access):
 
 
 class ContentNode(Content):
-    def __init__(self,node,nr=0,num=0,words=None):
+    def __init__(self,node,nr=0,num=0,words=None,collection=None):
         self.node = node
         self.id = node.id
         self.paths = []
         self.nr = nr
         self.num = num
         self.words = words
-        self.collection = getCollection(node)
+        if collection:
+            self.collection = collection
+        else:
+            self.collection = getCollection(node)
         collections={}
        
     def actual(self):

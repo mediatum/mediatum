@@ -292,30 +292,23 @@ class ContentList(Content):
 #paths
 def getPaths(node, access):
     list = []
-    def r(node, path, collections):
-        #if node.type == "collection":
-        if isCollection(node):
-            collections[node.id] = node
+    def r(node, path):
         if node is tree.getRoot():
             return
         for p in node.getParents():
             path.append(p)
-            if p is tree.getRoot("collections"):
-                path2 = []
-            else:
-                path2 = path
-            r(p, path2, collections)
+            if p is not tree.getRoot("collections"):
+                r(p, path)
         return path
         
     paths = []
     
-    collections = {}
-    p = r(node, [], collections)
+    p = r(node, [])
     omit = 0
     if p:
         for node in p:
             if access.hasReadAccess(node):
-                if node.type in ("directory", "home"):
+                if node.type in ("directory", "home", "collection"):
                     paths.append(node)
                 if node is tree.getRoot("collections") or node.type=="root":
                     paths.reverse()

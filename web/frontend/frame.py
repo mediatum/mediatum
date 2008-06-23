@@ -261,6 +261,17 @@ class NavTreeEntry:
 # NOTE: the whole collection/browsing tree stuff is horriby complex, and
 # should be rewritten from scratch
 
+def isParentOf(node, parent):
+    parents = node.getParents()
+    if node == parent:
+        return 1
+    if parent in parents:
+        return 1
+    for p in parents:
+        if isParentOf(node, p):
+            return 1
+    return 0
+
 class Collectionlet(Portlet):
     def __init__(self):
         Portlet.__init__(self)
@@ -287,7 +298,8 @@ class Collectionlet(Portlet):
             dirid = req.params["dir"]
             try:
                 dir = tree.getNode(dirid)
-                self.collection = getCollection(dir)
+                if self.collection.type=="collections" or not isParentOf(dir, self.collection):
+                    self.collection = getCollection(dir)
             except tree.NoSuchNodeError:
                 pass
 
@@ -295,7 +307,8 @@ class Collectionlet(Portlet):
             id = req.params["id"]
             try:
                 node = tree.getNode(id)
-                self.collection = getCollection(node)
+                if self.collection.type=="collections" or not isParentOf(node, self.collection):
+                    self.collection = getCollection(node)
             except tree.NoSuchNodeError:
                 pass
 

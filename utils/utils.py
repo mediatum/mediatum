@@ -115,10 +115,13 @@ Ue = u"\u00dc".encode("utf-8")
 oe = u"\u00f6".encode("utf-8")
 Oe = u"\u00d6".encode("utf-8")
 
+e1 = u"\u00e8".encode("utf-8")
+e2 = u"\u00e9".encode("utf-8")
+
 def normalize_utf8(s):
     s = s.replace(ae,"ae").replace(ue,"ue").replace(oe,"oe") \
          .replace(Ae,"Ae").replace(Ue,"Ue").replace(Oe,"Oe") \
-         .replace(ss,"ss")
+         .replace(ss,"ss").replace(e1,"e").replace(e2, "e")
     return s.lower()
 
 import locale

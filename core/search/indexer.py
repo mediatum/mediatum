@@ -26,6 +26,7 @@ import os
 import core
 import core.config as config
 import core.tree as tree
+from utils.utils import normalize_utf8
 
 try:
     import sqlite3 as sqlite
@@ -44,7 +45,6 @@ FULLTEXT_INDEX_MODE = 0
 
 def protect(s):
     return s.replace('"','')
-
 
 
 class SearchIndexer:
@@ -123,7 +123,6 @@ class SearchIndexer:
         for id, attr in res.fetchall():
             ret[id] = attr
         return ret
-
         
     def nodeToSimpleSearch(self, node):
         # build simple search index from node
@@ -131,8 +130,11 @@ class SearchIndexer:
             sql = 'INSERT INTO fullsearchmeta (id, type, schema, value) VALUES(\''+ str(node.id)+'\', \''+node.getContentType()+'\', \''+node.getSchema()+'\', \''+ str(node.name) + '| '
 
             # attributes
+            a = ''
             for key,value in node.items():
-                sql += protect(u(value))+'| '
+                a += protect(u(value))+'| '
+            a = normalize_utf8(a)
+            sql += a
 
             # files
             for file in node.getFiles():

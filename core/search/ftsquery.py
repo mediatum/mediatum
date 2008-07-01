@@ -26,7 +26,7 @@ import os
 import core
 import core.config as config
 import core.tree as tree
-from utils.utils import u, union
+from utils.utils import u, union, normalize_utf8
 from math import ceil
 
 DB_NAME = 'searchindex.db'
@@ -63,24 +63,24 @@ class FtsSearcher:
             return []
            
         if field == "full": # all metadata incl. fulltext
-            res = self.cur.execute('select distinct(id) from fullsearchmeta where fullsearchmeta match ?', ['\'value:'+protect(u(value))+ ' type:-directory\''])
+            res = self.cur.execute('select distinct(id) from fullsearchmeta where fullsearchmeta match ?', ['\'value:'+normalize_utf8(protect(u(value)))+ ' type:-directory\''])
             ret = [str(s[0]) for s in res.fetchall()]
 
             #fulltext
-            res = self.cur.execute('select distinct(id) from textsearchmeta where textsearchmeta match ?', ['\'value:'+protect(u(value))+ ' type:-directory\''])
+            res = self.cur.execute('select distinct(id) from textsearchmeta where textsearchmeta match ?', ['\'value:'+normalize_utf8((protect(u(value))))+ ' type:-directory\''])
             retfull = [str(s[0]) for s in res.fetchall()]
             return union([ret, retfull])
             
         elif field == "fulltext": # fulltext
-            res = self.cur.execute('select distinct(id) from textsearchmeta where textsearchmeta match ?', ['\'value:'+protect(u(value))+ ' type:-directory\''])
+            res = self.cur.execute('select distinct(id) from textsearchmeta where textsearchmeta match ?', ['\'value:'+normalize_utf8(protect(u(value)))+ ' type:-directory\''])
             return [str(s[0]) for s in res.fetchall()]
             
         elif field == "schema":
-            res = self.cur.execute('select distinct(id) from fullsearchmeta where schema="'+u(value).replace("'","")+'"')
+            res = self.cur.execute('select distinct(id) from fullsearchmeta where schema="'+normalize_utf8((u(value).replace("'","")))+'"')
             return [str(s[0]) for s in res.fetchall()]
         
         elif field == "objtype":
-            res = self.cur.execute('select distinct(id) from fullsearchmeta where type="'+u(value).replace("'","")+'"')
+            res = self.cur.execute('select distinct(id) from fullsearchmeta where type="'+normalize_utf8((u(value).replace("'","")))+'"')
             ret = [str(s[0]) for s in res.fetchall()]
             return ret
             
@@ -97,7 +97,7 @@ class FtsSearcher:
                 if op in [">=","<="]:
                     res = self.cur.execute('select distinct(id) from searchmeta where schema="'+str(pos[1])+'" and field'+str(pos[0])+' '+op+' "'+str(value)+'"')                    
                 else:
-                    res = self.cur.execute('select distinct(id) from searchmeta where searchmeta match ?', ['field'+str(pos[0])+':'+protect(u(value))+ ' type:-directory'])
+                    res = self.cur.execute('select distinct(id) from searchmeta where searchmeta match ?', ['field'+str(pos[0])+':'+normalize_utf8((protect(u(value))))+ ' type:-directory'])
                 
                 res = [str(s[0]) for s in res.fetchall()]
                 if len(ret)==0:
@@ -182,9 +182,16 @@ class FtsSearcher:
         try:
             sql = 'INSERT INTO fullsearchmeta (id, type, schema, value) VALUES(\''+ str(node.id)+'\', \''+node.getContentType()+'\', \''+node.getSchema()+'\', \''+ str(node.name) + '| '
             # attributes
+            val = ''
+            
             for key,value in node.items():
-                sql += protect(u(value))+'| '
-
+                val += protect(u(value))+'| '
+            for v in val.split(" "):
+                v = v.decode("utf-8").encode("latin-1")
+                if normalize_utf8(v)!=v.lower():
+                    val += ' '+normalize_utf8(v)          
+            sql += val+ ' '
+                
             # files
             for file in node.getFiles():
                 sql += protect(u(file.getName()+ '| '+file.getType()+'| '+file.getMimeType())+'| ')
@@ -231,12 +238,12 @@ class FtsSearcher:
                         sql += 'field'+str(key)+', '
                         values += '"'+u(v_list[key])+ '", '
                 sql = sql[:-2]
-                values = protect(values[:-2])
+                values = normalize_utf8(protect(values[:-2]))
                 sql = sql+') VALUES("'+ str(node.id)+'", "'+node.getContentType()+'", "'+node.getSchema()+'", "'+node.get("updatetime")+'", ' + values + ')'
             else:
                 sql = sql[:-2]
                 sql = sql+') VALUES("'+ str(node.id)+'", "'+node.getContentType()+'", "'+node.getSchema()+'", "'+node.get("updatetime")+'")'
-            print sql
+
             self.cur.execute(sql)
             
             return True
@@ -298,7 +305,7 @@ class FtsSearcher:
                     
                     while p in range(0, int(ceil(content_len/500000.0))):
                         try:
-                            self.cur.execute('INSERT INTO textsearchmeta (id, type, schema, value) VALUES("'+str(node.id)+'", "'+str(node.getContentType())+'", "'+str(node.getSchema())+'", "'+content[p*500000:(p+1)*500000-1]+'")')
+                            self.cur.execute('INSERT INTO textsearchmeta (id, type, schema, value) VALUES("'+str(node.id)+'", "'+str(node.getContentType())+'", "'+str(node.getSchema())+'", "'+normalize_utf8((content[p*500000:(p+1)*500000-1]))+'")')
                         except:
                             print "\nerror in fulltext of node",node.id
                             return False

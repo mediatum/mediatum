@@ -128,6 +128,7 @@ class FileNode:
         if name.startswith(config.settings["paths.datadir"]):
             name = name[len(config.settings["paths.datadir"]):]
         self._path = name
+        #self.path = name # workaround, until CVS is updated everywhere
         self.type = type
         self.mimetype = mimetype
         self.node = node
@@ -602,7 +603,6 @@ class Node:
             raise NoSuchNodeError("child of None")
         id = db.getNamedNode(self.id,name)
         if not id:
-            print "subnode of ",self.id,self.name," with name '" + str(name) + "' not found"
             raise NoSuchNodeError("child:"+str(name))
         return getNode(str(id))
 

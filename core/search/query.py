@@ -77,7 +77,7 @@ class QueryResult(tree.NodeList):
             else:
                 return s2
 
-    def merge(self, other):
+    def union(self, other):
         if self.searcher is None:
             self.searcher = other.searcher
         if self.ids is None:
@@ -185,7 +185,7 @@ def _getSearcher(name):
         search_lock.acquire()
         try:
             s = searchers[name]
-        except:
+        except KeyError:
             searchers[name] = s = _Searcher(name)
     finally:
         search_lock.release()

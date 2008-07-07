@@ -263,12 +263,13 @@ class NavTreeEntry:
 
 def isParentOf(node, parent):
     parents = node.getParents()
+    print [n.name for n in parents]
     if node == parent:
         return 1
     if parent in parents:
         return 1
     for p in parents:
-        if isParentOf(node, p):
+        if isParentOf(p, parent):
             return 1
     return 0
 
@@ -312,21 +313,19 @@ class Collectionlet(Portlet):
             except tree.NoSuchNodeError:
                 pass
 
-        if "cfold" in req.params:
-            id = req.params["cfold"]
-            if id in self.m:
-                self.m[id].folded = 1
-        if "cunfold" in req.params:
-            id = req.params["cunfold"]
-            if id in self.m:
-                self.m[id].folded = 0
-
         access = AccessData(req)
 
         for c in self.m.values():
             if not c.defaultopen:
                 c.folded = 1
             c.active = 0
+
+        print "collection is now", self.collection.name
+        
+        if "cunfold" in req.params:
+            id = req.params["cunfold"]
+            if id in self.m:
+                self.m[id].folded = 0
         
         if self.collection.id in self.m:
             self.m[self.collection.id].folded = 0
@@ -348,6 +347,7 @@ class Collectionlet(Portlet):
                 return
                
             data = self.m[node.id]
+
             col_data += [data]
 
             if not data.folded or data.defaultopen:

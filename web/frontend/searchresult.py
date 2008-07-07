@@ -148,7 +148,7 @@ def extended_search(req):
             q_user += " and "
         first2 = 0
 
-        if not isdigit(f):
+        if not f.isdigit():
             q = req.params.get("query"+str(i),"").strip()
             q_str += f + '=' + protect(q)
             q_user += f + '=' + protect(q)

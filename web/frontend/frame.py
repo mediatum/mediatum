@@ -320,8 +320,6 @@ class Collectionlet(Portlet):
                 c.folded = 1
             c.active = 0
 
-        print "collection is now", self.collection.name
-        
         if "cunfold" in req.params:
             id = req.params["cunfold"]
             if id in self.m:

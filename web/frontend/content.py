@@ -314,6 +314,7 @@ def getPaths(node, access):
                     paths.reverse()
                     if len(paths)>1 and not omit:
                         list.append(paths)
+                    omit = 0
                     paths =[]
             else:
                 omit = 1

@@ -60,7 +60,8 @@ def login_submit(req):
         if user.stdPassword():
             return display_changepwd(req,3);    
         else:        
-            req.request["Location"] = req.makeLink("node", {"id":tree.getRoot("collections").id})
+            #req.request["Location"] = "https://"+config.get("host.name")+"/node?id="+tree.getRoot("collections").id;
+            req.request["Location"] = "http://"+config.get("host.name")+"/node?id="+tree.getRoot("collections").id;
             return athana.HTTP_MOVED_TEMPORARILY;
     else:
         return display_login(req, "login_error")

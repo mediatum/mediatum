@@ -67,6 +67,12 @@ def getHomeDir(user):
         userdir = tree.getRoot("home").addChild(tree.Node(name=translate("user_directory", getDefaultLanguage())+" ("+username+")", type="directory"))
         userdir.setAccess("read","{user "+username+"}")
         userdir.setAccess("write","{user "+username+"}")
+        
+        # re-sort home dirs alphabetically
+        i = 0
+        for child in tree.getRoot("home").getChildren().sort("name"):
+            child.setOrderPos(i)
+            i = i + 1
     return userdir
 
 def getUploadDir(user):

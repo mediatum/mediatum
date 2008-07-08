@@ -84,6 +84,17 @@ class QueryResult(tree.NodeList):
             return QueryResult(self.searcher, other.ids, self._joinDesc(other.words,self.words))
         if other.ids is None:
             return QueryResult(self.searcher, self.ids, self._joinDesc(other.words,self.words))
+        ids = self.ids.union(other.ids)
+        print "Union returns",len(ids),"results"
+        return QueryResult(self.searcher, ids, self._joinDesc(other.words,self.words))
+
+    def merge(self, other):
+        if self.searcher is None:
+            self.searcher = other.searcher
+        if self.ids is None:
+            return QueryResult(self.searcher, other.ids, self._joinDesc(other.words,self.words))
+        if other.ids is None:
+            return QueryResult(self.searcher, self.ids, self._joinDesc(other.words,self.words))
         ids = self.ids.intersection(other.ids)
         print "Merging returns",len(ids),"results"
         return QueryResult(self.searcher, ids, self._joinDesc(other.words,self.words))

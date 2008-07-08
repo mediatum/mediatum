@@ -169,7 +169,11 @@ class MappingField(tree.Node):
         
     def getExportFormat(self):
         if self.get("exportformat")=="":
-            return self.getMapping().getStandardFormat()
+            m = self.getMapping()
+            if m:
+                return m.getStandardFormat()
+            else:
+                return ""
         return self.get("exportformat")
     def setExportFormat(self, exportformat):
         self.set("exportformat", exportformat)

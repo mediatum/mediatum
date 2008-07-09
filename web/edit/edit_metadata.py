@@ -74,7 +74,7 @@ def edit_metadata(req, ids):
                 return self.description
             def getDefaultMask(self):
                 return False
-            def metaFields(self):
+            def metaFields(self, lang=None):
                 return self.fields
             def i_am_not_a_mask():
                 pass

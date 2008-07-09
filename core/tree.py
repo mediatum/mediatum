@@ -330,6 +330,7 @@ class NodeList:
 class Node:
     def __init__(self, name="<unbenannt>", type=None, dbid=None):
         self.occurences = None
+        self.lock = thread.allocate_lock() # for attrlist
         if dbid is None:
             if type == None:
                 raise "Node must have a type"
@@ -785,22 +786,27 @@ class Node:
     # fill hashmap with idlists of listvalues
     def getAllAttributeValues(self, attribute, access):
         ALL = -1
-        if not hasattr(self, 'attrlist') or attribute not in self.attrlist.keys():
-            self.attrlist = {}
-            self.attrlist[attribute] = {}
             
-            # current attribute not listed -> create id list
-            if not ALL in self.attrlist[attribute].keys():
-                self.attrlist[attribute][ALL] = {}            
-                ret = {}
-                for node in self.getAllChildren():
-                    v = node.get(attribute)
-                    if v not in ret.keys():
-                        ret[v] =[]
-                    ret[v].append(node.id)
+        self.lock.acquire()
+        try:
+            if not hasattr(self, 'attrlist') or attribute not in self.attrlist.keys():
+                self.attrlist = {}
+                self.attrlist[attribute] = {}
+                
+                # current attribute not listed -> create id list
+                if not ALL in self.attrlist[attribute].keys():
+                    self.attrlist[attribute][ALL] = {}            
+                    ret = {}
+                    for node in self.getAllChildren():
+                        v = node.get(attribute)
+                        if v not in ret.keys():
+                            ret[v] =[]
+                        ret[v].append(node.id)
 
-                for key in ret.keys():
-                    self.attrlist[attribute][ALL][key] = NodeList(ret[key], key)
+                    for key in ret.keys():
+                        self.attrlist[attribute][ALL][key] = NodeList(ret[key], key)
+        finally:
+            self.lock.release()
 
         level = access.getPrivilegeLevel()
         if not level in self.attrlist[attribute].keys():

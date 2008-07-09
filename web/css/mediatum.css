@@ -445,11 +445,11 @@ button#reset-button{
 }
 
 #portal-column-content #object_image {
-     width: 300px;position:absolute; top:24px;left:0px;
+     width: 320px;position:absolute; top:24px;left:0px;
 }
 
 #portal-column-content #object_meta{
-    margin-left: 310px;
+    margin-left: 325px;
 }
 
 #portal-column-content #object_basket{

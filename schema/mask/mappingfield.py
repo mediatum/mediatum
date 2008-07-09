@@ -24,6 +24,7 @@ import core.tree as tree
 from core.tree import Node
 from core.metatype import Metatype
 from utils.utils import esc
+from schema.schema import getMetadataType
 
 class m_mappingfield(Metatype):
     
@@ -79,7 +80,10 @@ class m_mappingfield(Metatype):
                 elif var=="field":
                     s = s.replace("[field]", field_value)
                 elif var=="value":
-                    v = node.get(attrnode.getName())
+                    v = getMetadataType(attrnode.getFieldtype()).getFormatedValue(attrnode, node)[1]
+                    if v=="":
+                        v = node.get(attrnode.getName())
+
                     if "t" in options and not v.isdigit():
                         v = '"' + v + '"'                            
                     s = s.replace("[value]", v)

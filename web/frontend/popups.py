@@ -143,7 +143,12 @@ def show_attachmentbrowser(req):
     
 def show_printview(req):
     """ create a pdf preview of given node (id in path e.g. /print/[id])"""  
-    node = getNode(int(req.path[1:].split("/")[1]))
+    try:
+        nodeid = int(req.path[1:].split("/")[1])
+    except ValueError:
+        raise ValueError("Invalid Printview URL: "+req.path)
+
+    node = getNode(nodeid)
 
     access = AccessData(req)
     if not access.hasAccess(node,"read"):

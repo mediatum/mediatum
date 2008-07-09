@@ -36,7 +36,7 @@ class WorkflowStep_TextPage(WorkflowStep):
                 </table>
                 """, {"text":text, "buttons": self.tableRowButtons(node)})
     
-    def metaFields(self):
+    def metaFields(self, lang=None):
         ret = list()
         field = tree.Node("text", "metafield")
         field.set("label", "anzuzeigender Text")

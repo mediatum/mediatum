@@ -69,7 +69,7 @@ class WorkflowStep_Upload(WorkflowStep):
 
         return req.getTAL("workflow/upload.html", {"obj": node.id, "id": self.id,"prefix": prefix, "suffix": suffix, "filelist": filelist, "node": node, "buttons": self.tableRowButtons(node), "error":error}, macro="workflow_upload")
 
-    def metaFields(self):
+    def metaFields(self, lang=None):
         ret = list()
         field = tree.Node("prefix", "metafield")
         field.set("label", "Text vor dem Upload-Formular")

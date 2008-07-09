@@ -773,7 +773,7 @@ class WorkflowStep(tree.Node):
     def getComment(self):
         return self.get("comment")
 
-    def metaFields(self):
+    def metaFields(self, lang=None):
         return list()
 
     def tableRowButtons(self, node):

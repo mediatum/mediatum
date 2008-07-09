@@ -65,7 +65,7 @@ class WorkflowStep_ShowData(WorkflowStep):
         return req.getTAL("workflow/showdata.html", {"key": key, "filelist": filelist, "fields": fieldmap, "prefix": prefix, "suffix": suffix, "buttons": self.tableRowButtons(node)}, macro="workflow_showdata")
 
 
-    def metaFields(self):
+    def metaFields(self, lang=None):
         ret = list()
         field = tree.Node("prefix", "metafield")
         field.set("label", "Text vor den Daten")

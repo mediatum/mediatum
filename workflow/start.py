@@ -66,7 +66,7 @@ class WorkflowStep_Start(WorkflowStep):
 
         return req.getTAL("workflow/start.html", {"types":types, "id":self.id, "js":js}, macro="workflow_start")
         
-    def metaFields(self):
+    def metaFields(self, lang=None):
         ret = list()
         field = tree.Node("newnodetype", "metafield")
         field.set("label", "erstellbare Node-Typen (;-separiert)")

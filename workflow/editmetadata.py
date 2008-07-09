@@ -46,7 +46,7 @@ class WorkflowStep_EditMetadata(WorkflowStep):
         
         return req.getTAL("workflow/editmetadata.html", {"name":self.getName(), "error":error, "key":key, "mask":mask.getFormHTML([node],req), "buttons":self.tableRowButtons(node)}, macro="workflow_metadateneditor")
     
-    def metaFields(self):
+    def metaFields(self, lang=None):
         ret = list()
         field = tree.Node("mask", "metafield")
         field.set("label", "Editor-Maske")

@@ -24,11 +24,14 @@ import md5
 import core.tree as tree
 import core.translation
 import random
+import thread
 
 from utils.utils import Option
 
 useroption = []
 useroption += [Option("user_option_1", "editpwd", "c", "img/changepwd_opt.png")]
+
+authenticators = []
 
 def create_user(name, email="", groups="", pwd="", option=""):
     if not pwd:
@@ -52,6 +55,14 @@ def loadUsersFromDB():
     return users.getChildren()
 
 """ returns user object from db """
+def getExternalUser(name):
+    users = getExternalUserFolder()
+    try:
+        return users.getChild(name)
+    except tree.NoSuchNodeError:
+        return None
+
+""" returns user object from db """
 def getUser(id):
     users = tree.getRoot("users")
     
@@ -61,8 +72,15 @@ def getUser(id):
         try:
             return users.getChild(id)
         except tree.NoSuchNodeError,e:
-            return None
+            # try external user
+            return getExternalUser(id)
 
+def doExternalAuthentification(name, pwd):
+    global authenticators
+    for a in authenticators:
+        if a(name,pwd):
+            return 1
+    return 0
 
 def getUserFromRequest(req):
     try:
@@ -73,13 +91,60 @@ def getUserFromRequest(req):
             raise "User not found: \"" + config.get("user.guestuser")+"\""
     return user
 
+def getExternalUserFolder():
+    try:
+        extusers = tree.getRoot("external_users")
+    except tree.NoSuchNodeError:
+        extusers = tree.Node("external_users", "users")
+        tree.getRoot().addChild(extusers)
+    return extusers
+
+extuser_lock = thread.allocate_lock()
+
 def checkLogin(name, pwd):
     user = getUser(name)
-    if not user:
-        return 0
-    digest1 = user.getPassword()
-    digest2 = md5.md5(pwd).hexdigest()
-    return digest1 == digest2
+    digest1 = md5.md5(pwd).hexdigest()
+    if user:
+        if digest1 == user.getPassword():
+            return 1
+    else:
+        user = getExternalUser(name)
+        if user:
+            if digest1 == user.getPassword():
+                return 1
+
+    if doExternalAuthentification(name, pwd):
+        # if an external authenticator was able to log this
+        # user in, store the user name and hashed password
+        # in our database, so we recognize this person
+        # from now on (and can display him in the admin
+        # area).
+        # potential security problem: if a local user has
+        # the same name as some other external
+        # user, that external user can log in using his own
+        # password (and overwrite the internal password). 
+        # This only happens if the names (user ids) are not 
+        # the email addresses, however.
+        if user:
+            # overwrite password by the one used for
+            # the external authentication, so the next
+            # login is faster.
+            user.set("password", md5.md5(pwd).hexdigest())
+        else:
+            extusers = getExternalUserFolder()
+            user = tree.Node(name=name, type="user")
+            if '@' in name:
+                user.set("email", name)
+            user.set("password", md5.md5(pwd).hexdigest())
+            user.set("opts", '')
+
+            extuser_lock.acquire()
+            try:
+                if not extusers.hasChild(name):
+                    extusers.addChild(user)
+            finally:
+                extuser_lock.release()
+        return 1
 
 def changePWD(name, pwd):
     user = getUser(name)
@@ -142,4 +207,8 @@ def makeRandomPassword():
     nr2 = i[random.randint(0,len(i)-1)]
     char4 = a[random.randint(0,len(a)-1)]
     return char1+char2+char3+nr1+nr2+char4
+
+def registerAuthenticator(auth):
+    global authenticators
+    authenticators += [auth]
 

@@ -52,7 +52,7 @@ def login_submit(req):
 
     masterpassword = config.get("user.masterpassword")
 
-    if users.checkLogin(user, password)==1 or (masterpassword and password==masterpassword):
+    if users.checkLogin(user, password) or (masterpassword and password==masterpassword):
         user = users.getUser(user)
         req.session["user"] = user
         logging.getLogger('usertracing').info(user.name + " logged in")

@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.28 2008/06/12 10:37:19 kramm Exp $'
+RCS_ID =  '$Id: athana.py,v 1.29 2008/07/11 09:40:56 mediatum Exp $'
 
 import sys
 
@@ -2899,7 +2899,16 @@ class async_chat (asyncore.dispatcher):
                 if p is None:
                     if not self.ac_out_buffer:
                         self.producer_fifo.pop()
-                        self.close()
+                        try:
+                            self.close()
+                        except KeyError:
+                            # FIXME: tends to happen sometimes, seems to 
+                            # be a race condition in asyncore
+                            try:
+                                self._fileno = None
+                                self.socket.close()
+                            except:
+                                pass
                     return
                 elif isinstance(p, str):
                     self.producer_fifo.pop()

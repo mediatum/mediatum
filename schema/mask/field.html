@@ -102,7 +102,6 @@
 
 <tal:block metal:define-macro="metaeditor_export">
     <div class="back">
-        <p tal:content="python:str(item.get('fieldtype'))" />
         <h3 tal:condition="python:op=='edit'" i18n:translate="mask_edit_edit_field">TEXT</h3>
         <h3 tal:condition="python:op=='new'" i18n:translate="mask_edit_create_field">TEXT</h3>
         <br/>
@@ -116,7 +115,7 @@
                 <tal:block tal:repeat="mapping mappings">
                     <optgroup tal:attributes="label python:mapping.getName()">
                     <tal:block tal:repeat="mappingfield python:mapping.getFields()">
-                        <option tal:content="python:mappingfield.getFullName()" tal:attributes="value python:str(mappingfield.id); selected python:{'False':None,'True':'selected'}[str(str(item.id)==str(mappingfield.id))]"/>
+                        <option tal:content="python:mappingfield.getFullName()" tal:attributes="value python:str(mappingfield.id); selected python:{'False':None,'True':'selected'}[str(str(item.get('mappingfield'))==str(mappingfield.id))]"/>
                     </tal:block>
                     </optgroup>
                 </tal:block>

@@ -110,7 +110,8 @@ class m_field(Metatype):
             # hide empty elements
             return ''
         elif flags & VIEW_DATA_EXPORT:
-            return element.get("type")
+            return str(t.getFormatedValue(element, nodes[0], language)[1])
+            #return element.get("type")
         else:
             # standard view
             ret = '<div class="mask_row"><div>'

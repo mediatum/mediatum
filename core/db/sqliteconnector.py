@@ -28,8 +28,10 @@ from connector import Connector
 
 try:
     import sqlite3 as sqlite
+    import sqlite3.OperationalError as OperationalError
 except:
     from pysqlite2 import dbapi2 as sqlite
+    from pysqlite2.dbapi2 import OperationalError as OperationalError
 
 #from time import *
 from core.db.database import initDatabaseValues
@@ -43,6 +45,7 @@ from utils import *
 debug = 0
 log = logging.getLogger('database')
 
+sqlite_lock = thread.allocate_lock()
 
 class SQLiteConnector(Connector):
 
@@ -54,16 +57,14 @@ class SQLiteConnector(Connector):
                     os.makedirs(os.path.dirname(config.settings["paths.datadir"]+"db/"))
                 except OSError:
                     pass
-            self.con = sqlite.connect(config.settings["paths.datadir"]+"db/imagearch.db", check_same_thread=False)
+            db = config.settings["paths.datadir"]+"db/imagearch.db"
+            self.isInitialized()
         else:
-            self.con = sqlite.connect(db, check_same_thread=False)
-        self.cur = self.con.cursor()
-        self.con.text_factory = type("")
-        self.isInitialized()
+            self.db = db
 
     def isInitialized(self):
         try:
-            self.cur.execute("select id from node where type='root'")
+            self.execute("select id from node where type='root'")
             return True
         except sqlite.OperationalError:
             self.createTables()
@@ -75,19 +76,30 @@ class SQLiteConnector(Connector):
         return "'"+text.replace("'","\\'")+"'"
     
     def close(self):
-        try:
-            self.cur.close()
-        finally:
-            self.con.close()
+        pass
 
     def execute(self,sql, obj=None):
-        if obj:
-            res = self.cur.execute(sql, obj)
-        else:
-            res = self.cur.execute(sql)
-        self.commit()
-        s = res.fetchall()
-        return s
+        global sqlite_lock
+        sqlite_lock.acquire()
+        try:
+            fi = open("/tmp/sqlite.log", "ab+")
+            fi.write(sql+"\n")
+            fi.close()
+
+            con = sqlite.connect(self.db, check_same_thread=True)
+            con.text_factory = type("")
+            cur = con.cursor()
+            if obj:
+                res = cur.execute(sql, obj)
+            else:
+                res = cur.execute(sql)
+            s = res.fetchall()
+            cur.close()
+            con.commit()
+            con.close()
+            return s
+        finally:
+            sqlite_lock.release()
 
     def runQuery(self, sql, obj=None):
         if debug:
@@ -100,12 +112,6 @@ class SQLiteConnector(Connector):
             return self.execute(sql, obj)
         except:
             log.debug(sql)
-
-    def commit(self):
-    	self.con.commit()
-
-    def rollback(self):
-        self.con.rollback()
 
     def createTables(self):
         self.runQueryNoError("CREATE TABLE [nodeaccess] ([name] VARCHAR(64)  NOT NULL PRIMARY KEY, [description] TEXT  NULL,[rule] TEXT  NULL)")
@@ -284,3 +290,25 @@ class SQLiteConnector(Connector):
         return self.runQuery('select id from node where type like "%/'+schema+'" or type ="'+schema+'"')
 
 
+    def getStatus(self):
+        ret = []
+        key = ["sqlite_type", "sqlite_name", "sqlite_tbl_name", "sqlite_rootpage", "sqlite_sql"]
+        for table in self.runQuery("select * from sqlite_master"):
+            i=0
+            t = []
+            for item in table:
+                t.append((key[i],item))
+                i += 1
+                
+            items = self.runQuery("select * from sqlite_stat1 where tbl='"+t[2][1]+"'")
+            if len(items)>0:
+                t.append(("sqplite_items_count", str(items[0][2]).split(" ")[0]))
+
+            ret.append(t)
+
+        return ret
+
+        
+    def getDBSize(self):
+        import os
+        return os.stat(config.settings["paths.datadir"]+"db/imagearch.db")[6]

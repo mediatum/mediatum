@@ -185,6 +185,14 @@ class MgSearcher:
         print "node_change magpy"
         return
 
+    def getSearchInfo(self):
+        # magpy does not support this feature
+        return []
+
+    def getSearchSize(self):
+        # magpy does not support this feature
+        return 0
+
 
 mgSearcher = MgSearcher() 
 # new

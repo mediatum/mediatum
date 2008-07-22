@@ -369,3 +369,28 @@ class MYSQLConnector(Connector):
 
     def getNodeIDsForSchema(self, schema, datatype="*"):
         return self.runQuery('select id from node where type like "%/'+schema+'" or type ="'+schema+'"')
+        
+    def getStatus(self):
+        ret = []
+        key = ["mysql_name", "mysql_engine", "mysql_version", "mysql_row_format", "mysql_rows", "mysql_avg_row_length", "mysql_data_length", "mysql_max_data_length", "mysql_index_length", "mysql_data_free", "mysql_auto_increment",
+            "mysql_create_time", "mysql_update_time", "mysql_check_time", "mysql_collation", "mysql_checksum", "mysql_create_options", "mysql_comment"]
+        for table in self.runQueryNoError("SHOW TABLE STATUS"):
+            i=0
+            t = []
+            for item in table:
+                t.append((key[i],item))
+                i += 1
+            ret.append(t)
+        return ret
+        
+        
+    def getDBSize(self):
+        l = 0
+        for table in self.runQueryNoError("SHOW TABLE STATUS"):
+            l+= int(table[6])
+            l+= int(table[8])
+            
+        return int(l)
+        
+        
+        

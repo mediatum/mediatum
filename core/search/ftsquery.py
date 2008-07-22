@@ -29,6 +29,8 @@ import core.tree as tree
 from utils.utils import u, union, normalize_utf8
 from math import ceil
 
+import core.db.sqliteconnector as sqlite
+
 DB_NAME = 'searchindex.db'
 MAX_SEARCH_FIELDS = 32
 
@@ -39,22 +41,10 @@ MAX_SEARCH_FIELDS = 32
 """
 FULLTEXT_INDEX_MODE = 0
 
-try:
-    try:
-        import sqlite3 as sqlite
-        
-    except:
-        from pysqlite2 import dbapi2 as sqlite
-except ImportError:
-    print "\n\n\nImport Error:\nModule sqlite with fts3 support can not be found on the system, check your configuration.\n"
-    sys.exit()
-
 class FtsSearcher:
-
     def __init__(self):
         global DB_NAME
-        self.db = sqlite.connect(config.get("paths.searchstore") + DB_NAME, check_same_thread=False)
-        self.cur = self.db.cursor()
+        self.db = sqlite.SQLiteConnector(config.get("paths.searchstore") + DB_NAME)
         self.tablenames = ["fullsearchmeta", "searchmeta", "textsearchmeta"]
 
     def run_search(self, field, op, value):
@@ -63,43 +53,43 @@ class FtsSearcher:
             return []
            
         if field == "full": # all metadata incl. fulltext
-            res = self.cur.execute('select distinct(id) from fullsearchmeta where fullsearchmeta match ?', ['\'value:'+normalize_utf8(protect(u(value)))+ ' type:-directory\''])
-            ret = [str(s[0]) for s in res.fetchall()]
+            res = self.db.execute('select distinct(id) from fullsearchmeta where fullsearchmeta match ?', ['\'value:'+normalize_utf8(protect(u(value)))+ ' type:-directory\''])
+            ret = [str(s[0]) for s in res]
 
             #fulltext
-            res = self.cur.execute('select distinct(id) from textsearchmeta where textsearchmeta match ?', ['\'value:'+normalize_utf8((protect(u(value))))+ ' type:-directory\''])
-            retfull = [str(s[0]) for s in res.fetchall()]
+            res = self.db.execute('select distinct(id) from textsearchmeta where textsearchmeta match ?', ['\'value:'+normalize_utf8((protect(u(value))))+ ' type:-directory\''])
+            retfull = [str(s[0]) for s in res]
             return union([ret, retfull])
             
         elif field == "fulltext": # fulltext
-            res = self.cur.execute('select distinct(id) from textsearchmeta where textsearchmeta match ?', ['\'value:'+normalize_utf8(protect(u(value)))+ ' type:-directory\''])
-            return [str(s[0]) for s in res.fetchall()]
+            res = self.db.execute('select distinct(id) from textsearchmeta where textsearchmeta match ?', ['\'value:'+normalize_utf8(protect(u(value)))+ ' type:-directory\''])
+            return [str(s[0]) for s in res]
             
         elif field == "schema":
-            res = self.cur.execute('select distinct(id) from fullsearchmeta where schema="'+normalize_utf8((u(value).replace("'","")))+'"')
-            return [str(s[0]) for s in res.fetchall()]
+            res = self.db.execute('select distinct(id) from fullsearchmeta where schema="'+normalize_utf8((u(value).replace("'","")))+'"')
+            return [str(s[0]) for s in res]
         
         elif field == "objtype":
-            res = self.cur.execute('select distinct(id) from fullsearchmeta where type="'+normalize_utf8((u(value).replace("'","")))+'"')
-            ret = [str(s[0]) for s in res.fetchall()]
+            res = self.db.execute('select distinct(id) from fullsearchmeta where type="'+normalize_utf8((u(value).replace("'","")))+'"')
+            ret = [str(s[0]) for s in res]
             return ret
             
         elif field == "updatetime":
             if len(value)==10:
                 value +="T00:00:00"
-            res = self.cur.execute('select distinct(id) from searchmeta where updatetime '+op+' "'+u(value)+'"')
-            ret = [str(s[0]) for s in res.fetchall()]
+            res = self.db.execute('select distinct(id) from searchmeta where updatetime '+op+' "'+u(value)+'"')
+            ret = [str(s[0]) for s in res]
             return ret
 
         else: # special search
-            res = self.cur.execute('select position, name from searchmeta_def where attrname=?', [field])
-            for pos in res.fetchall():
+            res = self.db.execute('select position, name from searchmeta_def where attrname=?', [field])
+            for pos in res:
                 if op in [">=","<="]:
-                    res = self.cur.execute('select distinct(id) from searchmeta where schema="'+str(pos[1])+'" and field'+str(pos[0])+' '+op+' "'+str(value)+'"')                    
+                    res = self.db.execute('select distinct(id) from searchmeta where schema="'+str(pos[1])+'" and field'+str(pos[0])+' '+op+' "'+str(value)+'"')                    
                 else:
-                    res = self.cur.execute('select distinct(id) from searchmeta where searchmeta match ?', ['field'+str(pos[0])+':'+normalize_utf8((protect(u(value))))+ ' type:-directory'])
+                    res = self.db.execute('select distinct(id) from searchmeta where searchmeta match ?', ['field'+str(pos[0])+':'+normalize_utf8((protect(u(value))))+ ' type:-directory'])
                 
-                res = [str(s[0]) for s in res.fetchall()]
+                res = [str(s[0]) for s in res]
                 if len(ret)==0:
                     ret = res
 
@@ -127,16 +117,15 @@ class FtsSearcher:
         #if option=="init":
         try:
             # simple search table
-            self.cur.execute('CREATE VIRTUAL TABLE fullsearchmeta USING fts3(id, type, schema, value)')
+            self.db.execute('CREATE VIRTUAL TABLE fullsearchmeta USING fts3(id, type, schema, value)')
             # extended search table
-            self.cur.execute('CREATE VIRTUAL TABLE searchmeta USING fts3(id, type, schema, updatetime, '+s+')')
-            self.cur.execute('CREATE VIRTUAL TABLE searchmeta_def USING fts3(name, position, attrname)')
+            self.db.execute('CREATE VIRTUAL TABLE searchmeta USING fts3(id, type, schema, updatetime, '+s+')')
+            self.db.execute('CREATE VIRTUAL TABLE searchmeta_def USING fts3(name, position, attrname)')
             # fulltext search table
-            self.cur.execute('CREATE VIRTUAL TABLE textsearchmeta USING fts3(id, type, schema, value)')
+            self.db.execute('CREATE VIRTUAL TABLE textsearchmeta USING fts3(id, type, schema, value)')
                    
         except sqlite.OperationalError:
             print "searchdatabase already initialised"
-        self.db.commit()
     
     def getAllTableNames(self):
         ret = []
@@ -151,28 +140,26 @@ class FtsSearcher:
         print "\nclearing index tables..."
         for table in self.getAllTableNames():
             try:
-                self.cur.execute("delete from "+ table)
+                self.db.execute("delete from "+ table)
             except:
                 print " - table", table, "not found"
-        self.cur.execute("DELETE FROM searchmeta_def")
-        self.db.commit()
+        self.db.execute("DELETE FROM searchmeta_def")
         print "...cleared"
         
     def dropIndex(self):
         print "\ndropping index tables..."
         for table in self.getAllTableNames():
             try:
-                self.cur.execute("drop table "+table)
+                self.db.execute("drop table "+table)
             except sqlite.OperationalError:
                 print " - table", table, "not found"
-        self.db.commit()
         print "...dropped"
         
     def getDefForSchema(self, schema):
         ret = {}
-        res = self.cur.execute('SELECT position, attrname FROM searchmeta_def WHERE name="'+str(schema)+'" ORDER BY position')
+        res = self.db.execute('SELECT position, attrname FROM searchmeta_def WHERE name="'+str(schema)+'" ORDER BY position')
         
-        for id, attr in res.fetchall():
+        for id, attr in res:
             ret[id] = attr
         return ret
 
@@ -197,7 +184,7 @@ class FtsSearcher:
                 sql += protect(u(file.getName()+ '| '+file.getType()+'| '+file.getMimeType())+'| ')
 
             sql += '\')'
-            self.cur.execute(sql)
+            self.db.execute(sql)
             return True
         except:
             return False
@@ -244,7 +231,7 @@ class FtsSearcher:
                 sql = sql[:-2]
                 sql = sql+') VALUES("'+ str(node.id)+'", "'+node.getContentType()+'", "'+node.getSchema()+'", "'+node.get("updatetime")+'")'
 
-            self.cur.execute(sql)
+            self.db.execute(sql)
             
             return True
         except:
@@ -258,9 +245,9 @@ class FtsSearcher:
             fieldnames[str(i)] = field.getName()
             i+=1
 
-        self.cur.execute('DELETE FROM searchmeta_def WHERE name="' + node.getSchema()+'"')
+        self.db.execute('DELETE FROM searchmeta_def WHERE name="' + node.getSchema()+'"')
         for id in fieldnames.keys():
-            self.cur.execute('INSERT INTO searchmeta_def (name, position, attrname) VALUES("'+node.getSchema()+'", "'+id+'", "'+fieldnames[id]+'")')
+            self.db.execute('INSERT INTO searchmeta_def (name, position, attrname) VALUES("'+node.getSchema()+'", "'+id+'", "'+fieldnames[id]+'")')
 
     def nodeToFulltextSearch(self, node):
         # build fulltext index from node
@@ -305,7 +292,7 @@ class FtsSearcher:
                     
                     while p in range(0, int(ceil(content_len/500000.0))):
                         try:
-                            self.cur.execute('INSERT INTO textsearchmeta (id, type, schema, value) VALUES("'+str(node.id)+'", "'+str(node.getContentType())+'", "'+str(node.getSchema())+'", "'+normalize_utf8((content[p*500000:(p+1)*500000-1]))+'")')
+                            self.db.execute('INSERT INTO textsearchmeta (id, type, schema, value) VALUES("'+str(node.id)+'", "'+str(node.getContentType())+'", "'+str(node.getSchema())+'", "'+normalize_utf8((content[p*500000:(p+1)*500000-1]))+'")')
                         except:
                             print "\nerror in fulltext of node",node.id
                             return False
@@ -328,10 +315,6 @@ class FtsSearcher:
             err['ext'].append(node.id)
         if not self.nodeToFulltextSearch(node):
             err['text'].append(node.id)
-        try:
-            self.db.commit()
-        except:
-            err['commit'].append(node.id)
         return err
 
 
@@ -365,11 +348,7 @@ class FtsSearcher:
     """
     def removeNodeIndex(self, node, mode=0):
         for table in self.tablenames:
-            self.cur.execute('DELETE FROM '+table+' WHERE id="'+str(node.id)+'"')
-        try:
-            self.db.commit()
-        except:
-            print "commit failed"
+            self.db.execute('DELETE FROM '+table+' WHERE id="'+str(node.id)+'"')
         if mode!=0:
             print "node", node.id, "removed from index"
     
@@ -387,6 +366,28 @@ class FtsSearcher:
     def node_changed(self, node):
         print "node_change fts3"
         self.updateNodesIndex([node])
+        
+    def getSearchInfo(self):
+        ret = []
+        key = ["sqlite_type", "sqlite_name", "sqlite_tbl_name", "sqlite_rootpage", "sqlite_sql"]
+        res = self.db.execute("select * from sqlite_master")
+        for table in res:
+            i=0
+            t = []
+            for item in table:
+                t.append((key[i],item))
+                i += 1
+            if t[0][1]=="table":
+                items = self.db.execute("select count(*) from "+t[2][1])
+                t.append(("sqplite_items_count", str(items.fetchall()[0][0])))
+
+            ret.append(t)
+        return ret
+        
+    def getSearchSize(self):
+        import os
+        return os.stat(config.settings["paths.searchstore"]+"searchindex.db")[6]
+
      
     
 ftsSearcher = FtsSearcher()

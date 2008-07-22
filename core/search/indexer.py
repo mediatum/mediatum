@@ -26,29 +26,20 @@ import os
 import core
 import core.config as config
 import core.tree as tree
+import core.db.sqliteconnector as sqlite
 from utils.utils import normalize_utf8
-
-try:
-    import sqlite3 as sqlite
-except:
-    try:
-        from pysqlite2 import dbapi2 as sqlite
-    except:
-        pass # skip this import for now
 import core.tree as tree
 
 from utils.utils import iso2utf8, esc, u
 
 MAX_SEARCH_FIELDS = 32
-DB_NAME = 'searchindex_new.db'
+DB_NAME = 'searchindex.db'
 FULLTEXT_INDEX_MODE = 0
 
 def protect(s):
     return s.replace('"','')
 
-
 class SearchIndexer:
-
     def __init__(self, option=""):
         try:
             self.init(option)
@@ -67,24 +58,22 @@ class SearchIndexer:
             s += 'field'+ str(i)+", "
         s = s[:-2]
 
-        self.db = sqlite.connect(config.get("paths.searchstore") + DB_NAME, check_same_thread=False)
-        self.cur = self.db.cursor()
+        db = sqlite.SQLiteConnector(config.get("paths.searchstore") + DB_NAME)
         
         self.schemafields = {}
 
         if option=="init":
             try:
                 # simple search table
-                self.cur.execute('CREATE VIRTUAL TABLE fullsearchmeta USING fts3(id, type, schema, value)')
+                self.db.execute('CREATE VIRTUAL TABLE fullsearchmeta USING fts3(id, type, schema, value)')
                 # extended search table
-                self.cur.execute('CREATE VIRTUAL TABLE searchmeta USING fts3(id, type, schema, '+s+')')
-                self.cur.execute('CREATE VIRTUAL TABLE searchmeta_def USING fts3(name, position, attrname)')
+                self.db.execute('CREATE VIRTUAL TABLE searchmeta USING fts3(id, type, schema, '+s+')')
+                self.db.execute('CREATE VIRTUAL TABLE searchmeta_def USING fts3(name, position, attrname)')
                 # fulltext search table
-                self.cur.execute('CREATE VIRTUAL TABLE textsearchmeta USING fts3(id, type, schema, value)')
+                self.db.execute('CREATE VIRTUAL TABLE textsearchmeta USING fts3(id, type, schema, value)')
                     
             except sqlite.OperationalError:
                 print "searchdatabase already initialised"
-            self.db.commit()
         
     def getAllTableNames(self):
         ret = []
@@ -99,28 +88,26 @@ class SearchIndexer:
         print "\nclearing index tables..."
         for table in self.getAllTableNames():
             try:
-                self.cur.execute("delete from "+ table)
+                self.db.execute("delete from "+ table)
             except:
                 print " - table", table, "not found"
-        self.cur.execute("DELETE FROM searchmeta_def")
-        self.db.commit()
+        self.db.execute("DELETE FROM searchmeta_def")
         print "...cleared"
         
     def dropIndex(self):
         print "\ndropping index tables..."
         for table in self.getAllTableNames():
             try:
-                self.cur.execute("drop table "+table)
+                self.db.execute("drop table "+table)
             except sqlite.OperationalError:
                 print " - table", table, "not found"
-        self.db.commit()
         print "...dropped"
         
     def getDefForSchema(self, schema):
         ret = {}
-        res = self.cur.execute('SELECT position, attrname FROM searchmeta_def WHERE name="'+str(schema)+'" ORDER BY position')
+        res = self.db.execute('SELECT position, attrname FROM searchmeta_def WHERE name="'+str(schema)+'" ORDER BY position')
         
-        for id, attr in res.fetchall():
+        for id, attr in res:
             ret[id] = attr
         return ret
         
@@ -141,7 +128,7 @@ class SearchIndexer:
                 sql += protect(u(file.getName()+ '| '+file.getType()+'| '+file.getMimeType())+'| ')
 
             sql += '\')'
-            self.cur.execute(sql)
+            self.db.execute(sql)
             return True
         except:
             return False
@@ -174,7 +161,7 @@ class SearchIndexer:
             else:
                 sql = sql[:-2]
                 sql = sql+') VALUES("'+ str(node.id)+'", "'+node.getContentType()+'", "'+node.getSchema()+'")'
-            self.cur.execute(sql)
+            self.db.execute(sql)
             return True
         except:
             return False
@@ -189,14 +176,12 @@ class SearchIndexer:
 
         try:
             sql = 'DELETE FROM searchmeta_def WHERE name="' + node.getSchema()+'"'
-            self.cur.execute(sql)
+            self.db.execute(sql)
         except:
             None
         for id in fieldnames.keys():
             sql = 'INSERT INTO searchmeta_def (name, position, attrname) VALUES("'+node.getSchema()+'", "'+id+'", "'+fieldnames[id]+'")'
-            self.cur.execute(sql)
-            
-        
+            self.db.execute(sql)
             
     """
         FULLTEXT_INDEX_MODE values:
@@ -244,14 +229,13 @@ class SearchIndexer:
                 if len(content)>0:
                     try:
                         sql = 'INSERT INTO textsearchmeta (id, type, schema, value) VALUES("'+str(node.id)+'", "'+str(node.getContentType())+'", "'+str(node.getSchema())+'", "'+iso2utf8(esc(content))+'")'
-                        self.cur.execute(sql)
+                        self.db.execute(sql)
                     except:
                         print "error", node.id,"\n"
                         return False
                 else:
                     print "no Content"
         return True
-    
     
     def updateNode(self, node):
         self.removeNode(node)
@@ -267,14 +251,8 @@ class SearchIndexer:
             err['ext'].append(node.id)
         if not self.nodeToFulltextSearch(node):
             err['text'].append(node.id)
-        try:
-            self.db.commit()
-        except:
-            err['commit'].append(node.id)
-            print "commit failed"
         #print "update search index for node",node.id
         return err
-
 
     def updateNodes(self, nodelist):
         print "\nupdating node index..."
@@ -291,7 +269,6 @@ class SearchIndexer:
             self.nodeToSchemaDef(schemas[key])
         print "...finished"
         return err
-   
     
     """
         mode:
@@ -300,13 +277,9 @@ class SearchIndexer:
     def removeNode(self, node, mode=0):
         for table in self.tablenames:
             try:
-                self.cur.execute('DELETE FROM '+table+' WHERE id="'+str(node.id)+'"')
+                self.db.execute('DELETE FROM '+table+' WHERE id="'+str(node.id)+'"')
             except:
                 print "table", table, "does not exist"
-        try:
-            self.db.commit()
-        except:
-            print "commit failed"
         if mode!=0:
             print "node", node.id, "removed from index"
 
@@ -318,32 +291,18 @@ class SearchIndexer:
         err = self.updateNodes(root.getAllChildren())
         print err
 
-    # def runQuery(self):
-        
-        # sql = "select id, field9 from searchmeta where type='document' and schema='diss' and field9 < '2000' order by field9 desc"
-        # res = self.cur.execute(sql)
-        # for item in res.fetchall():
-            # print item
-        
-
     def node_changed(self,node):
         self.updateNode(node)
     
 searchIndexer = SearchIndexer()
 
-
 def getIndexer():
     global searchIndexer
     return searchIndexer
-
 
 if __name__ == "__main__":
     import time
     print "\nStart:",time.localtime(),"\n"
     searchIndexer.runIndexer(option="init")
     print "\nFinish:",time.localtime(), "\n"
-
-
-
-
 

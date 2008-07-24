@@ -33,7 +33,7 @@
                     (<tal:block tal:repeat="f python:field.getChildren()[0:10]">
                       <tal:block tal:condition="python:f.type == 'metafield'">
 		        <tal:block tal:define="fschema python:f.getSchemaNode()">
-                        <tal:block tal:content="python:fschema and f.getSchemaNode().getName() or '???'"/>:<tal:block tal:content="python:f.getName()"/>
+                        <tal:block tal:content="python:fschema and fschema.getName() or '???'"/>:<tal:block tal:content="python:f.getName()"/>
 			</tal:block>
                       </tal:block>
                     </tal:block>
@@ -77,7 +77,9 @@
 
                     <tal:block tal:condition="python:field.getNumChildren()" tal:repeat="subfield python:field.getChildren()">
                        <tr tal:condition="python:subfield.type == 'metafield'">
-                       <td tal:content="python:subfield.getSchemaNode().getName()"/>
+		       <tal:block tal:define="ss python:subfield.getSchemaNode()">
+                          <td tal:content="python:ss and ss.getName() or '??'"/>
+		       </tal:block>
                        <td tal:content="python:subfield.getName()"/>
                        <td><input type="image" tal:attributes="name python:'delsub_'+subfield.id" src="/img/delete.png"/></td>
                        </tr>

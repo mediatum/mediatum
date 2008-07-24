@@ -64,8 +64,6 @@ class LZAMetadata:
             self.id["id"] = ""
             
         self.parseXMLString(self.src)
-        
-
 
 
     def __str__(self):
@@ -73,9 +71,12 @@ class LZAMetadata:
         
         
     def lzaData(self):
-        if self.id["id"]=="mediatum_metadata":
-            return True
-        return False
+        try:
+            if self.id["id"]=="mediatum_metadata":
+                return True
+            return False
+        except:
+            return False
      
     # if there is still an original comment inside add add old as object
     def addOriginal(self, src):
@@ -171,22 +172,36 @@ from tiff import TIFFImage
         
 class LZA:
 
-    def __init__(self, filename):
+    def __init__(self, filename, mimetype=""):
         self.item = None
+        self.filename = filename
+
         if filename.endswith(".pdf"):
             self.item = PDFDocument(filename)
-        elif filename.endswith(".tiff"):
+        elif filename.endswith(".tiff") or filename.endswith(".tif"):
             self.item = TIFFImage(filename)
         elif filename.endswith(".jpg") or filename.endswith(".jpeg"):
             self.item = JPEGImage(filename)
+        elif filename.endswith(".lza"):
+            if mimetype=="image/tiff":
+                self.item = TIFFImage(filename)
+            elif mimetype=="image/jpeg":
+                self.item = JPEGImage(filename)
+            elif mimetype=="application/pdf":
+                self.item = PDFDocument(filename) 
         else:
-            raise "filetype not supported"
+            raise FiletypeNotSupported()
 
+
+    def buildLZAName(self):
+        return self.filename[:self.filename.rfind(".")]+".lza"
 
     def writeMediatumData(self, data, outputfile=""):    
+        if outputfile=="":
+            outputfile = self.buildLZAName()
         self.item.writeMetaData(str(data), outputfile)
 
-
+        
     def getMediatumData(self):
         meta = self.item.getMetaData()
         if meta.lzaData():
@@ -197,5 +212,8 @@ class LZA:
 
     def getOriginal(self, outputfile=""):
         self.item.getOriginal(outputfile)
+
         
-        
+class FiletypeNotSupported:
+    def __str__(self):
+        return "filetype not supported" 

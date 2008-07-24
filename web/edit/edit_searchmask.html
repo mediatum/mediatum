@@ -32,7 +32,9 @@
                     <tal:block tal:condition="python:field.getNumChildren()">
                     (<tal:block tal:repeat="f python:field.getChildren()[0:10]">
                       <tal:block tal:condition="python:f.type == 'metafield'">
-                        <tal:block tal:content="python:f.getSchemaNode().getName()"/>:<tal:block tal:content="python:f.getName()"/>
+		        <tal:block tal:define="fschema python:f.getSchemaNode()">
+                        <tal:block tal:content="python:fschema and f.getSchemaNode().getName() or '???'"/>:<tal:block tal:content="python:f.getName()"/>
+			</tal:block>
                       </tal:block>
                     </tal:block>
                     <tal:block tal:condition="python:len(field.getChildren())>10">...</tal:block>)

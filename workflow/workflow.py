@@ -37,6 +37,8 @@ import core.acl as acl
 from schema.schema import showEditor,parseEditorData,getMetaType,VIEW_HIDE_EMPTY
 from core.translation import t,lang
 
+import thread
+
 import utils.fileutils as fileutils
 
 log = logging.getLogger('backend')
@@ -630,43 +632,55 @@ class Workflow(tree.Node):
         return step
     
 
+workflow_lock = thread.allocate_lock()
+
 class WorkflowStep(tree.Node):
     
     def getId(self):
         return self.getName()
 
     def show_node_big(self, req):
-        access = acl.AccessData(req)
-        if "obj" in req.params:
-            node = tree.getNode(req.params["obj"])
-            key = req.params.get("key", req.session.get("key", ""))
-            req.session["key"] = key
 
-            if not access.hasWriteAccess(self) and \
-                (key != node.get("key")): # no permission
+        # the workflow operations (node forwarding, key assignment,
+        # parent node handling) are highly non-reentrant, so protect
+        # everything with a global lock
+        global workflow_lock
+        workflow_lock.acquire()
 
-                link = '('+self.name+')'
-                
-                return req.getTAL("workflow/workflow.html", {"node": node, "link":link, "email":config.get("email.workflow")}, macro="workflow_step")
+        try:
+            access = acl.AccessData(req)
+            if "obj" in req.params:
+                node = tree.getNode(req.params["obj"])
+                key = req.params.get("key", req.session.get("key", ""))
+                req.session["key"] = key
 
-            present = 0
-            for p in node.getParents():
-                if p.id == self.id:
-                    present = 1
-            if present:
-                link = req.makeLink("/mask", {"id":self.id})
-                if "forcetrue" in req.params:
-                    return self.forwardAndShow(node, True, req, link=link)
-                if "forcefalse" in req.params:
-                    return self.forwardAndShow(node, False, req, link=link)
-                if "raw" in req.params:
-                    return self.show_workflow_node(node, req)
+                if not access.hasWriteAccess(self) and \
+                    (key != node.get("key")): # no permission
+
+                    link = '('+self.name+')'
+                    
+                    return req.getTAL("workflow/workflow.html", {"node": node, "link":link, "email":config.get("email.workflow")}, macro="workflow_step")
+
+                present = 0
+                for p in node.getParents():
+                    if p.id == self.id:
+                        present = 1
+                if present:
+                    link = req.makeLink("/mask", {"id":self.id})
+                    if "forcetrue" in req.params:
+                        return self.forwardAndShow(node, True, req, link=link)
+                    if "forcefalse" in req.params:
+                        return self.forwardAndShow(node, False, req, link=link)
+                    if "raw" in req.params:
+                        return self.show_workflow_node(node, req)
+                    else:
+                        return '<center>'+self.show_workflow_node(node, req)+'</center>'
                 else:
-                    return '<center>'+self.show_workflow_node(node, req)+'</center>'
+                    return '<center>'+self.show_workflow_notexist(node, req)+'</center>'
             else:
-                return '<center>'+self.show_workflow_notexist(node, req)+'</center>'
-        else:
-            return '<center>'+self.show_workflow_step(req)+'</center>'
+                return '<center>'+self.show_workflow_step(req)+'</center>'
+        finally:
+            workflow_lock.release()
 
     def isContainer(self):
         # inhibit several content enrichment features

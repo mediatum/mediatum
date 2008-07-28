@@ -1,0 +1,33 @@
+<tal:block metal:define-macro="edit_logo">
+
+    <form tal:attributes="action python:'edit_content?id='+str(id)+'&tab='+tab" tal:define="files python:node.getFiles()" method="post" enctype="multipart/form-data" name="logo">
+        <p><b i18n:translate="edit_logo_logoheader">TEXT</b></p>
+
+        <p tal:condition="python:node.getLogoPath()==''" i18n:translate="edit_logo_no_logo"/>
+        <p tal:condition="python:node.getLogoPath()!=''">
+            <img tal:attributes="src python:node.getLogoPath()" />
+            <br/>
+            <button type="submit" name="logo_delete" value="logo_delete" i18n:translate="edit_logo_del_button">TEXT</button>
+        </p>
+        <p>
+            <span i18n:translate="edit_logo_link_label"/> <input type="text" name="logo_link" tal:attributes="value python:node.get('url')" style="width: 300px"/>
+            <img i18n:attributes="title edit_logo_test_title" src="/img/extlink.png" onclick="window.open(document.logo.logo_link.value)" style="cursor:pointer"/>
+        </p>
+        
+        <p>
+            <input i18n:attributes="value edit_logo_savechanges" type="submit" name="logo_save"/>
+            <input i18n:attributes="value edit_logo_reset" type="reset" name="logo_reset"/>
+        </p>
+
+        <p><b i18n:translate="edit_logo_changeheader">TEXT</b></p>
+        <p>
+            <input name="updatefile" type="file" size="50"/>
+        </p>
+        <p>
+            <button i18n:attributes="title edit_upload_upload_label" i18n:translate="edit_upload_upload_label" type="submit" name="addfile" value="submit">TEXT</button>
+        </p>
+    </form>
+
+</tal:block>
+
+<p metal:define-macro="filetype_error" i18n:translate="edit_logo_filetypeerror" class="error"/>

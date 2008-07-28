@@ -28,6 +28,10 @@ from core.acl import AccessData
 def export(req):
     p = req.path[1:].split("/")
     access = AccessData(req)
+
+    if len(p)!=2:
+        req.write("no export mask given")
+        return
     
     if p[0].isdigit():
         node = tree.getNode(p[0])
@@ -39,7 +43,10 @@ def export(req):
         return
         
     mask = getMetaType(node.getSchema()).getMask(p[1])
-    
-    req.reply_headers['Content-Type'] = "text/plain; charset=utf-8"
-    req.write(mask.getViewHTML([node], flags=8)) # flags =8 -> export type
-    
+    if mask:
+
+        req.reply_headers['Content-Type'] = "text/plain"
+        req.write(mask.getViewHTML([node], flags=8)) # flags =8 -> export type
+    else:
+        req.write("no export mask given")
+

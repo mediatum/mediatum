@@ -243,7 +243,7 @@
                 <td><tal:block i18n:translate="admin_wfstep_nodetype">TEXT</tal:block>:</td>
                 <td>
                     <select style="width:400px" name="ntype" onchange="sendForm()">
-                        <tal:block tal:repeat="key python:list(workflowtypes)" tal:define="typename python:workflowstep.getTypeName()">
+                        <tal:block tal:repeat="key python:list(workflowtypes)" tal:define="typename python:workflowstep.getContentType()">
                             <option tal:condition="python:(key==typename and update_type=='') or update_type==key" tal:attributes="value python:key" tal:content="key" selected="selected" i18n:translate=""/>
                             <option tal:condition="python:(key!=typename or update_type!='') and update_type!=key" tal:attributes="value python:key" tal:content="key" i18n:translate=""/>
                         </tal:block>

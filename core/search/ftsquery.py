@@ -124,7 +124,7 @@ class FtsSearcher:
             # fulltext search table
             self.db.execute('CREATE VIRTUAL TABLE textsearchmeta USING fts3(id, type, schema, value)')
                    
-        except sqlite.OperationalError:
+        except: #sqlite.OperationalError:
             print "searchdatabase already initialised"
     
     def getAllTableNames(self):

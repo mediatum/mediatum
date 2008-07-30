@@ -29,9 +29,8 @@ import core.search.query
 
 from utils.dicts import SortedDict
 from schema.schema import getMetadataType
-from web.frontend.browsingtree import browsingtree
 from utils.dicts import SortedDict
-from utils.utils import getCollection, Link, iso2utf8, isCollection
+from utils.utils import getCollection, Link, iso2utf8, isCollection, isDirectory
 from core.acl import AccessData,getRootAccess
 from core.translation import translate, lang, t
 from core.metatype import Context
@@ -175,57 +174,8 @@ class Searchlet(Portlet):
             f = g = getMetadataType("text")
         return f.getSearchHTML(Context(g,value=self.values[i], width=width, name="query"+str(i), language=lang(self.req), collection=self.req.params.get('collection'), user=users.getUserFromRequest(self.req), ip=self.req.ip))
 
-class Browselet(Portlet):
-    def __init__(self, collection):
-        Portlet.__init__(self)
-        self.name = "browselet"
-        self.collection = collection
-        self.currentdir = collection
-        self.browse_fold_link = ""
-        self.browse_unfold_link = ""
-        self.folded = 0
-        self.dirinreq = False
-        if collection.type == "collections":
-            self.folded = 1
-    def feedback(self,req):
-        Portlet.feedback(self,req)
-        if "dir" in req.params:
-            dirid = req.params["dir"]
-            try:
-                self.currentdir = tree.getNode(dirid)
-            except tree.NoSuchNodeError:
-                pass
-        else:
-            req.params["dir"] = self.currentdir.id
-
-        self.browse_fold_link = ""
-        self.browse_unfold_link = ""
-        if "fold" in req.params:
-            self.browse_fold_link = "&fold="+req.params["fold"]
-            if isCollection(tree.getNode(req.params["fold"])):
-                self.dirinreq = False
-
-        if "unfold" in req.params:
-            self.browse_unfold_link = "&unfold="+req.params["unfold"]
-            if isCollection(tree.getNode(req.params["unfold"])):
-                self.dirinreq = True
-
-    def canOpen(self):
-        return self.collection.id != tree.getRoot("collections").id
-    def getFrameLink(self):
-        return '/treeframe?id='+self.collection.id+'&'+'currentdir='+self.currentdir.id+self.browse_fold_link+self.browse_unfold_link
-
-    def buildBrowsingTree(self, req):
-        self.browsingtree = browsingtree(req)
-
-    def getBrowsingTree(self):
-        return self.browsingtree
-
-    def DirOpen(self):
-        return self.dirinreq
-    
 class NavTreeEntry:
-    def __init__(self, col, node, indent):
+    def __init__(self, col, node, indent, small=0):
         self.col = col
         self.node = node
         self.id = node.id
@@ -234,8 +184,9 @@ class NavTreeEntry:
         self.hassubdir = 0
         self.folded = 1
         self.active = 0
+        self.small = small
         for c in self.node.getChildren():
-            if c.type == "directory":
+            if isCollection(c) or isDirectory(c):
                 self.hassubdir = 1
                 self.folded = 1
                 break
@@ -253,10 +204,13 @@ class NavTreeEntry:
     def getText(self):
         return self.node.getLabel()
     def getClass(self):
-        if self.indent > 1:
-            return "lv1"
+        if self.node.type == "directory":
+            return "lv2"
         else:
-            return "lv0"
+            if self.indent > 1:
+                return "lv1"
+            else:
+                return "lv0"
 
 # NOTE: the whole collection/browsing tree stuff is horriby complex, and
 # should be rewritten from scratch
@@ -278,15 +232,16 @@ class Collectionlet(Portlet):
         Portlet.__init__(self)
         self.name="collectionlet"
         self.collection = tree.getRoot("collections")
+        self.directory = self.collection
         self.folded = 0
         self.m = {}
         self.col_data = None
         self.hassubdir = 0
     
         def f(m,node,indent):
-            m[node.id] = NavTreeEntry(self, node,indent)
+            m[node.id] = NavTreeEntry(self, node, indent, node.type=="directory")
             for c in node.getChildren():
-                if isCollection(c):
+                if isCollection(c) or isDirectory(c):
                     f(m, c, indent+1)
         f(self.m, tree.getRoot("collections"), 0)
 
@@ -295,21 +250,21 @@ class Collectionlet(Portlet):
 
     def feedback(self,req):
         Portlet.feedback(self,req)
-        if "dir" in req.params:
-            dirid = req.params["dir"]
-            try:
-                dir = tree.getNode(dirid)
-                if self.collection.type=="collections" or not isParentOf(dir, self.collection):
-                    self.collection = getCollection(dir)
-            except tree.NoSuchNodeError:
-                pass
-
-        if "id" in req.params:
-            id = req.params["id"]
+        if "dir" in req.params or "id" in req.params:
+            id = req.params.get("id", req.params.get("dir"))
             try:
                 node = tree.getNode(id)
-                if self.collection.type=="collections" or not isParentOf(node, self.collection):
-                    self.collection = getCollection(node)
+                if isCollection(node):
+                    self.collection = node
+                    self.directory = node
+                else:
+                    if isDirectory(node):
+                        self.directory = node
+                    else: 
+                        if not isDirectory(self.dir) or not isParentOf(node, self.dir):
+                            self.dir = getDirectory(node)
+                    if self.collection.type=="collections" or not isParentOf(node, self.collection):
+                        self.collection = getCollection(node)
             except tree.NoSuchNodeError:
                 pass
 
@@ -325,15 +280,23 @@ class Collectionlet(Portlet):
             if id in self.m:
                 self.m[id].folded = 0
         
+        if self.directory.id in self.m:
+            self.m[self.directory.id].folded = 0
+            self.m[self.directory.id].active = 1
+        
         if self.collection.id in self.m:
-            self.m[self.collection.id].folded = 0
             self.m[self.collection.id].active = 1
 
-        parents = [self.collection]
+        # open all parents, so we see that node
+        parents = [self.directory]
         while parents:
+            print [p.name for p in parents],'->',
             p = parents.pop()
+            print [j.name for j in p.getParents()]
             if p.id in self.m:
                 self.m[p.id].folded = 0
+            else:
+                print "no ID"
             parents += p.getParents()
 
         col_data = []
@@ -341,6 +304,7 @@ class Collectionlet(Portlet):
             if not access.hasReadAccess(node):
                 return
             if not node.id in self.m:
+                print "ERROR: Unknown node",node.id,node.name,"in browsing tree"
                 # some new node FIX-ME we should rebuild the tree
                 return
                
@@ -350,7 +314,7 @@ class Collectionlet(Portlet):
 
             if not data.folded or data.defaultopen:
                 for c in node.getChildren().sort():
-                    if isCollection(c):
+                    if isCollection(c) or isDirectory(c):
                         f(col_data,c, indent+1)
         f(col_data,tree.getRoot("collections"),0)
         self.col_data = col_data
@@ -407,11 +371,6 @@ class CollectionMapping:
         if collection.id not in self.searchmap:
             self.searchmap[collection.id] = Searchlet(collection)
         return self.searchmap[collection.id]
-    def getBrowse(self,collection):
-        if collection.id not in self.browsemap:
-            self.browsemap[collection.id] = Browselet(collection)
-        return self.browsemap[collection.id]
-
 
 def getSessionSetting(req, name, default):
     try:
@@ -500,12 +459,7 @@ class NavigationFrame:
         nav_portlet.feedback(req)
         navigation["navitem"] = nav_portlet
 
-        # browse
-        browse_portlet = self.cmap.getBrowse(col_selected)
-        req.params["collection"] = collection_portlet.collection.id
-        browse_portlet.feedback(req)
-        browse_portlet.buildBrowsingTree(req)
-        navigation["browse"] = browse_portlet
+        #<ul class="nav_depth03" tal:condition="python:browse.collection.id==data.id and not data.isFolded() and data.hassubdir">
         self.params = {"user": user, "userlinks": userlinks, "t":t, "navigation":navigation, "language":front_lang}
         
     def write(self, req, contentHTML, show_navbar=1):

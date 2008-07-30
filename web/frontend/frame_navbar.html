@@ -46,26 +46,23 @@
 
     </div>
 
-    <div class="portlet" tal:define="col python:navigation['collection']; browse python:navigation['browse']">
+    <div class="portlet" tal:define="col python:navigation['collection']">
         <ul id="navigationlist">
             <li tal:repeat="data python:col.getCollections()" tal:attributes="class python:data.getClass()">
                 <div tal:attributes="style python:data.getStyle();class python:['linknotselected','linkselected'][data.active]">
                     <tal:block tal:condition="python:not data.isFolded()">
                         <a tal:attributes="href python:data.getFoldLink()" 
                            tal:content="raw python:data.getText()">TEXT</a>
-                        <a tal:attributes="href python:data.getFoldLink()" 
+                        <a tal:condition="python:data.hassubdir" tal:attributes="href python:data.getFoldLink()" 
                             class="expanded">-</a>
                     </tal:block>
                     <tal:block tal:condition="python:data.isFolded()">
                         <a tal:attributes="href python:data.getUnfoldLink()"
                            tal:content="raw python:data.getText()">TEXT</a>
-                        <a tal:attributes="href python:data.getUnfoldLink()" 
+                        <a tal:condition="python:data.hassubdir" tal:attributes="href python:data.getUnfoldLink()" 
                            i18n:attributes="title unfold" class="collapsed">-</a>
                     </tal:block>
                 </div>
-                <ul class="nav_depth03" tal:condition="python:browse.collection.id==data.id and not data.isFolded() and data.hassubdir">
-                     <tal:block tal:replace="raw python:browse.getBrowsingTree()"/>
-                </ul >
             </li>
         </ul>
     </div>

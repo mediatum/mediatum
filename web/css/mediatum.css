@@ -250,6 +250,17 @@ ul#navigationlist li.lv1 div a {
     color: #004682;    
     background-color: #eef2f5;
 }
+ul#navigationlist li.lv2 {
+    padding: 0px; margin:0px;
+    background-color: #ffffff;
+}
+ul#navigationlist li.lv2 div a {
+    margin:0px;
+    padding: 0.2em 0px 0.2em 22px;display: block;font-size: 100%;text-decoration: none;outline: none;
+    color: #004682;    
+    background-color: #ffffff;
+}
+
 
 li.lv0 div.linknotselected{
     padding: 0px; margin:0px;

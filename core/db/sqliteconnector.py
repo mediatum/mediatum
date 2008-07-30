@@ -28,10 +28,10 @@ from connector import Connector
 
 try:
     import sqlite3 as sqlite
-    import sqlite3.OperationalError as OperationalError
+    #import sqlite3.OperationalError as OperationalError
 except:
     from pysqlite2 import dbapi2 as sqlite
-    from pysqlite2.dbapi2 import OperationalError as OperationalError
+    #from pysqlite2.dbapi2 import OperationalError as OperationalError
 
 #from time import *
 from core.db.database import initDatabaseValues

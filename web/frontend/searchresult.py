@@ -86,17 +86,18 @@ def simple_search(req):
         for collection in access.filter(tree.getRoot("collections").getChildren()):
             collection_ids[collection.id] = 1
 
-    logging.getLogger('usertracing').info(access.user.name + " search for '"+q+"'")
     # now retrieve all results in all collections
     
     for collection in tree.getRoot("collections").getChildren():
         if collection.id in collection_ids:
             collections.append(collection)
 
+    num = 0
     if "act_node" in req.params and tree.getNode(req.params.get("act_node")).getContentType()!="collections":
         # actual node is a collection or directory
         result = tree.getNode(req.params.get("act_node")).search('full='+q)
         result = access.filter(result)
+        num += len(result)
         if len(result)>0:
             cl = ContentList(tree.NodeList(result), collection, words)
             cl.feedback(req)
@@ -108,6 +109,7 @@ def simple_search(req):
         for collection in collections:
             result = collection.search('full='+q)
             result = access.filter(result)
+            num += len(result)
 
             if len(result)>0:
                 cl = ContentList(tree.NodeList(result), collection, words)
@@ -115,6 +117,9 @@ def simple_search(req):
                 cl.linkname = "Suchergebnis"
                 cl.linktarget = ""
                 res.append(cl)
+
+    logging.getLogger('usertracing').info(access.user.name + " search for '"+q+"', "+str(num)+" results")
+
     return SearchResult(res, q, collections)
 
 
@@ -192,8 +197,8 @@ def extended_search(req):
         result = tree.getNode(req.params.get("act_node")).search(q_str)
     else:
         result = collection.search(q_str)
-    logging.getLogger('usertracing').info(access.user.name + " xsearch for '"+q_user+"'")
     result = access.filter(result)
+    logging.getLogger('usertracing').info(access.user.name + " xsearch for '"+q_user+"', "+str(len(result))+" results")
     if len(result)>0:
         cl = ContentList(tree.NodeList(result), collection, q_user.strip())
         cl.feedback(req)

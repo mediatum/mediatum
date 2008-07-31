@@ -52,13 +52,13 @@
                 <div tal:attributes="style python:data.getStyle();class python:['linknotselected','linkselected'][data.active]">
                     <tal:block tal:condition="python:not data.isFolded()">
                         <a tal:attributes="href python:data.getFoldLink()" 
-                           tal:content="raw python:data.getText()">TEXT</a>
+                           tal:content="raw python:data.getText(acl)">TEXT</a>
                         <a tal:condition="python:data.hassubdir" tal:attributes="href python:data.getFoldLink()" 
                             class="expanded">-</a>
                     </tal:block>
                     <tal:block tal:condition="python:data.isFolded()">
                         <a tal:attributes="href python:data.getUnfoldLink()"
-                           tal:content="raw python:data.getText()">TEXT</a>
+                           tal:content="raw python:data.getText(acl)">TEXT</a>
                         <a tal:condition="python:data.hassubdir" tal:attributes="href python:data.getUnfoldLink()" 
                            i18n:attributes="title unfold" class="collapsed">-</a>
                     </tal:block>

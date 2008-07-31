@@ -30,7 +30,7 @@ import core.search.query
 from utils.dicts import SortedDict
 from schema.schema import getMetadataType
 from utils.dicts import SortedDict
-from utils.utils import getCollection, Link, iso2utf8, isCollection, isDirectory
+from utils.utils import getCollection, getDirectory, Link, iso2utf8, isCollection, isDirectory
 from core.acl import AccessData,getRootAccess
 from core.translation import translate, lang, t
 from core.metatype import Context
@@ -201,8 +201,18 @@ class NavTreeEntry:
         return self.folded
     def getStyle(self):
         return "padding-left: %dpx" % (self.indent*6)
-    def getText(self):
-        return self.node.getLabel()
+    def getText(self,accessdata):
+        if self.node.type == "directory":
+            count = 0
+            for n_t,num in self.node.getAllOccurences(accessdata).items():
+                if n_t.getContentType() != "directory":
+                    count += num
+            if count==0:
+                return self.node.getLabel()
+            else:
+                return self.node.getLabel()+" (" + str(count) + ")"
+        else:
+            return self.node.getLabel()
     def getClass(self):
         if self.node.type == "directory":
             return "lv2"
@@ -261,8 +271,8 @@ class Collectionlet(Portlet):
                     if isDirectory(node):
                         self.directory = node
                     else: 
-                        if not isDirectory(self.dir) or not isParentOf(node, self.dir):
-                            self.dir = getDirectory(node)
+                        if not isDirectory(self.directory) or not isParentOf(node, self.directory):
+                            self.directory = getDirectory(node)
                     if self.collection.type=="collections" or not isParentOf(node, self.collection):
                         self.collection = getCollection(node)
             except tree.NoSuchNodeError:
@@ -466,6 +476,7 @@ class NavigationFrame:
         self.params["content"] = contentHTML
         self.params["show_navbar"] = show_navbar
         self.params["act_node"] = req.params.get("id", req.params.get("dir", ""))
+        self.params["acl"] = AccessData(req)
         return req.writeTAL("web/frontend/frame.html", self.params)
 
 

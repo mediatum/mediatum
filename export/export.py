@@ -45,7 +45,7 @@ def export(req):
     mask = getMetaType(node.getSchema()).getMask(p[1])
     if mask:
 
-        req.reply_headers['Content-Type'] = "text/plain"
+        req.reply_headers['Content-Type'] = "text/plain; charset=utf-8"
         req.write(mask.getViewHTML([node], flags=8)) # flags =8 -> export type
     else:
         req.write("no export mask given")

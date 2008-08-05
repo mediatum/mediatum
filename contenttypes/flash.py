@@ -61,9 +61,10 @@ class Flash(default.Default):
 
     """ popup window for actual nodetype """
     def popup_fullsize(node, req):
-        for filenode in node.getFiles():
-            if filenode.getType()=="original":
-                f =  "/file/" + str(node.id) + "/" + filenode.getName()
-                break
-        req.writeTAL("contenttypes/flash.html", {"path":f}, macro="fullsize")
+    f = ""
+    for filenode in node.getFiles():
+        if filenode.getType() in ("original", "video"):
+            f =  "/file/" + str(node.id) + "/" + filenode.getName()
+            break
+    req.writeTAL("contenttypes/flash.html", {"path":f}, macro="fullsize")
     

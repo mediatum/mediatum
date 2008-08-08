@@ -430,8 +430,17 @@ msgstr "Attachment-Browser öffnen..."
 msgid "admin_print_title"
 msgstr "Aktuelle Seite drucken"
 
+msgid "admin_menu_0"
+msgstr "Hauptmenü"
+
+msgid "admin_menu_0_1"
+msgstr "Start"
+
 msgid "admin_menu_1"
 msgstr "Benutzerverwaltung"
+
+msgid "admin_menu_1_description"
+msgstr "Verwaltung von Benutzern und Gruppen"
 
 msgid "admin_menu_1_1"
 msgstr "Benutzergruppe"
@@ -442,11 +451,17 @@ msgstr "Benutzer"
 msgid "admin_menu_2"
 msgstr "Zugriffsrechte"
 
+msgid "admin_menu_2_description"
+msgstr "Verwaltung der ACL-Regeln"
+
 msgid "admin_menu_2_1"
 msgstr "ACL Editor"
 
 msgid "admin_menu_3"
 msgstr "Datentypen"
+
+msgid "admin_menu_3_description"
+msgstr "Verwaltung der Metadatendefinitionen"
 
 msgid "admin_menu_3_1"
 msgstr "Metadatentypen"
@@ -457,17 +472,29 @@ msgstr "Metadatenmapping"
 msgid "admin_menu_4"
 msgstr "Workflows"
 
+msgid "admin_menu_4_description"
+msgstr "Verwaltung der Workflows"
+
 msgid "admin_menu_4_1"
 msgstr "Workflow"
 
 msgid "admin_menu_5"
 msgstr "System-Einstellungen"
 
+msgid "admin_menu_5_description"
+msgstr "Verwaltung der Systemeinstellungen"
+
 msgid "admin_menu_5_1"
 msgstr "Log-Dateien"
 
 msgid "admin_menu_5_2"
 msgstr "Caches"
+
+msgid "admin_menu_5_3"
+msgstr "Mediatum Konfiguration"
+
+msgid "admin_submenu"
+msgstr "Unterpunkte:"
 
 msgid "admin_error"
 msgstr "Sie besitzen nicht die notwendigen Rechte, um den Administrationsbereich zu betreten.<br/> Falls Sie nicht angemeldet sein sollten, können Sie das ${link}"
@@ -523,6 +550,9 @@ msgstr "mediaTUM Administration Interface"
 msgid "admin_title"
 msgstr "mediaTUM Administration Interface"
 
+msgid "admin_filter_label"
+msgstr "Filter:"
+
 ### usergroup ###
 msgid "admin_usergroup_existing"
 msgstr "Vorhandene Benutzergruppen"
@@ -551,6 +581,9 @@ msgstr "# User"
 msgid "admin_usergroup_col_3"
 msgstr "# Schemata"
 
+msgid "admin_usergroup_col_4"
+msgstr "Editor Filter"
+
 msgid "usergroup_option_1"
 msgstr "Editorrechte"
 
@@ -577,6 +610,60 @@ msgstr "Optionen"
 
 msgid "admin_usergroup_aclrule"
 msgstr "Access Regel für diese Gruppe erstellen"
+
+msgid "admin_usergroup_hideedit_title"
+msgstr "Editorfunktionen gefiltert"
+
+msgid "admin_usergroup_rights"
+msgstr "Editormodule ausblenden:"
+
+msgid "e_acls"
+msgstr "ACL-Funktionen"
+
+msgid "e_classes"
+msgstr "Klassifikationsfunktion"
+
+msgid "e_editor"
+msgstr "Startseiteneditor"
+
+msgid "e_files"
+msgstr "Technische Metadaten"
+
+msgid "e_license"
+msgstr "Lizensierung"
+
+msgid "e_logo"
+msgstr "Logo Funktionen"
+
+msgid "e_lza"
+msgstr "Langzeitarchivierung"
+
+msgid "e_metadata"
+msgstr "Metadateneditor"
+
+msgid "e_search"
+msgstr "Suche"
+
+msgid "e_searchmask"
+msgstr "Suchmaskenfunktionen"
+
+msgid "e_sort"
+msgstr "Sortierfunktionen"
+
+msgid "e_sortfiles"
+msgstr "Dateien sortieren"
+
+msgid "e_subfolder"
+msgstr "Unterordner sortieren"
+
+msgid "e_upload"
+msgstr "Daten hochladen"
+
+msgid "e_workflow"
+msgstr "Workflow Funktionen"
+
+msgid "e_publish"
+msgstr "Veröffentlichung"
 
 ### user ###
 msgid "user_option_1"
@@ -613,13 +700,25 @@ msgid "admin_user_col_1"
 msgstr "Benutzername"
 
 msgid "admin_user_col_2"
-msgstr "Email"
+msgstr "Nachname"
 
 msgid "admin_user_col_3"
-msgstr "Gruppe(n)"
+msgstr "Vorname"
 
 msgid "admin_user_col_4"
+msgstr "Email"
+
+msgid "admin_user_col_5"
+msgstr "Gruppe(n)"
+
+msgid "admin_user_col_6"
 msgstr "Std. Passwort"
+
+msgid "admin_filter_all"
+msgstr "alle"
+
+msgid "admin_filter_else"
+msgstr "sonstige"
 
 msgid "admin_user_new_label"
 msgstr "Neuen Benutzer anlegen"
@@ -668,6 +767,15 @@ msgstr "Email absenden"
 
 msgid "admin_user_emailsend"
 msgstr "Email wurde verschickt."
+
+msgid "admin_user_filter_username"
+msgstr "Benutzername"
+
+msgid "admin_user_filter_lastname"
+msgstr "Nachname"
+
+msgid "admin_user_importintern"
+msgstr "Benutzer zu den internen Benutzern importieren"
 
 ### acl ###
 msgid "admin_acl_existing"
@@ -1026,6 +1134,27 @@ msgstr "Optionen"
 msgid "admin_index_update_msg"
 msgstr "Der Suchindex wird aktualisiert. Dies kann einen Moment dauern."
 
+msgid "admin_metatype_filter_id"
+msgstr "Schema-ID"
+
+msgid "admin_metatype_filter_name"
+msgstr "Name"
+
+msgid "admin_metafield_filter_name"
+msgstr "Name"
+
+msgid "admin_metafield_filter_label"
+msgstr "Label"
+
+msgid "admin_metatype_reindex_title"
+msgstr "Der Suchindex für das aktuelle Schema ist nicht aktuell, erneuern:"
+
+msgid "admin_metatype_reindex_button"
+msgstr "Reindex"
+
+msgid "admin_metatype_index_ok"
+msgstr "Der Suchindex für das aktuelle Metadatenschema ist aktuell."
+
 ### meta masks ###
 msgid "admin_mask_header"
 msgstr "Masken des Metadatenschemas '${name}'"
@@ -1087,6 +1216,9 @@ msgstr "Std. Maske"
 msgid "admin_mask_col_5"
 msgstr "Sprache"
 
+msgid "admin_mask_col_6"
+msgstr "ACL"
+
 msgid "admin_mask_default"
 msgstr "Standard Maske"
 
@@ -1116,6 +1248,9 @@ msgstr "Zeilentrenner auch bei letzter Zeile"
 
 msgid "admin_mask_nomapping"
 msgstr "- kein Mapping -"
+
+msgid "admin_mask_acl_title"
+msgstr "Metadatenmaske besitzt ACL-Regel"
 
 msgid "masktype_empty"
 msgstr "-kein Typ-"
@@ -1225,8 +1360,11 @@ msgstr "Zeilenformat"
 msgid "admin_mapping_standardformat_description"
 msgstr "mögliche Variablen:<br/>* [value] = Attributwert<br/>* [field] = Feldname<br/>* [att:field] = Attributfeldname<br/>* [att:id] = Knoten-ID<br/>"
 
+msgid "admin_mapping_overview_footer"
+msgstr "${number} Mappings"
+
 msgid "admin_mappingfield_existing"
-msgstr "Vorhandene Mappingfelder"
+msgstr "Vorhandene Mappingfelder des Mappings"
 
 msgid "admin_mappingfield_col_1"
 msgstr "Name"
@@ -1269,6 +1407,9 @@ msgstr "Vererbt"
 
 msgid "admin_mappingfield_nofields"
 msgstr "- keine Mappingfelder definiert -"
+
+msgid "admin_mappingfield_footer"
+msgstr "${number} Mappingfelder"
 
 ### admin logfiles ###
 msgid "admin_log_everything"
@@ -1486,6 +1627,133 @@ msgstr "Python Klassen werden in Caches zur Laufzeit zwischengespeichert.<br>Nac
 msgid "admin_flush_all_cleared"
 msgstr "Alle Caches wurden geleert."
 
+### admin settings ###
+msgid "admin_settings_header"
+msgstr "Informationen:"
+
+msgid "admin_settings_python_header"
+msgstr "Python"
+
+msgid "admin_settings_mediatum_header"
+msgstr "Mediatum"
+
+msgid "admin_settings_database_header"
+msgstr "Datenbank"
+
+msgid "admin_settings_search_header"
+msgstr "Suche"
+
+msgid "admin_settings_other_header"
+msgstr "Sonstiges"
+
+msgid "admin_settings_pythonversion"
+msgstr "Python Version:"
+
+msgid "admin_settings_platform"
+msgstr "Betriebssystem:"
+
+msgid "admin_settings_config"
+msgstr "Mediatum Konfiguration:"
+
+msgid "admin_settings_mediatum_version"
+msgstr "Mediatum Version:"
+
+msgid "admin_settings_dbdriver"
+msgstr "Datenbanktreiber:"
+
+msgid "admin_settings_dbdriverversion"
+msgstr "Datenbanktreiber Version:"
+
+msgid "admin_settings_db_status"
+msgstr "Datenbank Informationen:"
+
+msgid "admin_settings_db_size"
+msgstr "Größe:"
+
+msgid "sqlite_type"
+msgstr "Typ:"
+
+msgid "sqlite_name"
+msgstr "Name:"
+
+msgid "sqlite_tbl_name"
+msgstr "Tabellenname:"
+
+msgid "sqlite_rootpage"
+msgstr "Rootpage:"
+
+msgid "sqlite_sql"
+msgstr "SQL:"
+
+msgid "mysql_name"
+msgstr "Tabellenname:"
+
+msgid "mysql_engine"
+msgstr "Typ:"
+
+msgid "mysql_version"
+msgstr "Version:"
+
+msgid "mysql_row_format"
+msgstr "Zeilenformat:"
+
+msgid "mysql_rows"
+msgstr "Datensätze:"
+
+msgid "mysql_avg_row_length"
+msgstr "Durchschn. Zeilenlänge:"
+
+msgid "mysql_data_length"
+msgstr "Größe (Daten):"
+
+msgid "mysql_max_data_length"
+msgstr "Max. Datenlänge:"
+
+msgid "mysql_index_length"
+msgstr "Größe (Index):"
+
+msgid "mysql_data_free"
+msgstr "Freieinträge:"
+
+msgid "mysql_auto_increment"
+msgstr "Autowert:"
+
+msgid "mysql_create_time"
+msgstr "Erstelldatum:"
+
+msgid "mysql_update_time"
+msgstr "Aktualisierungsdatum:"
+
+msgid "mysql_check_time"
+msgstr "Prüfdatum:"
+
+msgid "mysql_collation"
+msgstr "Kodierung:"
+
+msgid "mysql_checksum"
+msgstr "Prüfsumme:"
+
+msgid "mysql_create_options"
+msgstr "Erstelloptionen:"
+
+msgid "mysql_comment"
+msgstr "Bemerkung:"
+
+msgid "admin_settings_search_type"
+msgstr "Suchengine:"
+
+msgid "admin_settings_search_status"
+msgstr "Sucheigenschaften:"
+
+msgid "sqplite_items_count"
+msgstr "Datensätze:"
+
+msgid "admin_settings_search_size"
+msgstr "Datenbankgröße:"
+
+msgid "admin_settings_python_copyright"
+msgstr "Python Copyright:"
+
 ### workflows ###
 msgid "wf_edit_header"
 msgstr "Workflows, die von Ihnen bearbeitet werden können"
@@ -1650,6 +1918,12 @@ msgid "popup_indexnumber"
 msgstr "Wert(e) selektiert"
 
 ### edit area ###
+msgid "edit_error_msg"
+msgstr "Sie besitzen nicht die notwendigen Rechte, um den Editorbereich zu betreten.<br/> Falls Sie nicht angemeldet sein sollten, können Sie das ${link}"
+
+msgid "edit_linktext"
+msgstr "hier"
+
 msgid "edit_nodeinformation"
 msgstr "Node Informationen"
 
@@ -1756,20 +2030,44 @@ msgid "edit_action_dir_del"
 msgstr "Löschen"
 
 ### edit tabs ###
+msgid "tab_layout"
+msgstr "Aussehen"
+
+msgid "tab_metadata"
+msgstr "Daten"
+
+msgid "tab_metadata_col"
+msgstr "Konfiguration"
+
+msgid "tab_operation"
+msgstr "Spezialfunktionen"
+
+msgid "tab_security"
+msgstr "Berechtigungen"
+
 msgid "tab_upload"
 msgstr "Upload"
 
-msgid "tab_html"
-msgstr "HTML"
+msgid "tab_editor"
+msgstr "Startseite editieren"
 
-msgid "tab_html_title"
+msgid "tab_metadata_col"
+msgstr "Anzeige"
+
+msgid "tab_metadata_dir"
+msgstr "Anzeige"
+
+msgid "tab_logo"
+msgstr "Logo editieren"
+
+msgid "tab_editor_title"
 msgstr "HTML-Seiten bearbeiten"
 
 msgid "tab_upload_title"
 msgstr "Upload-Bereich anzeigen"
 
-msgid "tab_meta"
-msgstr "Metadaten"
+msgid "tab_metadata"
+msgstr "Metadaten editieren"
 
 msgid "tab_meta_title"
 msgstr "Metadateneditor anzeigen"
@@ -1781,7 +2079,7 @@ msgid "tab_content_title"
 msgstr "Inhalt anzeigen"
 
 msgid "tab_search"
-msgstr "Suche"
+msgstr "Durchsuchen"
 
 msgid "tab_search_title"
 msgstr "Suche anzeigen"
@@ -1790,31 +2088,34 @@ msgid "tab_searchmask"
 msgstr "Suchmaske"
 
 msgid "tab_subfolder"
-msgstr "Unterordner Sortieren"
+msgstr "Unterordner sortieren"
 
 msgid "tab_subfolder_title"
-msgstr "Unterordner Sortieren"
+msgstr "Unterordner sortieren"
 
 msgid "tab_acls"
-msgstr "Berechtigungen"
+msgstr "Rechtevergabe"
 
 msgid "tab_acls_title"
-msgstr "Berechtigungen bearbeiten"
+msgstr "Rechte bearbeiten"
 
 msgid "tab_license"
-msgstr "Lizensierung"
+msgstr "Objektlisten/Prüfsummen"
 
 msgid "tab_license_title"
 msgstr "Lizensierungsliste anzeigen"
 
-msgid "tab_techmeta"
+msgid "tab_files"
 msgstr "Technische Metadaten"
 
-msgid "tab_techmeta_title"
+msgid "tab_files_title"
 msgstr "Technische Metadaten anzeigen"
 
+msgid "tab_files_obj"
+msgstr "digitale Objekte austauschen/hinzufügen"
+
 msgid "tab_view"
-msgstr "Aussehen"
+msgstr "Vorschau"
 
 msgid "tab_view_title"
 msgstr "Vorschau auf späteres Aussehen in Recherche"
@@ -1826,10 +2127,13 @@ msgid "tab_workflow_title"
 msgstr "Workflow anzeigen"
 
 msgid "tab_classes"
-msgstr "Klassifikationen"
+msgstr "Einordnen in Browsingstruktur"
 
 msgid "tab_classes_title"
 msgstr "Klassifizierung anzeigen"
+
+msgid "tab_classes_header"
+msgstr "Klassifikation"
 
 ### edit acls ###
 msgid "edit_acls_righttype_read"
@@ -2159,6 +2463,33 @@ msgstr "Vorkommen"
 
 msgid "sort_label"
 msgstr "Sortieren nach:"
+
+msgid "edit_logo_logoheader"
+msgstr "Logo:"
+
+msgid "edit_logo_del_button"
+msgstr "Logo löschen"
+
+msgid "edit_logo_no_logo"
+msgstr "-kein Logo vorhanden-"
+
+msgid "edit_logo_link_label"
+msgstr "Link hinter Logo: "
+
+msgid "edit_logo_test_title"
+msgstr "Link testen"
+
+msgid "edit_logo_savechanges"
+msgstr "Änderungen speichern"
+
+msgid "edit_logo_reset"
+msgstr "Zurücksetzen"
+
+msgid "edit_logo_changeheader"
+msgstr "Logo austauschen:"
+
+msgid "edit_logo_filetypeerror"
+msgstr "Die hochgeladene Datei hat keinen unterstützen Dateityp für Logos. Zugelassen sind nur Dateien vom Typ '.jpeg', '.jpg', '.gif' oder '.png'."
 
 # mask editor #
 msgid "mask_editor_title"
@@ -2520,7 +2851,7 @@ msgid "settings"
 msgstr "Einstellungen"
 
 msgid "style"
-msgstr "Aussehen"
+msgstr "Kurzanzeigeformat:"
 
 msgid "don't display logo"
 msgstr "Kein Logo Anzeigen"
@@ -2529,10 +2860,13 @@ msgid "no extended search"
 msgstr "Keine erweiterte Suche"
 
 msgid "full view style"
-msgstr "Vollansicht Stil"
+msgstr "Vollanzeigeformat:"
 
 msgid "node name"
-msgstr "Name"
+msgstr "Name:"
+
+msgid "no_extsearch"
+msgstr "keine erweiterte Suche:"
 
 msgid "fieldname"
 msgstr "Feldname"
@@ -2566,3 +2900,24 @@ msgstr "Folgende Felder durchsuchen:"
 
 msgid "add"
 msgstr "hinzufügen"
+
+msgid "sub_header_frontend"
+msgstr "Recherche"
+
+msgid "tab_lza"
+msgstr "Langzeitarchivierung"
+
+msgid "edit_lza_wrongfiletype"
+msgstr "Für die gewählte Datei kann kein Langzeit-Objekt erstellt werden, da sich die Ausgangsdatei in keinen geeigneten Format befindet."
+
+msgid "edit_lza_ioerror"
+msgstr "Langzeit-Objekt nicht gefunden, aber in Objekt verzeichnet."
+
+msgid "edit_lza_create_label"
+msgstr "Langzeit-Objekt erzeugen"
+
+msgid "edit_lza_remove_label"
+msgstr "Langzeit-Objekt entfernen"
+
+msgid "edit_lza_node"
+msgstr "LZA Informationen für Objekt mit id"

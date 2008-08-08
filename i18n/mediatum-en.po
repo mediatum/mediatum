@@ -418,44 +418,71 @@ msgstr "open attachment browser..."
 msgid "admin_print_title"
 msgstr "print current page"
 
+msgid "admin_menu_0"
+msgstr "Main Menu"
+
+msgid "admin_menu_0_1"
+msgstr "Start"
+
 msgid "admin_menu_1"
-msgstr "user administration"
-##
+msgstr "User administration"
+
+msgid "admin_menu_1_description"
+msgstr "Maintenance of Usergroups and Users"
+
 msgid "admin_menu_1_1"
-msgstr "user groups"
+msgstr "Usergroups"
 
 msgid "admin_menu_1_2"
-msgstr "users"
+msgstr "Users"
 
 msgid "admin_menu_2"
-msgstr "access rights"
+msgstr "Access Rights"
+
+msgid "admin_menu_2_description"
+msgstr "Maintenance of ACL-rules"
 
 msgid "admin_menu_2_1"
 msgstr "ACL editor"
 
 msgid "admin_menu_3"
-msgstr "datatypes"
+msgstr "Datatypes"
+
+msgid "admin_menu_3_description"
+msgstr "Maintenance Datatypes"
 
 msgid "admin_menu_3_1"
-msgstr "types of metadata"
+msgstr "Types of Metadata"
 
 msgid "admin_menu_3_2"
-msgstr "mapping of metadata"
+msgstr "Mapping of Metadata"
 
 msgid "admin_menu_4"
-msgstr "workflows"
+msgstr "Workflows"
+
+msgid "admin_menu_4_description"
+msgstr "Maintenance of Workflows"
 
 msgid "admin_menu_4_1"
-msgstr "workflow"
+msgstr "Workflow"
 
 msgid "admin_menu_5"
-msgstr "system"
+msgstr "System"
+
+msgid "admin_menu_5_description"
+msgstr "Maintenance of System Options"
 
 msgid "admin_menu_5_1"
-msgstr "log files"
+msgstr "Log Files"
 
 msgid "admin_menu_5_2"
-msgstr "caches"
+msgstr "Caches"
+
+msgid "admin_menu_5_3"
+msgstr "mediatum configuration"
+
+msgid "admin_submenu"
+msgstr "Subelements:"
 
 msgid "admin_error"
 msgstr "You're not allowed to access the administration area.<br/> You can logon here: ${link}"
@@ -511,6 +538,9 @@ msgstr "mediaTUM Administration Interface"
 msgid "admin_title"
 msgstr "mediaTUM Administration Interface"
 
+msgid "admin_filter_label"
+msgstr "Filter:"
+
 ### usergroup ###
 msgid "admin_usergroup_existing"
 msgstr "Existing user groups"
@@ -539,6 +569,9 @@ msgstr "# users"
 msgid "admin_usergroup_col_3"
 msgstr "# schemas"
 
+msgid "admin_usergroup_col_4"
+msgstr "editor filter"
+
 msgid "usergroup_option_1"
 msgstr "editor rights"
 
@@ -565,6 +598,60 @@ msgstr "options"
 
 msgid "admin_usergroup_aclrule"
 msgstr "create access rule for current user group"
+
+msgid "admin_usergroup_hideedit_title"
+msgstr "editor functions with filter"
+
+msgid "admin_usergroup_rights"
+msgstr "hide editor modules:"
+
+msgid "e_acls"
+msgstr "acl-functions"
+
+msgid "e_classes"
+msgstr "classifiaction"
+
+msgid "e_editor"
+msgstr "html editor (start page)"
+
+msgid "e_files"
+msgstr "technical metadata"
+
+msgid "e_license"
+msgstr "license functions"
+
+msgid "e_logo"
+msgstr "logo functions"
+
+msgid "e_lza"
+msgstr "long-term preservation"
+
+msgid "e_metadata"
+msgstr "metadata editor"
+
+msgid "e_search"
+msgstr "search"
+
+msgid "e_searchmask"
+msgstr "search mask functions"
+
+msgid "e_sort"
+msgstr "sort functions"
+
+msgid "e_sortfiles"
+msgstr "file sort functions"
+
+msgid "e_subfolder"
+msgstr "sort subfolder"
+
+msgid "e_upload"
+msgstr "file upload"
+
+msgid "e_workflow"
+msgstr "workflow functions"
+
+msgid "e_publish"
+msgstr "publishing"
 
 ### user ###
 msgid "user_option_1"
@@ -601,13 +688,25 @@ msgid "admin_user_col_1"
 msgstr "username"
 
 msgid "admin_user_col_2"
-msgstr "email"
+msgstr "lastname"
 
 msgid "admin_user_col_3"
-msgstr "group(s)"
+msgstr "firstname"
 
 msgid "admin_user_col_4"
+msgstr "email"
+
+msgid "admin_user_col_5"
+msgstr "group(s)"
+
+msgid "admin_user_col_6"
 msgstr "std. password"
+
+msgid "admin_filter_all"
+msgstr "all"
+
+msgid "admin_filter_else"
+msgstr "else"
 
 msgid "admin_user_new_label"
 msgstr "add new user"
@@ -656,6 +755,15 @@ msgstr "send email"
 
 msgid "admin_user_emailsend"
 msgstr "Email was send."
+
+msgid "admin_user_filter_username"
+msgstr "username"
+
+msgid "admin_user_filter_lastname"
+msgstr "lastname"
+
+msgid "admin_user_importintern"
+msgstr "import user to intern users"
 
 ### acl ###
 msgid "admin_acl_existing"
@@ -1014,6 +1122,27 @@ msgstr "Options"
 msgid "admin_index_update_msg"
 msgstr "Search index is updated. This can take one moment."
 
+msgid "admin_metatype_filter_id"
+msgstr "Schema-ID"
+
+msgid "admin_metatype_filter_name"
+msgstr "Name"
+
+msgid "admin_metafield_filter_name"
+msgstr "Name"
+
+msgid "admin_metafield_filter_label"
+msgstr "Label"
+
+msgid "admin_metatype_reindex_title"
+msgstr "Search index for current schema is not active, update:"
+
+msgid "admin_metatype_reindex_button"
+msgstr "Reindex"
+
+msgid "admin_metatype_index_ok"
+msgstr "Search index for current schema is active."
+
 ### meta masks ###
 msgid "admin_mask_header"
 msgstr "Masks of metadata scheme '${name}'"
@@ -1075,6 +1204,9 @@ msgstr "Default"
 msgid "admin_mask_col_5"
 msgstr "Language"
 
+msgid "admin_mask_col_6"
+msgstr "ACL"
+
 msgid "admin_mask_default"
 msgstr "Default Mask"
 
@@ -1104,6 +1236,9 @@ msgstr "line separator for last line"
 
 msgid "admin_mask_nomapping"
 msgstr "- no mapping -"
+
+msgid "admin_mask_acl_title"
+msgstr "metadatamask has an ACL-rule"
 
 msgid "masktype_empty"
 msgstr "-no type-"
@@ -1213,8 +1348,11 @@ msgstr "Std. format"
 msgid "admin_mapping_standardformat_description"
 msgstr "Available Variables:<br/>* [value] = attribute value<br/>* [field] = field name<br/>* [att:field] = name of attribute field<br/>* [att:id] = node id<br/>"
 
+msgid "admin_mapping_overview_footer"
+msgstr "${number} Mappings"
+
 msgid "admin_mappingfield_existing"
-msgstr "Available Mapping fields"
+msgstr "Available Mapping fields of Mapping"
 
 msgid "admin_mappingfield_col_1"
 msgstr "Name"
@@ -1258,6 +1396,8 @@ msgstr "Parent"
 msgid "admin_mappingfield_nofields"
 msgstr "- no Mapping fields defined -"
 
+msgid "admin_mappingfield_footer"
+msgstr "${number} Mapping fields"
 
 ### admin logfiles ###
 msgid "admin_log_everything"
@@ -1475,6 +1615,133 @@ msgstr "Python classes will be stored into caches at run-time. <br> After change
 msgid "admin_flush_all_cleared"
 msgstr "All chaches have been cleared."
 
+### admin settings ###
+msgid "admin_settings_header"
+msgstr "Information:"
+
+msgid "admin_settings_python_header"
+msgstr "Python"
+
+msgid "admin_settings_mediatum_header"
+msgstr "Mediatum"
+
+msgid "admin_settings_database_header"
+msgstr "Datenbank"
+
+msgid "admin_settings_search_header"
+msgstr "Searchengine"
+
+msgid "admin_settings_other_header"
+msgstr "Other"
+
+msgid "admin_settings_pythonversion"
+msgstr "Python Version:"
+
+msgid "admin_settings_platform"
+msgstr "OS:"
+
+msgid "admin_settings_config"
+msgstr "Mediatum Configuration:"
+
+msgid "admin_settings_mediatum_version"
+msgstr "Mediatum Version:"
+
+msgid "admin_settings_dbdriver"
+msgstr "Database Driver:"
+
+msgid "admin_settings_dbdriverversion"
+msgstr "Database Driver Version:"
+
+msgid "admin_settings_db_status"
+msgstr "Database Information:"
+
+msgid "admin_settings_db_size"
+msgstr "Size:"
+
+msgid "sqlite_type"
+msgstr "Type:"
+
+msgid "sqlite_name"
+msgstr "Name:"
+
+msgid "sqlite_tbl_name"
+msgstr "Table Name:"
+
+msgid "sqlite_rootpage"
+msgstr "Rootpage:"
+
+msgid "sqlite_sql"
+msgstr "SQL:"
+
+msgid "mysql_name"
+msgstr "Table Name:"
+
+msgid "mysql_engine"
+msgstr "Type:"
+
+msgid "mysql_version"
+msgstr "Version:"
+
+msgid "mysql_row_format"
+msgstr "Format:"
+
+msgid "mysql_rows"
+msgstr "Rows:"
+
+msgid "mysql_avg_row_length"
+msgstr "Avg. Row Length:"
+
+msgid "mysql_data_length"
+msgstr "Size (data):"
+
+msgid "mysql_max_data_length"
+msgstr "Max. Data Length:"
+
+msgid "mysql_index_length"
+msgstr "Size (index):"
+
+msgid "mysql_data_free"
+msgstr "Data Free:"
+
+msgid "mysql_auto_increment"
+msgstr "Auto Increment:"
+
+msgid "mysql_create_time"
+msgstr "Created:"
+
+msgid "mysql_update_time"
+msgstr "Updated:"
+
+msgid "mysql_check_time"
+msgstr "Check Date:"
+
+msgid "mysql_collation"
+msgstr "Collation:"
+
+msgid "mysql_checksum"
+msgstr "Checksum:"
+
+msgid "mysql_create_options"
+msgstr "Creation Options:"
+
+msgid "mysql_comment"
+msgstr "Comment:"
+
+msgid "admin_settings_search_type"
+msgstr "Search Engine:"
+
+msgid "admin_settings_search_status"
+msgstr "Search Engine Status:"
+
+msgid "sqplite_items_count"
+msgstr "Rows:"
+
+msgid "admin_settings_search_size"
+msgstr "Size:"
+
+msgid "admin_settings_python_copyright"
+msgstr "Python Copyright:"
+
 ### workflows ###
 msgid "wf_edit_header"
 msgstr "Editable workflows"
@@ -1639,6 +1906,12 @@ msgid "popup_indexnumber"
 msgstr "values selected"
 
 ### edit area ###
+msgid "edit_error_msg"
+msgstr "You're not allowed to access the editor area.<br/> You can logon here: ${link}"
+
+msgid "edit_linktext"
+msgstr "here"
+
 msgid "edit_nodeinformation"
 msgstr "node-information"
 
@@ -1745,26 +2018,47 @@ msgid "edit_action_dir_del"
 msgstr "Delete"
 
 ### edit tabs ###
+msgid "tab_layout"
+msgstr "Layout"
+
+msgid "tab_metadata_col"
+msgstr "Configuration"
+
+msgid "tab_metadata"
+msgstr "Data"
+
+msgid "tab_operation"
+msgstr "Special-functions"
+
+msgid "tab_security"
+msgstr "Rights"
+
 msgid "tab_upload"
 msgstr "Upload"
 
 msgid "tab_html"
-msgstr "HTML"
+msgstr "Edit startpage"
+
+msgid "tab_meta_col"
+msgstr "View"
+
+msgid "tab_meta_dir"
+msgstr "View"
+
+msgid "tab_logo"
+msgstr "Edit Logo"
 
 msgid "tab_html_title"
-msgstr "Open HTML definition"
+msgstr "Edit HTML pages"
 
 msgid "tab_upload_title"
-msgstr "Open upload area"
+msgstr "View upload area"
 
 msgid "tab_meta"
-msgstr "Metadata"
+msgstr "Meta Data"
 
 msgid "tab_meta_title"
-msgstr "Open metadata editor"
-
-msgid "tab_searchmask"
-msgstr "Search mask"
+msgstr "Open Meta Data editor"
 
 msgid "tab_content"
 msgstr "Content"
@@ -1776,31 +2070,37 @@ msgid "tab_search"
 msgstr "Search"
 
 msgid "tab_search_title"
-msgstr "Show Search"
+msgstr "Open Search"
+
+msgid "tab_searchmask"
+msgstr "Search mask"
 
 msgid "tab_subfolder"
-msgstr "Sort Subfolders"
+msgstr "Sort Subfolder"
 
 msgid "tab_subfolder_title"
-msgstr "Sort Subfolders"
+msgstr "Sort Subfolder"
 
 msgid "tab_acls"
-msgstr "Permissions"
+msgstr "Rights Management"
 
 msgid "tab_acls_title"
-msgstr "Edit Permissions"
+msgstr "Edit Rights"
 
 msgid "tab_license"
-msgstr "Licensing"
+msgstr "Object lists/Checksum"
 
 msgid "tab_license_title"
-msgstr "Open licensing overview"
+msgstr "Open Object list/Checksums"
 
 msgid "tab_techmeta"
-msgstr "Technical Metadata"
+msgstr "Technincal Meta Data"
 
 msgid "tab_techmeta_title"
-msgstr "Show Technical Metadata"
+msgstr "Open Technical Meta Data"
+
+msgid "tab_techmeta_obj"
+msgstr "Edit Digital Object"
 
 msgid "tab_view"
 msgstr "Preview"
@@ -1815,10 +2115,13 @@ msgid "tab_workflow_title"
 msgstr "Open Workflow"
 
 msgid "tab_classes"
-msgstr "Classification"
+msgstr "Place in Browsing Structure"
 
 msgid "tab_classes_title"
 msgstr "Show Classification"
+
+msgid "tab_classes_header"
+msgstr "Classification"
 
 ### edit acls ###
 msgid "edit_acls_righttype_read"
@@ -2146,6 +2449,32 @@ msgstr "sort by:"
 msgid "sort_label2"
 msgstr "and:"
 
+msgid "edit_logo_logoheader"
+msgstr "Logo:"
+
+msgid "edit_logo_del_button"
+msgstr "Delete Logo"
+
+msgid "edit_logo_no_logo"
+msgstr "-no Logo defined-"
+
+msgid "edit_logo_link_label"
+msgstr "Link behind Logo: "
+
+msgid "edit_logo_test_title"
+msgstr "Test Link"
+
+msgid "edit_logo_savechanges"
+msgstr "Save Changes"
+
+msgid "edit_logo_reset"
+msgstr "Reset"
+
+msgid "edit_logo_changeheader"
+msgstr "Change Logo:"
+
+msgid "edit_logo_filetypeerror"
+msgstr "Uploaded filetype is not supported for Logos. Allowed types are '.jpeg', '.jpg', '.gif' or '.png'."
 
 # mask editor #
 msgid "mask_editor_title"
@@ -2495,10 +2824,37 @@ msgid "don't display logo"
 msgstr "don't display logo"
 
 msgid "no extended search"
-msgstr "no extended search"
+msgstr "no extended search:"
 
 msgid "full view style"
-msgstr "full view style"
+msgstr "full view style:"
+
+msgid "style"
+msgstr "shot view style:"
+
+msgid "no_extsearch"
+msgstr "no extended search:"
 
 msgid "node name"
-msgstr "name"
+msgstr "name:"
+
+msgid "sub_header_frontend"
+msgstr "View Website"
+
+msgid "tab_lza"
+msgstr "Long-Term Preservation"
+
+msgid "edit_lza_wrongfiletype"
+msgstr "No suitable format for createion of Long-Term Object."
+
+msgid "edit_lza_ioerror"
+msgstr "Long-Term Object not found but listed in Object Definition."
+
+msgid "edit_lza_create_label"
+msgstr "Create Long-Term Object"
+
+msgid "edit_lza_remove_label"
+msgstr "Delete Long-Term Object"
+
+msgid "edit_lza_node"
+msgstr "Long-Term Preservation Information for Object with id"

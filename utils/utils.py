@@ -424,6 +424,30 @@ class EncryptionException:
 
 class FileException:
     pass
+    
+class Menu:
+    def __init__(self, name, description, icon="", link="", target="_self"):
+        self.name = name
+        self.icon = icon
+        self.link = link
+        self.target = target
+        self.description = description
+        self.item = list()
+        self.default = ""
+
+    def getName(self):
+        return self.name
+
+    def addItem(self, link, icon=""):
+        self.item.append((self.name+"_"+str(len(self.item)+1), link, icon))
+    def getItemList(self):
+        return self.item
+        
+    def setDefault(name):
+        self.default = name
+        
+    def getDefault():
+        return self.default
 
 if __name__ == "__main__":
     def tt(s):

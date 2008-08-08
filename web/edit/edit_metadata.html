@@ -36,18 +36,15 @@
         <br/>
         <tal:block tal:condition="maskform" tal:replace="raw python:maskform"/>
         <tal:block tal:condition="fields">
-        <table>
-        <tal:block tal:repeat="field fields">
-            <tr tal:define="name python:field.getFieldtype()=='meta' and field.getValue() or field.getName(); value python:node.get(name)">
-                <td>
-                    <span tal:replace="python:field.getLabel()"/>:
-                </td>
-                <td>
-                    <span tal:replace="structure python:field.getEditorHTML(value,400, field.getName())"/>
-                </td>
-            </tr>
-        </tal:block>
-        </table>
+            <tal:block tal:repeat="field fields">
+                <div class="editorrow">
+                    <div class="label" tal:content="python:field.getLabel()">TEXT</div>
+                    <div id="description">&nbsp;</div>
+                    <div id="editor_content">
+                        <span tal:define="name python:field.getFieldtype()=='meta' and field.getValue() or field.getName(); value python:node.get(name)" tal:replace="structure python:field.getEditorHTML(value,400, field.getName())"/>
+                    </div>            
+                </div>
+            </tal:block>
         </tal:block>
         <br/>
         <br/>

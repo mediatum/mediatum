@@ -1,0 +1,23 @@
+
+
+<tal:block metal:define-macro="edit_lza">
+    
+    <tal:block tal:condition="python:error!=''">
+        <p class="error" i18n:translate="" tal:content="error"/>
+    </tal:block>
+
+    <form tal:attributes="action python:'edit_content?id='+str(id)+'&tab='+tab" method="post" enctype="multipart/form-data">
+        <p><button i18n:attributes="title edit_lza_create_label" i18n:translate="edit_lza_create_label" type="submit" name="createlza" value="submit">TEXT</button></p>
+    
+        <p><button i18n:attributes="title edit_lza_remove_label" i18n:translate="edit_lza_remove_label" type="submit" name="removelza" value="submit">TEXT</button></p>
+    </form>
+
+    <tal:block tal:repeat="m_id python:list(meta)">
+        <div style="border:1px solid silver">
+            <span i18n:translate="edit_lza_node"/> <span tal:content="m_id"/>:
+            <pre tal:content="python:meta[m_id]"/>
+        </div>
+    </tal:block>
+    
+
+</tal:block>

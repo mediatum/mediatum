@@ -25,11 +25,12 @@ import urllib
 import core.tree as tree
 import core.config as config
 import core.users as users
+import core.usergroups as usergroups
 import core.translation
 import core.athana as athana
 import utils.log
 from core.acl import AccessData
-from utils.utils import Link,isCollection
+from utils.utils import Link,isCollection, Menu
 
 from edit_common import *
 from edit_acls import edit_acls
@@ -38,11 +39,15 @@ from edit_classes import edit_classes
 from edit_files import edit_files
 from edit_upload import edit_upload, upload_help
 from edit_search import edit_search
-from edit_sort import edit_sort,edit_sortfiles
+from edit_sort import edit_sort
+from edit_subfolder import edit_subfolder
+from edit_sortfiles import edit_sortfiles
 from edit_searchmask import edit_searchmask
 from edit_editor import edit_editor
 from edit_workflow import edit_workflow
 from edit_license import edit_license
+from edit_lza import edit_lza
+from edit_logo import edit_logo
 from core.translation import lang, t
 
 from edit_common import EditorNodeList
@@ -53,9 +58,6 @@ def frameset(req):
     tab = req.params.get("tab", None)
 
     user = users.getUserFromRequest(req)
-    if not user.isEditor():
-        req.writeTAL("web/edit/edit.html", {}, macro="access_error")
-        return
 
     uploaddir = getUploadDir(user)
     faultydir = getFaultyDir(user)
@@ -192,32 +194,55 @@ def frameset(req):
 
     req.writeTAL("web/edit/edit.html", {"id":id, "tab":(tab and "&tab="+tab) or "", "script":script}, macro="edit_main")
 
+    
+def getBreadcrumbs(menulist, tab):
+    for menuitem in menulist:
+        for item in menuitem.getItemList():
+            if item[1]==tab:
+                return [menuitem.getName(), item[1]]
+                
+    return [""]
+
+def filterMenu(menuitems, user):
+    #hide = ''
+    #for g in user.getGroups():
+    #    g = usergroups.getGroup(g)
+    #    hide += ';'+g.getHideEdit()
+    #hide = hide.split(';')
+
+    hide = users.getHideMenusForUser(user)
+    ret = list()
+    for menu in menuitems:
+        i = []
+        for item in menu.getItemList():
+            if item[2][4:] not in hide:
+                i.append(item)
+            else:
+                print "hide editor menu:", item[2]
+        menu.item = i
+        ret.append(menu)
+    return ret
+    
 def handletabs(req, ids, tabs):
     user = users.getUserFromRequest(req)
 
-    l = [Link("/logout", t(lang(req),"sub_header_logout_title"), t(lang(req),"sub_header_logout"), "_parent")]
-    if config.get("user.guestuser") == user.getName():
-        l = [Link("/login", t(lang(req),"sub_header_login_title"), t(lang(req),"sub_header_login"), "_parent")]
+    n = tree.getNode(ids[0])
+    if n.type=="workflows":
+        n = tree.getRoot()
 
-    l += [Link("/", t(lang(req),"sub_header_inquest_title"), t(lang(req),"sub_header_inquest"), "_parent")]
+    menu = filterMenu(n.getEditMenuTabs(), user)
 
+    spc = [Menu("sub_header_frontend", "sub_header_inquest_title","#", "../", target="_parent")]  
     if user.isAdmin():
-        l += [Link("/admin", t(lang(req),"sub_header_administration_title"), t(lang(req),"sub_header_administration"), "_parent")]
-    
+        spc.append(Menu("sub_header_administration", "sub_header_administration_title","#", "../admin", target="_parent"))
+        
     if user.isWorkflowEditor():
-        l += [Link("/publish/", t(lang(req),"sub_header_workflow_title"), t(lang(req),"sub_header_workflow"))]
+        spc.append(Menu("sub_header_workflow", "sub_header_workflow_title","#", "../publish", target="_parent"))
 
-    if config.get("user.guestuser") != user.getName() and "c" in user.getOption():
-        l += [Link("/display_changepwd", t(lang(req),"sub_header_changepwd_title"), t(lang(req),"sub_header_changepwd"), "_parent")]
-
-    idstr=""
-    for id in ids:
-        if idstr:
-            idstr+=","
-        idstr+=id
-    currenttab = req.params.get("tab", tabs[0])
+    currenttab = req.params.get("tab", tabs)
+    breadcrumbs = getBreadcrumbs(menu, currenttab)
     
-    req.writeTAL("web/edit/edit.html", {"user":user, "menuitems":l, "tabs":tabs, "ids":ids, "idstr":idstr, "currenttab":currenttab}, macro="edit_tabs")
+    req.writeTAL("web/edit/edit.html", {"user":user, "ids":ids, "idstr":",".join(ids), "menu":menu, "breadcrumbs":breadcrumbs, "spc":spc}, macro="edit_tabs")
 
     return currenttab
 
@@ -351,6 +376,7 @@ def action(req):
         newnode.set("creationtime",  str(time.strftime( '%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
         
         req.write("""
+        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
         <html>
           <head>
             <script language="javascript">
@@ -377,6 +403,7 @@ def action(req):
     idlist = getIDs(req)
     
     req.write("""
+        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
         <html>
         <head>
             <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -483,10 +510,16 @@ def showPaging(req, tab, ids):
             link2 = '&nbsp;'
 
         req.write("""
-        <table width="100%%">
-        <tr width="100%%"><td>%s</td><td align="center" width="100%%">%s</td><td>%s</td></tr>
+        <table width="100%%" style="padding-top:5px;margin-top:24px">
+        <tr width="100%%"><td style="width:50px">%s</td><td align="center" width="100%%" style="text-align:center">%s</td><td style="width:50px">%s</td></tr>
         </table>
         """ % (link1, nodelist.getPositionString(ids[0]), link2))
+    else:
+        req.write("""
+        <table width="100%%" style="padding-top:5px;margin-top:24px">
+        <tr width="100%%"><td>&nbsp;</td></tr>
+        </table>""")
+        
 
 def content(req):
     access = AccessData(req)
@@ -497,10 +530,6 @@ def content(req):
             del req.session[sessionkey]
         except:
             pass
-
-    if not access.user.isEditor():
-        req.writeTALstr('<span i18n:translate="edit_nopermission">Keine Berechtigung</span>',{})
-        return
 
     ids = getIDs(req)
 
@@ -513,6 +542,7 @@ def content(req):
         req.writeTALstr('<i i18n:translate="edit_noselection">nichts ausgew&auml;hlt</i>',{})
         return
 
+    req.write("""<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">""")
     if req.params.get("tab", "") == "tab_view":
         req.write("""
             <html>
@@ -520,6 +550,7 @@ def content(req):
               <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
               <meta content="text/html;charset=UTF-8" http-equiv="content-type">
               <link rel="stylesheet" href="/css/editor.css">
+              <link rel="stylesheet" href="/css/edit_style.css">
               <script type="text/javascript" src="/js/mediatum.js"></script>
             </head>""")
         req.write("""<body>""")
@@ -530,9 +561,11 @@ def content(req):
               <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
               <meta content="text/html;charset=UTF-8" http-equiv="content-type">
               <link rel="stylesheet" href="/css/editor.css">
+              <link rel="stylesheet" href="/css/edit_style.css">
               <script type="text/javascript" src="/js/editor.js"></script>
               <script type="text/javascript" src="/js/admin.js"></script>
               <script type="text/javascript" src="/js/mediatum.js"></script>
+                                  
               <script language="javascript"> 
                   var allobjects = new Array();
               """)
@@ -565,32 +598,33 @@ def content(req):
                       }
                   }
               </script>
+                                  <!--[if IE]>
+        <style type="text/css">
+        ul#nav li ul  {
+        filter: alpha(opacity=95);
+        }
+        </style>
+        <![endif]-->
             </head>""")
-        req.write("""<body style="background-color: #ffffff">""")
+        req.write("""<body>""")
 
     node = tree.getNode(ids[0])
     if node.type == "root":
         tabs = ["tab_globals"]
     else:
-        if isDirectory(node):
-            tabs = ["tab_content", "tab_html", "tab_search", "tab_subfolder"]
-            try:
-                if isCollection(node):
-                    tabs += ["tab_sortfiles", "tab_searchmask"] 
-            except IndexError: # if this is the root node
-                pass
-            tabs += ["tab_meta", "tab_acls", "tab_license", "tab_techmeta", "tab_view"]
-            
-            if node.name=="Uploads":
-                tabs = ["tab_upload"] + tabs[1:]
+        if isDirectory(node) and node.name=="Uploads":
+            tabs = "tab_upload"
         else:
-            tabs = ["tab_meta", "tab_acls", "tab_classes", "tab_techmeta", "tab_view"]
-        
+            tabs = node.getDefaultEditTab()
+
     current = handletabs(req, ids, tabs)
+    if not access.user.isEditor():
+        req.writeTALstr('<div class="MainMenu"><br/><br/><p i18n:translate="edit_error_msg" class="error" style="text-align:center">TEXT <span i18n:name="link"><a i18n:translate="edit_linktext" href="../login" target="_parent">TEXT</a></span></p></div>', {})
+        req.write("</body>")
+        return   
 
     showPaging(req, current, ids)
-
-    req.write('<div style="margin: 20px">')
+    req.write('<div style="margin:5px 5px 5px 5px;border:1px solid silver;padding: 4px">')
     
     # some tabs operate on only one file
     if current == "tab_techmeta" or current == "tab_html" or current == "tab_view" or current == "tab_upload":
@@ -598,15 +632,11 @@ def content(req):
 
     # display current images
     if "image" or "doc" in tree.getNode(ids[0]).type:
-        req.writeTALstr('<b i18n:translate="edit_taboverview_header">Ausgew&auml;hlt/in Bearbeitung:</b><br>',{})
+        req.writeTALstr('<b i18n:translate="edit_taboverview_header">Ausgew&auml;hlt/in Bearbeitung:</b><br/>',{})
 
         if current != "tab_view":
             req.write("""<script language="javascript">\n""")
             req.write("""clearObjects();\n""")
-            #try:
-            #    req.write("""parent.setSrc('"""+tree.getNode(ids[0]).getParents()[0].id+"""');""")
-            #except:
-            #    pass
 
             for id in ids:
                 req.write("""allobjects['%s'] = 1;\n""" % id)
@@ -636,7 +666,6 @@ def content(req):
                     req.write("""</td>""")
                     req.write("""<td width="20">&nbsp;</td>""")
             req.write("""</tr></table>""")
-        req.write('<hr>')
     else: # or current directory
         req.writeTALstr('<b i18n:translate="edit_actual_dir">Aktuelles Verzeichnis:</b><br>',{})
         n = tree.getNode(ids[0])
@@ -645,7 +674,7 @@ def content(req):
         while n:
             if not first:
                 s = '<b>-&gt;</b>' + s
-            s = '<a target="frame" href="edit?id=%s">%s</a>' % (n.id,n.name) + s
+            s = '<a target="frame" href="/edit?id=%s">%s</a>' % (n.id,n.name) + s
             first = 0
             p = n.getParents()
             if p: n = p[0]
@@ -673,8 +702,9 @@ def content(req):
     elif current == "tab_search":
         edit_search(req,ids)
     elif current == "tab_subfolder":
-        edit_sort(req,ids)
-    elif current == "tab_sortfiles":
+        #edit_sort(req,ids)
+        edit_subfolder(req,ids)
+    elif current == "tab_sort":
         edit_sortfiles(req,ids)
     elif current == "tab_searchmask":
         edit_searchmask(req,ids)
@@ -682,12 +712,12 @@ def content(req):
         edit_classes(req,ids)
     elif current == "tab_license":
         edit_license(req,ids)
-    elif current == "tab_techmeta":
+    elif current == "tab_files":
         edit_files(req,ids)
     elif current == "tab_content":
         if node.type == "directory":
             showdir(req,node)
-    elif current == "tab_html":
+    elif current == "tab_editor":
         found=False
         for f in node.getFiles():
             if f.mimetype == 'text/html':
@@ -696,19 +726,23 @@ def content(req):
         if not found:
             edit_editor(req, node, None)
  
-    elif current == "tab_meta":
+    elif current == "tab_metadata":
         edit_metadata(req, ids)
     elif current == "tab_upload":
         edit_upload(req, ids)
     elif current == "tab_globals":
         req.write("")
+    elif current == "tab_lza":
+        edit_lza(req, ids)
+    elif current == "tab_logo":
+        edit_logo(req, ids)
     else:
         req.write("<b>Unknown tab</b> '%s'" % current)
     
     req.write('</div')
-
-    req.write("""</body>""")
-    req.write("""</html>""")
+    req.write('</body>')
+    req.write('</html>')
+    
 
 def buttons(req):
 
@@ -717,17 +751,14 @@ def buttons(req):
     else:
         node = None
 
-    access = AccessData(req)
-    if not access.user.isEditor():
-        req.writeTALstr('<span i18n:translate="edit_nopermission">Keine Berechtigung</span>',{})
-        return
-
     req.write("""
+        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
         <html>
         <head>
           <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
           <meta content="text/html;charset=UTF-8" http-equiv="content-type">
           <link rel="stylesheet" href="/css/editor.css">
+          <link rel="stylesheet" href="/css/edit_style.css">
           <script language="javascript">
              function disableMoveDeleteOperations() {
                  this.document.getElementById("field_move").disabled = true;
@@ -739,7 +770,14 @@ def buttons(req):
              }
           </script>
         </head>
-        <body bgcolor="#ffffff">""")
+        <body>
+            <div id="logocontainer">
+                &nbsp;
+            </div>
+            <div class="topmenucontainer">
+                <span>&nbsp;</span>
+            </div>
+        """)
 
     if not node:
         dirtype = ""
@@ -758,10 +796,14 @@ def buttons(req):
         nodename = node.name
     else:
         nodename = ""
+    
+    access = AccessData(req)
+    if not access.user.isEditor():
+        req.write("</body></html>")
+        return
 
     req.writeTALstr("""
             <table cellspacing="0" cellpadding="0">
-            <tr><td><a i18n:attributes="title sub_header_inquest_title" title="Zur Rechercheoberfl&auml;che wechseln" href="/" target="_parent"><img border="0" height="142" src="/img/mediatum.png"></a></td><td width="100%"><img border="0" width="100%" height="142" src="/img/mediatum_line.png"></td></tr>
             </table>
                 <form name="changeaction">
                      <b i18n:translate="edit_files">Dateien:</b><br/>
@@ -790,13 +832,13 @@ def buttons(req):
                  <p id="buttonmessage" style="color:red">&nbsp;</p>
                  """,{"type": dirtype, "newdir": newdir, "newcoll": newcoll, "name": nodename})
 
-    req.write("""<hr></body></html>""")
+    req.write("""<hr/></body></html>""")
 
 def showtree(req):
     access = AccessData(req)
     user = users.getUserFromRequest(req)
     if not user.isEditor():
-        req.write("""permission denied""")
+        req.writeTAL("web/edit/edit.html", {}, macro="edit_notree_permission")
         return
 
     # scroll the tree to either the current id or the parent id

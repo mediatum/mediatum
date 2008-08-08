@@ -17,27 +17,19 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.tree as tree
-import core.users as users
-from core.acl import AccessData
+#import core.athana as athana
+#import core.acl as acl
+#import core.tree as tree
+#import logging
+#from core.acl import AccessData
+#from utils.utils import getCollection
+#from core.translation import t
 
-def edit_license(req, ids):
-    user = users.getUserFromRequest(req)
-    if "license" in users.getHideMenusForUser(user):
-        req.writeTAL("web/edit/edit.html", {}, macro="access_error")
-        return
-        
-    node = tree.getNode(ids[0])
-    req.writeTAL("web/edit/edit_license.html", {"node":node}, macro="edit_license_info")
 
-def objlist(req):
-    node = tree.getNode(req.params["id"])
-    
-    if node.id == tree.getRoot().id:
-        return
+#log = logging.getLogger('edit')
+#utrace = logging.getLogger('usertracing')
 
-    access = AccessData(req)
-    if not access.hasWriteAccess(node):
-        return
+from edit_sort import edit_sort
 
-    req.writeTAL("web/edit/edit_license.html", {"node":node}, macro="edit_license")
+def edit_subfolder(req, ids):
+    edit_sort(req, ids)

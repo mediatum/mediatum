@@ -28,9 +28,15 @@ import logging
 from core.translation import lang, t
 
 def edit_metadata(req, ids):
+
+    user = users.getUserFromRequest(req)
+    if "metadata" in users.getHideMenusForUser(user):
+        req.writeTAL("web/edit/edit.html", {}, macro="access_error")
+        return
+
     access = AccessData(req)
     reload_script = False
-    faultydir = getFaultyDir(users.getUserFromRequest(req))
+    faultydir = getFaultyDir(user)
     script = """\n<script language="javascript">
                   function openPopup(url, name, width, height)
                     {
@@ -65,7 +71,8 @@ def edit_metadata(req, ids):
     masklist = node.getType().getMasks(type="edit")
 
     if hasattr(node, "metaFields"):
-        class MyMask:
+                
+        class SystemMask:
             def __init__(self, name, description, fields):
                 self.name,self.description,self.fields = name,description,fields
             def getName(self):
@@ -78,7 +85,7 @@ def edit_metadata(req, ids):
                 return self.fields
             def i_am_not_a_mask():
                 pass
-        masklist = [MyMask("settings", t(req, "settings"), node.metaFields(lang(req)))] + masklist
+        masklist = [SystemMask("settings", t(req, "settings"), node.metaFields(lang(req)))] + masklist
 
     default = None
     for m in masklist:

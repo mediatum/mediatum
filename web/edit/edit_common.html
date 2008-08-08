@@ -59,7 +59,7 @@
                     <img tal:condition="python:not hasattr(node, 'show_node_image')" src="/img/questionmark.png"/>
                 </a>
             </div>
-            <div tal:attributes="onClick python:'document.location.href=\'edit_content?id='+str(node.id)+'&tab=tab_meta\''" style="position:absolute; left:148px; top:20px; width:148px; height:148px; overflow: hidden; cursor: pointer" i18n:attributes="title edit_common_edit_meta">
+            <div tal:attributes="onClick python:'document.location.href=\'edit_content?id='+str(node.id)+'&tab=tab_metadata\''" style="position:absolute; left:148px; top:20px; width:148px; height:148px; overflow: hidden; cursor: pointer" i18n:attributes="title edit_common_edit_meta">
                 <p class="descbox">
                     <tal:block tal:condition="python:hasattr(node, 'show_node_text')" tal:replace="raw python:node.show_node_text(None)"/>
                     <tal:block tal:condition="python:not hasattr(node, 'show_node_text')" tal:replace="raw python:node.getName()"/>

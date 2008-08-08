@@ -1,59 +1,47 @@
-<tal:block metal:define-macro="edit_tabs">
-    <table cellpadding="0" cellspacing="0" width="100%" height="110px" border="0">
-        <tr>
-            <td bgcolor="#7d85a6" align="right" class="banner">
-                <small>
-                    [<span i18n:translate="sub_header_user">TEXT</span>: <span tal:content="python:user.getName()"></span>
-                    <tal:block tal:repeat="menuitem menuitems">
-                        | <a tal:define="ltitle python:menuitem.title" tal:attributes="href python:menuitem.link; title ltitle; target python:menuitem.target">
-                        <span tal:define="l python:menuitem.label" tal:content="structure l"/>
-                        </a>
-                    </tal:block>]
-                    &nbsp;&nbsp;&nbsp;
-                </small>
-            </td>
-        </tr>
-        <tr>
-            <td valign="bottom">
-                <table cellpadding="0" cellspacing="0" width="100%" height="100%" border="0">
-                    <tr>
-                        <td tal:attributes="colspan python:str(len(tabs)*4+2)" bgcolor="#7d85a6">
-                            <h4 class="admin" i18n:translate="editor_main_header">TEXT</h4>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td bgcolor="#7d85a6" rowspan="5" width="20px" valign="bottom" align="right"><img src="/img/s.gif" width="2px" height="1px"/></td>
-                        <td tal:attributes="colspan python:str(len(tabs)*4)" bgcolor="#7d85a6" height="2px"><img src="/img/s.gif" width="1px" height="5px"/></td>
-                        <td bgcolor="#7d85a6" rowspan="5" valign="bottom" align="right"><small><b>ID:</b>&nbsp;<span tal:replace="python:str(ids)"/>&nbsp;</small></td>
-                     </tr>
-                     <tr>
-                        <tal:block tal:repeat="tab tabs">
-                            <td tal:attributes="bgcolor python:currenttab==tab and '#ffffff' or '#e8e8e8'" bgcolor="#ffffff" rowspan="2" valign="top" align="left"><img src="/img/ltab.gif" width="5" height="5" /></td>
-                            <td tal:attributes="bgcolor python:currenttab==tab and '#ffffff' or '#e8e8e8'"><img src="/img/s.gif" width="1" height="2" /></td>
-                            <td tal:attributes="bgcolor python:currenttab==tab and '#ffffff' or '#e8e8e8'" rowspan="2" valign="top" align="right"><img src="/img/rtab.gif" width="5" height="5" /></td>
-                            <td bgcolor="#7d85a6" rowspan="4"><img src="/img/s.gif" width="2" height="1" /></td>
-                        </tal:block>
 
-                    </tr>
-                    <tr>
-                        <td  tal:repeat="tab tabs" tal:attributes="bgcolor python:currenttab==tab and '#ffffff' or '#e8e8e8'" bgcolor="#ffffff" valign="bottom" align="center">
-                            <a tal:condition="python:currenttab!=tab" tal:attributes="title python:tab+'_title'; href python:'edit_content?id='+idstr+'&tab='+tab" i18n:attributes="title">
-                                <font size="2" tal:content="tab" i18n:translate=""/>
-                            </a>
-                            <font tal:condition="python:currenttab==tab" tal:content="tab" i18n:translate="" size="2"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td tal:repeat="tab tabs" tal:attributes="bgcolor python:currenttab==tab and '#ffffff' or '#e8e8e8'" colspan="3"><img src="/img/s.gif" width="2" height="1"/></td>
-                    </tr>
-                    <tr>
-                        <td tal:repeat="tab tabs" tal:attributes="bgcolor python:currenttab==tab and '#ffffff' or '#7d85a6'" colspan="3" bgcolor="#ffffff"><img src="/img/s.gif" width="2" height="1"/></td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
-</tal:block>
+<div id="clean-container" metal:define-macro="edit_tabs">
+    <div id="logocontainer">
+        
+        <div class="logotext">
+            <span i18n:translate="editor_main_header">TEXT</span><br/>
+            <span i18n:translate="sub_header_user">TEXT</span>: <span tal:replace="raw python:user.getName()"/>
+            <span tal:repeat="item python:spc">
+                | <a tal:attributes="href python:item.link; target python:item.target; title python:item.description" i18n:translate="" i18n:attributes="title" tal:content="python:item.name">TEXT</a>
+            </span>
+        </div>
+    </div>
+    <div class="topmenucontainer">
+        <ul id="nav">
+            <tal:block tal:repeat="navitem python:menu">
+            <li tal:condition="python:len(navitem.getItemList())>0"><a tal:condition="python:len(navitem.getItemList())==0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]; href python:navitem.link; target python:navitem.target" i18n:translate="" tal:content="python:navitem.name">TEXT</a>
+                <tal:block tal:condition="python:len(navitem.getItemList())>0">
+                    <a tal:attributes="class python:{0:None,1:'selected'}[navitem.getName()==breadcrumbs[0]]; target python:navitem.target" i18n:translate="" tal:content="python:navitem.getName()"/>
+                    <ul>
+                        <li tal:repeat="item python:navitem.getItemList()">
+                            <a i18n:translate="" tal:content="python:item[1]" tal:attributes="href python:'?id='+idstr+'&tab='+item[2]"/>
+                        </li>
+                    </ul>
+                </tal:block>                            
+            </li>          
+            </tal:block>
+        </ul>
+        <div style="padding-top:5px;position:absolute;right:2px;">
+            ID: <span tal:replace="python:str(ids)"/>
+        </div>
+        <div class="clearb"></div>
+        <div class="breadcrumbs">
+            <h2 class="breadcrumbs">
+                <tal:block tal:repeat="item breadcrumbs">
+                    <tal:block tal:content="item" i18n:translate="">TEXT</tal:block>
+                    <tal:block tal:condition="python:breadcrumbs.index(item)<len(breadcrumbs)-1">
+                     &raquo; 
+                    </tal:block>
+                </tal:block>
+            </h2>
+        </div>
+    </div>
+</div>
+
 
 
 <tal:block metal:define-macro="edit_errorpage">
@@ -64,30 +52,38 @@
     </html>
 </tal:block>
 
+<tal:block metal:define-macro="edit_notree_permission">
+    <body bgcolor="#FFFFFF">
+    &nbsp;
+    </body>
+</tal:block>
 
+<metal:block metal:define-macro="edit_main">
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+    <html>
+        <head>
+            <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+            <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+            <title i18n:translate="edit_main_title">TEXT</title>
+            <link rel="stylesheet" href="/css/editor.css">
+            <script type="text/javascript" src="/js/admin.js">
+            </script>
+            <script type="text/javascript" tal:content="raw script">
+            </script>
 
-<html metal:define-macro="edit_main">
-    <head>
-        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <meta content="text/html;charset=UTF-8" http-equiv="content-type">
-        <title i18n:translate="edit_main_title">TEXT</title>
-        <link rel="stylesheet" href="/css/editor.css">
-        <script type="text/javascript" src="/js/admin.js">
-        </script>
-        <script type="text/javascript" tal:content="raw script">
-        </script>
-
-    <frameset cols="273,*" frameborder="1" framespacing="1" name="frame">
-        <frameset rows="260,*" frameborder="0" framespacing="1">
-            <frame tal:attributes="src python:'edit_buttons?id='+str(id)" frameborder="0" framespacing="0" marginheight="0" marginwidth="0" name="buttons" scrolling="no"/>
-            <frame  tal:attributes="src python:'edit_tree?id='+str(id)" frameborder="0" framespacing="0" marginheight="0" marginwidth="0" name="tree"/>
+        <frameset cols="273,*" frameborder="1" framespacing="1" name="frame">
+            <frameset rows="260,*" frameborder="0" framespacing="1">
+                <frame tal:attributes="src python:'/edit/edit_buttons?id='+str(id)" frameborder="0" framespacing="0" marginheight="0" marginwidth="0" name="buttons" scrolling="no"/>
+                <frame  tal:attributes="src python:'/edit/edit_tree?id='+str(id)" frameborder="0" framespacing="0" marginheight="0" marginwidth="0" name="tree"/>
+            </frameset>
+            <frame tal:attributes="src python:'/edit/edit_content?id='+str(id)+str(tab)" frameborder="1" framespacing="1" name="content"/>
+            <noframes>
+                <br/><center i18n:translate="edit_main_noframe">TEXT</center>
+            </noframes>
         </frameset>
-        <frame tal:attributes="src python:'edit_content?id='+str(id)+str(tab)" frameborder="1" framespacing="1" name="content"/>
-        <noframes>
-            <br/><center i18n:translate="edit_main_noframe">TEXT</center>
-        </noframes>
-    </frameset>
-</html>
+
+    </html>
+</metal:block>
 
 
 <html metal:define-macro="edit_action_error">

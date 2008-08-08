@@ -1,10 +1,34 @@
+"""
+ mediatum - a multimedia content repository
+
+ Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
+ Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
 import core.tree as tree
 import schema.schema as schema
 import schema.searchmask as searchmask
 import md5
 import random
+import core.users as users
 
 def edit_searchmask(req, ids):
+    user = users.getUserFromRequest(req)
+    if "searchmask" in users.getHideMenusForUser(user):
+        req.writeTAL("web/edit/edit.html", {}, macro="access_error")
+        return
 
     p2 = {}
     for k,v in req.params.items():

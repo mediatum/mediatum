@@ -30,10 +30,11 @@ import core.acl as acl
 allow_delete_unused = 0
 
 def edit_files(req, ids):
+    user = users.getUserFromRequest(req)
     node = tree.getNode(ids[0])
     update_error = False
     access = acl.AccessData(req)
-    if not access.hasWriteAccess(node):
+    if not access.hasWriteAccess(node) or "files" in users.getHideMenusForUser(user):
         req.writeTAL("web/edit/edit.html", {}, macro="access_error")
         return
 

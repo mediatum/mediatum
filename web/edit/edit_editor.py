@@ -21,12 +21,18 @@ import cgi
 import re
 import os
 import core.config as config
+import core.users as users
 from core.tree import FileNode
 
 from lib.FCKeditor import fckeditor
 from core.acl import AccessData
 
 def edit_editor(req, node, filenode):
+    user = users.getUserFromRequest(req)
+    if "editor" in users.getHideMenusForUser(user):
+        req.writeTAL("web/edit/edit.html", {}, macro="access_error")
+        return
+        
     access = AccessData(req)
 
     if filenode==None:

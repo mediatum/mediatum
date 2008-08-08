@@ -21,6 +21,7 @@ import core.athana as athana
 import core.acl as acl
 import core.tree as tree
 import logging
+import core.users as users
 from core.acl import AccessData
 from utils.utils import getCollection
 from core.translation import t
@@ -29,6 +30,11 @@ log = logging.getLogger('edit')
 utrace = logging.getLogger('usertracing')
 
 def edit_sort(req, ids):
+    user = users.getUserFromRequest(req)
+    if "sort" in users.getHideMenusForUser(user):
+        req.writeTAL("web/edit/edit.html", {}, macro="access_error")
+        return
+    
     access = AccessData(req)
     node = tree.getNode(ids[0])
     runscript = False
@@ -87,36 +93,3 @@ def edit_sort(req, ids):
 
     req.writeTAL("web/edit/edit_sort.html", {"node":node, "nodelist":nodelist, "runscript":runscript}, macro="edit_sort")
     return
-
-def edit_sortfiles(req,ids):
-    access = AccessData(req)
-    node = tree.getNode(ids[0])
-    if not access.hasWriteAccess(node):
-        req.writeTAL("web/edit/edit.html", {}, macro="access_error")
-        return
-
-    c = getCollection(node)
-    
-    if "globalsort" in req.params:
-        c.set("sortfield", req.params["globalsort"])
-    collection_sortfield = c.get("sortfield")
-
-    sortchoices = []
-    class SortChoice:
-        def __init__(self, label, value):
-            self.label = label
-            self.value = value
-        
-    req.write("<h2>"+c.getName()+"</h2>")
-
-    sortfields = [SortChoice(t(req,"off"),"")]
-    for ntype,num in c.getAllOccurences(AccessData(req)).items():
-        #req.write(ntype.getName() +" " +str(num)+"<br/>")
-        if ntype.getSortFields():
-            for sortfield in ntype.getSortFields():
-                sortfields += [SortChoice(sortfield.getLabel(), sortfield.getName())]
-                sortfields += [SortChoice(sortfield.getLabel()+t(req,"descending"), "-"+sortfield.getName())]
-            break
-
-    req.writeTAL("web/edit/edit_sort.html", {"node":node, "collection_sortfield":collection_sortfield,
-                                         "sortchoices":sortfields}, macro="edit_autosort")

@@ -22,11 +22,16 @@ import core.tree as tree
 import os
 import logging
 import core.acl as acl
+import core.users as users
 
 from utils.utils import getMimeType
 from utils.fileutils import importFile
 
 def edit_logo(req, ids):
+    user = users.getUserFromRequest(req)
+    if "logo" in users.getHideMenusForUser(user):
+        req.writeTAL("web/edit/edit.html", {}, macro="access_error")
+        return
     v = {}
     node = tree.getNode(ids[0])
     access = acl.AccessData(req)

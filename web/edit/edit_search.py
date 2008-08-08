@@ -41,7 +41,11 @@ def protect(s):
 
 def search_results(req,id):
     access = AccessData(req)
-    print req.params
+    
+    user = users.getUserFromRequest(req)
+    if "search" in users.getHideMenusForUser(user):
+        req.writeTAL("web/edit/edit.html", {}, macro="access_error")
+        return
 
     if "Reset" in req.params:
         return search_form(req, id, "edit_search_reset_msg")

@@ -23,16 +23,24 @@ import core.users as users
 import sys
 import traceback
 
-from utils.utils import Link
+from utils.utils import Link, Menu
 from core.translation import t, lang
 
 def getAdminStdVars(req):
+
     if req.params.get("page","")=="0":
         page = "?page=0"
     else:
         page = ""
     user = users.getUserFromRequest(req)
-    return {"user": user, "page":page, "op":req.params.get("op","")}
+    
+    tabs = [("0-9", "09")]
+    for i in range(65,91):
+        tabs.append((unichr(i),unichr(i)))
+    tabs.append(("admin_filter_else","-"))
+    tabs.append(("admin_filter_all","*"))
+    
+    return {"user": user, "page":page, "op":req.params.get("op",""), "tabs":tabs, "actpage":req.params.get("page", req.params.get("actpage", "0"))}
 
 def getOptionHeader(options):
     ret = '<table><tr>'
@@ -45,9 +53,12 @@ class Overview:
         self.req = req
         self.path = req.path[1:]
         self.language = lang(req)
+        self.stdVars = getAdminStdVars(self.req)
 
         # self.page = 0 or None -> all entries
-        self.page = int(req.params.get("page",1))
+        self.page = int(req.params.get("page",req.params.get("actpage",1)))
+        if "firstpage" in req.params.keys():
+            self.page = 1
         max_page = len(list)/int(config.settings["admin.pageitems"])
         if max_page+1<self.page:
             self.page = 1
@@ -60,8 +71,10 @@ class Overview:
             self.start = (self.page-1) * int(config.settings["admin.pageitems"])
             self.end = self.start + int(config.settings["admin.pageitems"])
         self.list = list
+    
+    def getStdVars(self):
+        return self.stdVars
         
-
     def getStart(self):
         return int(self.start)
        
@@ -72,48 +85,26 @@ class Overview:
         return int(math.ceil(float(len(self.list))/float(config.settings["admin.pageitems"])))
 
     def printPageList(self):
-    
-        order = self.req.params.get("order","")
-        detail=''
-        if "detailof" in self.req.params.keys():
-            detail = '&detailof=' + self.req.params.get("detailof")
-        
-        if "maskof" in self.req.params.keys():
-            detail = '&maskof=' + self.req.params.get("maskof","")
-
-        if "order" in self.req.params.keys():
-            detail +='&order='+self.req.params.get("order")
-
-        ret = ""
+        order = self.req.params.get("order","") 
+        ret = ''
         if self.page>0:
-            p = 1
-            ret = '['
-            while p<=self.getNoPages():
+            for p in range(1,self.getNoPages()+1):
+                b_class = "admin_page"
                 if p==self.page:
-                    ret += ' <a class="actpage" href="/admin/'+self.path+'?page='+str(p)+detail+'" title="'+t(self.language,"admin_page")+' '+str(p)+'">'+str(p)+'</a> '
-                else:
-                    ret += ' <a href="/admin/'+self.path+'?page='+str(p)+detail+'" title="'+t(self.language,"admin_page")+' '+str(p)+'">'+str(p)+'</a> '
-                p += 1
-            ret += '] '
-        return ret
+                    b_class = "admin_page_act"
+                ret += '<button type="submit" name="page" class="'+b_class+'" title="'+t(self.language,"admin_page")+' '+str(p)+'" value="'+str(p)+'">'+str(p)+'</button> '
+        if len(ret)==0:
+            return ""
+        return '[' + ret + '] '
 
 
     def printPageAll(self):
-        try:
-            link = "?detailof=" + self.req.params["detailof"] + "&order=" + self.req.params.get("order","")
-        except:
-            link = "?order=" + self.req.params.get("order","")
-            
-        try:
-            link += "&maskof="+self.req.params["maskof"]
-        except:
-            None
-
         if self.page!=0:
-            return '<a href="/admin/'+self.path+link+'&page=0" title="'+t(self.language,"admin_allelements_title")+'">'+t(self.language,"admin_allelements")+'</a>'
+            return '<button name="resetpage" title="'+t(self.language,"admin_allelements_title")+'" class="admin_page" type="submit">'+t(self.language,"admin_allelements")+'</button>'
         else:
-            return '<a href="/admin/'+self.path+link+'" title="'+t(self.language,"admin_pageelements_title")+'">'+t(self.language,"admin_pageelements")+'</a>'
+            return '<button name="firstpage" title="'+t(self.language,"admin_pageelements_title")+'" class="admin_page" type="submit">'+t(self.language,"admin_pageelements_title")+'</button>'
 
+            
     def OrderColHeader(self, cols, order="", addparams=""):
         order = self.req.params.get("order","")
         ordercol=0
@@ -124,18 +115,33 @@ class Overview:
             ordercol = int(order[0:1])
             orderdir = int(order[1:])
         i=0
-        ret = ""
         for col in cols:
             if col!="":
                 if i==ordercol:
                     if orderdir == 0:
-                        retList += [Link("?page="+str(self.page)+ addparams + "&order=" +str(i)+"1", t(self.language,"admin_sort_label"), col+' <img src="/img/az.png" border="0" />')]
+                        retList += [Link(str(i)+"1", t(self.language,"admin_sort_label"), col+' <img src="/img/az.png" border="0" />')]
                     else:
-                        retList += [Link("?page="+str(self.page)+ addparams + "&order=" +str(i)+"0", t(self.language,"admin_sort_label"), col+' <img src="/img/za.png" border="0" />')]
+                        retList += [Link(str(i)+"0", t(self.language,"admin_sort_label"), col+' <img src="/img/za.png" border="0" />')]
                 else:
-                    retList += [Link("?page="+str(self.page)+ addparams + "&order=" +str(i)+"0", t(self.language,"admin_sort_label"), col)]
+                    retList += [Link(str(i)+"0", t(self.language,"admin_sort_label"), col)]
             i+=1
         return retList
+
+""" evaluate current filter """
+def getFilter(req):
+    actfilter = req.params.get("actfilter", req.params.get("filter", "all")).lower()
+    if "filterbutton" in req.params.keys():
+        actfilter = req.params.get("filterbutton").lower()
+    return actfilter
+
+""" fills variable for sort column """
+def getSortCol(req):
+    order = req.params.get("order", "")
+    for key in req.params.keys():
+        if key.startswith("sortcol_"):
+            order = key[8:]
+            req.params["order"] = order
+    return order
 
 """ load module for admin area """
 mymodules = {}
@@ -177,45 +183,67 @@ def show_content(req, op):
             return module.validate(req, op)
 
 
-class Menu:
-    def __init__(self, name):
-        self.name = name
-        self.item = list()
-
-    def getName(self):
-        return self.name
-
-    def addItem(self, link):
-        self.item.append((self.name+"_"+str(len(self.item)+1), link))
-    def getItemList(self):
-        return self.item
-
 
 def adminNavigation():
     menu = list()
-    try:    
-        submenu = Menu("admin_menu_1")
-        submenu.addItem("/admin/usergroup")
-        submenu.addItem("/admin/user")
+    try:
+        submenu = Menu("admin_menu_0", "admin_menu_0_description","", "/admin")
+        menu.append(submenu)
+  
+        submenu = Menu("admin_menu_1", "admin_menu_1_description", "/img/icons/usergroups.gif")
+        submenu.addItem("/admin/usergroup","/img/icons/usergroups.gif")
+        submenu.addItem("/admin/user", "/img/icons/users.gif")
         menu.append(submenu)
 
-        submenu = Menu("admin_menu_2")
+        submenu = Menu("admin_menu_2", "admin_menu_2_description", "/img/icons/groupperms.gif")
         submenu.addItem("/admin/acls")
         menu.append(submenu)
 
-        submenu = Menu("admin_menu_3")
+        submenu = Menu("admin_menu_3", "admin_menu_3_description", "/img/icons/datatypes.gif")
         submenu.addItem("/admin/metatype")
         submenu.addItem("/admin/mapping")
         menu.append(submenu)
 
-        submenu = Menu("admin_menu_4")
+        submenu = Menu("admin_menu_4", "admin_menu_4_description", "/img/icons/workflow.gif")
         submenu.addItem("/admin/workflows")
         menu.append(submenu)
 
-        submenu = Menu("admin_menu_5")
+        submenu = Menu("admin_menu_5", "admin_menu_5_description", "/img/icons/system.gif")
         submenu.addItem("/admin/logfile")
         submenu.addItem("/admin/flush")
+        submenu.addItem("/admin/settings")
         menu.append(submenu)
+        
+        submenu = Menu("admin_menu_6", "admin_menu_6_description", "/img/icons/stat.gif")
+        submenu.addItem("/admin/stats")
+        menu.append(submenu)
+        
+        submenu = Menu("admin_menu_6", "", "", "../edit/")
+        #menu.append(submenu)
+        
+        submenu = Menu("admin_menu_7", "", "/img/icons/viewsite.gif", "../")
+        #menu.append(submenu)
+        
+        submenu = Menu("admin_menu_8", "", "/img/icons/logout.gif", "/logout")
+        #menu.append(submenu)
+        
     except TypeError:
         pass
     return menu
+    
+def getMenuItemID(menulist, path):
+    if path=="":
+        return ["admin_menu_0"]
+    for item in menulist:
+        for subitem in item.getItemList():
+            if subitem[1].endswith(path):
+                return [item.name,subitem[0]]
+                
+    return ["admin_menu_0"]
+
+
+    
+    
+    
+    
+    

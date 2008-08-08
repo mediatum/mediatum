@@ -48,7 +48,10 @@ def getWorkflowList():
     return tree.getRoot("workflows").getChildren()
 
 def getWorkflow(name):
-    return tree.getRoot("workflows").getChild(name)
+    if name.isdigit():
+        return tree.getNode(name)
+    else:
+        return tree.getRoot("workflows").getChild(name)
 
 def addWorkflow(name,description):
     node = tree.getRoot("workflows").addChild(tree.Node(name=name, type="workflow"))
@@ -619,7 +622,10 @@ class Workflow(tree.Node):
         return None # circular workflow- shouldn't happen
 
     def getStep(self, name):
-        return self.getChild(name)
+        if name.isdigit():
+            return tree.getNode(name)
+        else:
+            return self.getChild(name)
 
     def getNodeList(self):
         list = []

@@ -819,6 +819,8 @@ class Node:
                 self.attrlist[attribute][level][item] = len(l)
         return self.attrlist[attribute][level]
 
+    def getTechnAttributes(self):
+        return {}
             
 def flush():
     global childids_cache,nodes_cache,parentids_cache,_root,db,sortorders

@@ -74,11 +74,11 @@ def initContexts():
     file = context.addFile("workflow/workflow.py")
     file.addHandler("createWorkflowImage").addPattern("/workflowimage")
 
-    #file = context.addFile("stats/contenttypes.py")
-    #file.addHandler("contenttypes").addPattern("/contenttypes.png")
-    #file = context.addFile("stats/dbstats.py")
-    #file.addHandler("dbstats").addPattern("/dbstats")
-    #file.addHandler("mimetypes").addPattern("/mimetypes.png")
+    file = context.addFile("stats/contenttypes.py")
+    file.addHandler("contenttypes").addPattern("/contenttypes.png")
+    file = context.addFile("stats/dbstats.py")
+    file.addHandler("dbstats").addPattern("/dbstats")
+    file.addHandler("mimetypes").addPattern("/mimetypes.png")
 
     # === admin area ===
     context = athana.addContext("/admin", ".")
@@ -116,7 +116,7 @@ def initContexts():
     # === static files ===
     athana.addFileStore("/module/", "lib/FCKeditor/files.zip")
     athana.addFileStore("/css/", "web/css/")
-    athana.addFileStore("/img/", ["web/img/", "img"])
+    athana.addFileStore("/img/", ["web/img/", "img","web/admin/img/", "web/edit/img/"])
     athana.addFileStore("/js/", ["web/js/", "js"])
 
     #athana.addContext("/flush", ".").addFile("core/webconfig.py").addHandler("flush").addPattern("/py")

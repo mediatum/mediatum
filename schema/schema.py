@@ -63,6 +63,10 @@ VIEW_DATA_EXPORT = 8    # deliver export format
 # return metadata object by given name
 #
 def getMetaType(name):
+    
+    if name.isdigit():
+        return tree.getNode(name)
+
     if name.find("/")>0:
         name = name[name.rfind("/")+1:]
 
@@ -156,13 +160,15 @@ def existMetaField(pid, name):
 
 
 """ update/create metadatafield """
-def updateMetaField(parent, name, label, orderpos, fieldtype, option="", description="", fieldvalues="", fieldvaluenum="", orig_name=""):
+def updateMetaField(parent, name, label, orderpos, fieldtype, option="", description="", fieldvalues="", fieldvaluenum="", fieldid=""):
     metatype = getMetaType(parent)
     try:
-        field = metatype.getChild(orig_name)
+        #field = metatype.getChild(fieldid)
+        field = tree.getNode(fieldid)
         field.setName(name)
         #field.setOrderPos(orderpos)
     except tree.NoSuchNodeError:
+        print "-new-"
         field = tree.Node(name=name, type="metafield")
         metatype.addChild(field)
         field.setOrderPos(len(metatype.getChildren())-1)
@@ -847,7 +853,9 @@ class Mask(tree.Node):
         
     def getMappingHeader(self):
         if self.getMasktype()=="export":
-            if len(self.get("exportmapping").split(";"))>1:
+            if len(self.get("exportheader"))>0:
+                return self.get("exportheader")
+            elif len(self.get("exportmapping").split(";"))>1:
                 return self.getExportHeader()
             else:
                 c = tree.getNode(self.get("exportmapping"))
@@ -856,7 +864,9 @@ class Mask(tree.Node):
             
     def getMappingFooter(self):
         if self.getMasktype()=="export":
-            if len(self.get("exportmapping").split(";"))>1:
+            if len(self.get("exportfooter"))>0:
+                return self.get("exportfooter")
+            elif len(self.get("exportmapping").split(";"))>1:
                 return self.getExportFooter()
             else:
                 c = tree.getNode(self.get("exportmapping"))

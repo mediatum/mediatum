@@ -24,15 +24,19 @@ import core.tree as tree
 import core.config as config
 
 from core.datatypes import loadAllDatatypes
-from web.admin.adminutils import Overview, getAdminStdVars
-from core.tree import Node, getNode
+from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
+from core.tree import Node, getNode, searcher
 from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings 
 from core.translation import lang, t
 from schema.schema import loadTypesFromDB, getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, deleteMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
 from schema.mapping import getMappings
 
-_masktypes = {"":"masktype_empty","edit":"masktype_edit", "search":"masktype_search", "shortview":"masktype_short", "fullview":"masktype_full", "export":"masktype_export"}
+# metafield methods
+from metatype_field import showDetailList, FieldDetail
+# meta mask methods
+from metatype_mask import showMaskList, MaskDetails
+
 
 """ checks a string whether it only contains the alphanumeric chars as well as "-" "." """
 def checkString(string):
@@ -59,277 +63,216 @@ def validate(req, op):
         importfile = req.params.get("file")
         if importfile.tempname!="":
             xmlimport(req, importfile.tempname)
-    
-    try:
-        if "detailof" in req.params.keys():
-            req.params["detaillist_" + req.params["detailof"] + ".x"] = 1
-        
-        if "maskof" in req.params.keys() and req.params.get("form_op","")=="":
-            req.params["masks_" + req.params["maskof"] + ".x"] = 1
-        
-        if "maskof" in req.params.keys() and req.params.get("form_op","")=="cancel":
-            req.params["masks_"+ req.params["maskof"]+".x"] = 0
-
+      
+    if req.params.get("acttype","schema")=="schema":
+        # section for schema       
         for key in req.params.keys():
-            # change field order up
-            if key.startswith("updetail_"):
-                moveMetaField(str(key[9:-2].split("|")[0]), str(key[9:-2].split("|")[1]), -1)
-                req.params["detailof"] = str(key[9:-2].split("|")[0])
-                return showDetailList(req, str(key[9:-2].split("|")[0]))
-
-            # change field order down
-            elif key.startswith("downdetail_"):
-                moveMetaField(str(key[11:-2].split("|")[0]), str(key[11:-2].split("|")[1]), 1)
-                req.params["detailof"] = str(key[11:-2].split("|")[0])
-                return showDetailList(req, str(key[11:-2].split("|")[0]))
-
-            # create new field
-            elif key.startswith("newdetail_"):
-                return FieldDetail(req, str(key[10:-2]), "")
-                
-            elif key.startswith("indexupdate_"):
-                schema = tree.getNode(key[12:-2])
-                s = schema.getAllItems()
-                searchIndexer.updateNodes(schema.getAllItems())
-                break
-            
-            elif key.startswith("editmask_"):
-                return MaskDetails(req, key[9:-2].split("|")[0], key[9:-2].split("|")[1], err=0)
-
-            elif key.startswith("masks_"):
-                req.params["maskof"] = str(key[6:-2])
-                return showMaskList(req, str(key[6:-2]))
-
-            elif key.startswith("automask_"):
-                mtype = getMetaType(str(key[9:-2]))
-                generateMask(mtype)
-                return showMaskList(req, str(key[9:-2]))
-
-            elif key.startswith("newmask_"):
-                return MaskDetails(req, key[8:-2].split("|")[0], "")
-
-            elif key.startswith("deletemask_"):
-                mtype = getMetaType(key[11:-2].split("|")[0])
-                if key[11:-2].split("|")[1].isdigit():
-                    mtype.removeChild(tree.getNode(key[11:-2].split("|")[1]))
-                else:
-                    mtype.removeChild(mtype.getMask(key[11:-2].split("|")[1]))
-                return showMaskList(req, key[11:-2].split("|")[0])
-
-            elif key.startswith("copymask_"):
-                mtype = getMetaType(key[9:-2].split("|")[0])
-                mask = mtype.getMask(key[9:-2].split("|")[1])
-                cloneMask(mask, "copy_"+mask.getName())
-                return showMaskList(req, key[9:-2].split("|")[0])
-                
             # create new metadatatype
-            elif key.startswith("new"):
+            if key.startswith("new"):
                 return MetatypeDetail(req, "")
-
+            
             # edit metadatatype
             elif key.startswith("edit_"):
                 return MetatypeDetail(req, str(key[5:-2]))
-
-            # edit metadatafield: key[11:-2]= pid | id
-            elif key.startswith("editdetail_"):
-                return FieldDetail(req, str(key[11:-2].split("|")[0]), str(key[11:-2].split("|")[1]))
             
             # delete metadata
             elif key.startswith("delete_"):
                 deleteMetaType(key[7:-2])
                 break
-
-            # delete metafield: key[13:-2] = pid | n
-            elif key.startswith("deletedetail_"):
-                deleteMetaField(key[13:-2].split("|")[0], key[13:-2].split("|")[1])
-                req.params["detailof"] = key[13:-2].split("|")[0]
-                return showDetailList(req, key[13:-2].split("|")[0])
-
+            
             # show details for given metadatatype
             elif key.startswith("detaillist_"):
-                req.params["detailof"] = str(key[11:-2])
-                return showDetailList(req, str(key[11:-2]))
+                return showDetailList(req, str(key[11:-2]))            
+            
+            # show masklist for given metadatatype
+            elif key.startswith("masks_"):
+                return showMaskList(req, str(key[6:-2]))
+                
+            # reindex search index for current schema
+            elif key.startswith("indexupdate_"):
+                schema = tree.getNode(key[12:])
+                searcher.reindex(schema.getAllItems())
+                break
 
-            elif key == "form_op":
-                if req.params["form_op"] == "save_new":
-                    # save metatype values
-                    if str(req.params["mname"])=="" or str(req.params["mlongname"])=="" or req.params.get("mdatatypes","")=="":
-                        return MetatypeDetail(req, "", 1) # no name was given
+        # save schema
+        if "form_op" in req.params.keys():
+            if req.params.get("form_op","")=="cancel":
+                return view(req)
+            
+            if req.params.get("mname","")=="" or req.params.get("mlongname","")=="" or req.params.get("mdatatypes","")=="":    
+                return MetatypeDetail(req, req.params.get("mname_orig",""), 1) # no name was given
+            elif checkString(req.params.get("mname","")) == False:
+                 return MetatypeDetail(req, req.params.get("mname_orig",""), 4) # if the name contains wrong characters
+            elif req.params.get("mname_orig","")!=req.params.get("mname","") and existMetaType(req.params.get("mname")):
+                return MetatypeDetail(req, req.params.get("mname_orig",""), 2) # metadata still existing
+            
+            _active = 0
+            if req.params.get("mactive","")!="":
+                _active = 1
+            updateMetaType(req.params.get("mname",""), description=req.params.get("description",""), longname=req.params.get("mlongname",""), active=_active, datatypes=req.params.get("mdatatypes","").replace(";", ", "), orig_name=req.params.get("mname_orig",""))
+            mtype = getMetaType(req.params.get("mname"))
+            if mtype:
+                mtype.setAccess("read", "")
+                for key in req.params.keys():
+                    if key.startswith("left"):
+                        mtype.setAccess(key[4:], req.params.get(key).replace(";",","))
+                        break
+
                         
-                    elif existMetaType(req.params["mname"]):
-                        return MetatypeDetail(req, "", 2) # metadata still existing
-                    
-                    elif checkString(str(req.params["mname"])) == False:
-                         return MetatypeDetail(req, "", 4) # if the name contains wrong characters
+    elif req.params.get("acttype")=="field":
+        # section for fields   
+        for key in req.params.keys():
+            # create new meta field
+            if key.startswith("newdetail_"):
+                return FieldDetail(req, req.params.get("parent"), "")
+            
+            # edit meta field
+            elif key.startswith("editdetail_"):
+                return FieldDetail(req, req.params.get("parent"), key[11:-2])
+                
+            # delete metafield: key[13:-2] = pid | n
+            elif key.startswith("deletedetail_"):
+                deleteMetaField(req.params.get("parent"), key[13:-2])
+                return showDetailList(req, req.params.get("parent"))
+                
+            # change field order up
+            if key.startswith("updetail_"):
+                moveMetaField(req.params.get("parent"), key[9:-2], -1)
+                return showDetailList(req, req.params.get("parent"))
 
-                    else:
-                        if "mactive" in req.params:
-                            _active = 1
-                        else:
-                            _active = 0
-                        updateMetaType(req.params["mname"], description=req.params["description"], longname=req.params["mlongname"], active=_active, datatypes=req.params["mdatatypes"].replace(";", ", "))
+            # change field order down
+            elif key.startswith("downdetail_"):
+                moveMetaField(req.params.get("parent"), key[11:-2], 1)
+                return showDetailList(req, req.params.get("parent"))
+            
+        if "form_op" in req.params.keys():
+            if req.params.get("form_op","")=="cancel":
+                return showDetailList(req, req.params.get("parent"))
 
-                        mtype = getMetaType(req.params["mname"])
-                        mtype.setAccess("read", "")
-                        for key in req.params.keys():
-                            if key.startswith("left"):
-                                mtype.setAccess(key[4:], req.params.get(key).replace(";",","))
-                                break
-                    break
+            if existMetaField(req.params.get("parent"), req.params.get("mname")) and req.params.get("form_op","")=="save_newdetail":
+                return FieldDetail(req, req.params.get("parent"), req.params.get("orig_name",""), 3) # field still existing
+            elif req.params.get("mname","")=="" or req.params.get("mlabel","")=="":                            
+                return FieldDetail(req, req.params.get("parent"), req.params.get("orig_name",""), 1)
+            elif checkString(req.params.get("mname",""))==False:
+                return FieldDetail(req, req.params.get("parent"), req.params.get("orig_name",""), 4) # if the name contains wrong characters
+    
+            _option = ""
+            for o in req.params.keys():
+                if o.startswith("option_"):
+                     _option += o[7]
+               
+            _fieldvalue = ""
+            if req.params.get("mtype","") + "_value" in req.params.keys():
+                _fieldvalue = str(req.params.get(req.params.get("mtype") + "_value"))
+            updateMetaField(req.params.get("parent",""), req.params.get("mname",""), req.params.get("mlabel",""), req.params.get("orderpos",""), req.params.get("mtype",""), _option, req.params.get("mdescription",""), _fieldvalue, fieldid=req.params.get("fieldid",""))
 
-                elif req.params["form_op"] == "save_edit":
-                    # update metatype
-                    if str(req.params["mname"])=="" or str(req.params["mlongname"])=="" or req.params.get("mdatatypes","")=="":
-                        return MetatypeDetail(req, req.params["mname_orig"], 1) # no name was given
-                        
-                    elif req.params["mname_orig"] != req.params["mname"] and existMetaType(req.params["mname"]):
-                        return MetatypeDetail(req, req.params["mname_orig"], 2) # metadata still existing
+        return showDetailList(req, req.params.get("parent"))
 
-                    elif checkString(str(req.params["mname"])) == False:
-                         return MetatypeDetail(req, req.params["mname_orig"], 4) # if the name contains wrong characters
-
-                    else:
-                        if "mactive" in req.params:
-                            _active = 1
-                        else:
-                            _active = 0
-                        updateMetaType(req.params["mname"], description=req.params["description"], longname=req.params["mlongname"], active=_active, datatypes=req.params["mdatatypes"].replace(";", ", "), orig_name=req.params["mname_orig"])
-                        
-                        mtype = getMetaType(req.params["mname"])
-                        mtype.setAccess("read", "")
-                        for key in req.params.keys():
-                            if key.startswith("left"):
-                                mtype.setAccess(key[4:], req.params.get(key).replace(";",","))
-                                break
-                    break
-
-                elif req.params["form_op"] == "save_newdetail":
-                    # save new metadatafield (detail)
-                    if existMetaField(req.params["pid"], req.params["mname"]):
-                        # field still existing
-                        return FieldDetail(req, req.params["pid"], "", 3)
-                        
-                    elif req.params["mname"]=="" or req.params["mlabel"] == "":                            
-                        return FieldDetail(req, req.params["pid"], "", 1)
-                    elif checkString(req.params["mname"]) == False:
-                         return FieldDetail(req, req.params["pid"], "", 4) # if the name contains wrong characters
-
-                    else:
-                        # save new field
-                        try:
-                            _option = ""
-                            for key in req.params.keys():
-                                if key.startswith("option_"):
-                                    _option += key[7]
-                        except:
-                            _option = ""
-
-                        _fieldvalue = ""
-                        if 'mtype' in req.params.keys() and req.params.get('mtype') + "_value" in req.params.keys():
-                            _fieldvalue = str(req.params[req.params['mtype'] + "_value"])
-                        
-                        updateMetaField(req.params["pid"], req.params["mname"], req.params["mlabel"], req.params["orderpos"], req.params["mtype"], _option, req.params["mdescription"], _fieldvalue, orig_name=req.params["mname"])
-                        req.params["detailof"] = req.params["pid"]
-                        return showDetailList(req, req.params["pid"])
-                    break
-
-                elif req.params["form_op"] == "save_editdetail":
-                    # update metadatafield (detail)
-
-                    if req.params["mname"]=="" or req.params["mlabel"] == "":
-                        return FieldDetail(req, req.params["pid"], "", 1)
-
-                    elif checkString(req.params["mname"]) == False:
-                         return FieldDetail(req, req.params["pid"],"", 4) # if the name contains wrong characters
-                    
-                    else:
-                        _len = 0
-                        if req.params.get("mlength","").isdigit():
-                            _len = int(req.params.get("mlength","0"))
-
-                        try:
-                            _option =""
-                            for key in req.params.keys():
-                                if key.startswith("option_"):
-                                    _option += key[7]
-                        except:
-                            _option = ""
-
-                        _fieldvalue = ""
-                        if req.params.get('mtype','') + "_value" in req.params.keys():
-                            _fieldvalue = str(req.params[req.params['mtype'] + "_value"])
-
-                        updateMetaField(req.params["pid"], req.params["mname"], req.params["mlabel"], req.params["orderpos"], req.params["mtype"], _option, req.params["mdescription"], _fieldvalue, orig_name=req.params["mname_orig"])
-
-                        req.params["detailof"] = req.params["pid"]
-                        return showDetailList(req, req.params["pid"])
-                    break
-
-                elif req.params["form_op"]=="save_editmask":
-                    if req.params["mname"]=="":
-                        return MaskDetails(req, req.params.get("mpid",""), req.params.get("morig_name",""), err=1)
-                    elif checkString(req.params["mname"]) == False:
-                        return MaskDetails(req, req.params.get("mpid",""), req.params.get("morig_name",""), err=4) # if the name contains wrong characters
-                    else:
-                        mtype = getMetaType(req.params.get("mpid",""))
-                        mask = mtype.getMask(req.params.get("morig_name",""))
-                        mask.setName(req.params.get("mname"))
-                        mask.setDescription(req.params.get("mdescription"))
-                        mask.setMasktype(req.params.get("mtype"))
-                        if req.params.get("mtype")=="export":
-                            mask.setExportMapping(req.params.get("exportmapping"))
-                            mask.setExportHeader(req.params.get("exportheader"))
-                            mask.setExportFooter(req.params.get("exportfooter"))
-                            _opt = ""
-                            if "types" in req.params.keys():
-                                _opt += "t"
-                            if "notlast" in req.params.keys():
-                                _opt += "l"
-                            mask.setExportOptions(_opt)
-                        mask.setLanguage(req.params.get("mlanguage", ""))
-                        mask.setDefaultMask("mdefault" in req.params.keys())
-                        return showMaskList(req, str(req.params.get("mpid","")))
-
-                elif req.params["form_op"]=="save_newmask":
-
-                    if req.params["mname"]=="":
-                        return MaskDetails(req, req.params.get("mpid",""), "", err=1)
-                    elif checkString(req.params["mname"]) == False:
-                         return MaskDetails(req, req.params.get("mpid",""), req.params.get("morig_name",""), err=4) # if the name contains wrong characters
-                    else:
-                        mtype = getMetaType(req.params.get("mpid",""))
-                        mask = tree.Node(req.params.get("mname",""), type="mask")
-                        mask.setDescription(req.params.get("mdescription",""))
-                        mask.set("type", "vgroup")
-                        mask.setMasktype(req.params.get("mtype"))
-                        if req.params.get("mtype")=="export":
-                            mask.setExportMapping(req.params.get("exportmapping"))
-                            mask.setExportHeader(req.params.get("exportheader"))
-                            mask.setExportFooter(req.params.get("exportfooter"))
-                            _opt = ""
-                            if "types" in req.params.keys():
-                                _opt += "t"
-                            if "notlast" in req.params.keys():
-                                _opt += "l"
-                            mask.setExportOptions(_opt)
-                                
-                        mask.setLanguage(req.params.get("mlanguage", ""))
-                        mask.setDefaultMask("mdefault" in req.params.keys())
-                        mtype.addChild(mask)
-
-                        return showMaskList(req, str(req.params.get("mpid","")))
+    
+    elif req.params.get("acttype")=="mask":
+        # section for masks
+        for key in req.params.keys():
         
-        return view(req)
-    except:
-        print sys.exc_info()[0], sys.exc_info()[1]
-        traceback.print_tb(sys.exc_info()[2])
+            # new mask
+            if key.startswith("newmask_"):
+                return MaskDetails(req, req.params.get("parent"), "")    
+            
+            # edit metatype masks
+            elif key.startswith("editmask_"):
+                return MaskDetails(req, req.params.get("parent"), key[9:-2], err=0)
+
+            # delete mask  
+            elif key.startswith("deletemask_"):
+                mtype = getMetaType(req.params.get("parent"))
+                mtype.removeChild(tree.getNode(key[11:-2]))
+                return showMaskList(req, req.params.get("parent"))
+            
+            # create autmatic mask with all fields
+            elif key.startswith("automask_"):
+                generateMask(getMetaType(req.params.get("parent")))
+                return showMaskList(req, req.params.get("parent"))
+                
+            # cope selected mask
+            if key.startswith("copymask_"):
+                mtype = getMetaType(req.params.get("parent"))
+                mask = mtype.getMask(key[9:-2])
+                cloneMask(mask, "copy_"+mask.getName())
+                return showMaskList(req, req.params.get("parent"))
+                
+        if "form_op" in req.params.keys():
+            if req.params.get("form_op","")=="cancel":
+                return showMaskList(req, req.params.get("parent"))
+                
+            if req.params.get("mname","")=="":
+                return MaskDetails(req, req.params.get("parent",""), req.params.get("morig_name",""), err=1)
+            elif checkString(req.params.get("mname","")) == False:
+                return MaskDetails(req, req.params.get("parent",""), req.params.get("morig_name",""), err=4) # if the name contains wrong characters
+            
+            
+            mtype = getMetaType(req.params.get("parent",""))
+            if req.params.get("form_op")=="save_editmask":
+                mask = mtype.getMask(req.params.get("maskid",""))
+                
+            elif req.params.get("form_op")=="save_newmask":
+                mask = tree.Node(req.params.get("mname",""), type="mask")
+                mtype.addChild(mask)
+                
+            mask.setName(req.params.get("mname"))
+            mask.setDescription(req.params.get("mdescription"))
+            mask.setMasktype(req.params.get("mtype"))
+
+            if req.params.get("mtype")=="export":
+                mask.setExportMapping(req.params.get("exportmapping"))
+                mask.setExportHeader(req.params.get("exportheader"))
+                mask.setExportFooter(req.params.get("exportfooter"))
+                _opt = ""
+                if "types" in req.params.keys():
+                    _opt += "t"
+                if "notlast" in req.params.keys():
+                    _opt += "l"
+                mask.setExportOptions(_opt)
+                
+            mask.setLanguage(req.params.get("mlanguage", ""))
+            mask.setDefaultMask("mdefault" in req.params.keys())
+            mask.setAccess("read", "")
+            for key in req.params.keys():
+                if key.startswith("left"):
+                    mask.setAccess(key[4:], req.params.get(key).replace(";",","))
+                    break
+        return showMaskList(req, str(req.params.get("parent","")))
+    return view(req)
+
 
 """ show all defined metadatatypes """
 def view(req):
     mtypes = loadTypesFromDB()
+    actfilter = getFilter(req)
+  
+    # filter
+    if actfilter!="":
+        if actfilter=="all" or actfilter==t(lang(req),"admin_filter_all"):
+            None # all users
+        elif actfilter=="0-9":
+            num = re.compile(r'([0-9])')
+            if req.params.get("filtertype","")=="id":
+                mtypes = filter(lambda x: num.match(x.getName()), mtypes)
+            else:
+                mtypes = filter(lambda x: num.match(x.getLongName()), mtypes)
+        elif actfilter=="else" or actfilter==t(lang(req),"admin_filter_else"):
+            all = re.compile(r'([a-z]|[A-Z]|[0-9])')
+            if req.params.get("filtertype","")=="id":
+                mtypes = filter(lambda x: not all.match(x.getName()), mtypes)
+            else:
+                mtypes = filter(lambda x: not all.match(x.getLongName()), mtypes)
+        else:
+            if req.params.get("filtertype","")=="id":
+                mtypes = filter(lambda x: x.getName().lower().startswith(actfilter), mtypes)
+            else:
+                mtypes = filter(lambda x: x.getLongName().lower().startswith(actfilter), mtypes)
+ 
     pages = Overview(req, mtypes)
-    order = req.params.get("order", "")
-    
+    order = getSortCol(req)
+
     # sorting
     if order != "":
         if int(order[0:1])==0:
@@ -354,11 +297,16 @@ def view(req):
         mtypes.sort(lambda x, y: cmp(x.getName().lower(),y.getName().lower()))
 
     v = getAdminStdVars(req)
-    v["sortcol"] = pages.OrderColHeader([t(lang(req),"admin_meta_col_1"),t(lang(req),"admin_meta_col_2"),t(lang(req),"admin_meta_col_3"),t(lang(req),"admin_meta_col_4"),t(lang(req),"admin_meta_col_5"),t(lang(req),"admin_meta_col_6"),t(lang(req),"admin_meta_col_7")])
+    #v["sortcol"] = pages.OrderColHeader([t(lang(req),"admin_meta_col_1"),t(lang(req),"admin_meta_col_2"),t(lang(req),"admin_meta_col_3"),t(lang(req),"admin_meta_col_4"),t(lang(req),"admin_meta_col_5"),t(lang(req),"admin_meta_col_6"),t(lang(req),"admin_meta_col_7")])
+    v["sortcol"] = pages.OrderColHeader([t(lang(req),"admin_meta_col_1"),t(lang(req),"admin_meta_col_2"),t(lang(req),"admin_meta_col_3"),t(lang(req),"admin_meta_col_4"),t(lang(req),"admin_meta_col_5"),t(lang(req),"admin_meta_col_6")])
     v["metadatatypes"] = mtypes
     v["datatypes"] = loadAllDatatypes()
     v["pages"] = pages
+    v["actfilter"] = actfilter
+    v["filterattrs"] = [("id","admin_metatype_filter_id"),("name","admin_metatype_filter_name")]
+    v["filterarg"] = req.params.get("filtertype", "id")
     return req.getTAL("web/admin/modules/metatype.html", v, macro="view_type")
+
     
 """ form for metadata (edit/new) """
 def MetatypeDetail(req, id, err=0):
@@ -399,178 +347,7 @@ def MetatypeDetail(req, id, err=0):
 
     return req.getTAL("web/admin/modules/metatype.html", v, macro="modify_type")
    
-""" list all fields of given metadatatype """
-def showDetailList(req, id):
-    global fieldoption
 
-    metadatatype = getMetaType(id)
-    metafields = metadatatype.getMetaFields()
-    pages = Overview(req, metafields)
-    order = req.params.get("order","")
-
-    # sorting
-    if order != "":
-        if int(order[0:1])==0:
-            metafields.sort(lambda x, y: cmp(x.getOrderPos(),y.getOrderPos()))
-        elif int(order[0:1])==1:
-            metafields.sort(lambda x, y: cmp(x.getName().lower(),y.getName().lower()))    
-        elif int(order[0:1])==2:
-            metafields.sort(lambda x, y: cmp(x.getLabel().lower(),y.getLabel().lower()))
-        elif int(order[0:1])==3:
-            metafields.sort(lambda x, y: cmp(getMetaFieldTypeNames()[str(x.getFieldtype())],getMetaFieldTypeNames()[str(y.getFieldtype())]))
-        if int(order[1:])==1:
-            metafields.reverse()
-    else:
-        metafields.sort(lambda x, y: cmp(x.getOrderPos(),y.getOrderPos()))
-
-    v = getAdminStdVars(req)
-    v["sortcol"] = pages.OrderColHeader(["", t(lang(req),"admin_metafield_col_1"),t(lang(req),"admin_metafield_col_2"),t(lang(req),"admin_metafield_col_3")])
-    v["metadatatype"] = metadatatype
-    v["metafields"] = metafields
-    v["fieldoptions"] = fieldoption
-    v["fieldtypes"] = getMetaFieldTypeNames()
-    v["pages"] = pages
-    v["order"] = order
-    return req.getTAL("web/admin/modules/metatype.html", v, macro="view_field")
-
-""" form for field of given metadatatype (edit/new) """
-def FieldDetail(req, pid, id, err=0):
-    global dateoption, requiredoption, fieldoption
-
-    _option =""
-    for key in req.params.keys():
-        if key.startswith("option_"):
-            _option += key[7]
-
-    if err==0 and id=="":
-        # new field
-        field = tree.Node("", type="metafield")
-
-    elif id!="":
-        # edit field
-        field = getMetaField(pid, id)
-         
-    else:
-        # error filling values
-        _fieldvalue = ""
-        if req.params.get('mtype','') + "_value" in req.params.keys():
-            _fieldvalue = str(req.params[req.params.get('mtype','') + "_value"])
-        
-        field = tree.Node(req.params["mname"], type="metafield")
-        field.setLabel(req.params["mlabel"])
-        field.setOrderPos(req.params["orderpos"])
-        field.setFieldtype(req.params["mtype"])
-        field.setOption(_option)
-        field.setValues(_fieldvalue)
-        field.setDescription(req.params["mdescription"])
-
-    attr = {}
-    metadatatype = getMetaType(pid)
-    for t in metadatatype.getDatatypes():
-        node = Node(type=t)
-        attr.update(node.getTechnAttributes())
-
-    metafields = {}
-    for fields in getFieldsForMeta(pid):
-        if fields.getType()!="union":
-            metafields[fields.getName()] = fields
-
-    v = getAdminStdVars(req)
-    v["metadatatype"] = metadatatype
-    v["metafield"] = field
-    v["error"] = err
-    v["fieldtypes"] = getMetaFieldTypeNames()
-    v["dateoptions"] = dateoption
-    v["datatypes"] = attr
-    v["requiredoptions"] = requiredoption
-    v["fieldoptions"] = fieldoption
-    v["metafields"] = metafields
-
-    v["icons"] = {"externer Link":"/img/extlink.png", "Email":"/img/email.png"}
-    v["valuelist"] = ("", "", "")
-    if field.getFieldtype()=="url":
-        v["valuelist"] = field.getValueList()
-        while len(v["valuelist"])!=3:
-            v["valuelist"].append("")
-    return req.getTAL("web/admin/modules/metatype.html", v, macro="modify_field")
-
-""" mask overview """
-def showMaskList(req, id):
-    global fieldoption, _masktypes
-
-    metadatatype = getMetaType(id)
-    masks = metadatatype.getMasks()
-    pages = Overview(req, masks)
-    order = req.params.get("order","")
-    
-    defaults = {}
-    for mask in masks:
-        if mask.getDefaultMask():
-            defaults[mask.getMasktype()] = mask.id
-
-    # sorting
-    if order != "":
-        if int(order[0:1])==0:
-            masks.sort(lambda x, y: cmp(x.getName().lower(),y.getName().lower()))    
-        elif int(order[0:1])==1:
-            masks.sort(lambda x, y: cmp(x.getMasktype(),y.getMasktype()))
-        elif int(order[0:1])==2:
-            masks.sort(lambda x, y: cmp(x.getDescription(),y.getDescription()))
-        elif int(order[0:1])==3:
-            masks.sort(lambda x, y: cmp(x.getDefaultMask(),y.getDefaultMask()))
-        elif int(order[0:1])==4:
-            masks.sort(lambda x, y: cmp(x.getLanguage(),y.getLanguage()))
-        if int(order[1:])==1:
-            masks.reverse()
-    else:
-        masks.sort(lambda x, y: cmp(x.getOrderPos(),y.getOrderPos()))
-
-    v = getAdminStdVars(req)
-    v["sortcol"] = pages.OrderColHeader([t(lang(req),"admin_mask_col_1"),t(lang(req),"admin_mask_col_2"),t(lang(req),"admin_mask_col_3"),t(lang(req),"admin_mask_col_4"),t(lang(req),"admin_mask_col_5")])
-    v["metadatatype"] = metadatatype
-    v["masktypes"] = _masktypes
-    v["lang_icons"] = {"de":"/img/flag_de.gif", "en":"/img/flag_en.gif", "no":"/img/emtyDot1Pix.gif"}
-    v["masks"] = masks
-    v["pages"] = pages
-    v["order"] = order
-    v["defaults"] = defaults
-    return req.getTAL("web/admin/modules/metatype.html", v, macro="view_mask")
-
-""" mask details """
-def MaskDetails(req, pid, id, err=0):
-    global _masktypes
-    mtype = getMetaType(pid)
-
-    if err==0 and id=="":
-        # new mask
-        mask = tree.Node("", type="mask")
-
-    elif id!="" and err==0:
-        # edit mask
-        if id.isdigit():
-            mask = tree.getNode(id)
-        else:
-            mask = mtype.getMask(id)
-
-    else:
-        # error filling values
-        mask = tree.Node(req.params.get("mname",""), type="mask")
-        mask.setDescription(req.params.get("mdescription",""))
-        mask.setMasktype(req.params.get("mtype"))
-        mask.setLanguage(req.params.get("mlanguage", ""))
-        mask.setDefaultMask(req.params.get("mdefault", False))
-        
-    v = getAdminStdVars(req)
-    v["mask"] = mask
-    v["mappings"] = getMappings()
-    v["mtype"] = mtype
-    v["error"] = err
-    v["pid"] = pid
-    v["masktypes"] = _masktypes
-    v["id"] = id
-    v["langs"] = config.get("i18n.languages").split(",")
-
-    return req.getTAL("web/admin/modules/metatype.html", v, macro="modify_mask")
 
 """ popup info form """
 def showInfo(req):
@@ -699,7 +476,7 @@ def showEditor(req):
                     fieldid = ""
                 else:
                     # normal field
-                    updateMetaField(parent, req.params.get("fieldname"), label, 0, req.params.get("newfieldtype"), option="", description=req.params.get("description",""), fieldvalues=fieldvalue, fieldvaluenum="", orig_name="")
+                    updateMetaField(parent, req.params.get("fieldname"), label, 0, req.params.get("newfieldtype"), option="", description=req.params.get("description",""), fieldvalues=fieldvalue, fieldvaluenum="", fieldid="")
                     fieldid = str(getMetaField(parent, req.params.get("fieldname")).id)
             
             item = editor.addMaskitem( label, req.params.get("type"), fieldid, req.params.get("pid","0") )

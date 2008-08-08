@@ -1,24 +1,26 @@
-<tal:block metal:define-macro="view_de">
-    <h3>Administrationsbereich des Medienservers</h3>
-    hier k&ouml;nnen Sie folgende Dinge erledigen:<br>
-    <ul>
-        <li>Benutzergruppen verwalten</li>
-        <li>Benutzer verwalten</li>
-        <li>ACL-Regeln verwalten</li>
-        <li>Metadatentypen verwalten</li>
-        <li>Workflows</li>
-        <li>System-Einstellungen</li>
-    </ul>
-</tal:block>
 
-
-<tal:block metal:define-macro="view_en">
-    <h3>In the administration section you can</h3>
-    <ul>
-        <li>manage users and user groups</li>
-        <li>define Access Control Lists (ACLs)</li>
-        <li>define metadata schemes</li>
-        <li>define workflows</li>
-        <li>monitor system behaviour</li>
-    </ul>
+<tal:block metal:define-macro="view" tal:repeat="navitem navigation">
+    <div class="itemmenucontainer" tal:condition="python:navitem.icon!=''">
+        <div class="itemoverflow">
+            <p class="itemicon">
+                <img i18n:attributes="alt; title" tal:attributes="src python:navitem.icon; alt python:navitem.name; title python:navitem.name"  class="itemicon" />
+            </p>
+            <p class="itemtext" tal:condition="python:len(navitem.getItemList())>0">
+                <b i18n:translate="" tal:content="python:navitem.name"/>
+                <br />
+                <span i18n:translate="" tal:content="python:navitem.description"/>
+                <br />
+                <tal:block tal:condition="python:len(navitem.getItemList())>0">
+                    <span i18n:translate="admin_submenu">TEXT</span>
+                    <tal:block tal:repeat="item python:navitem.getItemList()">
+                        <a class="itemsublink" i18n:translate="" tal:content="python:item[0]" tal:attributes="href python:item[1]"></a>
+                        <span tal:condition="python: navitem.getItemList().index(item)<len(navitem.getItemList())-1">,</span>
+                    </tal:block>                
+                </tal:block>
+            </p>
+            <p class="itemtext" tal:condition="python:len(navitem.getItemList())==0">
+                <b><a i18n:translate="" tal:attributes="href python:navitem.link" tal:content="python:navitem.name">TEXT</a></b>
+            </p>
+        </div>
+    </div>    
 </tal:block>

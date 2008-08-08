@@ -6,9 +6,17 @@
                 <td colspan="8"><h3 i18n:translate="admin_mapping_existing">TEXT</h3></td>
             </tr>
             <tr>
+                <td colspan="8">
+                    <span i18n:translate="admin_filter_label">TEXT</span>
+                    <tal:block tal:repeat="tab tabs">
+                        <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
+                    </tal:block>
+                </td>
+            </tr>
+            <tr>
                 <th>&nbsp;</th>
                 <th tal:repeat="col sortcol">
-                    <a tal:attributes="href python:col.link; title python:col.title" tal:content="structure python:col.label"/>
+                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit">TEXT</button>
                 </th>
                 <th>&nbsp;</th>
                 <th align="right">
@@ -38,7 +46,7 @@
             <tr>
                 <th colspan="4">
                     <small>
-                        <span i18n:translate="admin_mapping_footer">
+                        <span i18n:translate="admin_mapping_overview_footer">
                             <span i18n:name="number" tal:content="python:str(len(mappings))"/>
                         </span>
                         <span tal:content="raw python:pages.printPageList()"/>
@@ -47,6 +55,9 @@
                 <th colspan="4" align="right"><small tal:content="raw python:pages.printPageAll()"/></th>
             </tr>
         <br>
+        <input type="hidden" name="actpage" tal:attributes="value actpage"/>
+        <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
+        <input type="hidden" name="acttype" value="mapping"/>
     </form>
 </metal:block>
 
@@ -128,7 +139,7 @@
                 </td>
             </tr>
         </table>
-        <input tal:attributes="value python:id" type="hidden" name="id" id="id"/>
+        <input tal:attributes="value python:mapping.id" type="hidden" name="id" id="id"/>
         <input tal:attributes="value python:id=='' and 'save_new' or 'save_edit'" type="hidden" name="form_op" id="form_op"/>
     </form>
 </metal:block>
@@ -139,12 +150,20 @@
     <form name="mappingfieldoverview" method="post" action="#" tal:attributes="action page">
         <table class="overview">
             <tr>
-                <td colspan="7"><h3 i18n:translate="admin_mappingfield_existing">TEXT</h3></td>
+                <td colspan="7"><h3><span i18n:translate="admin_mappingfield_existing">TEXT</span> '<span tal:content="python:mapping.getName()">TEXT</span>'</h3></td>
+            </tr>
+            <tr>
+                <td colspan="7">
+                    <span i18n:translate="admin_filter_label">TEXT</span>
+                    <tal:block tal:repeat="tab tabs">
+                        <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
+                    </tal:block>
+                </td>
             </tr>
             <tr>
                 <th>&nbsp;</th>
                 <th tal:repeat="col sortcol">
-                    <a tal:attributes="href python:col.link; title python:col.title" tal:content="structure python:col.label"/>
+                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit">TEXT</button>
                 </th>
                 <th align="right">
                     <input i18n:attributes="title admin_mappingfield_create" tal:attributes="name python:('newfield_'+str(mapping.id))" type="image" src="/img/install.png"/>
@@ -179,6 +198,10 @@
                 <th colspan="2" align="right"><small tal:content="raw python:pages.printPageAll()"/></th>
             </tr>
         <br>
+        <input tal:attributes="value python:mapping.id" name="parent" type="hidden"/>
+        <input type="hidden" name="acttype" value="field"/>
+        <input type="hidden" name="actpage" tal:attributes="value actpage"/>
+        <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
     </form>
 </metal:block>
 
@@ -236,9 +259,10 @@
                 </td>
             </tr>
         </table>
-        <input tal:attributes="value python:str(parent.id)" type="hidden" name="parent" id="parent"/>
-        <input tal:attributes="value python:id" type="hidden" name="id" id="id"/>
+        <input tal:attributes="value python:parent.id" type="hidden" name="parent"/>
+        <input tal:attributes="value python:field.id" type="hidden" name="id"/>
         <input tal:attributes="value python:id=='' and 'save_new_field' or 'save_edit_field'" type="hidden" name="form_op" id="form_op"/>
+        <input type="hidden" name="acttype" value="field"/>
     </form>
 </metal:block>
 

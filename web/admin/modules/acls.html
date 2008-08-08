@@ -1,8 +1,5 @@
 <metal:block metal:define-macro="view">
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
-    
-    
-    
     <form tal:attributes="action page" name="rules" method="post" action="#">
         <table class="overview">
             <tr>
@@ -18,11 +15,18 @@
                     <br/>
                 </td>
             </tr>
-            
+            <tr>
+                <td colspan="5">
+                    <span i18n:translate="admin_filter_label">TEXT</span>
+                    <tal:block tal:repeat="tab tabs">
+                        <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
+                    </tal:block>
+                </td>
+            </tr>            
             <tr>
                 <th>&nbsp;</th>
                 <th tal:repeat="col sortcol">
-                    <a tal:attributes="href python:col.link; title python:col.title" tal:content="structure python:col.label"/>
+                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit">TEXT</button>
                 </th>
                 <th align="right"><input i18n:attributes="title admin_acl_create" type="image" src="/img/install.png" name="new"/></th>
             </tr>
@@ -57,6 +61,8 @@
             </tr>
         </table>
         <br/>
+        <input type="hidden" name="actpage" tal:attributes="value actpage"/>
+        <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
     </form>
 </metal:block>
 
@@ -72,8 +78,8 @@
         <table>
             <tr>
                 <td colspan="2">
-                    <h3 tal:condition="python:id==''" i18n:translate="admin_acl_existing">TEXT</h3>
-                    <h3 tal:condition="python:id!=''" i18n:translate="admin_acl_create">TEXT</h3>
+                    <h3 tal:condition="python:id!=''" i18n:translate="admin_acl_edit_title">TEXT</h3>
+                    <h3 tal:condition="python:id==''" i18n:translate="admin_acl_create">TEXT</h3>
                 </td>
             </tr>
             <tr tal:condition="python:error>0">

@@ -17,9 +17,11 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from core.translation import lang
-
+from web.admin.adminutils import adminNavigation
 
 def validate(req, op):
-    return req.getTAL("/web/admin/modules/default.html", {}, macro="view_"+lang(req))
+
+    v = {}
+    v["navigation"] = adminNavigation()
+    return req.getTAL("/web/admin/modules/default.html", v, macro="view")
 

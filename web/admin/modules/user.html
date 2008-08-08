@@ -3,12 +3,33 @@
     <form name="useroverview" method="post" action="#" tal:attributes="action page">
         <table class="overview">
             <tr>
-                <td colspan="8"><h3 i18n:translate="admin_user_existing">TEXT</h3></td>
+                <td colspan="10">
+                    <h3>
+                        <span i18n:translate="admin_user_existing">TEXT</span>
+                        (<span tal:content="usertype">TEXT</span>)
+                    </h3>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="10"><h4>Benutzertyp: <a href="/admin/user">Intern</a> | <a href="/admin/user/extern">Extern</a></h4></td>
+            </tr>
+            <tr>
+                <td colspan="10">
+                    <span i18n:translate="admin_filter_label">TEXT</span>
+                    <select name="filtertype" style="margin:0px">
+                        <tal:block tal:repeat="filterattr filterattrs">
+                            <option tal:content="python:filterattr[1]" tal:attributes="value python:filterattr[0]; selected python:{'False':None,'True':'selected'}[str(filterarg==filterattr[0])]" i18n:translate="">TEXT</option>
+                        </tal:block>
+                    </select>
+                    <tal:block tal:repeat="tab tabs">
+                        <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
+                    </tal:block>
+                </td>
             </tr>
             <tr>
                 <th>&nbsp;</th>
                 <th tal:repeat="col sortcol">
-                    <a tal:attributes="href python:col.link; title python:col.title" tal:content="structure python:col.label"/>
+                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit">TEXT</button>
                 </th>
                 <th>
                     <tal:block metal:use-macro="web/admin/frame.html/optionheader"/>
@@ -21,10 +42,12 @@
             <tr tal:condition="python:len(users)==0">
                 <td colspan="8"><small i18n:translate="admin_user_nousers">TEXT</small></td>
             </tr>
-            <tal:block tal:define="start python:pages.getStart();end python:pages.getEnd()" tal:repeat="user python:users[start:end]">
+            <tal:block tal:repeat="user python:users[pages.getStart():pages.getEnd()]">
                 <tr tal:define="cssclass python:users.index(user)%2 and 'norm' or 'silver'">
                     <td tal:attributes="class cssclass" tal:content="python:str(users.index(user)+1)+'.'"/>
-                                            <td tal:attributes="class cssclass" tal:content="python:user.getName()"/>
+                    <td tal:attributes="class cssclass" tal:content="python:user.getName()"/>
+                    <td tal:attributes="class cssclass" tal:content="python:user.getLastName()"/>
+                    <td tal:attributes="class cssclass" tal:content="python:user.getFirstName()"/>
                     <td tal:attributes="class cssclass" tal:content="python:user.getEmail()"/>
                     <td tal:attributes="class cssclass">
                         <tal:block tal:repeat="group python:user.getGroups()">
@@ -49,6 +72,7 @@
                     </td>
                     <td tal:attributes="class cssclass">
                         <input tal:attributes="name python:str('sendmail_'+user.getName())" i18n:attributes="title admin_user_sendmail_title" type="image" src="/img/email.png"/>
+                        <input tal:condition="python:usertype!='intern'" tal:attributes="name python:'tointern_'+str(user.id); onclick python:'return questionMoveUser(\''+user.getName()+'\')'" i18n:attributes="title admin_user_importintern" type="image" src="/img/rightarrow.png" />
                     </td>
                     <td tal:attributes="class cssclass" class="_norm_">
                         <input tal:attributes="name python:str('edit_'+str(user.id))" i18n:attributes="title admin_user_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
@@ -68,18 +92,27 @@
                 <th colspan="5" align="right"><small tal:content="raw python:pages.printPageAll()"/></th>
             </tr>
         <br>
+        <input type="hidden" name="usertype" tal:attributes="value usertype"/>
+        <input type="hidden" name="actpage" tal:attributes="value actpage"/>
+        <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
     </form>
 </metal:block>
 
 
 <metal:block metal:define-macro="modify">
-    <p><a i18n:translate="admin_overview" href="./user">TEXT</a></p>
+    <p>
+        <a tal:condition="python: usertype=='intern'" i18n:translate="admin_overview" href="/admin/user">TEXT</a>
+        <a tal:condition="python: usertype=='extern'" i18n:translate="admin_overview" href="/admin/user/extern">TEXT</a>
+    </p>
     <form tal:attributes="action page" name="edituser" method="post">
         <table>
             <tr>
                 <td colspan="2">
-                    <h3 tal:condition="python:id==''" i18n:translate="admin_user_new_label">TEXT</h3>
-                    <h3 tal:condition="python:id!=''" i18n:translate="admin_user_edit_label">TEXT</h3>
+                    <h3>
+                        <span tal:condition="python:id==''" i18n:translate="admin_user_new_label">TEXT</span>
+                        <span tal:condition="python:id!=''" i18n:translate="admin_user_edit_label">TEXT</span>
+                        (<span tal:content="usertype">TEXT</span>)
+                    </h3>
                 </td>
             </tr>
             <tr tal:condition="python:error>0">
@@ -90,12 +123,26 @@
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_user_username">TEXT</tal:block>: <span class="required">*</span></td>
-                <td tal:condition="python:id!=''">
-                    <input tal:attributes="value python:user.getName()" type="hidden" name="username" maxlength="50" size="50"/>
-                    <input tal:attributes="value python:user.getName()" type="text" name="username_new" maxlength="50" size="50"/>
-                </td>
-                <td tal:condition="python:id==''">
+                <td>
                     <input tal:attributes="value python:user.getName()" type="text" name="username" maxlength="50" size="50"/>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_user_lastname">TEXT</tal:block>:</td>
+                <td>
+                    <input tal:attributes="value python:user.getLastName()" type="text" name="lastname" maxlength=50 size="50"/>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_user_firstname">TEXT</tal:block>:</td>
+                <td>
+                    <input tal:attributes="value python:user.getFirstName()" type="text" name="firstname" maxlength=50 size="50"/>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_user_telephone">TEXT</tal:block>:</td>
+                <td>
+                    <input tal:attributes="value python:user.getTelephone()" type="text" name="telephone" maxlength=50 size="50"/>
                 </td>
             </tr>
             <tr>
@@ -114,6 +161,12 @@
                         </tal:block>
                     </select>
                 <td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_user_comment">TEXT</tal:block>:</td>
+                <td>
+                    <textarea name="comment" tal:content="python:user.getComment()" rows="4" cols="35"></textarea>
+                </td>
             </tr>
             <tr>
                 <td>&nbsp;</td>
@@ -154,6 +207,8 @@
             </tr>
         </table>
         <input tal:attributes="value python:id=='' and 'save_new' or 'save_edit'" type="hidden" name="form_op" id="form_op"/>
+        <input tal:attributes="value id" type="hidden" name="id"/>
+        <input tal:attributes="value usertype" type="hidden" name="usertype"/>
     </form>
 </metal:block>
 

@@ -20,11 +20,12 @@
 import sys, types
 import traceback
 import core.acl as acl
+import re
 
 from core.users import loadUsersFromDB
 from core.usergroups import loadGroupsFromDB
 from core.acl import AccessRule
-from web.admin.adminutils import Overview, getAdminStdVars
+from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from core.translation import t, lang
 
 
@@ -84,9 +85,25 @@ def validate(req, op):
 def view(req):
     global useroption
     rules = acl.getRuleList()
+ 
+    actfilter = getFilter(req)
+    order = getSortCol(req)
+    
+    # filter
+    if actfilter!="":
+        if actfilter=="all" or actfilter==t(lang(req),"admin_filter_all"):
+            None # all users
+        elif actfilter=="0-9":
+            num = re.compile(r'([0-9])')
+            rules = filter(lambda x: num.match(x.getName()), rules)
+        elif actfilter=="else" or actfilter==t(lang(req),"admin_filter_else"):
+            all = re.compile(r'([a-z]|[A-Z]|[0-9])')
+            rules = filter(lambda x: not all.match(x.getName()), rules)
+        else:
+            rules = filter(lambda x: x.getName().lower().startswith(actfilter), rules)
+    
     pages = Overview(req, rules)
-    order = req.params.get("order","")
-
+    
     # sorting
     if order != "":
         if int(order[0:1])==0:
@@ -105,6 +122,7 @@ def view(req):
     v["rules"] = rules
     v["pages"] = pages
     v["missing_rules"] = acl.getMissingRuleNames()
+    v["actfilter"] = actfilter
     return req.getTAL("web/admin/modules/acls.html", v, macro="view")
 
 #

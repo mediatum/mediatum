@@ -3,12 +3,21 @@
     <form name="usergroupoverview" method="post" action="#" tal:attributes="action page">
         <table class="overview">
             <tr>
-                <td colspan="5"><h3 i18n:translate="admin_usergroup_existing">TEXT</h3></td>
+                <td colspan="7"><h3 i18n:translate="admin_usergroup_existing">TEXT</h3></td>
+            </tr>
+            <tr>
+                <td colspan="7">
+                    <span i18n:translate="admin_filter_label">TEXT</span>
+                    
+                    <tal:block tal:repeat="tab tabs">
+                        <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit">TEXT</button>
+                    </tal:block>
+                </td>
             </tr>
             <tr>
                 <th>&nbsp;</th>
                 <th tal:repeat="col sortcol">
-                    <a tal:attributes="href python:col.link; title python:col.title" tal:content="structure python:col.label"/>
+                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit">TEXT</button>
                 </th>
                 <th>
                     <tal:block metal:use-macro="web/admin/frame.html/optionheader"/>
@@ -22,13 +31,21 @@
                 <td colspan="6"><small i18n:translate="admin_usergroup_nogroups">TEXT</small></td>
             </tr>
             
-            <tal:block tal:define="start python:pages.getStart(); end python:pages.getEnd()" tal:repeat="group python:groups[start:end]">
+            <tal:block tal:repeat="group python:groups[pages.getStart():pages.getEnd()]">
                 <tr tal:define="cssclass python:groups.index(group)%2 and 'norm' or 'silver'">
                     <td tal:attributes="class cssclass" tal:content="python:str(groups.index(group)+1)+'.'"/>
                     <td tal:attributes="class cssclass" tal:content="python:group.getName()"/>
                     <td tal:attributes="class cssclass;title python:group.getUserNames()" style="cursor:hand;width:50px" tal:content="structure python:'&nbsp;&nbsp;&nbsp;&nbsp;'+str(len(group.getChildren()))"/>
-                    <td tal:attributes="class cssclass; title python:', '.join(group.getSchemas())" style="cursor:hand;text-align:right;width:50px" tal:content="python:str(len(group.getSchemas()))"></td>
+                    <tal:block tal:define="schema python:group.getSchemas()">
+                        <td tal:attributes="class cssclass; title python:', '.join(schema)" style="cursor:hand;text-align:right;width:50px" tal:content="python:str(len(schema))"></td>
+                    </tal:block>
                     <td tal:attributes="class cssclass">
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <tal:block tal:condition="python:group.getHideEdit()!=''">
+                            <img src="/img/archive.png" i18n:attributes="title admin_usergroup_hideedit_title"/>
+                        </tal:block>
+                    </td>
+                    <td tal:attributes="class cssclass" style="width:40px">
                         <table>
                             <tr>
                                 <tal:block tal:define="options python:list(group.getOptionList())" tal:repeat="option options">
@@ -55,12 +72,14 @@
                         <span tal:content="raw python:pages.printPageList()"/>
                     </small>
                 </th>
-                <th colspan="3" align="right"><small tal:content="structure python:pages.printPageAll()"/></th>
+                <th colspan="4" align="right"><small tal:content="structure python:pages.printPageAll()"/></th>
             </tr>
         </table>
         <p>
             <small>(<span i18n:translate="admin_usergroup_msg1">TEXT</span>)</small>
         </p>
+        <input type="hidden" name="actpage" tal:attributes="value actpage"/>
+        <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
     </form>
 </metal:block>
 
@@ -96,6 +115,29 @@
                 <td>
                     <textarea tal:content="python:group.getDescription()" name="description" rows="4" ols="35"/>
                 <td>
+            </tr>
+            <tr>
+                <td i18n:translate="admin_usergroup_rights">TEXT</td>
+                <td>
+                    <table>
+                        <tr>
+                            <td align="left" valign="top">
+                                <select tal:content="raw val_left" tal:attributes="name python:'leftmodule'; ondblclick python:'moveRight(document.editgroup.leftmodule,document.editgroup.rightmodule)'" style="width:320px" size="6" multiple="multiple">
+                                </select>
+                            </td>
+                            <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
+                                <input tal:attributes="onclick python:'moveLeft(document.editgroup.leftmodule,document.editgroup.rightmodule)'" type="button" value="<<"/>
+                                <br>
+                                <input tal:attributes="onclick python:'moveRight(document.editgroup.leftmodule,document.editgroup.rightmodule)'" type="button" value=">>"/>
+                            </td>
+                            <td align="left" valign="top">
+                                <select tal:content="raw val_right" tal:attributes="name python:'rightmodule';  ondblclick python:'moveLeft(document.editgroup.leftmodule,document.editgroup.rightmodule)'" style="width:320px" size="6" multiple="multiple">
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                
+                </td>
             </tr>
             <tr>
                 <td>&nbsp;</td>
@@ -134,7 +176,7 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
+                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" type="submit" name="submit" value="submit" onclick="mark(document.editgroup.leftmodule)">TEXT</button>&nbsp;&nbsp;
                     <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
                 </td>
             </tr>

@@ -1,0 +1,250 @@
+<metal:block metal:define-macro="view_mask">
+    <p><a tal:attributes="href python:'./metatype'+page" i18n:translate="admin_overview">TEXT</a></p>
+    <script type="text/javascript">
+        function openwindow(url)
+        {
+            popup = window.open(url, "popup", "resizable=1,width=700,height=450,scrollbars");
+            popup.focus();
+        }
+    </script>
+
+    <form name="fieldoverview" method="post" action="#" tal:attributes="action page">
+        <table class="overview">
+            <tr>
+                <td colspan="5">
+                    <h3 i18n:translate="admin_mask_header">TEXT '<span tal:content="python:metadatatype.getName()" i18n:name="name"/>'</h3>
+                </td>
+            </tr>
+            <tr tal:condition="python:len(defaults)<3">
+                <td colspan="5">
+                    <p class="error" i18n:translate="admin_mask_type_text">TEXT</p>
+                    <br/><br/>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="10">
+                    <span i18n:translate="admin_filter_label">TEXT</span>
+                    <tal:block tal:repeat="tab tabs">
+                        <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
+                    </tal:block>
+                </td>
+            </tr>
+            <tr>
+                <th>&nbsp;</th>
+                <th tal:repeat="col sortcol">
+                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit">TEXT</button>
+                </th>
+                <th align="right">
+                    <input tal:attributes="name python:'automask_'+metadatatype.getName()" i18n:attributes="title admin_mask_createstd_title" type="image" src="/img/styles.png">&nbsp;&nbsp;&nbsp;&nbsp;
+                    <input tal:attributes="name python:'newmask_'+metadatatype.getName()" i18n:attributes="title admin_mask_create_title" type="image" src="/img/install.png">
+                </th>
+            </tr>
+            <tr tal:condition="python:not masks or len(masks)==0">
+                <td colspan="5"><small i18n:translate="admin_mask_nomask">TEXT</small></td>
+            </tr>
+                <tal:block tal:define="start python:pages.getStart(); end python:pages.getEnd()" tal:repeat="mask python:masks[start:end]">
+                    <tr tal:define="cssclass python:masks.index(mask)%2 and 'norm' or 'silver'">
+                        <td tal:attributes="class cssclass" tal:content="python:str(masks.index(mask)+1) +'.'"/>
+                        <td tal:attributes="class cssclass" tal:content="python:mask.getName()"/>
+                        <td tal:attributes="class cssclass" tal:content="python:masktypes[mask.getMasktype()]" i18n:translate=""/>
+                        <td tal:attributes="class cssclass" tal:content="python:mask.getDescription()"/>
+                        <td tal:attributes="class cssclass">&nbsp;&nbsp;
+                            <img tal:condition="python:mask.getDefaultMask()" src="/img/haken.gif"/>
+                            <img tal:condition="python:not mask.getDefaultMask()" src="/img/emtyDot1Pix.gif"/>
+                        </td>
+                        
+                        <td tal:attributes="class cssclass">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img tal:attributes="src python:lang_icons[mask.getLanguage()]"/></td>
+                        <td tal:attributes="class cssclass">
+                            <img tal:condition="python:mask.getAccess('read')" i18n:attributes="title admin_mask_acl_title" src="/img/archive.png"/>
+                            <img tal:condition="python:mask.getAccess('read')==''" i18n:attributes="title admin_mask_acl_title" src="/img/mark_empty.png"/>
+                        </td>
+                        <td tal:attributes="class cssclass">
+                            <a tal:attributes="onclick python:'javascript:openPopupWithScroll(\'/admin/metatype/'+metadatatype.getName()+'/'+mask.getName()+'/editor?style=popup\',\'editor\',800,600)'" href="#"><img i18n:attributes="title admin_mask_edit_field" src="/img/rightarrow.png" border="0"/></a>&nbsp;
+                            <input tal:attributes="name python:'copymask_'+str(mask.id)" i18n:attributes="title admin_mask_clone_title" type="image" src="/img/clone.png"/>&nbsp;&nbsp;                               
+                            <input tal:attributes="name python:'editmask_'+str(mask.id)" i18n:attributes="title admin_mask_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
+                            <input tal:attributes="name python:'deletemask_'+str(mask.id); onclick python:'return questionDelName(\''+mask.getName()+' ('+str(mask.id)+')\')'" i18n:attributes="title admin_mask_delete_title" type="image" src="/img/delete.png"/>
+                        </td>
+                    </tr>
+                </tal:block>
+                <tr>
+                    <th colspan="4">
+                        <small>
+                            <span i18n:translate="admin_mask_footer">
+                                <span i18n:name="number" tal:content="python:str(len(masks))"/>
+                            </span>
+                            <span tal:content="structure python:pages.printPageList()"/>
+                        </small>
+                    </th>
+                    <th align="right" colspan="4"><small tal:content="structure python:pages.printPageAll()"/></th>
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        &nbsp;
+                    </td>
+                </tr>
+            </table>
+        <br />
+        <input type="hidden" name="acttype" value="mask"/>
+        <input type="hidden" name="parent" tal:attributes="value python:metadatatype.id"/>
+        <input type="hidden" name="actpage" tal:attributes="value actpage"/>
+        <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
+    </form>
+</metal:block>
+
+<metal:block metal:define-macro="modify_mask">
+    <script type="text/javascript">
+    function changetype(doc){
+        obj = doc.getElementById("mtype");
+        t = obj.value;
+        
+        for(var i=0; i< obj.options.length; i++){
+            o = doc.getElementById("div_"+obj.options[i].value);
+            if (o){
+                o.style.display = "none";
+            }
+        }
+        if (doc.getElementById("div_"+obj.value)){
+            doc.getElementById("div_"+obj.value).style.display = "block";
+        }
+    }
+    
+    function selectacl(objname){
+        obj = document.getElementById(objname);
+        for (i=0; i<obj.length; i++){
+            obj.options[i].selected=true;
+        }
+    }
+    </script>
+    <p><a tal:attributes="href python:'./metatype'+page" i18n:translate="admin_overview">TEXT</a></p>
+    <form tal:attributes="action page" name="editmetatype" method="post">
+        <table>
+            <tr>
+                <td colspan="2">
+                    <h3 tal:condition="python:str(id)==''" i18n:translate="admin_mask_create">TEXT</h3>
+                    <h3 tal:condition="python:id!=''" i18n:translate="admin_mask_edit">TEXT</h3>
+                </td>
+            </tr>
+            <tr tal:condition="python:error>0">
+                <td colspan="2">
+                    <p tal:condition="python:error==1" class="error" i18n:translate="admin_mandatory_error">TEXT</p>
+                    <p tal:condition="python:error==2" class="error" i18n:translate="admin_duplicate_error">TEXT</p>
+                    <p tal:condition="python:error==3" class="error" i18n:translate="admin_mask_error_1">TEXT</p>
+                    <p tal:condition="python:error==4" class="error" i18n:translate="admin_mask_error_2">TEXT</p>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_mask_name">TEXT</tal:block>: <span class="required">*</span></td>
+                <td>
+                    <input tal:attributes="value python:mask.getName()" type="text" style="width:300px" name="mname"/>
+                    <input tal:attributes="value python:mask.getName()" type="hidden" name="morig_name"/>
+                </td>
+            </tr>
+            <tr>
+                <td style="vertical-align:top"><tal:block i18n:translate="admin_mask_type">TEXT</tal:block>:</td>
+                <td>
+                    <select name="mtype" style="width:200px" onchange="changetype(document, this)" onload="changetype(document)" id="mtype">
+                        <option tal:repeat="key python:masktypes.keys()" tal:attributes="value key; selected python:{'False':None,'True':'selected'}[str(mask.getMasktype()==str(key))]" tal:content="python:masktypes[key]" i18n:translate=""/>
+                    </select>
+                 <td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div id="div_export" style="display:none">
+                        <table>
+                            <tr>
+                                <td style="width: 105px"><tal:block i18n:translate="admin_mask_exportmapping">TEXT</tal:block>:</td>
+                                <td>
+                                    <select name="exportmapping" multiple="multiple" size="5">
+                                        <option i18n:translate="admin_mask_nomapping" value="">TEXT</option>
+                                        <tal:block tal:repeat="mapping mappings">
+                                            <option tal:attributes="selected python:{'False':None,'True':'selected'}[str(mapping.id in mask.getExportMapping())]; value python:mapping.id" tal:content="python:mapping.getName()"/>
+                                        </tal:block>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><tal:block i18n:translate="admin_mask_exportheader">TEXT</tal:block>:</td>
+                                <td><input tal:attributes="value python:mask.getExportHeader()" type="text" name="exportheader" style="width:300px"/></td>
+                            </tr>
+                            <tr>
+                                <td><tal:block i18n:translate="admin_mask_exportfooter">TEXT</tal:block>:</td>
+                                <td><input tal:attributes="value python:mask.getExportFooter()" type="text" name="exportfooter" style="width:300px"/></td>
+                            </tr>
+                            <tr>
+                                <td><tal:block i18n:translate="admin_mask_exportoptions">TEXT</tal:block>:</td>
+                                <td>
+                                    <fieldset style="display:inline">
+                                        <input tal:attributes="checked python:{'False':None,'True':'checked'}[str(mask.hasExportOption('t'))]" type="checkbox" name="types" value="types"/> <tal:block i18n:translate="admin_mask_export_validatetypes">TEXT</tal:block><br/>
+                                        <input tal:attributes="checked python:{'False':None,'True':'checked'}[str(mask.hasExportOption('l'))]" type="checkbox" name="notlast" value="notlast"/> <tal:block i18n:translate="admin_mask_export_endseparator">TEXT</tal:block>
+                                    </fieldset>
+                                </td>
+                            </tr>
+                        </table>                        
+                    </div>
+                    <script>
+                        changetype(document);
+                    </script>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_mask_description">TEXT</tal:block>:</td>
+                <td><textarea tal:content="python:mask.getDescription()" name="mdescription" rows="4" cols="35"/>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_mask_default">TEXT</tal:block>:</td>
+                <td><input type="checkbox" name="mdefault" value="True" tal:attributes="checked python:{'False':None,'True':'checked'}[str(mask.getDefaultMask())]"/></td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_mask_language">TEXT</tal:block>:</td>
+                <td>
+                    <select name="mlanguage" style="width:200px">
+                        <option value="">-</option>
+                        <tal:block tal:repeat="lang langs">
+                            <option tal:content="lang" tal:attributes="value lang; selected python:{'False':None,'True':'checked'}[str(mask.getLanguage()== lang)]"></option>
+                        </tal:block>
+                    </select>
+                </td>
+            </tr>
+            
+            <tr>
+                <td><tal:block i18n:translate="admin_meta_rights">TEXT</tal:block>:</td>
+                <td>
+                    <table border="0px" cellpadding="0px" cellspacing="0px">
+                        <tr>
+                            <td align="left" valign="top">
+                                <select tal:content="raw python:acl['val_left']" tal:attributes="name python:'left'+acl['name'];id python:'left'+acl['name']; ondblclick python:'moveRight(document.editmetatype.left'+acl['name']+',document.editmetatype.right'+acl['name']+')'" style="width:320px" size="6" multiple="multiple">
+                                </select>
+                            </td>
+                            <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
+                                <input tal:attributes="onclick python:'moveLeft(document.editmetatype.left'+acl['name']+',document.editmetatype.right'+acl['name']+')'" type="button" value="<<"/>
+                                <br>
+                                <input tal:attributes="onclick python:'moveRight(document.editmetatype.left'+acl['name']+',document.editmetatype.right'+acl['name']+')'" type="button" value=">>"/>
+                            </td>
+                            <td align="left" valign="top">
+                                <select tal:content="raw python:acl['val_right']" tal:attributes="name python:'right'+acl['name'];  ondblclick python:'moveLeft(document.editmetatype.left'+acl['name']+',document.editmetatype.right'+acl['name']+')'" style="width:320px" size="6" multiple="multiple">
+                                </select>
+                            </td>
+                        </tr>
+                    </table> 
+                </td>
+            </tr>
+            
+            <tr>
+                <td>&nbsp;</td>
+                <td><small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info">TEXT</span>)</small></td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>
+                    <button tal:attributes="onclick python:'selectacl(\'left'+acl['name']+'\')';" i18n:translate="admin_save" i18n:attributes="title admin_save_title" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
+                    <button i18n:translate="admin_cancel" i18n:attributes="title admin_cancel_title" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
+                </td>
+            </tr>
+        </table>
+        <input tal:attributes="value python:mtype.getName()" type="hidden" name="maskof"/>
+        <input tal:attributes="value python:id=='' and 'save_newmask' or 'save_editmask'" type="hidden" name="form_op" id="form_op"/>
+        <input type="hidden" name="acttype" value="mask"/>
+        <input type="hidden" name="parent" tal:attributes="value python:mtype.id"/>
+        <input type="hidden" name="maskid" tal:attributes="value python:mask.id"/>
+    </form>
+</metal:block>

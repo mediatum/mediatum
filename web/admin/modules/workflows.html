@@ -3,37 +3,43 @@
     <form tal:attributes="action python:page" name="addnewworkflow" method="post" action="#" enctype="multipart/form-data">
         <table class="overview">
             <tr>
-                <td colspan="7"><h3 i18n:translate="admin_wf_existing">TEXT</h3></td>
+                <td colspan="5"><h3 i18n:translate="admin_wf_existing">TEXT</h3></td>
+            </tr>
+            <tr>
+                <td colspan="5">
+                    <span i18n:translate="admin_filter_label">TEXT</span>
+                    <tal:block tal:repeat="tab tabs">
+                        <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
+                    </tal:block>
+                </td>
             </tr>
             <tr>
                 <th>&nbsp;</th>
                 <th tal:repeat="col sortcol">
-                    <a tal:attributes="href python:col.link; title python:col.title" tal:content="structure python:col.label">TEXT</a>	
+                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit">TEXT</button>
                 </th>
-                <th colspan="2">&nbsp;</th>
-                <th style="width:20px">
+                <th>
                     <a i18n:attributes="title admin_wf_exportall_title" href="/admin/export/workflows/all" target="_blank">
                         <img src="/img/export.png" border="0">
                     </a>
                 </th>
-                <th style="width:20px" align="right">
+                <th align="right">
                     <input i18n:attributes="title admin_wf_create_title" type="image" src="/img/install.png" name="new_"/>
                 </th>
             </tr>
             
             <tr tal:condition="python:len(workflows)==0">
-                <td colspan="7"><small i18n:translate="admin_wf_nowf">TEXT</small></td>
+                <td colspan="5"><small i18n:translate="admin_wf_nowf">TEXT</small></td>
             </tr>
             <tal:block tal:repeat="workflow python:workflows[start:end]" tal:define="start python:pages.getStart(); end python:pages.getEnd()">
             <tr tal:define="cssclass python:workflows.index(workflow)%2 and 'norm' or 'silver'">
                 <td tal:attributes="class cssclass" tal:content="python:str(workflows.index(workflow)+1)+'.'"/>
                 <td tal:attributes="class cssclass" tal:content="python:workflow.getName()"/>
-                <td tal:attributes="class cssclass" tal:content="python:workflow.getDescription()"/>
-                <td tal:attributes="class cssclass">&nbsp;</td>
+                <td tal:attributes="class cssclass" tal:content="python:workflow.getDescription()">TEXT</td>
                 <td tal:attributes="class cssclass">
                     <input tal:attributes="name python:'detaillist_'+str(workflow.getId())" i18n:attributes="title admin_wf_nodeedit_title" type="image" src="/img/rightarrow.png"/>
-                </td>
-                <td tal:attributes="class cssclass">
+                    &nbsp;
+                    &nbsp;
                     <a tal:attributes="href python:'./workflows/' +workflow.getName()+'/overview?style=popup'" i18n:attributes="title admin_wf_graphic_title" target="_blank"><img src="/img/search.gif" border="0"/></a>
                                                         
                     <a tal:attributes="href python:'/admin/export/workflows/' +workflow.getId()" i18n:attributes="title admin_wf_export_title" target="_blank"><img src="/img/export.png" border="0"/></a>
@@ -46,7 +52,7 @@
             </tr>
             </tal:block>
             <tr>
-                <th colspan="4">
+                <th colspan="2">
                     <small>
                         <span i18n:translate="admin_wf_footer">
                             <span i18n:name="number" tal:content="python:str(len(workflows))"/>
@@ -58,7 +64,7 @@
             </tr>
             <tr>
                 <td>&nbsp;</td>
-                <td colspan="6" align="right">
+                <td colspan="7" align="right">
                     <br/>
                     <table style="width:100px">
                         <tr>
@@ -75,10 +81,13 @@
             </tr>
         </table>
         <br>
+        <input type="hidden" name="acttype" value="workflow"/>
+        <input type="hidden" name="actpage" tal:attributes="value actpage"/>
+        <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
     </form>
 </metal:block>
 
-<metal:block metal:define-macro="modify" tal:define="id python:workflow.getId()">
+<metal:block metal:define-macro="modify" tal:define="id python:workflow.getName()">
     <p><a tal:attributes="href python:'./workflows'+page" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="editworkflow" method="post" action="#">
         <table>
@@ -98,7 +107,7 @@
                 <td><tal:block i18n:translate="admin_wf_name">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
                     <input tal:attributes="value python:workflow.getName()" type="text" name="name" maxlenght=64 style="width:400px"/>
-                    <input tal:attributes="value python:workflow.getId()" type="hidden" name="id"/>
+                    <input tal:attributes="value original_name" type="hidden" name="orig_name"/>
                 </td>
             </tr>
             <tr>
@@ -126,7 +135,9 @@
                 </td>
             </tr>
         </table>
-        <input tal:attributes="value python:id=='' and 'save_new' or 'save_edit'" type="hidden" name="form_op" id="form_op"/>
+        <input tal:attributes="value python:workflow.id=='' and 'save_new' or 'save_edit'" type="hidden" name="form_op" id="form_op"/>
+        <input tal:attributes="value python:workflow.id" type="hidden" name="id"/>
+        <input type="hidden" name="acttype" value="workflow"/>
     </form>
 
 </metal:block>
@@ -142,9 +153,17 @@
                 </td>
             </tr>
             <tr>
+                <td colspan="10">
+                    <span i18n:translate="admin_filter_label">TEXT</span>
+                    <tal:block tal:repeat="tab tabs">
+                        <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
+                    </tal:block>
+                </td>
+            </tr>
+            <tr>
                 <th>&nbsp;</th>
                 <th tal:repeat="col sortcol">
-                    <a tal:attributes="href python:col.link+'&detailof='+workflow.getId(); title python:col.title" tal:content="structure python:col.label"/>
+                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit">TEXT</button>
                 </th>
                 <th align="right">
                     <input tal:attributes="name python:'newdetail_'+str(workflow.getId())" i18n:attributes="title admin_wfstep_new_title" type="image" src="/img/install.png">
@@ -195,8 +214,10 @@
                 <th align="right" colspan="3"><small tal:content="structure python:pages.printPageAll()"/></th>
             </tr>
         </table>
-        <br>
-        <input tal:attributes="value python:workflow.getId()" type="hidden" name="wid">
+        <br/>
+        <!--<input tal:attributes="value python:workflow.getId()" type="hidden" name="wid"/>-->
+        <input type="hidden" name="parent" tal:attributes="value python:workflow.id"/>
+        <input type="hidden" name="acttype" value="step"/>
     </form>
 </metal:block>
 
@@ -231,6 +252,7 @@
                 <td><tal:block i18n:translate="admin_wfstep_name">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
                     <input tal:attributes="value python:workflowstep.name" style="width:400px" type="text" name="nname" maxlenght=64/>	
+                    <input tal:attributes="value orig_name" style="width:400px" type="hidden" name="orig_name" maxlenght=64/>	
                 </td>
             </tr>
             <tr>
@@ -300,8 +322,9 @@
             </tr>
         </table>         
         <input tal:attributes="value python:id=='' and 'save_newdetail' or 'save_editdetail'" type="hidden" name="form_op" id="form_op"/>                        
-        <input tal:attributes="value python:workflow.getId()" type="hidden" name="wid"/>
-        <input tal:attributes="value id" type="hidden" name="wnid"/>
+        <input tal:attributes="value id" type="hidden" name="stepid"/>
+        <input type="hidden" name="acttype" value="step"/>
+        <input tal:attributes="value python:workflow.id" type="hidden" name="parent"/>
     </form>
 </metal:block>
 

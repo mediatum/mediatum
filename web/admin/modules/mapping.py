@@ -20,7 +20,7 @@
 import core.tree as tree
 
 from schema.mapping import getMappings, getMapping, updateMapping, deleteMapping, updateMappingField, deleteMappingField
-from web.admin.adminutils import Overview, getAdminStdVars
+from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from core.translation import lang, t
 
 
@@ -28,77 +28,90 @@ from core.translation import lang, t
 def validate(req, op):
 
     print req.params
-
-    for key in req.params.keys():
- 
-        if key.startswith("fieldlist_"):
-            # list all defined fields
-            return viewlist(req, key[10:-2])
-
-        elif key.startswith("newfield_"):
-            # create new mapping field
-            return editMappingField_mask(req, "", tree.getNode(key[9:-2]))
+    if req.params.get("acttype", "mapping")=="mapping":
+        #  section for mapping
+        for key in req.params.keys():
+            if key.startswith("fieldlist_"):
+                # list all defined fields
+                return viewlist(req, key[10:-2])
             
-        elif key.startswith("editfield_"):
-            # create new mapping field
-            node = tree.getNode(key[10:-2])
-            for p in node.getParents():
-                if p.type=="mapping":
-                    return editMappingField_mask(req, key[10:-2], p)
-        
-        elif key.startswith("deletefield_"):
+            elif key.startswith("new"):
+                # create new mapping
+                return editMapping_mask(req, "")
+                
+            elif key.startswith("edit_"):
+                # edit/create mapping
+                return editMapping_mask(req, str(key[key.index("_")+1:-2]))
+                
+            elif key.startswith("delete_"):
+                # delete mapping
+                deleteMapping(key[7:-2])
+                break 
+
+        if "form_op" in req.params.keys():
+            if req.params.get("form_op","")=="cancel":
+                return view(req)
+            # save mapping values
+            if req.params.get("name","")=="":
+                return editMapping_mask(req, req.params.get("id",""), 1) # empty required field
+            else:
+                updateMapping(req.params.get("name"), namespace=req.params.get("namespace"), namespaceurl=req.params.get("namespaceurl"), description=req.params.get("description"), header=req.params.get("header"), footer=req.params.get("footer"), separator=req.params.get("separator"), standardformat=req.params.get("standardformat"), id=req.params.get("id"))
+
+    else:
+        # section for mapping fields
+        for key in req.params.keys():
+ 
+            if key.startswith("newfield_"):
+                # create new mapping field
+                return editMappingField_mask(req, "", tree.getNode(key[9:-2]))
+                
+            elif key.startswith("editfield_"):
+                # create new mapping field
+                return editMappingField_mask(req, key[10:-2], tree.getNode(req.params.get("parent")))
+            
+            elif key.startswith("deletefield_"):
                 # delete mapping field
                 deleteMappingField(key[12:-2])
                 break   
+ 
+        if "form_op" in req.params.keys():
+            if req.params.get("form_op","")=="cancel":
+                return viewlist(req, req.params.get("parent"))
+            # save mapping field values
+            if str(req.params["name"])=="":
+                return editMappingField_mask(req, req.params.get("id",""), tree.getNode(req.params.get("parent")), 1) # empty required field
+            else:
+                _mandatory = False
+                if "mandatory" in req.params.keys():
+                    _mandatory = True
+                updateMappingField(req.params.get("parent"), req.params.get("name"), description=req.params.get("description"), exportformat=req.params.get("exportformat"), mandatory=_mandatory, id=req.params.get("id"))               
+        return viewlist(req, req.params.get("parent"))
         
-        
-        elif key.startswith("new"):
-            # create new mapping
-            return editMapping_mask(req, "")
-            
-        elif key.startswith("edit_"):
-            # edit/create mapping
-            return editMapping_mask(req, str(key[key.index("_")+1:-2]))
-            
-        elif key.startswith("delete_"):
-                # delete mapping
-                deleteMapping(key[7:-2])
-                break   
-        
-        elif key == "form_op":
-            if req.params["form_op"]=="save_new" or req.params["form_op"]=="save_edit":
-                # save mapping values
-                if str(req.params["name"])=="":
-                    return editMapping_mask(req, "", 1) # empty required field
-                else:
-                    updateMapping(req.params.get("name"), namespace=req.params.get("namespace"), namespaceurl=req.params.get("namespaceurl"), description=req.params.get("description"), header=req.params.get("header"), footer=req.params.get("footer"), separator=req.params.get("separator"), standardformat=req.params.get("standardformat"), id=req.params.get("id"))
-                break
-                
-                
-            if req.params["form_op"]=="save_new_field" or req.params["form_op"]=="save_edit_field":
-                # save mapping field values
-                if str(req.params["name"])=="":
-                    return editMappingField_mask(req, "", req.params.get("parent"), 1) # empty required field
-                else:
-                    _mandatory = False
-                    if "mandatory" in req.params.keys():
-                        _mandatory = True
-                    updateMappingField(req.params.get("parent"), req.params.get("name"), description=req.params.get("description"), exportformat=req.params.get("exportformat"), mandatory=_mandatory, id=req.params.get("id"))
-                    return viewlist(req, req.params.get("parent"))
-                break
-
-    if "detailof" in req.params.keys():
-        return viewlist(req, req.params.get("detailof"))
-
     return view(req)
 
     
-    
 def view(req):
     mappings = list(getMappings())
-    pages = Overview(req, mappings)
-    order = req.params.get("order","")
+    order = getSortCol(req)
+    actfilter = getFilter(req)
 
+    # filter
+    if actfilter!="":
+        if actfilter=="all" or actfilter==t(lang(req),"admin_filter_all"):
+            None # all users
+        elif actfilter=="0-9":
+            num = re.compile(r'([0-9])')
+            mappings = filter(lambda x: num.match(x.getName()), mappings)
+            
+        elif actfilter=="else" or actfilter==t(lang(req),"admin_filter_else"):
+            all = re.compile(r'([a-z]|[A-Z]|[0-9])')
+            mappings = filter(lambda x: not all.match(x.getName()), mappings)
+            
+        else:
+            mappings = filter(lambda x: x.getName().lower().startswith(actfilter), mappings)
+            
+    pages = Overview(req, mappings)
+    
     # sorting
     if order != "":
         if int(order[0:1])==0:
@@ -122,6 +135,7 @@ def view(req):
     v["mappings"] = mappings
     v["options"] = []
     v["pages"] = pages
+    v["actfilter"] = actfilter
     return req.getTAL("web/admin/modules/mapping.html", v, macro="view")
     
     
@@ -157,8 +171,26 @@ def viewlist(req, id):
     mapping = getMapping(id)
 
     fields = list(mapping.getFields())
+    order = getSortCol(req)
+    actfilter = getFilter(req)
+
+    # filter
+    if actfilter!="":
+        if actfilter=="all" or actfilter==t(lang(req),"admin_filter_all"):
+            None # all users
+        elif actfilter=="0-9":
+            num = re.compile(r'([0-9])')
+            fields = filter(lambda x: num.match(x.getName()), fields)
+            
+        elif actfilter=="else" or actfilter==t(lang(req),"admin_filter_else"):
+            all = re.compile(r'([a-z]|[A-Z]|[0-9])')
+            fields = filter(lambda x: not all.match(x.getName()), fields)
+            
+        else:
+            fields = filter(lambda x: x.getName().lower().startswith(actfilter), fields)
+            
     pages = Overview(req, fields)
-    order = req.params.get("order","")
+    
 
     # sorting
     if order != "":
@@ -180,7 +212,7 @@ def viewlist(req, id):
     v["mapping"] = mapping
     v["options"] = []
     v["pages"] = pages
-
+    v["actfilter"] = actfilter
     return req.getTAL("web/admin/modules/mapping.html", v, macro="viewlist")
 
     
@@ -205,6 +237,5 @@ def editMappingField_mask(req, id, parent, err=0):
     v["error"] = err
     v["field"] = field
     v["parent"] = parent
-    v["id"] = id
     return req.getTAL("web/admin/modules/mapping.html", v, macro="modifyfield")
     

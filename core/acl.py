@@ -470,7 +470,7 @@ def getMissingRuleNames():
     global conn
     ret = []
     for rule in conn.getAllDBRuleNames(): # saved rulenames in nodes
-        if not existRule(rule):
+        if not existRule(rule) and not rule.startswith("{"):
             ret.append(rule)
     return ret
 

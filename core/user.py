@@ -38,6 +38,26 @@ class User(tree.Node):
             if p.type == "usergroup":
                 groups += [p.getName()]
         return groups
+        
+    def getLastName(self):
+        return self.get("lastname")
+    def setLastName(self, value):
+        self.set("lastname", value)
+ 
+    def getFirstName(self):
+        return self.get("firstname")
+    def setFirstName(self, value):
+        self.set("firstname", value)
+        
+    def getTelephone(self):
+        return self.get("telephone")
+    def setTelephone(self, value):
+        self.set("telephone", value)
+        
+    def getComment(self):
+        return self.get("comment")
+    def setComment(self, value):
+        self.set("comment", value)
  
     def getEmail(self):
         return self.get("email")

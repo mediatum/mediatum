@@ -20,6 +20,7 @@
 import core.tree as tree
 from schema.schema import loadTypesFromDB, VIEW_HIDE_EMPTY,VIEW_DATA_ONLY
 from core.translation import lang
+from utils.utils import Menu
 
 class Default(tree.Node):
     def show_node_big(node, req):
@@ -78,5 +79,21 @@ class Default(tree.Node):
             
     def getSysFiles(node):
         return []
+        
+    def buildLZAVersion(node):
+        print "no lza builder implemented"
+        
+    def getEditMenuTabs(node):
+        menu = list()
+        try:
+            submenu = Menu("tab_globals", "edit_menu_0_description","", "..")
+            menu.append(submenu)
+
+        except TypeError:
+            pass
+        return menu
+        
+    def getDefaultEditTab(node):
+        return "tab_view"
 
 

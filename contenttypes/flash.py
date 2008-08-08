@@ -21,7 +21,7 @@ import core.config as config
 import core.tree as tree
 import core.athana as athana
 
-from utils.utils import splitpath
+from utils.utils import splitpath, Menu
 from core.tree import Node,FileNode
 import default 
 
@@ -61,10 +61,38 @@ class Flash(default.Default):
 
     """ popup window for actual nodetype """
     def popup_fullsize(node, req):
-    f = ""
-    for filenode in node.getFiles():
-        if filenode.getType() in ("original", "video"):
-            f =  "/file/" + str(node.id) + "/" + filenode.getName()
-            break
-    req.writeTAL("contenttypes/flash.html", {"path":f}, macro="fullsize")
+        f = ""
+        for filenode in node.getFiles():
+            if filenode.getType() in ("original", "video"):
+                f =  "/file/" + str(node.id) + "/" + filenode.getName()
+                break
+        req.writeTAL("contenttypes/flash.html", {"path":f}, macro="fullsize")
     
+    def getEditMenuTabs(node):
+        menu = list()
+        try:
+            submenu = Menu("tab_layout", "description","#", "../") #new
+            submenu.addItem("tab_view","tab_view")
+            menu.append(submenu)
+            
+            submenu = Menu("tab_metadata", "description","#", "../") # new
+            submenu.addItem("tab_metadata","tab_metadata")
+            submenu.addItem("tab_files_obj","tab_files")
+            submenu.addItem("tab_lza", "tab_lza")
+            menu.append(submenu)
+            
+            submenu = Menu("tab_classes_header", "description","#", "../") # new
+            submenu.addItem("tab_classes","tab_classes")
+            menu.append(submenu)
+
+            submenu = Menu("tab_security", "description","#", "../") # new
+            submenu.addItem("tab_acls","tab_acls")
+            menu.append(submenu)
+
+        except TypeError:
+            pass
+        return menu
+        
+    def getDefaultEditTab(node):
+        return "tab_view"
+        

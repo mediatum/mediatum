@@ -24,7 +24,7 @@ import core.acl as acl
 import os
 import Image
 
-from utils.utils import splitfilename, splitpath
+from utils.utils import splitfilename, splitpath, Menu
 from core.tree import Node,FileNode
 from lib.flv.parse import getFLVSize
 from contenttypes.image import makeThumbNail,makePresentationFormat
@@ -108,3 +108,33 @@ class Video(default.Default):
                 flashembed("player", { src:'/img/FlowPlayerDark.swf', width: """+str(int(node.get('vid-width'))+64)+""", height: """+str(int(node.get('vid-height'))+53)+"""}, {config: {videoFile: '"""+file+"""'}} );
             }"""
         req.writeTAL("contenttypes/video.html", {"file":file, "script":script, "node":node}, macro="fullsize_flv")
+
+        
+    def getEditMenuTabs(node):
+        menu = list()
+        try:
+            submenu = Menu("tab_layout", "description","#", "../") #new
+            submenu.addItem("tab_view","tab_view")
+            menu.append(submenu)
+            
+            submenu = Menu("tab_metadata", "description","#", "../") # new
+            submenu.addItem("tab_meta","tab_meta")
+            submenu.addItem("tab_files_obj","tab_files")
+            submenu.addItem("tab_lza", "tab_lza")
+            menu.append(submenu)
+            
+            submenu = Menu("tab_classes_header", "description","#", "../") # new
+            submenu.addItem("tab_classes","tab_classes")
+            menu.append(submenu)
+
+            submenu = Menu("tab_security", "description","#", "../") # new
+            submenu.addItem("tab_acls","tab_acls")
+            menu.append(submenu)
+
+        except TypeError:
+            pass
+        return menu
+        
+    def getDefaultEditTab(node):
+        return "tab_view"
+  

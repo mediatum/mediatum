@@ -28,10 +28,10 @@ import random
 import os
 import default
 
-from utils.utils import splitfilename,isnewer
+from utils.utils import splitfilename, isnewer, Menu
 from core.tree import Node,FileNode
 from core.translation import lang
-from schema.schema import loadTypesFromDB, VIEW_DATA_ONLY,VIEW_HIDE_EMPTY
+from schema.schema import loadTypesFromDB, VIEW_DATA_ONLY, VIEW_HIDE_EMPTY
 from web.frontend import zoom
 
 """ make thumbnail (jpeg 128x128) """
@@ -380,4 +380,33 @@ class Image(default.Default):
         d['tileurl'] = "/tile/"+node.id+"/"
 
         req.writeTAL("contenttypes/image.html", d, macro="imageviewer")
+
+          
+    def getEditMenuTabs(node):
+        menu = list()
+        try:
+            submenu = Menu("tab_layout", "description","#", "../") #new
+            submenu.addItem("tab_view","tab_view")
+            menu.append(submenu)
+            
+            submenu = Menu("tab_metadata", "description","#", "../") # new
+            submenu.addItem("tab_metadata","tab_metadata")
+            submenu.addItem("tab_files_obj","tab_files")
+            submenu.addItem("tab_lza", "tab_lza")
+            menu.append(submenu)
+            
+            submenu = Menu("tab_classes_header", "description","#", "../") # new
+            submenu.addItem("tab_classes","tab_classes")
+            menu.append(submenu)
+
+            submenu = Menu("tab_security", "description","#", "../") # new
+            submenu.addItem("tab_acls","tab_acls")
+            menu.append(submenu)
+            
+        except TypeError:
+            pass
+        return menu
+
+    def getDefaultEditTab(node):
+        return "tab_view"
         

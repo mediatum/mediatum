@@ -25,6 +25,7 @@ import os
 import core.athana as athana
 import default
 from core.translation import t
+from utils.utils import Menu
 
 SRC_PATTERN = re.compile('src="([^":/]*)"')
 
@@ -104,16 +105,37 @@ class Directory(default.Default):
 
     def metaFields(node, lang=None):
         ret = list()
+        
+        field = tree.Node("nodename", "metafield")
+        field.set("label", t(lang,"node name"))
+        field.set("type", "text")
+        ret.append(field)
+        
         if node.type.startswith("collection"):
+            # special fields for collections
             field = tree.Node("style", "metafield")
             field.set("label", t(lang,"style"))
             field.set("type", "list")
             field.set("valuelist", "thumbnail;list;text")
             ret.append(field)
 
-            field = tree.Node("url", "metafield")
-            field.set("label", t(lang,"don't display logo"))
-            field.set("type", "text")
+            #field = tree.Node("url", "metafield")
+            #field.set("label", t(lang,"don't display logo"))
+            #field.set("type", "text")
+            #ret.append(field) no longer required
+            
+            field = tree.Node("style_full", "metafield")
+            field.set("label", t(lang,"full view style"))
+            field.set("type", "list")
+            field.set("valuelist", "full_standard;full_text")
+            ret.append(field)
+            
+        elif node.type.startswith("directory"):
+            # special fields for directories
+            field = tree.Node("style", "metafield")
+            field.set("label", t(lang,"style"))
+            field.set("type", "list")
+            field.set("valuelist", "thumbnail;list;text")
             ret.append(field)
             
             field = tree.Node("style_full", "metafield")
@@ -121,9 +143,51 @@ class Directory(default.Default):
             field.set("type", "list")
             field.set("valuelist", "full_standard;full_text")
             ret.append(field)
-
-        field = tree.Node("nodename", "metafield")
-        field.set("label", t(lang,"node name"))
-        field.set("type", "text")
-        ret.append(field)
+            
+            field = tree.Node("no_extsearch", "metafield")
+            field.set("label", t(lang,"no_extsearch"))
+            field.set("type", "check")
+            ret.append(field)
         return ret
+
+        
+    def getEditMenuTabs(node):
+        menu = list()
+        try:
+            submenu = Menu("tab_layout", "description","#", "../") #new
+            #submenu.addItem("tab_content","tab_content")
+            submenu.addItem("tab_editor","tab_editor")
+            submenu.addItem("tab_view","tab_view")
+            menu.append(submenu)
+            
+            
+            if node.getContentType()=="directory":
+                submenu = Menu("tab_metadata", "description","#", "../") # new
+                submenu.addItem("tab_metadata_dir","tab_metadata")
+            if node.getContentType() in ("collection", "collections"):
+                submenu = Menu("tab_metadata_col", "description","#", "../") # new
+                submenu.addItem("tab_metadata_col","tab_metadata")
+                submenu.addItem("tab_logo","tab_logo")
+            submenu.addItem("tab_files","tab_files")
+            if node.getContentType() in ("collection", "collections"):
+                submenu.addItem("tab_searchmask","tab_searchmask")
+            if node.getContentType() in ("collection", "collections"):
+                submenu.addItem("tab_sortfiles","tab_sortfiles")
+            menu.append(submenu)
+            
+            submenu = Menu("tab_security", "description","#", "../") # new
+            submenu.addItem("tab_acls","tab_acls")
+            menu.append(submenu)
+            
+            submenu = Menu("tab_operation", "description","#", "../") # new
+            submenu.addItem("tab_search","tab_search")
+            submenu.addItem("tab_subfolder","tab_subfolder")
+            submenu.addItem("tab_license","tab_license")
+            menu.append(submenu)
+
+        except TypeError:
+            pass
+        return menu
+        
+    def getDefaultEditTab(node):
+        return "tab_content"

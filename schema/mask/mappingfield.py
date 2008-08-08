@@ -29,6 +29,7 @@ from schema.schema import getMetadataType
 class m_mappingfield(Metatype):
     
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
+
         ns = ""
         if field.get("fieldtype")=="mapping":
             field = tree.getNode(field.get("mappingfield"))
@@ -40,7 +41,7 @@ class m_mappingfield(Metatype):
         else:
             format = field.get("mappingfield")
             field_value = field.getName()
-            
+        format = esc(format)
         for var in re.findall( r'\[(.+?)\]', format ):
             if var.startswith("att:"):
                 format = format.replace("[" + var + "]", '<i>{attribute:' + var[4:] + '}</i>')
@@ -50,7 +51,6 @@ class m_mappingfield(Metatype):
                 format = format.replace("[value]", '<i>{' + value + '}</i>')
             elif var=="ns":
                 format = format.replace("[value]", '<i>{namspaces}</i>')
-                
         format = format.replace("\\t", "")
         return format
 
@@ -76,7 +76,9 @@ class m_mappingfield(Metatype):
                         s = s.replace("[" + var + "]", attrnode.getName())
                     elif var=="att:id":
                         s = s.replace("[" + var + "]", str(node.id))
-
+                    elif var=="att:filename":
+                        s = s.replace("[" + var + "]", str(node.getName()))
+ 
                 elif var=="field":
                     s = s.replace("[field]", field_value)
                 elif var=="value":
@@ -118,7 +120,7 @@ class m_mappingfield(Metatype):
     def getViewHTML(self, fields, nodes, flags, language=""):
         ret = ""
         node = nodes[0]
-        
+
         mask = fields[0].getParents()[0]
         separator = ""
 

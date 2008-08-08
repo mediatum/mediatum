@@ -33,14 +33,22 @@ useroption += [Option("user_option_1", "editpwd", "c", "img/changepwd_opt.png")]
 
 authenticators = []
 
-def create_user(name, email="", groups="", pwd="", option=""):
+def create_user(name, email, groups, pwd="", lastname="", firstname="", telephone="", comment="", option="", type="intern"):    
     if not pwd:
         pwd = config.get("user.passwd")
-    users = tree.getRoot("users")
+    if (type=="intern"):
+        users = tree.getRoot("users")
+    elif (type=="extern"):
+        users = getExternalUserFolder()
+    
     user = tree.Node(name=name, type="user")
     user.set("email", email)
     user.set("password", md5.md5(pwd).hexdigest())
     user.set("opts", option)
+    user.set("lastname", lastname)
+    user.set("firstname", firstname)
+    user.set("telephone", telephone)
+    user.set("comment", comment)
 
     for group in groups.split(","):
         g = usergroups.getGroup(group)
@@ -53,21 +61,41 @@ def create_user(name, email="", groups="", pwd="", option=""):
 def loadUsersFromDB():
     users = tree.getRoot("users")
     return users.getChildren()
-
+    
+def getExternalUsers():
+    return getExternalUserFolder().getChildren()
+    
+    
 """ returns user object from db """
 def getExternalUser(name):
     users = getExternalUserFolder()
-    try:
-        return users.getChild(name)
-    except tree.NoSuchNodeError:
-        return None
+
+    if name.isdigit():
+        try:
+            print "by id"
+            return tree.getNode(name)
+        except tree.NoSuchNodeError,e:
+            try:
+                print "by Name"
+                return users.getChild(name)
+            except tree.NoSuchNodeError:
+                print "error"
+                return None
+    else:
+        for n in getExternalUsers():
+            if n.getName()==name:
+                return n
+        
 
 """ returns user object from db """
 def getUser(id):
     users = tree.getRoot("users")
     
     if id.isdigit():
-        return tree.getNode(id)
+        try:
+            return tree.getNode(id)
+        except tree.NoSuchNodeError,e:
+            return getExternalUser(id)
     else:
         try:
             return users.getChild(id)
@@ -105,11 +133,16 @@ def checkLogin(name, pwd):
     user = getUser(name)
     digest1 = md5.md5(pwd).hexdigest()
     if user:
+        print "---1----"
         if digest1 == user.getPassword():
             return 1
     else:
+        print ".....2....", name
         user = getExternalUser(name)
+        print user
         if user:
+            print "ssss"
+            return 1
             if digest1 == user.getPassword():
                 return 1
 
@@ -159,12 +192,18 @@ def addUser(user):
     user.setGroups(tmp[:-1])
     conn.addUser(user)    
 
-def update_user(name, email, groups, option, new_name=""):
-    user = getUser(name)
-    user.set("email", email)
-    user.set("opts", option)
-    if new_name!="":
-        user.setName(new_name)
+#def update_user(name, email, groups, option, new_name=""):
+def update_user(id, name, email, groups, lastname="", firstname="", telephone="", comment="", option=""):
+    
+    user = getUser(id)
+    user.setName(name)
+    user.setEmail(email)
+    user.setLastName(lastname)
+    user.setFirstName(firstname)
+    user.setTelephone(telephone)
+    user.setComment(comment)
+    user.setOption(option)
+
     # remove user from all groups
     for p in user.getParents():
         if p.type == "usergroup":
@@ -174,14 +213,17 @@ def update_user(name, email, groups, option, new_name=""):
         g = usergroups.getGroup(group)
         g.addChild(user)
 
-
 """ delete user from db """
-def deleteUser(user):
+def deleteUser(user, usertype="intern"):
     for group in tree.getRoot("usergroups").getChildren():
         for guser in group.getChildren():
             if guser.getName()==user.getName():
                 group.removeChild(guser)
-    users = tree.getRoot("users")
+    if usertype=="extern":
+        users = getExternalUserFolder()
+    else:
+        users = tree.getRoot("users")
+        
     users.removeChild(user)
                 
     for c in tree.getRoot("home").getChildren():
@@ -211,4 +253,19 @@ def makeRandomPassword():
 def registerAuthenticator(auth):
     global authenticators
     authenticators += [auth]
+    
+def moveUserToIntern(id):
+    user = getUser(id)
+    for p in user.getParents():
+        if p.type == "users" and p.getName()=="external_users":
+            p.removeChild(user)
+            
+    users = tree.getRoot("users")
+    users.addChild(user)
 
+def getHideMenusForUser(user):
+    hide = ''
+    for g in user.getGroups():
+        g = usergroups.getGroup(g)
+        hide += ';'+g.getHideEdit()
+    return hide.split(';')

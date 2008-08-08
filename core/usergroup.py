@@ -59,14 +59,16 @@ class UserGroup(tree.Node):
         return ", ".join(ret)
     
     def getSchemas(self):
-        schemas = loadTypesFromDB()
-        users = self.getChildren()
-        
-        schemalist = {}
-        for user in users:
-            for schema in AccessData(user=user).filter(loadTypesFromDB()):
-                if schema.isActive():
-                    schemalist[schema.getName()] = ""
-        schemalist = schemalist.keys()
+        schemas = filter(lambda x: x.isActive(), loadTypesFromDB())
+        schemalist = []
+        for user in self.getChildren():
+            for schema in AccessData(user=user).filter(schemas):
+                schemalist.append(schema.getName())
         schemalist.sort()
-        return list(schemalist)
+        return schemalist
+        
+    def getHideEdit(self):
+        return self.get("hideedit")
+        
+    def setHideEdit(self, value):
+        self.set("hideedit",value)

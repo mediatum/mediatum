@@ -6,6 +6,14 @@ function questionDelName(name){
     }
 }
 
+function questionMoveUser(name){
+    if (name==""){
+    	return confirm(unescape("Soll dieser Benutzer wirklich zu den internen Benutzern verschoben werden?"));
+    }else{
+        return confirm(unescape("Soll der Benutzer '"+name+"' wirklich zu den internen Benutzern verschoben werden?"));
+    }
+}
+
 function getEditRule(){
 	if (document.getElementById("rule").value==""){
 		return "";

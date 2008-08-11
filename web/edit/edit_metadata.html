@@ -12,7 +12,7 @@
     </script>
 
     <form class="edit" action="edit_content" method="post" id="changeform">
-        <input type="hidden" name="tab" value="tab_meta">
+        <input type="hidden" name="tab" value="tab_metadata">
         <input tal:attributes="value idstr" type="hidden" name="id">
         <tal:block tal:condition="python:len(masklist)>1">
             <span i18n:translate="edit_meta_mask_selection">TEXT</span>:
@@ -57,7 +57,7 @@
         <input i18n:attributes="value edit_meta_reset" type="reset"/>
         <br/>
         <input tal:attributes="value maskname" type="hidden" name="mask"/>
-        <input type="hidden" name="tab" value="tab_meta"/>
+        <input type="hidden" name="tab" value="tab_metadata"/>
         <input tal:attributes="value idstr" type="hidden" name="id"/>
         <input type="hidden" name="edit_metadata" value="edit_metadata"/>
     </form>

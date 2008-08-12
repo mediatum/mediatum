@@ -77,7 +77,7 @@ def frameset(req):
                 } else if(_action == 'sortsubfolders') {
                     this.location.href = "edit?tab=tab_subfolder&id="+tree.getFolder();
                 } else if(_action == 'edit') {
-                    this.location.href = "edit?tab=tab_meta&id="+tree.getFolder();
+                    this.location.href = "edit?tab=tab_metadata&id="+tree.getFolder();
                 } else if(_action == 'delete') {
                     if(confirm('"""+t(lang(req), "delete_folder_question")+"""')) {
                         src = tree.getFolder();
@@ -106,7 +106,7 @@ def frameset(req):
                         reloadPage(tree.getFolder(),'');
                     } else {
                         var src = tree.getFolder();
-                        this.content.location.href = "edit_content?ids="+ids+"&src="+src+"&tab=tab_meta";
+                        this.content.location.href = "edit_content?ids="+ids+"&src="+src+"&tab=tab_metadata";
                         r = ""+Math.random()*10000;
                         this.buttons.location.href = "edit_buttons?r="+r;
                     }
@@ -116,7 +116,7 @@ def frameset(req):
                     if(ids == '') {
                         reloadPage(tree.getFolder(),'');
                     } else {
-                        this.content.location.href = "edit_content?ids="+content.getFirstObject()+"&nodelist="+ids+"&tab=tab_meta";
+                        this.content.location.href = "edit_content?ids="+content.getFirstObject()+"&nodelist="+ids+"&tab=tab_metadata";
                         r = ""+Math.random()*10000;
                         this.buttons.location.href = "edit_buttons?r="+r;
                     }
@@ -381,7 +381,7 @@ def action(req):
           <head>
             <script language="javascript">
                 //opener.reloadURL('edit?tab=Metadaten&id="""+newnode.id+"""');
-                opener.reloadURL('edit?tab=tab_meta&id="""+newnode.id+"""');
+                opener.reloadURL('edit?tab=tab_metadata&id="""+newnode.id+"""');
                 this.close();
             </script>
           </head>

@@ -145,7 +145,7 @@ def upload_new(req):
     if "file" in req.params.keys():
         file = req.params["file"]
         del req.params["file"]
-        if file.filesize>0:
+        if hasattr(file,"filesize") and file.filesize>0:
             try:
                 importFileIntoNode(user, file.filename, file.tempname, datatype, workflow)
                 req.request["Location"] = req.makeLink("content", {"id":uploaddir.id})

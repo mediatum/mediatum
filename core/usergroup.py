@@ -60,10 +60,11 @@ class UserGroup(tree.Node):
     
     def getSchemas(self):
         schemas = filter(lambda x: x.isActive(), loadTypesFromDB())
-        schemalist = []
+        schemalist = {}
         for user in self.getChildren():
             for schema in AccessData(user=user).filter(schemas):
-                schemalist.append(schema.getName())
+                schemalist[schema.getName()]="."
+        schemalist = schemalist.keys()
         schemalist.sort()
         return schemalist
         

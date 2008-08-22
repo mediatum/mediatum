@@ -60,7 +60,7 @@ def edit_lza(req, ids):
                         else:
                             # generate error message
                             meta = l.LZAMetadata("""
-        <?xpacket begin="﻿" id="mediatum_metadata"?>
+        <?xpacket begin="\xef\xbb\xbf" id="mediatum_metadata"?>
                 <lza:data> 
                     <lza:error>-definition missing-</lza:error>
                 </lza:data><?xpacket end="w"?>

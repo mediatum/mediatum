@@ -1,0 +1,26 @@
+
+<tal:block metal:define-macro="publish_form">
+    <script>
+        function returnvalues(ids, values){
+            var obj = document.getElementById("destination");
+            obj.value=ids;
+            obj = document.getElementById("dest_names");
+            obj.innerHTML = values;
+        }
+    </script>
+
+    <h3 i18n:translate="edit_publish_header">TEXT</h3>
+    <p i18n:translate="edit_publish_info">TEXT</p>
+    <button tal:attributes="onclick python:'openWindow(\'edit_action?id='+id+'&tab=tab_publish&style=popup\', 300, 250)'" i18n:translate="edit_publish_button_select">TEXT</button>
+    <br/>
+    <br/>
+    <span i18n:translate="edit_publish_dirs">TEXT</span>
+    <div id="dest_names" name="dest_names" style="border:1px solid silver;width:400px;padding:5px;margin: 10px 0px" tal:content="stdname">
+
+    </div>
+    <p>
+        <input type="hidden" name="destination" id="destination" tal:attributes="value stddir" />
+        <button type="submit" name="dopublish" i18n:translate="edit_publish_button">TEXT</button>
+    </p>
+
+</tal:block>

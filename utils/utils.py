@@ -183,6 +183,28 @@ def getCollection(node):
         collection = core.tree.getRoot("collections")
     return collection
 
+def isDirectory(node):
+    if node.type == "directory":
+        return 1
+    else:
+        return 0
+        
+def getDirectory(node):
+    def p(node):
+        import core.tree
+        if node.type == "directory":
+            return node
+        for pp in node.getParents():
+            n = p(pp)
+            if n:
+                return n
+        return None
+    directory = p(node)
+    if directory is None:
+        import core.tree
+        directory = core.tree.getRoot("collections")
+    return directory
+
 def ArrayToString(pieces, glue=""):
     return string.join(pieces,glue)
 

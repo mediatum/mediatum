@@ -139,7 +139,7 @@ class AccessData:
     def hasWriteAccess(self,node,fnode=None):
         return self.hasAccess(node,"write",fnode)
 
-    def filter(self,nodelist):
+    def filter(self,nodelist, accesstype="read"):
         if self.user.isAdmin():
             return nodelist
 
@@ -148,7 +148,11 @@ class AccessData:
 
         newlist = []
         lastparent = None
-        lastaccess = self.hasReadAccess(tree.getRoot())
+        if type=="read":
+            lastaccess = self.hasReadAccess(tree.getRoot())
+        elif type=="write":
+            lastaccess = self.hasWriteAccess(tree.getRoot())
+            
         for node in nodelist:
             newnode = node
             if type(node) == type(""): # id
@@ -157,7 +161,8 @@ class AccessData:
                 except tree.NoSuchNodeError:
                     continue
                 newnode = node.id
-            rights = node.getAccess("read")
+            #rights = node.getAccess("read")
+            rights = node.getAccess(accesstype)
             if rights:
                 if not self._checkRights(rights, node):
                     continue
@@ -172,7 +177,10 @@ class AccessData:
             if parent != lastparent:
                 access=0
                 for p in node.getParents():
-                    if self.hasReadAccess(p,node):
+                    if accesstype=="read" and self.hasReadAccess(p,node):
+                        access=1
+                        break
+                    elif accesstype=="write" and self.hasWriteAccess(p,node):
                         access=1
                         break
                 lastaccess = access
@@ -182,7 +190,8 @@ class AccessData:
             if access:
                 newlist += [newnode]
 
-        logb.info("Filtering "+str(len(nodelist))+" nodes for read-access: "+str(len(newlist))+" nodes")
+        #logb.info("Filtering "+str(len(nodelist))+" nodes for read-access: "+str(len(newlist))+" nodes")
+        logb.info("Filtering "+str(len(nodelist))+" nodes for "+accesstype+"-access: "+str(len(newlist))+" nodes")
         return newlist
 
 def getRootAccess():

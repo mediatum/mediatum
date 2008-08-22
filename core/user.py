@@ -120,4 +120,36 @@ class User(tree.Node):
 
     def isContainer(node):
         return 0
+        
+    def setUserType(self, value):
+        self.usertype = value
+    def getUserType(self):
+        try:
+            return self.usertype
+        except AttributeError:
+            return ""
 
+    def setOrganisation(self, value):
+        self.set("organisation", value)
+    def getOrganisation(self):
+        return self.get("organisation")
+            
+    def allowAdd(self):
+        return 1
+  
+class ExternalUser:
+
+    def getUserType(self):
+        return self.usertype
+        
+    def getUser(self):
+        raise "not implemented"
+
+    def authenticate_login(self, username, password):
+        raise "notImplemented"
+        
+    def getName(self):
+        return ""
+        
+    def allowAdd(self):
+        return 0

@@ -48,6 +48,7 @@ from edit_workflow import edit_workflow
 from edit_license import edit_license
 from edit_lza import edit_lza
 from edit_logo import edit_logo
+from edit_publish import edit_publish
 from core.translation import lang, t
 
 from edit_common import EditorNodeList
@@ -132,6 +133,9 @@ def frameset(req):
                         }
                     }
                     return 0;
+                }else if(_action == "publish") {
+                    this.location.href = "edit?tab=tab_publish&id="""+uploaddir.id+"""";
+                    return 0;
                 } else {
                     idselection = content.getAllObjectsString();
                     if(idselection) {
@@ -198,17 +202,11 @@ def frameset(req):
 def getBreadcrumbs(menulist, tab):
     for menuitem in menulist:
         for item in menuitem.getItemList():
-            if item[1]==tab:
-                return [menuitem.getName(), item[1]]
-                
+            if item[1]==tab or tab.startswith(item[1]) or item[1].startswith(tab):
+                return [menuitem.getName(),"*"+ item[1]]
     return [""]
 
 def filterMenu(menuitems, user):
-    #hide = ''
-    #for g in user.getGroups():
-    #    g = usergroups.getGroup(g)
-    #    hide += ';'+g.getHideEdit()
-    #hide = hide.split(';')
 
     hide = users.getHideMenusForUser(user)
     ret = list()
@@ -241,9 +239,7 @@ def handletabs(req, ids, tabs):
 
     currenttab = req.params.get("tab", tabs)
     breadcrumbs = getBreadcrumbs(menu, currenttab)
-    
     req.writeTAL("web/edit/edit.html", {"user":user, "ids":ids, "idstr":",".join(ids), "menu":menu, "breadcrumbs":breadcrumbs, "spc":spc}, macro="edit_tabs")
-
     return currenttab
 
 def error(req):
@@ -326,6 +322,11 @@ def action(req):
 
     if not access.user.isEditor():
         req.write("""permission denied""")
+        return
+        
+        
+    if req.params.get("tab")=="tab_publish":
+        edit_publish(req, req.params.get("id"))
         return
     
     srcid = req.params["src"]
@@ -533,6 +534,7 @@ def content(req):
 
     ids = getIDs(req)
 
+    print req.params
     if req.params.get("type","")== "help":
         if req.params.get("tab","")=="tab_upload":   
             upload_help(req)
@@ -610,7 +612,7 @@ def content(req):
 
     node = tree.getNode(ids[0])
     if node.type == "root":
-        tabs = ["tab_globals"]
+        tabs = "tab_content"
     else:
         if isDirectory(node) and node.name=="Uploads":
             tabs = "tab_upload"
@@ -655,12 +657,12 @@ def content(req):
                 node = tree.getNode(id)
                 if hasattr(node,"show_node_image"):
                     req.write("""<td align="center">""")
-                    if node.type!="directory":
+                    if not isDirectory(node):
                         req.write("""<a href="javascript:fullSizeWindow('"""+id+"""','"""+str(node.get("width"))+"""','"""+str(node.get("height"))+"""')">""")
 
                     req.write(node.show_node_image())
 
-                    if node.type!="directory":
+                    if not isDirectory(node):
                         req.write("""</a>""")
 
                     req.write("""</td>""")
@@ -736,6 +738,8 @@ def content(req):
         edit_lza(req, ids)
     elif current == "tab_logo":
         edit_logo(req, ids)
+    elif current == "tab_publish":
+        edit_publish(req, ids)
     else:
         req.write("<b>Unknown tab</b> '%s'" % current)
     
@@ -808,8 +812,9 @@ def buttons(req):
                 <form name="changeaction">
                      <b i18n:translate="edit_files">Dateien:</b><br/>
                      <select id="groupaction" onChange="if(!parent.setObjectAction(this.value)) {this.value='none'}" name="groupaction" style="width:250px">
-                         <option value="none">---</option>
+                         <option value="none">---</option>                      
                          <option value="upload" i18n:translate="edit_action_file_upload">Hochladen</option>
+                         <option value="publish" i18n:translate="edit_action_file_publish">_</option>
                          <option id="field_move" value="move" i18n:translate="edit_action_file_move">Verschieben nach...</option>
                          <option value="copy" i18n:translate="edit_action_file_copy">Kopieren nach...</option>
                          <option id="field_delete" value="delete" i18n:translate="edit_action_file_delete">L&ouml;schen</option>

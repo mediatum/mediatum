@@ -32,7 +32,7 @@
         <div class="breadcrumbs">
             <h2 class="breadcrumbs">
                 <tal:block tal:repeat="item breadcrumbs">
-                    <tal:block tal:content="item" i18n:translate="">TEXT</tal:block>
+                    <tal:block tal:content="python:item.replace('*','')" i18n:translate="">TEXT</tal:block>
                     <tal:block tal:condition="python:breadcrumbs.index(item)<len(breadcrumbs)-1">
                      &raquo; 
                     </tal:block>
@@ -114,17 +114,7 @@
         <link rel="stylesheet" href="/css/editor.css">
       
         <style type="text/css">
-            body{
-                /* scrollbar */
-                scrollbar-face-color: #FFFFFF;
-                scrollbar-shadow-color: #FFFFFF;
-                scrollbar-highlight-color: #FFFFFF;
-                scrollbar-3dlight-color: #7d85a6;
-                scrollbar-darkshadow-color: #7d85a6;
-                scrollbar-track-color: #7d85a6;
-                scrollbar-arrow-color: #7d85a6;
-            }
-            a.coll_canread:link, a.coll_canread:visited, a.coll_canread:hover, a.coll_canread:active
+             a.coll_canread:link, a.coll_canread:visited, a.coll_canread:hover, a.coll_canread:active
             {
                 color: #606060;
                 text-decoration: none;

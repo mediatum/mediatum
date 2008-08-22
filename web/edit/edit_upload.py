@@ -166,7 +166,7 @@ def upload_new(req):
 """ popup with type information"""
 def upload_help(req):
     try:
-        req.writeTAL("contenttype/"+req.params.get("objtype", "") +".html", {}, macro="upload_help")
+        req.writeTAL("contenttypes/"+req.params.get("objtype", "") +".html", {}, macro="upload_help")
     except:
         None
     

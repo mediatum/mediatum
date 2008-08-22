@@ -59,16 +59,19 @@ def edit_metadata(req, ids):
     req.write(script)
 
     nodes = []
-    idstr=""
+    idstr = ""
     for id in ids:
         if idstr:
             idstr+=","
         node = tree.getNode(id)
         if len(nodes)==0 or nodes[0].type == node.type:
             nodes += [node]
-        idstr+=id
+        idstr += id
     
-    masklist = node.getType().getMasks(type="edit")
+    masklist = []
+    for m in node.getType().getMasks(type="edit"):
+        if access.hasReadAccess(m):
+            masklist.append(m)
 
     if hasattr(node, "metaFields"):
                 

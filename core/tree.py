@@ -113,6 +113,11 @@ def getNode(id):
         tree_lock.release()
     node = nodes_cache[long(id)] = Node(dbid=id)
     return node
+    
+def getNodesByAttribute(attributename, attributevalue=""):
+    return db.getNodeIdByAttribute(attributename, attributevalue)
+
+    
 
 class NoSuchNodeError:
     def __init__(self,id=None):

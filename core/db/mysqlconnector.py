@@ -293,7 +293,25 @@ class MYSQLConnector(Connector):
         else:
             log.error("More than one node for id "+str(id))
             return None
-
+            
+    def getNodeIdByAttribute(self, attributename, attributevalue):
+        if attributename.endswith("access"):
+            t = self.runQuery("select id from node where "+attributename+" like '%" + str(attributevalue)+"%'")
+        else:
+            if attributevalue=="*":
+                t = self.runQuery("select node.id from node, nodeattribute where node.id=nodeattribute.nid and nodeattribute.name='" + str(attributename)+"'")
+            else:
+                t = self.runQuery("select node.id from node, nodeattribute where node.id=nodeattribute.nid and nodeattribute.name='" + str(attributename)+"' and nodeattribute.value='"+str(attributevalue)+"'")
+        if len(t)==0:
+            return []
+        else:
+            ret = []
+            for i in t:
+                if i[0] not in ret:
+                    ret.append(i[0])
+            return ret
+            
+                
     def getNamedNode(self, parentid, name):
         t = self.runQuery("select id from node,nodemapping where node.name="+self.esc(name)+" and node.id = nodemapping.cid and nodemapping.nid = "+parentid)
         if len(t) == 0:

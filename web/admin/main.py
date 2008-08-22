@@ -24,8 +24,8 @@ import random
 import core.users as users
 
 from version import mediatum_version
-from utils.utils import join_paths
-from web.admin.adminutils import findmodule, show_content, adminNavigation
+from utils.utils import join_paths, Menu
+from web.admin.adminutils import findmodule, show_content, adminNavigation, getMenuItemID
 
 """ opens administration window with content """
 def show_node(req):
@@ -39,6 +39,14 @@ def show_node(req):
     v["version"] = mediatum_version
     v["content"] = show_content(req, p[0])
     v["navigation"] = adminNavigation()
+    v["breadcrumbs"] = getMenuItemID(v["navigation"], req.path[1:])
+    v["spc"] = list()
+    
+    spc = list()
+    v["spc"].append(Menu("sub_header_frontend", "sub_header_inquest_title","#", "/"))
+    v["spc"].append(Menu("sub_header_edit", "sub_header_edit_title", "", "/edit"))
+    if user.isWorkflowEditor():
+        v["spc"].append(Menu("sub_header_workflow", "sub_header_workflow_title", "", "../publish"))
 
     if len(p)>0:
         if style == "":

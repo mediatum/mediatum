@@ -234,9 +234,11 @@ def adminNavigation():
 def getMenuItemID(menulist, path):
     if path=="":
         return ["admin_menu_0"]
+        
+    p = path.split('/')
     for item in menulist:
         for subitem in item.getItemList():
-            if subitem[1].endswith(path):
+            if subitem[1].endswith(p[0]):
                 return [item.name,subitem[0]]
                 
     return ["admin_menu_0"]

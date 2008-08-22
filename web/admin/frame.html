@@ -1,69 +1,71 @@
 <metal:block metal:define-macro="frame">
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
     <html>
-
         <head>
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
             <meta content="text/html;charset=UTF-8" http-equiv="content-type">
-
             <title i18n:translate="admin_title">TEXT</title>
-
             <link rel="stylesheet" href="/css/admin.css"/>
             <script type="text/javascript" language="javascript" src="/js/admin.js">
             </script>
             <script type="text/javascript" language="javascript" src="/js/mediatum.js">
             </script>
+            <!--[if IE]>
+                                    <style type="text/css">
+                                    ul#nav li ul  {
+                                    filter: alpha(opacity=95);
+                                    }
+                                    </style>
+                             <![endif]-->
         </head>
         
-        <body topmargin="0" rightmargin="0" leftmargin="0">
-            <a name="top"/>
-            <table cellpadding="0" cellspacing="0" width="100%" class="header">
-                <tr>
-                    <td>
-                        <a href="/"><img src="/img/mediatum.png" border="0"></a>
-                    </td>
-                    <td class="header" height="10px" align="right">
-                        <table height="100%">
-                            <tr>
-                                <td align="right" class="banner">
-                                    <small>[ <span i18n:translate="sub_header_user">TEXT</span>: <span tal:replace="raw python:user.getName()"/>
-                                    <span tal:condition="python:guestuser==user.getName()"> | <a i18n:attributes="title sub_header_login_title" i18n:translate="sub_header_login" href="/login" class="navi">TEXT</a> </span>
-                                    <span tal:condition="python:guestuser!=user.getName()"> | <a i18n:attributes="title sub_header_logout_title" i18n:translate="sub_header_logout" href="/logout" class="navi">TEXT</a> </span>
-
-                                    | <a i18n:attributes="title sub_header_inquest_title" i18n:translate="sub_header_inquest" class="navi" href="/" title="TEXT">TEXT</a>
-                                    <span tal:condition="python:user.isEditor()"> | <a i18n:attributes="title sub_header_edit_title" i18n:translate="sub_header_edit" href="/edit/edit" class="navi">TEXT</a> </span>
-
-                                    <span tal:condition="python:'c' in user.getOption()">| <a i18n:attributes="title sub_header_changepwd_title" i18n:translate="sub_header_changepwd" href="/display_changepwd" class="navi" target="_parent">TEXT</a> </span>]&nbsp;&nbsp;&nbsp;</small>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <h4 i18n:translate="admin_header" class="admin">TEXT</h4>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td align="right" tal:content="version"></td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="content" style="width:272px">
-                        <div style="margin:5px;">
-                            <p tal:repeat="navitem navigation">
-                                <span i18n:translate="" tal:content="python:navitem.getName()"/>
-                                <br/>
-                                <li tal:repeat="item python:navitem.getItemList()">
-                                    <a i18n:translate="" tal:content="python:item[0]" tal:attributes="href python:item[1]"/>
-                                </li>
-                            </p>
-                        </div>
-                    </td>
-                    <td class="content">
-                        <div tal:replace="raw content"/>
-                    </td>
-                </tr>
-            </table>
+        <body topmargin="0" rightmargin="0" leftmargin="0">           
+            <div id="clean-container">
+                <div id="logocontainer">
+                    <div class="logotext">
+                        <span i18n:translate="admin_header">TEXT</span><br/>
+                        <span i18n:translate="sub_header_user">TEXT</span>: <span tal:replace="raw python:user.getName()"/>
+                        <span tal:repeat="item python:spc">
+                            | <a tal:attributes="href python:item.link; target python:item.target; title python:item.description" i18n:translate="" i18n:attributes="title" tal:content="python:item.name">TEXT</a>
+                        </span>
+                    </div>
+                </div>
+            
+                <div class="topmenucontainer">
+                    <ul id="nav">
+                        <li tal:repeat="navitem python:navigation"><a tal:condition="python:len(navitem.getItemList())==0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]; href python:navitem.link" i18n:translate="" tal:content="python:navitem.name">TEXT</a>
+                            <tal:block tal:condition="python:len(navitem.getItemList())>0">
+                                <a tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]" i18n:translate="" tal:content="python:navitem.getName()"/>
+                                <ul>
+                                    <li tal:repeat="item python:navitem.getItemList()">
+                                        <a i18n:translate="" tal:content="python:item[0]" tal:attributes="href python:item[1]"/>
+                                    </li>
+                                </ul>
+                            </tal:block>                            
+                        </li>
+                    </ul>
+                    <div class="clearb"></div>
+                </div>
+                <div class="breadcrumbs">
+                    <h2 class="breadcrumbs">
+                        <tal:block tal:repeat="item breadcrumbs">
+                            <tal:block tal:content="item" i18n:translate="">TEXT</tal:block>
+                            <tal:block tal:condition="python:breadcrumbs.index(item)<len(breadcrumbs)-1">
+                             &raquo; 
+                            </tal:block>
+                        </tal:block>
+                    </h2>
+                </div>
+                <div class="hstippled">&nbsp;</div>
+            </div>  
+            <!-- content start -->
+            <div class="MainMenu">
+                <div tal:replace="raw content"/>
+            </div>
+            <!-- content end -->
+            <div id="footer">
+                <a rel="external" href="http://mediatum-pages.ub.tum.de"><b>mediatum</b></a> <span tal:content="version">TEXT</span><br /><b>mediatum</b> is free software released under the General Public Licence.
+            </div>
         </body>
     </html>
 </metal:block>

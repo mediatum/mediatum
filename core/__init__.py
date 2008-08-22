@@ -92,7 +92,7 @@ workflow.register()
 from utils.utils import splitpath
 
 #LDAP activated
-if config.get("ldap.activate").lower()=="true":
+if config.get("ldap.activate", "").lower()=="true":
     print "activate LDAP login"
     from core.userldap import LDAPUser
     import core.users as users

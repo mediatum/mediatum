@@ -31,15 +31,15 @@ from utils.utils import Option
 useroption = []
 useroption += [Option("user_option_1", "editpwd", "c", "img/changepwd_opt.png")]
 
-authenticators = []
+authenticators = {}
 
-def create_user(name, email, groups, pwd="", lastname="", firstname="", telephone="", comment="", option="", type="intern"):    
+def create_user(name, email, groups, pwd="", lastname="", firstname="", telephone="", comment="", option="", organisation="", type="intern"):    
     if not pwd:
         pwd = config.get("user.passwd")
     if (type=="intern"):
         users = tree.getRoot("users")
-    elif (type=="extern"):
-        users = getExternalUserFolder()
+    else:
+        users = getExternalUserFolder(type)
     
     user = tree.Node(name=name, type="user")
     user.set("email", email)
@@ -49,6 +49,7 @@ def create_user(name, email, groups, pwd="", lastname="", firstname="", telephon
     user.set("firstname", firstname)
     user.set("telephone", telephone)
     user.set("comment", comment)
+    user.set("organisation", organisation)
 
     for group in groups.split(","):
         g = usergroups.getGroup(group)
@@ -62,27 +63,29 @@ def loadUsersFromDB():
     users = tree.getRoot("users")
     return users.getChildren()
     
-def getExternalUsers():
-    return getExternalUserFolder().getChildren()
-    
+def getExternalUsers(type=""):
+    if type=="":
+        return getExternalUserFolder().getChildren()
+    else:
+        for usertype in getExternalUserFolder().getChildren():
+            if usertype.getName()==type:
+                return usertype.getChildren()
+        return []
     
 """ returns user object from db """
-def getExternalUser(name):
+def getExternalUser(name, type="intern"):
     users = getExternalUserFolder()
-
     if name.isdigit():
         try:
-            print "by id"
             return tree.getNode(name)
         except tree.NoSuchNodeError,e:
             try:
-                print "by Name"
                 return users.getChild(name)
             except tree.NoSuchNodeError:
                 print "error"
                 return None
     else:
-        for n in getExternalUsers():
+        for n in getExternalUsers(type):
             if n.getName()==name:
                 return n
         
@@ -95,20 +98,31 @@ def getUser(id):
         try:
             return tree.getNode(id)
         except tree.NoSuchNodeError,e:
-            return getExternalUser(id)
+            return None
     else:
         try:
             return users.getChild(id)
         except tree.NoSuchNodeError,e:
-            # try external user
-            return getExternalUser(id)
+             return getExternalUser(id)
 
 def doExternalAuthentification(name, pwd):
     global authenticators
     for a in authenticators:
-        if a(name,pwd):
-            return 1
-    return 0
+        #x = authenticators[a].authenticate_login(name,pwd)#==1:
+        if authenticators[a].authenticate_login(name,pwd):
+            return authenticators[a].getUser(name)
+    return None
+    
+def getExternalAuthentificator(name):
+    global authenticators
+    if name in authenticators.keys():
+        return authenticators[name]
+    return None
+
+def getExternalAuthentificators():
+    global authenticators
+    return authenticators
+  
 
 def getUserFromRequest(req):
     try:
@@ -119,34 +133,35 @@ def getUserFromRequest(req):
             raise "User not found: \"" + config.get("user.guestuser")+"\""
     return user
 
-def getExternalUserFolder():
+def getExternalUserFolder(type=""):
     try:
         extusers = tree.getRoot("external_users")
     except tree.NoSuchNodeError:
         extusers = tree.Node("external_users", "users")
         tree.getRoot().addChild(extusers)
-    return extusers
+        
+    if type!="":
+        try:
+            users = extusers.getChild(type)
+        except tree.NoSuchNodeError:
+            users = tree.Node(type, "directory")
+            extusers.addChild(users)
+        return users
+    else: 
+        return extusers
 
 extuser_lock = thread.allocate_lock()
 
 def checkLogin(name, pwd):
     user = getUser(name)
     digest1 = md5.md5(pwd).hexdigest()
+    
     if user:
-        print "---1----"
         if digest1 == user.getPassword():
-            return 1
-    else:
-        print ".....2....", name
-        user = getExternalUser(name)
-        print user
-        if user:
-            print "ssss"
-            return 1
-            if digest1 == user.getPassword():
-                return 1
+            return user
 
-    if doExternalAuthentification(name, pwd):
+    auth = doExternalAuthentification(name, pwd)
+    #if doExternalAuthentification(name, pwd):
         # if an external authenticator was able to log this
         # user in, store the user name and hashed password
         # in our database, so we recognize this person
@@ -158,6 +173,14 @@ def checkLogin(name, pwd):
         # password (and overwrite the internal password). 
         # This only happens if the names (user ids) are not 
         # the email addresses, however.
+        
+    if auth:
+        return auth
+    else:
+        return None
+    
+    
+    if auth[0]:
         if user:
             # overwrite password by the one used for
             # the external authentication, so the next
@@ -193,25 +216,31 @@ def addUser(user):
     conn.addUser(user)    
 
 #def update_user(name, email, groups, option, new_name=""):
-def update_user(id, name, email, groups, lastname="", firstname="", telephone="", comment="", option=""):
-    
-    user = getUser(id)
-    user.setName(name)
-    user.setEmail(email)
-    user.setLastName(lastname)
-    user.setFirstName(firstname)
-    user.setTelephone(telephone)
-    user.setComment(comment)
-    user.setOption(option)
+def update_user(id, name, email, groups, lastname="", firstname="", telephone="", comment="", option="", organisation="", type="intern"):
+    if type=="intern":
+        user = getUser(id)
+    else:
+        user = getExternalUser(id, type)
+    if user:
+        user.setName(name)
+        user.setEmail(email)
+        user.setLastName(lastname)
+        user.setFirstName(firstname)
+        user.setTelephone(telephone)
+        user.setComment(comment)
+        user.setOption(option)
+        user.setOrganisation(organisation)
 
-    # remove user from all groups
-    for p in user.getParents():
-        if p.type == "usergroup":
-            p.removeChild(user)
-    # add user to the "new" groups
-    for group in groups.split(","):
-        g = usergroups.getGroup(group)
-        g.addChild(user)
+        # remove user from all groups
+        for p in user.getParents():
+            if p.type == "usergroup":
+                p.removeChild(user)
+        # add user to the "new" groups
+        for group in groups.split(","):
+            g = usergroups.getGroup(group)
+            g.addChild(user)
+    else:
+        print "user not found"
 
 """ delete user from db """
 def deleteUser(user, usertype="intern"):
@@ -219,8 +248,8 @@ def deleteUser(user, usertype="intern"):
         for guser in group.getChildren():
             if guser.getName()==user.getName():
                 group.removeChild(guser)
-    if usertype=="extern":
-        users = getExternalUserFolder()
+    if usertype!="intern":
+        users = getExternalUserFolder(usertype)
     else:
         users = tree.getRoot("users")
         
@@ -250,9 +279,9 @@ def makeRandomPassword():
     char4 = a[random.randint(0,len(a)-1)]
     return char1+char2+char3+nr1+nr2+char4
 
-def registerAuthenticator(auth):
+def registerAuthenticator(auth, name):
     global authenticators
-    authenticators += [auth]
+    authenticators[name] = auth
     
 def moveUserToIntern(id):
     user = getUser(id)

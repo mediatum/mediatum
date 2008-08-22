@@ -51,18 +51,24 @@ def login_submit(req):
     password = req.params.get("password","")
 
     masterpassword = config.get("user.masterpassword")
+    user = users.checkLogin(user, password)
 
-    if users.checkLogin(user, password) or (masterpassword and password==masterpassword):
-        user = users.getUser(user)
+    if user or (masterpassword and password==masterpassword):
         req.session["user"] = user
         logging.getLogger('usertracing').info(user.name + " logged in")
+        
+        if user.getUserType()!="":
+            x = users.getExternalAuthentificator(user.getUserType())           
+            if x.stdPassword(user):
+                return display_changepwd(req,3)
 
-        if user.stdPassword():
-            return display_changepwd(req,3);    
-        else:        
-            #req.request["Location"] = "https://"+config.get("host.name")+"/node?id="+tree.getRoot("collections").id;
-            req.request["Location"] = "http://"+config.get("host.name")+"/node?id="+tree.getRoot("collections").id;
-            return athana.HTTP_MOVED_TEMPORARILY;
+        else:
+            if user.stdPassword():
+                return display_changepwd(req,3)
+        
+        req.request["Location"] = "http://"+config.get("host.name")+"/node?id="+tree.getRoot("collections").id;
+        return athana.HTTP_MOVED_TEMPORARILY
+    
     else:
         return display_login(req, "login_error")
 

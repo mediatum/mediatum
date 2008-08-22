@@ -91,6 +91,13 @@ workflow.register()
 
 from utils.utils import splitpath
 
+#LDAP activated
+if config.get("ldap.activate").lower()=="true":
+    print "activate LDAP login"
+    from core.userldap import LDAPUser
+    import core.users as users
+    users.registerAuthenticator(LDAPUser(), "ldapuser")
+
 # make all subnodes of collections collections
 for n in tree.getRoot("collections").getChildren():
     if "directory" in n.type:

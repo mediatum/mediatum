@@ -20,6 +20,22 @@ type=sqlite
 #passwd=
 #cache_size=100000
 
+[ldap]
+activate=false
+server=serverurl
+password=password
+searchfilter=authLogin=[username]
+username=
+basedn=
+attributes=attribute,attribute1
+user_login=attribute
+user_lastname=attribute
+user_firstname=attribute
+user_email=attribute
+user_comment=attribute
+user_group=attribute
+user_org=attribute
+
 [user]
 adminuser=Administrator
 guestuser=Gast

@@ -29,7 +29,7 @@ import core.users as users
 import re
 
 from core.usergroups import loadGroupsFromDB
-from core.users import loadUsersFromDB, useroption, getUser, update_user, existUser, create_user, makeRandomPassword, deleteUser, getExternalUsers, getExternalUser, moveUserToIntern
+from core.users import loadUsersFromDB, useroption, getUser, update_user, existUser, create_user, makeRandomPassword, deleteUser, getExternalUsers, getExternalUser, moveUserToIntern, getExternalAuthentificators
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from core.translation import lang, t
 
@@ -45,6 +45,7 @@ def validate(req, op):
                 
             elif key.startswith("edit_"):
                 # edit user
+                print str(key[key.index("_")+1:-2])
                 return editUser_mask(req, str(key[key.index("_")+1:-2]))
 
             elif key.startswith("sendmail_") and req.params.get("form_op","")!="cancel":
@@ -80,14 +81,14 @@ def validate(req, op):
                 elif existUser(req.params.get("username")):
                     return editUser_mask(req, "", 2) #user still existing
                 else:
-                    create_user(req.params.get("username"), req.params.get("email"), req.params.get("usergroups").replace(";", ","), pwd=req.params.get("password", ""), lastname=req.params.get("lastname",""), firstname=req.params.get("firstname"), telephone=req.params.get("telephone"), comment=req.params.get("comment"), option=_option, type=req.params.get("usertype", "intern"))
+                    create_user(req.params.get("username"), req.params.get("email"), req.params.get("usergroups").replace(";", ","), pwd=req.params.get("password", ""), lastname=req.params.get("lastname",""), firstname=req.params.get("firstname"), telephone=req.params.get("telephone"), comment=req.params.get("comment"), option=_option, organisation=req.params.get("organisation",""), type=req.params.get("usertype", "intern"))
 
             elif req.params["form_op"] == "save_edit":
                 # update user
                 if req.params.get("email","")=="" or req.params.get("username","")=="" or req.params.get("usergroups","")=="":
                     return editUser_mask(req, req.params.get("id"), 1) # no username, emai or group selected
                 else:
-                    update_user(req.params.get("id", 0), req.params.get("username",""),req.params.get("email",""), req.params.get("usergroups","").replace(";", ","), lastname=req.params.get("lastname"), firstname=req.params.get("firstname"), telephone=req.params.get("telephone"), comment=req.params.get("comment"), option=_option)
+                    update_user(req.params.get("id", 0), req.params.get("username",""),req.params.get("email",""), req.params.get("usergroups","").replace(";", ","), lastname=req.params.get("lastname"), firstname=req.params.get("firstname"), telephone=req.params.get("telephone"), comment=req.params.get("comment"), option=_option, organisation=req.params.get("organisation",""), type=req.params.get("usertype", "intern"))
 
         return view(req)
     except:
@@ -102,14 +103,22 @@ def validate(req, op):
 def view(req):
     global useroption
     path = req.path[1:].split("/")
+    users = list()
+    usertypes = list(getExternalUsers())
     
-    if len(path)==2 and path[1]=="extern":
-        users = list(getExternalUsers())
+    auth = getExternalAuthentificators()
+    
+    if len(path)==2:
         usertype="extern"
+        for usertype in usertypes:
+            if usertype.getName()==path[1]:
+                users = list(usertype.getChildren())
+                usertype = path[1]
+                break
     else:
         users = list(loadUsersFromDB())
-        usertype="intern"
-        
+        usertype = "intern"
+
     order = getSortCol(req)
     actfilter = getFilter(req)
   
@@ -148,8 +157,10 @@ def view(req):
         elif int(order[0:1])==3:
             users.sort(lambda x, y: cmp(x.getEmail().lower(),y.getEmail().lower()))
         elif int(order[0:1])==4:
-            users.sort(lambda x, y: cmp(x.getGroups(),y.getGroups()))
+            users.sort(lambda x, y: cmp(x.getOrganisation(),y.getOrganisation()))    
         elif int(order[0:1])==5:
+            users.sort(lambda x, y: cmp(x.getGroups(),y.getGroups()))
+        elif int(order[0:1])==6:
             users.sort(lambda x, y: cmp(x.stdPassword(),y.stdPassword()))            
         if int(order[1:])==1:
             users.reverse()
@@ -159,12 +170,13 @@ def view(req):
     v = pages.getStdVars()
     v["filterattrs"] = [("username","admin_user_filter_username"),("lastname","admin_user_filter_lastname")]
     v["filterarg"] = req.params.get("filtertype", "username")
-    v["sortcol"] = pages.OrderColHeader([t(lang(req),"admin_user_col_1"), t(lang(req),"admin_user_col_2"), t(lang(req),"admin_user_col_3"), t(lang(req),"admin_user_col_4"), t(lang(req),"admin_user_col_5"), t(lang(req),"admin_user_col_6")], addparams="&type="+usertype+"&filter="+actfilter+"&filtertype="+v["filterarg"])
+    v["sortcol"] = pages.OrderColHeader([t(lang(req),"admin_user_col_1"), t(lang(req),"admin_user_col_2"), t(lang(req),"admin_user_col_3"), t(lang(req),"admin_user_col_4"), t(lang(req),"admin_user_col_5"), t(lang(req),"admin_user_col_6"), t(lang(req),"admin_user_col_7")])
     v["options"] = list(useroption)
     v["users"] = users
     v["pages"] = pages
     v["usertype"] = usertype
     v["actfilter"] = actfilter
+    v["auth"] = auth
     
     return req.getTAL("web/admin/modules/user.html", v, macro="view")
 
@@ -184,11 +196,14 @@ def editUser_mask(req, id, err=0):
         
     elif err==0 and id!="":
         #edit user
-        if usertype=="extern":
-            user = getExternalUser(id)
-        else:
+        print "wwww"
+        if usertype=="intern":
+            print "1"
             user = getUser(id)
-
+        else:
+            print "2"
+            user = getExternalUser(id)
+        print user
     else:
         #error while filling values
         option = ""
@@ -207,6 +222,7 @@ def editUser_mask(req, id, err=0):
         user.setFirstName(req.params.get("firstname", ""))
         user.setTelephone(req.params.get("telephone", ""))
         user.setComment(req.params.get("comment", ""))
+        user.setOrganisation(req.params.get("organisation", ""))
 
     v = getAdminStdVars(req)
     v["error"] = err

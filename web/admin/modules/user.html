@@ -3,18 +3,24 @@
     <form name="useroverview" method="post" action="#" tal:attributes="action page">
         <table class="overview">
             <tr>
-                <td colspan="10">
+                <td colspan="11">
                     <h3>
                         <span i18n:translate="admin_user_existing">TEXT</span>
-                        (<span tal:content="usertype">TEXT</span>)
+                        <span tal:condition="python:usertype!='intern'">(<span tal:content="python:auth[usertype].getName()" i18n:translate="">TEXT</span>)</span>
                     </h3>
                 </td>
             </tr>
             <tr>
-                <td colspan="10"><h4>Benutzertyp: <a href="/admin/user">Intern</a> | <a href="/admin/user/extern">Extern</a></h4></td>
+                <td colspan="11">
+                    <h4>Benutzertyp: <a href="/admin/user">Intern</a>
+                        <tal:block tal:repeat="auttype python:list(auth)">
+                            | <a tal:attributes="href python:'/admin/user/'+auttype" i18n:translate="" tal:content="python:auth[auttype].getName()"/>
+                        </tal:block>
+                    </h4>
+                </td>
             </tr>
             <tr>
-                <td colspan="10">
+                <td colspan="11">
                     <span i18n:translate="admin_filter_label">TEXT</span>
                     <select name="filtertype" style="margin:0px">
                         <tal:block tal:repeat="filterattr filterattrs">
@@ -36,7 +42,7 @@
                 </th>
                 <th align="right">&nbsp;</th>
                 <th align="right">
-                    <input i18n:attributes="title admin_user_create" type="image" src="/img/install.png" name="new"/>
+                    &nbsp;<input tal:condition="python:usertype=='intern' or auth[usertype].allowAdd()" i18n:attributes="title admin_user_create" type="image" src="/img/install.png" name="new"/>
                 </th>
             </tr>
             <tr tal:condition="python:len(users)==0">
@@ -49,6 +55,10 @@
                     <td tal:attributes="class cssclass" tal:content="python:user.getLastName()"/>
                     <td tal:attributes="class cssclass" tal:content="python:user.getFirstName()"/>
                     <td tal:attributes="class cssclass" tal:content="python:user.getEmail()"/>
+                    <td tal:attributes="class cssclass">
+                        <span tal:condition="python:len(user.getOrganisation())>10" tal:content="python:user.getOrganisation()[:10]+'...'" tal:attributes="title python:user.getOrganisation()" style="cursor:pointer"/>
+                        <span tal:condition="python:len(user.getOrganisation())<=10" tal:content="python:user.getOrganisation()" tal:attributes="title python:user.getOrganisation()" style="cursor:pointer"/>
+                    </td>
                     <td tal:attributes="class cssclass">
                         <tal:block tal:repeat="group python:user.getGroups()">
                             <span tal:content="group"/><span tal:condition="python:user.getGroups().index(group)<len(user.getGroups())-1">, </span>
@@ -71,7 +81,7 @@
                         </table>
                     </td>
                     <td tal:attributes="class cssclass">
-                        <input tal:attributes="name python:str('sendmail_'+user.getName())" i18n:attributes="title admin_user_sendmail_title" type="image" src="/img/email.png"/>
+                        <input tal:condition="python:usertype=='intern' or auth[usertype].allowAdd()" tal:attributes="name python:str('sendmail_'+user.getName())" i18n:attributes="title admin_user_sendmail_title" type="image" src="/img/email.png"/>
                         <input tal:condition="python:usertype!='intern'" tal:attributes="name python:'tointern_'+str(user.id); onclick python:'return questionMoveUser(\''+user.getName()+'\')'" i18n:attributes="title admin_user_importintern" type="image" src="/img/rightarrow.png" />
                     </td>
                     <td tal:attributes="class cssclass" class="_norm_">
@@ -81,7 +91,7 @@
                 </tr>
             </tal:block>
             <tr>
-                <th colspan="5">
+                <th colspan="6">
                     <small>
                         <span i18n:translate="admin_user_footer">
                             <span i18n:name="number" tal:content="python:str(len(users))"/>
@@ -102,7 +112,7 @@
 <metal:block metal:define-macro="modify">
     <p>
         <a tal:condition="python: usertype=='intern'" i18n:translate="admin_overview" href="/admin/user">TEXT</a>
-        <a tal:condition="python: usertype=='extern'" i18n:translate="admin_overview" href="/admin/user/extern">TEXT</a>
+        <a tal:condition="python: usertype!='intern'" i18n:translate="admin_overview" href=".">TEXT</a>
     </p>
     <form tal:attributes="action page" name="edituser" method="post">
         <table>
@@ -166,6 +176,12 @@
                 <td><tal:block i18n:translate="admin_user_comment">TEXT</tal:block>:</td>
                 <td>
                     <textarea name="comment" tal:content="python:user.getComment()" rows="4" cols="35"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_user_organisation">TEXT</tal:block>:</td>
+                <td>
+                    <input tal:attributes="value python:user.getOrganisation()" type="text" name="organisation" size="50"/>
                 </td>
             </tr>
             <tr>

@@ -654,6 +654,12 @@ msgid "e_publish"
 msgstr "publishing"
 
 ### user ###
+msgid "yearbook user"
+msgstr "Yearbook User"
+
+msgid "ldap user"
+msgstr "LDAP User"
+
 msgid "user_option_1"
 msgstr "password changeable"
 
@@ -697,9 +703,12 @@ msgid "admin_user_col_4"
 msgstr "email"
 
 msgid "admin_user_col_5"
-msgstr "group(s)"
+msgstr "organisation"
 
 msgid "admin_user_col_6"
+msgstr "group(s)"
+
+msgid "admin_user_col_7"
 msgstr "std. password"
 
 msgid "admin_filter_all"
@@ -764,6 +773,21 @@ msgstr "lastname"
 
 msgid "admin_user_importintern"
 msgstr "import user to intern users"
+
+msgid "admin_user_lastname"
+msgstr "Last Name"
+
+msgid "admin_user_firstname"
+msgstr "First Name"
+
+msgid "admin_user_telephone"
+msgstr "Phone"
+
+msgid "admin_user_comment"
+msgstr "Comment"
+
+msgid "admin_user_organisation"
+msgstr "Organisation"
 
 ### acl ###
 msgid "admin_acl_existing"
@@ -2017,6 +2041,9 @@ msgstr "Copy to..."
 msgid "edit_action_dir_del"
 msgstr "Delete"
 
+msgid "edit_action_file_publish"
+msgstr "Publish"
+
 ### edit tabs ###
 msgid "tab_layout"
 msgstr "Layout"
@@ -2151,10 +2178,10 @@ msgid "edit_upload_msg1"
 msgstr "Permission denied. You do not have the permission to add this object. Please contact your administrator."
 
 msgid "edit_upload_obj_selection"
-msgstr "Object type selection"
+msgstr "Upload of digital objects (files) / creation of metadatasets<br/><br/>Step 1: Object type selection"
 
 msgid "edit_upload_msg2"
-msgstr "Archives can consist of different object types. Please choose object type from list.<br/>For each type of object special upload forms are available, which offer respective functionality."
+msgstr "Please select an object type from the list below.<br/>For each type of object special upload forms are available, which offer respective functionality."
 
 msgid "edit_upload_obj_sel"
 msgstr "Choose object type:"
@@ -2163,7 +2190,16 @@ msgid "edit_upload_selecttion_value"
 msgstr "Choose"
 
 msgid "edit_upload_header1"
-msgstr "You can upload '${objtype}'"
+msgstr "Upload of digital objects (files) / creation of metadatasets<br/><br/>Step 1: Object type selection '${objtype}'"
+
+msgid "edit_upload_header2"
+msgstr "Step 2: Metadata scheme selection"
+
+msgid "edit_upload_header3"
+msgstr "Step 3: Select file for upload"
+
+msgid "edit_upload_header4"
+msgstr "Step 4: Create object / upload selected file"
 
 msgid "edit_upload_msg3"
 msgstr "Select file from your computer ("search button") and confirm by "upload"."
@@ -2178,7 +2214,7 @@ msgid "edit_upload_file"
 msgstr "File"
 
 msgid "edit_upload_upload_label"
-msgstr "Upload"
+msgstr "Create / Upload"
 
 ### workflow ###
 msgid "edit_workflow_msg1"
@@ -2475,6 +2511,33 @@ msgstr "Change Logo:"
 
 msgid "edit_logo_filetypeerror"
 msgstr "Uploaded filetype is not supported for Logos. Allowed types are '.jpeg', '.jpg', '.gif' or '.png'."
+
+# edit publish #
+msgid "edit_publish_header"
+msgstr "Publish Objects"
+
+msgid "edit_publish_info"
+msgstr "All selected objects will be published in selected directory."
+
+msgid "edit_publish_dirs"
+msgstr "Actual Destination-Directory:"
+
+msgid "edit_publish_button_select"
+msgstr "Choose publish directory"
+
+msgid "edit_publish_button"
+msgstr "Publish"
+
+msgid "edit_publish_popupheader"
+msgstr "Choose Destination:"
+
+msgid "edit_publish_ok"
+msgstr "OK"
+
+msgid "edit_publish_cancel"
+msgstr "Cancel"
+
+
 
 # mask editor #
 msgid "mask_editor_title"

@@ -666,6 +666,12 @@ msgid "e_publish"
 msgstr "Veröffentlichung"
 
 ### user ###
+msgid "yearbook user"
+msgstr "Jahrbuch Benutzer"
+
+msgid "ldap user"
+msgstr "LDAP Benutzer"
+
 msgid "user_option_1"
 msgstr "Passwort änderbar"
 
@@ -709,9 +715,12 @@ msgid "admin_user_col_4"
 msgstr "Email"
 
 msgid "admin_user_col_5"
-msgstr "Gruppe(n)"
+msgstr "Organisation"
 
 msgid "admin_user_col_6"
+msgstr "Gruppe(n)"
+
+msgid "admin_user_col_7"
 msgstr "Std. Passwort"
 
 msgid "admin_filter_all"
@@ -776,6 +785,21 @@ msgstr "Nachname"
 
 msgid "admin_user_importintern"
 msgstr "Benutzer zu den internen Benutzern importieren"
+
+msgid "admin_user_lastname"
+msgstr "Nachname"
+
+msgid "admin_user_firstname"
+msgstr "Vorname"
+
+msgid "admin_user_telephone"
+msgstr "Telefonnummer"
+
+msgid "admin_user_comment"
+msgstr "Bemerkung"
+
+msgid "admin_user_organisation"
+msgstr "Organisation"
 
 ### acl ###
 msgid "admin_acl_existing"
@@ -2029,6 +2053,9 @@ msgstr "Kopieren nach..."
 msgid "edit_action_dir_del"
 msgstr "Löschen"
 
+msgid "edit_action_file_publish"
+msgstr "Publizieren"
+
 ### edit tabs ###
 msgid "tab_layout"
 msgstr "Aussehen"
@@ -2163,10 +2190,10 @@ msgid "edit_upload_msg1"
 msgstr "Sie besitzen nicht die Berechtigung Objekte in das System einzustellen. Bitte wenden Sich an Ihren Administrator"
 
 msgid "edit_upload_obj_selection"
-msgstr "Objekttyp-Auswahl"
+msgstr "Hochladen von digitalen Objekten (Files) / Anlegen von Metadatensätzen<br/><br/>1. Schritt: Objekttyp-Auswahl"
 
 msgid "edit_upload_msg2"
-msgstr "Ein Archiv kann aus verschiedenen Objekttypen bestehen. Bitte wählen Sie aus der Liste unten den gew&uuml;nschten Typ aus.<br/>Für jeden Objekttyp stehen spezielle Upload-Formulare zur Verfügung, die die entsprechende Funktionalität bieten."
+msgstr "Bitte wählen Sie aus der Liste unten den gewünschten Typ aus.<br/>Für jeden Objekttyp stehen spezielle Upload-Formulare zur Verfügung, die die entsprechende Funktionalität bieten."
 
 msgid "edit_upload_obj_sel"
 msgstr "Objekttyp wählen:"
@@ -2175,7 +2202,16 @@ msgid "edit_upload_selecttion_value"
 msgstr "Auswählen"
 
 msgid "edit_upload_header1"
-msgstr "Sie können '${objtype}' ins System hochladen"
+msgstr "Hochladen von digitalen Objekten (Files) / Anlegen von Metadatensätzen.<br/><br/>1. Schritt: Objekttyp-Auswahl '${objtype}'"
+
+msgid "edit_upload_header2"
+msgstr "2. Schritt: Auswahl des Metadatenschemas"
+
+msgid "edit_upload_header3"
+msgstr "3. Schritt: Auswahl von Dateien für den Upload / entfällt, wenn Sie nur einen Metadatensatz ohne zugehörige Datei anlegen wollen"
+
+msgid "edit_upload_header4"
+msgstr "4. Schritt: Datensatz anlegen / ausgewählte Datei hochladen"
 
 msgid "edit_upload_msg3"
 msgstr "Dazu wählen Sie die ensprechende Datei auf Ihrem Computer aus ("Durchsuchen"-Button) und bestätigen Sie mit "Hochladen"."
@@ -2190,7 +2226,7 @@ msgid "edit_upload_file"
 msgstr "Datei"
 
 msgid "edit_upload_upload_label"
-msgstr "Hochladen"
+msgstr "Anlegen / Hochladen"
 
 ### workflow ###
 msgid "edit_workflow_msg1"
@@ -2490,6 +2526,31 @@ msgstr "Logo austauschen:"
 
 msgid "edit_logo_filetypeerror"
 msgstr "Die hochgeladene Datei hat keinen unterstützen Dateityp für Logos. Zugelassen sind nur Dateien vom Typ '.jpeg', '.jpg', '.gif' oder '.png'."
+
+# edit publish #
+msgid "edit_publish_header"
+msgstr "Objekte Publizieren"
+
+msgid "edit_publish_info"
+msgstr "Alle unten markierten Objekte können automatisch in ein Verzeichnis verschoben werden."
+
+msgid "edit_publish_dirs"
+msgstr "Aktuelle(s) Zielverzeichnis(e):"
+
+msgid "edit_publish_button_select"
+msgstr "Zielverzeichnis auswählen"
+
+msgid "edit_publish_button"
+msgstr "Publizieren"
+
+msgid "edit_publish_popupheader"
+msgstr "Ziel auswählen:"
+
+msgid "edit_publish_ok"
+msgstr "OK"
+
+msgid "edit_publish_cancel"
+msgstr "Abbrechen"
 
 # mask editor #
 msgid "mask_editor_title"

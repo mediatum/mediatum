@@ -35,8 +35,6 @@ except:
 from utils.utils import u, esc
 from core.translation import t
 
-(PAGE_WIDTH, PAGE_HEIGHT) = defaultPageSize
-
 class PrintPreview:
     def __init__(self, language, host=""):
         self.header = ""

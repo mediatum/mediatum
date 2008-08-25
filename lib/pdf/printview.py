@@ -21,13 +21,16 @@ import os
 import Image,ImageDraw
 import core.config as config
 
-
-from reportlab.platypus import Paragraph, BaseDocTemplate, SimpleDocTemplate, FrameBreak, Table, TableStyle, Image as PdfImage,Frame,PageBreak,PageTemplate
-from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import cm
-from reportlab.rl_config import defaultPageSize
-from reportlab.pdfgen import canvas
+try:
+    from reportlab.platypus import Paragraph, BaseDocTemplate, SimpleDocTemplate, FrameBreak, Table, TableStyle, Image as PdfImage,Frame,PageBreak,PageTemplate
+    from reportlab.lib import colors
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import cm
+    from reportlab.rl_config import defaultPageSize
+    from reportlab.pdfgen import canvas
+    reportlab=1
+except:
+    reportlab=0
 
 from utils.utils import u, esc
 from core.translation import t
@@ -158,6 +161,8 @@ class PrintPreview:
 
 def getPrintView(lang, imagepath, metadata, paths, style=1):
     """ returns pdf content of given item """
+    if not reportlab:
+        return None
     pv = PrintPreview(lang, config.get("host.name"))
     pv.setHeader()
     if imagepath:

@@ -33,8 +33,12 @@ def writexml(node, fi, indent=None, written=None, children=True):
     if node.type is None:
         node.type="node"
     fi.write("type=\""+node.type+"\" ")
-    #if node.access:
-    #    fi.write("access=\""+esc(node.access)+"\" ")
+    if node.read_access:
+        fi.write("read=\""+esc(node.read_access)+"\" ")
+    if node.write_access:
+        fi.write("write=\""+esc(node.write_access)+"\" ")
+    if node.data_access:
+        fi.write("data=\""+esc(node.data_access)+"\" ")
     fi.write('>'+"\n")
 
     indent += 4
@@ -104,7 +108,16 @@ class _NodeLoader:
                 type=attrs["type"].encode("utf-8")
             except:
                 type="directory"
+            
             node = tree.Node(name=attrs["name"].encode("utf-8"), type=type)
+            
+            if "read" in attrs:
+                node.setAccess("read", attrs["read"].encode("utf-8"))
+            if "write" in attrs:
+                node.setAccess("write", attrs["write"].encode("utf-8"))
+            if "data" in attrs:
+                node.setAccess("data", attrs["data"].encode("utf-8"))
+
             if "id" not in attrs:
                 attrs["id"] = str(random.random())
             self.id2node[attrs["id"].encode("utf-8")] = node

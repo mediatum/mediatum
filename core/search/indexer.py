@@ -64,16 +64,20 @@ class SearchIndexer:
 
         if option=="init":
             try:
-                # simple search table
-                self.db.execute('CREATE VIRTUAL TABLE fullsearchmeta USING fts3(id, type, schema, value)')
-                # extended search table
-                self.db.execute('CREATE VIRTUAL TABLE searchmeta USING fts3(id, type, schema, '+s+')')
-                self.db.execute('CREATE VIRTUAL TABLE searchmeta_def USING fts3(name, position, attrname)')
-                # fulltext search table
-                self.db.execute('CREATE VIRTUAL TABLE textsearchmeta USING fts3(id, type, schema, value)')
-                    
+                r = self.execute("select id from node where type='foobar'")
             except sqlite.OperationalError:
-                print "searchdatabase already initialised"
+                createTables(self):
+            except MySQLdb.ProgrammingError:
+                createTables(self):
+
+    def createTables(self):
+        # simple search table
+        self.execute('CREATE VIRTUAL TABLE fullsearchmeta USING fts3(id, type, schema, value)')
+        # extended search table
+        self.execute('CREATE VIRTUAL TABLE searchmeta USING fts3(id, type, schema, '+s+')')
+        self.execute('CREATE VIRTUAL TABLE searchmeta_def USING fts3(name, position, attrname)')
+        # fulltext search table
+        self.execute('CREATE VIRTUAL TABLE textsearchmeta USING fts3(id, type, schema, value)')
         
     def getAllTableNames(self):
         ret = []

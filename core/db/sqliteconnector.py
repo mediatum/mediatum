@@ -57,19 +57,21 @@ class SQLiteConnector(Connector):
                     os.makedirs(os.path.dirname(config.settings["paths.datadir"]+"db/"))
                 except OSError:
                     pass
-            db = config.settings["paths.datadir"]+"db/imagearch.db"
+            self.db = config.settings["paths.datadir"]+"db/imagearch.db"
             self.isInitialized()
         else:
             self.db = db
 
     def isInitialized(self):
         try:
-            self.execute("select id from node where type='root'")
+            v = self.execute("select id from node where type='root'")
+            v[0]
             return True
         except sqlite.OperationalError:
             self.createTables()
             initDatabaseValues(self)
-            self.commit()
+        except IndexError:
+            initDatabaseValues(self)
         return False
 
     def esc(self, text):

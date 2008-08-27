@@ -81,8 +81,10 @@ class m_mlist(Metatype):
     def getSearchHTML(self, context):
         return athana.getTAL("metadata/mlist.html",{"context":context, "valuelist":self.formatValues(context)}, macro="searchfield", language=context.language)
 
-    def getFormatedValue(self, field, node, language=None):
-        value = esc(node.get(field.getName()).replace(";","; "))
+    def getFormatedValue(self, field, node, language=None, html=1):
+        value = node.get(field.getName()).replace(";","; ")
+        if html:
+            value = esc(value)
         return (field.getLabel(), value)
 
     def getFormatedValueForDB(self, field, value):

@@ -45,7 +45,7 @@ class m_date(Metatype):
         return athana.getTAL("metadata/date.html",{"context":context}, macro="searchfield", language=context.language)
 
 
-    def getFormatedValue(self, field, node, language=None):
+    def getFormatedValue(self, field, node, language=None, html=1):
         value = node.get(field.getName())
         
         if not value or value=="0000-00-00T00:00:00": # dummy for unknown

@@ -80,8 +80,10 @@ class m_list(Metatype):
     def getSearchHTML(self, context):
         return athana.getTAL("metadata/list.html",{"context":context, "valuelist":self.formatValues(context)}, macro="searchfield", language=context.language)
 
-    def getFormatedValue(self, field, node, language=None):
-        value = esc(node.get(field.getName()))
+    def getFormatedValue(self, field, node, language=None, html=1):
+        value = node.get(field.getName())
+        if html:
+            value = esc(value)
         return (field.getLabel(), value)
 
     def getMaskEditorHTML(self, value="", metadatatype=None, language=None):

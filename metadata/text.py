@@ -30,8 +30,10 @@ class m_text(Metatype):
     def getSearchHTML(self, context):
         return athana.getTAL("metadata/text.html",{"context":context}, macro="searchfield", language=context.language)
 
-    def getFormatedValue(self, field, node, language=None):
-        value = esc(node.get(field.getName()).replace(";","; "))
+    def getFormatedValue(self, field, node, language=None, html=1):
+        value = node.get(field.getName()).replace(";","; ")
+        if html:
+            value = esc(value)
         
         # replace variables
         for var in re.findall( r'&lt;(.+?)&gt;', value ):

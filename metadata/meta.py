@@ -31,7 +31,7 @@ class m_meta(Metatype):
         return athana.getTAL("metadata/meta.html",{"context":context}, macro="searchfield", language=context.language)
 
 
-    def getFormatedValue(self, field, node, language=None):
+    def getFormatedValue(self, field, node, language=None, html=1):
         return (field.getLabel(), node.get(field.getValues()))
 
 

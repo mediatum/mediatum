@@ -41,7 +41,7 @@ class m_url(Metatype):
     #
     # format node value depending on field definition
     #
-    def getFormatedValue(self, field, node, language=None):
+    def getFormatedValue(self, field, node, language=None, html=1):
         try:
             value = node.get(field.getName()).split(";")
             fielddef = field.getValues().split("\r\n")

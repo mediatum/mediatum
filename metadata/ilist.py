@@ -42,14 +42,17 @@ class m_ilist(Metatype):
         return athana.getTAL("metadata/ilist.html",{"context":context, "valuelist":v}, macro="searchfield", language=context.language)
 
 
-    def getFormatedValue(self, field, node, language=None):
+    def getFormatedValue(self, field, node, language=None, html=1):
         value = node.get(field.getName())
         try:
             if value[-1]==";":
                 value = value[0:-1]
         except:
             pass
-        value = esc(value.replace(";","; "))
+
+        value = value.replace(";","; ")
+        if html:
+            value = esc(value)
         return (field.getLabel(), value)
 
 

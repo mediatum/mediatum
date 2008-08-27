@@ -27,7 +27,7 @@ class m_check(Metatype):
     def getSearchHTML(self, context):
         return athana.getTAL("metadata/check.html",{"context":context}, macro="searchfield", language=context.language)
 
-    def getFormatedValue(self, field, node, language=None):
+    def getFormatedValue(self, field, node, language=None, html=1):
         value = node.get(field.getName()).replace(";","; ")
         return (field.getLabel(), value)
 

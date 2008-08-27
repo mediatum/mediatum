@@ -28,6 +28,7 @@ import core.config as config
 
 from utils.utils import *
 from utils.date import *
+from utils.log import logException
 from core.tree import nodeclasses, Node
 from core.config import *
 from core.xmlnode import getNodeXML, readNodeXML
@@ -83,6 +84,7 @@ def loadTypesFromDB():
     return list(tree.getRoot("metadatatypes").getChildren().sort('name'))
 
 def getNumberNodes(name):
+    return 1
     return len(tree.getRoot("metadatatypes").search("objtype=%s*" % (name)))
 
 #
@@ -587,13 +589,13 @@ class Metadatatype(tree.Node):
         
     
     def searchIndexCorrupt(self):
-        from core.tree import searcher
-        search_def=[]
-        for node in node_getSearchFields(self):
-            search_def.append(node.getName())
-        search_def = set(search_def)
-        
         try:
+            from core.tree import searcher
+            search_def=[]
+            for node in node_getSearchFields(self):
+                search_def.append(node.getName())
+            search_def = set(search_def)
+            
             index_def = searcher.getDefForSchema(self.name)
             index_def = set(index_def.values())
             if len(search_def)>len(index_def) and len(self.getAllItems())>0:
@@ -602,7 +604,8 @@ class Metadatatype(tree.Node):
                 if search_def.union(index_def)==set([]) or index_def.difference(search_def)==set([]):
                     return False
             return True
-        except AttributeError:
+        except:
+            logException("error in searchIndexCorrupt")
             return False
 
             

@@ -58,7 +58,7 @@ def validate(req, op):
     if len(path)==2 and path[1]=="info":
         return showInfo(req)
     
-    if "file" in req.params and req.params["file"].filesize>0:
+    if "file" in req.params and hasattr(req.params["file"], "filesize") and req.params["file"].filesize>0:
         # import scheme from xml-file
         importfile = req.params.get("file")
         if importfile.tempname!="":

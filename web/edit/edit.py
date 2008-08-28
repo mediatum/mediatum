@@ -629,7 +629,7 @@ def content(req):
     req.write('<div style="margin:5px 5px 5px 5px;border:1px solid silver;padding: 4px">')
     
     # some tabs operate on only one file
-    if current == "tab_techmeta" or current == "tab_html" or current == "tab_view" or current == "tab_upload":
+    if current == "tab_files" or current == "tab_editor" or current == "tab_view" or current == "tab_upload":
         ids = ids[0:1]
 
     # display current images

@@ -6,7 +6,7 @@
         }
     </script>
 
-    <form tal:attributes="action python:'?id='+id+'&tab=tab_html'" method="post">
+    <form tal:attributes="action python:'?id='+id+'&tab=tab_editor'" method="post">
         <tal:block metal:use-macro="header"/>
         <tal:block tal:replace="raw python:oFCKeditor.Create()"/>
 

@@ -93,7 +93,7 @@ def simple_search(req):
             collections.append(collection)
 
     num = 0
-    if "act_node" in req.params and tree.getNode(req.params.get("act_node")).getContentType()!="collections":
+    if  req.params.get("act_node",None) and tree.getNode(req.params.get("act_node")).getContentType()!="collections":
         # actual node is a collection or directory
         result = tree.getNode(req.params.get("act_node")).search('full='+q)
         result = access.filter(result)

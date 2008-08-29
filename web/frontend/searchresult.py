@@ -193,7 +193,7 @@ def extended_search(req):
             q_str += ")"
             q_user += ")"
 
-    if "act_node" in req.params and req.params.get("act_node")!=str(collection.id):
+    if req.params.get("act_node","") and req.params.get("act_node")!=str(collection.id):
         result = tree.getNode(req.params.get("act_node")).search(q_str)
     else:
         result = collection.search(q_str)

@@ -2934,3 +2934,10 @@ msgstr "Delete Long-Term Object"
 
 msgid "edit_lza_node"
 msgstr "Long-Term Preservation Information for Object with id"
+
+msgid "edit_import_header"
+msgstr "Import bibtex data"
+
+msgid "edit_import"
+msgstr "In order to upload bibtex publications, please select a file on your computer and click 'upload'."
+

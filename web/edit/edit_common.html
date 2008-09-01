@@ -1,5 +1,10 @@
 
 <tal:block metal:define-macro="show_nodelist">
+    <p tal:condition="unpublishedlink" class="error">
+        <span i18n:translate="unpublished_objects1">_</span><br>
+        <a target="frame" i18n:translate="unpublished_objects2" tal:attributes="href unpublishedlink">_</a>
+    </p>
+
     <p>
         <b i18n:translate="edit_common_mark">TEXT</b><b>:</b>
         <br/>
@@ -67,6 +72,8 @@
             </div>
         </div>
     </tal:block>
+        
+    <tal:block tal:content="raw chkjavascript"/>
 
     <div style="clear: both;font-size: 1px;"/>
 

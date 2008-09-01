@@ -100,6 +100,8 @@ def initContexts():
     file.addHandler("action").addPattern("/edit_action")
     file = context.addFile("web/edit/edit_upload.py")
     file.addHandler("upload_new").addPattern("/upload_new")
+    file = context.addFile("web/edit/edit_import.py")
+    file.addHandler("import_new").addPattern("/import_new")
     file = context.addFile("web/edit/edit_license.py")
     file.addHandler("objlist").addPattern("/objlist")
 

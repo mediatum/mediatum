@@ -24,14 +24,14 @@ import edit
 
 from core.acl import AccessData
 from core.translation import t, lang
-from edit_common import writetree, showdir, getUploadDir, getHomeDir
+from edit_common import writetree, showdir, getHomeDir
 from edit import *#nodeIsChildOfNode
 
 
 def edit_publish(req, ids):
     print "req:", req.params
     user = users.getUserFromRequest(req)
-    uploaddir = getUploadDir(user)
+    publishdir = tree.getNode(ids[0])
     access = AccessData(req)
     
     explicit = tree.getNodesByAttribute("writeaccess", user.getName())
@@ -63,7 +63,7 @@ def edit_publish(req, ids):
                         src.removeChild(obj)
                     else:
                         print "Couldn't copy",obj.id,"from",src.id,"to",dest.id,":",dest.id,"is child of",obj.id             
-        req.write("<script>parent.reloadTree("+uploaddir.id+");</script>")
+        req.write("<script>parent.reloadTree("+publishdir.id+");</script>")
 
     
     if req.params.get("style","")=="":
@@ -79,9 +79,9 @@ def edit_publish(req, ids):
             stddir = str(explicit[0])+","
             stdname = "- " + tree.getNode(explicit[0]).getName()
 
-        req.write('<form action="/edit/edit_content?id='+uploaddir.id+'&tab=tab_publish" method="post" style="margin:5px" name="publishform">')
-        req.writeTAL("web/edit/edit_publish.html", {"id":uploaddir.id,"stddir":stddir, "stdname":stdname}, macro="publish_form")
-        showdir(req, uploaddir)
+        req.write('<form action="/edit/edit_content?id='+publishdir.id+'&tab=tab_publish" method="post" style="margin:5px" name="publishform">')
+        req.writeTAL("web/edit/edit_publish.html", {"id":publishdir.id,"stddir":stddir, "stdname":stdname}, macro="publish_form")
+        showdir(req, publishdir, publishwarn=0, markunpublished=1)
         req.write("</form>")
         return
 

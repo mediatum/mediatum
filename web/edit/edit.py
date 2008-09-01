@@ -62,6 +62,7 @@ def frameset(req):
     user = users.getUserFromRequest(req)
 
     uploaddir = getUploadDir(user)
+    importdir = getImportDir(user)
     faultydir = getFaultyDir(user)
     trashdir = getTrashDir(user)
 
@@ -102,6 +103,9 @@ def frameset(req):
                 if(_action == 'upload') {
                     reloadPage('"""+uploaddir.id+"""','');
                     return 0;
+                } else if(_action == 'import') {
+                    reloadPage('"""+importdir.id+"""','');
+                    return 0;
                 } else if(_action == "edit") {
                     var ids = content.getAllObjectsString();
                     if(ids == '') {
@@ -133,9 +137,6 @@ def frameset(req):
                             openWindow('edit_action?src='+src+'&action=delete&ids='+ids, 300, 200);
                         }
                     }
-                    return 0;
-                }else if(_action == "publish") {
-                    this.location.href = "edit?tab=tab_publish&id="""+uploaddir.id+"""";
                     return 0;
                 } else {
                     idselection = content.getAllObjectsString();
@@ -610,13 +611,19 @@ def content(req):
         <![endif]-->
             </head>""")
         req.write("""<body>""")
+    
+    user = users.getUserFromRequest(req)
+    uploaddir = getUploadDir(user)
+    importdir = getImportDir(user)
 
     node = tree.getNode(ids[0])
     if node.type == "root":
         tabs = "tab_content"
     else:
-        if isDirectory(node) and node.name=="Uploads":
+        if node.id == uploaddir.id:
             tabs = "tab_upload"
+        elif node.id == importdir.id:
+            tabs = "tab_import"
         else:
             tabs = node.getDefaultEditTab()
 
@@ -816,7 +823,7 @@ def buttons(req):
                      <b i18n:translate="edit_files">Dateien:</b><br/>
                      <select id="groupaction" onChange="if(!parent.setObjectAction(this.value)) {this.value='none'}" name="groupaction" style="width:250px">
                          <option value="none">---</option>                      
-                         <option value="upload" i18n:translate="edit_action_file_upload">Hochladen</option>
+                         <option value="upload" i18n:translate="edit_action_file_upload">_</option>
                          <option value="import" i18n:translate="edit_action_file_import">_</option>
                          <option id="field_move" value="move" i18n:translate="edit_action_file_move">Verschieben nach...</option>
                          <option value="copy" i18n:translate="edit_action_file_copy">Kopieren nach...</option>

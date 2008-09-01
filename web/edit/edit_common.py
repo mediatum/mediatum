@@ -85,6 +85,16 @@ def getUploadDir(user):
         uploaddir = userdir.addChild(tree.Node(name=translate("user_upload", getDefaultLanguage()), type="directory"))
     return uploaddir
 
+def getImportDir(user):
+    userdir = getHomeDir(user)
+    importdir = None
+    for c in userdir.getChildren():
+        if c.name == translate("user_import", getDefaultLanguage()):
+            importdir = c
+    if not importdir:
+        importdir = userdir.addChild(tree.Node(name=translate("user_import", getDefaultLanguage()), type="directory"))
+    return importdir
+
 #
 def getFaultyDir(user):
     userdir = getHomeDir(user)
@@ -108,14 +118,25 @@ def getTrashDir(user):
     return trashdir
 
 #
-def showdir(req,node):
-    shownodelist(req,node.getChildren())
+def showdir(req, node, publishwarn=1, markunpublished=0):
+    shownodelist(req,node.getChildren(),publishwarn=publishwarn,markunpublished=markunpublished,dir=node)
 
 
-def shownodelist(req,nodes):
+def getAllSubDirs(node):
+    #dirs = homedir.search("objtype=directory")
+    dirs = []
+    for c in node.getChildren():
+        if c.type == "directory":
+            dirs += [c] + getAllSubDirs(c)
+    return dirs
+            
+
+def shownodelist(req, nodes, publishwarn=1, markunpublished=0, dir=None):
     req.session["nodelist"] = EditorNodeList(nodes)
     script_array = "allobjects = new Array();\n"
     nodelist = []
+        
+    user = users.getUserFromRequest(req)
 
     for child in nodes:
         if child.type == "directory":
@@ -123,7 +144,41 @@ def shownodelist(req,nodes):
         script_array += "allobjects['"+child.id+"'] = 0;\n"
         nodelist.append(child)
 
-    req.writeTAL("web/edit/edit_common.html", {"nodelist":nodelist, "script_array":script_array}, macro="show_nodelist")
+    chkjavascript = ""
+    if publishwarn or markunpublished:
+        homedir = getHomeDir(user)
+        homedirs = getAllSubDirs(homedir)
+        notpublished = []
+        if markunpublished:
+            chkjavascript = """<script language="javascript">"""
+        for node in nodes:
+            ok = 0
+            for p in node.getParents():
+                if p not in homedirs:
+                    ok = 1
+            if not ok:
+                if markunpublished:
+                    chkjavascript += """allobjects['check%s'] = 1;
+                                        document.getElementById('check%s').checked = true;
+                                     """ % (node.id,node.id)
+
+                notpublished += [node]
+        chkjavascript += """</script>"""
+        # if all nodes are properly published, don't bother
+        # to warn the user
+        if not notpublished:
+            publishwarn = 0
+
+    unpublishedlink = None
+    if publishwarn:
+        user = users.getUserFromRequest(req)
+        if dir:
+            uploaddir = dir
+        else:
+            uploaddir = getUploadDir(user)
+        unpublishedlink = "edit?tab=tab_publish&id="""+uploaddir.id;
+
+    req.writeTAL("web/edit/edit_common.html", {"chkjavascript": chkjavascript, "unpublishedlink": unpublishedlink, "nodelist":nodelist, "script_array":script_array}, macro="show_nodelist")
 
 
 def isUnFolded(unfoldedids, id):

@@ -2003,7 +2003,7 @@ msgid "edit_dir"
 msgstr "Folder:"
 
 msgid "edit_action_file_upload"
-msgstr "Upload"
+msgstr "Create / Upload"
 
 msgid "edit_action_file_move"
 msgstr "Move to..."

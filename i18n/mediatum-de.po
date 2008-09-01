@@ -2015,7 +2015,7 @@ msgid "edit_dir"
 msgstr "Ordner:"
 
 msgid "edit_action_file_upload"
-msgstr "Hochladen"
+msgstr "Eingeben / Hochladen"
 
 msgid "edit_action_file_move"
 msgstr "Verschieben nach..."

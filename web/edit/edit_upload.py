@@ -57,9 +57,9 @@ def edit_upload(req, ids):
         if scheme.isActive():
             _schemes.append(scheme)
     schemes = _schemes
-        
 
-    #evalutate datatypes
+    # find out which schema allows which datatype, and hence,
+    # which overall data types we should display
     dtypes = []
     datatypes = loadAllDatatypes()
     for scheme in schemes:
@@ -68,8 +68,13 @@ def edit_upload(req, ids):
                 for t in datatypes:
                     if t.getName()==dtype and not elemInList(dtypes, t.getName()):
                         dtypes.append(t)
+
+    #for t in datatypes:
+    #    if t.getName() not in dtypes and t.canAlwaysUpload():
+    #        dtypes.append(t)
                         
-    dtypes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(),translate(y.getLongName(), request=req).lower()))
+    dtypes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(),
+                                 translate(y.getLongName(), request=req).lower()))
 
     objtype = ""
     if len(dtypes)==1:

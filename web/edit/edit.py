@@ -38,6 +38,7 @@ from edit_metadata import edit_metadata
 from edit_classes import edit_classes
 from edit_files import edit_files
 from edit_upload import edit_upload, upload_help
+from edit_import  import edit_import
 from edit_search import edit_search
 from edit_sort import edit_sort
 from edit_subfolder import edit_subfolder
@@ -732,6 +733,8 @@ def content(req):
         edit_metadata(req, ids)
     elif current == "tab_upload":
         edit_upload(req, ids)
+    elif current == "tab_import":
+        edit_import(req, ids)
     elif current == "tab_globals":
         req.write("")
     elif current == "tab_lza":
@@ -814,7 +817,7 @@ def buttons(req):
                      <select id="groupaction" onChange="if(!parent.setObjectAction(this.value)) {this.value='none'}" name="groupaction" style="width:250px">
                          <option value="none">---</option>                      
                          <option value="upload" i18n:translate="edit_action_file_upload">Hochladen</option>
-                         <option value="publish" i18n:translate="edit_action_file_publish">_</option>
+                         <option value="import" i18n:translate="edit_action_file_import">_</option>
                          <option id="field_move" value="move" i18n:translate="edit_action_file_move">Verschieben nach...</option>
                          <option value="copy" i18n:translate="edit_action_file_copy">Kopieren nach...</option>
                          <option id="field_delete" value="delete" i18n:translate="edit_action_file_delete">L&ouml;schen</option>

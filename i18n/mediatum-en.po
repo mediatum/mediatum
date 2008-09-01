@@ -2005,6 +2005,9 @@ msgstr "Folder:"
 msgid "edit_action_file_upload"
 msgstr "Create / Upload"
 
+msgid "edit_action_file_upload"
+msgstr "Import"
+
 msgid "edit_action_file_move"
 msgstr "Move to..."
 
@@ -2737,6 +2740,16 @@ msgstr "User directory"
 
 msgid "user_upload"
 msgstr "Uploads"
+
+msgid "user_import"
+msgstr "Imports"
+
+msgid "unpublished_objects1"
+msgstr "Notice: This Folder contains unpublished objects (objects which are not publicly visible)."
+
+msgid "unpublished_objects2"
+msgstr "Publish these objects"
+
 
 msgid "user_faulty"
 msgstr "Inconsistent data"

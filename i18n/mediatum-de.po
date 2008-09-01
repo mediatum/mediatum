@@ -2017,6 +2017,9 @@ msgstr "Ordner:"
 msgid "edit_action_file_upload"
 msgstr "Eingeben / Hochladen"
 
+msgid "edit_action_file_import"
+msgstr "Importieren"
+
 msgid "edit_action_file_move"
 msgstr "Verschieben nach..."
 
@@ -2762,6 +2765,15 @@ msgstr "Arbeitsverzeichnis"
 
 msgid "user_upload"
 msgstr "Uploads"
+
+msgid "user_import"
+msgstr "Importe"
+
+msgid "unpublished_objects1"
+msgstr "Hinweis: Dieser Ordner enthält unpublizierte Objekte (Objekte die bisher nach aussen nicht sichbar sind)."
+
+msgid "unpublished_objects2"
+msgstr "Unpublizierte Objekte jetzt publizieren"
 
 msgid "user_faulty"
 msgstr "Inkonsistente Daten"

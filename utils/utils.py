@@ -17,7 +17,6 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.config as config
 import stat
 import traceback
 import sys
@@ -99,7 +98,8 @@ def get_filesize(filename):
     if os.path.exists(filename):
         stat = os.stat(filename)
         return stat[6]
-    elif os.path.exists(config.settings["paths.datadir"]+"/"+filename):
+    import core.config as config
+    if os.path.exists(config.settings["paths.datadir"]+"/"+filename):
         stat = os.stat(config.settings["paths.datadir"]+"/"+filename)
         return stat[6]
     else:
@@ -427,19 +427,39 @@ def clean_path(path):
 def union(definition): # or
     if not definition:
         return []
-    result = definition[0] 
-    for item in definition[1:]:
-        result += filter(lambda x:x not in result,item)  
-    return list(result)
+    result1 = definition[0]
+    result2 = definition[1]
+    if type(result1)!=dict:
+        result1 = dict(zip(result1,result1))
+    if type(result2)!=dict:
+        result2 = dict(zip(result2,result2))
+    result1.update(result2)
+    if type(definition[0])==dict:
+        return result1
+    else:
+        return result1.keys()
 
     
 def intersection(definition): # and
     if not definition: 
         return [] 
-    result = definition[0]   
-    for item in definition[1:]:
-        result = filter(lambda x:x in result,item)
-    return result
+    if type(definition[0])!=dict:
+        result1 = definition[0]
+    else:
+        result1 = definition[0].keys()
+
+    if type(definition[1])!=dict:
+        result2 = dict(zip(definition[1],definition[1]))
+    else:
+        result2 = definition[1]
+    result = {}
+    for a in result1:
+        if a in result2:
+            result[a]=a
+    if type(definition[0])!=dict:
+        return result.keys()
+    else:
+        return result
     
 class EncryptionException:
     pass
@@ -486,3 +506,8 @@ if __name__ == "__main__":
     print clean_path("../test.txt")
     print clean_path("//etc/passwd")
     print clean_path("test^^.txt")
+
+    print union([[1,2,3],[3,4,5]])
+    print intersection([[1,2,3],[3,4,5]])
+    print union([{1:1,2:2,3:3},{3:3,4:4,5:5}])
+    print intersection([{1:1,2:2,3:3},{3:3,4:4,5:5}])

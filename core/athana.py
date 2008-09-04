@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.29 2008/07/11 09:40:56 mediatum Exp $'
+RCS_ID =  '$Id: athana.py,v 1.30 2008/09/04 17:15:21 mediatum Exp $'
 
 import sys
 
@@ -6565,6 +6565,8 @@ class AthanaHandler:
         
         if path=="/threadstatus":
             return thread_status(request)
+        if path=="/profilingstatus":
+            return profiling_status(request)
 
         function = context.match(path)
        
@@ -6807,8 +6809,36 @@ def thread_status(req):
     req['Connection'] = 'close';
     return req.done()
 
+profiles = []
+def profiling_status(req):
+    req.write("""<html><head><title>Athana Profiling Status</title></head><body>""")
+    i = 1
+    for time,url,trace in profiles:
+        req.write("<h2>Most usage #%d</h2>" % i)
+        req.write("<h3>Time: %.2f seconds</h3>" % time)
+        req.write("<h3>URL: %s</h3>" % url)
+        i = i+1
+        req.write('<pre>')
+        req.write(attrEscape(trace))
+        req.write('</pre>')
+
+    req.write("""</body></html>""")
+    req.channel.current_request = None
+    req.reply_code = 200
+    req['Connection'] = 'close';
+    return req.done()
+
+iolock = thread.allocate_lock()
+profiling=0
+try:
+    import hotshot
+    import hotshot.stats
+except ValueError:
+    profiling=0
+
 class AthanaThread:
     def __init__(self, server, number):
+        global profiling
         self.server = server
         self.lastrequest = 0
         self.status = "idle"
@@ -6829,11 +6859,46 @@ class AthanaThread:
                 self.status = "working"
                 self.uri = SESSION_PATTERN.sub("xxxxxx-xxxxxx-xxxxxx", req.uri)
                 server.queuelock.release()
+                if profiling:
+                    self.prof = hotshot.Profile("/tmp/athana%d.prof" % self.number)
+                    self.prof.start()
+                    timenow = time.time()
                 try:
                     server.callhandler(function,req)
                 except:
                     lgerr.log("Error while processing request:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
                     traceback.print_tb(sys.exc_info()[2],None,lgerr)
+                if profiling:
+                    global profiles
+                    duration = time.time() - timenow
+                    self.prof.stop()
+                    self.prof.close()
+                    st = hotshot.stats.load("/tmp/athana%d.prof" % self.number)
+                    #st.strip_dirs()
+                    st.sort_stats('cumulative', 'time')
+                    #"/tmp/athana%d.txt" % self.number)
+                    class myio:
+                        def __init__(self, old):
+                            self.txt = ""
+                            self.old = old
+                            self.id = thread.get_ident()
+                        def write(self,txt):
+                            if self.id == thread.get_ident():
+                                self.txt += txt
+                            else:
+                                self.old.write(txt)
+
+                    iolock.acquire()
+                    io = myio(sys.stdout)
+                    oldstdout,sys.stdout = sys.stdout,io
+                    st.print_stats(50)
+                    sys.stdout=oldstdout
+                    iolock.release()
+                    profiles += [(duration, self.uri, io.txt)]
+                    profiles.sort()
+                    profiles.reverse()
+                    profiles = profiles[0:30]
+
                 self.status = "idle waiting"
                 self.duration = time.time() - self.lastrequest
 

@@ -95,6 +95,9 @@ def simple_search(req):
     num = 0
     if  req.params.get("act_node",None) and tree.getNode(req.params.get("act_node")).getContentType()!="collections":
         # actual node is a collection or directory
+
+        #FIXME: this is a search which was done before, we don't need to
+        #       do this *again*
         result = tree.getNode(req.params.get("act_node")).search('full='+q)
         result = access.filter(result)
         num += len(result)
@@ -112,6 +115,8 @@ def simple_search(req):
             num += len(result)
 
             if len(result)>0:
+                # FIXME: this does all kinds of useless stuff, like sorting,
+                # which we don't need to just display a number
                 cl = ContentList(tree.NodeList(result), collection, words)
                 cl.feedback(req)
                 cl.linkname = "Suchergebnis"

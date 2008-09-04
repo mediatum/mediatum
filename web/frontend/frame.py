@@ -237,6 +237,9 @@ def isParentOf(node, parent):
             return 1
     return 0
 
+class RecursionException:
+    pass
+
 class Collectionlet(Portlet):
     def __init__(self):
         Portlet.__init__(self)
@@ -275,7 +278,12 @@ class Collectionlet(Portlet):
         # open all parents, so we see that node
         opened = {}
         parents = [self.directory]
+        counter=0
         while parents:
+            counter=counter+1
+            if counter>15:
+                raise RecursionException
+
             print [p.name for p in parents],'->',
             p = parents.pop()
             print [j.name for j in p.getParents()]
@@ -284,6 +292,8 @@ class Collectionlet(Portlet):
         
         m = {}
         def f(m,node,indent):
+            if indent>15:
+                raise RecursionException
             if not access.hasReadAccess(node):
                 return
             m[node.id] = NavTreeEntry(self, node, indent, node.type=="directory")
@@ -308,6 +318,8 @@ class Collectionlet(Portlet):
 
         col_data = []
         def f(col_data,node,indent):
+            if indent>15:
+                raise RecursionException
             if not access.hasReadAccess(node):
                 return
             if not node.id in m:
@@ -481,5 +493,3 @@ def getNavigationFrame(req):
     except KeyError:
         c = req.session["navframe"] = NavigationFrame()
     return c
-
-

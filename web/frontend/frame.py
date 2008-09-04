@@ -244,17 +244,9 @@ class Collectionlet(Portlet):
         self.collection = tree.getRoot("collections")
         self.directory = self.collection
         self.folded = 0
-        self.m = {}
         self.col_data = None
         self.hassubdir = 0
     
-        def f(m,node,indent):
-            m[node.id] = NavTreeEntry(self, node, indent, node.type=="directory")
-            for c in node.getChildren():
-                if isCollection(c) or isDirectory(c):
-                    f(m, c, indent+1)
-        f(self.m, tree.getRoot("collections"), 0)
-
     def getCurrent(self):
         return self.collection
 
@@ -279,46 +271,50 @@ class Collectionlet(Portlet):
                 pass
 
         access = AccessData(req)
-
-        for c in self.m.values():
-            if not c.defaultopen:
-                c.folded = 1
-            c.active = 0
-
-        if "cunfold" in req.params:
-            id = req.params["cunfold"]
-            if id in self.m:
-                self.m[id].folded = 0
         
-        if self.directory.id in self.m:
-            self.m[self.directory.id].folded = 0
-            self.m[self.directory.id].active = 1
-        
-        if self.collection.id in self.m:
-            self.m[self.collection.id].active = 1
-
         # open all parents, so we see that node
+        opened = {}
         parents = [self.directory]
         while parents:
             print [p.name for p in parents],'->',
             p = parents.pop()
             print [j.name for j in p.getParents()]
-            if p.id in self.m:
-                self.m[p.id].folded = 0
-            else:
-                print "no ID"
+            opened[p.id] = 1
             parents += p.getParents()
+        
+        m = {}
+        def f(m,node,indent):
+            if not access.hasReadAccess(node):
+                return
+            m[node.id] = NavTreeEntry(self, node, indent, node.type=="directory")
+            if node.id in opened:
+                m[node.id].folded = 0
+                for c in node.getChildren():
+                    if isCollection(c) or isDirectory(c):
+                        f(m, c, indent+1)
+        f(m, tree.getRoot("collections"), 0)
+
+        if "cunfold" in req.params:
+            id = req.params["cunfold"]
+            if id in m:
+                m[id].folded = 0
+        
+        if self.directory.id in m:
+            m[self.directory.id].folded = 0
+            m[self.directory.id].active = 1
+        
+        if self.collection.id in m:
+            m[self.collection.id].active = 1
 
         col_data = []
         def f(col_data,node,indent):
             if not access.hasReadAccess(node):
                 return
-            if not node.id in self.m:
+            if not node.id in m:
                 print "ERROR: Unknown node",node.id,node.name,"in browsing tree"
-                # some new node FIX-ME we should rebuild the tree
                 return
                
-            data = self.m[node.id]
+            data = m[node.id]
 
             col_data += [data]
 
@@ -376,7 +372,6 @@ class CollectionMapping:
     def __init__(self):
         self.searchmap = {}
         self.browsemap = {}
-        self.collection_portlet = Collectionlet()
     def getSearch(self,collection):
         if collection.id not in self.searchmap:
             self.searchmap[collection.id] = Searchlet(collection)

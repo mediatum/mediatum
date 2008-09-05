@@ -64,7 +64,7 @@ def getFLVSize(filename):
     prevsize = 0
     for i in range(10):
         prevlen = readU32(fi)
-        if prevlen != prevsize:
+        if prevlen and prevlen != prevsize:
             raise AttributeError("Error in FLV file")
         type = readU8(fi)
         size = readU24(fi)
@@ -130,5 +130,7 @@ def getFLVSize(filename):
 
 if __name__ == "__main__":
     #print getFLVSize("/home/data/videos/testvideo.flv")
-    print getFLVSize("/home/data/videos/Abiotv-carForWomen895.flv")
+    #print getFLVSize("/home/data/videos/Abiotv-carForWomen895.flv")
+    print getFLVSize("/home/kramm/save-video_LOW.flv")
+
 

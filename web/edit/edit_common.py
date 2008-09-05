@@ -22,7 +22,7 @@ import core.tree as tree
 from core.acl import AccessData
 import core.users as users
 from core.translation import translate, getDefaultLanguage
-from utils.utils import compare_utf8
+from utils.utils import compare_utf8,isDirectory,isCollection
 
 class EditorNodeList:
     def __init__(self, nodes):
@@ -139,7 +139,7 @@ def shownodelist(req, nodes, publishwarn=1, markunpublished=0, dir=None):
     user = users.getUserFromRequest(req)
 
     for child in nodes:
-        if child.type == "directory":
+        if isDirectory(child) or isCollection(child):
             continue
         script_array += "allobjects['"+child.id+"'] = 0;\n"
         nodelist.append(child)

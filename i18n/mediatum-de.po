@@ -2770,7 +2770,7 @@ msgid "user_import"
 msgstr "Importe"
 
 msgid "unpublished_objects1"
-msgstr "Hinweis: Dieser Ordner enthält unpublizierte Objekte (Objekte die bisher nach aussen nicht sichbar sind)."
+msgstr "Hinweis: Dieser Ordner enthält unpublizierte Objekte (Objekte die bisher nach aussen nicht sichtbar sind)."
 
 msgid "unpublished_objects2"
 msgstr "Unpublizierte Objekte jetzt publizieren"

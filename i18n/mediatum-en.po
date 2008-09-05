@@ -2943,3 +2943,6 @@ msgstr "In order to upload bibtex publications, please select a file on your com
 
 msgid "notpublished"
 msgstr "not published"
+
+msgid "admin_usergroup_emails"
+msgstr "emails:"

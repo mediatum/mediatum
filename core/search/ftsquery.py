@@ -319,7 +319,7 @@ class FtsSearcher:
 
 
     def updateNodesIndex(self, nodelist):
-        print "\nupdating node index..."
+        print "\nupdating node index for",len(nodelist),"nodes..."
         err = {}
         schemas = {}
         for node in nodelist:

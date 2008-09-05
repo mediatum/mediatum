@@ -725,7 +725,7 @@ def content(req):
     elif current == "tab_files":
         edit_files(req,ids)
     elif current == "tab_content":
-        if node.type == "directory":
+        if node.type == "directory" or node.type.startswith("collection"):
             showdir(req,node)
     elif current == "tab_editor":
         found=False

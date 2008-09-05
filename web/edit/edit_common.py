@@ -145,10 +145,10 @@ def shownodelist(req, nodes, publishwarn=1, markunpublished=0, dir=None):
         nodelist.append(child)
 
     chkjavascript = ""
+    notpublished = {}
     if publishwarn or markunpublished:
         homedir = getHomeDir(user)
         homedirs = getAllSubDirs(homedir)
-        notpublished = []
         if markunpublished:
             chkjavascript = """<script language="javascript">"""
         for node in nodes:
@@ -162,7 +162,7 @@ def shownodelist(req, nodes, publishwarn=1, markunpublished=0, dir=None):
                                         document.getElementById('check%s').checked = true;
                                      """ % (node.id,node.id)
 
-                notpublished += [node]
+                notpublished[node] = node
         chkjavascript += """</script>"""
         # if all nodes are properly published, don't bother
         # to warn the user
@@ -178,7 +178,7 @@ def shownodelist(req, nodes, publishwarn=1, markunpublished=0, dir=None):
             uploaddir = getUploadDir(user)
         unpublishedlink = "edit?tab=tab_publish&id="""+uploaddir.id;
 
-    req.writeTAL("web/edit/edit_common.html", {"chkjavascript": chkjavascript, "unpublishedlink": unpublishedlink, "nodelist":nodelist, "script_array":script_array}, macro="show_nodelist")
+    req.writeTAL("web/edit/edit_common.html", {"notpublished": notpublished, "chkjavascript": chkjavascript, "unpublishedlink": unpublishedlink, "nodelist":nodelist, "script_array":script_array}, macro="show_nodelist")
 
 
 def isUnFolded(unfoldedids, id):

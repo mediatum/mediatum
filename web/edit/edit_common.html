@@ -68,6 +68,7 @@
                 <p class="descbox">
                     <tal:block tal:condition="python:hasattr(node, 'show_node_text')" tal:replace="raw python:node.show_node_text(None)"/>
                     <tal:block tal:condition="python:not hasattr(node, 'show_node_text')" tal:replace="raw python:node.getName()"/>
+                    <br><span style="color: red" tal:condition="python:node in notpublished" i18n:translate="notpublished"/>
                 </p>
             </div>
         </div>

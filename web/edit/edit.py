@@ -619,13 +619,12 @@ def content(req):
     node = tree.getNode(ids[0])
     if node.type == "root":
         tabs = "tab_content"
-    else:
-        if node.id == uploaddir.id:
-            tabs = "tab_upload"
-        elif node.id == importdir.id:
-            tabs = "tab_import"
-        else:
-            tabs = node.getDefaultEditTab()
+    elif node.id == uploaddir.id:
+        tabs = "tab_upload"
+    elif node.id == importdir.id:
+        tabs = "tab_import"
+    elif hasattr(node, "getDefaultEditTab"):
+        tabs = node.getDefaultEditTab()
 
     current = handletabs(req, ids, tabs)
     if not access.user.isEditor():

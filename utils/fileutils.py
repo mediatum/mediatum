@@ -40,7 +40,7 @@ def importFile(realname,tempname):
         cmd = "copy "+tempname+" "+(os.path.split(destname)[0])
         ret = os.system(cmd.replace('/','\\'))
 
-    if ret:
+    if ret&0xff00:
         raise IOError("Couldn't copy "+tempname+" to "+destname+" (error: "+str(ret)+")")
 
     r = realname.lower()

@@ -111,6 +111,10 @@
                 </td>
             </tr>
             <tr>
+                <td i18n:translate="admin_usergroup_emails"/>
+                <td tal:content="emails"/>
+            </tr>
+            <tr>
                 <td><tal:block i18n:translate="admin_usergroup_description">TEXT</tal:block>:</td>
                 <td>
                     <textarea tal:content="python:group.getDescription()" name="description" rows="4" ols="35"/>

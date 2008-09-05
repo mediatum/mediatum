@@ -167,6 +167,7 @@ def editGroup_mask(req, id, err=0):
     v["modulenames"] = getEditModuleNames()
     v["val_left"] = buildRawModuleLeft(group, lang(req))
     v["val_right"] = buildRawModuleRight(group, lang(req))
+    v["emails"] = ', '.join([u.get('email') for u in group.getChildren()])
     return req.getTAL("/web/admin/modules/usergroup.html", v, macro="modify")
     
 

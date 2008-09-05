@@ -123,7 +123,7 @@ def send_file(req, download=0):
         n = tree.getNode(id)
     except tree.NoSuchNodeError:
         return 404
-    if not access.hasAccess(n,"data") and n.type not in ["directory","collections"]:
+    if not access.hasAccess(n,"data") and n.type not in ["directory","collections","collection"]:
         return 403
     file = None
     # try full filename

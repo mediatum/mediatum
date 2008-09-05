@@ -64,7 +64,14 @@ class SearchResult:
 
 def protect(s):
     return '"'+s.replace('"','')+'"'
-    
+   
+class DummyContentList:
+    def __init__(self,len,collection,words):
+        self.len=len
+        self.collection=collection
+        self.words=words
+    def length(self):
+        return self.len
 
 # method handles all parts of the simple search
 def simple_search(req):
@@ -115,10 +122,7 @@ def simple_search(req):
             num += len(result)
 
             if len(result)>0:
-                # FIXME: this does all kinds of useless stuff, like sorting,
-                # which we don't need to just display a number
-                cl = ContentList(tree.NodeList(result), collection, words)
-                cl.feedback(req)
+                cl = DummyContentList(len(result), collection, words)
                 cl.linkname = "Suchergebnis"
                 cl.linktarget = ""
                 res.append(cl)

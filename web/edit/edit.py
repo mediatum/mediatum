@@ -617,6 +617,7 @@ def content(req):
     importdir = getImportDir(user)
 
     node = tree.getNode(ids[0])
+    tabs = "tab_content"
     if node.type == "root":
         tabs = "tab_content"
     elif node.id == uploaddir.id:

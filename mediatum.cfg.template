@@ -65,6 +65,6 @@ workflow=admin@mediatum.org
 [plugins]
 
 [i18n]
-languages=en
-en=i18n/mediatum-de.po
-de=i18n/mediatum-en.po
+languages=en,de
+en=i18n/mediatum-en.po
+de=i18n/mediatum-de.po

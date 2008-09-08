@@ -274,7 +274,7 @@ class Image(default.Default):
             for f in node.getFiles():
                 if f.type.startswith("tile"):
                     tileok = 1
-            if not tileok and zoom.get("width") and zoom.get("height"):
+            if not tileok and node.get("width") and node.get("height"):
                 zoom.getImage(node.id)
 
             # iptc

@@ -196,14 +196,10 @@ def editUser_mask(req, id, err=0):
         
     elif err==0 and id!="":
         #edit user
-        print "wwww"
         if usertype=="intern":
-            print "1"
             user = getUser(id)
         else:
-            print "2"
             user = getExternalUser(id)
-        print user
     else:
         #error while filling values
         option = ""
@@ -232,6 +228,9 @@ def editUser_mask(req, id, err=0):
     v["useroption"] = useroption
     v["id"] = id
     v["usertype"] = usertype
+    v["actpage"] = req.params.get("actpage","")
+    v["actfilter"] = req.params.get("actfilter","")
+    v["filtertype"] = req.params.get("filtertype","")
     return req.getTAL("web/admin/modules/user.html", v, macro="modify")
     
 def sendmailUser_mask(req, id, err=0):

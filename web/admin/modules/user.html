@@ -225,6 +225,9 @@
         <input tal:attributes="value python:id=='' and 'save_new' or 'save_edit'" type="hidden" name="form_op" id="form_op"/>
         <input tal:attributes="value id" type="hidden" name="id"/>
         <input tal:attributes="value usertype" type="hidden" name="usertype"/>
+        <input type="hidden" name="actpage" tal:attributes="value actpage"/>
+        <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
+        <input type="hidden" name="filtertype" tal:attributes="value filtertype"/>
     </form>
 </metal:block>
 

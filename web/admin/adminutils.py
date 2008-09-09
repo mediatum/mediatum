@@ -40,7 +40,8 @@ def getAdminStdVars(req):
     tabs.append(("admin_filter_else","-"))
     tabs.append(("admin_filter_all","*"))
     
-    return {"user": user, "page":page, "op":req.params.get("op",""), "tabs":tabs, "actpage":req.params.get("page", req.params.get("actpage", "0"))}
+    actpage = req.params.get("page", req.params.get("actpage", "1"))
+    return {"user": user, "page":page, "op":req.params.get("op",""), "tabs":tabs, "actpage":actpage, "actfilter":req.params.get("actfilter","")}
 
 def getOptionHeader(options):
     ret = '<table><tr>'
@@ -56,9 +57,15 @@ class Overview:
         self.stdVars = getAdminStdVars(self.req)
 
         # self.page = 0 or None -> all entries
-        self.page = int(req.params.get("page",req.params.get("actpage",1)))
+        try:
+            self.page = int(req.params.get("page",req.params.get("actpage",1)))
+        except ValueError:
+            self.page = req.params.get("actpage")
+
         if "firstpage" in req.params.keys():
             self.page = 1
+        elif "resetpage" in req.params.keys():
+            self.page = 0
         max_page = len(list)/int(config.settings["admin.pageitems"])
         if max_page+1<self.page:
             self.page = 1
@@ -100,9 +107,9 @@ class Overview:
 
     def printPageAll(self):
         if self.page!=0:
-            return '<button name="resetpage" title="'+t(self.language,"admin_allelements_title")+'" class="admin_page" type="submit">'+t(self.language,"admin_allelements")+'</button>'
+            return '<button name="resetpage" title="'+t(self.language,"admin_allelements_title")+'" class="admin_page" type="submit" value="">'+t(self.language,"admin_allelements")+'</button>'
         else:
-            return '<button name="firstpage" title="'+t(self.language,"admin_pageelements_title")+'" class="admin_page" type="submit">'+t(self.language,"admin_pageelements_title")+'</button>'
+            return '<button name="firstpage" title="'+t(self.language,"admin_pageelements_title")+'" class="admin_page" type="submit" value="">'+t(self.language,"admin_pageelements_title")+'</button>'
 
             
     def OrderColHeader(self, cols, order="", addparams=""):
@@ -132,6 +139,9 @@ def getFilter(req):
     actfilter = req.params.get("actfilter", req.params.get("filter", "all")).lower()
     if "filterbutton" in req.params.keys():
         actfilter = req.params.get("filterbutton").lower()
+        
+    if len(actfilter)>20:
+        return "all"
     return actfilter
 
 """ fills variable for sort column """
@@ -213,20 +223,7 @@ def adminNavigation():
         submenu.addItem("/admin/flush")
         submenu.addItem("/admin/settings")
         menu.append(submenu)
-        
-        submenu = Menu("admin_menu_6", "admin_menu_6_description", "/img/icons/stat.gif")
-        submenu.addItem("/admin/stats")
-        menu.append(submenu)
-        
-        submenu = Menu("admin_menu_6", "", "", "../edit/")
-        #menu.append(submenu)
-        
-        submenu = Menu("admin_menu_7", "", "/img/icons/viewsite.gif", "../")
-        #menu.append(submenu)
-        
-        submenu = Menu("admin_menu_8", "", "/img/icons/logout.gif", "/logout")
-        #menu.append(submenu)
-        
+         
     except TypeError:
         pass
     return menu

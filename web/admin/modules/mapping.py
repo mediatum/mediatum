@@ -97,7 +97,7 @@ def view(req):
 
     # filter
     if actfilter!="":
-        if actfilter=="all" or actfilter==t(lang(req),"admin_filter_all"):
+        if actfilter in ("all", "*", t(lang(req),"admin_filter_all")):
             None # all users
         elif actfilter=="0-9":
             num = re.compile(r'([0-9])')
@@ -164,6 +164,7 @@ def editMapping_mask(req, id, err=0):
     v["error"] = err
     v["mapping"] = mapping
     v["id"] = id
+    v["actpage"] = req.params.get("actpage")
     return req.getTAL("web/admin/modules/mapping.html", v, macro="modify")
 
     
@@ -176,8 +177,8 @@ def viewlist(req, id):
 
     # filter
     if actfilter!="":
-        if actfilter=="all" or actfilter==t(lang(req),"admin_filter_all"):
-            None # all users
+        if actfilter in ("all", "*", (lang(req),"admin_filter_all")):
+            None # all mappings
         elif actfilter=="0-9":
             num = re.compile(r'([0-9])')
             fields = filter(lambda x: num.match(x.getName()), fields)
@@ -237,5 +238,6 @@ def editMappingField_mask(req, id, parent, err=0):
     v["error"] = err
     v["field"] = field
     v["parent"] = parent
+    v["actpage"] = req.params.get("actpage")
     return req.getTAL("web/admin/modules/mapping.html", v, macro="modifyfield")
     

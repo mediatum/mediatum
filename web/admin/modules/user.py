@@ -124,7 +124,7 @@ def view(req):
   
     # filter
     if actfilter!="":
-        if actfilter=="all" or actfilter==t(lang(req),"admin_filter_all"):
+        if actfilter in ("all", "*", t(lang(req),"admin_filter_all")):
             None # all users
         elif actfilter=="0-9":
             num = re.compile(r'([0-9])')
@@ -228,9 +228,8 @@ def editUser_mask(req, id, err=0):
     v["useroption"] = useroption
     v["id"] = id
     v["usertype"] = usertype
-    v["actpage"] = req.params.get("actpage","")
-    v["actfilter"] = req.params.get("actfilter","")
     v["filtertype"] = req.params.get("filtertype","")
+    v["actpage"] = req.params.get("actpage")
     return req.getTAL("web/admin/modules/user.html", v, macro="modify")
     
 def sendmailUser_mask(req, id, err=0):

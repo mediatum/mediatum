@@ -48,6 +48,7 @@ def checkString(string):
 
 """ standard method for admin module """
 def validate(req, op):
+    print req.params
     path = req.path[1:].split("/")
     if len(path)==3 and path[2]=="overview":
         return showFieldOverview(req)
@@ -89,11 +90,11 @@ def validate(req, op):
                 return showMaskList(req, str(key[6:-2]))
                 
             # reindex search index for current schema
-            elif key.startswith("indexupdate_"):
+            elif key.startswith("indexupdate_") and not "cancel" in req.params.keys():
                 schema = tree.getNode(key[12:])
                 searcher.reindex(schema.getAllItems())
                 break
-
+                
         # save schema
         if "form_op" in req.params.keys():
             if req.params.get("form_op","")=="cancel":
@@ -250,7 +251,7 @@ def view(req):
   
     # filter
     if actfilter!="":
-        if actfilter=="all" or actfilter==t(lang(req),"admin_filter_all"):
+        if actfilter in ("all", "*", t(lang(req),"admin_filter_all")):
             None # all users
         elif actfilter=="0-9":
             num = re.compile(r'([0-9])')
@@ -344,7 +345,8 @@ def MetatypeDetail(req, id, err=0):
     
     rights = removeEmptyStrings(rule)
     v["acl"] =  makeList(req, "read", rights, {}, overload=0, type="read")
-
+    v["filtertype"] = req.params.get("filtertype","")
+    v["actpage"] = req.params.get("actpage")
     return req.getTAL("web/admin/modules/metatype.html", v, macro="modify_type")
    
 

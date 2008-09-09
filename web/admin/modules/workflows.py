@@ -36,7 +36,6 @@ from core.translation import t, lang
 
 """ standard validator to execute correct method """
 def validate(req, op):
-    print req.params
     path = req.path[1:].split("/")
     if len(path)==3 and path[2]=="overview":
         return WorkflowPopup(req)
@@ -139,7 +138,7 @@ def view(req):
   
     # filter
     if actfilter!="":
-        if actfilter=="all" or actfilter==t(lang(req),"admin_filter_all"):
+        if actfilter in ("all", "*", t(lang(req),"admin_filter_all")):
             None # all users
         elif actfilter=="0-9":
             num = re.compile(r'([0-9])')
@@ -195,6 +194,7 @@ def WorkflowDetail(req, id, err=0):
     v["workflow"] = workflow
     v["error"] = err
     v["rules"] = getRuleList()
+    v["actpage"] = req.params.get("actpage")
     return req.getTAL("web/admin/modules/workflows.html", v, macro="modify")
 
 """ overview of all steps for given workflow
@@ -208,7 +208,7 @@ def WorkflowStepList(req, wid):
     
     # filter
     if actfilter!="":
-        if actfilter=="all" or actfilter==t(lang(req),"admin_filter_all"):
+        if actfilter in ("all","*", t(lang(req),"admin_filter_all")):
             None # all users
         elif actfilter=="0-9":
             num = re.compile(r'([0-9])')
@@ -294,7 +294,7 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
     v["workflowtypes"] = getWorkflowTypes()
     v["error"] = err
     v["update_type"] = req.params.get("ntype","")
-
+    v["actpage"] = req.params.get("actpage")
     return req.getTAL("web/admin/modules/workflows.html", v, macro="modify_step")
     
 """ popup window with image of workflow given by id

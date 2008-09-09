@@ -35,7 +35,6 @@ from core.translation import t, lang
 # standard validator
 #
 def validate(req, op):
-    print req.params
     try:
         for key in req.params.keys():
             if key.startswith("new"):
@@ -93,7 +92,7 @@ def view(req):
     
     # filter
     if actfilter!="":
-        if actfilter=="all" or actfilter==t(lang(req),"admin_filter_all"):
+        if actfilter in("all", t(lang(req),"admin_filter_all"), "*"):
             None # all groups
         elif actfilter=="0-9":
             num = re.compile(r'([0-9])')
@@ -168,6 +167,7 @@ def editGroup_mask(req, id, err=0):
     v["val_left"] = buildRawModuleLeft(group, lang(req))
     v["val_right"] = buildRawModuleRight(group, lang(req))
     v["emails"] = ', '.join([u.get('email') for u in group.getChildren()])
+    v["actpage"] = req.params.get("actpage")
     return req.getTAL("/web/admin/modules/usergroup.html", v, macro="modify")
     
 

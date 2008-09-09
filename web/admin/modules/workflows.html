@@ -1,4 +1,9 @@
 <metal:block metal:define-macro="view">
+    <!--[if lt IE 7]>
+            <script type="text/javascript">
+                window.attachEvent("onload", buttonfix);
+            </script>
+        <![endif]-->
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form tal:attributes="action python:page" name="addnewworkflow" method="post" action="#" enctype="multipart/form-data">
         <table class="overview">
@@ -16,7 +21,7 @@
             <tr>
                 <th>&nbsp;</th>
                 <th tal:repeat="col sortcol">
-                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit">TEXT</button>
+                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit" value="">TEXT</button>
                 </th>
                 <th>
                     <a i18n:attributes="title admin_wf_exportall_title" href="/admin/export/workflows/all" target="_blank">
@@ -138,11 +143,18 @@
         <input tal:attributes="value python:workflow.id=='' and 'save_new' or 'save_edit'" type="hidden" name="form_op" id="form_op"/>
         <input tal:attributes="value python:workflow.id" type="hidden" name="id"/>
         <input type="hidden" name="acttype" value="workflow"/>
+        <input type="hidden" name="actpage" tal:attributes="value actpage"/>
+        <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
     </form>
 
 </metal:block>
 
 <metal:block metal:define-macro="view_step">
+    <!--[if lt IE 7]>
+            <script type="text/javascript">
+                window.attachEvent("onload", buttonfix);
+            </script>
+        <![endif]-->
     <p><a href="./workflows" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="metafields" method="post" action="#">
         <table class="overview">
@@ -163,7 +175,7 @@
             <tr>
                 <th>&nbsp;</th>
                 <th tal:repeat="col sortcol">
-                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit">TEXT</button>
+                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit" value="">TEXT</button>
                 </th>
                 <th align="right">
                     <input tal:attributes="name python:'newdetail_'+str(workflow.getId())" i18n:attributes="title admin_wfstep_new_title" type="image" src="/img/install.png">
@@ -218,6 +230,8 @@
         <!--<input tal:attributes="value python:workflow.getId()" type="hidden" name="wid"/>-->
         <input type="hidden" name="parent" tal:attributes="value python:workflow.id"/>
         <input type="hidden" name="acttype" value="step"/>
+        <input type="hidden" name="actpage" tal:attributes="value actpage"/>
+        <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
     </form>
 </metal:block>
 
@@ -325,6 +339,8 @@
         <input tal:attributes="value id" type="hidden" name="stepid"/>
         <input type="hidden" name="acttype" value="step"/>
         <input tal:attributes="value python:workflow.id" type="hidden" name="parent"/>
+        <input type="hidden" name="actpage" tal:attributes="value actpage"/>
+        <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
     </form>
 </metal:block>
 

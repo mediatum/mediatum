@@ -26,8 +26,6 @@ from core.translation import lang, t
 
 
 def validate(req, op):
-
-    print req.params
     if req.params.get("acttype", "mapping")=="mapping":
         #  section for mapping
         for key in req.params.keys():

@@ -91,7 +91,7 @@ def view(req):
     
     # filter
     if actfilter!="":
-        if actfilter=="all" or actfilter==t(lang(req),"admin_filter_all"):
+        if actfilter in ("all", "*", t(lang(req),"admin_filter_all")):
             None # all users
         elif actfilter=="0-9":
             num = re.compile(r'([0-9])')
@@ -145,6 +145,7 @@ def editRule_mask(req, id, err=0):
     v = getAdminStdVars(req)
     v["error"] = err
     v["rule"] = rule
+    v["actpage"] = req.params.get("actpage")
     return req.getTAL("web/admin/modules/acls.html", v, macro="modify")
 
 #

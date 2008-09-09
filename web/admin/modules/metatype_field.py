@@ -35,11 +35,12 @@ def showDetailList(req, id):
     
     order = getSortCol(req)
     actfilter = getFilter(req)
-    
+
     # filter
     if actfilter!="":
-        if actfilter=="all" or actfilter==t(lang(req),"admin_filter_all"):
+        if actfilter in ("all", "*", t(lang(req),"admin_filter_all")):
             None # all users
+            print "nmone"
         elif actfilter=="0-9":
             num = re.compile(r'([0-9])')
             if req.params.get("filtertype","")=="name":
@@ -88,6 +89,11 @@ def showDetailList(req, id):
     v["pages"] = pages
     v["order"] = order
     v["actfilter"] = actfilter
+    
+    v["actpage"] = req.params.get("actpage")
+    if str(req.params.get("page","")).isdigit():
+        v["actpage"] = req.params.get("page")
+    
         
     return req.getTAL("web/admin/modules/metatype_field.html", v, macro="view_field")
     
@@ -151,6 +157,8 @@ def FieldDetail(req, pid, id, err=0):
     v["requiredoptions"] = requiredoption
     v["fieldoptions"] = fieldoption
     v["metafields"] = metafields
+    v["filtertype"] = req.params.get("filtertype","")
+    v["actpage"] = req.params.get("actpage")
 
     v["icons"] = {"externer Link":"/img/extlink.png", "Email":"/img/email.png"}
     v["valuelist"] = ("", "", "")

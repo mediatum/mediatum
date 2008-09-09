@@ -1,4 +1,9 @@
 <metal:block metal:define-macro="view">
+    <!--[if lt IE 7]>
+            <script type="text/javascript">
+                window.attachEvent("onload", buttonfix);
+            </script>
+        <![endif]-->
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form tal:attributes="action page" name="rules" method="post" action="#">
         <table class="overview">
@@ -26,7 +31,7 @@
             <tr>
                 <th>&nbsp;</th>
                 <th tal:repeat="col sortcol">
-                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit">TEXT</button>
+                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit" value="">TEXT</button>
                 </th>
                 <th align="right"><input i18n:attributes="title admin_acl_create" type="image" src="/img/install.png" name="new"/></th>
             </tr>
@@ -130,6 +135,8 @@
             </tr>
         </table>
         <input tal:attributes="value python:id=='' and 'save_new' or 'save_edit'" type="hidden" name="form_op" id="form_op"/>
+        <input type="hidden" name="actpage" tal:attributes="value actpage"/>
+        <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
     </form>
 </metal:block>
 

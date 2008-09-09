@@ -10,6 +10,11 @@
             document.getElementById("message").style.display="block";
         }
     </script>
+    <!--[if lt IE 7]>
+            <script type="text/javascript">
+                window.attachEvent("onload", buttonfix);
+            </script>
+        <![endif]-->
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form name="useroverview" method="post" action="#" enctype="multipart/form-data" tal:attributes="action page">
         <table class="overview">
@@ -38,7 +43,7 @@
             <tr>
                 <th>&nbsp;</th>
                 <th tal:repeat="col sortcol">
-                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit">TEXT</button>
+                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit" value="">TEXT</button>
                 </th>
                 <th>&nbsp;</th>
                 
@@ -136,6 +141,11 @@
 </metal:block>
 
 <metal:block metal:define-macro="modify_type" tal:define="id python:metadatatype.getName()">
+    <!--[if lt IE 7]>
+            <script type="text/javascript">
+                window.attachEvent("onload", buttonfix);
+            </script>
+        <![endif]-->
     <script>
         function selectacl(objname){
             obj = document.getElementById(objname);
@@ -219,8 +229,8 @@
             </tr>
             <tr tal:define="corrupt python:metadatatype.searchIndexCorrupt()">
                 <td>&nbsp;</td>
-                <td tal:condition="python:not corrupt">
-                    <span i18n:translate="admin_metatype_reindex_title">TEXT</span> &nbsp;&nbsp;<button type="submit" tal:attributes="name python:'indexupdate_'+str(metadatatype.id)" i18n:translate="admin_metatype_reindex_button">TEXT</button>
+                <td tal:condition="python:not corrupt and str(metadatatype.id)!='None'">
+                    <span i18n:translate="admin_metatype_reindex_title">TEXT</span> &nbsp;&nbsp; <button type="submit" tal:attributes="name python:'indexupdate_'+str(metadatatype.id)" i18n:translate="admin_metatype_reindex_button" value="">TEXT</button>
                     <br/>&nbsp;<br/>
                 </td>
                 <td tal:condition="python:corrupt">
@@ -237,6 +247,9 @@
         </table>
         <input tal:attributes="value python:{'True':'save_new','False':'save_edit'}[str(id=='')]" type="hidden" name="form_op" id="form_op" />
         <input type="hidden" name="acttype" value="schema"/>
+        <input type="hidden" name="actpage" tal:attributes="value actpage"/>
+        <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
+        <input type="hidden" name="filtertype" tal:attributes="value filtertype"/>
     </form>
 </metal:block>
 

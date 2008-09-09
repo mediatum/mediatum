@@ -1,4 +1,9 @@
 <metal:block metal:define-macro="view_mask">
+    <!--[if lt IE 7]>
+            <script type="text/javascript">
+                window.attachEvent("onload", buttonfix);
+            </script>
+        <![endif]-->
     <p><a tal:attributes="href python:'./metatype'+page" i18n:translate="admin_overview">TEXT</a></p>
     <script type="text/javascript">
         function openwindow(url)
@@ -11,18 +16,18 @@
     <form name="fieldoverview" method="post" action="#" tal:attributes="action page">
         <table class="overview">
             <tr>
-                <td colspan="5">
+                <td colspan="8">
                     <h3 i18n:translate="admin_mask_header">TEXT '<span tal:content="python:metadatatype.getName()" i18n:name="name"/>'</h3>
                 </td>
             </tr>
             <tr tal:condition="python:len(defaults)<3">
-                <td colspan="5">
+                <td colspan="8">
                     <p class="error" i18n:translate="admin_mask_type_text">TEXT</p>
                     <br/><br/>
                 </td>
             </tr>
             <tr>
-                <td colspan="10">
+                <td colspan="8">
                     <span i18n:translate="admin_filter_label">TEXT</span>
                     <tal:block tal:repeat="tab tabs">
                         <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
@@ -32,7 +37,7 @@
             <tr>
                 <th>&nbsp;</th>
                 <th tal:repeat="col sortcol">
-                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit">TEXT</button>
+                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit" value="">TEXT</button>
                 </th>
                 <th align="right">
                     <input tal:attributes="name python:'automask_'+metadatatype.getName()" i18n:attributes="title admin_mask_createstd_title" type="image" src="/img/styles.png">&nbsp;&nbsp;&nbsp;&nbsp;
@@ -40,7 +45,7 @@
                 </th>
             </tr>
             <tr tal:condition="python:not masks or len(masks)==0">
-                <td colspan="5"><small i18n:translate="admin_mask_nomask">TEXT</small></td>
+                <td colspan="8"><small i18n:translate="admin_mask_nomask">TEXT</small></td>
             </tr>
                 <tal:block tal:define="start python:pages.getStart(); end python:pages.getEnd()" tal:repeat="mask python:masks[start:end]">
                     <tr tal:define="cssclass python:masks.index(mask)%2 and 'norm' or 'silver'">
@@ -78,7 +83,7 @@
                     <th align="right" colspan="4"><small tal:content="structure python:pages.printPageAll()"/></th>
                 </tr>
                 <tr>
-                    <td colspan="5">
+                    <td colspan="8">
                         &nbsp;
                     </td>
                 </tr>
@@ -246,5 +251,7 @@
         <input type="hidden" name="acttype" value="mask"/>
         <input type="hidden" name="parent" tal:attributes="value python:mtype.id"/>
         <input type="hidden" name="maskid" tal:attributes="value python:mask.id"/>
+        <input type="hidden" name="actpage" tal:attributes="value actpage"/>
+        <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
     </form>
 </metal:block>

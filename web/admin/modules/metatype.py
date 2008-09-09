@@ -48,7 +48,6 @@ def checkString(string):
 
 """ standard method for admin module """
 def validate(req, op):
-    print req.params
     path = req.path[1:].split("/")
     if len(path)==3 and path[2]=="overview":
         return showFieldOverview(req)

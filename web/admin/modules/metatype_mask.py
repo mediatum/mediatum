@@ -43,7 +43,7 @@ def showMaskList(req, id):
     
     # filter
     if actfilter!="":
-        if actfilter=="all" or actfilter==t(lang(req),"admin_filter_all"):
+        if actfilter in ("all", "*", t(lang(req),"admin_filter_all")):
             None # all users
         elif actfilter=="0-9":
             num = re.compile(r'([0-9])')
@@ -128,6 +128,8 @@ def MaskDetails(req, pid, id, err=0):
     v["masktypes"] = _masktypes
     v["id"] = id
     v["langs"] = config.get("i18n.languages").split(",")
+    v["actpage"] = req.params.get("actpage")
+
     
     rule = mask.getAccess("read")
     if rule:

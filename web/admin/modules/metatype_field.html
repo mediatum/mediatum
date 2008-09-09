@@ -1,4 +1,9 @@
 <metal:block metal:define-macro="view_field">
+    <!--[if lt IE 7]>
+            <script type="text/javascript">
+                window.attachEvent("onload", buttonfix);
+            </script>
+        <![endif]-->
     <p><a tal:attributes="href python:'./metatype'+page" i18n:translate="admin_overview">TEXT</a></p>
     <script type="text/javascript">
         function openwindow(url)
@@ -38,8 +43,7 @@
             <tr>
                 <th>&nbsp;</th>
                 <th tal:repeat="col sortcol">
-                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit">TEXT</button>
-                    <!--<a tal:attributes="href python:col.link+'&detailof='+metadatatype.getName(); title python:col.title" tal:content="structure python:col.label"/>-->
+                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit" value="">TEXT</button>
                 </th>
                 <th>
                     <table>
@@ -300,6 +304,9 @@
         <input type="hidden" name="parent" tal:attributes="value python:metadatatype.id" />
         <input type="hidden" name="acttype" value="field"/>
         <input type="hidden" name="fieldid" tal:attributes="value python:metafield.id"/>
+        <input type="hidden" name="actpage" tal:attributes="value actpage"/>
+        <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
+        <input type="hidden" name="filtertype" tal:attributes="value filtertype"/>
     </form>
     <script>
        metatypechange(document);

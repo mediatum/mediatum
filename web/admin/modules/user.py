@@ -37,6 +37,7 @@ from core.translation import lang, t
 # standard validator
 #
 def validate(req, op):
+    print req.params
     try:
         for key in req.params.keys():
             if key.startswith("new"):

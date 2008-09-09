@@ -36,6 +36,7 @@ from core.translation import t, lang
 
 """ standard validator to execute correct method """
 def validate(req, op):
+    print req.params
     path = req.path[1:].split("/")
     if len(path)==3 and path[2]=="overview":
         return WorkflowPopup(req)

@@ -56,7 +56,7 @@ blockquote, input, li, select, th, td  {
    font-size: 1em;
    }
 
-input, button{
+button{
 	font-size: 1em;
 	border: 1px solid #ABC6DD;
 	background: #F8FAFA;
@@ -128,6 +128,7 @@ code1, tt1, pre1
    margin:0px;
    background-color: #fff;
    text-align: left;
+   width: auto;
 }
 	  
  /* Top - banner */	  
@@ -157,10 +158,11 @@ div.logotext  {
 	
    }
    
-div.logotext a{
+div.logotext a, div.logotext a:visited{
     color: silver;
     margin: 5px;
 }
+
 div.logotext a:hover{
     color: #FFFFFF;
 }
@@ -365,7 +367,7 @@ ul#nav li a  {
 	display: block;
  }
    
-ul#nav li:hover, ul#nav li.cssHover, ul#nav a.module:hover, ul#nav a.first_module:hover ,ul#nav li .selected:hover,ul#nav ul li a:hover  {
+ul#nav li:hover, ul#nav li.cssHover, ul#nav a.module:hover, ul#nav a.first_module:hover ,ul#nav li .selected:hover,ul#nav ul li a:hover  { 
  background:  url(/img/layout/nav.png) repeat-x left -50px;
  color: #fff;
    } 
@@ -389,6 +391,8 @@ ul#nav li ul a  {
 	border-top: 0 none;
 	border-right: 0 none;
 	border-left: 0 none;
+    height: auto;
+    width: auto;
    }
 ul#nav li ul  {
 	background: #F3F5F5;
@@ -402,7 +406,7 @@ ul#nav li ul  {
 	z-index:999;
 	border-top: 1px solid #FFFFFF;
 	border-bottom: 1px solid #374B51;
-	opacity:0.95;
+	/*opacity:0.95;*/
 	/*-moz-opacity: 0.90;*/
 }
 
@@ -435,13 +439,15 @@ ul#nav1 li.sep  {
 /* Nav Tools  */
 div.MainMenu { 
     /*margin-right: auto;*/
-	margin-left: 40px;/*auto;*/
+	margin-left: auto;
     margin-top: 50px;
     margin-bottom: 30px;
 	float:left;
 	height: auto;
 	width: auto;
     padding: 10px;
+    position: relative;
+    overflow: visible;
 }
 
 .visible  {
@@ -1104,11 +1110,11 @@ td.silver{
 
 
 table.overview{
-	width: 100%;
 	font-size: 10px;
 	font-weight: lighter;
 	text-decoration: none;
 	border-collapse: collapse;
+    width: 100%;
 }
 
 form{

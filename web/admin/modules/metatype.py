@@ -31,6 +31,7 @@ from utils.utils import removeEmptyStrings
 from core.translation import lang, t
 from schema.schema import loadTypesFromDB, getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, deleteMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
 from schema.mapping import getMappings
+from schema.bibtex import getAllBibTeXTypes
 
 # metafield methods
 from metatype_field import showDetailList, FieldDetail
@@ -341,7 +342,7 @@ def MetatypeDetail(req, id, err=0):
     v["datatypes"] = loadAllDatatypes()
     v["metadatatype"] = metadatatype
     v["error"] = err
-    v["bibtextypes"] = ["article", "book","booklet","inbook","manual","techreport","report","proceedings","conference","inproceedings","phdthesis","mastersthesis","misc"]
+    v["bibtextypes"] = getAllBibTeXTypes()
     v["bibtexselected"] = metadatatype.get("bibtexmapping")
     
     rule = metadatatype.getAccess("read")

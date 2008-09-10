@@ -98,16 +98,22 @@ class Video(default.Default):
 
     """ popup window for actual nodetype """
     def popup_fullsize(node, req):
+        f = None
         for filenode in node.getFiles():
             if filenode.getType()=="original" or filenode.getType()=="video":
                 f =  "/file/" + str(node.id) + "/" + filenode.getName()
                 break
+
         file = f
-        script = """
-        window.onload = function() {  
-                flashembed("player", { src:'/img/FlowPlayerDark.swf', width: """+str(int(node.get('vid-width') or '0')+64)+""", height: """+str(int(node.get('vid-height') or '0')+53)+"""}, {config: {videoFile: '"""+file+"""'}} );
-            }"""
-        req.writeTAL("contenttypes/video.html", {"file":file, "script":script, "node":node}, macro="fullsize_flv")
+        if file:
+            script = """
+            window.onload = function() {  
+                    flashembed("player", { src:'/img/FlowPlayerDark.swf', width: """+str(int(node.get('vid-width') or '0')+64)+""", height: """+str(int(node.get('vid-height') or '0')+53)+"""}, {config: {videoFile: '"""+file+"""'}} );
+                }"""
+        else:
+            script = ""
+
+        req.writeTAL("contenttypes/video.html", {"script":script, "node":node}, macro="fullsize_flv")
 
         
     def getEditMenuTabs(node):

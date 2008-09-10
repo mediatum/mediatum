@@ -240,16 +240,26 @@ def importBibTeX(file, node=None):
             if mytype not in bibtextypes:
                 raise ValueError("bibtex mapping of bibtex type '%s' not defined" % mytype)
             result += [(mytype.lower(), fields)]
-            doc = tree.Node(docid, type="document/"+bibtextypes[mytype])
-            print mytype,docid
+
+            metatype = bibtextypes[mytype]
+            doc = tree.Node(docid, type="document/"+metatype)
+            fieldnames = [field.getName() for field in doc.getMetaFields()]
             for k,v in fields.items():
-                print "\t",k,v
+                if k not in fieldnames: 
+                    if (k+"-contrib") in fieldnames:
+                        k = k+"-contrib"
+                    elif k+"-title" in fieldnames:
+                        k = k+"-title"
+                    elif k.startswith("book") and ("bookseries-"+k[4:]) in fieldnames:
+                        k = ("bookseries-"+k[4:]) 
+                    elif ("bookseries-"+k) in fieldnames:
+                        k = ("bookseries-"+k) 
+                    elif ("journal-"+k) in fieldnames:
+                        k = ("journal-"+k) 
+
+                if k not in fieldnames:
+                    print mytype,"->",metatype,"!",k
                 doc.set(k,v)
             node.addChild(doc)
     return node
 
-def test():
-    import glob
-    #for file in glob.glob("/home/kramm/IntegraTUM/bildarchiv/bibtex/*"):
-    for file in ["/home/kramm/IntegraTUM/bildarchiv/bibtex/Radig.bib"]:
-        importBibTeX(file)

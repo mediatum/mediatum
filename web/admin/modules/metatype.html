@@ -201,6 +201,18 @@
                     </select>
                 </td>
             </tr>
+
+            <tr>
+                <td><tal:block i18n:translate="admin_meta_bibtex">TEXT</tal:block>: <br>
+                    <tal:block i18n:translate="admin_meta_bibtex_warning">TEXT</tal:block>
+                </td>
+                <td>
+                    <select name="mbibtex" multiple="multiple" style="width:300px" size="5">
+                        <option tal:repeat="bibtex bibtextypes" tal:attributes="value python:bibtex; selected python:{'False':None,'True':'selected'}[str(bibtex in bibtexselected)]" tal:content="python:bibtex" i18n:translate=""/>
+                    </select>
+                </td>
+            </tr>
+
             <tr>
                 <td><tal:block i18n:translate="admin_meta_rights">TEXT</tal:block>:</td>
                 <td>

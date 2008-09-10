@@ -109,7 +109,12 @@ def validate(req, op):
             _active = 0
             if req.params.get("mactive","")!="":
                 _active = 1
-            updateMetaType(req.params.get("mname",""), description=req.params.get("description",""), longname=req.params.get("mlongname",""), active=_active, datatypes=req.params.get("mdatatypes","").replace(";", ", "), orig_name=req.params.get("mname_orig",""))
+            updateMetaType(req.params.get("mname",""), 
+                           description=req.params.get("description",""), 
+                           longname=req.params.get("mlongname",""), active=_active, 
+                           datatypes=req.params.get("mdatatypes","").replace(";", ", "), 
+                           bibtexmapping=req.params.get("mbibtex",""), 
+                           orig_name=req.params.get("mname_orig",""))
             mtype = getMetaType(req.params.get("mname"))
             if mtype:
                 mtype.setAccess("read", "")
@@ -329,12 +334,15 @@ def MetatypeDetail(req, id, err=0):
         metadatatype.setLongName(req.params["mlongname"])
         metadatatype.setActive("mactive" in req.params)
         metadatatype.setDatatypeString(req.params.get("mdatatypes","").replace(";",", "))
+        metadatatype.set("bibtexmapping", req.params.get("mbibtex",""))
 
         v["original_name"] = req.params["mname_orig"]
 
     v["datatypes"] = loadAllDatatypes()
     v["metadatatype"] = metadatatype
     v["error"] = err
+    v["bibtextypes"] = ["article", "book","booklet","inbook","manual","techreport","report","proceedings","conference","inproceedings","phdthesis","mastersthesis","misc"]
+    v["bibtexselected"] = metadatatype.get("bibtexmapping")
     
     rule = metadatatype.getAccess("read")
     if rule:
@@ -572,6 +580,7 @@ def showEditor(req):
     else:
         # show metaEditor
         v["editor"] = req.getTALstr(editor.getMetaMask(language=lang(req)), {})
+    
     return req.getTAL("web/admin/modules/metatype.html", v, macro="editor_popup")
 
 

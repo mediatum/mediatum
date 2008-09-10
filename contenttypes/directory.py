@@ -159,7 +159,7 @@ class Directory(default.Default):
             submenu.addItem("tab_editor","tab_editor")
             submenu.addItem("tab_view","tab_view")
             menu.append(submenu)
-            
+            submenu = None
             
             if node.getContentType()=="directory":
                 submenu = Menu("tab_metadata", "description","#", "../") # new
@@ -168,12 +168,14 @@ class Directory(default.Default):
                 submenu = Menu("tab_metadata_col", "description","#", "../") # new
                 submenu.addItem("tab_metadata_col","tab_metadata")
                 submenu.addItem("tab_logo","tab_logo")
-            submenu.addItem("tab_files","tab_files")
+            if submenu:
+                submenu.addItem("tab_files","tab_files")
+            
             if node.getContentType() in ("collection", "collections"):
                 submenu.addItem("tab_searchmask","tab_searchmask")
-            if node.getContentType() in ("collection", "collections"):
                 submenu.addItem("tab_sortfiles","tab_sortfiles")
-            menu.append(submenu)
+            if submenu:
+                menu.append(submenu)
             
             submenu = Menu("tab_security", "description","#", "../") # new
             submenu.addItem("tab_acls","tab_acls")

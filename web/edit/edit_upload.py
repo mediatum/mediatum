@@ -115,6 +115,9 @@ def importFileIntoNode(user,realname,tempname,datatype, workflow=0):
         z = zipfile.ZipFile(tempname)
         for f in z.namelist():
             name = mybasename(f)
+            if name.startswith("._"):
+                # ignore Mac OS X junk
+                continue
             rnd = str(random.random())[2:]
             ext = os.path.splitext(name)[1]
             newfilename = join_paths(config.get("paths.tempdir"), rnd+ext)

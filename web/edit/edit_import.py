@@ -37,6 +37,7 @@ from utils.fileutils import importFile
 from core.tree import Node
 from core.acl import AccessData
 from schema.schema import loadTypesFromDB
+from schema.bibtex import importBibTeX
 
 from core.translation import translate, lang, t
 
@@ -59,11 +60,11 @@ def import_new(req):
         del req.params["file"]
         if hasattr(file,"filesize") and file.filesize>0:
             try:
-                importBibTexData(importdir, file.tempname)
-                req.request["Location"] = req.makeLink("content", {"id":uploaddir.id})
+                importBibTeX(file.tempname, importdir)
+                req.request["Location"] = req.makeLink("content", {"id":importdir.id})
             except:
                 logException("error during upload")
-                req.request["Location"] = req.makeLink("content", {"id":uploaddir.id, "error":"PostprocessingError"})
+                req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"PostprocessingError"})
 
             return athana.HTTP_MOVED_TEMPORARILY;
 

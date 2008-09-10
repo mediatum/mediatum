@@ -155,7 +155,7 @@ class Directory(default.Default):
         menu = list()
         try:
             submenu = Menu("tab_layout", "description","#", "../") #new
-            #submenu.addItem("tab_content","tab_content")
+            submenu.addItem("tab_content","tab_content")
             submenu.addItem("tab_editor","tab_editor")
             submenu.addItem("tab_view","tab_view")
             menu.append(submenu)

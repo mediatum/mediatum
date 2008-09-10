@@ -3006,3 +3006,9 @@ msgstr "Nicht publiziert"
 
 msgid "admin_usergroup_emails"
 msgstr "eMails:"
+
+msgid "admin_meta_bibtex"
+msgstr "BibTeX-Import-Mapping"
+
+msgid "admin_meta_bibtex_warning"
+msgstr "(Nur für Veröffentlichungen!)"

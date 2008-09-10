@@ -105,7 +105,7 @@ class Video(default.Default):
         file = f
         script = """
         window.onload = function() {  
-                flashembed("player", { src:'/img/FlowPlayerDark.swf', width: """+str(int(node.get('vid-width'))+64)+""", height: """+str(int(node.get('vid-height'))+53)+"""}, {config: {videoFile: '"""+file+"""'}} );
+                flashembed("player", { src:'/img/FlowPlayerDark.swf', width: """+str(int(node.get('vid-width') or '0')+64)+""", height: """+str(int(node.get('vid-height') or '0')+53)+"""}, {config: {videoFile: '"""+file+"""'}} );
             }"""
         req.writeTAL("contenttypes/video.html", {"file":file, "script":script, "node":node}, macro="fullsize_flv")
 

@@ -87,29 +87,28 @@ def getentries(filename):
             else:
                 content = data[pos:]
             
+            content = content.replace("{","")
+            content = content.replace("~"," ")
+            content = content.replace("}","")
             content = xspace.sub(" ",backgarbage.sub("",frontgarbage.sub("",content)))
             content = content.replace("\\\"u","ü").replace("\\\"a","ä").replace("\\\"o","ö") \
                              .replace("\\\"U","Ü").replace("\\\"A","Ä").replace("\\\"O","Ö")
             content = content.replace("\\","")
             content = content.replace("{\"u}","ü").replace("{\"a}","ä").replace("{\"o}","ö") \
                              .replace("{\"U}","Ü").replace("{\"A}","Ä").replace("{\"O}","Ö")
-            content = content.replace("{","")
-            content = content.replace("~"," ")
-            content = content.replace("}","")
             content = content.strip()
 
             if field=="author" and content:
                 authors = []
-                for author in content.split("and"):
+                for author in content.split(" and "):
                     author = author.strip()
-                    if "," not in author:
+                    if "," not in author and " " in author:
                         i = author.rindex(' ') 
                         if i>0:
                             forename,lastname=author[0:i].strip(),author[i+1:].strip()
                         author = "%s, %s" % (lastname, forename)
                     authors += [author]
                 content = ";".join(authors)
-
 
             fields[field] = content
         else:

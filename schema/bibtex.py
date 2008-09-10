@@ -98,6 +98,8 @@ def getentries(filename):
                              .replace("{\"U}","Ü").replace("{\"A}","Ä").replace("{\"O}","Ö")
             content = content.strip()
 
+            content = unicode(content,"utf-8",errors='replace').encode("utf-8")
+
             if field=="author" and content:
                 authors = []
                 for author in content.split(" and "):
@@ -191,7 +193,6 @@ def getbibtexmappings():
         for bibtextype in metatype.get("bibtexmapping").split(";"):
             if bibtextype:
                 bibtextypes[bibtextype] = metatype.getName()
-                print bibtextype,"->",metatype.getName()
     return bibtextypes
 
 def checkMappings():
@@ -253,12 +254,32 @@ def importBibTeX(file, node=None):
                         k = ("bookseries-"+k[4:]) 
                     elif ("bookseries-"+k) in fieldnames:
                         k = ("bookseries-"+k) 
+                    elif k.startswith("book") and ("journal-"+k[4:]) in fieldnames:
+                        k = ("journal-"+k[4:]) 
                     elif ("journal-"+k) in fieldnames:
                         k = ("journal-"+k) 
+                    elif ("p-"+k) in fieldnames:
+                        k = ("p-"+k) 
 
                 if k not in fieldnames:
                     print mytype,"->",metatype,"!",k
                 doc.set(k,v)
             node.addChild(doc)
     return node
+
+def test():
+    import glob
+    try:
+        b = tree.getRoot("bibs")
+        tree.getRoot().removeChild(b)
+    except:
+        pass
+
+    b = tree.Node("bibs",type="directory")
+    tree.getRoot().addChild(b)
+    for file in glob.glob("/home/mis/tmp/bib/*"):
+        c = tree.Node(os.path.basename(file),type="directory")
+        b.addChild(c)
+        importBibTeX(file,c)
+
 

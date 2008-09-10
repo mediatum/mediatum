@@ -327,6 +327,10 @@ def event(etype="meta"):
         node.event_metadata_changed()
     elif etype=="file":
         node.event_files_changed()
+
+def bibtex():
+    import schema.bibtex as bibtex
+    bibtex.checkMappings()
     
 def quit():
     sys.exit(1)
@@ -340,6 +344,7 @@ commands = {
  "child": Command(get_child, ["name"]),
  "acl": Command(get_acl, ["type"]),
  "rm": Command(remove_node, ["name"]),
+ "bibtex": Command(bibtex, []),
  "search": Command(search, ["query"]),
  "searchids": Command(searchids, ["query"]),
  "searchsort": Command(searchsort, ["query","sortfield"]),

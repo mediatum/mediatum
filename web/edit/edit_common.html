@@ -2,7 +2,7 @@
 <tal:block metal:define-macro="show_nodelist">
     <p tal:condition="unpublishedlink" class="error">
         <span i18n:translate="unpublished_objects1">_</span><br>
-        <a target="frame" i18n:translate="unpublished_objects2" tal:attributes="href unpublishedlink">_</a>
+        <a target="_parent" i18n:translate="unpublished_objects2" tal:attributes="href unpublishedlink">_</a>
     </p>
 
     <p>
@@ -68,7 +68,7 @@
                 <p class="descbox">
                     <tal:block tal:condition="python:hasattr(node, 'show_node_text')" tal:replace="raw python:node.show_node_text(None)"/>
                     <tal:block tal:condition="python:not hasattr(node, 'show_node_text')" tal:replace="raw python:node.getName()"/>
-                    <br><span style="color: red" tal:condition="python:node in notpublished" i18n:translate="notpublished"/>
+                    <br><span style="color: red" tal:condition="python:node in notpublished" i18n:translate="notpublished">TEXT</span>
                 </p>
             </div>
         </div>

@@ -2401,6 +2401,9 @@ msgstr "Größe"
 msgid "edit_meta_info1"
 msgstr "Für diesen Knotentyp sind keine Metadaten verfügbar, die editiert werden können."
 
+msgid "edit_meta_info2"
+msgstr "Achtung, es wurden Objekte mit unterschiedlichen Metadatentypen ausgewählt!<br/>Es werden nur Objekte vom Schema <b>'${n}'</b> berücksichtigt."
+
 msgid "edit_meta_mask_selection"
 msgstr "Maskenauswahl"
 

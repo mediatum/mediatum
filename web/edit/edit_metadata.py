@@ -27,6 +27,7 @@ import core.tree as tree
 import logging
 from core.translation import lang, t
 
+
 def edit_metadata(req, ids):
 
     user = users.getUserFromRequest(req)
@@ -58,21 +59,25 @@ def edit_metadata(req, ids):
                       </script>\n"""
     req.write(script)
 
+    metatypes = {}
     nodes = []
     idstr = ""
     for id in ids:
         if idstr:
             idstr+=","
         node = tree.getNode(id)
-        if len(nodes)==0 or nodes[0].type == node.type:
+        metatypes[node.getSchema()] = ""
+        if len(nodes)==0 or nodes[0].getSchema() == node.getSchema():
             nodes += [node]
         idstr += id
-    
+    metatypes = metatypes.keys()
+
     masklist = []
+
     for m in node.getType().getMasks(type="edit"):
         if access.hasReadAccess(m):
             masklist.append(m)
-
+            
     if hasattr(node, "metaFields"):
                 
         class SystemMask:
@@ -99,7 +104,6 @@ def edit_metadata(req, ids):
         default = masklist[0]
 
     maskname = req.params.get("mask", node.get("edit.lastmask") or "editmask")
-    
     if maskname=="":
         maskname = default.getName()
 
@@ -188,9 +192,10 @@ def edit_metadata(req, ids):
                 except:
                     datestr = node.get("creationtime")
                 creation_date.append([node.get("creator"), datestr])
-
+    
     data = {}
     data["reload_script"] = reload_script
+    data["metatypes"] = metatypes
     data["idstr"] = idstr
     data["node"] = nodes[0]
     data["masklist"] = masklist

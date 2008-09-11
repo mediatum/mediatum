@@ -72,6 +72,8 @@ class DummyContentList:
         self.words=words
     def length(self):
         return self.len
+    def feedback(self, req):
+        pass
 
 # method handles all parts of the simple search
 def simple_search(req):

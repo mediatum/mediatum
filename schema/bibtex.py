@@ -250,14 +250,18 @@ def importBibTeX(file, node=None):
                         k = k+"-contrib"
                     elif k+"-title" in fieldnames:
                         k = k+"-title"
-                    elif k.startswith("book") and ("bookseries-"+k[4:]) in fieldnames:
-                        k = ("bookseries-"+k[4:]) 
-                    elif ("bookseries-"+k) in fieldnames:
-                        k = ("bookseries-"+k) 
+                    elif k.startswith("book") and ("congress"+k[4:]) in fieldnames:
+                        k = ("congress"+k[4:]) 
+                    elif ("congress-"+k) in fieldnames:
+                        k = ("congress-"+k) 
                     elif k.startswith("book") and ("journal-"+k[4:]) in fieldnames:
                         k = ("journal-"+k[4:]) 
                     elif ("journal-"+k) in fieldnames:
                         k = ("journal-"+k) 
+                    elif k.startswith("book") and ("bookseries-"+k[4:]) in fieldnames:
+                        k = ("bookseries-"+k[4:]) 
+                    elif ("bookseries-"+k) in fieldnames:
+                        k = ("bookseries-"+k) 
                     elif ("p-"+k) in fieldnames:
                         k = ("p-"+k) 
 

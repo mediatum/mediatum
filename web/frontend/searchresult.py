@@ -112,6 +112,7 @@ def simple_search(req):
 
             if len(result)>0:
                 cl = ContentList(tree.NodeList(result), collection, words)
+                cl.feedback(req)
                 cl.linkname = "Suchergebnis"
                 cl.linktarget = ""
                 res.append(cl)

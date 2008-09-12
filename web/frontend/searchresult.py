@@ -65,16 +65,6 @@ class SearchResult:
 def protect(s):
     return '"'+s.replace('"','')+'"'
    
-class DummyContentList:
-    def __init__(self,len,collection,words):
-        self.len=len
-        self.collection=collection
-        self.words=words
-    def length(self):
-        return self.len
-    def feedback(self, req):
-        pass
-
 # method handles all parts of the simple search
 def simple_search(req):
     from web.frontend.content import ContentList
@@ -104,9 +94,6 @@ def simple_search(req):
     num = 0
     if  req.params.get("act_node",None) and tree.getNode(req.params.get("act_node")).getContentType()!="collections":
         # actual node is a collection or directory
-
-        #FIXME: this is a search which was done before, we don't need to
-        #       do this *again*
         result = tree.getNode(req.params.get("act_node")).search('full='+q)
         result = access.filter(result)
         num += len(result)
@@ -124,7 +111,7 @@ def simple_search(req):
             num += len(result)
 
             if len(result)>0:
-                cl = DummyContentList(len(result), collection, words)
+                cl = ContentList(tree.NodeList(result), collection, words)
                 cl.linkname = "Suchergebnis"
                 cl.linktarget = ""
                 res.append(cl)

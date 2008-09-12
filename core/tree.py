@@ -683,7 +683,7 @@ class Node:
             if not self.id:
                 raise "Internal Error"
         else:
-            self.attributes[name] = value
+            self.attributes[name] = str(value)
 
         if self.id:
             db.setAttribute(self.id, name, value,check=(not bulk))

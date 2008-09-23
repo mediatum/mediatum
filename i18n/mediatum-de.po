@@ -2018,7 +2018,7 @@ msgid "edit_action_file_upload"
 msgstr "Eingeben / Hochladen"
 
 msgid "edit_action_file_import"
-msgstr "Importieren"
+msgstr "BibTex Importieren"
 
 msgid "edit_action_file_move"
 msgstr "Verschieben nach..."

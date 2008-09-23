@@ -2005,8 +2005,8 @@ msgstr "Folder:"
 msgid "edit_action_file_upload"
 msgstr "Create / Upload"
 
-msgid "edit_action_file_upload"
-msgstr "Import"
+msgid "edit_action_file_import"
+msgstr "Import bibtex"
 
 msgid "edit_action_file_move"
 msgstr "Move to..."

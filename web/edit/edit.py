@@ -114,7 +114,7 @@ def frameset(req):
                         var src = tree.getFolder();
                         this.content.location.href = "edit_content?ids="+ids+"&src="+src+"&tab=tab_metadata";
                         r = ""+Math.random()*10000;
-                        this.buttons.location.href = "edit_buttons?r="+r;
+                        this.buttons.location.href = "edit_buttons?ids="+ids+"&r="+r;
                     }
                     return 0;
                 } else if(_action == "editsingle") {
@@ -124,7 +124,7 @@ def frameset(req):
                     } else {
                         this.content.location.href = "edit_content?ids="+content.getFirstObject()+"&nodelist="+ids+"&tab=tab_metadata";
                         r = ""+Math.random()*10000;
-                        this.buttons.location.href = "edit_buttons?r="+r;
+                        this.buttons.location.href = "edit_buttons?ids="+ids+"&r="+r;
                     }
                     return 0;
                 } else if(_action == "delete") {
@@ -174,7 +174,7 @@ def frameset(req):
                 //this.tree.location.reload();
 
                 this.content.location.href = "edit_content?id="+id+"&r="+r;
-                this.buttons.location.href = "edit_buttons?r="+r;
+                this.buttons.location.href = "edit_buttons?id="+id+"&r="+r;
             }
             function reloadURL(url)
             {

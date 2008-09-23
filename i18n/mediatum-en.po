@@ -2055,13 +2055,25 @@ msgid "tab_metadata_col"
 msgstr "Configuration"
 
 msgid "tab_metadata"
-msgstr "Data"
+msgstr "Edit metadata"
 
 msgid "tab_operation"
 msgstr "Special-functions"
 
 msgid "tab_security"
 msgstr "Rights"
+
+msgid "tab_metadata_dir"
+msgstr "Edit metadata"
+
+msgid "tab_files"
+msgstr "Technical metadata"
+
+msgid "tab_editor"
+msgstr "Edit start page"
+
+msgid "tab_files_obj"
+msgstr "Change/add digital object"
 
 msgid "tab_upload"
 msgstr "Upload"

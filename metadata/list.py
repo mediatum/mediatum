@@ -31,7 +31,9 @@ class m_list(Metatype):
 
         items = {}
         try:
-            n = tree.getNode(context.collection)
+            n = context.collection
+            if n is None:
+                raise tree.NoSuchNodeError()
             items = n.getAllAttributeValues(context.field.getName(), context.access)
         except tree.NoSuchNodeError:
             None

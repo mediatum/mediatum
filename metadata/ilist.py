@@ -32,7 +32,7 @@ class m_ilist(Metatype):
 
 
     def getSearchHTML(self, context):
-        n = tree.getNode(context.collection)
+        n = context.collection
         valuelist = n.getAllAttributeValues(context.field.getName(), context.access)
         keys = valuelist.keys()
         keys.sort()

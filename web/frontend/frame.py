@@ -172,7 +172,7 @@ class Searchlet(Portlet):
         if f is None: # All Metadata
             # quick&dirty
             f = g = getMetadataType("text")
-        return f.getSearchHTML(Context(g,value=self.values[i], width=width, name="query"+str(i), language=lang(self.req), collection=self.req.params.get('collection'), user=users.getUserFromRequest(self.req), ip=self.req.ip))
+        return f.getSearchHTML(Context(g,value=self.values[i], width=width, name="query"+str(i), language=lang(self.req), collection=self.collection, user=users.getUserFromRequest(self.req), ip=self.req.ip))
 
 class NavTreeEntry:
     def __init__(self, col, node, indent, small=0):

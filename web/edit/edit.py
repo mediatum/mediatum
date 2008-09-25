@@ -328,7 +328,7 @@ def action(req):
         
         
     if req.params.get("tab")=="tab_publish":
-        edit_publish(req, req.params.get("id"))
+        edit_publish(req, [req.params.get("id")])
         return
     
     srcid = req.params["src"]

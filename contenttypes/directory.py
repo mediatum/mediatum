@@ -130,6 +130,11 @@ class Directory(default.Default):
             field.set("valuelist", "full_standard;full_text")
             ret.append(field)
             
+            field = tree.Node("style_hide_empty", "metafield")
+            field.set("label", t(lang,"hide empty directories"))
+            field.set("type", "check")
+            ret.append(field)
+            
         elif node.type.startswith("directory"):
             # special fields for directories
             field = tree.Node("style", "metafield")
@@ -144,10 +149,6 @@ class Directory(default.Default):
             field.set("valuelist", "full_standard;full_text")
             ret.append(field)
             
-            field = tree.Node("no_extsearch", "metafield")
-            field.set("label", t(lang,"no_extsearch"))
-            field.set("type", "check")
-            ret.append(field)
         return ret
 
         

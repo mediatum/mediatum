@@ -3015,3 +3015,6 @@ msgstr "BibTeX-Import-Mapping"
 
 msgid "admin_meta_bibtex_warning"
 msgstr "(Nur für Veröffentlichungen!)"
+
+msgid "hide empty directories"
+msgstr "Leere Verzeichnisse nicht anzeigen"

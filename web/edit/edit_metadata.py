@@ -147,9 +147,13 @@ def edit_metadata(req, ids):
         else:
             for field in mask.metaFields():
                 value = req.params.get(field.getName(), None)
+                print field.getName(),value
                 if value is not None:
                     for node in nodes:
                         node.set(field.getName(), value)
+                else:
+                    #if field.getFieldtype() == "check":
+                    node.set(field.getName(), "")
             errorlist = []
 
         if len(errorlist)>0:

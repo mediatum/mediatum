@@ -37,7 +37,7 @@ from utils.fileutils import importFile
 from core.tree import Node
 from core.acl import AccessData
 from schema.schema import loadTypesFromDB
-from schema.bibtex import importBibTeX
+from schema.bibtex import importBibTeX,MissingMapping
 
 from core.translation import translate, lang, t
 
@@ -62,6 +62,8 @@ def import_new(req):
             try:
                 importBibTeX(file.tempname, importdir)
                 req.request["Location"] = req.makeLink("content", {"id":importdir.id})
+            except MissingMapping,e:
+                req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":str(e)})
             except:
                 logException("error during upload")
                 req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"PostprocessingError"})

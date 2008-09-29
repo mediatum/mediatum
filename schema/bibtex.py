@@ -33,7 +33,6 @@
 
 import re
 import os
-    
 
 token = re.compile(r'@\w+\s*{|\w+\s*=\s*{?["\'{]|\w+\s*=\s+[0-9a-zA-Z_]')
 comment = re.compile(r'%[^\n]*\n')
@@ -227,6 +226,12 @@ def detecttype(doctype, fields):
     else:
         return None
 
+class MissingMapping:
+    def __init__(self, message=""):
+        self.message = message
+    def __str__(self):
+        return self.message
+
 def importBibTeX(file, node=None):
     bibtextypes = getbibtexmappings()
     result = []
@@ -238,7 +243,7 @@ def importBibTeX(file, node=None):
         mytype = detecttype(doctype, fields)
         if mytype:
             if mytype not in bibtextypes:
-                raise ValueError("bibtex mapping of bibtex type '%s' not defined" % mytype)
+                raise MissingMapping("bibtex mapping of bibtex type '%s' not defined" % mytype)
             result += [(mytype.lower(), fields)]
 
             metatype = bibtextypes[mytype]

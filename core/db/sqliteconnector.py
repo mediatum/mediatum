@@ -255,7 +255,11 @@ class SQLiteConnector(Connector):
     def getNamedNode(self, parentid, name):
         t = self.runQuery("select id from node,nodemapping where node.name="+self.esc(name)+" and node.id = nodemapping.cid and nodemapping.nid = "+parentid)
         if len(t) == 0:
-            return None
+            t = self.runQuery("select id from node,nodemapping where node.type="+self.esc(name)+" and node.id = nodemapping.cid and nodemapping.nid = "+parentid)
+            if len(t)==1:
+                return t[0][0]
+            else:
+                return None
         else:
             return t[0][0]
 

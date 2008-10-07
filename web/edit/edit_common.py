@@ -118,9 +118,13 @@ def getTrashDir(user):
     return trashdir
 
 #
-def showdir(req, node, publishwarn=1, markunpublished=0):
+def showdir(req, node, publishwarn="auto", markunpublished=0):
+    if publishwarn=="auto":
+        user = users.getUserFromRequest(req)
+        homedir = getHomeDir(user)
+        homedirs = getAllSubDirs(homedir)
+        publishwarn = node in homedirs
     shownodelist(req,node.getChildren(),publishwarn=publishwarn,markunpublished=markunpublished,dir=node)
-
 
 def getAllSubDirs(node):
     #dirs = homedir.search("objtype=directory")

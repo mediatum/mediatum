@@ -842,8 +842,10 @@ class Mask(tree.Node):
                     t = getMetadataType(field.get("type"))
                     if field.getName() in req.params.keys():
                         value = t.getFormatedValueForDB(field, req.params.get(field.getName()))
+                        print "SET",node.id, field.getName(), value
                         node.set(field.getName(), value)
                     elif field.getFieldtype() == "check":
+                        print "SET",node.id, field.getName(), 0
                         node.set(field.getName(), 0)
                     
                     ''' raise event for metafield-type '''
@@ -852,6 +854,7 @@ class Mask(tree.Node):
             ''' raise event for node '''
             if hasattr(node,"event_metadata_changed"):
                 node.event_metadata_changed()
+            node.set("updatetime", str(format_date()))
 
         return nodes
         

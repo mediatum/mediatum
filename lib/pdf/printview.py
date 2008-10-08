@@ -136,7 +136,7 @@ class PrintPreview:
 
     def addImage(self, path):
         if not os.path.isfile(path):
-            path = config.basedir+"/img/questionmark.png"
+            path = config.basedir+"/web/img/questionmark.png"
         im = Image.open(path)
         im.load()
         self.image_w = 9.5*cm

@@ -2763,7 +2763,7 @@ msgid "unpublished_objects1"
 msgstr "Notice: This Folder contains unpublished objects (objects which are not publicly visible)."
 
 msgid "unpublished_objects2"
-msgstr "Publish these objects"
+msgstr "Publish these objects (Quick publisher)"
 
 
 msgid "user_faulty"

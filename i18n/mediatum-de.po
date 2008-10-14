@@ -2776,7 +2776,7 @@ msgid "unpublished_objects1"
 msgstr "Hinweis: Dieser Ordner enthält unpublizierte Objekte (Objekte die bisher nach aussen nicht sichtbar sind)."
 
 msgid "unpublished_objects2"
-msgstr "Unpublizierte Objekte jetzt publizieren"
+msgstr "Unpublizierte Objekte jetzt publizieren (Quick-Publisher)"
 
 msgid "user_faulty"
 msgstr "Inkonsistente Daten"

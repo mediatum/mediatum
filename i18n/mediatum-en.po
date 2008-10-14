@@ -2532,7 +2532,7 @@ msgstr "Uploaded filetype is not supported for Logos. Allowed types are '.jpeg',
 
 # edit publish #
 msgid "edit_publish_header"
-msgstr "Publish Objects"
+msgstr "Publish Objects (Quick Publisher)"
 
 msgid "edit_publish_info"
 msgstr "All selected objects will be published in selected directory."

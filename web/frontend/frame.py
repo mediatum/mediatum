@@ -26,6 +26,7 @@ import time
 import core.athana as athana
 import os
 import core.search.query
+from utils.log import logException
 
 from utils.dicts import SortedDict
 from schema.schema import getMetadataType
@@ -165,14 +166,21 @@ class Searchlet(Portlet):
     def getSearchFields(self):
         return self.searchfields
     def getSearchField(self, i, width=174):
-        f = None
-        if self.names[i] and self.names[i]!="full":
-            f = tree.getNode(self.names[i]).getFirstField()
-        g = None
-        if f is None: # All Metadata
-            # quick&dirty
-            f = g = getMetadataType("text")
-        return f.getSearchHTML(Context(g,value=self.values[i], width=width, name="query"+str(i), language=lang(self.req), collection=self.collection, user=users.getUserFromRequest(self.req), ip=self.req.ip))
+        try:
+            f = None
+            if self.names[i] and self.names[i]!="full":
+                f = tree.getNode(self.names[i]).getFirstField()
+            g = None
+            if f is None: # All Metadata
+                # quick&dirty
+                f = g = getMetadataType("text")
+            return f.getSearchHTML(Context(g,value=self.values[i], width=width, name="query"+str(i), 
+                                   language=lang(self.req), collection=self.collection, 
+                                   user=users.getUserFromRequest(self.req), ip=self.req.ip))
+        except:
+            # workaround for unknown error
+            logException("error during getSearchField(i)")
+            return ""
 
 class NavTreeEntry:
     def __init__(self, col, node, indent, small=0):
@@ -296,8 +304,8 @@ class Collectionlet(Portlet):
                 raise RecursionException
             if not access.hasReadAccess(node):
                 return
-            m[node.id] = NavTreeEntry(self, node, indent, node.type=="directory")
-            if node.id in opened:
+            m[node.id] = e = NavTreeEntry(self, node, indent, node.type=="directory")
+            if node.id in opened or e.defaultopen:
                 m[node.id].folded = 0
                 for c in node.getChildren():
                     if isCollection(c) or isDirectory(c):

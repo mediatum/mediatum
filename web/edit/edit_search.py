@@ -147,7 +147,10 @@ def search_form(req, id, message=None):
         for field in otype.getMetaFields():
             if field.Searchfield() and field.getFieldtype()!="date":
                 value = searchvalues.get(otype.getSchema()+"."+field.getName(),"")
-                
+              
+                collection = tree.getRoot("collections")
+                if "id" in req.params:
+                    collection = tree.getNode(req.params.get("id"))
                 c = Context(field, value, width=640, name=field.getName(), collection=req.params.get("id"), language=lang(req), user=getUserFromRequest(req))
                 field.searchitem = field.getSearchHTML(c)
                 

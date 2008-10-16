@@ -257,6 +257,7 @@ class Collectionlet(Portlet):
         self.folded = 0
         self.col_data = None
         self.hassubdir = 0
+        self.hide_empty = False
     
     def getCurrent(self):
         return self.collection
@@ -280,6 +281,11 @@ class Collectionlet(Portlet):
                         self.collection = getCollection(node)
             except tree.NoSuchNodeError:
                 pass
+      
+        try:
+            self.hide_empty = self.collection.get("style_hide_empty") == "1"
+        except:
+            self.hide_empty = False
 
         access = AccessData(req)
         
@@ -304,10 +310,19 @@ class Collectionlet(Portlet):
                 raise RecursionException
             if not access.hasReadAccess(node):
                 return
+
+            children = None
+            if self.hide_empty:
+                children = node.getChildren()
+                if not len(children):
+                    return
+
             m[node.id] = e = NavTreeEntry(self, node, indent, node.type=="directory")
             if node.id in opened or e.defaultopen:
                 m[node.id].folded = 0
-                for c in node.getChildren():
+                if children is None:
+                    children = node.getChildren()
+                for c in children:
                     if isCollection(c) or isDirectory(c):
                         f(m, c, indent+1)
         f(m, tree.getRoot("collections"), 0)
@@ -331,7 +346,6 @@ class Collectionlet(Portlet):
             if not access.hasReadAccess(node):
                 return
             if not node.id in m:
-                print "ERROR: Unknown node",node.id,node.name,"in browsing tree"
                 return
                
             data = m[node.id]

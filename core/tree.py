@@ -738,7 +738,7 @@ class Node:
     """ run a search query. returns a list of nodes """
     def search(self, q):
         global searcher, subnodes
-        log.info('search: '+q+' for node '+str(self.id))
+        log.info('search: '+q+' for node '+str(self.id)+' '+str(self.name))
         self._makePersistent()
         items = subnodes(self)
         

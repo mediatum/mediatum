@@ -73,7 +73,7 @@ class FtsSearchParser(BoolParser):
             value = m.group(3)
             return FtsSearchFieldCondition(field, op, value)
         else:
-            return s
+            return FtsSearchFieldCondition("full", "=", s)
 
     def default(self):
         return FtsSearchFieldCondition("full", "=", "")

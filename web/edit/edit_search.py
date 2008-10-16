@@ -149,9 +149,7 @@ def search_form(req, id, message=None):
                 value = searchvalues.get(otype.getSchema()+"."+field.getName(),"")
               
                 collection = tree.getRoot("collections")
-                if "id" in req.params:
-                    collection = tree.getNode(req.params.get("id"))
-                c = Context(field, value, width=640, name=field.getName(), collection=req.params.get("id"), language=lang(req), user=getUserFromRequest(req))
+                c = Context(field, value, width=640, name=field.getName(), collection=node, language=lang(req), user=getUserFromRequest(req))
                 field.searchitem = field.getSearchHTML(c)
                 
                 formlist.append([field, value])

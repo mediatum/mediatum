@@ -47,7 +47,7 @@ def getentries(filename):
     fi = open(filename, "rb")
     data = fi.read()
     fi.close()
-    data.replace("\r", "\n")
+    data = data.replace("\r", "\n")
     data = comment.sub('\n', data)
     recordnr = 1
 
@@ -78,6 +78,11 @@ def getentries(filename):
         elif doctype:
             # new record
             s = data[start:end]
+
+            if end and data[end-1].isalnum():
+                # for the \w+\s*=\s+[0-9a-zA-Z_] case
+                end = end-1
+            
             field = s[:s.index("=")].strip().lower()
             pos = end
             next = token.search(data,pos)
@@ -85,7 +90,7 @@ def getentries(filename):
                 content = data[pos:next.start()]
             else:
                 content = data[pos:]
-            
+
             content = content.replace("{","")
             content = content.replace("~"," ")
             content = content.replace("}","")
@@ -251,33 +256,53 @@ def importBibTeX(file, node=None):
             fieldnames = [field.getName() for field in doc.getMetaFields()]
             for k,v in fields.items():
                 if k not in fieldnames: 
-                    if (k+"-contrib") in fieldnames:
-                        k = k+"-contrib"
-                    elif k+"-title" in fieldnames:
-                        k = k+"-title"
-                    elif k.startswith("book") and ("congress"+k[4:]) in fieldnames:
-                        k = ("congress"+k[4:]) 
-                    elif ("congress-"+k) in fieldnames:
-                        k = ("congress-"+k) 
-                    elif k.startswith("book") and ("journal-"+k[4:]) in fieldnames:
-                        k = ("journal-"+k[4:]) 
-                    elif ("journal-"+k) in fieldnames:
-                        k = ("journal-"+k) 
-                    elif k.startswith("book") and ("bookseries-"+k[4:]) in fieldnames:
-                        k = ("bookseries-"+k[4:]) 
-                    elif ("bookseries-"+k) in fieldnames:
-                        k = ("bookseries-"+k) 
-                    elif ("p-"+k) in fieldnames:
-                        k = ("p-"+k) 
+                    kk = [k]
+                    if k=="number":
+                        kk = ["number", "issue"]
+                    elif k=="author":
+                        kk = ["author", "author.fullname_comma", "author.fullname"]
+                    elif k=="school":
+                        kk = ["school", "origin"]
+                    elif k=="year":
+                        kk = ["year", "year-accepted"]
+
+                    for k in kk:
+                        if (k+"-contrib") in fieldnames:
+                            k = k+"-contrib"
+                            break
+                        elif k+"-title" in fieldnames:
+                            k = k+"-title"
+                            break
+                        elif k.startswith("book") and ("congress"+k[4:]) in fieldnames:
+                            k = ("congress"+k[4:]) 
+                            break
+                        elif ("congress-"+k) in fieldnames:
+                            k = ("congress-"+k) 
+                            break
+                        elif k.startswith("book") and ("journal-"+k[4:]) in fieldnames:
+                            k = ("journal-"+k[4:]) 
+                            break
+                        elif ("journal-"+k) in fieldnames:
+                            k = ("journal-"+k) 
+                            break
+                        elif k.startswith("book") and ("bookseries-"+k[4:]) in fieldnames:
+                            k = ("bookseries-"+k[4:]) 
+                            break
+                        elif ("bookseries-"+k) in fieldnames:
+                            k = ("bookseries-"+k) 
+                            break
+                        elif ("p-"+k) in fieldnames:
+                            k = ("p-"+k) 
+                            break
 
                 if k not in fieldnames:
                     print mytype,"->",metatype,"!",k
+                print k,v
                 doc.set(k,v)
             node.addChild(doc)
     return node
 
 def test():
-    import glob
     try:
         b = tree.getRoot("bibs")
         tree.getRoot().removeChild(b)
@@ -286,9 +311,14 @@ def test():
 
     b = tree.Node("bibs",type="directory")
     tree.getRoot().addChild(b)
-    for file in glob.glob("/home/mis/tmp/bib/*"):
-        c = tree.Node(os.path.basename(file),type="directory")
-        b.addChild(c)
-        importBibTeX(file,c)
+    #import glob
+    #for file in glob.glob("/home/mis/tmp/bib/*"):
+    #    c = tree.Node(os.path.basename(file),type="directory")
+    #    b.addChild(c)
+    #    importBibTeX(file,c)
+    file = "../file.bib"
+    c = tree.Node(os.path.basename(file),type="directory")
+    b.addChild(c)
+    importBibTeX(file,c)
 
 

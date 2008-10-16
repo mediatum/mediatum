@@ -108,12 +108,12 @@ class Video(default.Default):
         if file:
             script = """
             window.onload = function() {  
-                    flashembed("player", { src:'/img/FlowPlayerDark.swf', width: """+str(int(node.get('vid-width') or '0')+64)+""", height: """+str(int(node.get('vid-height') or '0')+53)+"""}, {config: {videoFile: '"""+file+"""'}} );
+                    flashembed("player", { src:'/img/FlowPlayerDark.swf', width: """+str(int(node.get('vid-width') or '0')+64)+""", height: """+str(int(node.get('vid-height') or '0')+53)+"""}, {config: {videoFile: '"""+file+"""', initialVolumePercentage: 100}} );
                 }"""
         else:
             script = ""
 
-        req.writeTAL("contenttypes/video.html", {"script":script, "node":node}, macro="fullsize_flv")
+        req.writeTAL("contenttypes/video.html", {"file":file, "script":script, "node":node}, macro="fullsize_flv")
 
         
     def getEditMenuTabs(node):
@@ -144,3 +144,4 @@ class Video(default.Default):
     def getDefaultEditTab(node):
         return "tab_view"
   
+>>>>>>> 1.14

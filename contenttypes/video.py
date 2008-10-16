@@ -144,4 +144,3 @@ class Video(default.Default):
     def getDefaultEditTab(node):
         return "tab_view"
   
->>>>>>> 1.14

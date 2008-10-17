@@ -22,10 +22,12 @@ import core.tree as tree
 import os
 import re
 
+import core.acl 
 from utils.utils import *
 from core.acl import AccessData
 from web.frontend.frame import getNavigationFrame
 from web.frontend.content import getContentArea,ContentNode
+import core.xmlnode as xmlnode
 
 def display(req):
     content = getContentArea(req)
@@ -84,3 +86,65 @@ def show_parent_node(req):
 
     return display_noframe(req)
 
+def esc(v):
+    return v.replace("\\","\\\\").replace("'","\\'")
+
+def exportsearch(req, xml=0):
+    access = AccessData(req)
+    
+    access = core.acl.getRootAccess()
+
+    id = req.params["id"]
+    q = req.params.get("query","")
+    collections = tree.getRoot("collections")
+
+    if xml:
+        req.reply_headers['Content-Type'] = "text/xml; charset=utf-8"
+        req.write('<?xml version="1.0" encoding="utf-8"?>')
+    else:
+        req.reply_headers['Content-Type'] = "text/plain; charset=utf-8"
+
+    try:
+        node = tree.getNode(id)
+    except tree.NoSuchNodeError:
+        if xml:
+            req.write("<error>Invalid ID</error>")
+        else:
+            req.write("var error='invalid id';")
+        return
+    if not isParentOf(node,collections):
+        if xml:
+            req.write("<error>Invalid ID</error>")
+        else:
+            req.write("var error='invalid id';")
+        return
+
+    if not q:
+        ids = access.filter(node.search("objtype=document"));
+    else:
+        ids = access.filter(node.search("objtype=document "+q));
+
+    if xml:
+        req.write("<nodelist>")
+        for id in ids:
+            node = tree.getNode(id)
+            s = xmlnode.getSingleNodeXML(node)
+            req.write(s)
+        req.write("</nodelist>")
+    else:
+        req.write('a=new Array(%d);' % len(ids))
+        i = 0
+        for id in ids:
+            node = tree.getNode(id)
+            req.write('a[%d] = new Object();\n' % i);
+            req.write("  a[%d]['nodename'] = '%s';\n" % (i,node.name))
+            for k,v in node.items():
+                req.write("    a[%d]['%s'] = '%s';\n" % (i,esc(k),esc(v)))
+            i = i + 1
+        req.write('add_data(a);\n')
+       
+def xmlsearch(req):
+    return exportsearch(req,xml=1)
+
+def jssearch(req):
+    return exportsearch(req,xml=0)

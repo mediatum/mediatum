@@ -52,6 +52,8 @@ def initContexts():
     handler.addPattern("/")
     handler.addPattern("/node")
     file.addHandler("display_noframe").addPattern("/mask")
+    file.addHandler("xmlsearch").addPattern("/xmlsearch")
+    file.addHandler("jssearch").addPattern("/jssearch")
     file.addHandler("show_parent_node").addPattern("/pnode")
     file.addHandler("publish").addPattern("/publish/.*")
     file = context.addFile("web/frontend/popups.py")
@@ -137,8 +139,6 @@ def flush(req):
 
 def startWebServer():
     initContexts()
-
-
     athana.setThreads(int(config.get("host.threads","8")))
     athana.run(int(config.get("host.port","8081")))
 

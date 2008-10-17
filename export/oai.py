@@ -391,12 +391,12 @@ def ListSets(req):
     access = acl.AccessData(req)
     req.write("""<ListSets>""")
     def browse(collection):
-        for c in access.filter(.getChildren()):
+        for c in access.filter(collection.getChildren()):
             if c.type=="collection":
                 spec = c.id
                 name = c.getName()
                 req.write("""<set><setSpec>"""+spec+"""</setSpec><setName>"""+esc(name)+"""</setName></set>""")
-                browse(collection)
+                browse(c)
     browse(tree.getRoot("collections"))
     req.write("""</ListSets>""")
 

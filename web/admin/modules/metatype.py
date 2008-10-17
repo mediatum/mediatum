@@ -343,7 +343,7 @@ def MetatypeDetail(req, id, err=0):
     v["metadatatype"] = metadatatype
     v["error"] = err
     v["bibtextypes"] = getAllBibTeXTypes()
-    v["bibtexselected"] = metadatatype.get("bibtexmapping")
+    v["bibtexselected"] = metadatatype.get("bibtexmapping").split(";")
     
     rule = metadatatype.getAccess("read")
     if rule:

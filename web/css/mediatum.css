@@ -261,7 +261,6 @@ ul#navigationlist li.lv2 div a {
     background-color: #ffffff;
 }
 
-
 li.lv0 div.linknotselected{
     padding: 0px; margin:0px;
     border: 1px solid #dbe2e9;
@@ -456,7 +455,7 @@ button#reset-button{
 }
 
 #portal-column-content #object_image {
-     width: 320px;position:absolute; top:24px;left:0px;
+     width: 320px;position:absolute; top:0px;left:0px;
 }
 
 #portal-column-content #object_meta{
@@ -485,7 +484,7 @@ button#reset-button{
 }
 
 #portal-column-content div#paths{
-    margin-left: 5px; margin-right: 10px;
+    border-top:1px solid #0A5096;margin-left: 5px; margin-right: 10px;
 }
 
 #portal-column-content div#nodes{

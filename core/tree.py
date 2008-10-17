@@ -792,7 +792,7 @@ class Node:
     def getAllAttributeValues(self, attribute, access):
         ALL = -1
             
-        self.lock.acquire()
+        self.lock.acquire() #FIXME: this lock is aquired way too long
         try:
             if not hasattr(self, 'attrlist') or attribute not in self.attrlist.keys():
                 self.attrlist = {}
@@ -802,6 +802,8 @@ class Node:
                 if not ALL in self.attrlist[attribute].keys():
                     self.attrlist[attribute][ALL] = {}            
                     ret = {}
+
+                    # TODO: optimize this
                     for node in self.getAllChildren():
                         v = node.get(attribute)
                         if v not in ret.keys():

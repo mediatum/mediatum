@@ -390,10 +390,14 @@ def GetRecord(req):
 def ListSets(req):
     access = acl.AccessData(req)
     req.write("""<ListSets>""")
-    for collection in access.filter(tree.getRoot("collections").getChildren()):
-        spec = collection.id
-        name = collection.getName()
-        req.write("""<set><setSpec>"""+spec+"""</setSpec><setName>"""+esc(name)+"""</setName></set>""")
+    def browse(collection):
+        for c in access.filter(.getChildren()):
+            if c.type=="collection":
+                spec = c.id
+                name = c.getName()
+                req.write("""<set><setSpec>"""+spec+"""</setSpec><setName>"""+esc(name)+"""</setName></set>""")
+                browse(collection)
+    browse(tree.getRoot("collections"))
     req.write("""</ListSets>""")
 
 def oaiRequest(req):

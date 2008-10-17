@@ -439,6 +439,18 @@ def union(definition): # or
     else:
         return result1.keys()
 
+def isParentOf(node, parent):
+    parents = node.getParents()
+    print [n.name for n in parents]
+    if node == parent:
+        return 1
+    if parent in parents:
+        return 1
+    for p in parents:
+        if isParentOf(p, parent):
+            return 1
+    return 0
+
     
 def intersection(definition): # and
     if not definition: 

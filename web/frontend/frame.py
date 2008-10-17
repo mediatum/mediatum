@@ -31,7 +31,7 @@ from utils.log import logException
 from utils.dicts import SortedDict
 from schema.schema import getMetadataType
 from utils.dicts import SortedDict
-from utils.utils import getCollection, getDirectory, Link, iso2utf8, isCollection, isDirectory
+from utils.utils import getCollection, getDirectory, Link, iso2utf8, isCollection, isDirectory, isParentOf
 from core.acl import AccessData,getRootAccess
 from core.translation import translate, lang, t
 from core.metatype import Context
@@ -229,21 +229,6 @@ class NavTreeEntry:
                 return "lv1"
             else:
                 return "lv0"
-
-# NOTE: the whole collection/browsing tree stuff is horriby complex, and
-# should be rewritten from scratch
-
-def isParentOf(node, parent):
-    parents = node.getParents()
-    print [n.name for n in parents]
-    if node == parent:
-        return 1
-    if parent in parents:
-        return 1
-    for p in parents:
-        if isParentOf(p, parent):
-            return 1
-    return 0
 
 class RecursionException:
     pass

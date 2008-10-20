@@ -25,6 +25,7 @@ import utils.date
 from utils.dicts import MaxSizeDict
 import utils.date as date
 import core.acl as acl
+import core.xmlnode
 from utils.utils import esc,getCollection
 
 errordesc = {
@@ -156,7 +157,7 @@ def ListMetadataFormats(req):
     """)
 
 def checkMetaDataFormat(format):
-    return format in ("epicur", "xmetadiss", "oai_dc")
+    return format in ["epicur", "xmetadiss", "oai_dc", "mediatum"]
 
 def Identify(req):
     if not checkParams(req, ["verb"]):
@@ -205,10 +206,13 @@ def writeRecord(req, node, metadataformat):
     #    value = node.get(f)
     #    req.write("""<dc:%s>%s</dc:%s>""" % (f,value,f))
 
-    if hasattr(node, "getXML"):
-        req.write(node.getXML(metadataformat))
+    if metadataformat=="mediatum":
+        req.write(core.xmlnode.getSingleNodeXML(node))
     else:
-        req.write("<recordHasNoXMLRepresentation/>")
+        if hasattr(node, "getXML"):
+            req.write(node.getXML(metadataformat))
+        else:
+            req.write("<recordHasNoXMLRepresentation/>")
 
     req.write("""</metadata></record>""")
 
@@ -223,13 +227,16 @@ def identifier2id(id):
     else:
         return id
 
-def retrieveNodes(access, collectionid, date_from=None, date_to=None):
+def retrieveNodes(access, collectionid, date_from=None, date_to=None, metadataformat=None):
     if collectionid:
         collection = tree.getNode(collectionid)
     else:
         collection = tree.getRoot("collections")
-    
-    query = "objtype=dissertation and schema=diss"
+   
+    if metadataformat == "mediatum":
+        query = "objtype=document"
+    else:
+        query = "objtype=dissertation and schema=diss"
 
     if date_from:
         if query:
@@ -305,7 +312,7 @@ def getNodes(req):
             return None,"badArgument",None
 
         try:
-            nodes = retrieveNodes(access, collectionid, date_from,date_to)
+            nodes = retrieveNodes(access, collectionid, date_from, date_to, metadataformat)
         except tree.NoSuchNodeError:
             # collection doesn't exist
             return None,"badArgument",None

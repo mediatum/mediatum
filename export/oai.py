@@ -146,7 +146,12 @@ def ListMetadataFormats(req):
              <schema>http://www.ddb.de/standards/xmetadiss/xmetadiss.xsd</schema>
              <metadataNamespace>http://www.ddb.de/standards/xMetaDiss/</metadataNamespace>
          </metadataFormat>
-
+         
+         <metadataFormat>
+             <metadataPrefix>mediatum</metadataPrefix>
+             <schema>http://mediatum-pages.ub.tum.de/mediatum.xsd</schema>
+             <metadataNamespace>http://mediatum-pages.ub.tum.de/</metadataNamespace>
+         </metadataFormat>
        </ListMetadataFormats>
     """)
 

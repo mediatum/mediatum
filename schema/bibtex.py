@@ -104,7 +104,7 @@ def getentries(filename):
 
             content = unicode(content,"utf-8",errors='replace').encode("utf-8")
 
-            if field=="author" and content:
+            if field in ["author","editor"] and content:
                 authors = []
                 for author in content.split(" and "):
                     author = author.strip()

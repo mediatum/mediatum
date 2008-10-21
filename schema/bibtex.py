@@ -292,6 +292,9 @@ def importBibTeX(file, node=None):
                         elif ("bookseries-"+k) in fieldnames:
                             k = ("bookseries-"+k) 
                             break
+                        elif k=="series" and ("bookseries-title") in fieldnames:
+                            k = "bookseries-title"
+                            break
                         elif ("p-"+k) in fieldnames:
                             k = ("p-"+k) 
                             break

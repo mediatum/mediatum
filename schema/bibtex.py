@@ -34,7 +34,7 @@
 import re
 import os
 
-token = re.compile(r'@\w+\s*{|\w+\s*=\s*{?["\'{]|\w+\s*=\s+[0-9a-zA-Z_]')
+token = re.compile(r'@\w+\s*{|[a-zA-Z_-]+\s*=\s*{?["\'{]|[a-zA-Z_-]+\s*=\s+[0-9a-zA-Z_]')
 comment = re.compile(r'%[^\n]*\n')
 delim = re.compile(r'\W')
 frontgarbage = re.compile(r'^\W*')

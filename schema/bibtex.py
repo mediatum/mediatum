@@ -95,14 +95,15 @@ def getentries(filename):
             content = content.replace("~"," ")
             content = content.replace("}","")
             content = xspace.sub(" ",backgarbage.sub("",frontgarbage.sub("",content)))
+
+            content = unicode(content,"utf-8",errors='replace').encode("utf-8")
+
             content = content.replace("\\\"u","ü").replace("\\\"a","ä").replace("\\\"o","ö") \
                              .replace("\\\"U","Ü").replace("\\\"A","Ä").replace("\\\"O","Ö")
             content = content.replace("\\","")
             content = content.replace("{\"u}","ü").replace("{\"a}","ä").replace("{\"o}","ö") \
                              .replace("{\"U}","Ü").replace("{\"A}","Ä").replace("{\"O}","Ö")
             content = content.strip()
-
-            content = unicode(content,"utf-8",errors='replace').encode("utf-8")
 
             if field in ["author","editor"] and content:
                 authors = []

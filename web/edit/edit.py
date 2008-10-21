@@ -710,11 +710,13 @@ def content(req):
     elif current == "tab_workflow":
         edit_workflow(req,ids)
     elif current == "tab_search":
-        edit_search(req,ids)
+        # disabled
+        #edit_search(req,ids)
+        pass
     elif current == "tab_subfolder":
         #edit_sort(req,ids)
         edit_subfolder(req,ids)
-    elif current == "tab_sort":
+    elif current == "tab_sortfiles":
         edit_sortfiles(req,ids)
     elif current == "tab_searchmask":
         edit_searchmask(req,ids)

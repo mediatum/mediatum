@@ -54,6 +54,12 @@ msgstr "List of favourites"
 msgid "sub_header_user"
 msgstr "User"
 
+msgid "help_link"
+msgstr "Help"
+
+msgid "help_title"
+msgstr "Show Help"
+
 msgid "footer_impressum"
 msgstr "imprint"
 

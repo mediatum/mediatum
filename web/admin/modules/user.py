@@ -29,7 +29,7 @@ import core.users as users
 import re
 
 from core.usergroups import loadGroupsFromDB
-from core.users import loadUsersFromDB, useroption, getUser, update_user, existUser, create_user, makeRandomPassword, deleteUser, getExternalUsers, getExternalUser, moveUserToIntern, getExternalAuthentificators
+from core.users import loadUsersFromDB, useroption, getUser, getExternalUser, update_user, existUser, create_user, makeRandomPassword, deleteUser, getExternalUsers, getExternalUser, moveUserToIntern, getExternalAuthentificators
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from core.translation import lang, t
 
@@ -37,7 +37,6 @@ from core.translation import lang, t
 # standard validator
 #
 def validate(req, op):
-    print req.params
     try:
         for key in req.params.keys():
             if key.startswith("new"):
@@ -236,20 +235,32 @@ def editUser_mask(req, id, err=0):
 def sendmailUser_mask(req, id, err=0):
 
     v = getAdminStdVars(req)
+    v["path"] = req.path[1:]
     
-    if id == "execute" or id == "execu":
+    if id=="execute" or id=="execu":
 
         userid = req.params["userid"]
         user = getUser(userid)
+        if not user:
+            path = req.path[1:].split("/")
+            user = getExternalUser(userid, path[-1])
+
         password = makeRandomPassword()
         user.resetPassword(password)
 
         text = req.params["text"]
         text = text.replace("[wird eingesetzt]", password)
-        mail.sendmail(req.params["from"],req.params["email"],req.params["subject"],text)
+        try:
+            mail.sendmail(req.params["from"],req.params["email"],req.params["subject"],text)
+        except mail.SocketError:
+            print "Socket error while sending mail"
+            return req.getTAL("web/admin/modules/user.html", v, macro="sendmailerror")
         return req.getTAL("web/admin/modules/user.html", v, macro="sendmaildone")
 
     user = getUser(id)
+    if not user:
+        path = req.path[1:].split("/")
+        user = getExternalUser(id, path[-1])
     
     x = {}
     x["name"] = user.getName()

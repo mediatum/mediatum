@@ -237,9 +237,15 @@
     </form>
 </metal:block>
 
-<metal:block metal:define-macro="sendmaildone" tal:define="id python:user.getName()">
+
+<metal:block metal:define-macro="sendmaildone">
     <p i18n:translate="admin_user_emailsend">TEXT</p>
-    <p><a tal:attributes="href python:'./user'+page" i18n:translate="admin_overview">TEXT</a></p>
+    <p><a tal:attributes="href python:'/admin/'+path" i18n:translate="admin_overview">TEXT</a></p>
+</metal:block>
+
+<metal:block metal:define-macro="sendmailerror">
+    <p i18n:translate="admin_user_emailsenderror">TEXT</p>
+    <p><a tal:attributes="href python:'/admin/'+path" i18n:translate="admin_overview">TEXT</a></p>
 </metal:block>
 
 <metal:block metal:define-macro="sendmail">

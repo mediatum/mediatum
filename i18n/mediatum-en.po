@@ -771,6 +771,9 @@ msgstr "send email"
 msgid "admin_user_emailsend"
 msgstr "Email was send."
 
+msgid "admin_user_emailsenderror"
+msgstr "Error while sending email to user. No email was send."
+
 msgid "admin_user_filter_username"
 msgstr "username"
 

@@ -20,12 +20,11 @@
 import smtplib
 import core.users
 import core.config as config
-#from utils import *
+
+SocketError = "socketerror"
 
 def sendmail(fromemail, email, subject, text):
-
     testing = config.get("host.type") == "testing"
-
     fromaddr = fromemail
 
     try:
@@ -51,9 +50,12 @@ def sendmail(fromemail, email, subject, text):
     msg = """From: %s\nTo: %s\nSubject: %s\n\n%s""" % (fromaddr, toaddrs_string, subject, text)
     print "Sending mail from %s to %s" % (fromaddr, toaddrs)
     if not testing:
-        server = smtplib.SMTP(config.get("server.mail"))
-        server.set_debuglevel(1)
-        server.sendmail(fromaddr, toaddrs, msg)
-        server.quit()
+        try:
+            server = smtplib.SMTP(config.get("server.mail"))
+            server.set_debuglevel(1)
+            server.sendmail(fromaddr, toaddrs, msg)
+            server.quit()
+        except smtplib.socket.error:
+            raise SocketError
     else:
         print msg

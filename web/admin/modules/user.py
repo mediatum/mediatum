@@ -27,6 +27,7 @@ import core.acl as acl
 import utils.mail as mail
 import core.users as users
 import re
+from utils.utils import getAllCollections
 
 from core.usergroups import loadGroupsFromDB
 from core.users import loadUsersFromDB, useroption, getUser, getExternalUser, update_user, existUser, create_user, makeRandomPassword, deleteUser, getExternalUsers, getExternalUser, moveUserToIntern, getExternalAuthentificators
@@ -273,7 +274,7 @@ def sendmailUser_mask(req, id, err=0):
 
 
     access = acl.AccessData(user=user)
-    for node in tree.getRoot("collections").getChildren():
+    for node in getAllCollections():
         if access.hasReadAccess(node):
             if access.hasWriteAccess(node):
                 x["collections"].append(node.name+" (lesen/schreiben)")

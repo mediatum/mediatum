@@ -38,6 +38,7 @@ from core.translation import lang, t
 # standard validator
 #
 def validate(req, op):
+    print req.params
     try:
         for key in req.params.keys():
             if key.startswith("new"):
@@ -262,7 +263,19 @@ def sendmailUser_mask(req, id, err=0):
     if not user:
         path = req.path[1:].split("/")
         user = getExternalUser(id, path[-1])
-    
+
+    collections = []
+    seen = {}
+    access = acl.AccessData(user=user)
+    for node in getAllCollections():
+        if access.hasReadAccess(node):
+            if access.hasWriteAccess(node):
+                collections.append(node.name+" (lesen/schreiben)")
+                seen[node.id] = None
+    for node in tree.getRoot("collections").getChildren():
+        if access.hasReadAccess(node) and node.id not in seen:
+            collections.append(node.name+" (nur lesen)")
+
     x = {}
     x["name"] = user.getName()
     x["host"] = config.get("host.name")
@@ -271,15 +284,7 @@ def sendmailUser_mask(req, id, err=0):
     x["collections"] = list()
     x["groups"] = user.getGroups()
     x["language"] = lang(req)
-
-
-    access = acl.AccessData(user=user)
-    for node in getAllCollections():
-        if access.hasReadAccess(node):
-            if access.hasWriteAccess(node):
-                x["collections"].append(node.name+" (lesen/schreiben)")
-            else:
-                x["collections"].append(node.name+" (nur lesen)")
+    x["collections"] = collections
 
 
     v["mailtext"] = req.getTAL("web/admin/modules/user.html", x, macro="emailtext").strip()

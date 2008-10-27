@@ -191,7 +191,7 @@ def getAllCollections():
                 l += [c]
                 f(l, c)
     import core.tree
-    f(core.tree.getRoot("collections"))
+    f(l, core.tree.getRoot("collections"))
     return l
 
 def isDirectory(node):

@@ -23,6 +23,7 @@ import os
 import re
 
 import core.acl 
+import core.config as config
 from utils.utils import *
 from core.acl import AccessData
 from web.frontend.frame import getNavigationFrame
@@ -92,10 +93,8 @@ def esc(v):
 def exportsearch(req, xml=0):
     access = AccessData(req)
     
-    access = core.acl.getRootAccess()
-
     id = req.params["id"]
-    q = req.params.get("query","")
+    q = req.params.get("q","")
     collections = tree.getRoot("collections")
 
     if xml:
@@ -122,16 +121,18 @@ def exportsearch(req, xml=0):
     if not q:
         ids = access.filter(node.search("objtype=document"));
     else:
-        ids = access.filter(node.search("objtype=document "+q));
+        ids = access.filter(node.search("objtype=document and "+q));
 
     if xml:
         req.write("<nodelist>")
+        i = 0
         for id in ids:
             node = tree.getNode(id)
             s = xmlnode.getSingleNodeXML(node)
             req.write(s)
+            i = i+1
         req.write("</nodelist>")
-    else:
+    elif req.params.get("data",None):
         req.write('a=new Array(%d);' % len(ids))
         i = 0
         for id in ids:
@@ -142,6 +143,17 @@ def exportsearch(req, xml=0):
                 req.write("    a[%d]['%s'] = '%s';\n" % (i,esc(k),esc(v)))
             i = i + 1
         req.write('add_data(a);\n')
+    else:
+        req.write('a=new Array(%d);' % len(ids))
+        i = 0
+        for id in ids:
+            node = tree.getNode(id)
+            req.write('a[%d] = new Object();\n' % i);
+            req.write("a[%d]['text'] = '%s';\n" % (i,esc(node.show_node_text())));
+            req.write("a[%d]['link'] = 'http://%s?id=%s';\n" % (i, config.get('host.name'),id));
+            i = i + 1
+        req.write('add_data(a);\n')
+    print "%d node entries xml=%d" % (i,xml)
        
 def xmlsearch(req):
     return exportsearch(req,xml=1)

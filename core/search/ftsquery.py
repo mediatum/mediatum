@@ -23,6 +23,7 @@ import sys
 sys.path += ["../","."]
 import re
 import os
+import time
 import core
 import core.config as config
 import core.tree as tree
@@ -319,26 +320,27 @@ class FtsSearcher:
 
 
     def updateNodesIndex(self, nodelist):
-        print "\nupdating node index for",len(nodelist),"nodes..."
+        print "updating node index for",len(nodelist),"nodes..."
         err = {}
         schemas = {}
+        t1 = time.time()
         for node in nodelist:
             self.removeNodeIndex(node)
-            sys.stdout.flush()
-            print ".",
-        print "\n...old index removed\n"
+        t2 = time.time()
         for node in nodelist:
-            sys.stdout.flush()
-            print ".",
             try:
                 if node.getSchema() not in schemas.keys():
                     schemas[node.getSchema()] = node
                 err = self.updateNodeIndex(node)
             except core.tree.NoSuchNodeError:
                 print "error for id", node.id
+        t3 = time.time()
         for key in schemas:
             self.nodeToSchemaDef(schemas[key])
-        print "...finished"
+        t4 = time.time()
+        print "%f seconds for removing old index" % (t2-t1)
+        print "%f seconds for adding new index" % (t3-t2)
+        print "%f seconds for updating schema definitions" % (t4-t3)
         return err
    
     

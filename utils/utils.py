@@ -183,6 +183,17 @@ def getCollection(node):
         collection = core.tree.getRoot("collections")
     return collection
 
+def getAllCollections():
+    l = []
+    def f(l,node):
+        for c in node.getChildren():
+            if isCollection(node):
+                l += [c]
+                f(l, c)
+    import core.tree
+    f(core.tree.getRoot("collections"))
+    return l
+
 def isDirectory(node):
     if node.type == "directory":
         return 1

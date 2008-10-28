@@ -30,7 +30,7 @@ class Default(tree.Node):
         return """<img border="0" src="/img/questionmark.png">"""
 
     """ format preview node text """
-    def show_node_text(node, words=None, language=None, seperator="<br />"):
+    def show_node_text(node, words=None, language=None, seperator="<br />", labels=0):
         metatext = list()
         mask = node.getMask("nodesmall")
         if mask:
@@ -40,11 +40,14 @@ class Default(tree.Node):
                     value = highlight(value, words, '<font class="hilite">', "</font>")
 
                 if value:
-                    if field[0].startswith("author"):
-                        value = '<span class="author">'+value+'</span>'
-                    if field[0].startswith("subject"):
-                        value = '<b>'+value+'</b>'
-                    metatext.append(value)
+                    if labels:
+                        metatext.append("<b>"+node.getMetaField(field[0]).getLabel()+":</b> "+value)
+                    else:
+                        if field[0].startswith("author"):
+                            value = '<span class="author">'+value+'</span>'
+                        if field[0].startswith("subject"):
+                            value = '<b>'+value+'</b>'
+                        metatext.append(value)
         else:
             metatext.append('&lt;smallview mask not defined&gt;')
 

@@ -2543,9 +2543,6 @@ msgstr "Uploaded filetype is not supported for Logos. Allowed types are '.jpeg',
 msgid "edit_publish_header"
 msgstr "Publish Objects (Quick Publisher)"
 
-msgid "edit_publish_warning"
-msgstr "Warning: This refers to the unpublished objects, not to the marked objects. You'll be able to explicitly select objects in the next step, after clicking the above link."
-
 msgid "edit_publish_info"
 msgstr "All selected objects will be published in selected directory."
 

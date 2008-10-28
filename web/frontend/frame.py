@@ -68,7 +68,6 @@ class Portlet:
             return "node?"+self.name+"=fold"
 
 def getSearchMask(collection):
-    print "getSearchMask(",collection.id
     if collection.get("searchtype") == "none":
         return None
     mask = None
@@ -286,10 +285,7 @@ class Collectionlet(Portlet):
             counter=counter+1
             if counter>15:
                 raise RecursionException
-
-            print [p.name for p in parents],'->',
             p = parents.pop()
-            print [j.name for j in p.getParents()]
             opened[p.id] = 1
             parents += p.getParents()
         

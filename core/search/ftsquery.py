@@ -27,7 +27,7 @@ import time
 import core
 import core.config as config
 import core.tree as tree
-from utils.utils import u, union, normalize_utf8
+from utils.utils import u, union, normalize_utf8, formatException
 from math import ceil
 
 import core.db.sqliteconnector as sqlite
@@ -126,7 +126,10 @@ class FtsSearcher:
             self.db.execute('CREATE VIRTUAL TABLE textsearchmeta USING fts3(id, type, schema, value)')
                    
         except: #sqlite.OperationalError:
-            print "searchdatabase already initialised"
+            print "sqlite fts3 database already exists, trying to optimize it..."
+            self.db.execute('SELECT optimize(fullsearchmeta) FROM fullsearchmeta LIMIT 1')
+            self.db.execute('SELECT optimize(searchmeta) FROM searchmeta LIMIT 1')
+            self.db.execute('SELECT optimize(textsearchmeta) FROM textsearchmeta LIMIT 1')
     
     def getAllTableNames(self):
         ret = []

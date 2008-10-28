@@ -27,6 +27,7 @@ from web.frontend import shoppingbag
 #from schema.schema import *
 from schema.schema import getMetaType
 from lib.pdf import printview
+from utils.log import logException
 
 from schema.schema import VIEW_DATA_ONLY,VIEW_HIDE_EMPTY
 from web.frontend.content import getPaths
@@ -111,7 +112,7 @@ def show_index(req):
         req.writeTAL("web/frontend/popups.html", {"index":index, "fieldname":fieldname}, macro="index")
         return athana.HTTP_OK
     except:
-        print "missing request parameter"
+        logging.logException("missing request parameter")
         return athana.HTTP_NOT_FOUND
 
 #

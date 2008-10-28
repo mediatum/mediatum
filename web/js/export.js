@@ -13,7 +13,6 @@ var publication_class = null;
 function add_data(data) {
     var d = document.getElementById("mediatum");
     var custom = 0;
-    d.innerHTML = "";
     var style = "border: 1px solid #ccc; margin-bottom: 5px; font-size: 12px; "+
                 "font-family: Arial,Geneva,sans-serif; color: #000";
     var styledata = "";
@@ -23,24 +22,27 @@ function add_data(data) {
         styledata = "style=\""+style+"\"";
     }
 
+    var s = ""
     for(i=0;i<data.length;i++)
     {
         if(custom) {
             node = data[i];
-            d.innerHTML += node["author-contrib"] || '';
-            d.innerHTML += ",";
-            d.innerHTML += node["booktitle-contrib"] || '';
-            d.innerHTML += ",";
+            s += node["author-contrib"] || '';
+            s += ",";
+            s += node["booktitle-contrib"] || '';
+            s += ",";
             year = node["year"] || '0000';
             year = year.substring(0,4);
-            d.innerHTML += year;
-            d.innerHTML += "<br />";
+            s += year;
+            s += "<br />";
         } else {
-            d.innerHTML += '<a href="'+data[i]['link']+'" style="text-decoration: none"><div '+styledata+'>'
+            s += '<a href="'+data[i]['link']+'" style="text-decoration: none"><div '+styledata+'>'
                            + '<b>' + (i+1) + " / " + data.length + "</b><br /><br />"
                            + data[i]['text']
                            + "<br />"
                            +"</div></a>";
         }
     }
+    d.innerHTML = s;
 }
+document.write(window.location.host);

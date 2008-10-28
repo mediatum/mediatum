@@ -92,6 +92,7 @@ def esc(v):
 
 def exportsearch(req, xml=0):
     access = AccessData(req)
+    access = core.acl.getRootAccess()
     
     id = req.params["id"]
     q = req.params.get("q","")
@@ -146,10 +147,11 @@ def exportsearch(req, xml=0):
     else:
         req.write('a=new Array(%d);' % len(ids))
         i = 0
+        labels = int(req.params.get("labels",1))
         for id in ids:
             node = tree.getNode(id)
             req.write('a[%d] = new Object();\n' % i);
-            req.write("a[%d]['text'] = '%s';\n" % (i,esc(node.show_node_text())));
+            req.write("a[%d]['text'] = '%s';\n" % (i,esc(node.show_node_text(labels=labels))));
             req.write("a[%d]['link'] = 'http://%s?id=%s';\n" % (i, config.get('host.name'),id));
             i = i + 1
         req.write('add_data(a);\n')

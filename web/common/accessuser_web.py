@@ -69,8 +69,10 @@ def makeUserList(req, name, rights, readonlyrights, overload=0, type=""):
     rorightsmap = {}
     for r in rights:
         for u in getRuleUsers(r, userlist):
-            rightsmap[translate(u[0], lang(req))+": "+u[1]] = None
-
+            if translate(u[0], lang(req))!="":
+                rightsmap[translate(u[0], lang(req))+": "+u[1]] = None
+            else:
+                rightsmap[u[1]] = None
    
     rrights = []
     for r in readonlyrights:
@@ -107,7 +109,7 @@ def makeUserList(req, name, rights, readonlyrights, overload=0, type=""):
         
         for user in susers:
             if translate(usertype, lang(req))+": "+user.getName() not in rightsmap and user.getName() not in rorightsmap and translate(usertype, lang(req))+": "+user.getName() not in readonlyrights:
-                    val_right += """<option value="%s">%s: %s</option>""" % (translate(usertype, lang(req))+": "+user.getName(), translate(usertype, lang(req)), user.getName())
-
+                val_right += """<option value="%s">%s</option>""" % (translate(usertype, lang(req))+": "+user.getName(), translate(usertype, lang(req))+": "+user.getName())
+                
     return {"name":name, "val_left":val_left, "val_right":val_right, "type":type}
     

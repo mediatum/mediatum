@@ -71,13 +71,26 @@ def show_acl_editor(req, ids):
                     error = 0
                     if access.hasWriteAccess(node) and userdir.id != node.id:
                         r = []
+                        r_acls = []
                         if req.params.get("leftuser"+type,"")!="":
                             for right in req.params.get("leftuser"+type, "").split(";"):
                                 if len(right.split(": "))==2:
                                     r.append("(user " + right.split(": ")[1]+ ")")
-                                rstr = "{"+" OR ".join(r)+"}"
-                                if len(rstr)==2:
-                                    rstr = ""
+                                else:
+                                    r_acls.append(right)
+                                    print "sonst", right
+                                if len(r)>0:
+                                    rstr = "{"+" OR ".join(r)+"}"
+                                else:
+                                    rstr = req.params.get("leftuser"+type,"")
+
+                                if len(rstr)>0:
+                                    rstr += "," 
+                                    
+                                for x in r_acls:
+                                    rstr += x+","
+                                    
+                                rstr = rstr[:-1]
                         else:
                             rstr = ""
                         node.setAccess(type, rstr)

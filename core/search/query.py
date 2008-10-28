@@ -228,14 +228,6 @@ def subnodes(node):
     print "Retrieving subnodes of",node.id,node.name,":",len(r),"results"
     return r
 
-def getGlobalIndex(type):
-    values = {}
-    fields = database.getConnection().getMetaFields(type)
-    for f in fields:
-        for s in f[0].split(";"):
-            values[s.strip()] = None
-    return values.keys()
-
 def flush():
     global searchers,collections
     searchers = {}

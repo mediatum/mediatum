@@ -78,13 +78,12 @@ input[type="radio"], input[type="checkbox"]{
     background: #FFFFFF;
 }
 
-button{
+button, .button {
 	font-size: 1em;
 	border: 1px solid #ABC6DD;
 	background: #F8FAFA;
 	margin-right: 2px;
     margin-bottom: 2px;
-    
 }
 
 
@@ -104,15 +103,16 @@ input[type="image"]:hover{
 input[type="text"],input[type="password"]{
 	padding:4px;
 }
-input[type="button"],input[type="submit"],input[type="reset"], button[type="submit"]
+.button, input[type="button"],input[type="submit"],input[type="reset"], button[type="submit"]
 {
 cursor: pointer;
 background: url(/img/layout/edit_nav.png) repeat-x left -50px;
 color:#fff;
 padding:4px;
 }
-input[type="button"]:hover,input[type="submit"]:hover,input[type="reset"]:hover, button:hover, button[type="submit"]:hover {
-cursor: pointer;
+.button:hover, input[type="button"]:hover,input[type="submit"]:hover,input[type="reset"]:hover, button:hover, button[type="submit"]:hover 
+{
+ cursor: pointer;
  background: url(/img/layout/edit_nav.png) repeat-x left 0px;
 
 }

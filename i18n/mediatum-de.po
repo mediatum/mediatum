@@ -2540,6 +2540,9 @@ msgstr "Die hochgeladene Datei hat keinen unterstützen Dateityp für Logos. Zug
 msgid "edit_publish_header"
 msgstr "Objekte Publizieren (Quick-Publisher)"
 
+msgid "edit_publish_warning"
+msgstr "Achtung: Dies bezieht sich auf die (mit rotem Text markierten) unpublizierten Objekte, nicht auf die von Ihnen ausgewäen Objekte. Sie haben aber im Nachfolgenden die Möchkeit, die zu publizierenden Objekte auszuwäen"
+
 msgid "edit_publish_info"
 msgstr "Alle unten markierten Objekte können automatisch in ein Verzeichnis verschoben werden."
 

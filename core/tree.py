@@ -790,6 +790,17 @@ class Node:
     
     # fill hashmap with idlists of listvalues
     def getAllAttributeValues(self, attribute, access):
+
+        # REVERT BACK TO SIMPLE SQL QUERY BECAUSE BELOW CODE TOO *SLOW*
+        # MK/2008/10/27
+        values = {}
+        fields = db.getMetaFields(attribute)
+        for f in fields:
+            for s in f[0].split(";"):
+                s = s.strip()
+                values[s] = values.get(s,0)+1
+        return values
+
         ALL = -1
             
         self.lock.acquire() #FIXME: this lock is aquired way too long

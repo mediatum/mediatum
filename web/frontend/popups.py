@@ -19,7 +19,6 @@
 """
 import core.athana as athana
 import core.tree as tree
-import core.search.query
 import core.config as config
 
 from core.tree import getNode
@@ -33,7 +32,6 @@ from schema.schema import VIEW_DATA_ONLY,VIEW_HIDE_EMPTY
 from web.frontend.content import getPaths
 from core.acl import AccessData
 from core.translation import t,lang
-import core.search as search
 
 #
 # execute fullsize method from node-type
@@ -102,18 +100,19 @@ def show_shoppingbag(req):
 # index popup for metadatafields of type 'indexlist'
 #
 def show_index(req):
+    access = AccessData(req)
     try:
         name = req.params['name']
         fieldname = req.params.get('fieldname', name)
-
-        index = search.query.getGlobalIndex(name)
-        index.sort(lambda x,y: cmp(x.lower(), y.lower()))
-
-        req.writeTAL("web/frontend/popups.html", {"index":index, "fieldname":fieldname}, macro="index")
-        return athana.HTTP_OK
     except:
         logging.logException("missing request parameter")
         return athana.HTTP_NOT_FOUND
+
+    index = tree.getRoot("collections").getAllAttributeValues(name, access)
+    index.sort(lambda x,y: cmp(x.lower(), y.lower()))
+
+    req.writeTAL("web/frontend/popups.html", {"index":index, "fieldname":fieldname}, macro="index")
+    return athana.HTTP_OK
 
 #
 # help window for metadata field

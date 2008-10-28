@@ -23,6 +23,7 @@ import core.tree as tree
 import logging
 import core.users as users
 from web.common.acl_web import makeList
+from web.common.accessuser_web import makeUserList
 from edit_common import getHomeDir
 
 from utils.utils import removeEmptyStrings
@@ -42,28 +43,57 @@ def show_acl_editor(req, ids):
     access = acl.AccessData(req)
 
     if "save" in req.params:
-        userdir = getHomeDir(users.getUserFromRequest(req))
-        logging.getLogger('usertracing').info(access.user.name + " change access "+idstr)
-        for type in acl_types:
-            rights = req.params.get("left"+type, "").replace(";",",")
-            for id in ids:
-                node = tree.getNode(id)
-                error = 0
-                if access.hasWriteAccess(node) and userdir.id != node.id:
-                    node.setAccess(type, rights)
-                else:
-                    error = 1
-                if error:
-                    req.writeTAL("web/edit/edit.html", {}, macro="access_error")
-                    return
-
+        #save acl level
+        if req.params.get("type")=="acl":
+        
+            userdir = getHomeDir(users.getUserFromRequest(req))
+            logging.getLogger('usertracing').info(access.user.name + " change access "+idstr)
+            for type in acl_types:
+                rights = req.params.get("left"+type, "").replace(";",",")
+                for id in ids:
+                    node = tree.getNode(id)
+                    error = 0
+                    if access.hasWriteAccess(node) and userdir.id != node.id:
+                        node.setAccess(type, rights)
+                    else:
+                        error = 1
+                    if error:
+                        req.writeTAL("web/edit/edit.html", {}, macro="access_error")
+                        return
+                        
+        #save userlevel
+        elif req.params.get("type")=="user":
+            userdir = getHomeDir(users.getUserFromRequest(req))
+            logging.getLogger('usertracing').info(access.user.name + " change access "+idstr)
+            for type in acl_types:
+                for id in ids:
+                    node = tree.getNode(id)
+                    error = 0
+                    if access.hasWriteAccess(node) and userdir.id != node.id:
+                        r = []
+                        if req.params.get("leftuser"+type,"")!="":
+                            for right in req.params.get("leftuser"+type, "").split(";"):
+                                if len(right.split(": "))==2:
+                                    r.append("(user " + right.split(": ")[1]+ ")")
+                                rstr = "{"+" OR ".join(r)+"}"
+                        else:
+                            rstr = ""
+                        node.setAccess(type, rstr)
+                    else:
+                        error = 1
+                    if error:
+                        req.writeTAL("web/edit/edit.html", {}, macro="access_error")
+                        return
 
     runsubmit = "\nfunction runsubmit(){\n"
     for type in acl_types:
         runsubmit +="\tmark(document.myform.left"+type+");\n"
+        runsubmit +="\tmark(document.myform.leftuser"+type+");\n"
     runsubmit +="\tdocument.myform.submit();\n}\n"
-
-    ret = ""
+    
+    retacl = ""
+    retuser = ""
+    
     for type in acl_types:
         overload = 0
         if type in ("read","data"):
@@ -94,9 +124,10 @@ def show_acl_editor(req, ids):
 
         rights = removeEmptyStrings(s.split(","))
 
-        ret += req.getTAL("web/edit/edit_acls.html", makeList(req, type, rights, parent_rights.keys(), overload, type=type), macro="edit_acls_selectbox")
-
-    req.writeTAL("web/edit/edit_acls.html", {"runsubmit":runsubmit, "idstr":idstr, "content":ret}, macro="edit_acls")
+        retacl += req.getTAL("web/edit/edit_acls.html", makeList(req, type, rights, parent_rights.keys(), overload, type=type), macro="edit_acls_selectbox")
+        retuser += req.getTAL("web/edit/edit_acls.html", makeUserList(req, type, rights, parent_rights.keys(), overload, type=type), macro="edit_acls_userselectbox")
+ 
+    req.writeTAL("web/edit/edit_acls.html", {"runsubmit":runsubmit, "idstr":idstr, "contentacl":retacl, "contentuser":retuser}, macro="edit_acls")
     return athana.HTTP_OK
 
 def edit_acls(req, ids):

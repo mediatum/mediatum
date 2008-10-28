@@ -188,7 +188,7 @@ def edit_publish(req, ids):
                 }
                 
                 function cancel(){
-                    opener.publishform.destination.value = "";
+                    opener.document.publishform.destination.value = "";
                     self.close();
                 }
               </script>

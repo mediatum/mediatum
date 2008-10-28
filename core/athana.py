@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.30 2008/09/04 17:15:21 mediatum Exp $'
+RCS_ID =  '$Id: athana.py,v 1.31 2008/10/28 09:26:24 mediatum Exp $'
 
 import sys
 
@@ -6834,6 +6834,8 @@ try:
     import hotshot
     import hotshot.stats
 except ValueError:
+    profiling=0
+except ImportError:
     profiling=0
 
 class AthanaThread:

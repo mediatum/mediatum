@@ -237,3 +237,23 @@ function getSelectedValue()
 {
 	document.getElementById("rule_part").innerHTML = document.getElementById("parts").value;
 }
+
+function showACLGroup(){
+    obj = document.getElementById("acl_div");
+    obj.style.display="block";
+    obj = document.getElementById("user_div");
+    obj.style.display="none";
+    
+    obj = document.getElementById("type");
+    obj.value = "acl";
+}
+
+function showACLUser(){
+    obj = document.getElementById("acl_div");
+    obj.style.display="none";
+    obj = document.getElementById("user_div");
+    obj.style.display="block";
+    
+    obj = document.getElementById("type");
+    obj.value = "user";
+}

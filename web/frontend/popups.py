@@ -108,7 +108,7 @@ def show_index(req):
         logging.logException("missing request parameter")
         return athana.HTTP_NOT_FOUND
 
-    index = tree.getRoot("collections").getAllAttributeValues(name, access)
+    index = tree.getRoot("collections").getAllAttributeValues(name, access).keys()
     index.sort(lambda x,y: cmp(x.lower(), y.lower()))
 
     req.writeTAL("web/frontend/popups.html", {"index":index, "fieldname":fieldname}, macro="index")

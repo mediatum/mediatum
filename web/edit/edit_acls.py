@@ -76,6 +76,8 @@ def show_acl_editor(req, ids):
                                 if len(right.split(": "))==2:
                                     r.append("(user " + right.split(": ")[1]+ ")")
                                 rstr = "{"+" OR ".join(r)+"}"
+                                if len(rstr)==2:
+                                    rstr = ""
                         else:
                             rstr = ""
                         node.setAccess(type, rstr)

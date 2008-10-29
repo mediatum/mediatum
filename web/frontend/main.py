@@ -126,8 +126,12 @@ def exportsearch(req, xml=0):
 
     limit = int(req.params.get("limit", 99999))
     sortfield = req.params.get("sort", None)
+    
     if sortfield:
         ids = tree.NodeList(ids).sort(sortfield).getIDs()
+
+    if limit < len(ids):
+        ids = ids[0:limit]
 
     if xml:
         req.write("<nodelist>")
@@ -137,8 +141,6 @@ def exportsearch(req, xml=0):
             s = xmlnode.getSingleNodeXML(node)
             req.write(s)
             i = i+1
-            if i==limit:
-                break
         req.write("</nodelist>")
     elif req.params.get("data",None):
         req.write('a=new Array(%d);' % len(ids))
@@ -150,8 +152,6 @@ def exportsearch(req, xml=0):
             for k,v in node.items():
                 req.write("    a[%d]['%s'] = '%s';\n" % (i,esc(k),esc(v)))
             i = i + 1
-            if i==limit:
-                break
         req.write('add_data(a);\n')
     else:
         req.write('a=new Array(%d);' % len(ids))
@@ -163,8 +163,6 @@ def exportsearch(req, xml=0):
             req.write("a[%d]['text'] = '%s';\n" % (i,esc(node.show_node_text(labels=labels))));
             req.write("a[%d]['link'] = 'http://%s?id=%s';\n" % (i, config.get('host.name'),id));
             i = i + 1
-            if i==limit:
-                break
         req.write('add_data(a);\n')
     print "%d node entries xml=%d" % (i,xml)
        

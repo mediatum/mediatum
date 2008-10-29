@@ -23,6 +23,7 @@ from utils.utils import compare_utf8,get_filesize, compare_digit, intersection
 from utils.log import logException
 from core.db import database
 import logging
+import time
 import sys
 import os
 from utils.dicts import MaxSizeDict
@@ -222,6 +223,7 @@ def changed_metadata(node):
 
 def createSortOrder(field):
     log.info("retrieving sort order for field "+field)
+    t1 = time.time()
     reverse=0
     if field[0]=='-':
         field = field[1:]
@@ -251,6 +253,7 @@ def createSortOrder(field):
             v = value
             i = i + 1
         id2pos[int(id)] = i
+    log.info("sort order retrieved, "+str(time.time()-t1)+" seconds")
     return id2pos
 
 class NodeList:

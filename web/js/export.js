@@ -1,11 +1,14 @@
 function addscript(src) {
     document.write('<script src="' + src + '" type="text/javascript"' + '>' + '<' + '/script>');
 }
-function mediatum_load(id,author){
+function mediatum_load(id,limit,author){
     document.write('<div id="mediatum">Loading...</div>');
-    var url = "http://mediatum2.ub.tum.de/jssearch?id="+id;
+    var url = "http://mediatumtest.ub.tum.de/jssearch?id="+id;
     if(author) {
-        url+="&q="+escape("author="+author);
+        url+="&q="+escape("author="+author)+"&sort=updatetime";
+    }
+    if(limit) {
+	url+="&limit="+limit;
     }
     addscript(url);
 }

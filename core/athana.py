@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.31 2008/10/28 09:26:24 mediatum Exp $'
+RCS_ID =  '$Id: athana.py,v 1.32 2008/10/30 08:30:13 mediatum Exp $'
 
 import sys
 
@@ -2476,9 +2476,8 @@ class AthanaTALEngine:
             try:
                 return eval(expr, self.globals, self.locals)
             except:
-                print "Error in python expression"
-                print sys.exc_info()[0], sys.exc_info()[1]
-                traceback.print_tb(sys.exc_info()[2])
+                lgerr.log("Error in python expression:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
+                traceback.print_tb(sys.exc_info()[2],None,lgerr)
                 raise TALESError("evaluation error in %s" % `expr`)
 
         if type == "position":

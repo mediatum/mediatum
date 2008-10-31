@@ -141,7 +141,10 @@ def show_acl_editor(req, ids):
 
         retacl += req.getTAL("web/edit/edit_acls.html", makeList(req, type, rights, parent_rights.keys(), overload, type=type), macro="edit_acls_selectbox")
         retuser += req.getTAL("web/edit/edit_acls.html", makeUserList(req, type, rights, parent_rights.keys(), overload, type=type), macro="edit_acls_userselectbox")
- 
+
+    if not access.getUser().isAdmin():
+        retuser = retacl
+
     req.writeTAL("web/edit/edit_acls.html", {"runsubmit":runsubmit, "idstr":idstr, "contentacl":retacl, "contentuser":retuser}, macro="edit_acls")
     return athana.HTTP_OK
 

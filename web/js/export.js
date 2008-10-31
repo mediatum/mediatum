@@ -3,7 +3,7 @@ function addscript(src) {
 }
 function mediatum_load(id,limit,sort,query){
     document.write('<div id="mediatum">Loading...</div>');
-    var url = "http://mediatumtest.ub.tum.de/jssearch?id="+id;
+    var url = "http://mediatum2.ub.tum.de/jssearch?id="+id;
     if(query) {
         url+="&q="+escape(query);
     }
@@ -51,4 +51,3 @@ function add_data(data) {
     }
     d.innerHTML = s;
 }
-document.write(window.location.host);

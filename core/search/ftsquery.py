@@ -27,6 +27,7 @@ import time
 import core
 import core.config as config
 import core.tree as tree
+from utils.log import logException
 from utils.utils import u, union, normalize_utf8, formatException
 from math import ceil
 
@@ -126,10 +127,11 @@ class FtsSearcher:
             self.db.execute('CREATE VIRTUAL TABLE textsearchmeta USING fts3(id, type, schema, value)')
                    
         except: #sqlite.OperationalError:
-            print "sqlite fts3 database already exists, trying to optimize it..."
-            self.db.execute('SELECT optimize(fullsearchmeta) FROM fullsearchmeta LIMIT 1')
-            self.db.execute('SELECT optimize(searchmeta) FROM searchmeta LIMIT 1')
-            self.db.execute('SELECT optimize(textsearchmeta) FROM textsearchmeta LIMIT 1')
+            pass
+            #print "sqlite fts3 database already exists, trying to optimize it..."
+            #self.db.execute('SELECT optimize(fullsearchmeta) FROM fullsearchmeta LIMIT 1')
+            #self.db.execute('SELECT optimize(searchmeta) FROM searchmeta LIMIT 1')
+            #self.db.execute('SELECT optimize(textsearchmeta) FROM textsearchmeta LIMIT 1')
     
     def getAllTableNames(self):
         ret = []
@@ -144,17 +146,17 @@ class FtsSearcher:
         print "\nclearing index tables..."
         for table in self.getAllTableNames():
             try:
-                self.db.execute("delete from "+ table)
+                self.execute("delete from "+ table)
             except:
                 print " - table", table, "not found"
-        self.db.execute("DELETE FROM searchmeta_def")
+        self.execute("DELETE FROM searchmeta_def")
         print "...cleared"
         
     def dropIndex(self):
         print "\ndropping index tables..."
         for table in self.getAllTableNames():
             try:
-                self.db.execute("drop table "+table)
+                self.execute("drop table "+table)
             except sqlite.OperationalError:
                 print " - table", table, "not found"
         print "...dropped"
@@ -167,30 +169,44 @@ class FtsSearcher:
             ret[id] = attr
         return ret
 
+    def execute(self, sql):
+        print sql
+        return self.db.execute(sql)
         
     def nodeToSimpleSearch(self, node):
         # build simple search index from node
-        try:
-            sql = 'INSERT INTO fullsearchmeta (id, type, schema, value) VALUES(\''+ str(node.id)+'\', \''+node.getContentType()+'\', \''+node.getSchema()+'\', \''+ str(node.name) + '| '
-            # attributes
-            val = ''
+        
+        sql0 = 'SELECT id from fullsearchmeta WHERE id=\''+node.id+'\''
+        sql1 = 'UPDATE fullsearchmeta SET type = \''+node.getContentType()+'\', schema=\''+node.getSchema()+'\', value=\''+ str(node.name) + '| '
+        sql2 = 'INSERT INTO fullsearchmeta (id, type, schema, value) VALUES(\''+ str(node.id)+'\', \''+node.getContentType()+'\', \''+node.getSchema()+'\', \''+ str(node.name) + '| '
+        # attributes
+        val = ''
+        
+        for key,value in node.items():
+            val += protect(u(value))+'| '
+        for v in val.split(" "):
+            v = v.decode("utf-8").encode("latin-1")
+            if normalize_utf8(v)!=v.lower():
+                val += ' '+normalize_utf8(v)          
+        sql1 += val+ ' '
+        sql2 += val+ ' '
             
-            for key,value in node.items():
-                val += protect(u(value))+'| '
-            for v in val.split(" "):
-                v = v.decode("utf-8").encode("latin-1")
-                if normalize_utf8(v)!=v.lower():
-                    val += ' '+normalize_utf8(v)          
-            sql += val+ ' '
-                
-            # files
-            for file in node.getFiles():
-                sql += protect(u(file.getName()+ '| '+file.getType()+'| '+file.getMimeType())+'| ')
+        # files
+        for file in node.getFiles():
+            sql1 += protect(u(file.getName()+ '| '+file.getType()+'| '+file.getMimeType())+'| ')
+            sql2 += protect(u(file.getName()+ '| '+file.getType()+'| '+file.getMimeType())+'| ')
 
-            sql += '\')'
-            self.db.execute(sql)
+        sql1 += '\' WHERE id=\''+node.id+'\''
+        sql2 += '\')'
+
+        try:
+            if self.execute(sql0): # select
+                self.execute(sql1) # do update
+            else:
+                self.execute(sql2) # do insert
             return True
         except:
+            logException('error in sqlite insert/update')
             return False
 
             
@@ -200,45 +216,45 @@ class FtsSearcher:
             # stop if schema has no searchfields
             return True
             
-        v_list = {}
-        values = ''
-        i = 1
-        for field in node.getSearchFields():
-            if field.getFieldtype()=="union":
-                v_list[str(i)] = [field.get("valuelist").split(";")]
-            else:
-                v_list[str(i)] = node.get(field.getName())
-            i+=1
-            
         # save definition
         self.nodeToSchemaDef(node)
-  
-        sql = 'INSERT INTO searchmeta (id, type, schema, updatetime, '
+ 
+        keyvalue = []
+        i = 1
+        for field in node.getSearchFields():
+            key = "field%d" % i
+            i = i + 1
+            value = ""
+            if field.getFieldtype()=="union":
+                for item in field.get("valuelist").split(";"):
+                    value += node.get(item)
+            else:
+                value = node.get(field.getName())
+            keyvalue += [(key, u(protect(value)))]
+            
+        sql0 = 'SELECT id FROM searchmeta where id=\''+node.id+'\''
+        sql1 = 'UPDATE searchmeta SET '
+        sql2 = 'INSERT INTO searchmeta (id, type, schema, updatetime'
+        for key,value in keyvalue:
+            sql1 += key + "='"+value+"', "
+            sql2 += ", "
+            sql2 += key
+        sql1 += "type='"+node.getContentType()+"', schema='"+node.getSchema()+"', updatetime='"+node.get("updatetime")+"'"
+        sql2 += ") VALUES("
+        sql2 += "'"+str(node.id)+"', \""+node.getContentType()+'", "'+node.getSchema()+'", "'+node.get("updatetime")+'"'
+        for key,value in keyvalue:
+            sql2 += ", '" + value + "'"
+        sql1 += " WHERE id='"+node.id+"'"
+        sql2 += ")"
 
         try:
-            if len(v_list) > 0:
-                for key in v_list:
-                    if type(v_list[key])==list:
-                        sub_s = ""
-                        for item in v_list[key][0]:
-                            sub_s += node.get(item)+" "
-                            
-                        sql += 'field'+str(key)+', '
-                        values += '"'+u(sub_s)+ '", '
-                    else:
-                        sql += 'field'+str(key)+', '
-                        values += '"'+u(v_list[key])+ '", '
-                sql = sql[:-2]
-                values = normalize_utf8(protect(values[:-2]))
-                sql = sql+') VALUES("'+ str(node.id)+'", "'+node.getContentType()+'", "'+node.getSchema()+'", "'+node.get("updatetime")+'", ' + values + ')'
+            if self.execute(sql0): #select
+                self.execute(sql1) # do update
             else:
-                sql = sql[:-2]
-                sql = sql+') VALUES("'+ str(node.id)+'", "'+node.getContentType()+'", "'+node.getSchema()+'", "'+node.get("updatetime")+'")'
-
-            self.db.execute(sql)
-            
+                self.execute(sql2) # do insert
             return True
         except:
+            logException('error in sqlite insert/update')
             return False
       
       
@@ -249,9 +265,9 @@ class FtsSearcher:
             fieldnames[str(i)] = field.getName()
             i+=1
 
-        self.db.execute('DELETE FROM searchmeta_def WHERE name="' + node.getSchema()+'"')
+        self.execute('DELETE FROM searchmeta_def WHERE name="' + node.getSchema()+'"')
         for id in fieldnames.keys():
-            self.db.execute('INSERT INTO searchmeta_def (name, position, attrname) VALUES("'+node.getSchema()+'", "'+id+'", "'+fieldnames[id]+'")')
+            self.execute('INSERT INTO searchmeta_def (name, position, attrname) VALUES("'+node.getSchema()+'", "'+id+'", "'+fieldnames[id]+'")')
 
     def nodeToFulltextSearch(self, node):
         # build fulltext index from node
@@ -260,6 +276,12 @@ class FtsSearcher:
             # only build fulltext of document nodes
             return True
         r = re.compile("[a-zA-Z0-9]+")
+       
+        if self.execute('SELECT id from textsearchmeta where id=\''+node.id+'\''):
+            # FIXME: we should not delete the old textdata from this node, and insert
+            # the new files. Only problem is, DELETE from a FTS3 table is prohibitively
+            # slow.
+            return
         
         for file in node.getFiles():
             w = ''
@@ -296,7 +318,7 @@ class FtsSearcher:
                     
                     while p in range(0, int(ceil(content_len/500000.0))):
                         try:
-                            self.db.execute('INSERT INTO textsearchmeta (id, type, schema, value) VALUES("'+str(node.id)+'", "'+str(node.getContentType())+'", "'+str(node.getSchema())+'", "'+normalize_utf8((content[p*500000:(p+1)*500000-1]))+'")')
+                            self.execute('INSERT INTO textsearchmeta (id, type, schema, value) VALUES("'+str(node.id)+'", "'+str(node.getContentType())+'", "'+str(node.getSchema())+'", "'+normalize_utf8((content[p*500000:(p+1)*500000-1]))+'")')
                         except:
                             print "\nerror in fulltext of node",node.id
                             return False
@@ -306,7 +328,6 @@ class FtsSearcher:
     
     
     def updateNodeIndex(self, node):
-        #self.removeNodeIndex(node)
         err = {}
         err['simple'] = []
         err['ext'] = []
@@ -327,8 +348,6 @@ class FtsSearcher:
         err = {}
         schemas = {}
         t1 = time.time()
-        for node in nodelist:
-            self.removeNodeIndex(node)
         t2 = time.time()
         for node in nodelist:
             try:
@@ -353,7 +372,7 @@ class FtsSearcher:
     """
     def removeNodeIndex(self, node, mode=0):
         for table in self.tablenames:
-            self.db.execute('DELETE FROM '+table+' WHERE id="'+str(node.id)+'"')
+            self.execute('DELETE FROM '+table+' WHERE id="'+str(node.id)+'"')
         if mode!=0:
             print "node", node.id, "removed from index"
     

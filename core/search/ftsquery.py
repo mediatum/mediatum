@@ -170,7 +170,6 @@ class FtsSearcher:
         return ret
 
     def execute(self, sql):
-        print sql
         return self.db.execute(sql)
         
     def nodeToSimpleSearch(self, node):
@@ -199,14 +198,18 @@ class FtsSearcher:
         sql1 += '\' WHERE id=\''+node.id+'\''
         sql2 += '\')'
 
+        sql = ""
         try:
+            sql = sql0
             if self.execute(sql0): # select
+                sql = sql1
                 self.execute(sql1) # do update
             else:
+                sql = sql2
                 self.execute(sql2) # do insert
             return True
         except:
-            logException('error in sqlite insert/update')
+            logException('error in sqlite insert/update: '+sql)
             return False
 
             
@@ -247,14 +250,18 @@ class FtsSearcher:
         sql1 += " WHERE id='"+node.id+"'"
         sql2 += ")"
 
+        sql = ""
         try:
+            sql = sql0
             if self.execute(sql0): #select
+                sql = sql1
                 self.execute(sql1) # do update
             else:
+                sql = sql2
                 self.execute(sql2) # do insert
             return True
         except:
-            logException('error in sqlite insert/update')
+            logException('error in sqlite insert/update: '+sql)
             return False
       
       

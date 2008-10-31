@@ -187,7 +187,7 @@ def getAllCollections():
     l = []
     def f(l,node):
         for c in node.getChildren():
-            if isCollection(node):
+            if isCollection(c):
                 l += [c]
                 f(l, c)
     import core.tree

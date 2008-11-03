@@ -2214,6 +2214,9 @@ msgstr "User level"
 msgid "edit_acls_selectusertitle"
 msgstr "Changes on user level"
 
+msgid "edit_acl_special_rule"
+msgstr "[special user rule]"
+
 ### classes ###
 msgid "edit_classes_class_title"
 msgstr "Classify"

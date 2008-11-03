@@ -2208,6 +2208,9 @@ msgstr "Benutzerebene"
 msgid "edit_acls_selectusertitle"
 msgstr "Bearbeitung auf Benutzerebene"
 
+msgid "edit_acl_special_rule"
+msgstr "[Spezial-Benutzerregel]"
+
 ### classes ###
 msgid "edit_classes_class_title"
 msgstr "Klassifizieren"

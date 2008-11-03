@@ -24,14 +24,19 @@ import core.tree
 import time
 import core.config
 
-def importFile(realname,tempname):
-    path,filename = os.path.split(tempname)
+def getImportDir():
     uploaddir = join_paths(core.config.get("paths.datadir"),"incoming")
     try:os.mkdir(uploaddir)
     except: pass
     uploaddir = join_paths(uploaddir, time.strftime("%Y-%b"))
     try:os.mkdir(uploaddir)
     except: pass
+    return uploaddir
+
+def importFile(realname,tempname):
+    path,filename = os.path.split(tempname)
+
+    uploadir = getImportDir()
             
     destname = join_paths(uploaddir, filename)
     if os.sep == '/':

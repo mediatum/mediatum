@@ -12,16 +12,18 @@
         <input type="hidden" name="save" value="save"/>
         <p><input i18n:attributes="value edit_save_title" type="button" name="save" onClick="runsubmit()"/></p>
 
-        <span i18n:translate="edit_acls_selection">TEXT</span> 
-        <a href="#" onclick="showACLGroup()" i18n:translate="edit_acls_selectacl" i18n:attributes="title edit_acls_selectacltitle">TEXT</a> | 
-        <a href="#"  onclick="showACLUser()" i18n:translate="edit_acls_selectuser"  i18n:attributes="title edit_acls_selectusertitle">TEXT</a><br/><br/>
+        <tal:block tal:condition="adminuser">
+            <span i18n:translate="edit_acls_selection">TEXT</span> 
+            <a href="#" onclick="showACLGroup()" i18n:translate="edit_acls_selectacl" i18n:attributes="title edit_acls_selectacltitle">TEXT</a> | 
+            <a href="#"  onclick="showACLUser()" i18n:translate="edit_acls_selectuser"  i18n:attributes="title edit_acls_selectusertitle">TEXT</a><br/><br/>
+        </tal:block>
         
         <div id="acl_div" style="border:1px solid silver; padding:5px">
             <h5 i18n:translate="edit_acls_groupheader">TEXT</h5>
             <tal:block tal:replace="raw contentacl"/>
         </div>
         
-        <div id="user_div" style="border:1px solid silver; display:none; padding:5px">
+        <div tal:condition="adminuser" id="user_div" style="border:1px solid silver; display:none; padding:5px">
             <h5 i18n:translate="edit_acls_userheader">TEXT</h5>
             <tal:block tal:replace="raw contentuser"/>
         </div><br/><br/>

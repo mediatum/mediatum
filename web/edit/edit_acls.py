@@ -145,7 +145,7 @@ def show_acl_editor(req, ids):
     if not access.getUser().isAdmin():
         retuser = retacl
 
-    req.writeTAL("web/edit/edit_acls.html", {"runsubmit":runsubmit, "idstr":idstr, "contentacl":retacl, "contentuser":retuser}, macro="edit_acls")
+    req.writeTAL("web/edit/edit_acls.html", {"runsubmit":runsubmit, "idstr":idstr, "contentacl":retacl, "contentuser":retuser, "adminuser":access.getUser().isAdmin()}, macro="edit_acls")
     return athana.HTTP_OK
 
 def edit_acls(req, ids):

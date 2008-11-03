@@ -127,9 +127,11 @@ function moveRight(left, right) {
 
     function mark(list)
     {
-        for (i=0; i<list.length; i++)
-        {
-            list.options[i].selected=true;
+        if (list){
+            for (i=0; i<list.length; i++)
+            {
+                list.options[i].selected=true;
+            }
         }
     }
 

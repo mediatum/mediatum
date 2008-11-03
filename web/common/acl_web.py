@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.acl as acl
+from core.translation import translate, lang
 
 def makeList(req, name, rights, readonlyrights, overload=0, type=""):
     rightsmap = {}
@@ -34,26 +35,35 @@ def makeList(req, name, rights, readonlyrights, overload=0, type=""):
         # inherited standard rules
         for rule in rulelist:
             if rule.getName() in readonlyrights:
-                val_left += """<optgroup label="%s"></optgroup>""" % (rule.getDescription())
+                if rule.getDescription().startswith("{"):
+                    val_left += """<optgroup label="%s"></optgroup>""" % (translate("edit_acl_special_rule", lang(req)))
+                else:
+                    val_left += """<optgroup label="%s"></optgroup>""" % (rule.getDescription())
                 rorightsmap[rule.getName()] = 1
 
         # inherited implicit rules
         for rule in readonlyrights:
             if rule not in rorightsmap:
-                val_left += """<optgroup label="%s"></optgroup>""" % (rule)
+                if rule.startswith("{"):
+                    val_left += """<optgroup label="%s"></optgroup>""" % (translate("edit_acl_special_rule", lang(req)))
+                else:
+                    val_left += """<optgroup label="%s"></optgroup>""" % (rule)
     else:
         print rightsmap
     
     # node-level standard rules
     for rule in rulelist:
         if rule.getName() in rightsmap:
-            val_left += """<option value="%s">%s</option>""" % (rule.getName(),rule.getDescription())
+            val_left += """<option value="%s">%s-1</option>""" % (rule.getName(),rule.getDescription())
             rightsmap[rule.getName()] = 1
 
     # node-level implicit rules
     for r in rightsmap.keys():
         if not rightsmap[r] and r not in rorightsmap:
-            val_left += """<option value="%s">%s</option>""" % (r,r)
+            if r.startswith("{"): # special rights not changeable in normal ACL area
+                val_left += """<optgroup label="%s"></optgroup>""" % (translate("edit_acl_special_rule", lang(req)))
+            else:
+                val_left += """<option value="%s">%s-2</option>""" % (r,r)
 
     
     for rule in rulelist:

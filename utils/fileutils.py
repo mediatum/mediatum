@@ -36,7 +36,7 @@ def getImportDir():
 def importFile(realname,tempname):
     path,filename = os.path.split(tempname)
 
-    uploadir = getImportDir()
+    uploaddir = getImportDir()
             
     destname = join_paths(uploaddir, filename)
     if os.sep == '/':

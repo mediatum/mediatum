@@ -24,11 +24,13 @@ import core.users as users
 from schema.schema import loadTypesFromDB
 import core.athana as athana
 import core.acl as acl
+from utils.fileutils import getImportDir
 import random
 import os
 import default
+import md5
 
-from utils.utils import splitfilename, isnewer, Menu
+from utils.utils import splitfilename, isnewer, Menu, formatException
 from core.tree import Node,FileNode
 from core.translation import lang
 from schema.schema import loadTypesFromDB, VIEW_DATA_ONLY, VIEW_HIDE_EMPTY
@@ -232,8 +234,16 @@ class Image(default.Default):
                     print "look for image",f.type,"|%s|" % f.retrieveFile()
                     if f.type == "image":
                         path,ext = splitfilename(f.retrieveFile())
+                        basename = md5.md5(str(random.random())).hexdigest()[0:8]
+                       
+                        #path = os.path.join(getImportDir(),os.path.basename(path))
+                        path = os.path.join(getImportDir(),basename)
+
                         thumbname = path+".thumb"
                         thumbname2 = path+".thumb2"
+
+                        assert not os.path.isfile(thumbname)
+                        assert not os.path.isfile(thumbname2)
                         width,height = getImageDimensions(f.retrieveFile())
                         makeThumbNail(f.retrieveFile(), thumbname)
                         makePresentationFormat(f.retrieveFile(), thumbname2)
@@ -293,7 +303,7 @@ class Image(default.Default):
                             if tags[k]!="":
                                 node.set("iptc_"+k.replace(" ","_"), tags[k])
             except:
-                print "iptc error"                           
+                print formatException("iptc error")
 
     """ list with technical attributes for type image """
     def getTechnAttributes(node):

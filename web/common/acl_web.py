@@ -54,7 +54,7 @@ def makeList(req, name, rights, readonlyrights, overload=0, type=""):
     # node-level standard rules
     for rule in rulelist:
         if rule.getName() in rightsmap:
-            val_left += """<option value="%s">%s-1</option>""" % (rule.getName(),rule.getDescription())
+            val_left += """<option value="%s">%s</option>""" % (rule.getName(),rule.getDescription())
             rightsmap[rule.getName()] = 1
 
     # node-level implicit rules

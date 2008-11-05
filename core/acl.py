@@ -52,6 +52,8 @@ class AccessData:
         self.level = None
 
     def getPrivilegeLevel(self):
+        return 0 # deactivate priviledge levels for now
+
         acllock.acquire()
         try:
             global aclrule2privilege,aclrule2privilege_length,aclrule2privilege_count,userip2level
@@ -170,11 +172,7 @@ class AccessData:
                     newlist += [newnode]
                     continue
             p = node.getParents()
-            if len(p):
-                parent = p[0]
-            else:
-                parent = None
-            if parent != lastparent:
+            if p != lastparent:
                 access=0
                 for p in node.getParents():
                     if accesstype=="read" and self.hasReadAccess(p,node):
@@ -186,7 +184,7 @@ class AccessData:
                 lastaccess = access
             else:
                 access = lastaccess
-            lastparent = parent
+            lastparent = p
             if access:
                 newlist += [newnode]
 

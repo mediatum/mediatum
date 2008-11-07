@@ -127,6 +127,8 @@ def getExternalAuthentificators():
 def getUserFromRequest(req):
     try:
         user = req.session["user"]
+        if not user:
+            raise KeyError()
     except KeyError:
         user = getUser(config.get("user.guestuser"))
         if not user:

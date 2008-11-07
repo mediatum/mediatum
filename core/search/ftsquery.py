@@ -89,7 +89,10 @@ class FtsSearcher:
                 if op in [">=","<="]:
                     res = self.db.execute('select distinct(id) from searchmeta where schema="'+str(pos[1])+'" and field'+str(pos[0])+' '+op+' "'+str(value)+'"')                    
                 else:
-                    res = self.db.execute('select distinct(id) from searchmeta where searchmeta match ?', ['field'+str(pos[0])+':'+normalize_utf8((protect(u(value))))+ ' type:-directory'])
+                    if value=="''":
+                        res = self.db.execute('select distinct(id) from searchmeta where field'+str(pos[0])+'=""')
+                    else:
+                        res = self.db.execute('select distinct(id) from searchmeta where searchmeta match ?', ['field'+str(pos[0])+':'+normalize_utf8((protect(u(value))))+ ' type:-directory'])
                 
                 res = [str(s[0]) for s in res]
                 if len(ret)==0:

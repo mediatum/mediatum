@@ -15,6 +15,7 @@ tempdir=/tmp/
 
 [database]
 type=sqlite
+#dbhost=localhost
 #db=mediatum
 #user=mediatumadmin
 #passwd=

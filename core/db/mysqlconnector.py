@@ -42,11 +42,12 @@ class MYSQLConnector(Connector):
 
     def __init__(self):
         config.initialize()
+        self.dbhost = config.settings(["database.dbhost"])
         self.database = config.settings["database.db"]
         self.user = config.settings["database.user"]
         self.passwd = config.settings["database.passwd"]
 
-        self.db=MySQLdb.connect(user = self.user, passwd = self.passwd, db = self.database)
+        self.db=MySQLdb.connect(host = self.dbhost, user = self.user, passwd = self.passwd, db = self.database)
         self.dblock=thread.allocate_lock()
         self.nodes = {}
 
@@ -85,7 +86,7 @@ class MYSQLConnector(Connector):
             self.db = None
 
         if not ok:
-            self.db=MySQLdb.connect(user = self.user, passwd = self.passwd, db = self.database)
+            self.db=MySQLdb.connect(host = self.dbhost, user = self.user, passwd = self.passwd, db = self.database)
         return self.db
 
     def esc(self,s):

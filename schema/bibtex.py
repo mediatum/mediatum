@@ -94,6 +94,10 @@ def getentries(filename):
             content = content.replace("{","")
             content = content.replace("~"," ")
             content = content.replace("}","")
+
+            # some people use html entities in their bibtex...
+            content = content.replace("&quot;", "'")
+
             content = xspace.sub(" ",backgarbage.sub("",frontgarbage.sub("",content)))
 
             content = unicode(content,"utf-8",errors='replace').encode("utf-8")

@@ -298,8 +298,11 @@ class Collectionlet(Portlet):
 
             children = None
             if self.hide_empty:
-                children = node.getChildren()
-                if not len(children):
+                ok = 0
+                for type,num in node.getAllOccurences(access).items():
+                    if not isDirectory(type) and not isCollection(type) and num:
+                        ok = 1
+                if not ok:
                     return
 
             m[node.id] = e = NavTreeEntry(self, node, indent, node.type=="directory")

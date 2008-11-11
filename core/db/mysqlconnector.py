@@ -42,7 +42,10 @@ class MYSQLConnector(Connector):
 
     def __init__(self):
         config.initialize()
-        self.dbhost = config.settings["database.dbhost"]
+        try:
+            self.dbhost = config.settings["database.dbhost"]
+        except:
+            self.dbhost = "localhost"
         self.database = config.settings["database.db"]
         self.user = config.settings["database.user"]
         self.passwd = config.settings["database.passwd"]

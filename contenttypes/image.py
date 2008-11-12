@@ -289,7 +289,7 @@ class Image(default.Default):
 
             # iptc
             try:
-                from mod.iptc import IPTC
+                from lib.iptc import IPTC
                 files = node.getFiles()
 
                 for file in files:

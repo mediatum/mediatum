@@ -27,7 +27,10 @@ import re
 
 def esc(s):
     return s.replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;").replace(">", "&gt;")
-
+    
+def desc(s):
+    return s.replace("&amp;", "&").replace("&quot;", "\"").replace("&lt;","<").replace("&gt;",">")
+    
 def u(s):
     try:
         return s.encode("utf-8")

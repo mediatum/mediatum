@@ -23,7 +23,7 @@ import core.tree as tree
 
 from core.tree import Node
 from core.metatype import Metatype
-from utils.utils import esc
+from utils.utils import esc, desc
 from schema.schema import getMetadataType
 
 class m_mappingfield(Metatype):
@@ -113,7 +113,7 @@ class m_mappingfield(Metatype):
             s = ret
         except:
             pass
-        return s
+        return desc(s)
         
         
         

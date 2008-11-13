@@ -52,12 +52,12 @@ class SQLiteConnector(Connector):
     def __init__(self,db=None):
         config.initialize()
         if db==None:
-            if not os.path.exists(config.settings["paths.datadir"]+"db/imagearch.db"):   
+            if not os.path.exists(config.get("paths.datadir")+"db/imagearch.db"):   
                 try:
-                    os.makedirs(os.path.dirname(config.settings["paths.datadir"]+"db/"))
+                    os.makedirs(os.path.dirname(config.get("paths.datadir")+"db/"))
                 except OSError:
                     pass
-            self.db = config.settings["paths.datadir"]+"db/imagearch.db"
+            self.db = config.get("paths.datadir")+"db/imagearch.db"
             self.isInitialized()
         else:
             self.db = db
@@ -146,7 +146,7 @@ class SQLiteConnector(Connector):
         log.info("tables deleted")
 
     def clearTables(self):
-        self.runQueryNoError("delete from access")
+        self.runQueryNoError("delete from nodeaccess")
         self.runQueryNoError("delete from user")
         self.runQueryNoError("delete from node")
         self.runQueryNoError("delete from nodefile")
@@ -155,12 +155,6 @@ class SQLiteConnector(Connector):
         self.commit()
         log.info("tables cleared")
         
-    def getMappings(self, direction):
-        if direction>0:
-            return self.runQuery("select nid,cid from nodemapping order by nid,cid")
-        else:
-            return self.runQuery("select cid,nid from nodemapping order by cid,nid")
-    
     def getRule(self, name):
         rule = self.runQuery("select name, description, rule from nodeaccess where name=" + self.esc(name))
         if len(rule)==1:
@@ -215,71 +209,6 @@ class SQLiteConnector(Connector):
             
             
     """ node section """
-    def getRootID(self):
-        nodes = self.runQuery("select id from node where type='root'")
-        if len(nodes)<=0:
-            return None
-        if len(nodes)>1:
-            raise "More than one root node"
-        return str(nodes[0][0])
-
-    def getNode(self,id):
-        t = self.runQuery("select id,name,type,readaccess,writeaccess,dataaccess,orderpos from node where id=" + id)
-        if len(t) == 1:
-            return str(t[0][0]),t[0][1],t[0][2],t[0][3],t[0][4],t[0][5],t[0][6] # id,name,type,read,write,data,orderpos
-        elif len(t) == 0:
-            log.error("No node for ID "+str(id))
-            return None
-        else:
-            log.error("More than one node for id "+str(id))
-            return None
-            
-    def getNodeIdByAttribute(self, attributename, attributevalue):
-        if attributename.endswith("access"):
-            t = self.runQuery("select id from node where "+attributename+" like '%" + str(attributevalue)+"%'")
-        else:
-            if attributevalue=="*":
-                t = self.runQuery("select node.id from node, nodeattribute where node.id=nodeattribute.nid and nodeattribute.name='" + str(attributename)+"'")
-            else:
-                t = self.runQuery("select node.id from node, nodeattribute where node.id=nodeattribute.nid and nodeattribute.name='" + str(attributename)+"' and nodeattribute.value='"+str(attributevalue)+"'")
-        if len(t)==0:
-            return []
-        else:
-            ret = []
-            for i in t:
-                if i[0] not in ret:
-                    ret.append(i[0])
-            return ret
-            
-
-    def getNamedNode(self, parentid, name):
-        t = self.runQuery("select id from node,nodemapping where node.name="+self.esc(name)+" and node.id = nodemapping.cid and nodemapping.nid = "+parentid)
-        if len(t) == 0:
-            t = self.runQuery("select id from node,nodemapping where node.type="+self.esc(name)+" and node.id = nodemapping.cid and nodemapping.nid = "+parentid)
-            if len(t)==1:
-                return t[0][0]
-            else:
-                return None
-        else:
-            return t[0][0]
-
-    def deleteNode(self, id):
-        self.runQuery("delete from node where id=" + id)
-        self.runQuery("delete from nodemapping where cid=" + id)
-        self.runQuery("delete from nodeattribute where nid=" + id)
-        self.runQuery("delete from nodefile where nid=" + id)
-
-        # WARNING: this might create orphans
-        self.runQuery("delete from nodemapping where nid=" + id)
-        log.info("node "+id+" deleted")
-
-    def mkOrderPos(self):
-        t = self.runQuery("select max(orderpos) as orderpos from node")
-        if len(t)==0 or t[0][0] is None:
-            return "1"
-        orderpos = t[0][0] + 1
-        return orderpos
-
     def createNode(self, name, type):
         orderpos = self.mkOrderPos()
         self.runQuery("insert into node (name,type,orderpos) values(?,?,?)",(name,type,orderpos))
@@ -297,6 +226,7 @@ class SQLiteConnector(Connector):
         self.setNodeOrderPos(childid, self.mkOrderPos())
         self.runQuery("insert into nodemapping (nid, cid) values(?,?)",(nodeid,childid))
 
+        
     def setAttribute(self, nodeid, attname, attvalue, check=1):
         if attvalue is None:
             raise "Attribute value is None"
@@ -306,12 +236,10 @@ class SQLiteConnector(Connector):
                 self.runQuery("update nodeattribute set value='"+attvalue+"' where nid="+nodeid+" and name='"+attname+"'")
                 return
         self.runQuery("insert into nodeattribute (nid, name, value) values(?,?,?)", (nodeid,attname,attvalue))
-
+       
+        
     def addFile(self, nodeid, path, type, mimetype):
         self.runQuery("insert into nodefile (nid, filename, type, mimetype) values(?,?,?,?)", (nodeid,path,type,mimetype))
-
-    def getNodeIDsForSchema(self, schema, datatype="*"):
-        return self.runQuery('select id from node where type like "%/'+schema+'" or type ="'+schema+'"')
 
 
     def getStatus(self):
@@ -335,4 +263,4 @@ class SQLiteConnector(Connector):
         
     def getDBSize(self):
         import os
-        return os.stat(config.settings["paths.datadir"]+"db/imagearch.db")[6]
+        return os.stat(config.get("paths.datadir")+"db/imagearch.db")[6]

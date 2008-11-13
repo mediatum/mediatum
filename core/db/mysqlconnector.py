@@ -42,13 +42,10 @@ class MYSQLConnector(Connector):
 
     def __init__(self):
         config.initialize()
-        try:
-            self.dbhost = config.settings["database.dbhost"]
-        except:
-            self.dbhost = "localhost"
-        self.database = config.settings["database.db"]
-        self.user = config.settings["database.user"]
-        self.passwd = config.settings["database.passwd"]
+        self.dbhost = config.get("database.dbhost", "localhost")
+        self.database = config.get("database.db", "mediatum")
+        self.user = config.get("database.user", "mediatumadmin")
+        self.passwd = config.get("database.passwd", "")
 
         self.db=MySQLdb.connect(host = self.dbhost, user = self.user, passwd = self.passwd, db = self.database)
         self.dblock=thread.allocate_lock()
@@ -204,14 +201,6 @@ class MYSQLConnector(Connector):
         self.runQueryNoError("alter table nodemapping add index(cid,nid);")
         log.info("tables created")
 
-
-    def getMappings(self, direction):
-        if direction > 0:
-            return self.runQuery("select nid,cid from nodemapping order by nid,cid")
-        else:
-            return self.runQuery("select cid,nid from nodemapping order by cid,nid")
-
-
     def dropTables(self):
         self.runQueryNoError("drop table access")
         self.runQueryNoError("drop table datatype")
@@ -274,71 +263,6 @@ class MYSQLConnector(Connector):
         for field in ["readaccess", "writeaccess", "dataaccess"]:
             self.runQuery('update node set '+field+'="'+newrule+'" where '+field+'="'+rulename+'"')
 
-    
-    #
-    # node section
-    #   
-    def getRootID(self):
-        nodes = self.runQuery("select id from node where type='root'")
-        if len(nodes)<=0:
-            return None
-        if len(nodes)>1:
-            raise "More than one root node"
-        return str(nodes[0][0])
-        
-
-    def getNode(self, id):
-        t = self.runQuery("select id,name,type,readaccess,writeaccess,dataaccess,orderpos from node where id=" + str(id))
-        if len(t) == 1:
-            return str(t[0][0]),t[0][1],t[0][2],t[0][3],t[0][4],t[0][5],t[0][6] # id,name,type,read,write,data,orderpos
-        elif len(t) == 0:
-            log.error("No node for ID "+str(id))
-            return None
-        else:
-            log.error("More than one node for id "+str(id))
-            return None
-            
-    def getNodeIdByAttribute(self, attributename, attributevalue):
-        if attributename.endswith("access"):
-            t = self.runQuery("select id from node where "+attributename+" like '%" + str(attributevalue)+"%'")
-        else:
-            if attributevalue=="*":
-                t = self.runQuery("select node.id from node, nodeattribute where node.id=nodeattribute.nid and nodeattribute.name='" + str(attributename)+"'")
-            else:
-                t = self.runQuery("select node.id from node, nodeattribute where node.id=nodeattribute.nid and nodeattribute.name='" + str(attributename)+"' and nodeattribute.value='"+str(attributevalue)+"'")
-        if len(t)==0:
-            return []
-        else:
-            ret = []
-            for i in t:
-                if i[0] not in ret:
-                    ret.append(i[0])
-            return ret
-            
-                
-    def getNamedNode(self, parentid, name):
-        t = self.runQuery("select id from node,nodemapping where node.name="+self.esc(name)+" and node.id = nodemapping.cid and nodemapping.nid = "+parentid)
-        if len(t) == 0:
-            t = self.runQuery("select id from node,nodemapping where node.type="+self.esc(name)+" and node.id = nodemapping.cid and nodemapping.nid = "+parentid)
-            if len(t)==1:
-                return t[0][0]
-            else:
-                return None
-        else:
-            return t[0][0]
-
-    def deleteNode(self, id):
-        self.runQuery("delete from node where id=" + id)
-        self.runQuery("delete from nodemapping where cid=" + id)
-        self.runQuery("delete from nodeattribute where nid=" + id)
-        self.runQuery("delete from nodefile where nid=" + id)
-   
-
-        # WARNING: this might create orphans
-        self.runQuery("delete from nodemapping where nid=" + id)
-        log.info("node "+id+" deleted")
-
-
     def mkID(self):
         # TODO: use mysql autoincrementer
         t = self.runQuery("select max(id) as maxid from node")
@@ -347,25 +271,10 @@ class MYSQLConnector(Connector):
         id = t[0][0] + 1
         return str(id)
 
-    def mkOrderPos(self):
-        # TODO: use mysql autoincrementer
-        t = self.runQuery("select max(orderpos) as orderpos from node")
-        if len(t)==0 or t[0][0] is None:
-            return "1"
-        orderpos = t[0][0] + 1
-        return orderpos
-
     def createNode(self, name, type):
         id = self.mkID()
         orderpos = self.mkOrderPos()
         self.runQuery("insert into node (id, name, type, orderpos) values(" + id + ", " + self.esc(name) + ", '" + type + "',"+str(orderpos)+")")
-        
-        #self.setAttribute(self, id, "creationdate", str(time()))
-        ##### time.strftime(format, time.localtime(str))
-        
-        #self.setAttribute(self, id, "creator", self.requestuser)
-            
-        #log.info("node "+id+" ("+name+") created")
         return str(id)
     
     def addChild(self, nodeid, childid, check=1):
@@ -379,6 +288,7 @@ class MYSQLConnector(Connector):
         self.setNodeOrderPos(childid, self.mkOrderPos())
         self.runQuery("insert into nodemapping (nid, cid) values(" + nodeid + ", " + childid + ")")
 
+        
     def setAttribute(self, nodeid, attname, attvalue, check=1):
         if attvalue is None:
             raise "Attribute value is None"
@@ -390,12 +300,8 @@ class MYSQLConnector(Connector):
         self.runQuery("insert into nodeattribute (nid, name, value) values(" + nodeid + ", " + self.esc(attname) + ", " + self.esc(attvalue) + ")")
 
     def addFile(self, nodeid, path, type, mimetype):
-        self.runQuery("insert into nodefile (nid, filename, type, mimetype) values(" + nodeid + \
-                    ", " + self.esc(path) + ", '" + type + "', '" + mimetype+ "')")
+        self.runQuery("insert into nodefile (nid, filename, type, mimetype) values(" + nodeid + ", " + self.esc(path) + ", '" + type + "', '" + mimetype+ "')")
 
-    def getNodeIDsForSchema(self, schema, datatype="*"):
-        return self.runQuery('select id from node where type like "%/'+schema+'" or type ="'+schema+'"')
-        
     def getStatus(self):
         ret = []
         key = ["mysql_name", "mysql_engine", "mysql_version", "mysql_row_format", "mysql_rows", "mysql_avg_row_length", "mysql_data_length", "mysql_max_data_length", "mysql_index_length", "mysql_data_free", "mysql_auto_increment",
@@ -408,8 +314,7 @@ class MYSQLConnector(Connector):
                 i += 1
             ret.append(t)
         return ret
-        
-        
+     
     def getDBSize(self):
         l = 0
         for table in self.runQueryNoError("SHOW TABLE STATUS"):
@@ -417,6 +322,4 @@ class MYSQLConnector(Connector):
             l+= int(table[8])
             
         return int(l)
-        
-        
-        
+ 

@@ -25,7 +25,6 @@ import traceback
 import thread
 
 from core.db.database import initDatabaseValues
-import core.config as config
 from utils import *
 
 debug = 0
@@ -97,4 +96,79 @@ class Connector:
 
     def setNodeType(self, id, type):
         self.runQuery("update node set type = "+self.esc(type)+" where id = "+id)
+    
+    def getMappings(self, direction):
+        if direction>0:
+            return self.runQuery("select nid,cid from nodemapping order by nid,cid")
+        else:
+            return self.runQuery("select cid,nid from nodemapping order by cid,nid")
 
+    # core node methodes
+    def getRootID(self):
+        nodes = self.runQuery("select id from node where type='root'")
+        if len(nodes)<=0:
+            return None
+        if len(nodes)>1:
+            raise "More than one root node"
+        return str(nodes[0][0])
+        
+    def getNode(self, id):
+        t = self.runQuery("select id,name,type,readaccess,writeaccess,dataaccess,orderpos from node where id=" + str(id))
+        if len(t) == 1:
+            return str(t[0][0]),t[0][1],t[0][2],t[0][3],t[0][4],t[0][5],t[0][6] # id,name,type,read,write,data,orderpos
+        elif len(t) == 0:
+            log.error("No node for ID "+str(id))
+            return None
+        else:
+            log.error("More than one node for id "+str(id))
+            return None       
+    
+    def getNodeIdByAttribute(self, attributename, attributevalue):
+        if attributename.endswith("access"):
+            t = self.runQuery("select id from node where "+attributename+" like '%" + str(attributevalue)+"%'")
+        else:
+            if attributevalue=="*":
+                t = self.runQuery("select node.id from node, nodeattribute where node.id=nodeattribute.nid and nodeattribute.name='" + str(attributename)+"'")
+            else:
+                t = self.runQuery("select node.id from node, nodeattribute where node.id=nodeattribute.nid and nodeattribute.name='" + str(attributename)+"' and nodeattribute.value='"+str(attributevalue)+"'")
+        if len(t)==0:
+            return []
+        else:
+            ret = []
+            for i in t:
+                if i[0] not in ret:
+                    ret.append(i[0])
+            return ret    
+ 
+    def getNamedNode(self, parentid, name):
+        t = self.runQuery("select id from node,nodemapping where node.name="+self.esc(name)+" and node.id = nodemapping.cid and nodemapping.nid = "+parentid)
+        if len(t) == 0:
+            t = self.runQuery("select id from node,nodemapping where node.type="+self.esc(name)+" and node.id = nodemapping.cid and nodemapping.nid = "+parentid)
+            if len(t)==1:
+                return t[0][0]
+            else:
+                return None
+        else:
+            return t[0][0]  
+
+    def deleteNode(self, id):
+        self.runQuery("delete from node where id=" + id)
+        self.runQuery("delete from nodemapping where cid=" + id)
+        self.runQuery("delete from nodeattribute where nid=" + id)
+        self.runQuery("delete from nodefile where nid=" + id)
+   
+
+        # WARNING: this might create orphans
+        self.runQuery("delete from nodemapping where nid=" + id)
+        log.info("node "+id+" deleted")
+
+    def mkOrderPos(self):
+        t = self.runQuery("select max(orderpos) as orderpos from node")
+        if len(t)==0 or t[0][0] is None:
+            return "1"
+        orderpos = t[0][0] + 1
+        return orderpos  
+    
+    def getNodeIDsForSchema(self, schema, datatype="*"):
+        return self.runQuery('select id from node where type like "%/'+schema+'" or type ="'+schema+'"')
+        

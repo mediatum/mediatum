@@ -211,7 +211,8 @@ class SQLiteConnector(Connector):
     """ node section """
     def createNode(self, name, type):
         orderpos = self.mkOrderPos()
-        self.runQuery("insert into node (name,type,orderpos) values(?,?,?)",(name,type,orderpos))
+        id = self.mkID()
+        self.runQuery("insert into node (id,name,type,orderpos) values(?,?,?,?)",(id,name,type,orderpos))
         res = self.runQuery("select max(id) from node")
         return str(res[0][0])
     

@@ -172,3 +172,10 @@ class Connector:
     def getNodeIDsForSchema(self, schema, datatype="*"):
         return self.runQuery('select id from node where type like "%/'+schema+'" or type ="'+schema+'"')
         
+    def mkID(self):
+        t = self.runQuery("select max(id) as maxid from node")
+        if len(t)==0 or t[0][0] is None:
+            return "1"
+        id = t[0][0] + 1
+        return str(id)
+

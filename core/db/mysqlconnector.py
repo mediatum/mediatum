@@ -263,14 +263,6 @@ class MYSQLConnector(Connector):
         for field in ["readaccess", "writeaccess", "dataaccess"]:
             self.runQuery('update node set '+field+'="'+newrule+'" where '+field+'="'+rulename+'"')
 
-    def mkID(self):
-        # TODO: use mysql autoincrementer
-        t = self.runQuery("select max(id) as maxid from node")
-        if len(t)==0 or t[0][0] is None:
-            return "1"
-        id = t[0][0] + 1
-        return str(id)
-
     def createNode(self, name, type):
         id = self.mkID()
         orderpos = self.mkOrderPos()

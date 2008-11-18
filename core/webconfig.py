@@ -24,7 +24,7 @@ import core.tree as tree
 
 def initContexts():
     athana.setBase(".")
-    athana.setTempDir("/tmp/")
+    athana.setTempDir(config.get("paths.tempdir", "/tmp/"))
     from core.config import resolve_filename
     from core.translation import translate
     from core.ftp import collection_ftpserver

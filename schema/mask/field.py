@@ -90,7 +90,9 @@ class m_field(Metatype):
             unit = ' ' + field.getUnit()
 
         if flags & VIEW_DATA_ONLY:
-            value = str(t.getFormatedValue(element, nodes[0], language)[1]) + str(unit)
+            value = str(t.getFormatedValue(element, nodes[0], language)[1])
+            if len(value.strip())>0:
+                value+= str(unit)
         else:
             value = str(formatLongText(t.getFormatedValue(element, nodes[0], language)[1], element)) + str(unit)  
 

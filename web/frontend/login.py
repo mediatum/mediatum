@@ -69,14 +69,15 @@ def login_submit(req):
             x = users.getExternalAuthentificator(user.getUserType())           
             if x.stdPassword(user):
                 return display_changepwd(req,3)
-
         else:
             if user.stdPassword():
                 return display_changepwd(req,3)
-        
-        req.request["Location"] = "http://"+config.get("host.name")+"/node?id="+tree.getRoot("collections").id;
+       
+        if config.get("config.ssh", "") == "yes":
+            req.request["Location"] = "https://"+config.get("host.name")+"/node?id="+tree.getRoot("collections").id;
+        else:
+            req.request["Location"] = "/node?id="+tree.getRoot("collections").id;
         return athana.HTTP_MOVED_TEMPORARILY
-    
     else:
         return display_login(req, "login_error")
 

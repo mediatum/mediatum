@@ -25,6 +25,14 @@ import logging
 from web.frontend.frame import getNavigationFrame
 
 def display_login(req, error=None):
+    if len(req.params)>0:
+        # user changed from login to browsing
+        p = ""
+        for key in req.params:
+            p += "&"+str(key)+"="+req.params.get(key) 
+        req.request["Location"] = "http://"+config.get("host.name")+"/node?"+p[1:];
+        return athana.HTTP_MOVED_TEMPORARILY
+        
     navframe = getNavigationFrame(req)
     navframe.feedback(req)
 

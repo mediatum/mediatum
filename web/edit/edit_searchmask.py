@@ -86,7 +86,8 @@ def edit_searchmask(req, ids):
 
     if searchtype == "own":
         maskname = node.get("searchmaskname")
-        if not maskname or not root.hasChild(maskname):
+
+        if not maskname or root.hasChild(maskname)==0:
             mask = searchmask.generateMask(node)
         else:
             mask = root.getChild(maskname)
@@ -126,6 +127,9 @@ def edit_searchmask(req, ids):
         else:
             selectedfield = None
 
+        if not mask:
+            print "no parent searchmask found, empty mask created"
+            mask = tree.Node(name=maskname, type="searchmask")
 
         fields = mask.getChildren()
 

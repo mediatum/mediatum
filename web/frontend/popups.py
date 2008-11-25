@@ -105,7 +105,7 @@ def show_index(req):
         name = req.params['name']
         fieldname = req.params.get('fieldname', name)
     except:
-        logging.logException("missing request parameter")
+        logException("missing request parameter")
         return athana.HTTP_NOT_FOUND
 
     index = tree.getRoot("collections").getAllAttributeValues(name, access).keys()

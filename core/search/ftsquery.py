@@ -413,8 +413,8 @@ class FtsSearcher:
                 i += 1
             if t[0][1]=="table":
                 items = self.db.execute("select count(*) from "+t[2][1])
-                t.append(("sqplite_items_count", str(items.fetchall()[0][0])))
-
+                for item in items:
+                    t.append(("sqplite_items_count",str(item[0])))
             ret.append(t)
         return ret
         

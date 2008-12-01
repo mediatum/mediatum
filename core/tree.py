@@ -118,6 +118,8 @@ def getNode(id):
 def getNodesByAttribute(attributename, attributevalue=""):
     return db.getNodeIdByAttribute(attributename, attributevalue)
 
+def getDirtyNodes(self, num=0):
+    return NodeList(db.getDirty(num))
     
 
 class NoSuchNodeError:
@@ -388,6 +390,8 @@ class Node:
             finally:
                 tree_lock.release()
 
+    def setDirty(self):
+        db.setDirty(self.id)
 
     """ get the node name """
     def getName(self):

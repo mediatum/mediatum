@@ -190,6 +190,8 @@ class FtsSearcher:
             v = v.decode("utf-8").encode("latin-1")
             if normalize_utf8(v)!=v.lower():
                 val += ' '+normalize_utf8(v)          
+        val = val.replace(chr(0),"")
+        
         sql1 += val+ ' '
         sql2 += val+ ' '
             

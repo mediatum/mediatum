@@ -114,7 +114,8 @@ def getFLVSize(filename):
             elif codec == 4 or codec == 5: #on2 vp6 video
                 keyframe = readU8(fi)
                 if keyframe&0x80:
-                    raise AttributeError("On2 VP6 Video doesn't start with a key frame")
+                    #raise AttributeError("On2 VP6 Video doesn't start with a key frame")
+                    pass
                 version = readU8(fi)
                 if keyframe&1:
                     fi.read(2)
@@ -131,6 +132,6 @@ def getFLVSize(filename):
 if __name__ == "__main__":
     #print getFLVSize("/home/data/videos/testvideo.flv")
     #print getFLVSize("/home/data/videos/Abiotv-carForWomen895.flv")
-    print getFLVSize("/home/kramm/save-video_LOW.flv")
+    print getFLVSize("tzanou.flv")
 
 

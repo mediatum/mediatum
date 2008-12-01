@@ -79,6 +79,16 @@ class Connector:
     def removeAttribute(self, nodeid, attname):
         self.runQuery("delete from nodeattribute where nid=" + nodeid + " and name=" + self.esc(attname))
     
+    def setDirty(self, nodeid):
+        self.runQuery("update node set dirty=1 where id=" + str(nodeid))
+    def getDirty(self, limit=0):
+        if limit:
+            ids = self.runQuery("select id from node where dirty=1 limit %d" % limit)
+        else:
+            ids = self.runQuery("select id from node where dirty=1")
+        ids2 = [id[0] for id in ids]
+        return ids2
+    
     def setNodeName(self, id, name):
         self.runQuery("update node set name = "+self.esc(name)+" where id = "+id)
 

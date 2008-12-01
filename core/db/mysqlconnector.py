@@ -63,6 +63,10 @@ class MYSQLConnector(Connector):
         except IndexError:
             initDatabaseValues(self)
 
+        try:
+            r = self.runQuery("select * from node where dirty=1 limit 1");
+        except MySQLdb.OperationalError:
+            self.runQuery("alter table node add column dirty bool");
 
     def close(self):
         self.dblock.acquire()
@@ -141,6 +145,7 @@ class MYSQLConnector(Connector):
         global debug
         self.dblock.acquire()
         try:
+            print sql
             if debug:
                 log.debug(sql)
                 c = self.db.cursor()
@@ -181,7 +186,7 @@ class MYSQLConnector(Connector):
 
 
     def createTables(self):
-        self.runQueryNoError("create table node (id integer not null, name varbinary(255), type varbinary(32) not null, readaccess text, writeaccess text, dataaccess text, orderpos int default '1', primary key (id))")
+        self.runQueryNoError("create table node (id integer not null, name varbinary(255), type varbinary(32) not null, readaccess text, writeaccess text, dataaccess text, orderpos int default '1', dirty bool, primary key (id))")
         self.runQueryNoError("create table nodefile (nid integer not null, filename text not null , type varbinary(16) not null, mimetype varbinary(20))")
         self.runQueryNoError("create table nodeattribute (nid integer not null, name varbinary(50) not null, value text ) ") 
         self.runQueryNoError("create table nodemapping (nid integer not null, cid integer not null)")
@@ -280,7 +285,6 @@ class MYSQLConnector(Connector):
         self.setNodeOrderPos(childid, self.mkOrderPos())
         self.runQuery("insert into nodemapping (nid, cid) values(" + nodeid + ", " + childid + ")")
 
-        
     def setAttribute(self, nodeid, attname, attvalue, check=1):
         if attvalue is None:
             raise "Attribute value is None"

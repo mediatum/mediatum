@@ -288,16 +288,16 @@ class Collectionlet(Portlet):
             p = parents.pop()
             opened[p.id] = 1
             parents += p.getParents()
-        
+      
         m = {}
-        def f(m,node,indent):
+        def f(m,node,indent,hide_empty):
             if indent>15:
                 raise RecursionException
             if not access.hasReadAccess(node):
                 return
 
             children = None
-            if self.hide_empty:
+            if hide_empty:
                 ok = 0
                 for type,num in node.getAllOccurences(access).items():
                     if not isDirectory(type) and not isCollection(type) and num:
@@ -312,8 +312,11 @@ class Collectionlet(Portlet):
                     children = node.getChildren()
                 for c in children:
                     if isCollection(c) or isDirectory(c):
-                        f(m, c, indent+1)
-        f(m, tree.getRoot("collections"), 0)
+                        if c.get("style_hide_empty") == "1":
+                            hide_empty=1
+                        f(m, c, indent+1, hide_empty)
+
+        f(m, tree.getRoot("collections"), 0, self.hide_empty)
 
         if "cunfold" in req.params:
             id = req.params["cunfold"]
@@ -331,8 +334,6 @@ class Collectionlet(Portlet):
         def f(col_data,node,indent):
             if indent>15:
                 raise RecursionException
-            if not access.hasReadAccess(node):
-                return
             if not node.id in m:
                 return
                

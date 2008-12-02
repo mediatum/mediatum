@@ -117,5 +117,10 @@ for k,v in config.getsubset("plugins").items():
         sys.path += [path]
     m = __import__(module)
 
-import search.query
-search.query.startThread()
+if config.get("config.searcher", "").startswith("fts"):
+    import search.ftsquery
+    search.ftsquery.startThread()
+else:
+    import search.query
+    search.query.startThread()
+

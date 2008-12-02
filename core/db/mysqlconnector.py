@@ -145,7 +145,6 @@ class MYSQLConnector(Connector):
         global debug
         self.dblock.acquire()
         try:
-            print sql
             if debug:
                 log.debug(sql)
                 c = self.db.cursor()
@@ -168,7 +167,6 @@ class MYSQLConnector(Connector):
 
 
     def runQueryNoError(self, sql):
-        print sql
         global debug
         if debug:
             log.debug(sql)

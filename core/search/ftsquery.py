@@ -119,22 +119,27 @@ class FtsSearcher:
 
         self.schemafields = {}
 
+        def create(sql):
+            try:
+                self.db.execute(sql)
+            except:
+                e = sys.exc_info()[1]
+                if "already exists" not in str(e):
+                    raise
+
         #if option=="init":
-        try:
             # simple search table
-            self.db.execute('CREATE VIRTUAL TABLE fullsearchmeta USING fts3(id, type, schema, value)')
+        create('CREATE VIRTUAL TABLE fullsearchmeta USING fts3(id, type, schema, value)')
             # extended search table
-            self.db.execute('CREATE VIRTUAL TABLE searchmeta USING fts3(id, type, schema, updatetime, '+s+')')
-            self.db.execute('CREATE VIRTUAL TABLE searchmeta_def USING fts3(name, position, attrname)')
+        create('CREATE VIRTUAL TABLE searchmeta USING fts3(id, type, schema, updatetime, '+s+')')
+        create('CREATE VIRTUAL TABLE searchmeta_def USING fts3(name, position, attrname)')
             # fulltext search table
-            self.db.execute('CREATE VIRTUAL TABLE textsearchmeta USING fts3(id, type, schema, value)')
+        create('CREATE VIRTUAL TABLE textsearchmeta USING fts3(id, type, schema, value)')
                    
-        except: #sqlite.OperationalError:
-            pass
-            #print "sqlite fts3 database already exists, trying to optimize it..."
-            #self.db.execute('SELECT optimize(fullsearchmeta) FROM fullsearchmeta LIMIT 1')
-            #self.db.execute('SELECT optimize(searchmeta) FROM searchmeta LIMIT 1')
-            #self.db.execute('SELECT optimize(textsearchmeta) FROM textsearchmeta LIMIT 1')
+        #print "sqlite fts3 database already exists, trying to optimize it..."
+        #self.db.execute('SELECT optimize(fullsearchmeta) FROM fullsearchmeta LIMIT 1')
+        #self.db.execute('SELECT optimize(searchmeta) FROM searchmeta LIMIT 1')
+        #self.db.execute('SELECT optimize(textsearchmeta) FROM textsearchmeta LIMIT 1')
     
     def getAllTableNames(self):
         ret = []
@@ -434,3 +439,13 @@ def protect(s):
     
 def subnodes(node):
     return node.getAllChildren().getIDs()
+
+
+def fts_indexer_thread(timewait):
+    time.sleep(3)
+    print tree.getDirtyNodes()
+
+def startThread():
+    thread_id = thread.start_new_thread(fts_indexer_thread, (int(timewait),))
+    log.info("started indexer thread")
+

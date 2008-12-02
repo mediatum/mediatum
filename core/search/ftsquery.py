@@ -23,15 +23,19 @@ import sys
 sys.path += ["../","."]
 import re
 import os
+import thread
 import time
 import core
 import core.config as config
 import core.tree as tree
+import logging
 from utils.log import logException
 from utils.utils import u, union, normalize_utf8, formatException
 from math import ceil
 
 import core.db.sqliteconnector as sqlite
+
+log = logging.getLogger("backend")
 
 DB_NAME = 'searchindex.db'
 MAX_SEARCH_FIELDS = 32
@@ -372,7 +376,13 @@ class FtsSearcher:
                     schemas[node.getSchema()] = node
                 err = self.updateNodeIndex(node)
             except core.tree.NoSuchNodeError:
+                # we ignore this exception, and mark the node
+                # non-dirty anyway, to prevent it from blocking
+                # updates of other nodes
+                logException('error during updating '+str(node.id))
                 print "error for id", node.id
+            node.cleanDirty()
+
         t3 = time.time()
         for key in schemas:
             self.nodeToSchemaDef(schemas[key])
@@ -405,8 +415,8 @@ class FtsSearcher:
         print err
         
     def node_changed(self, node):
-        print "node_change fts3"
-        self.updateNodesIndex([node])
+        print "node_change fts3",node.id
+        node.setDirty()
         
     def getSearchInfo(self):
         ret = []
@@ -440,12 +450,14 @@ def protect(s):
 def subnodes(node):
     return node.getAllChildren().getIDs()
 
-
-def fts_indexer_thread(timewait):
-    time.sleep(3)
-    print tree.getDirtyNodes()
+def fts_indexer_thread():
+    while 1:
+        time.sleep(3)
+        dirty = tree.getDirtyNodes(10)
+        if dirty:
+            ftsSearcher.updateNodesIndex(dirty)
 
 def startThread():
-    thread_id = thread.start_new_thread(fts_indexer_thread, (int(timewait),))
-    log.info("started indexer thread")
+    thread_id = thread.start_new_thread(fts_indexer_thread, ())
+    log.info("started indexer thread, thread_id="+str(thread_id))
 

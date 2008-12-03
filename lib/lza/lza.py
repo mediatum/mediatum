@@ -176,13 +176,13 @@ class LZA:
         self.item = None
         self.filename = filename
 
-        if filename.endswith(".pdf"):
+        if filename.lower().endswith(".pdf"):
             self.item = PDFDocument(filename)
-        elif filename.endswith(".tiff") or filename.endswith(".tif"):
+        elif filename.lower().endswith(".tiff") or filename.lower().endswith(".tif"):
             self.item = TIFFImage(filename)
-        elif filename.endswith(".jpg") or filename.endswith(".jpeg"):
+        elif filename.lower().endswith(".jpg") or filename.lower().endswith(".jpeg"):
             self.item = JPEGImage(filename)
-        elif filename.endswith(".lza"):
+        elif filename.lower().endswith(".lza"):
             if mimetype=="image/tiff":
                 self.item = TIFFImage(filename)
             elif mimetype=="image/jpeg":

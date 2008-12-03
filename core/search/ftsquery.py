@@ -366,6 +366,7 @@ class FtsSearcher:
 
     def updateNodesIndex(self, nodelist):
         print "updating node index for",len(nodelist),"nodes..."
+
         err = {}
         schemas = {}
         t1 = time.time()
@@ -410,9 +411,8 @@ class FtsSearcher:
             nodes = tree.getRoot().getAllChildren()
         else:
             nodes = nodelist
-        self.initIndexer(option)
-        err = self.updateNodesIndex(nodes)
-        print err
+        for node in nodes:
+            node.setDirty()
         
     def node_changed(self, node):
         print "node_change fts3",node.id

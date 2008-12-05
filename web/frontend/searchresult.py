@@ -45,6 +45,13 @@ class SearchResult:
         elif self.active>=0:
             return self.resultlist[self.active].feedback(req)
 
+    def in_list(self,id):
+        if self.active>=0:
+            c = self.resultlist[self.active]
+            if hasattr(c, "in_list") and c.in_list(id):
+                return 1
+        return 0
+
     def getLink(self,collection):
         return 'node?scoll='+collection.id
 
@@ -104,7 +111,7 @@ def simple_search(req):
             cl.linktarget = ""
             res.append(cl)
     else:
-        # actual node ist collections-node
+        # actual node is collections-node
         for collection in collections:
             result = collection.search('full='+q)
             result = access.filter(result)

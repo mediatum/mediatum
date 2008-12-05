@@ -119,7 +119,10 @@ def simple_search(req):
 
     logging.getLogger('usertracing').info(access.user.name + " search for '"+q+"', "+str(num)+" results")
 
-    return SearchResult(res, q, collections)
+    if len(res)==1:
+        return res[0]
+    else:
+        return SearchResult(res, q, collections)
 
 
 # method handles all parts of the extended search

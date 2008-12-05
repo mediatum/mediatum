@@ -419,7 +419,8 @@ class ContentArea(Content):
 
     def feedback(self,req):
         if "id" in req.params and not (hasattr(self.content,"in_list") and self.content.in_list(req.params["id"])):
-            print "id",id,"not in current content list, reverting to standard node display"
+            if hasattr(self.content, "id2pos"):
+                print self.content.id2pos.keys()
             self.content = mkContentNode(req)
         elif req.params.get("searchmode","") == "simple" and req.params.get("submittype","") != "change":
             self.content = simple_search(req)
@@ -449,7 +450,7 @@ class ContentArea(Content):
         
     def html(self,req):
         styles = []
-        if hasattr(self.content,"in_list") and not self.content.content:
+        if hasattr(self.content,"in_list") and not (hasattr(self.content,"content") and self.content.content):
             styles = liststyles
         if "raw" in req.params:
             path = ""

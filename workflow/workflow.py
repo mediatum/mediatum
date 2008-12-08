@@ -59,6 +59,9 @@ def addWorkflow(name,description):
 
 def updateWorkflow(name,description,origname="", writeaccess=""):
     if origname=="":
+        node = tree.getRoot("workflows")
+        if not node.hasChild(name):
+            addWorkflow(name, description)
         w = tree.getRoot("workflows").getChild(name)
     else:
         w = tree.getRoot("workflows").getChild(origname)

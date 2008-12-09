@@ -26,13 +26,21 @@ from workflow import mkKey
 
 class WorkflowStep_Start(WorkflowStep):
     def show_workflow_step(self, req):
-
         typename = self.get("newnodetype")
+        
+        # check existence of metadata types listed in the definition of the start node
+        schemalist = typename.split(";")
+        mdts = tree.getRoot("metadatatypes")
+        for schema in schemalist:
+            type = schema.strip().split("/")[-1]
+            if not mdts.hasChild(type):
+                return ('<i>' + t(lang(req),"permission_denied") + ': %s </i>') % schema
 
         if "Erstellen" in req.params:
-            if typename not in [ty.strip() for ty in self.get("newnodetype").split(";")]:
-                return '<i>' + t(lang(req),"permission_denied") + '</i>'
-            node = tree.Node(name="", type=typename)
+            selected_mdt=req.params["selected_metadatatype"]
+            mdt=mdts.getChild(selected_mdt)
+            schema=mdt.get("datatypes")+"/"+selected_mdt
+            node = tree.Node(name="", type=schema)
             self.addChild(node)
             node.setAccess("read", "{user workflow}")
             node.set("creator", "workflow-"+self.getParents()[0].getName())

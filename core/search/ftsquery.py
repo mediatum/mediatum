@@ -405,13 +405,8 @@ class FtsSearcher:
             print "node", node.id, "removed from index"
     
 
-    def reindex(self, option="", nodelist=None):
-        err = []
-        if not nodelist:
-            nodes = tree.getRoot().getAllChildren()
-        else:
-            nodes = nodelist
-        for node in nodes:
+    def reindex(self, nodelist):
+        for node in nodelist:
             node.setDirty()
         
     def node_changed(self, node):

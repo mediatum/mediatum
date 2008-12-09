@@ -21,14 +21,14 @@
 import sys
 import os
 
-try:
-    import wx
-except ImportError:
-    wx = None
-
-if wx:
-    import gui.console as gui
-    gui.start()
+#try:
+#    import wx
+#except ImportError:
+#    wx = None
+#
+#if wx:
+#    import gui.console as gui
+#    gui.start()
 
 import core
 import core.athana

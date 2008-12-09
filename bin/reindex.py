@@ -24,4 +24,5 @@ import core
 import core.tree
 from core.tree import searcher
 
-searcher.reindex(option = "init")
+searcher.reindex(tree.getRoot().getAllChildren())
+

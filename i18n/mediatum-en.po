@@ -1494,6 +1494,9 @@ msgstr "Export all workflows"
 msgid "admin_wf_create_title"
 msgstr "create new workflow"
 
+msgid "admin_wf_name"
+msgstr "Name"
+
 msgid "admin_wf_nowf"
 msgstr "- no workflows defined -"
 
@@ -1619,6 +1622,48 @@ msgstr "Additional information for current node type"
 
 msgid "admin_wf_definition"
 msgstr "Workflow definition"
+
+msgid "admin_wfstep_text_before_upload_form"
+msgstr "Text before upload form"
+
+msgid "admin_wfstep_text_after_upload_form"
+msgstr "Text after upload form"
+
+msgid "admin_wfstep_node_types_to_create"
+msgstr "node types to create (;-separated schema list)"
+
+msgid "admin_wfstep_editor_mask"
+msgstr "Editor mask"
+
+msgid "admin_wfstep_text_before_data"
+msgstr "Text before data"
+
+msgid "admin_wfstep_text_after_data"
+msgstr "Text after data"
+
+msgid "admin_wfstep_masks_to_display"
+msgstr "Masks to display (;-separated list)"
+
+msgid "admin_wfstep_email_sender"
+msgstr "Email address sender"
+
+msgid "admin_wfstep_email_recipient"
+msgstr "Email address recipient"
+
+msgid "admin_wfstep_email_subject"
+msgstr "Subject"
+
+msgid "admin_wfstep_email_text"
+msgstr "Text"
+
+msgid "admin_wfstep_email_text_editable"
+msgstr "Details editable?"
+
+msgid "admin_wfstep_email_text_editable_options"
+msgstr "Yes;No"
+
+msgid "admin_wfstep_textpage_text_to_display"
+msgstr "Text to display"
 
 ### flush ###
 msgid "admin_flush_operations"

@@ -1500,6 +1500,9 @@ msgstr "Alle Workflowdefinitionen exportieren"
 msgid "admin_wf_create_title"
 msgstr "Neuen Workflow anlegen"
 
+msgid "admin_wf_name"
+msgstr "Name"
+
 msgid "admin_wf_nowf"
 msgstr "- keine Workflows vorhanden -"
 
@@ -1625,6 +1628,48 @@ msgstr "Zusätzliche Daten für den gewählten Knotentyp"
 
 msgid "admin_wf_definition"
 msgstr "Workflow Definition"
+
+msgid "admin_wfstep_text_before_upload_form"
+msgstr "Text vor dem Upload-Formular"
+
+msgid "admin_wfstep_text_after_upload_form"
+msgstr "Text nach dem Upload-Formular"
+
+msgid "admin_wfstep_node_types_to_create"
+msgstr "erstellbare Node-Typen (;-separiert)"
+
+msgid "admin_wfstep_editor_mask"
+msgstr "Editor-Maske"
+
+msgid "admin_wfstep_text_before_data"
+msgstr "Text vor den Daten"
+
+msgid "admin_wfstep_text_after_data"
+msgstr "Text nach den Daten"
+
+msgid "admin_wfstep_masks_to_display"
+msgstr "anzuzeigende Masken (;-separiert)"
+
+msgid "admin_wfstep_email_sender"
+msgstr "Email-Adresse Absender"
+
+msgid "admin_wfstep_email_recipient"
+msgstr "Email-Adresse Empfänger"
+
+msgid "admin_wfstep_email_subject"
+msgstr "Betreff"
+
+msgid "admin_wfstep_email_text"
+msgstr "Text"
+
+msgid "admin_wfstep_email_text_editable"
+msgstr "Angaben editierbar?"
+
+msgid "admin_wfstep_email_text_editable_options"
+msgstr "Ja;Nein"
+
+msgid "admin_wfstep_textpage_text_to_display"
+msgstr "anzuzeigender Text"
 
 ### flush ###
 msgid "admin_flush_operations"

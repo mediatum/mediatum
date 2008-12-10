@@ -47,7 +47,8 @@ class WorkflowStep_EditMetadata(WorkflowStep):
     def metaFields(self, lang=None):
         ret = list()
         field = tree.Node("mask", "metafield")
-        field.set("label", "Editor-Maske")
+        field.set("label", t(lang, "admin_wfstep_editor_mask"))
         field.set("type", "text")
         ret.append(field)
         return ret
+    

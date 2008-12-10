@@ -24,11 +24,10 @@ from showdata import mkfilelist
 from core.translation import t,lang
 
 class WorkflowStep_Upload(WorkflowStep):
-   
-  
+
     def show_workflow_node(self, node, req):
         error = ""
-
+        
         for key in req.params.keys():
             if key.startswith("delete_"):
                 filename = key[7:-2]
@@ -40,11 +39,12 @@ class WorkflowStep_Upload(WorkflowStep):
             file = req.params["file"]
             del req.params["file"]
             if hasattr(file,"filename") and file.filename:
+                print "file.filename", file.filename
+                print "file.tempname", file.tempname
                 file = fileutils.importFile(file.filename,file.tempname)
                 node.addFile(file)
                 if hasattr(node,"event_files_changed"):
                     node.event_files_changed()
-        
         
         if "gotrue" in req.params:
             if hasattr(node,"event_files_changed"):
@@ -66,18 +66,19 @@ class WorkflowStep_Upload(WorkflowStep):
         
         prefix = self.get("prefix")
         suffix = self.get("suffix")
-
+        
         return req.getTAL("workflow/upload.html", {"obj": node.id, "id": self.id,"prefix": prefix, "suffix": suffix, "filelist": filelist, "node": node, "buttons": self.tableRowButtons(node), "error":error}, macro="workflow_upload")
 
     def metaFields(self, lang=None):
         ret = list()
         field = tree.Node("prefix", "metafield")
-        field.set("label", "Text vor dem Upload-Formular")
+        field.set("label", t(lang, "admin_wfstep_text_before_upload_form"))
         field.set("type", "memo")
         ret.append(field)
         
         field = tree.Node("suffix", "metafield")
-        field.set("label", "Text nach dem Upload-Formular")
+        field.set("label", t(lang, "admin_wfstep_text_after_upload_form")) #Text nach dem Upload-Formular")
         field.set("type", "memo")
         ret.append(field)
         return ret
+    

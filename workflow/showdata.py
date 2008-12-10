@@ -68,17 +68,18 @@ class WorkflowStep_ShowData(WorkflowStep):
     def metaFields(self, lang=None):
         ret = list()
         field = tree.Node("prefix", "metafield")
-        field.set("label", "Text vor den Daten")
+        field.set("label", t(lang, "admin_wfstep_text_before_data"))
         field.set("type", "memo")
         ret.append(field)
         
         field = tree.Node("suffix", "metafield")
-        field.set("label", "Text nach den Daten")
+        field.set("label", t(lang, "admin_wfstep_text_after_data"))
         field.set("type", "memo")
         ret.append(field)
         
         field = tree.Node("masks", "metafield")
-        field.set("label", "anzuzeigende Masken (;-separiert)")
+        field.set("label", t(lang, "admin_wfstep_masks_to_display"))
         field.set("type", "text")
         ret.append(field)
         return ret
+    

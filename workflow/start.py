@@ -77,7 +77,8 @@ class WorkflowStep_Start(WorkflowStep):
     def metaFields(self, lang=None):
         ret = list()
         field = tree.Node("newnodetype", "metafield")
-        field.set("label", "erstellbare Node-Typen (;-separiert)")
+        field.set("label", t(lang, "admin_wfstep_node_types_to_create"))
         field.set("type", "text")
         ret.append(field)
         return ret
+    

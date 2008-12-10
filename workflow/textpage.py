@@ -19,6 +19,7 @@
 """
 import core.tree as tree
 from workflow import WorkflowStep
+from core.translation import t,lang
 
 class WorkflowStep_TextPage(WorkflowStep):
     def show_workflow_node(self, node, req):
@@ -39,7 +40,8 @@ class WorkflowStep_TextPage(WorkflowStep):
     def metaFields(self, lang=None):
         ret = list()
         field = tree.Node("text", "metafield")
-        field.set("label", "anzuzeigender Text")
+        field.set("label", t(lang, "admin_wfstep_textpage_text_to_display"))
         field.set("type", "memo")
         ret.append(field)
         return ret
+    

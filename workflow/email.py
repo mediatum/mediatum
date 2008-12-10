@@ -112,29 +112,29 @@ class WorkflowStep_SendEmail(WorkflowStep):
     def metaFields(self, lang=None):
         ret = list()
         field = tree.Node("from", "metafield")
-        field.set("label", "Absender")
+        field.set("label", t(lang, "admin_wfstep_email_sender"))
         field.set("type", "text")
         ret.append(field)
 
         field = tree.Node("email", "metafield")
-        field.set("label", "Email")
+        field.set("label", t(lang, "admin_wfstep_email_recipient"))
         field.set("type", "text")
         ret.append(field)
         
         field = tree.Node("subject", "metafield")
-        field.set("label", "Betreff")
+        field.set("label", t(lang, "admin_wfstep_email_subject"))
         field.set("type", "text")
         ret.append(field)
 
         field = tree.Node("text", "metafield")
-        field.set("label", "Text")
+        field.set("label", t(lang, "admin_wfstep_email_text"))
         field.set("type", "memo")
         ret.append(field)
 
         field = tree.Node("allowedit", "metafield")
-        field.set("label", "Text Editierbar?")
+        field.set("label", t(lang, "admin_wfstep_email_text_editable"))
         field.set("type", "list")
-        field.set("valuelist", "Ja;Nein")
+        field.set("valuelist", t(lang, "admin_wfstep_email_text_editable_options"))
         ret.append(field)
 
         return ret

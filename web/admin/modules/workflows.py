@@ -36,7 +36,6 @@ from core.translation import t, lang
 
 """ standard validator to execute correct method """
 def validate(req, op):
-    print req.params
     path = req.path[1:].split("/")
     if len(path)==3 and path[2]=="overview":
         return WorkflowPopup(req)
@@ -285,7 +284,7 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
         workflowstep.setType(req.params.get("nytype",""))
     
     v_part={}
-    v_part["fields"] = workflowstep.metaFields() or []
+    v_part["fields"] = workflowstep.metaFields(lang(req)) or []
     v_part["node"] = workflowstep
     v_part["hiddenvalues"] = {"wnodeid":workflowstep.name}
     v["editor"] =  req.getTAL("web/admin/modules/workflows.html", v_part, macro="view_editor")

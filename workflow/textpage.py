@@ -27,15 +27,18 @@ class WorkflowStep_TextPage(WorkflowStep):
             return self.forwardAndShow(node, True, req)
         if "gofalse" in req.params:
             return self.forwardAndShow(node, False, req)
-
+        
         text = self.get("text")
         
-        return req.getTALstr(""" 
-                <tal:block tal:replace="raw python:text"/>
-                <table>
-                <tal:block tal:replace="raw python:buttons"/>
-                </table>
+        return req.getTALstr("""
+    <tal:block tal:replace="raw python:text"/>
+    <form action="/mask" method="post" enctype="multipart/form-data" style="padding:4px">
+        <table>
+            <tal:block tal:replace="raw python:buttons"/>
+        </table>
+    </form>
                 """, {"text":text, "buttons": self.tableRowButtons(node)})
+                
     
     def metaFields(self, lang=None):
         ret = list()

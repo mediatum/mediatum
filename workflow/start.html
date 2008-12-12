@@ -5,10 +5,10 @@
 
     <form action="/mask" method="post">
         <input type="hidden" name="id" tal:attributes="value python:id"/>
-        <select name="selected_metadatatype">
-        <tal:block tal:repeat="metadatatype types">
-            <option tal:attributes="value python:metadatatype.getName()" 
-                    tal:content="python:metadatatype.getLongName()"/>
+        <select name="selected_schema">
+        <tal:block tal:repeat="schema types">
+            <option tal:attributes="value python:schema[1]" 
+                    tal:content="python:schema[0].getLongName()"/>
         </tal:block>
         </select>
         <input i18n:attributes="value workflow_start_submit" type="submit" name="Erstellen"/>

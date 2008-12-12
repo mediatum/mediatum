@@ -37,10 +37,8 @@ class WorkflowStep_Start(WorkflowStep):
                 return ('<i>' + t(lang(req),"permission_denied") + ': %s </i>') % schema
 
         if "Erstellen" in req.params:
-            selected_mdt=req.params["selected_metadatatype"]
-            mdt=mdts.getChild(selected_mdt)
-            schema=mdt.get("datatypes")+"/"+selected_mdt
-            node = tree.Node(name="", type=schema)
+            selected_schema=req.params["selected_schema"]
+            node = tree.Node(name="", type=selected_schema)
             self.addChild(node)
             node.setAccess("read", "{user workflow}")
             node.set("creator", "workflow-"+self.getParents()[0].getName())
@@ -56,8 +54,10 @@ class WorkflowStep_Start(WorkflowStep):
                 # we could now check m.isActive(), but for now let's
                 # just take all specified metatypes, so that edit area
                 # and workflow are independent on this
-                types += [m]
-
+                types += [(m, a)]
+                
+        print "##### ---> ", types
+        
         cookie_error = t(lang(req),"Your browser doesn't support cookies")
 
         js="""

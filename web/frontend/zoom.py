@@ -91,9 +91,9 @@ class ZoomImage:
             t = (TILESIZE<<(self.levels-level))
             for x in range((self.width + (t-1)) / t):
                 for y in range((self.height + (t-1)) / t):
-                    self.getTile(level, x, y)
+                    self.getTile(level, x, y, 1)
 
-    def getTile(self, level, x, y):
+    def getTile(self, level, x, y, generate=0):
         if level > self.levels:
             return None
 
@@ -103,6 +103,9 @@ class ZoomImage:
         for f in self.node.getFiles():
             if f.type == tileid:
                 return f.retrieveFile()
+
+        if not generate:
+            return None
 
         self.load()
 

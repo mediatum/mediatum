@@ -134,6 +134,13 @@ def getImageDimensions(image):
     height = pic.size[1]
     return width,height
 
+def dozoom(node):
+    if node.get("width") and node.get("height") and \
+       (int(node.get("width"))>1000 or int(node.get("height"))>1000) and \
+       os.path.isfile(os.path.join(config.basedir,"web/img/zoom.swf")):
+            if str(node.id) == "629716":
+                return 1
+    return 0
 
 """ image class for internal image-type """
 class Image(default.Default):
@@ -259,7 +266,7 @@ class Image(default.Default):
 
             # Exif
             try:
-                from mod.Exif import EXIF           
+                from lib.Exif import EXIF           
                 files = node.getFiles()
 
                 for file in files:
@@ -280,12 +287,13 @@ class Image(default.Default):
             except:
                 None
 
-            tileok = 0
-            for f in node.getFiles():
-                if f.type.startswith("tile"):
-                    tileok = 1
-            if not tileok and node.get("width") and node.get("height"):
-                zoom.getImage(node.id)
+            if dozoom(node):
+                tileok = 0
+                for f in node.getFiles():
+                    if f.type.startswith("tile"):
+                        tileok = 1
+                if not tileok and node.get("width") and node.get("height"):
+                    zoom.getImage(node.id, 1)
 
             # iptc
             try:
@@ -303,7 +311,8 @@ class Image(default.Default):
                             if tags[k]!="":
                                 node.set("iptc_"+k.replace(" ","_"), tags[k])
             except:
-                print formatException("iptc error")
+                print "iptc error"
+                print formatException()
 
     """ list with technical attributes for type image """
     def getTechnAttributes(node):
@@ -382,10 +391,8 @@ class Image(default.Default):
         
         d['flash'] = False
 
-        if node.get("width") and int(node.get("width"))>1000 or \
-           node.get("height") and int(node.get("height"))>1000:
-               if os.path.isfile(os.path.join(config.basedir,"web/img/zoom.swf")):
-                   d['flash'] = True
+        if dozoom(node):
+            d['flash'] = True
 
         d['tileurl'] = "/tile/"+node.id+"/"
 

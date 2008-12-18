@@ -103,7 +103,11 @@ def getUser(id):
         try:
             return users.getChild(id)
         except tree.NoSuchNodeError,e:
-             return getExternalUser(id)
+            for key in getExternalAuthentificators():
+                u = getExternalUser(id, type=key)
+                if u:
+                    return u
+            return None
 
 def doExternalAuthentification(name, pwd):
     global authenticators

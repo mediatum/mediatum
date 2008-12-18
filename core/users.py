@@ -161,11 +161,10 @@ extuser_lock = thread.allocate_lock()
 def checkLogin(name, pwd):
     user = getUser(name)
     digest1 = md5.md5(pwd).hexdigest()
-    
-    if user:
+
+    if user and user.getUserType()=="":
         if digest1 == user.getPassword():
             return user
-
     auth = doExternalAuthentification(name, pwd)
     #if doExternalAuthentification(name, pwd):
         # if an external authenticator was able to log this

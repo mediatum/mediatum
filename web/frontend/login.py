@@ -25,7 +25,10 @@ import logging
 from web.frontend.frame import getNavigationFrame
 
 def display_login(req, error=None):
-    if len(req.params)>0:
+    if "LoginReset" in req.params.keys():
+        del req.params['error']
+
+    if len(req.params)>0 and not "error" in req.params.keys():
         # user changed from login to browsing
         p = ""
         for key in req.params:
@@ -79,6 +82,8 @@ def login_submit(req):
             req.request["Location"] = "/node?id="+tree.getRoot("collections").id;
         return athana.HTTP_MOVED_TEMPORARILY
     else:
+        print "error"
+        req.params['error']  = "1"
         return display_login(req, "login_error")
 
 def logout(req):

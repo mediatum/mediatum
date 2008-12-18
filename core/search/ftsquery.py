@@ -196,7 +196,7 @@ class FtsSearcher:
         for key,value in node.items():
             val += protect(u(value))+'| '
         for v in val.split(" "):
-            v = v.decode("utf-8").encode("latin-1")
+            v = v.decode("utf-8").encode("latin-1", "replace")
             if normalize_utf8(v)!=v.lower():
                 val += ' '+normalize_utf8(v)          
         val = val.replace(chr(0),"")

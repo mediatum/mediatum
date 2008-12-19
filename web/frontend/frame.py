@@ -488,7 +488,7 @@ class NavigationFrame:
         navigation["navitem"] = nav_portlet
 
         #<ul class="nav_depth03" tal:condition="python:browse.collection.id==data.id and not data.isFolded() and data.hassubdir">
-        self.params = {"user": user, "userlinks": userlinks, "t":t, "navigation":navigation, "language":front_lang}
+        self.params = {"show_navbar": True, "user": user, "userlinks": userlinks, "t":t, "navigation":navigation, "language":front_lang}
         
     def write(self, req, contentHTML, show_navbar=1):
         self.params["content"] = contentHTML

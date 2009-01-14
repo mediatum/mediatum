@@ -70,3 +70,10 @@ def getBrowsingPathList(node):
     else:
         return []
 
+def isDescendantOf(node, parent):
+    if node == parent:
+        return 1
+    for p in node.getParents():
+        if isDescendantOf(p, parent):
+            return 1
+    return 0

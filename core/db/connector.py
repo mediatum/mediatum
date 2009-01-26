@@ -99,7 +99,7 @@ class Connector:
         self.runQuery("update node set orderpos = "+str(orderpos)+" where id = "+id)
     
     def setNodeLocalRead(self, id, localread):
-        self.runQuery("update node set localread= "+str(localread)+" where id = "+id)
+        self.runQuery("update node set localread = "+self.esc(localread)+" where id = "+id)
 
     def setNodeReadAccess(self, id, access):
         self.runQuery("update node set readaccess = "+self.esc(access)+" where id = "+id)

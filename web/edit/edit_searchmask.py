@@ -52,7 +52,11 @@ def edit_searchmask(req, ids):
 
     node = tree.getNode(ids[0])
 
-    root = tree.getRoot("searchmasks") 
+    try:
+        root = tree.getRoot("searchmasks") 
+    except tree.NoSuchNodeError:
+        root = tree.Node("searchmasks", type="searchmasks")
+        tree.getRoot().addChild(root)
 
     searchtype = req.params.get("searchtype", None)
     if not searchtype:

@@ -369,6 +369,8 @@ class Node:
             self.orderpos = orderpos
             self.attributes = None
             self.localread = localread
+
+            self.getLocalRead()
         self.occurences = {}
         self.occurences2node = {}
 
@@ -435,6 +437,26 @@ class Node:
             return self.type[self.type.find('/')+1:]
         else:
             return self.type
+
+    def getLocalRead(self):
+        if not self.localread:
+            
+            if self.id is None:
+                return self.read_access
+
+            def p(node,rights):
+                r = node.read_access
+                if r:
+                    for rule in r.split(","):
+                        rights[rule]=None
+                else:
+                    for c in node.getParents():
+                        p(c,rights)
+            rights = {}
+            p(self,rights)
+            self.localread = ",".join(rights.keys())
+            db.setNodeLocalRead(self.id, self.localread)
+        return self.localread
            
     """ set the node type (as string) """
     def setTypeName(self,type):

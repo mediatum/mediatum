@@ -110,7 +110,7 @@ class Document(default.Default):
         return node.name
 
     def getSysFiles(node):
-        return ["doc","document","thumb", "thumb2","presentati","fulltext","fileinfo"]
+        return ["doc","document","thumb", "thumb2","presentati", "presentation", "fulltext","fileinfo"]
 
        
     """ postprocess method for object type 'document'. called after object creation """

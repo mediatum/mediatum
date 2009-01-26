@@ -97,6 +97,9 @@ class Connector:
 
     def setNodeOrderPos(self, id, orderpos):
         self.runQuery("update node set orderpos = "+str(orderpos)+" where id = "+id)
+    
+    def setNodeLocalRead(self, id, localread):
+        self.runQuery("update node set localread= "+str(localread)+" where id = "+id)
 
     def setNodeReadAccess(self, id, access):
         self.runQuery("update node set readaccess = "+self.esc(access)+" where id = "+id)
@@ -126,9 +129,9 @@ class Connector:
         return str(nodes[0][0])
         
     def getNode(self, id):
-        t = self.runQuery("select id,name,type,readaccess,writeaccess,dataaccess,orderpos from node where id=" + str(id))
+        t = self.runQuery("select id,name,type,readaccess,writeaccess,dataaccess,orderpos,localread from node where id=" + str(id))
         if len(t) == 1:
-            return str(t[0][0]),t[0][1],t[0][2],t[0][3],t[0][4],t[0][5],t[0][6] # id,name,type,read,write,data,orderpos
+            return str(t[0][0]),t[0][1],t[0][2],t[0][3],t[0][4],t[0][5],t[0][6],t[0][7] # id,name,type,read,write,data,orderpos,localread
         elif len(t) == 0:
             log.error("No node for ID "+str(id))
             return None

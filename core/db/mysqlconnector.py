@@ -68,6 +68,9 @@ class MYSQLConnector(Connector):
         except MySQLdb.OperationalError:
             self.runQuery("alter table node add column dirty bool");
 
+    def applyPatches(self):
+        self.runQueryNoError("alter table node add column (localread TEXT NULL)")
+
     def close(self):
         self.dblock.acquire()
         try:
@@ -179,12 +182,15 @@ class MYSQLConnector(Connector):
             elif nr[0] == 1051:
                 log.info("table doesn't exists: "+sql)
                 return None
+            elif nr[0] == 1060:
+                log.info("column already exists: "+sql)
+                return None
             else:
                 raise nr
 
 
     def createTables(self):
-        self.runQueryNoError("create table node (id integer not null, name varbinary(255), type varbinary(32) not null, readaccess text, writeaccess text, dataaccess text, orderpos int default '1', dirty bool, primary key (id))")
+        self.runQueryNoError("create table node (id integer not null, name varbinary(255), type varbinary(32) not null, readaccess text, writeaccess text, dataaccess text, orderpos int default '1', dirty bool, primary key (id), localread text)")
         self.runQueryNoError("create table nodefile (nid integer not null, filename text not null , type varbinary(16) not null, mimetype varbinary(20))")
         self.runQueryNoError("create table nodeattribute (nid integer not null, name varbinary(50) not null, value text ) ") 
         self.runQueryNoError("create table nodemapping (nid integer not null, cid integer not null)")

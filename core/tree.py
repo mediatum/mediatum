@@ -358,7 +358,7 @@ class Node:
             dbnode = db.getNode(dbid)
             if not dbnode:
                 raise NoSuchNodeError(dbid)
-            id,name,type,read,write,data,orderpos = dbnode
+            id,name,type,read,write,data,orderpos,localread = dbnode
 
             self.id = id
             self.name = name
@@ -368,6 +368,7 @@ class Node:
             self.data_access = data
             self.orderpos = orderpos
             self.attributes = None
+            self.localread = localread
         self.occurences = {}
         self.occurences2node = {}
 
@@ -885,6 +886,7 @@ def initialize(load=1):
     nodes_cache = MaxSizeDict(int(config.get("db.cache_size","100000")), keep_weakrefs=1)
     testmode = config.get("host.type", "") == "testing"
     db = database.getConnection()
+    db.applyPatches()
     if load:
         getRoot()
     global schema, subnodes, searchParser, searcher

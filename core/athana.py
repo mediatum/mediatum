@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.32 2008/10/30 08:30:13 mediatum Exp $'
+RCS_ID =  '$Id: athana.py,v 1.33 2009/01/27 13:23:33 mediatum Exp $'
 
 import sys
 
@@ -6811,6 +6811,10 @@ def thread_status(req):
 profiles = []
 def profiling_status(req):
     req.write("""<html><head><title>Athana Profiling Status</title></head><body>""")
+
+    if not profiling:
+        req.write("(profiling disabled)")
+
     i = 1
     for time,url,trace in profiles:
         req.write("<h2>Most usage #%d</h2>" % i)
@@ -6828,7 +6832,7 @@ def profiling_status(req):
     return req.done()
 
 iolock = thread.allocate_lock()
-profiling=0
+profiling=1
 try:
     import hotshot
     import hotshot.stats
@@ -6869,6 +6873,7 @@ class AthanaThread:
                 except:
                     lgerr.log("Error while processing request:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
                     traceback.print_tb(sys.exc_info()[2],None,lgerr)
+
                 if profiling:
                     global profiles
                     duration = time.time() - timenow

@@ -28,6 +28,7 @@ import re
 from core.db import database
 from utils.boolparser import BoolParser
 import thread
+import time
 
 logb = logging.getLogger('backend')
 
@@ -50,6 +51,7 @@ class AccessData:
             self.user = user
             self.ip = ip or "127.0.0.1"
         self.level = None
+        self.allowed_rules = {}
 
     def getPrivilegeLevel(self):
         return 0 # deactivate priviledge levels for now
@@ -140,8 +142,31 @@ class AccessData:
 
     def hasWriteAccess(self,node,fnode=None):
         return self.hasAccess(node,"write",fnode)
+    
+    def filter(self, nodelist, accesstype="read"):
+        if accesstype!="read":
+            return self.filter_old(nodelist, accesstype)
+        if self.user.isAdmin():
+            return nodelist
+      
+        t1 = time.time() 
+        print "filtering..."
+        newlist = []
+        for node in nodelist: 
+            l = node.getLocalRead()
+            for clause in l.split(","):
+                if clause not in self.allowed_rules:
+                    rule = getRule(clause)
+                    self.allowed_rules[clause] = rule.getParsedRule().has_access(self, node)
+                if self.allowed_rules[clause]:
+                    newlist += [node]
+                    break
+        t2 = time.time() 
 
-    def filter(self,nodelist, accesstype="read"):
+        print "done,", (t2-t1), "seconds"
+        return newlist
+
+    def filter_old(self,nodelist, accesstype="read"):
         if self.user.isAdmin():
             return nodelist
 

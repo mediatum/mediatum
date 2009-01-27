@@ -163,7 +163,7 @@ class AccessData:
                     break
         t2 = time.time() 
 
-        print "done,", (t2-t1), "seconds"
+        print "done, %.4f seconds" % (t2-t1)
         return newlist
 
     def filter_old(self,nodelist, accesstype="read"):

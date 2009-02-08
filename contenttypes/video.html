@@ -23,21 +23,18 @@
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
             <meta content="text/html;charset=UTF-8" http-equiv="content-type">
 
-            <script type="text/javascript" src="/js/flashembed.min.js">
-            </script>
-            
             <title i18n:translate="video_showvideo">TEXT</title>
+            <script src="/js/flowplayer-3.0.5.min.js"> </script>
+            
             <style>
-                html, body{
-                    margin:0px;
-                    padding:0px;
-                    background-color: #000000;
+                body{
+                margin:0px;padding:0px;
                 }
             </style>
+        
         </head>
-        <body>
-            <script tal:content="script"/>
-            <div id="player"/>
+        <body onload="flowplayer('player', '/img/FlowPlayerDark.swf');">
+            <p tal:replace="raw script"/>
         </body>
     </html>
 </tal:block>

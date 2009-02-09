@@ -106,7 +106,7 @@ class Video(default.Default):
 
         file = f
         if file:
-            script = """<p href=""""+file+"""" style="display:block;width:"""+str(int(node.get('vid-width') or '0')+64)+"""px;height:"""+str(int(node.get('vid-height') or '0')+53)+"""px;" id="player"/p>"""
+            script = """<p href=\""""+file+"""\" style="display:block;width:"""+str(int(node.get('vid-width') or '0')+64)+"""px;height:"""+str(int(node.get('vid-height') or '0')+53)+"""px;" id="player"/p>"""
         else:
             script = ""
 

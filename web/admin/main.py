@@ -47,7 +47,8 @@ def show_node(req):
     v["spc"].append(Menu("sub_header_edit", "sub_header_edit_title", "", "/edit"))
     if user.isWorkflowEditor():
         v["spc"].append(Menu("sub_header_workflow", "sub_header_workflow_title", "", "../publish"))
-
+    v["spc"].append(Menu("sub_header_logout", "sub_header_logout_title","#", "/logout"))
+    
     if len(p)>0:
         if style == "":
             req.writeTAL("web/admin/frame.html", v, macro="frame")

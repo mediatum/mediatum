@@ -239,6 +239,7 @@ def handletabs(req, ids, tabs):
     if user.isWorkflowEditor():
         spc.append(Menu("sub_header_workflow", "sub_header_workflow_title","#", "../publish", target="_parent"))
 
+    spc.append(Menu("sub_header_logout", "sub_header_logout_title","#", "../logout", target="_parent"))
     currenttab = req.params.get("tab", tabs)
     breadcrumbs = getBreadcrumbs(menu, currenttab)
     req.writeTAL("web/edit/edit.html", {"user":user, "ids":ids, "idstr":",".join(ids), "menu":menu, "breadcrumbs":breadcrumbs, "spc":spc}, macro="edit_tabs")

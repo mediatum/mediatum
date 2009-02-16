@@ -2984,7 +2984,7 @@ msgid "search_result_text"
 msgstr "Gesucht wurde in folgenden Kollektionen:"
 
 msgid "error_msg_objectnotfound"
-msgstr "Fehler auf der Seite, das gewünschte Objekt konnte nicht gefunden werden"
+msgstr "Fehler auf der Seite, Objekt nicht vorhanden bzw. kein Zugriffsrecht auf das gewünschte Objekt."
 
 msgid "home_link"
 msgstr "zur Startseite"

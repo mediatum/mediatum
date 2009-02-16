@@ -2969,7 +2969,7 @@ msgid "search_result_text"
 msgstr "The search covered the following collections:"
 
 msgid "error_msg_objectnotfound"
-msgstr "Error on page, object not found"
+msgstr "Error on page, object not found or no access rights."
 
 msgid "home_link"
 msgstr "Home"

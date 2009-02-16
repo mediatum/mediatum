@@ -446,6 +446,8 @@ def subnodes(node):
     return node.getAllChildren().getIDs()
 
 def fts_indexer_thread():
+    if not time:
+        return
     while 1:
         time.sleep(3)
         dirty = tree.getDirtyNodes(10)

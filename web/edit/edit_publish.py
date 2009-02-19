@@ -46,6 +46,16 @@ def edit_publish(req, ids):
         for obj_id in objlist:
             obj = tree.getNode(obj_id)
             
+            faultylist = []
+            for m in obj.getType().getMasks(type="edit"):
+                if access.hasReadAccess(m):
+                    for f in m.validateNodelist([obj]):
+                        faultylist.append(f)
+
+            if len(faultylist)>0:
+                print "object not moved, faulty"
+                continue
+            
             for dest_id in req.params.get("destination", "").split(","):
                 if dest_id=="":
                     continue

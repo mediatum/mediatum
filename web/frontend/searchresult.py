@@ -24,7 +24,7 @@ import utils.date as date
 import logging
 from core.acl import AccessData
 from core.translation import lang
-from utils.utils import intersection
+from utils.utils import intersection,getAllCollections
 from core.tree import subnodes, searcher
 
 class SearchResult:
@@ -93,8 +93,7 @@ def simple_search(req):
             collection_ids[collection.id] = 1
 
     # now retrieve all results in all collections
-    
-    for collection in tree.getRoot("collections").getChildren():
+    for collection in getAllCollections():
         if collection.id in collection_ids:
             collections.append(collection)
 

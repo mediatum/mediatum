@@ -148,6 +148,8 @@ class AccessData:
             return self.filter_old(nodelist, accesstype)
         if self.user.isAdmin():
             return nodelist
+        if nodelist and type(nodelist[0])==type(""):
+            nodelist = tree.NodeList(nodelist)
       
         t1 = time.time() 
         print "filtering..."

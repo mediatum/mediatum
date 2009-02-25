@@ -183,7 +183,7 @@ class MYSQLConnector(Connector):
                 log.info("table doesn't exists: "+sql)
                 return None
             elif nr[0] == 1060:
-                log.info("column already exists: "+sql)
+                #log.info("column already exists: "+sql)
                 return None
             else:
                 raise nr

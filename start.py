@@ -33,5 +33,14 @@ import os
 import core
 import core.athana
 import core.webconfig
+import core.config as config
+
+if config.get("config.searcher", "").startswith("fts"):
+    import core.search.ftsquery
+    core.search.ftsquery.startThread()
+else:
+    import core.search.query
+    core.search.query.startThread()
+
 core.webconfig.startWebServer()
 

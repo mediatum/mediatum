@@ -104,7 +104,7 @@ def simple_search(req):
         result = access.filter(result)
         num += len(result)
         if len(result)>0:
-            cl = ContentList(tree.NodeList(result), collection, words)
+            cl = ContentList(result, collection, words)
             cl.feedback(req)
             cl.linkname = "Suchergebnis"
             cl.linktarget = ""
@@ -117,7 +117,7 @@ def simple_search(req):
             num += len(result)
 
             if len(result)>0:
-                cl = ContentList(tree.NodeList(result), collection, words)
+                cl = ContentList(result, collection, words)
                 cl.feedback(req)
                 cl.linkname = "Suchergebnis"
                 cl.linktarget = ""
@@ -208,7 +208,7 @@ def extended_search(req):
     result = access.filter(result)
     logging.getLogger('usertracing').info(access.user.name + " xsearch for '"+q_user+"', "+str(len(result))+" results")
     if len(result)>0:
-        cl = ContentList(tree.NodeList(result), collection, q_user.strip())
+        cl = ContentList(result, collection, q_user.strip())
         cl.feedback(req)
         cl.linkname = ""
         cl.linktarget = ""

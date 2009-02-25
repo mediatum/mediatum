@@ -438,9 +438,15 @@ class Node:
         else:
             return self.type
 
+    def invalidateLocalRead(self):
+        self.localread = ""
+        if self.id:
+            db.setNodeLocalRead(self.id, self.localread)
+        for c in self.getChildren():
+            c.invalidateLocalRead()
+
     def getLocalRead(self):
-        if not self.localread:
-            
+        if not self.localread:            
             if self.id is None:
                 return self.read_access
 
@@ -507,6 +513,8 @@ class Node:
                     db.setNodeDataAccess(self.id,access)
         finally:
             tree_lock.release()
+        if self.id and type=="read":
+            self.invalidateLocalRead()
 
 
     def _flush(self):

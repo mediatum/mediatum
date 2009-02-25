@@ -777,7 +777,7 @@ class Node:
         
         if type(items)!= list:
             items = items.getIDs()
-        return intersection([items, searcher.query(q)])
+        return NodeList(intersection([items, searcher.query(q)]))
 
     def __getattr__(self, name):
         cls = self.__class__

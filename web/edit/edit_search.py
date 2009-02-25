@@ -93,7 +93,7 @@ def search_results(req,id):
     query += ' and schema="'+req.params.get("objtype","*")+'"'
                                 
     utrace.info(access.user.name + " search for "+query)
-    nodes = tree.NodeList(node.search(query))
+    nodes = node.search(query)
     req.session["nodelist"] = EditorNodeList(nodes)
 
     if len(nodes):

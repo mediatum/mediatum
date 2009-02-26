@@ -149,7 +149,7 @@ class AccessData:
         if self.user.isAdmin():
             return nodelist
         
-        if nodelist and type(nodelist[0]) == type(""):
+        if len(nodelist) and type(nodelist[0]) == type(""):
             # convert list of ids to list of nodes
             nodelist = tree.NodeList(nodelist)
       
@@ -163,12 +163,12 @@ class AccessData:
                     rule = getRule(clause)
                     self.allowed_rules[clause] = rule.getParsedRule().has_access(self, node)
                 if self.allowed_rules[clause]:
-                    newlist += [node]
+                    newlist += [node.id]
                     break
         t2 = time.time() 
 
         print "done, %.4f seconds" % (t2-t1)
-        return newlist
+        return tree.NodeList(newlist)
 
     def filter_old(self,nodelist, accesstype="read"):
         if self.user.isAdmin():

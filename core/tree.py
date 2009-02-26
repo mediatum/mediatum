@@ -259,7 +259,14 @@ def createSortOrder(field):
     return id2pos
 
 class NodeList:
-    def __init__(self, ids,description=""):
+    def __init__(self, ids, description=""):
+        if isinstance(ids, NodeList):
+            ids = ids.ids
+        elif len(ids) and isinstance(ids[0], Node):
+            nodes = ids
+            ids = [None]*len(nodes)
+            for i,n in enumerate(nodes):
+                ids[i]=n.id
         self.ids = ids
         self.len = len(ids)
         self.description = description

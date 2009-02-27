@@ -359,6 +359,7 @@ class Node:
             self.data_access = None
             self.orderpos = 1
             self.attributes = {}
+            self.localread = None
             if type == "root":
                 self._makePersistent()
         else:

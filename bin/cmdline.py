@@ -317,7 +317,6 @@ def changescheme(collection_id, newschemename, write=0):
 def reindex():
     global node
     from core.tree import searcher
-    print searcher
     nodes = node.getAllChildren()
     print "reindex started for",len(nodes), "nodes"
     searcher.reindex(nodelist=nodes)
@@ -334,6 +333,55 @@ def bibtex():
     
 def quit():
     sys.exit(1)
+    
+    
+def searchindex():
+    global node
+    from core.tree import searcher
+    print "writing indexvalues of searchindex for node", "'"+node.name+"'", "(id "+str(node.id)+") in file 'searchindex.log'"
+    
+    fi = open("searchindex.log", "wb")
+    fi.write("searchindex for node '"+node.name+"' (id: "+str(node.id)+")\n\n")
+    fi.write("* FULLSEARCHMETA:\n\n")
+    
+    i = 0
+    fullfields = ["id", "type", "schema", "value"]
+    for line in searcher.db.execute('select * from fullsearchmeta where fullsearchmeta match ?', ['\'id:'+str(node.id)+ '\'']):
+        for part in line:
+                for p in part.split("| "):
+                    if i<len(fullfields):
+                        fi.write(fullfields[i]+":\n")
+                    
+                    fi.write("  "+p+"\n")
+                    i+=1
+    
+    fi.write("\n\n* SEARCHMETA:\n\n")
+    i = 0
+    fields = ["id", "type", "schema", "date"]
+
+    sfields = searcher.db.execute('select position, attrname from searchmeta_def where name=\''+str(node.getSchema())+ '\'',[])    
+    sfields.sort(lambda x, y: cmp(int(x[0]),int(y[0])))
+    for f in sfields:
+        fields.append(f[1])
+    
+    for line in searcher.db.execute('select * from searchmeta where searchmeta match ?', ['\'id:'+str(node.id)+ '\'']):
+        for part in line:
+            if i<len(fields):
+                fi.write(fields[i]+":\n")
+                fi.write(" "+str(part)+"\n")
+            i+=1
+   
+    fi.write("\n\n* TEXTSEARCHMETA:\n\n")
+    fields = ["id", "type", "schema"]
+    for line in searcher.db.execute('select * from textsearchmeta where textsearchmeta match ?', ['\'id:'+str(node.id)+ '\'']):
+        i = 0
+        for part in line:
+            if i<len(fields):
+                fi.write(fields[i]+":\n")
+                fi.write(" "+str(part)+"\n")
+            i+=1
+    fi.close()
+
 
 commands = {
  "show": Command(show_node, []),
@@ -365,7 +413,8 @@ commands = {
  "clonemask": Command(clonemask, ["oldmask","newmask"]),
  "reindex":Command(reindex, []),
  "?":Command(showlist,[]),
- "changescheme":Command(changescheme,["collection_id", "newschemename", "write"])
+ "changescheme":Command(changescheme,["collection_id", "newschemename", "write"]),
+ "searchindex":Command(searchindex, [])
 };
 print "\n\nmediaTUM CommandLineInterface\n('?' for commandlist)"
 while 1:
@@ -386,6 +435,7 @@ while 1:
         command = commands[cmd]
         pattern = re.compile(r'([^ "]+|"[^"]*"|\'[^\']*\')\s+'*len(command.args))
         p = pattern.match(rest)
+
         if not p or len(p.groups()) != len(command.args):
             print "Invalid arguments for command",cmd
             print "Usage:"

@@ -31,6 +31,7 @@ import core.tree as tree
 import logging
 from utils.log import logException
 from utils.utils import u, union, normalize_utf8, formatException
+from utils.date import format_date
 from math import ceil
 
 import core.db.sqliteconnector as sqlite
@@ -361,6 +362,7 @@ class FtsSearcher:
             err['ext'].append(node.id)
         if not self.nodeToFulltextSearch(node):
             err['text'].append(node.id)
+        node.set("updatesearchindex", str(format_date()))
         return err
 
 

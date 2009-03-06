@@ -371,17 +371,32 @@ def searchindex():
                 fi.write(" "+str(part)+"\n")
             i+=1
    
-    fi.write("\n\n* TEXTSEARCHMETA:\n\n")
-    fields = ["id", "type", "schema"]
-    for line in searcher.db.execute('select * from textsearchmeta where textsearchmeta match ?', ['\'id:'+str(node.id)+ '\'']):
-        i = 0
+    fi.write("\n\n* SEARCHMETA:\n\n")
+    i = 0
+    fields = ["id", "type", "schema", "date"]
+
+    sfields = searcher.db.execute('select position, attrname from searchmeta_def where name=\''+str(node.getSchema())+ '\'',[])
+    sfields.sort(lambda x, y: cmp(int(x[0]),int(y[0])))
+    for f in sfields:
+        fields.append(f[1])
+
+    for line in searcher.db.execute('select * from searchmeta where searchmeta match ?', ['\'id:'+str(node.id)+ '\'']):
         for part in line:
             if i<len(fields):
                 fi.write(fields[i]+":\n")
                 fi.write(" "+str(part)+"\n")
             i+=1
-    fi.close()
 
+    i = 0
+    fi.write("\n\n* TEXTSEARCHMETA:\n\n")
+    fields = ["id", "type", "schema", "text"]
+    for line in searcher.db.execute('select * from textsearchmeta where textsearchmeta match ?', ['\'id:'+str(node.id)+ '\'']):
+
+        for field in fields:
+            fi.write(fields[i]+":\n")
+            fi.write(" "+str(line[i])+"\n")
+            i += 1
+    fi.close()
 
 commands = {
  "show": Command(show_node, []),

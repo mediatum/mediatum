@@ -96,6 +96,9 @@ msgstr "Ihr Benutzerkonto besitzt noch das Standardpasswort. Bitte ändern Sie d
 msgid "login_act_pwd:"
 msgstr "Aktuelles Passwort:"
 
+msgid "login_info"
+msgstr "Hinweis zur sicheren Verbindung mit verschlüsselter Datenübertragung:<br/> Die verschlüsselte Verbindung zum mediaTUM-Server ist nur dann möglich, wenn das vom Server ausgelieferte Zertifikat vom Browser akzeptiert wird. Das Zertifikat des mediaTUM-Servers wurde im Rahmen der DFN-PKI (Public Key Infrastruktur vom Deutschen Forschungsnetz) ausgestellt. Das zugehörige Wurzelzertifikat ist in vielen Anwendungen bereits integriert, leider aber nicht in allen (z.B. nicht beim Firefox). In diesen Fällen reagiert der Browser mit diversen Warnhinweisen und die verschlüsselte Verbindung ist erst dann möglich, wenn Sie das Zertifikat in den Browser laden und als vertrauenswürdig akzeptieren."
+
 msgid "password_repeat:"
 msgstr "Neues Passwort (Wiederholung):"
 

@@ -31,11 +31,12 @@ def esc(s):
 def desc(s):
     return s.replace("&amp;", "&").replace("&quot;", "\"").replace("&lt;","<").replace("&gt;",">")
     
-def u(s):
+def u(s):  
     try:
         return s.encode("utf-8")
     except:
         try:
+            s = unicode(s)
             return s.decode("latin-1").encode("utf-8")
         except:
             return s
@@ -124,7 +125,7 @@ e2 = u"\u00e9".encode("utf-8")
 def normalize_utf8(s):
     s = s.replace(ae,"ae").replace(ue,"ue").replace(oe,"oe") \
          .replace(Ae,"Ae").replace(Ue,"Ue").replace(Oe,"Oe") \
-         .replace(ss,"ss").replace(e1,"e").replace(e2, "e")
+         .replace(ss,"ss").replace(e1,"e").replace(e2, "e") 
     return s.lower()
 
 import locale
@@ -198,7 +199,7 @@ def getAllCollections():
     return l
 
 def isDirectory(node):
-    if node.type == "directory":
+    if node.type.startswith("directory"):
         return 1
     else:
         return 0
@@ -206,7 +207,7 @@ def isDirectory(node):
 def getDirectory(node):
     def p(node):
         import core.tree
-        if node.type == "directory":
+        if node.type.startswith("directory"):
             return node
         for pp in node.getParents():
             n = p(pp)

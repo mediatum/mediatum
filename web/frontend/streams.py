@@ -142,7 +142,10 @@ def send_file(req, download=0):
     if not file:
         print "Document",req.path,"not found"
         return 404
-    if(download or file.getSize() > 16*1048576):
+    
+    video = file.type == "video"
+
+    if((download or file.getSize() > 16*1048576) and not video):
         req.reply_headers["Content-Disposition"] = "attachment; filename="+filename
         return req.sendFile(file.retrieveFile(), "application/x-download")
     else:

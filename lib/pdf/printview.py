@@ -154,7 +154,7 @@ class PrintPreview:
                 if path.index(item)<len(path)-1:
                     p += ' > '
             p = p.replace('&', '&amp;')
-            self.addData(Paragraph(p, self.bv, bulletText=u('\267')))
+            self.addData(Paragraph(p, self.bv, bulletText=u'\267'.encode("utf-8")))
             p = ' '
 
 def getPrintView(lang, imagepath, metadata, paths, style=1):

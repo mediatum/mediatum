@@ -104,8 +104,13 @@ def edit_files(req, ids):
     metafields={}
     technfields={}
     obsoletefields={}
-
-    tattr = formatTechAttrs(node.getTechnAttributes())
+    
+    tattr = {}
+    try:
+        tattr = node.getTechnAttributes()
+    except AttributeError:
+        continue
+    tattr = formatTechAttrs(tattr)
 
     for key,value in attrs:
         if key in fieldnames:

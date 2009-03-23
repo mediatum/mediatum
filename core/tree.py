@@ -381,6 +381,8 @@ class Node:
             self.getLocalRead()
         self.occurences = {}
         self.occurences2node = {}
+        if hasattr(self, 'overload'):
+            self.overload()
 
     def _makePersistent(self):
         if self.id is None:
@@ -886,8 +888,8 @@ class Node:
                 self.attrlist[attribute][level][item] = len(l)
         return self.attrlist[attribute][level]
 
-    def getTechnAttributes(self):
-        return {}
+    #def getTechnAttributes(self):
+    #    return {}
             
 def flush():
     global childids_cache,nodes_cache,parentids_cache,_root,db,sortorders

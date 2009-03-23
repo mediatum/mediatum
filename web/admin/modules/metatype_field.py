@@ -40,7 +40,6 @@ def showDetailList(req, id):
     if actfilter!="":
         if actfilter in ("all", "*", t(lang(req),"admin_filter_all")):
             None # all users
-            print "nmone"
         elif actfilter=="0-9":
             num = re.compile(r'([0-9])')
             if req.params.get("filtertype","")=="name":
@@ -136,7 +135,7 @@ def FieldDetail(req, pid, id, err=0):
     attr = {}
     metadatatype = getMetaType(pid)
     for t in metadatatype.getDatatypes():
-        node = Node(type=t)
+        node = tree.Node(type=t)
         try:
             attr.update(node.getTechnAttributes())
         except AttributeError:

@@ -97,7 +97,7 @@ class FtsSearcher:
                     if value=="''":
                         res = self.db.execute('select distinct(id) from searchmeta where field'+str(pos[0])+'=""')
                     else:
-                        res = self.db.execute('select distinct(id) from searchmeta where searchmeta match ?', ['field'+str(pos[0])+':'+normalize_utf8((protect(u(value))))+ ' type:-directory'])
+                        res = self.db.execute('select distinct(id) from searchmeta where searchmeta match ?', ['field'+str(pos[0])+':'+normalize_utf8(protect(u(value)))+ ' type:-directory'])
                 
                 res = [str(s[0]) for s in res]
                 if len(ret)==0:
@@ -197,9 +197,10 @@ class FtsSearcher:
         for key,value in node.items():
             val += protect(u(value))+'| '
         for v in val.split(" "):
-            v = v.decode("utf-8").encode("latin-1", "replace")
+            v = u(v)
             if normalize_utf8(v)!=v.lower():
-                val += ' '+normalize_utf8(v)          
+                val += ' '+normalize_utf8(v)
+                
         val = val.replace(chr(0),"")
         
         sql1 += val+ ' '
@@ -254,14 +255,14 @@ class FtsSearcher:
         sql1 = 'UPDATE searchmeta SET '
         sql2 = 'INSERT INTO searchmeta (id, type, schema, updatetime'
         for key,value in keyvalue:
-            sql1 += key + "='"+value+"', "
+            sql1 += key + "='"+normalize_utf8(value)+"', "
             sql2 += ", "
             sql2 += key
         sql1 += "type='"+node.getContentType()+"', schema='"+node.getSchema()+"', updatetime='"+node.get("updatetime")+"'"
         sql2 += ") VALUES("
         sql2 += "'"+str(node.id)+"', \""+node.getContentType()+'", "'+node.getSchema()+'", "'+node.get("updatetime")+'"'
         for key,value in keyvalue:
-            sql2 += ", '" + value + "'"
+            sql2 += ", '" + normalize_utf8(value) + "'"
         sql1 += " WHERE id='"+node.id+"'"
         sql2 += ")"
 

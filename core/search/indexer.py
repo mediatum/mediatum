@@ -28,6 +28,7 @@ import core.config as config
 import core.tree as tree
 import core.db.sqliteconnector as sqlite
 from utils.utils import normalize_utf8
+from utils.date import format_date
 import core.tree as tree
 
 from utils.utils import iso2utf8, esc, u
@@ -66,9 +67,9 @@ class SearchIndexer:
             try:
                 r = self.execute("select id from node where type='foobar'")
             except sqlite.OperationalError:
-                createTables(self):
+                createTables(self)
             except MySQLdb.ProgrammingError:
-                createTables(self):
+                createTables(self)
 
     def createTables(self):
         # simple search table
@@ -126,7 +127,6 @@ class SearchIndexer:
                 a += protect(u(value))+'| '
             a = normalize_utf8(a)
             sql += a
-
             # files
             for file in node.getFiles():
                 sql += protect(u(file.getName()+ '| '+file.getType()+'| '+file.getMimeType())+'| ')
@@ -158,7 +158,8 @@ class SearchIndexer:
             if len(v_list) > 0:
                 for key in v_list:
                     sql += 'field'+str(key)+', '
-                    values += '"'+u(v_list[key])+ '", '
+                    #values += '"'+u(v_list[key])+ '", '
+                    values += '"'+normalize_utf8(u(v_list[key]))+ '", '
                 sql = sql[:-2]
                 values = values[:-2]
                 sql = sql+') VALUES("'+ str(node.id)+'", "'+node.getContentType()+'", "'+node.getSchema()+'", ' + values + ')'
@@ -256,6 +257,7 @@ class SearchIndexer:
         if not self.nodeToFulltextSearch(node):
             err['text'].append(node.id)
         #print "update search index for node",node.id
+        node.set("updatesearchindex", str(format_date()))
         return err
 
     def updateNodes(self, nodelist):

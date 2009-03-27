@@ -109,7 +109,7 @@ def edit_files(req, ids):
     try:
         tattr = node.getTechnAttributes()
     except AttributeError:
-        continue
+        pass
     tattr = formatTechAttrs(tattr)
 
     for key,value in attrs:

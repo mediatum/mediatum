@@ -120,33 +120,31 @@ def exportsearch(req, xml=0):
         return
 
     if not q:
-        ids = access.filter(node.search("objtype=document"));
+        nodes = access.filter(node.search("objtype=document"));
     else:
-        ids = access.filter(node.search("objtype=document and "+q));
+        nodes = access.filter(node.search("objtype=document and "+q));
 
     limit = int(req.params.get("limit", 99999))
     sortfield = req.params.get("sort", None)
     
     if sortfield:
-        ids = tree.NodeList(ids).sort(sortfield).getIDs()
+        nodes = nodes.sort(sortfield)
 
-    if limit < len(ids):
-        ids = ids[0:limit]
+    if limit < len(nodes):
+        nodes = nodes[0:limit]
 
     if xml:
         req.write("<nodelist>")
         i = 0
-        for id in ids:
-            node = tree.getNode(id)
+        for node in nodes:
             s = xmlnode.getSingleNodeXML(node)
             req.write(s)
             i = i+1
         req.write("</nodelist>")
     elif req.params.get("data",None):
-        req.write('a=new Array(%d);' % len(ids))
+        req.write('a=new Array(%d);' % len(nodes))
         i = 0
-        for id in ids:
-            node = tree.getNode(id)
+        for node in nodes:
             req.write('a[%d] = new Object();\n' % i);
             req.write("  a[%d]['nodename'] = '%s';\n" % (i,node.name))
             for k,v in node.items():
@@ -154,14 +152,13 @@ def exportsearch(req, xml=0):
             i = i + 1
         req.write('add_data(a);\n')
     else:
-        req.write('a=new Array(%d);' % len(ids))
+        req.write('a=new Array(%d);' % len(nodes))
         i = 0
         labels = int(req.params.get("labels",1))
-        for id in ids:
-            node = tree.getNode(id)
+        for node in nodes:
             req.write('a[%d] = new Object();\n' % i);
             req.write("a[%d]['text'] = '%s';\n" % (i,esc(node.show_node_text(labels=labels))));
-            req.write("a[%d]['link'] = 'http://%s?id=%s';\n" % (i, config.get('host.name'),id));
+            req.write("a[%d]['link'] = 'http://%s?id=%s';\n" % (i, config.get('host.name'),node.id));
             i = i + 1
         req.write('add_data(a);\n')
     print "%d node entries xml=%d" % (i,xml)

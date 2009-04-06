@@ -256,7 +256,11 @@ class SQLiteConnector(Connector):
                 t.append((key[i],item))
                 i += 1
                 
-            items = self.runQuery("select * from sqlite_stat1 where tbl='"+t[2][1]+"'")
+            items = []
+            try:
+                items = self.runQuery("select * from sqlite_stat1 where tbl='"+t[2][1]+"'")
+            except:
+                pass
             if len(items)>0:
                 t.append(("sqplite_items_count", str(items[0][2]).split(" ")[0]))
 

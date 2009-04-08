@@ -2349,6 +2349,9 @@ msgstr "Save"
 msgid "delete_folder_question"
 msgstr "If you delete this file, all files and subfolders in it will be irrevocably lost. Perform delete operation?"
 
+msgid "delete_root_error_msg"
+msgstr "Delete operation denied for current collection!"
+
 msgid "delete_object_question"
 msgstr "Move objects into trashbox?"
 

@@ -2343,6 +2343,9 @@ msgstr "Speichern"
 msgid "delete_folder_question"
 msgstr "Wenn Sie diesen Ordner löschen, sind alle Dateien und Unterverzeichnisse darin unwiderruflich verloren. Löschen durchführen?"
 
+msgid "delete_root_error_msg"
+msgstr "Die gewählte Kollektion kann nicht gelöscht werden!"
+
 msgid "delete_object_question"
 msgstr "Markierte Objekte in den Papierkorb verschieben?"
 

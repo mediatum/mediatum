@@ -82,6 +82,10 @@ def frameset(req):
                 } else if(_action == 'edit') {
                     this.location.href = "edit?tab=tab_metadata&id="+tree.getFolder();
                 } else if(_action == 'delete') {
+                    if('"""+currentdir.type+"""'=='collections' || '"""+currentdir.type+"""'=='root' || '"""+currentdir.type+"""'=='home'){
+                        alert('"""+t(lang(req), "delete_root_error_msg")+"""');
+                        return 0;
+                    }
                     if(confirm('"""+t(lang(req), "delete_folder_question")+"""')) {
                         src = tree.getFolder();
                         openWindow('edit_action?src='+src+'&action=delete&ids='+src, 300, 200);

@@ -25,6 +25,19 @@ def createPathPreserve(parent_node, sPath, sSeparator='/'):
                 parent_node=dir_node
     return parent_node
 
+def createPathPreserve2(parent_node, sPath, sType='directory', sSeparator='/'):
+    dirs=string.split(sPath, sSeparator)
+    for dirName in dirs:
+        if len(dirName)>0:
+            try:
+                node=parent_node.getChild(dirName)
+                parent_node=node
+            except tree.NoSuchNodeError,e:
+                dir_node=tree.Node(name=dirName, type=sType)
+                parent_node.addChild(dir_node)
+                parent_node=dir_node
+    return parent_node
+
 def checkPath(parent_node, sPath, sSeparator='/'):
     dirs=string.split(sPath, sSeparator)
     for dirName in dirs:

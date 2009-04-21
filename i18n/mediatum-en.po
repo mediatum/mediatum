@@ -2287,6 +2287,12 @@ msgstr "Attribute value:"
 msgid "edit_admin_add_attr"
 msgstr "Save attribute"
 
+msgid "edit_dirty"
+msgstr "Dirty-Flag"
+
+msgid "edit_localread"
+msgstr "Localread-Flag"
+
 ### classes ###
 msgid "edit_classes_class_title"
 msgstr "Classify"

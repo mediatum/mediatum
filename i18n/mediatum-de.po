@@ -2110,6 +2110,12 @@ msgstr "Löschen"
 msgid "edit_action_file_publish"
 msgstr "Publizieren"
 
+msgid "edit_dirty"
+msgstr "Dirty-Flag"
+
+msgid "edit_localread"
+msgstr "Localread-Flag"
+
 ### edit tabs ###
 msgid "tab_layout"
 msgstr "Aussehen"

@@ -405,6 +405,12 @@ class Node:
 
     def setDirty(self):
         db.setDirty(self.id)
+        
+    def isDirty(self):
+        if db.isDirty(self.id):
+            return 1
+        else:
+            return 0
     
     def cleanDirty(self):
         db.cleanDirty(self.id)
@@ -473,6 +479,10 @@ class Node:
             self.localread = ",".join(rights.keys())
             db.setNodeLocalRead(self.id, self.localread)
         return self.localread
+        
+    def resetLocalRead(self):
+        self.localread = ""
+        db.setNodeLocalRead(self.id, self.localread)
            
     """ set the node type (as string) """
     def setTypeName(self,type):

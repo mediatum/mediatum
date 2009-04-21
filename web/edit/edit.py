@@ -37,6 +37,7 @@ from edit_acls import edit_acls
 from edit_metadata import edit_metadata
 from edit_classes import edit_classes
 from edit_files import edit_files
+from edit_admin import edit_admin
 from edit_upload import edit_upload, upload_help
 from edit_import  import edit_import
 from edit_search import edit_search
@@ -639,10 +640,10 @@ def content(req):
         return   
 
     showPaging(req, current, ids)
-    req.write('<div style="margin:5px 5px 5px 5px;border:1px solid silver;padding: 4px">')
+    req.write('<div style="margin:5px;border:1px solid silver;padding: 4px">')
     
     # some tabs operate on only one file
-    if current == "tab_files" or current == "tab_editor" or current == "tab_view" or current == "tab_upload":
+    if current in ["tab_files", "tab_editor", "tab_view", "tab_upload"]:
         ids = ids[0:1]
 
     # display current images
@@ -670,12 +671,12 @@ def content(req):
                 node = tree.getNode(id)
                 if hasattr(node,"show_node_image"):
                     req.write("""<td align="center">""")
-                    if not isDirectory(node):
+                    if not isDirectory(node) and not node.isContainer():
                         req.write("""<a href="javascript:fullSizeWindow('"""+id+"""','"""+str(node.get("width"))+"""','"""+str(node.get("height"))+"""')">""")
 
                     req.write(node.show_node_image())
 
-                    if not isDirectory(node):
+                    if not isDirectory(node) and not node.isContainer():
                         req.write("""</a>""")
 
                     req.write("""</td>""")
@@ -715,7 +716,10 @@ def content(req):
     elif current == "tab_workflow":
         edit_workflow(req,ids)
     elif current == "tab_search":
+        #disabled
         edit_search(req,ids)
+
+
     elif current == "tab_subfolder":
         #edit_sort(req,ids)
         edit_subfolder(req,ids)
@@ -729,8 +733,10 @@ def content(req):
         edit_license(req,ids)
     elif current == "tab_files":
         edit_files(req,ids)
+    elif current == "tab_admin":
+        edit_admin(req,ids)    
     elif current == "tab_content":
-        if node.type == "directory" or node.type.startswith("collection"):
+        if node.type == "directory" or node.type.startswith("collection") or node.type.startswith("directory"):
             showdir(req,node)
     elif current == "tab_editor":
         found=False
@@ -758,7 +764,7 @@ def content(req):
     else:
         req.write("<b>Unknown tab</b> '%s'" % current)
     
-    req.write('</div')
+    req.write('</div>')
     req.write('</body>')
     req.write('</html>')
     

@@ -2216,6 +2216,10 @@ msgstr "Klassifizierung anzeigen"
 msgid "tab_classes_header"
 msgstr "Klassifikation"
 
+msgid "tab_admin"
+msgstr "Administration"
+
+
 ### edit acls ###
 msgid "edit_acls_righttype_read"
 msgstr "Usergruppen, die diese Objekte sehen dürfen:"
@@ -2258,6 +2262,25 @@ msgstr "Bearbeitung auf Benutzerebene"
 
 msgid "edit_acl_special_rule"
 msgstr "[Spezial-Benutzerregel]"
+
+### edit admin ###
+msgid "edit_admin_setdirty_title"
+msgstr "Knoten für Reindizierung markieren"
+
+msgid "edit_admin_localread_del_title"
+msgstr "Localread neu setzen (ACL-Rechte Cache)"
+
+msgid "edit_admin_add_attribute"
+msgstr "Neues Attribut erzeugen"
+
+msgid "edit_admin_add_attributename"
+msgstr "Attributname:"
+
+msgid "edit_admin_add_attributevalue"
+msgstr "Attributwert:"
+
+msgid "edit_admin_add_attr"
+msgstr "Speichern"
 
 ### classes ###
 msgid "edit_classes_class_title"

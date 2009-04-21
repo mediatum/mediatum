@@ -52,8 +52,6 @@
             <p><input name="updatefile" type="file" size="50"/></p>
             <p><button i18n:attributes="title edit_upload_upload_label" i18n:translate="edit_upload_upload_label" type="submit" name="addfile" value="submit">TEXT</button></p>
         </tal:block>
-            
-        <hr>
 
         <tal:block tal:condition="python:len(files)==0">
             <table class="files">
@@ -68,89 +66,10 @@
                 </tr>
             </table>
         </tal:block>
-
         <hr>
-
         <form tal:attributes="action python:'edit_content?id='+str(id)+'&tab='+tab" method="post">
             <p><input i18n:attributes="value edit_files_reprocess" type="submit" name="postprocess"></p>
             <p><small i18n:translate="edit_files_reprocess_info">TEXT</small></p>
-        </form>
-        
-        <hr>
-
-        <form method="post" action="edit_content?id='+ids[0]+'&tab=tab_files" name="meta">
-            <table class="files">
-                <tr>
-                    <th colspan="3" i18n:translate="edit_nodeinformation"/>
-                </tr>
-                <tr>
-                    <td i18n:translate="edit_id"/>
-                    <td colspan="2" tal:content="python:str(node.id)"/>
-                </tr>
-                <tal:block tal:define="type python:node.type" tal:condition="python:type.find('/')>0">
-                    <tr>
-                        <td i18n:translate="edit_objecttype"/>
-                        <td colspan="2" tal:content="python:type.split('/')[0]"/>
-                        
-                    </tr>
-                    <tr>
-                        <td i18n:translate="edit_schema"/>
-                        <td colspan="2" tal:content="python:type.split('/')[1]"/>
-                    <tr>
-                </tal:block>
-                <tal:block tal:define="type python:node.getType().getName()" tal:condition="python:type.find('/')<0">
-                    <tr>
-                        <td i18n:translate="edit_objectname"/>
-                        <td colspan="2" tal:content="type"/>
-                        
-                    </tr>
-                </tal:block>
-                
-                <tr tal:condition="python:len(list(obsoletefields))>0">
-                    <th colspan="3" i18n:translate="edit_files_obsolete">TEXT</th>
-                </tr>
-
-                <tal:block tal:repeat="key python:list(obsoletefields)">
-                    <tr tal:condition="python:key not in ('rindex','lindex','mindex')">
-                        <td style="color: red" tal:content="python:str(key)"/>
-                        <td style="color: red; white-space:normal" tal:content="python:str(node.get(str(key)))"/>
-
-                        <td tal:condition="python:allow_delete_unused">
-                            <input tal:attributes="name python:'attr_'+str(key)" i18n:attributes="title edit_files_obsolete_del_title" type="image" src="/img/delete.png" onClick="return questionDel()"/>
-                        </td>
-                        <td tal:condition="python:not allow_delete_unused">&nbsp;</td>
-                    </tr>
-                </tal:block>
-
-                <tr>
-                    <th colspan="3" i18n:translate="edit_files_metafields">TEXT</th>
-                </tr>
-
-                <tr tal:repeat="key python: list(metafields)">
-                    <td>
-                        <b tal:content="key"/>
-                    </td>
-                    <td colspan="2" tal:content="python:fd(node.get(key), gf(fields, key))" style="white-space:normal"/>
-                </tr>
-
-                <tr>
-                    <th colspan="3" i18n:translate="edit_files_tech_meta">TEXT</th>
-                </tr>
-
-                <tr tal:repeat="key python:list(technfields)">
-                    <tal:block tal:repeat="sec python:node.getTechnAttributes().keys()">
-                        <td tal:condition="python:key in node.getTechnAttributes()[sec].keys()" style="color: #666666" tal:content="raw python:node.getTechnAttributes()[sec][key]"/>
-                    </tal:block>
-                    <td style="color: #666666" colspan="2" tal:content="python:str(fd(node.get(key)))"/>
-                </tr>
-
-                <tr tal:condition="python:len(technfields)>0">
-                    <td colspan="3">
-                        <button name="deltechn" type="submit" onclick="document.meta.type.value='technical'" i18n:translate="edit_files_del_tech_meta">TEXT</button>
-                    </td>
-                </tr>
-            </table>
-            <input type="hidden" name="type" value=""/>
         </form>
     </form>
 

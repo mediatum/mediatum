@@ -29,11 +29,13 @@ import thread
 import traceback
 import utils.date as date
 from utils.utils import ArrayToString,formatException
-try:
-    import mgquery
-except ImportError:
-    print "\n\n\nImport Error:\nModule magpy can not be found on the system, check your configuration.\n"
-    sys.exit()
+
+if config.get("config.searcher","")!="fts3":
+    try:
+        import mgquery
+    except ImportError:
+        print "\n\n\nImport Error:\nModule magpy can not be found on the system, check your configuration.\n"
+        sys.exit()
     
 log = logging.getLogger("backend")
 search_lock = thread.allocate_lock()

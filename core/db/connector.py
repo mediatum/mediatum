@@ -83,6 +83,8 @@ class Connector:
         self.runQuery("update node set dirty=1 where id=" + str(nodeid))
     def cleanDirty(self, nodeid):
         self.runQuery("update node set dirty=0 where id=" + str(nodeid))
+    def isDirty(self, nodeid):
+        return self.runQuery("select dirty from node where id=" + str(nodeid))[0][0]
 
     def getDirty(self, limit=0):
         if limit:

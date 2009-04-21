@@ -27,8 +27,6 @@ import core.config as config
 import logging
 import core.acl as acl
 
-allow_delete_unused = 0
-
 def edit_files(req, ids):
     user = users.getUserFromRequest(req)
     node = tree.getNode(ids[0])
@@ -39,8 +37,6 @@ def edit_files(req, ids):
         return
 
     mime = ""
-
-
     if req.params.get("postprocess","")!="":
         if hasattr(node,"event_files_changed"):
             try:
@@ -87,66 +83,7 @@ def edit_files(req, ids):
                         node.event_files_changed()
                     except "PostprocessingError":
                         update_error = True
-                    
-        
-    # delete attribute
-    for key in req.params.keys():
-        if key.startswith("attr_"):
-            node.removeAttribute(key[5:-2])
 
-    fields = node.getType().getMetaFields()
-    fieldnames = []
-    for field in fields:
-        fieldnames +=[field.name]
-
-    attrs = node.items()
-
-    metafields={}
-    technfields={}
-    obsoletefields={}
-    
-    tattr = {}
-    try:
-        tattr = node.getTechnAttributes()
-    except AttributeError:
-        pass
-    tattr = formatTechAttrs(tattr)
-
-    for key,value in attrs:
-        if key in fieldnames:
-            metafields[key]=formatdate(value, getFormat(fields, key))
-        elif key in tattr.keys():
-            technfields[key]=formatdate(value)
-        else:
-            obsoletefields[key]=value
-    
-    if req.params.get("type","")=="obsolete":
-        print "delete obsolete"
-        for key in obsoletefields:
-             node.removeAttribute(key)
-        obsoletefields={}
-
-    elif req.params.get("type","")=="technical":
-        print "delete technical"
-        for key in technfields:
-             node.removeAttribute(key)
-        technfields={}
-
-    req.writeTAL("web/edit/edit_files.html", {"id":req.params.get("id","0"), "tab":req.params.get("tab", ""), "node":node, "obsoletefields":obsoletefields, "allow_delete_unused":allow_delete_unused, "metafields":metafields, "fields":fields, "technfields":technfields, "tattr":tattr,"fd":formatdate, "gf":getFormat, "update_error":update_error}, macro="edit_files_file")
-
-
-def getFormat(fields, name):
-    for field in fields:
-        if field.name == name:
-            return field.getValues()
-
-
-def formatdate(value, format=""):
-    if format=="":
-        format='%d.%m.%Y %H:%M:%S'
-    try:
-        return format_date(parse_date(value,"%Y-%m-%dT%H:%M:%S"), format=format)
-    except:
-        return value
+    req.writeTAL("web/edit/edit_files.html", {"id":req.params.get("id","0"), "tab":req.params.get("tab", ""), "node":node, "update_error":update_error}, macro="edit_files_file")
 
 

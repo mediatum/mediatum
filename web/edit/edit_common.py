@@ -193,7 +193,8 @@ def isUnFolded(unfoldedids, id):
         return 0
 
 def writenode(req, node, unfoldedids, f, indent, key, access):
-    if node.type != "directory" and node.type != "collection" and node.type != "root" and node.type != "home" and node.type != "collections" and node.type != "navigation":
+    #if node.type != "directory" and node.type != "collection" and node.type != "root" and node.type != "home" and node.type != "collections" and node.type != "navigation":
+    if node.type not in ["directory", "collection", "root", "home", "collections","navigation"] and not node.type.startswith("directory"):
         return
     if not access.hasReadAccess(node):
         return
@@ -203,7 +204,8 @@ def writenode(req, node, unfoldedids, f, indent, key, access):
     num = 0
     objnum = 0
     for c in node.getChildren():
-        if c.type == "directory" or c.type == "collection":
+        #if c.type == "directory" or c.type == "collection":
+        if c.type in["directory", "collection"] or c.type.startswith("directory"):
             num += 1
         else:
             objnum += 1

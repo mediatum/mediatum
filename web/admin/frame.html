@@ -20,6 +20,7 @@
         </head>
         
         <body topmargin="0" rightmargin="0" leftmargin="0">           
+            
             <div id="clean-container">
                 <div id="logocontainer">
                     <div class="logotext">
@@ -33,7 +34,8 @@
             
                 <div class="topmenucontainer">
                     <ul id="nav">
-                        <li tal:repeat="navitem python:navigation"><a tal:condition="python:len(navitem.getItemList())==0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]; href python:navitem.link" i18n:translate="" tal:content="python:navitem.name">TEXT</a>
+                        <li tal:repeat="navitem python:navigation">
+                            <a tal:condition="python:len(navitem.getItemList())==0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]; href python:navitem.link" i18n:translate="" tal:content="python:navitem.name">TEXT</a>
                             <tal:block tal:condition="python:len(navitem.getItemList())>0">
                                 <a tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]" i18n:translate="" tal:content="python:navitem.getName()"/>
                                 <ul>
@@ -59,13 +61,14 @@
                 <div class="hstippled">&nbsp;</div>
             </div>  
             <!-- content start -->
-            <div class="MainMenu">
+            <div class="MainMenu" style="overflow:auto;width:90%">
                 <div tal:replace="raw content"/>
             </div>
             <!-- content end -->
             <div id="footer">
                 <a rel="external" href="http://mediatum-pages.ub.tum.de"><b>mediatum</b></a> <span tal:content="version">TEXT</span><br /><b>mediatum</b> is free software released under the General Public Licence.
             </div>
+         
         </body>
     </html>
 </metal:block>

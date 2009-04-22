@@ -98,6 +98,14 @@ if config.get("ldap.activate", "").lower()=="true":
     import core.users as users
     users.registerAuthenticator(LDAPUser(), "ldapuser")
 
+# load archive manager
+archivemanager = None
+try:
+    import core.archive as archive
+    archivemanager = archive.ArchiveManager()
+except ImportError:
+    print "error while initialization of archive manager"
+
 # make all subnodes of collections collections
 for n in tree.getRoot("collections").getChildren():
     if "directory" in n.type:
@@ -108,7 +116,6 @@ for n in tree.getRoot("collections").getChildren():
 if not tree.getRoot().hasChild("searchmasks"):
     print "creating searchmasks node"
     tree.getRoot().addChild(tree.Node(name="searchmasks", type="searchmasks"))
-
 
 for k,v in config.getsubset("plugins").items():
     print 'Initializing plugin "'+k+'"'

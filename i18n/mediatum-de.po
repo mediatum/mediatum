@@ -1829,6 +1829,39 @@ msgstr "Datenbankgröße:"
 msgid "admin_settings_python_copyright"
 msgstr "Python Copyright:"
 
+msgid "admin_settings_archive_header"
+msgstr "Archivierung"
+
+msgid "admin_settings_archive_header"
+msgstr "Archivierungseinstellungen"
+
+msgid "admin_settings_archive_activate"
+msgstr "Archivierung aktiviert:"
+
+msgid "admin_settings_archive_interval"
+msgstr "Periode aktiv (in s):"
+
+msgid "admin_settings_archive_manager"
+msgstr "Installierte Archivmanager:"
+
+msgid "admin_settings_archive_name"
+msgstr "Managername:"
+
+msgid "admin_settings_archive_stat"
+msgstr "Statistik"
+
+msgid "admin_settings_archive_used"
+msgstr "Verwendet"
+
+msgid "admin_settings_archive_state1"
+msgstr "davon Status 1 (im Archiv)"
+
+msgid "admin_settings_archive_state2"
+msgstr "davon Status 2 (über Periode)"
+
+msgid "admin_settings_archive_state3"
+msgstr "davon Status 3 (anstehend zum Zurückschreiben)"
+
 ### workflows ###
 msgid "wf_edit_header"
 msgstr "Workflows, die von Ihnen bearbeitet werden können"

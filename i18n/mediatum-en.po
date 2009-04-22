@@ -1823,6 +1823,40 @@ msgstr "Size:"
 msgid "admin_settings_python_copyright"
 msgstr "Python Copyright:"
 
+msgid "admin_settings_archive_header"
+msgstr "Archiving"
+
+msgid "admin_settings_archive_header"
+msgstr "Archiving settings"
+
+msgid "admin_settings_archive_activate"
+msgstr "Archiving activated:"
+
+msgid "admin_settings_archive_interval"
+msgstr "Period for living active (s):"
+
+msgid "admin_settings_archive_manager"
+msgstr "Installed manager(s):"
+
+msgid "admin_settings_archive_name"
+msgstr "Manager name:"
+
+msgid "admin_settings_archive_stat"
+msgstr "Statistics"
+
+msgid "admin_settings_archive_used"
+msgstr "Used"
+
+msgid "admin_settings_archive_state1"
+msgstr "state 1 (inside archive)"
+
+msgid "admin_settings_archive_state2"
+msgstr "state 2 (period reached)"
+
+msgid "admin_settings_archive_state3"
+msgstr "state 3 (write back to archive)"
+
+
 ### workflows ###
 msgid "wf_edit_header"
 msgstr "Editable workflows"

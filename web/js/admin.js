@@ -278,11 +278,13 @@ function _add_show_handlers(navbar) {
     for (var i = 0; i < tabs.length; i += 1) {
 	tabs[i].onmousedown = function() {
 	    for (var j = 0; j < tabs.length; j += 1) {
-		tabs[j].className = '';
+		if(document.getElementById(tabs[j].id + "_c")!=null){
+        tabs[j].className = '';
 		document.getElementById(tabs[j].id + "_c").style.display = 'none';
-	    }
 	    this.className = 'active';
 	    document.getElementById(this.id + "_c").style.display = 'block';
+        }
+        }
 	    return true;
 	};
     }
@@ -349,6 +351,28 @@ function defaultFocus() {
                 }
         }
    }
+}
+
+function createRequestObject() {
+    var tmpXmlHttpObject = null;
+    try{
+        tmpXmlHttpObject = new XMLHttpRequest();
+    }                
+    catch (ms){
+        try{                        
+            tmpXmlHttpObject = new ActiveXObject("Msxml2.XMLHTTP");
+        }                     
+        catch (nonms){
+            try{                            
+                tmpXmlHttpObject = new ActiveXObject("Microsoft.XMLHTTP");
+            }                         
+            catch (failed){
+                tmpXmlHttpObject = null;
+                alert("fail");
+            }
+        }
+    }
+    return tmpXmlHttpObject;
 }
 
 

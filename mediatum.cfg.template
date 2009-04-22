@@ -37,6 +37,11 @@ user_comment=attribute
 user_group=attribute
 user_org=attribute
 
+[archive]
+activate=false
+class=#
+interval=3600
+
 [user]
 adminuser=Administrator
 guestuser=Gast

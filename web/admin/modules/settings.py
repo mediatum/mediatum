@@ -21,6 +21,7 @@
 import sys
 import os
 import core.config as config
+import core
 
 from version import mediatum_version
 from core.config import basedir
@@ -32,52 +33,69 @@ def validate(req, op):
 
 def view(req):
     global basedir
+    page = req.params.get("page","")
     v = {}
-
-    # python information
-    v['copyright'] = sys.copyright
-    v['platform'] = sys.platform
-    v['version'] = sys.version
-    v['platform'] = sys.platform
-
-    if sys.platform.startswith("win"):
-        v['plat_version'] = sys.getwindowsversion()
-    else:
-        v['plat_version'] = ''
-
-    # mediatum information
-    fi = open(os.path.join(basedir,'mediatum.cfg'), "rb")
-    v['mediatum_cfg'] = fi.readlines()
-    v["mediatum_version"] = mediatum_version
     
-    if config.get("database.type")=="sqlite":
-        #sqlite
-        v['db_driver'] = 'PySQLite'
-        v['db_connector_version'] = 'n.a.'
-    else:
-        # mysql
-        import MySQLdb
-        v['db_driver'] = 'MySQLdb'
-        v['db_connector_version'] = ('%i.%i.%i %s %i' % MySQLdb.version_info)
+    if page=="python":
+        # python information
+        v['copyright'] = sys.copyright
+        v['platform'] = sys.platform
+        v['version'] = sys.version
+        v['platform'] = sys.platform
 
-    from core.tree import db
-    v['db_status'] = db.getStatus()
-    v['db_size'] = format_filesize(db.getDBSize())
+        if sys.platform.startswith("win"):
+            v['plat_version'] = sys.getwindowsversion()
+        else:
+            v['plat_version'] = ''
+            
+        return req.getTAL("web/admin/modules/settings.html", v, macro="view_python")
+        
+    elif page=="mediatum":
+        # mediatum information
+        fi = open(os.path.join(basedir,'mediatum.cfg'), "rb")
+        v['mediatum_cfg'] = fi.readlines()
+        v["mediatum_version"] = mediatum_version
 
+        return req.getTAL("web/admin/modules/settings.html", v, macro="view_mediatum")
+        
+    elif page=="database":
+        if config.get("database.type")=="sqlite":
+            #sqlite
+            v['db_driver'] = 'PySQLite'
+            v['db_connector_version'] = 'n.a.'
+        else:
+            # mysql
+            import MySQLdb
+            v['db_driver'] = 'MySQLdb'
+            v['db_connector_version'] = ('%i.%i.%i %s %i' % MySQLdb.version_info)
 
-    # search
-    if config.get("config.searcher")=="fts3":
-        v['search_driver'] = 'sqlite with fts3 support'
+        from core.tree import db
+        v['db_status'] = db.getStatus()
+        v['db_size'] = format_filesize(db.getDBSize())
         
+        return req.getTAL("web/admin/modules/settings.html", v, macro="view_database")
         
-    else:
-        v['search_driver'] = 'magpy'
+    elif page=="search":
+        # search
+        if config.get("config.searcher")=="fts3":
+            v['search_driver'] = 'sqlite with fts3 support'
+            
+            
+        else:
+            v['search_driver'] = 'magpy'
+            
+        from core.tree import searcher
+        v['search_info'] = searcher.getSearchInfo()
+        v['search_size'] = format_filesize(searcher.getSearchSize())
         
-    from core.tree import searcher
-    v['search_info'] = searcher.getSearchInfo()
-    v['search_size'] = format_filesize(searcher.getSearchSize())
+        return req.getTAL("web/admin/modules/settings.html", v, macro="view_search")
+        
+    elif page=="archive": 
+        v['a_managers'] = core.archivemanager.getManager()
+        v['archive_interval'] = config.get('archive.interval')
+        v['archive_activated'] = config.get('archive.activate')
+        return req.getTAL("web/admin/modules/settings.html", v, macro="view_archive")
     
-    #print v['search_info']
-    
-    return req.getTAL("web/admin/modules/settings.html", v, macro="view")
+    else:
+        return req.getTAL("web/admin/modules/settings.html", v, macro="view")
 

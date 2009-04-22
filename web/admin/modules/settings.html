@@ -1,20 +1,33 @@
 <metal:block metal:define-macro="view">
     <script>
         function tab(act_tab){
-            var t = new Array("python", "mediatum", "database", "search");
-            
+            var t = new Array("python", "mediatum", "database", "search", "archive");
             for (obj in t){
                 o = document.getElementById(t[obj]);
                 t_div = document.getElementById(t[obj]+'_tab');
                 if (t[obj]==act_tab){
                     o.style.display='block';
                     t_div.className ='active';
+                    getPage(t[obj]);
                 }else{
                     o.style.display='none';
                     t_div.className ='';
                 }
             }
-        }    
+        }
+        
+        function getPage(id){
+            var lastrssbridgeurl = '/admin/settings?style=popup&page='+id;
+            http.open('get', lastrssbridgeurl, true);
+            http.send(null);
+            http.onreadystatechange =function(){
+                if(http.readyState == 4){
+                    document.getElementById(id).innerHTML = http.responseText;
+                }
+            }
+        }
+        
+        var http = createRequestObject();
     </script>
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
 
@@ -23,117 +36,178 @@
         <div id="mediatum_tab" onclick="tab('mediatum')" i18n:translate="admin_settings_mediatum_header">TEXT</div>
         <div id="database_tab" onclick="tab('database')" i18n:translate="admin_settings_database_header">TEXT</div>
         <div id="search_tab" onclick="tab('search')" i18n:translate="admin_settings_search_header">TEXT</div>
-    </div>
-    
-    <div id="page_content" style="background-color:white">
-        <!--<form name="useroverview" method="post" action="#">-->
-
-            <div id="python" style="display:visible">
-                <table>
-                    <tr>
-                        <td colspan="2"><h2 i18n:translate="admin_settings_python_header"/></td>
-                    </tr>
-                    <tr>
-                        <td  i18n:translate="admin_settings_pythonversion"/>
-                        <td tal:content="version"/>
-                    </tr>
-                    <tr>
-                        <td i18n:translate="admin_settings_platform"/>
-                        <td tal:content="platform"/>
-                    </tr>
-                    <tr>
-                        <td i18n:translate="admin_settings_python_copyright"/>
-                        <td>
-                            <pre style="font-family:arial"><p tal:replace="copyright"/></pre>
-                        </td>
-                    
-                    </tr>
-                </table>
-            </div>
-            
-            <div id="mediatum" style="display:none;">
-                <table>
-                    <tr>
-                        <td colspan="2"><h2 i18n:translate="admin_settings_mediatum_header"/></td>
-                    </tr>
-                    <tr>
-                        <td i18n:translate="admin_settings_config"/>
-                        <td>
-                            <textarea style="height:400px;width:600px;"><tal:block tal:repeat="item python:list(mediatum_cfg)"><span tal:replace="python:item">TEXT</span></tal:block></textarea>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td i18n:translate="admin_settings_mediatum_version"/>
-                        <td tal:content="mediatum_version"/>
-                    </tr>
-                </table>
-            </div>
-            
-            <div id="database" style="display:none">
-                <table>
-                    <tr>
-                        <td colspan="2"><h2 i18n:translate="admin_settings_database_header"/></td>
-                    </tr>
-                    <tr>
-                        <td i18n:translate="admin_settings_dbdriver"></td>
-                        <td tal:content="db_driver"></td>
-                    </tr>
-                    <tr>
-                        <td i18n:translate="admin_settings_dbdriverversion"/>
-                        <td tal:content="db_connector_version"></td>
-                    </tr>
-                    <tr>    
-                        <td i18n:translate="admin_settings_db_status"/>
-                        <td>
-                            <table tal:repeat="items db_status">
-                                <tr tal:repeat="item items">
-                                    <td i18n:translate="" tal:content="python:item[0]"/>
-                                    <td i18n:translate="" tal:content="python:item[1]"/>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">&nbsp;</td>
-                                </tr>
-                            </table>
-                        
-                        </td>
-                    </tr>
-                    <tr>
-                        <td i18n:translate="admin_settings_db_size"/>
-                        <td tal:content="db_size"/>
-                    </tr>
-                </table>
-            </div>
-            
-            <div id="search" style="display:none">
-                <table>
-                    <tr>
-                        <td colspan="2"><h2 i18n:translate="admin_settings_search_header"/></td>
-                    </tr>
-                    <tr>
-                        <td i18n:translate="admin_settings_search_type"/>
-                        <td tal:content="search_driver"/>
-                    </tr>
-                    <tr>    
-                        <td i18n:translate="admin_settings_search_status"/>
-                        <td>
-                            <table tal:repeat="items search_info">
-                                <tr tal:repeat="item items">
-                                    <td i18n:translate="" tal:content="python:item[0]"/>
-                                    <td i18n:translate="" tal:content="python:item[1]"/>
-                                </tr>
-                                <tr>
-                                    <td colspan="2">&nbsp;</td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>    
-                    <tr>
-                        <td i18n:translate="admin_settings_search_size"/>
-                        <td tal:content="search_size"/>
-                    </tr>
-                </table>
-            </div>
-        <!--</form>-->
+        <div id="archive_tab" onclick="tab('archive')" i18n:translate="admin_settings_archive_header">TEXT</div>
     </div>
 
+    <div id="page_content" style="background-color:white;width:90%">
+        <div id="python" style="display:visible"><img src="/img/wait_small.gif"/></div>
+            
+        <div id="mediatum" style="display:none;"><img src="/img/wait_small.gif"/></div>
+        
+        <div id="database" style="display:none"><img src="/img/wait_small.gif"/></div>
+        
+        <div id="search" style="display:none"><img src="/img/wait_small.gif"/></div>
+        
+        <div id="archive" style="display:none"><img src="/img/wait_small.gif"/></div>
+
+    </div>
+    <script>
+        getPage('python')
+    </script>
+</metal:block>
+
+<metal:block metal:define-macro="view_python">
+    <table>
+        <tr>
+            <td colspan="2"><h2 i18n:translate="admin_settings_python_header"/></td>
+        </tr>
+        <tr>
+            <td  i18n:translate="admin_settings_pythonversion"/>
+            <td tal:content="version"/>
+        </tr>
+        <tr>
+            <td i18n:translate="admin_settings_platform"/>
+            <td tal:content="platform"/>
+        </tr>
+        <tr>
+            <td i18n:translate="admin_settings_python_copyright"/>
+            <td>
+                <pre style="font-family:arial"><p tal:replace="copyright"/></pre>
+            </td>
+        
+        </tr>
+    </table>
+</metal:block>
+
+<metal:block metal:define-macro="view_mediatum">
+    <table>
+        <tr>
+            <td colspan="2"><h2 i18n:translate="admin_settings_mediatum_header"/></td>
+        </tr>
+        <tr>
+            <td i18n:translate="admin_settings_config"/>
+            <td>
+                <textarea style="height:400px;width:600px;"><tal:block tal:repeat="item python:list(mediatum_cfg)"><span tal:replace="python:item">TEXT</span></tal:block></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td i18n:translate="admin_settings_mediatum_version"/>
+            <td tal:content="mediatum_version"/>
+        </tr>
+    </table>
+</metal:block>
+
+<metal:block metal:define-macro="view_database">
+    <table>
+        <tr>
+            <td colspan="2"><h2 i18n:translate="admin_settings_database_header"/></td>
+        </tr>
+        <tr>
+            <td i18n:translate="admin_settings_dbdriver"></td>
+            <td tal:content="db_driver"></td>
+        </tr>
+        <tr>
+            <td i18n:translate="admin_settings_dbdriverversion"/>
+            <td tal:content="db_connector_version"></td>
+        </tr>
+        <tr>    
+            <td i18n:translate="admin_settings_db_status"/>
+            <td>
+                <table tal:repeat="items db_status">
+                    <tr tal:repeat="item items">
+                        <td i18n:translate="" tal:content="python:item[0]"/>
+                        <td i18n:translate="" tal:content="python:item[1]"/>
+                    </tr>
+                    <tr>
+                        <td colspan="2">&nbsp;</td>
+                    </tr>
+                </table>
+            
+            </td>
+        </tr>
+        <tr>
+            <td i18n:translate="admin_settings_db_size"/>
+            <td tal:content="db_size"/>
+        </tr>
+    </table>
+</metal:block>
+
+<metal:block metal:define-macro="view_search">
+    <table>
+        <tr>
+            <td colspan="2"><h2 i18n:translate="admin_settings_search_header"/></td>
+        </tr>
+        <tr>
+            <td i18n:translate="admin_settings_search_type"/>
+            <td tal:content="search_driver"/>
+        </tr>
+        <tr>    
+            <td i18n:translate="admin_settings_search_status"/>
+            <td>
+                <table tal:repeat="items search_info">
+                    <tr tal:repeat="item items">
+                        <td i18n:translate="" tal:content="python:item[0]"/>
+                        <td i18n:translate="" tal:content="python:item[1]" style="width:600px"/>
+                    </tr>
+                    <tr>
+                        <td colspan="2">&nbsp;</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>    
+        <tr>
+            <td i18n:translate="admin_settings_search_size"/>
+            <td tal:content="search_size"/>
+        </tr>
+    </table>
+</metal:block>
+
+<metal:block metal:define-macro="view_archive">
+    <table>
+        <tr>
+            <td colspan="2"><h2 i18n:translate="admin_settings_archive_header"/></td>
+        </tr>
+        <tr>
+            <td i18n:translate="admin_settings_archive_activate"/>
+            <td tal:content="archive_activated"/>
+        </tr>
+        <tr>
+            <td i18n:translate="admin_settings_archive_interval"/>
+            <td tal:content="archive_interval"/>
+        </tr>
+        <tr>
+            <td i18n:translate="admin_settings_archive_manager" colspan="2" style="font-weight:bold"/>
+        </tr>
+        <tal:block tal:repeat="manager a_managers">
+        <tr>
+            <td i18n:translate="admin_settings_archive_name"/>
+            <td tal:content="python:str(manager)"/>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td tal:content="python:manager.info()"/>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td i18n:translate="admin_settings_archive_stat" style="font-weight:bold"/>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td><span i18n:translate="admin_settings_archive_used"/>: <b tal:content="python:manager.stat('used')"/></td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td><span i18n:translate="admin_settings_archive_state1"/>: <b tal:content="python:manager.stat('state1')"/></td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td><span i18n:translate="admin_settings_archive_state2"/>: <b tal:content="python:manager.stat('state2')"/></td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td><span i18n:translate="admin_settings_archive_state3"/>: <b tal:content="python:manager.stat('state3')"/><br/>&nbsp;</td>
+        </tr>
+        
+        </tal:block>
+    </table>
 </metal:block>

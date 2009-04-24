@@ -2578,7 +2578,17 @@ msgid "edit_sort_header"
 msgstr "Sort manually"
 
 msgid "edit_sort_label"
-msgstr "Sort field"
+msgstr "Sort automatically"
+
+msgid "edit_sort_label_1"
+msgstr "Attribute:"
+
+msgid "edit_sort_up"
+msgstr "ascending"
+
+msgid "edit_sort_down"
+msgstr "descending"
+
 
 msgid "edit_sort_position"
 msgstr "Position"

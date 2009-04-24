@@ -2581,7 +2581,16 @@ msgid "edit_sort_header2"
 msgstr "Kollektions Sortierung"
 
 msgid "edit_sort_label"
-msgstr "Nach"
+msgstr "Automatisch sortieren"
+
+msgid "edit_sort_label_1"
+msgstr "Nach Attribut:"
+
+msgid "edit_sort_up"
+msgstr "aufsteigend"
+
+msgid "edit_sort_down"
+msgstr "absteigend"
 
 msgid "edit_sort_position"
 msgstr "Position"

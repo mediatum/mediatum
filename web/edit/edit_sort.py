@@ -30,6 +30,7 @@ log = logging.getLogger('edit')
 utrace = logging.getLogger('usertracing')
 
 def edit_sort(req, ids):
+    print req.params
     user = users.getUserFromRequest(req)
     if "sort" in users.getHideMenusForUser(user):
         req.writeTAL("web/edit/edit.html", {}, macro="access_error")
@@ -54,9 +55,9 @@ def edit_sort(req, ids):
             break
 
     if "resort" in req.params:
-        key = req.params["resort"]
+        key = req.params["resort"].lower()
         i = 0
-        for child in node.getChildren().sort(key):
+        for child in node.getChildren().sort(key, req.params.get("direction","up")):
             child.setOrderPos(i)
             i = i + 1
         runscript = True

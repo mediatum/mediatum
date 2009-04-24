@@ -29,16 +29,21 @@
                 </tr>
             </table>
     </form>
-
+    <hr/>
+    <h3 i18n:translate="edit_sort_label">TEXT</h3>
     <form>
         <input type="hidden" name="tab" value="tab_subfolder">
         <input tal:attributes="value python:node.id" type="hidden" name="id"/>
-        <p><span i18n:translate="edit_sort_label">TEXT</span> 
-            <select name="resort">
-                <option value="name" i18n:translate="edit_sort_name">TEXT</option>
-            </select> 
+            <span i18n:translate="edit_sort_label_1">TEXT</span>
+            <b>'<span i18n:translate="edit_sort_name">TEXT</span>'</b>
+            <input i18n:attributes="value edit_sort_name" type="hidden" name="resort">
+            <select name="direction">
+                <option value="up" i18n:translate="edit_sort_up">TEXT</option>
+                <option value="down" i18n:translate="edit_sort_down">TEXT</option>
+            </select>
+        <br/>&nbsp;<br/>
         <input i18n:attributes="value edit_sort_sort" type="submit" name="autosort" value="TEXT"/>
-        </p>
+        
     </form>
 </tal:block>
 

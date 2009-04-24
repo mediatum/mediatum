@@ -287,7 +287,7 @@ class NodeList:
         
     def getDescription(self):
         return self.description
-    def sort(self,field="orderpos"):
+    def sort(self,field="orderpos", direction="up"):
         if field == "orderpos":
             nodes = []
             for id in self.ids:
@@ -305,10 +305,17 @@ class NodeList:
             nodes = []
             for id in self.ids:
                 nodes += [getNode(str(id))]
-            def namecmp(n1,n2):
-                result = compare_utf8(n1.name,n2.name)
-                return result
-            nodes.sort(namecmp)
+                def namecmp(n1,n2):
+                    result = compare_utf8(n1.name,n2.name)
+                    return result
+                if direction=="up":
+                    nodes.sort(namecmp)
+                
+                def namecmp_down(n1,n2):
+                    result = compare_utf8(n2.name,n1.name)
+                    return result
+                if direction=="down":
+                    nodes.sort(namecmp_down)
             # we don't return a NodeList here, but a normal
             # list. The main difference between those two is
             # that a normal list doesn't have an "intersect" operation.

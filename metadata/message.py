@@ -23,8 +23,8 @@ from core.metatype import Metatype
 class m_message(Metatype):
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
         value = value.split(";")
-        while len(value)<5:
-            value.append("0")           
+        if len(value)<2:
+            value = ["",0,"black",0]         
         return athana.getTAL("metadata/message.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
@@ -32,6 +32,8 @@ class m_message(Metatype):
 
     def getFormatedValue(self, field, node, language=None, html=1):
         value = node.get(field.getName()).replace(";","; ").split(";")
+        if len(value)<2:
+            value = ["",0,"black",0] 
         if int(value[1])==0: # suppress label
             return ("","")
 

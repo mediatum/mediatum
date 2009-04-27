@@ -3185,3 +3185,46 @@ msgstr "Jahrbuch"
 
 msgid "intern"
 msgstr "Intern"
+
+########## colors
+msgid "color_black"
+msgstr "Schwarz"
+
+msgid "color_red"
+msgstr "Rot"
+
+msgid "color_blue"
+msgstr "Blau"
+
+msgid "color_green"
+msgstr "Grün"
+
+msgid "view_yes"
+msgstr "ja"
+
+msgid "view_no"
+msgstr "nein"
+
+msgid "style_normal"
+msgstr "normal"
+
+msgid "style_bold"
+msgstr "fett"
+
+msgid "style_italic"
+msgstr "kursiv"
+
+msgid "style_bold_italic"
+msgstr "fett + kursiv"
+
+msgid "field_msg_text"
+msgstr "Text:"
+
+msgid "field_msg_style"
+msgstr "Stil:"
+
+msgid "field_msg_view"
+msgstr "Anzeigen:"
+
+msgid "field_msg_color"
+msgstr "Farbe/Stil:"

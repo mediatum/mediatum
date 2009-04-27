@@ -3137,3 +3137,46 @@ msgstr "Yearbook"
 
 msgid "intern"
 msgstr "Intern"
+
+########## colors
+msgid "color_black"
+msgstr "Black"
+
+msgid "color_red"
+msgstr "Red"
+
+msgid "color_blue"
+msgstr "Blue"
+
+msgid "color_green"
+msgstr "Green"
+
+msgid "view_yes"
+msgstr "yes"
+
+msgid "view_no"
+msgstr "no"
+
+msgid "style_normal"
+msgstr "normal"
+
+msgid "style_bold"
+msgstr "bold"
+
+msgid "style_italic"
+msgstr "italic"
+
+msgid "style_bold_italic"
+msgstr "bold + italic"
+
+msgid "field_msg_text"
+msgstr "Text:"
+
+msgid "field_msg_style"
+msgstr "Style:"
+
+msgid "field_msg_view"
+msgstr "Show:"
+
+msgid "field_msg_color"
+msgstr "color/style:"

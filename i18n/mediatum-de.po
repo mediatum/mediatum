@@ -409,6 +409,15 @@ msgstr "externer Link (neues Fenster)"
 msgid "fieldtype_watermark"
 msgstr "Wasserzeichen"
 
+msgid "fieldtye_watermark_desc"
+msgstr "Wasserzeichen für Bilder"
+
+msgid "fieldtype_message"
+msgstr "Meldung"
+
+msgid "fieldtype_message_desc"
+msgstr "Meldungs- oder Hinweiszeile"
+
 ### views ###
 msgid "view_list_add_shoppingbag"
 msgstr "Objekt zur Merkliste hinzufügen"
@@ -2791,6 +2800,9 @@ msgstr "Feld bearbeiten"
 
 msgid "mask_edit_create_field"
 msgstr "Neues Feld anlegen"
+
+msgid "mask_edit_fieldname"
+msgstr "Name/Label:"
 
 msgid "mask_edit_position"
 msgstr "Position (vor):"

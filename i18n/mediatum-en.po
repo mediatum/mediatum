@@ -403,6 +403,15 @@ msgstr "external link (new window)"
 msgid "fieldtype_watermark"
 msgstr "watermark"
 
+msgid "fieldtype_watermark_desc"
+msgstr "watermark for images"
+
+msgid "fieldtype_message"
+msgstr "message"
+
+msgid "fieldtype_message_desc"
+msgstr "message or notice field"
+
 ### views ###
 msgid "view_list_add_shoppingbag"
 msgstr "Add object to list of favourites"
@@ -2794,6 +2803,9 @@ msgstr "Edit field"
 
 msgid "mask_edit_create_field"
 msgstr "Create new field"
+
+msgid "mask_edit_fieldname"
+msgstr "Name/Label:"
 
 msgid "mask_edit_position"
 msgstr "Position (before):"

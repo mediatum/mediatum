@@ -157,7 +157,8 @@ class Document(default.Default):
                 infoname = path + ".info"
                 tempdir = config.get("paths.tempdir")
                 try:
-                    pdfdata = parsepdf.parsePDF2(doc.retrieveFile(), config.basedir, tempdir, thumbname, thumb2name, fulltextname, infoname)
+                    pdfdata = parsepdf.parsePDF2(doc.retrieveFile())
+
                 except parsepdf.EncryptedException:
                     print "*** encrypted ***"
                     raise EncryptionException()
@@ -293,6 +294,7 @@ class Document(default.Default):
             submenu = Menu("tab_metadata", "description","#", "../") # new
             submenu.addItem("tab_metadata","tab_metadata")
             submenu.addItem("tab_files_obj","tab_files")
+            submenu.addItem("tab_admin","tab_admin")
             submenu.addItem("tab_lza", "tab_lza")
             menu.append(submenu)
             

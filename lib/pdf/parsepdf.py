@@ -31,12 +31,23 @@ import logging
 import sys
 import os
 
+from utils.utils import splitfilename
+
 class EncryptedException:
     pass
 
-def parsePDF(filename, tempdir, thumb128, thumb300, fulltext, infoname):
+def parsePDF(filename):
+    import core.config as config
+    tempdir = config.get("paths.tempdir")
+    name, ext = splitfilename(filename)
+    
+    thumb128 = name+".thumb"
+    thumb300 = name+".thumb2"
+    fulltext = name+".txt"
+    infoname = name+".info"
+
     gfx.verbose(0)
-    gfx.setparameter("disable_polygon_conversion", "1")
+    gfx.setoption("disable_polygon_conversion", "1")
     pdf = gfx.open("pdf", filename)
     
     if pdf.getInfo("oktocopy") != "yes":
@@ -94,14 +105,17 @@ def parsePDF(filename, tempdir, thumb128, thumb300, fulltext, infoname):
 
     # if xpdf exists, use it- it might generate better fulltext than gfx
     try:
-        os.system("pdftotext " + filename + " " + fulltext)
+        os.system("pdftotext -enc UTF-8 " + filename + " " + fulltext)
     except:
         txt.save(fulltext)
 
-def parsePDF2(filename, basedir, tempdir, thumb128, thumb300, fulltext, infodict):
-    command = "\"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\"" % (sys.executable, os.path.join(basedir,"lib/pdf/parsepdf.py"),
-            basedir, filename, tempdir, thumb128, thumb300, fulltext, infodict)
+def parsePDF2(filename):
+    from core.config import basedir
+    command = "%s %s %s" % (sys.executable, os.path.join(basedir,"lib/pdf/parsepdf.py"), filename)
+    os.system(command)
+    
     exit_status = os.system(command) >> 8
+    
     if exit_status:
         logging.getLogger('errors').error("Exit status "+str(exit_status)+" of subprocess "+command)
     if exit_status == 111:
@@ -143,7 +157,8 @@ if __name__ == "__main__":
     except:
         pass
     try:
-        parsePDF(sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7])
+        parsePDF(sys.argv[1])
+
     except EncryptedException:
         sys.exit(111)
 

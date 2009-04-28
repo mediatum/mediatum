@@ -19,11 +19,10 @@
 """
 import sys
 if __name__ == "__main__":
-    sys.path += [sys.argv[1]]
+    sys.path += [sys.argv[1], "../../", "."]
 
 import gfx
 import logging
-from utils.dicts import SortedDict
 import random
 import Image
 import ImageDraw
@@ -31,13 +30,14 @@ import logging
 import sys
 import os
 
-from utils.utils import splitfilename
-
 class EncryptedException:
     pass
 
 def parsePDF(filename):
     import core.config as config
+    from utils.dicts import SortedDict
+    from utils.utils import splitfilename
+    
     tempdir = config.get("paths.tempdir")
     name, ext = splitfilename(filename)
     
@@ -47,7 +47,10 @@ def parsePDF(filename):
     infoname = name+".info"
 
     gfx.verbose(0)
-    gfx.setoption("disable_polygon_conversion", "1")
+    try:
+        gfx.setparameter("disable_polygon_conversion", "1")
+    except:
+        gfx.setoption("disable_polygon_conversion", "1")
     pdf = gfx.open("pdf", filename)
     
     if pdf.getInfo("oktocopy") != "yes":
@@ -112,6 +115,8 @@ def parsePDF(filename):
 def parsePDF2(filename):
     from core.config import basedir
     command = "\"\"%s\" \"%s\" \"%s\"" % (sys.executable, os.path.join(basedir,"lib/pdf/parsepdf.py"), filename)
+    if os.name!="nt":
+        command = command[1:]
     os.system(command)
     
     exit_status = os.system(command) >> 8

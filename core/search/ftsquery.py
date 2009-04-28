@@ -56,6 +56,7 @@ class FtsSearcher:
 
     def run_search(self, field, op, value):
         ret = []
+        ret = []
         if value=="" or field=="" or op=="":
             return []
            
@@ -246,7 +247,7 @@ class FtsSearcher:
             value = ""
             if field.getFieldtype()=="union":
                 for item in field.get("valuelist").split(";"):
-                    value += node.get(item)
+                    value += node.get(item) + '|'
             else:
                 value = node.get(field.getName())
             keyvalue += [(key, u(protect(value)))]

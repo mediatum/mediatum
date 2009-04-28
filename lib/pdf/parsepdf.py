@@ -111,7 +111,7 @@ def parsePDF(filename):
 
 def parsePDF2(filename):
     from core.config import basedir
-    command = "%s %s %s" % (sys.executable, os.path.join(basedir,"lib/pdf/parsepdf.py"), filename)
+    command = "\"\"%s\" \"%s\" \"%s\"" % (sys.executable, os.path.join(basedir,"lib/pdf/parsepdf.py"), filename)
     os.system(command)
     
     exit_status = os.system(command) >> 8

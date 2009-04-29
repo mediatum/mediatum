@@ -64,8 +64,11 @@ class Document(default.Default):
         
         if node.has_object():
             obj['canseeoriginal'] = access.hasAccess(node,"data")
-            obj['documentlink'] = '/doc/'+str(node.id)+'/'+str(node.id)+'.pdf'
-            obj['documentdownload'] = '/download/'+str(node.id)+'/'+str(node.id)+'.pdf'
+            #obj['documentlink'] = '/doc/'+str(node.id)+'/'+str(node.id)+'.pdf'
+            obj['documentlink'] = '/doc/'+str(node.id)+'/'+node.getName()
+            #obj['documentdownload'] = '/download/'+str(node.id)+'/'+str(node.id)+'.pdf'
+            print "documentlink", obj['documentlink']
+            obj['documentdownload'] = '/download/'+str(node.id)+'/'+node.getName()
         else:
             obj['canseeoriginal']= False
         obj['documentthumb'] = '/thumb2/'+str(node.id) 
@@ -157,7 +160,7 @@ class Document(default.Default):
                 infoname = path + ".info"
                 tempdir = config.get("paths.tempdir")
                 try:
-                    pdfdata = parsepdf.parsePDF2(doc.retrieveFile())
+                    pdfdata = parsepdf.parsePDF2(doc.retrieveFile(), tempdir)
 
                 except parsepdf.EncryptedException:
                     print "*** encrypted ***"

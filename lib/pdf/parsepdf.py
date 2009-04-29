@@ -30,15 +30,13 @@ import logging
 import sys
 import os
 
+from utils.utils import splitfilename
+from utils.dicts import SortedDict
+
 class EncryptedException:
     pass
 
-def parsePDF(filename):
-    import core.config as config
-    from utils.dicts import SortedDict
-    from utils.utils import splitfilename
-    
-    tempdir = config.get("paths.tempdir")
+def parsePDF(filename, tempdir):
     name, ext = splitfilename(filename)
     
     thumb128 = name+".thumb"
@@ -112,9 +110,9 @@ def parsePDF(filename):
     except:
         txt.save(fulltext)
 
-def parsePDF2(filename):
+def parsePDF2(filename, tempdir):
     from core.config import basedir
-    command = "\"\"%s\" \"%s\" \"%s\"" % (sys.executable, os.path.join(basedir,"lib/pdf/parsepdf.py"), filename)
+    command = "\"\"%s\" \"%s\" \"%s\" \"%s\"" % (sys.executable, os.path.join(basedir,"lib/pdf/parsepdf.py"), filename, tempdir)
     if os.name!="nt":
         command = command[1:]
     os.system(command)
@@ -162,7 +160,7 @@ if __name__ == "__main__":
     except:
         pass
     try:
-        parsePDF(sys.argv[1])
+        parsePDF(sys.argv[1], sys.argv[2])
 
     except EncryptedException:
         sys.exit(111)

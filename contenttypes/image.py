@@ -160,7 +160,10 @@ class Image(default.Default):
         if access.hasAccess(node,"data"):
             for f in node.getFiles():
                 if f.getType()=="original":
-                    tif = f.getName()
+                    if node.get("system.origname")=="1":
+                        tif = node.getName()
+                    else:
+                        tif = f.getName()
 
         obj = {}
         obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY) # hide empty elements

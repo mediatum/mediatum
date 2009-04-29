@@ -64,11 +64,12 @@ class Document(default.Default):
         
         if node.has_object():
             obj['canseeoriginal'] = access.hasAccess(node,"data")
-            #obj['documentlink'] = '/doc/'+str(node.id)+'/'+str(node.id)+'.pdf'
-            obj['documentlink'] = '/doc/'+str(node.id)+'/'+node.getName()
-            #obj['documentdownload'] = '/download/'+str(node.id)+'/'+str(node.id)+'.pdf'
-            print "documentlink", obj['documentlink']
-            obj['documentdownload'] = '/download/'+str(node.id)+'/'+node.getName()
+            if node.get('system.origname')=="1":
+                obj['documentlink'] = '/doc/'+str(node.id)+'/'+node.getName()
+                obj['documentdownload'] = '/download/'+str(node.id)+'/'+node.getName()
+            else:
+                obj['documentlink'] = '/doc/'+str(node.id)+'/'+str(node.id)+'.pdf'
+                obj['documentdownload'] = '/download/'+str(node.id)+'/'+str(node.id)+'.pdf'
         else:
             obj['canseeoriginal']= False
         obj['documentthumb'] = '/thumb2/'+str(node.id) 

@@ -567,6 +567,7 @@ class Node:
             raise InvalidOperationError()
 
         db.addChild(self.id,child.id,check=(not bulk))
+        child.resetLocalRead()
         self._flushOccurences()
         return child
 
@@ -578,6 +579,7 @@ class Node:
         self._flush()
         child._flush()
         db.removeChild(self.id,child.id)
+        child.resetLocalRead()
         self._flushOccurences()
 
 

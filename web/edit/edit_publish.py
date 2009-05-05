@@ -29,7 +29,6 @@ from edit import *#nodeIsChildOfNode
 
 
 def edit_publish(req, ids):
-    print "req:", req.params
     user = users.getUserFromRequest(req)
     publishdir = tree.getNode(ids[0])
     access = AccessData(req)

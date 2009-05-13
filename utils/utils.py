@@ -43,6 +43,9 @@ def u(s):
 
 def iso2utf8(s):
     return unicode(s,"latin-1").encode("utf-8")
+    
+def utf82iso(s):
+    return unicode(s,"utf-8").encode("latin-1")
 
 def splitpath(path):
     while path.endswith("/") or path.endswith("\\"):

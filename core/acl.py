@@ -141,6 +141,18 @@ class AccessData:
         return self.hasAccess(node,"read",fnode)
 
     def hasWriteAccess(self,node,fnode=None):
+        
+        # check for explicit restriction with "NOT" rule
+        rule = ""
+        for n in node.getParents():
+            try:
+                rule += getRule(n.getAccess("write")).getRuleStr() + " "
+            except:
+                continue
+        for grp in self.user.getGroups():
+            if rule.find("NOT ( group "+grp+" )")>0:
+                return 0
+  
         return self.hasAccess(node,"write",fnode)
     
     def filter(self, nodelist, accesstype="read"):

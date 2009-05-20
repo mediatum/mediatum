@@ -38,6 +38,8 @@ errordesc = {
  "noMetadataFormats": "There are no metadata formats available for the specified item.",
  "noSetHierarchy": "The repository does not support sets.",
  "noPermission": "The requested records are protected",
+ "badDateformatUntil" : "Bad argument (until): Date not in OAI format (yyyy-mm-dd or yyyy-mm-ddThh:mm:ssZ)",
+ "badDateformatFrom" : "Bad argument (from): Date not in OAI format (yyyy-mm-dd or yyyy-mm-ddThh:mm:ssZ)",
 }
 
 EARLIEST_YEAR=1960
@@ -59,7 +61,7 @@ CHUNKSIZE=10
 def mklink(req):
     return "http://"+config.get("host.name", socket.gethostname()+":8081")+"/oai/oai"
 
-def writeHead(req):
+def writeHead(req, attributes=""):
     request = mklink(req)
     d = ISO8601(date.now())
     try:
@@ -71,21 +73,25 @@ def writeHead(req):
     <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
         <responseDate>"""+d+"""Z</responseDate>
         <request""")
-    for n in "verb", "identifier", "metadataprefix", "from", "until", "set":
-        if n in req.params:
-            req.write(' '+n+'="'+esc(req.params[n])+'"')
+    if attributes!="noatt":
+        for n in "verb", "identifier", "metadataprefix", "from", "until", "set":
+            if n in req.params:
+                req.write(' '+n+'="'+esc(req.params[n])+'"')
     req.write(">"+request+"</request>")
 
 def writeTail(req):
     req.write("""</OAI-PMH>""")
 
-def writeError(req, code):
+def writeError(req, code, detail=""):
     d = ISO8601(date.now())
     try:
         verb = req.params["verb"]
     except KeyError:
         verb = ""
-    req.write("""<error code="%s">%s</error>""" % (code, errordesc[code]))
+    if detail!="":
+        req.write("""<error code="%s">%s</error>""" % (code, errordesc[detail]))
+    else:
+        req.write("""<error code="%s">%s</error>""" % (code, errordesc[code]))
 
 def ISO8601(t=None):
     # MET summer time 
@@ -247,11 +253,12 @@ def retrieveNodes(access, collectionid, date_from=None, date_to=None, metadatafo
             query += " and "
         query += DATEFIELD + " <= "+str(date_to)
     nodes = collection.search(query)
+    print "nodes", nodes
     if access:
         nodes = access.filter(nodes)
 
     print "search below",collection.id,collection.name,"for",query,":",len(nodes),"nodes"
-
+    
     return nodes
 
 
@@ -327,8 +334,8 @@ def getNodes(req):
     return tree.NodeList(nodes[pos:pos+CHUNKSIZE]), tokenstring, metadataformat
 
 def ListIdentifiers(req):
-    if "until" in req.params.keys():
-        return writeError(req, 'badArgument')
+    #if "until" in req.params.keys():
+    #    return writeError(req, 'badArgument')
     nodes, tokenstring, metadataformat = getNodes(req)
     if nodes is None:
         return writeError(req,tokenstring)
@@ -382,6 +389,8 @@ def GetRecord(req):
         return writeError(req,"badArgument")
 
     id = identifier2id(id)
+    
+    print id
 
     try:
         node = tree.getNode(id)
@@ -414,26 +423,50 @@ def ListSets(req):
 
 def oaiRequest(req):
     req.request["Content-Type"] = "text/xml"
-    writeHead(req)
+
+    if "until" in req.params:
+        try:
+            date_to = parseDate(req.params["until"])
+        except:
+            writeHead(req, "noatt")  
+            writeError(req, "badArgument", "badDateformatUntil")
+            writeTail(req)
+            return
+            
+    elif "from" in req.params:
+        try:
+            date_from = parseDate(req.params["from"])
+        except:
+            writeHead(req, "noatt")
+            writeError(req, "badArgument", "badDateformatFrom")
+            writeTail(req)
+            return
 
     if "verb" not in req.params:
-        print "verb missing"
         writeError(req,"badVerb")
+    
     else:
         verb = req.params["verb"]
         if verb == "Identify":
+            writeHead(req)
             Identify(req)
         elif verb == "ListMetadataFormats":
+            writeHead(req)
             ListMetadataFormats(req)
         elif verb == "ListSets":
+            writeHead(req)
             ListSets(req)
         elif verb == "ListIdentifiers":
+            writeHead(req)
             ListIdentifiers(req)
         elif verb == "ListRecords":
+            writeHead(req)
             ListRecords(req)
         elif verb == "GetRecord":
+            writeHead(req)
             GetRecord(req)
         else:
+            writeHead(req, "noatt")
             writeError(req,"badVerb")
 
     writeTail(req)

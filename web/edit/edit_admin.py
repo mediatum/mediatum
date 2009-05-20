@@ -26,8 +26,6 @@ import logging
 
 
 def edit_admin(req, ids):
-    print req.params
-    
     user = users.getUserFromRequest(req)
     node = tree.getNode(ids[0])
     access = acl.AccessData(req)

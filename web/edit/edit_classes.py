@@ -26,14 +26,17 @@ from core.acl import AccessData
 
 def edit_classes(req, ids):
     user = users.getUserFromRequest(req)
-    if "classes" in users.getHideMenusForUser(user):
-        req.writeTAL("web/edit/edit.html", {}, macro="access_error")
-        return
-        
     access = AccessData(req)
     nodes = []
     for id in ids:
+        if not access.hasWriteAccess(tree.getNode(id)):
+            req.writeTAL("web/edit/edit.html", {}, macro="access_error")
+            return "error"
         nodes += [tree.getNode(id)]
+    
+    if "classes" in users.getHideMenusForUser(user):
+        req.writeTAL("web/edit/edit.html", {}, macro="access_error")
+        return
 
     changed = 0
     try: 

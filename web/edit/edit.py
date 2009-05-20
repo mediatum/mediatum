@@ -741,9 +741,10 @@ def content(req):
     elif current == "tab_editor":
         found=False
         for f in node.getFiles():
-            if f.mimetype == 'text/html':
-                edit_editor(req, node, f)
+            if f.mimetype=='text/html':
                 found=True
+                if edit_editor(req, node, f)=="error":
+                    break
         if not found:
             edit_editor(req, node, None)
  

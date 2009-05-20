@@ -29,11 +29,11 @@ from core.acl import AccessData
 
 def edit_editor(req, node, filenode):
     user = users.getUserFromRequest(req)
-    if "editor" in users.getHideMenusForUser(user):
-        req.writeTAL("web/edit/edit.html", {}, macro="access_error")
-        return
-        
     access = AccessData(req)
+    
+    if not access.hasWriteAccess(node) or "editor" in users.getHideMenusForUser(user):
+        req.writeTAL("web/edit/edit.html", {}, macro="access_error")
+        return "error"
 
     if filenode==None:
         path = config.settings["paths.datadir"] + "html/" + req.params['id'] + ".html"

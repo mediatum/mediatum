@@ -34,13 +34,19 @@ acl_types = ["read", "write", "data"]
 
 def show_acl_editor(req, ids):
     
+    user = users.getUserFromRequest(req)
+    access = acl.AccessData(req)
     idstr=""
     for id in ids:
+        if not access.hasWriteAccess(tree.getNode(id)) or "acls" in users.getHideMenusForUser(user):
+            req.writeTAL("web/edit/edit.html", {}, macro="access_error")
+            return
+
         if idstr:
             idstr+=","
         idstr+=id
 
-    access = acl.AccessData(req)
+    
 
     if "save" in req.params:
         #save acl level

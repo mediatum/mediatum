@@ -66,11 +66,17 @@ def edit_metadata(req, ids):
         if idstr:
             idstr+=","
         node = tree.getNode(id)
+        if not access.hasWriteAccess(node):
+            req.writeTAL("web/edit/edit.html", {}, macro="access_error")
+            return
+
         metatypes[node.getSchema()] = ""
         if len(nodes)==0 or nodes[0].getSchema() == node.getSchema():
             nodes += [node]
         idstr += id
     metatypes = metatypes.keys()
+    
+    
 
     masklist = []
 

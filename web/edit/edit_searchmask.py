@@ -23,10 +23,14 @@ import schema.searchmask as searchmask
 import md5
 import random
 import core.users as users
+from core.acl import AccessData
 
 def edit_searchmask(req, ids):
     user = users.getUserFromRequest(req)
-    if "searchmask" in users.getHideMenusForUser(user):
+    node = tree.getNode(ids[0])
+    access = AccessData(req)
+    
+    if not access.hasWriteAccess(node) or "searchmask" in users.getHideMenusForUser(user):
         req.writeTAL("web/edit/edit.html", {}, macro="access_error")
         return
 
@@ -48,9 +52,6 @@ def edit_searchmask(req, ids):
             delfield = k[4:]
         if k.startswith("delsub_"):
             delsubfield = k[7:]
-    print req.params
-
-    node = tree.getNode(ids[0])
 
     try:
         root = tree.getRoot("searchmasks") 

@@ -121,8 +121,9 @@ class Video(default.Default):
             menu.append(submenu)
             
             submenu = Menu("tab_metadata", "description","#", "../") # new
-            submenu.addItem("tab_meta","tab_meta")
+            submenu.addItem("tab_metadata","tab_metadata")
             submenu.addItem("tab_files_obj","tab_files")
+            submenu.addItem("tab_admin","tab_admin")
             submenu.addItem("tab_lza", "tab_lza")
             menu.append(submenu)
             

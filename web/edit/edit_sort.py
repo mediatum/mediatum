@@ -23,14 +23,14 @@ import core.tree as tree
 import logging
 import core.users as users
 from core.acl import AccessData
-from utils.utils import getCollection
+from utils.utils import getCollection, intersection
 from core.translation import t
+from schema.schema import getMetaType
 
 log = logging.getLogger('edit')
 utrace = logging.getLogger('usertracing')
 
 def edit_sort(req, ids):
-    print req.params
     user = users.getUserFromRequest(req)
     if "sort" in users.getHideMenusForUser(user):
         req.writeTAL("web/edit/edit.html", {}, macro="access_error")
@@ -55,12 +55,13 @@ def edit_sort(req, ids):
             break
 
     if "resort" in req.params:
-        key = req.params["resort"].lower()
+        # sort criteria
         i = 0
-        for child in node.getChildren().sort(key, req.params.get("direction","up")):
+        for child in node.getChildren().sort(req.params.get("sortattribute"), req.params.get("sortdirection","up")):
             child.setOrderPos(i)
             i = i + 1
         runscript = True
+ 
 
     if up>=0 or down>=0:
         i = 0
@@ -83,14 +84,27 @@ def edit_sort(req, ids):
                 pass
 
         runscript = True
+        
     nodelist = []
-
+    attributes = []
+    fields = {}
+    i = 0
     for child in list(node.getChildren().sort()):
         try:
             if child.isContainer():
+                i += 1 # count container children
                 nodelist.append(child)
+                for field in getMetaType(child.getSchema()).getMetaFields():
+                    if not field in fields.keys():
+                        fields[field] = 0
+                    fields[field] += 1
         except:
             pass
+    
+    for field in fields:
+        if i==fields[field]:
+            attributes.append(field)
+    attributes.sort(lambda x, y: cmp(x.getLabel().lower(),y.getLabel().lower()))
 
-    req.writeTAL("web/edit/edit_sort.html", {"node":node, "nodelist":nodelist, "runscript":runscript}, macro="edit_sort")
+    req.writeTAL("web/edit/edit_sort.html", {"node":node, "nodelist":nodelist, "sortattributes":attributes, "runscript":runscript}, macro="edit_sort")
     return

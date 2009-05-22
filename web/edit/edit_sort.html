@@ -34,15 +34,28 @@
     <form>
         <input type="hidden" name="tab" value="tab_subfolder">
         <input tal:attributes="value python:node.id" type="hidden" name="id"/>
-            <span i18n:translate="edit_sort_label_1">TEXT</span>
-            <b>'<span i18n:translate="edit_sort_name">TEXT</span>'</b>
-            <input i18n:attributes="value edit_sort_name" type="hidden" name="resort">
-            <select name="direction">
+        <input i18n:attributes="value edit_sort_name" type="hidden" name="resort">
+
+        <p><span i18n:translate="edit_sort_label_1">TEXT</span>
+        <select name="sortattribute">
+            <optgroup label="Spezialattribute">
+                <option value="name" i18n:translate="edit_sort_name">Nlllame</option>
+            </optgroup>
+            
+            <optgroup label="Attribute">
+                <tal:block tal:repeat="sortattribute sortattributes"> 
+                <option tal:attributes="value python:sortattribute.getName()" tal:content="python:sortattribute.getLabel()"/>
+                </tal:block>
+            </optgroup>
+        </select>
+        <select name="sortdirection">
                 <option value="up" i18n:translate="edit_sort_up">TEXT</option>
                 <option value="down" i18n:translate="edit_sort_down">TEXT</option>
             </select>
-        <br/>&nbsp;<br/>
+        </p>
+
         <input i18n:attributes="value edit_sort_sort" type="submit" name="autosort" value="TEXT"/>
+        
         
     </form>
 </tal:block>

@@ -174,11 +174,14 @@ class MaxSizeDict:
         #print
 
         while self.queuelen >= self.maxsize:
-            key = self.queue_start.remove()
-            if self.keep_weakrefs:
-                self._key2data[key].inqueue = 0
+            if self.queue_start:
+                key = self.queue_start.remove()
+                if self.keep_weakrefs:
+                    self._key2data[key].inqueue = 0
+                else:
+                    del self._key2data[key]
             else:
-                del self._key2data[key]
+                break
 
     def __setitem__(self, key, data): 
         try:

@@ -84,6 +84,9 @@ class Directory(default.Default):
             return ["directory"]
         elif self.type == "collection" or self.type == "collections":
             return ["directory","collection"]
+        elif self.type.startswith("directory"):
+            print "special directory"
+            return ["directory"]
         else:
             return []
 
@@ -171,6 +174,7 @@ class Directory(default.Default):
                 submenu.addItem("tab_logo","tab_logo")
             if submenu:
                 submenu.addItem("tab_files","tab_files")
+                submenu.addItem("tab_admin","tab_admin")
             
             if node.getContentType() in ("collection", "collections"):
                 submenu.addItem("tab_searchmask","tab_searchmask")
@@ -194,3 +198,4 @@ class Directory(default.Default):
         
     def getDefaultEditTab(node):
         return "tab_content"
+        

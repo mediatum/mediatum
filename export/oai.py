@@ -443,6 +443,7 @@ def oaiRequest(req):
             return
 
     if "verb" not in req.params:
+        writeHead(req, "noatt")
         writeError(req,"badVerb")
     
     else:

@@ -2659,6 +2659,10 @@ msgstr "No file was transferred to the server."
 msgid "print_view_header"
 msgstr "mediaTUM object"
 
+msgid "print_view_children"
+msgstr "entries"
+
+
 msgid "print_view_page"
 msgstr "page"
 

@@ -2664,6 +2664,9 @@ msgstr "Text-Ansicht für Dokumente"
 msgid "print_view_header"
 msgstr "mediaTUM-Objekt"
 
+msgid "print_view_children"
+msgstr "Einträge"
+
 msgid "print_view_page"
 msgstr "Seite"
 

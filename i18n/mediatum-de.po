@@ -3240,3 +3240,9 @@ msgstr "Anzeigen:"
 
 msgid "field_msg_color"
 msgstr "Farbe/Stil:"
+
+msgid "show_all"
+msgstr "alle anzeigen"
+
+msgid "show_pages"
+msgstr "seitenweise anzeigen"

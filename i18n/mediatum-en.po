@@ -3192,3 +3192,9 @@ msgstr "Show:"
 
 msgid "field_msg_color"
 msgstr "color/style:"
+
+msgid "show_all"
+msgstr "show all"
+
+msgid "show_pages"
+msgstr "pages"

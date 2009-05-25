@@ -204,7 +204,12 @@ def show_printview(req):
                     c_mask = c_mtype.getMask("nodesmall")
                 children.append(c_mask.getViewHTML([c], VIEW_DATA_ONLY+VIEW_HIDE_EMPTY))
             else:
-                children.append([(c.id, u(c.getName()), u(c.getName()), "header")])
+                items = getPaths(c, AccessData(req))
+                p = []
+                for item in items[0]:
+                    p.append(u(item.getName()))
+                p.append(u(c.getName()))
+                children.append([(c.id, " - ".join(p[1:]), u(c.getName()), "header")])
 
     req.reply_headers['Content-Type'] = "application/pdf"
     req.write(printview.getPrintView(lang(req), imagepath, mask.getViewHTML([node], VIEW_DATA_ONLY+VIEW_HIDE_EMPTY), getPaths(node, AccessData(req)), style, children))

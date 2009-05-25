@@ -178,14 +178,14 @@ class PrintPreview:
 
                     if path.index(item)<len(path)-1:
                         p += ' > '
-                p = p.replace('&', '&amp;')
-                self.addData(Paragraph(p, self.bv, bulletText=u'\267'.encode("utf-8")))
+                self.addData(Paragraph(p.replace('&', '&amp;'), self.bv, bulletText=u'\267'.encode("utf-8")))
                 p = ' '
             
     def addChildren(self, children):
         self.addData(FrameBreak())
         self.addData(Paragraph(t(self.language, "print_view_children")+":", self.bp))
         
+        #path = []
         # count headers
         _head = 0
         for c in children:
@@ -201,8 +201,7 @@ class PrintPreview:
                 for item in items:
                     self.addData(Paragraph("["+str(_c)+"/"+str(len(children)-_head)+"]: "+"; ".join(item), self.bv))
                     _c+=1
-
-                self.addData(Paragraph(c[0][1], self.bf))
+                self.addData(Paragraph(c[0][1].replace('&', '&amp;'), self.bf))
                 items = []
                 continue
             values = []

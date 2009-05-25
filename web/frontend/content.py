@@ -167,6 +167,7 @@ class ContentList(Content):
        
         if "back" in req.params:
             self.nr = -1
+            
 
         for i in range(SORT_FIELDS):
             if ("sortfield%d"%i) in req.params:
@@ -233,13 +234,22 @@ class ContentList(Content):
 
         nav_list = list()
         nav_page = list()
-
-        files_per_page = 9
+ 
+        if not "itemsperpage" in req.params:
+            files_per_page = 9
+        else:
+            if req.params.get("itemsperpage")=="-1":
+                files_per_page = len(self.files)
+            else:
+                files_per_page = int(req.params.get("itemsperpage"))
 
         min = 0
         max = (len(self.files)+files_per_page-1)/files_per_page-1
         left = self.page - 6
         right = self.page + 6
+        
+        
+        
         if left < 0:
             left = 0
         if right > max or right >= max-2:
@@ -308,11 +318,11 @@ def getPaths(node, access):
     if p:
         for node in p:
             if access.hasReadAccess(node):
-                if node.type in ("directory", "home", "collection"):
+                if node.type in ("directory", "home", "collection") or node.type.startswith("directory"):
                     paths.append(node)
                 if node is tree.getRoot("collections") or node.type=="root":
                     paths.reverse()
-                    if len(paths)>1 and not omit:
+                    if len(paths)>0 and not omit:
                         list.append(paths)
                     omit = 0
                     paths =[]
@@ -373,7 +383,7 @@ def mkContentNode(req):
         ids = []
         nodes = access.filter(node.getAllChildren())
         for c in nodes:
-            if c.type != "directory" and c.type != "collection":
+            if c.type != "directory" and c.type != "collection" and not c.type.startswith("directory"):
                 ids += [c.id]
         c = ContentList(tree.NodeList(ids),getCollection(node))
         c.feedback(req)
@@ -455,7 +465,8 @@ class ContentArea(Content):
         if "raw" in req.params:
             path = ""
         else:
-            path = req.getTAL("web/frontend/content_nav.html", {"params": self.params, "path": self.getPath(), "styles":styles, "logo":self.collectionlogo, "searchmode":req.params.get("searchmode","")}, macro="path")
+            items = req.params.get("itemsperpage")
+            path = req.getTAL("web/frontend/content_nav.html", {"params": self.params, "path": self.getPath(), "styles":styles, "logo":self.collectionlogo, "searchmode":req.params.get("searchmode",""), "items":items}, macro="path")
 
         return path + '\n<!-- CONTENT START -->\n<div id="nodes">' +  self.content.html(req) + '</div>\n<!-- CONTENT END -->\n'
 

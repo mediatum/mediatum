@@ -8,8 +8,14 @@
             <img tal:condition="python: not logo.getURL()" tal:attributes="src python:logo.getPath()" style="margin-left: 30px;"/>
     </div>
 
-    <a tal:condition="python:len(styles)>1" tal:repeat="style styles" 
+    <a tal:condition="python:len(styles)>1 and items!='-1'" tal:repeat="style styles" 
        tal:attributes="href python:'/?style='+style.getName()+params;title python:style.getLabel()" 
+       i18n:attributes="title" id="view_switch">
+        <img tal:attributes="src python:'/img/'+style.getIcon()"/>
+    </a>
+    
+    <a tal:condition="python:len(styles)>1 and items=='-1'" tal:repeat="style styles" 
+       tal:attributes="href python:'/?itemsperpage=-1&style='+style.getName()+params;title python:style.getLabel()" 
        i18n:attributes="title" id="view_switch">
         <img tal:attributes="src python:'/img/'+style.getIcon()"/>
     </a>
@@ -60,7 +66,13 @@
             </tal:block>
             <span tal:condition="python:page=='...'" tal:replace="python:' ...'"/>
         </tal:block>
+        <span>&nbsp;&nbsp;<a href="?itemsperpage=-1" i18n:translate="show_all">alle anzeigen</a></span>
         </div>
+        <div tal:condition="python:len(list(nav_list))==1">
+            <span><a href="?page=0">seitenweise anzeigen</a></span>
+        </div>
+        
+        
     </div>
 </div>
 

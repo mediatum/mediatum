@@ -8,6 +8,8 @@
             <img tal:condition="python: not logo.getURL()" tal:attributes="src python:logo.getPath()" style="margin-left: 30px;"/>
     </div>
 
+    <a target="_blank" tal:attributes="href python:'/print/'+str(id)" id="view_switch"><img src="/img/print_icon.gif"/></a>
+    
     <a tal:condition="python:len(styles)>1 and items!='-1'" tal:repeat="style styles" 
        tal:attributes="href python:'/?style='+style.getName()+params;title python:style.getLabel()" 
        i18n:attributes="title" id="view_switch">

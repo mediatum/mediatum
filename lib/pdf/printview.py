@@ -201,7 +201,7 @@ class PrintPreview:
                 for item in items:
                     self.addData(Paragraph("["+str(_c)+"/"+str(len(children)-_head)+"]: "+"; ".join(item), self.bv))
                     _c+=1
-                self.addData(Paragraph(c[0][1].replace('&', '&amp;'), self.bf))
+                self.addData(Paragraph(u(c[0][1]).replace('&', '&amp;'), self.bf))
                 items = []
                 continue
             values = []

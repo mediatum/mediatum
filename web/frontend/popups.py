@@ -209,7 +209,7 @@ def show_printview(req):
                 for item in items[0]:
                     p.append(u(item.getName()))
                 p.append(u(c.getName()))
-                children.append([(c.id, " - ".join(p[1:]), u(c.getName()), "header")])
+                children.append([(c.id, " > ".join(p[1:]), u(c.getName()), "header")])
 
     req.reply_headers['Content-Type'] = "application/pdf"
     req.write(printview.getPrintView(lang(req), imagepath, mask.getViewHTML([node], VIEW_DATA_ONLY+VIEW_HIDE_EMPTY), getPaths(node, AccessData(req)), style, children))

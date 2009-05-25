@@ -41,6 +41,7 @@ class PrintPreview:
         self.language = language
         self.host = host
         self.data = []
+        self.image = 0
         self.styleSheet = getSampleStyleSheet()
 
         self.styleSheet.add(ParagraphStyle(name='paths',
@@ -49,6 +50,13 @@ class PrintPreview:
                                   spaceBefore=20,
                                   bulletFontName="Symbol",
                                   bulletFontSize=16))
+                                  
+        self.styleSheet.add(ParagraphStyle(name='fac_header',
+                                  fontName='Helvetica-Bold',
+                                  fontSize=10,
+                                  leftIndent = 10,
+                                  spaceBefore=10,
+                                  spaceAfter=10))
         
         self.bl = self.styleSheet['Normal']
         self.bl.fontName = 'Helvetica-Bold'
@@ -57,7 +65,12 @@ class PrintPreview:
         self.bv = self.styleSheet['BodyText']
         self.bv.fontName = 'Helvetica'
         self.bv.spaceBefore = 0
+        self.bv.spaceAfter = 5
+        
+        self.bf = self.styleSheet['fac_header']
+        
         self.bp = self.styleSheet['paths']
+
         self.image_w = 9.5*cm
         self.image_h = 4.5*cm
 
@@ -76,9 +89,8 @@ class PrintPreview:
         self.addData(FrameBreak())
 
     def getStyle(self, page, config):
-
         frameHeader = Frame(1*cm, 25.5*cm, 19*cm, 3*cm,leftPadding=0, rightPadding=0, id='normal')
-        frameFollow =Frame(1*cm, 2.5*cm, 19*cm, 26*cm,leftPadding=0, rightPadding=0, id='normal')
+        frameFollow = Frame(1*cm, 2.5*cm, 19*cm, 26*cm,leftPadding=0, rightPadding=0, id='normal')
 
         if config==1:
             frameImage = Frame(1*cm, 2.5*cm, 9.5*cm, 23*cm,leftPadding=0, topPadding=12,rightPadding=0, id='normal')
@@ -89,10 +101,20 @@ class PrintPreview:
                 return [frameFollow]
         else:
             frameImage = Frame(10.5*cm, 25.5*cm-self.image_h-1*cm, 9.5*cm, self.image_h+1*cm, leftPadding=0, rightPadding=0, id='normal')
+            frameImage_hide = Frame(20.0*cm, 25.5*cm-self.image_h-1*cm, 0.01*cm, self.image_h+1*cm, leftPadding=0, rightPadding=0, id='normal')
+            
             frameMeta = Frame(1*cm, 25.5*cm-self.image_h-1*cm, 9.5*cm, self.image_h+1*cm, leftPadding=10, topPadding=12, rightPadding=0, id='normal')
+            frameMeta_hide = Frame(1*cm, 25.5*cm-self.image_h-1*cm, 19.0*cm, self.image_h+1*cm, leftPadding=10, topPadding=12, rightPadding=0, id='normal')
+            
             frameMeta2 = Frame(1*cm, 2.5*cm, 19*cm, 23*cm-self.image_h-1*cm, leftPadding=10, rightPadding=0, id='normal')
+            
+            
+            
             if page==1:
-                return [frameHeader, frameImage, frameMeta, frameMeta2]
+                if self.image==1:
+                    return [frameHeader, frameImage, frameMeta, frameMeta2]
+                else:
+                    return [frameHeader, frameImage_hide, frameMeta_hide, frameMeta2]
             else:
                 return [frameFollow]
 
@@ -142,30 +164,72 @@ class PrintPreview:
         self.image_w = 9.5*cm
         self.image_h = self.image_w/im.size[0]*im.size[1]
         self.data.append(PdfImage(path, width=self.image_w, height=self.image_h, kind="proportional"))
+        self.image = 1
     
     def addPaths(self, pathlist):
-        self.addData(Paragraph(t(self.language, "print_preview_occurences")+":", self.bp))
-        p = ' '
-        for path in pathlist:
-
-            for item in path:
-                p += '<link href="http://'+self.host+'/node?id='+item.id+'&amp;dir='+item.id+'\">'+item.getName()+ '</link>'
-
-                if path.index(item)<len(path)-1:
-                    p += ' > '
-            p = p.replace('&', '&amp;')
-            self.addData(Paragraph(p, self.bv, bulletText=u'\267'.encode("utf-8")))
+    
+        if len(pathlist)>0:
+            self.addData(Paragraph(t(self.language, "print_preview_occurences")+":", self.bp))
             p = ' '
+            for path in pathlist:
 
-def getPrintView(lang, imagepath, metadata, paths, style=1):
+                for item in path:
+                    p += '<link href="http://'+self.host+'/node?id='+item.id+'&amp;dir='+item.id+'\">'+item.getName()+ '</link>'
+
+                    if path.index(item)<len(path)-1:
+                        p += ' > '
+                p = p.replace('&', '&amp;')
+                self.addData(Paragraph(p, self.bv, bulletText=u'\267'.encode("utf-8")))
+                p = ' '
+            
+    def addChildren(self, children):
+        self.addData(FrameBreak())
+        self.addData(Paragraph(t(self.language, "print_view_children")+":", self.bp))
+        
+        # count headers
+        _head = 0
+        for c in children:
+            if c[0][3]=="header":
+                _head += 1
+
+        items = []
+        _c = 1
+        for c in children:
+            if c[0][3]=="header":
+                if len(items)>0:
+                    items.sort(lambda x, y: cmp(x[0].lower(),y[0].lower()))
+                for item in items:
+                    self.addData(Paragraph("["+str(_c)+"/"+str(len(children)-_head)+"]: "+"; ".join(item), self.bv))
+                    _c+=1
+
+                self.addData(Paragraph(c[0][1], self.bf))
+                items = []
+                continue
+            values = []
+            for item in c:
+                values.append(item[1])    
+            items.append(values)
+
+        # print last items   
+        if len(items)>0:
+            items.sort(lambda x, y: cmp(x[0].lower(),y[0].lower()))
+        for item in items:
+            self.addData(Paragraph("["+str(_c)+"/"+str(len(children)-_head)+"]: "+", ".join(item), self.bv))
+            _c+=1    
+            
+def getPrintView(lang, imagepath, metadata, paths, style=1, children=[]):
     """ returns pdf content of given item """
     if not reportlab:
         return None
+
     pv = PrintPreview(lang, config.get("host.name"))
     pv.setHeader()
     if imagepath:
         pv.addImage(imagepath)
     pv.addData(FrameBreak())
     pv.addMetaData(metadata)
+
     pv.addPaths(paths)
+    if len(children)>0:
+        pv.addChildren(children)
     return pv.build(style)

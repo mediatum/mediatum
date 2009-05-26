@@ -160,56 +160,81 @@ def show_printview(req):
         nodeid = int(req.path[1:].split("/")[1])
     except ValueError:
         raise ValueError("Invalid Printview URL: "+req.path)
-
-    node = getNode(nodeid) 
     
-    access = AccessData(req)
-    if not access.hasAccess(node,"read"):
-        req.write(t(req, "permission_denied"))
-        return
-
-    style = int(req.params.get("style",2))
-    
-    # nodetype
-    mtype = getMetaType(node.getSchema())
-    
-    mask = None
-    for m in mtype.getMasks():
-        if m.getMasktype()=="fullview":
-            mask = m
-        if m.getMasktype()=="printview":
-            mask = m
-            break
-            
-    if not mask:
-        mask = mtype.getMask("nodebig")
-
-    files = node.getFiles()
-    imagepath = None
-    for file in files:
-        if file.getType().startswith("presentati"):
-            imagepath = file.retrieveFile()
-
-    #children
-    children = []
-    if node.isContainer():
-        ret = []
-        getPrintChildren(req, node, ret)
-
-        for c in ret:
-            if not c.isContainer():  
-                c_mtype = getMetaType(c.getSchema())
+    # use objects from session
+    if nodeid=="0":
+        children = []
+        if "contentarea" in req.session:
+            try:
+                nodes = req.session["contentarea"].content.files
+            except:
+                c = req.session["contentarea"].content
+                nodes = c.resultlist[c.active].files
+            for n in nodes:
+                c_mtype = getMetaType(n.getSchema())
                 c_mask = c_mtype.getMask("printlist")
                 if not c_mask:
                     c_mask = c_mtype.getMask("nodesmall")
-                children.append(c_mask.getViewHTML([c], VIEW_DATA_ONLY+VIEW_HIDE_EMPTY))
-            else:
-                items = getPaths(c, AccessData(req))
-                p = []
-                for item in items[0]:
-                    p.append(u(item.getName()))
-                p.append(u(c.getName()))
-                children.append([(c.id, " > ".join(p[1:]), u(c.getName()), "header")])
+                _c = c_mask.getViewHTML([n], VIEW_DATA_ONLY+VIEW_HIDE_EMPTY)
+                if len(_c)>0:
+                    children.append(_c)
+    
+        req.reply_headers['Content-Type'] = "application/pdf"
+        req.write(printview.getPrintView(lang(req), None, [["", "", t(lang(req), "")]], [], 3, children))
 
-    req.reply_headers['Content-Type'] = "application/pdf"
-    req.write(printview.getPrintView(lang(req), imagepath, mask.getViewHTML([node], VIEW_DATA_ONLY+VIEW_HIDE_EMPTY), getPaths(node, AccessData(req)), style, children))
+    else:    
+        node = getNode(nodeid) 
+        access = AccessData(req)
+        if not access.hasAccess(node,"read"):
+            req.write(t(req, "permission_denied"))
+            return
+
+        style = int(req.params.get("style",2))
+        
+        # nodetype
+        mtype = getMetaType(node.getSchema())
+        
+        mask = None
+        for m in mtype.getMasks():
+            if m.getMasktype()=="fullview":
+                mask = m
+            if m.getMasktype()=="printview":
+                mask = m
+                break
+                
+        if not mask:
+            mask = mtype.getMask("nodebig")
+
+        files = node.getFiles()
+        imagepath = None
+        for file in files:
+            if file.getType().startswith("presentati"):
+                imagepath = file.retrieveFile()
+
+        #children
+        children = []
+        if node.isContainer():
+            ret = []
+            getPrintChildren(req, node, ret)
+
+            for c in ret:
+                if not c.isContainer():  
+                    #items
+                    c_mtype = getMetaType(c.getSchema())
+                    c_mask = c_mtype.getMask("printlist")
+                    if not c_mask:
+                        c_mask = c_mtype.getMask("nodesmall")
+                    _c = c_mask.getViewHTML([c], VIEW_DATA_ONLY+VIEW_HIDE_EMPTY)
+                    if len(_c)>0:
+                        children.append(_c)
+                else:
+                    # header
+                    items = getPaths(c, AccessData(req))
+                    p = []
+                    for item in items[0]:
+                        p.append(u(item.getName()))
+                    p.append(u(c.getName()))
+                    children.append([(c.id, " > ".join(p[1:]), u(c.getName()), "header")])
+
+        req.reply_headers['Content-Type'] = "application/pdf"
+        req.write(printview.getPrintView(lang(req), imagepath, mask.getViewHTML([node], VIEW_DATA_ONLY+VIEW_HIDE_EMPTY), getPaths(node, AccessData(req)), style, children))

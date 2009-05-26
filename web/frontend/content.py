@@ -466,8 +466,13 @@ class ContentArea(Content):
             path = ""
         else:
             items = req.params.get("itemsperpage")
-            id = self.content.node.id
-            path = req.getTAL("web/frontend/content_nav.html", {"params": self.params, "path": self.getPath(), "styles":styles, "logo":self.collectionlogo, "searchmode":req.params.get("searchmode",""), "items":items, "id":id}, macro="path")
+            try:
+                id = self.content.node.id
+                node = self.content.node
+            except:
+                id=0
+                node=None
+            path = req.getTAL("web/frontend/content_nav.html", {"params": self.params, "path": self.getPath(), "styles":styles, "logo":self.collectionlogo, "searchmode":req.params.get("searchmode",""), "items":items, "id":id, "node":node}, macro="path")
 
         return path + '\n<!-- CONTENT START -->\n<div id="nodes">' +  self.content.html(req) + '</div>\n<!-- CONTENT END -->\n'
 

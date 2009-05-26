@@ -2662,6 +2662,8 @@ msgstr "mediaTUM object"
 msgid "print_view_children"
 msgstr "entries"
 
+msgid "print_view_list"
+msgstr "list of mediatum objects"
 
 msgid "print_view_page"
 msgstr "page"

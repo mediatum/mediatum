@@ -160,10 +160,11 @@ def FieldDetail(req, pid, id, err=0):
     v["actpage"] = req.params.get("actpage")
 
     v["icons"] = {"externer Link":"/img/extlink.png", "Email":"/img/email.png"}
-    v["valuelist"] = ("", "", "")
+    v["url_targets"] = {"selbes Fenster":"same", "neues Fenster":"_blank"}
+    v["valuelist"] = ("", "", "", "")
     if field.getFieldtype()=="url":
         v["valuelist"] = field.getValueList()
-        while len(v["valuelist"])!=3:
+        while len(v["valuelist"])!=4:
             v["valuelist"].append("")
     return req.getTAL("web/admin/modules/metatype_field.html", v, macro="modify_field")
     

@@ -256,6 +256,14 @@
                                     <tal:block i18n:translate="admin_metafield_preview">TEXT</tal:block>: <img src="/img/emtyDot1Pix.gif" id="image_preview"/>
                                 </td>
                             </tr>
+                            <tr>
+                                <td><tal:block i18n:translate="admin_metafield_urltarget">TEXT</tal:block>:</td>
+                                <td>
+                                    <select name="url_value">
+                                        <option tal:repeat="index python:list(url_targets)" tal:attributes="value python:url_targets[index]; selected python:{'False':None,'True':'selected'}[str(valuelist[3]==url_targets[index])]" tal:content="index" value="_value_"/>  
+                                    </select>
+                                </td>
+                            </tr>
                         </table>
                     </div>
 

@@ -143,7 +143,10 @@ class AccessData:
     def hasWriteAccess(self,node,fnode=None):
         
         # check for explicit restriction with "NOT" rule
-        rule = ""
+        try:
+            rule = getRule(node.getAccess("write")).getRuleStr() + " "
+        except:
+            rule = ""
         for n in node.getParents():
             try:
                 rule += getRule(n.getAccess("write")).getRuleStr() + " "

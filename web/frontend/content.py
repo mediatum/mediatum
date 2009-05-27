@@ -318,7 +318,7 @@ def getPaths(node, access):
     if p:
         for node in p:
             if access.hasReadAccess(node):
-                if node.type in ("directory", "home", "collection") or node.type.startswith("directory"):
+                if node.type in ("directory", "home", "collection"):# or node.type.startswith("directory"):
                     paths.append(node)
                 if node is tree.getRoot("collections") or node.type=="root":
                     paths.reverse()
@@ -383,7 +383,7 @@ def mkContentNode(req):
         ids = []
         nodes = access.filter(node.getAllChildren())
         for c in nodes:
-            if c.type != "directory" and c.type != "collection" and not c.type.startswith("directory"):
+            if c.type != "directory" and c.type != "collection":# and not c.type.startswith("directory"):
                 ids += [c.id]
         c = ContentList(tree.NodeList(ids),getCollection(node))
         c.feedback(req)
@@ -480,9 +480,16 @@ class CollectionLogo(Content):
     def __init__(self,collection):
         self.collection = collection
         self.path = None
+        logoname = collection.get("system.logo")
         for f in self.collection.getFiles():
-            if f.getType()=="image":
-                self.path = '/file/'+str(self.collection.id)+'/'+f.getName()
+            if logoname=="":
+                if f.getType()=="image":
+                    self.path = '/file/'+str(self.collection.id)+'/'+f.getName()
+                    break
+            else:
+                if f.getName()==logoname:
+                    self.path = '/file/'+str(self.collection.id)+'/'+logoname
+                    break   
 
     def getPath(self):
         return self.path

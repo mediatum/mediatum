@@ -210,10 +210,12 @@ class NavTreeEntry:
         return "padding-left: %dpx" % (self.indent*6)
     def getText(self,accessdata):
         try:
-            if self.node.type == "directory":
+            #if self.node.type.startswith("directory"):
+            if self.node.getContentType()=="directory":
                 count = 0
                 for n_t,num in self.node.getAllOccurences(accessdata).items():
                     if n_t.getContentType() != "directory":
+                    #if not n_t.getContentType().startswith("directory"):
                         count += num
                 if count==0:
                     return self.node.getLabel()

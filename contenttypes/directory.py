@@ -101,9 +101,15 @@ class Directory(default.Default):
         return {}
 
     def getLogoPath(node):
+        logoname = collection.get("system.logo")
+        
         for file in node.getFiles():
-            if file.getType()=='image':
-                return "/file/"+str(node.id)+"/"+file.getName()
+            if logoname=="":
+                if file.getType()=='image':
+                    return "/file/"+str(node.id)+"/"+file.getName()
+            else:
+                if file.getName()==logoname:
+                    return "/file/"+str(node.id)+"/"+file.getName()
         return ""
 
     def metaFields(node, lang=None):

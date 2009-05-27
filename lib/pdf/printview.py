@@ -99,17 +99,21 @@ class PrintPreview:
                 return [frameHeader, frameImage, frameMeta]
             else:
                 return [frameFollow]
+        elif config==3:
+            # liststyle for e.g. searchresults
+            frameMeta = Frame(1*cm, 2.5*cm, 19*cm, 23*cm,leftPadding=10, rightPadding=0, id='normal')
+            if page==1:
+                return [frameHeader, frameMeta]
+            else:
+                return [frameFollow]
         else:
             frameImage = Frame(10.5*cm, 25.5*cm-self.image_h-1*cm, 9.5*cm, self.image_h+1*cm, leftPadding=0, rightPadding=0, id='normal')
             frameImage_hide = Frame(20.0*cm, 25.5*cm-self.image_h-1*cm, 0.01*cm, self.image_h+1*cm, leftPadding=0, rightPadding=0, id='normal')
             
             frameMeta = Frame(1*cm, 25.5*cm-self.image_h-1*cm, 9.5*cm, self.image_h+1*cm, leftPadding=10, topPadding=12, rightPadding=0, id='normal')
             frameMeta_hide = Frame(1*cm, 25.5*cm-self.image_h-1*cm, 19.0*cm, self.image_h+1*cm, leftPadding=10, topPadding=12, rightPadding=0, id='normal')
-            
             frameMeta2 = Frame(1*cm, 2.5*cm, 19*cm, 23*cm-self.image_h-1*cm, leftPadding=10, rightPadding=0, id='normal')
-            
-            
-            
+
             if page==1:
                 if self.image==1:
                     return [frameHeader, frameImage, frameMeta, frameMeta2]
@@ -157,6 +161,8 @@ class PrintPreview:
 
 
     def addImage(self, path):
+        if not path:
+            return
         if not os.path.isfile(path):
             path = config.basedir+"/web/img/questionmark.png"
         im = Image.open(path)
@@ -167,7 +173,6 @@ class PrintPreview:
         self.image = 1
     
     def addPaths(self, pathlist):
-    
         if len(pathlist)>0:
             self.addData(Paragraph(t(self.language, "print_preview_occurences")+":", self.bp))
             p = ' '
@@ -182,20 +187,18 @@ class PrintPreview:
                 p = ' '
             
     def addChildren(self, children):
-        self.addData(FrameBreak())
         self.addData(Paragraph(t(self.language, "print_view_children")+":", self.bp))
-        
-        #path = []
+
         # count headers
         _head = 0
         for c in children:
-            if c[0][3]=="header":
+            if len(c)>0 and c[0][3]=="header":
                 _head += 1
 
         items = []
         _c = 1
         for c in children:
-            if c[0][3]=="header":
+            if len(c)>0 and c[0][3]=="header":
                 if len(items)>0:
                     items.sort(lambda x, y: cmp(x[0].lower(),y[0].lower()))
                 for item in items:
@@ -203,6 +206,7 @@ class PrintPreview:
                     _c+=1
                 self.addData(Paragraph(u(c[0][1]).replace('&', '&amp;'), self.bf))
                 items = []
+               
                 continue
             values = []
             for item in c:
@@ -215,20 +219,30 @@ class PrintPreview:
         for item in items:
             self.addData(Paragraph("["+str(_c)+"/"+str(len(children)-_head)+"]: "+", ".join(item), self.bv))
             _c+=1    
+
             
-def getPrintView(lang, imagepath, metadata, paths, style=1, children=[]):
+def getPrintView(lang, imagepath, metadata, paths, style=1, children=[]): # style=1: object, style=3: liststyle
     """ returns pdf content of given item """
     if not reportlab:
         return None
 
     pv = PrintPreview(lang, config.get("host.name"))
     pv.setHeader()
-    if imagepath:
+    
+    if style==1 or style==2:
+        # single object (with children)
         pv.addImage(imagepath)
-    pv.addData(FrameBreak())
-    pv.addMetaData(metadata)
+        pv.addData(FrameBreak())
+        pv.addMetaData(metadata)
 
-    pv.addPaths(paths)
-    if len(children)>0:
+        pv.addPaths(paths)
+        if len(children)>0:
+            pv.addData(FrameBreak())
+        
         pv.addChildren(children)
+    elif style==3:
+        # objectlist
+        pv.addData(Paragraph(t(pv.language, "print_view_list"), pv.bp))
+        pv.addChildren(children)
+            
     return pv.build(style)

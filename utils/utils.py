@@ -205,7 +205,8 @@ def getAllCollections():
     return l
 
 def isDirectory(node):
-    if node.type.startswith("directory"):
+    #if node.type.startswith("directory"):
+    if node.getContentType()=="directory" or node.isContainer():
         return 1
     else:
         return 0

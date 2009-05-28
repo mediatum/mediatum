@@ -22,14 +22,16 @@ import core.tree as tree
 import os
 import core.config as config
 from utils.utils import get_filesize, join_paths, clean_path, getMimeType
+from core.translation import t
 import random
 import zipfile
 import core.acl as acl
+from core import archivemanager
 from core.acl import AccessData
 from core.tree import getNode
 
 
-IMGNAME = re.compile("/?(attachment|doc|images|thumbs|thumb2|file|download)/([^/]*)(/(.*))?$")
+IMGNAME = re.compile("/?(attachment|doc|images|thumbs|thumb2|file|download|archive)/([^/]*)(/(.*))?$")
 
 def incUsage(node):
     nr = int(node.get("hit_statistic.file") or "0")
@@ -139,10 +141,14 @@ def send_file(req, download=0):
                 incUsage(n)
                 file = f
                 break
+                
+    if file and not os.path.isfile(file.retrieveFile()) and n.get("archive_type")!="":  
+        archivemanager.getManager(n.get("archive_type")).getArchivedFile(id)
+                
     if not file:
         print "Document",req.path,"not found"
         return 404
-    
+
     video = file.type == "video"
 
     if((download or file.getSize() > 16*1048576) and not video):
@@ -203,3 +209,25 @@ def send_attfile(req):
         return req.sendFile(path, "application/x-download")
     else:
         return req.sendFile(path, mime)
+
+        
+def get_archived(req):
+    id, filename = splitpath(req.path)
+    print "get file from archive:", filename, id
+    n = tree.getNode(id)
+    if not archivemanager:
+        req.write("-no archive module loaded-")
+        return
+    am = archivemanager.getManager(n.get("archive_type"))
+    am.getArchivedFile(n.id)
+    req.write('<script>alert("file delivered")</script>\n<a href="/file/'+str(id)+'/'+filename+'">'+t(req, "image_high_res_title")+'</a>')
+    
+    
+def get_root(req):
+    filename = config.basedir+"/web/root"+ req.path
+    print filename
+    if os.path.isfile(filename):
+        return req.sendFile(filename, "text/plain")
+    else:
+        return 404
+        

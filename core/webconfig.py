@@ -42,6 +42,8 @@ def initContexts():
     file.addHandler("send_file_as_download").addPattern("/download/.*")
     file.addHandler("send_attachment").addPattern("/attachment/.*")
     file.addHandler("send_attfile").addPattern("/attfile/.*")
+    file.addHandler("get_archived").addPattern("/archive/.*")
+    file.addHandler("get_root").addPattern(".*") # root directory added /web/root
 
     file = context.addFile("web/frontend/zoom.py")
     file.addHandler("send_imageproperties_xml").addPattern("/tile/[0-9]*/ImageProperties.xml")
@@ -120,8 +122,9 @@ def initContexts():
     # === static files ===
     athana.addFileStore("/module/", "lib/FCKeditor/files.zip")
     athana.addFileStore("/css/", "web/css/")
+    athana.addFileStore("/xml/", "web/xml/")
     athana.addFileStore("/img/", ["web/img/", "img","web/admin/img/", "web/edit/img/"])
-    athana.addFileStore("/js/", ["web/js/", "js"])
+    athana.addFileStore("/js/", ["web/js/", "js"]) 
 
     #athana.addContext("/flush", ".").addFile("core/webconfig.py").addHandler("flush").addPattern("/py")
     

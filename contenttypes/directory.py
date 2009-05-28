@@ -101,7 +101,7 @@ class Directory(default.Default):
         return {}
 
     def getLogoPath(node):
-        logoname = collection.get("system.logo")
+        logoname = node.get("system.logo")
         
         for file in node.getFiles():
             if logoname=="":

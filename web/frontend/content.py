@@ -460,6 +460,7 @@ class ContentArea(Content):
         
     def html(self,req):
         styles = []
+        nodeprint = "1" # show print icon
         if hasattr(self.content,"in_list") and not (hasattr(self.content,"content") and self.content.content):
             styles = liststyles
         if "raw" in req.params:
@@ -469,10 +470,15 @@ class ContentArea(Content):
             try:
                 id = self.content.node.id
                 node = self.content.node
+                
+                if not node.getContentType() in ['collection', 'directory']:
+                    nodeprint = 0
+                else:
+                    if node.get("system.print")!="":
+                        nodeprint = node.get("system.print")
             except:
                 id=0
-                node=None
-            path = req.getTAL("web/frontend/content_nav.html", {"params": self.params, "path": self.getPath(), "styles":styles, "logo":self.collectionlogo, "searchmode":req.params.get("searchmode",""), "items":items, "id":id, "node":node}, macro="path")
+            path = req.getTAL("web/frontend/content_nav.html", {"params": self.params, "path": self.getPath(), "styles":styles, "logo":self.collectionlogo, "searchmode":req.params.get("searchmode",""), "items":items, "id":id, "nodeprint":nodeprint}, macro="path")
 
         return path + '\n<!-- CONTENT START -->\n<div id="nodes">' +  self.content.html(req) + '</div>\n<!-- CONTENT END -->\n'
 

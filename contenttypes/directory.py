@@ -171,7 +171,7 @@ class Directory(default.Default):
             menu.append(submenu)
             submenu = None
             
-            if node.getContentType()=="directory":
+            if node.getContentType().startswith("directory"):
                 submenu = Menu("tab_metadata", "description","#", "../") # new
                 submenu.addItem("tab_metadata_dir","tab_metadata")
             if node.getContentType() in ("collection", "collections"):

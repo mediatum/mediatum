@@ -184,6 +184,8 @@ def show_printview(req):
 
     else:    
         node = getNode(nodeid) 
+        if node.get("system.print")=="0":
+            return 404
         access = AccessData(req)
         if not access.hasAccess(node,"read"):
             req.write(t(req, "permission_denied"))

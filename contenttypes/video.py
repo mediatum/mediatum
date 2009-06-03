@@ -26,7 +26,7 @@ import Image
 
 from utils.utils import splitfilename, splitpath, Menu
 from core.tree import Node,FileNode
-from lib.flv.parse import getFLVSize
+from lib.flv.parse import getFLVSize, FLVReader
 from contenttypes.image import makeThumbNail,makePresentationFormat
 import default
 
@@ -53,12 +53,27 @@ class Video(default.Default):
     
     def event_files_changed(node):
         for f in node.getFiles():
+            if f.type == "thumb" or f.type == "presentation":
+                node.removeFile(f)
+        
+        
+        for f in node.getFiles():
             if f.type == "original" or f.type == "video":
                 if f.mimetype == "video/x-flv":
-                    width,height = getFLVSize(f.retrieveFile())
-                    node.set("vid-width", width)
-                    node.set("vid-height", height)
+                    #width,height = getFLVSize(f.retrieveFile())
+                    #node.set("vid-width", width)
+                    #node.set("vid-height", height)
 
+                    meta = FLVReader(f.retrieveFile())
+                    for key in meta:
+                        try:
+                            node.set(key, int(meta[key]))
+                        except:
+                            node.set(key, meta[key])
+                            
+                    node.set("vid-width", node.get("width"))
+                    node.set("vid-height", node.get("height"))
+                    
                     tempname = os.path.join(config.get("paths.tempdir"),"tmp.gif")
                     try:
                         os.unlink(tempname);
@@ -66,8 +81,10 @@ class Video(default.Default):
                         pass
 
                     try:
-                        cmd = "ffmpeg -vframes 1 -i "+f.retrieveFile()+" -pix_fmt rgb24 "+tempname
-                        print cmd
+                        if node.get("system.thumbframe")!="":
+                            cmd = "ffmpeg -vframes 1 -ss "+node.get("system.thumbframe")+" -i "+f.retrieveFile()+" -pix_fmt rgb24 "+tempname
+                        else:
+                            cmd = "ffmpeg -vframes 1 -i "+f.retrieveFile()+" -pix_fmt rgb24 "+tempname
                         ret = os.system(cmd)
                         if ret & 0xff00:
                             return
@@ -93,8 +110,18 @@ class Video(default.Default):
     """ list with technical attributes for type video """
     def getTechnAttributes(node):
         return {"Standard":{"creationtime":"Erstelldatum",
-                "creator":"Ersteller"}}
-
+                             "creator":"Ersteller"},
+                "FLV":{"audiodatarate": "Audio Datenrate",
+                        "videodatarate": "Video Datenrate",
+                        "framerate": "Frame Rate",
+                        "height": "Videoh\xc3\xb6he",
+                        "width": "Breite",
+                        "audiocodecid": "Audio Codec",
+                        "duration": "Dauer",
+                        "canSeekToEnd": "Suchbar",
+                        "videocodecid": "Video Codec",
+                        "audiodelay": "Audioversatz"}
+                }
 
     """ popup window for actual nodetype """
     def popup_fullsize(node, req):

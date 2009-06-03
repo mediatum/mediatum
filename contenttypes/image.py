@@ -38,13 +38,15 @@ from web.frontend import zoom
 
 """ make thumbnail (jpeg 128x128) """
 def makeThumbNail(image, thumb):
-    import Image,ImageDraw
+    import Image,ImageDraw, ImageChops
     if isnewer(thumb,image):
         return
     print "Creating thumbnail for image ",image
     pic = Image.open(image)
     pic.load()
     pic = pic.convert("RGB")
+    #if pic.mode=="CMYK":
+    #    pic = ImageChops.invert(pic)
 
     width = pic.size[0]
     height = pic.size[1]
@@ -55,12 +57,21 @@ def makeThumbNail(image, thumb):
         newheight = 128
         newwidth = width*newheight/height
     pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
-    im = Image.new("RGB", (128, 128), (255, 255, 255))
+    if pic.mode=="CMYK":
+        im = Image.new(pic.mode, (128, 128))
+        #pic = ImageChops.invert(pic)
+    else:
+        im = Image.new(pic.mode, (128, 128), (255, 255, 255))
+    
     x = (128-newwidth)/2
     y = (128-newheight)/2
     im.paste( pic, (x,y,x+newwidth,y+newheight))
+    
     draw = ImageDraw.ImageDraw(im)
     draw.line([(0,0),(127,0),(127,127),(0,127),(0,0)], (128,128,128))
+    
+    im = im.convert("RGB")
+    
     im.save(thumb, "jpeg")
 
 """ make presentation format (png) """
@@ -138,8 +149,8 @@ def dozoom(node):
     if node.get("width") and node.get("height") and \
        (int(node.get("width"))>1000 or int(node.get("height"))>1000) and \
        os.path.isfile(os.path.join(config.basedir,"web/img/zoom.swf")):
-            if str(node.id) == "629716":
-                return 1
+           if str(node.id) == "629716":
+               return 1
     return 0
 
 """ image class for internal image-type """
@@ -160,7 +171,7 @@ class Image(default.Default):
         if access.hasAccess(node,"data"):
             for f in node.getFiles():
                 if f.getType()=="original":
-                    if node.get("system.origname")=="1":
+                    if node.get('system.origname')=="1":
                         tif = node.getName()
                     else:
                         tif = f.getName()
@@ -172,6 +183,18 @@ class Image(default.Default):
         obj['zoom'] = False 
         obj['tileurl'] = "/tile/"+node.id+"/"
         obj['canseeoriginal'] = access.hasAccess(node,"data")
+        obj['originallink'] = "getArchivedItem('"+str(node.id)+"/"+tif+"')"
+        
+        if "style" in req.params.keys():
+            req.session["full_style"] = req.params.get("style", "full_standard")
+        elif "full_style" not in req.session.keys():
+            if "contentarea" in req.session.keys():
+                col = req.session["contentarea"].collection
+                req.session["full_style"] = col.get("style_full")
+            else:
+                req.session["full_style"] = "full_standard"
+       
+        obj['style'] = req.session["full_style"]
         return obj
     
     """ format big view with standard template """
@@ -194,7 +217,6 @@ class Image(default.Default):
     """ postprocess method for object type 'image'. called after object creation """
     def event_files_changed(node):
         print "Postprocessing node",node.id
-        print node.type
         if "image" in node.type:
             orig = 0
             thumb = 0
@@ -306,9 +328,6 @@ class Image(default.Default):
                 for file in files:
                     if file.type=="original":
                         tags=IPTC.getIPTCValues(file.retrieveFile())
-                        print "ipct:"
-                        print tags
-                        
                         tags.keys().sort()
                         for k in tags.keys():
                             if tags[k]!="":
@@ -412,6 +431,7 @@ class Image(default.Default):
             submenu = Menu("tab_metadata", "description","#", "../") # new
             submenu.addItem("tab_metadata","tab_metadata")
             submenu.addItem("tab_files_obj","tab_files")
+            submenu.addItem("tab_admin","tab_admin")
             submenu.addItem("tab_lza", "tab_lza")
             menu.append(submenu)
             

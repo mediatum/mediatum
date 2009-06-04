@@ -43,11 +43,13 @@ def makeThumbNail(image, thumb):
         return
     print "Creating thumbnail for image ",image
     pic = Image.open(image)
-    pic.load()
 
     if pic.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")):
-        os.system("convert "+image+" -depth 8 -colorspace rgb "+image)
-        pic = Image.open(image)
+        tmpjpg = "/tmp/img"+str(random.random())+".jpg"
+        os.system("convert "+image+" -depth 8 -colorspace rgb "+tmpjpg)
+        pic = Image.open(tmpjpg)
+    
+    pic.load()
 
     width = pic.size[0]
     height = pic.size[1]

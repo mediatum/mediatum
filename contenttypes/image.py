@@ -44,9 +44,10 @@ def makeThumbNail(image, thumb):
     print "Creating thumbnail for image ",image
     pic = Image.open(image)
     pic.load()
-    pic = pic.convert("RGB")
-    #if pic.mode=="CMYK":
-    #    pic = ImageChops.invert(pic)
+
+    if pic.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")):
+        os.system("convert "+image+" -depth 8 -colorspace rgb "+image)
+        pic = Image.open(image)
 
     width = pic.size[0]
     height = pic.size[1]
@@ -57,11 +58,7 @@ def makeThumbNail(image, thumb):
         newheight = 128
         newwidth = width*newheight/height
     pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
-    if pic.mode=="CMYK":
-        im = Image.new(pic.mode, (128, 128))
-        #pic = ImageChops.invert(pic)
-    else:
-        im = Image.new(pic.mode, (128, 128), (255, 255, 255))
+    im = Image.new(pic.mode, (128, 128), (255, 255, 255))
     
     x = (128-newwidth)/2
     y = (128-newheight)/2

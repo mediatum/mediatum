@@ -239,4 +239,10 @@ def show_printview(req):
                     children.append([(c.id, " > ".join(p[1:]), u(c.getName()), "header")])
 
         req.reply_headers['Content-Type'] = "application/pdf"
-        req.write(printview.getPrintView(lang(req), imagepath, mask.getViewHTML([node], VIEW_DATA_ONLY+VIEW_HIDE_EMPTY), getPaths(node, AccessData(req)), style, children))
+        
+        if not mask:
+            metadata = [['nodename',node.getName(),'Name', 'text']]
+        else:
+            metadata = mask.getViewHTML([node], VIEW_DATA_ONLY+VIEW_HIDE_EMPTY)
+        
+        req.write(printview.getPrintView(lang(req), imagepath, metadata, getPaths(node, AccessData(req)), style, children))

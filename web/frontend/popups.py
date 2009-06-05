@@ -197,15 +197,24 @@ def show_printview(req):
         mtype = getMetaType(node.getSchema())
         
         mask = None
-        for m in mtype.getMasks():
-            if m.getMasktype()=="fullview":
-                mask = m
-            if m.getMasktype()=="printview":
-                mask = m
-                break
+        metadata = None
+        if mtype:
+            for m in mtype.getMasks():
+                if m.getMasktype()=="fullview":
+                    mask = m
+                if m.getMasktype()=="printview":
+                    mask = m
+                    break
+                    
+            if not mask:
+                mask = mtype.getMask("nodebig")
+ 
+            if mask:
+                metadata = mask.getViewHTML([node], VIEW_DATA_ONLY+VIEW_HIDE_EMPTY)
                 
-        if not mask:
-            mask = mtype.getMask("nodebig")
+        if not metadata:
+            metadata = [['nodename',node.getName(),'Name', 'text']]
+
 
         files = node.getFiles()
         imagepath = None
@@ -239,10 +248,5 @@ def show_printview(req):
                     children.append([(c.id, " > ".join(p[1:]), u(c.getName()), "header")])
 
         req.reply_headers['Content-Type'] = "application/pdf"
-        
-        if not mask:
-            metadata = [['nodename',node.getName(),'Name', 'text']]
-        else:
-            metadata = mask.getViewHTML([node], VIEW_DATA_ONLY+VIEW_HIDE_EMPTY)
-        
+
         req.write(printview.getPrintView(lang(req), imagepath, metadata, getPaths(node, AccessData(req)), style, children))

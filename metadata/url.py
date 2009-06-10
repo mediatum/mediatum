@@ -100,9 +100,9 @@ class m_url(Metatype):
 
     def getMaskEditorHTML(self, value="", metadatatype=None, language=None):
         value = value.split("\r\n")
-        while len(value)<3:
+        while len(value)<4:
             value.append("")
-        return athana.getTAL("metadata/url.html", {"value":value, "icons":{"externer Link":"/img/extlink.png", "Email":"/img/email.png"}}, macro="maskeditor", language=language)
+        return athana.getTAL("metadata/url.html", {"value":value, "icons":{"externer Link":"/img/extlink.png", "Email":"/img/email.png"},"url_targets":{"selbes Fenster":"same", "neues Fenster":"_blank"}}, macro="maskeditor", language=language)
 
     def getName(self):
         return "fieldtype_url"

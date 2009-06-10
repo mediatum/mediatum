@@ -1155,6 +1155,9 @@ msgstr "Link"
 msgid "admin_metafield_urltext"
 msgstr "Angezeigter Text"
 
+msgid "admin_metafield_urltarget"
+msgstr "Linkziel"
+
 msgid "admin_metafield_icon"
 msgstr "Icon"
 

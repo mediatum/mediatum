@@ -1149,6 +1149,9 @@ msgstr "Link"
 msgid "admin_metafield_urltext"
 msgstr "Link text"
 
+msgid "admin_metafield_urltarget"
+msgstr "link target"
+
 msgid "admin_metafield_icon"
 msgstr "Icon"
 

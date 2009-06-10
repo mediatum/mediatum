@@ -41,7 +41,7 @@ from metatype_mask import showMaskList, MaskDetails
 
 """ checks a string whether it only contains the alphanumeric chars as well as "-" "." """
 def checkString(string):
-    result = re.match("([\w\-]+)", string)
+    result = re.match("([\w\-\.]+)", string)
     if result != None and result.group(0) == string:
        return True
     return False
@@ -265,7 +265,7 @@ def view(req):
             else:
                 mtypes = filter(lambda x: num.match(x.getLongName()), mtypes)
         elif actfilter=="else" or actfilter==t(lang(req),"admin_filter_else"):
-            all = re.compile(r'([a-z]|[A-Z]|[0-9])')
+            all = re.compile(r'([a-z]|[A-Z]|[0-9]|\.)')
             if req.params.get("filtertype","")=="id":
                 mtypes = filter(lambda x: not all.match(x.getName()), mtypes)
             else:

@@ -48,7 +48,7 @@ def showDetailList(req, id):
                 metafields = filter(lambda x: num.match(x.getLabel()), metafields)
             
         elif actfilter=="else" or actfilter==t(lang(req),"admin_filter_else"):
-            all = re.compile(r'([a-z]|[A-Z]|[0-9])')
+            all = re.compile(r'([a-z]|[A-Z]|[0-9]|\.)')
             if req.params.get("filtertype","")=="name":
                 metafields = filter(lambda x: not all.match(x.getName()), metafields)
             else:

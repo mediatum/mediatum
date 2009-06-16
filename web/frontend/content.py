@@ -318,7 +318,7 @@ def getPaths(node, access):
     if p:
         for node in p:
             if access.hasReadAccess(node):
-                if node.type in ("directory", "home", "collection"):# or node.type.startswith("directory"):
+                if node.type in ("directory", "home", "collection") or node.type.startswith("directory"):
                     paths.append(node)
                 if node is tree.getRoot("collections") or node.type=="root":
                     paths.reverse()
@@ -485,17 +485,10 @@ class ContentArea(Content):
 class CollectionLogo(Content):
     def __init__(self,collection):
         self.collection = collection
-        self.path = None
-        logoname = collection.get("system.logo")
-        for f in self.collection.getFiles():
-            if logoname=="":
-                if f.getType()=="image":
-                    self.path = '/file/'+str(self.collection.id)+'/'+f.getName()
-                    break
-            else:
-                if f.getName()==logoname:
-                    self.path = '/file/'+str(self.collection.id)+'/'+logoname
-                    break   
+        self.path = collection.getLogoPath()
+
+        if self.path!="":
+            self.path = '/file/'+str(self.collection.id)+'/'+self.path
 
     def getPath(self):
         return self.path

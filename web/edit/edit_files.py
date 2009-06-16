@@ -73,6 +73,11 @@ def edit_files(req, ids):
                         node.removeFile(nfile)
 
                 logging.getLogger('usertracing').info(user.name + " upload "+file.filename+" ("+file.tempname+")")
+                
+                # set filename=nodename
+                if not only_add or len(node.getFiles())==0:
+                    node.setName(file.filename)
+                    
                 file = importFile(file.filename,file.tempname)
                 if only_add and mime:
                     file.type = "extra"

@@ -2689,7 +2689,16 @@ msgid "edit_logo_del_button"
 msgstr "Logo löschen"
 
 msgid "edit_logo_no_logo"
-msgstr "-kein Logo vorhanden-"
+msgstr "kein Logo"
+
+msgid "edit_logo_zoom"
+msgstr "(Vergrößerung beim Darüberfahren)"
+
+msgid "edit_logo_addfile"
+msgstr "Datei hinzufügen:"
+
+msgid "edit_logo_selecttitle"
+msgstr "als Logo auswählen"
 
 msgid "edit_logo_link_label"
 msgstr "Link hinter Logo: "

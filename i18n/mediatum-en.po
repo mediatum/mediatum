@@ -2693,7 +2693,16 @@ msgid "edit_logo_del_button"
 msgstr "Delete Logo"
 
 msgid "edit_logo_no_logo"
-msgstr "-no Logo defined-"
+msgstr "no Logo"
+
+msgid "edit_logo_zoom"
+msgstr "(mouseover for zoom)"
+
+msgid "edit_logo_addfile"
+msgstr "Upload file:"
+
+msgid "edit_logo_selecttitle"
+msgstr "select as logo"
 
 msgid "edit_logo_link_label"
 msgstr "Link behind Logo: "

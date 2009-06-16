@@ -35,7 +35,10 @@ class Default(tree.Node):
         mask = node.getMask("nodesmall")
         if mask:
             for field in mask.getViewHTML([node], VIEW_DATA_ONLY):
-                value = field[1]
+                if len(field)==2:
+                    value = field[1]
+                else:
+                    value = ""
                 if words!=None:
                     value = highlight(value, words, '<font class="hilite">', "</font>")
 

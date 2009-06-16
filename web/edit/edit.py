@@ -458,14 +458,12 @@ def action(req):
                 else:
                     print "No write access to",mysrc.id,"!"
             elif action == "move":
-                print mysrc.id,'==',id,'==>',dest.id
                 if dest != mysrc and \
                    access.hasWriteAccess(mysrc) and \
                    access.hasWriteAccess(dest) and \
                    access.hasWriteAccess(obj) and \
                    isDirectory(dest):
                     if not nodeIsChildOfNode(dest,obj):
-                        print "Move",obj.id,"from",mysrc.id,"to",dest.id
                         mysrc.removeChild(obj)
                         dest.addChild(obj)
                     else:

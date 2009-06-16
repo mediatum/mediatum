@@ -24,15 +24,16 @@ import logging
 import core.acl as acl
 import core.users as users
 
-from utils.utils import getMimeType
+from utils.utils import getMimeType, splitpath
 from utils.fileutils import importFile
 
 def edit_logo(req, ids):
+
     user = users.getUserFromRequest(req)
     if "logo" in users.getHideMenusForUser(user):
         req.writeTAL("web/edit/edit.html", {}, macro="access_error")
         return
-    v = {}
+
     node = tree.getNode(ids[0])
     access = acl.AccessData(req)
     
@@ -40,31 +41,29 @@ def edit_logo(req, ids):
         req.writeTAL("web/edit/edit.html", {}, macro="access_error")
         return
     
-    # save logo link
+    # save logo
     if "logo_save" in req.params.keys():
-        node.set('url', req.params.get("logo_link",""))
-    
-    # delete logo file
-    elif "logo_delete" in req.params.keys():
-        for f in node.getFiles():
-            if f.getType()=="image":
-                node.removeFile(f)
-                break
-    
+        # save url
+        if req.params.get("logo_link","")=="":
+            node.removeAttribute("url")
+        else:
+            node.set('url', req.params.get("logo_link"))
+ 
+        # save filename
+        if req.params.get("logo")=="nologo":
+            # remove logo from current node
+            node.removeAttribute("system.logo")
+
+        elif req.params.get("logo")!="":
+            node.set("system.logo", req.params.get("logo"))
+
     # add logo file
     elif "addfile" in req.params.keys():
         file = req.params.get("updatefile")
-        if file:
-            for f in node.getFiles():
-                if f.getType()=="image":
-                    node.removeFile(f)
-                    break
-                    
-            r = file.filename.lower()
+        if file:      
             mimetype = "application/x-download"
             type = "file"
-            
-            mimetype, type = getMimeType(r)
+            mimetype, type = getMimeType(file.filename.lower())
 
             if mimetype not in ("image/jpeg", "image/gif", "image/png"):
                 # wrong file type (jpeg, jpg, gif, png)
@@ -73,5 +72,9 @@ def edit_logo(req, ids):
             else:
                 file = importFile(file.filename,file.tempname)
                 node.addFile(file)
-                
-    req.writeTAL("web/edit/edit_logo.html", {"id":req.params.get("id","0"), "tab":req.params.get("tab", ""), "node":node}, macro="edit_logo")
+    logofiles = []
+    for f in node.getFiles():
+        if f.getType()=="image":
+            logofiles.append(splitpath(f.retrieveFile()))
+
+    req.writeTAL("web/edit/edit_logo.html", {"id":req.params.get("id","0"), "tab":req.params.get("tab", ""), "node":node, "logofiles":logofiles, "logo":node.getLogoPath()}, macro="edit_logo")

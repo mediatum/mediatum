@@ -1,14 +1,20 @@
 <tal:block metal:define-macro="edit_logo">
 
     <form tal:attributes="action python:'edit_content?id='+str(id)+'&tab='+tab" tal:define="files python:node.getFiles()" method="post" enctype="multipart/form-data" name="logo">
-        <p><b i18n:translate="edit_logo_logoheader">TEXT</b></p>
-
-        <p tal:condition="python:node.getLogoPath()==''" i18n:translate="edit_logo_no_logo"/>
-        <p tal:condition="python:node.getLogoPath()!=''">
-            <img tal:attributes="src python:node.getLogoPath()" />
+        <p><b i18n:translate="edit_logo_logoheader">TEXT</b> <small i18n:translate="edit_logo_zoom">TEXT</small></p>
+        
+        <tal:block tal:repeat="item logofiles">
+            <input type="radio" name="logo" style="border:1px solid white" i18n:attributes="title edit_logo_selecttitle" tal:attributes="value python:item[1]; checked python:{'False':None,'True':'checked'}[str(logo==item[1])]"/>
+            <img tal:attributes=" src python:'/file/'+str(id)+'/'+item[1]" width="150" style="padding-left:30px;border:1px solid silver" onmouseover="javascript:this.width='400'" onmouseout="javascript:this.width='150'"/>
             <br/>
-            <button type="submit" name="logo_delete" value="logo_delete" i18n:translate="edit_logo_del_button">TEXT</button>
+        </tal:block>
+        <input type="radio" name="logo" value="nologo" style="border:1px solid white" i18n:attributes="title edit_logo_selecttitle" tal:attributes="checked python:{'False':None,'True':'checked'}[str(logo=='')]"/>
+        <span i18n:translate="edit_logo_no_logo">TEXT</span>
+
+        <p>
+            <span i18n:translate="edit_logo_addfile"/> <input name="updatefile" type="file" size="50"/> <button i18n:attributes="title edit_upload_upload_label" i18n:translate="edit_upload_upload_label" type="submit" name="addfile" value="submit">TEXT</button>
         </p>
+
         <p>
             <span i18n:translate="edit_logo_link_label"/> <input type="text" name="logo_link" tal:attributes="value python:node.get('url')" style="width: 300px"/>
             <img i18n:attributes="title edit_logo_test_title" src="/img/extlink.png" onclick="window.open(document.logo.logo_link.value)" style="cursor:pointer"/>
@@ -17,14 +23,6 @@
         <p>
             <input i18n:attributes="value edit_logo_savechanges" type="submit" name="logo_save"/>
             <input i18n:attributes="value edit_logo_reset" type="reset" name="logo_reset"/>
-        </p>
-
-        <p><b i18n:translate="edit_logo_changeheader">TEXT</b></p>
-        <p>
-            <input name="updatefile" type="file" size="50"/>
-        </p>
-        <p>
-            <button i18n:attributes="title edit_upload_upload_label" i18n:translate="edit_upload_upload_label" type="submit" name="addfile" value="submit">TEXT</button>
         </p>
     </form>
 

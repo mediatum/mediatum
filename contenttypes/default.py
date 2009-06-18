@@ -35,7 +35,7 @@ class Default(tree.Node):
         mask = node.getMask("nodesmall")
         if mask:
             for field in mask.getViewHTML([node], VIEW_DATA_ONLY):
-                if len(field)==2:
+                if len(field)>=2:
                     value = field[1]
                 else:
                     value = ""

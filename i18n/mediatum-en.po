@@ -1399,6 +1399,12 @@ msgstr "Available Variables:<br/>* [value] = attribute value<br/>* [field] = fie
 msgid "admin_mapping_overview_footer"
 msgstr "${number} Mappings"
 
+msgid "admin_mapping_msg1"
+msgstr "mapping import (xml-file)"
+
+msgid "admin_mapping_import"
+msgstr "import"
+
 msgid "admin_mappingfield_existing"
 msgstr "Available Mapping fields of Mapping"
 

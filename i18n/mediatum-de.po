@@ -1405,6 +1405,12 @@ msgstr "mögliche Variablen:<br/>* [value] = Attributwert<br/>* [field] = Feldna
 msgid "admin_mapping_overview_footer"
 msgstr "${number} Mappings"
 
+msgid "admin_mapping_msg1"
+msgstr "Mapping-Import aus XML-Datei"
+
+msgid "admin_mapping_import"
+msgstr "Importieren"
+
 msgid "admin_mappingfield_existing"
 msgstr "Vorhandene Mappingfelder des Mappings"
 

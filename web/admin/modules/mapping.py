@@ -19,7 +19,7 @@
 """
 import core.tree as tree
 
-from schema.mapping import getMappings, getMapping, updateMapping, deleteMapping, updateMappingField, deleteMappingField
+from schema.mapping import getMappings, getMapping, updateMapping, deleteMapping, updateMappingField, deleteMappingField, exportMapping, importMapping
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from core.translation import lang, t
 
@@ -27,6 +27,14 @@ from core.translation import lang, t
 
 def validate(req, op):
     if req.params.get("acttype", "mapping")=="mapping":
+    
+        if "file" in req.params and hasattr(req.params["file"], "filesize") and req.params["file"].filesize>0:
+            # import mapping from xml-file
+            importfile = req.params.get("file")
+            if importfile.tempname!="":
+                xmlimport(req, importfile.tempname)
+    
+    
         #  section for mapping
         for key in req.params.keys():
             if key.startswith("fieldlist_"):
@@ -238,4 +246,15 @@ def editMappingField_mask(req, id, parent, err=0):
     v["parent"] = parent
     v["actpage"] = req.params.get("actpage")
     return req.getTAL("web/admin/modules/mapping.html", v, macro="modifyfield")
+    
+    
+""" export mapping-definition (XML) """
+def export(req, name):
+    return exportMapping(name)
+    
+""" import definition from file """
+def xmlimport(req, filename):
+    importMapping(filename)
+
+
     

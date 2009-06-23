@@ -25,6 +25,7 @@ import xml
 import traceback
 import core.tree as tree
 import core.config as config
+import core.translation as translation
 
 from utils.utils import *
 from utils.date import *
@@ -577,7 +578,7 @@ class Metadatatype(tree.Node):
             else:
                 return self.getChild(name)
         except tree.NoSuchNodeError:
-            print "mask '" + str(name) + "' not found"
+            #print "mask '" + str(name) + "' not found"
             return None
           
     def hasUploadForm(self):
@@ -842,10 +843,8 @@ class Mask(tree.Node):
                     t = getMetadataType(field.get("type"))
                     if field.getName() in req.params.keys():
                         value = t.getFormatedValueForDB(field, req.params.get(field.getName()))
-                        print "SET",node.id, field.getName(), value
                         node.set(field.getName(), value)
                     elif field.getFieldtype() == "check":
-                        print "SET",node.id, field.getName(), 0
                         node.set(field.getName(), 0)
                     
                     ''' raise event for metafield-type '''
@@ -1122,6 +1121,8 @@ def pluginClass(newclass):
     if name.startswith("m_"):
         name = name[2:]
     mytypes[name] = newclass
+    if hasattr(newclass(), "getLabels"):
+        translation.addLabels(newclass().getLabels())
 
 def pluginModule(module):
     class Dummyclass:

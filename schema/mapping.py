@@ -19,7 +19,7 @@
 """
 
 import core.tree as tree
-
+from core.xmlnode import getNodeXML, readNodeXML
 
 def getMappings():
     try:
@@ -83,8 +83,30 @@ def deleteMappingField(name):
         if p.type=="mapping":
             p.removeChild(node)
             return
-            
 
+            
+def exportMapping(name):
+    if name=="all":
+        return getNodeXML(tree.getRoot("mappings"))
+    else:
+        return getNodeXML(getMapping(name))
+
+        
+def importMapping(filename):
+    n = readNodeXML(filename)
+    importlist = list()
+    if n.getContentType()=="mapping":
+        importlist.append(n)
+    elif n.getContentType()=="mappings":
+        for ch in n.getChildren():
+            importlist.append(ch)
+
+    mappings = tree.getRoot("mappings")
+    for m in importlist:
+        m.setName("import-"+m.getName())
+        mappings.addChild(m)
+
+        
 class Mapping(tree.Node):
 
     def getName(self):

@@ -1405,6 +1405,9 @@ msgstr "mapping import (xml-file)"
 msgid "admin_mapping_import"
 msgstr "import"
 
+msgid "admin_mapping_exportall_title"
+msgstr "export all mappings"
+
 msgid "admin_mappingfield_existing"
 msgstr "Available Mapping fields of Mapping"
 

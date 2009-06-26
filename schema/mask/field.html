@@ -51,7 +51,9 @@
                     </tal:block>
                 </select>
                 <br/>
+                <!-- automatic block from metatype start -->
                 <tal:block tal:repeat="values add_values" tal:content="raw values"/>
+                <!-- automatic block from metatype end -->
             </fieldset>
             <br/>
         </tal:block>
@@ -72,7 +74,7 @@
         </tal:block>
 
         <div class="label" i18n:translate="mask_edit_help">TEXT</div>
-        <textarea tal:content="python:item.getDescription()" name="description" rows="4" style="width:500px;"/>
+        <textarea tal:content="python:item.getDescription()" name="div_description" rows="4" style="width:500px;"/>
         <br/>
         <div class="label" i18n:translate="mask_edit_required">TEXT</div> 
         <input tal:condition="python:item.getRequired()==1" type="checkbox" name="required" value="1" checked="checked">

@@ -33,7 +33,7 @@ class m_field(Metatype):
         element = field.getField()
         ret = ''
         label = ''
-        description = '<div id="description"></div>'
+        description = '<div id="div_description"></div>'
         unit = ''
         
         if not sub:
@@ -48,7 +48,7 @@ class m_field(Metatype):
                     label += '<span class="required">*</span> '
 
         if field.getDescription()!="":
-            description = '<div id="description"><a href="#" onclick="openPopup(\'/popup_help?id='+element.id+'&maskid='+field.id+'\', \'\', 400, 250)"><img src="/img/tooltip.png" border="0"/></a></div>'
+            description = '<div id="div_description"><a href="#" onclick="openPopup(\'/popup_help?id='+element.id+'&maskid='+field.id+'\', \'\', 400, 250)"><img src="/img/tooltip.png" border="0"/></a></div>'
         
 
         if not sub:
@@ -147,7 +147,7 @@ class m_field(Metatype):
             fieldstring = getMetadataType("mappingfield").getEditorHTML(field, width=item.getWidth(), value=attribute.getName(), language=language) + ' ' + item.getUnit()
         
         if item.getDescription()!="":
-            description = '<div id="description"><a href="#" onclick="openPopup(\'/popup_help?id='+field.id+'&maskid='+item.id+'\', \'\', 400, 250)"> <img src="/img/tooltip.png" border="0"/></a></div>'
+            description = '<div id="div_description"><a href="#" onclick="openPopup(\'/popup_help?id='+field.id+'&maskid='+item.id+'\', \'\', 400, 250)"> <img src="/img/tooltip.png" border="0"/></a></div>'
 
         if len(item.getLabel())>0 and item.getLabel()!="mapping":
             if ptype in("vgroup","hgroup") or sub==False:

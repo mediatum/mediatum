@@ -24,6 +24,8 @@ import core.users as users
 from utils.utils import formatTechAttrs
 import logging
 
+from core.tree import nodes_cache
+
 
 def edit_admin(req, ids):
     user = users.getUserFromRequest(req)
@@ -48,6 +50,12 @@ def edit_admin(req, ids):
         if key.startswith("set_dirty"):
             node.setDirty()
             logging.getLogger('editor').info("set node "+str(node.id)+" dirty")
+            break
+        
+        # delete node from cache (e.g. after changes in db)
+        if key.startswith("del_cache"):
+            for n in node.getAllChildren():
+                nodes_cache.remove(int(n.id))
             break
         
         # remove  attribute

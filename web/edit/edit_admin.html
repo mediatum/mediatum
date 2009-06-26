@@ -4,7 +4,8 @@
     <form tal:attributes="action python:'edit_content?id='+str(id)+'&tab=tab_admin'" method="post" name="meta">
         <table class="files">
             <tr>
-                <th colspan="3" i18n:translate="edit_nodeinformation"/>
+                <th colspan="2" i18n:translate="edit_nodeinformation"/>
+                <th><input i18n:attributes="title edit_clearfromcache" name="del_cache" type="image" src="/img/update_index.gif"/></th>
             </tr>
             <tr>
                 <td i18n:translate="edit_id"/>

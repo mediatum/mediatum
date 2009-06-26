@@ -140,7 +140,7 @@ class PrintPreview:
         max_width = 0
         
         for item in metadata:
-            l  = Paragraph(item[2]+":", self.bl)
+            l = Paragraph(item[2]+":", self.bl)
             
             if max_width<l.minWidth():
                 max_width = l.minWidth()
@@ -150,10 +150,10 @@ class PrintPreview:
 
         for item in metadata:
             l = Paragraph(esc(item[2]+":"), self.bl)
-            
-            if item[1].find("href")==-1:
-                item[1] = esc(item[1])
-            
+
+            #if item[1].find("href")==-1:
+            #    item[1] = esc(item[1])
+
             v = Paragraph(item[1], self.bv)
 
             self.addData(l)

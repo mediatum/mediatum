@@ -23,8 +23,7 @@ import core.config as config
 
 from core.tree import getNode
 from web.frontend import shoppingbag
-#from schema.schema import *
-from schema.schema import getMetaType
+from schema.schema import getMetaType, getMetadataType
 from lib.pdf import printview
 from utils.log import logException
 
@@ -97,24 +96,7 @@ def show_shoppingbag(req):
     req.writeTAL("web/frontend/popups.html", v, macro="shoppingbag")
     return athana.HTTP_OK
 
-#
-# index popup for metadatafields of type 'indexlist'
-#
-def show_index(req):
-    access = AccessData(req)
-    try:
-        name = req.params['name']
-        fieldname = req.params.get('fieldname', name)
-    except:
-        logException("missing request parameter")
-        return athana.HTTP_NOT_FOUND
-
-    index = tree.getRoot("collections").getAllAttributeValues(name, access).keys()
-    index.sort(lambda x,y: cmp(x.lower(), y.lower()))
-
-    req.writeTAL("web/frontend/popups.html", {"index":index, "fieldname":fieldname}, macro="index")
-    return athana.HTTP_OK
-
+    
 #
 # help window for metadata field
 #
@@ -125,7 +107,6 @@ def show_help(req):
         field = getNode(req.params.get("id",""))
 
     req.writeTAL("web/frontend/popups.html", {"field":field}, macro="show_help")
-
 
 #
 # show attachmentbrowser for given node
@@ -250,3 +231,12 @@ def show_printview(req):
         req.reply_headers['Content-Type'] = "application/pdf"
 
         req.write(printview.getPrintView(lang(req), imagepath, metadata, getPaths(node, AccessData(req)), style, children))
+
+# use popup method of  metadatatype  
+def popup_metatype(req):
+    mtype = getMetadataType(req.path.split("/")[-1])
+    if mtype and hasattr(mtype, "getPopup"):
+        mtype.getPopup(req)
+    else:
+        print "error, no popup method found"
+        

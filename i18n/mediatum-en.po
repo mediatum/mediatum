@@ -333,85 +333,6 @@ msgstr "wait"
 msgid "workflowstep-end"
 msgstr "end node"
 
-### fieldtypes ####
-msgid "fieldtype_text"
-msgstr "text"
-
-msgid "fieldtype_text_desc"
-msgstr "normal text input field"
-
-msgid "fieldtype_number"
-msgstr "number"
-
-msgid "fieldtype_number_desc"
-msgstr "field for digit input"
-
-msgid "fieldtype_list"
-msgstr "valuelist"
-
-msgid "fieldtype_list_desc"
-msgstr "drop down valuelist"
-
-msgid "fieldtype_mlist"
-msgstr "multilist"
-
-msgid "fieldtype_mlist_desc"
-msgstr "selection list for multiple values"
-
-msgid "fieldtype_ilist"
-msgstr "indexlist"
-
-msgid "fieldtype_ilist_desc"
-msgstr "input field with index"
-
-msgid "fieldtype_memo"
-msgstr "memo"
-
-msgid "fieldtype_memo_desc"
-msgstr "textfield for any text length"
-
-msgid "fieldtype_check"
-msgstr "checkbox"
-
-msgid "fieldtype_check_desc"
-msgstr "checkbox field (true/false)"
-
-msgid "fieldtype_date"
-msgstr "date"
-
-msgid "fieldtype_date_desc"
-msgstr "date field (day / month / year)"
-
-msgid "fieldtype_meta"
-msgstr "technical metadata"
-
-msgid "fieldtype_meta_desc"
-msgstr "field for technical metadata (automatically filled in by mediatum)"
-
-msgid "fieldtype_union"
-msgstr "combination field"
-
-msgid "fieldtype_union_desc"
-msgstr "combination of multiple metafata fields"
-
-msgid "fieldtype_url"
-msgstr "url"
-
-msgid "fieldtype_url_desc"
-msgstr "external link (new window)"
-
-msgid "fieldtype_watermark"
-msgstr "watermark"
-
-msgid "fieldtype_watermark_desc"
-msgstr "watermark for images"
-
-msgid "fieldtype_message"
-msgstr "message"
-
-msgid "fieldtype_message_desc"
-msgstr "message or notice field"
-
 ### views ###
 msgid "view_list_add_shoppingbag"
 msgstr "Add object to list of favourites"
@@ -1142,24 +1063,6 @@ msgstr "Metadata fields"
 
 msgid "admin_metafields_techfields"
 msgstr "Technical metadata field"
-
-msgid "admin_metafield_link"
-msgstr "Link"
-
-msgid "admin_metafield_urltext"
-msgstr "Link text"
-
-msgid "admin_metafield_urltarget"
-msgstr "link target"
-
-msgid "admin_metafield_icon"
-msgstr "Icon"
-
-msgid "admin_metafield_noicon"
-msgstr "-no Icon-"
-
-msgid "admin_metafield_preview"
-msgstr "Preview"
 
 msgid "admin_metafield_description"
 msgstr "Description"
@@ -2016,31 +1919,6 @@ msgstr "(popup closes after 3 seconds)"
 msgid "popup_help_title"
 msgstr "Help for metadata field "${name}""
 
-### index popup ###
-msgid "popup_index_header"
-msgstr "Existing Index values"
-
-msgid "popup_ok"
-msgstr "OK"
-
-msgid "popup_cancel"
-msgstr "Cancel"
-
-msgid "popup_listvalue_title"
-msgstr "Show list values as popup"
-
-msgid "popup_listvalue"
-msgstr "show list values"
-
-msgid "popup_clearselection"
-msgstr "clear selection"
-
-msgid "popup_clearselection_title"
-msgstr "Unselect all values"
-
-msgid "popup_indexnumber"
-msgstr "values selected"
-
 ### edit area ###
 msgid "edit_error_msg"
 msgstr "You're not allowed to access the editor area.<br/> You can logon here: ${link}"
@@ -2756,8 +2634,6 @@ msgstr "OK"
 msgid "edit_publish_cancel"
 msgstr "Cancel"
 
-
-
 # mask editor #
 msgid "mask_editor_title"
 msgstr "Mask editor"
@@ -2861,33 +2737,6 @@ msgstr "Type:"
 msgid "mask_edit_help"
 msgstr "Help text:"
 
-msgstr "mask_edit_max_length"
-msgstr "Max. length"
-
-msgstr "mask_edit_list_values"
-msgstr "List values:"
-
-msgid "mask_edit_date_format"
-msgstr "Date-/Time-format:"
-
-msgid "mask_edit_tech_meta"
-msgstr "Technical metadata field:"
-
-msgid "mask_edit_link"
-msgstr "Link:"
-
-msgid "mask_edit_linktext"
-msgstr "Link Text:"
-
-msgid "mask_edit_icon"
-msgstr "Icon:"
-
-msgid "mask_edit_noicon"
-msgstr "-no icon-"
-
-msgid "mask_edit_preview"
-msgstr "Preview:"
-
 msgid "mask_edit_required"
 msgstr "Required:"
 
@@ -2987,12 +2836,6 @@ msgstr "until"
 
 msgid "editor_input_format"
 msgstr "Input format: "
-
-msgid "editor_index"
-msgstr "Index"
-
-msgid "editor_index_title"
-msgstr "show index values"
 
 msgid "editor_memo_label"
 msgstr "characters remaining"

@@ -339,85 +339,6 @@ msgstr "Warten"
 msgid "workflowstep-end"
 msgstr "Endknoten"
 
-### fieldtypes ####
-msgid "fieldtype_text"
-msgstr "Text"
-
-msgid "fieldtype_text_desc"
-msgstr "Normales Texteingabefeld"
-
-msgid "fieldtype_number"
-msgstr "Zahl"
-
-msgid "fieldtype_number_desc"
-msgstr "Feld zur Eingabe eines Zahlenwertes"
-
-msgid "fieldtype_list"
-msgstr "Werteliste"
-
-msgid "fieldtype_list_desc"
-msgstr "Werte-Auswahlfeld als Drop-Down Liste"
-
-msgid "fieldtype_mlist"
-msgstr "Mehrfachauswahl"
-
-msgid "fieldtype_mlist_desc"
-msgstr "Werte-Auswahlfeld als Multiselect-Liste"
-
-msgid "fieldtype_ilist"
-msgstr "Werteliste mit Index"
-
-msgid "fieldtype_ilist_desc"
-msgstr "Eingabefeld mit Index als Popup"
-
-msgid "fieldtype_memo"
-msgstr "Memofeld"
-
-msgid "fieldtype_memo_desc"
-msgstr "Texteingabefeld beliebiger Länge"
-
-msgid "fieldtype_check"
-msgstr "Checkbox"
-
-msgid "fieldtype_check_desc"
-msgstr "Checkbox Auswahl (für Ja/Nein-Werte)"
-
-msgid "fieldtype_date"
-msgstr "Datum"
-
-msgid "fieldtype_date_desc"
-msgstr "Datumsauswahl (Tag / Monat / Jahr)"
-
-msgid "fieldtype_meta"
-msgstr "Technisches Metadatum"
-
-msgid "fieldtype_meta_desc"
-msgstr "Technisches Metadatum (automatisch vom System erstellt)"
-
-msgid "fieldtype_union"
-msgstr "Kombinationsfeld"
-
-msgid "fieldtype_union_desc"
-msgstr "kann aus beliebigen Metadatenfeldern bestehen"
-
-msgid "fieldtype_url"
-msgstr "URL"
-
-msgid "fieldtype_url_desc"
-msgstr "externer Link (neues Fenster)"
-
-msgid "fieldtype_watermark"
-msgstr "Wasserzeichen"
-
-msgid "fieldtye_watermark_desc"
-msgstr "Wasserzeichen für Bilder"
-
-msgid "fieldtype_message"
-msgstr "Meldung"
-
-msgid "fieldtype_message_desc"
-msgstr "Meldungs- oder Hinweiszeile"
-
 ### views ###
 msgid "view_list_add_shoppingbag"
 msgstr "Objekt zur Merkliste hinzufügen"
@@ -1148,24 +1069,6 @@ msgstr "Metadatenfelder"
 
 msgid "admin_metafields_techfields"
 msgstr "Technisches Metadatenfeld"
-
-msgid "admin_metafield_link"
-msgstr "Link"
-
-msgid "admin_metafield_urltext"
-msgstr "Angezeigter Text"
-
-msgid "admin_metafield_urltarget"
-msgstr "Linkziel"
-
-msgid "admin_metafield_icon"
-msgstr "Icon"
-
-msgid "admin_metafield_noicon"
-msgstr "-kein Icon-"
-
-msgid "admin_metafield_preview"
-msgstr "Vorschau"
 
 msgid "admin_metafield_description"
 msgstr "Beschreibung"
@@ -2021,31 +1924,6 @@ msgstr "(Fenster schlie&szlig;t nach 3 Sekunden)"
 msgid "popup_help_title"
 msgstr "Hilfe zum Metadatenfeld "${name}""
 
-### index popup ###
-msgid "popup_index_header"
-msgstr "Vorhandene Indexwerte"
-
-msgid "popup_ok"
-msgstr "OK"
-
-msgid "popup_cancel"
-msgstr "Abbrechen"
-
-msgid "popup_listvalue_title"
-msgstr "Listenwerte als Popup anzeigen"
-
-msgid "popup_listvalue"
-msgstr "Listenwerte anzeigen"
-
-msgid "popup_clearselection"
-msgstr "Auwahl aufheben"
-
-msgid "popup_clearselection_title"
-msgstr "Auswahlliste leeren"
-
-msgid "popup_indexnumber"
-msgstr "Wert(e) selektiert"
-
 ### edit area ###
 msgid "edit_error_msg"
 msgstr "Sie besitzen nicht die notwendigen Rechte, um den Editorbereich zu betreten.<br/> Falls Sie nicht angemeldet sein sollten, können Sie das ${link}"
@@ -2861,30 +2739,6 @@ msgstr "Hilfetext:"
 msgid "mask_edit_max_length"
 msgstr "Maximallänge"
 
-msgid "mask_edit_list_values"
-msgstr "Listenwerte:"
-
-msgid "mask_edit_date_format"
-msgstr "Datums-/Zeitformat:"
-
-msgid "mask_edit_tech_meta"
-msgstr "Technisches Metadatenfeld:"
-
-msgid "mask_edit_link"
-msgstr "Link:"
-
-msgid "mask_edit_linktext"
-msgstr "Angezeigter Text:"
-
-msgid "mask_edit_icon"
-msgstr "Icon:"
-
-msgid "mask_edit_noicon"
-msgstr "-kein Icon-"
-
-msgid "mask_edit_preview"
-msgstr "Vorschau:"
-
 msgid "mask_edit_required"
 msgstr "Pflichtfeld:"
 
@@ -2995,18 +2849,6 @@ msgstr "bis"
 
 msgid "editor_input_format"
 msgstr "Eingabeformat: "
-
-msgid "editor_index"
-msgstr "Index"
-
-msgid "editor_index_title"
-msgstr "Indexwerte anzeigen"
-
-msgid "editor_memo_label"
-msgstr "Zeichen übrig"
-
-msgid "editor_metadata_field"
-msgstr "Metadatenfeld"
 
 msgid "popup_help_header"
 msgstr "Hilfe"

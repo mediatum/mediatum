@@ -66,6 +66,22 @@ blockquote, input, li, select, th, td  {
    font-size: 1em;
    }
 
+input.text{
+    margin-bottom:5px;
+}
+
+select.text{
+    height: 25px; margin-bottom: 5px;
+}
+
+select.multitext{
+    height: 60px; margin-bottom: 5px;
+}
+
+textarea.memo_text{
+    margin-bottom: 5px;
+}
+   
 input{
 	font-size: 1em;
 	border: 1px solid #ABC6DD;

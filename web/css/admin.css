@@ -53,7 +53,7 @@ h4  {
    }
 
 blockquote, input, li, select, th, td  {
-   font-size: 1em;
+   font-size: 1em; margin:2px;
    }
 
 button{
@@ -1149,7 +1149,14 @@ label{
 	float: left;
 	text-align: left;
 	margin-right: 1em;
-	display: block
+	display: block;
+}
+
+div.label {
+    width: 130px;
+    margin-top:6px;
+    float:left;
+    display: inline;
 }
 
 button.opbutton{

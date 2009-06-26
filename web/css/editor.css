@@ -70,8 +70,8 @@ div.back {
 }
 
 
-#description {
-    float:left;
+#div_description {
+    float:left; border:1px solid white;
 }
 
 #hitem {

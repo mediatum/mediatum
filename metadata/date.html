@@ -27,7 +27,7 @@
 
 
 <div metal:define-macro="maskeditor" style="display:none" name="div_date" id="div_date">
-    <div class="label" i18n:translate="mask_edit_date_format">TEXT</div>
+    <div class="label" i18n:translate="date_edit_date_format">TEXT</div>
     <select id="date_value" name="date_value" style="width:250px;">
         <option tal:repeat="option dateoption" tal:attributes="value python:option.getShortName(); selected python:{'False':None, 'True':'selected'}[str(option.getShortName()==value)]" tal:content="python:option.getName()" i18n:translate=""/>
     </select>

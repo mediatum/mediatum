@@ -22,7 +22,7 @@ import re
 import core.tree as tree
 
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
-from schema.schema import getMetaType, fieldoption, getMetaFieldTypeNames, getMetaField, getFieldsForMeta, dateoption, requiredoption
+from schema.schema import getMetaType, fieldoption, getMetaFieldTypeNames, getMetaField, getFieldsForMeta, dateoption, requiredoption, getMetaFieldTypes, getMetadataType
 from core.translation import lang, t
 from core.tree import Node
 
@@ -166,5 +166,11 @@ def FieldDetail(req, pid, id, err=0):
         v["valuelist"] = field.getValueList()
         while len(v["valuelist"])!=4:
             v["valuelist"].append("")
+
+    v["adminfields"] = []
+    for t in getMetaFieldTypeNames():
+        f = getMetadataType(t)
+        v["adminfields"] .append(f.getMaskEditorHTML("\r\n".join(v["valuelist"]), metadatatype=metadatatype, language=lang(req)))
+            
     return req.getTAL("web/admin/modules/metatype_field.html", v, macro="modify_field")
     

@@ -97,3 +97,25 @@ class m_mlist(Metatype):
 
     def getName(self):
         return "fieldtype_mlist"
+ 
+    def getInformation(self):
+        return {"moduleversion":"1.1", "softwareversion":"1.1", "files":"mlist.py;mlist.html"}
+        
+    # method for additional keys of type mlist
+    def getLabels(self):
+        return m_mlist.labels
+
+    labels = { "de":
+            [
+                ("mlist_list_values", "Listenwerte:"),
+                ("fieldtype_mlist", "Mehrfachauswahl"),
+                ("fieldtype_mlist_desc", "Werte-Auswahlfeld als Multiselect-Liste")
+            ],
+           "en":
+            [
+                ("mlist_list_values", "List values:"),
+                ("fieldtype_mlist", "multilist"),
+                ("fieldtype_mlist_desc", "selection list for multiple values")                
+            ]
+          }
+          

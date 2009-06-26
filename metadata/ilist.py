@@ -18,11 +18,11 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.athana as athana
-import core.search as search
-import core.search.query
+#import core.search as search
 import core.tree as tree
 from utils.utils import esc
 from core.metatype import Metatype, Context
+from core.acl import AccessData
 
 
 class m_ilist(Metatype):
@@ -62,3 +62,58 @@ class m_ilist(Metatype):
 
     def getName(self):
         return "fieldtype_ilist"
+        
+    def getInformation(self):
+        return {"moduleversion":"1.1", "softwareversion":"1.1"}
+        
+    def getPopup(self, req):
+        access = AccessData(req)
+        try:
+            name = req.params['name']
+            fieldname = req.params.get('fieldname', name)
+        except:
+            logException("missing request parameter")
+            return athana.HTTP_NOT_FOUND
+
+        index = tree.getRoot("collections").getAllAttributeValues(name, access).keys()
+        index.sort(lambda x,y: cmp(x.lower(), y.lower()))
+
+        req.writeTAL("metadata/ilist.html", {"index":index, "fieldname":fieldname}, macro="popup")
+        return athana.HTTP_OK
+
+    # method for additional keys of type spctext
+    def getLabels(self):
+        return m_ilist.labels
+        
+    labels = { "de":
+            [
+                ("editor_index","Index"),
+                ("editor_index_title","Indexwerte anzeigen"),
+                ("popup_index_header","Vorhandene Indexwerte"),
+                ("popup_indexnumber","Wert(e) selektiert"),
+                ("popup_listvalue_title","Listenwerte als Popup anzeigen"),
+                ("popup_listvalue","Listenwerte anzeigen"),
+                ("popup_clearselection_title","Auswahlliste leeren"),
+                ("popup_clearselection","Auwahl aufheben"),
+                ("popup_ok","OK"),
+                ("popup_cancel","Abbrechen"),
+                ("fieldtype_ilist", "Werteliste mit Index"),
+                ("fieldtype_ilist_desc", "Eingabefeld mit Index als Popup")
+            ],
+          "en":
+            [
+                ("editor_index","Index"),
+                ("editor_index_title","show index values"),
+                ("popup_index_header","Existing Index values"),
+                ("popup_ok","OK"),
+                ("popup_cancel","Cancel"),
+                ("popup_listvalue_title","Show list values as popup"),
+                ("popup_listvalue","show list values"),
+                ("popup_clearselection","clear selection"),
+                ("popup_clearselection_title","Unselect all values"),
+                ("popup_indexnumber","values selected"),
+                ("fieldtype_ilist", "indexlist"),
+                ("fieldtype_ilist_desc", "input field with index")              
+            ]
+        }
+        

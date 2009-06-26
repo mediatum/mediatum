@@ -24,6 +24,9 @@ from core.translation import t
 
 class m_url(Metatype):
 
+    icons = {"externer Link":"/img/extlink.png", "Email":"/img/email.png"}
+    targets = {"selbes Fenster":"same", "neues Fenster":"_blank"}
+
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
         fielddef = field.getValues().split("\r\n")
         if len(fielddef)!=3:
@@ -34,7 +37,11 @@ class m_url(Metatype):
 
         return athana.getTAL("metadata/url.html", {"lock":lock, "value":val, "fielddef":fielddef, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
 
-
+    def getAdminFieldsHTML(self, values={}):
+        print "addfields attribute html for field-editor"
+        return athana.getTAL("metadata/url.html",{"valuelist":values["valuelist"], "icons":m_url.icons,"url_targets":m_url.targets}, macro="fieldeditor", language=values["language"])
+        
+        
     def getSearchHTML(self, context):
         return athana.getTAL("metadata/url.html",{"context":context}, macro="searchfield", language=context.language)
 
@@ -102,7 +109,41 @@ class m_url(Metatype):
         value = value.split("\r\n")
         while len(value)<4:
             value.append("")
-        return athana.getTAL("metadata/url.html", {"value":value, "icons":{"externer Link":"/img/extlink.png", "Email":"/img/email.png"},"url_targets":{"selbes Fenster":"same", "neues Fenster":"_blank"}}, macro="maskeditor", language=language)
+        return athana.getTAL("metadata/url.html", {"value":value, "icons":m_url.icons, "url_targets":m_url.targets}, macro="maskeditor", language=language)
 
     def getName(self):
         return "fieldtype_url"
+        
+    def getInformation(self):
+        return {"moduleversion":"1.1", "softwareversion":"1.1"}
+
+    # method for additional keys of type url
+    def getLabels(self):
+        return m_url.labels
+        
+    labels = { "de":
+            [
+                ("url_edit_link", "Link:"),
+                ("url_edit_linktext", "Angezeigter Text:"),
+                ("url_edit_icon", "Icon:"),
+                ("url_edit_noicon", "-kein Icon-"),
+                ("url_edit_preview", "Vorschau:"),
+                ("url_urltarget", "Linkziel:"),
+                ("fieldtype_url", "URL"),
+                ("fieldtype_url_desc", "externer Link (neues Fenster)")
+
+            ],
+           "en":
+            [
+                ("url_edit_link", "Link:"),
+                ("url_edit_linktext", "Link Text:"),
+                ("url_edit_icon", "Icon:"),
+                ("url_edit_noicon", "-kein Icon-"),
+                ("url_edit_preview", "Preview:"),
+                ("url_urltarget", "Link target:"),
+                ("fieldtype_url", "url"),
+                ("fieldtype_url_desc", "external link (new window)")
+
+            ]
+         }
+  

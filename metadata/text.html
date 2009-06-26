@@ -1,10 +1,140 @@
 
 <tal:block metal:define-macro="editorfield">
-    <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width)+'px'; name name; id name; value value; maxlenght python:str(len(value))"/>
+    <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-26)+'px'; name name; id name; value value; maxlenght python:str(len(value))"/>
     <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
         <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onchange python:'handlelock(\''+name+'\')'" type="checkbox"/>
         <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
    </span>
+   <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/text?name='+name+'\', \'\', 550, 470)'" style="margin-left:5px;width:14px;padding-left:0px;border-width:0px" type="button" i18n:attributes="title text_titlepopupbutton"><img src="/img/edit_spc.png" style="height:14px"/></button>
 </tal:block>
 
 <input metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name; value python:context.value" type="text" class="searchfield"/>
+
+<tal:block metal:define-macro="popup">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+        <title i18n:translate="text_popup_title">TEXT</title>
+        <script type="text/javascript">
+            function detail(obj){
+                o = document.getElementById("spcvalue");
+                o.innerHTML = "&#"+obj.value+";";
+                o = document.getElementById("spcname");
+                o.innerHTML = obj.title;
+            }
+
+            function setFormated(obj){
+                o = document.getElementById("formatedvalue");
+                o.innerHTML = obj.value;
+            }
+
+            function insert(aTag, eTag) {
+                var input = document.getElementById("value");
+                input.focus();
+                if(typeof document.selection != 'undefined') {
+                    var range = document.selection.createRange();
+                    var insText = range.text;
+                    range.text = aTag + insText + eTag;
+                    range = document.selection.createRange();
+                    if (insText.length == 0) {
+                        range.move('character', -eTag.length);
+                    } else {
+                        range.moveStart('character', aTag.length + insText.length + eTag.length);      
+                    }
+                    range.select();
+                }
+                else if(typeof input.selectionStart != 'undefined')
+                {
+                    var start = input.selectionStart;
+                    var end = input.selectionEnd;
+                    var insText = input.value.substring(start, end);
+                    input.value = input.value.substr(0, start) + aTag + insText + eTag + input.value.substr(end);
+
+                    var pos;
+                    if (insText.length == 0) {
+                        pos = start + aTag.length;
+                    } else {
+                        pos = start + aTag.length + insText.length + eTag.length;
+                    }
+                    input.selectionStart = pos;
+                    input.selectionEnd = pos;
+                }
+                else
+                {
+                    var pos;
+                    var re = new RegExp('^[0-9]{0,3}$');
+                    while(!re.test(pos)) {
+                        pos = prompt("insert at (0.." + input.value.length + "):", "0");
+                    }
+                    if(pos > input.value.length) {
+                        pos = input.value.length;
+                    }
+                    var insText = prompt("insert text to format:");
+                    input.value = input.value.substr(0, pos) + aTag + insText + eTag + input.value.substr(pos);
+                }
+                setFormated(input);
+            }
+            
+            function init(name){
+                o = document.getElementById('value'); 
+                if (window.opener && !window.opener.closed){
+                    o.value = window.opener.document.getElementById(name).value;
+                }
+                o.focus();
+                setFormated(o);
+            }
+            
+            function save(value){
+                if (window.opener && !window.opener.closed){
+                    window.opener.document.getElementById(value).value=document.getElementById('value').value;
+                }
+                window.close();
+            }
+        </script>
+        
+        <style>
+            body{font-size:12px;margin:5px;font-family:arial;background:#fff url(/img/layout/edit_body.jpg) repeat-x scroll left top}
+            #items{width:20px;height:20px;border:1px solid silver;text-align:center;margin:1px;padding:0px;cursor:hand;font-size: 9px}
+            #style{margin:0px;padding:0px;border:1px solid silver;cursor:hand}
+            #value{border:1px solid silver;width:400px}
+            #spcvalue{width:80px;height:80px;border:1px solid silver;float:right;margin:1px;padding-top:20px;font-size: 50px;text-align:center;background-color:#fff}
+            #spcname{width:80px;height:80px;float:right}
+            #formatedvalue{width:400px;height:40px;display:block;font-size:14px;border:1px solid silver;float:left}
+            #spccontainer{width:450px;height:313px;border:1px solid silver;display:block;padding:2px 1px 1px 2px;float:left;background-color:#fff;margin-top:1px}
+            #buttons{float:right;margin-top:14px;backgrond-color:#fff}
+            #style:hover, #items:hover{ border:1px solid black}
+        </style>
+    </head>
+    
+    <body tal:attributes="onload python:'init(\''+name+'\')'"> 
+        <form>
+            <div>
+                <div id="buttons">
+                    <button i18n:attributes="title text_bold_title" type="button" id="style" onclick="insert('<b>','</b>')"><img src="/module/editor/skins/silver/toolbar/bold.gif" alt="bold"/></button>
+                    <button i18n:attributes="title text_italic_title" type="button" id="style" onclick="insert('<em>','</em>')"><img src="/module/editor/skins/silver/toolbar/italic.gif" alt="italic"/></button>
+                    <button i18n:attributes="title text_sub_title" type="button" id="style" onclick="insert('<sub>','</sub>')"><img src="/module/editor/skins/silver/toolbar/subscript.gif" alt="subscript"/></button>
+                    <button i18n:attributes="title text_sup_title" type="button" id="style" onclick="insert('<sup>','</sup>')"><img src="/module/editor/skins/silver/toolbar/superscript.gif" alt="superscript"/></button>
+                </div>
+                <span i18n:translate="text_valuelabel">TEXT</span><br/><input type="text" name="value" id="value" onkeyup="setFormated(this)"/>
+            </div>
+            
+            <div>
+                <span i18n:translate="text_formatedvalue">TEXT</span><br/>
+                <div id="formatedvalue"> </div>
+                <div style="float:right;text-align:right">
+                    <button type="button" tal:attributes="onclick python:'save(\''+name+'\')'" i18n:translate="text_done">TEXT</button><br/><br/>
+                    <button type="button" onclick="window.close()" i18n:translate="text_cancel">TEXT</button>
+                </div> 
+            </div>
+            <div style="clear:both" i18n:translate="text_spcchar">TEXT</div>
+            <div id="spccontainer">
+                <button tal:repeat="item charmap" type="button" id="items" tal:content="raw python:item[0]" tal:attributes="title python:item[2]; value python:item[1]" onmouseover="detail(this)" onclick="insert(String.fromCharCode(decodeURI(this.value)),'')"/>
+            </div>
+            <div id="spcvalue"> </div>
+            <div id="spcname"> </div>
+        </form>
+    </body>
+</html>
+</tal:block>

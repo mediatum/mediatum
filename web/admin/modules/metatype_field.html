@@ -189,84 +189,9 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <div style="display:none" name="div_memo" id="div_memo">
-                        <tal:block i18n:translate="admin_memofield_maxlength">Maximall&auml;nge</tal:block>:<br>
-                        <input tal:attributes="value python:metafield.getValues()" type="text" name="memo_value" style="width:390px;"/>
-                        <br>
-                    </div>
-                    
-                    <div style="display:none" name="div_list" id="div_list">
-                        <tal:block i18n:translate="admin_metafield_listvalues">TEXT</tal:block>:<br>
-                        <textarea name="list_value" rows="4" style="width:390px;">
-<tal:block tal:content="python:metafield.getValues()"/></textarea>
-                        <br>
-                    </div>
-                    
-                    <div style="display:none" name="div_mlist" id="div_mlist">
-                        <tal:block i18n:translate="admin_metafield_listvalues">TEXT</tal:block>:<br>
-                        <textarea tal:content="python:metafield.getValues()" name="mlist_value" rows="4" style="width:100%"/>
-                        <br>
-                    </div>
-                    
-                    <div style="display:none" name="div_date" id="div_date">
-                        <tal:block i18n:translate="admin_metafield_dateformat">TEXT</tal:block>:<br>
-                        <select id="date_value" name="date_value" style="width:390px;">
-                            <option tal:repeat="dateoption dateoptions" tal:attributes="value python:dateoption.getShortName(); selected python:{'False':None,'True':'selected'}[str(dateoption.getShortName()==str(metafield.getValues()))]" tal:content="python:dateoption.getName()" i18n:translate=""/>
-                       </select>
-                    </div>
-
-                    <div style="display:none" id="div_union">
-                        <tal:block i18n:translate="admin_metafield_fields">TEXT</tal:block>:<br>
-                        <select id="union_value" name="union_value" style="width:390px;" size="5" multiple="multiple">
-                            <option tal:repeat="index python:list(metafields)" tal:content="python:metafields[index].getLabel()" tal:attributes="value python:metafields[index].getName(); selected python:{'False':None,'True':'selected'}[str(metafields[index].getName() in metafield.getValueList())]" i18n:translate=""/>
-                        </select>
-                    </div>
-
-                    <div style="display:none" id="div_meta">
-                        <tal:block i18n:translate="admin_metafields_techfields">TEXT</tal:block>:<br>
-                        <select id="meta_value" name="meta_value" style="width:390px;">
-                            <optgroup tal:repeat="key python:datatypes.keys()" tal:attributes="label key">
-                                 <option tal:repeat="item python:datatypes[key].keys()" tal:attributes="value item; selected python:{'False':None,'True':'selected'}[str(item in metafield.getValueList())]" tal:content="structure python:datatypes[key][item]"/>
-                            </optgroup>
-                        </select>
-                    </div>
-
-                    <div style="display:none" id="div_url">
-                        <table>
-                            <tr>
-                                <td><tal:block i18n:translate="admin_metafield_link">TEXT</tal:block>:</td>
-                                <td>
-                                    <input tal:attributes="value python:valuelist[0]" type="text" name="url_value" style="width:200px;"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><tal:block i18n:translate="admin_metafield_urltext">TEXT</tal:block>:</td>
-                                <td>
-                                    <input tal:attributes="value python:valuelist[1]" type="text" name="url_value" value=""  style="width:200px;"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><tal:block i18n:translate="admin_metafield_icon">Icon</tal:block>:</td>
-                                <td>
-                                    <select onchange="showPreview(document, this.value)" name="url_value">
-                                        <option value="" i18n:translate="admin_metafield_noicon">TEXT</option>
-
-                                        <option tal:repeat="index python:list(icons)" tal:attributes="value python:icons[index]; selected python:{'False':None,'True':'selected'}[str(valuelist[2]==icons[index])]" tal:content="index" value="_value_"/>  
-                                    </select>
-                                    <tal:block i18n:translate="admin_metafield_preview">TEXT</tal:block>: <img src="/img/emtyDot1Pix.gif" id="image_preview"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><tal:block i18n:translate="admin_metafield_urltarget">TEXT</tal:block>:</td>
-                                <td>
-                                    <select name="url_value">
-                                        <option tal:repeat="index python:list(url_targets)" tal:attributes="value python:url_targets[index]; selected python:{'False':None,'True':'selected'}[str(valuelist[3]==url_targets[index])]" tal:content="index" value="_value_"/>  
-                                    </select>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-
+                    <!-- automatic block from metatype start -->
+                    <div tal:repeat="item adminfields" tal:attributes="id python:'div_'" tal:content="raw item"/>
+                    <!-- automatic block from metatype end -->
                     &nbsp;
                 </td>
             </tr>

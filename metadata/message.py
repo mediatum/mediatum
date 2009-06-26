@@ -47,5 +47,24 @@ class m_message(Metatype):
             ret = '<b><i>'+ret+'</i></b>'
         return ("", ret)
 
+    def getInformation(self):
+        return {"moduleversion":"1.1", "softwareversion":"1.1", "files":"meta.py;meta.html"}
+        
     def getName(self):
         return "fieldtype_message"
+
+    # method for additional keys of type message
+    def getLabels(self):
+        return m_message.labels
+
+    labels = { "de":
+            [
+                ("fieldtype_message", "Meldung"),
+                ("fieldtype_message_desc", "Meldungs- oder Hinweiszeile")
+            ],
+           "en":
+            [
+                ("fieldtype_message", "message"),
+                ("fieldtype_message_desc", "message or notice field")
+            ]
+         }

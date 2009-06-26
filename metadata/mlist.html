@@ -1,6 +1,6 @@
 
 <tal:block metal:define-macro="editorfield">
-    <select class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[int(context.lock)]; style python:'width:'+str(context.width)+'px'; name python: context.name; id python: context.name;" multiple>
+    <select class="multitext" tal:attributes="disabled python:{0:None,1:'disabled'}[int(context.lock)]; style python:'width:'+str(context.width-16)+'px'; name python: context.name; id python: context.name;" multiple>
         <tal:block tal:repeat="v valuelist">
             <option tal:condition="python:v[0]=='optionselected'" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]" selected="selected"/>
             <option tal:condition="python:v[0]=='option'" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]"/>
@@ -25,6 +25,6 @@
 
 
 <div metal:define-macro="maskeditor" style="display:none" name="div_mlist" id="div_mlist">
-    <div class="label" i18n:translate="mask_edit_list_values">TEXT</div>
+    <div class="label" i18n:translate="mlist_list_values">TEXT</div>
     <textarea name="mlist_value" rows="4" style="width:250px"><tal:block tal:replace="value"/></textarea>
 </div>

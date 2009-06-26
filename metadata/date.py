@@ -77,3 +77,24 @@ class m_date(Metatype):
 
     def getName(self):
         return "fieldtype_date"
+    
+    def getInformation(self):
+        return {"moduleversion":"1.1", "softwareversion":"1.1"}
+        
+    # method for additional keys
+    def getLabels(self):
+        return m_date.labels
+
+    labels = { "de":
+            [
+                ("date_edit_date_format", "Datums-/Zeitformat:"),
+                ("fieldtype_date", "Datum"),
+                ("fieldtype_date_desc", "Datumsauswahl (Tag / Monat / Jahr)")
+            ],
+           "en":
+            [
+                ("date_edit_date_format", "Date-/Time-format:"),
+                ("fieldtype_date", "date"),
+                ("fieldtype_date_desc", "date field (day / month / year)")
+            ]
+          }

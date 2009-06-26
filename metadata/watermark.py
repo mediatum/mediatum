@@ -153,7 +153,6 @@ class m_watermark(Metatype):
 
     ''' events '''
     def event_metafield_changed(self, node, field):
-        
         if "image" in node.type:
             items = node.items()
             #check if there is an original file and modify it in case
@@ -170,5 +169,20 @@ class m_watermark(Metatype):
                     node.addFile(FileNode(name=pngname, type="original_wm", mimetype="image/jpeg"))
                     print "watermark created for original file"
 
+    # method for additional keys of type watermark
+    def getLabels(self):
+        return m_watermark.labels
+
+    labels = { "de":
+            [
+                ("fieldtype_watermark", "Wasserzeichen"),
+                ("fieldtye_watermark_desc", "Wasserzeichen f\xc3\xbcr Bilder")
+            ],
+           "en":
+            [
+                ("fieldtype_watermark", "watermark"),
+                ("fieldtype_watermark_desc", "watermark for images")
+            ]
+         }
 
 

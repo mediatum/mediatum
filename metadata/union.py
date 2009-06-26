@@ -36,3 +36,20 @@ class m_union(Metatype):
 
     def getName(self):
         return "fieldtype_union"
+        
+    # method for additional keys of type union
+    def getLabels(self):
+        return m_union.labels
+
+    labels = { "de":
+            [
+                ("fieldtype_union", "Kombinationsfeld"),
+                ("fieldtype_union_desc", "kann aus beliebigen Metadatenfeldern bestehen")
+            ],
+           "en":
+            [
+                ("fieldtype_union", "combination field"),
+                ("fieldtype_union_desc", "combination of multiple metafata fields")
+            ]
+         }
+

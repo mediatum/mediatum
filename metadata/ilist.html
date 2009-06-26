@@ -1,8 +1,7 @@
 <tal:block metal:define-macro="editorfield">
     <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-50)+'px'; name name; id name; value value"/>
     &nbsp;
-    <button tal:attributes="name python:'indexbutton_'+name; onclick python:'openPopup(\'/popup_index?pid='+field.getName()+'&type='+field.getFieldtype()+'&name='+name+'\', \'\', 400, 400)'" style="width: 44px" type="button" title="Indexwerte anzeigen"  i18:attributes="title editor_index_title" i18n:translate="editor_index">Index</button>
-
+    <button tal:attributes="name python:'indexbutton_'+name; onclick python:'openPopup(\'/metatype/ilist?pid='+field.getName()+'&type='+field.getFieldtype()+'&name='+name+'\', \'\', 400, 400)'" style="width: 44px" type="button" i18:attributes="title editor_index_title" i18n:translate="editor_index">Index</button>
     <tal:block tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
         <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/>
         <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
@@ -11,7 +10,170 @@
 
 <select metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name" class="searchfield">
     <tal:block tal:repeat="val python:valuelist">
-        <option tal:condition="python:val[1]>0" tal:attributes="value python:'\''+val[0]+'\''; selected python:{'True':'selected', 'False':None}[str(context.value=='\''+val[0]+'\'')]" tal:content="raw python:val[0]+ ' ('+str(val[1])+')'"/>
-        <option tal:condition="python:val[1]==0" tal:attributes="value python:'\''+val[0]+'\''; selected python:{'True':'selected', 'False':None}[str(context.value=='\''+val[0]+'\'')]" tal:content="raw python:val[0]"/>
+        <option tal:condition="python:val[1]>0" tal:attributes="value python:'\''+val[0]+'\''; selected python:{'True':'selected', 'False':None}[str(context.value=='\''+val[0]+'\'')]" tal:content="python:val[0]+ ' ('+str(val[1])+')'"/>
+        <option tal:condition="python:val[1]==0" tal:attributes="value python:'\''+val[0]+'\''; selected python:{'True':'selected', 'False':None}[str(context.value=='\''+val[0]+'\'')]" tal:content="python:val[0]"/>
     </tal:block>
 </select>
+
+<metal:block metal:define-macro="popup">
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+    <html>
+        <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+            <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+            <title i18n:translate="popup_index_header">TEXT</title>
+            <script>
+                var old_id = new Array();
+                function trim(str)
+                {
+                    return str.replace(/^\s*|\s*$/g,"");
+                }
+
+                function pick(value)
+                {
+                    val = "";
+                    if (window.opener && !window.opener.closed){
+                        el = document.getElementById('values');
+                        doc = window.opener.document;
+                        for(i=0; i< old_id.length;i++){
+                            if(val.length){
+                                val+= ";";
+                            }
+                            val += el.options[old_id[i]].value;
+                        }
+                        doc.getElementById(value).value=val;
+                    }
+                    window.close();
+                }
+                        
+                function getValue(value)
+                {
+                    if (window.opener && !window.opener.closed){
+                        doc = window.opener.document;
+                        arr = doc.getElementById(value);
+                        
+                        if (arr){
+                            arr = arr.value.split(";");
+                            selObj = document.getElementById('values');
+                            for (i=0; i<selObj.length; i++) {
+                                for(j=0; j<arr.length; j++) {
+                                    if (trim(arr[j]) == selObj.options[i].value){
+                                         old_id[j] = i;
+                                    }
+                                }
+                            }
+                            if (old_id.length>0){
+                                for(i=0; i<old_id.length;i++){
+                                    selObj.options[old_id[i]].selected = true;
+                                }
+                            }
+                        }else{
+                            return;
+                        }
+                        setNumber();
+                    }
+                }
+
+                function setNumber()
+                {
+                    c = 0;
+                    selObj = document.getElementById('values');
+
+                    x = new Array();
+                    found=false;
+                    for (i=0; i<selObj.length; i++) {
+                        if (selObj.options[i].selected){
+                            x.push(i);
+                            found = false;
+                            for(j=0; j< old_id.length;j++){
+                                if(old_id[j]==i){
+                                    found=true;
+                                }
+                            }
+                            //add element
+                            if (found==false){
+                                old_id.push(i);
+                            }
+                        }
+                    }
+                    
+                    for (i=0; i<old_id.length; i++){
+                        found = false;
+                        for(j=0; j<x.length; j++){
+                            if(x[j]==old_id[i]){
+                                found = true;
+                            }
+                        }
+                        //remove element
+                        if (found==false){
+                            old_id.splice(i,1);
+                        }
+                    }
+
+                    for (i=0; i<selObj.length; i++) {
+                        if (selObj.options[i].selected){
+                            c++;
+                        }
+                    }
+
+                    obj = document.getElementById('count');
+                    obj.firstChild.data = c;
+                }
+
+                function showValues()
+                {
+                    txt = "";
+                    selObj = document.getElementById('values');
+
+                    for(i=0; i<old_id.length; i++){
+                        txt += "- " + selObj.options[old_id[i]].value + "\n";
+                    }
+                    if (txt!=""){
+                        alert(txt);
+                    }
+                }
+                
+                function clearSelection()
+                {
+                    selObj = document.getElementById('values');
+                    for (i=0; i<selObj.length; i++) {
+                        selObj.options[i].selected = false;
+                    }
+                }
+
+            </script>
+            <link href="/css/popup.css" rel="stylesheet" type="text/css">
+        </head>
+        <body class="form" tal:attributes="onload python:'getValue(\''+fieldname+'\')'">
+            <form>
+                <table class="maintable">
+                    <tr class="headline">
+                        <th><span i18n:translate="popup_index_header">TEXT</span>:</th>
+                    </tr>
+                    <tr>
+                        <td class="content">
+                            <select multiple id="values" class="sel" onchange="setNumber()">
+                                <tal:block tal:repeat="word index">
+                                    <option tal:condition="python:word and len(word)" tal:attributes="value word" tal:content="word"/>
+                                </tal:block>
+                            </select>
+                            <div style="text-align:right;float:right">
+                                <small style="font-size:9px"><span id="count">2</span> <span i18n:translate="popup_indexnumber">TEXT</span></small>
+                            </div>
+                            <div style="font-size:9px">
+                                <a i18n:attributes="title popup_listvalue_title" i18n:translate="popup_listvalue" href="#" onclick="showValues()">TEXT</a>
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                <a i18n:attributes="title popup_clearselection_title" i18n:translate="popup_clearselection" href="#" onclick="clearSelection()">TEXT</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="bottom">
+                        <td>
+                            <button tal:attributes="onclick python:'pick(\''+fieldname+'\')'" i18n:translate="popup_ok" type="button" style="width:100px">TEXT</button> <button i18n:translate="popup_cancel" type="button" onclick="window.close()" style="width: 100px">TEXT</button>
+                        </td>
+                    </tr> 
+                </table>
+            </form>
+        </body>
+    </html>
+</metal:block>

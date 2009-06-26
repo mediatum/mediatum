@@ -58,8 +58,14 @@ class _POFile:
         finally:
             self.lock.release()
         return self.map[key]
+        
+    def addKeys(self,items):
+        for item in items:
+            if item[0] not in self.map.keys():
+                self.map[item[0]] = item[1]
 
 lang2po = {}
+addlangitems = {}
 
 def translate(key, language=None, request=None):
     if request and not language:
@@ -72,13 +78,29 @@ def translate(key, language=None, request=None):
         filename = config.get("i18n."+language)
         if not filename:
             return key
-        lang2po[language] = _POFile(join_paths(config.basedir,config.get("i18n."+language)))
+            
+        items = _POFile(join_paths(config.basedir,config.get("i18n."+language)))
+        
+        lang2po[language] = items
 
     try:
         pofile = lang2po[language]
         return pofile.getTranslation(key)
     except KeyError:
-       return key
+        # try additional keys
+        try:
+            return addlangitems[language][key]
+        except KeyError:
+            return key
+       
+       
+def addLabels(labels={}):
+    for key in labels:
+        if not key in addlangitems.keys():
+            addlangitems[key] = {}
+        
+        for item in labels[key]:
+            addlangitems[key][item[0]] = item[1]
 
 def lang(req):
     if "change_language" in req.params and req.params["change_language"]:

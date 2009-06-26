@@ -524,7 +524,16 @@ class Menu:
         
     def getDefault():
         return self.default
+        
+        
+def getFormatedString(s):
+    l = ["b", "sub", "sup", "em"]
+    for i in l:
+        s = s.replace("&lt;"+i+"&gt;", "<"+i+">").replace("&lt;/"+i+"&gt;", "</"+i+">")
+    return s
 
+    
+    
 if __name__ == "__main__":
     def tt(s):
         t,f,l = splitname(s)

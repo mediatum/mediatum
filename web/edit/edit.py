@@ -30,7 +30,7 @@ import core.translation
 import core.athana as athana
 import utils.log
 from core.acl import AccessData
-from utils.utils import Link,isCollection, Menu
+from utils.utils import Link,isCollection, Menu, getFormatedString
 
 from edit_common import *
 from edit_acls import edit_acls
@@ -704,7 +704,7 @@ def content(req):
             <b i18n:translate="hint"></b><span i18n:translate="edit_tabarea_msg2"/><br/>
             <hr/>
             """, {})
-            req.write(node.show_node_big(req))
+            req.write(getFormatedString(node.show_node_big(req)))
         else:
             req.writeTALstr("""
             <span i18n:translate="edit_object_not_viewable"/><br>

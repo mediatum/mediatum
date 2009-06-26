@@ -23,7 +23,7 @@ import core.tree as tree
 import os
 import re
 
-from utils.utils import getCollection,Link,isCollection
+from utils.utils import getCollection,Link,isCollection, getFormatedString
 from core.acl import AccessData
 from core.translation import lang,t
 from web.frontend.searchresult import simple_search, extended_search
@@ -227,7 +227,6 @@ class ContentList(Content):
 
 
     def html(self,req):
-
         if self.content:
             headline = athana.getTAL("web/frontend/content_nav.html", {"nav": self}, macro="navheadline", language=lang(req))
             return headline + self.content.html(req)
@@ -355,7 +354,8 @@ class ContentNode(Content):
         if not self.node.isContainer():
             plist = getPaths(self.node, AccessData(req))
             paths = athana.getTAL("web/frontend/content_nav.html", {"paths": plist}, macro="paths", language=lang(req))
-        return self.node.show_node_big(req) + paths
+        
+        return getFormatedString(self.node.show_node_big(req)) + paths
 
 def fileIsNotEmpty(file):
     f = open(file)

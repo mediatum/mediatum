@@ -41,7 +41,7 @@ class m_check(Metatype):
     labels = { "de":
             [
                 ("fieldtype_check", "Checkbox"),
-                ("fieldtype_check_desc", "Checkbox Auswahl (für Ja/Nein-Werte)")
+                ("fieldtype_check_desc", "Checkbox Auswahl (f\xc3\xbcr Ja/Nein-Werte)")
             ],
            "en":
             [

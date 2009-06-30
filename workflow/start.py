@@ -55,9 +55,6 @@ class WorkflowStep_Start(WorkflowStep):
                 # just take all specified metatypes, so that edit area
                 # and workflow are independent on this
                 types += [(m, a)]
-                
-        print "##### ---> ", types
-        
         cookie_error = t(lang(req),"Your browser doesn't support cookies")
 
         js="""

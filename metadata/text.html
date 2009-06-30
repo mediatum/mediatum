@@ -18,11 +18,11 @@
         <meta content="text/html;charset=UTF-8" http-equiv="content-type">
         <title i18n:translate="text_popup_title">TEXT</title>
         <script type="text/javascript">
-            function detail(obj){
+            function detail(value, title){
                 o = document.getElementById("spcvalue");
-                o.innerHTML = "&#"+obj.value+";";
+                o.innerHTML = String.fromCharCode(value)
                 o = document.getElementById("spcname");
-                o.innerHTML = obj.title;
+                o.innerHTML = title;
             }
 
             function setFormated(obj){
@@ -31,6 +31,9 @@
             }
 
             function insert(aTag, eTag) {
+                if (eTag==''){
+                    aTag = String.fromCharCode(aTag);
+                }
                 var input = document.getElementById("value");
                 input.focus();
                 if(typeof document.selection != 'undefined') {
@@ -130,7 +133,7 @@
             </div>
             <div style="clear:both" i18n:translate="text_spcchar">TEXT</div>
             <div id="spccontainer">
-                <button tal:repeat="item charmap" type="button" id="items" tal:content="raw python:item[0]" tal:attributes="title python:item[2]; value python:item[1]" onmouseover="detail(this)" onclick="insert(String.fromCharCode(decodeURI(this.value)),'')"/>
+                <button tal:repeat="item charmap" type="button" id="items" tal:content="raw python:item[0]" tal:attributes="title python:item[2]; value python:item[1]; onmouseover python:'detail('+item[1]+',\''+item[2]+'\')'; onclick python:'insert(\''+item[1]+'\',\'\')'"/>
             </div>
             <div id="spcvalue"> </div>
             <div id="spcname"> </div>

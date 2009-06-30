@@ -36,11 +36,11 @@
         <meta content="text/html;charset=UTF-8" http-equiv="content-type">
         <title i18n:translate="memo_popup_title">TEXT</title>
         <script type="text/javascript">
-            function detail(obj){
+            function detail(value, title){
                 o = document.getElementById("spcvalue");
-                o.innerHTML = "&#"+obj.value+";";
+                o.innerHTML = String.fromCharCode(value)
                 o = document.getElementById("spcname");
-                o.innerHTML = obj.title;
+                o.innerHTML = title;
             }
 
             function setFormated(obj){
@@ -49,6 +49,9 @@
             }
 
             function insert(aTag, eTag) {
+                if (eTag==''){
+                    aTag = String.fromCharCode(aTag);
+                }
                 var input = document.getElementById("value");
                 input.focus();
                 if(typeof document.selection != 'undefined') {
@@ -119,7 +122,7 @@
             #value{border:1px solid silver;width:400px;height:100px;font-family:arial}
             #spcvalue{width:80px;height:80px;border:1px solid silver;float:right;margin:1px;padding-top:20px;font-size: 50px;text-align:center;background-color:#fff}
             #spcname{width:80px;height:80px;float:right}
-            #formatedvalue{width:400px;height:100px;display:block;font-size:14px;border:1px solid silver;float:left}
+            #formatedvalue{width:405px;height:100px;display:block;font-size:14px;border:1px solid silver;float:left;overflow:scroll}
             #spccontainer{width:450px;height:313px;border:1px solid silver;display:block;padding:2px 1px 1px 2px;float:left;background-color:#fff;margin-top:1px}
             #buttons{float:right;margin-top:14px;backgrond-color:#fff}
             #style:hover, #items:hover{ border:1px solid black}
@@ -148,7 +151,7 @@
             </div>
             <div style="clear:both" i18n:translate="memo_spcchar">TEXT</div>
             <div id="spccontainer">
-                <button tal:repeat="item charmap" type="button" id="items" tal:content="raw python:item[0]" tal:attributes="title python:item[2]; value python:item[1]" onmouseover="detail(this)" onclick="insert(String.fromCharCode(decodeURI(this.value)),'')"/>
+                <button tal:repeat="item charmap" type="button" id="items" tal:content="raw python:item[0]" tal:attributes="title python:item[2]; value python:item[1]; onmouseover python:'detail('+item[1]+',\''+item[2]+'\')'; onclick python:'insert(\''+item[1]+'\',\'\')'"/>
             </div>
             <div id="spcvalue"> </div>
             <div id="spcname"> </div>

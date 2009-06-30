@@ -41,7 +41,13 @@ class FLVReader(dict):
         self.dataOffset = self.readint()
         extraDataLen = self.dataOffset - self.file.tell()
         self.extraData = self.file.read(extraDataLen)
-        self.readtag()
+        try:
+            self.readtag()
+        except:
+            print "dirty file"
+            dimension = getFLVSize(filename)
+            self.update({"width":dimension[0], "height":dimension[1]})
+            
 
     def readtag(self):
         unknown = self.readint()
@@ -129,7 +135,6 @@ class FLVReader(dict):
 
     def readAMFDate(self):
         return datetime.fromtimestamp(self.readAMFDouble())
-
 
 def readU32(fi):
     s = fi.read(4)

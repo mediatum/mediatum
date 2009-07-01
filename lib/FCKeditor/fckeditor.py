@@ -1,24 +1,29 @@
 """
-FCKeditor - The text editor for internet
-Copyright (C) 2003-2005 Frederico Caldeira Knabben
+FCKeditor - The text editor for Internet - http://www.fckeditor.net
+Copyright (C) 2003-2009 Frederico Caldeira Knabben
 
-Licensed under the terms of the GNU Lesser General Public License:
-		http://www.opensource.org/licenses/lgpl-license.php
+== BEGIN LICENSE ==
 
-For further information visit:
-		http://www.fckeditor.net/
+Licensed under the terms of any of the following licenses at your
+choice:
 
-"Support Open Source software. What about a donation today?"
+ - GNU General Public License Version 2 or later (the "GPL")
+   http://www.gnu.org/licenses/gpl.html
 
-File Name: fckeditor.py
-	This is the integration file for Python.
+ - GNU Lesser General Public License Version 2.1 or later (the "LGPL")
+   http://www.gnu.org/licenses/lgpl.html
 
-File Authors:
-		Andrew Liu (andrew@liuholdings.com)
+ - Mozilla Public License Version 1.1 or later (the "MPL")
+   http://www.mozilla.org/MPL/MPL-1.1.html
+
+== END LICENSE ==
+
+This is the integration file for Python.
 """
 
 import cgi
 import os
+import re
 import string
 
 def escape(text, replace=string.replace):
@@ -39,9 +44,9 @@ def escape(text, replace=string.replace):
 class FCKeditor(object):
 	def __init__(self, instanceName):
 		self.InstanceName = instanceName
-		self.BasePath = '/FCKeditor/'
+		self.BasePath = 'FCKeditor/'
 		self.Width = '100%'
-		self.Height = '400'
+		self.Height = '200'
 		self.ToolbarSet = 'Default'
 		self.Value = '';
 
@@ -52,7 +57,7 @@ class FCKeditor(object):
 
 	def CreateHtml(self):
 		HtmlValue = escape(self.Value)
-		Html = "<div>"
+		Html = ""
 
 		if (self.IsCompatible()):
 			File = "fckeditor.html"
@@ -61,9 +66,8 @@ class FCKeditor(object):
 					File,
 					self.InstanceName
 					)
-
 			if (self.ToolbarSet is not None):
-				Link += "&amp;ToolBar=%s" % self.ToolbarSet
+				Link += "&amp;Toolbar=%s" % self.ToolbarSet
 
 			# Render the linked hidden field
 			Html += "<input type=\"hidden\" id=\"%s\" name=\"%s\" value=\"%s\" style=\"display:none\" />" % (
@@ -79,7 +83,7 @@ class FCKeditor(object):
 					)
 
 			# Render the editor iframe
-			Html += "<iframe id=\"%s\__Frame\" src=\"%s\" width=\"%s\" height=\"%s\" frameborder=\"no\" scrolling=\"no\"></iframe>" % (
+			Html += "<iframe id=\"%s\__Frame\" src=\"%s\" width=\"%s\" height=\"%s\" frameborder=\"0\" scrolling=\"no\"></iframe>" % (
 					self.InstanceName,
 					Link,
 					self.Width,
@@ -101,9 +105,13 @@ class FCKeditor(object):
 					HeightCSS,
 					HtmlValue
 					)
-		Html += "</div>"
+					
+		#print "#" * 60
+		#print Html
+		#print "#" * 60
+		
 		return Html
-	
+
 	def IsCompatible(self):
 		if (os.environ.has_key("HTTP_USER_AGENT")):
 			sAgent = os.environ.get("HTTP_USER_AGENT", "")
@@ -116,11 +124,21 @@ class FCKeditor(object):
 				return True
 			return False
 		elif (sAgent.find("Gecko/") >= 0):
-                        try:
-                            iVersion = int(sAgent[i+6:i+6+8])
-                        except:
-                            iVersion = 20030211
+			i = sAgent.find("Gecko/")
+			iVersion = int(sAgent[i+6:i+6+8])
 			if (iVersion >= 20030210):
+				return True
+			return False
+		elif (sAgent.find("Opera/") >= 0):
+			i = sAgent.find("Opera/")
+			iVersion = float(sAgent[i+6:i+6+4])
+			if (iVersion >= 9.5):
+				return True
+			return False
+		elif (sAgent.find("AppleWebKit/") >= 0):
+			p = re.compile('AppleWebKit\/(\d+)', re.IGNORECASE)
+			m = p.search(sAgent)
+			if (m.group(1) >= 522):
 				return True
 			return False
 		else:
@@ -145,4 +163,3 @@ class FCKeditor(object):
 				else:
 					sParams += "%s=%s" % (k, v)
 		return sParams
-					

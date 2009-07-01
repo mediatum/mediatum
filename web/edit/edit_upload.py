@@ -38,7 +38,7 @@ from core.tree import Node
 from core.acl import AccessData
 from schema.schema import loadTypesFromDB
 
-from core.translation import translate, lang
+from core.translation import translate, lang, t
 
 def elemInList(list, name):
     for item in list:
@@ -148,6 +148,7 @@ def upload_new(req):
     user = users.getUserFromRequest(req)
     datatype = req.params.get("datatype", "image")
     uploaddir = getUploadDir(user)
+
     workflow = "" #int(req.params["workflow"])
     
     if "file" in req.params.keys():
@@ -177,4 +178,138 @@ def upload_help(req):
         req.writeTAL("contenttypes/"+req.params.get("objtype", "") +".html", {}, macro="upload_help")
     except:
         None
+        
+def upload_for_html(req):
+    user = users.getUserFromRequest(req)
+    datatype = req.params.get("datatype", "image")
+    id=(req.path).split('/')[-2]
+
+    n=tree.getNode(id)
+    access = AccessData(req)
+    if not (access.hasAccess(n,'read') and access.hasAccess(n,'write') and access.hasAccess(n,'data')):
+        return 403
     
+    for key in req.params.keys():
+        if key.startswith("delete_"):
+            filename = key[7:-2]
+            for file in n.getFiles():
+                if file.getName() == filename:
+                    n.removeFile(file)
+
+    if "file" in req.params.keys():
+        file = req.params["file"]
+        del req.params["file"]
+        if hasattr(file,"filesize") and file.filesize>0:
+            try:
+                nodefile=importFile(file.filename, file.tempname)
+                
+                n.addFile(nodefile)
+                
+                req.request["Location"] = req.makeLink("nodefile_browser/%s/" % id, {}) # , {"id":id, "tab":"tab_editor"})
+            except EncryptionException:
+                req.request["Location"] = req.makeLink("content", {"id":id, "tab":"tab_editor", "error":"EncryptionError_"+datatype[:datatype.find("/")]})
+            except:
+                logException("error during upload")
+                req.request["Location"] = req.makeLink("content", {"id":id, "tab":"tab_editor", "error":"PostprocessingError_"+datatype[:datatype.find("/")]})
+
+            send_nodefile_tal(req)
+            return athana.HTTP_OK
+        
+    if "NewFile" in req.params.keys():
+        file = req.params["NewFile"]
+        del req.params["NewFile"]
+        if hasattr(file,"filesize") and file.filesize>0:
+            try:
+                nodefile=importFile(file.filename, file.tempname)
+
+                n.addFile(nodefile)
+
+            except EncryptionException:
+                req.request["Location"] = req.makeLink("content", {"id":id, "tab":"tab_editor", "error":"EncryptionError_"+datatype[:datatype.find("/")]})
+            except:
+                logException("error during upload")
+                req.request["Location"] = req.makeLink("content", {"id":id, "tab":"tab_editor", "error":"PostprocessingError_"+datatype[:datatype.find("/")]})
+
+            originalName=file.filename
+            newName=file.tempname.split('/')[2]
+            url='/file/'+id+'/'+newName
+            
+            # the following response is copied from the FCKeditor sources:
+            # lib/FCKeditor/files.zip/editor/filemanager/connectors/py/fckoutput.py
+            req.write("""<script type="text/javascript">
+			(function(){var d=document.domain;while (true){try{var A=window.parent.document.domain;break;}catch(e) {};d=d.replace(/.*?(?:\.|$)/,'');if (d.length==0) break;try{document.domain=d;}catch (e){break;}}})();
+
+			window.parent.OnUploadCompleted(%(errorNumber)s,"%(fileUrl)s","%(fileName)s","%(customMsg)s");
+			</script>""" % {
+			'errorNumber': 0,
+			'fileUrl': url.replace ('"', '\\"'),
+			'fileName': originalName.replace ( '"', '\\"' ) ,
+			'customMsg': (t(lang(req), "edit_fckeditor_cfm_uploadsuccess")),
+			})
+
+            return athana.HTTP_OK
+
+    send_nodefile_tal(req)
+    return athana.HTTP_OK
+    
+def send_fckfile(req, download=0):
+    id,filename = (req.path).split("/")[2:4]
+    try:
+        n = tree.getNode(id)
+    except tree.NoSuchNodeError:
+        return 404
+    access = AccessData(req)
+    if not (access.hasAccess(n,'read') and access.hasAccess(n,'data')):
+        return 403
+    if not access.hasAccess(n,"write") and n.type not in ["directory","collections","collection"]:
+        return 403
+    file = None
+    # try full filename
+    for f in n.getFiles():
+        if f.getName() == filename:
+            file = f
+            break
+
+    if file and not os.path.isfile(file.retrieveFile()) and n.get("archive_type")!="":
+        archivemanager.getManager(n.get("archive_type")).getArchivedFile(id)
+
+    if not file:
+        print "Document",req.path,"not found"
+        return 404
+
+    if req.params.get("delete", "") == "True":
+        print "---> delete==True, going to remove:",file.retrieveFile(),'from node ',id
+        n.removeFile(file)
+        try:
+            os.remove(file.retrieveFile())
+        except:
+            print "---> could not remove this file "
+        return
+
+    return req.sendFile(file.retrieveFile(), file.getMimeType())
+
+def send_nodefile_tal(req):
+    
+    id=(req.path).split('/')[-2]
+    n = tree.getNode(id)
+    access = AccessData(req)
+
+    if not (access.hasAccess(n,'read') and access.hasAccess(n,'write') and access.hasAccess(n,'data')):
+        return 403
+    try:
+        node = tree.getNode(id)
+    except tree.NoSuchNodeError:
+        return 404
+    if not access.hasAccess(node,"write") and node.type not in ["directory","collections","collection"]:
+        return 403
+    
+    # only pass images to the file browser
+    files = [f for f in node.getFiles() if f.mimetype.startswith("image")]
+
+    # this flag may switch the display of a "delete" button in the customs file browser in web/edit_editor.html
+    showdelbutton=True
+   
+    req.writeTAL("web/edit/edit_editor.html", {"id":id, "node":node, "files":files, "logoname":node.get("system.logo"), "delbutton":showdelbutton}, macro="fckeditor_customs_filemanager")
+    
+    return athana.HTTP_OK
+

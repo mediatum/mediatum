@@ -105,6 +105,9 @@ def initContexts():
     file.addHandler("action").addPattern("/edit_action")
     file = context.addFile("web/edit/edit_upload.py")
     file.addHandler("upload_new").addPattern("/upload_new")
+    file.addHandler("upload_for_html").addPattern("/upload_for_html/.*")
+    file.addHandler("send_nodefile_tal").addPattern("/nodefile_browser/.*")
+    file.addHandler("send_fckfile").addPattern("/fckfile/.*")    
     file = context.addFile("web/edit/edit_import.py")
     file.addHandler("import_new").addPattern("/import_new")
     file = context.addFile("web/edit/edit_license.py")
@@ -125,7 +128,7 @@ def initContexts():
     athana.addFileStore("/css/", "web/css/")
     athana.addFileStore("/xml/", "web/xml/")
     athana.addFileStore("/img/", ["web/img/", "img","web/admin/img/", "web/edit/img/"])
-    athana.addFileStore("/js/", ["web/js/", "js"]) 
+    athana.addFileStore("/js/", ["web/js/", "js", "lib/FCKeditor/js/"]) 
 
     #athana.addContext("/flush", ".").addFile("core/webconfig.py").addHandler("flush").addPattern("/py")
     

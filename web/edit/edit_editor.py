@@ -26,6 +26,7 @@ from core.tree import FileNode
 
 from lib.FCKeditor import fckeditor
 from core.acl import AccessData
+from core.translation import lang
 
 def edit_editor(req, node, filenode):
     user = users.getUserFromRequest(req)
@@ -68,14 +69,22 @@ def edit_editor(req, node, filenode):
         except:
             os.environ['HTTP_USER_AGENT'] = req.request.request_headers['user-agent']
 
+        # these configurations override those in the custom configuration file
+        # the configurations in the custom configuration file overide those in fckconfig.js
         oFCKeditor = fckeditor.FCKeditor('file_content_'+path)
+        oFCKeditor.BasePath = "/module/"
+        oFCKeditor.Config['CustomConfigurationsPath']='/js/custom_config.js'
         oFCKeditor.Width="100%"
         oFCKeditor.Height="500px"
-        oFCKeditor.ToolbarSet = "mis"
-        oFCKeditor.BasePath = "/module/"
+        oFCKeditor.ToolbarSet = 'mediatum'
         oFCKeditor.Value = getFiletemplate(req, node, path, {})
-
-        req.writeTAL("web/edit/edit_editor.html", {"id":req.params.get('id'), "oFCKeditor":oFCKeditor, "path":path}, macro="edit_editor")
+        oFCKeditor.Config['AutoDetectLanguage'] = 'false'  # boolean javascript
+        oFCKeditor.Config['DefaultLanguage'] = lang(req)
+        oFCKeditor.Config['ImageBrowserURL'] = ('/edit/nodefile_browser/%s/' % node.id)
+        oFCKeditor.Config['LinkBrowserURL'] = ('/edit/nodefile_browser/%s/' % node.id)
+        oFCKeditor.Config['ImageUploadURL'] = ('/edit/upload_for_html/%s/' % node.id)
+        
+        req.writeTAL("web/edit/edit_editor.html", {"id":req.params.get('id'), "oFCKeditor":oFCKeditor, "path":path, "node":node, "files":node.getFiles(), "logoname":node.get("system.logo"), "delbutton":False}, macro="edit_editor")
     else:
         req.writeTAL("web/edit/edit_editor.html", {}, macro="header")
         req.write(getFiletemplate(req, node, path, {}))

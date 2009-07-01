@@ -44,7 +44,7 @@ def makeThumbNail(image, thumb):
     print "Creating thumbnail for image ",image
     pic = Image.open(image)
 
-    if pic.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")):
+    if pic.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode=="P":
         tmpjpg = "/tmp/img"+str(random.random())+".jpg"
         os.system("convert "+image+" -depth 8 -colorspace rgb "+tmpjpg)
         pic = Image.open(tmpjpg)

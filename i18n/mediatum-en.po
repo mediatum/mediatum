@@ -2282,6 +2282,46 @@ msgstr "File"
 msgid "edit_upload_upload_label"
 msgstr "Create / Upload"
 
+### edit FCKeditor custom file manager ###
+msgid "edit_fckeditor_cfm_filetype"
+msgstr "Type"
+
+msgid "edit_fckeditor_cfm_filesize"
+msgstr "Size"
+
+msgid "edit_fckeditor_cfm_mimetype"
+msgstr "Mimetype"
+
+msgid "edit_fckeditor_cfm_nameonserver"
+msgstr "Name on server"
+
+msgid "edit_fckeditor_cfm_delete"
+msgstr "delete"
+
+msgid "edit_fckeditor_cfm_clicktochoose"
+msgstr "Click on an image to select"
+
+msgid "edit_fckeditor_cfm_hasnoimages"
+msgstr "No images uploaded for this page. Upload an image first."
+
+msgid "edit_fckeditor_cfm_closewindow"
+msgstr "Close Window"
+
+msgid "edit_fckeditor_cfm_imageislogo"
+msgstr "image is logo"
+
+msgid "edit_fckeditor_cfm_uploadexplain"
+msgstr "You can upload a new file to this node:"
+
+msgid "edit_fckeditor_cfm_uploadbutton"
+msgstr "upload to server"
+
+msgid "edit_fckeditor_cfm_deleteconfirm"
+msgstr "Do you really want to delete this file?"
+
+msgid "edit_fckeditor_cfm_uploadsuccess"
+msgstr "The file has been uploaded."
+
 ### workflow ###
 msgid "edit_workflow_msg1"
 msgstr "Current object has no workflow. To assign it into a workflow choose one of the list and confirm with 'save'."

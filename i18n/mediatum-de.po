@@ -2276,6 +2276,46 @@ msgstr "Datei"
 msgid "edit_upload_upload_label"
 msgstr "Anlegen / Hochladen"
 
+### edit FCKeditor custom file manager ###
+msgid "edit_fckeditor_cfm_filetype"
+msgstr "Typ"
+
+msgid "edit_fckeditor_cfm_filesize"
+msgstr "Größe"
+
+msgid "edit_fckeditor_cfm_mimetype"
+msgstr "Mimetype"
+
+msgid "edit_fckeditor_cfm_nameonserver"
+msgstr "Name auf Server"
+
+msgid "edit_fckeditor_cfm_delete"
+msgstr "löschen"
+
+msgid "edit_fckeditor_cfm_clicktochoose"
+msgstr "Bild durch Anklicken auswählen"
+
+msgid "edit_fckeditor_cfm_hasnoimages"
+msgstr "Es sind noch keine Bilder für diese Seite hochgeladen. Bitte zuerst ein Bild hochladen."
+
+msgid "edit_fckeditor_cfm_closewindow"
+msgstr "Fenster schließen"
+
+msgid "edit_fckeditor_cfm_imageislogo"
+msgstr "Bild ist Logo"
+
+msgid "edit_fckeditor_cfm_uploadexplain"
+msgstr "Sie können eine neue Datei für diesen Node hochladen:"
+
+msgid "edit_fckeditor_cfm_uploadbutton"
+msgstr "auf Server hochladen"
+
+msgid "edit_fckeditor_cfm_deleteconfirm"
+msgstr "Wollen Sie diese Datei wirklich löschen?"
+
+msgid "edit_fckeditor_cfm_uploadsuccess"
+msgstr "Die Datei wurde hochgeladen."
+
 ### workflow ###
 msgid "edit_workflow_msg1"
 msgstr "Das aktuelle Objekt ist in keinem Workflow eingebunden. Um es in einen Workflow zuzuordnen, w&auml;hlen Sie einen aus der Liste und bestätigen mit 'Speichern'."

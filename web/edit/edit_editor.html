@@ -54,22 +54,6 @@ window.opener.SetUrl( fileUrl ) ;
 window.close() ;
 }
 
-function delete_nodefile(s, id, filename){
-    var win1;
-    var erg;
-    var mssg = document.getElementById("deleteconfirm").innerHTML;
-    erg = confirm(unescape(mssg));
-    if (erg == true) {
-    win1=window.open(s+'?delete=True', '', 'width=1,height=1');
-    win1.close();
-    var el = document.getElementById(filename);
-    el.style.display = 'none';
-    return 1;
-    } else {
-    return 1;
-    };
-}
-        
 </script>
 
 </head>
@@ -138,7 +122,29 @@ function delete_nodefile(s, id, filename){
         </span>    
         
         <span tal:condition="python: False">
-              <!-- disabled delete button !-->
+        
+              <!-- disabled delete button !-->        
+        
+              <script type="text/javascript">
+              
+              function delete_nodefile(s, id, filename){
+                  var win1;
+                  var erg;
+                  var mssg = document.getElementById("deleteconfirm").innerHTML;
+                  erg = confirm(unescape(mssg));
+                  if (erg == true) {
+                  win1=window.open(s+'?delete=True', '', 'width=1,height=1');
+                  win1.close();
+                  var el = document.getElementById(filename);
+                  el.style.display = 'none';
+                  return 1;
+                  } else {
+                  return 1;
+                  };
+              }
+                      
+              </script>        
+
               <div width="75px" style="text-align:center;" tal:condition="python:delbutton">
                   <img i18n:attributes="title edit_fckeditor_cfm_delete" tal:attributes="name python:'delete_'+file.getName(); onclick python:'return delete_nodefile(\'/edit/fckfile/'+node.id+'/'+file.getName()+'\', '+node.id+', \''+file.getName()+'\')'; " type="image" src="/img/delete.png"/>
               </div>

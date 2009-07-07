@@ -1,7 +1,6 @@
 
 <div id="clean-container" metal:define-macro="edit_tabs">
     <div id="logocontainer">
-        
         <div class="logotext">
             <span i18n:translate="editor_main_header">TEXT</span><br/>
             <span i18n:translate="sub_header_user">TEXT</span>: <span tal:replace="raw python:user.getName()"/>
@@ -11,6 +10,9 @@
         </div>
     </div>
     <div class="topmenucontainer">
+        <div id="nodeid">
+            ID: <span tal:replace="python:str(ids)"/>
+        </div>
         <ul id="nav">
             <tal:block tal:repeat="navitem python:menu">
             <li tal:condition="python:len(navitem.getItemList())>0"><a tal:condition="python:len(navitem.getItemList())==0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]; href python:navitem.link; target python:navitem.target" i18n:translate="" tal:content="python:navitem.name">TEXT</a>
@@ -25,20 +27,17 @@
             </li>          
             </tal:block>
         </ul>
-        <div style="padding-top:5px;position:absolute;right:2px;">
-            ID: <span tal:replace="python:str(ids)"/>
-        </div>
         <div class="clearb"></div>
-        <div class="breadcrumbs">
-            <h2 class="breadcrumbs">
-                <tal:block tal:repeat="item breadcrumbs">
-                    <tal:block tal:content="python:item.replace('*','')" i18n:translate="">TEXT</tal:block>
-                    <tal:block tal:condition="python:breadcrumbs.index(item)<len(breadcrumbs)-1">
-                     &raquo; 
-                    </tal:block>
+    </div>
+    <div class="breadcrumbs">
+       <h2 class="breadcrumbs">
+            <tal:block tal:repeat="item breadcrumbs">
+                <tal:block tal:content="python:item.replace('*','')" i18n:translate="">TEXT</tal:block>
+                <tal:block tal:condition="python:breadcrumbs.index(item)<len(breadcrumbs)-1">
+                 &raquo; 
                 </tal:block>
-            </h2>
-        </div>
+            </tal:block>
+        </h2>
     </div>
 </div>
 
@@ -85,6 +84,13 @@
     </html>
 </metal:block>
 
+<table metal:define-macro="edit_paging" width="100%" style="padding-top:5px;margin-top:0px;">
+    <tr width="100%">
+        <td style="width:50px" tal:content="raw linkback"></td>
+        <td align="center" width="100%" style="text-align:center" tal:content="raw position">TEXT</td>
+        <td style="width:50px" tal:content="raw linknext">TEXT</td>
+    </tr>
+</table>
 
 <html metal:define-macro="edit_action_error">
     <body>

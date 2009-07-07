@@ -178,6 +178,7 @@ code, tt, pre
 	background: #243135 url(/img/layout/edit_bg_banner.png) repeat-x left top;
 	border-bottom: 1px solid #D9E2E6;
 	width:auto;
+    overflow:hidden;
    }
  /* Top - logo */	 
 #logocontainer img  {
@@ -210,7 +211,7 @@ visibility: hidden;
 * html .clear {height: 1%;} 
 .clear {display: block;} 
 
-div.logotext a{
+div.logotext a, a:visited{
     color: silver;
     margin: 5px;
 }
@@ -368,10 +369,19 @@ p.lbpass  {
 div.topmenucontainer  {
  	background-color: #243135;
 	width:auto;
-    height: 40px;
 	border-top: 1px solid #3F565C;  /*height:50px;*/
+    border-bottom:1px solid silver;
 	margin: 0;
     padding: 0;
+    height:78px;
+    overflow:hidden;
+}
+
+div.topmenucontainer div#nodeid{
+    padding-top:12px;
+    position:absolute;
+    right:2px;
+    color:#fff;
 }
 
 ul#nav, ul#nav ul  {

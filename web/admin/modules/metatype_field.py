@@ -166,6 +166,8 @@ def FieldDetail(req, pid, id, err=0):
         v["valuelist"] = field.getValueList()
         while len(v["valuelist"])!=4:
             v["valuelist"].append("")
+    else:
+        v["valuelist"] = field.getValueList()
 
     v["adminfields"] = []
     for t in getMetaFieldTypeNames():

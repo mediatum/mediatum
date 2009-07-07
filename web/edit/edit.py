@@ -504,28 +504,20 @@ def isDirectory(node):
 
 def showPaging(req, tab, ids):
     nodelist = req.session.get("nodelist", None)
+    
+    link1 = '&nbsp;'
+    link2 = '&nbsp;'
+    position = '&nbsp;'
+    
     if nodelist and len(ids)==1:
         previd = nodelist.getPrevious(ids[0])
         if previd:
             link1 = '<a href="/edit/edit_content?id=%s&tab=%s"><img border="0" src="/img/pageleft.gif"></a>' % (previd, tab)
-        else:
-            link1 = '&nbsp;'
         nextid = nodelist.getNext(ids[0])
         if nextid:
             link2 = '<a href="/edit/edit_content?id=%s&tab=%s"><img border="0" src="/img/pageright.gif"></a>' % (nextid, tab)
-        else:
-            link2 = '&nbsp;'
-
-        req.write("""
-        <table width="100%%" style="padding-top:5px;margin-top:24px">
-        <tr width="100%%"><td style="width:50px">%s</td><td align="center" width="100%%" style="text-align:center">%s</td><td style="width:50px">%s</td></tr>
-        </table>
-        """ % (link1, nodelist.getPositionString(ids[0]), link2))
-    else:
-        req.write("""
-        <table width="100%%" style="padding-top:5px;margin-top:24px">
-        <tr width="100%%"><td>&nbsp;</td></tr>
-        </table>""")
+        position = nodelist.getPositionString(ids[0])
+    req.writeTAL("web/edit/edit.html", {"linkback":link1, "linknext":link2, "position":position}, macro="edit_paging")
         
 
 def content(req):
@@ -539,8 +531,6 @@ def content(req):
             pass
 
     ids = getIDs(req)
-
-    print req.params
     if req.params.get("type","")== "help":
         if req.params.get("tab","")=="tab_upload":   
             upload_help(req)
@@ -638,7 +628,9 @@ def content(req):
         return   
 
     showPaging(req, current, ids)
+    req.write('<p style="text-align:right"><a href="/print/'+str(node.id)+'" target="_blank"><img src="/img/print_icon.gif"/></a>&nbsp;&nbsp;</p>')
     req.write('<div style="margin:5px;border:1px solid silver;padding: 4px">')
+    
     
     # some tabs operate on only one file
     if current in ["tab_files", "tab_editor", "tab_view", "tab_upload"]:

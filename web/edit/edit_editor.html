@@ -35,9 +35,11 @@
         
 <style type="text/css">
 
-.imagecontainer { height:150px; width: 150px; float:left; border:1px solid #888; padding:3px; margin:3px; text-align:center; display:block;}
+.imagecontainer { height:150px; width: 150px; float:left; border:1px solid #888; padding:3px; margin:3px; text-align:center; display:block; vertical-align:middle;}
 
-.image { height:110px; width:144px; border:1px solid #888; display:block;}
+.innerimagecontainer { height:110px; width:144px; border:1px solid #888; }
+
+.image { border:1px solid #888;}
 
 #closewindowdiv
 {
@@ -107,8 +109,12 @@ window.close() ;
 
  <div>
     <div class="imagecontainer" tal:repeat="file files" tal:attributes="id python:file.getName()">
+    
+    <div  class="innerimagecontainer"  tal:attributes="onclick python:'return SelectFile(\'/file/'+node.id+'/'+file.getName()+'\', '+node.id+')'">
 
-    <img class="image" i18n:attributes="title edit_fckeditor_cfm_clicktochoose"  tal:attributes="src python:'/file/'+node.id+'/'+file.getName(); onclick python:'return SelectFile(\'/file/'+node.id+'/'+file.getName()+'\', '+node.id+')'">
+     <img class="image" i18n:attributes="title edit_fckeditor_cfm_clicktochoose"  tal:attributes="width python:fit(file.retrieveFile(), (140,100))[0]; height python:fit(file.retrieveFile(), (140,100))[1]; src python:'/file/'+node.id+'/'+file.getName();">
+    
+    </div>
 
         <div i18n:attributes="title edit_fckeditor_cfm_nameonserver;"  tal:attributes="onclick python:'return SelectFile(\'/file/'+node.id+'/'+file.getName()+'\', '+node.id+')'" tal:content="python:'/file/'+node.id+'/'+file.getName()">
         </div>   

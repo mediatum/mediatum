@@ -306,15 +306,19 @@ def send_nodefile_tal(req):
     
     def fit(imagefile, cn):
         # fits the image into a box with dimensions cn, returning new width and height
-        sz=PIL.Image.open(imagefile).size
-        (x, y)=(sz[0], sz[1])
-        if x > cn[0]:
-            y=(y*cn[0])/x
-            x=(x*cn[0])/x
-        if y > cn[1]:
-            x=(x*cn[1])/y
-            y=(y*cn[1])/y
-        return (x,y)
+        try:
+            sz=PIL.Image.open(imagefile).size
+            print "--->", sz
+            (x, y)=(sz[0], sz[1])
+            if x > cn[0]:
+                y=(y*cn[0])/x
+                x=(x*cn[0])/x
+            if y > cn[1]:
+                x=(x*cn[1])/y
+                y=(y*cn[1])/y
+            return (x,y)
+        except:
+            return cn
     
     # only pass images to the file browser
     files = [f for f in node.getFiles() if f.mimetype.startswith("image")]

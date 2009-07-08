@@ -25,7 +25,7 @@ import re
 import utils.date
 from utils.log import logException
 import core.config as config
-import zipfile
+import zipfile, PIL.Image
 import random 
 import logging
 from core.datatypes import loadAllDatatypes
@@ -197,14 +197,14 @@ def upload_for_html(req):
                     n.removeFile(file)
 
     if "file" in req.params.keys():
+        # file upload via (possibly disabled) upload form in custom image browser
         file = req.params["file"]
         del req.params["file"]
         if hasattr(file,"filesize") and file.filesize>0:
             try:
+                logging.getLogger('editor').info(user.name + " upload "+file.filename+" ("+file.tempname+")")
                 nodefile=importFile(file.filename, file.tempname)
-                
                 n.addFile(nodefile)
-                
                 req.request["Location"] = req.makeLink("nodefile_browser/%s/" % id, {}) # , {"id":id, "tab":"tab_editor"})
             except EncryptionException:
                 req.request["Location"] = req.makeLink("content", {"id":id, "tab":"tab_editor", "error":"EncryptionError_"+datatype[:datatype.find("/")]})
@@ -216,14 +216,14 @@ def upload_for_html(req):
             return athana.HTTP_OK
         
     if "NewFile" in req.params.keys():
+        # file upload via FCKeditor Image Properties / Upload tab
         file = req.params["NewFile"]
         del req.params["NewFile"]
         if hasattr(file,"filesize") and file.filesize>0:
             try:
+                logging.getLogger('editor').info(user.name + " upload "+file.filename+" ("+file.tempname+")")
                 nodefile=importFile(file.filename, file.tempname)
-
                 n.addFile(nodefile)
-
             except EncryptionException:
                 req.request["Location"] = req.makeLink("content", {"id":id, "tab":"tab_editor", "error":"EncryptionError_"+datatype[:datatype.find("/")]})
             except:
@@ -278,12 +278,13 @@ def send_fckfile(req, download=0):
         return 404
 
     if req.params.get("delete", "") == "True":
-        print "---> delete==True, going to remove:",file.retrieveFile(),'from node ',id
+        user = users.getUserFromRequest(req)
+        logging.getLogger('editor').info(user.name + " going to remove "+file.retrieveFile()+" via startpage editor on node " + id)
         n.removeFile(file)
         try:
             os.remove(file.retrieveFile())
         except:
-            print "---> could not remove this file "
+            logException("could not remove file: %s" % file.retrieveFile())
         return
 
     return req.sendFile(file.retrieveFile(), file.getMimeType())
@@ -303,13 +304,25 @@ def send_nodefile_tal(req):
     if not access.hasAccess(node,"write") and node.type not in ["directory","collections","collection"]:
         return 403
     
+    def fit(imagefile, cn):
+        # fits the image into a box with dimensions cn, returning new width and height
+        sz=PIL.Image.open(imagefile).size
+        (x, y)=(sz[0], sz[1])
+        if x > cn[0]:
+            y=(y*cn[0])/x
+            x=(x*cn[0])/x
+        if y > cn[1]:
+            x=(x*cn[1])/y
+            y=(y*cn[1])/y
+        return (x,y)
+    
     # only pass images to the file browser
     files = [f for f in node.getFiles() if f.mimetype.startswith("image")]
 
     # this flag may switch the display of a "delete" button in the customs file browser in web/edit_editor.html
     showdelbutton=True
    
-    req.writeTAL("web/edit/edit_editor.html", {"id":id, "node":node, "files":files, "logoname":node.get("system.logo"), "delbutton":showdelbutton}, macro="fckeditor_customs_filemanager")
+    req.writeTAL("web/edit/edit_editor.html", {"id":id, "node":node, "files":files, "fit":fit, "logoname":node.get("system.logo"), "delbutton":showdelbutton}, macro="fckeditor_customs_filemanager")
     
     return athana.HTTP_OK
 

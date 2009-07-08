@@ -52,7 +52,7 @@ def edit_logo(req, ids):
         # save filename
         if req.params.get("logo")=="nologo":
             # remove logo from current node
-            node.removeAttribute("system.logo")
+            node.set("system.logo","")
 
         elif req.params.get("logo")!="":
             node.set("system.logo", req.params.get("logo"))

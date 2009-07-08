@@ -308,7 +308,6 @@ def send_nodefile_tal(req):
         # fits the image into a box with dimensions cn, returning new width and height
         try:
             sz=PIL.Image.open(imagefile).size
-            print "--->", sz
             (x, y)=(sz[0], sz[1])
             if x > cn[0]:
                 y=(y*cn[0])/x

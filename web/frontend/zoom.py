@@ -22,6 +22,8 @@ import core.tree as tree
 import os
 import Image
 import sys
+import zipfile
+import core.config as config
 from utils.dicts import MaxSizeDict
 from utils.fileutils import importFile
 IMGNAME = re.compile("/?tile/([^/]*)(/(.*))?$")
@@ -58,6 +60,10 @@ class ZoomImage:
         self.height = int(self.node.get("height"))
         self.levels = int(self.node.get("levels") or "0")
         self.img = None
+        self.z_file = None
+        self.filepath = None
+        self.load()
+        
         if not self.levels:
             self.load()
         if store and preprocess:
@@ -70,11 +76,10 @@ class ZoomImage:
         for f in self.node.getFiles():
             if f.type == "image":
                 filename = f.retrieveFile()
+                self.filepath = os.path.dirname(filename)
                 break
         else:
             raise AttributeError("Not an image")
-        
-        print "loading image",filename
 
         self.img = Image.open(filename)
         self.img.load()
@@ -87,11 +92,23 @@ class ZoomImage:
         self.node.set("levels", str(self.levels))
 
     def preprocess(self):
+        names = []
         for level in range(self.levels+1):
             t = (TILESIZE<<(self.levels-level))
             for x in range((self.width + (t-1)) / t):
                 for y in range((self.height + (t-1)) / t):
-                    self.getTile(level, x, y, 1)
+                    names.append(self.getTile(level, x, y, 1))
+
+        # open the zip file for writing, and write stuff to it
+        file = zipfile.ZipFile(self.filepath+"/zoom"+str(self.node.id)+".zip", "w")
+        for name in names:
+            file.write(name, os.path.basename(name), zipfile.ZIP_DEFLATED)
+            os.unlink(name)
+        file.close()
+        
+        self.node.addFile(tree.FileNode(name="zoom"+str(self.node.id)+".zip",mimetype="application/zip",type="zoom"))
+
+
 
     def getTile(self, level, x, y, generate=0):
         if level > self.levels:
@@ -99,10 +116,13 @@ class ZoomImage:
 
         tileid = "tile-%d-%d-%d" % (level,x,y)
 
-        # TODO: this linear search is still somewhat slow
-        for f in self.node.getFiles():
-            if f.type == tileid:
-                return f.retrieveFile()
+        if not self.z_file:
+            for f in self.node.getFiles():  
+                if f.type=="zoom":
+                    self.z_file = zipfile.ZipFile(self.filepath+"/"+f.getName(), "r")
+                    break
+        if self.z_file:
+            return self.z_file.read(tileid+".jpg")
 
         if not generate:
             return None
@@ -129,15 +149,8 @@ class ZoomImage:
         yl = (y1-y0) / level
 
         img = self.img.crop((x0,y0,x1,y1)).resize((xl,yl))
-        tmpname = os.tmpnam()+".jpg"
+        tmpname = self.filepath+"/"+tileid+".jpg"
         img.save(tmpname)
-
-        if store:
-            file = importFile(tmpname, tmpname)
-            file.type = tileid
-            self.node.addFile(file)
-            print "Storing tile in node"
-
         return tmpname
 
 def send_imageproperties_xml(req):
@@ -149,8 +162,7 @@ def send_imageproperties_xml(req):
 def send_tile(req):
     nid, data = splitpath(req.path)
     img = getImage(nid)
-
-    zoomlevels = 4 # ?
+    zoomlevels = 4
 
     if not req.path.endswith(".jpg"):
         print "invalid tile request", req.path
@@ -159,13 +171,7 @@ def send_tile(req):
     zoom,x,y = map(int, jpg.split("-"))
 
     tmpname = img.getTile(zoom, x, y)
-    if not tmpname:
-        return 404
-    r = req.sendFile(tmpname, "image/jpeg")
-   
-    if not store:
-        os.unlink(tmpname)
-
-    return r
+    req.write(tmpname)
+    return tmpname
 
 

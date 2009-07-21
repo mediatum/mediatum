@@ -74,6 +74,7 @@ def getentries(filename):
                 recordnr = recordnr + 1
                 pos = m.end()
             fields = {}
+            fields["key"] = key
             records += [(doctype,key,fields)]
         elif doctype:
             # new record
@@ -125,25 +126,6 @@ def getentries(filename):
         else:
             pos = end
     return records
-
-#article_types = [
-#("article", "bibtex-article", "dt-zeitschriftenaufsatz",
-# ["author", "title", "journal", "year", "volume", "number", "pages", "month", "note"]),
-#("book,booklet,inbook", "bibtex-book", "dt-buch", 
-# ["author", "editor", "title", "publisher", "year", "volume", "number", "series", "address", "edition", "month", "note"]),
-#("manual,techreport,report", "bibtex-report", "dt-report",
-# ["author", "title", "institution", "year", "address", "month", "number", "note"]),
-#("proceedings,conference", "bibtex-proceedings", "dt-konferenzband",
-# ["title", "year", "editor", "volume", "number", "series", "address", "publisher", "note", "month", "organization"]),
-#("inproceedings", "bibtex-inproceedings", "dt-konferenzbeitrag",
-# ["author", "title", "booktitle", "year", "editor", "volume", "number", "series", "pages", "address", "month", "organization", "publisher", "note"]),
-#("incollection", "bibtex-incollection", "dt-buchbeitrag",
-# ["author", "title", "booktitle", "publisher", "year", "editor", "volume", "number", "series", "chapter", "pages", "address", "edition", "month", "note"]),
-#("phdthesis", "bibtex-incollection", "diss",
-# ["author", "title", "school", "year"]),
-#("mastersthesis", "bibtex-incollection", "diss",
-# ["author", "title", "school", "year"])
-#]
 
 article_types = [
 ("article", "An article from a journal or magazine.",
@@ -303,9 +285,9 @@ def importBibTeX(file, node=None):
                             k = ("p-"+k) 
                             break
 
-                if k not in fieldnames:
-                    print mytype,"->",metatype,"!",k
-                print k,v
+                #if k not in fieldnames:
+                #    print mytype,"->",metatype,"!",k
+
                 doc.set(k,v)
             node.addChild(doc)
     return node

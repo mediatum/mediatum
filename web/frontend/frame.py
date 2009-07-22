@@ -220,7 +220,7 @@ class NavTreeEntry:
                 if count==0:
                     return self.node.getLabel()
                 else:
-                    return self.node.getLabel()+" (" + str(count) + ")"
+                    return self.node.getLabel()+" <small>(" + str(count) + ")</small>"
             else:
                 return self.node.getLabel()
         except:

@@ -922,7 +922,7 @@ def showtree(req):
     def f(req,node,objnum,link,indent,type):
         indent *= 10
         if objnum and node.getType().getName()!="root":
-            items = ' ('+str(objnum)+')'
+            items = ' <small>('+str(objnum)+')</small>'
         else:
             items = ''
 

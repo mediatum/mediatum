@@ -16,26 +16,45 @@
 </metal:block>
 
 
-<tal:block metal:define-macro="fullsize_flv">
-    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
-    <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-        <head>
-            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-            <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+<html metal:define-macro="fullsize_flv" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta content="text/html;charset=UTF-8" http-equiv="content-type">
 
-            <title i18n:translate="video_showvideo">TEXT</title>
-            <script src="/js/flowplayer-3.0.5.min.js"> </script>
-            
-            <style>
-                body{
-                margin:0px;padding:0px;
-                }
-            </style>
+        <title i18n:translate="video_showvideo">TEXT</title>
+        <script src="/js/flowplayer-3.0.5.min.js"> </script>
         
-        </head>
-        <body onload="flowplayer('player', '/img/FlowPlayerDark.swf');">
-            <p tal:replace="raw script"/>
-        </body>
-    </html>
-</tal:block>
+        <style>
+            body{
+                margin:0px;padding:0px;
+            }
+            html{
+                height:100%;
+            }
+        </style>
+    
+    </head>
+    <body>
+        <a tal:attributes="href file" style="display:block;width:100%;height:100%" id="player"></a>
+        <script language="JavaScript">
+            flowplayer("player", "/img/FlowPlayerDark.swf", {
+                plugins: {         
+                    controls: {
+                        autoHide: 'always',
+                        bufferColor: '#000000',
+                        progressColor: '#6E6E6E',
+                        buttonColor: '#000000',
+                        buttonOverColor: '#000000',
+                        durationColor: "#ffffff",
+                        timeColor: "#9E9E9E",
+                        backgroundGradient: 'none',
+                        time: true
+                        }
+                    }
+                }
+            );
+        </script>
+    </body>
+</html>
+
 

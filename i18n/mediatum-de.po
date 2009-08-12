@@ -102,6 +102,39 @@ msgstr "Hinweis zur sicheren Verbindung mit verschlüsselter Datenübertragung:<
 msgid "password_repeat:"
 msgstr "Neues Passwort (Wiederholung):"
 
+msgid "pwdforgotten_link"
+msgstr "Passwort vergessen?"
+
+msgid "pwdforgotten_explain_procedure"
+msgstr "Um ein neues Passwort zu erhalten, geben Sie bitte Ihren Benutzernamen ein. Ein neues Passwort und ein Link zur Aktivierung werden dann an Ihre E-Mail-Adresse gesandt."
+
+msgid "pwdforgotten_submit"
+msgstr "Absenden"
+
+msgid "pwdforgotten_cancel"
+msgstr "Zurück"
+
+msgid "pwdforgotten_butmailnowsent"
+msgstr "Ein neues Passwort und ein Link zur Aktivierung wurden an Ihre Email-Adresse gesandt."
+
+msgid "pwdforgotten_noentry"
+msgstr "Keine Eingabe"
+
+msgid "pwdforgotten_nosuchuser"
+msgstr "Benutzername nicht gefunden"
+
+msgid "pwdforgotten_password_activated"
+msgstr "Neues Passwort aktiviert für Benutzer: "
+
+msgid "pwdforgotten_password_invalid_key"
+msgstr "Ungültiger Schlüssel: falscher oder bereits genutzter Schlüssel"
+
+msgid "pwdforgotten_email_subject"
+msgstr "Ihr mediaTUM-Zugang: neues Passwort angefordert"
+
+msgid "pwdforgotten_emailsenderror"
+msgstr "Fehler beim Versenden der Email"
+
 msgid "hint"
 msgstr "Hinweis: "
 

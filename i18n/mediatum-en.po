@@ -102,6 +102,39 @@ msgstr "new password:"
 msgid "password_repeat:"
 msgstr "repeat new password:"
 
+msgid "pwdforgotten_link"
+msgstr "Password forgotten?"
+
+msgid "pwdforgotten_explain_procedure"
+msgstr "To obtain a new password, please enter your username. A new password and an activation link will be sent to your e-mail address."
+
+msgid "pwdforgotten_submit"
+msgstr "Send"
+
+msgid "pwdforgotten_cancel"
+msgstr "Back"
+
+msgid "pwdforgotten_butmailnowsent"
+msgstr "A new password and an activation link have been sent to your e-mail address."
+
+msgid "pwdforgotten_noentry"
+msgstr "No entry submitted"
+
+msgid "pwdforgotten_nosuchuser"
+msgstr "Username not found"
+
+msgid "pwdforgotten_password_activated"
+msgstr "New password has been activated for user: "
+
+msgid "pwdforgotten_password_invalid_key"
+msgstr "Invalid key: wrong key or already used key"
+
+msgid "pwdforgotten_email_subject"
+msgstr "Your mediaTUM account: new password requested"
+
+msgid "pwdforgotten_emailsenderror"
+msgstr "Failed to send e-mail"
+
 msgid "hint"
 msgstr "Notice: "
 

@@ -73,6 +73,9 @@ def initContexts():
     file.addHandler("logout").addPattern("/logout")
     file.addHandler("display_changepwd").addPattern("/display_changepwd")
     file.addHandler("changepwd_submit").addPattern("/changepwd_submit")
+    file.addHandler("display_pwdforgotten").addPattern("/display_pwdforgotten")
+    file.addHandler("pwdforgotten_submit").addPattern("/pwdforgotten_submit")
+    file.addHandler("pwdforgotten_activate").addPattern("/pwdforgotten_activate")    
     #file = context.addFile("web/frontend/usersettings.py")
     #file.addHandler("user_settings").addPattern("/user")
 

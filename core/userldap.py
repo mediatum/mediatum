@@ -4,6 +4,9 @@ import core.tree as tree
 import core.config as config
 import core.usergroups as usergroups
 
+import utils.date as date
+import logging
+
 from core.user import ExternalUser
     
 ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
@@ -16,6 +19,7 @@ class LDAPUser(ExternalUser):
         if str(attrname)=="":
             return ""
         for attr in str(attrname).split(","):
+            attr=attr.strip()
             if attr in list.keys():
                 for i in list[attr]:
                     ret += i+separator
@@ -63,7 +67,7 @@ class LDAPUser(ExternalUser):
             return 0
 
         username2 = result_data[0][0]
-
+        
         while 1:
             l2 = ldap.initialize(config.get("ldap.server"))
             try:
@@ -103,10 +107,16 @@ class LDAPUser(ExternalUser):
             user.set("organisation", self._getAttribute(config.get("ldap.user_org"), result_data[0][1]))
             user.set("comment", self._getAttribute(config.get("ldap.user_comment"), result_data[0][1]))
             
+            user.set("ldapuser.creationtime", date.format_date())
+            logging.getLogger('usertracing').info("created ldap user: "+username)
+            
             groups = self._getAttribute(config.get("ldap.user_group"), result_data[0][1], ",").split(",")
             for group in groups:
                 if group!=""and not usergroups.existGroup(group):
-                    usergroups.create_group(group, description="LDAP Usergroup", option="")
+                    res=usergroups.create_group(group, description="LDAP Usergroup", option="")
+                    res.set("ldapusergroup.creationtime", date.format_date())
+                    logging.getLogger('usertracing').info("created ldap user group: "+group)
+                    
                 g = usergroups.getGroup(group)
                 if g:
                     g.addChild(user)

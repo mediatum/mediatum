@@ -21,19 +21,19 @@ import core.config as config
 import Image
 import core.tree as tree
 import core.users as users
-from schema.schema import loadTypesFromDB
 import core.athana as athana
 import core.acl as acl
-from utils.fileutils import getImportDir
 import random
 import os
 import default
 import md5
 
+from schema.schema import loadTypesFromDB, VIEW_DATA_ONLY, VIEW_HIDE_EMPTY
+from core.acl import AccessData
+from utils.fileutils import getImportDir
 from utils.utils import splitfilename, isnewer, Menu, formatException
 from core.tree import Node,FileNode
-from core.translation import lang
-from schema.schema import loadTypesFromDB, VIEW_DATA_ONLY, VIEW_HIDE_EMPTY
+from core.translation import lang,t
 from web.frontend import zoom
 
 """ make thumbnail (jpeg 128x128) """
@@ -44,7 +44,7 @@ def makeThumbNail(image, thumb):
     print "Creating thumbnail for image ",image
     pic = Image.open(image)
 
-    if pic.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode=="P":
+    if pic.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
         tmpjpg = "/tmp/img"+str(random.random())+".jpg"
         os.system("convert "+image+" -depth 8 -colorspace rgb "+tmpjpg)
         pic = Image.open(tmpjpg)
@@ -60,6 +60,7 @@ def makeThumbNail(image, thumb):
         newheight = 128
         newwidth = width*newheight/height
     pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
+    print pic.mode
     im = Image.new(pic.mode, (128, 128), (255, 255, 255))
     
     x = (128-newwidth)/2
@@ -145,12 +146,17 @@ def getImageDimensions(image):
     return width,height
 
 def dozoom(node):
-    if node.get("width") and node.get("height") and \
-       (int(node.get("width"))>1000 or int(node.get("height"))>1000) and \
-       os.path.isfile(os.path.join(config.basedir,"web/img/zoom.swf")):
-           if str(node.id) == "629716":
-               return 1
+    for file in node.getFiles():
+        if file.getType()=="zoom":
+            return 1
     return 0
+    
+    #if node.get("width") and node.get("height") and \
+    #   (int(node.get("width"))>1000 or int(node.get("height"))>1000) and \
+    #   os.path.isfile(os.path.join(config.basedir,"web/img/zoom.swf")):
+    #       #if str(node.id) == "629716":
+    #           return 1
+    #return 0
 
 """ image class for internal image-type """
 class Image(default.Default):
@@ -179,7 +185,7 @@ class Image(default.Default):
         obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY) # hide empty elements
         obj['node'] = node
         obj['tif'] = tif
-        obj['zoom'] = False 
+        obj['zoom'] = dozoom(node)
         obj['tileurl'] = "/tile/"+node.id+"/"
         obj['canseeoriginal'] = access.hasAccess(node,"data")
         obj['originallink'] = "getArchivedItem('"+str(node.id)+"/"+tif+"')"
@@ -311,14 +317,16 @@ class Image(default.Default):
             except:
                 None
 
-            if dozoom(node):
+            if node.get("width")>=5000 or node.get("height")>=5000:# dozoom(node):
+                print "zoom activated"
                 tileok = 0
                 for f in node.getFiles():
                     if f.type.startswith("tile"):
                         tileok = 1
                 if not tileok and node.get("width") and node.get("height"):
                     zoom.getImage(node.id, 1)
-
+            else:
+                print "use normal presentation"
             # iptc
             try:
                 from lib.iptc import IPTC
@@ -406,20 +414,44 @@ class Image(default.Default):
 
     """ fullsize popup-window for image node """
     def popup_fullsize(node, req):
+        access = AccessData(req)
+
+        if (not access.hasAccess(node, "data") and not dozoom(node)) or not access.hasAccess(node,"read"):
+            req.write(t(req, "permission_denied"))
+            return
+
         d = {}
         d["key"] = req.params.get("id", "")
         # we assume that width==origwidth, height==origheight
-        
-        d['flash'] = False
-
-        if dozoom(node):
-            d['flash'] = True
-
+        d['flash'] = dozoom(node)
         d['tileurl'] = "/tile/"+node.id+"/"
-
         req.writeTAL("contenttypes/image.html", d, macro="imageviewer")
+        
+    
+    def popup_thumbbig(node, req):
+        import Image
+        access = AccessData(req)
 
-          
+        if (not access.hasAccess(node, "data") and not dozoom(node)) or not access.hasAccess(node,"read"):
+            req.write(t(req, "permission_denied"))
+            return
+        
+        thumbbig = None
+        for file in node.getFiles():
+            if file.getType()=="thumb2":
+                thumbbig = file
+                break
+        if not thumbbig:
+            node.popup_fullsize(req)
+        else:
+            im = Image.open(thumbbig.retrieveFile())
+            req.writeTAL("contenttypes/image.html", {"filename":'/file/'+str(node.id)+'/'+thumbbig.getName(), "width":im.size[0], "height":im.size[1]}, macro="thumbbig")
+
+       
+        
+        
+        
+
     def getEditMenuTabs(node):
         menu = list()
         try:

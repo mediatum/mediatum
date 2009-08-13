@@ -23,6 +23,8 @@ import core.athana as athana
 
 from utils.utils import splitpath, Menu
 from core.tree import Node,FileNode
+from core.translation import t
+from core.acl import AccessData
 import default 
 
 """ flash class """
@@ -61,12 +63,20 @@ class Flash(default.Default):
 
     """ popup window for actual nodetype """
     def popup_fullsize(node, req):
+        access = AccessData(req)
+        if not access.hasAccess(node, "data") or not access.hasAccess(node,"read"):
+            req.write(t(req, "permission_denied"))
+            return
+            
         f = ""
         for filenode in node.getFiles():
             if filenode.getType() in ("original", "video"):
                 f =  "/file/" + str(node.id) + "/" + filenode.getName()
                 break
         req.writeTAL("contenttypes/flash.html", {"path":f}, macro="fullsize")
+        
+    def popup_thumbbig(node, req):
+        node.popup_fullsize(req)
     
     def getEditMenuTabs(node):
         menu = list()

@@ -7,36 +7,33 @@
     <div id="object_main">
 	
         <div id="object_image" tal:condition="python:canseeoriginal">
-            <tal:block tal:condition="python:zoom">
-                <object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" 
-                        codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,40,0"
-                        width="300" height="300" id="theMovie">
-                  <param name="FlashVars" 
-                         tal:attributes="value python:'zoomifyImagePath='+tileurl">
-                  <param name="MENU" value="FALSE">
-                  <param name="SRC" value="/img/zoom.swf">
-                  <embed FlashVars="zoomifyImagePath=http://localhost:8081/tile/635890/" 
-                         tal:attributes="FlashVars python:'zoomifyImagePath='+tileurl"
-                         src="/img/zoom.swf" 
-                         menu="false" 
-                         pluginspage="http://www.macromedia.com/shockwave/download/index.cgi?P1_Prod_Version=ShockwaveFlash"
-                         width="300" height="300" name="theMovie">
-                  </embed>
-                </object>
-            </tal:block>
             <tal:block tal:condition="python:not zoom">
             <a>
                 <img tal:attributes="src python:'/thumb2/'+str(node.id); onClick python:'fullSizePopup('+str(node.id)+', ' + str(node.get('width')) +', ' + str(node.get('height')) +')'" style="cursor:pointer;border:1px double silver;" border="1px" />
             </a>
             </tal:block>
+            
+            <tal:block tal:condition="python:zoom">
+            <a>
+                <img tal:attributes="src python:'/thumb2/'+str(node.id); onClick python:'fullSizePopup('+str(node.id)+', 700, 700)'" style="width:300px;cursor:pointer;border:1px double silver;" border="1px" />
+            </a>
+            </tal:block>
+            
+            
             <div tal:condition="python:tif!=''" id="object_highresolution">
                 &nbsp;&nbsp;<a tal:attributes="href python:'/file/'+str(node.id)+'/'+str(tif)" href="#" i18n:translate="image_high_res_title">TEXT</a>
             </div>
         </div>
 
         <div id="object_image" tal:condition="python:not canseeoriginal">
-            <img tal:attributes="src python:'/thumb2/'+str(node.id)" 
-                 style="width: 300px;border:1px double silver;" border="1px"/>
+            <tal:block tal:condition="python:zoom">
+            <a>
+                <img tal:attributes="src python:'/thumb2/'+str(node.id); onClick python:'fullSizePopup('+str(node.id)+', 700, 700)'" style="width:300px;cursor:pointer;border:1px double silver;" border="1px" />
+            </a>
+            </tal:block>
+            <tal:block tal:condition="python:not zoom">
+                <img tal:attributes="src python:'/thumb2/'+str(node.id)" style="width: 300px;border:1px double silver;" border="1px"/>
+            </tal:block>
         </div>        
 	<div id="object_meta" tal:content="raw metadata" style="min-height: 400px"/>
     </div>
@@ -163,6 +160,24 @@
                  width="100%" height="100%" name="theMovie">
           </embed>
         </object>
+    </body>
+</html>
+
+<html metal:define-macro="thumbbig">
+    <head>
+        <script tal:content="python:'var height='+str(height)+';'"/>
+        <script tal:content="python:'var width='+str(width)+';'"/>
+        <script>
+            function resize(){
+                window.resizeTo(width+50, height+100);
+            }
+        </script>
+        <style type="text/css">
+            body{ margin:0px;padding:0px; background-color:black;}
+        </style>
+    </head>
+    <body onload="resize()">
+        <img tal:attributes="src filename"/>
     </body>
 </html>
 

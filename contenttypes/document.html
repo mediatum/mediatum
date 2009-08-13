@@ -18,7 +18,7 @@
     <div tal:condition="python: len(node.getFiles())>0" id="object_image">
         <tal:block tal:condition="python:canseeoriginal">
             <a tal:attributes="href documentlink" i18n:attributes="title doc_fulltext_title" target="pdfdocument">
-                <img tal:attributes="src documentthumb" style="cursor:pointer" border="0" width="300"  alt="Thumbnail not found"/>
+                <img tal:attributes="src documentthumb" style="cursor:pointer" border="0" width="300" />
             </a>
             <p></p>
             <tal:block tal:condition="documentdownload" i18n:translate="">

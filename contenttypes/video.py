@@ -25,9 +25,11 @@ import os
 import Image
 
 from utils.utils import splitfilename, splitpath, Menu
+from core.acl import AccessData
 from core.tree import Node,FileNode
 from lib.flv.parse import getFLVSize, FLVReader
 from contenttypes.image import makeThumbNail,makePresentationFormat
+from core.translation import t
 import default
 
 """ video class """
@@ -125,6 +127,11 @@ class Video(default.Default):
 
     """ popup window for actual nodetype """
     def popup_fullsize(node, req):
+        access = AccessData(req)
+        if not access.hasAccess(node, "data") or not access.hasAccess(node,"read"):
+            req.write(t(req, "permission_denied"))
+            return
+    
         f = None
         for filenode in node.getFiles():
             if filenode.getType()=="original" or filenode.getType()=="video":
@@ -137,8 +144,10 @@ class Video(default.Default):
         else:
             script = ""
 
-        req.writeTAL("contenttypes/video.html", {"file":file, "script":script, "node":node}, macro="fullsize_flv")
+        req.writeTAL("contenttypes/video.html", {"file":file, "script":script, "node":node, "width":int(node.get('vid-width') or '0')+64, "height":int(node.get('vid-height') or '0')+53}, macro="fullsize_flv")
 
+    def popup_thumbbig(node, req):
+        node.popup_fullsize(req)
         
     def getEditMenuTabs(node):
         menu = list()

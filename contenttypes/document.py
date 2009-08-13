@@ -27,7 +27,8 @@ import os
 from utils.utils import getMimeType, format_filesize,splitfilename, u, EncryptionException, Menu
 from core.tree import Node,FileNode
 from schema.schema import loadTypesFromDB, VIEW_HIDE_EMPTY,VIEW_DATA_ONLY
-from core.translation import lang
+from core.translation import lang, t
+from core.acl import AccessData
 from lib.pdf import parsepdf
 import default
 
@@ -213,10 +214,18 @@ class Document(default.Default):
 
     """ popup window for actual nodetype """
     def popup_fullsize(node, req):
+        access = AccessData(req)
+        if not access.hasAccess(node, "data") or not access.hasAccess(node,"read"):
+            req.write(t(req, "permission_denied"))
+            return
+        
         for f in node.getFiles():
             if f.getType() == "doc" or f.getType() == "document":
                 req.sendFile(f.retrieveFile(), f.getMimeType())
                 return
+                
+    def popup_thumbbig(node, req):
+        node.popup_fullsize(req)
 
     """ get attachments for node (current directory) """
     def filebrowser(node, req):

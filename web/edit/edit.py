@@ -648,9 +648,9 @@ def content(req):
                 req.write("""allobjects['%s'] = 1;\n""" % id)
 
             req.write("""
-                function fullSizeWindow(id,width,height)
+                function Thumb2Window(id)
                 {
-                    var win1 = window.open('/fullsize?id='+id,'fullsize','width='+width+',height='+height+',directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=1'); 
+                    var win1 = window.open('/thumbbig?id='+id,'thumbbig','width=100,height=100,directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=1'); 
                     win1.focus();
                 }
             """)
@@ -662,13 +662,10 @@ def content(req):
                 if hasattr(node,"show_node_image"):
                     req.write("""<td align="center">""")
                     if not isDirectory(node) and not node.isContainer():
-                        req.write("""<a href="javascript:fullSizeWindow('"""+id+"""','"""+str(node.get("width"))+"""','"""+str(node.get("height"))+"""')">""")
-
+                        req.write("""<a href="javascript:Thumb2Window('"""+id+"""')">""")
                     req.write(node.show_node_image())
-
                     if not isDirectory(node) and not node.isContainer():
                         req.write("""</a>""")
-
                     req.write("""</td>""")
                     req.write("""<td width="20">&nbsp;</td>""")
             req.write("""</tr></table>""")

@@ -37,15 +37,25 @@ from utils.utils import u
 # execute fullsize method from node-type
 #
 def popup_fullsize(req):
-    access = AccessData(req)
+    #access = AccessData(req)
     try:
         node = getNode(req.params["id"])
     except tree.NoSuchNodeError:
         return 404
-    if not access.hasAccess(node,"data"):
-        req.write(t(req, "permission_denied"))
-        return
+    #if not access.hasAccess(node,"data"):
+    #    req.write(t(req, "permission_denied"))
+    #    return
     node.popup_fullsize(req)
+#
+# execute thumbBig method from node-type
+#
+def popup_thumbbig(req):
+    #access = AccessData(req)
+    try:
+        node = getNode(req.params["id"])
+    except tree.NoSuchNodeError:
+        return 404
+    node.popup_thumbbig(req)
 #
 # add file to shoppingbag
 #

@@ -61,6 +61,7 @@ def initContexts():
     file = context.addFile("web/frontend/popups.py")
     file.addHandler("popup_metatype").addPattern("/metatype/.*")
     file.addHandler("popup_fullsize").addPattern("/fullsize")
+    file.addHandler("popup_thumbbig").addPattern("/thumbbig")
     file.addHandler("put_into_shoppingbag").addPattern("/put_into_shoppingbag")
     file.addHandler("show_shoppingbag").addPattern("/popup_shoppingbag")
     #file.addHandler("show_index").addPattern("/popup_index")

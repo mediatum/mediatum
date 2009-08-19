@@ -656,7 +656,7 @@ def content(req):
             """)
 
             req.write("""</script>\n""")
-            req.write("""<table border="0"><tr>""")
+            req.write("""<div style="overflow:auto"><table border="0"><tr>""")
             for id in ids:
                 node = tree.getNode(id)
                 if hasattr(node,"show_node_image"):
@@ -668,7 +668,7 @@ def content(req):
                         req.write("""</a>""")
                     req.write("""</td>""")
                     req.write("""<td width="20">&nbsp;</td>""")
-            req.write("""</tr></table>""")
+            req.write("""</tr></table></div>""")
     else: # or current directory
         req.writeTALstr('<b i18n:translate="edit_actual_dir">Aktuelles Verzeichnis:</b><br>',{})
         n = tree.getNode(ids[0])

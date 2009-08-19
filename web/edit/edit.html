@@ -10,8 +10,8 @@
         </div>
     </div>
     <div class="topmenucontainer">
-        <div id="nodeid">
-            ID: <span tal:replace="python:str(ids)"/>
+        <div id="nodeid" tal:attributes="title python:str(ids)">
+            ID: <span tal:condition="python:len(str(ids))<=10" tal:replace="python:str(ids)"/><span tal:condition="python:len(str(ids))>10" tal:replace="python:str(ids)[:10]+'...'"/>
         </div>
         <ul id="nav">
             <tal:block tal:repeat="navitem python:menu">

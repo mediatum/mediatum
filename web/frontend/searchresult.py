@@ -153,7 +153,7 @@ def extended_search(req):
         f = req.params.get("field"+str(i),"").strip()
         q = req.params.get("query"+str(i),"").strip()
 
-        if not q:
+        if not q and "query"+str(i)+"-from" not in req.params:
             continue
         
         if not first2:

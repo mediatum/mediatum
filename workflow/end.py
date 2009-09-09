@@ -26,5 +26,10 @@ class WorkflowStep_End(WorkflowStep):
         return req.getTALstr('<h2 i18n:translate="wf_step_ready">Fertig</h2><p i18n:translate="workflow_step_ready_msg">Das Objekt <span tal:content="node" i18n:name="name"/> ist am Ende des Workflows angekommen.</p>', {"node":str(node.id)})
        
     def runAction(self, node, op=""):
-        pass
+        # insert node into searchindex
+        try:
+            node.setDirty()
+        except:
+            pass
+        #pass
         #self.removeChild(node)

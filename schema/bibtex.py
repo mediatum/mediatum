@@ -56,6 +56,7 @@ def getentries(filename):
     records = []
     fields = {}
     doctype = None
+    placeholder = {}
     while 1:
         m = token.search(data,pos)
         if not m:
@@ -76,6 +77,19 @@ def getentries(filename):
             fields = {}
             fields["key"] = key
             records += [(doctype,key,fields)]
+
+            if doctype=="string":
+                # found placeholder
+                t2 = re.compile(r'[^}]*')
+                x = t2.search(data,end)
+                x_start = x.start()
+                x_end = x.end()
+                s = data[x_start:x_end+1]
+                key, value = s.split("=")
+
+                placeholder[key.strip()] = value.strip()[1:-1]
+                pos = x_end
+
         elif doctype:
             # new record
             s = data[start:end]
@@ -95,12 +109,15 @@ def getentries(filename):
             content = content.replace("{","")
             content = content.replace("~"," ")
             content = content.replace("}","")
+            
+            for key in placeholder:
+                content = content.replace(key, placeholder[key])
 
             # some people use html entities in their bibtex...
             content = content.replace("&quot;", "'")
 
             content = xspace.sub(" ",backgarbage.sub("",frontgarbage.sub("",content)))
-
+            
             content = unicode(content,"utf-8",errors='replace').encode("utf-8")
 
             content = content.replace("\\\"u","ü").replace("\\\"a","ä").replace("\\\"o","ö") \
@@ -231,10 +248,16 @@ def importBibTeX(file, node=None):
     if not node:
         node = tree.Node(name=os.path.basename(file), type="directory")
 
+    shortcut = {}
     for doctype, docid, fields in getentries(file):
         mytype = detecttype(doctype, fields)
         if mytype:
-            if mytype not in bibtextypes:
+            if mytype=="string":
+                #shortcut[]
+                print "string fields:",fields
+                continue
+            
+            elif mytype not in bibtextypes:
                 raise MissingMapping("bibtex mapping of bibtex type '%s' not defined" % mytype)
             result += [(mytype.lower(), fields)]
 

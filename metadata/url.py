@@ -77,22 +77,22 @@ class m_url(Metatype):
 
             fielddef = fielddef.split(";")
 
-            
             if str(fielddef[0]).find("____")>=0:
                 fielddef[0] = ''               
             if str(fielddef[1]).find("____")>=0:
                 fielddef[1] = ''
 
             if len(fielddef)<4:
-                fielddef[3]==""
-            
+                fielddef[3] = ""
+                
+            if fielddef[1]=="":
+                fielddef[1] = "link"
+                    
             if fielddef[0]=='' and fielddef[1]=='': # link + text empty
                 value = ''
             elif fielddef[0]=='' and fielddef[1]!='': # link empty, text not empty
                 value = fielddef[1]
-            elif fielddef[0]!='' and fielddef[1]=='':
-                value = ''
-            else:
+            else:   
                 if fielddef[3] in ["","_blank"]:
                     value = '<a href="'+str(fielddef[0])+'" target="_blank" title="'+t(language,'show in new window')+'">'+str(fielddef[1])+'</a>' 
                 else:

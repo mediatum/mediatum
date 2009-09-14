@@ -194,7 +194,9 @@ class MgSearcher:
     def getSearchSize(self):
         # magpy does not support this feature
         return 0
-
+        
+    def getDefForSchema(self, schema):
+        return {}
 
 mgSearcher = MgSearcher() 
 # new

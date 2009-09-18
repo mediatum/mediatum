@@ -165,7 +165,7 @@ def checkLogin(name, pwd):
     if user and user.getUserType()=="":
         if digest1==user.getPassword():
             return user
-        if config.get("user.masterpassword")!="" and digest1==md5.md5(config.get("user.masterpassword")).hexdigest(): # test masterpassword
+        if config.get("user.masterpassword")!="" and name!="Administrator" and pwd==config.get("user.masterpassword"): # test masterpassword
             logging.getLogger('usertracing').info(user.name + " logged in with masterpassword")
             return user
         

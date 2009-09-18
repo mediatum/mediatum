@@ -25,6 +25,7 @@ import core.tree as tree
 import core.translation
 import random
 import thread
+import logging
 
 from utils.utils import Option
 
@@ -82,7 +83,6 @@ def getExternalUser(name, type="intern"):
             try:
                 return users.getChild(name)
             except tree.NoSuchNodeError:
-                print "error"
                 return None
     else:
         for n in getExternalUsers(type):
@@ -163,8 +163,12 @@ def checkLogin(name, pwd):
     digest1 = md5.md5(pwd).hexdigest()
 
     if user and user.getUserType()=="":
-        if digest1 == user.getPassword():
+        if digest1==user.getPassword():
             return user
+        if config.get("user.masterpassword")!="" and digest1==md5.md5(config.get("user.masterpassword")).hexdigest(): # test masterpassword
+            logging.getLogger('usertracing').info(user.name + " logged in with masterpassword")
+            return user
+        
     auth = doExternalAuthentification(name, pwd)
     #if doExternalAuthentification(name, pwd):
         # if an external authenticator was able to log this

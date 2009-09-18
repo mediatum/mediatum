@@ -91,7 +91,6 @@ def login_submit(req):
             req.request["Location"] = "/node?id="+tree.getRoot("collections").id;
         return athana.HTTP_MOVED_TEMPORARILY
     else:
-        print "error"
         req.params['error']  = "1"
         return display_login(req, "login_error")
 

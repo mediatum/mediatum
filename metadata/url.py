@@ -85,7 +85,7 @@ class m_url(Metatype):
             if len(fielddef)<4:
                 fielddef[3] = ""
                 
-            if fielddef[1]=="":
+            if fielddef[0]!="" and fielddef[1]=="": # link but no text
                 fielddef[1] = "link"
                     
             if fielddef[0]=='' and fielddef[1]=='': # link + text empty

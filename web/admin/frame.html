@@ -20,55 +20,55 @@
         </head>
         
         <body topmargin="0" rightmargin="0" leftmargin="0">           
-            
-            <div id="clean-container">
-                <div id="logocontainer">
-                    <div class="logotext">
-                        <span i18n:translate="admin_header">TEXT</span><br/>
-                        <span i18n:translate="sub_header_user">TEXT</span>: <span tal:replace="raw python:user.getName()"/>
-                        <span tal:repeat="item python:spc">
-                            | <a tal:attributes="href python:item.link; target python:item.target; title python:item.description" i18n:translate="" i18n:attributes="title" tal:content="python:item.name">TEXT</a>
-                        </span>
+            <div style="position:absolute; min-width:100%">
+                <div id="clean-container">
+                    <div id="logocontainer">
+                        <div class="logotext">
+                            <span i18n:translate="admin_header">TEXT</span><br/>
+                            <span i18n:translate="sub_header_user">TEXT</span>: <span tal:replace="raw python:user.getName()"/>
+                            <span tal:repeat="item python:spc">
+                                | <a tal:attributes="href python:item.link; target python:item.target; title python:item.description" i18n:translate="" i18n:attributes="title" tal:content="python:item.name">TEXT</a>
+                            </span>
+                        </div>
                     </div>
-                </div>
-            
-                <div class="topmenucontainer">
-                    <ul id="nav">
-                        <li tal:repeat="navitem python:navigation">
-                            <a tal:condition="python:len(navitem.getItemList())==0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]; href python:navitem.link" i18n:translate="" tal:content="python:navitem.name">TEXT</a>
-                            <tal:block tal:condition="python:len(navitem.getItemList())>0">
-                                <a tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]" i18n:translate="" tal:content="python:navitem.getName()"/>
-                                <ul>
-                                    <li tal:repeat="item python:navitem.getItemList()">
-                                        <a i18n:translate="" tal:content="python:item[0]" tal:attributes="href python:item[1]"/>
-                                    </li>
-                                </ul>
-                            </tal:block>                            
-                        </li>
-                    </ul>
-                    <div class="clearb"></div>
-                </div>
-                <div class="breadcrumbs">
-                    <h2 class="breadcrumbs">
-                        <tal:block tal:repeat="item breadcrumbs">
-                            <tal:block tal:content="item" i18n:translate="">TEXT</tal:block>
-                            <tal:block tal:condition="python:breadcrumbs.index(item)<len(breadcrumbs)-1">
-                             &raquo; 
+                
+                    <div class="topmenucontainer">
+                        <ul id="nav">
+                            <li tal:repeat="navitem python:navigation">
+                                <a tal:condition="python:len(navitem.getItemList())==0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]; href python:navitem.link" i18n:translate="" tal:content="python:navitem.name">TEXT</a>
+                                <tal:block tal:condition="python:len(navitem.getItemList())>0">
+                                    <a tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]" i18n:translate="" tal:content="python:navitem.getName()"/>
+                                    <ul>
+                                        <li tal:repeat="item python:navitem.getItemList()">
+                                            <a i18n:translate="" tal:content="python:item[0]" tal:attributes="href python:item[1]"/>
+                                        </li>
+                                    </ul>
+                                </tal:block>                            
+                            </li>
+                        </ul>
+                        <div class="clearb"></div>
+                    </div>
+                    <div class="breadcrumbs">
+                        <h2 class="breadcrumbs">
+                            <tal:block tal:repeat="item breadcrumbs">
+                                <tal:block tal:content="item" i18n:translate="">TEXT</tal:block>
+                                <tal:block tal:condition="python:breadcrumbs.index(item)<len(breadcrumbs)-1">
+                                 &raquo; 
+                                </tal:block>
                             </tal:block>
-                        </tal:block>
-                    </h2>
+                        </h2>
+                    </div>
+                    <div class="hstippled">&nbsp;</div>
+                </div>  
+                <!-- content start -->
+                <div class="MainMenu" style="min-width:80%">
+                    <div tal:replace="raw content"/>
                 </div>
-                <div class="hstippled">&nbsp;</div>
-            </div>  
-            <!-- content start -->
-            <div class="MainMenu" style="overflow:auto;width:90%">
-                <div tal:replace="raw content"/>
+                <!-- content end -->
+                <div id="footer">
+                    <a rel="external" href="http://mediatum-pages.ub.tum.de"><b>mediatum</b></a> <span tal:content="version">TEXT</span><br /><b>mediatum</b> is free software released under the General Public Licence.
+                </div>
             </div>
-            <!-- content end -->
-            <div id="footer">
-                <a rel="external" href="http://mediatum-pages.ub.tum.de"><b>mediatum</b></a> <span tal:content="version">TEXT</span><br /><b>mediatum</b> is free software released under the General Public Licence.
-            </div>
-         
         </body>
     </html>
 </metal:block>

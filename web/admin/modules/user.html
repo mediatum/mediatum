@@ -65,10 +65,9 @@
                         <span tal:condition="python:len(user.getOrganisation())>10" tal:content="python:user.getOrganisation()[:10]+'...'" tal:attributes="title python:user.getOrganisation()" style="cursor:pointer"/>
                         <span tal:condition="python:len(user.getOrganisation())<=10" tal:content="python:user.getOrganisation()" tal:attributes="title python:user.getOrganisation()" style="cursor:pointer"/>
                     </td>
-                    <td tal:attributes="class cssclass">
-                        <tal:block tal:repeat="group python:user.getGroups()">
-                            <span tal:content="group"/><span tal:condition="python:user.getGroups().index(group)<len(user.getGroups())-1">, </span>
-                        </tal:block>
+                    <td tal:attributes="class cssclass" tal:define="grp python:', '.join(user.getGroups())">
+                        <span tal:condition="python:len(grp)<30" tal:content="grp"/>
+                        <span tal:condition="python:len(grp)>29" tal:attributes="title grp" tal:content="python:grp[:29]+'...'" style="cursor:pointer"/>
                     </td>
                     <td tal:condition="python:user.stdPassword()" tal:attributes="class cssclass">
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img i18n:attributes="title admin_user_stdpwd_title" src="/img/unarchive.png"/>

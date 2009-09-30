@@ -172,6 +172,7 @@ def show_printview(req):
     
         req.reply_headers['Content-Type'] = "application/pdf"
         req.write(printview.getPrintView(lang(req), None, [["", "", t(lang(req), "")]], [], 3, children))
+        print "...1111...."
 
     else:    
         node = getNode(nodeid) 
@@ -226,7 +227,8 @@ def show_printview(req):
                     c_mask = c_mtype.getMask("printlist")
                     if not c_mask:
                         c_mask = c_mtype.getMask("nodesmall")
-                    _c = c_mask.getViewHTML([c], VIEW_DATA_ONLY+VIEW_HIDE_EMPTY)
+                    #_c = c_mask.getViewHTML([c], VIEW_DATA_ONLY+VIEW_HIDE_EMPTY)
+                    _c = c_mask.getViewHTML([c], VIEW_DATA_ONLY)
                     if len(_c)>0:
                         children.append(_c)
                 else:
@@ -238,6 +240,36 @@ def show_printview(req):
                     p.append(u(c.getName()))
                     children.append([(c.id, " > ".join(p[1:]), u(c.getName()), "header")])
 
+            if len(children)>1:
+                col = []
+                order = []
+                
+                for i in range(0,2):
+                    col.append((0,""))
+                    order.append(1)
+                    if req.params.get("sortfield"+str(i))!="":
+                        sort = req.params.get("sortfield"+str(i),"")
+                        if sort.startswith("-"):
+                            sort = sort[1:]
+                            order[i] = -1
+                        _i = 0
+                        for c in children[0]:
+                            if c[0]==sort:
+                                col[i] = (_i, sort)
+                            _i+=1
+                    if col[i][1]=="":
+                        col[i]=(0, children[0][0][0])
+                            
+                # sort method for items
+                def myCmp(x, y, col, order):                   
+                    if  x[col[0][0]][1].lower()>y[col[0][0]][1].lower():
+                        return 1*order[0]
+                    elif x[col[0][0]][1].lower()==y[col[0][0]][1].lower():
+                        if len(col[1:])>0:
+                            return myCmp(x,y, col[1:], order[1:]) 
+                    return -1*order[0]
+
+                children.sort(lambda x, y: myCmp(x,y, col, order))
         req.reply_headers['Content-Type'] = "application/pdf"
 
         req.write(printview.getPrintView(lang(req), imagepath, metadata, getPaths(node, AccessData(req)), style, children))

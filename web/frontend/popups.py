@@ -172,7 +172,6 @@ def show_printview(req):
     
         req.reply_headers['Content-Type'] = "application/pdf"
         req.write(printview.getPrintView(lang(req), None, [["", "", t(lang(req), "")]], [], 3, children))
-        print "...1111...."
 
     else:    
         node = getNode(nodeid) 
@@ -227,7 +226,6 @@ def show_printview(req):
                     c_mask = c_mtype.getMask("printlist")
                     if not c_mask:
                         c_mask = c_mtype.getMask("nodesmall")
-                    #_c = c_mask.getViewHTML([c], VIEW_DATA_ONLY+VIEW_HIDE_EMPTY)
                     _c = c_mask.getViewHTML([c], VIEW_DATA_ONLY)
                     if len(_c)>0:
                         children.append(_c)
@@ -268,10 +266,24 @@ def show_printview(req):
                         if len(col[1:])>0:
                             return myCmp(x,y, col[1:], order[1:]) 
                     return -1*order[0]
-
-                children.sort(lambda x, y: myCmp(x,y, col, order))
+                
+                sorted_children = []
+                tmp = []
+                for item in children:
+                    if item[0][3]=="header":
+                        if len(tmp)>0:
+                            tmp.sort(lambda x, y: myCmp(x,y, col, order))
+                            sorted_children.extend(tmp)
+                        tmp=[]
+                        sorted_children.append(item)
+                    else:
+                        tmp.append(item)
+                tmp.sort(lambda x, y: myCmp(x,y, col, order))
+                sorted_children.extend(tmp)
+                
+                children = sorted_children
+        
         req.reply_headers['Content-Type'] = "application/pdf"
-
         req.write(printview.getPrintView(lang(req), imagepath, metadata, getPaths(node, AccessData(req)), style, children))
 
 # use popup method of  metadatatype  

@@ -199,27 +199,21 @@ class PrintPreview:
         _c = 1
         for c in children:
             if len(c)>0 and c[0][3]=="header":
-                if len(items)>0:
-                    items.sort(lambda x, y: cmp(x[0].lower(),y[0].lower()))
                 for item in items:
-                    self.addData(Paragraph("["+str(_c)+"/"+str(len(children)-_head)+"]: "+"; ".join(item), self.bv))
+                    self.addData(Paragraph("["+str(_c)+"/"+str(len(children)-_head)+"]: "+", ".join([i for i in item if i!=""]), self.bv))
                     _c+=1
                 self.addData(Paragraph(u(c[0][1]).replace('&', '&amp;'), self.bf))
                 items = []
-               
                 continue
+                
             values = []
             for item in c:
                 values.append(item[1])    
             items.append(values)
 
-        # print last items   
-        if len(items)>0:
-            items.sort(lambda x, y: cmp(x[0].lower(),y[0].lower()))
         for item in items:
-            self.addData(Paragraph("["+str(_c)+"/"+str(len(children)-_head)+"]: "+", ".join(item), self.bv))
+            self.addData(Paragraph("["+str(_c)+"/"+str(len(children)-_head)+"]: "+", ".join([i for i in item if i!=""]), self.bv))
             _c+=1    
-
             
 def getPrintView(lang, imagepath, metadata, paths, style=1, children=[]): # style=1: object, style=3: liststyle
     """ returns pdf content of given item """

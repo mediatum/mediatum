@@ -61,6 +61,7 @@ class SingleFile:
     def getShoppingBagLink(self):
         return 'shoppingBag(\''+str(self.node.id)+'\')'
     def getMetadata(self,seperator="."):
+        print "---hier---", seperator
         return self.node.show_node_text(seperator=seperator)
     def getLink(self):
         return '/node?id='+self.file.id
@@ -478,7 +479,12 @@ class ContentArea(Content):
                         nodeprint = node.get("system.print")
             except:
                 id=0
-            path = req.getTAL("web/frontend/content_nav.html", {"params": self.params, "path": self.getPath(), "styles":styles, "logo":self.collectionlogo, "searchmode":req.params.get("searchmode",""), "items":items, "id":id, "nodeprint":nodeprint}, macro="path")
+
+            printlink = '/print/'+str(id)
+            if nodeprint=="1" and "sortfield0" in req.params.keys():
+                printlink += '?sortfield0='+str(req.params.get("sortfield0"))+'&sortfield1='+str(req.params.get("sortfield1"))
+
+            path = req.getTAL("web/frontend/content_nav.html", {"params": self.params, "path": self.getPath(), "styles":styles, "logo":self.collectionlogo, "searchmode":req.params.get("searchmode",""), "items":items, "id":id, "nodeprint":nodeprint, "printlink":printlink}, macro="path")
 
         return path + '\n<!-- CONTENT START -->\n<div id="nodes">' +  self.content.html(req) + '</div>\n<!-- CONTENT END -->\n'
 

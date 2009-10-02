@@ -70,6 +70,7 @@ def login_submit(req):
     user = req.params.get("user",config.get("user.guestuser"))
     password = req.params.get("password","")
 
+
     user = users.checkLogin(user, password)
 
     if user:
@@ -90,6 +91,7 @@ def login_submit(req):
             req.request["Location"] = "/node?id="+tree.getRoot("collections").id;
         return athana.HTTP_MOVED_TEMPORARILY
     else:
+
         req.params['error']  = "1"
         return display_login(req, "login_error")
 
@@ -121,6 +123,16 @@ def changepwd_submit(req):
             return athana.HTTP_MOVED_TEMPORARILY;
         
 def display_pwdforgotten(req, error=None):
+    
+    # copied from display_login()
+    if len(req.params)>0 and not "error" in req.params.keys():
+        # user changed to browsing
+        p = ""
+        for key in req.params:
+            p += "&"+str(key)+"="+req.params.get(key)
+        req.request["Location"] = "http://"+config.get("host.name")+"/node?"+p[1:];
+        return athana.HTTP_MOVED_TEMPORARILY
+    
     navframe = getNavigationFrame(req)
     navframe.feedback(req)
 
@@ -141,6 +153,16 @@ def mkKey():
     return s
 
 def pwdforgotten_submit(req):
+    
+    # copied from display_login()
+    if 'cunfold' in req.params or 'cfold' in req.params:
+        # user changed to browsing
+        p = ""
+        for key in req.params:
+            p += "&"+str(key)+"="+req.params.get(key)
+        req.request["Location"] = "http://"+config.get("host.name")+"/node?"+p[1:];
+        return athana.HTTP_MOVED_TEMPORARILY
+    
     if req.params.get("change_language"):
         return display_login(req)
 
@@ -206,6 +228,16 @@ def pwdforgotten_submit(req):
             return athana.HTTP_OK
     
 def pwdforgotten_activate(req):
+    
+    # copied from display_login()
+    if 'cunfold' in req.params or 'cfold' in req.params:
+        # user changed to browsing
+        p = ""
+        for key in req.params:
+            p += "&"+str(key)+"="+req.params.get(key)
+        req.request["Location"] = "http://"+config.get("host.name")+"/node?"+p[1:];
+        return athana.HTTP_MOVED_TEMPORARILY
+    
     navframe = getNavigationFrame(req)
     navframe.feedback(req)
     

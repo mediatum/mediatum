@@ -25,6 +25,10 @@ from utils.utils import get_filesize, join_paths, clean_path, getMimeType
 from core.translation import t
 import random
 import zipfile
+
+import glob
+import utils.utils
+
 import core.acl as acl
 from core import archivemanager
 from core.acl import AccessData
@@ -80,8 +84,21 @@ def send_thumbnail(req):
         if f.type == "thumb":
             if os.path.isfile(f.retrieveFile()):
                 return req.sendFile(f.retrieveFile(), f.getMimeType())
-            else:
-                return req.sendFile(config.basedir + "/web/img/questionmark.png", "image/png", force=1)
+        
+    s = n.getSchema()
+    t = n.type
+    if t:
+        t = t.split("/")[0]
+
+    tests = ["default_thumb_%s_%s_.*" % (t, s), "default_thumb_%s_.*" % (s), "default_thumb_%s_.*" % (t)]
+    
+    for test in tests:
+        fps = glob.glob(os.path.join(config.basedir, "web", "img", test))
+        if fps:
+            fp=fps[0]
+            thumb_mimetype, thumb_type = utils.utils.getMimeType(fp)
+            return req.sendFile(fp, thumb_mimetype, force=1)
+            
     return req.sendFile(config.basedir + "/web/img/questionmark.png", "image/png", force=1)
 
 def send_thumbnail2(req):

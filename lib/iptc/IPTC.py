@@ -19,7 +19,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #
-# $Id: IPTC.py,v 1.1 2007/09/05 09:48:23 kramm Exp $'
+# $Id: IPTC.py,v 1.2 2009/10/08 09:09:23 seiferta Exp $'
 # Based on a PHP script for IPTC parser this avoid to install PIL
 import sys
 from StringIO import StringIO
@@ -70,11 +70,9 @@ def getiptc_data(data):
 def getiptc(file):
     data=file.read(1)
     if(ord(data)!=0xFF):
-        print "1"
         return {}
     data=file.read(1)
     if(ord(data)!=0xD8):
-        print "2"
         return {}
     count = 0
     done = False
@@ -126,7 +124,6 @@ def getiptc(file):
                 data = dict['data']
                 break
     if (data == 0):
-        print "3"
         return {}
     pos = 14
     datasize = len(data)
@@ -174,5 +171,4 @@ def getiptc(file):
     return _markers['iptc']
 
 def getIPTCValues(filename):
-    print filename
     return getiptc_path(filename)

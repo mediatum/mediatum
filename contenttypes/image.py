@@ -31,7 +31,7 @@ import md5
 from schema.schema import loadTypesFromDB, VIEW_DATA_ONLY, VIEW_HIDE_EMPTY
 from core.acl import AccessData
 from utils.fileutils import getImportDir
-from utils.utils import splitfilename, isnewer, Menu, formatException
+from utils.utils import splitfilename, isnewer, Menu, formatException, iso2utf8
 from core.tree import Node,FileNode
 from core.translation import lang,t
 from web.frontend import zoom
@@ -45,7 +45,7 @@ def makeThumbNail(image, thumb):
     pic = Image.open(image)
 
     if pic.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
-        tmpjpg = "/tmp/img"+str(random.random())+".jpg"
+        tmpjpg = config.get("paths.datadir")+"tmp/img"+str(random.random())+".jpg"
         os.system("convert "+image+" -depth 8 -colorspace rgb "+tmpjpg)
         pic = Image.open(tmpjpg)
     
@@ -60,7 +60,6 @@ def makeThumbNail(image, thumb):
         newheight = 128
         newwidth = width*newheight/height
     pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
-    print pic.mode
     im = Image.new(pic.mode, (128, 128), (255, 255, 255))
     
     x = (128-newwidth)/2
@@ -144,6 +143,31 @@ def getImageDimensions(image):
     width = pic.size[0]
     height = pic.size[1]
     return width,height
+    
+def getJpegSection(image, section): # section character
+    data = ""
+    try:
+        fin = open(image, "rb")
+        done = False
+        capture = False
+
+        while not done:
+            c = fin.read(1)
+            if capture and ord(c)!=0xFF and ord(c)!=section:
+                data += c
+
+            if ord(c)==0xFF: # found tag start
+                if capture:
+                    done = True
+                    
+                c = fin.read(1)
+                if ord(c)==section: # found tag
+                    capture = True
+        fin.close()
+    except:
+        data = ""
+    return data
+
 
 def dozoom(node):
     for file in node.getFiles():
@@ -265,6 +289,9 @@ class Image(default.Default):
                     node.set("origwidth", width)
                     node.set("origheight", height)
                     node.set("origsize", f.getSize())
+                    
+                    if f.mimetype=="image/jpeg":
+                        node.set("jpg_comment", iso2utf8(getJpegSection(f.retrieveFile(), 0xFE).strip()))
 
             if thumb == 0:
                 for f in node.getFiles():
@@ -318,15 +345,13 @@ class Image(default.Default):
                 None
 
             if node.get("width")>=5000 or node.get("height")>=5000:# dozoom(node):
-                print "zoom activated"
                 tileok = 0
                 for f in node.getFiles():
                     if f.type.startswith("tile"):
                         tileok = 1
                 if not tileok and node.get("width") and node.get("height"):
                     zoom.getImage(node.id, 1)
-            else:
-                print "use normal presentation"
+
             # iptc
             try:
                 from lib.iptc import IPTC

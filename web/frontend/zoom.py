@@ -137,8 +137,6 @@ class ZoomImage:
             return None
         if y0 > self.img.size[1]:
             return None
-        
-        print "Creating tile",l,"of",self.levels, "x=",x,"y=",y,"for image",self.node.id
 
         if x1 > self.img.size[0]:
             x1 = self.img.size[0]

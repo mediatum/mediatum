@@ -37,7 +37,7 @@
 
                 <div id="language_switch" tal:condition="python:len(language['name'])>1">
                     <form name="chooser" action="" method="post">
-                        <a tal:repeat="lang python:language['name']" tal:attributes="class python:language['actlang']==lang and 'selected_language' or ''; href python:'?change_language='+lang" tal:content="lang" i18n:translate="" />
+                        <a tal:repeat="lang python:language['name']" tal:attributes="class python:language['actlang']==lang and 'selected_language' or ''; href python:'?change_language='+lang+'&act_node='+act_node" tal:content="lang" i18n:translate="" />
                     </form>
                 </div>
                 

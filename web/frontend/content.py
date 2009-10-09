@@ -365,7 +365,7 @@ def fileIsNotEmpty(file):
     if s: return 1
     else: return 0
         
-def mkContentNode(req): 
+def mkContentNode(req):
     access = AccessData(req)
     id = req.params["id"]
     try:
@@ -377,9 +377,12 @@ def mkContentNode(req):
 
     if node.type in ["directory","collection"]:
         if "files" not in req.params:
-            for f in node.getFiles():
-                if f.type == "content" and f.mimetype == "text/html" and os.path.isfile(f.retrieveFile()) and fileIsNotEmpty(f.retrieveFile()):
-                    return ContentNode(node)
+
+            from web.edit.edit_startpages import getStartpageFileNode
+            spn = getStartpageFileNode(node, lang(req))
+            if spn:
+                return ContentNode(node)
+
         access = AccessData(req)
         ids = []
         nodes = access.filter(node.getAllChildren())
@@ -429,6 +432,10 @@ class ContentArea(Content):
         return path
 
     def feedback(self,req):
+
+        if "change_language" in req.params and "act_node" in req.params and req.params["act_node"].isdigit() and not "id" in req.params:
+            req.params["id"] = req.params["act_node"]
+
         if "id" in req.params and not (hasattr(self.content,"in_list") and self.content.in_list(req.params["id"])):
             if hasattr(self.content, "id2pos"):
                 print self.content.id2pos.keys()

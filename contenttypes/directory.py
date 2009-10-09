@@ -23,9 +23,12 @@ from core.acl import AccessData
 import re
 import os
 import core.athana as athana
+import core.config as config
 import default
-from core.translation import t
+from core.translation import t, lang
 from utils.utils import Menu
+
+
 
 SRC_PATTERN = re.compile('src="([^":/]*)"')
 
@@ -59,6 +62,14 @@ def includetemplate(node, file, substitute):
         print "Couldn't find",file
     return ret
 
+# taken from web/frontend/content.py 20090908 wn
+def fileIsNotEmpty(file):
+    f = open(file)
+    s = f.read().strip()
+    f.close()
+    if s: return 1
+    else: return 0
+
 """ directory class """
 class Directory(default.Default):
 
@@ -67,9 +78,15 @@ class Directory(default.Default):
         content = ""
         link = "node?id="+node.id + "&amp;files=1"
         
-        for f in node.getFiles():
-            if f.type=="content" and f.mimetype=="text/html":
-                content = includetemplate(node, f.retrieveFile(), {'${next}': link})
+        from web.edit.edit_startpages import getStartpageFileNode
+        spn = getStartpageFileNode(node, lang(req))
+        if spn:
+            long_path = spn.retrieveFile()
+            if os.path.isfile(long_path) and fileIsNotEmpty(long_path):
+                                  content = includetemplate(node, long_path, {'${next}': link})
+            if content:
+                return content
+
         return content
     
     """ format node image with standard template """
@@ -169,7 +186,8 @@ class Directory(default.Default):
         try:
             submenu = Menu("tab_layout", "description","#", "../") #new
             submenu.addItem("tab_content","tab_content")
-            submenu.addItem("tab_editor","tab_editor")
+            submenu.addItem("tab_startpages","tab_startpages") # new 20090906 wn
+            # submenu.addItem("tab_editor","tab_editor")
             submenu.addItem("tab_view","tab_view")
             menu.append(submenu)
             submenu = None

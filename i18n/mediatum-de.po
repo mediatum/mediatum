@@ -2103,6 +2103,9 @@ msgstr "Upload"
 msgid "tab_editor"
 msgstr "Startseite editieren"
 
+msgid "tab_startpages"
+msgstr "Startseiten verwalten"
+
 msgid "tab_metadata_col"
 msgstr "Anzeige"
 
@@ -2349,6 +2352,64 @@ msgstr "Wollen Sie diese Datei wirklich löschen?"
 msgid "edit_fckeditor_cfm_uploadsuccess"
 msgstr "Die Datei wurde hochgeladen."
 
+### edit startpages ###
+msgid "edit_startpages_header"
+msgstr "Startseiten"
+
+msgid "edit_startpages_explain_table"
+msgstr "HTML-Seiten für diesen Node" 
+
+msgid "edit_startpages_edit"
+msgstr "diese Seite bearbeiten"
+
+msgid "edit_startpages_delete"
+msgstr "diese Seite vom Server löschen"
+
+msgid "edit_startpages_savechanges"
+msgstr "Änderungen speichern"
+
+msgid "edit_startpages_reset"
+msgstr "Zurücksetzen"
+
+msgid "edit_startpages_explain_addbutton"
+msgstr "Klicken Sie auf den Schalter, um eine neue Seite im HTML-Editor zu bearbeiten." 
+
+msgid "edit_startpages_addnew"
+msgstr "Neue Seite erzeugen"
+
+msgid "edit_startpages_link"
+msgstr "Link zur Seite"
+
+msgid "edit_startpages_technical_name"
+msgstr "Tech. Name"
+
+msgid "edit_startpages_file_size"
+msgstr "Dateigröße (Bytes)"
+
+msgid "edit_startpages_ed"
+msgstr "Bearbeiten"
+
+msgid "edit_startpages_delete"
+msgstr "Löschen"
+
+msgid "edit_startpages_deleteconfirm"
+msgstr "Wollen Sie diese Seite wirklich löschen?"
+
+msgid "edit_startpages_descriptive_name"
+msgstr "Beschreibender Name"
+
+msgid "edit_startpages_none"
+msgstr "- kein -"
+
+msgid "edit_startpages_not_applicable"
+msgstr "k.A."
+
+msgid "edit_startpages_do_not_use_a_startpage"
+msgstr "Keine Startseite für diese Sprache"
+
+msgid "edit_startpages_selectlanguage"
+msgstr "als Startseite für diese Sprache wählen"
+
 ### workflow ###
 msgid "edit_workflow_msg1"
 msgstr "Das aktuelle Objekt ist in keinem Workflow eingebunden. Um es in einen Workflow zuzuordnen, w&auml;hlen Sie einen aus der Liste und bestätigen mit 'Speichern'."
@@ -2446,6 +2507,9 @@ msgstr "HTML-Daten löschen"
 
 msgid "edit_editor_delete_title"
 msgstr "HTML-Daten löschen"
+
+msgid "edit_editor_new_file"
+msgstr "neu erzeugte Datei"
 
 msgid "edit_editor_header"
 msgstr "Im Augenblick sind folgende Daten f&uuml;r dieses Archiv hinterlegt:"

@@ -2104,6 +2104,9 @@ msgstr "Upload"
 msgid "tab_html"
 msgstr "Edit startpage"
 
+msgid "tab_startpages"
+msgstr "Manage startpages"
+
 msgid "tab_meta_col"
 msgstr "View"
 
@@ -2355,6 +2358,64 @@ msgstr "Do you really want to delete this file?"
 msgid "edit_fckeditor_cfm_uploadsuccess"
 msgstr "The file has been uploaded."
 
+### edit startpages ###
+msgid "edit_startpages_header"
+msgstr "Startpages"
+
+msgid "edit_startpages_explain_table"
+msgstr "html pages for this node" 
+
+msgid "edit_startpages_edit"
+msgstr "click to edit this page"
+
+msgid "edit_startpages_delete"
+msgstr "click to delete this page from the server"
+
+msgid "edit_startpages_deleteconfirm"
+msgstr "Do you really want to delete this page?"
+
+msgid "edit_startpages_savechanges"
+msgstr "Save changes"
+
+msgid "edit_startpages_reset"
+msgstr "Reset"
+
+msgid "edit_startpages_explain_addbutton"
+msgstr "Click this button to open a new page in the html editor" 
+
+msgid "edit_startpages_addnew"
+msgstr "Create new page"
+
+msgid "edit_startpages_link"
+msgstr "Link to the page"
+
+msgid "edit_startpages_technical_name"
+msgstr "Tech. Name"
+
+msgid "edit_startpages_file_size"
+msgstr "file size (bytes)"
+
+msgid "edit_startpages_ed"
+msgstr "Edit"
+
+msgid "edit_startpages_delete"
+msgstr "Delete"
+
+msgid "edit_startpages_descriptive_name"
+msgstr "Descriptive name"
+
+msgid "edit_startpages_none"
+msgstr "- none -"
+
+msgid "edit_startpages_not_applicable"
+msgstr "n/a"
+
+msgid "edit_startpages_do_not_use_a_startpage"
+msgstr "Do not use a startpage for this language"
+
+msgid "edit_startpages_selectlanguage"
+msgstr "select as startpage for this language"
+
 ### workflow ###
 msgid "edit_workflow_msg1"
 msgstr "Current object has no workflow. To assign it into a workflow choose one of the list and confirm with 'save'."
@@ -2449,6 +2510,9 @@ msgstr "Delete HTML files"
 
 msgid "edit_editor_delete_title"
 msgstr "Delete HTML files"
+
+msgid "edit_editor_new_file"
+msgstr "newly created file"
 
 msgid "edit_editor_header"
 msgstr "At the moment the archive contains the following data:"

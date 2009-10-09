@@ -45,6 +45,7 @@ from edit_sort import edit_sort
 from edit_subfolder import edit_subfolder
 from edit_sortfiles import edit_sortfiles
 from edit_searchmask import edit_searchmask
+from edit_startpages import edit_startpages
 from edit_editor import edit_editor
 from edit_workflow import edit_workflow
 from edit_license import edit_license
@@ -629,7 +630,7 @@ def content(req):
 
     showPaging(req, current, ids)
     req.write('<p style="text-align:right"><a href="/print/'+str(node.id)+'" target="_blank"><img src="/img/print_icon.gif"/></a>&nbsp;&nbsp;</p>')
-    req.write('<div style="margin:5px;border:1px solid silver;padding: 4px">')
+    req.write('<div style="margin:5px;border:1px solid silver;padding: 4px;overflow-x:auto;overflow-y:hidden;">')
     
     
     # some tabs operate on only one file
@@ -648,27 +649,30 @@ def content(req):
                 req.write("""allobjects['%s'] = 1;\n""" % id)
 
             req.write("""
-                function Thumb2Window(id)
+                function fullSizeWindow(id,width,height)
                 {
-                    var win1 = window.open('/thumbbig?id='+id,'thumbbig','width=100,height=100,directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=1'); 
+                    var win1 = window.open('/fullsize?id='+id,'fullsize','width='+width+',height='+height+',directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=1'); 
                     win1.focus();
                 }
             """)
 
             req.write("""</script>\n""")
-            req.write("""<div style="overflow:auto"><table border="0"><tr>""")
+            req.write("""<table border="0"><tr>""")
             for id in ids:
                 node = tree.getNode(id)
                 if hasattr(node,"show_node_image"):
                     req.write("""<td align="center">""")
                     if not isDirectory(node) and not node.isContainer():
-                        req.write("""<a href="javascript:Thumb2Window('"""+id+"""')">""")
+                        req.write("""<a href="javascript:fullSizeWindow('"""+id+"""','"""+str(node.get("width"))+"""','"""+str(node.get("height"))+"""')">""")
+
                     req.write(node.show_node_image())
+
                     if not isDirectory(node) and not node.isContainer():
                         req.write("""</a>""")
+
                     req.write("""</td>""")
                     req.write("""<td width="20">&nbsp;</td>""")
-            req.write("""</tr></table></div>""")
+            req.write("""</tr></table>""")
     else: # or current directory
         req.writeTALstr('<b i18n:translate="edit_actual_dir">Aktuelles Verzeichnis:</b><br>',{})
         n = tree.getNode(ids[0])
@@ -725,13 +729,34 @@ def content(req):
     elif current == "tab_content":
         if node.type == "directory" or node.type.startswith("collection") or node.type.startswith("directory"):
             showdir(req,node)
+    elif current == "tab_startpages":   # new 20090906 wn
+        edit_startpages(req, node)
     elif current == "tab_editor":
+        from web.edit.edit_startpages import getStartpageDict
+
+        basedir = config.get("paths.datadir")
+            
+        file_to_edit = None
+        
+        if "file_to_edit" in req.params:
+            file_to_edit = req.params["file_to_edit"]
+            
+        if not file_to_edit:
+            d = getStartpageDict(node)
+            if d and lang(req) in d:
+                file_to_edit = d[lang(req)]
+
         found=False
         for f in node.getFiles():
             if f.mimetype=='text/html':
-                found=True
-                if edit_editor(req, node, f)=="error":
+                filepath = f.retrieveFile().replace(basedir, '')
+                if file_to_edit == filepath:
+                    found=True
+                    result = edit_editor(req, node, f)
+                    if result == "error":
+                        print "error editing ", f.retrieveFile()
                     break
+
         if not found:
             edit_editor(req, node, None)
  
@@ -919,7 +944,7 @@ def showtree(req):
     def f(req,node,objnum,link,indent,type):
         indent *= 10
         if objnum and node.getType().getName()!="root":
-            items = ' <small>('+str(objnum)+')</small>'
+            items = ' ('+str(objnum)+')'
         else:
             items = ''
 

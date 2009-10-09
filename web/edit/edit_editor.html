@@ -17,11 +17,21 @@
             <input i18n:attributes="value edit_editor_delete; title edit_editor_delete_title" type="submit" name="delete_page" onclick="return questionDel()"/>
         </p>
     </form>
+ 
 </tal:block>
 
-<p metal:define-macro="header" i18n:translate="edit_editor_header">
+<tal:block  metal:define-macro="header"> 
+ <p>
+   <span i18n:translate="edit_editor_header">
     TEXT
-</p>
+    
+   </span> 
+   <strong>
+   <span tal:content="python: descriptiveLabel">
+   </span>
+   </strong>
+ </p>  
+</tal:block>
 
 
 <tal:block metal:define-macro="fckeditor_customs_filemanager">

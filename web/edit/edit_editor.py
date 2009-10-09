@@ -19,28 +19,88 @@
 """
 import cgi
 import re
-import os
+import os, sys
+import string
+import logging
+import core.athana as athana
 import core.config as config
 import core.users as users
 from core.tree import FileNode
 
 from lib.FCKeditor import fckeditor
 from core.acl import AccessData
-from core.translation import lang
+from core.translation import t, lang
+
+from web.edit import edit_startpages
 
 def edit_editor(req, node, filenode):
+    
     user = users.getUserFromRequest(req)
     access = AccessData(req)
     
+    basedir = config.get("paths.datadir")
+    
+    file_to_edit = req.params.setdefault('file_to_edit', '')
+    
+    descriptiveName = node.get("startpagedescr."+file_to_edit)
+    
+    if descriptiveName:
+        descriptiveLabel = "%s" % descriptiveName
+    elif file_to_edit:
+        descriptiveLabel = "%s - %s" % (t(lang(req), "edit_startpages_technical_name"), file_to_edit)
+    elif filenode:
+        descriptiveLabel = "Name of the file node: %s" % filenode.getName()
+    else:
+        descriptiveLabel = ""
+
     if not access.hasWriteAccess(node) or "editor" in users.getHideMenusForUser(user):
         req.writeTAL("web/edit/edit.html", {}, macro="access_error")
         return "error"
+    
+    # add page
+    if "add_page" in req.params:
 
-    if filenode==None:
-        path = config.settings["paths.datadir"] + "html/" + req.params['id'] + ".html"
-        node.addFile(FileNode(path, "content", "text/html"))
-    else:
-        path = filenode.retrieveFile()
+        filelist = []
+        for f in node.getFiles():
+            if f.mimetype=='text/html':
+                filelist.append(f)
+                
+        shortpaths = [f.retrieveFile().replace(basedir, "") for f in filelist]
+                
+        def getStartpageID(f):
+            path = f.retrieveFile()
+            id = None
+            if path:
+                id = os.path.split(path)[-1]
+            return id
+
+        def id2name(id):
+            return dnames.setdefault(id, "")
+
+        id_filelist = [getStartpageID(f).split('.')[0] for f in filelist]
+
+        i=1
+        shortpath_to_check = "html/%s_%d.html" % (node.id, i)
+        while (shortpath_to_check in shortpaths) or (os.path.exists(os.path.join(basedir, shortpath_to_check))):
+            i = i+1
+            shortpath_to_check = "html/%s_%d.html" % (node.id, i)
+
+        shortpath = "html/" + (node.id+"_%d" % i) + ".html"
+        path = basedir + shortpath
+        filenode = FileNode(path, "content", "text/html")
+        descriptiveLabel = "%s - %s" % (t(lang(req), "edit_editor_new_file"), shortpath)
+        node.addFile(filenode)
+        logging.getLogger('usertracing').info(user.name + " - startpages - added FileNode for node %s (%s): %s, %s, %s " % (node.id, node.name, filenode.getName(), filenode.type, filenode.mimetype))
+    
+    if filenode == None:
+        from web.edit.edit_startpages import getStartpageFileNode
+        filenode = getStartpageFileNode(node, lang(req))
+        
+    if filenode == None:
+        path = os.path.join(config.settings["paths.datadir"], "html/"+req.params['id']+".html")
+        for f in node.getFiles():
+            if f.retrieveFile() == path:
+                filenode = f
 
     if access.hasWriteAccess(node):
         # save page
@@ -54,15 +114,43 @@ def edit_editor(req, node, filenode):
             fi = open(req.params['file_path'],"w")
             fi.writelines(content)
             fi.close()
-
+            
+            del req.params['save_page']
+            req.params['tab'] = 'tab_startpages'
+            
+            path = req.params['file_path']
+            
+            edit_startpages.edit_startpages(req, node)
+            return
+                
         # delete page
         if "delete_page" in req.params:
             try:
-                os.remove(req.params['file_path'])
-                node.removeFile(FileNode(req.params['file_path'], "content", "text/html"))
+                file_path = req.params['file_path']
+                file_shortpath = file_path.replace(basedir, "")
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                filenode = FileNode(file_path, "", "text/html")
+                
+                node.removeAttribute("startpagedescr."+file_shortpath)
+                startpage_selector = node.get("startpage.selector").replace(file_shortpath, "")
+                node.set("startpage.selector", startpage_selector)
+                node.removeFile(filenode)
+                
+                logging.getLogger('usertracing').info(user.name + " - startpages - deleted FileNode and file for node %s (%s): %s, %s, %s, %s" % (node.id, node.name, req.params['file_path'], filenode.getName(), filenode.type, filenode.mimetype))
+                
             except:
-                None
+                logging.getLogger('usertracing').error(user.name + " - startpages - error while delete FileNode and file for " + req.params['file_path'])
+                logging.getLogger('usertracing').error("%s - %s" % ( sys.exc_info()[0], sys.exc_info()[1]))
+                
+            del req.params['delete_page']
+            req.params['tab'] = 'tab_startpages'
 
+            edit_startpages.edit_startpages(req, node)
+            return
+
+        path = filenode.retrieveFile()
+        
         # show editor
         try:
             os.environ['HTTP_USER_AGENT'] = req.request.request_headers['HTTP_USER_AGENT']
@@ -83,8 +171,20 @@ def edit_editor(req, node, filenode):
         oFCKeditor.Config['ImageBrowserURL'] = ('/edit/nodefile_browser/%s/' % node.id)
         oFCKeditor.Config['LinkBrowserURL'] = ('/edit/nodefile_browser/%s/' % node.id)
         oFCKeditor.Config['ImageUploadURL'] = ('/edit/upload_for_html/%s/' % node.id)
-        
-        req.writeTAL("web/edit/edit_editor.html", {"id":req.params.get('id'), "oFCKeditor":oFCKeditor, "path":path, "node":node, "files":node.getFiles(), "logoname":node.get("system.logo"), "delbutton":False}, macro="edit_editor")
+
+        v = {
+             "id":req.params.get('id'),
+             "oFCKeditor":oFCKeditor,
+             "path":path,
+             "node":node,
+             "filenode":filenode,
+             "files":node.getFiles(),
+             "logoname":node.get("system.logo"),
+             "delbutton":False,
+             "descriptiveLabel":descriptiveLabel,
+            }
+             
+        req.writeTAL("web/edit/edit_editor.html", v, macro="edit_editor")
     else:
         req.writeTAL("web/edit/edit_editor.html", {}, macro="header")
         req.write(getFiletemplate(req, node, path, {}))

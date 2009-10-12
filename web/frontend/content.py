@@ -378,8 +378,7 @@ def mkContentNode(req):
     if node.type in ["directory","collection"]:
         if "files" not in req.params:
 
-            from web.edit.edit_startpages import getStartpageFileNode
-            spn = getStartpageFileNode(node, lang(req))
+            spn = node.getStartpageFileNode(lang(req))
             if spn:
                 return ContentNode(node)
 

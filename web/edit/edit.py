@@ -732,7 +732,6 @@ def content(req):
     elif current == "tab_startpages":   # new 20090906 wn
         edit_startpages(req, node)
     elif current == "tab_editor":
-        from web.edit.edit_startpages import getStartpageDict
 
         basedir = config.get("paths.datadir")
             
@@ -742,7 +741,7 @@ def content(req):
             file_to_edit = req.params["file_to_edit"]
             
         if not file_to_edit:
-            d = getStartpageDict(node)
+            d = node.getStartpageDict()
             if d and lang(req) in d:
                 file_to_edit = d[lang(req)]
 

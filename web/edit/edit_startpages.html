@@ -117,7 +117,7 @@
           
           <tal:block tal:repeat="lang languages">
             <td class="td00">
-              <input type="radio" name="radio" style="border:1px solid white" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'radio_'+lang; value python:''; checked python:{'False':None,'True':'checked'}[str(getStartpageFileNode(node, lang)==None)]"/>
+              <input type="radio" name="radio" style="border:1px solid white" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'radio_'+lang; value python:''; checked python:{'False':None,'True':'checked'}[str(node.getStartpageFileNode(lang)==None)]"/>
             </td> 
           </tal:block>
           

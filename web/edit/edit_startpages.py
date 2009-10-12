@@ -30,43 +30,6 @@ from utils.utils import getMimeType, splitpath
 from utils.fileutils import importFile
 from core.translation import translate, lang, t
 
-def getStartpageDict(n):
-    d = {}
-
-    descriptor = n.get('startpage.selector')
-    for x in descriptor.split(';'):
-        if x:
-            key, value = x.split(':')
-            d[key]=value
-    return d
-
-def getStartpageFileNode(node, language, verbose=False):
-    res = None
-    
-    basedir = config.get("paths.datadir")
-
-    d = getStartpageDict(node)
-    if d and (language in d.keys()):
-        shortpath_dict = d[language]
-        if shortpath_dict:
-            for f in node.getFiles():
-                shortpath_file = f.retrieveFile().replace(basedir, "")
-                if shortpath_dict == shortpath_file:
-                    res = f
-    if not d:
-        for f in node.getFiles():
-            shortpath_file = f.retrieveFile().replace(basedir, "")
-            if f.getType() == 'content' and f.mimetype == 'text/html':
-                res = f
-                
-    if verbose:
-        if res:
-            print "getStartpageFileNode(%s, %s) is returning a FileNode: %s" % (node.id, language, str([res.retrieveFile(), res.getType(), res.mimetype]))
-        else:
-            print "getStartpageFileNode(%s, %s) is NOT returning a FileNode: %s" % (node.id, language, str(res))
-        
-    return res
-    
 def edit_startpages(req, node):
     user = users.getUserFromRequest(req)
     access = acl.AccessData(req)
@@ -112,7 +75,7 @@ def edit_startpages(req, node):
             
         langlist = []
         for language in languages:
-            spn = getStartpageFileNode(node, language)
+            spn = node.getStartpageFileNode(language)
             if spn:
                 if spn.retrieveFile() == long_path:
                     langlist.append(language)
@@ -130,7 +93,7 @@ def edit_startpages(req, node):
                                 link
                               ) )
                               
-    lang2file = getStartpageDict(node)
+    lang2file = node.getStartpageDict()
     
     # compatibility: there may be old startpages in the database that
     # are not described by node attributes
@@ -168,7 +131,6 @@ def edit_startpages(req, node):
                          "lang2file":lang2file,
                          "types":types,
                          "d": d,
-                         "getStartpageFileNode": getStartpageFileNode,
                         },
                         macro="edit_startpages")
 

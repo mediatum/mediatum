@@ -67,18 +67,6 @@ def edit_editor(req, node, filenode):
                 
         shortpaths = [f.retrieveFile().replace(basedir, "") for f in filelist]
                 
-        def getStartpageID(f):
-            path = f.retrieveFile()
-            id = None
-            if path:
-                id = os.path.split(path)[-1]
-            return id
-
-        def id2name(id):
-            return dnames.setdefault(id, "")
-
-        id_filelist = [getStartpageID(f).split('.')[0] for f in filelist]
-
         i=1
         shortpath_to_check = "html/%s_%d.html" % (node.id, i)
         while (shortpath_to_check in shortpaths) or (os.path.exists(os.path.join(basedir, shortpath_to_check))):
@@ -90,11 +78,10 @@ def edit_editor(req, node, filenode):
         filenode = FileNode(path, "content", "text/html")
         descriptiveLabel = "%s - %s" % (t(lang(req), "edit_editor_new_file"), shortpath)
         node.addFile(filenode)
-        logging.getLogger('usertracing').info(user.name + " - startpages - added FileNode for node %s (%s): %s, %s, %s " % (node.id, node.name, filenode.getName(), filenode.type, filenode.mimetype))
+        logging.getLogger('usertracing').info(user.name + " - startpages - added FileNode for node %s (%s): %s, %s " % (node.id, node.name, filenode.getName(), filenode.mimetype))
     
     if filenode == None:
-        from web.edit.edit_startpages import getStartpageFileNode
-        filenode = getStartpageFileNode(node, lang(req))
+        filenode = node.getStartpageFileNode(lang(req))
         
     if filenode == None:
         path = os.path.join(config.settings["paths.datadir"], "html/"+req.params['id']+".html")
@@ -137,7 +124,7 @@ def edit_editor(req, node, filenode):
                 node.set("startpage.selector", startpage_selector)
                 node.removeFile(filenode)
                 
-                logging.getLogger('usertracing').info(user.name + " - startpages - deleted FileNode and file for node %s (%s): %s, %s, %s, %s" % (node.id, node.name, req.params['file_path'], filenode.getName(), filenode.type, filenode.mimetype))
+                logging.getLogger('usertracing').info(user.name + " - startpages - deleted FileNode and file for node %s (%s): %s, %s, %s" % (node.id, node.name, req.params['file_path'], filenode.getName(), filenode.mimetype))
                 
             except:
                 logging.getLogger('usertracing').error(user.name + " - startpages - error while delete FileNode and file for " + req.params['file_path'])

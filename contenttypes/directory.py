@@ -72,14 +72,51 @@ def fileIsNotEmpty(file):
 
 """ directory class """
 class Directory(default.Default):
+    
+    def getStartpageDict(node):
+        d = {}
+
+        descriptor = node.get('startpage.selector')
+        for x in descriptor.split(';'):
+            if x:
+                key, value = x.split(':')
+                d[key]=value
+
+        return d
+
+    def getStartpageFileNode(node, language, verbose=False):
+        res = None
+
+        basedir = config.get("paths.datadir")
+
+        d = node.getStartpageDict()
+        if d and (language in d.keys()):
+            shortpath_dict = d[language]
+            if shortpath_dict:
+                for f in node.getFiles():
+                    shortpath_file = f.retrieveFile().replace(basedir, "")
+                    if shortpath_dict == shortpath_file:
+                        res = f
+        if not d:
+            for f in node.getFiles():
+                shortpath_file = f.retrieveFile().replace(basedir, "")
+                if f.getType() == 'content' and f.mimetype == 'text/html':
+                    res = f
+
+        if verbose:
+            if res:
+                print "getStartpageFileNode(%s, %s) is returning a FileNode: %s" % (node.id, language, str([res.retrieveFile(), res.getType(), res.mimetype]))
+            else:
+                print "getStartpageFileNode(%s, %s) is NOT returning a FileNode: %s" % (node.id, language, str(res))
+
+        return res
 
     """ format big view with standard template """
     def show_node_big(node, req):
         content = ""
         link = "node?id="+node.id + "&amp;files=1"
         
-        from web.edit.edit_startpages import getStartpageFileNode
-        spn = getStartpageFileNode(node, lang(req))
+        spn = node.getStartpageFileNode(lang(req))
         if spn:
             long_path = spn.retrieveFile()
             if os.path.isfile(long_path) and fileIsNotEmpty(long_path):
@@ -225,4 +262,5 @@ class Directory(default.Default):
         
     def getDefaultEditTab(node):
         return "tab_content"
-        
+    
+

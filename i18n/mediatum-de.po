@@ -135,6 +135,9 @@ msgstr "Ihr mediaTUM-Zugang: neues Passwort angefordert"
 msgid "pwdforgotten_emailsenderror"
 msgstr "Fehler beim Versenden der Email"
 
+msgid "pwdforgotten_excludedgroup"
+msgstr "Der Benutzername ist einer Gruppe zugeordnet, für die diese Anfrage ausgeschlossen wurde. Sie müßten die AdministratorInnen kontaktieren, um ein neues Passwort zu erhalten."
+
 msgid "hint"
 msgstr "Hinweis: "
 

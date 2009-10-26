@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.users as users
+import core.usergroups as usergroups
 import web.admin.modules.user as usermodule
 
 import core.athana as athana
@@ -29,6 +30,7 @@ import random, md5
 
 import utils.mail as mail
 import utils.date as date
+import utils.pathutils as pathutils
 
 from web.frontend.frame import getNavigationFrame
 from core.translation import lang, t
@@ -174,58 +176,75 @@ def pwdforgotten_submit(req):
         req.params['error'] = error
         return display_pwdforgotten(req, error)
     
-    if username:
-        
-        targetuser = users.getUser(username)
-        
-        if not targetuser:
-            logging.getLogger('usertracing').info("new password requested for non-existing user: "+username)
-            error="pwdforgotten_nosuchuser"
-            req.params['error'] = error
-            return display_pwdforgotten(req, error)
-        
-        else:
-            targetemail = targetuser.getEmail()
-            
-            password = users.makeRandomPassword()
-            randomkey=mkKey()
+    targetuser = users.getUser(username)
 
-            targetuser.set("newpassword.password", md5.md5(password).hexdigest())
-            targetuser.set("newpassword.time_requested", date.format_date())
-            targetuser.set("newpassword.activation_key", randomkey)
-            targetuser.set("newpassword.request_ip", req.ip)
-            
-            v = {}
-            v["name"] = targetuser.getName()
-            v["host"] = config.get("host.name")
-            v["login"] = targetuser.getName()
-            v["language"] = lang(req)
-            v["activationlink"] = v["host"]+"/pwdforgotten_activate?key=%s-%s" % (targetuser.id, randomkey)
-            
-            text = req.getTAL("web/frontend/login.html", v, macro="emailtext").strip()
-            text = text.replace("[$newpassword]", password)
-            
-            v = {}
-            v["email"] = targetuser.getEmail()
-            v["userid"] = targetuser.getName()
-            
-            navframe = getNavigationFrame(req)
-            navframe.feedback(req)
-            
-            # going to send the mail
-            text = text.replace("[wird eingesetzt]", password)
-            
-            try:
-                mail.sendmail(config.get("email.admin"),targetemail,t(lang(req),"pwdforgotten_email_subject"),text)
-                logging.getLogger('usertracing').info("new password requested for user: %s - activation email sent" % username)
-            except mail.SocketError:
-                print "Socket error while sending mail"
-                logging.getLogger('usertracing').info("new password requested for user: %s - failed to send activation email" % username)
-                return req.getTAL("web/frontend/login.html", v, macro="sendmailerror")
-            
-            contentHTML = req.getTAL("web/frontend/login.html", v, macro="pwdforgotten_butmailnowsent")
-            navframe.write(req, contentHTML)
-            return athana.HTTP_OK
+    if not targetuser:
+        logging.getLogger('usertracing').info("new password requested for non-existing user: "+username)
+        error="pwdforgotten_nosuchuser"
+        req.params['error'] = error
+        return display_pwdforgotten(req, error)
+    
+    # check for admin group, disallow for members of admin group
+    if targetuser.isAdmin():
+        logging.getLogger('usertracing').info("new password request refused for user %s (user belongs to administration group)" % username)
+        error="pwdforgotten_excludedgroup"
+        req.params['error'] = error
+        return display_pwdforgotten(req, error)
+    
+    # check for external user, disallow for external users
+    external_users_root = None
+    try:
+        external_users_root = tree.getRoot('external_users')
+    except tree.NoSuchNodeError:
+        pass
+    
+    if external_users_root and pathutils.isDescendantOf(targetuser, external_users_root):
+        logging.getLogger('usertracing').info("new password request refused for user %s (user is external user)" % username)
+        error="pwdforgotten_excludedgroup"
+        req.params['error'] = error
+        return display_pwdforgotten(req, error)
+        
+    targetemail = targetuser.getEmail()
+    
+    password = users.makeRandomPassword()
+    randomkey=mkKey()
+  
+    targetuser.set("newpassword.password", md5.md5(password).hexdigest())
+    targetuser.set("newpassword.time_requested", date.format_date())
+    targetuser.set("newpassword.activation_key", randomkey)
+    targetuser.set("newpassword.request_ip", req.ip)
+    
+    v = {}
+    v["name"] = targetuser.getName()
+    v["host"] = config.get("host.name")
+    v["login"] = targetuser.getName()
+    v["language"] = lang(req)
+    v["activationlink"] = v["host"]+"/pwdforgotten_activate?key=%s-%s" % (targetuser.id, randomkey)
+    
+    text = req.getTAL("web/frontend/login.html", v, macro="emailtext").strip()
+    text = text.replace("[$newpassword]", password)
+    
+    v = {}
+    v["email"] = targetuser.getEmail()
+    v["userid"] = targetuser.getName()
+    
+    navframe = getNavigationFrame(req)
+    navframe.feedback(req)
+    
+    # going to send the mail
+    text = text.replace("[wird eingesetzt]", password)
+    
+    try:
+        mail.sendmail(config.get("email.admin"),targetemail,t(lang(req),"pwdforgotten_email_subject"),text)
+        logging.getLogger('usertracing').info("new password requested for user: %s - activation email sent" % username)
+    except mail.SocketError:
+        print "Socket error while sending mail"
+        logging.getLogger('usertracing').info("new password requested for user: %s - failed to send activation email" % username)
+        return req.getTAL("web/frontend/login.html", v, macro="sendmailerror")
+    
+    contentHTML = req.getTAL("web/frontend/login.html", v, macro="pwdforgotten_butmailnowsent")
+    navframe.write(req, contentHTML)
+    return athana.HTTP_OK
     
 def pwdforgotten_activate(req):
     

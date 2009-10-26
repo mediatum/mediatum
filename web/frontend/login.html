@@ -68,7 +68,10 @@
     </p>   
     <p tal:condition="python: error=='pwdforgotten_nosuchuser'" i18n:translate="pwdforgotten_nosuchuser" class="error" style="text-align:center">
         TEXT
-    </p>      
+    </p>    
+    <p tal:condition="python: error=='pwdforgotten_excludedgroup'" i18n:translate="pwdforgotten_excludedgroup" class="error" style="text-align:center">
+        TEXT
+    </p>        
     <br/>
     <form method="post" action="pwdforgotten_submit" class="login" name="login" >
         <div class="label">&nbsp;</div>

@@ -33,6 +33,7 @@
 
 import re
 import os
+from schema import getMetaType
 
 token = re.compile(r'@\w+\s*{|[a-zA-Z-]+\s*=\s*{?["\'{]|[a-zA-Z-]+\s*=\s+[0-9a-zA-Z_]')
 comment = re.compile(r'%[^\n]*\n')
@@ -120,11 +121,11 @@ def getentries(filename):
             
             content = unicode(content,"utf-8",errors='replace').encode("utf-8")
 
-            content = content.replace("\\\"u","ü").replace("\\\"a","ä").replace("\\\"o","ö") \
-                             .replace("\\\"U","Ü").replace("\\\"A","Ä").replace("\\\"O","Ö")
+            content = content.replace("\\\"u","Ã¼").replace("\\\"a","Ã¤").replace("\\\"o","Ã¶") \
+                             .replace("\\\"U","Ãœ").replace("\\\"A","Ã„").replace("\\\"O","Ã–")
             content = content.replace("\\","")
-            content = content.replace("{\"u}","ü").replace("{\"a}","ä").replace("{\"o}","ö") \
-                             .replace("{\"U}","Ü").replace("{\"A}","Ä").replace("{\"O}","Ö")
+            content = content.replace("{\"u}","Ã¼").replace("{\"a}","Ã¤").replace("{\"o}","Ã¶") \
+                             .replace("{\"U}","Ãœ").replace("{\"A}","Ã„").replace("{\"O}","Ã–")
             content = content.strip()
 
             if field in ["author","editor"] and content:
@@ -251,10 +252,12 @@ def importBibTeX(file, node=None):
     shortcut = {}
     for doctype, docid, fields in getentries(file):
         mytype = detecttype(doctype, fields)
+
         if mytype:
+            fieldnames = {}
+            
             if mytype=="string":
-                #shortcut[]
-                print "string fields:",fields
+                print "string fields:", fields
                 continue
             
             elif mytype not in bibtextypes:
@@ -262,56 +265,25 @@ def importBibTeX(file, node=None):
             result += [(mytype.lower(), fields)]
 
             metatype = bibtextypes[mytype]
+
+            # check for mask configuration
+            mask = getMetaType(metatype).getMask("bibtex")
+            if mask:
+                for f in mask.getMaskFields():
+                    try:
+                        _bib_name = tree.getNode(f.get("mappingfield")).getName()
+                        _med_name = tree.getNode(f.get("attribute")).getName()
+                    except tree.NoSuchNodeError:
+                        continue
+
+                    fieldnames[_bib_name] = _med_name
+            
             doc = tree.Node(docid, type="document/"+metatype)
-            fieldnames = [field.getName() for field in doc.getMetaFields()]
             for k,v in fields.items():
-                if k not in fieldnames: 
-                    kk = [k]
-                    if k=="number":
-                        kk = ["number", "issue"]
-                    elif k=="author":
-                        kk = ["author", "author.fullname_comma", "author.fullname"]
-                    elif k=="school":
-                        kk = ["school", "origin"]
-                    elif k=="year":
-                        kk = ["year", "year-accepted"]
+                if k in fieldnames.keys():
+                    k = fieldnames[k] # map bibtex name
 
-                    for k in kk:
-                        if (k+"-contrib") in fieldnames:
-                            k = k+"-contrib"
-                            break
-                        elif k+"-title" in fieldnames:
-                            k = k+"-title"
-                            break
-                        elif k.startswith("book") and ("congress"+k[4:]) in fieldnames:
-                            k = ("congress"+k[4:]) 
-                            break
-                        elif ("congress-"+k) in fieldnames:
-                            k = ("congress-"+k) 
-                            break
-                        elif k.startswith("book") and ("journal-"+k[4:]) in fieldnames:
-                            k = ("journal-"+k[4:]) 
-                            break
-                        elif ("journal-"+k) in fieldnames:
-                            k = ("journal-"+k) 
-                            break
-                        elif k.startswith("book") and ("bookseries-"+k[4:]) in fieldnames:
-                            k = ("bookseries-"+k[4:]) 
-                            break
-                        elif ("bookseries-"+k) in fieldnames:
-                            k = ("bookseries-"+k) 
-                            break
-                        elif k=="series" and ("bookseries-title") in fieldnames:
-                            k = "bookseries-title"
-                            break
-                        elif ("p-"+k) in fieldnames:
-                            k = ("p-"+k) 
-                            break
-
-                #if k not in fieldnames:
-                #    print mytype,"->",metatype,"!",k
-
-                doc.set(k,v)
+                doc.set(k, v)
             node.addChild(doc)
     return node
 

@@ -20,6 +20,7 @@
 import smtplib
 import core.users
 import core.config as config
+from utils import formatException
 
 SocketError = "socketerror"
 

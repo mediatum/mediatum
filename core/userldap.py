@@ -133,5 +133,9 @@ class LDAPUser(ExternalUser):
         return "ldap user"
 
     def allowAdd(self):
+        return 1
+        
+    def canChangePWD(self):
         return 0
+        
         

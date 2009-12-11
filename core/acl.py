@@ -271,12 +271,21 @@ class AccessRule:
 
     def getName(self):
         return self.name
+        
+    def setName(self, newname):
+        self.name = newname
 
     def getRuleStr(self):
         return self.rulestr
+        
+    def setRuleStr(self, newrule):
+        self.rulestr = newrule
 
     def getDescription(self):
         return self.description
+    
+    def setDescription(self, newdesc):
+        self.description = newdesc
 
     def setParsedRule(self, str):
         self.parsedRule = parse(str)
@@ -386,6 +395,9 @@ class ACLDateAfterClause(AccessCondition):
             return "date > "+self.date
         else:
             return "date >= "+self.date
+    def has_access(self, accessdata, node):
+        from utils.date import now, parse_date
+        return int(now().int()>=parse_date(self.date, "dd.mm.yyyy").int())
 
 class ACLDateBeforeClause(AccessCondition):
     def __init__(self, date, end):
@@ -396,6 +408,9 @@ class ACLDateBeforeClause(AccessCondition):
             return "date <= "+self.date
         else:
             return "date < "+self.date
+    def has_access(self, accessdata, node):
+        from utils.date import now, parse_date
+        return int(now().int()<=parse_date(self.date, "dd.mm.yyyy").int())
 
 class ACLParser(BoolParser):
     def parseSimpleCondition(self,s):
@@ -484,7 +499,7 @@ def getRuleList():
         rlist += [AccessRule(str(rule[0]), str(rule[2]), str(rule[1]))]
     return rlist
 
-def updateRule(rule):
+def updateRule(rule, oldrule="", newname = "", oldname = ""):
     global conn, rules
     conn.updateRule(rule)
     rules[rule.getName()] = rule
@@ -593,8 +608,6 @@ def makeList(req, name, rights, readonlyrights, overload=0, type=""):
         for rule in readonlyrights:
             if rule not in rorightsmap:
                 val_left += """<optgroup label="%s"></optgroup>""" % (rule)
-    else:
-        print rightsmap
     
     # node-level standard rules
     for rule in rulelist:

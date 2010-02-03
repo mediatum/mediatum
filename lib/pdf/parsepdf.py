@@ -21,7 +21,6 @@ import sys
 if __name__ == "__main__":
     sys.path += [sys.argv[1], "../../", "."]
 
-import gfx
 import logging
 import random
 import Image
@@ -32,97 +31,88 @@ import os
 
 from utils.utils import splitfilename
 from utils.dicts import SortedDict
+from subprocess import Popen, PIPE, call
 
 class EncryptedException:
     pass
+    
+class PDFInfo:
+    def __init__(self, data={}):
+        self.data = data
+        
+    def getInfo(self, name):
+        if name in self.data.keys():
+            return self.data[name]
+        return ""
+
+    def isEncrypted(self):
+        if self.getInfo("Encrypted")=="yes":
+            return 1
+        return 0
+    
+    def __getitem__(self, key): 
+        return self.data[key]
+        
+    def items(self):
+        return self.data
 
 def parsePDF(filename, tempdir):
-    name, ext = splitfilename(filename)
-    
+    # process info file
+    def parseInfo(lines):
+        attrs = ["Title", "Subject", "Keywords", "Author", "Creator", "Producer", "CreationDate", "ModDate", "Tagged", "Pages", "Encrypted", "Page size", "File size", "Optimized", "PDF Version", "Metadata"]
+        data = {}
+        for line in lines:
+            for attr in attrs:
+                parts = line[:-1].split(attr+":")
+                if len(parts)==2:
+                    data[attr] = parts[1].strip()
+                    
+                    if attr=="Encrypted" and parts[1].strip().startswith("yes"):
+                        for s_option in parts[1].strip()[5:-1].split(" "):
+                            option = s_option.split(":")
+                            if option[1]=="":
+                                break
+                            data[option[0]] = option[1]
+                        data[attr] = "yes"
+                    break
+        return PDFInfo(data)
+
+    name = ".".join(filename.split(".")[:-1])
+    imgfile = tempdir + "tmp" + str(random.random())+".png"
     thumb128 = name+".thumb"
     thumb300 = name+".thumb2"
     fulltext = name+".txt"
     infoname = name+".info"
 
-    gfx.verbose(0)
-    try:
-        gfx.setparameter("disable_polygon_conversion", "1")
-    except:
-        gfx.setoption("disable_polygon_conversion", "1")
-    pdf = gfx.open("pdf", filename)
+    # pdf info (xpdf)
+    p = Popen("pdfinfo -meta %s" % filename, stdout=PIPE)
+    info = parseInfo(p.communicate()[0].strip().split("\n"))
     
-    if pdf.getInfo("oktocopy") != "yes":
-        raise EncryptedException()
+    # test for correct rights
+    if info.isEncrypted():
+        raise PDFException("error:document encrypted")
+    
+    finfo = open(infoname, "w")
+    for item in info.items():# infokeys:
+        finfo.write(item+":"+(" "*(15-len(item))+info[item]+"\n"))
+    finfo.close()
 
-    png = gfx.ImageList()
-    txt = gfx.PlainText()
-
-    maxwidth,maxheight = 0,0
-    for pagenr in range(1,pdf.pages+1):
-        page = pdf.getPage(pagenr)
-        txt.startpage(page.width, page.height)
-        page.render(txt)
-        txt.endpage()
-        if page.width > maxwidth:
-            maxwidth = page.width
-        if page.height > maxheight:
-            maxheight = page.height
-        if pagenr == 1:
-            png.startpage(page.width, page.height)
-            page.render(png)
-            png.endpage()
-
-    infodict = SortedDict()
-    infodict["producer"] = pdf.getInfo("producer")
-    infodict["creationdate"] = pdf.getInfo("creationdate")
-    infodict["tagged"] = pdf.getInfo("tagged")
-    infodict["pages"] = str(pdf.pages)
-    infodict["pagesize"] = "%d x %d pts" % (maxwidth, maxheight)
-    infodict["title"] = pdf.getInfo("title")
-    infodict["subject"] = pdf.getInfo("subject")
-    infodict["keywords"] = pdf.getInfo("keywords")
-    infodict["author"] = pdf.getInfo("author")
-    infodict["creator"] = pdf.getInfo("creator")
-    infodict["moddate"] = pdf.getInfo("moddate")
-    infodict["linearized"] = pdf.getInfo("linearized")
-    infodict["encrypted"] = pdf.getInfo("encrypted")
-    infodict["print"] = pdf.getInfo("oktoprint")
-    infodict["copy"] = pdf.getInfo("oktocopy")
-    infodict["change"] = pdf.getInfo("oktochange")
-    infodict["addNotes"] = pdf.getInfo("oktoaddnotes")
-    infodict["version"] = pdf.getInfo("version")
-                
-    fi = open(infoname, "wb")
-    for k,v in infodict.items():
-        if v:
-            fi.write(k+":"+(" "*(16-len(k))+v+"\n"))
-    fi.close()
-
-    imgfile = tempdir + "tmp" + str(random.random())
-    png.save(imgfile)
+    # convert first page to image (imagemagick + ghostview)
+    os.system("convert -thumbnail x300 %s %s" % (filename, imgfile))
     makeThumbs(imgfile, thumb128, thumb300)
-    try: os.unlink(imgfile)
-    except: pass
 
-    # if xpdf exists, use it- it might generate better fulltext than gfx
-    try:
-        os.system("pdftotext -enc UTF-8 " + filename + " " + fulltext)
-    except:
-        txt.save(fulltext)
+    # extract fulltext (xpdf)
+    os.system("pdftotext -enc UTF-8 %s %s" % (filename, fulltext))
+    os.remove(imgfile)
+
 
 def parsePDF2(filename, tempdir):
     from core.config import basedir
-    command = "\"\"%s\" \"%s\" \"%s\" \"%s\"" % (sys.executable, os.path.join(basedir,"lib/pdf/parsepdf.py"), filename, tempdir)
-    if os.name!="nt":
-        command = command[1:]
-    os.system(command)
-    
-    exit_status = os.system(command) >> 8
-    
-    if exit_status:
-        logging.getLogger('errors').error("Exit status "+str(exit_status)+" of subprocess "+command)
-    if exit_status == 111:
-        raise EncryptedException()
+    retcode = call([sys.executable, os.path.join(basedir,"lib/pdf/parsepdf.py"), filename, tempdir])
+    if retcode==111:
+        raise PDFException("error:document encrypted")
+    elif retcode==1: # normal run
+        pass
 
 """  create preview image for given pdf """
 def makeThumbs(src, thumb128, thumb300):
@@ -150,7 +140,8 @@ def makeThumbs(src, thumb128, thumb300):
     draw = ImageDraw.ImageDraw(im)
     draw.line([(0,0),(127,0),(127,127),(0,127),(0,0)], (128,128,128))
     im.save(thumb128,"jpeg")
-
+    
+    
 if __name__ == "__main__":
     import sys
 

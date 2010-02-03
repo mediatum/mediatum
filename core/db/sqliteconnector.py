@@ -240,9 +240,9 @@ class SQLiteConnector(Connector):
         if check:
             t = self.runQuery("select count(*) as num from nodeattribute where nid="+nodeid+" and name='"+attname+"'")
             if len(t)>0 and t[0][0]>0:
-                self.runQuery("update nodeattribute set value='"+attvalue+"' where nid="+nodeid+" and name='"+attname+"'")
+                self.runQuery("update nodeattribute set value='"+str(attvalue)+"' where nid="+nodeid+" and name='"+attname+"'")
                 return
-        self.runQuery("insert into nodeattribute (nid, name, value) values(?,?,?)", (nodeid,attname,attvalue))
+        self.runQuery("insert into nodeattribute (nid, name, value) values(?,?,?)", (nodeid,attname,str(attvalue)))
        
         
     def addFile(self, nodeid, path, type, mimetype):

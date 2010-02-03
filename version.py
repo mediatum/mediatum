@@ -1,1 +1,1 @@
-mediatum_version="0.5.0rc2"
+mediatum_version="0.5.1"

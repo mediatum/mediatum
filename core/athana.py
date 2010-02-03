@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.33 2009/01/27 13:23:33 mediatum Exp $'
+RCS_ID =  '$Id: athana.py,v 1.34 2010/02/03 11:34:31 seiferta Exp $'
 
 import sys
 
@@ -6832,7 +6832,7 @@ def profiling_status(req):
     return req.done()
 
 iolock = thread.allocate_lock()
-profiling=1
+profiling=0
 try:
     import hotshot
     import hotshot.stats

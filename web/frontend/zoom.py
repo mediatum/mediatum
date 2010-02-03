@@ -25,7 +25,7 @@ import sys
 import zipfile
 import core.config as config
 from utils.dicts import MaxSizeDict
-from utils.fileutils import importFile
+from utils.fileutils import importFile, getImportDir
 IMGNAME = re.compile("/?tile/([^/]*)(/(.*))?$")
 
 store = 1 # keep tiles?
@@ -106,8 +106,7 @@ class ZoomImage:
             os.unlink(name)
         file.close()
         
-        self.node.addFile(tree.FileNode(name="zoom"+str(self.node.id)+".zip",mimetype="application/zip",type="zoom"))
-
+        self.node.addFile(tree.FileNode(name=getImportDir()+"/zoom"+str(self.node.id)+".zip",mimetype="application/zip",type="zoom"))
 
 
     def getTile(self, level, x, y, generate=0):

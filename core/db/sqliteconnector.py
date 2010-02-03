@@ -24,6 +24,7 @@ import sys
 import logging
 import traceback
 import thread
+import core.config as config
 from connector import Connector
 
 try:
@@ -87,7 +88,9 @@ class SQLiteConnector(Connector):
         global sqlite_lock
         sqlite_lock.acquire()
         try:
-            fi = open("/tmp/sqlite.log", "ab+")
+            if not os.path.exists(config.get("paths.tempdir")):
+                os.makedirs(os.path.dirname(config.get("paths.tempdir")))
+            fi = open(config.get("paths.tempdir")+"sqlite.log", "ab+")
             fi.write(sql+"\n")
             fi.close()
 
@@ -136,7 +139,7 @@ class SQLiteConnector(Connector):
         self.runQueryNoError("CREATE INDEX [IDX_NODEMAPPING_NID] ON [nodemapping]([nid]  ASC)")
         self.runQueryNoError("CREATE INDEX [IDX_NODEMAPPING_CID] ON [nodemapping]([cid]  ASC)")
         self.runQueryNoError("CREATE INDEX [IDX_NODEMAPPING_NIDCID] ON [nodemapping]([nid]  ASC,[cid]  ASC)")
-        self.commit()
+        #self.commit()
 
     def dropTables(self):
         self.runQueryNoError("drop table nodeaccess")
@@ -145,7 +148,7 @@ class SQLiteConnector(Connector):
         self.runQueryNoError("drop table nodefile")
         self.runQueryNoError("drop table nodeattribute")
         self.runQueryNoError("drop table nodemapping")
-        self.commit()
+        #self.commit()
         log.info("tables deleted")
 
     def clearTables(self):
@@ -155,7 +158,7 @@ class SQLiteConnector(Connector):
         self.runQueryNoError("delete from nodefile")
         self.runQueryNoError("delete from nodeattribute")
         self.runQueryNoError("delete from nodemapping")
-        self.commit()
+        #self.commit()
         log.info("tables cleared")
         
     def getRule(self, name):

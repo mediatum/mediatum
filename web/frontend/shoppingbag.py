@@ -32,8 +32,7 @@ FOOTER_HEIGHT=0
 
 
 def shoppingbag_action(req):
-    print req.params
-    
+
     if "action" in req.params:
         if req.params.get("action")=="add": # add item in shoppingbag
             put_into_shoppingbag(req)

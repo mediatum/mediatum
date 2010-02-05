@@ -25,23 +25,14 @@ import logging
 import traceback
 import thread
 import core.config as config
+
 from connector import Connector
-
-try:
-    import sqlite3 as sqlite
-    #import sqlite3.OperationalError as OperationalError
-except:
-    from pysqlite2 import dbapi2 as sqlite
-    #from pysqlite2.dbapi2 import OperationalError as OperationalError
-
-#from time import *
+from pysqlite2 import dbapi2 as sqlite
 from core.db.database import initDatabaseValues
+from utils import *
 
 if __name__ == "__main__":
     sys.path += [".."]
-
-import core.config as config
-from utils import *
 
 debug = 0
 log = logging.getLogger('database')
@@ -173,9 +164,9 @@ class SQLiteConnector(Connector):
     def getRuleList(self):
         return self.runQuery("select name, description, rule from nodeaccess order by name")
 
-    def updateRule(self, rule):
+    def updateRule(self, rule, oldname):
         #try:
-        sql = "update nodeaccess set rule='"+rule.getRuleStr()+"', description='"+rule.getDescription()+"' where name='" + rule.getName()+"'"
+        sql = "update nodeaccess set rule='"+rule.getRuleStr()+"', description='"+rule.getDescription()+"' where name='" + oldname+"'"
         self.runQuery(sql)
         return True
         #except:

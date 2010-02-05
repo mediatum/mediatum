@@ -233,12 +233,14 @@ class MYSQLConnector(Connector):
     def getRuleList(self):
         return self.runQuery("select name, description, rule from access order by name")
 
-    def updateRule(self, rule):
+           
+    def updateRule(self, newrule, oldname):
         try:
-            self.runQuery("update access set rule=" + self.esc(rule.getRuleStr()) + ", description=" + self.esc(rule.getDescription()) + " where name=" + self.esc(rule.getName()))
+            self.runQuery("update access set name=" + self.esc(newrule.getName()) + ", rule=" + self.esc(newrule.getRuleStr()) + ", description=" + self.esc(newrule.getDescription()) + " where name=" + self.esc(oldname))
             return True
         except:
-            return False
+            return False        
+            
 
     def addRule(self, rule):
         try:

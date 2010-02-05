@@ -1,32 +1,28 @@
 <div id="object_main" metal:define-macro="login" style="margin-left:20px">
     <p>&nbsp;</p>
-    <p tal:condition="error" i18n:translate="login_error_1" class="error" style="text-align:center">
-        TEXT
-    </p>
+    <p tal:condition="python:error>0" tal:content="python:'login_error_'+str(error)" i18n:translate="" class="error" style="text-align:center">TEXT</p>
     <br/>
-    <form method="post" action="login_submit" class="login" name="login" >
+    <form method="post" class="login" name="login" style="margin-bottom:50px">
         <div class="label">&nbsp;</div>
         <span i18n:translate="login_currentuser_msg">
             TEXT [ <span tal:content="python:user.getName()" i18n:name="name" class="username">username</span> ]
         </span>
-        <br/><br/>
+        <br/>
+        <br/>
         <div i18n:translate="username:" class="label">TEXT</div>
-        <input maxlength="30" class="text" type="text" name="user" style="width: 200px">
+        <input maxlength="30" class="text" type="text" name="user" style="width:200px; margin-bottom:2px">
         <br/>
         <div i18n:translate="password:" class="label">TEXT</div>
-        <input maxlength="30" class="text" type="password" name="password" style="width: 200px">
-        <br/><br/>
-
+        <input maxlength="30" class="text" type="password" name="password" style="width:200px;margin-bottom:5px">
+        <br/>
         <div class="label">&nbsp;</div>
-        <input i18n:attributes="value login_submit" name="LoginSubmit" value="Anmelden" class="submitbutton" type="submit"/>
+        <button type="submit" name="LoginSubmit" i18n:translate="login_submit">TEXT</button>
         &nbsp;
-        <button i18n:translate="login_reset" name="LoginReset" value="cancel" class="submitbutton" type="submit">TEXT</button>
-        <br/><br/>
+        <button type="button" onclick="location='/'" name="cancel" i18n:translate="login_reset">TEXT</button>
+        <br/>
         <div class="label">&nbsp;</div>
-        <small><a href="/display_pwdforgotten" i18n:translate="pwdforgotten_link">forgot your password?</a></small>
+        <small style="font-size:9px"><a href="/pwdforgotten" i18n:translate="pwdforgotten_link">TEXT</a></small>
     </form>
-    <p>&nbsp;</p>    
-    <p>&nbsp;</p>
     <div style="width:520px;" align="justify"><small i18n:translate="login_info">TEXT</small></div>
     <script>
         function setFocus(){document.login.user.focus();}
@@ -36,24 +32,21 @@
 
 <div id="object_main" metal:define-macro="change_pwd" style="margin-left:20px">
     <p>&nbsp;</p>
-    <tal:block tal:condition="python:error>0">
-        <p tal:condition="python:error==1" i18n:translate="login_change_err_1" class="error" style="text-align:center">TEXT</p>
-        <p tal:condition="python:error==2" i18n:translate="login_change_err_2" class="error" style="text-align:center">TEXT</p>
-        <p tal:condition="python:error==3" i18n:translate="login_change_err_3" class="error" style="text-align:center">TEXT</p>
-    </tal:block>
-
-    <form method="post" action="changepwd_submit" class="login" name="login">
+    <p tal:condition="python:error>0" tal:content="python:'login_change_err_'+str(error)" i18n:translate="" class="error" style="text-align:center">TEXT</p>
+    <form method="post" action="pwdchange" class="login" name="login">
         <div i18n:translate="login_act_pwd:" class="label">TEXT</div>
-        <input maxlength="30" class="text" type="password" name="password_old"/>
+        <input maxlength="30" class="text" type="password" name="password_old" style="width:200px; margin-bottom:2px"/>
         <br/>
         <div i18n:translate="new_password:" class="label">TEXT</div>
-        <input maxlength="30" class="text" type="password" name="password_new1"/>
+        <input maxlength="30" class="text" type="password" name="password_new1" style="width:200px; margin-bottom:2px"/>
         <br/>
         <div i18n:translate="password_repeat:" class="label">TEXT</div>
-        <input maxlength="30" class="text" type="password" name="password_new2"/>
-        <br/><br/>
+        <input maxlength="30" class="text" type="password" name="password_new2" style="width:200px; margin-bottom:5px"/>
+        <br/>
         <div class="label">&nbsp;</div>
-        <input i18n:attributes="value login_save" name="ChangeSubmit" value="Speichern" class="submitbutton" type="submit"/>
+        <button i18n:translate="login_save" name="ChangeSubmit">TEXT</button>
+        &nbsp;
+        <button type="button" onclick="location='/'" name="cancel" i18n:translate="login_reset">TEXT</button>
     </form>
     <script>
         function setFocus(){document.login.password_old.focus();}
@@ -63,37 +56,27 @@
 
 <div id="object_main" metal:define-macro="pwdforgotten" style="margin-left:20px">
     <p>&nbsp;</p>
-    <p tal:condition="python: error=='pwdforgotten_noentry'" i18n:translate="pwdforgotten_noentry" class="error" style="text-align:center">
-        TEXT
-    </p>   
-    <p tal:condition="python: error=='pwdforgotten_nosuchuser'" i18n:translate="pwdforgotten_nosuchuser" class="error" style="text-align:center">
-        TEXT
-    </p>    
-    <p tal:condition="python: error=='pwdforgotten_excludedgroup'" i18n:translate="pwdforgotten_excludedgroup" class="error" style="text-align:center">
-        TEXT
-    </p>        
+    <p tal:condition="python: error=='pwdforgotten_noentry'" i18n:translate="pwdforgotten_noentry" class="error" style="text-align:center">TEXT</p>   
+    <p tal:condition="python: error=='pwdforgotten_nosuchuser'" i18n:translate="pwdforgotten_nosuchuser" class="error" style="text-align:center">TEXT</p>      
     <br/>
-    <form method="post" action="pwdforgotten_submit" class="login" name="login" >
+    <form method="post" class="login" name="login" style="margin-bottom:50px">
         <div class="label">&nbsp;</div>
         <div i18n:translate="login_currentuser_msg">
             TEXT [ <span tal:content="python:user.getName()" i18n:name="name" class="username">username</span> ]
         </div>
         <br/>
-        <div i18n:translate="pwdforgotten_explain_procedure">
-            TEXT 
-        </div>        
-        <br/><br/>
+        <div i18n:translate="pwdforgotten_explain_procedure">TEXT</div>        
+        <br/>
+        <br/>
         <div i18n:translate="username:" class="label">TEXT</div>
         <input maxlength="30" class="text" type="text" name="user" style="width: 200px">
-        <br/><br/>
-
+        <br/>
+        <br/>
         <div class="label">&nbsp;</div>
-        <input i18n:attributes="value pwdforgotten_submit" name="PwdForgottenSubmit" value="send" class="submitbutton" type="submit"/>
+        <button type="submit" name="PwdForgottenSubmit" i18n:translate="pwdforgotten_submit">TEXT</button>
         &nbsp;
-        <input i18n:attributes="value pwdforgotten_cancel" type="button" onClick="history.go(-1);return true;">
+        <button type="button" onclick="location='/login'" name="cancel" i18n:translate="pwdforgotten_cancel">TEXT</button>
     </form>
-    <p>&nbsp;</p>
-    <p>&nbsp;</p>
     <div style="width:520px;" align="justify"><small i18n:translate="login_info">TEXT</small></div>
     <script>
         function setFocus(){document.login.user.focus();}
@@ -101,33 +84,18 @@
     </script>
 </div>
 
-<div id="object_main" metal:define-macro="pwdforgotten_butmailnowsent" style="margin-left:20px">
+<div id="object_main" metal:define-macro="pwdforgotten_message" style="margin-left:20px">
     <p>&nbsp;</p>
-    <p i18n:translate="pwdforgotten_butmailnowsent" style="text-align:center">
-        TEXT
-    </p>
+    <p tal:content="message" i18n:translate="" style="text-align:center">TEXT</p>
 </div>
+
 
 <div id="object_main" metal:define-macro="pwdforgotten_password_activated" style="margin-left:20px">
     <p>&nbsp;</p>
-    <span i18n:translate="pwdforgotten_password_activated" style="text-align:center">
-        TEXT
-    </span>
-    <span tal:replace="username">
-        TEXT
-    </span>
+    <span i18n:translate="pwdforgotten_password_activated" style="text-align:center">TEXT</span>
+    <span tal:replace="username">TEXT</span>
 </div>
 
-<div id="object_main" metal:define-macro="pwdforgotten_password_invalid_key" style="margin-left:20px">
-    <p>&nbsp;</p>
-    <span i18n:translate="pwdforgotten_password_invalid_key" style="text-align:center">
-        TEXT
-    </span>
-</div>
-
-<metal:block metal:define-macro="sendmailerror">
-    <p i18n:translate="pwdforgotten_emailsenderror">TEXT</p>
-</metal:block>
 
 <metal:block metal:define-macro="emailtext">
 <tal:block tal:condition="python:language not in ['en','de']">
@@ -141,7 +109,7 @@ Sehr geehrte(r) Frau/Herr <tal:block tal:replace="name"/>,
 
 Das neue Passwort wird nur dann aktiviert, wenn Sie den folgenden Link in einem Browser öffnen:
 
-http://<tal:block tal:replace="activationlink"/>/
+http://<tal:block tal:replace="raw activationlink"/>/
 
 Ihre Zugangsdaten lauten dann:
 

@@ -17,7 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import md5
+import hashlib
+import core
 import core.tree as tree
 import core.usergroups as usergroups
 import core.config as config
@@ -67,7 +68,7 @@ class User(tree.Node):
     def getPassword(self):
         return self.get("password")
     def setPassword(self, p):
-        self.set("password", md5.md5(p).hexdigest());
+        self.set("password", hashlib.md5(p).hexdigest());
 
     def inGroup(self, id):
         for group in self.getGroups():
@@ -110,16 +111,16 @@ class User(tree.Node):
         return False
 
     def stdPassword(self):
-        return self.get("password") == md5.md5(config.get("user.passwd")).hexdigest()
+        return self.get("password") == hashlib.md5(config.get("user.passwd")).hexdigest()
 
     def resetPassword(self, newPwd):
-        self.set("password", md5.md5(newPwd).hexdigest());
+        self.set("password", hashlib.md5(newPwd).hexdigest());
 
     def translate(self,key):
         return translation.translate(key=key,user=self)
-
-    def isContainer(node):
-        return 0
+        
+    def isSystemType(self):
+        return 1
         
     def setUserType(self, value):
         self.usertype = value
@@ -136,6 +137,15 @@ class User(tree.Node):
             
     def allowAdd(self):
         return 1
+        
+    def canChangePWD(self):
+        if self.isAdmin():
+            return 0
+        if self.getUserType()=="intern":
+            return "c" in self.getOption()
+        else:
+            from core.users import authenticators
+            return authenticators[self.getUserType()].canChangePWD()
   
 class ExternalUser:
 
@@ -153,3 +163,7 @@ class ExternalUser:
         
     def allowAdd(self):
         return 0
+        
+    def canChangePWD(self):
+        raise "not implemented"
+        

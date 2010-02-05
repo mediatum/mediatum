@@ -43,11 +43,11 @@ def show_node(req):
     v["spc"] = list()
     
     spc = list()
-    v["spc"].append(Menu("sub_header_frontend", "sub_header_inquest_title","#", "/"))
-    v["spc"].append(Menu("sub_header_edit", "sub_header_edit_title", "", "/edit"))
+    v["spc"].append(Menu("sub_header_frontend", "/"))
+    v["spc"].append(Menu("sub_header_edit", "/edit"))
     if user.isWorkflowEditor():
-        v["spc"].append(Menu("sub_header_workflow", "sub_header_workflow_title", "", "../publish"))
-    v["spc"].append(Menu("sub_header_logout", "sub_header_logout_title","#", "/logout"))
+        v["spc"].append(Menu("sub_header_workflow", "../publish"))
+    v["spc"].append(Menu("sub_header_logout", "/logout"))
     
     if len(p)>0:
         if style == "":

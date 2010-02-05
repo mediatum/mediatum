@@ -11,12 +11,12 @@
             <script type="text/javascript" language="javascript" src="/js/mediatum.js">
             </script>
             <!--[if IE]>
-                                    <style type="text/css">
-                                    ul#nav li ul  {
-                                    filter: alpha(opacity=95);
-                                    }
-                                    </style>
-                             <![endif]-->
+                    <style type="text/css">
+                    ul#nav li ul  {
+                    filter: alpha(opacity=95);
+                    }
+                    </style>
+             <![endif]-->
         </head>
         
         <body topmargin="0" rightmargin="0" leftmargin="0">           
@@ -27,7 +27,7 @@
                             <span i18n:translate="admin_header">TEXT</span><br/>
                             <span i18n:translate="sub_header_user">TEXT</span>: <span tal:replace="raw python:user.getName()"/>
                             <span tal:repeat="item python:spc">
-                                | <a tal:attributes="href python:item.link; target python:item.target; title python:item.description" i18n:translate="" i18n:attributes="title" tal:content="python:item.name">TEXT</a>
+                                | <a tal:attributes="href python:item.link; target python:item.target; title python:item.getName()+'_title'" i18n:translate="" i18n:attributes="title" tal:content="python:item.name">TEXT</a>
                             </span>
                         </div>
                     </div>
@@ -35,12 +35,12 @@
                     <div class="topmenucontainer">
                         <ul id="nav">
                             <li tal:repeat="navitem python:navigation">
-                                <a tal:condition="python:len(navitem.getItemList())==0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]; href python:navitem.link" i18n:translate="" tal:content="python:navitem.name">TEXT</a>
+                                <a tal:condition="python:len(navitem.getItemList())==0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]; href python:navitem.getLink()" i18n:translate="" tal:content="python:'admin_menu_'+navitem.getName()">TEXT</a>
                                 <tal:block tal:condition="python:len(navitem.getItemList())>0">
-                                    <a tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]" i18n:translate="" tal:content="python:navitem.getName()"/>
+                                    <a tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]" i18n:translate="" tal:content="python:'admin_menu_'+navitem.getName()"/>
                                     <ul>
                                         <li tal:repeat="item python:navitem.getItemList()">
-                                            <a i18n:translate="" tal:content="python:item[0]" tal:attributes="href python:item[1]"/>
+                                            <a i18n:translate="" tal:content="python:'admin_menu_'+item" tal:attributes="href python:'/admin/'+item"/>
                                         </li>
                                     </ul>
                                 </tal:block>                            
@@ -51,7 +51,7 @@
                     <div class="breadcrumbs">
                         <h2 class="breadcrumbs">
                             <tal:block tal:repeat="item breadcrumbs">
-                                <tal:block tal:content="item" i18n:translate="">TEXT</tal:block>
+                                <tal:block tal:content="python:item" i18n:translate="">TEXT</tal:block>
                                 <tal:block tal:condition="python:breadcrumbs.index(item)<len(breadcrumbs)-1">
                                  &raquo; 
                                 </tal:block>

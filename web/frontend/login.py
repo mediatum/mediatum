@@ -18,7 +18,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.users as users
-import core.usergroups as usergroups
 import web.admin.modules.user as usermodule
 
 import core.athana as athana
@@ -26,76 +25,64 @@ import core.config as config
 import core.tree as tree
 
 import logging
-import random, md5
+import random, hashlib
 
 import utils.mail as mail
 import utils.date as date
-import utils.pathutils as pathutils
 
 from web.frontend.frame import getNavigationFrame
 from core.translation import lang, t
+from utils.utils import mkKey
 
-def display_login(req, error=None):
-    if "LoginReset" in req.params.keys():
-        del req.params['error']
+def buildURL(req):
+    p = ""
+    for key in req.params:
+        p += "&"+str(key)+"="+req.params.get(key) 
+    req.request["Location"] = "http://"+config.get("host.name")+"/node?"+p[1:];
+    return athana.HTTP_MOVED_TEMPORARILY
 
-    if len(req.params)>0 and not "error" in req.params.keys():
-        # user changed from login to browsing
-        p = ""
-        for key in req.params:
-            p += "&"+str(key)+"="+req.params.get(key) 
-        req.request["Location"] = "http://"+config.get("host.name")+"/node?"+p[1:];
-        return athana.HTTP_MOVED_TEMPORARILY
+
+def login(req):
+    if len(req.params)>2 and "user" not in req.params: # user changed to browsing
+        return buildURL(req)
+
+    error = 0
+    username = req.params.get("user", config.get("user.guestuser"))
+    password = req.params.get("password", "")
+
+    if username=="" and "user" in req.params: # empty username
+        error = 1
         
-    navframe = getNavigationFrame(req)
-    navframe.feedback(req)
+    elif "LoginSubmit" in req.params: # try given values
+        user = users.checkLogin(username, password)
+        if user:
+            req.session["user"] = user
+            logging.getLogger('usertracing').info(user.name + " logged in")
+            
+            if user.getUserType()=="intern":
+                if user.stdPassword():
+                    return pwdchange(req, 3)
+                    
+            else:
+                x = users.getExternalAuthentificator(user.getUserType())           
+                if x.stdPassword(user):
+                    return pwdchange(req, 3)
+                   
+            if config.get("config.ssh", "")=="yes":
+                req.request["Location"] = "https://"+config.get("host.name")+"/node?id="+tree.getRoot("collections").id;
+            else:
+                req.request["Location"] = "/node?id="+tree.getRoot("collections").id;
+            return athana.HTTP_MOVED_TEMPORARILY
+        else:
+            error = 1
 
+    # standard login form
     user = users.getUserFromRequest(req)
-   
-    v = {"error":error, "user":user}
-    contentHTML = req.getTAL("web/frontend/login.html", v, macro="login")
-    navframe.write(req, contentHTML)
+    navframe = getNavigationFrame(req)
+    navframe.feedback(req) 
+    navframe.write(req, req.getTAL("web/frontend/login.html", {"error":error, "user":user}, macro="login"))
     return athana.HTTP_OK
 
-def display_changepwd(req, error=None):
-    navframe = getNavigationFrame(req)
-    navframe.feedback(req)
-    
-    user = users.getUserFromRequest(req)
-
-    v = {"error":error, "user":user}
-    contentHTML = req.getTAL("web/frontend/login.html", v, macro="change_pwd")
-    navframe.write(req, contentHTML)
-    return athana.HTTP_OK
-
-def login_submit(req):
-    user = req.params.get("user",config.get("user.guestuser"))
-    password = req.params.get("password","")
-
-
-    user = users.checkLogin(user, password)
-
-    if user:
-        req.session["user"] = user
-        logging.getLogger('usertracing').info(user.name + " logged in")
-        
-        if user.getUserType()!="":
-            x = users.getExternalAuthentificator(user.getUserType())           
-            if x.stdPassword(user):
-                return display_changepwd(req,3)
-        else:
-            if user.stdPassword():
-                return display_changepwd(req,3)
-       
-        if config.get("config.ssh", "") == "yes":
-            req.request["Location"] = "https://"+config.get("host.name")+"/node?id="+tree.getRoot("collections").id;
-        else:
-            req.request["Location"] = "/node?id="+tree.getRoot("collections").id;
-        return athana.HTTP_MOVED_TEMPORARILY
-    else:
-
-        req.params['error']  = "1"
-        return display_login(req, "login_error")
 
 def logout(req):
     try:
@@ -105,193 +92,117 @@ def logout(req):
     req.request["Location"] = req.makeLink("node", {"id":tree.getRoot("collections").id})
     return athana.HTTP_MOVED_TEMPORARILY;
 
-def changepwd_submit(req):
-    user = users.getUserFromRequest(req)
-
-    if user.getName() == config.get("user.guestuser"):
-        req.request["Location"] = req.makeLink("node", {"id":tree.getRoot("collections").id})
-        return athana.HTTP_MOVED_TEMPORARILY;
     
-    else:
-        if users.checkLogin(user.getName(), req.params["password_old"])==0:
-            return display_changepwd(req, 1) # old wrong
+def pwdchange(req, error=0):
+    if len(req.params)>2 and "password_old" not in req.params: # user changed to browsing
+        return buildURL(req)
+    
+    user = users.getUserFromRequest(req)
+    
+    if not user.canChangePWD() and not user.isAdmin():
+        error = 4 # no rights
         
-        elif req.params["password_new1"] != req.params["password_new2"]:
-            return display_changepwd(req, 2) # no match
-        
-        else:
-            user.setPassword(req.params["password_new2"])
+    elif "ChangeSubmit" in req.params:
+        if user.getName()==config.get("user.guestuser"):
             req.request["Location"] = req.makeLink("node", {"id":tree.getRoot("collections").id})
             return athana.HTTP_MOVED_TEMPORARILY;
         
-def display_pwdforgotten(req, error=None):
-    
-    # copied from display_login()
-    if len(req.params)>0 and not "error" in req.params.keys():
-        # user changed to browsing
-        p = ""
-        for key in req.params:
-            p += "&"+str(key)+"="+req.params.get(key)
-        req.request["Location"] = "http://"+config.get("host.name")+"/node?"+p[1:];
-        return athana.HTTP_MOVED_TEMPORARILY
-    
-    navframe = getNavigationFrame(req)
-    navframe.feedback(req)
-
-    user = users.getUserFromRequest(req)
-    
-    v = {"error":error, "user":user}
-
-    contentHTML = req.getTAL("web/frontend/login.html", v, macro="pwdforgotten")
-    navframe.write(req, contentHTML)
-    return athana.HTTP_OK
-
-# def mkKey() taken from /workflow/workflow.py
-def mkKey():
-    alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-    s = ""
-    for i in range(0,16):
-        s += alphabet[random.randrange(0,len(alphabet)-1)]
-    return s
-
-def pwdforgotten_submit(req):
-    
-    # copied from display_login()
-    if 'cunfold' in req.params or 'cfold' in req.params:
-        # user changed to browsing
-        p = ""
-        for key in req.params:
-            p += "&"+str(key)+"="+req.params.get(key)
-        req.request["Location"] = "http://"+config.get("host.name")+"/node?"+p[1:];
-        return athana.HTTP_MOVED_TEMPORARILY
-    
-    if req.params.get("change_language"):
-        return display_login(req)
-
-    username = req.params.get("user", "")
-    email = req.params.get("email", "")
-    
-    if username == '':
-        error = "pwdforgotten_noentry"
-        req.params['error'] = error
-        return display_pwdforgotten(req, error)
-    
-    targetuser = users.getUser(username)
-
-    if not targetuser:
-        logging.getLogger('usertracing').info("new password requested for non-existing user: "+username)
-        error="pwdforgotten_nosuchuser"
-        req.params['error'] = error
-        return display_pwdforgotten(req, error)
-    
-    # check for admin group, disallow for members of admin group
-    if targetuser.isAdmin():
-        logging.getLogger('usertracing').info("new password request refused for user %s (user belongs to administration group)" % username)
-        error="pwdforgotten_excludedgroup"
-        req.params['error'] = error
-        return display_pwdforgotten(req, error)
-    
-    # check for external user, disallow for external users
-    external_users_root = None
-    try:
-        external_users_root = tree.getRoot('external_users')
-    except tree.NoSuchNodeError:
-        pass
-    
-    if external_users_root and pathutils.isDescendantOf(targetuser, external_users_root):
-        logging.getLogger('usertracing').info("new password request refused for user %s (user is external user)" % username)
-        error="pwdforgotten_excludedgroup"
-        req.params['error'] = error
-        return display_pwdforgotten(req, error)
-        
-    targetemail = targetuser.getEmail()
-    
-    password = users.makeRandomPassword()
-    randomkey=mkKey()
-  
-    targetuser.set("newpassword.password", md5.md5(password).hexdigest())
-    targetuser.set("newpassword.time_requested", date.format_date())
-    targetuser.set("newpassword.activation_key", randomkey)
-    targetuser.set("newpassword.request_ip", req.ip)
-    
-    v = {}
-    v["name"] = targetuser.getName()
-    v["host"] = config.get("host.name")
-    v["login"] = targetuser.getName()
-    v["language"] = lang(req)
-    v["activationlink"] = v["host"]+"/pwdforgotten_activate?key=%s-%s" % (targetuser.id, randomkey)
-    
-    text = req.getTAL("web/frontend/login.html", v, macro="emailtext").strip()
-    text = text.replace("[$newpassword]", password)
-    
-    v = {}
-    v["email"] = targetuser.getEmail()
-    v["userid"] = targetuser.getName()
-    
-    navframe = getNavigationFrame(req)
-    navframe.feedback(req)
-    
-    # going to send the mail
-    text = text.replace("[wird eingesetzt]", password)
-    
-    try:
-        mail.sendmail(config.get("email.admin"),targetemail,t(lang(req),"pwdforgotten_email_subject"),text)
-        logging.getLogger('usertracing').info("new password requested for user: %s - activation email sent" % username)
-    except mail.SocketError:
-        print "Socket error while sending mail"
-        logging.getLogger('usertracing').info("new password requested for user: %s - failed to send activation email" % username)
-        return req.getTAL("web/frontend/login.html", v, macro="sendmailerror")
-    
-    contentHTML = req.getTAL("web/frontend/login.html", v, macro="pwdforgotten_butmailnowsent")
-    navframe.write(req, contentHTML)
-    return athana.HTTP_OK
-    
-def pwdforgotten_activate(req):
-    
-    # copied from display_login()
-    if 'cunfold' in req.params or 'cfold' in req.params:
-        # user changed to browsing
-        p = ""
-        for key in req.params:
-            p += "&"+str(key)+"="+req.params.get(key)
-        req.request["Location"] = "http://"+config.get("host.name")+"/node?"+p[1:];
-        return athana.HTTP_MOVED_TEMPORARILY
-    
-    navframe = getNavigationFrame(req)
-    navframe.feedback(req)
-    
-    if req.params.get("change_language"):
-        return display_login(req)
-    
-    id, key = req.params.get("key").replace("/", "").split('-')
-    targetuser = users.getUser(id)
-    
-    if targetuser.get("newpassword.activation_key")==key:
-        newpassword = targetuser.get("newpassword.password")
-        
-        if newpassword:
-            targetuser.set("password", newpassword)
-            print "password reset for user '%s' (id=%s) reset" % (targetuser.getName(), targetuser.id)
-            targetuser.set("newpassword.password", "")
-            targetuser.set("newpassword.time_activated", date.format_date())
-            
-            username=targetuser.getName()
-            requested=targetuser.get("newpassword.time_requested")
-            ip=targetuser.get("newpassword.request_ip")
-            
-            logging.getLogger('usertracing').info("new password activated for user: %s - was requested: %s by %s" % (username, requested, ip))
-            
-            v={"username": targetuser.getName()}
-            
-            contentHTML = req.getTAL("web/frontend/login.html", v, macro="pwdforgotten_password_activated")
-            navframe.write(req, contentHTML)
-            return athana.HTTP_OK
-        
         else:
-            print "invalid key: wrong key or already used key"
-            v = {}
-            contentHTML = req.getTAL("web/frontend/login.html", v, macro="pwdforgotten_password_invalid_key")
-            navframe.write(req, contentHTML)
-            return athana.HTTP_OK
+            if not users.checkLogin(user.getName(), req.params.get("password_old")):
+                error = 1 # old pwd does not match
             
+            elif req.params.get("password_new1")!=req.params.get("password_new2"):
+                error = 2 # new pwds do not match
+            
+            else:
+                user.setPassword(req.params.get("password_new2"))
+                req.request["Location"] = req.makeLink("node", {"id":tree.getRoot("collections").id})
+                return athana.HTTP_MOVED_TEMPORARILY;
+  
+    navframe = getNavigationFrame(req)
+    navframe.feedback(req)
+    contentHTML = req.getTAL("web/frontend/login.html",{"error":error, "user":user}, macro="change_pwd")
+    navframe.write(req, contentHTML)
+    return athana.HTTP_OK
+
+    
+def pwdforgotten(req):
+    if len(req.params)>2: # user changed to browsing
+        return buildURL(req)
+
+    navframe = getNavigationFrame(req)
+    navframe.feedback(req)
+    
+    if req.params.get("action", "")=="activate": # do activation of new password
+        id, key = req.params.get("key").replace("/", "").split('-')
+        targetuser = users.getUser(id)
+        
+        if targetuser.get("newpassword.activation_key")==key:
+            newpassword = targetuser.get("newpassword.password")
+            
+            if newpassword:
+                targetuser.set("password", newpassword)
+                print "password reset for user '%s' (id=%s) reset" % (targetuser.getName(), targetuser.id)
+                targetuser.removeAttribute("newpassword.password")
+                targetuser.set("newpassword.time_activated", date.format_date())
+                logging.getLogger('usertracing').info("new password activated for user: %s - was requested: %s by %s" % (targetuser.getName(), targetuser.get("newpassword.time_requested"), targetuser.get("newpassword.request_ip")))
+                
+                navframe.write(req, req.getTAL("web/frontend/login.html", {"username": targetuser.getName()}, macro="pwdforgotten_password_activated"))
+                return athana.HTTP_OK
+            
+            else:
+                print "invalid key: wrong key or already used key"
+                navframe.write(req, req.getTAL("web/frontend/login.html", {"message":"pwdforgotten_password_invalid_key"}, macro="pwdforgotten_message"))
+                return athana.HTTP_OK
+ 
+    elif "user" in req.params: # create email with activation information
+        username = req.params.get("user", "")
+
+        if username=='':
+            req.params['error'] = "pwdforgotten_noentry"
+
+        else:
+            targetuser = users.getUser(username)
+            
+            if not targetuser or not targetuser.canChangePWD():
+                logging.getLogger('usertracing').info("new password requested for non-existing user: "+username)
+                req.params['error'] = "pwdforgotten_nosuchuser"
+            
+            else:
+                password = users.makeRandomPassword()
+                randomkey = mkKey()
+
+                targetuser.set("newpassword.password", hashlib.md5(password).hexdigest())
+                targetuser.set("newpassword.time_requested", date.format_date())
+                targetuser.set("newpassword.activation_key", randomkey)
+                targetuser.set("newpassword.request_ip", req.ip)
+
+                v = {}
+                v["name"] = targetuser.getName()
+                v["host"] = config.get("host.name")
+                v["login"] = targetuser.getName()
+                v["language"] = lang(req)
+                v["activationlink"] = v["host"]+"/pwdforgotten?action=activate&key=%s-%s" % (targetuser.id, randomkey)
+                v["email"] = targetuser.getEmail()
+                v["userid"] = targetuser.getName()
+                
+                # going to send the mail                
+                try:
+                    mailtext = req.getTAL("web/frontend/login.html", v, macro="emailtext")
+                    mailtext = mailtext.strip().replace("[$newpassword]", password).replace("[wird eingesetzt]", password)
+                    
+                    mail.sendmail(config.get("email.admin"),targetuser.getEmail(), t(lang(req),"pwdforgotten_email_subject"), mailtext)
+                    logging.getLogger('usertracing').info("new password requested for user: %s - activation email sent" % username)
+                    navframe.write(req, req.getTAL("web/frontend/login.html", {"message":"pwdforgotten_butmailnowsent"}, macro="pwdforgotten_message"))
+                    return athana.HTTP_OK
+                    
+                except mail.SocketError:
+                    print "Socket error while sending mail"
+                    logging.getLogger('usertracing').info("new password requested for user: %s - failed to send activation email" % username)
+                    return req.getTAL("web/frontend/login.html", {"message":"pwdforgotten_emailsenderror"}, macro="pwdforgotten_message")
+
+    # standard operation
+    navframe.write(req, req.getTAL("web/frontend/login.html", {"error":req.params.get("error"), "user":users.getUserFromRequest(req)}, macro="pwdforgotten"))
+    return athana.HTTP_OK
+  
 

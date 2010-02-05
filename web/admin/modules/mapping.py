@@ -23,7 +23,8 @@ from schema.mapping import getMappings, getMapping, updateMapping, deleteMapping
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from core.translation import lang, t
 
-
+def getInformation():
+    return{"version":"1.0"}
 
 def validate(req, op):
     if req.params.get("acttype", "mapping")=="mapping":

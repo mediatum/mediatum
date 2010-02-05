@@ -27,18 +27,21 @@ import core.acl as acl
 import utils.mail as mail
 import core.users as users
 import re
-from utils.utils import getAllCollections
+from utils.utils import getAllCollections, formatException
 
 from core.usergroups import loadGroupsFromDB
 from core.users import loadUsersFromDB, useroption, getUser, getExternalUser, update_user, existUser, create_user, makeRandomPassword, deleteUser, getExternalUsers, getExternalUser, moveUserToIntern, getExternalAuthentificators
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from core.translation import lang, t
 
+def getInformation():
+    return{"version":"1.0"}
+
+
 #
 # standard validator
 #
 def validate(req, op):
-    print req.params
     try:
         for key in req.params.keys():
             if key.startswith("new"):
@@ -47,7 +50,6 @@ def validate(req, op):
                 
             elif key.startswith("edit_"):
                 # edit user
-                print str(key[key.index("_")+1:-2])
                 return editUser_mask(req, str(key[key.index("_")+1:-2]))
 
             elif key.startswith("sendmail_") and req.params.get("form_op","")!="cancel":
@@ -76,7 +78,7 @@ def validate(req, op):
                 if key.startswith("option_"):
                     _option += key[7]
                         
-            if req.params["form_op"] == "save_new":
+            if req.params["form_op"]=="save_new":
                 # save user values
                 if req.params.get("username","")=="" or req.params.get("usergroups", "")=="" or req.params.get("email","")=="":
                     return editUser_mask(req, "", 1) # no username or group selected
@@ -85,7 +87,7 @@ def validate(req, op):
                 else:
                     create_user(req.params.get("username"), req.params.get("email"), req.params.get("usergroups").replace(";", ","), pwd=req.params.get("password", ""), lastname=req.params.get("lastname",""), firstname=req.params.get("firstname"), telephone=req.params.get("telephone"), comment=req.params.get("comment"), option=_option, organisation=req.params.get("organisation",""), type=req.params.get("usertype", "intern"))
 
-            elif req.params["form_op"] == "save_edit":
+            elif req.params["form_op"]=="save_edit":
                 # update user
                 if req.params.get("email","")=="" or req.params.get("username","")=="" or req.params.get("usergroups","")=="":
                     return editUser_mask(req, req.params.get("id"), 1) # no username, emai or group selected
@@ -111,7 +113,7 @@ def view(req):
     auth = getExternalAuthentificators()
     
     if len(path)==2:
-        usertype="extern"
+        usertype = "extern"
         for usertype in usertypes:
             if usertype.getName()==path[1]:
                 users = list(usertype.getChildren())
@@ -188,13 +190,14 @@ def view(req):
 def editUser_mask(req, id, err=0):
     global useroption
     ugroups = []
-    
     usertype = req.params.get("usertype", "intern")
-        
+    newuser = 0
+    
     if err==0 and id=="":
         # new user
         user = tree.Node("", type="user")
         user.setOption("c")
+        newuser = 1
         
     elif err==0 and id!="":
         #edit user
@@ -232,7 +235,28 @@ def editUser_mask(req, id, err=0):
     v["usertype"] = usertype
     v["filtertype"] = req.params.get("filtertype","")
     v["actpage"] = req.params.get("actpage")
+    v["newuser"] = newuser
     return req.getTAL("web/admin/modules/user.html", v, macro="modify")
+
+    
+def addACL(username, firstname, lastname, oldusername=None):
+    userrule = "( user %s )" % username
+    userruledesc = username
+
+    try:
+        if (not (lastname=="" or firstname=="")):
+            userruledesc = "%s, %s" % (lastname, firstname)
+          
+        if (oldusername==None):
+            oldusername = username
+
+        if acl.existRule(oldusername):
+            acl.updateRule(AccessRule(username, userrule, userruledesc), oldusername, username, oldusername)
+        else:
+            acl.addRule(AccessRule(username, userrule, userruledesc))
+    except:
+        print formatException()    
+    
     
 def sendmailUser_mask(req, id, err=0):
 
@@ -282,9 +306,9 @@ def sendmailUser_mask(req, id, err=0):
     x["login"] = user.getName()
     x["isEditor"] = user.isEditor()
     x["collections"] = list()
-    x["groups"] = user.getGroups()
+    x["groups"] = user.getGroups().sort(lambda x, y: cmp(x, y))
     x["language"] = lang(req)
-    x["collections"] = collections
+    x["collections"] = collections.sort(lambda x, y: cmp(x, y))
 
 
     v["mailtext"] = req.getTAL("web/admin/modules/user.html", x, macro="emailtext").strip()

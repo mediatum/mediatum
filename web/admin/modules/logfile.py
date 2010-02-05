@@ -24,6 +24,9 @@ import os
 from utils.utils import format_filesize, get_filesize
 from web.admin.adminutils import Overview,getAdminStdVars
 
+def getInformation():
+    return{"version":"1.0"}
+
 class LogFile:
     def __init__(self, name, path):
         self.name = name

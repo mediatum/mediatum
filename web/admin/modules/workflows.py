@@ -33,6 +33,8 @@ from schema.schema import Metadatafield
 from core.translation import t, lang
 #from core.metatype import Context
 
+def getInformation():
+    return{"version":"1.0"}
 
 """ standard validator to execute correct method """
 def validate(req, op):

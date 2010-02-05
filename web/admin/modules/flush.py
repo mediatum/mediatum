@@ -21,6 +21,9 @@ import core.tree as tree
 import core.webconfig as webconfig
 from web.admin.adminutils import getAdminStdVars
 
+def getInformation():
+    return{"version":"1.0"}
+
 def validate(req, op):
 
     if "op" in req.params.keys():

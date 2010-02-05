@@ -139,6 +139,7 @@
             <tr>
                 <td><tal:block i18n:translate="admin_user_username">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
+                    <input tal:attributes="value python:user.getName()" type="hidden" name="oldusername" maxlength="50" size="50"/>
                     <input tal:attributes="value python:user.getName()" type="text" name="username" maxlength="50" size="50"/>
                 </td>
             </tr>
@@ -210,8 +211,10 @@
                                 tal:attributes="name python:'option_'+option.getValue(); value python:'option_'+option.getValue()" type="checkbox" name="" value="">
 
                             <span tal:content="structure python:option.getName()" i18n:translate=""/>
-                            <br>
+                            <br/>
                         </tal:block>
+                        <input tal:condition="python:newuser==1" name="create_acl_rule" value="true" type="checkbox" checked i18n:translate="admin_user_create_acl"/>
+                        <input tal:condition="python:newuser==0" name="create_acl_rule" value="true" type="hidden"/>
                     </fieldset>
                 </td>
             </tr>

@@ -39,6 +39,9 @@ from metatype_field import showDetailList, FieldDetail
 from metatype_mask import showMaskList, MaskDetails
 
 
+def getInformation():
+    return {"version":"1.0"}
+
 """ checks a string whether it only contains the alphanumeric chars as well as "-" "." """
 def checkString(string):
     result = re.match("([\w\-\.]+)", string)
@@ -226,6 +229,7 @@ def validate(req, op):
             mask.setName(req.params.get("mname"))
             mask.setDescription(req.params.get("mdescription"))
             mask.setMasktype(req.params.get("mtype"))
+            mask.setSeperator(req.params.get("mseperator"))
 
             if req.params.get("mtype")=="export":
                 mask.setExportMapping(req.params.get("exportmapping"))
@@ -303,10 +307,10 @@ def view(req):
         mtypes.sort(lambda x, y: cmp(x.getName().lower(),y.getName().lower()))
 
     v = getAdminStdVars(req)
-    #v["sortcol"] = pages.OrderColHeader([t(lang(req),"admin_meta_col_1"),t(lang(req),"admin_meta_col_2"),t(lang(req),"admin_meta_col_3"),t(lang(req),"admin_meta_col_4"),t(lang(req),"admin_meta_col_5"),t(lang(req),"admin_meta_col_6"),t(lang(req),"admin_meta_col_7")])
     v["sortcol"] = pages.OrderColHeader([t(lang(req),"admin_meta_col_1"),t(lang(req),"admin_meta_col_2"),t(lang(req),"admin_meta_col_3"),t(lang(req),"admin_meta_col_4"),t(lang(req),"admin_meta_col_5"),t(lang(req),"admin_meta_col_6")])
     v["metadatatypes"] = mtypes
     v["datatypes"] = loadAllDatatypes()
+    v["datatypes"].sort(lambda x,y: cmp(t(lang(req), x.getLongName()), t(lang(req), y.getLongName())))
     v["pages"] = pages
     v["actfilter"] = actfilter
     v["filterattrs"] = [("id","admin_metatype_filter_id"),("name","admin_metatype_filter_name")]
@@ -340,6 +344,7 @@ def MetatypeDetail(req, id, err=0):
         v["original_name"] = req.params["mname_orig"]
 
     v["datatypes"] = loadAllDatatypes()
+    v["datatypes"].sort(lambda x,y: cmp(t(lang(req), x.getLongName()), t(lang(req), y.getLongName())))
     v["metadatatype"] = metadatatype
     v["error"] = err
     v["bibtextypes"] = getAllBibTeXTypes()
@@ -515,7 +520,9 @@ def showEditor(req):
 
         item.setWidth(int(req.params.get("width", 400)))
         item.setUnit(req.params.get("unit", ""))
-        item.setDefault(req.params.get("default", ""))   
+        item.setDefault(req.params.get("default", ""))
+        item.setFormat(req.params.get("format", ""))
+        item.setSeperator(req.params.get("seperator", ""))
         item.setDescription(req.params.get("description",""))
         if "required" in req.params.keys():
             item.setRequired(1)
@@ -568,6 +575,8 @@ def showEditor(req):
         item.setWidth(int(req.params.get("width", 400)))
         item.setUnit(req.params.get("unit", ""))
         item.setDefault(req.params.get("default", ""))
+        item.setFormat(req.params.get("format", ""))
+        item.setSeperator(req.params.get("seperator", ""))
         item.setDescription(req.params.get("description",""))
         if "required" in req.params.keys():
             item.setRequired(1)
@@ -581,6 +590,7 @@ def showEditor(req):
     else:
         # show metaEditor
         v["editor"] = req.getTALstr(editor.getMetaMask(language=lang(req)), {})
+    v["title"] = editor.name
     
     return req.getTAL("web/admin/modules/metatype.html", v, macro="editor_popup")
 

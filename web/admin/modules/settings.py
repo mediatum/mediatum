@@ -22,19 +22,42 @@ import sys
 import os
 import core.config as config
 import core
+import core.tree as tree
 
 from version import mediatum_version
 from core.config import basedir
-from utils.utils import format_filesize
+from utils.utils import format_filesize, parseMenuString
+
+
+def getInformation():
+    return {"version":"1.0", "required":1}
 
 def validate(req, op):
     return view(req)
 
 
+def searchconfig_action(req):    
+    for key in req.params.keys():
+        if key.startswith("delete|"):
+            print "delete key",key.split("|"), "for section", req.params.get("section")
+            break
+    
+ 
 def view(req):
+
+    gotopage = req.params.get("gotopage","")
+    if gotopage=="searchconfig":
+        searchconfig_action(req)
+        
+
     global basedir
     page = req.params.get("page","")
+    gotopage = req.params.get("gotopage","")
+
     v = {}
+    
+    v["gotopage"] = req.params.get("gotopage","")
+    v["subitem"] = req.params.get("editsubitem","")
     
     if page=="python":
         # python information
@@ -90,12 +113,40 @@ def view(req):
         
         return req.getTAL("web/admin/modules/settings.html", v, macro="view_search")
         
+    elif page=="searchconfig":
+        node = tree.getRoot()
+        file = None
+        sections = ["chars", "words"]
+        data = {"chars":[], "words":[]}
+        for f in node.getFiles():
+            if f.retrieveFile().endswith("searchconfig.txt"):
+                file = f
+                break
+                
+        if file and os.path.exists(file.retrieveFile()):
+            section = ""
+            for line in open(file.retrieveFile(), "r"):
+                line = line[:-1]
+                if line.startswith("[") and line.endswith("]"):
+                    section = line[1:-1]
+                    continue
+                if section in sections:
+                    data[section].append(line.split("="))
+                    
+        v["data"] = data    
+    
+        return req.getTAL("web/admin/modules/settings.html", v, macro="view_searchconfig")
+    
     elif page=="archive": 
-        v['a_managers'] = core.archivemanager.getManager()
+        try:
+            v['a_managers'] = core.archivemanager.getManager()
+        except:
+            return req.getTAL("web/admin/modules/settings.html", v, macro="view_error")
+            
         v['archive_interval'] = config.get('archive.interval')
         v['archive_activated'] = config.get('archive.activate')
         return req.getTAL("web/admin/modules/settings.html", v, macro="view_archive")
-    
+
     else:
         return req.getTAL("web/admin/modules/settings.html", v, macro="view")
 

@@ -52,6 +52,9 @@ class m_url(Metatype):
         try:
             value = node.get(field.getName()).split(";")
             fielddef = field.getValues().split("\r\n")
+            
+            while len(fielddef)<4:
+                fielddef.append("")
 
             l = ""
             for i in range(0,4):
@@ -102,7 +105,6 @@ class m_url(Metatype):
 
             return (field.getLabel(), value)
         except:
-            print "error in url-field format"
             return (field.getLabel(), "")
 
     def getMaskEditorHTML(self, value="", metadatatype=None, language=None):

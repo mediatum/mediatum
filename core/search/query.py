@@ -197,8 +197,14 @@ class MgSearcher:
         
     def getDefForSchema(self, schema):
         return {}
+        
+    def getNormalization(self):
+        from utils.utils import normalization_items
+        normalization_items = []
+
 
 mgSearcher = MgSearcher() 
+mgSearcher.getNormalization()
 # new
 
 def _getSearcher(name):

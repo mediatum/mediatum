@@ -28,7 +28,8 @@ from core.acl import AccessRule
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from core.translation import t, lang
 
-
+def getInformation():
+    return{"version":"1.0"}
 
 def validate(req, op):
     try:
@@ -55,21 +56,21 @@ def validate(req, op):
                 break
                 
             elif key == "form_op":
-                if req.params["form_op"] == "save_new":
+                if req.params.get("form_op")=="save_new":
                     # save rule values
-                    if str(req.params["rulename"])=="" or req.params["rule"]=="":
+                    if req.params.get("rulename")=="" or req.params.get("rule")=="":
                         return editRule_mask(req, "", 1) # no rulename or rulestring
 
-                    elif acl.existRule(req.params["rulename"]):
+                    elif acl.existRule(req.params.get("rulename")):
                         return editRule_mask(req, "", 2) # rule still existing
                     else:
-                        acl.addRule(AccessRule(str(req.params["rulename"]), str(req.params["rule"]), str(req.params["description"])))
+                        acl.addRule(AccessRule(req.params.get("rulename"), req.params("rule"), req.params("description")))
                     break
-                elif req.params["form_op"] == "save_edit":
+                elif req.params.get("form_op")=="save_edit":
                     # update rule
 
-                    if req.params["rule"] != "":
-                        acl.updateRule(AccessRule(str(req.params["rulename"]), str(req.params["rule"]), str(req.params["description"])) )
+                    if req.params.get("rule")!="":
+                        acl.updateRule(AccessRule(req.params.get("rulename"), req.params.get("rule"), req.params.get("description")), oldrule=req.params.get("oldrulename"))
                     break
         return view(req)
 

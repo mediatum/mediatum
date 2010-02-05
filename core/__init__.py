@@ -123,4 +123,3 @@ for k,v in config.getsubset("plugins").items():
     if path and path not in sys.path:
         sys.path += [path]
     m = __import__(module)
-

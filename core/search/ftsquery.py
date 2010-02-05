@@ -30,7 +30,7 @@ import core.config as config
 import core.tree as tree
 import logging
 from utils.log import logException
-from utils.utils import u, union, normalize_utf8, formatException
+from utils.utils import u, union, formatException, normalize_utf8
 from utils.date import format_date
 from math import ceil
 
@@ -53,6 +53,7 @@ class FtsSearcher:
         global DB_NAME
         self.db = sqlite.SQLiteConnector(config.get("paths.searchstore") + DB_NAME)
         self.tablenames = ["fullsearchmeta", "searchmeta", "textsearchmeta"]
+        self.normalization_items = None
 
     def run_search(self, field, op, value):
         ret = []
@@ -133,19 +134,15 @@ class FtsSearcher:
                 if "already exists" not in str(e):
                     raise
 
-        #if option=="init":
+        if option=="init":
             # simple search table
-        create('CREATE VIRTUAL TABLE fullsearchmeta USING fts3(id, type, schema, value)')
+            create('CREATE VIRTUAL TABLE fullsearchmeta USING fts3(id, type, schema, value)')
             # extended search table
-        create('CREATE VIRTUAL TABLE searchmeta USING fts3(id, type, schema, updatetime, '+s+')')
-        create('CREATE VIRTUAL TABLE searchmeta_def USING fts3(name, position, attrname)')
+            create('CREATE VIRTUAL TABLE searchmeta USING fts3(id, type, schema, updatetime, '+s+')')
+            create('CREATE VIRTUAL TABLE searchmeta_def USING fts3(name, position, attrname)')
             # fulltext search table
-        create('CREATE VIRTUAL TABLE textsearchmeta USING fts3(id, type, schema, value)')
-                   
-        #print "sqlite fts3 database already exists, trying to optimize it..."
-        #self.db.execute('SELECT optimize(fullsearchmeta) FROM fullsearchmeta LIMIT 1')
-        #self.db.execute('SELECT optimize(searchmeta) FROM searchmeta LIMIT 1')
-        #self.db.execute('SELECT optimize(textsearchmeta) FROM textsearchmeta LIMIT 1')
+            create('CREATE VIRTUAL TABLE textsearchmeta USING fts3(id, type, schema, value)')
+
     
     def getAllTableNames(self):
         ret = []
@@ -445,6 +442,7 @@ ftsSearcher.initIndexer()
 
 def protect(s):
     return s.replace('\'','"')
+    
     
 def subnodes(node):
     return node.getAllChildren().getIDs()

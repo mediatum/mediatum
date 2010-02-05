@@ -19,43 +19,83 @@
 """
 import re
 import core.tree as tree
-from core.acl import AccessData
 import core.users as users
-from core.translation import translate, getDefaultLanguage
-from utils.utils import compare_utf8,isDirectory,isCollection
+import logging
 
+from core.acl import AccessData
+from core.translation import translate, getDefaultLanguage, t, lang
+from utils.log import logException
+from utils.utils import isDirectory, isCollection, EncryptionException
+from utils.fileutils import importFile
+
+
+class NodeWrapper:
+    def __init__(self, node, nodenumber):
+        self.node = node
+        self.nodenumber = nodenumber
+    
+    def getNode():
+        return self.node
+    
+    def getNodeNumber():
+        return self.nodenumber
+
+        
 class EditorNodeList:
     def __init__(self, nodes):
         self.nodeids = []
         self.nodeid2pos = {}
-        for node in nodes:
-            self.nodeids.append(node.id)
         i = 0
         for node in nodes:
-            self.nodeid2pos[node.id] = i
-            i = i + 1
+            if not node.isContainer():
+                self.nodeids.append(node.id)
+                self.nodeid2pos[node.id] = i
+                i += 1
+             
     def getNext(self, nodeid):
         try:
             pos = self.nodeid2pos[nodeid] 
         except KeyError:
             return None
-        if pos >= len(self.nodeids)-1:
+        if pos>=len(self.nodeids)-1:
             return None
         return self.nodeids[pos+1]
-    def getPrevious(self, nodeid):
+        
+    def getPrevious(self, nodeid): 
         try:
             pos = self.nodeid2pos[nodeid] 
         except KeyError:
             return None
-        if pos <= 0:
+        if pos<=0:
             return None
         return self.nodeids[pos-1]
-    def getPositionString(self,nodeid):
+        
+    def getPositionString(self, nodeid):
         try:
             pos = self.nodeid2pos[nodeid] 
         except KeyError:
-            return ""
-        return "%d / %d" % (pos+1, len(self.nodeids))
+            return "", ""
+        return pos+1, len(self.nodeids)
+
+    def getPositionCombo(self, tab):
+        script = """<script language="javascript">
+        function gotoContent(cid, tab) {
+          window.location.assign('/edit/edit_content?id='+cid+'&tab='+tab);
+        }
+        </script>"""
+        data = []
+        for nid in self.nodeids:
+            data.append((nid, len(data)+1))
+        return data, script
+        
+
+def existsHomeDir(user):
+    username = user.getName()
+    userdir = None
+    for c in tree.getRoot("home").getChildren():
+        if (c.getAccess("read") or "").find("{user "+username+"}")>=0 and (c.getAccess("write") or "").find("{user "+username+"}")>=0:
+            userdir = c
+    return (not userdir==None)
 
 def getHomeDir(user):
     username = user.getName()
@@ -73,14 +113,19 @@ def getHomeDir(user):
         i = 0
         for child in tree.getRoot("home").getChildren().sort("name"):
             child.setOrderPos(i)
-            i = i + 1
+            i += 1
     return userdir
+ 
+def renameHomeDir(user, newusername):
+    if (existsHomeDir(user)):
+        getHomeDir(user).setName(translate("user_directory", getDefaultLanguage())+" ("+newusername+")")
 
+        
 def getUploadDir(user):
     userdir = getHomeDir(user)
     uploaddir = None
     for c in userdir.getChildren():
-        if c.name == translate("user_upload", getDefaultLanguage()):
+        if c.name==translate("user_upload", getDefaultLanguage()):
             uploaddir = c
     if not uploaddir:
         uploaddir = userdir.addChild(tree.Node(name=translate("user_upload", getDefaultLanguage()), type="directory"))
@@ -90,48 +135,44 @@ def getImportDir(user):
     userdir = getHomeDir(user)
     importdir = None
     for c in userdir.getChildren():
-        if c.name == translate("user_import", getDefaultLanguage()):
+        if c.name==translate("user_import", getDefaultLanguage()):
             importdir = c
     if not importdir:
         importdir = userdir.addChild(tree.Node(name=translate("user_import", getDefaultLanguage()), type="directory"))
     return importdir
 
-#
 def getFaultyDir(user):
     userdir = getHomeDir(user)
     faultydir = None
     for c in userdir.getChildren():
-        if c.name == translate("user_faulty", getDefaultLanguage()):
+        if c.name==translate("user_faulty", getDefaultLanguage()):
             faultydir = c
     if not faultydir:
         faultydir = userdir.addChild(tree.Node(name=translate("user_faulty", getDefaultLanguage()), type="directory"))
     return faultydir
 
-
 def getTrashDir(user):
     userdir = getHomeDir(user)
     trashdir = None
     for c in userdir.getChildren():
-        if c.name == translate("user_trash", getDefaultLanguage()):
+        if c.name==translate("user_trash", getDefaultLanguage()):
             trashdir = c
     if not trashdir:
         trashdir = userdir.addChild(tree.Node(name=translate("user_trash", getDefaultLanguage()), type="directory"))
     return trashdir
 
-#
 def showdir(req, node, publishwarn="auto", markunpublished=0):
     if publishwarn=="auto":
         user = users.getUserFromRequest(req)
         homedir = getHomeDir(user)
         homedirs = getAllSubDirs(homedir)
         publishwarn = node in homedirs
-    shownodelist(req,node.getChildren(),publishwarn=publishwarn,markunpublished=markunpublished,dir=node)
+    return shownodelist(req,node.getChildren(), publishwarn=publishwarn, markunpublished=markunpublished, dir=node)
 
 def getAllSubDirs(node):
-    #dirs = homedir.search("objtype=directory")
     dirs = []
     for c in node.getChildren():
-        if c.type == "directory":
+        if c.type=="directory":
             dirs += [c] + getAllSubDirs(c)
     return dirs
             
@@ -183,7 +224,7 @@ def shownodelist(req, nodes, publishwarn=1, markunpublished=0, dir=None):
             uploaddir = getUploadDir(user)
         unpublishedlink = "edit?tab=tab_publish&id="""+uploaddir.id;
 
-    req.writeTAL("web/edit/edit_common.html", {"notpublished": notpublished, "chkjavascript": chkjavascript, "unpublishedlink": unpublishedlink, "nodelist":nodelist, "script_array":script_array}, macro="show_nodelist")
+    return req.getTAL("web/edit/edit_common.html", {"notpublished": notpublished, "chkjavascript": chkjavascript, "unpublishedlink": unpublishedlink, "nodelist":nodelist, "script_array":script_array}, macro="show_nodelist")
 
 
 def isUnFolded(unfoldedids, id):
@@ -193,19 +234,17 @@ def isUnFolded(unfoldedids, id):
         unfoldedids[id] = 0
         return 0
 
-def writenode(req, node, unfoldedids, f, indent, key, access):
-    #if node.type != "directory" and node.type != "collection" and node.type != "root" and node.type != "home" and node.type != "collections" and node.type != "navigation":
+def writenode(req, node, unfoldedids, f, indent, key, access, ret=""):
     if node.type not in ["directory", "collection", "root", "home", "collections","navigation"] and not node.type.startswith("directory"):
-        return
+        return ret
     if not access.hasReadAccess(node):
-        return
+        return ret
 
     isunfolded = isUnFolded(unfoldedids, node.id)
 
     num = 0
     objnum = 0
     for c in node.getChildren():
-        #if c.type == "directory" or c.type == "collection":
         if c.type in["directory", "collection"] or c.type.startswith("directory"):
             num += 1
         else:
@@ -213,21 +252,19 @@ def writenode(req, node, unfoldedids, f, indent, key, access):
 
     if num:
         if isunfolded:
-            link = "edit_tree?tree_fold="+node.id;
-            f(req,node,objnum,link,indent,type=1)
+            ret+=f(req, node, objnum, "edit_tree?tree_fold="+node.id, indent, type=1)
         else:
-            link = "edit_tree?tree_unfold="+node.id;
-            f(req,node,objnum,link,indent,type=2)
+            ret+=f(req, node, objnum, "edit_tree?tree_unfold="+node.id, indent, type=2)
     else:
-        link = ""
-        f(req,node,objnum,link,indent,type=3)
+        ret+=f(req, node, objnum, "", indent, type=3)
 
     if isunfolded:
         for c in node.getChildren().sort():
-            writenode(req, c, unfoldedids, f, indent+1, key, access)
-
+            ret+= writenode(req, c, unfoldedids, f, indent+1, key, access)
+    return ret
 
 def writetree(req, node, f, key="", openednodes=None, sessionkey="unfoldedids", omitroot=0):
+    ret = ""
     access = AccessData(req)
 
     try:
@@ -260,6 +297,117 @@ def writetree(req, node, f, key="", openednodes=None, sessionkey="unfoldedids", 
    
     if omitroot:
         for c in node.getChildren().sort("name"):
-            writenode(req, c, unfoldedids, f, 0, key, access)
+            ret += writenode(req, c, unfoldedids, f, 0, key, access)
     else:
-        writenode(req, node, unfoldedids, f, 0, key, access)
+        ret += writenode(req, node, unfoldedids, f, 0, key, access)
+
+    return ret
+    
+def upload_help(req):
+    try:
+        return req.writeTAL("contenttypes/"+req.params.get("objtype", "") +".html", {}, macro="upload_help")
+    except:
+        None
+        
+def send_nodefile_tal(req):
+    if "file" in req.params:
+        return upload_for_html(req)
+    
+    id = req.params.get("id")
+    node = tree.getNode(id)
+    access = AccessData(req)
+
+    if not (access.hasAccess(node,'read') and access.hasAccess(node,'write') and access.hasAccess(node,'data') and node.type in ["directory","collections","collection"]) :
+        return ""
+    
+    def fit(imagefile, cn):
+        # fits the image into a box with dimensions cn, returning new width and height
+        try:
+            sz = PIL.Image.open(imagefile).size
+            (x, y)=(sz[0], sz[1])
+            if x > cn[0]:
+                y = (y*cn[0])/x
+                x = (x*cn[0])/x
+            if y > cn[1]:
+                x = (x*cn[1])/y
+                y = (y*cn[1])/y
+            return (x,y)
+        except:
+            return cn
+    
+    # only pass images to the file browser
+    files = [f for f in node.getFiles() if f.mimetype.startswith("image")]
+
+    # this flag may switch the display of a "delete" button in the customs file browser in web/edit/modules/startpages.html
+    showdelbutton = True
+    return req.getTAL("web/edit/modules/startpages.html", {"id":id, "node":node, "files":files, "fit":fit, "logoname":node.get("system.logo"), "delbutton":True}, macro="fckeditor_customs_filemanager")
+        
+def upload_for_html(req):
+    user = users.getUserFromRequest(req)
+    datatype = req.params.get("datatype", "image")
+    
+    id = req.params.get("id")
+    node = tree.getNode(id)
+
+    access = AccessData(req)
+    if not (access.hasAccess(node,'read') and access.hasAccess(node,'write') and access.hasAccess(node,'data')):
+        return 403
+    
+    for key in req.params.keys():
+        if key.startswith("delete_"):
+            filename = key[7:-2]
+            for file in n.getFiles():
+                if file.getName()==filename:
+                    n.removeFile(file)
+
+    if "file" in req.params.keys():
+        # file upload via (possibly disabled) upload form in custom image browser
+        file = req.params["file"]
+        del req.params["file"]
+        if hasattr(file,"filesize") and file.filesize>0:
+            try:
+                logging.getLogger('editor').info(user.name + " upload "+file.filename+" ("+file.tempname+")")
+                nodefile = importFile(file.filename, file.tempname)
+                node.addFile(nodefile)
+                req.request["Location"] = req.makeLink("nodefile_browser/%s/" % id, {})
+            except EncryptionException:
+                req.request["Location"] = req.makeLink("content", {"id":id, "tab":"tab_editor", "error":"EncryptionError_"+datatype[:datatype.find("/")]})
+            except:
+                logException("error during upload")
+                req.request["Location"] = req.makeLink("content", {"id":id, "tab":"tab_editor", "error":"PostprocessingError_"+datatype[:datatype.find("/")]})
+            return send_nodefile_tal(req)
+        
+    if "NewFile" in req.params.keys():
+        # file upload via FCKeditor Image Properties / Upload tab
+        file = req.params["NewFile"]
+        del req.params["NewFile"]
+        if hasattr(file,"filesize") and file.filesize>0:
+            try:
+                logging.getLogger('editor').info(user.name + " upload "+file.filename+" ("+file.tempname+")")
+                nodefile = importFile(file.filename, file.tempname)
+                node.addFile(nodefile)
+            except EncryptionException:
+                req.request["Location"] = req.makeLink("content", {"id":id, "tab":"tab_editor", "error":"EncryptionError_"+datatype[:datatype.find("/")]})
+            except:
+                logException("error during upload")
+                req.request["Location"] = req.makeLink("content", {"id":id, "tab":"tab_editor", "error":"PostprocessingError_"+datatype[:datatype.find("/")]})
+
+            originalName = file.filename
+
+            url = '/file/'+id+'/'+file.tempname.split('/')[-1]
+            
+            # the following response is copied from the FCKeditor sources:
+            # lib/FCKeditor/files.zip/editor/filemanager/connectors/py/fckoutput.py
+            return """<script type="text/javascript">
+            (function(){var d=document.domain;while (true){try{var A=window.parent.document.domain;break;}catch(e) {};d=d.replace(/.*?(?:\.|$)/,'');if (d.length==0) break;try{document.domain=d;}catch (e){break;}}})();
+
+            window.parent.OnUploadCompleted(%(errorNumber)s,"%(fileUrl)s","%(fileName)s","%(customMsg)s");
+            </script>""" % {
+            'errorNumber': 0,
+            'fileUrl': url.replace ('"', '\\"'),
+            'fileName': originalName.replace ( '"', '\\"' ) ,
+            'customMsg': (t(lang(req), "edit_fckeditor_cfm_uploadsuccess")),
+            }
+
+    return send_nodefile_tal(req)
+

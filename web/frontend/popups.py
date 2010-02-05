@@ -56,57 +56,8 @@ def popup_thumbbig(req):
     except tree.NoSuchNodeError:
         return 404
     node.popup_thumbbig(req)
-#
-# add file to shoppingbag
-#
-def put_into_shoppingbag(req):
-    dir = req.params.get("id", None)
-    
-    files = req.params["files"].split(',')
-    
-    try:
-        f = req.session["shoppingbag"]
-    except:
-        f = []
 
-    f += files
-    req.session["shoppingbag"] = f
-
-    req.writeTAL("web/frontend/popups.html", {}, macro="shoppingbag_add")
-    return athana.HTTP_OK
-
-
-#
-# open shoppingbag window
-#
-def show_shoppingbag(req):
-    if req.params.get("shoppingbag","")=="clear":
-        req.session["shoppingbag"] = []
-      
-    (width,height) = shoppingbag.calculate_dimensions(req)
-    v = {"width":width, "height":height}
-    f = []
-
-    img = False
-    doc = False
-    files = req.session.get("shoppingbag",[])
-
-    for file in files:
-        node = tree.getNode(file)
-        if node.getContentType()=="image":
-            img = True
-        if node.getContentType() in("document", "dissertation"):
-            doc = True
-        f.append(node)
-
-    v["files"] = f
-    v["image"] = img
-    v["document"] = doc
-
-    req.writeTAL("web/frontend/popups.html", v, macro="shoppingbag")
-    return athana.HTTP_OK
-
-    
+ 
 #
 # help window for metadata field
 #

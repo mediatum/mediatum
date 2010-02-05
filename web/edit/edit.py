@@ -29,36 +29,24 @@ import core.usergroups as usergroups
 import core.translation
 import core.athana as athana
 import utils.log
+import logging
 from core.acl import AccessData
-from utils.utils import Link,isCollection, Menu, getFormatedString
+from utils.utils import Link, isCollection, Menu, getFormatedString, splitpath, parseMenuString
 
 from edit_common import *
-from edit_acls import edit_acls
-from edit_metadata import edit_metadata
-from edit_classes import edit_classes
-from edit_files import edit_files
-from edit_admin import edit_admin
-from edit_upload import edit_upload, upload_help
-from edit_import  import edit_import
-from edit_search import edit_search
-from edit_sort import edit_sort
-from edit_subfolder import edit_subfolder
-from edit_sortfiles import edit_sortfiles
-from edit_searchmask import edit_searchmask
-from edit_startpages import edit_startpages
-from edit_editor import edit_editor
-from edit_workflow import edit_workflow
-from edit_license import edit_license
-from edit_lza import edit_lza
-from edit_logo import edit_logo
-from edit_publish import edit_publish
+#from edit_search import edit_search
+#from edit_sort import edit_sort
+#from edit_searchmask import edit_searchmask
+#from edit_publish import edit_publish
 from core.translation import lang, t
-
 from edit_common import EditorNodeList
+from core.datatypes import loadAllDatatypes
+from core.tree import getRoot
 
+logger = logging.getLogger('editor')
 
 def frameset(req):
-    id = req.params.get("id", tree.getRoot().id)
+    id = req.params.get("id", tree.getRoot("collections").id)
     tab = req.params.get("tab", None)
 
     user = users.getUserFromRequest(req)
@@ -68,7 +56,13 @@ def frameset(req):
     faultydir = getFaultyDir(user)
     trashdir = getTrashDir(user)
 
-    currentdir = tree.getNode(id)
+    try:
+        currentdir = tree.getNode(id)
+        
+    except tree.NoSuchNodeError:
+        currentdir = tree.getRoot("collections")
+        req.params["id"] = currentdir.id
+        id = req.params.get("id")  
     script="""
             var idselection = "";
             var action = "";
@@ -80,14 +74,14 @@ def frameset(req):
                 } else if(_action == 'newcollection') {
                     openWindow("edit_action?newcollection=Neue%20Kollektion&src="+tree.getFolder(),300,200);
                 } else if(_action == 'sortsubfolders') {
-                    this.location.href = "edit?tab=tab_subfolder&id="+tree.getFolder();
+                    this.location.href = "edit?tab=subfolder&id="+tree.getFolder();
                 } else if(_action == 'edit') {
-                    this.location.href = "edit?tab=tab_metadata&id="+tree.getFolder();
+                    this.location.href = "edit?tab=metadata&id="+tree.getFolder();
                 } else if(_action == 'delete') {
-                    if('"""+currentdir.type+"""'=='collections' || '"""+currentdir.type+"""'=='root' || '"""+currentdir.type+"""'=='home'){
+                    /*if('"""+currentdir.type+"""'=='collections' || '"""+currentdir.type+"""'=='root' || '"""+currentdir.type+"""'=='home'){
                         alert('"""+t(lang(req), "delete_root_error_msg")+"""');
                         return 0;
-                    }
+                    }*/
                     if(confirm('"""+t(lang(req), "delete_folder_question")+"""')) {
                         src = tree.getFolder();
                         openWindow('edit_action?src='+src+'&action=delete&ids='+src, 300, 200);
@@ -118,7 +112,7 @@ def frameset(req):
                         reloadPage(tree.getFolder(),'');
                     } else {
                         var src = tree.getFolder();
-                        this.content.location.href = "edit_content?ids="+ids+"&src="+src+"&tab=tab_metadata";
+                        this.content.location.href = "edit_content?ids="+ids+"&src="+src+"&tab=metadata";
                         r = ""+Math.random()*10000;
                         this.buttons.location.href = "edit_buttons?ids="+ids+"&r="+r;
                     }
@@ -128,7 +122,7 @@ def frameset(req):
                     if(ids == '') {
                         reloadPage(tree.getFolder(),'');
                     } else {
-                        this.content.location.href = "edit_content?ids="+content.getFirstObject()+"&nodelist="+ids+"&tab=tab_metadata";
+                        this.content.location.href = "edit_content?ids="+content.getFirstObject()+"&nodelist="+ids+"&tab=metadata";
                         r = ""+Math.random()*10000;
                         this.buttons.location.href = "edit_buttons?ids="+ids+"&r="+r;
                     }
@@ -177,8 +171,6 @@ def frameset(req):
                 }
                 r = ""+Math.random()*10000;
                 this.tree.location.href = "edit_tree?"+s+"id="+id+"&r="+r+"#"+id;
-                //this.tree.location.reload();
-
                 this.content.location.href = "edit_content?id="+id+"&r="+r;
                 this.buttons.location.href = "edit_buttons?id="+id+"&r="+r;
             }
@@ -210,23 +202,23 @@ def frameset(req):
 def getBreadcrumbs(menulist, tab):
     for menuitem in menulist:
         for item in menuitem.getItemList():
-            if item[1]==tab or tab.startswith(item[1]) or item[1].startswith(tab):
-                return [menuitem.getName(),"*"+ item[1]]
-    return [""]
+            if item==tab or tab.startswith(item) or item.startswith(tab):
+                return [menuitem.getName(),"*"+ item]
+    return [tab]
 
 def filterMenu(menuitems, user):
-
     hide = users.getHideMenusForUser(user)
-    ret = list()
-    for menu in menuitems:
+    ret = []
+    for menu in parseMenuString(menuitems):
         i = []
         for item in menu.getItemList():
-            if item[2][4:] not in hide:
+            if item not in hide:    
                 i.append(item)
             else:
-                print "hide editor menu:", item[2]
+                print "hide editor menu:", item
         menu.item = i
         ret.append(menu)
+        
     return ret
     
 def handletabs(req, ids, tabs):
@@ -235,50 +227,60 @@ def handletabs(req, ids, tabs):
     n = tree.getNode(ids[0])
     if n.type=="workflows":
         n = tree.getRoot()
-
-    menu = filterMenu(n.getEditMenuTabs(), user)
-
-    spc = [Menu("sub_header_frontend", "sub_header_inquest_title","#", "../", target="_parent")]  
+    
+    menu = filterMenu(getEditMenuString(n.getContentType()), user)
+    
+    spc = [Menu("sub_header_frontend", "../", target="_parent")]  
     if user.isAdmin():
-        spc.append(Menu("sub_header_administration", "sub_header_administration_title","#", "../admin", target="_parent"))
+        spc.append(Menu("sub_header_administration", "../admin", target="_parent"))
         
     if user.isWorkflowEditor():
-        spc.append(Menu("sub_header_workflow", "sub_header_workflow_title","#", "../publish", target="_parent"))
+        spc.append(Menu("sub_header_workflow", "../publish", target="_parent"))
 
-    spc.append(Menu("sub_header_logout", "sub_header_logout_title","#", "../logout", target="_parent"))
-    currenttab = req.params.get("tab", tabs)
-    breadcrumbs = getBreadcrumbs(menu, currenttab)
-    req.writeTAL("web/edit/edit.html", {"user":user, "ids":ids, "idstr":",".join(ids), "menu":menu, "breadcrumbs":breadcrumbs, "spc":spc}, macro="edit_tabs")
-    return currenttab
+    spc.append(Menu("sub_header_logout", "../logout", target="_parent"))
 
+    return req.getTAL("web/edit/edit.html", {"user":user, "ids":ids, "idstr":",".join(ids), "menu":menu, "breadcrumbs":getBreadcrumbs(menu, req.params.get("tab", tabs)), "spc":spc}, macro="edit_tabs")
+
+    
 def error(req):
     req.writeTAL("<tal:block tal:replace=\"errormsg\"/>",{"errormsg":req.params.get("errmsg","")} , macro="edit_errorpage")
     return athana.HTTP_OK
+    
+    
+# delivers all edit modules
+editModules = {} 
+def getEditModules(force=0):
+    if len(editModules)==0:
+        path = os.walk(os.path.join(config.basedir, 'web/edit/modules'))
+        for root, dirs, files in path:
+            for name in [f for f in files if f.endswith(".py") and f!="__init__.py"]:
+                try:
+                    m = __import__("web.edit.modules." + name[:-3])
+                    m = eval("m.edit.modules."+name[:-3])
+                    editModules[name[:-3]] = m
+                except SyntaxError:
+                    logger.error("syntax error in module "+name[:-3])
+                except:
+                    logger.error("error in module "+name[:-3])
+             
+        # test for external modules by plugin
+        for k,v in config.getsubset("plugins").items():
+            path,module = splitpath(v)
+            try:
+                sys.path += [path+".editmodules"]
+                
+                for root, dirs, files in os.walk(os.path.join(config.basedir, v+"/editmodules")):
+                    for name in [f for f in files if f.endswith(".py") and f!="__init__.py"]:
+                        m = __import__(module+".editmodules."+name[:-3])
+                        m = eval("m.editmodules."+name[:-3])
+                        editModules[name[:-3]] = m
+            except ImportError:
+                pass # no edit modules in plugin
 
-def openErrorPage(req, errormsg):
-    req.write("""
-    <html>
-    <head>
-        <script language="javascript">
-            function openWindow(fileName, width, height)
-            { 
-                var win1 = window.open(fileName,'errorPopup','screenX=50,screenY=50,width='+width+',height='+height+',directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=no'); 
-                win1.focus();
-            } 
-            function o()
-            {
-                openWindow('edit_error?errmsg=%s', 300, 200);
-                location.href = "edit_buttons";
-            }
-        </script>
-    </head>
-    <body onload="setTimeout(o())">
-        <h1>%s</h1>
-    </body>
-    </html>""" % (urllib.quote(errormsg), errormsg))
-    return athana.HTTP_OK
+    return editModules
 
 
+    
 def getIDs(req):
     # update nodelist, if necessary
     if "nodelist" in req.params:
@@ -288,6 +290,8 @@ def getIDs(req):
         req.session["nodelist"] = EditorNodeList(nodelist)
 
     # look for one "id" parameter, containing an id or a list of ids
+    id = req.params.get("id")
+
     try:
         id = req.params["id"]
     except KeyError:
@@ -313,7 +317,6 @@ def getIDs(req):
     idlist = ids.split(',')
     if idlist == ['']:
         idlist = []
-
     return idlist
 
 def nodeIsChildOfNode(node1,node2):
@@ -324,7 +327,22 @@ def nodeIsChildOfNode(node1,node2):
             return 1
     return 0
 
+    
+def getEditMenuString(ntype, default=0):
+    menu_str = ""
+    
+    for dtype in loadAllDatatypes(): # all known datatypes
+        if dtype.name==ntype:
+            n = tree.Node("", type=dtype.name)
+            
+            menu_str = getRoot().get("edit.menu."+dtype.name)
+            if (menu_str=="" or default==1) and hasattr(n, "getEditMenuTabs"):
+                menu_str = n.getEditMenuTabs()
+            break
+    return menu_str  
+    
 def action(req):
+    global editModules
     access = AccessData(req)
     user = users.getUserFromRequest(req)
     trashdir = getTrashDir(user)
@@ -333,12 +351,11 @@ def action(req):
         req.write("""permission denied""")
         return
         
-        
-    if req.params.get("tab")=="tab_publish":
-        edit_publish(req, [req.params.get("id")])
-        return
+    if "tab" in req.params:
+        tab = req.params.get("tab").split("_")[-1]
+        return editModules[tab].getContent(req, [req.params.get("id")])
     
-    srcid = req.params["src"]
+    srcid = req.params.get("src")
     try:
         src = tree.getNode(srcid)
     except:
@@ -351,31 +368,19 @@ def action(req):
         is_collection = 1
         newfolder = req.params.get("newcollection", "")
 
-    if newfolder != "":
+    if newfolder!="":
         node = tree.getNode(srcid)
         if not access.hasWriteAccess(node):
-            req.write("""
-                <html>
-                <head>
-                    <script language="javascript">
-                        opener.reloadURL('edit?id="""+node.id+"""');
-                    </script>
-                </head>
-                <body>
-                    <h2>""" + t(lang(req), "edit_error") + """</h2>
-                    """ + t(lang(req), "edit_error_msg1") + """
-                </body>
-                </html>
-            """)
-            return;
+            req.writeTAL("web/edit/edit.html", {"id":node.id, "operation":"error"}, macro="newfolder")
+            return
 
-        if node.type == "collections":
+        if node.type=="collections":
             # always create a collection in the uppermost hierarchy- independent on
             # what the user requested
             newnode = node.addChild(tree.Node(name=newfolder, type="collection"))
         else:
             if is_collection:
-                if node.type != "collection" and node.type != "collections":
+                if node.type!="collection" and node.type!="collections":
                     req.writeTAL("web/edit/edit.html", {"errormsg":"can't create a collection below a node of type "+str(node.type)}, macro="edit_errorpage")
                     return
                 newnode = node.addChild(tree.Node(name=newfolder, type="collection"))
@@ -384,20 +389,8 @@ def action(req):
         
         newnode.set("creator", user.getName())
         newnode.set("creationtime",  str(time.strftime( '%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
-        
-        req.write("""
-        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
-        <html>
-          <head>
-            <script language="javascript">
-                //opener.reloadURL('edit?tab=Metadaten&id="""+newnode.id+"""');
-                opener.reloadURL('edit?tab=tab_metadata&id="""+newnode.id+"""');
-                this.close();
-            </script>
-          </head>
-        </html>
-        """)
-        return;
+        req.writeTAL("web/edit/edit.html", {"id":newnode.id, "operation":"new"}, macro="newfolder")
+        return
 
     try:
         destid = req.params["dest"]
@@ -409,38 +402,17 @@ def action(req):
         folderid = srcid
     
     action = req.params["action"] 
-
     idlist = getIDs(req)
-    
-    req.write("""
-        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
-        <html>
-        <head>
-            <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-            <meta content="text/html;charset=UTF-8" http-equiv="content-type">
-            <script language="javascript">
-                function returnValue(srcid) 
-                {
-                    window.close();
-                    opener.reloadPage(srcid, '');
-                }
-            </script>
-        </head>
-        <body>""")
-            
-    req.writeTALstr('<span i18n:translate="edit_action_msg">Die Aktion <b i18n:name="action">'+ t(lang(req), action) + '</b> wird ausgef&uuml;hrt</span>',{})
-    
+    mysrc = None
+    errorobj = None
     try:
-
-        print "srcid",srcid,tree.getNode(srcid).getName()
-        if destid:
-            print "destid",destid,tree.getNode(destid).getName()
-        print "ids",idlist
-
         if action=="clear_trash":
             for n in trashdir.getChildren():
+                for f in n.getFiles():
+                    if os.path.exists(f.retrieveFile()):
+                        os.remove(f.retrieveFile())
                 trashdir.removeChild(n)
-            print "remove all nodes from users trash"
+            logger.info(user.getName()+" cleared trash folder with id "+str(trashdir.id))
 
         for id in idlist:
             obj = tree.getNode(id)
@@ -448,17 +420,16 @@ def action(req):
             if isDirectory(obj):
                 mysrc = obj.getParents()[0]
 
-            if action == "delete":
+            if action=="delete":
                 if access.hasWriteAccess(mysrc) and access.hasWriteAccess(obj):
-                    if mysrc.id==trashdir.id:
-                        print "source node is trashbox!"
-                    else:
-                        print "Remove",obj.id,"from",mysrc.id
+                    if mysrc.id!=trashdir.id:
                         mysrc.removeChild(obj)
                         trashdir.addChild(obj)
+                        logger.info(user.getName()+" removed "+obj.id+" from "+mysrc.id)
                 else:
-                    print "No write access to",mysrc.id,"!"
-            elif action == "move":
+                    logger.error(user.getName()+" has no write access for node "+mysrc.id)
+            
+            elif action=="move":
                 if dest != mysrc and \
                    access.hasWriteAccess(mysrc) and \
                    access.hasWriteAccess(dest) and \
@@ -468,61 +439,72 @@ def action(req):
                         mysrc.removeChild(obj)
                         dest.addChild(obj)
                     else:
-                        print "Couldn't move",obj.id,"from",mysrc.id,"to",dest.id,":",dest.id,"is child of",obj.id
+                        logger.error(user.getName()+" could not move "+obj.id+" from "+mysrc.id+" to "+dest.id)
                 mysrc = None
-            elif action == "copy":
+           
+            elif action=="copy":
                 if dest != mysrc and \
                    access.hasReadAccess(mysrc) and \
                    access.hasWriteAccess(dest) and \
                    access.hasWriteAccess(obj) and \
                    isDirectory(dest):
                     if not nodeIsChildOfNode(dest,obj):
-                        print "Copy",obj.id,"from",mysrc.id,"to",dest.id
                         dest.addChild(obj)
+                        logger.info(user.getName()+" copied "+obj.id+" from "+mysrc.id+" to "+dest.id)
                     else:
-                        print "Couldn't copy",obj.id,"from",mysrc.id,"to",dest.id,":",dest.id,"is child of",obj.id
+                        logger.error(user.getName()+" could not copy "+obj.id+" from "+mysrc.id+" to "+dest.id)
                 mysrc = None
         if not mysrc:
             mysrc = src
-
-        req.write("""<script language="javascript">returnValue('"""+mysrc.id+"""');</script>""")
     except:
-        req.write("""<h1>"""+t(lang(req),"edit_error")+"""</h1>""")
-        req.write(str(sys.exc_info()[0]) or "")
-        req.write("<br>")
-        req.write(str(sys.exc_info()[1]) or "")
-        req.write("""
-        <script language="javascript">
-            opener.reloadPage('"""+srcid+"""', '');
-        </script>
-        """)
-
-    req.write("""</body></html>""")
+        errorobj = sys.exc_info()
+    
+    v = {}
+    v["action"] = action
+    v["mysrcid"] = mysrc.id
+    v["srcid"] = srcid
+    v["error"] = errorobj
+    req.writeTAL("web/edit/edit.html", v, macro="edit_action")
 
 
 def isDirectory(node):
-    return node.type == "directory" or node.type == "root" or node.type == "collection" or node.type == "collections"
+    return node.type=="directory" or node.type=="root" or node.type=="collection" or node.type=="collections"
 
 def showPaging(req, tab, ids):
     nodelist = req.session.get("nodelist", None)
-    
-    link1 = '&nbsp;'
-    link2 = '&nbsp;'
-    position = '&nbsp;'
-    
+    nextid = previd = None
+    position = absitems = '&nbsp;'
+    combodata = ""
+    script = ""
+    combo = '&nbsp;'
     if nodelist and len(ids)==1:
         previd = nodelist.getPrevious(ids[0])
-        if previd:
-            link1 = '<a href="/edit/edit_content?id=%s&tab=%s"><img border="0" src="/img/pageleft.gif"></a>' % (previd, tab)
         nextid = nodelist.getNext(ids[0])
-        if nextid:
-            link2 = '<a href="/edit/edit_content?id=%s&tab=%s"><img border="0" src="/img/pageright.gif"></a>' % (nextid, tab)
-        position = nodelist.getPositionString(ids[0])
-    req.writeTAL("web/edit/edit.html", {"linkback":link1, "linknext":link2, "position":position}, macro="edit_paging")
-        
+        position, absitems = nodelist.getPositionString(ids[0])
+        combodata, script = nodelist.getPositionCombo(tab)
 
+    return req.getTAL("web/edit/edit.html", {"nextid":nextid, "previd":previd, "position":position, "absitems":absitems, "tab":tab,"combodata":combodata, "script":script, "nodeid":ids[0]}, macro="edit_paging")
+        
+   
 def content(req):
+    content = {}
+    content["script"] = ""
+    content["body"] = ""
+    v = {}
+    v["dircontent"] = ""
+    
+    path = req.path[1:].split("/")
+    if len(path)>=4:
+        req.params["style"] = "popup"
+        req.params["id"] = path[1]
+        req.params["tab"] = path[2]
+        req.params["option"] = path[3]
+        
+    getEditModules()
+
     access = AccessData(req)
+    if not access.user.isEditor():
+        return req.writeTAL("web/edit/edit.html", {}, macro="error")
 
     # remove all caches for the frontend area- we might make changes there
     for sessionkey in ["contentarea", "navframe"]:
@@ -532,149 +514,47 @@ def content(req):
             pass
 
     ids = getIDs(req)
-    if req.params.get("type","")== "help":
-        if req.params.get("tab","")=="tab_upload":   
-            upload_help(req)
-        return
+    if req.params.get("type","")=="help" and req.params.get("tab","")=="upload":
+        return upload_help(req)
 
-    if len(ids)==0:
-        req.writeTALstr('<i i18n:translate="edit_noselection">nichts ausgew&auml;hlt</i>',{})
-        return
-
-    req.write("""<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">""")
-    if req.params.get("tab", "") == "tab_view":
-        req.write("""
-            <html>
-            <head>
-              <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-              <meta content="text/html;charset=UTF-8" http-equiv="content-type">
-              <link rel="stylesheet" href="/css/editor.css">
-              <link rel="stylesheet" href="/css/edit_style.css">
-              <script type="text/javascript" src="/js/mediatum.js"></script>
-            </head>""")
-        req.write("""<body>""")
-    else:
-        req.write("""
-            <html>
-            <head>
-              <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-              <meta content="text/html;charset=UTF-8" http-equiv="content-type">
-              <link rel="stylesheet" href="/css/editor.css">
-              <link rel="stylesheet" href="/css/edit_style.css">
-              <script type="text/javascript" src="/js/editor.js"></script>
-              <script type="text/javascript" src="/js/admin.js"></script>
-              <script type="text/javascript" src="/js/mediatum.js"></script>
-                                  
-              <script language="javascript"> 
-                  var allobjects = new Array();
-              """)
-
-        req.write("""
-                  function getAllObjectsString()
-                  {
-                      var s = "";
-                      var first = 1;
-                      for(var i in allobjects) {
-                          if(allobjects[i]) {
-                              if(first!=1) s += ",";
-                              s += i; first = 0;
-                          }
-                      }
-                      return s;
-                  }
-                  function getFirstObject()
-                  {
-                      for(var i in allobjects) {
-                          if(allobjects[i]) {
-                              return i;
-                          }
-                      }
-                  }
-                  function clearObjects()
-                  {
-                      for(var i in allobjects) {
-                          allobjects[i] = 0;
-                      }
-                  }
-              </script>
-                                  <!--[if IE]>
-        <style type="text/css">
-        ul#nav li ul  {
-        filter: alpha(opacity=95);
-        }
-        </style>
-        <![endif]-->
-            </head>""")
-        req.write("""<body>""")
-    
     user = users.getUserFromRequest(req)
-    uploaddir = getUploadDir(user)
-    importdir = getImportDir(user)
 
-    node = tree.getNode(ids[0])
-    tabs = "tab_content"
-    if node.type == "root":
-        tabs = "tab_content"
-    elif node.id == uploaddir.id:
-        tabs = "tab_upload"
-    elif node.id == importdir.id:
-        tabs = "tab_import"
+    if len(ids)>0:
+        node = tree.getNode(ids[0])
+
+    tabs = "content"
+    if node.type=="root":
+        tabs = "content"
+    elif node.id==getUploadDir(user).id:
+        tabs = "upload"
+    elif node.id==getImportDir(user).id:
+        tabs = "imports"
     elif hasattr(node, "getDefaultEditTab"):
         tabs = node.getDefaultEditTab()
 
-    current = handletabs(req, ids, tabs)
-    if not access.user.isEditor():
-        req.writeTALstr('<div class="MainMenu"><br/><br/><p i18n:translate="edit_error_msg" class="error" style="text-align:center">TEXT <span i18n:name="link"><a i18n:translate="edit_linktext" href="../login" target="_parent">TEXT</a></span></p></div>', {})
-        req.write("</body>")
-        return   
+    current = req.params.get("tab", tabs)
 
-    showPaging(req, current, ids)
-    req.write('<p style="text-align:right"><a href="/print/'+str(node.id)+'" target="_blank"><img src="/img/print_icon.gif"/></a>&nbsp;&nbsp;</p>')
-    req.write('<div style="margin:5px;border:1px solid silver;padding: 4px;overflow-x:auto;overflow-y:hidden;">')
-    
-    
     # some tabs operate on only one file
-    if current in ["tab_files", "tab_editor", "tab_view", "tab_upload"]:
+    #if current in ["files", "view", "upload"]:
+    if current in ["files", "upload"]:
         ids = ids[0:1]
 
     # display current images
-    if "image" or "doc" in tree.getNode(ids[0]).type:
-        req.writeTALstr('<b i18n:translate="edit_taboverview_header">Ausgew&auml;hlt/in Bearbeitung:</b><br/>',{})
-
-        if current != "tab_view":
-            req.write("""<script language="javascript">\n""")
-            req.write("""clearObjects();\n""")
-
-            for id in ids:
-                req.write("""allobjects['%s'] = 1;\n""" % id)
-
-            req.write("""
-                function fullSizeWindow(id,width,height)
-                {
-                    var win1 = window.open('/fullsize?id='+id,'fullsize','width='+width+',height='+height+',directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=1'); 
-                    win1.focus();
-                }
-            """)
-
-            req.write("""</script>\n""")
-            req.write("""<table border="0"><tr>""")
+    v["notdirectory"] = 0
+    if "image" or "doc" in tree.getNode(ids[0]).getContentType():
+        v["notdirectory"] = 1
+        items = []
+        if current!="view":
             for id in ids:
                 node = tree.getNode(id)
-                if hasattr(node,"show_node_image"):
-                    req.write("""<td align="center">""")
+                if hasattr(node, "show_node_image"):
                     if not isDirectory(node) and not node.isContainer():
-                        req.write("""<a href="javascript:fullSizeWindow('"""+id+"""','"""+str(node.get("width"))+"""','"""+str(node.get("height"))+"""')">""")
-
-                    req.write(node.show_node_image())
-
-                    if not isDirectory(node) and not node.isContainer():
-                        req.write("""</a>""")
-
-                    req.write("""</td>""")
-                    req.write("""<td width="20">&nbsp;</td>""")
-            req.write("""</tr></table>""")
+                        items.append(('javascript:fullSizeWindow(\''+id+'\',\''+str(node.get("width"))+'\',\''+str(node.get("height"))+'\')', node.show_node_image()))
+                    else:
+                        items.append(("",node.show_node_image()))
+        v["items"] = items
+            
     else: # or current directory
-        req.writeTALstr('<b i18n:translate="edit_actual_dir">Aktuelles Verzeichnis:</b><br>',{})
         n = tree.getNode(ids[0])
         first = 1
         s = ""
@@ -686,52 +566,10 @@ def content(req):
             p = n.getParents()
             if p: n = p[0]
             else: n = None
-        req.write('<div style="margin-left: 20px">'+s+'</div>')
-        req.write('<hr>')
+        v["dircontent"] = s
 
-    if current == "tab_view":
-        if hasattr(node, "show_node_big"):
-            req.writeTALstr("""
-            <span i18n:translate="edit_tabarea_msg1"/>
-            <br>
-            <b i18n:translate="hint"></b><span i18n:translate="edit_tabarea_msg2"/><br/>
-            <hr/>
-            """, {})
-            req.write(getFormatedString(node.show_node_big(req)))
-        else:
-            req.writeTALstr("""
-            <span i18n:translate="edit_object_not_viewable"/><br>
-            """, {})
-    elif current == "tab_acls":
-        edit_acls(req,ids)
-    elif current == "tab_workflow":
-        edit_workflow(req,ids)
-    elif current == "tab_search":
-        #disabled
-        edit_search(req,ids)
-
-
-    elif current == "tab_subfolder":
-        #edit_sort(req,ids)
-        edit_subfolder(req,ids)
-    elif current == "tab_sortfiles":
-        edit_sortfiles(req,ids)
-    elif current == "tab_searchmask":
-        edit_searchmask(req,ids)
-    elif current == "tab_classes":
-        edit_classes(req,ids)
-    elif current == "tab_license":
-        edit_license(req,ids)
-    elif current == "tab_files":
-        edit_files(req,ids)
-    elif current == "tab_admin":
-        edit_admin(req,ids)    
-    elif current == "tab_content":
-        if node.type == "directory" or node.type.startswith("collection") or node.type.startswith("directory"):
-            showdir(req,node)
-    elif current == "tab_startpages":   # new 20090906 wn
-        edit_startpages(req, node)
-    elif current == "tab_editor":
+    if current=="globals":
+        pass
 
         basedir = config.get("paths.datadir")
             
@@ -773,49 +611,31 @@ def content(req):
         edit_logo(req, ids)
     elif current == "tab_publish":
         edit_publish(req, ids)
-    else:
-        req.write("<b>Unknown tab</b> '%s'" % current)
-    
-    req.write('</div>')
-    req.write('</body>')
-    req.write('</html>')
-    
 
+    else:
+        t = current.split("_")[-1]
+        if t in editModules.keys():
+            content["body"] += editModules[t].getContent(req, ids) # use standard method of module
+        else:
+            content["body"] += req.getTAL("web/edit/edit.html",{"module":current}, macro="module_error")
+   
+    if req.params.get("style","")!="popup": # normal page with header
+        v["tabs"] = handletabs(req, ids, tabs)
+        v["script"] = content["script"]
+        v["body"] = content["body"]
+        v["paging"] = showPaging(req, current, ids)
+        v["node"] = node       
+        req.writeTAL("web/edit/edit.html", v, macro="frame_content")
+    
+# frame with action drop-downs
 def buttons(req):
-
+    node = None
+    nodename = ""
+    access = AccessData(req)
+    
     if "id" in req.params:
-        node = tree.getNode(req.params["id"])
-    else:
-        node = None
-
-    req.write("""
-        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
-        <html>
-        <head>
-          <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
-          <meta content="text/html;charset=UTF-8" http-equiv="content-type">
-          <link rel="stylesheet" href="/css/editor.css">
-          <link rel="stylesheet" href="/css/edit_style.css">
-          <script language="javascript">
-             function disableMoveDeleteOperations() {
-                 this.document.getElementById("field_move").disabled = true;
-                 this.document.getElementById("field_delete").disabled = true;
-             }
-             function reset() {
-                 this.document.getElementById("field_move").enabled = true;
-                 this.document.getElementById("field_delete").enabled = true;
-             }
-          </script>
-        </head>
-        <body>
-            <div id="logocontainer">
-                &nbsp;
-            </div>
-            <div class="topmenucontainer">
-                <span>&nbsp;</span>
-            </div>
-        """)
-
+        node = tree.getNode(req.params.get("id"))
+        
     if not node:
         dirtype = ""
         newcoll = None
@@ -831,47 +651,17 @@ def buttons(req):
 
     if node:
         nodename = node.name
-    else:
-        nodename = ""
+
+    v = {}
+    v["iseditor"] = access.user.isEditor()
+    v["type"] = dirtype
+    v["newdir"] = newdir
+    v["newcoll"] = newcoll
+    v["name"] = nodename
     
-    access = AccessData(req)
-    if not access.user.isEditor():
-        req.write("</body></html>")
-        return
-
-    req.writeTALstr("""
-            <table cellspacing="0" cellpadding="0">
-            </table>
-                <form name="changeaction">
-                     <b i18n:translate="edit_files">Dateien:</b><br/>
-                     <select id="groupaction" onChange="if(!parent.setObjectAction(this.value)) {this.value='none'}" name="groupaction" style="width:250px">
-                         <option value="none">---</option>                      
-                         <option value="upload" i18n:translate="edit_action_file_upload">_</option>
-                         <option value="import" i18n:translate="edit_action_file_import">_</option>
-                         <option id="field_move" value="move" i18n:translate="edit_action_file_move">Verschieben nach...</option>
-                         <option value="copy" i18n:translate="edit_action_file_copy">Kopieren nach...</option>
-                         <option id="field_delete" value="delete" i18n:translate="edit_action_file_delete">L&ouml;schen</option>
-                         <option value="edit" i18n:translate="edit_action_file_edit">Gleichzeitig Bearbeiten</option>
-                         <option value="editsingle" i18n:translate="edit_action_file_editsingle">Einzeln Bearbeiten</option>
-                     </select><br/>
-                     <b tal:attributes="alt name; title name" tal:content="type"/><br/>
-                     <select id="folderaction" onChange="parent.setFolderAction(this.value)" name="folderaction" style="width:250px">
-                         <option value="">---</option>
-                         <option value="newcollection" tal:condition="newcoll" tal:content="newcoll">_</option>
-                         <option value="newfolder" tal:condition="newdir" tal:content="newdir">_</option>
-                         <option value="edit" i18n:translate="edit_action_dir_edit">_</option>
-                         <option value="move" i18n:translate="edit_action_dir_move">_</option>
-                         <option value="sortsubfolders" i18n:translate="edit_action_dir_sort">_</option>
-                         <!--<option value="copy" i18n:translate="edit_action_dir_copy">_</option>-->
-                         <option value="delete" i18n:translate="edit_action_dir_del">_</option>
-                         <option value="clear_trash" i18n:translate="edit_action_clear_trash">_</option>
-                     </select>
-                 </form>
-                 <p id="buttonmessage" style="color:red">&nbsp;</p>
-                 """,{"type": dirtype, "newdir": newdir, "newcoll": newcoll, "name": nodename})
-
-    req.write("""<hr/></body></html>""")
-
+    req.writeTAL("web/edit/edit.html", v, macro="frame_actions")
+    
+# build browsing tree-frame
 def showtree(req):
     access = AccessData(req)
     user = users.getUserFromRequest(req)
@@ -912,96 +702,52 @@ def showtree(req):
             if dist[0] > 24:
                 scrollid = currentid
 
-    script ="""var currentfolder = '"""+currentid+"""';
-        function setFolder(id)
-        {
-            img = document.images['img'+id];
-            if(currentfolder != "") {
-                lastimg = document.images['img'+currentfolder];
-                if(lastimg) {
-                    lastimg.src = "/img/mark_empty.png";
-                    lastimg.title = "";
-                }
-            }
-            if(img) {
-                img.src = "/img/mark_arrow.png";
-                img.title = "Selektierter Ordner ("+id+")";
-            }
-            parent.setFolder(id);
-            currentfolder = id;
-        }
-        function getFolder() 
-        {
-            return currentfolder;
-        }
-        function openNode(link,id)
-        {
-            document.location.href = link + "&id="+currentfolder + "&scrollid=" + id;
-        }"""
-
-    c = [""]
     def f(req,node,objnum,link,indent,type):
         indent *= 10
+        items = ''
         if objnum and node.getType().getName()!="root":
             items = ' ('+str(objnum)+')'
-        else:
-            items = ''
 
         nodename = node.name
         try: nodename = node.getLabel()
         except: 
             log.logException()
 
-        c[0] += '<a name="'+str(node.id)+'"/>'
-
-        c[0] += '<div class="line">'
-        c[0] += ' <div class="name" style="padding-left: '+str(indent)+'px">'
-        if node.id != currentid:
-            c[0] += '<img id="img%s" src="/img/mark_empty.png"/>' % (node.id)
+        if isCollection(node):
+            cssclass = "coll_"
         else:
-            c[0] += '<img id="img%s" title="%s" src="/img/mark_arrow.png"/>' % (node.id, "Selektierter Ordner ("+node.id+")")
-        title = 'title="'+nodename + ' (ID'+node.id+')"'
-
+            cssclass = "dir_"
         if access.hasWriteAccess(node):
-            if isCollection(node):
-                color = 'class="coll_canwrite"'
-            else:
-                color = 'class="dir_canwrite"'
+            cssclass += "canwrite"
         else:
-            if isCollection(node):
-                color = 'class="coll_canread"'
-            else:
-                color = 'class="dir_canread"'
+            cssclass += "canread"    
 
-        if type == 1:
-            c[0] += "<a title=\""+t(lang(req),"edit_classes_close_title")+"\" href=\"javascript:openNode('"+link+"','"+node.id+"')"+"\"><img src=\"/img/edit_box1.gif\" border=\"0\"/></a>"
-            c[0] += "<a "+color+" "+title+" href=\"javascript:setFolder('"+node.id+"')\">&nbsp;" + nodename+items+"</a>"
-        elif type == 2:
-            c[0] += "<a title=\""+t(lang(req),"edit_classes_open_title")+"\" href=\"javascript:openNode('"+link+"','"+node.id+"')"+"\"><img src=\"/img/edit_box2.gif\" border=\"0\"/></a>"
-            c[0] += "<a "+color+" "+title+" href=\"javascript:setFolder('"+node.id+"')\">&nbsp;" + nodename+items+"</a>"
-        elif type == 3:
-            c[0] += "<img src=\"/img/edit_box3.gif\" border=\"0\"/>"
-            c[0] += "<a "+color+" "+title+" href=\"javascript:setFolder('"+node.id+"')\">&nbsp;" + nodename+items+"</a>"
-        c[0] += " </div>"
-        c[0] += "</div>"
-   
+        v = {}
+        v["id"] = str(node.id)
+        v["type"] = type
+        v["indent"] = indent
+        v["current"] = node.id == currentid
+        v["cssclass"] = cssclass
+        v["title"] = nodename + ' (ID'+node.id+')'
+        v["nodename"] = nodename
+        v["items"] = items
+        v["link"] = link
+
+        return req.getTAL("web/edit/edit.html", v, macro="build_tree")
+
     node = tree.getNode(currentid)
     o = None
     if len(node.getParents()):
         o = [node.getParents()[0]]
 
-
     home_omitroot = 1
     if len(access.filter(tree.getRoot("home").getChildren())) > 1:
         home_omitroot = 0
 
-    content = [""]
-    writetree(req, tree.getRoot("home"), f, "", openednodes=o, sessionkey="lefttreenodes", omitroot=home_omitroot)
-    writetree(req, tree.getRoot("collections"), f, "", openednodes=o, sessionkey="lefttreenodes", omitroot=0)
-    writetree(req, tree.getRoot("navigation"), f, "", openednodes=o, sessionkey="lefttreenodes", omitroot=1)
+    content = ""
+    content += writetree(req, tree.getRoot("home"), f, "", openednodes=o, sessionkey="lefttreenodes", omitroot=home_omitroot)
+    content += writetree(req, tree.getRoot("collections"), f, "", openednodes=o, sessionkey="lefttreenodes", omitroot=0)
+    content += writetree(req, tree.getRoot("navigation"), f, "", openednodes=o, sessionkey="lefttreenodes", omitroot=1)
+    
+    req.writeTAL("web/edit/edit.html", {"script":"var currentfolder = '"+currentid+"'", "scrollid":scrollid, "content":content}, macro="frame_tree")
 
-    req.writeTAL("web/edit/edit.html", {"script":script, "scrollid":scrollid, "content":c[0]}, macro="edit_tree")
-
-def flush(req):
-    tree.flush()
-    req.write("<p>Caches have been flushed</p>")

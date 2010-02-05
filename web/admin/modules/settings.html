@@ -214,10 +214,10 @@
             <td i18n:translate="admin_settings_archive_interval"/>
             <td tal:content="archive_interval"/>
         </tr>
-        <tr>
+        <tr tal:condition="python:len(a_managers)>0">
             <td i18n:translate="admin_settings_archive_manager" colspan="2" style="font-weight:bold"/>
         </tr>
-        <tal:block tal:repeat="manager a_managers">
+        <tal:block tal:condition="python:len(a_managers)>0" tal:repeat="manager a_managers">
         <tr>
             <td i18n:translate="admin_settings_archive_name"/>
             <td tal:content="python:str(manager)"/>

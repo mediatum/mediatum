@@ -18,41 +18,75 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-from utils import join_paths,getMimeType
 import logging
 import core.tree
 import time
-import core.config
+
+from utils import join_paths, getMimeType, formatException
 
 def getImportDir():
+    uploaddir = join_paths(core.config.get("paths.datadir"),"incoming")
+    try: os.mkdir(uploaddir)
+    except: pass
+    uploaddir = join_paths(uploaddir, time.strftime("%Y-%b"))
+    try: os.mkdir(uploaddir)
+    except: pass
+    return uploaddir
+
+
+def importFile(realname,tempname):
+    try:
+        path,filename = os.path.split(tempname)
+
+        uploaddir = getImportDir()
+                
+        destname = join_paths(uploaddir, filename)
+        if os.sep=='/':
+            ret = os.system("cp %s %s" %(tempname, destname))
+        else:
+            cmd = "copy %s %s" %(tempname, (os.path.split(destname)[0]))
+            ret = os.system(cmd.replace('/','\\'))
+
+        if ret&0xff00:
+            raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, destname, str(ret)))
+
+        r = realname.lower()
+        mimetype = "application/x-download"
+        type = "file"
+        
+        mimetype, type = getMimeType(r)
+
+        return core.tree.FileNode(name=destname,mimetype=mimetype, type=type)
+    except:
+        print formatException()
+    return None
+    
+
+def importFileRandom(tempname):
+    #import core.config as config
+    import random
+    #import core.tree as tree
+    path,filename = os.path.split(tempname)
     uploaddir = join_paths(core.config.get("paths.datadir"),"incoming")
     try:os.mkdir(uploaddir)
     except: pass
     uploaddir = join_paths(uploaddir, time.strftime("%Y-%b"))
     try:os.mkdir(uploaddir)
     except: pass
-    return uploaddir
 
-def importFile(realname,tempname):
-    path,filename = os.path.split(tempname)
-
-    uploaddir = getImportDir()
-            
-    destname = join_paths(uploaddir, filename)
+    destfile = str(random.random())[2:]+os.path.splitext(filename)[1]
+    destname = join_paths(uploaddir, destfile)
     if os.sep == '/':
-        ret = os.system("cp "+tempname+" "+destname)
+        ret = os.system("cp '%s' %s" %(tempname, destname))
     else:
-        cmd = "copy "+tempname+" "+(os.path.split(destname)[0])
+        cmd = "copy '%s' %s" %(tempname, (os.path.split(destname)[0]))
         ret = os.system(cmd.replace('/','\\'))
-
-    if ret&0xff00:
-        raise IOError("Couldn't copy "+tempname+" to "+destname+" (error: "+str(ret)+")")
-
-    r = realname.lower()
+ 
+    if ret:
+        raise IOError("Couldn't copy %s to %s (error: %s)" %(tempname, destname, str(ret)))
+ 
+    r = tempname.lower()
     mimetype = "application/x-download"
     type = "file"
-    
     mimetype, type = getMimeType(r)
-
-    return core.tree.FileNode(name=destname,mimetype=mimetype,type=type)
-
+    return core.tree.FileNode(name=destname, mimetype=mimetype, type=type)

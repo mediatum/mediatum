@@ -49,7 +49,6 @@ class FtsSearchOrCondition:
     def execute(self):
         ids1 = self.a.execute()
         ids2 = self.b.execute()
-        print "len", ids1, ids2
         return union([ids1,ids2])
 
 class FtsSearchFieldCondition:

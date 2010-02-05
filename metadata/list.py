@@ -77,10 +77,10 @@ class m_list(Metatype):
 
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
         context = Context(field, value=value, width=width, name=name, lock=lock, language=language)
-        return athana.getTAL("metadata/list.html", {"context":context, "valuelist":self.formatValues(context)}, macro="editorfield", language=language)
+        return athana.getTAL("metadata/list.html", {"context":context, "valuelist":filter(lambda x:x!="", self.formatValues(context))}, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
-        return athana.getTAL("metadata/list.html",{"context":context, "valuelist":self.formatValues(context)}, macro="searchfield", language=context.language)
+        return athana.getTAL("metadata/list.html", {"context":context, "valuelist":filter(lambda x:x!="", self.formatValues(context))}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None, html=1):
         value = node.get(field.getName())
@@ -114,4 +114,3 @@ class m_list(Metatype):
                 ("fieldtype_list_desc", "drop down valuelist")
             ]
           }
-

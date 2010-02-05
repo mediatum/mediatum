@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.tree as tree
-import xml.parsers.expat
+import xml.parsers.expat as expat
 import StringIO
 import random
 
@@ -85,7 +85,7 @@ class _NodeLoader:
         self.nodes = []
         self.attributename = None
         self.id2node = {}
-        p = xml.parsers.expat.ParserCreate()
+        p = expat.ParserCreate()
         p.StartElementHandler = lambda name, attrs: self.xml_start_element(name,attrs)
         p.EndElementHandler = lambda name: self.xml_end_element(name)
         p.CharacterDataHandler = lambda d: self.xml_char_data(d)

@@ -96,8 +96,8 @@
             <tr>
                 <td><tal:block i18n:translate="admin_acl_rulename">TEXT</tal:block>:</td>
                 <td>
-                    <span tal:condition="python:error==0" tal:replace="python:rule.getName()"/>
-                    <input tal:attributes="value python:rule.getName(); type python:id=='' and 'text' or 'hidden'" name="rulename"/>
+                    <input tal:attributes="value python:rule.getName(); type python:'text'" name="rulename"/> 
+                    <input tal:attributes="value python:rule.getName(); type python:'hidden'" name="oldrulename"/>
                 </td>
             </tr>
             <tr>

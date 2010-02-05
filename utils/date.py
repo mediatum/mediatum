@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import time
+import calendar
 
 class DateTime:
     def __init__(self,year,month,day,hour,minute,second):
@@ -38,6 +39,15 @@ class DateTime:
         return self.second+60*(self.minute+60*(self.hour+24*(self.day+32*(self.month+366*self.year))))
     def daynum(self):
         return self.year*32*12 + self.month*32 + self.day
+        
+    def weekday(self): # 0=monday
+        if self.year>1970:
+            return calendar.weekday(self.year, self.month, self.day)
+        return -1
+        
+    def maxMonthDay(self):
+        return calendar.monthrange(self.year, self.month)[1]
+        
     def __str__(self):
         return format_date(self)
     def add(self,seconds):
@@ -259,29 +269,3 @@ def validateDateString(value, format=None):
     except ValueError:
         return False
     return validateDate(d)
-
-
-if __name__ == "__main__":
-    print format_date()
-    print parse_date('1004-03-01T23:59:59',"%Y-%m-%dT%H:%M:%S").split()
-    print parse_date('04-03-01T23:59:59',"%y-%m-%dT%H:%M:%S").split()
-    print make_date(2001,3,31,23,59,59).split()
-    print split_date(parse_date('1004-03-01T23:59:59',"%Y-%m-%dT%H:%M:%S"))
-    print format_date(format="%y-%m-%dTTT%H:%M:%S")
-    
-    print parse_date("01.01.2001 00:00:00", "%d.%m.%Y %H:%M:%S").split()
-    print format_date(now(), "dd.mm.yyyy hh:mm:ss")
-    
-    parse_date('01.01.2001 00:00:00', "%d.%m.%Y %H:%M:%S")
-    print format_date(parse_date('01.02.2003 04:05:06', "dd.mm.yyyy HH:MM:SS"), 'dd.mm.yyyy HH:MM:SS')
-    print format_date(parse_date('3.3.1978', 'dd.mm.yyyy'))
-    print format_date(parse_date('3.3.1978', '%d.%m.%Y'))
-    try:
-        print format_date(parse_date('3.3.1978', '%d.%m.%Y'))
-    except:
-        print "ok"
-    try:
-        parse_date('', 'dd.mm.yyyy')
-    except ValueError:
-        print "ok"
-

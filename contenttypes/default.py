@@ -30,7 +30,10 @@ class Default(tree.Node):
         return """<img border="0" src="/img/questionmark.png">"""
 
     """ format preview node text """
-    def show_node_text(node, words=None, language=None, seperator="<br />", labels=0):
+    def show_node_text(node, words=None, language=None, seperator="", labels=0):
+    
+        if seperator=="":
+            seperator = "<br/>"
         metatext = list()
         mask = node.getMask("nodesmall")
         if mask:
@@ -39,6 +42,7 @@ class Default(tree.Node):
                     value = field[1]
                 else:
                     value = ""
+
                 if words!=None:
                     value = highlight(value, words, '<font class="hilite">', "</font>")
 
@@ -57,6 +61,9 @@ class Default(tree.Node):
         return seperator.join(metatext)
     
     def isContainer(node):
+        return 0
+        
+    def isSystemType(node):
         return 0
 
     def get_name(node):
@@ -82,7 +89,7 @@ class Default(tree.Node):
             return tree.Node("", type="mask")
         else:
             return masks[0]
-            
+  
     def getSysFiles(node):
         return []
         
@@ -92,14 +99,14 @@ class Default(tree.Node):
     def getEditMenuTabs(node):
         menu = list()
         try:
-            submenu = Menu("tab_globals", "edit_menu_0_description","", "..")
+            submenu = Menu("menuglobals", "..")
             menu.append(submenu)
 
         except TypeError:
             pass
-        return menu
+        return  ";".join([m.getString() for m in menu])
         
     def getDefaultEditTab(node):
-        return "tab_view"
+        return "view"
 
 

@@ -77,6 +77,13 @@ class m_ilist(Metatype):
 
         index = tree.getRoot("collections").getAllAttributeValues(name, access).keys()
         index.sort(lambda x,y: cmp(x.lower(), y.lower()))
+        
+        if req.params.get("print","")!="":
+            req.reply_headers["Content-Disposition"] = "attachment; filename=index.txt"
+            for word in index:
+                if word.strip()!="":
+                    req.write(word.strip()+"\r\n")
+            return
 
         req.writeTAL("metadata/ilist.html", {"index":index, "fieldname":fieldname}, macro="popup")
         return athana.HTTP_OK

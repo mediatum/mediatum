@@ -148,7 +148,12 @@
             <form>
                 <table class="maintable">
                     <tr class="headline">
-                        <th><span i18n:translate="popup_index_header">TEXT</span>:</th>
+                        <th>
+                            <span i18n:translate="popup_index_header">TEXT</span>: 
+                            <div style="position:absolute; right:8px;top:8px">
+                                <a tal:attributes="href python:'/metatype/ilist?print=do&name='+fieldname"><img src="/img/print_icon.gif" border="0px"/></a>
+                            </div>
+                        </th>
                     </tr>
                     <tr>
                         <td class="content">

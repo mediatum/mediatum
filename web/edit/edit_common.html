@@ -1,14 +1,16 @@
 
 <tal:block metal:define-macro="show_nodelist">
     <p tal:condition="unpublishedlink" class="error">
-        <span i18n:translate="unpublished_objects1">_</span><br>
-        <a target="_parent" i18n:translate="unpublished_objects2" tal:attributes="href unpublishedlink">_</a>
-	<br /><br />
-        <span i18n:translate="edit_publish_warning">_</span>
+        <tal:block i18n:translate="unpublished_objects1"/>
+        <br/>
+        <a target="_parent" i18n:translate="unpublished_objects2" tal:attributes="href unpublishedlink">TEXT</a>
+        <br/>
+        <br/>
+        <tal:block i18n:translate="edit_publish_warning"/>
     </p>
 
     <p>
-        <b i18n:translate="edit_common_mark">TEXT</b><b>:</b>
+        <b><tal:block i18n:translate="edit_common_mark"/>:</b>
         <br/>
         <select onChange="doaction(this);" name="selection" style="width:250px">
             <option value="empty">---</option>
@@ -19,7 +21,6 @@
     </p>
     <script tal:content="script_array"/>
     <script>
-
         function doaction(action) { 
             if(action.value == 'markall') {
                 for(var a in allobjects) {
@@ -61,16 +62,16 @@
                 <input tal:attributes="name python:node.id; id python:'check'+node.id" onChange="checkObject(this)" type="checkbox"/> <span i18n:translate="edit_common_mark">TEXT</span>
             </div>
             <div style="position:absolute; left:3px; top:25px; width:148px; height:148px;">
-                <a tal:attributes="href python:'edit_content?id='+str(node.id)+'&tab=tab_view'" i18n:attributes="title edit_common_bigview_title">
+                <a tal:attributes="href python:'edit_content?id='+str(node.id)+'&tab=view'" i18n:attributes="title edit_common_bigview_title">
                     <tal:block tal:condition="python:hasattr(node, 'show_node_image')" tal:replace="raw python:node.show_node_image()"/>
                     <img tal:condition="python:not hasattr(node, 'show_node_image')" src="/img/questionmark.png"/>
                 </a>
             </div>
-            <div tal:attributes="onClick python:'document.location.href=\'edit_content?id='+str(node.id)+'&tab=tab_metadata\''" style="position:absolute; left:148px; top:20px; width:148px; height:148px; overflow: hidden; cursor: pointer" i18n:attributes="title edit_common_edit_meta">
+            <div tal:attributes="onClick python:'document.location.href=\'edit_content?id='+str(node.id)+'&tab=metadata\''" style="position:absolute; left:148px; top:20px; width:148px; height:148px; overflow: hidden; cursor: pointer" i18n:attributes="title edit_common_edit_meta">
                 <p class="descbox">
                     <tal:block tal:condition="python:hasattr(node, 'show_node_text')" tal:replace="raw python:node.show_node_text(None)"/>
                     <tal:block tal:condition="python:not hasattr(node, 'show_node_text')" tal:replace="raw python:node.getName()"/>
-                    <br><span style="color: red" tal:condition="python:node in notpublished" i18n:translate="notpublished">TEXT</span>
+                    <br/><span style="color: red" tal:condition="python:node in notpublished" i18n:translate="notpublished">TEXT</span>
                 </p>
             </div>
         </div>

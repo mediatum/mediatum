@@ -1,11 +1,11 @@
 
 <div id="clean-container" metal:define-macro="edit_tabs">
-    <div id="logocontainer">
+    <div id="logocontainer" style="height:50px; overflow:hidden">
         <div class="logotext">
             <span i18n:translate="editor_main_header">TEXT</span><br/>
             <span i18n:translate="sub_header_user">TEXT</span>: <span tal:replace="raw python:user.getName()"/>
             <span tal:repeat="item python:spc">
-                | <a tal:attributes="href python:item.link; target python:item.target; title python:item.description" i18n:translate="" i18n:attributes="title" tal:content="python:item.name">TEXT</a>
+                | <a tal:attributes="href python:item.link; target python:item.target; title python:item.getName()+'_title'" i18n:translate="" i18n:attributes="title" tal:content="python:item.getName()">TEXT</a>
             </span>
         </div>
     </div>
@@ -15,12 +15,12 @@
         </div>
         <ul id="nav">
             <tal:block tal:repeat="navitem python:menu">
-            <li tal:condition="python:len(navitem.getItemList())>0"><a tal:condition="python:len(navitem.getItemList())==0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]; href python:navitem.link; target python:navitem.target" i18n:translate="" tal:content="python:navitem.name">TEXT</a>
+            <li tal:condition="python:len(navitem.getItemList())>=0"><a tal:condition="python:len(navitem.getItemList())==0" tal:attributes="class python:{0:None,1:'selected'}[navitem.name==breadcrumbs[0]]; href python:navitem.link; target python:navitem.target" i18n:translate="" tal:content="python:navitem.name">TEXT</a>
                 <tal:block tal:condition="python:len(navitem.getItemList())>0">
-                    <a tal:attributes="class python:{0:None,1:'selected'}[navitem.getName()==breadcrumbs[0]]; target python:navitem.target" i18n:translate="" tal:content="python:navitem.getName()"/>
+                    <a tal:attributes="class python:{0:None,1:'selected'}[navitem.getName()==breadcrumbs[0]]; target python:navitem.target" i18n:translate="" tal:content="python:'tab_'+navitem.getName()"/>
                     <ul>
                         <li tal:repeat="item python:navitem.getItemList()">
-                            <a i18n:translate="" tal:content="python:item[1]" tal:attributes="href python:'?id='+idstr+'&tab='+item[2]"/>
+                            <a i18n:translate="" tal:content="python:'tab_'+item" tal:attributes="href python:'?id='+idstr+'&tab='+item"/>
                         </li>
                     </ul>
                 </tal:block>                            
@@ -32,7 +32,7 @@
     <div class="breadcrumbs">
        <h2 class="breadcrumbs">
             <tal:block tal:repeat="item breadcrumbs">
-                <tal:block tal:content="python:item.replace('*','')" i18n:translate="">TEXT</tal:block>
+                <tal:block tal:content="python:'tab_'+item.replace('*','')" i18n:translate="">TEXT</tal:block>
                 <tal:block tal:condition="python:breadcrumbs.index(item)<len(breadcrumbs)-1">
                  &raquo; 
                 </tal:block>
@@ -42,20 +42,19 @@
 </div>
 
 
-
-<tal:block metal:define-macro="edit_errorpage">
-    <html>
-        <body>
-            <h1 tal:content="errormsg"/>
-        </body>
-    </html>
-</tal:block>
-
-<tal:block metal:define-macro="edit_notree_permission">
-    <body bgcolor="#FFFFFF">
-    &nbsp;
+<html metal:define-macro="edit_errorpage">
+    <body>
+        <h1 tal:content="errormsg"/>
     </body>
-</tal:block>
+</html>
+
+
+<p metal:define-macro="module_error" class="error" style="text-align:center" i18n:translate="edit_module_error"><tal:block tal:content="python:module" i18n:name="name"/></p>
+
+
+<body metal:define-macro="edit_notree_permission" bgcolor="#FFFFFF">
+    &nbsp;
+</body>
 
 <metal:block metal:define-macro="edit_main">
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
@@ -70,27 +69,48 @@
             <script type="text/javascript" tal:content="raw script">
             </script>
 
-        <frameset cols="273,*" frameborder="1" framespacing="1" name="frame">
-            <frameset rows="260,*" frameborder="0" framespacing="1">
-                <frame tal:attributes="src python:'/edit/edit_buttons?id='+str(id)" frameborder="0" framespacing="0" marginheight="0" marginwidth="0" name="buttons" scrolling="no"/>
-                <frame  tal:attributes="src python:'/edit/edit_tree?id='+str(id)" frameborder="0" framespacing="0" marginheight="0" marginwidth="0" name="tree"/>
+            <frameset cols="273,*" frameborder="1" framespacing="1" name="frame">
+                <frameset rows="168,*" frameborder="0" framespacing="1">
+                    <frame tal:attributes="src python:'/edit/edit_buttons?id='+str(id)" frameborder="0" framespacing="0" marginheight="0" marginwidth="0" name="buttons" scrolling="no"/>
+                    <frame  tal:attributes="src python:'/edit/edit_tree?id='+str(id)" frameborder="0" framespacing="0" marginheight="0" marginwidth="0" name="tree"/>
+                </frameset>
+                <frame tal:attributes="src python:'/edit/edit_content?id='+str(id)+str(tab)" frameborder="1" framespacing="1" name="content"/>
+                <noframes>
+                    <br/><center i18n:translate="edit_main_noframe">TEXT</center>
+                </noframes>
             </frameset>
-            <frame tal:attributes="src python:'/edit/edit_content?id='+str(id)+str(tab)" frameborder="1" framespacing="1" name="content"/>
-            <noframes>
-                <br/><center i18n:translate="edit_main_noframe">TEXT</center>
-            </noframes>
-        </frameset>
-
+        </head>
     </html>
 </metal:block>
 
 <table metal:define-macro="edit_paging" width="100%" style="padding-top:5px;margin-top:0px;">
     <tr width="100%">
-        <td style="width:50px" tal:content="raw linkback"></td>
-        <td align="center" width="100%" style="text-align:center" tal:content="raw position">TEXT</td>
-        <td style="width:50px" tal:content="raw linknext">TEXT</td>
+        <td style="width:50px">
+            <a tal:condition="previd" tal:attributes="href python:'/edit/edit_content?id='+str(previd)+'&tab='+tab"><img border="0" src="/img/pageleft.gif"/></a>
+            &nbsp;
+        </td>
+        <td align="center" width="100%" style="text-align:center">
+            <tal:block tal:condition="python:previd or nextid">
+                <tal:block tal:replace="raw script"/>
+                <select id="goto" tal:attributes="onchange python:'gotoContent(document.getElementById(\'goto\').value,\''+tab+'\')'">
+                    <option tal:repeat="item combodata" tal:attributes="value python:item[0]; selected python:[None,'selected'][item[0]==nodeid]" tal:content="python:item[1]" ></option>
+                </select>
+                / <tal:block tal:replace="absitems" />
+            </tal:block>&nbsp;
+        </td>
+        <td align="center" width="100%" style="text-align:center">
+            
+        </td>
+        <td style="width:50px">
+            &nbsp;
+            <a tal:condition="nextid" tal:attributes="href python:'/edit/edit_content?id='+str(nextid)+'&tab='+tab"><img border="0" src="/img/pageright.gif"/></a>
+        </td>
     </tr>
 </table>
+
+<metal:block metal:define-macro="edit_paging_combo">
+    
+</metal:block>
 
 <html metal:define-macro="edit_action_error">
     <body>
@@ -112,102 +132,303 @@
     </body>
 </html>
 
-<html metal:define-macro="edit_tree">
+
+<i metal:define-macro="access_error" i18n:translate="edit_access_error">TEXT</i>
+
+
+<metal:block metal:define-macro="build_tree">
+    <a tal:attributes="name python:'node'+id"/>
+    <div class="line">
+        <div tal:attributes="style python:'padding-left:'+str(indent)+'px'" class="name">
+            <img tal:condition="python:not current" tal:attributes="id python:'img'+id" src="/img/mark_empty.png"/> 
+            <img tal:condition="current" tal:attributes="id python:'img'+id" src="/img/mark_arrow.png"/>
+            <a tal:condition="python:type==1" tal:attributes="href python:'javascript:openNode(\''+link+'\',\''+id+'\')'" i18n:attributes="title edit_classes_close_title">
+                <img src="/img/edit_box1.gif" border="0"/>
+            </a>
+            <a tal:condition="python:type==2" tal:attributes="href python:'javascript:openNode(\''+link+'\',\''+id+'\')'" i18n:attributes="title edit_classes_open_title">
+                <img src="/img/edit_box2.gif" border="0"/>
+            </a>
+            <img tal:condition="python:type==3" src="/img/edit_box3.gif" border="0"/>
+            <a tal:attributes="class cssclass; title title; href python:'javascript:setFolder('+id+')'">
+                &nbsp;<tal:block tal:replace="python:nodename+items"/>
+            </a>
+        </div>
+    </div>
+</metal:block>
+
+
+<metal:block metal:define-macro="frame_content">
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+    <html>
+        <head>
+            <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+            <meta content="text/html;charset=UTF-8" http-equiv="content-type"/>
+            <link rel="stylesheet" href="/css/editor.css">
+            <link rel="stylesheet" href="/css/edit_style.css">
+            <script type="text/javascript" src="/js/editor.js">
+            </script>
+            <script type="text/javascript" src="/js/admin.js">
+            </script>
+            <script type="text/javascript" src="/js/mediatum.js">
+            </script>
+            <script type="text/javascript" language="javascript"> 
+                var allobjects = new Array();
+
+                function getAllObjectsString(){
+                  var s = "";
+                  var first = 1;
+                  for(var i in allobjects) {
+                      if(allobjects[i]) {
+                          if(first!=1) s += ",";
+                          s += i; first = 0;
+                      }
+                  }
+                  return s;
+                }
+                
+                function getFirstObject(){
+                  for(var i in allobjects) {
+                      if(allobjects[i]) {
+                          return i;
+                      }
+                  }
+                }
+                
+                function clearObjects(){
+                  for(var i in allobjects) {
+                      allobjects[i] = 0;
+                  }
+                }
+            </script>
+            <tal:block tal:replace="script"/>
+            <!--[if IE]>
+            <style type="text/css">
+            ul#nav li ul  {
+            filter: alpha(opacity=95);
+            }
+            </style>
+            <![endif]-->
+        </head>
+        <body>
+            <!--content start-->
+            <tal:block tal:content="raw tabs"/>
+            <tal:block tal:content="raw paging"/>
+            <p style="text-align:right">
+                <a tal:attributes="href python:'/print/'+str(node.id)" target="_blank"><img src="/img/print_icon.gif"/></a>
+                &nbsp;&nbsp;
+            </p>
+            <div style="margin:5px;border:1px solid silver;padding: 4px;overflow-x:auto;">
+                <tal:block tal:condition="python: notdirectory==1">
+                    <script language="javascript">
+                        function fullSizeWindow(id,width,height){
+                            var win1 = window.open('/fullsize?id='+id,'fullsize','width='+width+',height='+height+',directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=1'); 
+                            win1.focus();
+                        }
+                    </script>
+                    
+                    <b i18n:translate="edit_taboverview_header">TEXT</b>
+                    <br/>
+                    <table border="0">
+                        <tr>
+                            <td tal:repeat="item items" align="center">
+                                <a tal:condition="python:item[0]!=''" tal:attributes="href python:item[0]" tal:content="raw python:item[1]">TEXT</a>
+                                <tal:block tal:condition="python:item[0]==''" tal:replace="raw python:item[1]"/>
+                            </td>
+                            <td width="20">&nbsp;</td>
+                        </tr>
+                    </table>
+                </tal:block>
+                
+                <tal:block tal:condition="python:notdirectory==0">
+                    <b i18n:translate="edit_actual_dir">TEXT</b>
+                    <br/>
+                    <div style="margin-left: 20px" tal:content="raw dircontent"> </div>
+                </tal:block>
+                <tal:block tal:replace="raw body"/>
+            </div>
+            <!--content end-->
+        </body>
+    </html>
+</metal:block>
+
+
+<html metal:define-macro="frame_tree">
     <head>
         <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta content="text/html;charset=UTF-8" http-equiv="content-type">
         <title i18n:translate="edit_tree_editor_title">TEXT</title>
-        <link rel="stylesheet" href="/css/editor.css">
-      
-        <style type="text/css">
-             a.coll_canread:link, a.coll_canread:visited, a.coll_canread:hover, a.coll_canread:active
-            {
-                color: #606060;
-                text-decoration: none;
-                font-weight: bold;
-            }
-            a.coll_canwrite:link, a.coll_canwrite:visited, a.coll_canwrite:hover, a.coll_canwrite:active
-            {
-                color: #000000;
-                text-decoration: none;
-                font-weight: bold;
-            }
-            a.dir_canread:link, a.dir_canread:visited, a.dir_canread:hover, a.dir_canread:active
-            {
-                color: #606060;
-                text-decoration: none;
-                font-weight: normal;
-            }
-            a.dir_canwrite:link, a.dir_canwrite:visited, a.dir_canwrite:hover, a.dir_canwrite:active
-            {
-                color: #000000;
-                text-decoration: none;
-                font-weight: normal;
-            }
-            div.line {
-                height:16px; 
-                width:100%;
-                font-size: 12px;
-                /*border-style: solid;
-                border-width: 0px;
-                border-top-width: 1px;
-                border-color: #808080;*/
-                overflow: hidden;
-            }
-            div.type {
-                float:left; 
-                height:16px; 
-                width:100px;
-                font-size: 12px;
-            }
-            div.name {
-                float:left;
-                height:16px; 
-                width:1024px;
-                overflow:hidden;
-                font-size: 12px;
-            }
-            div.box {
-                float: left;
-                width: 16px;
-                height: 20px;
-            }
-            div.operations {
-                float:right; 
-                height:16px; 
-                width:128px; 
-            }
-            div.metadata {
-                font-size: 12px;
-                background-color: #f0f0f0;
-            }
-            div.flush {
-                clear:both;
-                font-size:1px;
-            }
-            span.key {
-                width:128px; 
-            }
-            span.value {
-            }
-        </style>
-      
+        <link rel="stylesheet" href="/css/editor.css"/>
+        <link rel="stylesheet" href="/css/edit_tree.css"/>
+
         <script tal:content="raw script" language="javascript">
         </script>
-
-
+        <script language="javascript">
+            function setFolder(id){
+                var img = document.images['img'+id];
+                if(currentfolder != "") {
+                    lastimg = document.images['img'+currentfolder];
+                    if(lastimg) {
+                        lastimg.src = "/img/mark_empty.png";
+                        lastimg.title = "";
+                    }
+                }
+                if(img) {
+                    img.src = "/img/mark_arrow.png";
+                    img.title = "Selektierter Ordner ("+id+")";
+                }
+                parent.setFolder(id);
+                currentfolder = id;
+            }
+            
+            function getFolder() {
+                return currentfolder;
+            }
+            
+            function openNode(link,id){
+                document.location.href = link + "&id="+currentfolder + "&scrollid=" + id;
+            }
+        </script>
     </head>
     <body tal:content="raw content" tal:attributes="onload python:'location.hash='+scrollid" bgcolor="#ffffff">
-
-
     </body>
 </html>
 
-<tal:block metal:define-macro="access_error">
-    <i i18n:translate="edit_access_error">TEXT</i>
-</tal:block>
+
+<metal:block metal:define-macro="frame_actions">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+    <html>
+        <head>
+            <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+            <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+            <link rel="stylesheet" href="/css/editor.css">
+            <link rel="stylesheet" href="/css/edit_style.css">
+            <script language="javascript">
+                function disableMoveDeleteOperations() {
+                    this.document.getElementById("field_move").disabled = true;
+                    this.document.getElementById("field_delete").disabled = true;
+                }
+                function reset() {
+                    this.document.getElementById("field_move").enabled = true;
+                    this.document.getElementById("field_delete").enabled = true;
+                }
+            </script>
+        </head>
+        <body>
+            <div id="logocontainer" style="height:50px">
+                &nbsp;
+            </div>
+            <div class="topmenucontainer" style="height:82px">
+                <form tal:condition="iseditor" name="changeaction" style="margin:0px">
+                    <b i18n:translate="edit_files" style="color:#ffffff"/><br/>
+                    <select id="groupaction" onChange="if(!parent.setObjectAction(this.value)) {this.value='none'}" name="groupaction" style="width:250px">
+                        <option value="none">---</option>                      
+                        <option value="upload" i18n:translate="edit_action_file_upload">TEXT</option>
+                        <option value="import" i18n:translate="edit_action_file_import">TEXT</option>
+                        <option id="field_move" value="move" i18n:translate="edit_action_file_move">TEXT</option>
+                        <option value="copy" i18n:translate="edit_action_file_copy">TEXT</option>
+                        <option id="field_delete" value="delete" i18n:translate="edit_action_file_delete">TEXT</option>
+                        <option value="edit" i18n:translate="edit_action_file_edit">TEXT</option>
+                        <option value="editsingle" i18n:translate="edit_action_file_editsingle">TEXT</option>
+                    </select><br/>
+                    <b tal:attributes="alt name; title name" tal:content="type" style="color:#ffffff;padding-top:5px"/><br/>
+                    <select id="folderaction" onChange="parent.setFolderAction(this.value)" name="folderaction" style="width:250px;margin:0px;padding:0px">
+                        <option value="">---</option>
+                        <option value="newcollection" tal:condition="newcoll" tal:content="newcoll">TEXT</option>
+                        <option value="newfolder" tal:condition="newdir" tal:content="newdir">TEXT</option>
+                        <option value="edit" i18n:translate="edit_action_dir_edit">TEXT</option>
+                        <option value="move" i18n:translate="edit_action_dir_move">TEXT</option>
+                        <option value="sortsubfolders" i18n:translate="edit_action_dir_sort">TEXT</option>
+                        <option value="delete" i18n:translate="edit_action_dir_del">TEXT</option>
+                        <option value="clear_trash" i18n:translate="edit_action_clear_trash">TEXT</option>
+                    </select>
+                </form></div>
+            <p id="buttonmessage" style="color:red; padding-left:20px; margin:0px">&nbsp;</p>  
+            <hr/>
+        </body>
+        
+    </html>
+</metal:block>
 
 
-<p metal:define-macro="flush" i18n:translate="edit_flush">
-    TEXT
-</p>
+<metal:block metal:define-macro="error">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+    <html>
+        <head>
+            <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+            <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+            <link rel="stylesheet" href="/css/editor.css">
+            <link rel="stylesheet" href="/css/edit_style.css">
+        </head>
+        <body>
+            <div id="logocontainer">
+                &nbsp;
+            </div>
+            <div class="topmenucontainer">
+                <span>&nbsp;</span>
+            </div>
+            <div class="MainMenu">
+                <br/>
+                <br/>
+                <p i18n:translate="edit_error_msg" class="error" style="text-align:center">TEXT 
+                    <span i18n:name="link"><a i18n:translate="edit_linktext" href="../login" target="_parent">TEXT</a></span>
+                </p>
+            </div>
+        </body>
+    </html>
+</metal:block>
+
+
+<metal:block metal:define-macro="newfolder">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+    <html>
+        <head>
+            <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+            <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+            <link rel="stylesheet" href="/css/editor.css"/>
+            <link rel="stylesheet" href="/css/edit_style.css"/>
+            <script tal:condition="python:operation=='error'" language="javascript" tal:content="python:'opener.reloadURL(\'edit?id='+id+'\');'">
+            </script>
+            <script tal:condition="python:operation=='new'" language="javascript" tal:content="raw python:'opener.reloadURL(\'edit?tab=metadata&id='+id+'\');this.close();'"> 
+            </script>
+        </head>
+        <body>
+            <tal:block tal:condition="python:operation=='error'">
+                <h1 i18n:translate="edit_error">TEXT</h1>
+                <p i18n:translate="edit_error_msg1" style="margin:10px">TEXT</p>
+                <p>&nbsp;</p>
+                <p>&nbsp;</p>
+                <p style="text-align:center"><button type="button" onclick="self.close()" i18n:translate="close_window">TEXT</button>
+            </tal:block>
+        </body>
+    </html>
+</metal:block>
+
+
+<metal:block metal:define-macro="edit_action">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+    <html>
+    <head>
+        <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <meta content="text/html;charset=UTF-8" http-equiv="content-type"/>
+        <link rel="stylesheet" href="/css/editor.css"/>
+        <link rel="stylesheet" href="/css/edit_style.css"/>
+        <script language="javascript">
+            function returnValue(srcid) {
+                window.close();
+                opener.reloadPage(srcid, '');
+            }
+        </script>
+    </head>
+    <body>
+        <span i18n:translate="edit_action_msg">TEXT<b i18n:name="action" tal:content="action">TEXT</b>...</span>
+        <script language="javascript" tal:content="python:'returnValue(\''+mysrcid+'\');'">TEXT</script>
+    
+        <tal:block tal:condition="error">
+            <h1 i18n:translate="edit_error">TEXT</h1>
+            <p tal:content="python:str(error[0])">TEXT</p>
+            <p tal:content="python:str(error[1])">TEXT</p>
+            <script language="javascript" tal:content="python:'opener.reloadPage(\''+srcid+'\', \'\');'">TEXT</script>
+        </tal:block>
+    </body>
+</html>
+</metal:block>

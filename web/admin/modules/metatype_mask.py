@@ -24,17 +24,15 @@ import core.config as config
 
 from core.tree import Node
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
-from schema.schema import getMetaType
+from schema.schema import getMetaType, getMaskTypes
 from core.translation import lang, t
 from schema.mapping import getMappings
 from utils.utils import removeEmptyStrings 
 from web.common.acl_web import makeList
 
-_masktypes = {"":"masktype_empty","edit":"masktype_edit", "search":"masktype_search", "shortview":"masktype_short", "fullview":"masktype_full", "export":"masktype_export"}
-
 """ mask overview """
 def showMaskList(req, id):
-    global fieldoption, _masktypes
+    global fieldoption
 
     metadatatype = getMetaType(id)
     masks = metadatatype.getMasks()
@@ -84,7 +82,7 @@ def showMaskList(req, id):
     v["filterarg"] = req.params.get("filtertype", "name")
     v["sortcol"] = pages.OrderColHeader([t(lang(req),"admin_mask_col_1"),t(lang(req),"admin_mask_col_2"),t(lang(req),"admin_mask_col_3"),t(lang(req),"admin_mask_col_4"),t(lang(req),"admin_mask_col_5"),t(lang(req),"admin_mask_col_6")])
     v["metadatatype"] = metadatatype
-    v["masktypes"] = _masktypes
+    v["masktypes"] = getMaskTypes()
     v["lang_icons"] = {"de":"/img/flag_de.gif", "en":"/img/flag_en.gif", "no":"/img/emtyDot1Pix.gif"}
     v["masks"] = masks
     v["pages"] = pages
@@ -97,7 +95,6 @@ def showMaskList(req, id):
 
 """ mask details """
 def MaskDetails(req, pid, id, err=0):
-    global _masktypes
     mtype = getMetaType(pid)
 
     if err==0 and id=="":
@@ -125,7 +122,7 @@ def MaskDetails(req, pid, id, err=0):
     v["mtype"] = mtype
     v["error"] = err
     v["pid"] = pid
-    v["masktypes"] = _masktypes
+    v["masktypes"] = getMaskTypes()
     v["id"] = id
     v["langs"] = config.get("i18n.languages").split(",")
     v["actpage"] = req.params.get("actpage")

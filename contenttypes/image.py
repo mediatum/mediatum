@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import core
 import core.config as config
 import Image
 import core.tree as tree
@@ -26,12 +27,12 @@ import core.acl as acl
 import random
 import os
 import default
-import md5
+import hashlib
 
 from schema.schema import loadTypesFromDB, VIEW_DATA_ONLY, VIEW_HIDE_EMPTY
 from core.acl import AccessData
 from utils.fileutils import getImportDir
-from utils.utils import splitfilename, isnewer, Menu, formatException, iso2utf8
+from utils.utils import splitfilename, isnewer, formatException, iso2utf8, OperationException
 from core.tree import Node,FileNode
 from core.translation import lang,t
 from web.frontend import zoom
@@ -46,10 +47,14 @@ def makeThumbNail(image, thumb):
 
     if pic.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
         tmpjpg = config.get("paths.datadir")+"tmp/img"+str(random.random())+".jpg"
-        os.system("convert "+image+" -depth 8 -colorspace rgb "+tmpjpg)
+        retcode = os.system("convert "+image+" -depth 8 -colorspace rgb "+tmpjpg)
         pic = Image.open(tmpjpg)
     
-    pic.load()
+    try:
+        pic.load()
+    except IOError, e:
+        pic = None
+        raise OperationException("error:"+str(e))
 
     width = pic.size[0]
     height = pic.size[1]
@@ -70,7 +75,6 @@ def makeThumbNail(image, thumb):
     draw.line([(0,0),(127,0),(127,127),(0,127),(0,0)], (128,128,128))
     
     im = im.convert("RGB")
-    
     im.save(thumb, "jpeg")
 
 """ make presentation format (png) """
@@ -190,7 +194,7 @@ class Image(default.Default):
         #tifs
         mask = node.getFullView(lang(req))
 
-        tif = ""        
+        tif = ""
         try: 
             tifs = req.session["fullresolutionfiles"]
         except:
@@ -204,6 +208,9 @@ class Image(default.Default):
                         tif = node.getName()
                     else:
                         tif = f.getName()
+        
+            if node.get("archive_path")!="":
+                tif = "file/"+str(node.id)+node.get("archive_path")
 
         obj = {}
         obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY) # hide empty elements
@@ -232,7 +239,7 @@ class Image(default.Default):
     
     """ format node image with standard template """
     def show_node_image(node, language=None):
-    	return '<img src="/thumbs/'+node.id+'" class="thumbnail" border="0"/>'
+        return '<img src="/thumbs/'+node.id+'" class="thumbnail" border="0"/>'
     
     def isContainer(node):
         return 0
@@ -298,7 +305,7 @@ class Image(default.Default):
                     print "look for image",f.type,"|%s|" % f.retrieveFile()
                     if f.type == "image":
                         path,ext = splitfilename(f.retrieveFile())
-                        basename = md5.md5(str(random.random())).hexdigest()[0:8]
+                        basename = hashlib.md5(str(random.random())).hexdigest()[0:8]
                        
                         #path = os.path.join(getImportDir(),os.path.basename(path))
                         path = os.path.join(getImportDir(),basename)
@@ -365,8 +372,7 @@ class Image(default.Default):
                             if tags[k]!="":
                                 node.set("iptc_"+k.replace(" ","_"), tags[k])
             except:
-                print "iptc error"
-                print formatException()
+                None
 
     """ list with technical attributes for type image """
     def getTechnAttributes(node):
@@ -472,37 +478,73 @@ class Image(default.Default):
             im = Image.open(thumbbig.retrieveFile())
             req.writeTAL("contenttypes/image.html", {"filename":'/file/'+str(node.id)+'/'+thumbbig.getName(), "width":im.size[0], "height":im.size[1]}, macro="thumbbig")
 
-       
+    def processImage(node, type="", value="", dest=""):
+        import Image
+        import os
+
+        img = None
+        for file in node.getFiles():
+            if file.type=="image":
+                img = file
+                break
         
-        
-        
+        if img:
+            pic = Image.open(img.retrieveFile())
+            pic.load()
+            
+            if type=="percentage":
+                w = pic.size[0]*int(value)/100
+                h = pic.size[1]*int(value)/100
+                
+            if type=="pixels":
+                if pic.size[0]>pic.size[1]:
+                    w = int(value)
+                    h = pic.size[1]*int(value)/pic.size[0]
+                else:
+                    h = int(value)
+                    w = pic.size[0]*int(value)/pic.size[1]
+            
+            elif type=="standard":
+                w, h = value.split("x")
+                w = int(w)
+                h = int(h)
+
+                if pic.size[0]<pic.size[1]:
+                    factor_w = w*1.0/pic.size[0]
+                    factor_h = h*1.0/pic.size[1]
+
+                    if pic.size[0]*factor_w<w and pic.size[1]*factor_w<h:
+                        w = pic.size[0]*factor_w
+                        h = pic.size[1]*factor_w
+                    else:
+                        w = pic.size[0]*factor_h
+                        h = pic.size[1]*factor_h
+                else:
+                    factor_w = w*1.0/pic.size[0]
+                    factor_h = h*1.0/pic.size[1]
+                    
+                    if pic.size[0]*factor_w<w and pic.size[1]*factor_w<h:
+                        w = pic.size[0]*factor_h
+                        h = pic.size[1]*factor_h
+                    else:
+                        w = pic.size[0]*factor_w
+                        h = pic.size[1]*factor_w
+            
+            else: # do nothing but copy image
+                w = pic.size[0]
+                h = pic.size[1]
+
+            pic = pic.resize((int(w),int(h)), Image.ANTIALIAS)
+            if not os.path.isdir(dest):
+                os.mkdir(dest)
+            pic.save(dest+node.id+".jpg", "jpeg")      
+            return 1
+        return 0
+
 
     def getEditMenuTabs(node):
-        menu = list()
-        try:
-            submenu = Menu("tab_layout", "description","#", "../") #new
-            submenu.addItem("tab_view","tab_view")
-            menu.append(submenu)
-            
-            submenu = Menu("tab_metadata", "description","#", "../") # new
-            submenu.addItem("tab_metadata","tab_metadata")
-            submenu.addItem("tab_files_obj","tab_files")
-            submenu.addItem("tab_admin","tab_admin")
-            submenu.addItem("tab_lza", "tab_lza")
-            menu.append(submenu)
-            
-            submenu = Menu("tab_classes_header", "description","#", "../") # new
-            submenu.addItem("tab_classes","tab_classes")
-            menu.append(submenu)
-
-            submenu = Menu("tab_security", "description","#", "../") # new
-            submenu.addItem("tab_acls","tab_acls")
-            menu.append(submenu)
-            
-        except TypeError:
-            pass
-        return menu
+        return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
 
     def getDefaultEditTab(node):
-        return "tab_view"
+        return "view"
         

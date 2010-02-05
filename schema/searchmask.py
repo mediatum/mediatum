@@ -1,6 +1,6 @@
 import core.tree as tree
 import core.acl as acl
-import md5
+import hashlib
 import random
 import schema
 
@@ -13,7 +13,7 @@ class SearchMaskItem:
 def newMask(node):
     root = tree.getRoot("searchmasks") 
     while 1:
-        maskname = md5.md5(str(random.random())).hexdigest()[0:8]
+        maskname = hashlib.md5(str(random.random())).hexdigest()[0:8]
         if root.hasChild(maskname):
             continue
         else:
@@ -54,7 +54,7 @@ def generateMask(node):
     allfields = schema.getMetaType(maintype.getSchema())
 
     for metafield in maintype.getMetaFields("s"):
-        print maintype.getSchema(),metafield.getName()
+        
         d = metafield.get("label")
         if not d:
             d = metafield.getName()

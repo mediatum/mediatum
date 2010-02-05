@@ -93,9 +93,77 @@ class SortedDict:
     def __contains__(self, key):
         return key in self._key2data
 
+        
+"""A dictionary which is ordered by the values for purposes of the extended search"""
+class SortedDictByValue:
+    def __init__(self):
+        self._key2data = {}
+
+    def __cmp__(self, dict):
+        if isinstance(dict,SortedDictByValue):
+            return cmp(self._key2data, dict.data)
+        else:
+            return cmp(self._key2data, dict)
+
+    def __len__(self): 
+        return len(self._key2data)
+
+    def __getitem__(self, key): 
+        return self._key2data[key]
+
+    def __setitem__(self, key, item): 
+        self._key2data[key] = item
+
+    def __delitem__(self, key): 
+        item = self._key2data[key]
+        del self._key2data[key]
+
+    def clear(self): 
+        self._key2data.clear()
+
+    def copy(self):
+        s = SortedDictByValue()
+        s._key2data = self._key2data.copy()
+        return s
+
+    def keys(self):
+        import core.config as config
+        import core.translation as translation
+        s = sorted(self._key2data, key=self._key2data.get)
+        allowed_languages = config.get("i18n.languages","de").split(",")
+        for k in s:
+            for l in allowed_languages:
+                if self._key2data[k]==translation.translate(key="all_metafields", language=l):
+                    s.remove(k)
+                    s.insert(0, k)
+        return s
+
+    def items(self): 
+        return [(the_key, x[the_key]) for the_key in sorted(x, key=x.get)]
+    
+    def values(self): 
+        l = []
+        for k in self.keys():
+            l += [self._key2data[k]]
+        return l
+
+    def has_key(self, key): 
+        return self._key2data.has_key(key)
+
+    def update(self, dict):
+        for k, v in dict.items():
+            self._key2data[k] = v
+
+    def get(self, key, failobj=None):
+        if not self.has_key(key):
+            return failobj
+        return self._key2data[key]
+
+    def __contains__(self, key):
+        return key in self._key2data
+
 
 """A dictionary which is only allowed to keep n entries"""
-
 class MaxSizeDictEntry:
     def __init__(self,dict,key,data):
         self.key = key

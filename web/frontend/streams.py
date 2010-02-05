@@ -21,7 +21,7 @@ import re
 import core.tree as tree
 import os
 import core.config as config
-from utils.utils import get_filesize, join_paths, clean_path, getMimeType
+from utils.utils import get_filesize, join_paths, clean_path, getMimeType, formatException
 from core.translation import t
 import random
 import zipfile
@@ -33,13 +33,14 @@ import core.acl as acl
 from core import archivemanager
 from core.acl import AccessData
 from core.tree import getNode
+from string import atoi
 
 
 IMGNAME = re.compile("/?(attachment|doc|images|thumbs|thumb2|file|download|archive)/([^/]*)(/(.*))?$")
 
 def incUsage(node):
     nr = int(node.get("hit_statistic.file") or "0")
-    nr = nr + 1
+    nr+=1
     node.set("hit_statistic.file", str(nr))
 
 def splitpath(path):
@@ -47,9 +48,9 @@ def splitpath(path):
     if m is None:
         return path
     try:
-        return m.group(2),m.group(4)
+        return m.group(2), m.group(4)
     except:
-        return m.group(2),None
+        return m.group(2), None
 
 def send_image(req):
     try:
@@ -57,8 +58,19 @@ def send_image(req):
     except tree.NoSuchNodeError:
         return 404
     for f in n.getFiles():
-        if f.type == "image":
+        if f.getType()=="image":
             return req.sendFile(f.retrieveFile(), f.getMimeType())
+    return 404
+    
+def send_image_watermark(req):
+    try:
+        result = splitpath(req.path)
+        n = tree.getNode(result[0])
+    except tree.NoSuchNodeError:
+        return 404
+    for f in n.getFiles():
+        if f.getType()=="original_wm":
+            return req.sendFile(f.retrieveFile(), getMimeType(f.retrieveFile()))
     return 404
 
 def send_rawimage(req):
@@ -67,12 +79,30 @@ def send_rawimage(req):
         n = tree.getNode(splitpath(req.path)[0])
     except tree.NoSuchNodeError:
         return 404
-    if not access.hasAccess(n,"data") and n.type != "directory":
+    if not access.hasAccess(n, "data") and n.type!="directory":
         return 403
     for f in n.getFiles():
-        if f.type == "original":
+        if f.getType()=="original":
             incUsage(n)
             return req.sendFile(f.retrieveFile(), f.getMimeType())
+    return 404
+    
+def send_rawfile(req, n=None):
+    access = AccessData(req)
+    if not n:
+        id, filename = splitpath(req.path)
+        n = None
+        try:
+            n = tree.getNode(id)
+        except tree.NoSuchNodeError:
+            return 404
+
+    if not access.hasAccess(n, "data") and n.getContentType() not in ["directory", "collections", "collection"]:
+        return 403
+    for f in n.getFiles():
+        if f.getType()=="original":
+            incUsage(n)
+            return req.sendFile(f.retrieveFile(n), f.getMimeType(n))
     return 404
 
 def send_thumbnail(req):
@@ -81,23 +111,15 @@ def send_thumbnail(req):
     except tree.NoSuchNodeError:
         return 404
     for f in n.getFiles():
-        if f.type == "thumb":
+        if f.getType()=="thumb":
             if os.path.isfile(f.retrieveFile()):
                 return req.sendFile(f.retrieveFile(), f.getMimeType())
-        
-    s = n.getSchema()
-    t = n.type
-    if t:
-        t = t.split("/")[0]
 
-    tests = ["default_thumb_%s_%s_.*" % (t, s), "default_thumb_%s_.*" % (s), "default_thumb_%s_.*" % (t)]
-    
-    for test in tests:
+    for test in ["default_thumb_%s_%s.*" % (n.getContentType(), n.getSchema()), "default_thumb_%s.*" % (n.getSchema()), "default_thumb_%s.*" % (n.getContentType())]:
         fps = glob.glob(os.path.join(config.basedir, "web", "img", test))
         if fps:
-            fp=fps[0]
-            thumb_mimetype, thumb_type = utils.utils.getMimeType(fp)
-            return req.sendFile(fp, thumb_mimetype, force=1)
+            thumb_mimetype, thumb_type = utils.utils.getMimeType(fps[0])
+            return req.sendFile(fps[0], thumb_mimetype, force=1)
             
     return req.sendFile(config.basedir + "/web/img/questionmark.png", "image/png", force=1)
 
@@ -107,15 +129,14 @@ def send_thumbnail2(req):
     except tree.NoSuchNodeError:
         return 404
     for f in n.getFiles():
-        if f.type.startswith("presentat"):
+        if f.getType().startswith("presentat"):
             return req.sendFile(f.retrieveFile(), f.getMimeType())
     #fallback
     for f in n.getFiles():
-        if f.type == "image":
+        if f.getType()=="image":
             return req.sendFile(f.retrieveFile(), f.getMimeType())
-    print "No thumb2 for id",req.path
     return 404
-
+    
 
 def send_doc(req):
     access = AccessData(req)
@@ -123,16 +144,15 @@ def send_doc(req):
         n = tree.getNode(splitpath(req.path)[0])
     except tree.NoSuchNodeError:
         return 404
-    if not access.hasAccess(n,"data") and n.type != "directory":
+    if not access.hasAccess(n, "data") and n.type!="directory":
         return 403
     for f in n.getFiles():
-        if f.type=="doc" or f.type=="document":
+        if f.getType() in ["doc", "document"]:
             incUsage(n)
-            if(f.getSize() > 16*1048576):
+            if(f.getSize()>16*1048576):
                 return req.sendFile(f.retrieveFile(), "application/x-download")
             else:
                 return req.sendFile(f.retrieveFile(), f.getMimeType())
-    print "Document",req.path,"not found"
     return 404
 
 def send_file(req, download=0):
@@ -142,12 +162,12 @@ def send_file(req, download=0):
         n = tree.getNode(id)
     except tree.NoSuchNodeError:
         return 404
-    if not access.hasAccess(n,"data") and n.type not in ["directory","collections","collection"]:
+    if not access.hasAccess(n, "data") and n.type not in ["directory", "collections", "collection"]:
         return 403
     file = None
     # try full filename
     for f in n.getFiles():
-        if f.getName() == filename:
+        if f.getName()==filename:
             incUsage(n)
             file = f
             break
@@ -158,17 +178,16 @@ def send_file(req, download=0):
                 incUsage(n)
                 file = f
                 break
-                
-    if file and not os.path.isfile(file.retrieveFile()) and n.get("archive_type")!="":  
-        archivemanager.getManager(n.get("archive_type")).getArchivedFile(id)
-                
+    # try file from archivemanager
+    if not file and n.get("archive_type")!="":  
+        return req.sendFile(archivemanager.getManager(n.get("archive_type")).getArchivedFileStream(n.get("archive_path")), "image/tif")
+    
     if not file:
-        print "Document",req.path,"not found"
         return 404
 
-    video = file.type == "video"
+    video = file.getType()=="video"
 
-    if((download or file.getSize() > 16*1048576) and not video):
+    if((download or file.getSize()>16*1048576) and not video):
         req.reply_headers["Content-Disposition"] = "attachment; filename="+filename
         return req.sendFile(file.retrieveFile(), "application/x-download")
     else:
@@ -188,24 +207,31 @@ def send_attachment(req):
         return 403
     # filename is attachment.zip
     for file in node.getFiles():
-        if file.type == "attachment":
-            sendZipFile(req,file.retrieveFile())
+        if file.getType()=="attachment":
+            sendZipFile(req, file.retrieveFile())
             break
 
 def sendZipFile(req, path):
-    tempfile = join_paths(config.get("paths.tempdir"), str(random.random()))
-    zip = zipfile.ZipFile(tempfile,"w")
+    tempfile = join_paths(config.get("paths.tempdir"), str(random.random()))+".zip"
+    zip = zipfile.ZipFile(tempfile, "w")
     def r(p):
-        if os.path.isdir(join_paths(path,p)):
-            for file in os.listdir(join_paths(path,p)):
-                    r(join_paths(p,file))
+        if os.path.isdir(join_paths(path, p)):
+            for file in os.listdir(join_paths(path, p)):
+                r(join_paths(p, file))
         else:
-            zip.write(join_paths(path,p),p)
-    r("")
+            while len(p)>0 and p[0]=="/":
+                p = p[1:]
+            try:
+                zip.write(join_paths(path, p), p)
+            except:
+                pass
+    r("/")
     zip.close()
+    req.reply_headers['Content-Disposition'] = "attachment; filename=shoppingbag.zip"
     req.sendFile(tempfile, "application/zip")
-    if os.sep == '/': # Unix?
+    if os.sep=='/': # Unix?
         os.unlink(tempfile) # unlinking files while still reading them only works on Unix/Linux
+
 
 #
 # send single attachment file to user
@@ -217,11 +243,11 @@ def send_attfile(req):
         node = getNode(f[0])
     except tree.NoSuchNodeError:
         return 404
-    if not access.hasAccess(node,"data") and node.type != "directory":
+    if not access.hasAccess(node, "data") and node.type!="directory":
         return 403
     filename = clean_path("/".join(f[1:]))
     path = join_paths(config.get("paths.datadir"), filename)
-    mime, type= getMimeType(filename)
+    mime, type = getMimeType(filename)
     if(get_filesize(filename) > 16*1048576):
         return req.sendFile(path, "application/x-download")
     else:
@@ -230,7 +256,6 @@ def send_attfile(req):
         
 def get_archived(req):
     id, filename = splitpath(req.path)
-    print "get file from archive:", filename, id
     n = tree.getNode(id)
     if not archivemanager:
         req.write("-no archive module loaded-")
@@ -241,8 +266,7 @@ def get_archived(req):
     
     
 def get_root(req):
-    filename = config.basedir+"/web/root"+ req.path
-    print filename
+    filename = config.basedir+"/web/root"+req.path
     if os.path.isfile(filename):
         return req.sendFile(filename, "text/plain")
     else:

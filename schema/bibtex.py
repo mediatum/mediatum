@@ -34,6 +34,7 @@
 import re
 import os
 from schema import getMetaType
+from utils.date import parse_date
 
 token = re.compile(r'@\w+\s*{|[a-zA-Z-]+\s*=\s*{?["\'{]|[a-zA-Z-]+\s*=\s+[0-9a-zA-Z_]')
 comment = re.compile(r'%[^\n]*\n')
@@ -255,6 +256,7 @@ def importBibTeX(file, node=None):
 
         if mytype:
             fieldnames = {}
+            datefields = {}
             
             if mytype=="string":
                 print "string fields:", fields
@@ -272,17 +274,25 @@ def importBibTeX(file, node=None):
                 for f in mask.getMaskFields():
                     try:
                         _bib_name = tree.getNode(f.get("mappingfield")).getName()
-                        _med_name = tree.getNode(f.get("attribute")).getName()
+                        _mfield = tree.getNode(f.get("attribute"))
+                        _med_name = _mfield.getName()
+                        
+                        if _mfield.get("type")=="date":
+                            datefields[_med_name] = _mfield.get("valuelist")
+                        
                     except tree.NoSuchNodeError:
                         continue
 
                     fieldnames[_bib_name] = _med_name
-            
+
             doc = tree.Node(docid, type="document/"+metatype)
             for k,v in fields.items():
                 if k in fieldnames.keys():
                     k = fieldnames[k] # map bibtex name
 
+                if k in datefields.keys(): # format date field
+                    v = parse_date(v,datefields[k])
+                
                 doc.set(k, v)
             node.addChild(doc)
     return node

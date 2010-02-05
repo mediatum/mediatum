@@ -22,12 +22,16 @@ import traceback
 import sys
 import os
 import string
-import md5
+import hashlib
 import re
+import random
 
 def esc(s):
     return s.replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;").replace(">", "&gt;")
-    
+
+def lightesc(s):
+    return s.replace("<", "&lt;").replace(">", "&gt;")
+
 def desc(s):
     return s.replace("&amp;", "&").replace("&quot;", "\"").replace("&lt;","<").replace("&gt;",">")
     
@@ -66,6 +70,13 @@ def splitfilename(path):
     except:
         return path,""
 
+        
+def findLast(string, char):
+    # TODO
+    """Finds the last occurrence of char in string and returns its index. If the char cannot be found, return -1"""
+    return string.rfind(char)
+
+
 def isnewer(path1, path2):
     try:
         l1 = os.stat(path1)
@@ -100,9 +111,9 @@ def get_hash(filename):
         fi = open(filename,"rb")
         s = fi.read()
         fi.close()
-        return md5.md5(s).hexdigest()
+        return hashlib.md5(s).hexdigest()
     except IOError:
-        return md5.md5("").hexdigest()
+        return hashlib.md5("").hexdigest()
 
 def get_filesize(filename):
     if os.path.exists(filename):
@@ -117,26 +128,39 @@ def get_filesize(filename):
         return 0
 
 
-ae = u"\u00e4".encode("utf-8")
-Ae = u"\u00c4".encode("utf-8")
-ss = u"\u00df".encode("utf-8")
-ue = u"\u00fc".encode("utf-8")
-Ue = u"\u00dc".encode("utf-8")
-oe = u"\u00f6".encode("utf-8")
-Oe = u"\u00d6".encode("utf-8")
+normalization_items = {"chars":[("00e4", "ae"),\
+                        ("00c4", "Ae"),\
+                        ("00df", "ss"),\
+                        ("00fc", "ue"),\
+                        ("00dc", "Ue"),\
+                        ("00f6", "oe"),\
+                        ("00d6", "Oe"),\
+                        ("00e8", "e"),\
+                        ("00e9", "e")],\
+                     "words":[]}
 
-e1 = u"\u00e8".encode("utf-8")
-e2 = u"\u00e9".encode("utf-8")
-
+    
 def normalize_utf8(s):
-    s = s.replace(ae,"ae").replace(ue,"ue").replace(oe,"oe") \
-         .replace(Ae,"Ae").replace(Ue,"Ue").replace(Oe,"Oe") \
-         .replace(ss,"ss").replace(e1,"e").replace(e2, "e") 
-    return s.lower()
+    global normalization_items
+    
+    s = s.lower()
+    # Process special characters for search
+    for key,value in normalization_items["chars"]:
+        repl = unichr(int(key, 16)).encode("utf-8")
+        s = s.replace(repl, value)
+    return s
+    
+def replace_words(s):
+    global normalization_items
+    s = s.lower()
+    # Processing word trees for search
+    for key, value in normalization_items["words"]:
+        s = re.sub(str(key), value, s)
+    return s
 
 import locale
 def compare_utf8(s1,s2):
-    return locale.strcoll(normalize_utf8(s1),normalize_utf8(s2))
+    return locale.strcoll(normalize_utf8(s1), normalize_utf8(s2))
 
     
 def compare_digit(s1,s2):
@@ -145,11 +169,12 @@ def compare_digit(s1,s2):
     return 1
 
 class Option:
-    def __init__(self, name="", shortname="", value="", imgsource=""):
+    def __init__(self, name="", shortname="", value="", imgsource="", optiontype=""):
         self.name = name
         self.shortname = shortname
         self.value = value
         self.imgsource = imgsource
+        self.optiontype = optiontype
 
     def getName(self):
         return self.name
@@ -160,7 +185,7 @@ class Option:
         return self.shortname
     def setShortName(self, value):
         self.shortname = value
-    	
+    
     def getValue(self):
         return self.value
     def setValue(self, value):
@@ -170,11 +195,19 @@ class Option:
         return self.imgsource
     def setImagesource(self, value):
         self.imagesource = value
-    	
+        
+    def getOptionType(self):
+        return self.optiontype
+    def setOptionType(self, value):
+        self.optiontype = value
+    
+    
 def isCollection(node):
-    if node.type == "collection" or node.type == "collections":
-        return 1
-    else:
+    try:
+        if node.type in["collection", "collections"]:
+            return 1
+        return 0
+    except:
         return 0
 
 def getCollection(node):
@@ -280,7 +313,7 @@ def highlight(string, words, left, right):
 #
 def getMimeType(filename):
     
-    filename = filename.lower()
+    filename = filename.lower().strip()
     mimetype = "application/x-download"
     type = "file"
     if filename.endswith(".jpg") or filename.endswith(".jpeg"):
@@ -322,7 +355,9 @@ def getMimeType(filename):
     elif filename.endswith(".ppt"):
         mimetype = "application/mspowerpoint"
         type = "ppt"
-
+    elif filename.endswith(".xml"):
+        mimetype = "application/xml"
+        type = "xml"
     else:
         mimetype = "other"
         type = "other"
@@ -337,18 +372,7 @@ def formatTechAttrs(attrs):
             ret[item]=attrs[sects][item]
     return ret
 
-#splits a name into title, forename, lastname
-def splitname_old(fullname):
-    firstname=lastname=title=""
-    pos = 0
-    parts = fullname.split(" ")
-    lastname = parts.pop()
-    firstname = parts.pop()
-    while len(parts) and not (parts[-1].endswith(".") or parts[-1].endswith(")") or parts[-1].startswith("(")):
-        firstname = parts.pop()+" "+firstname
-    title = " ".join(parts)
-    return title,firstname,lastname
-
+    
 def splitname(fullname):
     fullname = fullname.strip()
     
@@ -422,6 +446,14 @@ def formatLongText(value, field):
             return value
     except:
         return value
+    
+    
+def checkString(string):
+    """ Checks a string, if it only contains alphanumeric chars as well as "-" """
+    result = re.match("([\w\-]+)", string)
+    if result and result.group(0)==string:
+       return True
+    return False
 
 
 def removeEmptyStrings(list):
@@ -463,7 +495,6 @@ def union(definition): # or
 
 def isParentOf(node, parent):
     parents = node.getParents()
-    print [n.name for n in parents]
     if node == parent:
         return 1
     if parent in parents:
@@ -495,36 +526,76 @@ def intersection(definition): # and
     else:
         return result
     
-class EncryptionException:
-    pass
+class EncryptionException(Exception):
+    def __init__(self, value=""):
+        self.value = value
+        
+    def __str__(self):
+        return repr(self.value)
+    
+class OperationException(Exception):
+    def __init__(self, value=""):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
 
+        
 class FileException:
     pass
     
 class Menu:
-    def __init__(self, name, description, icon="", link="", target="_self"):
+    def __init__(self, name, link="", target="_self"):
         self.name = name
-        self.icon = icon
         self.link = link
         self.target = target
-        self.description = description
         self.item = list()
         self.default = ""
+        
+    def getLink(self):
+        if self.link=="":
+            return "."
+        return self.link
+        
+    def getString(self):
+        return self.getName() + "(" + ";".join(self.getItemList()) + ")"
 
     def getName(self):
         return self.name
+    def getId(self):
+        return self.name.split("_")[-1]
 
-    def addItem(self, link, icon=""):
-        self.item.append((self.name+"_"+str(len(self.item)+1), link, icon))
+    def addItem(self, itemname):
+        self.item.append(itemname)
+        
     def getItemList(self):
         return self.item
         
-    def setDefault(name):
+    def setDefault(self, name):
         self.default = name
         
-    def getDefault():
+    def getDefault(self):
         return self.default
         
+def parseMenuString(menustring):
+    menu = []
+    submenu = None
+    if menustring.endswith(")"):
+        menustring = menustring[:-1]
+    menus = re.split("\);",menustring)
+    for m in menus:
+        items = re.split("\(|;", m)
+        for item in items:
+            
+            if items.index(item)==0 and item.startswith("menu"):
+                # menu
+                submenu = Menu(item) # do not optimize, submenu obj needed
+                menu.append(submenu)
+            else:
+                # submenu
+                if (item!=""):
+                    submenu.addItem(item)
+    return menu
+    
         
 def getFormatedString(s):
     l = ["b", "sub", "sup", "em"]
@@ -532,6 +603,12 @@ def getFormatedString(s):
         s = s.replace("&lt;"+i+"&gt;", "<"+i+">").replace("&lt;/"+i+"&gt;", "</"+i+">")
     return s
 
+def mkKey():
+    alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    s = ""
+    for i in range(0,16):
+        s += alphabet[random.randrange(0,len(alphabet)-1)]
+    return s
     
     
 if __name__ == "__main__":

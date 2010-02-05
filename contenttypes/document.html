@@ -8,7 +8,7 @@
             <img i18n:attributes="title full_text_doc_title" src="/img/doc_text.png"/>
         </a>
         &nbsp;&nbsp;&nbsp;
-        <a tal:attributes="href python:'javascript:shoppingBag(\''+str(node.id)+'\')'" href="javascript:shoppingBag(nodeid)" style="text-decoration:none">
+        <a tal:attributes="href python:'javascript:shoppingBag(\''+str(node.id)+'\')'" style="text-decoration:none">
             <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png"/>
         </a>
         <a tal:condition="print_url" tal:attributes="href python:print_url" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>

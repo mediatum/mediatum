@@ -1,6 +1,6 @@
 <metal:block metal:define-macro="showbig">
     <div style="width: 100%; text-align:right">
-        <a tal:attributes="href python:'javascript:shoppingBag(\''+str(node.id)+'\')'" href="javascript:shoppingBag(nodeid)">
+        <a tal:attributes="href python:'javascript:shoppingBag(\''+str(node.id)+'\')'">
             <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png" title="Objekt zur Merkliste hinzuf&uuml;gen"/></a>
         <a tal:attributes="href python:'/print/'+str(node.id)" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
     </div>

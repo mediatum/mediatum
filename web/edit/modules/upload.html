@@ -1,0 +1,65 @@
+
+<tal:block metal:define-macro="upload_form">
+    <tal:block tal:condition="error">
+        <p tal:content="error" i18n:translate="" class="error" style="text-align:center"/>
+    </tal:block>
+
+    <p style="color:red" tal:condition="python:len(schemes)==0" i18n:translate="edit_upload_msg1">
+        TEXT
+    </p>
+
+    
+    <tal:block tal:condition="python:len(schemes)!=0">
+        <script>
+            parent.reloadTree('');
+        </script>
+
+        <!-- first step: object selection -->
+        <form tal:condition="python:objtype=='' and len(schemes)!=0" tal:attributes="action python:'/edit/edit_content?id='+id" method="post" style="margin:5px">
+            <h3 i18n:translate="edit_upload_obj_selection">TEXT</h3>
+            <p i18n:translate="edit_upload_msg2">TEXT</p>
+            <p><label i18n:translate="edit_upload_obj_sel">TEXT</label>       
+                <select name="objtype">
+                    <option tal:repeat="datatype datatypes" tal:attributes="value python:datatype.getName()" tal:content="python:datatype.getLongName()" i18n:translate=""/>
+                </select>
+            </p>
+            <p><label>&nbsp;</label><input i18n:attributes="value edit_upload_selecttion_value" type="submit" name="submit"/></p>
+        </form>
+
+        <!--<form tal:condition="python:objtype!=''" action="upload_new" method="post" enctype="multipart/form-data" style="padding:4px">-->
+        <form tal:condition="python:objtype!=''" method="post" enctype="multipart/form-data" style="padding:4px">
+            <h3><span i18n:translate="edit_upload_header1">TEXT <span tal:content="python:objtype.getLongName()" i18n:name="objtype" i18n:translate=""/> TEXT</span> &nbsp;&nbsp;
+                <a href="#" onclick="openSearchPopup('edit_content?tab=upload&type=help&id=1&objtype=image', 'help', 350, 400)">
+                    <img src="/img/tooltip.png" border="0"/>
+                </a>
+            </h3>
+            <h3 i18n:translate="edit_upload_header2">TEXT</h3>
+
+            <div class="label" i18n:translate="edit_upload_scheme">TEXT</div>
+            
+            <tal:block tal:condition="python:len(schemes)==1">
+                <b tal:content="python:schemes[0].getLongName()"></b>
+                <input tal:attributes="value python:objtype.getName()+'/'+schemes[0].getName()" type="hidden" name="datatype">
+            </tal:block>
+
+            <select tal:condition="python:len(schemes)>1" name="datatype" style="width:400px">
+                <option tal:repeat="scheme schemes" tal:content="python:scheme.getLongName()" tal:attributes="value python:objtype.getName()+'/'+scheme.getName()"/>
+            </select>
+
+            <br/>
+
+            <h3 i18n:translate="edit_upload_header3">TEXT</h3>
+            <p i18n:translate="edit_upload_msg3">TEXT</p>
+            <p i18n:translate="edit_upload_msg4">TEXT</p>
+            <div class="label"><tal:block i18n:translate="edit_upload_file">TEXT</tal:block>:</div>
+            <input type="file" name="file" style="width:400px"/>
+            <p/>
+            <h3 i18n:translate="edit_upload_header4">TEXT</h3>
+            <div class="label">&nbsp;</div>
+            <input i18n:attributes="value edit_upload_upload_label" type="submit" name="submit"/>
+        </form>
+
+    </tal:block>
+
+</tal:block>
+

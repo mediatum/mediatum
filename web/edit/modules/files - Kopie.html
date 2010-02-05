@@ -1,0 +1,78 @@
+
+<p metal:define-macro="filetype_error" style="color:red" i18n:translate="edit_files_filetype_error">
+    TEXT
+</p>
+
+
+<tal:block metal:define-macro="edit_files_file">
+    <br/>
+    <form tal:attributes="action python:'edit_content?id='+str(id)+'&tab='+tab" tal:define="files python:node.getFiles()" method="post" enctype="multipart/form-data">
+        <tal:block tal:condition="python:update_error">
+            <p class="error" i18n:translate="file_processingerror">TEXT</p>
+        </tal:block>
+        
+        <tal:block tal:condition="python:len(files)>0">
+            <table class="files">
+                <tr>
+                    <th i18n:translate="edit_files_type">TEXT</th>
+                    <th i18n:translate="edit_files_size">TEXT</th>
+                    <th i18n:translate="edit_files_mimetype">TEXT</th>
+                    <th i18n:translate="edit_files_location">TEXT</th>
+                    <th i18n:translate="edit_files_options">TEXT</th>
+                    <th>....</th>
+                </tr>
+
+                <tr tal:repeat="file files">
+                    <td tal:content="python:file.type"/>
+                    <td tal:content="python:file.getSize()"/>
+                    <td tal:content="python:file.mimetype"/>
+                    <td>
+                        <a tal:attributes="href python:'/file/'+str(node.id)+'/'+file.getName()" tal:content="python:file.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
+                    </td>
+
+                    <td tal:condition="python:file.type=='doc'" tal:define="value python:node.get('pdf_encrypted')">
+                        <tal:block tal:condition="python:value.startswith('yes')">
+                            <tal:block tal:repeat="opt python:value[5:-2].split(' ')">
+                                <span tal:replace="python:opt"/>
+                            </tal:block>
+                        </tal:block>
+                        <tal:block tal:condition="python:value.startswith('yes')==False" tal:replace="python:'-'"/>
+                    </td>
+                    <td tal:condition="python:file.type!='doc'">
+                        &nbsp;
+                    </td>
+                    <td><input tal:attributes="name python:'del_'+file.getName()" type="image" src="/img/delete.png"/></td>
+                </tr>
+            </table>
+            
+            <hr>
+
+            <b i18n:translate="edit_files_change">TEXT</b><b>:</b>
+            <p><input type="radio" name="change_file" value="yes"/><tal:block i18n:translate="edit_files_change"/><br />
+               <input type="radio" name="change_file" value="no"/><tal:block i18n:translate="edit_files_add_obj"/><br />
+            </p>
+            <p><input name="updatefile" type="file" size="50"/></p>
+            <p><button i18n:attributes="title edit_upload_upload_label" i18n:translate="edit_upload_upload_label" type="submit" name="addfile" value="submit">TEXT</button></p>
+        </tal:block>
+
+        <tal:block tal:condition="python:len(files)==0">
+            <table class="files">
+                <tr>
+                    <td>
+                        <p><b i18n:translate="edit_files_add_obj">TEXT</b><b>:</b></p>
+                        <p><input name="updatefile" type="file" size="50"></p>
+                        <p>
+                            <button i18n:attributes="title edit_files_add_obj" i18n:translate="edit_files_add_obj" type="submit" name="addfile" value="submit">TEXT</button>
+                        </p>
+                    </td>
+                </tr>
+            </table>
+        </tal:block>
+        <hr>
+        <form tal:attributes="action python:'edit_content?id='+str(id)+'&tab='+tab" method="post">
+            <p><input i18n:attributes="value edit_files_reprocess" type="submit" name="postprocess"></p>
+            <p><small i18n:translate="edit_files_reprocess_info">TEXT</small></p>
+        </form>
+    </form>
+
+</tal:block>

@@ -1,0 +1,73 @@
+
+<p metal:define-macro="filetype_error" style="color:red" i18n:translate="edit_files_filetype_error">
+    TEXT
+</p>
+
+
+<tal:block metal:define-macro="edit_files_file" tal:define="files python:node.getFiles()">
+    <br/>
+    <tal:block tal:condition="python:update_error">
+        <p class="error" i18n:translate="file_processingerror">TEXT</p>
+    </tal:block>
+        
+    <form method="post" tal:condition="python:len(files)>0">
+        <table class="files">
+            <tr>
+                <th i18n:translate="edit_files_type">TEXT</th>
+                <th i18n:translate="edit_files_size">TEXT</th>
+                <th i18n:translate="edit_files_mimetype">TEXT</th>
+                <th i18n:translate="edit_files_location">TEXT</th>
+                <th i18n:translate="edit_files_options">TEXT</th>
+             </tr>
+
+            <tr tal:repeat="file files">
+                <td tal:content="python:file.type"/>
+                <td tal:content="python:file.getSize()"/>
+                <td tal:content="python:file.mimetype"/>
+                <td>
+                    <a tal:attributes="href python:'/file/'+str(node.id)+'/'+file.getName()" tal:content="python:file.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
+                </td>
+                <td style="text-align:center"><input tal:condition="python:file.type not in ['original', 'image']" tal:attributes="name python:'del|'+file.type+'|'+file.getName()" type="image" src="/img/delete.png" onclick="return questionDelName('')"/>&nbsp;</td>
+            </tr>
+        </table>
+        <input type="hidden" name="operation" value="delete"/>
+    </form>
+    
+    <hr/>
+    <form method="post" enctype="multipart/form-data">
+        <b><tal:block i18n:translate="edit_files_change"/>:</b>
+        <p>
+            <input type="radio" name="change_file" value="yes"/><tal:block i18n:translate="edit_files_change"/>
+            <br/>
+            <input type="radio" name="change_file" value="no" checked="checked"/><tal:block i18n:translate="edit_files_add_obj"/>
+            <br/>
+        </p>
+        <p>
+            <input name="updatefile" type="file" size="50"/>
+        </p>
+        <p>
+            <button i18n:attributes="title edit_upload_upload_label" i18n:translate="edit_upload_upload_label" type="submit" name="addfile" value="submit">TEXT</button>
+        </p>
+        <input type="hidden" name="operation" value="change"/>
+    </form>
+
+    <hr/>
+    <form method="post" enctype="multipart/form-data">
+        <b>Thumbnail neu hochladen:</b>
+        <p>
+            <input name="updatefile" type="file" size="50"/>
+        </p>
+        <p>
+            <button i18n:attributes="title edit_upload_upload_label" i18n:translate="edit_upload_upload_label" type="submit" name="addthumbfile" value="submit">TEXT</button>
+        </p>
+        <input type="hidden" name="operation" value="addthumb"/>
+    </form>
+    
+    <hr/>
+    <form method="post">
+        <p><input i18n:attributes="value edit_files_reprocess" type="submit" name="postprocess"></p>
+        <p><small i18n:translate="edit_files_reprocess_info">TEXT</small></p>
+        <input type="hidden" name="operation" value="postprocess"/>
+    </form>
+
+</tal:block>

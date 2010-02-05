@@ -1,0 +1,95 @@
+
+<tal:block metal:define-macro="no_mask">
+    <p>&nbsp;</p>
+    <p align="center" i18n:translate="edit_meta_info1">
+        TEXT
+    </p>
+</tal:block>
+
+<tal:block metal:define-macro="edit_metadata">
+    <script language="javascript">
+        function openPopup(url, name, width, height){
+            var win1 = window.open(url,name,'width='+width+',height='+height+',screenX=50,screenY=50,directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=no');
+            win1.focus();
+            return win1;
+        }
+
+        function handlelock(name){
+            if (document.getElementById('lock_'+name).checked){
+                document.getElementById(name).disabled = false;
+                document.getElementById(name).value = '';
+            }else{
+                document.getElementById(name).disabled = true;
+                document.getElementById(name).value = '? ';
+            }
+        }
+    </script>
+    <script tal:condition="python:reload_script" language="javascript">
+        parent.reloadTree('');
+    </script>
+    
+    <p tal:condition="python:len(metatypes)>1" class="error" i18n:translate="edit_meta_info2"><span i18n:name="n" tal:content="python:metatypes[0]">TEXT</span></p>
+
+    <form class="edit" action="edit_content" method="post" id="changeform">
+        <input type="hidden" name="tab" value="metadata">
+        <input tal:attributes="value idstr" type="hidden" name="id">
+        <tal:block tal:condition="python:len(masklist)>1">
+            <span i18n:translate="edit_meta_mask_selection">TEXT</span>:
+            <select name="mask" onChange="this.form.submit()">
+                <tal:block tal:repeat="mask masklist">
+                    <option tal:attributes="value python:mask.getName();selected python:{'False':None,'True':'selected'}[str(mask.getName()==maskname)]" tal:content="python:{'False':mask.getName(),'True':mask.getDescription()}[str(mask.getDescription()!='')]"/>
+                </tal:block>
+            </select>
+        </tal:block>
+        <tal:block tal:condition="python:len(masklist)==1 and masklist[0].getDescription()!=''">
+            <span i18n:translate="edit_mask">TEXT</span>: <span tal:content="python:masklist[0].getDescription()">TEXT</span>
+        </tal:block>
+        <hr/>
+    </form>
+
+    <form class="edit" action="edit_content" method="post" id="myform">
+        <div class="label">&nbsp;</div>
+        <input i18n:attributes="value edit_meta_save" type="submit" name="save"/> 
+        <input i18n:attributes="value edit_meta_reset" type="reset"/>
+        <br/>
+        <br/>
+        <tal:block tal:condition="maskform" tal:replace="raw python:maskform"/>
+        <tal:block tal:condition="fields">
+            <tal:block tal:repeat="field fields">
+                <div class="editorrow">
+                    <div class="label" tal:content="python:field.getLabel()">TEXT</div>
+                    <div id="description">&nbsp;</div>
+                    <div id="editor_content">
+                        <span tal:define="name python:field.getFieldtype()=='meta' and field.getValue() or field.getName(); value python:node.get(name)" tal:replace="structure python:field.getEditorHTML(value,400, field.getName())"/>
+                    </div>            
+                </div>
+            </tal:block>
+        </tal:block>
+        <br/>
+        <br/>
+        <div class="label">&nbsp;</div>
+        <small>(<span class="required">*</span> <span i18n:translate="edit_mask_required">TEXT</span>)</small>
+        <br/>
+        <br/>
+        <div class="label">&nbsp;</div>
+        <input i18n:attributes="value edit_meta_save" type="submit" name="save"/> 
+        <input i18n:attributes="value edit_meta_reset" type="reset"/>
+        <br/>
+        <input tal:attributes="value maskname" type="hidden" name="mask"/>
+        <input type="hidden" name="tab" value="metadata"/>
+        <input tal:attributes="value idstr" type="hidden" name="id"/>
+        <input type="hidden" name="edit_metadata" value="edit_metadata"/>
+    </form>
+
+
+    <br>
+    <small style="color: silver">
+        <span tal:condition="python:len(creation_date)>0"><span i18n:translate="edit_meta_created">TEXT</span>: </span>
+        <tal:block tal:repeat="c_date creation_date" tal:content="raw python:c_date[0] + ' ('+c_date[1]+')' "/>
+        <br/>
+        <span tal:condition="python:len(update_date)>0"><span i18n:translate="edit_meta_changed">TEXT</span>: </span>
+        <tal:block tal:repeat="u_date update_date" tal:content="raw python:u_date[0] + ' ('+u_date[1]+')' "/>
+    </small>
+    <br/>
+</tal:block>
+    

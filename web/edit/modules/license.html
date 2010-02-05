@@ -1,0 +1,58 @@
+
+<tal:block metal:define-macro="edit_license_info">
+    <p i18n:translate="edit_license_info">TEXT</p>
+    <a tal:attributes="href python:'/edit/edit_content?id='+node.id+'&tab=tab_license&style=popup'" target="licensewindow" i18n:translate="edit_license_gen">TEXT</a>
+</tal:block>
+
+<tal:block metal:define-macro="edit_license">
+    <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+     <html>
+         <head>
+            <style type="text/css">
+                table {
+                    padding: 0px;
+                    spacing: 0px;
+                    border: 1px solid black;
+                }
+                th {
+                    font-family: Lucida Console, Courier;
+                    text-weight: bold;
+                    font-size: 12px;
+                    text-align: left;
+                    border: 1px solid black;
+                    padding: 2px;
+                }
+                td {
+                    font-family: Lucida Console, Courier;
+                    text-weight: normal;
+                    font-size: 12px;
+                    text-align: left;
+                    border: 1px solid black;
+                    padding: 2px;
+                    white-space: nowrap;
+                }
+            </style>
+            <title i18n:translate="edit_license_obj_list">TEXT</title>
+         </head>
+         <body>
+            <table cellspacing="0">
+                <tr>
+                    <th i18n:translate="edit_license_name">TEXT</th>
+                    <th i18n:translate="edit_license_file">TEXT</th>
+                    <th i18n:translate="edit_license_hash">TEXT</th>
+                    <th i18n:translate="edit_license_size">TEXT</th>
+                </tr>
+                <tal:block tal:repeat="child python:node.getAllChildren()">
+                    <tal:block tal:repeat="file python:child.getFiles()">
+                        <tr tal:condition="python:file.type=='original'">
+                            <td tal:content="python:child.getName()"/>
+                            <td tal:content="python:file.getName()"/>
+                            <td tal:content="python:file.getHash()"/>
+                            <td style="text-align: right" tal:content="python:file.getSize()"/>
+                        </tr>
+                    </tal:block>
+                </tal:block>
+            </table>
+        </body>
+    </html>
+</tal:block>

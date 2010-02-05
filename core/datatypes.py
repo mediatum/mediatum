@@ -53,7 +53,10 @@ class Datatype:
 
     def getLongName(self):
         return self.classname
-
+        
+    def isSystemType(self):
+        return 0
+        
 
 def loadAllDatatypes():
     datalist = []

@@ -46,7 +46,6 @@ class Archive:
     def acquire(self):
         self.lock.acquire()
 
-        
     def release(self):
         self.lock.release()
     
@@ -59,6 +58,9 @@ class Archive:
     def getArchivedFile(self, node):
         None
         
+    def getArchivedFileStream(self, filename):
+        None
+    
     def deleteFromArchive(self, filename):
         None
         
@@ -66,6 +68,7 @@ class Archive:
         archive_log(message, type)
         
     def info(self):
+        self.version = "0.1"
         return "no description of archive manager found"
         
     def stat(self, attribute=""):
@@ -87,7 +90,7 @@ class Archive:
 class ArchiveManager:
 
     def __init__(self):
-        self.manager = []
+        self.manager = {}
 
         if config.get("archive.activate", "").lower()=="true":
             print "Initializing archive manager:",
@@ -96,8 +99,8 @@ class ArchiveManager:
                 if path and path not in sys.path:
                     sys.path += [path]
                 m = __import__(manager).__dict__[manager]()
-                print m,",",
-                self.manager.append(m)
+                print str(m.__class__),",",
+                self.manager[manager] = m
             print len(self.manager), "manager loaded"
 
         if len(self.manager)>0:
@@ -109,9 +112,9 @@ class ArchiveManager:
     def getManager(self, name=""):
         if name=="":
             return self.manager
-        for manager in self.manager:
-            if str(manager)==name:
-                return manager
+        
+        if name in self.manager.keys():
+            return self.manager[name]
         return None
             
     def archive_thread(self):
@@ -119,7 +122,7 @@ class ArchiveManager:
         if not time:
             return
         while 1:
-            time.sleep(int(config.get("archive.interval",10)))
+            time.sleep(int(config.get("archive.interval", 60)))
             archive_nodes_3 = db.getNodeIdByAttribute("archive_state", "3")
             archive_nodes_2 = []
 
@@ -139,7 +142,7 @@ class ArchiveManager:
                 nodes = intersection((db.getNodeIdByAttribute("archive_type",str(manager)), archive_nodes))
                 
                 # run action defined in manager
-                manager.actionArchive(nodes)
+                self.manager[manager].actionArchive(nodes)
 
 
 def initialize():
@@ -152,7 +155,7 @@ def initialize():
             if path and path not in sys.path:
                 sys.path += [path]
             m = __import__(manager).__dict__[manager]()
-            print m,",",
+            print str(m.__class__),",",
             archive_manager.append(m)
         print len(archive_manager), "manager loaded"
     if len(archive_manager)>0:

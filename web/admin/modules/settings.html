@@ -1,59 +1,49 @@
 <metal:block metal:define-macro="view">
     <script>
-        function tab(act_tab){
-            var t = new Array("python", "mediatum", "database", "search", "archive");
+        function tab(act_tab, subitem){
+            var t = new Array("python", "mediatum", "database", "search", "searchconfig", "archive");
             for (obj in t){
                 o = document.getElementById(t[obj]);
                 t_div = document.getElementById(t[obj]+'_tab');
                 if (t[obj]==act_tab){
                     o.style.display='block';
                     t_div.className ='active';
-                    getPage(t[obj]);
+                    getAdminPage("settings", t[obj], t[obj], subitem);
                 }else{
                     o.style.display='none';
                     t_div.className ='';
                 }
             }
         }
-        
-        function getPage(id){
-            var lastrssbridgeurl = '/admin/settings?style=popup&page='+id;
-            http.open('get', lastrssbridgeurl, true);
-            http.send(null);
-            http.onreadystatechange =function(){
-                if(http.readyState == 4){
-                    document.getElementById(id).innerHTML = http.responseText;
-                }
+    </script>
+    <script type="text/javascript" language="javascript">
+        function handleTypeObjectDiv(id){
+            obj = document.getElementById(id);
+            if (obj.style.display=='block'){
+                obj.style.display='none';
+            }else{
+                obj.style.display='block';
             }
         }
-        
-        var http = createRequestObject();
     </script>
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
 
-    <div id="page_tabs">
-        <div id="python_tab" class='active' onclick="tab('python')" i18n:translate="admin_settings_python_header">TEXT</div>
-        <div id="mediatum_tab" onclick="tab('mediatum')" i18n:translate="admin_settings_mediatum_header">TEXT</div>
-        <div id="database_tab" onclick="tab('database')" i18n:translate="admin_settings_database_header">TEXT</div>
-        <div id="search_tab" onclick="tab('search')" i18n:translate="admin_settings_search_header">TEXT</div>
-        <div id="archive_tab" onclick="tab('archive')" i18n:translate="admin_settings_archive_header">TEXT</div>
-    </div>
+    <tal:block tal:define="pages python:['python', 'mediatum', 'database', 'search', 'searchconfig', 'archive']">   
+        <div id="page_tabs">
+            <div tal:repeat="page pages" tal:attributes="id python:page+'_tab'; onclick python:'tab(\''+page+'\')'; class python:{'False':None,'True':'active'}[str(pages.index(page)==0)]" class='active' tal:content="python:'admin_settings_'+page+'_header'" i18n:translate="">TEXT</div>
+        </div>
+        <div id="page_content" style="background-color:white;width:90%">
+            <div tal:repeat="page pages" tal:attributes="id page; style python:'display:'+{'False':'none','True':'visible'}[str(pages.index(page)==0)]"><img src="/img/wait_small.gif"/></div>
+        </div>
+    </tal:block>
 
-    <div id="page_content" style="background-color:white;width:90%">
-        <div id="python" style="display:visible"><img src="/img/wait_small.gif"/></div>
-            
-        <div id="mediatum" style="display:none;"><img src="/img/wait_small.gif"/></div>
-        
-        <div id="database" style="display:none"><img src="/img/wait_small.gif"/></div>
-        
-        <div id="search" style="display:none"><img src="/img/wait_small.gif"/></div>
-        
-        <div id="archive" style="display:none"><img src="/img/wait_small.gif"/></div>
-
-    </div>
-    <script>
-        getPage('python')
+    <script tal:condition="python:gotopage!=''" tal:content="python:'\n\ttab(\''+gotopage+'\',\''+subitem+'\')\n'">
     </script>
+    
+    <script tal:condition="python:gotopage==''">
+        getAdminPage('settings', 'python', 'python')
+    </script>
+    
 </metal:block>
 
 <metal:block metal:define-macro="view_python">
@@ -162,7 +152,56 @@
     </table>
 </metal:block>
 
+<metal:block metal:define-macro="view_searchconfig">
+    <style type="text/css">
+        #searchconfig {border-spacing:0px;}
+        #searchconfig td {border-bottom:1px solid silver;}
+    </style>
+    <table style="width:100%">
+        <tr>
+            <td tal:repeat="section python:list(data)">
+                <form method="post" tal:attributes="name python:'form_'+section">
+                <table id="searchconfig" style="border-spacing:0px;">
+                    <tr>
+                        <td colspan="3">
+                            <h3 tal:content="python:'searchreplace_'+section"/>
+                            <input type="hidden" name="section" tal:attributes="value section"/>
+                        </td>
+                    </tr>
+                    <tr tal:repeat="item python:data[section]">
+                        <td tal:content="python:item[0]"/>
+                        <td tal:content="python:item[1]"/>
+                        <td>
+                            <input type="image" src="/img/delete.png" tal:attributes="name python:'delete|'+item[0]+'|'+item[1]"/>
+                        </td>
+                    </tr>
+                    <tr tal:repeat="i python:range(0, 11)">
+                        <td style="width:180px;">
+                            <input type="text" tal:attributes="name python:'newname_'+section+'_'+str(i)" class="smallinput"/>
+                        </td>
+                        <td style="width:180px;">
+                            <input type="text" tal:attributes="name python:'newvalue_'+section+'_'+str(i)" class="smallinput"/>
+                        </td>
+                        <td> 
+                            &nbsp;
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" style="text-align:right;border-width:0px">
+                            <button type="submit">Speichern</button>
+                        </td>
+                    </tr>
+                </table>
+                <input type="hidden" name="gotopage" value="searchconfig"/>
+                <input type="hidden" name="changes" value="searchconfig"/>
+                </form>
+            </td>
+        </tr>
+    </table>
+</metal:block>
+
 <metal:block metal:define-macro="view_archive">
+
     <table>
         <tr>
             <td colspan="2"><h2 i18n:translate="admin_settings_archive_header"/></td>
@@ -211,3 +250,5 @@
         </tal:block>
     </table>
 </metal:block>
+
+<p  metal:define-macro="view_error" tal:content="admin_settings_nomodule">TEXT</p>

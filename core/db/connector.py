@@ -43,6 +43,21 @@ class Connector:
         for id in t:
             idlist += [str(id[0])]
         return idlist
+        
+    def getContainerChildren(self, nodeid):
+        t = self.runQuery("select cid from containermapping where nid="+nodeid+" order by cid")
+        idlist = []
+        for id in t:
+            idlist += [str(id[0])]
+        return idlist
+
+    def getContentChildren(self, nodeid):
+        t = self.runQuery("select cid from contentmapping where nid="+nodeid+" order by cid")
+        idlist = []
+        for id in t:
+            idlist += [str(id[0])]
+        return idlist
+
 
     def getParents(self, nodeid):
         t = self.runQuery("select nid from nodemapping where cid="+nodeid)

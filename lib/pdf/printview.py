@@ -20,6 +20,7 @@
 import os
 import Image,ImageDraw
 import core.config as config
+import re
 
 try:
     from reportlab.platypus import Paragraph, BaseDocTemplate, SimpleDocTemplate, FrameBreak, Table, TableStyle, Image as PdfImage,Frame,PageBreak,PageTemplate
@@ -150,12 +151,7 @@ class PrintPreview:
 
         for item in metadata:
             l = Paragraph(esc(item[2]+":"), self.bl)
-
-            #if item[1].find("href")==-1:
-            #    item[1] = esc(item[1])
-
-            v = Paragraph(item[1], self.bv)
-
+            v = Paragraph(re.sub(r'<[^>]*>', '', item[1]), self.bv)
             self.addData(l)
             self.addData(v)
 
@@ -199,8 +195,11 @@ class PrintPreview:
         _c = 1
         for c in children:
             if len(c)>0 and c[0][3]=="header":
+                if len(items)>0:
+                    items.sort(lambda x, y: cmp(x[0].lower(),y[0].lower()))
+                
                 for item in items:
-                    self.addData(Paragraph("["+str(_c)+"/"+str(len(children)-_head)+"]: "+", ".join([i for i in item if i!=""]), self.bv))
+                    self.addData(Paragraph("["+str(_c)+"/"+str(len(children)-_head)+"]: "+"; ".join(item), self.bv))
                     _c+=1
                 self.addData(Paragraph(u(c[0][1]).replace('&', '&amp;'), self.bf))
                 items = []
@@ -212,7 +211,9 @@ class PrintPreview:
             items.append(values)
 
         for item in items:
-            self.addData(Paragraph("["+str(_c)+"/"+str(len(children)-_head)+"]: "+", ".join([i for i in item if i!=""]), self.bv))
+            if len(items)>0:
+                items.sort(lambda x, y: cmp(x[0].lower(),y[0].lower()))
+            self.addData(Paragraph("["+str(_c)+"/"+str(len(children)-_head)+"]: "+", ".join(item), self.bv))
             _c+=1    
             
 def getPrintView(lang, imagepath, metadata, paths, style=1, children=[]): # style=1: object, style=3: liststyle

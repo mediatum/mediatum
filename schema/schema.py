@@ -172,7 +172,6 @@ def updateMetaField(parent, name, label, orderpos, fieldtype, option="", descrip
         field.setName(name)
         #field.setOrderPos(orderpos)
     except tree.NoSuchNodeError:
-        print "-new-"
         field = tree.Node(name=name, type="metafield")
         metatype.addChild(field)
         field.setOrderPos(len(metatype.getChildren())-1)
@@ -578,7 +577,6 @@ class Metadatatype(tree.Node):
             else:
                 return self.getChild(name)
         except tree.NoSuchNodeError:
-            #print "mask '" + str(name) + "' not found"
             return None
           
     def hasUploadForm(self):
@@ -722,9 +720,41 @@ class Metadatafield(tree.Node):
             t = getMetadataType("default")
 
         return t.getFormatedValue(self, node, language=language)
-        
-class Mask(tree.Node):
 
+# helper class for masks
+class MaskType:
+    def __init__(self, type, seperator="<br/>"):
+        self.type = type
+        self.seperator = seperator
+        
+    def setType(self, value):
+        self.type = value
+    def getType(self):
+        return self.type
+        
+    def setSeperator(self, value):
+        self.seperator = value
+    def getSeperator(self):
+        return self.seperator        
+
+def getMaskTypes(key="."):
+    masktypes = {
+                    "":MaskType("masktype_empty"),
+                    "edit":MaskType("masktype_edit"), 
+                    "search":MaskType("masktype_search"), 
+                    "shortview":MaskType("masktype_short",". "), 
+                    "fullview":MaskType("masktype_full"), 
+                    "export":MaskType("masktype_export")
+                }
+    if key==".":
+        return masktypes
+    else:
+        if key in masktypes.keys():
+            return masktype[key]
+        else:
+            return MaskType()
+            
+class Mask(tree.Node):
     def getFormHTML(self, nodes, req):
         if not self.getChildren():
             return None
@@ -754,6 +784,11 @@ class Mask(tree.Node):
             t = getMetadataType(field.get("type"))
             if flags & 4: # data mode
                 v = t.getViewHTML(field, nodes, flags, language=language)
+                format = field.getFormat()
+                if format!="":
+                    v[1] = format.replace("<value>", v[1])
+                v.append(field.getSeperator())
+                
                 if flags & 2:   # hide empty
                     if v[1].strip()!="":
                         ret.append(v)
@@ -839,7 +874,7 @@ class Mask(tree.Node):
         for node in nodes:
             for item in self.getMaskFields():
                 field = item.getField()
-                if field and field.getContentType()=="metafield" and req.params.get(field.getName(),"")!="? ":
+                if field and field.getContentType()=="metafield" and req.params.get(field.getName(),"").find("?")!=0:
                     t = getMetadataType(field.get("type"))
                     if field.getName() in req.params.keys():
                         value = t.getFormatedValueForDB(field, req.params.get(field.getName()))
@@ -1026,6 +1061,14 @@ class Mask(tree.Node):
         else:
             self.set("defaultmask", "False")
             
+    def getSeperator(self):
+        if not "seperator" in self.items():
+            return getMaskTypes(self.getMasktype()).getSeperator()
+            #if self.getMasktype() in getMaskTypes().keys():
+            #    return getMaskTypes()[self.getMasktype()].getSeperator()
+        return self.get("seperator")
+    def setSeperator(self, value):
+        self.set("seperator", value)
 
     def addMaskitem(self, label, type, fieldid, pid):
         item = tree.Node(name=label, type="maskitem") 
@@ -1110,9 +1153,17 @@ class Maskitem(tree.Node):
         return self.get("unit")
     def setUnit(self, value):
         self.set("unit", str(value))
-
-     
         
+    def getFormat(self):
+        return self.get("format")
+    def setFormat(self, value):
+        self.set("format", value)
+        
+    def getSeperator(self):
+        return self.get("seperator") or ""
+    def setSeperator(self, value):
+        self.set("seperator", value)
+
 mytypes = {}
 
 def pluginClass(newclass):

@@ -499,11 +499,40 @@ def getRuleList():
         rlist += [AccessRule(str(rule[0]), str(rule[2]), str(rule[1]))]
     return rlist
 
-def updateRule(rule, oldrule="", newname = "", oldname = ""):
+def updateRule_old(rule, oldrule="", newname = "", oldname = ""):
     global conn, rules
     conn.updateRule(rule)
     rules[rule.getName()] = rule
     flush()
+    
+def updateRule(rule, oldrule="", newname="", oldname=""):
+    """ rule is the new rule
+        oldrule is the name of the old and previous rule"""
+    global conn, rules
+
+    if oldrule=="":
+        oldrule = rule
+    else:
+        oldrule = getRule(oldrule)
+
+    conn.updateRule(rule, oldrule.getName())
+    rules[oldrule.getName()] = rule
+    rules[rule.getName()] = rule
+    
+    if (oldrule.getName()!=rule.getName()):
+        for n in tree.getRoot().getAllChildren():
+            n.overwriteAccess(rule, oldrule)
+           
+    if (newname != oldname and newname != ""):
+        tempoldname = " " + oldname + " "
+        tempnewname = " " + newname + " "
+        for aclrule in getRuleList():
+            if (tempoldname in aclrule.getRuleStr()):
+                newrulestr = aclrule.getRuleStr().replace(tempoldname, tempnewname)
+                newrule = AccessRule(aclrule.getName(), newrulestr, aclrule.getDescription())
+                conn.updateRule(newrule, newrule.getName())
+                rules[aclrule.getName()] = newrule
+
 
 def addRule(rule):
     global conn

@@ -17,14 +17,18 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import os
+import re
 import core.config as config
 import math
 import core.users as users
 import sys
 import traceback
 
-from utils.utils import Link, Menu
+from utils.utils import Link, Menu, splitpath, parseMenuString
 from core.translation import t, lang
+from core.tree import getRoot
+from core.config import getsubset
 
 def getAdminStdVars(req):
 
@@ -154,15 +158,13 @@ def getSortCol(req):
     return order
 
 """ load module for admin area """
-mymodules = {}
 def findmodule(type):
-    global mymodules
-    if type in mymodules:
-        return mymodules[type]
+    global adminModules
+    if type in adminModules:
+        return adminModules[type]
 
     try:
         m = __import__("web.admin.modules." + type)
-        #m = eval("m.modules."+type)
         m = eval("m.admin.modules."+type)
     except:
         print "Warning: couldn't load module for type",type
@@ -171,8 +173,6 @@ def findmodule(type):
         import web.admin.modules.default
         m = __import__("web.admin.modules.default")
         m = eval("m.admin.modules.default")
-
-    mymodules[type] = m
     return m
 
 """ main method for content area """
@@ -182,8 +182,8 @@ def show_content(req, op):
     if not user.inGroup("Administration"):
         return req.getTAL("web/admin/frame.html", {}, macro="errormessage")
     else:
-        if op == "":
-            op = "default"
+        if op=="" or op not in getRoot().get("admin.menu"):
+            op = "menumain"
         module = findmodule(op.split("_")[0])
 
         try:
@@ -191,58 +191,82 @@ def show_content(req, op):
                 return module.spc(req, op)
         except:
             return module.validate(req, op)
-
-
-
-def adminNavigation():
-    menu = list()
-    try:
-        submenu = Menu("admin_menu_0", "admin_menu_0_description","", "/admin")
-        menu.append(submenu)
-  
-        submenu = Menu("admin_menu_1", "admin_menu_1_description", "/img/icons/usergroups.gif")
-        submenu.addItem("/admin/usergroup","/img/icons/usergroups.gif")
-        submenu.addItem("/admin/user", "/img/icons/users.gif")
-        menu.append(submenu)
-
-        submenu = Menu("admin_menu_2", "admin_menu_2_description", "/img/icons/groupperms.gif")
-        submenu.addItem("/admin/acls")
-        menu.append(submenu)
-
-        submenu = Menu("admin_menu_3", "admin_menu_3_description", "/img/icons/datatypes.gif")
-        submenu.addItem("/admin/metatype")
-        submenu.addItem("/admin/mapping")
-        menu.append(submenu)
-
-        submenu = Menu("admin_menu_4", "admin_menu_4_description", "/img/icons/workflow.gif")
-        submenu.addItem("/admin/workflows")
-        menu.append(submenu)
-
-        submenu = Menu("admin_menu_5", "admin_menu_5_description", "/img/icons/system.gif")
-        submenu.addItem("/admin/logfile")
-        submenu.addItem("/admin/flush")
-        submenu.addItem("/admin/settings")
-        menu.append(submenu)
+            
+# delivers all admin modules
+def getAdminModules(path):
+    mods = {}
+    for root, dirs, files in path:
+        for name in [f for f in files if f.endswith(".py") and f!="__init__.py"]:
+            m = __import__("web.admin.modules." + name[:-3])
+            m = eval("m.admin.modules."+name[:-3])
+            mods[name[:-3]] = m
          
-    except TypeError:
-        pass
-    return menu
+    # test for external modules by plugin
+    for k,v in config.getsubset("plugins").items():
+        path,module = splitpath(v)
+        try:
+            sys.path += [path+".adminmodules"]
+            
+            for root, dirs, files in os.walk(os.path.join(config.basedir, v+"/adminmodules")):
+                for name in [f for f in files if f.endswith(".py") and f!="__init__.py"]:
+                    m = __import__(module+".adminmodules."+name[:-3])
+                    m = eval("m.adminmodules."+name[:-3])
+                    mods[name[:-3]] = m
+        except ImportError:
+            pass # no admin modules in plugin
+    return mods
+                
+# delivers all active admin modules in navigations
+adminModules = {}
+def adminNavigation():
+    if len(adminModules)==0:
+        # load admin modules
+        mods = getAdminModules(os.walk(os.path.join(config.basedir, 'web/admin/modules')))
+        for mod in mods:
+            if hasattr(mods[mod], "getInformation"):
+                adminModules[mod] = (mods[mod])
+            
+    # get module configuration
+    root = getRoot()
+    admin_configuration = root.get("admin.menu")
+
+    if admin_configuration=="":
+        # no confguration found -> use default
+        admin_configuration = "menumain();menuuser(usergroup;user);menuacl(acls);menudata(metatype;mapping);menuworkflow(workflows);menusystem(logfile;flush;settings;settingsmenu)"
+        root.set("admin.menu", admin_configuration)
+        
+    return parseMenuString(admin_configuration[:-1])
+
     
+def getAdminModulesVisible():
+    ret = []
+    for menu in adminNavigation():
+        ret.append(menu.getId())
+        for item in menu.getItemList():
+            ret.append(item)
+    return ret
+    
+def getAdminModuleInformation(mod, key=""):
+    global adminModules
+    if mod in adminModules.keys():
+        m = adminModules[mod]
+        if hasattr(m, "getInformation"):
+            info = m.getInformation()
+            if key not in info.keys():
+                return info
+            else:
+                return info[key]
+    
+
 def getMenuItemID(menulist, path):
     if path=="":
-        return ["admin_menu_0"]
+        return ["admin_menu_menumain"]
         
     p = path.split('/')
     for item in menulist:
         for subitem in item.getItemList():
             if subitem[1].endswith(p[0]):
-                return [item.name,subitem[0]]
+                return [item.name,"admin_menu_"+subitem[0]]
                 
-    return ["admin_menu_0"]
+    return ["admin_menu_menumain"]
 
-
-    
-    
-    
-    
-    

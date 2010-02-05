@@ -91,7 +91,13 @@
         <div class="label" i18n:translate="mask_edit_unit">TEXT</div>
         <input tal:attributes="value python:str(item.getUnit())" type="text" name="unit" style="width:500px"/>
         <br/>
-         <input tal:attributes="value python:str(item.id)" type="hidden" name="id"/>
+        <div class="label" i18n:translate="mask_edit_format">TEXT</div>
+        <input tal:attributes="value python:str(item.getFormat())" type="text" name="format" style="width:500px"/>
+        <br/>
+        <div class="label" i18n:translate="mask_edit_seperator">TEXT</div>
+        <input tal:attributes="value python:str(item.getSeperator())" type="text" name="seperator" style="width:500px"/>
+        <br/>
+        <input tal:attributes="value python:str(item.id)" type="hidden" name="id"/>
         <input tal:attributes="value pid" type="hidden" name="pid"/>
         <input type="hidden" name="type" value="field"/>
         <br/>&nbsp;<br/><div class="label">&nbsp;</div>

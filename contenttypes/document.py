@@ -24,7 +24,7 @@ import core.athana as athana
 import core.acl as acl
 import os
 
-from utils.utils import getMimeType, format_filesize,splitfilename, u, EncryptionException, Menu
+from utils.utils import getMimeType, format_filesize,splitfilename, u, OperationException
 from core.tree import Node,FileNode
 from schema.schema import loadTypesFromDB, VIEW_HIDE_EMPTY,VIEW_DATA_ONLY
 from core.translation import lang, t
@@ -128,17 +128,17 @@ class Document(default.Default):
         present = 0
         fileinfo = 0
         for f in node.getFiles():
-            if f.type == "thumb":
+            if f.type=="thumb":
                 thumb = 1
             elif f.type.startswith("present"):
                 present = 1
-            elif f.type == "fulltext":
+            elif f.type=="fulltext":
                 fulltext = 1
-            elif f.type == "fileinfo":
+            elif f.type=="fileinfo":
                 fileinfo = 1
-            elif f.type == "doc":
+            elif f.type=="doc":
                 doc = f
-            elif f.type == "document":
+            elif f.type=="document":
                 doc = f
 
         if not doc:
@@ -151,25 +151,21 @@ class Document(default.Default):
                     node.removeFile(f)
                 elif f.type == "fulltext":
                     node.removeFile(f)
-
+                    
         if doc:
             path,ext = splitfilename(doc.retrieveFile())
-
+            
             if not (thumb and present and fulltext and fileinfo):
                 thumbname = path+".thumb"
                 thumb2name = path+".thumb2"
                 fulltextname = path + ".txt"
                 infoname = path + ".info"
                 tempdir = config.get("paths.tempdir")
+                
                 try:
                     pdfdata = parsepdf.parsePDF2(doc.retrieveFile(), tempdir)
-
-                except parsepdf.EncryptedException:
-                    print "*** encrypted ***"
-                    raise EncryptionException()
-
-                if not os.path.isfile(infoname):
-                    raise "PostprocessingError"
+                except parsepdf.PDFException, ex:
+                    raise OperationException(ex.value)
 
                 fi = open(infoname, "rb")
                 for line in fi.readlines():
@@ -182,6 +178,8 @@ class Document(default.Default):
                 node.addFile(FileNode(name=thumb2name, type="presentation", mimetype="image/jpeg"))
                 node.addFile(FileNode(name=fulltextname, type="fulltext", mimetype="text/plain"))
                 node.addFile(FileNode(name=infoname, type="fileinfo", mimetype="text/plain"))
+        else:
+            raise OperationException("error:wrong filetype")
 
     """ list with technical attributes for type document """
     def getTechnAttributes(node):
@@ -298,31 +296,8 @@ class Document(default.Default):
 
         
     def getEditMenuTabs(node):
-        menu = list()
-        try:
-            submenu = Menu("tab_layout", "description","#", "../") #new
-            submenu.addItem("tab_view","tab_view")
-            menu.append(submenu)
-            
-            submenu = Menu("tab_metadata", "description","#", "../") # new
-            submenu.addItem("tab_metadata","tab_metadata")
-            submenu.addItem("tab_files_obj","tab_files")
-            submenu.addItem("tab_admin","tab_admin")
-            submenu.addItem("tab_lza", "tab_lza")
-            menu.append(submenu)
-            
-            submenu = Menu("tab_classes_header", "description","#", "../") # new
-            submenu.addItem("tab_classes","tab_classes")
-            menu.append(submenu)
-
-            submenu = Menu("tab_security", "description","#", "../") # new
-            submenu.addItem("tab_acls","tab_acls")
-            menu.append(submenu)
-            
-        except TypeError:
-            pass
-        return menu
+        return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
 
     def getDefaultEditTab(node):
-        return "tab_view"
+        return "view"
         

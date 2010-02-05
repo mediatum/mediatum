@@ -20,6 +20,7 @@ msgstr "Willkommen auf mediaTUM"
 
 msgid "username:"
 msgstr "Benutzername:"
+msgstr "Benutzername:"
 
 msgid "password:"
 msgstr "Passwort:"
@@ -92,6 +93,9 @@ msgstr "Das neue Passwort und die Wiederholung sind nicht identisch"
 
 msgid "login_change_err_3"
 msgstr "Ihr Benutzerkonto besitzt noch das Standardpasswort. Bitte ändern Sie dieses ab, um Missbrauch vorzubeugen."
+
+msgid "login_change_err_4"
+msgstr "Das Passwort des aktuellen Benutzerkontos kann nicht geändert werden."
 
 msgid "login_act_pwd:"
 msgstr "Aktuelles Passwort:"
@@ -187,6 +191,9 @@ msgstr "Bearbeiten"
 msgid "sub_header_inquest_title"
 msgstr "Zur Rechercheoberfläche wechseln"
 
+msgid "sub_header_frontend_title"
+msgstr "Zur Rechercheoberfläche wechseln"
+
 msgid "sub_header_inquest"
 msgstr "Recherche"
 
@@ -210,6 +217,12 @@ msgstr "Suchen"
 
 msgid "xsearch"
 msgstr "Erweiterte Suche"
+
+msgid "xsearch2"
+msgstr "Weniger Felder"
+
+msgid "search_extendedsuper"
+msgstr "Mehr Felder"
 
 msgid "all_metafields"
 msgstr "Alle Daten"
@@ -399,67 +412,67 @@ msgstr "Attachment-Browser öffnen..."
 msgid "admin_print_title"
 msgstr "Aktuelle Seite drucken"
 
-msgid "admin_menu_0"
+msgid "admin_menu_menumain"
 msgstr "Hauptmenü"
 
-msgid "admin_menu_0_1"
+msgid "admin_menu_start"
 msgstr "Start"
 
-msgid "admin_menu_1"
+msgid "admin_menu_menuuser"
 msgstr "Benutzerverwaltung"
 
-msgid "admin_menu_1_description"
+msgid "admin_menu_menuuser_description"
 msgstr "Verwaltung von Benutzern und Gruppen"
 
-msgid "admin_menu_1_1"
+msgid "admin_menu_usergroup"
 msgstr "Benutzergruppe"
 
-msgid "admin_menu_1_2"
+msgid "admin_menu_user"
 msgstr "Benutzer"
 
-msgid "admin_menu_2"
+msgid "admin_menu_menuacl"
 msgstr "Zugriffsrechte"
 
-msgid "admin_menu_2_description"
+msgid "admin_menu_menuacl_description"
 msgstr "Verwaltung der ACL-Regeln"
 
-msgid "admin_menu_2_1"
+msgid "admin_menu_acls"
 msgstr "ACL Editor"
 
-msgid "admin_menu_3"
+msgid "admin_menu_menudata"
 msgstr "Datentypen"
 
-msgid "admin_menu_3_description"
+msgid "admin_menu_menudata_description"
 msgstr "Verwaltung der Metadatendefinitionen"
 
-msgid "admin_menu_3_1"
+msgid "admin_menu_metatype"
 msgstr "Metadatentypen"
 
-msgid "admin_menu_3_2"
+msgid "admin_menu_mapping"
 msgstr "Metadatenmapping"
 
-msgid "admin_menu_4"
+msgid "admin_menu_menuworkflow"
 msgstr "Workflows"
 
-msgid "admin_menu_4_description"
+msgid "admin_menu_menuworkflow_description"
 msgstr "Verwaltung der Workflows"
 
-msgid "admin_menu_4_1"
+msgid "admin_menu_workflows"
 msgstr "Workflow"
 
-msgid "admin_menu_5"
+msgid "admin_menu_menusystem"
 msgstr "System-Einstellungen"
 
-msgid "admin_menu_5_description"
+msgid "admin_menu_menusystem_description"
 msgstr "Verwaltung der Systemeinstellungen"
 
-msgid "admin_menu_5_1"
+msgid "admin_menu_logfile"
 msgstr "Log-Dateien"
 
-msgid "admin_menu_5_2"
+msgid "admin_menu_flush"
 msgstr "Caches"
 
-msgid "admin_menu_5_3"
+msgid "admin_menu_settings"
 msgstr "Mediatum Konfiguration"
 
 msgid "admin_submenu"
@@ -772,6 +785,9 @@ msgstr "Bemerkung"
 
 msgid "admin_user_organisation"
 msgstr "Organisation"
+
+msgid "admin_user_create_acl"
+msgstr "ACL Regel anlegen / modifizieren"
 
 ### acl ###
 msgid "admin_acl_existing"
@@ -1690,6 +1706,9 @@ msgstr "Betriebssystem:"
 msgid "admin_settings_config"
 msgstr "Mediatum Konfiguration:"
 
+msgid "admin_settings_nomodule"
+msgstr "Modul nicht installiert."
+
 msgid "admin_settings_mediatum_version"
 msgstr "Mediatum Version:"
 
@@ -1822,6 +1841,66 @@ msgstr "davon Status 2 (über Periode)"
 msgid "admin_settings_archive_state3"
 msgstr "davon Status 3 (anstehend zum Zurückschreiben)"
 
+msgid "admin_settings_adminmodules_header"
+msgstr "Admin-Menü"
+
+msgid "admin_settings_adminmodules_title"
+msgstr "Administrations-Menüstruktur"
+
+msgid "admin_settings_adminmodules_name"
+msgstr "Modulname"
+
+msgid "admin_settings_adminmodules_view"
+msgstr "Ein/Ausblenden"
+
+msgid "admin_modules_adminmodules_move"
+msgstr "Verschieben"
+
+msgid "admin_modules_adminmodules_std"
+msgstr "Standardmodul"
+
+msgid "admin_modules_adminmodules_showtitle"
+msgstr "Modul einblenden"
+
+msgid "admin_modules_adminmodules_hidetitle"
+msgstr "Modul ausblenden"
+
+msgid "admin_settings_adminmodules_reset"
+msgstr "Menü zurücksetzen"
+
+msgid "admin_settings_editmodules_header"
+msgstr "Edit-Menü"
+
+msgid "admin_settings_editmodule_selecttype"
+msgstr "Datentyp wählen:"
+
+msgid "admin_settings_editmenu_selectmodule"
+msgstr "Menü auswählen"
+
+msgid "admin_settings_editmenu_typeheader"
+msgstr "Edit-Menü für Datentyp:"
+
+msgid "admin_settings_editmodules_reset"
+msgstr "Menü zurücksetzen"
+
+msgid "admin_settings_editmodules_name"
+msgstr "Modulname"
+
+msgid "admin_settings_editmodules_view"
+msgstr "Ein/Ausblenden"
+
+msgid "admin_modules_editmodules_move"
+msgstr "Verschieben"
+
+msgid "admin_modules_editmodules_showtitle"
+msgstr "Modul einblenden"
+
+msgid "admin_modules_editmodules_hidetitle"
+msgstr "Modul ausblenden"
+
+msgid "admin_modules_editmodules_system"
+msgstr "Systemmodul"
+
 ### workflows ###
 msgid "wf_edit_header"
 msgstr "Workflows, die von Ihnen bearbeitet werden können"
@@ -1932,8 +2011,15 @@ msgid "workflow_step_ready_msg"
 msgstr "Das Objekt ${name} ist am Ende des Workflows angekommen."
 
 ### shoppingbag popup ###
+msgid "shoppingbag_object_added"
+msgstr "Objekt wurde zur Merkliste hinzugefügt."
+
+msgid "shoppingbag_object_still_added"
+msgstr "Objekt befindet dich bereit in der Merkliste."
+
 msgid "popup_shoppinbag_msg1"
 msgstr "Bilder k&ouml;nnen per Drag&Drop in eine Anwendung (z.B. Powerpoint) durch Ziehen exportiert werden:"
+
 
 msgid "popup_shoppingbag_msg2"
 msgstr "Dokumente können direkt geöffnet werden:"
@@ -1961,6 +2047,9 @@ msgid "popup_help_title"
 msgstr "Hilfe zum Metadatenfeld "${name}""
 
 ### edit area ###
+msgid "edit_module_error"
+msgstr "Das Modul '${name}' konnte nicht geladen werden."
+
 msgid "edit_error_msg"
 msgstr "Sie besitzen nicht die notwendigen Rechte, um den Editorbereich zu betreten.<br/> Falls Sie nicht angemeldet sein sollten, können Sie das ${link}"
 
@@ -2004,7 +2093,7 @@ msgid "edit_ok"
 msgstr "OK"
 
 msgid "edit_error_msg1"
-msgstr "Ordner konnte nicht erstellt werden: Der Üergeordnete Ordner ist schreibgeschützt."
+msgstr "Ordner konnte nicht erstellt werden: Der übergeordnete Ordner ist schreibgeschützt."
 
 msgid "edit_action_msg"
 msgstr "Die Aktion ${action} wird ausgeführt"
@@ -2085,7 +2174,7 @@ msgid "edit_localread"
 msgstr "Localread-Flag"
 
 ### edit tabs ###
-msgid "tab_layout"
+msgid "tab_menulayout"
 msgstr "Aussehen"
 
 msgid "tab_metadata"
@@ -2094,10 +2183,10 @@ msgstr "Daten"
 msgid "tab_metadata_col"
 msgstr "Konfiguration"
 
-msgid "tab_operation"
+msgid "tab_menuoperation"
 msgstr "Spezialfunktionen"
 
-msgid "tab_security"
+msgid "tab_menusecurity"
 msgstr "Berechtigungen"
 
 msgid "tab_upload"
@@ -2125,6 +2214,9 @@ msgid "tab_upload_title"
 msgstr "Upload-Bereich anzeigen"
 
 msgid "tab_metadata"
+msgstr "Metadaten editieren"
+
+msgid "tab_menumetadata"
 msgstr "Metadaten editieren"
 
 msgid "tab_meta_title"
@@ -2164,7 +2256,7 @@ msgid "tab_license_title"
 msgstr "Lizensierungsliste anzeigen"
 
 msgid "tab_files"
-msgstr "Technische Metadaten"
+msgstr "digitale Objekte austauschen/hinzufügen"
 
 msgid "tab_files_title"
 msgstr "Technische Metadaten anzeigen"
@@ -2190,12 +2282,23 @@ msgstr "Einordnen in Browsingstruktur"
 msgid "tab_classes_title"
 msgstr "Klassifizierung anzeigen"
 
-msgid "tab_classes_header"
+msgid "tab_menuclasses"
 msgstr "Klassifikation"
 
 msgid "tab_admin"
 msgstr "Administration"
 
+msgid "tab_imports"
+msgstr "Systemmodul Upload"
+
+msgid "tab_publish"
+msgstr "Systemmodul Publizieren"
+
+msgid "tab_statsaccess"
+msgstr "Zugriffsstatistiken"
+
+msgid "tab_statsfiles"
+msgstr "Datenstatistiken"
 
 ### edit acls ###
 msgid "edit_acls_righttype_read"
@@ -2468,7 +2571,6 @@ msgstr "Diese Datei war keinem Verzeichnis mehr zugeordnet."
 msgid "no_file_transferred"
 msgstr "Es wurde keine Datei auf den Server &uuml;bertragen."
 
-# new 14-05-2007
 msgid "edit_create_new_folder"
 msgstr "Ordner konnte nicht erstellt werden: Der Übergeordnete Ordner ist schreibgeschützt."
 
@@ -2772,6 +2874,99 @@ msgstr "OK"
 
 msgid "edit_publish_cancel"
 msgstr "Abbrechen"
+
+msgid "edit_stats_period_header"
+msgstr "Berichtszeitraum"
+
+msgid "edit_stats_noaccess"
+msgstr "Im aktuell gewählten Berichtszeitraum erfolgten keine Zugriffe."
+
+msgid "edit_stats_stand"
+msgstr "Stand"
+
+msgid "edit_stats_access"
+msgstr "Zugriffe"
+
+msgid "edit_stats_spreading"
+msgstr "Verteilung nach Datum"
+
+msgid "edit_stats_spreading_day"
+msgstr "Verteilung nach Wochentag"
+
+msgid "edit_stats_spreading_time"
+msgstr "Verteilung nach Uhrzeit"
+
+msgid "edit_stats_topten"
+msgstr "TOP 10"
+
+msgid "edit_stats_showall"
+msgstr "alle anzeigen..."
+
+msgid "edit_stats_showtopten"
+msgstr "TOP 10 anzeigen..."
+
+msgid "edit_stats_node"
+msgstr "Knoten"
+
+msgid "edit_stats_all"
+msgstr "Alle"
+
+msgid "edit_stats_day"
+msgstr "Tag"
+
+msgid "edit_stats_weekday"
+msgstr "Wochentag"
+
+msgid "edit_stats_diffusers"
+msgstr "unterschiedliche<br/>Besucher"
+
+msgid "edit_stats_pages"
+msgstr "Seiten"
+
+msgid "edit_stats_daytime"
+msgstr "Uhrzeit"
+
+msgid "edit_stats_popuptitle"
+msgstr "Statistik-Aktion"
+
+msgid "edit_stats_popupheader"
+msgstr "Statistik erneuern für aktuellen Knoten"
+
+msgid "edit_stats_popupupdatebutton"
+msgstr "Statistik aktualisieren"
+
+msgid "edit_stats_popuperror"
+msgstr "Daten können nicht aktualisiert werden, da bereits ein Update läuft.<br/>Versuchen Sie es später erneut."
+
+msgid "edit_stats_popup_close"
+msgstr "Fenster schließen"
+
+msgid "edit_stats_popupfooter"
+msgstr "Schließen Sie dieses Fenster erst, wenn Sie dazu aufgefordert werden."
+
+msgid "edit_stats_popupdone"
+msgstr "Die Daten wurden aktualisiert<br/>Sie können das Fenster jetzt schließen."
+
+msgid "edit_stats_sum"
+msgstr "Zugriffe insgesamt"
+
+msgid "edit_stats_details"
+msgstr "details..."
+
+msgid "edit_stats_schema"
+msgstr "Metadatenschemata"
+
+msgid "edit_stats_updatebutton"
+msgstr "Statistik aktualisieren"
+
+msgid "edit_stats_allobjlabel"
+msgstr "Objekte gesamt"
+
+msgid "edit_stats_digobjlabel"
+msgstr "Objekte mit Digitalisat"
+
+msgid "edit_stats_schema"
+msgstr "Metadatenschemata"
 
 # mask editor #
 msgid "mask_editor_title"
@@ -3255,3 +3450,81 @@ msgstr "alle anzeigen"
 
 msgid "show_pages"
 msgstr "seitenweise anzeigen"
+
+msgid "monthname_1_short"
+msgstr "Jan"
+
+msgid "monthname_2_short"
+msgstr "Feb"
+
+msgid "monthname_3_short"
+msgstr "Mär"
+
+msgid "monthname_4_short"
+msgstr "Apr"
+
+msgid "monthname_5_short"
+msgstr "Mai"
+
+msgid "monthname_6_short"
+msgstr "Jun"
+
+msgid "monthname_7_short"
+msgstr "Jul"
+
+msgid "monthname_8_short"
+msgstr "Aug"
+
+msgid "monthname_9_short"
+msgstr "Sep"
+
+msgid "monthname_10_short"
+msgstr "Okt"
+
+msgid "monthname_11_short"
+msgstr "Nov"
+
+msgid "monthname_12_short"
+msgstr "Dez"
+
+msgid "dayname_0_short"
+msgstr "Mo"
+
+msgid "dayname_1_short"
+msgstr "Di"
+
+msgid "dayname_2_short"
+msgstr "Mi"
+
+msgid "dayname_3_short"
+msgstr "Do"
+
+msgid "dayname_4_short"
+msgstr "Fr"
+
+msgid "dayname_5_short"
+msgstr "Sa"
+
+msgid "dayname_6_short"
+msgstr "So"
+
+msgid "dayname_0_long"
+msgstr "Montag"
+
+msgid "dayname_1_long"
+msgstr "Dienstag"
+
+msgid "dayname_2_long"
+msgstr "Mittwoch"
+
+msgid "dayname_3_long"
+msgstr "Donnerstag"
+
+msgid "dayname_4_long"
+msgstr "Freitag"
+
+msgid "dayname_5_long"
+msgstr "Samstag"
+
+msgid "dayname_6_long"
+msgstr "Sonntag"

@@ -45,10 +45,10 @@ msgstr "mediaTUM - digital collection management at TUM"
 msgid "bib_link_title"
 msgstr "to the library portal"
 
-msgid "header_shoopingbag_alt"
+msgid "header_shoppingbag_alt"
 msgstr "List of favourites"
 
-msgid "header_shoopingbag_title"
+msgid "header_shoppingbag_title"
 msgstr "List of favourites"
 
 msgid "sub_header_user"
@@ -89,6 +89,9 @@ msgstr "Passwords don't match"
 
 msgid "login_change_err_3"
 msgstr "The user account possesses still the standard password. please change to prevent misuse."
+
+msgid "login_change_err_4"
+msgstr "You are not allowed to change password of current user."
 
 msgid "login_act_pwd:"
 msgstr "current password:"
@@ -181,6 +184,9 @@ msgstr "Edit"
 msgid "sub_header_inquest_title"
 msgstr "Switch to search area"
 
+msgid "sub_header_frontend_title"
+msgstr "Switch to search area"
+
 msgid "sub_header_inquest"
 msgstr "Search"
 
@@ -204,6 +210,12 @@ msgstr "Search"
 
 msgid "xsearch"
 msgstr "Advanced search"
+
+msgid "xsearch2"
+msgstr "Less Searchfields"
+
+msgid "search_extendedsuper"
+msgstr "More Searchfields"
 
 msgid "all_metafields"
 msgstr "all metadata"
@@ -393,67 +405,67 @@ msgstr "open attachment browser..."
 msgid "admin_print_title"
 msgstr "print current page"
 
-msgid "admin_menu_0"
+msgid "admin_menu_menumain"
 msgstr "Main Menu"
 
-msgid "admin_menu_0_1"
+msgid "admin_menu_start"
 msgstr "Start"
 
-msgid "admin_menu_1"
+msgid "admin_menu_menuuser"
 msgstr "User administration"
 
-msgid "admin_menu_1_description"
+msgid "admin_menu_menuuser_description"
 msgstr "Maintenance of Usergroups and Users"
 
-msgid "admin_menu_1_1"
+msgid "admin_menu_usergroup"
 msgstr "Usergroups"
 
-msgid "admin_menu_1_2"
+msgid "admin_menu_user"
 msgstr "Users"
 
-msgid "admin_menu_2"
+msgid "admin_menu_menuacl"
 msgstr "Access Rights"
 
-msgid "admin_menu_2_description"
+msgid "admin_menu_menuacl_description"
 msgstr "Maintenance of ACL-rules"
 
-msgid "admin_menu_2_1"
+msgid "admin_menu_acls"
 msgstr "ACL editor"
 
-msgid "admin_menu_3"
+msgid "admin_menu_menudata"
 msgstr "Datatypes"
 
-msgid "admin_menu_3_description"
+msgid "admin_menu_menudata_description"
 msgstr "Maintenance Datatypes"
 
-msgid "admin_menu_3_1"
+msgid "admin_menu_metatype"
 msgstr "Types of Metadata"
 
-msgid "admin_menu_3_2"
+msgid "admin_menu_mapping"
 msgstr "Mapping of Metadata"
 
-msgid "admin_menu_4"
+msgid "admin_menu_menuworkflow"
 msgstr "Workflows"
 
-msgid "admin_menu_4_description"
+msgid "admin_menu_menuworkflow_description"
 msgstr "Maintenance of Workflows"
 
-msgid "admin_menu_4_1"
+msgid "admin_menu_workflows"
 msgstr "Workflow"
 
-msgid "admin_menu_5"
+msgid "admin_menu_menusystem"
 msgstr "System"
 
-msgid "admin_menu_5_description"
+msgid "admin_menu_menusystem_description"
 msgstr "Maintenance of System Options"
 
-msgid "admin_menu_5_1"
+msgid "admin_menu_logfile"
 msgstr "Log Files"
 
-msgid "admin_menu_5_2"
+msgid "admin_menu_flush"
 msgstr "Caches"
 
-msgid "admin_menu_5_3"
+msgid "admin_menu_settings"
 msgstr "mediatum configuration"
 
 msgid "admin_submenu"
@@ -766,6 +778,9 @@ msgstr "Comment"
 
 msgid "admin_user_organisation"
 msgstr "Organisation"
+
+msgid "admin_user_create_acl"
+msgstr "Create/Update ACL rule"
 
 ### acl ###
 msgid "admin_acl_existing"
@@ -1684,6 +1699,9 @@ msgstr "OS:"
 msgid "admin_settings_config"
 msgstr "Mediatum Configuration:"
 
+msgid "admin_settings_nomodule"
+msgstr "Module not installed."
+
 msgid "admin_settings_mediatum_version"
 msgstr "Mediatum Version:"
 
@@ -1816,6 +1834,35 @@ msgstr "state 2 (period reached)"
 msgid "admin_settings_archive_state3"
 msgstr "state 3 (write back to archive)"
 
+msgid "admin_settings_adminmodules_header"
+msgstr "Admin Menu"
+
+msgid "admin_settings_adminmodules_title"
+msgstr "Administration Menu Structure"
+
+msgid "admin_settings_adminmodules_name"
+msgstr "Module Name"
+
+msgid "admin_settings_adminmodules_view"
+msgstr "Show/Hide"
+
+msgid "admin_modules_adminmodules_move"
+msgstr "Move"
+
+msgid "admin_modules_adminmodules_std"
+msgstr "Std. Module"
+
+msgid "admin_modules_adminmodules_showtitle"
+msgstr "Show Module"
+
+msgid "admin_modules_adminmodules_hidetitle"
+msgstr "Hide Module"
+
+msgid "admin_settings_adminmodules_reset"
+msgstr "Reset Menu Structure"
+
+msgid "admin_modules_editmodules_system"
+msgstr "System Type"
 
 ### workflows ###
 msgid "wf_edit_header"
@@ -1927,6 +1974,12 @@ msgid "workflow_step_ready_msg"
 msgstr "Objekt ${name} has reached the end of the current workflow."
 
 ### shoppingbag popup ###
+msgid "shoppingbag_object_added"
+msgstr "Object added to favourites."
+
+msgid "shoppingbag_object_still_added"
+msgstr "Object was in favourites."
+
 msgid "popup_shoppinbag_msg1"
 msgstr "Pictures can be exported via Drag&Drop into most applications (e.g. Powerpoint):"
 
@@ -1956,6 +2009,9 @@ msgid "popup_help_title"
 msgstr "Help for metadata field "${name}""
 
 ### edit area ###
+msgid "edit_module_error"
+msgstr "Module '${name}' couldn't be loaded."
+
 msgid "edit_error_msg"
 msgstr "You're not allowed to access the editor area.<br/> You can logon here: ${link}"
 
@@ -2074,7 +2130,7 @@ msgid "edit_action_file_publish"
 msgstr "Publish"
 
 ### edit tabs ###
-msgid "tab_layout"
+msgid "tab_menulayout"
 msgstr "Layout"
 
 msgid "tab_metadata_col"
@@ -2083,17 +2139,20 @@ msgstr "Configuration"
 msgid "tab_metadata"
 msgstr "Edit metadata"
 
-msgid "tab_operation"
+msgid "tab_menumetadata"
+msgstr "Edit metadata"
+
+msgid "tab_menuoperation"
 msgstr "Special-functions"
 
-msgid "tab_security"
+msgid "tab_menusecurity"
 msgstr "Rights"
 
 msgid "tab_metadata_dir"
 msgstr "Edit metadata"
 
 msgid "tab_files"
-msgstr "Technical metadata"
+msgstr "Change/add digital object"
 
 msgid "tab_editor"
 msgstr "Edit start page"
@@ -2191,11 +2250,23 @@ msgstr "Place in Browsing Structure"
 msgid "tab_classes_title"
 msgstr "Show Classification"
 
-msgid "tab_classes_header"
-msgstr "Classification"
+msgid "tab_menuclasses"
+msgstr Classification"
 
 msgid "tab_admin"
 msgstr "Administration"
+
+msgid "tab_statsaccess"
+msgstr "User-Statistics"
+
+msgid "tab_statsfiles"
+msgstr "File-Statistics"
+
+msgid "tab_imports"
+msgstr "System module Upload"
+
+msgid "tab_publish"
+msgstr "System module Publish"
 
 ### edit acls ###
 msgid "edit_acls_righttype_read"
@@ -2774,6 +2845,99 @@ msgstr "OK"
 msgid "edit_publish_cancel"
 msgstr "Cancel"
 
+msgid "edit_stats_period_header"
+msgstr "Report Period"
+
+msgid "edit_stats_noaccess"
+msgstr "No user access in chosen report period."
+
+msgid "edit_stats_stand"
+msgstr "stand"
+
+msgid "edit_stats_access"
+msgstr "Access"
+
+msgid "edit_stats_spreading"
+msgstr "Access spreading (date)"
+
+msgid "edit_stats_spreading_day"
+msgstr "Access spreading (weekday)"
+
+msgid "edit_stats_spreading_time"
+msgstr "Access spreading (time)"
+
+msgid "edit_stats_topten"
+msgstr "TOP 10"
+
+msgid "edit_stats_showall"
+msgstr "show all..."
+
+msgid "edit_stats_showtopten"
+msgstr "show TOP 10..."
+
+msgid "edit_stats_node"
+msgstr "Nodes"
+
+msgid "edit_stats_all"
+msgstr "All"
+
+msgid "edit_stats_day"
+msgstr "Day"
+
+msgid "edit_stats_weekday"
+msgstr "Weekday"
+
+msgid "edit_stats_diffusers"
+msgstr "Different<br/>Users"
+
+msgid "edit_stats_pages"
+msgstr "Pages"
+
+msgid "edit_stats_daytime"
+msgstr "Time"
+
+msgid "edit_stats_popuptitle"
+msgstr "Statistics action"
+
+msgid "edit_stats_popupheader"
+msgstr "Refresh statistics for current node"
+
+msgid "edit_stats_popupupdatebutton"
+msgstr "refresh statistics"
+
+msgid "edit_stats_popuperror"
+msgstr "Data cannot be refreshed, since an update is running.<br/>Try it again later."
+
+msgid "edit_stats_popup_close"
+msgstr "close window"
+
+msgid "edit_stats_popupfooter"
+msgstr "Close this window only if requested."
+
+msgid "edit_stats_popupdone"
+msgstr "Statisics data were updated.<br/>You can close this window now."
+
+msgid "edit_stats_sum"
+msgstr "Access (total)"
+
+msgid "edit_stats_details"
+msgstr "details..."
+
+msgid "edit_stats_schema"
+msgstr "Types of Metadata"
+
+msgid "edit_stats_updatebutton"
+msgstr "Update Statistics"
+
+msgid "edit_stats_allobjlabel"
+msgstr "Items (sum)"
+
+msgid "edit_stats_digobjlabel"
+msgstr "Items (digital)"
+
+msgid "edit_stats_schema"
+msgstr "Types of Metadata"
+
 # mask editor #
 msgid "mask_editor_title"
 msgstr "Mask editor"
@@ -3208,3 +3372,81 @@ msgstr "show all"
 
 msgid "show_pages"
 msgstr "pages"
+
+msgid "monthname_1_short"
+msgstr "Jan"
+
+msgid "monthname_2_short"
+msgstr "Feb"
+
+msgid "monthname_3_short"
+msgstr "Mar"
+
+msgid "monthname_4_short"
+msgstr "Apr"
+
+msgid "monthname_5_short"
+msgstr "May"
+
+msgid "monthname_6_short"
+msgstr "Jun"
+
+msgid "monthname_7_short"
+msgstr "Jul"
+
+msgid "monthname_8_short"
+msgstr "Aug"
+
+msgid "monthname_9_short"
+msgstr "Sep"
+
+msgid "monthname_10_short"
+msgstr "Oct"
+
+msgid "monthname_11_short"
+msgstr "Nov"
+
+msgid "monthname_12_short"
+msgstr "Dec"
+
+msgid "dayname_0_short"
+msgstr "Mo"
+
+msgid "dayname_1_short"
+msgstr "Tu"
+
+msgid "dayname_2_short"
+msgstr "We"
+
+msgid "dayname_3_short"
+msgstr "Th"
+
+msgid "dayname_4_short"
+msgstr "Fr"
+
+msgid "dayname_5_short"
+msgstr "Sa"
+
+msgid "dayname_6_short"
+msgstr "Su"
+
+msgid "dayname_0_long"
+msgstr "Monday"
+
+msgid "dayname_1_long"
+msgstr "Tuesday"
+
+msgid "dayname_2_long"
+msgstr "Wednesday"
+
+msgid "dayname_3_long"
+msgstr "Thursday"
+
+msgid "dayname_4_long"
+msgstr "Friday"
+
+msgid "dayname_5_long"
+msgstr "Saturday"
+
+msgid "dayname_6_long"
+msgstr "Sunday"

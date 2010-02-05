@@ -29,9 +29,14 @@ import logging
 import sys
 import os
 
-from utils.utils import splitfilename
-from utils.dicts import SortedDict
 from subprocess import Popen, PIPE, call
+
+class PDFException(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
+    
 
 class EncryptedException:
     pass
@@ -114,6 +119,7 @@ def parsePDF2(filename, tempdir):
     elif retcode==1: # normal run
         pass
 
+        
 """  create preview image for given pdf """
 def makeThumbs(src, thumb128, thumb300):
     pic = Image.open(src)
@@ -140,11 +146,10 @@ def makeThumbs(src, thumb128, thumb300):
     draw = ImageDraw.ImageDraw(im)
     draw.line([(0,0),(127,0),(127,127),(0,127),(0,0)], (128,128,128))
     im.save(thumb128,"jpeg")
-    
-    
-if __name__ == "__main__":
-    import sys
 
+    
+if __name__=="__main__":
+    import sys
     try:
         import signal
         signal.alarm(600) # try processing the file for 10 minutes - then abort
@@ -153,6 +158,5 @@ if __name__ == "__main__":
     try:
         parsePDF(sys.argv[1], sys.argv[2])
 
-    except EncryptedException:
+    except PDFException, e:
         sys.exit(111)
-

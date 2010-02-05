@@ -26,8 +26,6 @@ import core.athana as athana
 import core.config as config
 import default
 from core.translation import t, lang
-from utils.utils import Menu
-
 
 
 SRC_PATTERN = re.compile('src="([^":/]*)"')
@@ -75,32 +73,30 @@ class Directory(default.Default):
     
     def getStartpageDict(node):
         d = {}
-
         descriptor = node.get('startpage.selector')
         for x in descriptor.split(';'):
             if x:
                 key, value = x.split(':')
-                d[key]=value
+                d[key] = value
 
         return d
 
     def getStartpageFileNode(node, language, verbose=False):
         res = None
-
         basedir = config.get("paths.datadir")
-
         d = node.getStartpageDict()
+        
         if d and (language in d.keys()):
             shortpath_dict = d[language]
             if shortpath_dict:
                 for f in node.getFiles():
                     shortpath_file = f.retrieveFile().replace(basedir, "")
-                    if shortpath_dict == shortpath_file:
+                    if shortpath_dict==shortpath_file:
                         res = f
         if not d:
             for f in node.getFiles():
                 shortpath_file = f.retrieveFile().replace(basedir, "")
-                if f.getType() == 'content' and f.mimetype == 'text/html':
+                if f.getType()=='content' and f.mimetype=='text/html':
                     res = f
 
         if verbose:
@@ -108,7 +104,7 @@ class Directory(default.Default):
                 print "getStartpageFileNode(%s, %s) is returning a FileNode: %s" % (node.id, language, str([res.retrieveFile(), res.getType(), res.mimetype]))
             else:
                 print "getStartpageFileNode(%s, %s) is NOT returning a FileNode: %s" % (node.id, language, str(res))
-
+        
         return res
 
     """ format big view with standard template """
@@ -132,6 +128,9 @@ class Directory(default.Default):
      
     def isContainer(node):
         return 1
+        
+    def getSysFiles(node):
+        return ["statistic", "image"]
     
     def getPossibleChildContainers():
         if self.type == "directory":
@@ -219,48 +218,16 @@ class Directory(default.Default):
 
         
     def getEditMenuTabs(node):
-        menu = list()
-        try:
-            submenu = Menu("tab_layout", "description","#", "../") #new
-            submenu.addItem("tab_content","tab_content")
-            submenu.addItem("tab_startpages","tab_startpages") # new 20090906 wn
-            # submenu.addItem("tab_editor","tab_editor")
-            submenu.addItem("tab_view","tab_view")
-            menu.append(submenu)
-            submenu = None
-            
-            if node.getContentType().startswith("directory"):
-                submenu = Menu("tab_metadata", "description","#", "../") # new
-                submenu.addItem("tab_metadata_dir","tab_metadata")
-            if node.getContentType() in ("collection", "collections"):
-                submenu = Menu("tab_metadata", "description","#", "../") # new
-                submenu.addItem("tab_metadata_col","tab_metadata")
-                submenu.addItem("tab_logo","tab_logo")
-            if submenu:
-                submenu.addItem("tab_files","tab_files")
-                submenu.addItem("tab_admin","tab_admin")
-            
-            if node.getContentType() in ("collection", "collections"):
-                submenu.addItem("tab_searchmask","tab_searchmask")
-                submenu.addItem("tab_sortfiles","tab_sortfiles")
-            if submenu:
-                menu.append(submenu)
-            
-            submenu = Menu("tab_security", "description","#", "../") # new
-            submenu.addItem("tab_acls","tab_acls")
-            menu.append(submenu)
-            
-            submenu = Menu("tab_operation", "description","#", "../") # new
-            submenu.addItem("tab_search","tab_search")
-            submenu.addItem("tab_subfolder","tab_subfolder")
-            submenu.addItem("tab_license","tab_license")
-            menu.append(submenu)
+        if node.getContentType() in ["collection", "collections"]:
+            return "menulayout(content;startpages;view);menumetadata(metadata;logo;files;admin;searchmask;sortfiles);menusecurity(acls);menuoperation(search;subfolder;license)"
+        
+        elif node.getContentType()=="directory":
+            return "menulayout(content;startpages;view);menumetadata(metadata;files;admin);menusecurity(acls);menuoperation(search;subfolder;license)"
 
-        except TypeError:
-            pass
-        return menu
+        else:
+            return "menulayout(content;startpages;view);menusecurity(acls);menuoperation(search;subfolder;license)"
         
     def getDefaultEditTab(node):
-        return "tab_content"
+        return "content"
     
 

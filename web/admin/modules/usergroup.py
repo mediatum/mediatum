@@ -23,19 +23,22 @@ import core.tree as tree
 import core.athana as athana
 import logging
 import core.usergroups as usergroups
+import core.config as config
 import re
 import os
 
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
-from core.usergroups import groupoption, loadGroupsFromDB, getGroup, existGroup, create_group, createAcRule, deleteGroup, getNumUsers
+from core.usergroups import groupoption, loadGroupsFromDB, getGroup, existGroup, create_group, updateAclRule, deleteGroup, getNumUsers
 from core.translation import t, lang
+from utils.utils import splitpath
 
+def getInformation():
+    return{"version":"1.0"}
 
 #
 # standard validator
 #
 def validate(req, op):
-    print req.params
     try:
         for key in req.params.keys():
             if key.startswith("new"):
@@ -65,14 +68,18 @@ def validate(req, op):
                     return editGroup_mask(req, "", 2) # group still existing
                 else:
                     if req.params.get("create_rule","")=="True":
-                        createAcRule(req.params.get("groupname",""))
+                        updateAclRule(req.params.get("groupname",""), req.params.get("groupname",""))
                     group = create_group(req.params.get("groupname",""), req.params.get("description",""), str(_option))
                     group.setHideEdit(req.params.get("leftmodule","").strip())
 
             elif req.params.get("form_op")=="save_edit":
                 # save changed values
-                groupname = req.params.get("groupname","")
-                group = getGroup(groupname)
+                groupname = req.params.get("groupname", "")
+                oldgroupname = req.params.get("oldgroupname", "")
+                group = getGroup(oldgroupname)
+                if oldgroupname!=groupname:
+                    updateAclRule(oldgroupname, groupname)
+                group.setName(groupname)
                 group.setDescription(req.params.get("description",""))
                 group.setOption(str(_option))
                 group.setHideEdit(req.params.get("leftmodule","").strip())
@@ -138,7 +145,8 @@ def view(req):
 #
 def editGroup_mask(req, id, err=0):
     global groupoption
-
+    
+    newusergroup = 0
     if err==0 and id=="":
         # new usergroup
         group = tree.Node("", type="usergroup")
@@ -169,29 +177,46 @@ def editGroup_mask(req, id, err=0):
     v["val_right"] = buildRawModuleRight(group, lang(req))
     v["emails"] = ', '.join([u.get('email') for u in group.getChildren()])
     v["actpage"] = req.params.get("actpage")
+    v["newusergroup"] = newusergroup
     return req.getTAL("/web/admin/modules/usergroup.html", v, macro="modify")
     
 
 def getEditModuleNames():
     ret = []
-    for root, dirs, files in os.walk('web/edit'):
-        for f in files:
-            if f.startswith("edit_") and f[-3:]==".py" and not f.startswith("edit_common"):
-                ret.append(f[5:-3])
+    path = os.walk(os.path.join(config.basedir, 'web/edit/modules'))
+    for root, dirs, files in path:
+        for name in [f for f in files if f.endswith(".py") and f!="__init__.py"]:
+            ret.append(name[:-3])
+         
+    # test for external modules by plugin
+    for k,v in config.getsubset("plugins").items():
+        path,module = splitpath(v)
+        try:
+            sys.path += [path+".editmodules"]
+            
+            for root, dirs, files in os.walk(os.path.join(config.basedir, v+"/editmodules")):
+                for name in [f for f in files if f.endswith(".py") and f!="__init__.py"]:
+                    ret.append(name[:-3])
+        except ImportError:
+            pass # no edit modules in plugin
     return ret
     
 def buildRawModuleLeft(group, language):
     ret = ""
     if group.getHideEdit()=="":
         return ret
-    for hide in group.getHideEdit().split(';'):
-        ret += '<option value="'+hide+'">'+t(language,'e_'+hide,)+'</option>'
+    hidelist = group.getHideEdit().split(';')
+    hidelist.sort(lambda x, y: cmp(t(language,'e_'+x), t(language,'e_'+y)))
+    for hide in hidelist:
+        ret += '<option value="%s">%s</option>' %(hide, t(language,'e_'+hide, ))
     return ret
     
 def buildRawModuleRight(group, language):
     ret = ""
     hide = group.getHideEdit().split(';')
-    for mod in getEditModuleNames():
+    modulenames = getEditModuleNames()
+    modulenames.sort(lambda x, y: cmp(t(language,'e_'+x).lower(), t(language,'e_'+y).lower()))
+    for mod in modulenames:
         if mod not in hide:
-            ret += '<option value="'+mod+'">'+t(language,'e_'+mod,)+'</option>'
+            ret += '<option value="%s">%s</option>' %(mod, t(language,'e_'+mod, ))
     return ret

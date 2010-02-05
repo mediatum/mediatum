@@ -106,13 +106,9 @@
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_usergroup_group">TEXT</tal:block>: <span class="required">*</span></td>
-                <td tal:condition="python:not group.getName()==''">
-                    <input tal:attributes="value python:group.getName()" type="hidden" name="groupname" maxlength="50" size="50"/>
-                    <span tal:content="python:group.getName()"/>
-                </td>
-
-                <td tal:condition="python:group.getName()==''">
-                    <input tal:attributes="value python:group.getName()" type="text" name="groupname" value="" maxlength="50" size="50"/>
+                <td>
+                    <input tal:attributes="value python:group.getName()" type="hidden" name="oldgroupname" maxlength="50" size="50"/>
+                    <input tal:attributes="value python:group.getName()" name="groupname" maxlength="50" size="50"/>
                 </td>
             </tr>
             <tr>
@@ -163,21 +159,15 @@
                             <span tal:content="python:option.getName()" i18n:translate=""/>
                             <br>
                         </tal:block>
+                        <tal:block tal:condition="python:newusergroup==1">
+                            <input type="checkbox" name="create_rule" value="True" checked="checked"/>
+                            <span i18n:translate="admin_usergroup_aclrule">TEXT</span>
+                        </tal:block>
+
+                        <input tal:condition="python:newusergroup==0" name="create_rule" value="true" type="hidden"/>
                     </fieldset>
                 </td>
             </tr>
-            <tal:block tal:condition="python:group.getName()==''">
-                <tr>
-                    <td colspan="2">&nbsp;</td>
-                </tr>
-                <tr>
-                    <td>&nbsp;</td>
-                    <td>
-                        <input type="checkbox" name="create_rule" value="True" checked="checked"/>
-                        <span i18n:translate="admin_usergroup_aclrule">TEXT</span>
-                    </td>
-                </tr>
-            </tal:block>
             <tr>
                 <td>&nbsp;</td>
                 <td><small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info">TEXT</span>)</small></td>

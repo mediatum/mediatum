@@ -57,7 +57,7 @@ class SearchResult:
 
     def html(self,req):
         if self.active<0:
-            if len(self.resultlist) ==0:
+            if len(self.resultlist)==0:
                 return req.getTAL("web/frontend/searchresult.html", {"query":self.query, "r":self, "collections":self.collections, "language":lang(req)}, macro="noresult")
             else:
                 if len(self.resultlist)==1:
@@ -134,6 +134,9 @@ def simple_search(req):
 # method handles all parts of the extended search
 def extended_search(req):
     from web.frontend.content import ContentList
+    max = 3
+    if req.params.get("searchmode")=="extendedsuper":
+        max = 10
     sfields=[]
     access = AccessData(req)
     metatype = None
@@ -149,7 +152,7 @@ def extended_search(req):
     q_str = ''
     q_user = ''
     first2 = 1
-    for i in range(1,3+1):       
+    for i in range(1,max+1):       
         f = req.params.get("field"+str(i),"").strip()
         q = req.params.get("query"+str(i),"").strip()
 

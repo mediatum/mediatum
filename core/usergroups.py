@@ -75,7 +75,11 @@ def existGroup(grp):
     except tree.NoSuchNodeError:
         return 0
 
-def createAcRule(name):
-    acl.addRule(acl.AccessRule(name, "( group "+name+" )", name))
-    
 
+def updateAclRule(oldname, newname):
+    newrule = acl.AccessRule(newname, "( group "+newname+" )", newname)
+    if (acl.existRule(oldname)):
+       acl.updateRule(newrule, oldname, newname, oldname)
+
+    else:
+       acl.addRule(newrule)

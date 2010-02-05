@@ -57,20 +57,40 @@ class m_field(Metatype):
             else:
                 ret += '<div class="editorrow">'
 
-        ret += label+description   
+        ret += label+description  
+        elementtype = element.get("type")
 
         val = nodes[0].get(element.getName())
+        for node in nodes:
+            elementname = node.get(element.getName())
+            if elementname=="" or (elementname== ";" and elementtype=="url"):
+                val = ""
+        valuelist = {}
+        
         lock = 0
-        for node in nodes[1:]:
-            if val!=node.get(element.getName()):
-                val = "? "
-                lock = 1
-                break
+        differentvalues = 0
+        containsemptystring = val == ""
+
+        for node in nodes:
+            newvalue = node.get(element.getName())
+            containsemptystring = containsemptystring or newvalue==""
+            if not valuelist.has_key(newvalue):
+                differentvalues += 1
+                valuelist[newvalue] = 1
+
+        if differentvalues==2 and containsemptystring:
+            for t in valuelist.keys():
+                if (t!="" and elementtype!="url") or (t!=";" and elementtype=="url"):
+                    val = t
+            lock = 1
+        elif differentvalues>=2:
+            val = "? "
+            lock = 1
         
         if val=="" and field.getDefault()!="":
            val = field.getDefault()
         
-        t = getMetadataType(element.get("type"))
+        t = getMetadataType(elementtype)
         
         if field.getUnit()!="":
             unit += field.getUnit()
@@ -94,7 +114,11 @@ class m_field(Metatype):
             if len(value.strip())>0:
                 value+= str(unit)
         else:
-            value = str(formatLongText(t.getFormatedValue(element, nodes[0], language)[1], element)) + str(unit)  
+            if field.getFormat()!="":
+                value = t.getFormatedValue(element, nodes[0], language)[1]
+                value = field.getFormat().replace("<value>",value) + str(unit)
+            else:
+                value = str(formatLongText(t.getFormatedValue(element, nodes[0], language)[1], element)) + str(unit)  
 
         label = '&nbsp;'
         if field.getLabel()!="":

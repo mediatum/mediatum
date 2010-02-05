@@ -51,7 +51,7 @@
                     <tr tal:define="cssclass python:masks.index(mask)%2 and 'norm' or 'silver'">
                         <td tal:attributes="class cssclass" tal:content="python:str(masks.index(mask)+1) +'.'"/>
                         <td tal:attributes="class cssclass" tal:content="python:mask.getName()"/>
-                        <td tal:attributes="class cssclass" tal:content="python:masktypes[mask.getMasktype()]" i18n:translate=""/>
+                        <td tal:attributes="class cssclass" tal:content="python:masktypes[mask.getMasktype()].getType()" i18n:translate=""/>
                         <td tal:attributes="class cssclass" tal:content="python:mask.getDescription()"/>
                         <td tal:attributes="class cssclass">&nbsp;&nbsp;
                             <img tal:condition="python:mask.getDefaultMask()" src="/img/haken.gif"/>
@@ -148,7 +148,7 @@
                 <td style="vertical-align:top"><tal:block i18n:translate="admin_mask_type">TEXT</tal:block>:</td>
                 <td>
                     <select name="mtype" style="width:200px" onchange="changetype(document, this)" onload="changetype(document)" id="mtype">
-                        <option tal:repeat="key python:masktypes.keys()" tal:attributes="value key; selected python:{'False':None,'True':'selected'}[str(mask.getMasktype()==str(key))]" tal:content="python:masktypes[key]" i18n:translate=""/>
+                        <option tal:repeat="key python:masktypes.keys()" tal:attributes="value key; selected python:{'False':None,'True':'selected'}[str(mask.getMasktype()==str(key))]" tal:content="python:masktypes[key].getType()" i18n:translate=""/>
                     </select>
                  <td>
             </tr>
@@ -200,6 +200,12 @@
                 <td><input type="checkbox" name="mdefault" value="True" tal:attributes="checked python:{'False':None,'True':'checked'}[str(mask.getDefaultMask())]"/></td>
             </tr>
             <tr>
+                <td style="vertical-align:top"><tal:block i18n:translate="admin_mask_seperator">TEXT</tal:block>:</td>
+                <td>
+                    <!--<input tal:attributes="value python:mask.getSeperator()" type="text" style="width:300px" name="mseperator"/>-->
+                 <td>
+            </tr>
+            <tr>
                 <td><tal:block i18n:translate="admin_mask_language">TEXT</tal:block>:</td>
                 <td>
                     <select name="mlanguage" style="width:200px">
@@ -210,7 +216,6 @@
                     </select>
                 </td>
             </tr>
-            
             <tr>
                 <td><tal:block i18n:translate="admin_meta_rights">TEXT</tal:block>:</td>
                 <td>

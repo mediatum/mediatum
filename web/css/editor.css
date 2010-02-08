@@ -48,7 +48,7 @@ div.row {
     margin: 2px;
     width: 100%;
     white-space: nowrap;
-    cursor:hand;
+    cursor:pointer;
 }
 
 span.required {
@@ -158,6 +158,16 @@ p.error{
     margin-left: 20px;
     margin-right: 20px;
     vertical-align: middle;
+}
+
+p.error a{
+    color:black;
+    margin:0px;
+}
+
+p.error a:hover{
+    color:black;
+    text-decoration:underline;
 }
 
 

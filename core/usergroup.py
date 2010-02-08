@@ -73,3 +73,9 @@ class UserGroup(tree.Node):
         
     def setHideEdit(self, value):
         self.set("hideedit",value)
+     
+    def isSystemType(self):
+        return 1
+
+    def isContainer(self):
+        return 1

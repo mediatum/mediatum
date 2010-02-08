@@ -33,7 +33,7 @@ import core.xmlnode as xmlnode
 def display(req):
     content = getContentArea(req)
     content.feedback(req)
-
+    
     navframe = getNavigationFrame(req)
     navframe.feedback(req)
 
@@ -90,7 +90,7 @@ def show_parent_node(req):
 def esc(v):
     return v.replace("\\","\\\\").replace("'","\\'")
 
-def exportsearch(req, xml=0):
+def exportsearch(req, xml=0):  # format 0=pre-formated, 1=xml, 2=plain
     access = AccessData(req)
     access = core.acl.getRootAccess()
     
@@ -101,6 +101,7 @@ def exportsearch(req, xml=0):
     if xml:
         req.reply_headers['Content-Type'] = "text/xml; charset=utf-8"
         req.write('<?xml version="1.0" encoding="utf-8"?>')
+
     else:
         req.reply_headers['Content-Type'] = "text/plain; charset=utf-8"
 
@@ -122,7 +123,8 @@ def exportsearch(req, xml=0):
     if not q:
         nodes = access.filter(node.search("objtype=document"));
     else:
-        nodes = access.filter(node.search("objtype=document and "+q));
+        #nodes = access.filter(node.search("objtype=document and "+q));
+        nodes = access.filter(node.search(q));
 
     limit = int(req.params.get("limit", 99999))
     sortfield = req.params.get("sort", None)
@@ -133,7 +135,7 @@ def exportsearch(req, xml=0):
     if limit < len(nodes):
         nodes = nodes[0:limit]
 
-    if xml:
+    if xml: # xml
         req.write("<nodelist>")
         i = 0
         for node in nodes:
@@ -141,7 +143,8 @@ def exportsearch(req, xml=0):
             req.write(s)
             i = i+1
         req.write("</nodelist>")
-    elif req.params.get("data",None):
+
+    elif req.params.get("data", None):
         req.write('a=new Array(%d);' % len(nodes))
         i = 0
         for node in nodes:
@@ -161,10 +164,10 @@ def exportsearch(req, xml=0):
             req.write("a[%d]['link'] = 'http://%s?id=%s';\n" % (i, config.get('host.name'),node.id));
             i = i + 1
         req.write('add_data(a);\n')
-    print "%d node entries xml=%d" % (i,xml)
+    print "%d node entries xml=%d" % (i, xml)
        
 def xmlsearch(req):
-    return exportsearch(req,xml=1)
+    return exportsearch(req, xml=1)
 
 def jssearch(req):
-    return exportsearch(req,xml=0)
+    return exportsearch(req, xml=0)

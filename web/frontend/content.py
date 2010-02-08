@@ -27,6 +27,7 @@ from utils.utils import getCollection,Link,isCollection, getFormatedString
 from core.acl import AccessData
 from core.translation import lang,t
 from web.frontend.searchresult import simple_search, extended_search
+from core.styles import getContentStyles
 
 class Content:
     def feedback(self,req):
@@ -61,42 +62,9 @@ class SingleFile:
     def getShoppingBagLink(self):
         return 'shoppingBag(\''+str(self.node.id)+'\')'
     def getMetadata(self,seperator="."):
-        print "---hier---", seperator
         return self.node.show_node_text(seperator=seperator)
     def getLink(self):
         return '/node?id='+self.file.id
-
-class ContentListStyle:
-    def __init__(self, name, label, icon, template):
-        self.name = name
-        self.label = label
-        self.icon = icon
-        self.template = template
-
-    def getName(self):
-        return self.name
-    
-    def getLabel(self):
-        return self.label
-
-    def getIcon(self):
-        return self.icon
-
-    def getTemplate(self):
-        return self.template
-
-liststyles=[ContentListStyle("list","Listen-Ansicht","list.png","web/frontend/content_list.html"),
-            ContentListStyle("thumbnail","Thumbnail-Ansicht","thumb.png","web/frontend/content_thumb.html"),
-            ContentListStyle("text","Text-Ansicht","text.png","web/frontend/content_text.html"),
-           ]
-           #ContentListStyle("dummystyle","dummystyle","","")
-
-def getListStyle(name):
-    if name!="default":
-        for style in liststyles:
-            if style.getName()==name:
-                return style
-    return liststyles[0]
 
 SORT_FIELDS=2
 
@@ -115,11 +83,8 @@ class ContentList(Content):
         if self.sortfields[0]:
             self.files.sort(self.sortfields)
         
-        liststylename = self.collection.get("style")
-        if liststylename:
-            self.liststyle = getListStyle(liststylename)
-        else:
-            self.liststyle = getListStyle("default")
+        self.liststyle = getContentStyles("smallview", self.collection.get("style") or "default")    
+        
 
     def length(self):
         return self.num
@@ -184,7 +149,7 @@ class ContentList(Content):
         if "style" in req.params:
             newstyle = req.params.get("style")
             print "Overloading style display for collection",self.collection.id,"(set to",newstyle,")"
-            req.session["liststyle-"+self.collection.id] = getListStyle(newstyle)
+            req.session["liststyle-"+self.collection.id] = getContentStyles("smallview", newstyle)
 
         if self.content:
             return self.content.feedback(req)
@@ -247,9 +212,7 @@ class ContentList(Content):
         max = (len(self.files)+files_per_page-1)/files_per_page-1
         left = self.page - 6
         right = self.page + 6
-        
-        
-        
+ 
         if left < 0:
             left = 0
         if right > max or right >= max-2:
@@ -335,7 +298,7 @@ def getPaths(node, access):
 
 
 class ContentNode(Content):
-    def __init__(self,node,nr=0,num=0,words=None,collection=None):
+    def __init__(self, node, nr=0, num=0, words=None, collection=None):
         self.node = node
         self.id = node.id
         self.paths = []
@@ -355,7 +318,6 @@ class ContentNode(Content):
         if not self.node.isContainer():
             plist = getPaths(self.node, AccessData(req))
             paths = athana.getTAL("web/frontend/content_nav.html", {"paths": plist}, macro="paths", language=lang(req))
-        
         return getFormatedString(self.node.show_node_big(req)) + paths
 
 def fileIsNotEmpty(file):
@@ -375,8 +337,18 @@ def mkContentNode(req):
     if not access.hasReadAccess(node):
         return ContentError("Permission denied")
 
-    if node.type in ["directory","collection"]:
+    if node.type in ["directory", "collection"]:
         if "files" not in req.params:
+<<<<<<< content.py
+            for f in node.getFiles():
+                if f.type=="content" and f.mimetype=="text/html" and os.path.isfile(f.retrieveFile()) and fileIsNotEmpty(f.retrieveFile()):
+                    return ContentNode(node)
+
+        ids = access.filter(list(set(tree.getAllContainerChildrenAbs(node,[]))))
+        node.ccount = len(ids)
+        #ids = access.filter(node.getAllChildren())
+
+=======
 
             spn = node.getStartpageFileNode(lang(req))
             if spn:
@@ -388,6 +360,7 @@ def mkContentNode(req):
         for c in nodes:
             if c.type != "directory" and c.type != "collection":# and not c.type.startswith("directory"):
                 ids += [c.id]
+>>>>>>> 1.35
         c = ContentList(tree.NodeList(ids),getCollection(node))
         c.feedback(req)
         c.node = node
@@ -395,8 +368,7 @@ def mkContentNode(req):
     else:
         return ContentNode(node)
 
-
-
+        
 class ContentError(Content):
     def __init__(self,error):
         self.error = error
@@ -431,19 +403,12 @@ class ContentArea(Content):
         return path
 
     def feedback(self,req):
-
-        if "change_language" in req.params and "act_node" in req.params and req.params["act_node"].isdigit() and not "id" in req.params:
-            req.params["id"] = req.params["act_node"]
-
-        if "id" in req.params and not (hasattr(self.content,"in_list") and self.content.in_list(req.params["id"])):
-            if hasattr(self.content, "id2pos"):
-                print self.content.id2pos.keys()
+        if "id" in req.params and not "searchmode" in req.params and not (hasattr(self.content,"in_list") and self.content.in_list(req.params["id"])):
             self.content = mkContentNode(req)
-        elif req.params.get("searchmode","") == "simple" and req.params.get("submittype","") != "change":
-            self.content = simple_search(req)
-        elif req.params.get("searchmode","") == "extended" and req.params.get("submittype","") != "change":
-            # extended search
-            self.content = extended_search(req)
+        elif req.params.get("searchmode")=="simple" and req.params.get("submittype")!="change":
+            self.content = simple_search(req) # simple search
+        elif req.params.get("searchmode") in ["extended", "extendedsuper"] and req.params.get("submittype")!="change":
+            self.content = extended_search(req) # extended search
         else:
             newcontent = self.content.feedback(req)
             if newcontent:
@@ -455,6 +420,7 @@ class ContentArea(Content):
         if hasattr(self.content,"getParams"):
             self.params = '&'+self.content.getParams()
 
+    
     def actNode(self):
         try:
             if self.content.nr>=0 and len(self.content.files)>=self.content.nr:
@@ -469,7 +435,7 @@ class ContentArea(Content):
         styles = []
         nodeprint = "1" # show print icon
         if hasattr(self.content,"in_list") and not (hasattr(self.content,"content") and self.content.content):
-            styles = liststyles
+            styles = getContentStyles("smallview")# liststyles
         if "raw" in req.params:
             path = ""
         else:

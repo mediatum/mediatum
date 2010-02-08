@@ -339,7 +339,6 @@ def mkContentNode(req):
 
     if node.type in ["directory", "collection"]:
         if "files" not in req.params:
-<<<<<<< content.py
             for f in node.getFiles():
                 if f.type=="content" and f.mimetype=="text/html" and os.path.isfile(f.retrieveFile()) and fileIsNotEmpty(f.retrieveFile()):
                     return ContentNode(node)
@@ -348,19 +347,6 @@ def mkContentNode(req):
         node.ccount = len(ids)
         #ids = access.filter(node.getAllChildren())
 
-=======
-
-            spn = node.getStartpageFileNode(lang(req))
-            if spn:
-                return ContentNode(node)
-
-        access = AccessData(req)
-        ids = []
-        nodes = access.filter(node.getAllChildren())
-        for c in nodes:
-            if c.type != "directory" and c.type != "collection":# and not c.type.startswith("directory"):
-                ids += [c.id]
->>>>>>> 1.35
         c = ContentList(tree.NodeList(ids),getCollection(node))
         c.feedback(req)
         c.node = node

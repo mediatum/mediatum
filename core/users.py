@@ -20,7 +20,7 @@
 
 import core.config as config
 import usergroups
-import md5
+import hashlib
 import core.tree as tree
 import core.translation
 import random
@@ -29,10 +29,20 @@ import logging
 
 from utils.utils import Option
 
+OPTION_ENHANCED_READRIGHTS = Option("user_option_2", "editreadrights", "r", "img/changereadrights.png", "checkbox")
+#OPTION_MAX_IMAGESIZE = Option("user_option_3", "maximagesize", "0", "img/maximagesize.png", "text")
+
 useroption = []
-useroption += [Option("user_option_1", "editpwd", "c", "img/changepwd_opt.png")]
+useroption += [OPTION_ENHANCED_READRIGHTS]
+useroption += [Option("user_option_1", "editpwd", "c", "img/changepwd_opt.png", "checkbox")]
 
 authenticators = {}
+
+#Saves a hashtable for every user which holds if he has access on a specific node...
+useraccesstable = {}
+
+#Saves for each user which collection he prefers which search mode
+usercollectionsearchmode = {}
 
 def create_user(name, email, groups, pwd="", lastname="", firstname="", telephone="", comment="", option="", organisation="", type="intern"):    
     if not pwd:
@@ -44,7 +54,7 @@ def create_user(name, email, groups, pwd="", lastname="", firstname="", telephon
     
     user = tree.Node(name=name, type="user")
     user.set("email", email)
-    user.set("password", md5.md5(pwd).hexdigest())
+    user.set("password", hashlib.md5(pwd).hexdigest())
     user.set("opts", option)
     user.set("lastname", lastname)
     user.set("firstname", firstname)
@@ -59,10 +69,74 @@ def create_user(name, email, groups, pwd="", lastname="", firstname="", telephon
     users.addChild(user)
     return user
 
+# Methods for manipulation of access hashtable
+def getAccessTable(user):
+    if not useraccesstable.has_key(user.id):
+        useraccesstable[user.id] = {}
+    return useraccesstable[user.id]
+
+def clearAllTableAccess():
+    """ Clears the complete cache """
+    allkeys = useraccesstable.keys()
+    for k in allkeys:
+        useraccesstable[k].clear()
+
+        
+def clearTableAccess(user):
+    """Clears all entries from a hashtable"""
+    try:
+        getAccessTable(user).clear()
+    except:                         
+        sys.exc_info()[0]
+
+        
+def getCollectionSearchMode(user, collectionid):
+    """ Returns -1, is current user has no search mode specified for a collection"""
+    if (usercollectionsearchmode.has_key(user)):
+        if (usercollectionsearchmode[user].has_key(collectionid)):
+            return usercollectionsearchmode[user][collectionid]
+    return -1
+
+    
+def setCollectionSearchMode(user, collectionid, searchmode):
+    if (not usercollectionsearchmode.has_key(user)):
+        usercollectionsearchmode[user] = {}
+    usercollectionsearchmode[user][collectionid] = searchmode
+
+
+def setTableAccess(user, node, access):
+    """Sets the rights of a node"""
+    if node.type=="collections":
+        return
+    getAccessTable(user)[node.id] = access
+
+    
+def setTableAccessWithParents(user, node, access):
+    """Sets the rights of a node and its direct parents"""
+    setTableAccess(user, node, access)
+    for p in node.getParents():
+        if p.type != "collections":
+            setTableAccess(user, p, access)
+
+            
+def getTableAccess(user, node):
+    """Retrieves the access rights of a node. Returns 0, if there are either no rights available or the node has no rights"""
+    accesstable = getAccessTable(user)
+    if accesstable.has_key(node.id):
+        return accesstable[node.id]
+    return 0
+
+
+def hasTableAccess(user, node):
+    """Checks if the user has access on a specific node and if he is even allowed to use the hashtable """
+    return getAccessTable(user).has_key(node.id)
+# End of methods for access hashtable manipulation
+   
+    
 """ load all users from db """
 def loadUsersFromDB():
     users = tree.getRoot("users")
-    return users.getChildren()
+    return users.getChildren().sort(field="name")
     
 def getExternalUsers(type=""):
     if type=="":
@@ -96,16 +170,23 @@ def getUser(id):
     
     if id.isdigit():
         try:
-            return tree.getNode(id)
+            #return tree.getNode(id)
+            user = tree.getNode(id)
+            user.setUserType("intern")
+            return user
         except tree.NoSuchNodeError,e:
             return None
     else:
         try:
-            return users.getChild(id)
+            #return users.getChild(id)
+            user = users.getChild(id)
+            user.setUserType("intern")
+            return user
         except tree.NoSuchNodeError,e:
             for key in getExternalAuthentificators():
                 u = getExternalUser(id, type=key)
                 if u:
+                    u.setUserType(key)
                     return u
             return None
 
@@ -162,7 +243,7 @@ def checkLogin(name, pwd):
     user = getUser(name)
     digest1 = md5.md5(pwd).hexdigest()
 
-    if user and user.getUserType()=="":
+    if user and user.getUserType()=="intern":
         if digest1==user.getPassword():
             return user
         if config.get("user.masterpassword")!="" and name!="Administrator" and pwd==config.get("user.masterpassword"): # test masterpassword
@@ -224,7 +305,7 @@ def addUser(user):
     user.setGroups(tmp[:-1])
     conn.addUser(user)    
 
-#def update_user(name, email, groups, option, new_name=""):
+
 def update_user(id, name, email, groups, lastname="", firstname="", telephone="", comment="", option="", organisation="", type="intern"):
     if type=="intern":
         user = getUser(id)
@@ -250,6 +331,7 @@ def update_user(id, name, email, groups, lastname="", firstname="", telephone=""
             g.addChild(user)
     else:
         print "user not found"
+    return user
 
 """ delete user from db """
 def deleteUser(user, usertype="intern"):

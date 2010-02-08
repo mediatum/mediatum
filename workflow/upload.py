@@ -20,6 +20,7 @@
 import core.tree as tree
 from workflow import WorkflowStep
 import utils.fileutils as fileutils
+from utils.utils import OperationException
 from showdata import mkfilelist
 from core.translation import t,lang
 
@@ -39,12 +40,14 @@ class WorkflowStep_Upload(WorkflowStep):
             file = req.params["file"]
             del req.params["file"]
             if hasattr(file,"filename") and file.filename:
-                print "file.filename", file.filename
-                print "file.tempname", file.tempname
                 file = fileutils.importFile(file.filename,file.tempname)
                 node.addFile(file)
                 if hasattr(node,"event_files_changed"):
-                    node.event_files_changed()
+                    try:
+                        node.event_files_changed()
+                    except OperationException, ex:
+                        error = ex.value
+
         
         if "gotrue" in req.params:
             if hasattr(node,"event_files_changed"):

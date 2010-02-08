@@ -557,18 +557,14 @@ class Workflows(tree.Node):
 
     def isContainer(node):
         return 1
+        
+    def isSystemType(node):
+        return 1
 
     def getLabel(node):
         return node.name
 
-def mkKey():
-    alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-    s = ""
-    for i in range(0,16):
-        s += alphabet[random.randrange(0,len(alphabet)-1)]
-    return s
-
-
+        
 class Workflow(tree.Node):
     def show_node_big(node, req):
         access = acl.AccessData(req)
@@ -593,6 +589,10 @@ class Workflow(tree.Node):
     
     def isContainer(node):
         return 1
+        
+    def isSystemType(node):
+        return 1
+        
     def getLabel(node):
         return node.name
     
@@ -693,6 +693,9 @@ class WorkflowStep(tree.Node):
 
     def isContainer(self):
         # inhibit several content enrichment features
+        return 1
+    
+    def isSystemType(self):
         return 1
 
     def show_workflow_notexist(self, node, req):

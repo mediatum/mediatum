@@ -1,0 +1,386 @@
+#!/usr/bin/python
+"""
+ mediatum - a multimedia content repository
+
+ Copyright (C) 2009 Arne Seifert <seiferta@in.tum.de>
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+import os
+import re
+import xml.parsers.expat
+import core.config as config
+import core.tree as tree
+import calendar
+import logging
+
+from utils.date import parse_date, format_date, now, make_date
+from utils.utils import splitpath
+from utils.fileutils import importFile
+from lib.geoip.geoip import GeoIP
+
+class LogItem:
+
+    def __init__(self, data):
+        m = re.split(' INFO | - - \[| \] \"GET | HTTP/1.1\"', data)
+        self.date, self.time = m[0][:-4].split(" ")
+        self.ip = m[1]
+        self.url = m[-2]
+        self.data = data
+        self.id = 0
+        self.type = ""
+        #self.country = ""
+
+        if self.url.startswith("/fullsize"): # download
+            m = re.findall('/fullsize\?id=[0-9]*', self.url)
+            if len(m)==1:
+                self.id = m[0][13:]
+                self.type = "download"
+                
+        elif self.url.startswith("/edit"): # edit
+            m = re.findall('/edit.*[\?|\&]id=[0-9]*', self.url)
+            if len(m)==1:
+                m = re.findall('[\?|\&]id=[0-9]*', self.url)
+                if len(m)==1:
+                    self.id = m[0][4:]
+            self.type = "edit"
+        else: # frontend
+            m = re.findall('[\?|\&]id=[0-9]*', self.url)
+            if len(m)==1:
+                self.id = m[0][4:]
+                self.type = "frontend"
+
+        if self.id==0:
+            return None
+
+    def getDate(self):
+        return self.date
+
+    def getTime(self):
+        return self.time
+
+    def getTimestampShort(self):
+        return format_date(parse_date(str(self.getDate()), "yyyy-mm-dd"), "yyyy-mm")
+
+    def getUrl(self):
+        return self.url
+
+    def getID(self):
+        return self.id
+
+    def isFrontend(self):
+        if self.url.find("edit")<1:
+            return 1
+        return 0
+
+    def getType(self):
+        return self.type
+        
+    def getIp(self):
+        if " " in self.ip:
+            return "".join(self.ip.split(":")[:-1]).split(" ")[-1] 
+        else:
+            return "".join(self.ip.split(":")[:-1])
+        
+    #def getCountry(self):
+    #    return self.country
+        
+        
+class StatAccess:
+    def __init__(self):
+        self.date = ""
+        self.time = ""
+        self.ip = ""
+        self.id = ""
+        self.country = ""
+        
+    def getIp(self):
+        return "".join(self.ip.split(", ")[-1])
+        
+class StatisticFile:
+    def __init__(self, filenode):
+        self.items = []
+        self.created = None
+        self.access = None
+        self.currentnodeid = ""
+        
+        if filenode:
+            self.filenode = filenode
+            self.filename = splitpath(filenode.retrieveFile())[1]
+
+            self.period_year = int(self.filename.split("_")[2].split("-")[0])
+            self.period_month = int(self.filename.split("_")[2].split("-")[1])
+            self.type = self.filename.split("_")[3]
+
+            if os.path.exists(filenode.retrieveFile()):
+                fi = open(filenode.retrieveFile(), "r")
+                p = xml.parsers.expat.ParserCreate()
+                p.StartElementHandler = lambda name, attrs: self.xml_start_element(name, attrs)
+                p.EndElementHandler = lambda name: self.xml_end_element(name)
+                p.CharacterDataHandler = lambda d: self.xml_char_data(d)
+                p.ParseFile(fi)
+                fi.close()
+        
+    def getPeriodYear(self):
+        return self.period_year
+    
+    def getPeriodMonth(self):
+        return self.period_month
+        
+    def getCreationDate(self):
+        return self.created
+        
+    def getItems(self):
+        return self.items
+        
+    def getIDs(self):
+        ids = {}
+        ret = []
+        if len(self.items)==0:
+            ret.append((0,0))
+            return ret
+
+        for item in self.items:
+            if item.id not in ids:
+                ids[item.id] = 0
+            ids[item.id] += 1
+
+        for k in ids:
+            ret.append((k,ids[k]))
+        
+        ret.sort(lambda x,y: cmp(y[1], x[1]))
+        return ret
+        
+
+    # statistic for day
+    def getProgress(self, type=""):
+        items = {}
+        if len(self.items)==0:
+            items[0] = {"max":0, "max_p":0, "max_u":0}
+            return items
+        
+        # fill items in structure
+        if type=="":
+            for i in range(1, parse_date(self.items[0].date, "yyyy-mm-dd").maxMonthDay()+1):
+                items[i] = {"items":[]}
+                
+            for item in self.items:
+                day = parse_date(item.date, "yyyy-mm-dd").day
+                items[day]["items"].append(item)
+        
+        elif type=="day":
+            for i in range(0,8):
+                items[i] = {"items":[]}
+
+            for item in self.items:
+                weekday = parse_date(item.date, "yyyy-mm-dd").weekday()
+                items[weekday+1]["items"].append(item)
+        
+        elif type=="time":
+            for i in range(0,25):
+                items[i] = {"items":[]}
+ 
+            for item in self.items:
+                hour = parse_date(item.time, "HH:MM:SS").hour
+                items[hour+1]["items"].append(item)
+                
+        elif type=="country":
+            for item in self.items:
+                c = item.country
+                if c=="":
+                    c = "n.a."
+                if c not in items.keys():
+                    items[c] = {}
+                    items[c]["items"] = []
+                items[c]["items"].append(item)
+            
+            items[c]["items"].sort()
+
+        max = 0 # maximum of progress
+        max_p = 0 # maximum of pages
+        max_u = 0 # maximum users
+        for key in items:
+            ids = {}
+            ips = {}
+            if max<=len(items[key]["items"]):
+                max = len(items[key]["items"])
+                
+            for item in items[key]["items"]: # different pages
+                if item.id not in ids.keys():
+                    ids[item.id] = 0
+                ids[item.id] += 1
+            items[key]["different"] = ids
+            
+            if max_p<=len(ids):
+                max_p = len(ids)
+            
+            for item in items[key]["items"]: # different ips
+                if item.getIp() not in ips.keys():
+                    ips[item.getIp()] = 0
+                ips[item.getIp()] += 1
+            items[key]["ips"] = ips
+            
+            if len(ips)>max_u:
+                max_u = len(ips)
+            
+        items[0] = {"max":max, "max_p":max_p, "max_u":max_u} # deliver max-values on index 0
+        return items
+
+        
+    def getWeekDay(self, day):
+        dt = make_date(self.period_year, self.period_month, day)
+        return dt.weekday()  
+
+        
+    def xml_start_element(self, name, attrs):
+        if name=="nodelist":
+            if "created" in attrs.keys():
+                self.created = parse_date(attrs["created"], "yyyy-mm-dd HH:MM:SS")
+
+        elif name=="node":
+            if "id" in attrs.keys():
+                self.currentnodeid = attrs["id"].encode("utf-8")
+                    
+        elif name=="access":
+            self.access = StatAccess()
+            self.access.id = self.currentnodeid
+            
+            for key in attrs:
+                if key=="date":
+                    self.access.date = attrs[key].encode("utf-8")
+                elif key=="time":
+                    self.access.time = attrs[key].encode("utf-8")
+                elif key=="ip":
+                    self.access.ip = attrs[key].encode("utf-8")
+                elif key=="country":
+                    self.access.country = attrs[key].encode("utf-8")
+        
+    def xml_end_element(self, name):
+        if name=="access":
+            self.items.append(self.access)
+    
+    def xml_char_data(self, d):
+        pass
+                
+
+
+logdata = {}
+def readLogFiles():
+    global logdata
+    path = config.get("logging.file.everything")
+    files = []
+    files.append(path)
+
+    if len(logdata)!=0:
+        return logdata
+
+    for i in range(1, 21):
+        files.append(path+"."+str(i))
+
+    data = {}  # data [yyyy-mm][id][type]
+    for file in files:
+        if os.path.exists(file):
+            for line in open(file, "r"):
+                if "GET" in line and "id=" in line:
+                    info = LogItem(line)
+                    if not info or info.getID()=='':
+                        continue
+
+                    if info.getTimestampShort() not in data.keys():
+                        data[info.getTimestampShort()] = {}
+
+                    if info.getID() not in data[info.getTimestampShort()].keys():
+                        data[info.getTimestampShort()][info.getID()] = {"frontend":[], "edit":[], "download":[]}
+
+                    data[info.getTimestampShort()][info.getID()][info.getType()].append(info)
+    logdata = data
+    return data
+
+ip2c = None
+
+def buildStat(collection, period=""): # period format = yyyy-mm
+    gi = GeoIP()
+    logging.getLogger('editor').info("update stats for node %s and period %s" % (collection.id, period))
+    statfiles = []
+
+    # read data from logfiles
+    def getStatFile(node, timestamp, type, period=period):
+        f = None
+        for file in node.getFiles():
+            if file.getType()=="statistic":
+                if file.getName()=="stat_"+str(node.id)+"_"+timestamp+"_"+type+".xml":
+                    if timestamp==str(format_date(now(), "yyyy-mm")) or timestamp==period: # update current month or given period
+                        node.removeFile(file) # remove old file and create new
+                        f = None
+                        break
+                    else: # old month, do nothing
+                        return None
+        if not f:
+            # create new file
+            f_name = config.get("paths.tempdir")+"stat_"+str(node.id)+"_"+timestamp+"_"+type+".xml"
+            if os.path.exists(f_name):
+                f = open(f_name, "a")
+            else:
+                # create new file and write header:
+                f = open(f_name, "w")
+                f.write('<?xml version="1.0" encoding="utf-8" ?>\n')
+                f.write('<nodelist created="'+str(format_date(now(), "yyyy-mm-dd HH:MM:SS"))+'">\n')
+
+            if f_name not in statfiles:
+                statfiles.append(f_name)
+            return f
+        
+        
+    def writeFooters():
+        for file in statfiles:
+            f = open(file, "a")
+            f.write("</nodelist>\n")
+            f.close()
+            
+    ids = []
+    items = collection.getAllChildren()
+    for item in items:
+        ids.append(item.id)
+    data = readLogFiles()
+
+    for timestamp in data.keys():
+        for id in data[timestamp].keys():
+            if id in ids:
+                for type in ["frontend", "edit", "download"]:
+                    fin = getStatFile(collection, timestamp, type, period)
+                    if fin and len(data[timestamp][id][type])>0:
+                        fin.write('\t<node id="%s">\n' % str(id))
+                        for access in data[timestamp][id][type]:
+                            #fin.write('\t\t<access date="%s" time="%s" ip="%s" country="%s"/>\n' % (str(access.getDate()), str(access.getTime()), str(access.getIp()), str(access.getCountry())))
+                            fin.write('\t\t<access date="%s" time="%s" ip="%s" country="%s"/>\n' % (str(access.getDate()), str(access.getTime()), str(access.getIp()), gi.country_code_by_name(access.getIp())))
+                        fin.write("\t</node>\n")
+                        fin.close()
+
+    for file in statfiles:
+        f = open(file, "a")
+        f.write("</nodelist>\n")
+        f.close()
+
+        statfile = importFile(file.split("/")[-1], file)
+        statfile.type = "statistic"
+        collection.addFile(statfile)
+        try:
+            os.remove(file)
+        except:
+            pass
+
+if __name__ == "__main__":
+    readLogFiles()
+    

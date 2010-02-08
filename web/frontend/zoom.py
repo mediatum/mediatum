@@ -154,7 +154,7 @@ def send_imageproperties_xml(req):
     nid,data = splitpath(req.path)
     img = getImage(nid)
     req.write("""<IMAGE_PROPERTIES WIDTH="%d" HEIGHT="%d" NUMIMAGES="1" VERSION="1.8" TILESIZE="%d"/>""" % (img.width, img.height, TILESIZE))
-    print "return ImageProperties.xml"
+
 
 def send_tile(req):
     nid, data = splitpath(req.path)

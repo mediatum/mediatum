@@ -1,0 +1,39 @@
+
+a.coll_canread:link, a.coll_canread:visited, a.coll_canread:hover, a.coll_canread:active{
+    color: #606060; text-decoration: none; font-weight: bold;
+}
+a.coll_canwrite:link, a.coll_canwrite:visited, a.coll_canwrite:hover, a.coll_canwrite:active{
+    color: #000000; text-decoration: none; font-weight: bold;
+}
+a.dir_canread:link, a.dir_canread:visited, a.dir_canread:hover, a.dir_canread:active{
+    color: #606060; text-decoration: none; font-weight: normal;
+}
+a.dir_canwrite:link, a.dir_canwrite:visited, a.dir_canwrite:hover, a.dir_canwrite:active{
+    color: #000000; text-decoration: none; font-weight: normal;
+}
+div.line {
+    height:16px; width:100%; font-size: 12px; overflow: hidden;
+}
+div.type {
+    float:left;  height:16px;  width:100px; font-size: 12px;
+}
+div.name {
+    float:left; height:16px;  width:1024px; overflow:hidden; font-size: 12px;
+}
+div.box {
+    float: left; width: 16px; height: 20px;
+}
+div.operations {
+    float:right; height:16px;  width:128px; 
+}
+div.metadata {
+    font-size: 12px; background-color: #f0f0f0;
+}
+div.flush {
+    clear:both; font-size:1px;
+}
+span.key {
+    width:128px; 
+}
+span.value {
+}

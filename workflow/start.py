@@ -22,7 +22,7 @@ from upload import WorkflowStep #relative import
 from schema.schema import getMetaType
 from core.translation import t,lang
 import utils.date as date
-from workflow import mkKey
+from utils.utils import mkKey
 
 class WorkflowStep_Start(WorkflowStep):
     def show_workflow_step(self, req):

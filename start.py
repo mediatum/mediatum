@@ -20,20 +20,18 @@
 
 import sys
 import os
-
-#try:
-#    import wx
-#except ImportError:
-#    wx = None
-#
-#if wx:
-#    import gui.console as gui
-#    gui.start()
-
+import time
 import core
 import core.athana
 import core.webconfig
 import core.config as config
+import subprocess
+import urllib2
+from utils.utils import formatException
+
+webserverprocess = None
+restarted = False
+restarttime = config.get("config.restart_time", "00:00:00").split(":")
 
 if config.get("config.searcher", "").startswith("fts"):
     import core.search.ftsquery
@@ -41,6 +39,42 @@ if config.get("config.searcher", "").startswith("fts"):
 else:
     import core.search.query
     core.search.query.startThread()
+    
 
-core.webconfig.startWebServer()
+def startWebServer():
+    global webserverprocess
+    webserverprocess = subprocess.Popen("python startathana.py", shell=True)
+    time.sleep(5)
+    fileHandle = urllib2.urlopen("http://" + config.get("host.name", ""))
+    data = fileHandle.read()
+    fileHandle.close()
 
+if config.get("config.restart_time", "00:00:00")=="00:00:00":
+    # no internal restart process
+    core.webconfig.startWebServer()
+    
+else:
+    # use internal restart process
+    while (1):
+        time.sleep(1)
+        localtime = time.localtime()
+        if (localtime.tm_hour==int(restarttime[0]) and localtime.tm_min==int(restarttime[1])):
+            if (not restarted):
+                try:
+                    if webserverprocess:
+                        print "Killing server..."
+                        try:
+                            os.popen("kill -9 " + str(webserverprocess.pid))
+                        except:
+                            print "Killed server!"
+                            print formatException()
+                        time.sleep(2)
+                    print "Restarting webserver..."
+                    startWebServer()
+                    restarttime = [str(time.localtime().tm_hour), str(time.localtime().tm_min+1)]
+                    restarted = True
+                except:
+                    print "Could not restart webserver... Retrying!"
+                    print formatException()
+            else:
+                restarted = False

@@ -303,8 +303,10 @@ def readLogFiles():
 
                     if info.getID() not in data[info.getTimestampShort()].keys():
                         data[info.getTimestampShort()][info.getID()] = {"frontend":[], "edit":[], "download":[]}
-
-                    data[info.getTimestampShort()][info.getID()][info.getType()].append(info)
+                    try:
+                        data[info.getTimestampShort()][info.getID()][info.getType()].append(info)
+                    except:
+                        pass
     logdata = data
     return data
 

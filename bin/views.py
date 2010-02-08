@@ -36,11 +36,16 @@ viewnames = ["containermapping", "contentmapping"]
 
 
 def createView(dbname, viewname, viewsql):
-    if str(dbname) not in ["", "None"]:
-        sql = 'CREATE OR REPLACE VIEW `%s`.`%s` AS %s' %(dbname, viewname, viewsql)
-    else:
+    if str(dbname) in ["", "None"]: #sqlite
+        try:
+            db.runQuery("DROP VIEW %s;" %viewname)
+        except:
+            pass
         sql = 'CREATE VIEW `%s` AS %s' %(viewname, viewsql)
+    else:
+        sql = 'CREATE OR REPLACE VIEW `%s`.`%s` AS %s' %(dbname, viewname, viewsql)
     db.runQuery(sql)
+    
     print "view '%s' created"  % viewname
 
     
@@ -60,6 +65,12 @@ for x in content:
     t += "node.type like '"+x+"%' or "
 
 for i in range(0,2):
-    viewsql = "select nodemapping.nid AS nid,nodemapping.cid AS cid, node.type AS type from (nodemapping join node on((nodemapping.cid=node.id))) where (node.type in ("+types[i]+"))"    
+    if i==0:
+        viewsql = "select nodemapping.nid AS nid,nodemapping.cid AS cid, node.type AS type from (nodemapping join node on((nodemapping.cid=node.id))) where (node.type in ("+types[i]+"))"    
+    else:
+        if str(dbname) in ["", "None"]: #sqlite
+            viewsql = "select nodemapping.nid AS nid,nodemapping.cid AS cid, node.type AS type from (nodemapping join node on((nodemapping.cid=node.id))) where (("+t[:-4]+"))"       
+        else:
+            viewsql = "select nodemapping.nid AS nid,nodemapping.cid AS cid, node.type AS type from (nodemapping join node on((nodemapping.cid=node.id))) where ((substring_index(`node`.`type`,'/',1) ("+types[i]+")))"    
     createView(dbname, viewnames[i], viewsql)
     

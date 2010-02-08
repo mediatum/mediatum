@@ -1,4 +1,4 @@
-var lastmark = "";
+﻿var lastmark = "";
 var lasttime = 0;
     
 function reloadPage()
@@ -36,18 +36,29 @@ function fullSizePopup(id, width, height)
 
 function shoppingbag(shoppingbag_width, shoppingbag_height)
 {
-    openPopup('popup_shoppingbag', 'bag', shoppingbag_width, shoppingbag_height);
+    openPopup('/shoppingbag', 'bag', shoppingbag_width, shoppingbag_height, 'yes');
 }
 
 function shoppingBag(nodeid)
 {
-    openPopup('put_into_shoppingbag?files='+nodeid, 'move', 30,30);
-    //reloadPage();
+    var url = '/shoppingbag?files='+nodeid+'&action=add';
+    x = http.open('get', url, true);
+    http.send(null);
+    http.onreadystatechange = function(){
+        if(http.readyState==4){
+            alert(unescape(http.responseText));
+        }
+    }
+}
+
+function addDirToShoppingBag(nodeid)
+{
+    openPopup('put_dir_into_shoppingbag?dir='+nodeid, 'move', 150,100, 'no');
 }
    
-function openPopup(url, name, width, height)
+function openPopup(url, name, width, height, scroll)
 {
-    var win1 = window.open(url,name,'width='+width+',height='+height+',screenX=50,screenY=50,directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=yes'); 
+    var win1 = window.open(url,name,'width='+width+',height='+height+',screenX=50,screenY=50,directories=no,location=no,menubar=no,scrollbars='+scroll+',status=no,toolbar=no,resizable=yes'); 
     win1.focus();
     return win1;
 }
@@ -149,3 +160,28 @@ function countMeta(obj, maxlength){
         return false;
     }
 }
+
+var http = createRequestObject();
+
+function createRequestObject() {
+    var tmpXmlHttpObject = null;
+    try{
+        tmpXmlHttpObject = new XMLHttpRequest();
+    }                
+    catch (ms){
+        try{                        
+            tmpXmlHttpObject = new ActiveXObject("Msxml2.XMLHTTP");
+        }                     
+        catch (nonms){
+            try{                            
+                tmpXmlHttpObject = new ActiveXObject("Microsoft.XMLHTTP");
+            }                         
+            catch (failed){
+                tmpXmlHttpObject = null;
+                alert("fail");
+            }
+        }
+    }
+    return tmpXmlHttpObject;
+}
+

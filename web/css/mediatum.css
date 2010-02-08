@@ -42,7 +42,7 @@ textarea{
     position:absolute; left:400px; z-index:333; width:17px; height:25px; margin:0px; background-color: #004682;
 }
 #header h4{
-    position:absolute; left:417px; z-index:99; width:100%; height:25px; margin:0px; background-color:#004682; left top no-repeat; border-width:0px;
+    position:absolute; left:417px; z-index:99; width:100%; height:25px; margin:0px; background-color:#004682 left top no-repeat; border-width:0px;
 }
 
 #header p#claim{
@@ -308,7 +308,7 @@ ul#navigationlist ul {
     padding: 0px 3px 0.1em 0px; margin: 0px;
 }
 ul#navigationlist li ul.nav_depth02 a {
-    background-color:green;//#eef2f5;
+    background-color:#eef2f5;
     
 }
 ul#navigationlist li ul.nav_depth03 a {
@@ -532,5 +532,5 @@ span.required{
 }
 
 p.error{
-    background: #FFE7E7; color: #AF0101;  padding: 7px; border: 1px solid #AF0101; margin-left: 20px; margin-right: 20px; vertical-align: center;
+    background: #FFE7E7; color: #AF0101;  padding: 7px; border: 1px solid #AF0101; margin-left: 20px; margin-right: 20px ; text-align: center;
 }

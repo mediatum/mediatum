@@ -56,9 +56,9 @@ class Portlet:
     def feedback(self,req):
         self.user = users.getUserFromRequest(req)
         r = req.params.get(self.name,"")
-        if r == "unfold":
+        if r=="unfold":
             self.open()
-        elif r == "fold":
+        elif r=="fold":
             self.close()
         self.language = lang(req)
     def getFoldUnfoldLink(self):
@@ -68,16 +68,16 @@ class Portlet:
             return "node?"+self.name+"=fold"
 
 def getSearchMask(collection):
-    if collection.get("searchtype") == "none":
+    if collection.get("searchtype")=="none":
         return None
     mask = None
     n = collection
-    if collection.get("searchtype") == "parent":
+    if collection.get("searchtype")=="parent":
         while len(n.getParents()):
-            if n.get("searchtype") == "own":
+            if n.get("searchtype")=="own":
                 break
             n = n.getParents()[0]
-    if n.get("searchtype") == "own":
+    if n.get("searchtype")=="own":
         try:
             mask = tree.getRoot("searchmasks").getChild(n.get("searchmaskname"))
         except tree.NoSuchNodeError:
@@ -94,12 +94,12 @@ class Searchlet(Portlet):
         self.collection = collection
         self.searchmask = getSearchMask(collection)
 
-        self.values = [None,"","",""]
+        self.values = [None] + [""]*10
         self.req = None
         self.initialize()
 
     def insideCollection(self):
-        return self.collection and self.collection.id != tree.getRoot("collections").id
+        return self.collection and self.collection.id!=tree.getRoot("collections").id
 
     def initialize(self):
         types = {}
@@ -111,26 +111,31 @@ class Searchlet(Portlet):
         if self.searchmask:
             for field in self.searchmask.getChildren().sort():
                 self.searchfields[field.id] = field.name
-        self.names = [None,None,None,None]
+        self.names = [None] * 11
 
     def feedback(self, req):
         Portlet.feedback(self,req)
         self.req = req
+        extendedfields = range(1, 4)
+        
         if "searchmode" in req.params:
-            if req.params["searchmode"] == "simple":
+            if req.params["searchmode"]=="simple":
                 self.extended = 0
-            if req.params["searchmode"] == "extended":
+            if req.params["searchmode"]=="extendedsuper":
+                self.extended = 2
+                extendedfields = range(1, 11)
+            if req.params["searchmode"]=="extended":
                 self.extended = 1
 
-        for i in [1,2,3]:
+        for i in extendedfields:
             if "field"+str(i) in req.params:
-                newname = req.params.get("field"+str(i),"full")
-                if newname != self.names[i]:
+                newname = req.params.get("field"+str(i), "full")
+                if newname!=self.names[i]:
                     self.values[i] = ""
                 self.names[i] = newname
 
             name = self.names[i]
-            if name == "full" or not name:
+            if name=="full" or not name:
                 f = None
             else:
                 f = tree.getNode(name).getFirstField()
@@ -146,11 +151,21 @@ class Searchlet(Portlet):
 
     def hasExtendedSearch(self):
         return self.searchmask is not None
+        
+    def setExtended(self, value): # value 0:simple, 1:extended, 2:extendedsuper
+        self.extended = value
 
     def isSimple(self):
-        return not self.extended
+        return self.extended==0 or self.searchmask==None
+        
     def isExtended(self):
-        return self.extended
+        return self.extended>0 and self.searchmask!=None
+        
+    def isExtendedNormal(self):
+        return self.extended==1 and self.searchmask!=None
+        
+    def isExtendedSuper(self):
+        return self.extended==2 and self.searchmask!=None
 
     def query(self):
         return self.values[0]
@@ -158,6 +173,8 @@ class Searchlet(Portlet):
         return "node?searchmode=simple&submittype=change"
     def searchLinkExtended(self):
         return "node?searchmode=extended&submittype=change"
+    def searchLinkExtendedSuper(self):
+        return "node?searchmode=extendedsuper&submittype=change"
     def searchActiveLeft(self):
         return not self.extended
     def searchActiveRight(self):
@@ -173,7 +190,7 @@ class Searchlet(Portlet):
             if f is None: # All Metadata
                 # quick&dirty
                 f = g = getMetadataType("text")
-            return f.getSearchHTML(Context(g,value=self.values[i], width=width, name="query"+str(i), 
+            return f.getSearchHTML(Context(g, value=self.values[i], width=width, name="query"+str(i), 
                                    language=lang(self.req), collection=self.collection, 
                                    user=users.getUserFromRequest(self.req), ip=self.req.ip))
         except:
@@ -182,7 +199,7 @@ class Searchlet(Portlet):
             return ""
 
 class NavTreeEntry:
-    def __init__(self, col, node, indent, small=0):
+    def __init__(self, col, node, indent, small=0, hide_empty=0):
         self.col = col
         self.node = node
         self.id = node.id
@@ -192,45 +209,55 @@ class NavTreeEntry:
         self.folded = 1
         self.active = 0
         self.small = small
-        for c in self.node.getChildren():
-            if isCollection(c) or isDirectory(c):
-                self.hassubdir = 1
-                self.folded = 1
-                break
+        self.count = -1
+        self.hide_empty = hide_empty
+        if len(self.node.getContainerChildren())>0:
+            self.hassubdir = 1
+            self.folded = 1
 
     def isRoot(self):
         return self.node.type=='collections'
+    
     def getFoldLink(self):
         return "?cfold="+self.node.id+"&dir="+self.node.id+"&id="+self.node.id
+    
     def getUnfoldLink(self):
         return "?cunfold="+self.node.id+"&dir="+self.node.id+"&id="+self.node.id
+    
+    def getLink(self):
+        if self.folded:
+            return "?cfold="+self.node.id+"&dir="+self.node.id+"&id="+self.node.id
+        return "?cunfold="+self.node.id+"&dir="+self.node.id+"&id="+self.node.id
+        
     def isFolded(self):
         return self.folded
+    
     def getStyle(self):
         return "padding-left: %dpx" % (self.indent*6)
+    
     def getText(self,accessdata):
         try:
             if self.node.getContentType()=="directory":
-                count = 0
-                for n_t,num in self.node.getAllOccurences(accessdata).items():
-                    if n_t.getContentType() != "directory":
-                        count += num
-                if count==0:
-                    return self.node.getLabel()
-                else:
-                    return self.node.getLabel()+" <small>(" + str(count) + ")</small>"
+                if self.node.ccount==-1:
+                    self.node.ccount = tree.getAllContainerChildren(self.node)
+                self.count = self.node.ccount
+                
+                if self.hide_empty and self.count==0:
+                    return "" # hide empty entries
+
             else:
                 if hasattr(self.node, "childcount"):
-                    count = self.node.childcount()
-                    if count>0:
-                        return self.node.getLabel() + " <small>(" + str(count)+")</small>"
-                    else:
-                        return self.node.getLabel()
-                else:
-                    return self.node.getLabel()
+                    self.count = self.node.childcount()
+
+            if self.count>0:
+                return "%s <small>(%s)</small>" %(self.node.getLabel(), str(self.count))
+            else:
+                return self.node.getLabel()
+
         except:
             logException("error during NavTreeEntry.getText()")
             return "Node (0)"
+    
     def getClass(self):
         if self.node.type == "directory":
             return "lv2"
@@ -246,7 +273,7 @@ class RecursionException:
 class Collectionlet(Portlet):
     def __init__(self):
         Portlet.__init__(self)
-        self.name="collectionlet"
+        self.name = "collectionlet"
         self.collection = tree.getRoot("collections")
         self.directory = self.collection
         self.folded = 0
@@ -276,20 +303,17 @@ class Collectionlet(Portlet):
                         self.collection = getCollection(node)
             except tree.NoSuchNodeError:
                 pass
-      
         try:
             self.hide_empty = self.collection.get("style_hide_empty") == "1"
         except:
             self.hide_empty = False
-
         access = AccessData(req)
-        
         # open all parents, so we see that node
         opened = {}
         parents = [self.directory]
-        counter=0
+        counter = 0
         while parents:
-            counter=counter+1
+            counter += 1
             if counter>15:
                 raise RecursionException
             p = parents.pop()
@@ -303,25 +327,14 @@ class Collectionlet(Portlet):
             if not access.hasReadAccess(node):
                 return
 
-            children = None
-            if hide_empty:
-                ok = 0
-                for type,num in node.getAllOccurences(access).items():
-                    if not isDirectory(type) and not isCollection(type) and num:
-                        ok = 1
-                if not ok:
-                    return
-
-            m[node.id] = e = NavTreeEntry(self, node, indent, node.type=="directory")
+            count = -1
+            m[node.id] = e = NavTreeEntry(self, node, indent, node.type=="directory", hide_empty=hide_empty)
             if node.id in opened or e.defaultopen:
                 m[node.id].folded = 0
-                if children is None:
-                    children = node.getChildren()
-                for c in children:
-                    if isCollection(c) or isDirectory(c):
-                        if c.get("style_hide_empty") == "1":
-                            hide_empty=1
-                        f(m, c, indent+1, hide_empty)
+                for c in node.getContainerChildren():
+                    if c.get("style_hide_empty")=="1":
+                        hide_empty = 1
+                    f(m, c, indent+1, hide_empty)
 
         f(m, tree.getRoot("collections"), 0, self.hide_empty)
 
@@ -338,20 +351,19 @@ class Collectionlet(Portlet):
             m[self.collection.id].active = 1
 
         col_data = []
-        def f(col_data,node,indent):
+        def f(col_data, node, indent):
             if indent>15:
                 raise RecursionException
             if not node.id in m:
                 return
                
             data = m[node.id]
-
             col_data += [data]
 
             if not data.folded or data.defaultopen:
-                for c in node.getChildren().sort():
-                    if isCollection(c) or isDirectory(c):
-                        f(col_data,c, indent+1)
+                for c in node.getContainerChildren():
+                    f(col_data,c, indent+1)
+
         f(col_data,tree.getRoot("collections"),0)
         self.col_data = col_data
 
@@ -379,8 +391,8 @@ class Navlet(Portlet):
 class Pathlet:
     def __init__(self,currentdir):
         self.currentdir = currentdir
+    
     def getPath(self):
-        #path
         path = []
         if type(self.currentdir) == type(""):
             path.append(Link(self.currentdir, self.currentdir, self.currentdir))
@@ -402,6 +414,7 @@ class CollectionMapping:
     def __init__(self):
         self.searchmap = {}
         self.browsemap = {}
+    
     def getSearch(self,collection):
         if collection.id not in self.searchmap:
             self.searchmap[collection.id] = Searchlet(collection)
@@ -426,20 +439,22 @@ class UserLinks:
         self.user = user
         self.id = None
         self.language = ""
+        
     def feedback(self,req):
         if "id" in req.params:
-            self.id = req.params["id"]
+            self.id = req.params.get("id")
         self.language = lang(req)
+        
     def getLinks(self):
         l = [Link("/logout", t(self.language,"sub_header_logout_title"), t(self.language,"sub_header_logout"))]
         if config.get("user.guestuser")==self.user.getName():
             l = [Link("/login", t(self.language,"sub_header_login_title"), t(self.language,"sub_header_login"))]
         
         if self.user.isEditor():
-            idstr=""
+            idstr = ""
             if self.id:
                 idstr = "?id="+self.id
-            l += [Link("/edit/edit"+idstr, t(self.language,"sub_header_edit_title"), t(self.language,"sub_header_edit"))]
+            l += [Link("/edit"+idstr, t(self.language,"sub_header_edit_title"), t(self.language,"sub_header_edit"))]
         
         if self.user.isAdmin():
             l += [Link("/admin", t(self.language,"sub_header_administration_title"), t(self.language,"sub_header_administration"))]
@@ -448,7 +463,7 @@ class UserLinks:
             l += [Link("/publish/", t(self.language,"sub_header_workflow_title"), t(self.language,"sub_header_workflow"))]
 
         if config.get("user.guestuser")!=self.user.getName() and "c" in self.user.getOption():
-            l += [Link("/display_changepwd", t(self.language,"sub_header_changepwd_title"), t(self.language,"sub_header_changepwd"), "_parent")]
+            l += [Link("/pwdchange", t(self.language,"sub_header_changepwd_title"), t(self.language,"sub_header_changepwd"), "_parent")]
         return l
 
 
@@ -459,16 +474,10 @@ class NavigationFrame:
         self.nav_portlet = Navlet()
 
     def feedback(self,req):
-        #self.cmap.feedback(req)
         user = users.getUserFromRequest(req)
 
         userlinks = UserLinks(user)
         userlinks.feedback(req)
-
-        #if not user.isGuest():
-        #    l += [Link("/user", "Pers&ouml;nliche Daten", "Pers&ouml;nliche Daten")]
-
-        t = time.strftime("%d.%m.%Y %H:%M:%S")    
 
         #tabs
         navigation = {}
@@ -494,15 +503,27 @@ class NavigationFrame:
         nav_portlet.feedback(req)
         navigation["navitem"] = nav_portlet
 
-        #<ul class="nav_depth03" tal:condition="python:browse.collection.id==data.id and not data.isFolded() and data.hassubdir">
-        self.params = {"show_navbar": True, "user": user, "userlinks": userlinks, "t":t, "navigation":navigation, "language":front_lang}
+        self.params = {"show_navbar": True, "user": user, "userlinks": userlinks, "navigation":navigation, "language":front_lang}
         
     def write(self, req, contentHTML, show_navbar=1):
         self.params["content"] = contentHTML
-        self.params["show_navbar"] = show_navbar
         self.params["act_node"] = req.params.get("id", req.params.get("dir", ""))
         self.params["acl"] = AccessData(req)
-        return req.writeTAL("web/frontend/frame.html", self.params)
+        
+        # header
+        self.params["header"] = req.getTAL("web/frontend/frame.html", self.params, macro="frame_header")
+        
+        # footer
+        self.params["footer"] = req.getTAL("web/frontend/frame.html", {"t":time.strftime("%d.%m.%Y %H:%M:%S")}, macro="frame_footer")
+        
+        # search mask
+        self.params["search"] = req.getTAL("web/frontend/frame.html", {"search":self.params["navigation"]["search"], "act_node":self.params["act_node"]}, macro="frame_search")
+
+        # tree
+        self.params["tree"] = req.getTAL("web/frontend/frame.html", {"collections":self.collection_portlet.getCollections(), "acl":self.params["acl"]}, macro="frame_tree")
+
+        self.params["show_navbar"] = show_navbar
+        req.writeTAL("web/frontend/frame.html", self.params, macro="frame")
 
 
 def getNavigationFrame(req):
@@ -511,3 +532,4 @@ def getNavigationFrame(req):
     except KeyError:
         c = req.session["navframe"] = NavigationFrame()
     return c
+

@@ -168,7 +168,7 @@ code, tt, pre
    margin:0px;
    background-color: #fff;
    text-align: left;
-   overflow: hidden;
+   /*overflow: hidden;*/
 }
 	  
  /* Top - banner */	  
@@ -178,7 +178,7 @@ code, tt, pre
 	background: #243135 url(/img/layout/edit_bg_banner.png) repeat-x left top;
 	border-bottom: 1px solid #D9E2E6;
 	width:auto;
-    overflow:hidden;
+    /*overflow:hidden;*/
    }
  /* Top - logo */	 
 #logocontainer img  {
@@ -373,8 +373,8 @@ div.topmenucontainer  {
     border-bottom:1px solid silver;
 	margin: 0;
     padding: 0;
-    height:78px;
-    overflow:hidden;
+    height:75px;
+    /*overflow:hidden;*/
 }
 
 div.topmenucontainer div#nodeid{
@@ -627,16 +627,13 @@ div.breadcrumbs{
     margin:0px;
 	background: #F2F5F7;
 	border-bottom: 1px solid #E2E9EB;
-	padding: 8px 10px 10px 20px;
+	padding: 6px 10px 5px 20px;
 	color: #243135;
-	height:20px;
+	height:30px;
    }
 a.breadcrumbs  {
    color: #243135;
 }
-/*p.breadcrumbs  {
-  color: #243135;
-}*/
 
 
 /*FOOTER*/

@@ -33,10 +33,13 @@ container = []
 content = []
 dbname = config.get("database.db")
 viewnames = ["containermapping", "contentmapping"]
-types = ["'"+"', '".join(container)+"'", "'"+"', '".join(content)+"'"]
+
 
 def createView(dbname, viewname, viewsql):
-    sql = 'CREATE OR REPLACE VIEW `%s`.`%s` AS %s' %(dbname, viewname, viewsql)
+    if str(dbname) not in ["", "None"]:
+        sql = 'CREATE OR REPLACE VIEW `%s`.`%s` AS %s' %(dbname, viewname, viewsql)
+    else:
+        sql = 'CREATE VIEW `%s` AS %s' %(viewname, viewsql)
     db.runQuery(sql)
     print "view '%s' created"  % viewname
 
@@ -50,7 +53,8 @@ for dtype in loadAllDatatypes():
                 container.append(dtype.name)
             else:
                 content.append(dtype.name)
-
+                
+types = ["'"+"', '".join(container)+"'", "'"+"', '".join(content)+"'"]
 t = ""
 for x in content:
     t += "node.type like '"+x+"%' or "
@@ -58,3 +62,4 @@ for x in content:
 for i in range(0,2):
     viewsql = "select nodemapping.nid AS nid,nodemapping.cid AS cid, node.type AS type from (nodemapping join node on((nodemapping.cid=node.id))) where (node.type in ("+types[i]+"))"    
     createView(dbname, viewnames[i], viewsql)
+    

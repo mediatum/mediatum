@@ -375,4 +375,19 @@ function createRequestObject() {
     return tmpXmlHttpObject;
 }
 
+function getAdminPage(module, id, page, subitem){
+    var lastrssbridgeurl = '/admin/'+module+'?style=popup&page='+page+'&subitem='+subitem;
+    http.open('get', lastrssbridgeurl, true);
+    http.send(null);
+    http.onreadystatechange =function(){
+        if(http.readyState == 4){
+            document.getElementById(id).innerHTML = http.responseText;
+        }
+    }
+}
+var http = createRequestObject();
+
+
+
+
 

@@ -115,6 +115,25 @@ def getNode(id):
     node = nodes_cache[long(id)] = Node(dbid=id)
     return node
     
+def getAllContainerChildrenNum(node, count=0): # returns the number of children
+    for n in node.getContainerChildren():
+        count = getAllContainerChildrenNum(n, count)
+    count += len(node.getContentChildren())
+    return count
+
+    
+def getAllContainerChildrenAbs(node, count=[]): # returns a list with children, each child once
+    for n in node.getContainerChildren():
+        count = getAllContainerChildrenAbs(n, count)
+    count.extend(node.getContentChildren().ids)
+    return count
+
+def getAllContainerChildren(node):
+    return len(list(set(getAllContainerChildrenAbs(node, [])))) # get number of children
+    #return getAllContainerChildrenNum(node, 0) # get number of children (faster)
+    #return 0 # suppress number (fastest)
+
+    
 def getNodesByAttribute(attributename, attributevalue=""):
     return db.getNodeIdByAttribute(attributename, attributevalue)
 
@@ -140,6 +159,15 @@ class FileNode:
         self.type = type
         self.mimetype = mimetype
         self.node = node
+        
+    def clone(self, node):
+        """Creates a deep copy of this filenode, i.e. there is a new version of the file on the drive being created!"""
+        from utils.fileutils import importFileRandom
+        f = importFileRandom(self.retrieveFile())
+        f.node = node
+        f.type = self.type
+        f.mimetype = self.mimetype
+        return f
 
     def getType(self):
         return self.type
@@ -224,7 +252,6 @@ def changed_metadata(node):
         last_changed_metadata_node = node.id
 
 def createSortOrder(field):
-    log.info("retrieving sort order for field "+field)
     t1 = time.time()
     reverse=0
     if field[0]=='-':
@@ -255,7 +282,6 @@ def createSortOrder(field):
             v = value
             i = i + 1
         id2pos[int(id)] = i
-    log.info("sort order retrieved, "+str(time.time()-t1)+" seconds")
     return id2pos
 
 class NodeList:
@@ -388,6 +414,7 @@ class Node:
             self.getLocalRead()
         self.occurences = {}
         self.occurences2node = {}
+        self.ccount = -1
         if hasattr(self, 'overload'):
             self.overload()
 
@@ -548,6 +575,7 @@ class Node:
         global childids_cache,parentids_cache
         childs = self._getChildIDs()
         parents = self._getChildIDs(1)
+        self.ccount = -1
         tree_lock.acquire()
         try:
             for id in childs + parents + [long(self.id)]:
@@ -683,6 +711,15 @@ class Node:
         if not id:
             raise NoSuchNodeError("child:"+str(name))
         return getNode(str(id))
+        
+    def getContainerChildren(self):
+        id = db.getContainerChildren(self.id)
+        return NodeList(id)
+        
+    def getContentChildren(self):
+        id = db.getContentChildren(self.id)
+        return NodeList(id)
+
 
     """ get all parents of this node """
     def getParents(self):
@@ -787,6 +824,7 @@ class Node:
     def _flushOccurences(self):
         self.occurences = {}
         self.occurences2node = {}
+        self.ccount = -1
         for p in self.getParents():
             p._flushOccurences()
 
@@ -805,7 +843,13 @@ class Node:
                     self.occurences2node[level][schema] = node
                 else:
                     self.occurences[level][schema] += 1
-        return dict([(self.occurences2node[level][s],v) for s,v in self.occurences[level].items()])
+        ret = {}
+        for s,v in self.occurences[level].items():
+            if level in self.occurences2node and s in self.occurences2node[level]:
+                ret[self.occurences2node[level][s]]=v
+            else:
+                print "not found", s
+        return ret
     
     """ run a search query. returns a list of nodes """
     def search(self, q):
@@ -912,6 +956,68 @@ class Node:
     #def getTechnAttributes(self):
     #    return {}
             
+    
+    def overwriteAccess(self, newrule, oldrule):
+        """ Replaces the old access with new accessname"""
+        """ Oldname is the old rules name
+            Newname is the new rules name
+            newrule is the actual new rule
+            oldrule is the actual old rule"""
+        tree_lock.acquire()
+        try:
+            oldrulestr = oldrule.getRuleStr()[1:-1].strip()
+            newrulestr = newrule.getRuleStr()[1:-1].strip()
+
+            if self.read_access:
+                self.read_access = self.overwriteRule(self.read_access, oldrule.getName(), newrule.getName(), oldrulestr, newrulestr)
+                if self.id:
+                    pass
+                    db.setNodeReadAccess(self.id, self.read_access)
+
+            if self.write_access:
+                self.write_access = self.overwriteRule(self.write_access, oldrule.getName(), newrule.getName(), oldrulestr, newrulestr)
+                if self.id:
+                    pass
+                    db.setNodeWriteAccess(self.id,self.write_access)
+
+            if self.data_access:
+                self.data_access = self.overwriteRule(self.data_access, oldrule.getName(), newrule.getName(), oldrulestr, newrulestr)
+                if self.id:
+                    pass
+                    db.setNodeDataAccess(self.id,self.data_access)
+        finally:
+            tree_lock.release()
+            self.invalidateLocalRead()
+
+            
+    def overwriteRule(self, rulestring, oldname, newname, oldrulestr, newrulestr):
+        """ rulestring is the access string, holding all access rules of this node
+            Oldname is the old rule name
+            newname is the new rule name
+            oldrulestr is the old rule string
+            newrulestr is the new rule string """
+        rules = rulestring.split(",")
+        result = []
+
+        for r in rules:
+            if r==oldname and not oldname=="":
+                #Either its exactly the rulename
+                r = newname
+                
+            elif oldrulestr in r and not oldrulestr=="":
+                #Or its the rule string. There it first tests, if it is within the current rule. If it is there, it is tested, if it is exactly the rule.
+                temp = r
+                if temp.startswith("{"):
+                    temp = temp[1:len(r)-1]
+                    if temp.startswith("("):
+                        temp = temp[1:len(r)-1]
+                if temp==oldrulestr:
+                    r = r.replace(oldrulestr, newrulestr)
+            result.append(r)
+        result = ",".join(result)
+        return result        
+   
+            
 def flush():
     global childids_cache,nodes_cache,parentids_cache,_root,db,sortorders
     tree_lock.acquire()
@@ -971,6 +1077,26 @@ def initialize(load=1):
         subnodes = subnodes
         searchParser = searchParser
         searcher = mgSearcher
-    
-    
+        
+        
+    # load char replacement table
 
+    file = None
+    sections = ["chars", "words"]
+    data = {"chars":[], "words":[]}
+    for f in getRoot().getFiles():
+        if f.retrieveFile().endswith("searchconfig.txt"):
+            file = f
+            break
+            
+    if file and os.path.exists(file.retrieveFile()):
+        section = ""
+        for line in open(file.retrieveFile(), "r"):
+            line = line[:-1]
+            if line.startswith("[") and line.endswith("]"):
+                section = line[1:-1]
+                continue
+            if section in sections:
+                data[section].append(line.split("="))
+    import utils.utils
+    utils.utils.normalization_items = data

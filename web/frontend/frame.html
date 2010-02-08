@@ -1,12 +1,14 @@
+
+<!-- main macro for frontend -->
+<metal:block metal:define-macro="frame">
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
 <html>
     
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta content="text/html;charset=UTF-8" http-equiv="content-type">
-
         <title i18n:translate="main_title">TEXT</title>
-
         <link rel="stylesheet" href="/css/mediatum.css"/>
         <script type="text/javascript" language="javascript" src="/js/mediatum.js">
         </script>
@@ -15,68 +17,133 @@
     <body>
         <div id="main">
             <!-- header -->
-            <div id="header">
-                <h1><a href="">&nbsp;</a></h1>
-                <h2>&nbsp;</h2>
-                <h3>&nbsp;</h3>
-                <h4>&nbsp;</h4>
-                <p i18n:attributes="title bib_link_title" id="biblogo"><a href="">&nbsp;</a></p>
-                <p id="claim" i18n:translate="header_slogan"></p>
-            </div>
-
-            <div id="sub_header">
-                <a i18n:attributes="alt header_shoopingbag_alt; title header_shoopingbag_title" id="shopping_bag" alt="Favoriten" title="Favoriten anzeigen" href="javascript:shoppingbag(300,300)">
-                    <img border="0" src="/img/favourite.png">
-                </a>
-                <span i18n:translate="sub_header_user">TEXT</span>: <span tal:content="python:user.getName()"></span>
-                <tal:block tal:repeat="menuitem python:userlinks.getLinks()">
-                    | <a tal:define="ltitle python:menuitem.title" tal:attributes="href python:menuitem.link; title ltitle">
-                    <span tal:define="l python:menuitem.label" tal:content="structure l"/>
-                    </a>
-                </tal:block>
-
-                <div id="language_switch" tal:condition="python:len(language['name'])>1">
-                    <form name="chooser" action="" method="post">
-                        <a tal:repeat="lang python:language['name']" tal:attributes="class python:language['actlang']==lang and 'selected_language' or ''; href python:'?change_language='+lang+'&act_node='+act_node" tal:content="lang" i18n:translate="" />
-                    </form>
-                </div>
-                
-            </div>
-    
-            <div class="pathbar">&nbsp;</div>
-
-
+            <tal:block tal:replace="raw header"/>
 
             <!-- main-content -->
             <table id="layouttable">
                 <tbody>
-                    <tr tal:condition="python:show_navbar">
+                    <tr>
                         <td id="portal-column-one">
-                            <tal:block metal:use-macro="web/frontend/frame_navbar.html/navbar"/>
-                        </td>
-                        <td tal:content="raw content" id="portal-column-content"/>
-                    </tr>
-
-                    <tr tal:condition="python:not show_navbar">
-                        <td id="portal-column-one">
+                            <div style="width:290px" tal:condition="python:show_navbar">
+                                <tal:block tal:replace="raw search"/>
+                                <tal:block tal:replace="raw tree"/>
+                            </div>
                             &nbsp;
                         </td>
-                        <td tal:content="raw content" id="portal-column-content"/>
+                        <td  id="portal-column-content">
+                            <tal:block tal:replace="raw content"/>
+                        </td>
                     </tr>
-                    
                 </tbody>
             </table>
 
             <!-- footer -->
-            <div id="footer">
-                <span class="footer_left">
-                    This is the default mediatum design. To change it, edit the html files in web/frontend/mediatum.
-                </span>
-                <span class="footer_right">
-                    <a i18n:translate="footer_impressum" href="/file/604993/impressum.html">Impressum</a>&nbsp;|&nbsp;<span tal:content="t">TEXT</span>
-                </span>
-            </div>
+            <tal:block tal:replace="raw footer"/>
         </div>
     </body>
 </html>
+</metal:block>
 
+
+<!-- macro for header -->
+<metal:block metal:define-macro="frame_header">
+<div id="header">
+    <h1><a href=""> </a></h1>
+    <h2>&nbsp;</h2>
+    <h3>&nbsp;</h3>
+    <h4>&nbsp;</h4>
+    <p i18n:attributes="title bib_link_title" id="biblogo">
+        <a href=""> </a>
+    </p>
+    <p id="claim" i18n:translate="header_slogan"/>
+</div>
+
+<div id="sub_header">
+    <a i18n:attributes="alt header_shoopingbag_alt; title header_shoopingbag_title" id="shopping_bag" href="javascript:shoppingbag(750,470)">
+        <img border="0" src="/img/favourite.png"/>
+    </a>
+    <span i18n:translate="sub_header_user"/>: <span tal:content="python:user.getName()"/>
+        <tal:block tal:repeat="menuitem python:userlinks.getLinks()">
+        | <a tal:attributes="href python:menuitem.link; title python:menuitem.title"><span tal:content="raw python:menuitem.label"/></a>
+        </tal:block>
+
+    <div id="language_switch" tal:condition="python:len(language['name'])>1">
+        <form name="chooser" action="" method="post">
+            <a tal:repeat="lang python:language['name']" tal:attributes="class python:language['actlang']==lang and 'selected_language' or ''; href python:'?change_language='+lang" tal:content="lang" i18n:translate="" />
+        </form>
+    </div>
+    
+</div>
+<div class="pathbar">&nbsp;</div>
+</metal:block>
+
+
+<!-- macro for footer -->
+<div metal:define-macro="frame_footer" id="footer">
+    <span class="footer_left">
+        This is the default mediatum design. To change it, edit the html files in web/frontend/mediatum.
+    </span>
+    <span class="footer_right">
+        <a i18n:translate="footer_impressum" href="/file/604993/impressum.html">Impressum</a>&nbsp;|&nbsp;<span tal:content="t">TEXT</span>
+    </span>
+</div>
+
+
+<!-- macro for navigation tree -->
+<div  metal:define-macro="frame_tree" class="portlet">
+    <ul id="navigationlist">
+        <tal:block tal:repeat="data collections"><li tal:attributes="class python:data.getClass()" tal:define="label python:data.getText(acl)" tal:condition="python:label!=''">
+            <div  tal:attributes="style python:data.getStyle(); class python:['linknotselected','linkselected'][data.active];">
+                <a tal:attributes="href python:data.getFoldLink()" tal:content="raw label"/>
+                <a tal:condition="python:data.hassubdir" tal:attributes="href python:data.getLink(); class python:['expanded','collapsed'][data.isFolded()]"> </a>
+            </div>
+        </li></tal:block>
+    </ul>
+</div>
+
+
+<!-- macro for search mask -->
+<div metal:define-macro="frame_search" class="portlet">
+    <span>
+        <form tal:condition="python:search.isSimple()" id="search-box" name="search" action="/node" method="post" accept-charset="utf-8" style="padding:10px 0px 0px 10px">
+            <input tal:attributes="value python:search.query()" id="search-field" name="query" style="width:180px"/>
+            <input type="hidden" name="searchmode" value="simple"/>
+            <input type="hidden" value="1" tal:attributes="name python:'c_'+search.collection.id" tal:condition="python:search.insideCollection()"/>
+            <input i18n:attributes="value search; title search_title" id="search-button" type="submit" name="start_search"/>
+            <a tal:condition="python:search.hasExtendedSearch()" tal:attributes="href python:search.searchLinkExtended()" i18n:translate="xsearch" id="advancedsearchlink"> </a> 
+            <input type="hidden" name="act_node" tal:attributes="value python:act_node"/>
+        </form>
+
+        <form tal:condition="python:search.isExtended()" name="xsearch" id="search-box" method="post" action="/node" accept-charset="utf-8"  style="padding:10px 0px 0px 10px">
+            <input type="hidden" name="submittype" value="search"/>
+            <input type="hidden" name="collection" tal:attributes="value python:search.collection.id"/>
+            <input type="hidden" name="act_node" tal:attributes="value python:act_node"/>
+            <input type="hidden" name="searchmode" tal:attributes="value python:['extendedsuper','extended'][search.isExtendedNormal()]"/>
+            <table tal:define="max python:[4,11][search.isExtendedSuper()]">
+                <tr tal:repeat="i python:range(1,max)">
+                    <td valign="top">
+                        <select tal:attributes="name python:'field'+str(i)" onchange="chg()">
+                            <option tal:attributes="selected python:[None,'selected'][search.names[i]=='full']" i18n:translate="all_metafields" value="full"/>
+                            <tal:block tal:repeat="a python:search.getSearchFields().keys()">
+                                <option tal:attributes="value a; selected python:[None,'selected'][search.names[i]==a]" tal:content="python:search.getSearchFields()[a]"/>
+                            </tal:block>
+                        </select>
+                    </td>
+                    <td tal:content="raw python:search.getSearchField(i)"/>
+                </tr>
+                <tr>
+                    <td>
+                        <small>
+                             <a tal:condition="python:search.isExtendedNormal()" tal:attributes="href python:search.searchLinkExtendedSuper()" i18n:translate="search_extendedsuper" id="advancedsearchlink"> </a>
+                             <a tal:condition="python:search.isExtendedSuper()" tal:attributes="href python:search.searchLinkExtended()" i18n:translate="xsearch2" id="advancedsearchlink"> </a>
+                        </small>
+                    </td>
+                    <td align="right">
+                        <button i18n:attributes="title reset_field_title" i18n:translate="reset_field" type="button" onclick="clearFields()" id="reset-button"/>&nbsp;&nbsp;<button i18n:translate="search" i18n:attributes="title search_title" type="submit" name="Suche" id="xsearch-button"/>
+                    </td>
+                </tr>
+            </table>
+            <a tal:attributes="href python:search.searchLinkSimple()" i18n:translate="search_simple" id="advancedsearchlink"> </a>
+        </form>
+    </span>
+</div>

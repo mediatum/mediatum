@@ -17,6 +17,7 @@
         <tal:block tal:condition="python:max>0">
         <p>
             <a href="#all" i18n:translate="edit_stats_access">TEXT</a> | 
+            <a href="#country" i18n:translate="edit_stats_country">TEXT</a> |
             <a href="#date" i18n:translate="edit_stats_spreading">TEXT</a> | 
             <a href="#day" i18n:translate="edit_stats_spreading_day">TEXT</a> | 
             <a href="#time" i18n:translate="edit_stats_spreading_time">TEXT</a>
@@ -41,10 +42,9 @@
                     obj.style.display = 'block';                
                 }
             }
-        </script>   
-        
+        </script>
         <div id="access_top10" tal:condition="python:max>0">
-            <table style="width:100%">
+            <table style="margin-left:40px">
                 <tr>
                     <th colspan="2"><tal:block i18n:translate="edit_stats_topten"/>:</th>
                     <th><a href="javascript:showDetailAccess('top10')" i18n:translate="edit_stats_showall">TEXT</a></th>
@@ -54,8 +54,7 @@
                     <th i18n:translate="edit_stats_access">TEXT</th>
                 </tr>
                 <tr tal:repeat="id python:list(ids)[:10]">
-                    <!--<td tal:content="python:nodename(id[0]).getName()" style="width:100px; overflow:hidden"/>-->
-                    <td tal:content="python:'name'" style="width:100px; overflow:hidden"/>
+                    <td tal:content="python:current_file.getName(id[0])" style="width:100px; overflow:hidden"/>
                     <td style="text-align:right">
                         <a tal:attributes="href python:'/?id='+str(id[0])" tal:content="python:str(id[0])" target="blank" class="stat">TEXT</a>
                     </td>
@@ -68,7 +67,7 @@
             </table> 
         </div>
         <div id="access_all" style="display:none" tal:condition="python:max>0">
-            <!--<table style="width:100%">
+            <table style="margin-left:40px">
                 <tr>
                     <th colspan="2"><tal:block i18n:translate="edit_stats_all"/>:</th>
                     <th><a href="javascript:showDetailAccess('all')" i18n:translate="edit_stats_showtopten">TEXT</a></th>
@@ -77,9 +76,8 @@
                     <th colspan="2" i18n:translate="edit_stats_node">TEXT</th>
                     <th i18n:translate="edit_stats_access">TEXT</th>
                 </tr>
-                <tr tal:repeat="id python:list(ids)">-->
-                    <!--<td tal:content="python:nodename(id[0]).getName()" style="width:100px; overflow:hidden"/>-->
-                    <!--<td tal:content="python:'name'" style="width:100px; overflow:hidden"/>
+                <tr tal:repeat="id python:list(ids)[:20]">
+                    <td tal:content="python:current_file.getName(id[0])" style="width:100px; overflow:hidden"/>
                     <td style="text-align:right">
                         <a tal:attributes="href python:'/?id='+str(id[0])" tal:content="python:str(id[0])" target="blank" class="stat">TEXT</a>
                     </td>
@@ -89,7 +87,7 @@
                         <tal:block tal:replace="python:str(id[1])"/>
                     </td>
                 </tr>
-            </table> -->
+            </table>
         </div>
         <div tal:condition="python:max>1">
             <br/>
@@ -97,6 +95,54 @@
             <hr/>
         </div>
     </div>  
+    
+    <div tal:define="items python:current_file.getProgress('country'); max python:int(items[0]['max']); max_p python:int(items[0]['max_p']); max_u python:int(items[0]['max_u']);" tal:condition="python:len(items)>1">
+        <a name="#country"> </a>
+        <h3><tal:block i18n:translate="edit_stats_country"/>: <a href="#top"><img src="/img/up.gif"/></a></h3>
+        
+        <script tal:condition="python:max>0">
+            function showDetailAccessCountry(id){
+                if (id=="top10"){
+                    obj = document.getElementById('country_all');
+                    obj.style.display = 'block';
+                    obj = document.getElementById('country_top10');
+                    obj.style.display = 'none';
+                }else{
+                    obj = document.getElementById('country_all');
+                    obj.style.display = 'none';
+                    obj = document.getElementById('country_top10');
+                    obj.style.display = 'block';                
+                }
+            }
+        </script>   
+
+        <div id="country_top10" tal:condition="python:max>0">
+            <table style="margin-left:40px">
+                <tr>
+                    <th style="width:100px"><tal:block i18n:translate="edit_stats_topten"/>:</th>
+                    <th><a href="javascript:showDetailAccessCountry('top10')" i18n:translate="edit_stats_showall">TEXT</a></th>
+                </tr>
+                <tr tal:repeat="p python:sorted([p for p in [(len(x[1]['items']), x[0]) for x in items.items()[1:]]], reverse=True)[:10]">
+                    <td tal:content="python:current_file.getCountryName(p[1])"/>
+                    <td><img src="/img/stat_bar.png" style="height:10px" i18n:attributes="title edit_stats_access" tal:attributes="width python:str(p[0]*500/max)+'px'"/> <tal:block tal:replace="python:p[0]"/></td>
+                </tr>
+            </table>
+        </div>
+        
+        <div id="country_all" style="display:none" tal:condition="python:max>0">
+            <table style="margin-left:40px">
+                <tr>
+                    <th style="width:100px"><tal:block i18n:translate="edit_stats_all"/>:</th>
+                    <th><a href="javascript:showDetailAccessCountry('all')" i18n:translate="edit_stats_showtopten">TEXT</a></th>
+                </tr>
+                <tr tal:repeat="p python:sorted([p for p in [(len(x[1]['items']), x[0]) for x in items.items()[1:]]], reverse=True)[:20]">
+                    <td tal:content="python:current_file.getCountryName(p[1])"/>
+                    <td><img src="/img/stat_bar.png" style="height:10px" i18n:attributes="title edit_stats_access" tal:attributes="width python:str(p[0]*500/max)+'px'"/> <tal:block tal:replace="python:p[0]"/></td>
+                </tr>
+            </table>
+        </div>
+        <hr/>
+    </div>
 
     <div tal:define="items python:current_file.getProgress(); max python:items[0]['max']; max_p python:items[0]['max_p']; max_u python:items[0]['max_u']" tal:condition="python:len(items)>1">
         <a name="#date"> </a>
@@ -269,14 +315,7 @@
             </tr>
         </table>   
     </div>
-    <div tal:define="items python:current_file.getProgress('country'); max python:int(items[0]['max']); max_p python:int(items[0]['max_p']); max_u python:int(items[0]['max_u']);" tal:condition="python:len(items)>1">
-        <p tal:repeat="item python:list(items)[1:]">
-            <tal:block tal:condition="python:item!=0">
-            <tal:block tal:content="item"/>
-            <tal:block tal:content="python:len(items[item]['items'])"/>
-            </tal:block>
-        </p>
-    </div>
+    <p>&nbsp;</p>
     
 </metal:block>
 

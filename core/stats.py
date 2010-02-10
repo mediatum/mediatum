@@ -29,7 +29,7 @@ import logging
 from utils.date import parse_date, format_date, now, make_date
 from utils.utils import splitpath
 from utils.fileutils import importFile
-from lib.geoip.geoip import GeoIP
+from lib.geoip.geoip import GeoIP, getFullCountyName
 
 class LogItem:
 
@@ -136,6 +136,12 @@ class StatisticFile:
     def getPeriodYear(self):
         return self.period_year
     
+    def getName(self, id):
+        try:
+            return tree.getNode(id).getName()
+        except tree.NoSuchNodeError:
+            return id
+    
     def getPeriodMonth(self):
         return self.period_month
         
@@ -237,7 +243,9 @@ class StatisticFile:
             
         items[0] = {"max":max, "max_p":max_p, "max_u":max_u} # deliver max-values on index 0
         return items
-
+        
+    def getCountryName(self, id):
+        return getFullCountyName(id)
         
     def getWeekDay(self, day):
         dt = make_date(self.period_year, self.period_month, day)

@@ -246,6 +246,7 @@ class ACLParseException:
         self.msg = msg
     def __str__(self):
         return "parse exception: "+self.msg+"\n"
+        
 
 class AccessCondition:
     def __init__(self):
@@ -472,7 +473,7 @@ def getRule(name):
         else:
             try:
                 description, text = conn.getRule(name)
-            except "RuleNotFoundError":
+            except database.DatabaseException("rule not found"):
                 print "rule not found, access denied"
                 description = "( not true )"
                 text = "dummy_rule"

@@ -546,6 +546,19 @@ class GeoIP:
         addr = socket.gethostbyname(hostname)
         return self.region_by_addr(addr)
         
+
+def getFullCountyName(id):
+    try:
+        i = COUNTRY_CODES.index(id)
+    except:
+        return id
+    
+    try:
+        return COUNTRY_NAMES[i]
+    except:
+        return id+"_err"
+
+
         
 if __name__=="__main__":
     gi = GeoIP()

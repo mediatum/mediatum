@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import md5
+import hashlib
 import random
 import core.tree as tree
 import os
@@ -73,7 +73,7 @@ def getContent(req, ids):
             uploadfile = req.params.get("updatefile")
 
             if uploadfile:
-                thumbname = os.path.join(getImportDir(), md5.md5(str(random.random())).hexdigest()[0:8])+".thumb"
+                thumbname = os.path.join(getImportDir(), hashlib.md5(str(random.random())).hexdigest()[0:8])+".thumb"
 
                 file = importFile(thumbname, uploadfile.tempname) # add new file
                 makeThumbNail(file.retrieveFile(), thumbname)

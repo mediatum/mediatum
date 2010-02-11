@@ -4,7 +4,7 @@
         <p><tal:block i18n:translate="edit_stats_period_header"/>:
         <select name="select_period" onchange="javascript:submit()">
             <optgroup tal:repeat="t python:list(files)" tal:attributes="label t">
-                <option tal:repeat="p python:list(files[t])" tal:content="p" tal:attributes="value python:t+'_'+p; selected python:{'False':None,'True':'selected'}[str(t+'_'+p==current_period)]"/>         
+                <option tal:repeat="p python:sorted(list(files[t]),reverse=True)" tal:content="p" tal:attributes="value python:t+'_'+p; selected python:{'False':None,'True':'selected'}[str(t+'_'+p==current_period)]"/>
             </optgroup>
         </select>
         <script tal:content="python:'var url= \'/edit/edit_content?id='+id+'&tab=statsaccess&style=popup\';'"> </script>
@@ -55,7 +55,7 @@
                 </tr>
                 <tr tal:repeat="id python:list(ids)[:10]">
                     <td tal:content="python:current_file.getName(id[0])" style="width:150px"/>
-		    <td style="text-align:right">
+                    <td style="text-align:right">
                         <a tal:attributes="href python:'/?id='+str(id[0])" tal:content="python:str(id[0])" target="blank" class="stat">TEXT</a>
                     </td>
                     <td>

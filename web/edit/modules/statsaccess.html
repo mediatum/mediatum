@@ -54,8 +54,8 @@
                     <th i18n:translate="edit_stats_access">TEXT</th>
                 </tr>
                 <tr tal:repeat="id python:list(ids)[:10]">
-                    <td tal:content="python:current_file.getName(id[0])" style="width:100px; overflow:hidden"/>
-                    <td style="text-align:right">
+                    <td tal:content="python:current_file.getName(id[0])" style="width:150px"/>
+		    <td style="text-align:right">
                         <a tal:attributes="href python:'/?id='+str(id[0])" tal:content="python:str(id[0])" target="blank" class="stat">TEXT</a>
                     </td>
                     <td>
@@ -76,8 +76,8 @@
                     <th colspan="2" i18n:translate="edit_stats_node">TEXT</th>
                     <th i18n:translate="edit_stats_access">TEXT</th>
                 </tr>
-                <tr tal:repeat="id python:list(ids)[:20]">
-                    <td tal:content="python:current_file.getName(id[0])" style="width:100px; overflow:hidden"/>
+                <tr tal:repeat="id python:list(ids)[:50]">
+                    <td tal:content="python:current_file.getName(id[0])" style="width:150px"/>
                     <td style="text-align:right">
                         <a tal:attributes="href python:'/?id='+str(id[0])" tal:content="python:str(id[0])" target="blank" class="stat">TEXT</a>
                     </td>
@@ -91,7 +91,7 @@
         </div>
         <div tal:condition="python:max>1">
             <br/>
-            <tal:block i18n:translate="edit_stats_sum"/>: <tal:block tal:replace="max"/>
+            <tal:block i18n:translate="edit_stats_sum"/>: <tal:block tal:replace="python:sum([p[1] for p in list(ids)])"/>
             <hr/>
         </div>
     </div>  
@@ -135,7 +135,7 @@
                     <th style="width:100px"><tal:block i18n:translate="edit_stats_all"/>:</th>
                     <th><a href="javascript:showDetailAccessCountry('all')" i18n:translate="edit_stats_showtopten">TEXT</a></th>
                 </tr>
-                <tr tal:repeat="p python:sorted([p for p in [(len(x[1]['items']), x[0]) for x in items.items()[1:]]], reverse=True)[:20]">
+                <tr tal:repeat="p python:sorted([p for p in [(len(x[1]['items']), x[0]) for x in items.items()[1:]]], reverse=True)">
                     <td tal:content="python:current_file.getCountryName(p[1])"/>
                     <td><img src="/img/stat_bar.png" style="height:10px" i18n:attributes="title edit_stats_access" tal:attributes="width python:str(p[0]*500/max)+'px'"/> <tal:block tal:replace="python:p[0]"/></td>
                 </tr>

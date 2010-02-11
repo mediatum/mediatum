@@ -62,7 +62,6 @@ def getContent(req, ids):
             
             if period not in statfiles[type].keys():
                 statfiles[type][period] = []
-                
             statfiles[type][period].append(file)
 
     v = {}
@@ -78,7 +77,6 @@ def getContent(req, ids):
 
     
 def getPopupWindow(req, ids):
-    print req.params
     v = {}
     v["id"] = ids
     if "update" in req.params:
@@ -93,7 +91,6 @@ def getPopupWindow(req, ids):
         return
         
     else:
-        print "show form step 1"
         v["action"] = "showform"
         v["statsrun"] = tree.getNode(ids).get("system.statsrun")
     req.writeTAL("web/edit/modules/statsaccess.html", v, macro="edit_stats_popup")

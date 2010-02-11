@@ -20,7 +20,6 @@
 import core.tree as tree
 import schema.schema as schema
 import schema.searchmask as searchmask
-import md5
 import random
 import core.users as users
 from core.acl import AccessData

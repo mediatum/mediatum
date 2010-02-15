@@ -32,7 +32,6 @@ from contenttypes.image import makeThumbNail, makePresentationFormat
 
 
 def getContent(req, ids):
-    print req.params
     
     user = users.getUserFromRequest(req)
     node = tree.getNode(ids[0])
@@ -100,5 +99,5 @@ def getContent(req, ids):
                 except "PostprocessingError":
                     update_error = True
             
-    return req.getTAL("web/edit/modules/files.html", {"id":req.params.get("id","0"), "tab":req.params.get("tab", ""), "node":node, "update_error":update_error}, macro="edit_files_file")    
+    return req.getTAL("web/edit/modules/files.html", {"id":req.params.get("id","0"), "tab":req.params.get("tab", ""), "node":node, "update_error":update_error, "user":user}, macro="edit_files_file")    
     

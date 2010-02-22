@@ -300,4 +300,44 @@ function getEditPage(destname, nodeid, tab, action){
     }
 }
 
+
+function isNumber(x){
+    return ! isNaN (x-0); 
+}
+
+
+function edit_action(action, src, ids, add){
+    if (!add){
+        var url= '/edit/edit_action?src='+src+'&action='+action+'&ids='+ids+'&style=popup';
+    }
+    if(add==1){ /* folder */
+        var url= '/edit/edit_action?src='+src+'&newfolder='+escape(action)+'&ids='+ids+'&style=popup';
+    }
+    if(add==2){ /* collection */
+        var url= '/edit/edit_action?src='+src+'&newcollection='+escape(action)+'&ids='+ids+'&style=popup';
+    }
+    if (action=="move" || action=="copy"){
+        var url = '/edit/edit_action?src='+src+'&action='+action+'&dest='+add+'&ids='+ids+'&style=popup';
+    }
+
+    http.open('get', url, true);
+    http.send(null);
+    http.onreadystatechange =function(){
+        if(http.readyState==4){
+            var x = unescape(""+http.responseText);
+            if(add==1 || add==2){
+                if (isNumber(x)){
+                    reloadURL('/edit?tab=metadata&id='+x);
+                }else{
+                    alert(x);
+                }
+            }else{
+                if(x!=""){
+                    alert(x); 
+                }
+            }
+        }
+    }
+}
+
 var http = createRequestObject();

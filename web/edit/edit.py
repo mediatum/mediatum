@@ -69,28 +69,31 @@ def frameset(req):
 
             function setFolderAction(_action)
             {
-                if(_action == 'newfolder') {
-                    openWindow("edit_action?newfolder=Neuer%20Ordner&src="+tree.getFolder(),300,200);
-                } else if(_action == 'newcollection') {
-                    openWindow("edit_action?newcollection=Neue%20Kollektion&src="+tree.getFolder(),300,200);
-                } else if(_action == 'sortsubfolders') {
+                src = tree.getFolder()
+                if(_action=='newfolder') {
+                    edit_action('"""+t(lang(req), "edit_add_folder")+"""', src, src, 1);
+                    
+                } else if(_action=='newcollection') {
+                    edit_action('"""+t(lang(req), "edit_add_collection")+"""', src, src, 2);
+                    
+                } else if(_action=='sortsubfolders') {
                     this.location.href = "edit?tab=subfolder&id="+tree.getFolder();
-                } else if(_action == 'edit') {
+                    
+                } else if(_action=='edit') {
                     this.location.href = "edit?tab=metadata&id="+tree.getFolder();
-                } else if(_action == 'delete') {
-                    /*if('"""+currentdir.type+"""'=='collections' || '"""+currentdir.type+"""'=='root' || '"""+currentdir.type+"""'=='home'){
-                        alert('"""+t(lang(req), "delete_root_error_msg")+"""');
-                        return 0;
-                    }*/
+                    
+                } else if(_action=='delete') {
                     if(confirm('"""+t(lang(req), "delete_folder_question")+"""')) {
-                        src = tree.getFolder();
-                        openWindow('edit_action?src='+src+'&action=delete&ids='+src, 300, 200);
-                    }  
-                } else if(_action == "clear_trash") {
-                    if(confirm('"""+t(lang(req), "clear_trash_question")+"""')) {
-                        src = tree.getFolder();
-                        openWindow('edit_action?src='+src+'&action=clear_trash&ids='+src, 300, 200);
+                        edit_action('delete', src, src);
+                        reloadPage(src, '');
                     }
+                    
+                } else if(_action=="clear_trash") {
+                    if(confirm('"""+t(lang(req), "clear_trash_question")+"""')) {
+                        edit_action('clear_trash', src, src);
+                        reloadPage(src, '');
+                    }
+                    
                 } else {
                     idselection = tree.getFolder();
                     action = _action;
@@ -129,12 +132,13 @@ def frameset(req):
                     return 0;
                 } else if(_action == "delete") {
                     var ids = content.getAllObjectsString();
-                    if(ids == '') {
+                    if(ids=='') {
                         reloadPage(tree.getFolder(),'');
                     } else {
                         if(confirm('"""+t(lang(req), "delete_object_question")+"""')) {
                             var src = tree.getFolder();
-                            openWindow('edit_action?src='+src+'&action=delete&ids='+ids, 300, 200);
+                            edit_action('delete', src, ids);
+                            reloadPage(src, '');
                         }
                     }
                     return 0;
@@ -191,7 +195,8 @@ def frameset(req):
                     this.content.location.href = "edit_content?id="+folderid;
                     this.buttons.location.href = "edit_buttons?id="+folderid;
                 } else {
-                    openWindow('edit_action?src='+src+'&action='+action+'&dest='+folderid+'&ids='+idselection, 300, 200);
+                    edit_action(action, src, idselection, folderid);
+                    reloadPage(folderid, '');
                 }
             }
             """
@@ -371,25 +376,19 @@ def action(req):
     if newfolder!="":
         node = tree.getNode(srcid)
         if not access.hasWriteAccess(node):
-            req.writeTAL("web/edit/edit.html", {"id":node.id, "operation":"error"}, macro="newfolder")
+            req.writeTALstr('<tal:block i18n:translate="edit_nopermission"/>', {}) # deliver errorlabel
             return
 
-        if node.type=="collections":
+        if node.type=="collections" or is_collection:
             # always create a collection in the uppermost hierarchy- independent on
             # what the user requested
             newnode = node.addChild(tree.Node(name=newfolder, type="collection"))
         else:
-            if is_collection:
-                if node.type!="collection" and node.type!="collections":
-                    req.writeTAL("web/edit/edit.html", {"errormsg":"can't create a collection below a node of type "+str(node.type)}, macro="edit_errorpage")
-                    return
-                newnode = node.addChild(tree.Node(name=newfolder, type="collection"))
-            else:
-                newnode = node.addChild(tree.Node(name=newfolder, type="directory"))
+            newnode = node.addChild(tree.Node(name=newfolder, type="directory"))
         
         newnode.set("creator", user.getName())
         newnode.set("creationtime",  str(time.strftime( '%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
-        req.writeTAL("web/edit/edit.html", {"id":newnode.id, "operation":"new"}, macro="newfolder")
+        req.writeTALstr('<tal:block tal:replace="id"/>',{"id":newnode.id}) # deliver id of new node
         return
 
     try:
@@ -413,6 +412,7 @@ def action(req):
                         os.remove(f.retrieveFile())
                 trashdir.removeChild(n)
             logger.info(user.getName()+" cleared trash folder with id "+str(trashdir.id))
+            return
 
         for id in idlist:
             obj = tree.getNode(id)
@@ -426,8 +426,11 @@ def action(req):
                         mysrc.removeChild(obj)
                         trashdir.addChild(obj)
                         logger.info(user.getName()+" removed "+obj.id+" from "+mysrc.id)
+                        return
                 else:
                     logger.error(user.getName()+" has no write access for node "+mysrc.id)
+                    req.writeTALstr('<tal:block i18n:translate="edit_nopermission"/>', {})
+                    return
             
             elif action=="move":
                 if dest != mysrc and \
@@ -438,8 +441,11 @@ def action(req):
                     if not nodeIsChildOfNode(dest,obj):
                         mysrc.removeChild(obj)
                         dest.addChild(obj)
+                        return
                     else:
                         logger.error(user.getName()+" could not move "+obj.id+" from "+mysrc.id+" to "+dest.id)
+                else:
+                    req.writeTALstr('<tal:block i18n:translate="edit_nopermission"/>', {})
                 mysrc = None
            
             elif action=="copy":
@@ -458,13 +464,6 @@ def action(req):
             mysrc = src
     except:
         errorobj = sys.exc_info()
-    
-    v = {}
-    v["action"] = action
-    v["mysrcid"] = mysrc.id
-    v["srcid"] = srcid
-    v["error"] = errorobj
-    req.writeTAL("web/edit/edit.html", v, macro="edit_action")
 
 
 def isDirectory(node):

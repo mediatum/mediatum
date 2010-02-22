@@ -64,6 +64,8 @@
             <meta content="text/html;charset=UTF-8" http-equiv="content-type">
             <title i18n:translate="edit_main_title">TEXT</title>
             <link rel="stylesheet" href="/css/editor.css">
+            <script type="text/javascript" src="/js/editor.js">
+            </script>
             <script type="text/javascript" src="/js/admin.js">
             </script>
             <script type="text/javascript" tal:content="raw script">
@@ -122,7 +124,7 @@
 
 <html metal:define-macro="edit_action_new_error">
     <head>
-        <script language="javascript">
+        <script language="text/javascript">
             opener.reloadURL('edit?id="""+node.id+"""');
         </script>
     </head>
@@ -171,7 +173,7 @@
             </script>
             <script type="text/javascript" src="/js/mediatum.js">
             </script>
-            <script type="text/javascript" language="javascript"> 
+            <script type="text/javascript"> 
                 var allobjects = new Array();
 
                 function getAllObjectsString(){
@@ -219,7 +221,7 @@
             </p>
             <div style="margin:5px;border:1px solid silver;padding: 4px;overflow-x:auto;">
                 <tal:block tal:condition="python: notdirectory==1">
-                    <script language="javascript">
+                    <script language="text/javascript">
                         function fullSizeWindow(id,width,height){
                             var win1 = window.open('/fullsize?id='+id,'fullsize','width='+width+',height='+height+',directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=1'); 
                             win1.focus();
@@ -302,7 +304,7 @@
             <meta content="text/html;charset=UTF-8" http-equiv="content-type">
             <link rel="stylesheet" href="/css/editor.css">
             <link rel="stylesheet" href="/css/edit_style.css">
-            <script language="javascript">
+            <script language="text/javascript">
                 function disableMoveDeleteOperations() {
                     this.document.getElementById("field_move").disabled = true;
                     this.document.getElementById("field_delete").disabled = true;
@@ -378,32 +380,6 @@
 </metal:block>
 
 
-<metal:block metal:define-macro="newfolder">
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
-    <html>
-        <head>
-            <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-            <meta content="text/html;charset=UTF-8" http-equiv="content-type">
-            <link rel="stylesheet" href="/css/editor.css"/>
-            <link rel="stylesheet" href="/css/edit_style.css"/>
-            <script tal:condition="python:operation=='error'" language="javascript" tal:content="python:'opener.reloadURL(\'edit?id='+id+'\');'">
-            </script>
-            <script tal:condition="python:operation=='new'" language="javascript" tal:content="raw python:'opener.reloadURL(\'edit?tab=metadata&id='+id+'\');this.close();'"> 
-            </script>
-        </head>
-        <body>
-            <tal:block tal:condition="python:operation=='error'">
-                <h1 i18n:translate="edit_error">TEXT</h1>
-                <p i18n:translate="edit_error_msg1" style="margin:10px">TEXT</p>
-                <p>&nbsp;</p>
-                <p>&nbsp;</p>
-                <p style="text-align:center"><button type="button" onclick="self.close()" i18n:translate="close_window">TEXT</button>
-            </tal:block>
-        </body>
-    </html>
-</metal:block>
-
-
 <metal:block metal:define-macro="edit_action">
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
     <html>
@@ -412,7 +388,7 @@
         <meta content="text/html;charset=UTF-8" http-equiv="content-type"/>
         <link rel="stylesheet" href="/css/editor.css"/>
         <link rel="stylesheet" href="/css/edit_style.css"/>
-        <script language="javascript">
+        <script language="text/javascript">
             function returnValue(srcid) {
                 window.close();
                 opener.reloadPage(srcid, '');
@@ -421,13 +397,13 @@
     </head>
     <body>
         <span i18n:translate="edit_action_msg">TEXT<b i18n:name="action" tal:content="action">TEXT</b>...</span>
-        <script language="javascript" tal:content="python:'returnValue(\''+mysrcid+'\');'">TEXT</script>
+        <script language="text/javascript" tal:content="python:'returnValue(\''+mysrcid+'\');'">TEXT</script>
     
         <tal:block tal:condition="error">
             <h1 i18n:translate="edit_error">TEXT</h1>
             <p tal:content="python:str(error[0])">TEXT</p>
             <p tal:content="python:str(error[1])">TEXT</p>
-            <script language="javascript" tal:content="python:'opener.reloadPage(\''+srcid+'\', \'\');'">TEXT</script>
+            <script language="text/javascript" tal:content="python:'opener.reloadPage(\''+srcid+'\', \'\');'">TEXT</script>
         </tal:block>
     </body>
 </html>

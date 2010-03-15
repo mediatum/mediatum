@@ -105,7 +105,7 @@ charmap = [
 	['&bdquo;',   '8222', 'double low-9 quotation mark'],
 	['&lt;',      '60',   'less-than sign'],
 	['&gt;',      '62',   'greater-than sign'],
-	['&le;',      '880;', 'less-than or equal to'],
+	['&le;',      '8804', 'less-than or equal to'],
 	['&ge;',      '8805', 'greater-than or equal to'],
 	['&ndash;',   '8211', 'en dash'],
 	['&mdash;',   '8212', 'em dash'],

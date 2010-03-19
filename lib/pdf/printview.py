@@ -195,9 +195,6 @@ class PrintPreview:
         _c = 1
         for c in children:
             if len(c)>0 and c[0][3]=="header":
-                if len(items)>0:
-                    items.sort(lambda x, y: cmp(x[0].lower(),y[0].lower()))
-                
                 for item in items:
                     self.addData(Paragraph("["+str(_c)+"/"+str(len(children)-_head)+"]: "+"; ".join(item), self.bv))
                     _c+=1
@@ -211,8 +208,6 @@ class PrintPreview:
             items.append(values)
 
         for item in items:
-            if len(items)>0:
-                items.sort(lambda x, y: cmp(x[0].lower(),y[0].lower()))
             self.addData(Paragraph("["+str(_c)+"/"+str(len(children)-_head)+"]: "+", ".join(item), self.bv))
             _c+=1    
             
@@ -220,7 +215,7 @@ def getPrintView(lang, imagepath, metadata, paths, style=1, children=[]): # styl
     """ returns pdf content of given item """
     if not reportlab:
         return None
-
+ 
     pv = PrintPreview(lang, config.get("host.name"))
     pv.setHeader()
     

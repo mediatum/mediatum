@@ -50,19 +50,18 @@ childids_cache = None
 parentids_cache = None
 
 class WatchLock:
-    def __init__(self):
+    def __init__(self, mode=0):
+        self.mode = mode
         self.nr = 0
         self.lock = thread.allocate_lock()
     def release(self):
         self.nr = self.nr - 1
         self.lock.release()
     def acquire(self):
-        global testmode
-        if testmode and self.nr >= 1:
+        if self.mode and self.nr >= 1:
             try:
                 raise ""
             except:
-                print "************************************"
                 print "** Lock acquired more than once!  **"
                 for line in traceback.extract_stack():
                     print line
@@ -70,7 +69,7 @@ class WatchLock:
         self.lock.acquire()
         self.nr = self.nr + 1
 
-tree_lock = WatchLock()
+tree_lock = WatchLock(testmode)
 
 def getRootID():
     id = db.getRootID()
@@ -603,7 +602,7 @@ class Node:
 
 
     """ remove (unlink) a given child node """
-    def removeChild(self,child):
+    def removeChild(self, child):
         self._makePersistent()
         child._makePersistent()
         self._flush()
@@ -612,7 +611,7 @@ class Node:
         child.resetLocalRead()
         self._flushOccurences()
 
-
+        
     """ get all FileNode subnodes of this node """
     def getFiles(self):
         self._makePersistent()

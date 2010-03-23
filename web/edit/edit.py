@@ -426,12 +426,10 @@ def action(req):
                         mysrc.removeChild(obj)
                         trashdir.addChild(obj)
                         logger.info(user.getName()+" removed "+obj.id+" from "+mysrc.id)
-                        return
                 else:
                     logger.error(user.getName()+" has no write access for node "+mysrc.id)
                     req.writeTALstr('<tal:block i18n:translate="edit_nopermission"/>', {})
-                    return
-            
+
             elif action=="move":
                 if dest != mysrc and \
                    access.hasWriteAccess(mysrc) and \
@@ -441,7 +439,6 @@ def action(req):
                     if not nodeIsChildOfNode(dest,obj):
                         mysrc.removeChild(obj)
                         dest.addChild(obj)
-                        return
                     else:
                         logger.error(user.getName()+" could not move "+obj.id+" from "+mysrc.id+" to "+dest.id)
                 else:
@@ -746,7 +743,6 @@ def showtree(req):
     content = ""
     content += writetree(req, tree.getRoot("home"), f, "", openednodes=o, sessionkey="lefttreenodes", omitroot=home_omitroot)
     content += writetree(req, tree.getRoot("collections"), f, "", openednodes=o, sessionkey="lefttreenodes", omitroot=0)
-    content += writetree(req, tree.getRoot("navigation"), f, "", openednodes=o, sessionkey="lefttreenodes", omitroot=1)
-    
+
     req.writeTAL("web/edit/edit.html", {"script":"var currentfolder = '"+currentid+"'", "scrollid":scrollid, "content":content}, macro="frame_tree")
 

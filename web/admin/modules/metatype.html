@@ -66,7 +66,7 @@
                 <td tal:attributes="class cssclass" tal:content="python:metadatatype.getName()"/>
                 <td tal:attributes="class cssclass" tal:content="python:metadatatype.getLongName()"/>
                 <td tal:condition="python:len(metadatatype.getDescription())<=10" tal:attributes="class cssclass" tal:content="python:metadatatype.getDescription()"/>
-                <td tal:condition="python:len(metadatatype.getDescription())>10" tal:attributes="class cssclass; title python:metadatatype.getDescription()" tal:content="python:metadatatype.getDescription()[:9]+'...'"/>
+                <td tal:condition="python:len(metadatatype.getDescription())>10" tal:attributes="class cssclass; title python:metadatatype.getDescription()" tal:content="python:metadatatype.getDescription()[:10]+'...'"/>
                 <td tal:attributes="class cssclass">
                     &nbsp;&nbsp;&nbsp;<img tal:condition="python:metadatatype.isActive()" i18n:attributes="title admin_meta_active_title" src="/img/haken.gif"/>
                 </td>

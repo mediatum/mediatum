@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.34 2010/02/03 11:34:31 seiferta Exp $'
+RCS_ID =  '$Id: athana.py,v 1.35 2010/03/23 10:22:58 seiferta Exp $'
 
 import sys
 
@@ -4065,7 +4065,11 @@ class http_channel (async_chat):
     # this information needs to get into the request object,
     # so that it may log correctly.
     def send (self, data):
-        result = async_chat.send (self, data)
+        result = 0
+        try:
+            result = async_chat.send (self, data)
+        except:
+            pass
         self.server.bytes_out.increment (len(data))
         return result
 

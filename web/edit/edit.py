@@ -230,7 +230,7 @@ def handletabs(req, ids, tabs):
     user = users.getUserFromRequest(req)
 
     n = tree.getNode(ids[0])
-    if n.type=="workflows":
+    if n.type.startswith("workflow"):
         n = tree.getRoot()
     
     menu = filterMenu(getEditMenuString(n.getContentType()), user)

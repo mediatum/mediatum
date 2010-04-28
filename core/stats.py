@@ -34,35 +34,38 @@ from lib.geoip.geoip import GeoIP, getFullCountyName
 class LogItem:
 
     def __init__(self, data):
-        m = re.split(' INFO | - - \[| \] \"GET | HTTP/1.1\"', data)
-        self.date, self.time = m[0][:-4].split(" ")
-        self.ip = m[1]
-        self.url = m[-2]
-        self.data = data
-        self.id = 0
-        self.type = ""
-        #self.country = ""
+        try:
+            m = re.split(' INFO | - - \[| \] \"GET | HTTP/1.1\"', data)
+            self.date, self.time = m[0][:-4].split(" ")
+            self.ip = m[1]
+            self.url = m[-2]
+            self.data = data
+            self.id = 0
+            self.type = ""
+            #self.country = ""
 
-        if self.url.startswith("/fullsize"): # download
-            m = re.findall('/fullsize\?id=[0-9]*', self.url)
-            if len(m)==1:
-                self.id = m[0][13:]
-                self.type = "download"
-                
-        elif self.url.startswith("/edit"): # edit
-            m = re.findall('/edit.*[\?|\&]id=[0-9]*', self.url)
-            if len(m)==1:
+            if self.url.startswith("/fullsize"): # download
+                m = re.findall('/fullsize\?id=[0-9]*', self.url)
+                if len(m)==1:
+                    self.id = m[0][13:]
+                    self.type = "download"
+                    
+            elif self.url.startswith("/edit"): # edit
+                m = re.findall('/edit.*[\?|\&]id=[0-9]*', self.url)
+                if len(m)==1:
+                    m = re.findall('[\?|\&]id=[0-9]*', self.url)
+                    if len(m)==1:
+                        self.id = m[0][4:]
+                self.type = "edit"
+            else: # frontend
                 m = re.findall('[\?|\&]id=[0-9]*', self.url)
                 if len(m)==1:
                     self.id = m[0][4:]
-            self.type = "edit"
-        else: # frontend
-            m = re.findall('[\?|\&]id=[0-9]*', self.url)
-            if len(m)==1:
-                self.id = m[0][4:]
-                self.type = "frontend"
+                    self.type = "frontend"
 
-        if self.id==0:
+            if self.id==0:
+                return None
+        except:
             return None
 
     def getDate(self):

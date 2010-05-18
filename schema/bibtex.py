@@ -1,4 +1,4 @@
-# coding=utf8
+### coding=utf8
 """
  mediatum - a multimedia content repository
 
@@ -33,10 +33,12 @@
 
 import re
 import os
+import codecs
 from schema import getMetaType
+from utils.utils import u
 from utils.date import parse_date
 
-token = re.compile(r'@\w+\s*{|[a-zA-Z-]+\s*=\s*{?["\'{]|[a-zA-Z-]+\s*=\s+[0-9a-zA-Z_]')
+token = re.compile(r'@\w+\s*{\s*|[a-zA-Z-]+\s*=\s*{?["\'{]|[a-zA-Z-]+\s*=\s+[0-9a-zA-Z_]')
 comment = re.compile(r'%[^\n]*\n')
 delim = re.compile(r'\W')
 frontgarbage = re.compile(r'^\W*')
@@ -45,9 +47,22 @@ xspace = re.compile(r'\s+')
 
 counterpiece = {"{":"}",'"':'"',"'":"'"}
 
+class MissingMapping(Exception):
+    def __init__(self, message=""):
+        self.message = message
+    def __str__(self):
+        return self.message
+
+
 def getentries(filename):
-    fi = open(filename, "rb")
-    data = fi.read()
+    fi = codecs.open(filename, "r", "utf-8")
+    
+    try:
+        data = fi.read()
+    except UnicodeDecodeError:
+        fi.close()
+        raise MissingMapping("wrong encoding")
+        
     fi.close()
     data = data.replace("\r", "\n")
     data = comment.sub('\n', data)
@@ -67,7 +82,7 @@ def getentries(filename):
         end = m.end()
         if data[start]=='@':
             # new entry
-            doctype = data[start+1:end-1].strip().lower()
+            doctype = data[start+1:end-1].replace("{", "").strip().lower()
             m = delim.search(data,end)
             if m and m.start()>end:
                 key = data[end:m.start()].strip()
@@ -117,16 +132,21 @@ def getentries(filename):
 
             # some people use html entities in their bibtex...
             content = content.replace("&quot;", "'")
-
-            content = xspace.sub(" ",backgarbage.sub("",frontgarbage.sub("",content)))
+            content = xspace.sub(" ", backgarbage.sub("", frontgarbage.sub("", content)))
             
-            content = unicode(content,"utf-8",errors='replace').encode("utf-8")
-
-            content = content.replace("\\\"u","Ã¼").replace("\\\"a","Ã¤").replace("\\\"o","Ã¶") \
-                             .replace("\\\"U","Ãœ").replace("\\\"A","Ã„").replace("\\\"O","Ã–")
+            #content = unicode(content,"utf-8",errors='replace').encode("utf-8")
+            content = u(content)    
+            content = content.replace("\\\"u","\xc3\xbc").replace("\\\"a","\xc3\xa4").replace("\\\"o","\xc3\xb6") \
+                             .replace("\\\"U","\xc3\x9c").replace("\\\"A","\xc3\x84").replace("\\\"O","\xc3\x96")
             content = content.replace("\\","")
-            content = content.replace("{\"u}","Ã¼").replace("{\"a}","Ã¤").replace("{\"o}","Ã¶") \
-                             .replace("{\"U}","Ãœ").replace("{\"A}","Ã„").replace("{\"O}","Ã–")
+            content = content.replace("{\"u}","\xc3\xbc").replace("{\"a}","\xc3\xa4").replace("{\"o}","\xc3\xb6") \
+                             .replace("{\"U}","\xc3\x9c").replace("{\"A}","\xc3\x84").replace("{\"O}","\xc3\x96")
+
+            #content = content.replace("\\\"u","Ã¼").replace("\\\"a","Ã¤").replace("\\\"o","Ã¶") \
+            #                 .replace("\\\"U","Ãœ").replace("\\\"A","Ã„").replace("\\\"O","Ã–")
+            #content = content.replace("\\","")
+            #content = content.replace("{\"u}","Ã¼").replace("{\"a}","Ã¤").replace("{\"o}","Ã¶") \
+            #                 .replace("{\"U}","Ãœ").replace("{\"A}","Ã„").replace("{\"O}","Ã–")
             content = content.strip()
 
             if field in ["author","editor"] and content:
@@ -237,21 +257,23 @@ def detecttype(doctype, fields):
     else:
         return None
 
-class MissingMapping:
-    def __init__(self, message=""):
-        self.message = message
-    def __str__(self):
-        return self.message
-
 def importBibTeX(file, node=None):
     bibtextypes = getbibtexmappings()
     result = []
-
-    if not node:
-        node = tree.Node(name=os.path.basename(file), type="directory")
-
+    entries = []
     shortcut = {}
-    for doctype, docid, fields in getentries(file):
+    
+    if type(file)==list:
+        entries = file
+    else:
+        if not node:
+            node = tree.Node(name=os.path.basename(file), type="directory")
+        try:
+            entries = getentries(file)
+        except:
+            raise ValueError("encoding_error")
+        
+    for doctype, docid, fields in entries:
         mytype = detecttype(doctype, fields)
 
         if mytype:
@@ -259,7 +281,6 @@ def importBibTeX(file, node=None):
             datefields = {}
             
             if mytype=="string":
-                print "string fields:", fields
                 continue
             
             elif mytype not in bibtextypes:

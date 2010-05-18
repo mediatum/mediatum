@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.35 2010/03/23 10:22:58 seiferta Exp $'
+RCS_ID =  '$Id: athana.py,v 1.36 2010/05/18 14:57:46 seiferta Exp $'
 
 import sys
 
@@ -2554,7 +2554,6 @@ class AthanaTALEngine:
             raise TALESError("empty macro name")
         i = macroName.rfind('/')
         if i < 0:
-            print "NO Macro"
             return None, macroName
         else:
             fileName = getMacroFile(macroName[:i])
@@ -6763,6 +6762,22 @@ def addFileStore(webpath, localpaths):
     c = FileStore(webpath, localpaths)
     contexts += [c]
     return c
+    
+def getFileStorePaths(webpath):
+    global contexts
+    ret = []
+    for context in contexts:
+        if context.name==webpath:
+            for h in context.handlers:
+                ret.append(h.filesystem.root)
+    return ret
+                
+def addFileStorePath(webpath, path):
+    global contexts
+    for context in contexts:
+        if context.name==webpath:
+            if path not in context.handlers:
+                context.addRoot(path)
 
 def setThreads(number):
     global number_of_threads

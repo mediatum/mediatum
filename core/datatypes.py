@@ -40,17 +40,6 @@ class Datatype:
     def getComment(self):
         return self.comment
 
-    def hasUploadForm(self):
-        try:
-            global nodeclasses
-            obj = nodeclasses[self.id]
-            if "upload_form" in obj.__dict__:
-                return True
-            else:
-                return False
-        except:
-            return False
-
     def getLongName(self):
         return self.classname
         

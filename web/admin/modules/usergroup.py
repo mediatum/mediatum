@@ -30,7 +30,7 @@ import os
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from core.usergroups import groupoption, loadGroupsFromDB, getGroup, existGroup, create_group, updateAclRule, deleteGroup, getNumUsers
 from core.translation import t, lang
-from utils.utils import splitpath
+from utils.utils import splitpath, u
 
 def getInformation():
     return{"version":"1.0"}
@@ -40,6 +40,16 @@ def getInformation():
 #
 def validate(req, op):
     try:
+    
+        if "action" in req.params.keys():
+            if req.params.get("action")=="titleinfo":
+                group = getGroup(u(req.params.get("group")))
+                schema = group.getSchemas()
+                req.write('|'.join(schema))
+            return ""
+    
+    
+    
         for key in req.params.keys():
             if key.startswith("new"):
                 # create new group

@@ -458,5 +458,4 @@ def fts_indexer_thread():
 
 def startThread():
     thread_id = thread.start_new_thread(fts_indexer_thread, ())
-    log.info("started indexer thread, thread_id="+str(thread_id))
 

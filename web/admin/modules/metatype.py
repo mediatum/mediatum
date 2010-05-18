@@ -229,7 +229,7 @@ def validate(req, op):
             mask.setName(req.params.get("mname"))
             mask.setDescription(req.params.get("mdescription"))
             mask.setMasktype(req.params.get("mtype"))
-            mask.setSeperator(req.params.get("mseperator"))
+            mask.setSeparator(req.params.get("mseparator"))
 
             if req.params.get("mtype")=="export":
                 mask.setExportMapping(req.params.get("exportmapping"))
@@ -522,7 +522,7 @@ def showEditor(req):
         item.setUnit(req.params.get("unit", ""))
         item.setDefault(req.params.get("default", ""))
         item.setFormat(req.params.get("format", ""))
-        item.setSeperator(req.params.get("seperator", ""))
+        item.setSeparator(req.params.get("separator", ""))
         item.setDescription(req.params.get("description",""))
         if "required" in req.params.keys():
             item.setRequired(1)
@@ -576,7 +576,7 @@ def showEditor(req):
         item.setUnit(req.params.get("unit", ""))
         item.setDefault(req.params.get("default", ""))
         item.setFormat(req.params.get("format", ""))
-        item.setSeperator(req.params.get("seperator", ""))
+        item.setSeparator(req.params.get("separator", ""))
         item.setDescription(req.params.get("description",""))
         if "required" in req.params.keys():
             item.setRequired(1)

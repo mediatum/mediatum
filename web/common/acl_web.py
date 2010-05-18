@@ -48,8 +48,6 @@ def makeList(req, name, rights, readonlyrights, overload=0, type=""):
                     val_left += """<optgroup label="%s"></optgroup>""" % (translate("edit_acl_special_rule", lang(req)))
                 else:
                     val_left += """<optgroup label="%s"></optgroup>""" % (rule)
-    else:
-        print rightsmap
     
     # node-level standard rules
     for rule in rulelist:
@@ -69,5 +67,4 @@ def makeList(req, name, rights, readonlyrights, overload=0, type=""):
     for rule in rulelist:
         if rule.getName() not in rightsmap and rule.getName() not in rorightsmap:
             val_right += """<option value="%s">%s</option>""" % (rule.getName(),rule.getDescription())
-
     return {"name":name, "val_left":val_left, "val_right":val_right, "type":type}

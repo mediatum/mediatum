@@ -23,19 +23,24 @@ import schema
 import core.athana as athana
 import core.acl as acl
 import os
+import default
 
-from utils.utils import getMimeType, format_filesize,splitfilename, u, OperationException
+from utils.utils import getMimeType, splitfilename, u, OperationException
 from core.tree import Node,FileNode
 from schema.schema import loadTypesFromDB, VIEW_HIDE_EMPTY,VIEW_DATA_ONLY
 from core.translation import lang, t
 from core.acl import AccessData
+from core.styles import getContentStyles
 from lib.pdf import parsepdf
-import default
-
-fileicons = {'directory':'mmicon_dir.gif', 'application/pdf':'mmicon_pdf.gif', 'image/jpeg':'mmicon_jpg.gif', 'image/gif':'mmicon_gif.gif', 'image/png':'mmicon_png.gif', 'image/tiff':'mmicon_tiff.gif', 'image/x-ms-bmp':'mmicon_bmp.gif', 'application/postscript':'mmicon_ps.gif', 'application/zip':'mmicon_zip.gif', 'other':'mmicon_file.gif' , "back": "mmicon_back.gif", "application/mspowerpoint":"mmicon_ppt.gif", "application/msword":"mmicon_doc.gif", "video/x-msvideo":"mmicon_avi.gif"}
+from core.attachment import filebrowser
 
 """ document class """
 class Document(default.Default):
+    def getTypeAlias(node):
+        return "document"
+        
+    def getCategoryName(node):
+        return "document"
 
     def _prepareData(node, req, words=""):
 
@@ -49,12 +54,7 @@ class Document(default.Default):
             obj['metadata'] = []
         obj['node'] = node  
         obj['path'] = req and req.params.get("path","") or ""
-        files, sum_size = node.filebrowser(req)
-        
-        #doc_exist = False
-        #for f in node.getFiles():
-        #    if f.type=="doc":
-        #        doc_exist = True
+        files, sum_size = filebrowser(node, req)
             
         obj['attachment'] = files
         obj['sum_size'] = sum_size
@@ -95,9 +95,13 @@ class Document(default.Default):
         return obj
      
     """ format big view with standard template """
-    def show_node_big(node, req):
-        return req.getTAL("contenttypes/document.html", node._prepareData(req), macro="showbig")
-    
+    def show_node_big(node, req, template="", macro=""):
+        if template=="":
+            styles = getContentStyles("bigview", contenttype=node.getContentType())
+            if len(styles)>=1:
+                template = styles[0].getTemplate()
+        return req.getTAL(template, node._prepareData(req), macro)
+
     """ format node image with standard template """
     def show_node_image(node):
         return '<img src="/thumbs/'+node.id+'" class="thumbnail" border="0"/>'
@@ -225,79 +229,22 @@ class Document(default.Default):
     def popup_thumbbig(node, req):
         node.popup_fullsize(req)
 
-    """ get attachments for node (current directory) """
-    def filebrowser(node, req):
-        global fileicons
-        filesize = 0
-        ret = list()
-        path = ""
-        for f in node.getFiles():
-            if f.getType() == "attachment":
-                path = f._path
-                break
-        
-        if path == "":
-            # no attachment directory -> test for single file
-            file = {}
-            for f in node.getFiles():
-                if f.getType() not in node.getSysFiles():
-                    file["mimetype"], file["type"] = getMimeType(f.getName())
-                    file["icon"] = fileicons[file["mimetype"]]
-                    file["path"] = f._path
-                    file["name"] = f.getName()
-                    file["size"] = format_filesize(f.getSize())
-                    filesize += f.getSize()
-                    ret.append(file)
-            return ret, filesize
-
-        if not path.endswith("/") and not req.params.get("path", "").startswith("/"):
-            path += "/"
-        path += req.params.get("path", "")
-
-        if req.params.get("path","")!="":
-            file = {}
-            file["type"] = "back"
-            file["mimetype"] = "back"
-            file["icon"] = fileicons[file["mimetype"]]
-            file["name"] = ".."
-            file["path"] = req.params.get("path", "")
-            file["req_path"] = req.params.get("path", "")[:req.params.get("path", "").rfind("/")]
-            ret.append(file)
-
-        for name in os.listdir(config.settings["paths.datadir"] + path+"/"):
-            
-            if name.endswith(".thumb") or name.endswith(".thumb2"):
-                continue
-            file = {}
-
-            file_path = os.path.join(config.settings["paths.datadir"] +path, name)
-            if os.path.isdir(file_path):
-                # directory
-                file["type"] = "dir"
-                file["mimetype"] = "directory"
-            else:
-                # file
-                file["mimetype"], file["type"] = getMimeType(name)
-                file["size"] = format_filesize(os.path.getsize(file_path))
-                filesize += os.path.getsize(file_path)
-
-            file["icon"] = fileicons[file["mimetype"]]
-            file["path"] = os.path.join(path, name)
-            file["name"] = name
-            file["req_path"] = req.params.get("path", "") + "/" + file["name"]
-            ret.append(file)
-
-        return ret, format_filesize(filesize)
-
-    """ format attachment browser """
-    def getAttachmentBrowser(node, req):
-        f, s = node.filebrowser(req)
-        req.writeTAL("contenttypes/document.html", {"files":f, "sum_size":s, "id": req.params.get("id",""), "path":req.params.get("path", "")}, macro="attachmentbrowser")
-
         
     def getEditMenuTabs(node):
         return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
 
     def getDefaultEditTab(node):
         return "view"
+        
+    def processDocument(node, dest):
+        for file in node.getFiles():
+            if file.getType()=="document":
+                filename = file.retrieveFile()
+                if os.sep=='/':
+                    cmd = "cp %s %s" %(filename, dest)
+                    ret = os.system(mcd)
+                else:
+                    cmd = "copy %s %s" %(filename, dest+node.id+".pdf")
+                    ret = os.system(cmd.replace('/','\\'))
+        return 1
         

@@ -48,22 +48,24 @@ tree.registerNodeClass("collection", Directory)
 tree.registerNodeClass("collections", Directory)
 tree.registerNodeClass("root", Directory)
 tree.registerNodeClass("home", Directory)
-tree.registerNodeClass("navitem", Directory)
 
-from contenttypes.image import Image
-tree.registerNodeClass("image", Image)
-from contenttypes.document import Document
-tree.registerNodeClass("document", Document)
-from contenttypes.flash import Flash
-tree.registerNodeClass("flash", Flash)
-from contenttypes.video import Video
-tree.registerNodeClass("video", Video)
+# register types in definition directory /contenttypes
+log.info("Loading Content types")
+for root, dirs, files in os.walk(os.path.join(config.basedir, 'contenttypes')):
+    for name in [f for f in files if f.endswith(".py") and f!="__init__.py"]:
+        m = __import__("contenttypes."+name[:-3])
+        m = eval("m."+name[:-3]+"."+name[0].upper()+name[1:-3])
+        tree.registerNodeClass(name[:-3], m)
+
 from core.user import User
 tree.registerNodeClass("user", User)
 from core.usergroup import UserGroup
 tree.registerNodeClass("usergroup", UserGroup)
 from contenttypes.default import Default
 tree.registerNodeClass("default", Default)
+
+from core.shoppingbag import ShoppingBag
+tree.registerNodeClass("shoppingbag", ShoppingBag)
 
 from schema.schema import Metadatatype, Metadatafield, Mask, Maskitem
 tree.registerNodeClass("metadatatype", Metadatatype)
@@ -109,12 +111,10 @@ except ImportError:
 # make all subnodes of collections collections
 for n in tree.getRoot("collections").getChildren():
     if "directory" in n.type:
-        print "making node",n.id,n.name,"a collection"
         n.setContentType("collection")
         n.setSchema(None)
 
 if not tree.getRoot().hasChild("searchmasks"):
-    print "creating searchmasks node"
     tree.getRoot().addChild(tree.Node(name="searchmasks", type="searchmasks"))
 
 for k,v in config.getsubset("plugins").items():

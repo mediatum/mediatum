@@ -146,6 +146,22 @@ class User(tree.Node):
         else:
             from core.users import authenticators
             return authenticators[self.getUserType()].canChangePWD()
+            
+    def getShoppingBag(self, name=""):
+        ret = []
+        for c in self.getChildren():
+            if c.getContentType()=="shoppingbag":
+                if str(c.id)==str(name) or c.getName()==name:
+                    return [c]
+                else:
+                    ret.append(c)
+        return ret
+        
+    def addShoppingBag(self, name, items=[]):
+        sb = tree.Node(name, type="shoppingbag")
+        sb.setItems(items)
+        self.addChild(sb)
+    
   
 class ExternalUser:
 

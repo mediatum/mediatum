@@ -24,6 +24,12 @@ import os
 _db = None
 _dbconn = None
 
+class DatabaseException:
+    def __init__(self, msg):
+        self.msg = msg
+    def __str__(self):
+        return "db exception: "+self.msg+"\n"
+
 def getConnection():
     global _db, _dbconn
     if not _db:

@@ -19,6 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import MySQLdb
+import core
 import sys
 from time import *
 import logging
@@ -26,7 +27,7 @@ import traceback
 import thread
 from connector import Connector
 
-from core.db.database import initDatabaseValues
+from core.db.database import initDatabaseValues, DatabaseException
 
 if __name__ == "__main__":
     sys.path += [".."]
@@ -225,9 +226,9 @@ class MYSQLConnector(Connector):
         if len(rule)==1:
             return rule[0][2], rule[0][1]
         elif len(rule)>1:
-            raise "DuplicateRuleError"
+            raise DatabaseException("duplicate rule")
         else:
-            raise "RuleNotFoundError"
+            raise DatabaseException("rule not found")
     
 
     def getRuleList(self):

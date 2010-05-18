@@ -32,52 +32,52 @@ def getInformation():
     return{"version":"1.0"}
 
 def validate(req, op):
-    try:
-        for key in req.params.keys():
-            if key == "style" and req.params.get("style","")=="editor":
-                return showEditor(req)
+    #try:
+    for key in req.params.keys():
+        if key == "style" and req.params.get("style","")=="editor":
+            return showEditor(req)
 
-            if key.startswith("new"):
-                # create new rule
-                return editRule_mask(req, "")
+        if key.startswith("new"):
+            # create new rule
+            return editRule_mask(req, "")
 
-            elif key.startswith("edit_"):
-                # edit rule
-                return editRule_mask(req, str(key[key.index("_")+1:-2]))
+        elif key.startswith("edit_"):
+            # edit rule
+            return editRule_mask(req, str(key[key.index("_")+1:-2]))
 
-            elif key.startswith("delete_"):
-                # delete rule
-                acl.deleteRule(str(key[7:-2]))
+        elif key.startswith("delete_"):
+            # delete rule
+            acl.deleteRule(str(key[7:-2]))
+            break
+            
+        elif key.startswith("reset_"):
+            # remove not defined rule names from nodes
+            acl.resetNodeRule(key[6:-2])
+            break
+            
+        elif key == "form_op":
+            if req.params.get("form_op")=="save_new":
+                # save rule values
+                if req.params.get("rulename")=="" or req.params.get("rule")=="":
+                    return editRule_mask(req, "", 1) # no rulename or rulestring
+
+                elif acl.existRule(req.params.get("rulename")):
+                    return editRule_mask(req, "", 2) # rule still existing
+                else:
+                    acl.addRule(AccessRule(req.params.get("rulename"), req.params.get("rule"), req.params.get("description")))
                 break
-                
-            elif key.startswith("reset_"):
-                # remove not defined rule names from nodes
-                acl.resetNodeRule(key[6:-2])
+            elif req.params.get("form_op")=="save_edit":
+                # update rule
+
+                if req.params.get("rule")!="":
+                    acl.updateRule(AccessRule(req.params.get("rulename"), req.params.get("rule"), req.params.get("description")), oldrule=req.params.get("oldrulename"))
                 break
-                
-            elif key == "form_op":
-                if req.params.get("form_op")=="save_new":
-                    # save rule values
-                    if req.params.get("rulename")=="" or req.params.get("rule")=="":
-                        return editRule_mask(req, "", 1) # no rulename or rulestring
+    return view(req)
 
-                    elif acl.existRule(req.params.get("rulename")):
-                        return editRule_mask(req, "", 2) # rule still existing
-                    else:
-                        acl.addRule(AccessRule(req.params.get("rulename"), req.params("rule"), req.params("description")))
-                    break
-                elif req.params.get("form_op")=="save_edit":
-                    # update rule
-
-                    if req.params.get("rule")!="":
-                        acl.updateRule(AccessRule(req.params.get("rulename"), req.params.get("rule"), req.params.get("description")), oldrule=req.params.get("oldrulename"))
-                    break
-        return view(req)
-
-    except:
-        print "Warning: couldn't load module for type",type
-        print sys.exc_info()[0], sys.exc_info()[1]
-        traceback.print_tb(sys.exc_info()[2])
+    #except:
+    #    print "Warning: couldn't load module for type",type
+    #    print sys.exc_info()[0], sys.exc_info()[1]
+    #    traceback.print_tb(sys.exc_info()[2])
 
 
 #

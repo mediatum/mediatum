@@ -26,6 +26,7 @@ import core.athana as athana
 import core.config as config
 import default
 from core.translation import t, lang
+from utils.utils import CustomItem
 
 
 SRC_PATTERN = re.compile('src="([^":/]*)"')
@@ -60,7 +61,7 @@ def includetemplate(node, file, substitute):
         print "Couldn't find",file
     return ret
 
-# taken from web/frontend/content.py 20090908 wn
+    
 def fileIsNotEmpty(file):
     f = open(file)
     s = f.read().strip()
@@ -70,6 +71,12 @@ def fileIsNotEmpty(file):
 
 """ directory class """
 class Directory(default.Default):
+    def getTypeAlias(node):
+        return "directory"
+        
+    def getCategoryName(node):
+        return "container"
+
     
     def getStartpageDict(node):
         d = {}
@@ -108,15 +115,23 @@ class Directory(default.Default):
         return res
 
     """ format big view with standard template """
-    def show_node_big(node, req):
+    def show_node_big(node, req, template="", macro=""):
         content = ""
         link = "node?id="+node.id + "&amp;files=1"
+        
+        if "item" in req.params:
+            fpath = config.get("paths.datadir")+"html/"+req.params.get("item")
+            if os.path.isfile(fpath):
+                c = open(fpath, "r")
+                content = c.read()
+                c.close()
+                return content
         
         spn = node.getStartpageFileNode(lang(req))
         if spn:
             long_path = spn.retrieveFile()
             if os.path.isfile(long_path) and fileIsNotEmpty(long_path):
-                                  content = includetemplate(node, long_path, {'${next}': link})
+                content = includetemplate(node, long_path, {'${next}': link})
             if content:
                 return content
 
@@ -138,7 +153,6 @@ class Directory(default.Default):
         elif self.type == "collection" or self.type == "collections":
             return ["directory","collection"]
         elif self.type.startswith("directory"):
-            print "special directory"
             return ["directory"]
         else:
             return []
@@ -230,4 +244,19 @@ class Directory(default.Default):
     def getDefaultEditTab(node):
         return "content"
     
+    def getCustomItems(node, type=""):
+        ret = []
+        items = {}
+        items[type] = node.get("system."+type).split(";")
+
+        for item in items[type]:
+            if item!="":
+                item = item.split("|")
+                if len(item)==4:
+                    ci = CustomItem(item[0], item[1], item[2], item[3])
+                ret.append(ci)
+        return ret
+        
+    def setCustomItems(node, type, items):
+        node.set("system."+type, ";".join(str(i) for i in items))
 

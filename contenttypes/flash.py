@@ -28,6 +28,11 @@ import default
 
 """ flash class """
 class Flash(default.Default):
+    def getTypeAlias(node):
+        return "flash"
+
+    def getCategoryName(node):
+        return "video"
 
     def _prepareData(node, req, words=""):
         mask = node.getMask("nodebig")
@@ -38,8 +43,8 @@ class Flash(default.Default):
         return obj
 
     """ format big view with standard template """
-    def show_node_big(node, req):
-        return req.getTAL("contenttypes/flash.html", node._prepareData(req), macro="showbig")
+    def show_node_big(node, req, template="contenttypes/flash.html", macro="showbig"):
+        return req.getTAL(template, node._prepareData(req), macro)
 
     """ returns preview image """
     def show_node_image(node):

@@ -31,10 +31,12 @@ import hashlib
 
 from schema.schema import loadTypesFromDB, VIEW_DATA_ONLY, VIEW_HIDE_EMPTY
 from core.acl import AccessData
+from core.attachment import filebrowser
 from utils.fileutils import getImportDir
 from utils.utils import splitfilename, isnewer, formatException, iso2utf8, OperationException
 from core.tree import Node,FileNode
 from core.translation import lang,t
+from core.styles import getContentStyles
 from web.frontend import zoom
 
 """ make thumbnail (jpeg 128x128) """
@@ -44,12 +46,12 @@ def makeThumbNail(image, thumb):
         return
     print "Creating thumbnail for image ",image
     pic = Image.open(image)
-
-    if pic.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
-        tmpjpg = config.get("paths.datadir")+"tmp/img"+str(random.random())+".jpg"
-        retcode = os.system("convert "+image+" -depth 8 -colorspace rgb "+tmpjpg)
-        pic = Image.open(tmpjpg)
+    tmpjpg = config.get("paths.datadir")+"tmp/img"+str(random.random())+".jpg"
     
+    if pic.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
+        os.system("convert -quality 100 -fill #fffffe -draw \"rectangle 0,0 1,1\" %s %s" %(image, tmpjpg)) #always get a rgb image
+        pic = Image.open(tmpjpg)
+
     try:
         pic.load()
     except IOError, e:
@@ -76,31 +78,28 @@ def makeThumbNail(image, thumb):
     
     im = im.convert("RGB")
     im.save(thumb, "jpeg")
+    if os.path.exists(tmpjpg):
+        os.unlink(tmpjpg)
 
 """ make presentation format (png) """
 def makePresentationFormat(image, thumb):
     import Image,ImageDraw
     if isnewer(thumb,image):
         return
-    print "Creating presentation sized version of image ",image
+    print "Creating presentation sized version of image ", image
     
+    pic = Image.open(image)
+    tmpjpg = config.get("paths.datadir")+"tmp/img"+str(random.random())+".jpg"
+    if pic.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
+        os.system("convert -quality 100 -fill #fffffe -draw \"rectangle 0,0 1,1\" %s %s" %(image, tmpjpg))
+        pic = Image.open(tmpjpg)
+        
     try:
-        pic = Image.open(image)
         pic.load()
-        pic = pic.convert("RGB")
-    except (IOError, ValueError):
-        # happens for some TIF files... FIXME: enhance Python's imagelib
-        tmppnm = "/tmp/img"+str(random.random())+".pnm"
-        #os.system("tifftopnm "+image+" > "+tmppnm)
-        #pic = Image.open(tmppnm)
-        #pic.load()
-        #os.unlink(tmppnm)
-        os.system("convert "+image+" -depth 8 -colorspace rgb "+tmppng)
-        pic = Image.open(tmppng)
-        pic.load()
-        pic = pic.convert("RGB")
-        os.unlink(tmppng)
-
+    except IOError, e:
+        pic = None
+        raise OperationException("error:"+str(e))
+        
     width = pic.size[0]
     height = pic.size[1]
 
@@ -115,31 +114,31 @@ def makePresentationFormat(image, thumb):
             newwidth = width*newheight/height
         pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
     pic.save(thumb, "jpeg")
+    if os.path.exists(tmpjpg):
+        os.unlink(tmpjpg)
 
 """ make original (png real size) """
 def makeOriginalFormat(image, thumb):
     import Image
     
+    tmpjpg = config.get("paths.datadir")+"tmp/img"+str(random.random())+".jpg"
+    pic = Image.open(image)
+    if pic.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
+    #if image.endswith("jpg") or image.endswith("jpeg"):
+        os.system("convert -quality 100 -fill #fffffe -draw \"rectangle 0,0 1,1\" %s %s" %(image, tmpjpg))
+        pic = Image.open(tmpjpg)
+        
     try:
-        pic = Image.open(image)
         pic.load()
-        pic = pic.convert("RGB")
-    except (IOError, ValueError):
-        # happens for some TIF files... FIXME: enhance Python's imagelib
-        #tmppnm = "/tmp/img"+str(random.random())+".pnm"
-        #os.system("tifftopnm "+image+" > "+tmppnm)
-        #pic = Image.open(tmppnm)
-        #pic.load()
-        #os.unlink(tmppnm)
-        tmppng = "/tmp/img"+str(random.random())+".png"
-        os.system("convert "+image+" -depth 8 -colorspace rgb "+tmppng)
-        pic = Image.open(tmppng)
-        pic.load()
-        pic = pic.convert("RGB")
-        os.unlink(tmppng)
+    except IOError, e:
+        pic = None
+        raise OperationException("error:"+str(e))
+        
+    pic.save(thumb, "png")    
+    if os.path.exists(tmpjpg):
+        os.unlink(tmpjpg)
 
-    pic.save(thumb,"png")
-                    
+        
 """ evaluate image dimensions for given file """
 def getImageDimensions(image):
     import Image
@@ -177,17 +176,18 @@ def dozoom(node):
     for file in node.getFiles():
         if file.getType()=="zoom":
             return 1
+    if node.get("width") and node.get("height") and (int(node.get("width"))>2000 or int(node.get("height"))>2000):
+        return 1
     return 0
-    
-    #if node.get("width") and node.get("height") and \
-    #   (int(node.get("width"))>1000 or int(node.get("height"))>1000) and \
-    #   os.path.isfile(os.path.join(config.basedir,"web/img/zoom.swf")):
-    #       #if str(node.id) == "629716":
-    #           return 1
-    #return 0
 
+    
 """ image class for internal image-type """
 class Image(default.Default):
+    def getTypeAlias(node):
+        return "image"
+        
+    def getCategoryName(node):
+        return "image"
 
     # prepare hash table with values for TAL-template
     def _prepareData(node, req):
@@ -210,9 +210,15 @@ class Image(default.Default):
                         tif = f.getName()
         
             if node.get("archive_path")!="":
-                tif = "file/"+str(node.id)+node.get("archive_path")
+                tif = "file/"+str(node.id)+"/"+node.get("archive_path")
+                
+        files, sum_size = filebrowser(node, req)
+        print "\n\n->Files:", files, sum_size, "\n\n"
 
         obj = {}
+        obj['path'] = req and req.params.get("path","") or ""
+        obj['attachment'] = files
+        obj['sum_size'] = sum_size
         obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY) # hide empty elements
         obj['node'] = node
         obj['tif'] = tif
@@ -234,8 +240,12 @@ class Image(default.Default):
         return obj
     
     """ format big view with standard template """
-    def show_node_big(node, req):
-        return req.getTAL("contenttypes/image.html", node._prepareData(req), macro="showbig")
+    def show_node_big(node, req, template="", macro=""):
+        if template=="":
+            styles = getContentStyles("bigview", contenttype=node.getContentType())
+            if len(styles)>=1:
+                template = styles[0].getTemplate()
+        return req.getTAL(template, node._prepareData(req), macro)
     
     """ format node image with standard template """
     def show_node_image(node, language=None):
@@ -248,7 +258,7 @@ class Image(default.Default):
         return node.name
 
     def getSysFiles(node):
-        return ["original","thumb","presentati","image"]
+        return ["original","thumb","presentati","image","presentation", "zoom"]
 
     """ postprocess method for object type 'image'. called after object creation """
     def event_files_changed(node):
@@ -291,7 +301,7 @@ class Image(default.Default):
 
             # retrieve technical metadata.
             for f in node.getFiles():
-                if f.type == "image":
+                if f.type=="image":
                     width,height = getImageDimensions(f.retrieveFile())
                     node.set("origwidth", width)
                     node.set("origheight", height)
@@ -300,10 +310,9 @@ class Image(default.Default):
                     if f.mimetype=="image/jpeg":
                         node.set("jpg_comment", iso2utf8(getJpegSection(f.retrieveFile(), 0xFE).strip()))
 
-            if thumb == 0:
+            if thumb==0:
                 for f in node.getFiles():
-                    print "look for image",f.type,"|%s|" % f.retrieveFile()
-                    if f.type == "image":
+                    if f.type=="image":
                         path,ext = splitfilename(f.retrieveFile())
                         basename = hashlib.md5(str(random.random())).hexdigest()[0:8]
                        
@@ -351,7 +360,7 @@ class Image(default.Default):
             except:
                 None
 
-            if node.get("width")>=5000 or node.get("height")>=5000:# dozoom(node):
+            if dozoom(node)==1:
                 tileok = 0
                 for f in node.getFiles():
                     if f.type.startswith("tile"):

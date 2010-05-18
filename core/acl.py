@@ -473,8 +473,7 @@ def getRule(name):
         else:
             try:
                 description, text = conn.getRule(name)
-            except database.DatabaseException("rule not found"):
-                print "rule not found, access denied"
+            except: # return false
                 description = "( not true )"
                 text = "dummy_rule"
 

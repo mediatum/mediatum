@@ -85,18 +85,59 @@ def isnewer(path1, path2):
     except:
         return 0
 
+def isNumeric(s):
+    try:
+        i = float(s)
+    except ValueError:
+        return 0
+    else:
+        return 1
 
 class Link:
-    def __init__(self, link, title, label, target="_self"):
+    def __init__(self, link, title, label, target="_self", icon="/img/blank.gif"):
         self.link = link
         self.title = title
         self.label = label
         self.target = target
+        self.icon = icon
 
     def getTitle(self):
         return self.title
     
+class CustomItem:
+    def __init__(self, name, filename, type="intern", icon=""):
+        self.name = name
+        self.filename = filename
+        self.type = type
+        self.icon = icon
+        
+    def getName(self):
+        return self.name
+
+    def getLink(self):
+        if self.type=="intern":
+            return "/?item="+self.filename
+        elif self.type=="node":
+            return "/?id="+self.filename
+        elif self.type=="text":
+            return ""
+        return self.filename
+            
+    def getType(self):
+        return self.type
+
+    def getIcon(self):
+        return self.icon
+        
+    def __str__(self):
+        return "%s|%s|%s|%s" %(self.name, self.filename, self.type, self.icon)
+    
+    
 def format_filesize(size):
+    try:
+        size = int(size)
+    except:
+        return size
     if size<1024:
         return "%d Byte" % size
     elif size<1048576:
@@ -358,6 +399,16 @@ def getMimeType(filename):
     elif filename.endswith(".xml"):
         mimetype = "application/xml"
         type = "xml"
+    elif filename.endswith(".mp3"):
+        mimetype = "audio/mpeg"
+        type = "audio"
+    elif filename.endswith(".wav"):
+        mimetype = "audio/x-wav"
+        type = "audio"
+    elif filename.endswith(".aif") or filename.endswith(".aiff"):
+        mimetype = "audio/x-aiff"
+        type = "audio"
+
     else:
         mimetype = "other"
         type = "other"

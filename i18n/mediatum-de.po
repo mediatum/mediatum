@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2007-03-08 15:16+0100\n"
+"PO-Revision-Date: 2010-04-15 14:48+0100\n"
 "Last-Translator: Arne Seifert <seifert@ub.tum.de>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -19,7 +19,6 @@ msgid "welcome"
 msgstr "Willkommen auf mediaTUM"
 
 msgid "username:"
-msgstr "Benutzername:"
 msgstr "Benutzername:"
 
 msgid "password:"
@@ -49,10 +48,10 @@ msgstr "mediaTUM - Der Medienserver der TU München"
 msgid "bib_link_title"
 msgstr "Zum Bibliotheksportal"
 
-msgid "header_shoopingbag_alt"
+msgid "header_shoppingbag_alt"
 msgstr "Merkliste"
 
-msgid "header_shoopingbag_title"
+msgid "header_shoppingbag_title"
 msgstr "Merkliste anzeigen"
 
 msgid "sub_header_user"
@@ -83,7 +82,7 @@ msgid "login_save"
 msgstr "Speichern"
 
 msgid "login_currentuser_msg"
-msgstr "Sie sind derzeit angemeldet als: [ ${name} ]"
+msgstr "Sie sind derzeit angemeldet als: <b>${name}</b>"
 
 msgid "login_change_err_1"
 msgstr "Das Ursprungspasswort stimmt nicht mit dem gespeicherten überein"
@@ -475,6 +474,9 @@ msgstr "Caches"
 msgid "admin_menu_settings"
 msgstr "Mediatum Konfiguration"
 
+msgid "admin_menu_settingsmenu"
+msgstr "Menü Konfiguration"
+
 msgid "admin_submenu"
 msgstr "Unterpunkte:"
 
@@ -657,6 +659,9 @@ msgstr "LDAP Benutzer"
 msgid "user_option_1"
 msgstr "Passwort änderbar"
 
+msgid "user_option_2"
+msgstr "Merkliste speicherbar"
+
 msgid "admin_user_existing"
 msgstr "Vorhandene Benutzer"
 
@@ -752,9 +757,6 @@ msgstr "Text"
 
 msgid "admin_user_send"
 msgstr "Senden"
-
-msgid "admin_user_sendmail_title"
-msgstr "Email absenden"
 
 msgid "admin_user_emailsend"
 msgstr "Email wurde verschickt."
@@ -1011,8 +1013,17 @@ msgstr "Name"
 msgid "admin_meta_description"
 msgstr "Beschreibung"
 
+msgid "wf_edit_stepname"
+msgstr "Workflow Schritt"
+
+msgid "wf_edit_stepitems"
+msgstr "Anzahl Objekte"
+
 msgid "admin_meta_rights"
 msgstr "Berechtigung"
+
+msgid "admin_meta_writerights"
+msgstr "Schreibrechte"
 
 msgid "admin_meta_active"
 msgstr "Aktiv"
@@ -1249,6 +1260,9 @@ msgstr "- kein Mapping -"
 msgid "admin_mask_acl_title"
 msgstr "Metadatenmaske besitzt ACL-Regel"
 
+msgid "admin_mask_separator"
+msgstr "Feld-Trenner"
+
 msgid "masktype_empty"
 msgstr "-kein Typ-"
 
@@ -1473,6 +1487,12 @@ msgstr "Name"
 msgid "admin_wf_col_2"
 msgstr "Beschreibung"
 
+msgid "admin_wf_col_3"
+msgstr "ACL (lesen)"
+
+msgid "admin_wf_col_4"
+msgstr "ACL (schreiben)"
+
 msgid "admin_wf_exportall_title"
 msgstr "Alle Workflowdefinitionen exportieren"
 
@@ -1481,6 +1501,9 @@ msgstr "Neuen Workflow anlegen"
 
 msgid "admin_wf_name"
 msgstr "Name"
+
+msgid "admin_wf_acl_title"
+msgstr "Workflow besitzt ACL-Regel"
 
 msgid "admin_wf_nowf"
 msgstr "- keine Workflows vorhanden -"
@@ -1547,6 +1570,15 @@ msgstr "False"
 
 msgid "admin_wfstep_col_5"
 msgstr "Beschreibung"
+
+msgid "admin_wfstep_col_6"
+msgstr "ACL (lesen)"
+
+msgid "admin_wfstep_col_7"
+msgstr "ACL (schreiben)"
+
+msgid "admin_wfstep_acl_title"
+msgstr "Schritt besitzt ACL-Regel"
 
 msgid "admin_wfstep_new_title"
 msgstr "Neuen Knoten anlegen"
@@ -1694,6 +1726,15 @@ msgstr "Datenbank"
 msgid "admin_settings_search_header"
 msgstr "Suche"
 
+msgid "admin_settings_searchconfig_header"
+msgstr "Sucheinstellungen"
+
+msgid "searchreplace_chars"
+msgstr "Zeichen, die ersetzt werden sollen:"
+
+msgid "searchreplace_words"
+msgstr "Worte, die ersetzt werden sollen:"
+
 msgid "admin_settings_other_header"
 msgstr "Sonstiges"
 
@@ -1809,9 +1850,6 @@ msgid "admin_settings_python_copyright"
 msgstr "Python Copyright:"
 
 msgid "admin_settings_archive_header"
-msgstr "Archivierung"
-
-msgid "admin_settings_archive_header"
 msgstr "Archivierungseinstellungen"
 
 msgid "admin_settings_archive_activate"
@@ -1905,6 +1943,15 @@ msgstr "Systemmodul"
 msgid "wf_edit_header"
 msgstr "Workflows, die von Ihnen bearbeitet werden können"
 
+msgid "wf_edit_no_header"
+msgstr "Keine Workflows zur Bearbeitung vorhanden."
+
+msgid "wf_edit_nosearchresults"
+msgstr "- keine Treffer -"
+
+msgid "wf_edit_search"
+msgstr "Suchen"
+
 msgid "wf_edit_name"
 msgstr "Name"
 
@@ -1912,7 +1959,7 @@ msgid "wf_edit_description"
 msgstr "Beschreibung"
 
 msgid "wf_list_header"
-msgstr "${number}  Objekte im Workflow '"
+msgstr "${number} Objekte im Workflow '${name}'"
 
 msgid "wf_list_objects"
 msgstr "${number} Objekte"
@@ -1966,7 +2013,10 @@ msgid "workflow_show_step"
 msgstr "Schritt anzeigen"
 
 msgid "workflow_footer"
-msgstr "${number} Elemente im aktuellen Workflowschritt"
+msgstr "${number} Objekte im aktuellen Workflowschritt"
+
+msgid "workflow_searchfooter"
+msgstr "${number} Einträge gefunden"
 
 msgid "workflow_error_msg"
 msgstr "Bitte füllen Sie die fehlenden Pflichtfelder aus bzw. kontrollieren Sie die fehlerhaften Eingaben."
@@ -2010,6 +2060,9 @@ msgstr "Das Objekt ${name} ist am Ende des Workflows angekommen."
 msgid "workflow_step_ready_msg"
 msgstr "Das Objekt ${name} ist am Ende des Workflows angekommen."
 
+msgid "workflow_back"
+msgstr "Zurück"
+
 ### shoppingbag popup ###
 msgid "shoppingbag_object_added"
 msgstr "Objekt wurde zur Merkliste hinzugefügt."
@@ -2017,14 +2070,16 @@ msgstr "Objekt wurde zur Merkliste hinzugefügt."
 msgid "shoppingbag_object_still_added"
 msgstr "Objekt befindet dich bereit in der Merkliste."
 
-msgid "popup_shoppinbag_msg1"
-msgstr "Bilder k&ouml;nnen per Drag&Drop in eine Anwendung (z.B. Powerpoint) durch Ziehen exportiert werden:"
+msgid "popup_shoppingbag_img_title"
+msgstr "Bilder können per Drag&Drop in eine Anwendung (z.B. Powerpoint) durch Ziehen exportiert werden:"
 
-
-msgid "popup_shoppingbag_msg2"
+msgid "popup_shoppingbag_doc_title"
 msgstr "Dokumente können direkt geöffnet werden:"
 
-msgid "popup_shoppingbag_msg3"
+msgid "popup_shoppingbag_media_title"
+msgstr "Multimediadateien können direkt geöffnet werden:"
+
+msgid "popup_shoppingbag_no_items"
 msgstr "Keine Objekte in Ihrer Merkliste vorhanden"
 
 msgid "popup_shoppingbag_delete_title"
@@ -2039,8 +2094,107 @@ msgstr "Files werden verschoben..."
 msgid "popup_shoppingbag_add_msg"
 msgstr "Objekt wurde hinzugefügt"
 
-msgid "popup_shoppingbag_add_msg1"
-msgstr "(Fenster schlie&szlig;t nach 3 Sekunden)"
+msgid "popup_shoppingbag_title"
+msgstr "Merkliste"
+
+msgid "popup_shoppingbag_items_filtered"
+msgstr "Merkliste wurde gefiltert, nicht alle Objekte können angezeigt werden."
+
+msgid "shoppingbag_clear_item"
+msgstr "Objekt aus Merkliste entfernen"
+
+msgid "popup_shoppingbag_object_delete"
+msgstr "Soll die gewählte Merkliste wirklich gelöscht werden?"
+
+msgid "popup_shoppingbag_export"
+msgstr "Export..."
+
+msgid "popup_shoppingbag_metadata"
+msgstr "Metadaten:"
+
+msgid "popup_shoppingbag_imageonly"
+msgstr "Nur Bilder"
+
+msgid "popup_shoppingbag_imagemeta"
+msgstr "Bilder und Metadaten"
+
+msgid "popup_shoppingbag_metaonly"
+msgstr "Nur Metadaten"
+
+msgid "popup_shoppingbag_size"
+msgstr "Größe:"
+
+msgid "popup_shoppingbag_imagesize"
+msgstr "Bildgröße:"
+
+msgid "popup_shoppingbag_or"
+msgstr "oder"
+
+msgid "popup_shoppingbag_maximgsize"
+msgstr "Max. Seitenlänge:"
+
+msgid "popup_shoppingbag_stdsize"
+msgstr "Std. Größe:"
+
+msgid "popup_shoppingbag_format"
+msgstr "Format:"
+
+msgid "popup_shoppingbag_ziptitle"
+msgstr "Als Zip-Datei exportieren"
+
+msgid "popup_shoppingbag_doconly"
+msgstr "Nur Dokumente"
+
+msgid "popup_shoppingbag_docmeta"
+msgstr "Dokumente und Metadaten"
+
+msgid "popup_shoppingbag_mediaonly"
+msgstr "Nur Objekte"
+
+msgid "popup_shoppingbag_mediameta"
+msgstr "Objekte und Metadaten"
+
+msgid "popup_shoppingbag_ownbags"
+msgstr "Eigene Merklisten:"
+
+msgid "popup_shoppingbag_private"
+msgstr "private Merkliste (kann nicht extern geladen werden)"
+
+msgid "popup_shoppingbag_share_bag"
+msgstr "Merkliste öffentlich/privat schalten"
+
+msgid "popup_shoppingbag_delete_bag"
+msgstr "Merkliste löschen"
+
+msgid "popup_shoppingbag_load_bag"
+msgstr "Objekte der Merkliste laden"
+
+msgid "popup_shoppingbag_privateinfo"
+msgstr "private Merkliste"
+
+msgid "popup_shoppingbag_savebag"
+msgstr "Merkliste speichern:"
+
+msgid "popup_shoppingbag_name"
+msgstr "Name:"
+
+msgid "popup_shoppingbag_save"
+msgstr "speichern"
+
+msgid "popup_shoppingbag_loadbag"
+msgstr "Externe Merkliste laden (key):"
+
+msgid "popup_shoppingbag_key"
+msgstr "Schlüssel:"
+
+msgid "popup_shoppingbag_load"
+msgstr "laden"
+
+msgid "popup_shoppingbag_markall"
+msgstr "Alle Objekte markieren"
+
+msgid "popup_shoppingbag_unmarkall"
+msgstr "Auswahl aufheben"
 
 ### popup help###
 msgid "popup_help_title"
@@ -2049,6 +2203,9 @@ msgstr "Hilfe zum Metadatenfeld "${name}""
 ### edit area ###
 msgid "edit_module_error"
 msgstr "Das Modul '${name}' konnte nicht geladen werden."
+
+msgid "edit_template_error"
+msgstr "Bei der Verarbeitung des Templates ist ein Fehler aufgetreten. Den genauen Fehler können Sie untenstehender Meldung entnehmen:"
 
 msgid "edit_error_msg"
 msgstr "Sie besitzen nicht die notwendigen Rechte, um den Editorbereich zu betreten.<br/> Falls Sie nicht angemeldet sein sollten, können Sie das ${link}"
@@ -2097,6 +2254,12 @@ msgstr "Ordner konnte nicht erstellt werden: Der übergeordnete Ordner ist schre
 
 msgid "edit_action_msg"
 msgstr "Die Aktion ${action} wird ausgeführt"
+
+msgid "edit_add_folder"
+msgstr "Neuer Ordner"
+
+msgid "edit_add_collection"
+msgstr "Neue Kollektion"
 
 msgid "edit_nopermission"
 msgstr "Keine Berechtigung"
@@ -2173,12 +2336,97 @@ msgstr "Dirty-Flag"
 msgid "edit_localread"
 msgstr "Localread-Flag"
 
+### edit frontendparts ###
+msgid "item_type_intern"
+msgstr "HTML-Seite"
+
+msgid "item_type_text"
+msgstr "Text (Label)"
+
+msgid "item_type_link"
+msgstr "Link"
+
+msgid "item_type_node"
+msgstr "mediatum-Knoten"
+
+msgid "edit_frontendparts_name"
+msgstr "Name:"
+
+msgid "edit_frontendparts_type"
+msgstr "Typ:"
+
+msgid "edit_frontendparts_html"
+msgstr "HTML-Datei:"
+
+msgid "edit_frontendparts_link"
+msgstr "Link:"
+
+msgid "edit_frontendparts_node"
+msgstr "Konten:"
+
+msgid "edit_frontendparts_icon"
+msgstr "Icon:"
+
+msgid "edit_frontendparts_save"
+msgstr "Speichern"
+
+msgid "edit_frontendparts_cancel"
+msgstr "Abbrechen"
+
+msgid "edit_frontendparts_item_delete"
+msgstr "Soll der Eintrag wirklich gelöscht werden?"
+
+msgid "edit_frontendparts_header_title"
+msgstr "Header:"
+
+msgid "edit_frontendparts_footerleft_title"
+msgstr "Fußzeile links:"
+
+msgid "edit_frontendparts_footerright_title"
+msgstr "Fußzeile rechts:"
+
+msgid "edit_frontendparts_name_title"
+msgstr "Name"
+
+msgid "edit_frontendparts_link_title"
+msgstr "Link"
+
+msgid "edit_frontendparts_type_title"
+msgstr "Typ"
+
+msgid "edit_frontendparts_icon_title"
+msgstr "Icon"
+
+msgid "edit_frontendparts_selectnode_title"
+msgstr "Konten auswählen (Popup)"
+
+msgid "edit_frontendparts_selecticon_title"
+msgstr "Icon auswählen (Popup)"
+
+msgid "edit_frontendparts_deleteicon_title"
+msgstr "Icon löschen"
+
+msgid "edit_frontendparts_nodeheader"
+msgstr "Wählen Sie einen Knoten aus:"
+
+msgid "edit_frontendparts_iconheader"
+msgstr "Wählen Sie ein Icon aus:"
+
+msgid "edit_frontendparts_delete_title"
+msgstr "Eintrag löschen"
+
+msgid "edit_frontendparts_edit_title"
+msgstr "Eintrag bearbeiten"
+
+msgid "edit_frontendparts_order_title"
+msgstr "Reihenfolge ändern"
+
+msgid "edit_frontendparts_add_title"
+msgstr "Neuen Eintrag erzeugen"
+
 ### edit tabs ###
 msgid "tab_menulayout"
 msgstr "Aussehen"
-
-msgid "tab_metadata"
-msgstr "Daten"
 
 msgid "tab_metadata_col"
 msgstr "Konfiguration"
@@ -2198,16 +2446,22 @@ msgstr "Startseite editieren"
 msgid "tab_startpages"
 msgstr "Startseiten verwalten"
 
-msgid "tab_metadata_col"
-msgstr "Anzeige"
-
 msgid "tab_metadata_dir"
 msgstr "Anzeige"
+
+msgid "tab_techmeta"
+msgstr "Technische Metadaten"
+
+msgid "tab_meta"
+msgstr "Metadaten"
 
 msgid "tab_logo"
 msgstr "Logo editieren"
 
 msgid "tab_editor_title"
+msgstr "HTML-Seiten bearbeiten"
+
+msgid "tab_html_title"
 msgstr "HTML-Seiten bearbeiten"
 
 msgid "tab_upload_title"
@@ -2299,6 +2553,24 @@ msgstr "Zugriffsstatistiken"
 
 msgid "tab_statsfiles"
 msgstr "Datenstatistiken"
+
+msgid "tab_meta_col"
+msgstr "Anzeigen"
+
+msgid "tab_meta_dir"
+msgstr "Anzeigen"
+
+msgid "tab_techmeta_title"
+msgstr "Technische Metadaten anzeigen"
+
+msgid "tab_html"
+msgstr "Startseite bearbeiten"
+
+msgid "tab_techmeta_obj"
+msgstr "Digitales Objekt bearbeiten"
+
+msgid "tab_frontendparts"
+msgstr "Kopf-/Fusszeileneinträge"
 
 ### edit acls ###
 msgid "edit_acls_righttype_read"
@@ -2463,7 +2735,7 @@ msgid "edit_startpages_header"
 msgstr "Startseiten"
 
 msgid "edit_startpages_explain_table"
-msgstr "HTML-Seiten für diesen Node" 
+msgstr "HTML-Seiten für diesen Node"
 
 msgid "edit_startpages_edit"
 msgstr "diese Seite bearbeiten"
@@ -2478,7 +2750,7 @@ msgid "edit_startpages_reset"
 msgstr "Zurücksetzen"
 
 msgid "edit_startpages_explain_addbutton"
-msgstr "Klicken Sie auf den Schalter, um eine neue Seite im HTML-Editor zu bearbeiten." 
+msgstr "Klicken Sie auf den Schalter, um eine neue Seite im HTML-Editor zu bearbeiten."
 
 msgid "edit_startpages_addnew"
 msgstr "Neue Seite erzeugen"
@@ -2490,25 +2762,13 @@ msgid "edit_startpages_technical_name"
 msgstr "Tech. Name"
 
 msgid "edit_startpages_file_size"
-msgstr "Dateigröße (Bytes)"
-
-msgid "edit_startpages_ed"
-msgstr "Bearbeiten"
-
-msgid "edit_startpages_delete"
-msgstr "Löschen"
+msgstr "Größe"
 
 msgid "edit_startpages_deleteconfirm"
 msgstr "Wollen Sie diese Seite wirklich löschen?"
 
 msgid "edit_startpages_descriptive_name"
 msgstr "Beschreibender Name"
-
-msgid "edit_startpages_none"
-msgstr "- kein -"
-
-msgid "edit_startpages_not_applicable"
-msgstr "k.A."
 
 msgid "edit_startpages_do_not_use_a_startpage"
 msgstr "Keine Startseite für diese Sprache"
@@ -2808,9 +3068,6 @@ msgstr "Seite"
 msgid "print_preview_occurences"
 msgstr "Vorkommen"
 
-msgid "sort_label"
-msgstr "Sortieren nach:"
-
 msgid "edit_logo_logoheader"
 msgstr "Logo:"
 
@@ -2886,6 +3143,9 @@ msgstr "Stand"
 
 msgid "edit_stats_access"
 msgstr "Zugriffe"
+
+msgid "edit_stats_country"
+msgstr "Verteilung nach Ländern"
 
 msgid "edit_stats_spreading"
 msgstr "Verteilung nach Datum"
@@ -2964,9 +3224,6 @@ msgstr "Objekte gesamt"
 
 msgid "edit_stats_digobjlabel"
 msgstr "Objekte mit Digitalisat"
-
-msgid "edit_stats_schema"
-msgstr "Metadatenschemata"
 
 # mask editor #
 msgid "mask_editor_title"
@@ -3139,6 +3396,7 @@ msgstr "Kopfzeile"
 
 msgid "mask_edit_footer"
 msgstr "Fusszeile"
+
 ####
 msgid "mask_edit_mappingselection"
 msgstr "Mapping Typ:"
@@ -3151,6 +3409,7 @@ msgstr "Freie Formatbeschreibung"
 
 msgid "mask_edit_attribute_description"
 msgstr "mögliche Variablen:<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [value] = Attributwert aus 'Feld'<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [att:field] = Attributfeldname<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [att:id] = Knoten-ID<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (&lt;[att:field]&gt;[value]&lt;/[att:field]&gt;)"
+
 ####
 msgid "user_directory"
 msgstr "Arbeitsverzeichnis"
@@ -3184,6 +3443,9 @@ msgstr "bis"
 
 msgid "editor_input_format"
 msgstr "Eingabeformat: "
+
+msgid "editor_memo_label"
+msgstr "Zeichen übrig"
 
 msgid "popup_help_header"
 msgstr "Hilfe"
@@ -3528,3 +3790,25 @@ msgstr "Samstag"
 
 msgid "dayname_6_long"
 msgstr "Sonntag"
+
+msgid "document_view"
+msgstr "Dokument-Ansicht"
+
+msgid "document_view_text"
+msgstr "Textansicht"
+
+msgid "list_view"
+msgstr "Listenansicht"
+
+msgid "thumb_view"
+msgstr "Thumbnail-Ansicht"
+
+msgid "text_view"
+msgstr "Text-Ansicht"
+
+msgid "image_view"
+msgstr "Bild/Text-Ansicht"
+
+msgid "image_view_big"
+msgstr "Bild-Ansicht"
+

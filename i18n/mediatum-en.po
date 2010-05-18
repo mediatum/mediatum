@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2007-03-08 15:16+0100\n"
-"Last-Translator: Arne Seifert <seifert@ub.tum.de>\n"
+"PO-Revision-Date: 2010-04-15 14:48+0100\n"
+"Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
@@ -468,6 +468,9 @@ msgstr "Caches"
 msgid "admin_menu_settings"
 msgstr "mediatum configuration"
 
+msgid "admin_menu_settingsmenu"
+msgstr "Menu configuration"
+
 msgid "admin_submenu"
 msgstr "Subelements:"
 
@@ -650,6 +653,9 @@ msgstr "LDAP User"
 msgid "user_option_1"
 msgstr "password changeable"
 
+msgid "user_option_2"
+msgstr "favourites savable"
+
 msgid "admin_user_existing"
 msgstr "Existing Users"
 
@@ -745,9 +751,6 @@ msgstr "text"
 
 msgid "admin_user_send"
 msgstr "send"
-
-msgid "admin_user_sendmail_title"
-msgstr "send email"
 
 msgid "admin_user_emailsend"
 msgstr "Email was send."
@@ -1242,6 +1245,9 @@ msgstr "- no mapping -"
 msgid "admin_mask_acl_title"
 msgstr "metadatamask has an ACL-rule"
 
+msgid "admin_mask_separator"
+msgstr "Field Separator"
+
 msgid "masktype_empty"
 msgstr "-no type-"
 
@@ -1466,6 +1472,12 @@ msgstr "Name"
 msgid "admin_wf_col_2"
 msgstr "Description"
 
+msgid "admin_wf_col_3"
+msgstr "ACL (read)"
+
+msgid "admin_wf_col_4"
+msgstr "ACL (write)"
+
 msgid "admin_wf_exportall_title"
 msgstr "Export all workflows"
 
@@ -1474,6 +1486,9 @@ msgstr "create new workflow"
 
 msgid "admin_wf_name"
 msgstr "Name"
+
+msgid "admin_wf_acl_title"
+msgstr "workflow uses ACL-rule"
 
 msgid "admin_wf_nowf"
 msgstr "- no workflows defined -"
@@ -1540,6 +1555,12 @@ msgstr "False"
 
 msgid "admin_wfstep_col_5"
 msgstr "Description"
+
+msgid "admin_wfstep_col_6"
+msgstr "ACL"
+
+msgid "admin_wfstep_acl_title"
+msgstr "step uses ACL-rule"
 
 msgid "admin_wfstep_new_title"
 msgstr "Create new node"
@@ -1687,6 +1708,15 @@ msgstr "Datenbank"
 msgid "admin_settings_search_header"
 msgstr "Searchengine"
 
+msgid "admin_settings_searchconfig_header"
+msgstr "Search Configuration"
+
+msgid "searchreplace_chars"
+msgstr "Character to be replaced:"
+
+msgid "searchreplace_words"
+msgstr "Word to be replaced:"
+
 msgid "admin_settings_other_header"
 msgstr "Other"
 
@@ -1802,9 +1832,6 @@ msgid "admin_settings_python_copyright"
 msgstr "Python Copyright:"
 
 msgid "admin_settings_archive_header"
-msgstr "Archiving"
-
-msgid "admin_settings_archive_header"
 msgstr "Archiving settings"
 
 msgid "admin_settings_archive_activate"
@@ -1858,11 +1885,41 @@ msgstr "Show Module"
 msgid "admin_modules_adminmodules_hidetitle"
 msgstr "Hide Module"
 
+msgid "admin_modules_editmodules_hidetitle"
+msgstr "Hide Module"
+
+msgid "admin_modules_editmodules_showtitle"
+msgstr "Show Module"
+
+msgid "admin_settings_editmodule_selecttype"
+msgstr "Select Datatype:"
+
+msgid "admin_settings_editmenu_selectmodule"
+msgstr "Select Menu"
+
+msgid "admin_settings_editmenu_typeheader"
+msgstr "Edit Menu for Datatype:"
+
 msgid "admin_settings_adminmodules_reset"
 msgstr "Reset Menu Structure"
 
 msgid "admin_modules_editmodules_system"
 msgstr "System Type"
+
+msgid "admin_settings_editmodules_view"
+msgstr "Show/Hide"
+
+msgid "admin_settings_editmodules_name"
+msgstr "Module Name"
+
+msgid "admin_settings_editmodules_reset"
+msgstr "Reset Menu"
+
+msgid "admin_settings_editmodules_header"
+msgstr "Edit Menu"
+
+msgid "admin_modules_editmodules_move"
+msgstr "Move"
 
 ### workflows ###
 msgid "wf_edit_header"
@@ -1980,29 +2037,131 @@ msgstr "Object added to favourites."
 msgid "shoppingbag_object_still_added"
 msgstr "Object was in favourites."
 
-msgid "popup_shoppinbag_msg1"
+msgid "popup_shoppingbag_img_title"
 msgstr "Pictures can be exported via Drag&Drop into most applications (e.g. Powerpoint):"
 
-msgid "popup_shoppingbag_msg2"
+msgid "popup_shoppingbag_doc_title"
 msgstr "Documents can be opened:"
 
-msgid "popup_shoppingbag_msg3"
-msgstr "No objects available"
+msgid "popup_shoppingbag_media_title"
+msgstr "Multimedia files can be opened:"
+
+msgid "popup_shoppingbag_no_items"
+msgstr "No objects in your favourites"
 
 msgid "popup_shoppingbag_delete_title"
-msgstr "clear list of favourites"
+msgstr "clear favourites"
 
 msgid "popup_shoppingbag_delete"
-msgstr "clear list of favourites"
+msgstr "clear favourites"
 
 msgid "popup_shoppingbag_movefiles"
-msgstr "moving files..."
+msgstr "Objects will be moved..."
 
 msgid "popup_shoppingbag_add_msg"
-msgstr "Object as added"
+msgstr "Object was added to favourites."
 
-msgid "popup_shoppingbag_add_msg1"
-msgstr "(popup closes after 3 seconds)"
+msgid "popup_shoppingbag_title"
+msgstr "Favourites"
+
+msgid "popup_shoppingbag_items_filtered"
+msgstr "Favourites were filtered, your user account has no rights to see some objects."
+
+msgid "shoppingbag_clear_item"
+msgstr "remove from list"
+
+msgid "popup_shoppingbag_object_delete"
+msgstr "Remove object from list?"
+
+msgid "popup_shoppingbag_export"
+msgstr "Export..."
+
+msgid "popup_shoppingbag_metadata"
+msgstr "metadata:"
+
+msgid "popup_shoppingbag_imageonly"
+msgstr "only images"
+
+msgid "popup_shoppingbag_imagemeta"
+msgstr "images and metadata"
+
+msgid "popup_shoppingbag_metaonly"
+msgstr "only metadata"
+
+msgid "popup_shoppingbag_size"
+msgstr "size:"
+
+msgid "popup_shoppingbag_imagesize"
+msgstr "image dimensions:"
+
+msgid "popup_shoppingbag_or"
+msgstr "or"
+
+msgid "popup_shoppingbag_maximgsize"
+msgstr "max. length:"
+
+msgid "popup_shoppingbag_stdsize"
+msgstr "std. size:"
+
+msgid "popup_shoppingbag_format"
+msgstr "format:"
+
+msgid "popup_shoppingbag_ziptitle"
+msgstr "export as zip file"
+
+msgid "popup_shoppingbag_doconly"
+msgstr "only documents"
+
+msgid "popup_shoppingbag_docmeta"
+msgstr "docuemtns and metadata"
+
+msgid "popup_shoppingbag_mediaonly"
+msgstr "only objects"
+
+msgid "popup_shoppingbag_mediameta"
+msgstr "objects and metadata"
+
+msgid "popup_shoppingbag_ownbags"
+msgstr "Own favourites:"
+
+msgid "popup_shoppingbag_private"
+msgstr "private favourites (not shared)"
+
+msgid "popup_shoppingbag_share_bag"
+msgstr "toggle favourites public/private"
+
+msgid "popup_shoppingbag_delete_bag"
+msgstr "clear favourites"
+
+msgid "popup_shoppingbag_load_bag"
+msgstr "load objects from favourites"
+
+msgid "popup_shoppingbag_privateinfo"
+msgstr "private favourites"
+
+msgid "popup_shoppingbag_savebag"
+msgstr "Save favourites:"
+
+msgid "popup_shoppingbag_name"
+msgstr "Name:"
+
+msgid "popup_shoppingbag_save"
+msgstr "Save"
+
+msgid "popup_shoppingbag_loadbag"
+msgstr "Load external favourites (by key):"
+
+msgid "popup_shoppingbag_key"
+msgstr "Key:"
+
+msgid "popup_shoppingbag_load"
+msgstr "load"
+
+msgid "popup_shoppingbag_markall"
+msgstr "Mark all objects"
+
+msgid "popup_shoppingbag_unmarkall"
+msgstr "Unmark selection"
 
 ### popup help###
 msgid "popup_help_title"
@@ -2011,6 +2170,9 @@ msgstr "Help for metadata field "${name}""
 ### edit area ###
 msgid "edit_module_error"
 msgstr "Module '${name}' couldn't be loaded."
+
+msgid "edit_template_error"
+msgstr "Error while lading template. See the description below for closer information:"
 
 msgid "edit_error_msg"
 msgstr "You're not allowed to access the editor area.<br/> You can logon here: ${link}"
@@ -2099,6 +2261,12 @@ msgstr "Copy to..."
 msgid "edit_action_file_delete"
 msgstr "Delete"
 
+msgid "edit_add_folder"
+msgstr "Add Folder"
+
+msgid "edit_add_collection"
+msgstr "Add Collection"
+
 msgid "edit_action_file_edit"
 msgstr "Simultaneous editing"
 
@@ -2136,6 +2304,9 @@ msgstr "Layout"
 msgid "tab_metadata_col"
 msgstr "Configuration"
 
+msgid "tab_menuclasses"
+msgstr "Classification"
+
 msgid "tab_metadata"
 msgstr "Edit metadata"
 
@@ -2154,8 +2325,14 @@ msgstr "Edit metadata"
 msgid "tab_files"
 msgstr "Change/add digital object"
 
+msgid "tab_files_title"
+msgstr "Edit technical metadata"
+
 msgid "tab_editor"
 msgstr "Edit start page"
+
+msgid "tab_editor_title"
+msgstr "Edit HTML-pages"
 
 msgid "tab_files_obj"
 msgstr "Change/add digital object"
@@ -2250,9 +2427,6 @@ msgstr "Place in Browsing Structure"
 msgid "tab_classes_title"
 msgstr "Show Classification"
 
-msgid "tab_menuclasses"
-msgstr Classification"
-
 msgid "tab_admin"
 msgstr "Administration"
 
@@ -2267,6 +2441,9 @@ msgstr "System module Upload"
 
 msgid "tab_publish"
 msgstr "System module Publish"
+
+msgid "tab_frontendparts"
+msgstr "Header/Footer entries"
 
 ### edit acls ###
 msgid "edit_acls_righttype_read"
@@ -2335,6 +2512,94 @@ msgstr "Dirty-Flag"
 
 msgid "edit_localread"
 msgstr "Localread-Flag"
+
+### edit frontendparts ###
+msgid "item_type_intern"
+msgstr "html page"
+
+msgid "item_type_text"
+msgstr "text (label)"
+
+msgid "item_type_link"
+msgstr "link"
+
+msgid "item_type_node"
+msgstr "mediatum node"
+
+msgid "edit_frontendparts_name"
+msgstr "Name:"
+
+msgid "edit_frontendparts_type"
+msgstr "Type:"
+
+msgid "edit_frontendparts_html"
+msgstr "HTML file:"
+
+msgid "edit_frontendparts_link"
+msgstr "Link:"
+
+msgid "edit_frontendparts_node"
+msgstr "Node:"
+
+msgid "edit_frontendparts_icon"
+msgstr "Icon:"
+
+msgid "edit_frontendparts_save"
+msgstr "Save"
+
+msgid "edit_frontendparts_cancel"
+msgstr "Cancel"
+
+msgid "edit_frontendparts_item_delete"
+msgstr "Do you really want to delete this entry?"
+
+msgid "edit_frontendparts_header_title"
+msgstr "Header:"
+
+msgid "edit_frontendparts_footerleft_title"
+msgstr "Footer left:"
+
+msgid "edit_frontendparts_footerright_title"
+msgstr "Footer right:"
+
+msgid "edit_frontendparts_name_title"
+msgstr "Name"
+
+msgid "edit_frontendparts_link_title"
+msgstr "Link"
+
+msgid "edit_frontendparts_type_title"
+msgstr "Type"
+
+msgid "edit_frontendparts_icon_title"
+msgstr "Icon"
+
+msgid "edit_frontendparts_selectnode_title"
+msgstr "Select node (popup)"
+
+msgid "edit_frontendparts_selecticon_title"
+msgstr "Select icon (popup)"
+
+msgid "edit_frontendparts_deleteicon_title"
+msgstr "delete icon"
+
+msgid "edit_frontendparts_nodeheader"
+msgstr "Choose a node:"
+
+msgid "edit_frontendparts_iconheader"
+msgstr "Choose an icon:"
+
+msgid "edit_frontendparts_delete_title"
+msgstr "delete entry"
+
+msgid "edit_frontendparts_edit_title"
+msgstr "edit entry"
+
+msgid "edit_frontendparts_order_title"
+msgstr "change order"
+
+msgid "edit_frontendparts_add_title"
+msgstr "create new entry"
 
 ### classes ###
 msgid "edit_classes_class_title"
@@ -2437,7 +2702,7 @@ msgid "edit_startpages_header"
 msgstr "Startpages"
 
 msgid "edit_startpages_explain_table"
-msgstr "html pages for this node" 
+msgstr "html pages for this node"
 
 msgid "edit_startpages_edit"
 msgstr "click to edit this page"
@@ -2455,7 +2720,7 @@ msgid "edit_startpages_reset"
 msgstr "Reset"
 
 msgid "edit_startpages_explain_addbutton"
-msgstr "Click this button to open a new page in the html editor" 
+msgstr "Click this button to open a new page in the html editor"
 
 msgid "edit_startpages_addnew"
 msgstr "Create new page"
@@ -2467,22 +2732,10 @@ msgid "edit_startpages_technical_name"
 msgstr "Tech. Name"
 
 msgid "edit_startpages_file_size"
-msgstr "file size (bytes)"
-
-msgid "edit_startpages_ed"
-msgstr "Edit"
-
-msgid "edit_startpages_delete"
-msgstr "Delete"
+msgstr "size"
 
 msgid "edit_startpages_descriptive_name"
 msgstr "Descriptive name"
-
-msgid "edit_startpages_none"
-msgstr "- none -"
-
-msgid "edit_startpages_not_applicable"
-msgstr "n/a"
 
 msgid "edit_startpages_do_not_use_a_startpage"
 msgstr "Do not use a startpage for this language"
@@ -2687,6 +2940,9 @@ msgstr "last edit"
 msgid "edit_sort_header"
 msgstr "Sort manually"
 
+msgid "edit_sort_header2"
+msgstr "Sort Collections"
+
 msgid "edit_sort_label"
 msgstr "Sort automatically"
 
@@ -2699,6 +2955,8 @@ msgstr "ascending"
 msgid "edit_sort_down"
 msgstr "descending"
 
+msgid "edit_mask"
+msgstr "Mask"
 
 msgid "edit_sort_position"
 msgstr "Position"
@@ -2824,6 +3082,9 @@ msgstr "Uploaded filetype is not supported for Logos. Allowed types are '.jpeg',
 msgid "edit_publish_header"
 msgstr "Publish Objects (Quick Publisher)"
 
+msgid "edit_publish_warning"
+msgstr "Attention: This refers to unpublished objects (marked with red text), not to your current selection. You can select objects to be published in the next step."
+
 msgid "edit_publish_info"
 msgstr "All selected objects will be published in selected directory."
 
@@ -2856,6 +3117,9 @@ msgstr "stand"
 
 msgid "edit_stats_access"
 msgstr "Access"
+
+msgid "edit_stats_country"
+msgstr "Access spreading (country)"
 
 msgid "edit_stats_spreading"
 msgstr "Access spreading (date)"
@@ -2934,9 +3198,6 @@ msgstr "Items (sum)"
 
 msgid "edit_stats_digobjlabel"
 msgstr "Items (digital)"
-
-msgid "edit_stats_schema"
-msgstr "Types of Metadata"
 
 # mask editor #
 msgid "mask_editor_title"
@@ -3107,6 +3368,23 @@ msgstr "Header"
 msgid "mask_edit_footer"
 msgstr "footer"
 
+####
+msgid "mask_edit_mappingselection"
+msgstr "Mapping Type:"
+
+msgid "mask_edit_mapping_field"
+msgstr "Field of mapping definition"
+
+msgid "mask_edit_attribute_description"
+msgstr "possible variables:<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [value] = attribute value of 'Field'<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [att:field] = attributename<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [att:id] = node ID<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (&lt;[att:field]&gt;[value]&lt;/[att:field]&gt;)"
+
+msgid "mask_edit_attribute_field"
+msgstr "Format description"
+
+msgid "mask_edit_max_length"
+msgstr "Maximum length"
+
+####
 msgid "user_directory"
 msgstr "User directory"
 
@@ -3121,7 +3399,6 @@ msgstr "Notice: This Folder contains unpublished objects (objects which are not 
 
 msgid "unpublished_objects2"
 msgstr "Publish these objects (Quick publisher)"
-
 
 msgid "user_faulty"
 msgstr "Inconsistent data"
@@ -3182,6 +3459,9 @@ msgstr "Sort Files"
 
 msgid "descending"
 msgstr " (descending)"
+
+msgid "images"
+msgstr "images"
 
 msgid "documents"
 msgstr "documents"
@@ -3244,9 +3524,6 @@ msgstr "digital object available"
 msgid "file_processingerror"
 msgstr "Error while processing file! Please check processed file."
 
-msgid "admin_meta_col_8"
-msgstr "# Nodes"
-
 msgid "searchresult"
 msgstr "Searchresult"
 
@@ -3276,6 +3553,24 @@ msgstr "shot view style:"
 
 msgid "no_extsearch"
 msgstr "no extended search:"
+
+msgid "fieldname"
+msgstr "field name"
+
+msgid "Search within the following fields:"
+msgstr "Search within the following fields:"
+
+msgid "search mask"
+msgstr "search mask"
+
+msgid "none"
+msgstr "none"
+
+msgid "from parent"
+msgstr "from parent"
+
+msgid "define new"
+msgstr "define new"
 
 msgid "node name"
 msgstr "name:"
@@ -3315,14 +3610,30 @@ msgstr "emails:"
 
 msgid "admin_meta_bibtex"
 msgstr "bibTeX import mapping"
+
 msgid "admin_meta_bibtex_warning"
 msgstr "(only use this for publications!)"
+
+msgid "hide empty directories"
+msgstr "hide empty directories"
 
 msgid "yearbookuser"
 msgstr "Yearbook"
 
 msgid "intern"
 msgstr "Intern"
+
+msgid "field"
+msgstr "Field"
+
+msgid "append new field"
+msgstr "append new field"
+
+msgid "search field"
+msgstr "search field"
+
+msgid "schema"
+msgstr "schema"
 
 ########## colors
 msgid "color_black"
@@ -3342,6 +3653,9 @@ msgstr "yes"
 
 msgid "view_no"
 msgstr "no"
+
+msgid "add"
+msgstr "add"
 
 msgid "style_normal"
 msgstr "normal"
@@ -3450,3 +3764,4 @@ msgstr "Saturday"
 
 msgid "dayname_6_long"
 msgstr "Sunday"
+

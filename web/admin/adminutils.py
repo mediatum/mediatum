@@ -31,11 +31,10 @@ from core.tree import getRoot
 from core.config import getsubset
 
 def getAdminStdVars(req):
-
+    page = ""
     if req.params.get("page","")=="0":
         page = "?page=0"
-    else:
-        page = ""
+
     user = users.getUserFromRequest(req)
     
     tabs = [("0-9", "09")]
@@ -47,11 +46,6 @@ def getAdminStdVars(req):
     actpage = req.params.get("page", req.params.get("actpage", "1"))
     return {"user": user, "page":page, "op":req.params.get("op",""), "tabs":tabs, "actpage":actpage, "actfilter":req.params.get("actfilter","")}
 
-def getOptionHeader(options):
-    ret = '<table><tr>'
-    for option in options:
-        ret += '<td width="20px" align="center"><img src="/' + option.getImagesource()  + '" title="' + option.getName() + '"></td>'
-    return [ret + '</tr></table>']
 
 class Overview:
     def __init__(self, req, list):

@@ -75,7 +75,7 @@
 
 <table metal:define-macro="optionheader">
     <tr>
-        <td tal:repeat="option options" width="20px" align="center">
+        <td tal:repeat="option options" style="width:20px; text-align:center">
             <img i18n:attributes="title" tal:attributes="src python:'/'+option.getImagesource();title python:option.getName()"/>
         </td>
     </tr>

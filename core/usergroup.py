@@ -62,8 +62,11 @@ class UserGroup(tree.Node):
         schemas = filter(lambda x: x.isActive(), loadTypesFromDB())
         schemalist = {}
         for user in self.getChildren():
-            for schema in AccessData(user=user).filter(schemas):
-                schemalist[schema.getName()]="."
+            try:
+                for schema in AccessData(user=user).filter(schemas):
+                    schemalist[schema.getName()]="."
+            except:
+                pass
         schemalist = schemalist.keys()
         schemalist.sort()
         return schemalist

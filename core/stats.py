@@ -306,7 +306,7 @@ def readLogFiles():
             for line in open(file, "r"):
                 if "GET" in line and "id=" in line:
                     info = LogItem(line)
-                    if not info or info.getID()=='':
+                    if not info or (info and info.getID()==''):
                         continue
 
                     if info.getTimestampShort() not in data.keys():

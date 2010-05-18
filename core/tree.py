@@ -34,6 +34,7 @@ import traceback
 
 nodeclasses = {}
 nodefunctions = {}
+contentstyles = {}
 filehandlers = []
 
 _root = None

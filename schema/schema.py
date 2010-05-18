@@ -579,15 +579,6 @@ class Metadatatype(tree.Node):
         except tree.NoSuchNodeError:
             return None
           
-    def hasUploadForm(self):
-        global nodeclasses
-        for dtype in self.getDatatypes():
-            obj = nodeclasses[dtype]
-            if "upload_form" in obj.__dict__:
-                return True
-        return False
-        
-    
     def searchIndexCorrupt(self):
         try:
             from core.tree import searcher
@@ -723,19 +714,19 @@ class Metadatafield(tree.Node):
 
 # helper class for masks
 class MaskType:
-    def __init__(self, type, seperator="<br/>"):
+    def __init__(self, type, separator="<br/>"):
         self.type = type
-        self.seperator = seperator
+        self.separator = separator
         
     def setType(self, value):
         self.type = value
     def getType(self):
         return self.type
         
-    def setSeperator(self, value):
-        self.seperator = value
-    def getSeperator(self):
-        return self.seperator        
+    def setSeparator(self, value):
+        self.separator = value
+    def getSeparator(self):
+        return self.separator        
 
 def getMaskTypes(key="."):
     masktypes = {
@@ -750,7 +741,7 @@ def getMaskTypes(key="."):
         return masktypes
     else:
         if key in masktypes.keys():
-            return masktype[key]
+            return masktypes[key]
         else:
             return MaskType()
             
@@ -787,7 +778,7 @@ class Mask(tree.Node):
                 format = field.getFormat()
                 if format!="":
                     v[1] = format.replace("<value>", v[1])
-                v.append(field.getSeperator())
+                v.append(field.getSeparator())
                 
                 if flags & 2:   # hide empty
                     if v[1].strip()!="":
@@ -1061,14 +1052,14 @@ class Mask(tree.Node):
         else:
             self.set("defaultmask", "False")
             
-    def getSeperator(self):
-        if not "seperator" in self.items():
-            return getMaskTypes(self.getMasktype()).getSeperator()
-            #if self.getMasktype() in getMaskTypes().keys():
-            #    return getMaskTypes()[self.getMasktype()].getSeperator()
-        return self.get("seperator")
-    def setSeperator(self, value):
-        self.set("seperator", value)
+    def getSeparator(self):
+        for key, value in self.items():
+            if key=="separator":
+                return self.get("separator")
+        return getMaskTypes(self.getMasktype()).getSeparator()
+
+    def setSeparator(self, value):
+        self.set("separator", value)
 
     def addMaskitem(self, label, type, fieldid, pid):
         item = tree.Node(name=label, type="maskitem") 
@@ -1159,10 +1150,10 @@ class Maskitem(tree.Node):
     def setFormat(self, value):
         self.set("format", value)
         
-    def getSeperator(self):
-        return self.get("seperator") or ""
-    def setSeperator(self, value):
-        self.set("seperator", value)
+    def getSeparator(self):
+        return self.get("separator") or ""
+    def setSeparator(self, value):
+        self.set("separator", value)
 
 mytypes = {}
 

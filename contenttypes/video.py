@@ -25,20 +25,32 @@ import os
 import Image
 
 from utils.utils import splitfilename, splitpath
+from utils.date import format_date, make_date
 from core.acl import AccessData
 from core.tree import Node,FileNode
 from lib.flv.parse import getFLVSize, FLVReader
 from contenttypes.image import makeThumbNail,makePresentationFormat
 from core.translation import t
+from core.styles import getContentStyles
 import default
 
 """ video class """
 class Video(default.Default):
-
+    def getTypeAlias(node):
+        return "video"
+        
+    def getCategoryName(node):
+        return "video"
+        
     def _prepareData(node, req, words=""):
         access = acl.AccessData(req)
         mask = node.getMask("nodebig")
         obj = {}
+        for filenode in node.getFiles():
+            if filenode.getType()=="original" or filenode.getType()=="video":
+                obj["file"] =  "/file/" + str(node.id) + "/" + filenode.getName()
+                break
+
         obj['metadata'] = mask.getViewHTML([node], 2) # hide empty elements
         obj['node'] = node  
         obj['path'] = req.params.get("path","")
@@ -46,8 +58,12 @@ class Video(default.Default):
         return obj
 
     """ format big view with standard template """
-    def show_node_big(node, req):
-        return req.getTAL("contenttypes/video.html", node._prepareData(req), macro="showbig")
+    def show_node_big(node, req, template="", macro=""):
+        if template=="":
+            styles = getContentStyles("bigview", contenttype=node.getContentType())
+            if len(styles)>=1:
+                template = styles[0].getTemplate()
+        return req.getTAL(template, node._prepareData(req), macro)
 
     """ returns preview image """
     def show_node_image(node):
@@ -60,12 +76,8 @@ class Video(default.Default):
         
         
         for f in node.getFiles():
-            if f.type == "original" or f.type == "video":
-                if f.mimetype == "video/x-flv":
-                    #width,height = getFLVSize(f.retrieveFile())
-                    #node.set("vid-width", width)
-                    #node.set("vid-height", height)
-
+            if f.type in["original", "video"]:
+                if f.mimetype=="video/x-flv":
                     meta = FLVReader(f.retrieveFile())
                     for key in meta:
                         try:
@@ -104,10 +116,22 @@ class Video(default.Default):
         return 0
 
     def getSysFiles(node):
-        return []
+        return ["presentation", "thumb", "video"]
 
     def getLabel(node):
         return node.name
+        
+    def getDuration(node):
+        duration = node.get("duration")
+        try:
+            duration = float(duration)
+        except ValueError:
+            return 0
+        else:
+            _s = int(duration % 60)
+            _m = duration/60
+            _h = int(duration) /3600
+            return format_date(make_date(0,0,0,_h,_m,_s), '%H:%M:%S')
 
     """ list with technical attributes for type video """
     def getTechnAttributes(node):
@@ -154,4 +178,16 @@ class Video(default.Default):
         
     def getDefaultEditTab(node):
         return "view"
+        
+    def processMediaFile(node, dest):
+        for file in node.getFiles():
+            if file.getType()=="video":
+                filename = file.retrieveFile()
+                path, ext = splitfilename(filename)
+                if os.sep=='/':
+                    ret = os.system("cp %s %s" %(filename, dest))
+                else:
+                    cmd = "copy %s %s%s.%s" %(filename, dest, node.id, ext)
+                    ret = os.system(cmd.replace('/','\\'))
+        return 1
   

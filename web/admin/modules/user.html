@@ -8,105 +8,112 @@
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form name="useroverview" method="post" action="#" tal:attributes="action page">
         <table class="overview">
-            <tr>
-                <td colspan="11">
-                    <h3>
-                        <span i18n:translate="admin_user_existing">TEXT</span>
-                        <span tal:condition="python:usertype!='intern'">(<span tal:content="python:auth[usertype].getName()" i18n:translate="">TEXT</span>)</span>
-                    </h3>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="11">
-                    <h4>Benutzertyp: <a href="/admin/user">Intern</a>
-                        <tal:block tal:repeat="auttype python:list(auth)">
-                            | <a tal:attributes="href python:'/admin/user/'+auttype" i18n:translate="" tal:content="python:auth[auttype].getName()"/>
-                        </tal:block>
-                    </h4>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="11">
-                    <span i18n:translate="admin_filter_label">TEXT</span>
-                    <select name="filtertype" style="margin:0px">
-                        <tal:block tal:repeat="filterattr filterattrs">
-                            <option tal:content="python:filterattr[1]" tal:attributes="value python:filterattr[0]; selected python:{'False':None,'True':'selected'}[str(filterarg==filterattr[0])]" i18n:translate="">TEXT</option>
-                        </tal:block>
-                    </select>
-                    <tal:block tal:repeat="tab tabs">
-                        <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
-                    </tal:block>
-                </td>
-            </tr>
-            <tr>
-                <th>&nbsp;</th>
-                <th tal:repeat="col sortcol">
-                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" value="" class="admin_sortcol" type="submit">TEXT</button>
-                </th>
-                <th>
-                    <tal:block metal:use-macro="web/admin/frame.html/optionheader"/>
-                </th>
-                <th align="right">&nbsp;</th>
-                <th align="right">
-                    &nbsp;<input tal:condition="python:usertype=='intern' or auth[usertype].allowAdd()" i18n:attributes="title admin_user_create" type="image" src="/img/install.png" name="new"/>
-                </th>
-            </tr>
-            <tr tal:condition="python:len(users)==0">
-                <td colspan="8"><small i18n:translate="admin_user_nousers">TEXT</small></td>
-            </tr>
-            <tal:block tal:repeat="user python:users[pages.getStart():pages.getEnd()]">
-                <tr tal:define="cssclass python:users.index(user)%2 and 'norm' or 'silver'">
-                    <td tal:attributes="class cssclass" tal:content="python:str(users.index(user)+1)+'.'"/>
-                    <td tal:attributes="class cssclass" tal:content="python:user.getName()"/>
-                    <td tal:attributes="class cssclass" tal:content="python:user.getLastName()"/>
-                    <td tal:attributes="class cssclass" tal:content="python:user.getFirstName()"/>
-                    <td tal:attributes="class cssclass" tal:content="python:user.getEmail()"/>
-                    <td tal:attributes="class cssclass">
-                        <span tal:condition="python:len(user.getOrganisation())>10" tal:content="python:user.getOrganisation()[:10]+'...'" tal:attributes="title python:user.getOrganisation()" style="cursor:pointer"/>
-                        <span tal:condition="python:len(user.getOrganisation())<=10" tal:content="python:user.getOrganisation()" tal:attributes="title python:user.getOrganisation()" style="cursor:pointer"/>
-                    </td>
-                    <td tal:attributes="class cssclass" tal:define="grp python:', '.join(user.getGroups())">
-                        <span tal:condition="python:len(grp)<30" tal:content="grp"/>
-                        <span tal:condition="python:len(grp)>29" tal:attributes="title grp" tal:content="python:grp[:29]+'...'" style="cursor:pointer"/>
-                    </td>
-                    <td tal:condition="python:user.stdPassword()" tal:attributes="class cssclass">
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img i18n:attributes="title admin_user_stdpwd_title" src="/img/unarchive.png"/>
-                    </td>
-                    <td tal:condition="python:not user.stdPassword()" tal:attributes="class cssclass">
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img i18n:attributes="title admin_user_nostdpwd_title" src="/img/archive.png"/>
-                    </td>
-                    <td tal:attributes="class cssclass">
-                        <table>
-                            <tr tal:define="options python:list(user.getOptionList())">
-                                <td tal:repeat="option options" width="20px" align="center">
-                                    <img tal:condition="python:user.getOptionList()[option]" src="/img/haken.gif"/>
-                                    <img tal:condition="python: not user.getOptionList()[option]" src="/img/mark_empty.png"/>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                    <td tal:attributes="class cssclass">
-                        <input tal:condition="python:usertype=='intern' or auth[usertype].allowAdd()" tal:attributes="name python:str('sendmail_'+user.getName())" i18n:attributes="title admin_user_sendmail_title" type="image" src="/img/email.png"/>
-                        <input tal:condition="python:usertype!='intern'" tal:attributes="name python:'tointern_'+str(user.id); onclick python:'return questionMoveUser(\''+user.getName()+'\')'" i18n:attributes="title admin_user_importintern" type="image" src="/img/rightarrow.png" />
-                    </td>
-                    <td tal:attributes="class cssclass" class="_norm_">
-                        <input tal:attributes="name python:str('edit_'+str(user.id))" i18n:attributes="title admin_user_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
-                        <input tal:attributes="name python:str('delete_'+str(user.id)); onclick python:'return questionDelName(\''+user.getName()+'\')'" i18n:attributes="title admin_user_delete_title" type="image" src="/img/delete.png"/>
+            <thead>
+                <tr>
+                    <td colspan="11">
+                        <h3>
+                            <span i18n:translate="admin_user_existing">TEXT</span>
+                            <span tal:condition="python:usertype!='intern'">(<span tal:content="python:auth[usertype].getName()" i18n:translate="">TEXT</span>)</span>
+                        </h3>
                     </td>
                 </tr>
-            </tal:block>
-            <tr>
-                <th colspan="6">
-                    <small>
-                        <span i18n:translate="admin_user_footer">
-                            <span i18n:name="number" tal:content="python:str(len(users))"/>
-                        </span>
-                        <span tal:content="raw python:pages.printPageList()"/>
-                    </small>
-                </th>
-                <th colspan="5" align="right"><small tal:content="raw python:pages.printPageAll()"/></th>
-            </tr>
-        <br>
+                <tr>
+                    <td colspan="11">
+                        <h4>Benutzertyp: <a href="/admin/user">Intern</a>
+                            <tal:block tal:repeat="auttype python:list(auth)">
+                                | <a tal:attributes="href python:'/admin/user/'+auttype" i18n:translate="" tal:content="python:auth[auttype].getName()"/>
+                            </tal:block>
+                        </h4>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="11">
+                        <span i18n:translate="admin_filter_label">TEXT</span>
+                        <select name="filtertype" style="margin:0px">
+                            <tal:block tal:repeat="filterattr filterattrs">
+                                <option tal:content="python:filterattr[1]" tal:attributes="value python:filterattr[0]; selected python:{'False':None,'True':'selected'}[str(filterarg==filterattr[0])]" i18n:translate="">TEXT</option>
+                            </tal:block>
+                        </select>
+                        <tal:block tal:repeat="tab tabs">
+                            <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
+                        </tal:block>
+                    </td>
+                </tr>
+                <tr>
+                    <th>&nbsp;</th>
+                    <th tal:repeat="col sortcol">
+                        <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" value="" class="admin_sortcol" type="submit">TEXT</button>
+                    </th>
+                    <th style="padding:0px;margin:0px">
+                        <tal:block metal:use-macro="web/admin/frame.html/optionheader"/>
+                    </th>
+                    <th align="right">&nbsp;</th>
+                    <th align="right">
+                        &nbsp;<input tal:condition="python:usertype=='intern' or auth[usertype].allowAdd()" i18n:attributes="title admin_user_create" type="image" src="/img/install.png" name="new"/>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr tal:condition="python:len(users)==0">
+                    <td colspan="8"><small i18n:translate="admin_user_nousers">TEXT</small></td>
+                </tr>
+                <tal:block tal:repeat="user python:users[pages.getStart():pages.getEnd()]">
+                    <tr tal:define="cssclass python:users.index(user)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
+                        <td tal:content="python:str(users.index(user)+1)+'.'"/>
+                        <td tal:content="python:user.getName()"/>
+                        <td tal:content="python:user.getLastName()"/>
+                        <td tal:content="python:user.getFirstName()"/>
+                        <td tal:content="python:user.getEmail()"/>
+                        <td >
+                            <span tal:condition="python:len(user.getOrganisation())>10" tal:content="python:user.getOrganisation()[:10]+'...'" tal:attributes="title python:user.getOrganisation()" style="cursor:pointer"/>
+                            <span tal:condition="python:len(user.getOrganisation())<=10" tal:content="python:user.getOrganisation()" tal:attributes="title python:user.getOrganisation()" style="cursor:pointer"/>
+                        </td>
+                        <td tal:define="grp python:', '.join(user.getGroups())">
+                            <span tal:condition="python:len(grp)<30" tal:content="grp"/>
+                            <span tal:condition="python:len(grp)>29" tal:attributes="title grp" tal:content="python:grp[:29]+'...'" style="cursor:pointer"/>
+                        </td>
+                        <td tal:condition="python:user.stdPassword()">
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img i18n:attributes="title admin_user_stdpwd_title" src="/img/unarchive.png"/>
+                        </td>
+                        <td tal:condition="python:not user.stdPassword()">
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img i18n:attributes="title admin_user_nostdpwd_title" src="/img/archive.png"/>
+                        </td>
+                        <td>
+                            <table>
+                                <tr>
+                                    <td tal:repeat="option options" style="width:20px; text-align:center">
+                                        <img tal:condition="python:user.getOptionList()[option.getName()]" src="/img/haken.gif"/>
+                                        <img tal:condition="python: not user.getOptionList()[option.getName()]" src="/img/mark_empty.png"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td>
+                            <input tal:condition="python:usertype=='intern' or auth[usertype].allowAdd()" tal:attributes="name python:str('sendmail_'+user.getName())" i18n:attributes="title admin_user_sendmail_title" type="image" src="/img/email.png"/>
+                            <input tal:condition="python:usertype!='intern'" tal:attributes="name python:'tointern_'+str(user.id); onclick python:'return questionMoveUser(\''+user.getName()+'\')'" i18n:attributes="title admin_user_importintern" type="image" src="/img/rightarrow.png" />
+                        </td>
+                        <td>
+                            <input tal:attributes="name python:str('edit_'+str(user.id))" i18n:attributes="title admin_user_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
+                            <input tal:attributes="name python:str('delete_'+str(user.id)); onclick python:'return questionDelName(\''+user.getName()+'\')'" i18n:attributes="title admin_user_delete_title" type="image" src="/img/delete.png"/>
+                        </td>
+                    </tr>
+                </tal:block>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="6" align="left">
+                        <small>
+                            <span i18n:translate="admin_user_footer">
+                                <span i18n:name="number" tal:content="python:str(len(users))"/>
+                            </span>
+                            <span tal:content="raw python:pages.printPageList()"/>
+                        </small>
+                    </th>
+                    <th colspan="5" align="right"><small tal:content="raw python:pages.printPageAll()"/></th>
+                </tr>
+            </tfoot>
+        </table>
+        <br/>
         <input type="hidden" name="usertype" tal:attributes="value usertype"/>
         <input type="hidden" name="actpage" tal:attributes="value actpage"/>
         <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>

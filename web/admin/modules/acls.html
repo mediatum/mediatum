@@ -1,4 +1,4 @@
-<metal:block metal:define-macro="view">
+﻿<metal:block metal:define-macro="view">
     <!--[if lt IE 7]>
             <script type="text/javascript">
                 window.attachEvent("onload", buttonfix);
@@ -7,63 +7,68 @@
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form tal:attributes="action page" name="rules" method="post" action="#">
         <table class="overview">
-            <tr>
-                <td colspan="5"><h3 i18n:translate="admin_acl_existing">TEXT</h3></td>
-            </tr>
-            <tr tal:condition="python: len(missing_rules)>0">
-                <td colspan="5">
-                    <p class="error"><tal:block i18n:translate="admin_acl_missing_header">TEXT</tal:block><br/><br/>
-                    <tal:block tal:repeat="missing_rule missing_rules">
-                        <b>- <span tal:content="missing_rule"></span> <input tal:attributes="name python:'reset_'+missing_rule" i18n:attributes="title admin_acl_reset_title" type="image" src="/img/delete.png"/></b><br/>
-                    </tal:block>
-                    </p>
-                    <br/>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="5">
-                    <span i18n:translate="admin_filter_label">TEXT</span>
-                    <tal:block tal:repeat="tab tabs">
-                        <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
-                    </tal:block>
-                </td>
-            </tr>            
-            <tr>
-                <th>&nbsp;</th>
-                <th tal:repeat="col sortcol">
-                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit" value="">TEXT</button>
-                </th>
-                <th align="right"><input i18n:attributes="title admin_acl_create" type="image" src="/img/install.png" name="new"/></th>
-            </tr>
-
-            <tr tal:condition="python:len(rules)==0">
-                <td colspan="5"><small i18n:translate="admin_acl_noacl">TEXT</small></td>
-            </tr>
-                <tal:block tal:define="start python:pages.getStart(); end python:pages.getEnd()" tal:repeat="rule python:rules[start:end]">
-                <tr tal:define="cssclass python:rules.index(rule)%2 and 'norm' or 'silver'">
-                    <td tal:attributes="class cssclass" tal:content="python:str(rules.index(rule)+1)+'.'"/>
-                    <td tal:attributes="class cssclass" tal:content="python:rule.getName()"/>
-                    <td tal:condition="python:len(rule.getRuleStr())<=30" tal:attributes="class cssclass" tal:content="python:rule.getRuleStr()"/>
-                    <td tal:condition="python:len(rule.getRuleStr())>30" tal:attributes="class cssclass"><a tal:attributes="title python:rule.getRuleStr()" tal:content="python:rule.getRuleStr()[:30]+'...'" style="cursor:default"/>
+            <thead>
+                <tr>
+                    <td colspan="5"><h3 i18n:translate="admin_acl_existing">TEXT</h3></td>
+                </tr>
+                <tr tal:condition="python: len(missing_rules)>0">
+                    <td colspan="5">
+                        <p class="error"><tal:block i18n:translate="admin_acl_missing_header">TEXT</tal:block><br/><br/>
+                        <tal:block tal:repeat="missing_rule missing_rules">
+                            <b>- <span tal:content="missing_rule"></span> <input tal:attributes="name python:'reset_'+missing_rule" i18n:attributes="title admin_acl_reset_title" type="image" src="/img/delete.png"/></b><br/>
+                        </tal:block>
+                        </p>
+                        <br/>
                     </td>
-                    <td tal:attributes="class cssclass" tal:content="python:rule.getDescription()"/>
-                    <td tal:attributes="class cssclass">
+                </tr>
+                <tr>
+                    <td colspan="5">
+                        <span i18n:translate="admin_filter_label">TEXT</span>
+                        <tal:block tal:repeat="tab tabs">
+                            <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
+                        </tal:block>
+                    </td>
+                </tr>
+                <tr>
+                    <th>&nbsp;</th>
+                    <th tal:repeat="col sortcol">
+                        <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit" value="">TEXT</button>
+                    </th>
+                    <th align="right"><input i18n:attributes="title admin_acl_create" type="image" src="/img/install.png" name="new"/></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr tal:condition="python:len(rules)==0">
+                    <td colspan="5"><small i18n:translate="admin_acl_noacl">TEXT</small></td>
+                </tr>
+                <tal:block tal:define="start python:pages.getStart(); end python:pages.getEnd()" tal:repeat="rule python:rules[start:end]">
+                <tr tal:define="cssclass python:rules.index(rule)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
+                    <td tal:content="python:str(rules.index(rule)+1)+'.'"/>
+                    <td tal:content="python:rule.getName()"/>
+                    <td tal:condition="python:len(rule.getRuleStr())<=30" tal:content="python:rule.getRuleStr()"/>
+                    <td tal:condition="python:len(rule.getRuleStr())>30"><a tal:attributes="title python:rule.getRuleStr()" tal:content="python:rule.getRuleStr()[:30]+'...'" style="cursor:default"/>
+                    </td>
+                    <td tal:content="python:rule.getDescription()"/>
+                    <td>
                         <input tal:attributes="name python:'edit_'+rule.getName()" i18n:attributes="title admin_acl_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
                         <input tal:condition="python: rule.ruleUsage()==0" tal:attributes="name python:'delete_'+rule.getName(); onclick python:'return questionDelName(\''+rule.getName()+'\')'" i18n:attributes="title admin_acl_delete_title" type="image" src="/img/delete.png" onClick="return questionDel()"/>
                     </td>
                 </tr>
                 </tal:block>
-            <tr>
-                <th colspan="3">
-                    <small>
-                        <span i18n:translate="admin_acl_footer">
-                            <span i18n:name="number" tal:content="python:str(len(rules))"/>
-                        </span>
-                        <span tal:content="structure python:pages.printPageList()"/>
-                    </small>
-                </th>
-                <th align="right" colspan="2"><small tal:content="structure python:pages.printPageAll()"/></th>
-            </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="3" align="left">
+                        <small>
+                            <span i18n:translate="admin_acl_footer">
+                                <span i18n:name="number" tal:content="python:str(len(rules))"/>
+                            </span>
+                            <span tal:content="structure python:pages.printPageList()"/>
+                        </small>
+                    </th>
+                    <th align="right" colspan="2"><small tal:content="structure python:pages.printPageAll()"/></th>
+                </tr>
+            </tfoot>
         </table>
         <br/>
         <input type="hidden" name="actpage" tal:attributes="value actpage"/>

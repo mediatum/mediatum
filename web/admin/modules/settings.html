@@ -164,7 +164,7 @@
                 <table id="searchconfig" style="border-spacing:0px;">
                     <tr>
                         <td colspan="3">
-                            <h3 tal:content="python:'searchreplace_'+section"/>
+                            <h3 tal:content="python:'searchreplace_'+section" i18n:translate=""/>
                             <input type="hidden" name="section" tal:attributes="value section"/>
                         </td>
                     </tr>
@@ -188,7 +188,7 @@
                     </tr>
                     <tr>
                         <td colspan="3" style="text-align:right;border-width:0px">
-                            <button type="submit">Speichern</button>
+                            <button type="submit" i18n:translate="admin_save"/>
                         </td>
                     </tr>
                 </table>

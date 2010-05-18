@@ -15,64 +15,69 @@
 
     <form name="fieldoverview" method="post" action="#" tal:attributes="action page">
         <table class="overview">
-            <tr>
-                <td colspan="8">
-                    <h3 i18n:translate="admin_mask_header">TEXT '<span tal:content="python:metadatatype.getName()" i18n:name="name"/>'</h3>
-                </td>
-            </tr>
-            <tr tal:condition="python:len(defaults)<3">
-                <td colspan="8">
-                    <p class="error" i18n:translate="admin_mask_type_text">TEXT</p>
-                    <br/><br/>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="8">
-                    <span i18n:translate="admin_filter_label">TEXT</span>
-                    <tal:block tal:repeat="tab tabs">
-                        <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
-                    </tal:block>
-                </td>
-            </tr>
-            <tr>
-                <th>&nbsp;</th>
-                <th tal:repeat="col sortcol">
-                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit" value="">TEXT</button>
-                </th>
-                <th align="right">
-                    <input tal:attributes="name python:'automask_'+metadatatype.getName()" i18n:attributes="title admin_mask_createstd_title" type="image" src="/img/styles.png">&nbsp;&nbsp;&nbsp;&nbsp;
-                    <input tal:attributes="name python:'newmask_'+metadatatype.getName()" i18n:attributes="title admin_mask_create_title" type="image" src="/img/install.png">
-                </th>
-            </tr>
-            <tr tal:condition="python:not masks or len(masks)==0">
-                <td colspan="8"><small i18n:translate="admin_mask_nomask">TEXT</small></td>
-            </tr>
-                <tal:block tal:define="start python:pages.getStart(); end python:pages.getEnd()" tal:repeat="mask python:masks[start:end]">
-                    <tr tal:define="cssclass python:masks.index(mask)%2 and 'norm' or 'silver'">
-                        <td tal:attributes="class cssclass" tal:content="python:str(masks.index(mask)+1) +'.'"/>
-                        <td tal:attributes="class cssclass" tal:content="python:mask.getName()"/>
-                        <td tal:attributes="class cssclass" tal:content="python:masktypes[mask.getMasktype()].getType()" i18n:translate=""/>
-                        <td tal:attributes="class cssclass" tal:content="python:mask.getDescription()"/>
-                        <td tal:attributes="class cssclass">&nbsp;&nbsp;
-                            <img tal:condition="python:mask.getDefaultMask()" src="/img/haken.gif"/>
-                            <img tal:condition="python:not mask.getDefaultMask()" src="/img/emtyDot1Pix.gif"/>
-                        </td>
-                        
-                        <td tal:attributes="class cssclass">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img tal:attributes="src python:lang_icons[mask.getLanguage()]"/></td>
-                        <td tal:attributes="class cssclass">
-                            <img tal:condition="python:mask.getAccess('read')" i18n:attributes="title admin_mask_acl_title" src="/img/archive.png"/>
-                            <img tal:condition="python:mask.getAccess('read')==''" i18n:attributes="title admin_mask_acl_title" src="/img/mark_empty.png"/>
-                        </td>
-                        <td tal:attributes="class cssclass">
-                            <a tal:attributes="onclick python:'javascript:openPopupWithScroll(\'/admin/metatype/'+metadatatype.getName()+'/'+mask.getName()+'/editor?style=popup\',\'editor\',800,600)'" href="#"><img i18n:attributes="title admin_mask_edit_field" src="/img/rightarrow.png" border="0"/></a>&nbsp;
-                            <input tal:attributes="name python:'copymask_'+str(mask.id)" i18n:attributes="title admin_mask_clone_title" type="image" src="/img/clone.png"/>&nbsp;&nbsp;                               
-                            <input tal:attributes="name python:'editmask_'+str(mask.id)" i18n:attributes="title admin_mask_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
-                            <input tal:attributes="name python:'deletemask_'+str(mask.id); onclick python:'return questionDelName(\''+mask.getName()+' ('+str(mask.id)+')\')'" i18n:attributes="title admin_mask_delete_title" type="image" src="/img/delete.png"/>
-                        </td>
-                    </tr>
-                </tal:block>
+            <thead>
                 <tr>
-                    <th colspan="4">
+                    <td colspan="8">
+                        <h3 i18n:translate="admin_mask_header">TEXT '<span tal:content="python:metadatatype.getName()" i18n:name="name"/>'</h3>
+                    </td>
+                </tr>
+                <tr tal:condition="python:len(defaults)<3">
+                    <td colspan="8">
+                        <p class="error" i18n:translate="admin_mask_type_text">TEXT</p>
+                        <br/><br/>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="8">
+                        <span i18n:translate="admin_filter_label">TEXT</span>
+                        <tal:block tal:repeat="tab tabs">
+                            <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
+                        </tal:block>
+                    </td>
+                </tr>
+                <tr>
+                    <th>&nbsp;</th>
+                    <th tal:repeat="col sortcol">
+                        <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit" value="">TEXT</button>
+                    </th>
+                    <th align="right">
+                        <input tal:attributes="name python:'automask_'+metadatatype.getName()" i18n:attributes="title admin_mask_createstd_title" type="image" src="/img/styles.png">&nbsp;&nbsp;&nbsp;&nbsp;
+                        <input tal:attributes="name python:'newmask_'+metadatatype.getName()" i18n:attributes="title admin_mask_create_title" type="image" src="/img/install.png">
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr tal:condition="python:not masks or len(masks)==0">
+                    <td colspan="8"><small i18n:translate="admin_mask_nomask">TEXT</small></td>
+                </tr>
+                <tal:block tal:define="start python:pages.getStart(); end python:pages.getEnd()" tal:repeat="mask python:masks[start:end]">
+                <tr tal:define="cssclass python:masks.index(mask)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
+                    <td tal:content="python:str(masks.index(mask)+1) +'.'"/>
+                    <td tal:content="python:mask.getName()"/>
+                    <td tal:content="python:masktypes[mask.getMasktype()].getType()" i18n:translate=""/>
+                    <td tal:content="python:mask.getDescription()"/>
+                    <td>&nbsp;&nbsp;
+                        <img tal:condition="python:mask.getDefaultMask()" src="/img/haken.gif"/>
+                        <img tal:condition="python:not mask.getDefaultMask()" src="/img/emtyDot1Pix.gif"/>
+                    </td>
+                    
+                    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img tal:attributes="src python:lang_icons[mask.getLanguage()]"/></td>
+                    <td>
+                        <img tal:condition="python:mask.getAccess('read')" i18n:attributes="title admin_mask_acl_title" src="/img/archive.png"/>
+                        <img tal:condition="python:mask.getAccess('read')==''" i18n:attributes="title admin_mask_acl_title" src="/img/mark_empty.png"/>
+                    </td>
+                    <td>
+                        <a tal:attributes="onclick python:'javascript:openPopupWithScroll(\'/admin/metatype/'+metadatatype.getName()+'/'+mask.getName()+'/editor?style=popup\',\'editor\',800,600)'" href="#"><img i18n:attributes="title admin_mask_edit_field" src="/img/rightarrow.png" border="0"/></a>&nbsp;
+                        <input tal:attributes="name python:'copymask_'+str(mask.id)" i18n:attributes="title admin_mask_clone_title" type="image" src="/img/clone.png"/>&nbsp;&nbsp;                               
+                        <input tal:attributes="name python:'editmask_'+str(mask.id)" i18n:attributes="title admin_mask_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
+                        <input tal:attributes="name python:'deletemask_'+str(mask.id); onclick python:'return questionDelName(\''+mask.getName()+' ('+str(mask.id)+')\')'" i18n:attributes="title admin_mask_delete_title" type="image" src="/img/delete.png"/>
+                    </td>
+                </tr>
+                </tal:block>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="4" align="left">
                         <small>
                             <span i18n:translate="admin_mask_footer">
                                 <span i18n:name="number" tal:content="python:str(len(masks))"/>
@@ -87,7 +92,8 @@
                         &nbsp;
                     </td>
                 </tr>
-            </table>
+            </tfoot>
+        </table>
         <br />
         <input type="hidden" name="acttype" value="mask"/>
         <input type="hidden" name="parent" tal:attributes="value python:metadatatype.id"/>
@@ -200,9 +206,9 @@
                 <td><input type="checkbox" name="mdefault" value="True" tal:attributes="checked python:{'False':None,'True':'checked'}[str(mask.getDefaultMask())]"/></td>
             </tr>
             <tr>
-                <td style="vertical-align:top"><tal:block i18n:translate="admin_mask_seperator">TEXT</tal:block>:</td>
+                <td style="vertical-align:top"><tal:block i18n:translate="admin_mask_separator">TEXT</tal:block>:</td>
                 <td>
-                    <!--<input tal:attributes="value python:mask.getSeperator()" type="text" style="width:300px" name="mseperator"/>-->
+                    <input tal:attributes="value python:mask.getSeparator()" type="text" style="width:300px" name="mseparator"/>
                  <td>
             </tr>
             <tr>

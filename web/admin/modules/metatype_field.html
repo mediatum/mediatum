@@ -15,115 +15,119 @@
 
     <form name="fieldoverview" method="post" action="#" tal:attributes="action page">
         <table class="overview">
-            <tr>
-                <td colspan="10">
-                    <h3 i18n:translate="admin_metafield_header">
-                        TEXT '<span tal:content="python:metadatatype.getName()" i18n:name="name"/>'
-                    </h3>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="10">
-                    <a tal:attributes="href python:'./metatype/'+metadatatype.getName()+'/overview?style=popup'" i18n:translate="admin_metafield_fieldlist" target="_blank">TEXT</a>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="10">
-                    <span i18n:translate="admin_filter_label">TEXT</span>
-                    <select name="filtertype" style="margin:0px">
-                        <tal:block tal:repeat="filterattr filterattrs">
-                            <option tal:content="python:filterattr[1]" tal:attributes="value python:filterattr[0]; selected python:{'False':None,'True':'selected'}[str(filterarg==filterattr[0])]" i18n:translate="">TEXT</option>
-                        </tal:block>
-                    </select>
-                    <tal:block tal:repeat="tab tabs">
-                        <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
-                    </tal:block>
-                </td>
-            </tr>
-            <tr>
-                <th>&nbsp;</th>
-                <th tal:repeat="col sortcol">
-                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit" value="">TEXT</button>
-                </th>
-                <th>
-                    <table>
-                        <tr>
-                            <td tal:repeat="fieldoption fieldoptions" width="20px" align="center">
-                                <img tal:attributes="src python:fieldoption.getImagesource(); title python:fieldoption.getName()" i18n:attributes="title"/>
-                            </td>
-                        </tr>
-                    </table>
-                </th>
-                <th tal:condition="python:order[0:1]==0 or order==''">
-                    <tal:block i18n:translate="admin_metafield_order">Reihenfolge</tal:block> <img src="/img/az.png" border="0" />
-                </th>
-                <th tal:condition="python:order[0:1]!=0 and order!=''">
-                    <button i18n:translate="admin_metafield_order" i18n:attributes="title admin_sort_label" tal:attributes="name python:'sortcol_00'" class="admin_sortcol" type="submit">TEXT</button>
-                </th>
-                <th align="right">
-                    <input tal:attributes="name python:'newdetail_'+metadatatype.getName()" i18n:attributes="title admin_metafield_new_title" type="image" src="/img/install.png">
-                </th>
-            </tr>
-            <tr tal:condition="python:not metafields or len(metafields)==0">
-                <td colspan="7"><small i18n:translate="admin_metafield_nofield">TEXT</small></td>
-            </tr>
-                <tal:block tal:repeat="metafield python:metafields[pages.getStart():pages.getEnd()]">
-                    <tr tal:define="cssclass python:metafields.index(metafield)%2 and 'norm' or 'silver'">
-                        <td tal:attributes="class cssclass" tal:content="python:str(metafields.index(metafield)+1) +'.'"/>
-                        <td tal:attributes="class cssclass" tal:content="python:str(metafield.getName())"/>
-                        <td tal:attributes="class cssclass" tal:content="python:str(metafield.getLabel())"/>
-                        <td tal:attributes="class cssclass" tal:content="python:fieldtypes[str(metafield.getFieldtype())]" i18n:translate=""/>
-                        <!--<td tal:attributes="class cssclass" tal:content="python:metafield.getFieldtype()" i18n:translate=""/>-->
-  
-                        <td tal:attributes="class cssclass" tal:define="flist python:metafield.getFieldOptionList()">
-                            <table>
-                                <tr>
-                                    <td tal:repeat="fieldoption fieldoptions" width="20px" align="center">
-                                        <img tal:define="index python:fieldoptions.index(fieldoption)" tal:condition="python:flist[index]" tal:attributes="title python:flist[index] and fieldoption.getName() or ''; src python:flist[index] and '/img/haken.gif' or '/img/mark_empty.gif'" i18n:attributes="title"/>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                        <td tal:define="index python:metafields.index(metafield); count python:len(metafields)" tal:attributes="class cssclass">
-                            &nbsp;&nbsp;&nbsp;
-                            <tal:block tal:condition="python:index>=0 and index<count-1">    
-                                <input tal:condition="python:order[0:1]!='0' and order!=''" tal:attributes="name python:'downdetail_'+metafield.getName()" disabled type="image" src="/img/downarrowdisabled.png"/>
-
-                                <input tal:condition="python:order[0:1]=='0' or order==''" tal:attributes="name python:'downdetail_'+metafield.getName()" i18n:attributes="title admin_metafield_down_title" type="image" src="/img/downarrow.png"/>
-                            </tal:block>
-                            <tal:block tal:condition="python:index==count-1">
-                                &nbsp;&nbsp;&nbsp;
-                            </tal:block>
-                            &nbsp;
-                            <tal:block tal:condition="python:index>0 and index<=count">
-                                <input tal:condition="python:order[0:1]!='0' and order!=''" tal:attributes="name python:'updetail_'+metafield.getName()" disabled type="image" src="/img/uparrowdisabled.png"/>
-                            
-                                <input tal:condition="python:order[0:1]=='0' or order==''" tal:attributes="name python:'updetail_'+metafield.getName()" i18n:attributes="title admin_metafield_up_title" type="image" src="/img/uparrow.png"/>
-                            </tal:block>
-                        </td>
-
-                        <td tal:attributes="class cssclass">
-                            <input tal:attributes="name python:'editdetail_'+metafield.getName()" i18n:attributes="title admin_metafield_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
-                            <input tal:attributes="name python:'deletedetail_'+metafield.getName(); onclick python:'return questionDelName(\''+metafield.getLabel() + ' (' +metafield.getName()+')\')'" i18n:attributes="title admin_metafield_delete_title" type="image" src="/img/delete.png" alt="delete"/>
-                        </td>
-                    </tr>
-                </tal:block>
+            <thead>
                 <tr>
-                    <th colspan="4">
-                        <small>
-                            <span i18n:translate="admin_metafield_footer">
-                                <span i18n:name="number" tal:content="python:str(len(metafields))"/>
-                            </span>
-                            <span tal:content="structure python:pages.printPageList()"/>
-                        </small>
-                    </th>
-                    <th align="right" colspan="3"><small tal:content="structure python:pages.printPageAll()"/></th>
-                </tr>
-                <tr>
-                    <td colspan="7">
-                        (<span i18n:translate="admin_metafield_msg1">TEXT</span>)
+                    <td colspan="10">
+                        <h3 i18n:translate="admin_metafield_header">
+                            TEXT '<span tal:content="python:metadatatype.getName()" i18n:name="name"/>'
+                        </h3>
                     </td>
                 </tr>
+                <tr>
+                    <td colspan="10">
+                        <a tal:attributes="href python:'./metatype/'+metadatatype.getName()+'/overview?style=popup'" i18n:translate="admin_metafield_fieldlist" target="_blank">TEXT</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="10">
+                        <span i18n:translate="admin_filter_label">TEXT</span>
+                        <select name="filtertype" style="margin:0px">
+                            <tal:block tal:repeat="filterattr filterattrs">
+                                <option tal:content="python:filterattr[1]" tal:attributes="value python:filterattr[0]; selected python:{'False':None,'True':'selected'}[str(filterarg==filterattr[0])]" i18n:translate="">TEXT</option>
+                            </tal:block>
+                        </select>
+                        <tal:block tal:repeat="tab tabs">
+                            <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
+                        </tal:block>
+                    </td>
+                </tr>
+                <tr>
+                    <th>&nbsp;</th>
+                    <th tal:repeat="col sortcol">
+                        <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit" value="">TEXT</button>
+                    </th>
+                    <th>
+                        <table>
+                            <tr>
+                                <td tal:repeat="fieldoption fieldoptions" width="20px" align="center">
+                                    <img tal:attributes="src python:fieldoption.getImagesource(); title python:fieldoption.getName()" i18n:attributes="title"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </th>
+                    <th tal:condition="python:order[0:1]==0 or order==''">
+                        <tal:block i18n:translate="admin_metafield_order">Reihenfolge</tal:block> <img src="/img/az.png" border="0" />
+                    </th>
+                    <th tal:condition="python:order[0:1]!=0 and order!=''">
+                        <button i18n:translate="admin_metafield_order" i18n:attributes="title admin_sort_label" tal:attributes="name python:'sortcol_00'" class="admin_sortcol" type="submit">TEXT</button>
+                    </th>
+                    <th align="right">
+                        <input tal:attributes="name python:'newdetail_'+metadatatype.getName()" i18n:attributes="title admin_metafield_new_title" type="image" src="/img/install.png">
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr tal:condition="python:not metafields or len(metafields)==0">
+                    <td colspan="7"><small i18n:translate="admin_metafield_nofield">TEXT</small></td>
+                </tr>
+                    <tal:block tal:repeat="metafield python:metafields[pages.getStart():pages.getEnd()]">
+                        <tr tal:define="cssclass python:metafields.index(metafield)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
+                            <td tal:content="python:str(metafields.index(metafield)+1) +'.'"/>
+                            <td tal:content="python:str(metafield.getName())"/>
+                            <td tal:content="python:str(metafield.getLabel())"/>
+                            <td tal:content="python:fieldtypes[str(metafield.getFieldtype())]" i18n:translate=""/>
+                            <td tal:define="flist python:metafield.getFieldOptionList()">
+                                <table>
+                                    <tr>
+                                        <td tal:repeat="fieldoption fieldoptions" width="20px" align="center">
+                                            <img tal:define="index python:fieldoptions.index(fieldoption)" tal:condition="python:flist[index]" tal:attributes="title python:flist[index] and fieldoption.getName() or ''; src python:flist[index] and '/img/haken.gif' or '/img/mark_empty.gif'" i18n:attributes="title"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td tal:define="index python:metafields.index(metafield); count python:len(metafields)">
+                                &nbsp;&nbsp;&nbsp;
+                                <tal:block tal:condition="python:index>=0 and index<count-1">    
+                                    <input tal:condition="python:order[0:1]!='0' and order!=''" tal:attributes="name python:'downdetail_'+metafield.getName()" disabled type="image" src="/img/downarrowdisabled.png"/>
+
+                                    <input tal:condition="python:order[0:1]=='0' or order==''" tal:attributes="name python:'downdetail_'+metafield.getName()" i18n:attributes="title admin_metafield_down_title" type="image" src="/img/downarrow.png"/>
+                                </tal:block>
+                                <tal:block tal:condition="python:index==count-1">
+                                    &nbsp;&nbsp;&nbsp;
+                                </tal:block>
+                                &nbsp;
+                                <tal:block tal:condition="python:index>0 and index<=count">
+                                    <input tal:condition="python:order[0:1]!='0' and order!=''" tal:attributes="name python:'updetail_'+metafield.getName()" disabled type="image" src="/img/uparrowdisabled.png"/>
+                                
+                                    <input tal:condition="python:order[0:1]=='0' or order==''" tal:attributes="name python:'updetail_'+metafield.getName()" i18n:attributes="title admin_metafield_up_title" type="image" src="/img/uparrow.png"/>
+                                </tal:block>
+                            </td>
+
+                            <td>
+                                <input tal:attributes="name python:'editdetail_'+metafield.getName()" i18n:attributes="title admin_metafield_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
+                                <input tal:attributes="name python:'deletedetail_'+metafield.getName(); onclick python:'return questionDelName(\''+metafield.getLabel() + ' (' +metafield.getName()+')\')'" i18n:attributes="title admin_metafield_delete_title" type="image" src="/img/delete.png" alt="delete"/>
+                            </td>
+                        </tr>
+                    </tal:block>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="4" align="left">
+                            <small>
+                                <span i18n:translate="admin_metafield_footer">
+                                    <span i18n:name="number" tal:content="python:str(len(metafields))"/>
+                                </span>
+                                <span tal:content="structure python:pages.printPageList()"/>
+                            </small>
+                        </th>
+                        <th align="right" colspan="3"><small tal:content="structure python:pages.printPageAll()"/></th>
+                    </tr>
+                    <tr>
+                        <td colspan="7">
+                            (<span i18n:translate="admin_metafield_msg1">TEXT</span>)
+                        </td>
+                    </tr>
+                </tfoot>
             </table>
         <br />
         <br/>

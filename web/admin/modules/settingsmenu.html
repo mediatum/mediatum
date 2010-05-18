@@ -50,48 +50,51 @@
 <metal:block metal:define-macro="view_adminmodules">
     <form method="post">
     <table class="overview">
-        <tr>
-            <td colspan="9">
-                <h2 i18n:translate="admin_settings_adminmodules_title">TEXT</h2>
-            </td>
-            <td>
-                <button type="submit" name="adminmodules_default" i18n:translate="admin_settings_adminmodules_reset">TEXT</button>
-            </td>
-        </tr>
-        <tr>
-            <th colspan="4" i18n:translate="admin_settings_adminmodules_name">TEXT</th>
-            <th style="width:60px" i18n:translate="admin_settings_adminmodules_view">TEXT</th>
-            <th colspan="5" i18n:translate="admin_modules_adminmodules_move">TEXT</th>
-        </tr>
-        <tal:block tal:repeat="key python:list(mods)">
-            <tal:block tal:repeat="menu python:mods[key]">
-                <tr tal:define="is_menu python:menu.startswith('menu'); is_visible python:key!=-1; hidden python:key==-1; cssclass python: (is_menu or not is_visible) and 'silver' or 'norm'">
-                    <td tal:attributes="class cssclass" tal:condition="python: not is_menu">&nbsp;</td>
-                    <td tal:attributes="class cssclass; colspan python:{'False':2,'True':3}[str(is_menu)]" tal:content="python:'admin_menu_'+menu" i18n:translate="">TEXT</td>
-                    <td tal:attributes="class cssclass" tal:content="python:'version: '+modinfo(menu, 'version')">TEXT</td>
-                    <td tal:attributes="class cssclass" tal:condition="python:required(menu)" style="text-align:center" i18n:translate="admin_modules_adminmodules_std">TEXT</td>
-                    <td tal:attributes="class cssclass" tal:condition="python:hidden and required(menu)==0 and is_menu" style="text-align:center"><input tal:attributes="name python:'show|'+menu" i18n:attributes="title admin_modules_adminmodules_showtitle" type="image" src="/img/haken.gif"/></td>
-                    <td tal:attributes="class cssclass" tal:condition="python:hidden and required(menu)==0 and not is_menu" style="text-align:center">&nbsp;</td>
-                    
-                    <td tal:attributes="class cssclass" tal:condition="python:is_visible and required(menu)==0" style="text-align:center;width:50px"><input tal:attributes="name python:'hide|'+menu" i18n:attributes="title admin_modules_adminmodules_hidetitle" type="image" src="/img/delete.png" /></td>
-                    
-                    <td tal:attributes="class cssclass" style="width:10px; padding:0px"><input type="image" tal:attributes="class cssclass;name python:'adminmodulesup_'+menu" src="/img/uparrow.png" tal:condition="python:is_menu and is_visible and key>0"/>&nbsp;</td>
-                    <td tal:attributes="class cssclass" style="width:10px; padding:0px"><input type="image" tal:attributes="name python:'down|'+menu" src="/img/downarrow.png" tal:condition="python:is_menu and is_visible and key<len(mods)-2"/>&nbsp;</td>
-                    <td tal:attributes="class cssclass" style="width:10px; padding:0px"><input type="image" tal:attributes="name python:'up|'+menu" src="/img/uparrow.png" tal:condition="python:not is_menu and is_visible and mods[key].index(menu)>1"/>&nbsp;</td>
-                    <td tal:attributes="class cssclass" style="width:10px; padding:0px"><input type="image" tal:attributes="name python:'down|'+menu" src="/img/downarrow.png" tal:condition="python:not is_menu and is_visible and mods[key].index(menu)<len(mods[key])-1"/>&nbsp;</td>
-                    <td tal:attributes="class cssclass" tal:condition="python:not is_menu" style="text-align:center;width:80px">
-                        <select onchange="submit()" tal:attributes="name python:'move|'+menu">
-                            <option value="">-<tal:block i18n:translate="admin_modules_adminmodules_move">TEXT</tal:block>-</option>
-                            <tal:block tal:repeat="k python:list(mods)">
-                                <option tal:condition="python:k>=0" tal:content="python:'admin_menu_'+mods[k][0]" tal:attributes="value python:mods[k][0]" i18n:translate=""></option>
-                            </tal:block>
-                        </select>
-                    </td>
-                    <td tal:attributes="class cssclass" tal:condition="python:is_menu" style="text-align:center">&nbsp;</td>
-                </tr>
+        <thead>
+            <tr>
+                <td colspan="9">
+                    <h2 i18n:translate="admin_settings_adminmodules_title">TEXT</h2>
+                </td>
+                <td>
+                    <button type="submit" name="adminmodules_default" i18n:translate="admin_settings_adminmodules_reset">TEXT</button>
+                </td>
+            </tr>
+            <tr>
+                <th colspan="4" i18n:translate="admin_settings_adminmodules_name">TEXT</th>
+                <th style="width:60px" i18n:translate="admin_settings_adminmodules_view">TEXT</th>
+                <th colspan="5" i18n:translate="admin_modules_adminmodules_move">TEXT</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tal:block tal:repeat="key python:list(mods)">
+                <tal:block tal:repeat="menu python:mods[key]">
+                    <tr tal:define="is_menu python:menu.startswith('menu'); is_visible python:key!=-1; hidden python:key==-1; cssclass python: (is_menu or not is_visible) and 'silver' or 'norm'" tal:attributes="class cssclass">
+                        <td tal:condition="python: not is_menu">&nbsp;</td>
+                        <td tal:attributes="colspan python:{'False':2,'True':3}[str(is_menu)]" tal:content="python:'admin_menu_'+menu" i18n:translate="">TEXT</td>
+                        <td tal:content="python:'version: '+modinfo(menu, 'version')">TEXT</td>
+                        <td tal:condition="python:required(menu)" style="text-align:center" i18n:translate="admin_modules_adminmodules_std">TEXT</td>
+                        <td tal:condition="python:hidden and required(menu)==0 and is_menu" style="text-align:center"><input tal:attributes="name python:'show|'+menu" i18n:attributes="title admin_modules_adminmodules_showtitle" type="image" src="/img/haken.gif"/></td>
+                        <td tal:condition="python:hidden and required(menu)==0 and not is_menu" style="text-align:center">&nbsp;</td>
+                        
+                        <td tal:condition="python:is_visible and required(menu)==0" style="text-align:center;width:50px"><input tal:attributes="name python:'hide|'+menu" i18n:attributes="title admin_modules_adminmodules_hidetitle" type="image" src="/img/delete.png" /></td>
+                        
+                        <td style="width:10px; padding:0px"><input type="image" tal:attributes="class cssclass;name python:'adminmodulesup_'+menu" src="/img/uparrow.png" tal:condition="python:is_menu and is_visible and key>0"/>&nbsp;</td>
+                        <td style="width:10px; padding:0px"><input type="image" tal:attributes="name python:'down|'+menu" src="/img/downarrow.png" tal:condition="python:is_menu and is_visible and key<len(mods)-2"/>&nbsp;</td>
+                        <td style="width:10px; padding:0px"><input type="image" tal:attributes="name python:'up|'+menu" src="/img/uparrow.png" tal:condition="python:not is_menu and is_visible and mods[key].index(menu)>1"/>&nbsp;</td>
+                        <td style="width:10px; padding:0px"><input type="image" tal:attributes="name python:'down|'+menu" src="/img/downarrow.png" tal:condition="python:not is_menu and is_visible and mods[key].index(menu)<len(mods[key])-1"/>&nbsp;</td>
+                        <td tal:condition="python:not is_menu" style="text-align:center;width:80px">
+                            <select onchange="submit()" tal:attributes="name python:'move|'+menu">
+                                <option value="">-<tal:block i18n:translate="admin_modules_adminmodules_move">TEXT</tal:block>-</option>
+                                <tal:block tal:repeat="k python:list(mods)">
+                                    <option tal:condition="python:k>=0" tal:content="python:'admin_menu_'+mods[k][0]" tal:attributes="value python:mods[k][0]" i18n:translate=""></option>
+                                </tal:block>
+                            </select>
+                        </td>
+                        <td tal:condition="python:is_menu" style="text-align:center">&nbsp;</td>
+                    </tr>
+                </tal:block>
             </tal:block>
-            
-        </tal:block>
+        </tbody>
     </table>
     <input type="hidden" name="gotopage" value="adminmodules"/>
     <input type="hidden" name="changes" value="adminmodules"/>
@@ -114,43 +117,45 @@
             <h3><tal:block i18n:translate="admin_settings_editmenu_typeheader"/> <tal:block tal:content="typelongname" i18n:translate=""/></h3>
             <p style="text-align:right"><button type="submit" name="editmodules_default" i18n:translate="admin_settings_editmodules_reset">TEXT</button></p>
             <table class="overview">
-            <tr>
-                <th colspan="3" i18n:translate="admin_settings_editmodules_name">TEXT</th>
-                <th i18n:translate="admin_settings_editmodules_view">TEXT</th>
-                <th colspan="5" i18n:translate="admin_modules_editmodules_move">TEXT</th>
-            </tr>
- 
-            <tal:block tal:repeat="key python:list(mods)">
-                <tal:block tal:define="menu python:mods[key]" tal:repeat="item menu">
-                <tr tal:define="is_menu python:str(item).startswith('menu'); is_visible python:key!=-1; hidden python:key==-1; cssclass python: (is_menu or not is_visible) and 'silver' or 'norm';">
-                    <td tal:attributes="class cssclass" tal:condition="python: not is_menu">&nbsp;</td>
-                    <td tal:attributes="class cssclass; colspan python:{'False':1,'True':2}[str(is_menu)]" tal:content="python:'tab_'+item" i18n:translate="">TEXT</td>
-                    <td tal:attributes="class cssclass">
-                        <tal:block tal:condition="python:getVersion(item)!=''" tal:replace="python:'version: '+getVersion(item)"/>
-                        &nbsp;
-                    </td>                  
-                    <td tal:attributes="class cssclass" style="width:10px; padding:0px; text-align:center">
-                        <input tal:condition="is_visible" tal:attributes="name python:'del|'+str(key)+'|'+item" type="image" src="/img/delete.png" i18n:attributes="title admin_modules_editmodules_hidetitle"/>
-                        <input tal:condition="python:is_menu and not is_visible" tal:attributes="name python:'show|'+str(key)+'|'+item" type="image" src="/img/haken.gif" i18n:attributes="title admin_modules_editmodules_showtitle"/>
-                    </td>
-                    <td tal:attributes="class cssclass" style="width:10px; padding:0px; text-align:center"><input tal:condition="python:is_menu and is_visible and key>0" tal:attributes="name python:'up|'+item" type="image" src="/img/uparrow.png"/></td>
-                    <td tal:attributes="class cssclass" style="width:10px; padding:0px; text-align:center"><input type="image" tal:attributes="name python:'down|'+item" src="/img/downarrow.png" tal:condition="python:is_menu and is_visible and key<len(mods)-2"/>&nbsp;</td>
-                    <td tal:attributes="class cssclass" style="width:10px; padding:0px; text-align:center"><input type="image" tal:attributes="name python:'up|'+item" src="/img/uparrow.png" tal:condition="python:not is_menu and is_visible and menu.index(item)>1"/></td>
-                    <td tal:attributes="class cssclass" style="width:10px; padding:0px; text-align:center"><input type="image" tal:attributes="name python:'down|'+item" src="/img/downarrow.png" tal:condition="python:not is_menu and is_visible and menu.index(item)<len(menu)-1"/>&nbsp;</td>
-                    <td tal:attributes="class cssclass" tal:condition="python:not is_menu" style="text-align:center;width:80px">
-                        <select onchange="submit()" tal:attributes="name python:'move|'+item" tal:condition="python: not isSystem(item)">
-                            <option value="">-<tal:block i18n:translate="admin_modules_editmodules_move">TEXT</tal:block>-</option>
-                            <tal:block tal:repeat="key python:list(mods)">
-                                <option tal:condition="python:key>=0" tal:content="python:'tab_'+mods[key][0]" tal:attributes="value python:mods[key][0]" i18n:translate=""></option>
-                            </tal:block>
-                        </select>
-                        <tal:block tal:condition="python:isSystem(item)" i18n:translate="admin_modules_editmodules_system"/>
-                    </td>
-                    <td tal:attributes="class cssclass" tal:condition="python:is_menu" style="text-align:center;width:80px">&nbsp;</td>
-                </tr>
-                </tal:block>
-            </tal:block>
-  
+                <thead>
+                    <tr>
+                        <th colspan="3" i18n:translate="admin_settings_editmodules_name">TEXT</th>
+                        <th i18n:translate="admin_settings_editmodules_view">TEXT</th>
+                        <th colspan="5" i18n:translate="admin_modules_editmodules_move">TEXT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tal:block tal:repeat="key python:list(mods)">
+                        <tal:block tal:define="menu python:mods[key]" tal:repeat="item menu">
+                        <tr tal:define="is_menu python:str(item).startswith('menu'); is_visible python:key!=-1; hidden python:key==-1; cssclass python: (is_menu or not is_visible) and 'silver' or 'norm';" tal:attributes="class cssclass">
+                            <td tal:condition="python: not is_menu">&nbsp;</td>
+                            <td tal:attributes="colspan python:{'False':1,'True':2}[str(is_menu)]" tal:content="python:'tab_'+item" i18n:translate="">TEXT</td>
+                            <td>
+                                <tal:block tal:condition="python:getVersion(item)!=''" tal:replace="python:'version: '+getVersion(item)"/>
+                                &nbsp;
+                            </td>                  
+                            <td style="width:10px; padding:0px; text-align:center">
+                                <input tal:condition="is_visible" tal:attributes="name python:'del|'+str(key)+'|'+item" type="image" src="/img/delete.png" i18n:attributes="title admin_modules_editmodules_hidetitle"/>
+                                <input tal:condition="python:is_menu and not is_visible" tal:attributes="name python:'show|'+str(key)+'|'+item" type="image" src="/img/haken.gif" i18n:attributes="title admin_modules_editmodules_showtitle"/>
+                            </td>
+                            <td style="width:10px; padding:0px; text-align:center"><input tal:condition="python:is_menu and is_visible and key>0" tal:attributes="name python:'up|'+item" type="image" src="/img/uparrow.png"/></td>
+                            <td style="width:10px; padding:0px; text-align:center"><input type="image" tal:attributes="name python:'down|'+item" src="/img/downarrow.png" tal:condition="python:is_menu and is_visible and key<len(mods)-2"/>&nbsp;</td>
+                            <td style="width:10px; padding:0px; text-align:center"><input type="image" tal:attributes="name python:'up|'+item" src="/img/uparrow.png" tal:condition="python:not is_menu and is_visible and menu.index(item)>1"/></td>
+                            <td style="width:10px; padding:0px; text-align:center"><input type="image" tal:attributes="name python:'down|'+item" src="/img/downarrow.png" tal:condition="python:not is_menu and is_visible and menu.index(item)<len(menu)-1"/>&nbsp;</td>
+                            <td tal:condition="python:not is_menu" style="text-align:center;width:80px">
+                                <select onchange="submit()" tal:attributes="name python:'move|'+item" tal:condition="python: not isSystem(item)">
+                                    <option value="">-<tal:block i18n:translate="admin_modules_editmodules_move">TEXT</tal:block>-</option>
+                                    <tal:block tal:repeat="key python:list(mods)">
+                                        <option tal:condition="python:key>=0" tal:content="python:'tab_'+mods[key][0]" tal:attributes="value python:mods[key][0]" i18n:translate=""></option>
+                                    </tal:block>
+                                </select>
+                                <tal:block tal:condition="python:isSystem(item)" i18n:translate="admin_modules_editmodules_system"/>
+                            </td>
+                            <td tal:condition="python:is_menu" style="text-align:center;width:80px">&nbsp;</td>
+                        </tr>
+                        </tal:block>
+                    </tal:block>
+                </tbody>
             </table>
             <input type="hidden" name="gotopage" value="editmodules"/>
             <input type="hidden" name="changes" value="editmodules"/>

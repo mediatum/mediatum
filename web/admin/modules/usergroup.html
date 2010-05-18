@@ -7,78 +7,80 @@
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form name="usergroupoverview" method="post" action="#" tal:attributes="action page">
         <table class="overview">
-            <tr>
-                <td colspan="7"><h3 i18n:translate="admin_usergroup_existing">TEXT</h3></td>
-            </tr>
-            <tr>
-                <td colspan="7">
-                    <span i18n:translate="admin_filter_label">TEXT</span>
-                    
-                    <tal:block tal:repeat="tab tabs">
-                        <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit">TEXT</button>
-                    </tal:block>
-                </td>
-            </tr>
-            <tr>
-                <th>&nbsp;</th>
-                <th tal:repeat="col sortcol">
-                    <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit" value="">TEXT</button>
-                </th>
-                <th>
-                    <tal:block metal:use-macro="web/admin/frame.html/optionheader"/>
-                </th>
-
-                <th align="right">
-                    <input i18n:attributes="title admin_usergroup_create" type="image" src="/img/install.png" name="new"/>
-                </th>
-            </tr>
-            <tr tal:condition="python:len(groups)==0">
-                <td colspan="6"><small i18n:translate="admin_usergroup_nogroups">TEXT</small></td>
-            </tr>
-            
-            <tal:block tal:repeat="group python:groups[pages.getStart():pages.getEnd()]">
-                <tr tal:define="cssclass python:groups.index(group)%2 and 'norm' or 'silver'">
-                    <td tal:attributes="class cssclass" tal:content="python:str(groups.index(group)+1)+'.'"/>
-                    <td tal:attributes="class cssclass" tal:content="python:group.getName()"/>
-                    <td tal:attributes="class cssclass;title python:group.getUserNames()" style="cursor:hand;width:50px" tal:content="structure python:'&nbsp;&nbsp;&nbsp;&nbsp;'+str(len(group.getChildren()))"/>
-                    <tal:block tal:define="schema python:group.getSchemas()">
-                        <td tal:attributes="class cssclass; title python:', '.join(schema)" style="cursor:hand;text-align:right;width:50px" tal:content="python:str(len(schema))"></td>
-                    </tal:block>
-                    <td tal:attributes="class cssclass">
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        <tal:block tal:condition="python:group.getHideEdit()!=''">
-                            <img src="/img/archive.png" i18n:attributes="title admin_usergroup_hideedit_title"/>
+            <thead>
+                <tr>
+                    <td colspan="7"><h3 i18n:translate="admin_usergroup_existing">TEXT</h3></td>
+                </tr>
+                <tr>
+                    <td colspan="7">
+                        <span i18n:translate="admin_filter_label">TEXT</span>
+                        
+                        <tal:block tal:repeat="tab tabs">
+                            <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit">TEXT</button>
                         </tal:block>
                     </td>
-                    <td tal:attributes="class cssclass" style="width:40px">
-                        <table>
-                            <tr>
-                                <tal:block tal:define="options python:list(group.getOptionList())" tal:repeat="option options">
-                                    <td tal:condition="python:group.getOptionList()[option]" width="20px" align="center"><img src="/img/haken.gif"/></td>
-                                    <td tal:condition="python: not group.getOptionList()[option]" width="20px" align="center">
-                                        <img src="/img/mark_empty.png"/>
-                                    </td>
-                                </tal:block>
-                            </tr>
-                        </table>
-                    </td>
-                    <td tal:attributes="class cssclass" style="width: 80px">
-                        <input i18n:attributes="title admin_usergroup_edit" tal:attributes="name python:str('edit_'+group.getName())" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
-                        <input tal:condition="python:len(group.getChildren())==0" tal:attributes="name python:str('delete_'+group.getName()); onclick python:'return questionDelName(\''+group.getName()+'\')'" i18n:attributes="title admin_usergroup_delete" type="image" src="/img/delete.png"/>
-                    </td>
                 </tr>
-            </tal:block>
-            <tr>
-                <th colspan="3">
-                    <small>
-                        <span i18n:translate="admin_usergroup_footer">
-                            <span i18n:name="number" tal:content="python:str(len(groups))"/>
-                        </span>
-                        <span tal:content="raw python:pages.printPageList()"/>
-                    </small>
-                </th>
-                <th colspan="4" align="right"><small tal:content="structure python:pages.printPageAll()"/></th>
-            </tr>
+                <tr>
+                    <th>&nbsp;</th>
+                    <th tal:repeat="col sortcol">
+                        <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit" value="">TEXT</button>
+                    </th>
+                    <th style="padding:0px;margin:0px">
+                        <tal:block metal:use-macro="web/admin/frame.html/optionheader"/>
+                    </th>
+
+                    <th align="right">
+                        <input i18n:attributes="title admin_usergroup_create" type="image" src="/img/install.png" name="new"/>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr tal:condition="python:len(groups)==0">
+                    <td colspan="6"><small i18n:translate="admin_usergroup_nogroups">TEXT</small></td>
+                </tr>
+                
+                <tal:block tal:repeat="group python:groups[pages.getStart():pages.getEnd()]">
+                    <tr tal:attributes="class cssclass" tal:define="cssclass python:groups.index(group)%2 and 'norm' or 'silver'">
+                        <td tal:content="python:str(groups.index(group)+1)+'.'"/>
+                        <td tal:content="python:group.getName()"/>
+                        <td tal:attributes="title python:group.getUserNames()" style="cursor:pointer;width:50px" tal:content="structure python:'&nbsp;&nbsp;&nbsp;&nbsp;'+str(len(group.getChildren()))"/>
+                        <td tal:attributes="id python:'usergroup_'+str(group.id)+'_schema'" style="cursor:pointer;text-align:center;width:50px"><img src="/img/rightarrow.png" tal:attributes="onmouseover python:'getGroupSchema(this, \''+group.id+'\')'" title="..."/></td>
+                        <td>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <tal:block tal:condition="python:group.getHideEdit()!=''">
+                                <img src="/img/archive.png" i18n:attributes="title admin_usergroup_hideedit_title"/>
+                            </tal:block>
+                        </td>
+                        <td>
+                            <table tal:define="options python:list(group.getOptionList())">
+                                <tr>
+                                    <td tal:repeat="option options" style="width:20px; text-align:center">
+                                        <img tal:condition="python:group.getOptionList()[option]" src="/img/haken.gif"/>
+                                        <img tal:condition="python: not group.getOptionList()[option]" src="/img/mark_empty.png"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td style="width: 80px">
+                            <input i18n:attributes="title admin_usergroup_edit" tal:attributes="name python:str('edit_'+group.getName())" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
+                            <input tal:condition="python:len(group.getChildren())==0" tal:attributes="name python:str('delete_'+group.getName()); onclick python:'return questionDelName(\''+group.getName()+'\')'" i18n:attributes="title admin_usergroup_delete" type="image" src="/img/delete.png"/>
+                        </td>
+                    </tr>
+                </tal:block>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="3" align="left">
+                        <small>
+                            <span i18n:translate="admin_usergroup_footer">
+                                <span i18n:name="number" tal:content="python:str(len(groups))"/>
+                            </span>
+                            <span tal:content="raw python:pages.printPageList()"/>
+                        </small>
+                    </th>
+                    <th colspan="4" align="right"><small tal:content="structure python:pages.printPageAll()"/></th>
+                </tr>
+            </tfoot>
         </table>
         <p>
             <small>(<span i18n:translate="admin_usergroup_msg1">TEXT</span>)</small>

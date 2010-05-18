@@ -2,42 +2,47 @@
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form tal:attributes="action page" name="logfiles" method="post" action="#">
         <table class="overview">
-            <tr>
-                <td colspan="5"><h3 i18n:translate="admin_log_existing">TEXT</h3></td>
-            </tr>
-            <tr>
-                <th>&nbsp;</th>
-                <th i18n:translate="admin_log_name">TEXT</th>
-                <th i18n:translate="admin_log_path">TEXT</th>
-                <th i18n:translate="admin_log_filesize">TEXT</th>
-                <th width="50px" valign="right">&nbsp;</th>
-            </tr>
-            <tr tal:condition="python:len(filelist)==0">
-                <td colspan="5"><small i18n:translate="admin_log_nofiles">TEXT</small></td>
-            </tr>
-
-            <tal:block tal:define="start python:pages.getStart(); end python:pages.getEnd()" tal:repeat="file python:filelist[start:end]">
-                <tr tal:define="cssclass python:filelist.index(file)%2 and 'norm' or 'silver'">
-                    <td tal:attributes="class cssclass" tal:content="python:str(filelist.index(file)+1)+'.'"/>
-                    <td tal:attributes="class cssclass" tal:content="python:file.getName()"/>
-                    <td tal:attributes="class cssclass" tal:content="python:file.getPath()"/>
-                    <td tal:attributes="class cssclass" tal:content="python:file.getSize()"/>
-                    <td tal:attributes="class cssclass">
-                        <input tal:attributes="name python:'view_'+file.getName()" i18n:attributes="title admin_log_show_title" type="image" src="/img/search.gif"/>
-                    </td>
+            <thead>
+                <tr>
+                    <td colspan="5"><h3 i18n:translate="admin_log_existing">TEXT</h3></td>
                 </tr>
-            </tal:block>
-            <tr>
-                <th colspan="2">
-                    <small>
-                        <span i18n:translate="admin_log_footer">
-                            <span i18n:name="number" tal:content="python:str(len(filelist))"/>
-                        </span>
-                        <span tal:content="structure python:pages.printPageList()"/>
-                    </small>
-                </th>
-                <th colspan="3" align="right"><small tal:content="structure python:pages.printPageAll()"/></th>
-            </tr>
+                <tr>
+                    <th>&nbsp;</th>
+                    <th i18n:translate="admin_log_name">TEXT</th>
+                    <th i18n:translate="admin_log_path">TEXT</th>
+                    <th i18n:translate="admin_log_filesize">TEXT</th>
+                    <th width="50px" valign="right">&nbsp;</th>
+                </tr>
+                <tr tal:condition="python:len(filelist)==0">
+                    <td colspan="5"><small i18n:translate="admin_log_nofiles">TEXT</small></td>
+                </tr>
+            </thead>
+            <tbody>
+                <tal:block tal:define="start python:pages.getStart(); end python:pages.getEnd()" tal:repeat="file python:filelist[start:end]">
+                    <tr tal:define="cssclass python:filelist.index(file)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
+                        <td tal:content="python:str(filelist.index(file)+1)+'.'"/>
+                        <td tal:content="python:file.getName()"/>
+                        <td tal:content="python:file.getPath()"/>
+                        <td tal:content="python:file.getSize()"/>
+                        <td>
+                            <input tal:attributes="name python:'view_'+file.getName()" i18n:attributes="title admin_log_show_title" type="image" src="/img/search.gif"/>
+                        </td>
+                    </tr>
+                </tal:block>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="2">
+                        <small>
+                            <span i18n:translate="admin_log_footer">
+                                <span i18n:name="number" tal:content="python:str(len(filelist))"/>
+                            </span>
+                            <span tal:content="structure python:pages.printPageList()"/>
+                        </small>
+                    </th>
+                    <th colspan="3" align="right"><small tal:content="structure python:pages.printPageAll()"/></th>
+                </tr>
+            </tfoot>
         </table>
         <br>
     </form>

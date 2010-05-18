@@ -29,12 +29,13 @@ import logging
 
 from utils.utils import Option
 
-OPTION_ENHANCED_READRIGHTS = Option("user_option_2", "editreadrights", "r", "img/changereadrights.png", "checkbox")
+#OPTION_ENHANCED_READRIGHTS = Option("user_option_2", "editreadrights", "r", "img/changereadrights.png", "checkbox")
 #OPTION_MAX_IMAGESIZE = Option("user_option_3", "maximagesize", "0", "img/maximagesize.png", "text")
 
 useroption = []
-useroption += [OPTION_ENHANCED_READRIGHTS]
-useroption += [Option("user_option_1", "editpwd", "c", "img/changepwd_opt.png", "checkbox")]
+#useroption += [OPTION_ENHANCED_READRIGHTS]
+useroption += [Option("user_option_1", "editpwd", "c", "img/changepwd_opt.png", "checkbox"),\
+               Option("user_option_2", "editshopping", "s", "img/editshopping_opt.png", "checkbox")]
 
 authenticators = {}
 
@@ -241,7 +242,7 @@ extuser_lock = thread.allocate_lock()
 
 def checkLogin(name, pwd):
     user = getUser(name)
-    digest1 = md5.md5(pwd).hexdigest()
+    digest1 = hashlib.md5(pwd).hexdigest()
 
     if user and user.getUserType()=="intern":
         if digest1==user.getPassword():
@@ -275,13 +276,13 @@ def checkLogin(name, pwd):
             # overwrite password by the one used for
             # the external authentication, so the next
             # login is faster.
-            user.set("password", md5.md5(pwd).hexdigest())
+            user.set("password", hashlib.md5(pwd).hexdigest())
         else:
             extusers = getExternalUserFolder()
             user = tree.Node(name=name, type="user")
             if '@' in name:
                 user.set("email", name)
-            user.set("password", md5.md5(pwd).hexdigest())
+            user.set("password", hashlib.md5(pwd).hexdigest())
             user.set("opts", '')
 
             extuser_lock.acquire()
@@ -294,7 +295,7 @@ def checkLogin(name, pwd):
 
 def changePWD(name, pwd):
     user = getUser(name)
-    user.setPassword(md5.md5(pwd).hexdigest())
+    user.setPassword(hashlib.md5(pwd).hexdigest())
         
 """ add new user in db """
 def addUser(user):

@@ -210,10 +210,6 @@ class Document(default.Default):
                 "Standard":{"creationtime":"Erstelldatum",
                 "creator":"Ersteller"}}
 
-    """ show uploadform for metadatatype 'document' """
-    def upload_form(node, req):
-        req.writeTAL("contenttypes/document.html", {"metadatatypes": loadTypesFromDB()}, macro="uploadform")
-
     """ popup window for actual nodetype """
     def popup_fullsize(node, req):
         access = AccessData(req)

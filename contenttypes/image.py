@@ -448,10 +448,6 @@ class Image(default.Default):
                 "exif_JPEGThumbnail": "JPEGThumbnail",
                 "Thumbnail": "Thumbnail"}}
  
-    """ upload functionallity """
-    def upload_form(node, req):
-        req.writeTAL("contenttypes/image.html", {"metadatatypes":loadTypesFromDB()}, macro="uploadform")
-
     """ fullsize popup-window for image node """
     def popup_fullsize(node, req):
         access = AccessData(req)

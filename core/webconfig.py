@@ -22,6 +22,37 @@ import core.athana as athana
 import core.config as config
 import core.tree as tree
 
+from core.styles import theme
+
+
+def loadThemes():
+    # try loading theme from mediatum theme folder
+    if config.get("config.theme", "")!="":
+        p = config.basedir+"/web/themes/"+config.get("config.theme", "")+"/"
+        if os.path.exists(p):
+            print "Loading theme '%s'" %(config.get("config.theme", ""))
+            athana.addFileStore("/theme/", "web/themes/"+config.get("config.theme", "")+"/")
+            athana.addFileStorePath("/css/", "web/themes/"+config.get("config.theme", "")+"/css/")
+            athana.addFileStorePath("/img/", "web/themes/"+config.get("config.theme", "")+"/img/")
+            athana.addFileStorePath("/js/", "web/themes/"+config.get("config.theme", "")+"/js/")
+            
+            theme.update(config.get("config.theme"), "web/themes/"+config.get("config.theme", "")+"/", "intern")
+
+        # try laoding themes from plugin
+        for k,v in config.getsubset("plugins").items():
+            p = config.basedir+"/"+v+"themes/"+config.get("config.theme", "")+"/"
+            if os.path.exists(p):
+                print "Loading external theme '%s'" %(config.get("config.theme", ""))
+                athana.addFileStore("/theme/", v+"themes/"+config.get("config.theme", "")+"/")
+                athana.addFileStorePath("/css/", v+"themes/"+config.get("config.theme", "")+"/css/")
+                athana.addFileStorePath("/img/", v+"themes/"+config.get("config.theme", "")+"/img/")
+                athana.addFileStorePath("/js/", v+"themes/"+config.get("config.theme", "")+"/js/")
+                theme.update(config.get("config.theme"), v+"themes/"+config.get("config.theme", "")+"/", "extern")
+
+    else:
+        print "Loading default theme"
+
+
 def initContexts():
     athana.setBase(".")
     athana.setTempDir(config.get("paths.tempdir", "/tmp/"))
@@ -44,11 +75,15 @@ def initContexts():
     file.addHandler("send_attfile").addPattern("/attfile/.*")
     file.addHandler("get_archived").addPattern("/archive/.*")
     file.addHandler("get_root").addPattern("/[a-z]*\.[a-z]*") # root directory added /web/root (only files with extensions)
-
+    
     file = context.addFile("web/frontend/zoom.py")
     file.addHandler("send_imageproperties_xml").addPattern("/tile/[0-9]*/ImageProperties.xml")
     file.addHandler("send_tile").addPattern("/tile/[0-9]*/[^I].*")
 
+    # === workflow ===
+    #file = context.addFile("web/publish/main.py")
+    #file.addHandler("publish").addPattern("/publish/.*")
+    
     file = context.addFile("web/frontend/main.py")
     handler = file.addHandler("display")
     handler.addPattern("/")
@@ -79,12 +114,6 @@ def initContexts():
     file = context.addFile("workflow/workflow.py")
     file.addHandler("createWorkflowImage").addPattern("/workflowimage")
 
-    #file = context.addFile("stats/contenttypes.py")
-    #file.addHandler("contenttypes").addPattern("/contenttypes.png")
-    #file = context.addFile("stats/dbstats.py")
-    #file.addHandler("dbstats").addPattern("/dbstats")
-    #file.addHandler("mimetypes").addPattern("/mimetypes.png")
-
     # === admin area ===
     context = athana.addContext("/admin", ".")
     file = context.addFile("web/admin/main.py")
@@ -109,7 +138,7 @@ def initContexts():
     file = context.addFile("export/oai.py")
     file.addHandler("oaiRequest").addPattern(".*")
 
-    # === Exoprt ===
+    # === Export ===
     context = athana.addContext("/export", ".")
     file = context.addFile("export/export.py")
     file.addHandler("export").addPattern("/.*")
@@ -118,8 +147,12 @@ def initContexts():
     athana.addFileStore("/module/", "lib/FCKeditor/files.zip")
     athana.addFileStore("/css/", "web/css/")
     athana.addFileStore("/xml/", "web/xml/")
-    athana.addFileStore("/img/", ["web/img/", "img","web/admin/img/", "web/edit/img/"])
+    athana.addFileStore("/img/", ["web/img/", "web/admin/img/", "web/edit/img/"])
+    #athana.addFileStore("/img/", ["img","web/admin/img/", "web/edit/img/"])
     athana.addFileStore("/js/", ["web/js/", "js", "lib/FCKeditor/js/"]) 
+    
+    # === theme handling ===
+    loadThemes()
 
     #athana.addContext("/flush", ".").addFile("core/webconfig.py").addHandler("flush").addPattern("/py")
     

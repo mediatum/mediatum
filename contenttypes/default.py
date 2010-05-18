@@ -23,19 +23,28 @@ from core.translation import lang
 from utils.utils import Menu
 
 class Default(tree.Node):
-    def show_node_big(node, req):
+    def getTypeAlias(node):
+        return "default"
+        
+    def getCategoryName(node):
+        return "undefined"
+
+    def show_node_big(node, req, template="", macro=""):
         return "Unknown datatype: "+node.type
 
     def show_node_image(node):
         return """<img border="0" src="/img/questionmark.png">"""
 
     """ format preview node text """
-    def show_node_text(node, words=None, language=None, seperator="", labels=0):
+    def show_node_text(node, words=None, language=None, separator="", labels=0):
     
-        if seperator=="":
-            seperator = "<br/>"
+        if separator=="":
+            separator = "<br/>"
         metatext = list()
         mask = node.getMask("nodesmall")
+        for m in node.getMasks("shortview", language):
+            if m.getName()=="nodesmall":
+                mask = m
         if mask:
             for field in mask.getViewHTML([node], VIEW_DATA_ONLY):
                 if len(field)>=2:
@@ -58,7 +67,7 @@ class Default(tree.Node):
         else:
             metatext.append('&lt;smallview mask not defined&gt;')
 
-        return seperator.join(metatext)
+        return separator.join(metatext)
     
     def isContainer(node):
         return 0
@@ -108,5 +117,4 @@ class Default(tree.Node):
         
     def getDefaultEditTab(node):
         return "view"
-
 

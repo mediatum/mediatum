@@ -1,17 +1,20 @@
 function addscript(src) {
     document.write('<script src="' + src + '" type="text/javascript"' + '>' + '<' + '/script>');
 }
-function mediatum_load(id,limit,sort,query){
+function mediatum_load(id, limit, sort, query, format){
     document.write('<div id="mediatum">Loading...</div>');
     var url = "http://mediatum2.ub.tum.de/jssearch?id="+id;
     if(query) {
         url+="&q="+escape(query);
     }
     if(sort) {
-	url+="&sort="+sort;
+        url+="&sort="+sort;
     }
     if(limit) {
-	url+="&limit="+limit;
+        url+="&limit="+limit;
+    }
+    if(format){
+        url+="&format="+format;
     }
     addscript(url);
 }

@@ -49,6 +49,12 @@
 </html>
 
 
+<p metal:define-macro="edit_errortemplate" class="templateerror" style="text-align:center">
+    <tal:block i18n:translate="edit_template_error"/><br/><br/>
+    <span id="msg" tal:condition="python:e!=''" tal:content="e"/>
+</p>
+
+
 <p metal:define-macro="module_error" class="error" style="text-align:center" i18n:translate="edit_module_error"><tal:block tal:content="python:module" i18n:name="name"/></p>
 
 

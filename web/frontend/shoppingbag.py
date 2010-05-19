@@ -21,8 +21,12 @@
 import core.athana as athana
 import core
 import core.tree as tree
+import core.users as users
 from core.translation import lang
+from core.acl import AccessData
+from core.styles import theme
 from schema.schema import VIEW_HIDE_EMPTY, VIEW_DATA_ONLY
+from utils.utils import format_filesize
 
 
 WIDTH=102
@@ -38,6 +42,10 @@ def shoppingbag_action(req):
             put_into_shoppingbag(req)
             return
             
+        if req.params.get("action")=="delmsg":
+            req.writeTALstr('<tal:block i18n:translate="popup_shoppingbag_object_delete"/>',{})
+            return
+            
         elif req.params.get("action")=="items":
             for key in req.params.keys():
                 if key.startswith("del_"): # delete item from list
@@ -51,12 +59,62 @@ def shoppingbag_action(req):
                     export_shoppingbag(req)
                     show_shoppingbag(req)
                     return
+        elif req.params.get("action")=="bags":
+            user = users.getUserFromRequest(req)
+            if req.params.get("operation")=="save_bag":
+                user.addShoppingBag(req.params.get("bagname"), req.params.get("bagitems").split(","))
+                show_shoppingbag(req)
+                return
+                
+            if req.params.get("operation")=="load_bag":
+                msg = ""
+                if load_shoppingbagByKey(req)==0:
+                    msg = "error, bag not found."
+                show_shoppingbag(req, msg)
+                return
 
-    if "clearall" in req.params.keys():
-        req.session["shoppingbag"] = []
+            if "clearall" in req.params.keys():
+                req.session["shoppingbag"] = []
+                
+            for key in req.params.keys():
+                
+                if key.startswith("load_"):
+                    sb = user.getShoppingBag(key[5:])
+                    if len(sb)==1:
+                        req.session["shoppingbag"] = sb[0].getItems()
+                        break
+                    
+                if key.startswith("delete_"):
+                    sb = user.getShoppingBag(key[7:])
+                    if len(sb)==1:
+                        user.removeChild(sb[0])
+                        break
+                        
+                if key.startswith("share_"):
+                    sb = user.getShoppingBag(key[6:])
+                    if len(sb)==1:
+                        print sb[0].id, sb[0].isShared()
+                        if sb[0].isShared():
+                            sb[0].stopShare()
+                        else:
+                            sb[0].createShareKey()
+                        break
+
+            show_shoppingbag(req)
+            return
 
     # open shoppingbag
     show_shoppingbag(req)
+
+def load_shoppingbagByKey(req):
+    if req.params.get("bagkey")=="":
+        return 1
+    for user in users.loadUsersFromDB():
+        for c in user.getShoppingBag():
+            if c.getSharedKey()==req.params.get("bagkey"):
+                req.session["shoppingbag"] = c.getItems()
+                return 1
+    return 0
 
     
 def put_into_shoppingbag(req):
@@ -82,19 +140,24 @@ def put_into_shoppingbag(req):
     return athana.HTTP_OK
 
     
-def show_shoppingbag(req):
+def show_shoppingbag(req, msg=""):
     """open shoppingbag and show content"""
     img = False
     doc = False
+    media = False
 
     (width, height) = calculate_dimensions(req)
     v = {"width":width, "height":height}
     f = []
     
+    # deliver image dimensions of original
     def calc_dim(file):
         ret = ""
-        w = int(file.get("width"))
-        h = int(file.get("height"))
+        try:
+            w = int(file.get("width"))
+            h = int(file.get("height"))
+        except:
+            return "padding:0px 0px;width:90px;height:90px;"
         
         if w>h:
             factor = 90.0/w
@@ -107,25 +170,47 @@ def show_shoppingbag(req):
             ret += 'padding:0px %spx;' % str(int((90-w)/2))
         return ret +'width:%spx;height:%spx;' %(str(int(w)), str(int(h)))
 
-    
-    files = req.session.get("shoppingbag",[])
+    # deliver document file size
+    def calc_size(file):
+        for f in file.getFiles():
+            if f.getType()=="document":
+                return format_filesize(f.getSize())
+        return ""
+        
+    def calc_length(file):
+        try:
+            return file.getDuration()
+        except:
+            return ""
 
-    for file in files:
-        node = tree.getNode(file)
-        if node.getContentType()=="image":
+    access = AccessData(req)
+    for node in access.filter(tree.NodeList(req.session.get("shoppingbag",[]))):
+        if node.getCategoryName()=="image":
             img = True
-        if node.getContentType() in("document", "dissertation"):
+        if node.getCategoryName()=="document":
             doc = True
+        if node.getCategoryName() in ["audio", "video"]:
+            media = True
         f.append(node)
+        
+    if len(f)!=len(req.session.get("shoppingbag",[])) and msg=="":
+        msg = "popup_shoppingbag_items_filtered"
 
     v["files"] = f
     v["image"] = img
     v["document"] = doc
+    v["media"] = media
     v["img_perc_range"] = range(1,11)
     v["img_pix_sizes"] = ["1600x1200", "1280x960", "1024x768", "800x600"]
     v["calc_dim"] = calc_dim
+    v["calc_size"] = calc_size
+    v["calc_length"] = calc_length
+    user = users.getUserFromRequest(req)
+    v["shoppingbags"] = user.getShoppingBag()
+    v["user"] = user
+    v["msg"] = msg
 
-    req.writeTAL("web/frontend/shoppingbag.html", v, macro="shoppingbag")
+    req.writeTAL(ttheme.getTemplate("shoppingbag.html"), v, macro="shoppingbag")
     return athana.HTTP_OK
     
 def export_shoppingbag(req):
@@ -139,12 +224,11 @@ def export_shoppingbag(req):
     for key in req.params.keys():
         if key.startswith("select_"):
             items.append(key[7:])
-    
+            
     dest = join_paths(config.get("paths.tempdir"), str(random.random())) + "/"
     
+    # images
     if req.params.get("type")=="image":
-        
-        # images
         if req.params.get("metadata") in ["no", "yes"]:
         
             format_type = req.params.get("format_type")
@@ -166,22 +250,36 @@ def export_shoppingbag(req):
                     processvalue = _pix[0]
                 else:
                     processvalue = int(_pix[1])
-                
-                
+
             elif format_type=="std":
                 processtype = "standard"
                 processvalue = req.params.get("img_pix", ";;").split(";")[2]
 
-            
             for item in items:
                 node = tree.getNode(item)
-                
-                ret = node.processImage(processtype, processvalue, dest)
-                
-                if ret==0:
+                if node.processImage(processtype, processvalue, dest)==0:
                     print "image not found"
-                
-                
+                    
+    # documenttypes
+    if req.params.get("type")=="document":
+        if req.params.get("metadata") in ["no", "yes"]:
+            if not os.path.isdir(dest):
+                os.mkdir(dest)
+
+            for item in items:
+                if tree.getNode(item).processDocument(dest)==0:
+                    print "document not found"
+                    
+    # documenttypes
+    if req.params.get("type")=="media":
+        if req.params.get("metadata") in ["no", "yes"]:
+            if not os.path.isdir(dest):
+                os.mkdir(dest)
+
+            for item in items:
+                if tree.getNode(item).processMediaFile(dest)==0:
+                    print "file not found"
+
     # metadata
     if req.params.get("metadata") in ["yes", "meta"]:
         for item in items:
@@ -209,7 +307,6 @@ def export_shoppingbag(req):
         if os.path.isdir(dest):
             os.rmdir(dest)
 
-   
     
 def calculate_dimensions(session):
     try:

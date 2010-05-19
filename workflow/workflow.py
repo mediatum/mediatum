@@ -73,6 +73,13 @@ def deleteWorkflow(id):
     workflows = tree.getRoot("workflows")
     w = workflows.getChild(id)
     workflows.removeChild(w)
+    
+def inheritWorkflowRights(name, type):
+    w = getWorkflow(name)
+    ac = w.getAccess(type)
+    for step in w.getChildren():
+        step.setAccess(type, ac)
+
 
 def getNodeWorkflow(node):
     for p in node.getParents():
@@ -162,7 +169,34 @@ def registerStep(nodename):
 def getWorkflowTypes():
     return workflowtypes
 
+
+def workflowSearch(nodes, text, access=None):
+    text = text.strip()
+    if text=="":
+        return []
+        
+    ret = []
+    for node in filter(lambda x: x.getContentType()=='workflow', nodes):
+        for n in node.getSteps(access, "write"):
+            for c in n.getChildren():
+                if text=="*":
+                    ret += [c]
+                elif isNumeric(text):
+                    if c.id==text:
+                        ret +=[c]
+                else:
+                    if "|".join([f[1].lower() for f in c.items()]).find(text.lower())>=0:
+                        ret += [c]
+
+    return ret
     
+def formatItemDate(d):
+    try:
+        return date.format_date(date.parse_date(d),'dd.mm.yyyy HH:MM:SS')
+    except:
+        return ""
+
+
 ###############################################
 # workflow image creator
 # creates image for given workflow
@@ -545,7 +579,7 @@ def importWorkflow(filename):
         workflows.addChild(w)
 
 class Workflows(tree.Node):
-    def show_node_big(node, req):
+    def show_node_big(node, req, template="workflow/workflow.html", macro="workflowlist"):
         access = acl.AccessData(req)
 
         list = []
@@ -553,7 +587,7 @@ class Workflows(tree.Node):
             if access.hasWriteAccess(workflow):
                 list += [workflow]
 
-        return req.getTAL("workflow/workflow.html", {"list":list}, macro="workflowlist")
+        return req.getTAL(template, {"list":list, "search":req.params.get("workflow_search", ""), "items":workflowSearch(list, req.params.get("workflow_search", ""), access),"getStep": getNodeWorkflowStep,"format_date": formatItemDate}, macro=macro)
 
     def isContainer(node):
         return 1
@@ -566,12 +600,11 @@ class Workflows(tree.Node):
 
         
 class Workflow(tree.Node):
-    def show_node_big(node, req):
+    def show_node_big(node, req, template="workflow/workflow.html", macro="object_list"):
         access = acl.AccessData(req)
         if not access.hasWriteAccess(node):
             return '<i>' + t(lang(req),"permission_denied") + '</i>'
-
-        return req.getTAL("workflow/workflow.html", {"workflow": node}, macro="object_list")
+        return req.getTAL(template, {"workflow": node, "access":access, "search":req.params.get("workflow_search", ""), "items":workflowSearch([node], req.params.get("workflow_search", ""), access),"getStep": getNodeWorkflowStep,"format_date": formatItemDate}, macro=macro)
 
     def getId(self):
         return self.getName()
@@ -606,8 +639,12 @@ class Workflow(tree.Node):
     def setDescription(self, d):
         self.set("description", d)
 
-    def getSteps(self):
-        return self.getChildren()
+    def getSteps(self, access=None, accesstype="read"):
+        steps = self.getChildren()
+        if access:
+            return access.filter(steps, accesstype=accesstype)
+        else:
+            return steps
 
     def getNode(self, type):
         raise ""
@@ -619,7 +656,7 @@ class Workflow(tree.Node):
                 followers[step.getTrueId()] = None
             if step.getFalseId():
                 followers[step.getFalseId()] = None
-        for step in self.getChildren():      	
+        for step in self.getChildren():
             if step.id not in followers:
                 return step
         return None # circular workflow- shouldn't happen
@@ -648,7 +685,7 @@ class WorkflowStep(tree.Node):
     def getId(self):
         return self.getName()
 
-    def show_node_big(self, req):
+    def show_node_big(self, req, template="workflow/workflow.html", macro="object_step"):
 
         # the workflow operations (node forwarding, key assignment,
         # parent node handling) are highly non-reentrant, so protect
@@ -668,7 +705,7 @@ class WorkflowStep(tree.Node):
 
                     link = '('+self.name+')'
                     
-                    return req.getTAL("workflow/workflow.html", {"node": node, "link":link, "email":config.get("email.workflow")}, macro="workflow_step")
+                    return req.getTAL(template, {"node": node, "link":link, "email":config.get("email.workflow")}, macro=macro)
 
                 present = 0
                 for p in node.getParents():
@@ -680,14 +717,16 @@ class WorkflowStep(tree.Node):
                         return self.forwardAndShow(node, True, req, link=link)
                     if "forcefalse" in req.params:
                         return self.forwardAndShow(node, False, req, link=link)
-                    if "raw" in req.params:
-                        return self.show_workflow_node(node, req)
-                    else:
-                        return '<center>'+self.show_workflow_node(node, req)+'</center>'
+                    
+                    return self.show_workflow_node(node, req)
+                    #if "raw" in req.params:
+                    #    return self.show_workflow_node(node, req)
+                    #else:
+                    #    return self.show_workflow_node(node, req)
                 else:
-                    return '<center>'+self.show_workflow_notexist(node, req)+'</center>'
+                    return self.show_workflow_notexist(node, req)
             else:
-                return '<center>'+self.show_workflow_step(req)+'</center>'
+                return self.show_workflow_step(req)
         finally:
             workflow_lock.release()
 
@@ -698,7 +737,7 @@ class WorkflowStep(tree.Node):
     def isSystemType(self):
         return 1
 
-    def show_workflow_notexist(self, node, req):
+    def show_workflow_notexist(self, node, req, template="workflow/workflow.html", macro="workflow_node"):
         step = getNodeWorkflowStep(node)
 
         link = ""
@@ -725,7 +764,7 @@ class WorkflowStep(tree.Node):
         if not access.hasWriteAccess(self):
             return '<i>'+t(lang(req),"permission_denied")+'</i>'
         
-        return req.getTAL("workflow/workflow.html", {"step": self, "nodelink": "/mask?id="+self.id+"&obj=", "format_date": date.format_date, "parse_date": date.parse_date}, macro="workflow_show")
+        return req.getTAL("workflow/workflow.html", {"workflow":self.getParents()[0], "step": self, "nodelink": "/mask?id="+self.id+"&obj=", "format_date": date.format_date, "parse_date": date.parse_date}, macro="workflow_show")
     
     def show_node_image(node):
         return """<img border="0" src="/img/directory.png">"""
@@ -803,7 +842,7 @@ class WorkflowStep(tree.Node):
         return list()
 
     def tableRowButtons(self, node):
-        result = '<tr><td align="left">'
+        result = '<table id="workflowbuttons"><tr><td align="left">'
         result += '<input type="hidden" name="id" value="%s"/>' % self.id
         result += '<input type="hidden" name="obj" value="%s"/>' % node.id
         if self.getFalseId():
@@ -815,7 +854,7 @@ class WorkflowStep(tree.Node):
             result += '<input type="submit" name="gotrue" value="%s"/>' % self.getTrueLabel()
         else:
             result += '&nbsp;'
-        result += '</td></tr>'
+        result += '</td></tr></table>'
         return result
         
     def getTypeName(self):

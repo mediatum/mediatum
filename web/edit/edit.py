@@ -22,6 +22,7 @@ import os
 import re
 import time
 import urllib
+import traceback
 import core.tree as tree
 import core.config as config
 import core.users as users
@@ -605,16 +606,17 @@ def content(req):
         edit_lza(req, ids)
     elif current == "tab_logo":
         edit_logo(req, ids)
-    elif current == "tab_publish":
-        edit_publish(req, ids)
-
     else:
         t = current.split("_")[-1]
+        #try:
         if t in editModules.keys():
             content["body"] += editModules[t].getContent(req, ids) # use standard method of module
         else:
             content["body"] += req.getTAL("web/edit/edit.html",{"module":current}, macro="module_error")
-   
+    
+       # except core.athana.TALESError, e:
+        #    content["body"] += req.getTAL("web/edit/edit.html", {"e":e or "", "trace":traceback, "sys":sys}, macro="edit_errortemplate")
+    
     if req.params.get("style","")!="popup": # normal page with header
         v["tabs"] = handletabs(req, ids, tabs)
         v["script"] = content["script"]

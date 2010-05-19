@@ -20,6 +20,7 @@
 """
 import core.athana as athana
 import core.tree as tree
+import core.config as config
 import os
 import re
 
@@ -27,7 +28,7 @@ from utils.utils import getCollection,Link,isCollection, getFormatedString
 from core.acl import AccessData
 from core.translation import lang,t
 from web.frontend.searchresult import simple_search, extended_search
-from core.styles import getContentStyles
+from core.styles import getContentStyles, theme
 
 class Content:
     def feedback(self,req):
@@ -49,7 +50,6 @@ class SingleFile:
                     self.attachment = f
                     break
 
-
         self.datatype = file.getType()
         self.image = file.show_node_image()
         self.text = file.show_node_text(words)
@@ -61,8 +61,8 @@ class SingleFile:
         self.file = file
     def getShoppingBagLink(self):
         return 'shoppingBag(\''+str(self.node.id)+'\')'
-    def getMetadata(self,seperator="."):
-        return self.node.show_node_text(seperator=seperator)
+    def getMetadata(self, separator=".", language=None):
+        return self.node.show_node_text(separator=separator, language=language)
     def getLink(self):
         return '/node?id='+self.file.id
 
@@ -82,9 +82,7 @@ class ContentList(Content):
         self.sortfields = [self.collection.get("sortfield")]*SORT_FIELDS
         if self.sortfields[0]:
             self.files.sort(self.sortfields)
-        
-        self.liststyle = getContentStyles("smallview", self.collection.get("style") or "default")    
-        
+        self.liststyle = getContentStyles("smallview", self.collection.get("style") or "list")
 
     def length(self):
         return self.num
@@ -140,17 +138,18 @@ class ContentList(Content):
                 self.sortfields[i] = req.params["sortfield%d"%i]
                 self.files.sort(self.sortfields)
 
+        self.content = None
         if self.nr>=0 and self.nr<self.num:
             self.content = ContentNode(self.files[self.nr],self.nr,self.num,self.words,self.collection)
-        else:
-            self.content = None
+
         
         # style selection
         if "style" in req.params:
             newstyle = req.params.get("style")
-            print "Overloading style display for collection",self.collection.id,"(set to",newstyle,")"
-            req.session["liststyle-"+self.collection.id] = getContentStyles("smallview", newstyle)
-
+            if self.content.__class__!=ContentNode:
+                req.session["liststyle-"+self.collection.id] = getContentStyles("smallview", newstyle)
+            else:
+                req.session["style-"+self.content.node.getContentType()] = getContentStyles("bigview", name=newstyle, contenttype=self.content.node.getContentType())[0]
         if self.content:
             return self.content.feedback(req)
     
@@ -190,11 +189,17 @@ class ContentList(Content):
             return []
         else:
             return l
+            
+    def getContentStyles(self):
+        if self.content.__class__==ContentNode:
+            return getContentStyles("bigview", contenttype=self.content.node.getContentType())
+        else:
+            return getContentStyles("smallview")#, self.collection.get("style") or "default")
 
 
     def html(self,req):
         if self.content:
-            headline = athana.getTAL("web/frontend/content_nav.html", {"nav": self}, macro="navheadline", language=lang(req))
+            headline = athana.getTAL(theme.getTemplate("content_nav.html"), {"nav": self}, macro="navheadline", language=lang(req))
             return headline + self.content.html(req)
 
         nav_list = list()
@@ -251,15 +256,16 @@ class ContentList(Content):
             # no liststsyle, use collection default
             liststyle = self.liststyle
 
-        filesHTML = req.getTAL("web/frontend/content_nav.html", {
+        filesHTML = req.getTAL(theme.getTemplate("content_nav.html"), {
                  "nav_list":nav_list, "nav_page":nav_page, "act_page":self.page, 
                  "sortfields":self.sortfields, "sortfieldslist":self.getSortFieldsList(),
                  "files":tal_files, "maxresult":len(self.files), "op":"", "query":req.params.get("query", "")}, macro="files")
 
-        contentList = req.getTAL(liststyle.getTemplate(), {
-                "nav_list":nav_list, "nav_page":nav_page, "act_page":self.page, 
-                 "files":tal_files, "maxresult":len(self.files), "op":""})
-        return filesHTML + '<div id="nodes">'+contentList + '</div><div id="page_nav">' + filesHTML + '</div>'
+        # use template of style and build html content
+        contentList = liststyle.renderTemplate(req, {"nav_list":nav_list, "nav_page":nav_page, "act_page":self.page, 
+             "files":tal_files, "maxresult":len(self.files), "op":"", "language":lang(req)})
+
+        return filesHTML + '<div id="nodes">'+contentList + '</div>' + filesHTML
        
     
 #paths
@@ -313,11 +319,30 @@ class ContentNode(Content):
        
     def actual(self):
         return "(%d/%d)" % (int(self.nr)+1, self.num)
+        
+    def getContentStyles(self):
+        return getContentStyles("bigview", contenttype=self.node.getContentType())
+
     def html(self,req):
         paths = ""
+        stylebig = self.getContentStyles()
+        liststyle = req.session.get("style-"+self.node.getContentType(), "")
+        
         if not self.node.isContainer():
             plist = getPaths(self.node, AccessData(req))
-            paths = athana.getTAL("web/frontend/content_nav.html", {"paths": plist}, macro="paths", language=lang(req))
+            paths = athana.getTAL(theme.getTemplate("content_nav.html"), {"paths": plist}, macro="paths", language=lang(req))
+        # render style of node for nodebig
+        if len(stylebig)>1:
+            #more than on style found
+            for item in stylebig:
+                if liststyle:
+                    if item.getName()==liststyle.getName():
+                        return getFormatedString(self.node.show_node_big(req, template=item.getTemplate())) + paths
+                else:
+                    if item.isDefaultStyle():
+                        return getFormatedString(self.node.show_node_big(req, template=item.getTemplate())) + paths
+        elif len(stylebig)==1:
+            return getFormatedString(self.node.show_node_big(req, template=stylebig[0].getTemplate())) + paths
         return getFormatedString(self.node.show_node_big(req)) + paths
 
 def fileIsNotEmpty(file):
@@ -329,7 +354,7 @@ def fileIsNotEmpty(file):
         
 def mkContentNode(req):
     access = AccessData(req)
-    id = req.params["id"]
+    id = req.params.get("id", tree.getRoot("collections").id)
     try:
         node = tree.getNode(id)
     except tree.NoSuchNodeError:
@@ -346,7 +371,6 @@ def mkContentNode(req):
         ids = access.filter(list(set(tree.getAllContainerChildrenAbs(node,[]))))
         node.ccount = len(ids)
         #ids = access.filter(node.getAllChildren())
-
         c = ContentList(tree.NodeList(ids),getCollection(node))
         c.feedback(req)
         c.node = node
@@ -360,7 +384,10 @@ class ContentError(Content):
         self.error = error
 
     def html(self,req):
-        return athana.getTAL("web/frontend/content_error.html", {"error":self.error}, language=lang(req))
+        return athana.getTAL(theme.getTemplate("content_error.html"), {"error":self.error}, language=lang(req))
+        
+    def getContentStyles(self):
+        return []
 
 class ContentArea(Content):
     def __init__(self):
@@ -368,7 +395,7 @@ class ContentArea(Content):
         self.collection = None
         self.collectionlogo = None
         self.params = ""
-    
+
     def getPath(self):
         path = []
         if hasattr(self.content,"node"):
@@ -389,7 +416,7 @@ class ContentArea(Content):
         return path
 
     def feedback(self,req):
-        if "id" in req.params and not "searchmode" in req.params and not (hasattr(self.content,"in_list") and self.content.in_list(req.params["id"])):
+        if ("id" in req.params or "item" in req.params) and not "searchmode" in req.params and not (hasattr(self.content,"in_list") and self.content.in_list(req.params.get("id"))):
             self.content = mkContentNode(req)
         elif req.params.get("searchmode")=="simple" and req.params.get("submittype")!="change":
             self.content = simple_search(req) # simple search
@@ -420,8 +447,9 @@ class ContentArea(Content):
     def html(self,req):
         styles = []
         nodeprint = "1" # show print icon
-        if hasattr(self.content,"in_list") and not (hasattr(self.content,"content") and self.content.content):
-            styles = getContentStyles("smallview")# liststyles
+        styles = self.content.getContentStyles()
+        #if hasattr(self.content,"in_list") and not (hasattr(self.content,"content") and self.content.content):
+        #    styles = getContentStyles("smallview")
         if "raw" in req.params:
             path = ""
         else:
@@ -442,9 +470,13 @@ class ContentArea(Content):
             if nodeprint=="1" and "sortfield0" in req.params.keys():
                 printlink += '?sortfield0='+str(req.params.get("sortfield0"))+'&sortfield1='+str(req.params.get("sortfield1"))
 
-            path = req.getTAL("web/frontend/content_nav.html", {"params": self.params, "path": self.getPath(), "styles":styles, "logo":self.collectionlogo, "searchmode":req.params.get("searchmode",""), "items":items, "id":id, "nodeprint":nodeprint, "printlink":printlink}, macro="path")
-
-        return path + '\n<!-- CONTENT START -->\n<div id="nodes">' +  self.content.html(req) + '</div>\n<!-- CONTENT END -->\n'
+            if req.params.get("show_navbar")==0 or req.session.get("area")=="publish":
+                breadscrubs = []
+            else:
+                breadscrubs = self.getPath()
+            
+            path = req.getTAL(theme.getTemplate("content_nav.html"), {"params": self.params, "path": breadscrubs, "styles":styles, "logo":self.collectionlogo, "searchmode":req.params.get("searchmode",""), "items":items, "id":id, "nodeprint":nodeprint, "printlink":printlink, "area":req.session.get("area","")}, macro="path")
+        return path + '\n<!-- CONTENT START -->\n' +  self.content.html(req) + '\n<!-- CONTENT END -->\n'
 
 class CollectionLogo(Content):
     def __init__(self,collection):
@@ -466,12 +498,11 @@ class CollectionLogo(Content):
 
 def getContentArea(req):
     if len(req.params):
-        try:
+        if "contentarea" in req.session:
             c = req.session["contentarea"]
-        except KeyError:
+        else:
             c = req.session["contentarea"] = ContentArea()
         return c
     else:
         c = req.session["contentarea"] = ContentArea()
         return c
-

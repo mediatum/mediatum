@@ -1,0 +1,152 @@
+<div id="object_main" metal:define-macro="login" style="margin-left:20px">
+    <p>&nbsp;</p>
+    <p tal:condition="python:error>0" tal:content="python:'login_error_'+str(error)" i18n:translate="" class="error" style="text-align:center">TEXT</p>
+    <br/>
+    <form method="post" class="login" name="login" style="margin-bottom:50px">
+        <div class="label">&nbsp;</div>
+        <span i18n:translate="login_currentuser_msg">
+            TEXT [ <span tal:content="python:user.getName()" i18n:name="name" class="username">username</span> ]
+        </span>
+        <br/>
+        <br/>
+        <div i18n:translate="username:" class="label">TEXT</div>
+        <input maxlength="30" class="text" type="text" name="user" style="width:200px; margin-bottom:2px">
+        <br/>
+        <div i18n:translate="password:" class="label">TEXT</div>
+        <input maxlength="30" class="text" type="password" name="password" style="width:200px;margin-bottom:5px">
+        <br/>
+        <div class="label">&nbsp;</div>
+        <button type="submit" name="LoginSubmit" i18n:translate="login_submit">TEXT</button>
+        &nbsp;
+        <button type="button" onclick="location='/'" name="cancel" i18n:translate="login_reset">TEXT</button>
+        <br/>
+        <div class="label">&nbsp;</div>
+        <small style="font-size:9px"><a href="/pwdforgotten" i18n:translate="pwdforgotten_link">TEXT</a></small>
+    </form>
+    <div style="width:520px;" align="justify"><small i18n:translate="login_info">TEXT</small></div>
+    <script>
+        function setFocus(){document.login.user.focus();}
+        setFocus()
+    </script>
+</div>
+
+<div id="object_main" metal:define-macro="change_pwd" style="margin-left:20px">
+    <p>&nbsp;</p>
+    <p tal:condition="python:error>0" tal:content="python:'login_change_err_'+str(error)" i18n:translate="" class="error" style="text-align:center">TEXT</p>
+    <form method="post" action="pwdchange" class="login" name="login">
+        <div i18n:translate="login_act_pwd:" class="label">TEXT</div>
+        <input maxlength="30" class="text" type="password" name="password_old" style="width:200px; margin-bottom:2px"/>
+        <br/>
+        <div i18n:translate="new_password:" class="label">TEXT</div>
+        <input maxlength="30" class="text" type="password" name="password_new1" style="width:200px; margin-bottom:2px"/>
+        <br/>
+        <div i18n:translate="password_repeat:" class="label">TEXT</div>
+        <input maxlength="30" class="text" type="password" name="password_new2" style="width:200px; margin-bottom:5px"/>
+        <br/>
+        <div class="label">&nbsp;</div>
+        <button i18n:translate="login_save" name="ChangeSubmit">TEXT</button>
+        &nbsp;
+        <button type="button" onclick="location='/'" name="cancel" i18n:translate="login_reset">TEXT</button>
+    </form>
+    <script>
+        function setFocus(){document.login.password_old.focus();}
+        setFocus()
+    </script>
+</div>
+
+<div id="object_main" metal:define-macro="pwdforgotten" style="margin-left:20px">
+    <p>&nbsp;</p>
+    <p tal:condition="python: error=='pwdforgotten_noentry'" i18n:translate="pwdforgotten_noentry" class="error" style="text-align:center">TEXT</p>   
+    <p tal:condition="python: error=='pwdforgotten_nosuchuser'" i18n:translate="pwdforgotten_nosuchuser" class="error" style="text-align:center">TEXT</p>      
+    <br/>
+    <form method="post" class="login" name="login" style="margin-bottom:50px">
+        <div class="label">&nbsp;</div>
+        <div i18n:translate="login_currentuser_msg">
+            TEXT [ <span tal:content="python:user.getName()" i18n:name="name" class="username">username</span> ]
+        </div>
+        <br/>
+        <div i18n:translate="pwdforgotten_explain_procedure">TEXT</div>        
+        <br/>
+        <br/>
+        <div i18n:translate="username:" class="label">TEXT</div>
+        <input maxlength="30" class="text" type="text" name="user" style="width: 200px">
+        <br/>
+        <br/>
+        <div class="label">&nbsp;</div>
+        <button type="submit" name="PwdForgottenSubmit" i18n:translate="pwdforgotten_submit">TEXT</button>
+        &nbsp;
+        <button type="button" onclick="location='/login'" name="cancel" i18n:translate="pwdforgotten_cancel">TEXT</button>
+    </form>
+    <div style="width:520px;" align="justify"><small i18n:translate="login_info">TEXT</small></div>
+    <script>
+        function setFocus(){document.login.user.focus();}
+        setFocus()
+    </script>
+</div>
+
+<div id="object_main" metal:define-macro="pwdforgotten_message" style="margin-left:20px">
+    <p>&nbsp;</p>
+    <p tal:content="message" i18n:translate="" style="text-align:center">TEXT</p>
+</div>
+
+
+<div id="object_main" metal:define-macro="pwdforgotten_password_activated" style="margin-left:20px">
+    <p>&nbsp;</p>
+    <span i18n:translate="pwdforgotten_password_activated" style="text-align:center">TEXT</span>
+    <span tal:replace="username">TEXT</span>
+</div>
+
+
+<metal:block metal:define-macro="emailtext">
+<tal:block tal:condition="python:language not in ['en','de']">
+translation to be done
+</tal:block>
+
+<tal:block tal:condition="python:language=='de'">
+Sehr geehrte(r) Frau/Herr <tal:block tal:replace="name"/>,
+
+über das Login-Formular wurde für Sie ein neues Passwort angefordert.
+
+Das neue Passwort wird nur dann aktiviert, wenn Sie den folgenden Link in einem Browser öffnen:
+
+http://<tal:block tal:replace="raw activationlink"/>/
+
+Ihre Zugangsdaten lauten dann:
+
+URL: http://<tal:block tal:replace="host"/>/
+Benutzerkennung: <tal:block tal:replace="login"/>
+Neues Passwort: [$newpassword]
+
+Bitte beachten Sie, dass es sich hierbei um ein Initialpasswort handelt,
+das Sie bitte nach dem ersten Login abändern sollten.
+
+Mit freundlichen Grüßen,
+
+das mediaTUM Team
+</tal:block>
+<tal:block tal:condition="python:language=='en'">
+Dear user <tal:block tal:replace="name"/>,
+
+a new password has been requested for your mediaTUM account from the login form.
+
+To activate that new password, open the following link in a web browser:
+
+http://<tal:block tal:replace="activationlink"/>
+
+You can then login using the following parameters:
+
+url: http://<tal:block tal:replace="host"/>/
+username: <tal:block tal:replace="login"/>
+new password: [$newpassword]
+
+Please be aware that this is an initial password that should be changed after the first login.
+
+Regards
+
+mediaTUM Team
+</tal:block>
+</metal:block>
+
+
+
+

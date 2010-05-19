@@ -1,0 +1,37 @@
+<div style="width: 100%; text-align:right">
+    <a tal:attributes="href python:'javascript:shoppingBag(\''+str(node.id)+'\')'">
+        <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png"/></a>
+    <a tal:attributes="href python:'/print/'+str(node.id)" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
+</div>
+<div id="object_main" style="float:none">
+    <div id="object_image_" tal:condition="python:canseeoriginal">
+        <tal:block tal:condition="python:not zoom">
+        <a>
+            <img tal:attributes="src python:'/thumb2/'+str(node.id); onClick python:'fullSizePopup('+str(node.id)+', ' + str(node.get('width')) +', ' + str(node.get('height')) +')'" style="cursor:pointer;border:1px double silver;width:100%" border="1px" />
+        </a>
+        </tal:block>
+        
+        <tal:block tal:condition="python:zoom">
+        <a>
+            <img tal:attributes="src python:'/thumb2/'+str(node.id); onClick python:'fullSizePopup('+str(node.id)+', 700, 700)'" style="cursor:pointer;border:1px double silver;" />
+        </a>
+        </tal:block>
+        
+        
+        <div tal:condition="python:tif!=''" id="object_highresolution">
+            &nbsp;&nbsp;<a tal:attributes="href python:'/file/'+str(node.id)+'/'+str(tif)" href="#" i18n:translate="image_high_res_title">TEXT</a>
+        </div>
+    </div>
+    
+    <div id="object_image" tal:condition="python:not canseeoriginal" style="border:1px solid green">
+        <tal:block tal:condition="python:zoom">
+        <a>
+            <img tal:attributes="src python:'/thumb2/'+str(node.id); onClick python:'fullSizePopup('+str(node.id)+', 700, 700)'" style="width:300px;cursor:pointer;border:1px double silver;" border="1px" />
+        </a>
+        </tal:block>
+        <tal:block tal:condition="python:not zoom">
+            <img tal:attributes="src python:'/thumb2/'+str(node.id)" style="width: 300px;border:1px double silver;" border="1px"/>
+        </tal:block>
+    </div>
+</div>
+<div id="object_meta" tal:content="raw metadata" style="float:none;padding-left:0px;margin-left:0px"/>

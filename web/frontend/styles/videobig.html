@@ -1,0 +1,45 @@
+<div id="object_main_" style="position:relative">
+    <div style="width:100%; text-align:right">
+        <a tal:attributes="href python:'javascript:shoppingBag(\''+str(node.id)+'\')'">
+            <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png"/></a>
+        <a tal:attributes="href python:'/print/'+str(node.id)" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
+    </div>
+</div>
+<script src="/js/flowplayer-3.0.5.min.js"> </script>
+
+<div tal:condition="python:not canseeoriginal" style="border:1px solid silver">
+    <img tal:attributes="src python:'/thumb2/'+str(node.id)"/>
+</div>
+<div tal:condition="python:canseeoriginal" tal:attributes="width python:node.get('vid-width')+'px';height python:node.get('vid-height')+'px'" style="border:1px solid silver; height:400px;text-align:center">
+<a tal:attributes="href file" id="player"><img tal:attributes="src python:'/thumb2/'+str(node.id)" style="height:100%"/></a>
+</div>
+<script tal:condition="python:canseeoriginal" language="JavaScript">
+    flowplayer("player", "/img/FlowPlayerDark.swf", {
+        plugins: {         
+            controls: {
+                autoHide: 'always',
+                bufferColor: '#000000',
+                progressColor: '#6E6E6E',
+                buttonColor: '#000000',
+                buttonOverColor: '#000000',
+                durationColor: "#ffffff",
+                timeColor: "#9E9E9E",
+                backgroundGradient: 'none',
+                time: true
+                }
+            },
+            clip:{
+                scaling: 'orig',
+                autoPlay: false,
+                autoBuffering: true
+
+                }
+        }
+        
+    );
+
+</script>
+<p><small i18n:translate="video_plugin_info">TEXT</small></p>
+<div id="object_meta_" style="margin-left:10px">
+    <tal:block tal:content="raw metadata"/>
+</div>

@@ -1,0 +1,29 @@
+    DEFAULT THEME FOR AUDIO
+<div style="width: 100%; text-align:right">
+    <a tal:attributes="href python:'javascript:shoppingBag(\''+str(node.id)+'\')'">
+        <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png"/></a>
+    <a tal:attributes="href python:'/print/'+str(node.id)" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
+</div>
+
+<div id="object_main">
+    <div id="object_image" tal:condition="python:canseeoriginal">
+        <a tal:attributes="href audiodownload" i18n:attributes="title audio_original_title">
+            <img tal:attributes="src audiothumb" border="0" width="300" />
+        </a>
+        <br/>
+        <object type="application/x-shockwave-flash" data="/img/audio.swf" width="100" height="20">
+            <param name="movie" value="/img/audio.swf" />
+            <param name="FlashVars" tal:attributes="value python:'src=/file/'+node.id+'/audio.mp3'" />
+            <param name="bgcolor" value="#FFFFFF" />
+        </object>
+    </div>
+    <div id="object_image" tal:condition="python:not canseeoriginal">
+        <img tal:attributes="src audiothumb" border="0" width="300" />
+    </div>
+</div>
+
+<div style="width:100%;text-align:right">
+...
+
+</div>
+<div id="object_meta" tal:content="raw metadata" style="min-height: 400px"/>

@@ -4,7 +4,7 @@
         <a tal:attributes="href python:file.getLink()" tal:content="raw python:file.node.show_node_image()" target="_parent"/>
     </div>
     <p tal:content="python:'['+str(file.nr+1)+'/'+str(file.num)+']'" class="docnum"/>
-    <a tal:attributes="href python:file.getLink()" tal:content="raw python:file.node.show_node_text()" style="white-space:normal"/>
+    <a tal:attributes="href python:file.getLink()" tal:content="raw python:file.node.show_node_text(None, language)" style="white-space:normal"/>
 
     <div tal:attributes="onclick python:'shoppingBag(\''+str(file.node.id)+'\')'" style="position:absolute; right:0px; top:3px; width:20px; height:20px; overflow:hidden; cursor: pointer;">
         <img i18n:attributes="title view_list_add_shoppingbag" src="/img/favourite_add.png"/>

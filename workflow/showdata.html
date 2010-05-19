@@ -23,22 +23,26 @@
 
 <tal:block metal:define-macro="workflow_showdata">
     <p tal:content="raw python:prefix"/>
-        <table>
+    <table>
+        <tr>
+            <td tal:repeat="field fields" style="width:400px;padding-right:20px">
+                <tal:block tal:replace="raw field"/>
+            </td>
+        </tr>
+    </table>
+
+    <tal:block tal:replace="raw filelist"/>
+   
+    <p tal:content="raw python:suffix"/>
+    
+    <form action="/mask" method="post">
+        <input tal:attributes="value key" type="hidden" name="key"/>
+        <table style="width:100%">
             <tr>
-                <td tal:repeat="field fields" valign="top" align="left" width="400">
-                    <tal:block tal:replace="raw field"/>
+                <td>
+                    <tal:block tal:replace="raw buttons"/>
                 </td>
             </tr>
         </table>
-
-        <tal:block tal:replace="raw filelist"/>
-       
-        <p tal:content="raw python:suffix"/>
-        
-        <form action="/mask" method="post">
-            <table style="width:100%">
-            <input tal:attributes="value key" type="hidden" name="key"/>
-            <tal:block tal:replace="raw buttons"/>
-            </table>
-        </form>
+    </form>
 </tal:block>

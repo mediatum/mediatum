@@ -1,42 +1,107 @@
 <metal:block metal:define-macro="list">
 </metal:block>
 
-<center metal:define-macro="workflowlist">
-    <h2><tal:block i18n:translate="wf_edit_header">TEXT</tal:block>:</h2>
-    <table id="workflowtable" cellspacing="0px">
-        <tr>
-            <th i18n:translate="wf_edit_name">TEXT</th>
-            <th i18n:translate="wf_edit_description">TEXT</th>
-        </tr>
-        <tr tal:repeat="w list">
-            <td>
-                <a tal:content="python:w.getName()" tal:attributes="href python:'/publish/'+w.getName()" i18n:attributes="title wf_show_details_title"/>
-            </td>
-            <td tal:content="raw python:w.getDescription() or '&nbsp;'"/>
-        </tr>
-    </table>
-</center>
+<div metal:define-macro="workflowlist" id="workflow">
+    <tal:block tal:condition="python:len(list)==0">
+        <h2 i18n:translate="wf_edit_no_header" style="padding:30px 4px">TEXT</h2>
+        <br/>&nbsp;
+    </tal:block>
+    
+    <tal:block tal:condition="python:len(list)>0">
+        <h2 i18n:translate="wf_edit_header" style="padding:10px">TEXT</h2>
+        
+        <table id="workflowtable" cellspacing="0px">
+            <tbody>
+                <tr>
+                    <th i18n:translate="wf_edit_name">TEXT</th>
+                    <th i18n:translate="wf_edit_description">TEXT</th>
+                </tr>
+                <tr tal:repeat="w list">
+                    <td>
+                        <a tal:content="python:w.getName()" tal:attributes="href python:'/publish/'+w.getName()" i18n:attributes="title wf_show_details_title"/>
+                    </td>
+                    <td tal:content="raw python:w.getDescription() or '&nbsp;'"/>
+                </tr>
+            </tbody>
+        </table>
+        <tal:block metal:use-macro="searchmask"/>
+    </tal:block>
+</div>
 
-<center metal:define-macro="object_list">
-    <h2><span i18n:translate="wf_list_header"><span tal:content="python:str(len(workflow.getNodeList()))" i18n:name="number"/> TEXT
-        </span><a tal:attributes="href python:workflow.getLink()"><span tal:replace="python:workflow.getName()"/></a>': 
-        <span tal:replace="python:workflow.getDescription()"/>
+
+<table id="workflowtable" metal:define-macro="searchmask">
+    <thead>
+        <tr class="search">
+            <th colspan="7" style="padding-top:20px;padding-bottom:20px">
+                <form method="post">
+                    <tal:block i18n:translate="wf_edit_search"/>: <input tal:attributes="value search" type="text" name="workflow_search"/><button type="submit" i18n:translate="wf_edit_search">TEXT</button>
+                </form>
+                <p tal:condition="python:search!='' and len(items)==0" i18n:translate="wf_edit_nosearchresults"></p>
+            </th>
+        </tr>
+        <tr tal:condition="python:len(items)>0">
+            <th i18n:translate="workflow_label_id"/>
+            <th i18n:translate="workflow_label_date"/>
+            <th i18n:translate="workflow_label_name"/>
+            <th i18n:translate="workflow_label_step" colspan="2"/>
+            <th i18n:translate="workflow_label_forward" colspan="2"/>
+        </tr>
+    </thead>
+    <tbody>
+        <tr tal:repeat="item items">
+            <tal:block tal:define="step python:getStep(item)">
+                <td><a target="editorwindow" tal:attributes="href python:'/edit/edit?id='+item.id" tal:content="python:item.id"></a></td>
+                <td tal:content="python:format_date(item.get('creationtime'))"/>
+                <td tal:content="python:item.getName()"/>
+                <td tal:content="python:step.getName()"/>
+                <td><a tal:attributes="href python:'/mask?id='+step.id+'&obj='+item.id" i18n:translate="workflow_show_step">TEXT</a></td>
+                <td><a tal:attributes="href python:'/mask?id='+step.id+'&obj='+item.id+'&forcefalse=1'" tal:content="raw python:step.getFalseLabel() or '&nbsp;'"/></td>
+                <td><a tal:attributes="href python:'/mask?id='+step.id+'&obj='+item.id+'&forcetrue=1'" tal:content="raw python:step.getTrueLabel() or '&nbsp;'"/></td>
+            </tal:block>
+        </tr>
+    </tbody>
+    <tfoot tal:condition="python:len(items)>0">
+        <tr>
+            <th colspan="7">
+                <small i18n:translate="workflow_searchfooter">
+                    <tal:block tal:content="python:str(len(items))" i18n:name="number"/>
+                </small>
+            </th>
+        </tr>
+    </tfoot>
+</table>
+
+<div metal:define-macro="object_list" id="workflow">
+    <p>
+        <a href="/publish" i18n:translate="workflow_back">TEXT</a>
+    </p>
+    <h2><tal:block i18n:translate="wf_list_header"><tal:block tal:content="python:str(len(workflow.getNodeList()))" i18n:name="number"/>
+        <tal:block tal:content="python:workflow.getName()" i18n:name="name"/>
+        </tal:block>:
+        <tal:block tal:replace="python:workflow.getDescription()"/>
     </h2>
     <table id="workflowtable" cellspacing="0px">
-        <tal:block tal:repeat="step python:workflow.getSteps()">
-        <tr tal:attributes="bgcolor python:step.get('adminstep') and '#bec2d3' or None">
-            <td align="left"><b tal:content="python:step.getName()"></b></td>
-            <td align="left"><a tal:attributes="href python:step.getLink()" i18n:translate="wf_list_objects"><span tal:content="python:str(len(step.getChildren()))" i18n:name="number"/> TEXT</a></td>
-        </tr>
-        </tal:block>
+        <tbody>
+            <tr>
+                <th i18n:translate="wf_edit_stepname">TEXT</th>
+                <th i18n:translate="wf_edit_stepitems">TEXT</th>
+            </tr>
+            <tal:block tal:repeat="step python:workflow.getSteps(access, 'write')">
+                <tr tal:attributes="bgcolor python:step.get('adminstep') and '#bec2d3' or None">
+                    <td align="left"><b tal:content="python:step.getName()"></b></td>
+                    <td align="left"><a tal:attributes="href python:step.getLink()" i18n:translate="wf_list_objects"><span tal:content="python:str(len(step.getChildren()))" i18n:name="number"/> TEXT</a></td>
+                </tr>
+            </tal:block>
+        </tbody>
     </table>
-</center>
+    <tal:block metal:use-macro="searchmask"/>
+</div>
 
 <center metal:define-macro="workflow_step">
     <h2 i18n:translate="wf_step_ready">TEXT</h2>
     <p i18n:translate="wf_step_msg1">
         TEXT
-        <br><span tal:content="python:node.id +' '+node.name" i18n:name="name"/> 
+        <br/><span tal:content="python:node.id +' '+node.name" i18n:name="name"/> 
         TEXT 
         <span tal:replace="link" i18n:name="link"/>.
     </p>
@@ -54,7 +119,10 @@
 </tal:block>
 
 
-<tal:block metal:define-macro="workflow_show">
+<div metal:define-macro="workflow_show" id="workflow">
+    <p>
+    <span style="text-align:left"><a tal:attributes="href python:'/publish/'+workflow.getName()" i18n:translate="workflow_back">TEXT</a></span>
+    </p>
     <h2 i18n:translate="workflow_msg3">TEXT <span tal:content="python:step.name" i18n:name="name"/>:</h2>
     <table id="workflowtable" cellspacing="0px" tal:define="mylist python:step.getChildren().sort('name')">
         <tr>
@@ -71,7 +139,7 @@
                 <td tal:attributes="class cssclass" tal:content="python:format_date(parse_date(node.get('creationtime')),'dd.mm.yyyy HH:MM:SS')"/>
                 <td tal:attributes="class cssclass" tal:content="python:node.getName()"/>
 
-                <td tal:attributes="class cssclass"><a tal:attributes="href python:nodelink+node.id" i18n:translate="workflow_show_step">TEXT</a></td>
+                <td tal:attributes="class cssclass"><a tal:attributes="href python:nodelink+node.id+'&type=editor'" i18n:translate="workflow_show_step">TEXT</a></td>
                 <td tal:attributes="class cssclass"><a target="editorwindow" tal:attributes="href python:'/edit/edit?id='+node.id" i18n:translate="sub_header_edit">TEXT</a></td>
 
                 <td tal:attributes="class cssclass"><a tal:attributes="href python:nodelink+node.id+'&forcefalse=1'" tal:content="raw python:step.getFalseLabel() or '&nbsp;'"/></td>
@@ -81,14 +149,13 @@
         <tr>
             <th colspan="7" align="right">
                 <small i18n:translate="workflow_footer">
-                    <small tal:content="python:str(len(list(step.getChildren())))" i18n:name="number"/>
-                    TEXT
+                    <tal:block tal:content="python:str(len(list(step.getChildren())))" i18n:name="number"/>
                 </small>
             </th>
         </tr>
     </table>
-    <br>
-</tal:block>
+    <br/>
+</div>
 
 
 <tal:block metal:define-macro="workflow_forward">

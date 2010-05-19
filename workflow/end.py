@@ -23,7 +23,7 @@ class WorkflowStep_End(WorkflowStep):
        
     def show_workflow_node(self, node, req):
         # only for debugging
-        return req.getTALstr('<h2 i18n:translate="wf_step_ready">Fertig</h2><p i18n:translate="workflow_step_ready_msg">Das Objekt <span tal:content="node" i18n:name="name"/> ist am Ende des Workflows angekommen.</p>', {"node":str(node.id)})
+        return req.getTALstr('<h2 i18n:translate="wf_step_ready">Fertig</h2><p>&nbsp;</p><p i18n:translate="workflow_step_ready_msg">Das Objekt <span tal:content="node" i18n:name="name"/> ist am Ende des Workflows angekommen.</p>', {"node":str(node.id)})
        
     def runAction(self, node, op=""):
         # insert node into searchindex

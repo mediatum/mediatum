@@ -37,8 +37,7 @@ class WorkflowStep_Start(WorkflowStep):
                 return ('<i>' + t(lang(req),"permission_denied") + ': %s </i>') % schema
 
         if "Erstellen" in req.params:
-            selected_schema=req.params["selected_schema"]
-            node = tree.Node(name="", type=selected_schema)
+            node = tree.Node(name="", type=req.params.get("selected_schema"))
             self.addChild(node)
             node.setAccess("read", "{user workflow}")
             node.set("creator", "workflow-"+self.getParents()[0].getName())

@@ -48,15 +48,10 @@ class WorkflowStep_ShowData(WorkflowStep):
 
         fieldmap = []
         for maskname in masklist:
-            mask = getMetaType(node.type).getMask(maskname)
-            fieldmap += [mask.getViewHTML([node],VIEW_HIDE_EMPTY,language=lang(req))]
-
-        #printlink = ""
-        #try:
-        #    f = node.show_node_printview()
-        #    printlink = """<button onClick="window.open('print?id="""+node.id+"""','printwin')">Daten drucken</button>"""
-        #except:
-        #    pass
+            t = getMetaType(node.type)
+            if t:
+                mask = t.getMask(maskname)
+                fieldmap += [mask.getViewHTML([node],VIEW_HIDE_EMPTY,language=lang(req))]
 
         filelist = ""
         if node.getFiles():

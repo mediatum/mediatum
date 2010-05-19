@@ -23,6 +23,7 @@ import os
 import Image
 import sys
 import zipfile
+import random
 import core.config as config
 from utils.dicts import MaxSizeDict
 from utils.fileutils import importFile, getImportDir
@@ -82,6 +83,10 @@ class ZoomImage:
             raise AttributeError("Not an image")
 
         self.img = Image.open(filename)
+        tmpjpg = config.get("paths.datadir")+"tmp/img"+str(random.random())+".jpg"
+        if self.img.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or self.img.mode in ["P", "L"]:
+            os.system("convert -quality 100 -fill #fffffe -draw \"rectangle 0,0 1,1\" %s %s" %(filename, tmpjpg))
+            self.img = Image.open(tmpjpg)
         self.img.load()
         l = max(self.img.size)
         self.levels = 0
@@ -90,6 +95,8 @@ class ZoomImage:
             self.levels = self.levels + 1
         self.width,self.height = self.img.size
         self.node.set("levels", str(self.levels))
+        if os.path.exists(tmpjpg):
+            os.unlink(tmpjpg)
 
     def preprocess(self):
         names = []
@@ -105,8 +112,8 @@ class ZoomImage:
             file.write(name, os.path.basename(name), zipfile.ZIP_DEFLATED)
             os.unlink(name)
         file.close()
-        
-        self.node.addFile(tree.FileNode(name=getImportDir()+"/zoom"+str(self.node.id)+".zip",mimetype="application/zip",type="zoom"))
+        l = config.get("paths.datadir")
+        self.node.addFile(tree.FileNode(name=self.filepath[len(l):]+"/zoom"+str(self.node.id)+".zip",mimetype="application/zip",type="zoom"))
 
 
     def getTile(self, level, x, y, generate=0):
@@ -127,7 +134,6 @@ class ZoomImage:
             return None
 
         self.load()
-
         l = level
         level = 1<<(self.levels-level)
 
@@ -155,7 +161,6 @@ def send_imageproperties_xml(req):
     img = getImage(nid)
     req.write("""<IMAGE_PROPERTIES WIDTH="%d" HEIGHT="%d" NUMIMAGES="1" VERSION="1.8" TILESIZE="%d"/>""" % (img.width, img.height, TILESIZE))
 
-
 def send_tile(req):
     nid, data = splitpath(req.path)
     img = getImage(nid)
@@ -170,5 +175,3 @@ def send_tile(req):
     tmpname = img.getTile(zoom, x, y)
     req.write(tmpname)
     return tmpname
-
-

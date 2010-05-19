@@ -27,10 +27,11 @@ import core.config as config
 from utils.utils import *
 from core.acl import AccessData
 from web.frontend.frame import getNavigationFrame
-from web.frontend.content import getContentArea,ContentNode
+from web.frontend.content import getContentArea, ContentNode
 import core.xmlnode as xmlnode
 
 def display(req):
+    req.session["area"] = ""
     content = getContentArea(req)
     content.feedback(req)
     
@@ -46,8 +47,10 @@ def display_noframe(req):
     
     navframe = getNavigationFrame(req)
     navframe.feedback(req)
+    req.params["show_navbar"] = 0
 
     contentHTML = content.html(req)
+    
     if "raw" in req.params:
         req.write(contentHTML)
     else:
@@ -62,17 +65,22 @@ def publish(req):
     node = tree.getRoot("workflows")
     if m: 
         for a in m.group(2).split("/"):
-            if a: node = node.getChild(a)
+            if a: 
+                try:
+                    node = node.getChild(a)
+                except tree.NoSuchNodeError:
+                    return 404
     
     req.params["id"] = node.id
 
     content = getContentArea(req)
     content.content = ContentNode(node)
+    req.session["area"] = "publish"
     
     return display_noframe(req)
 
 def show_parent_node(req):
-    id = req.params["id"]
+    id = req.params.get("id")
     node = tree.getNode(id)
     parent = None
     for p in node.getParents():
@@ -94,7 +102,7 @@ def exportsearch(req, xml=0):  # format 0=pre-formated, 1=xml, 2=plain
     access = AccessData(req)
     access = core.acl.getRootAccess()
     
-    id = req.params["id"]
+    id = req.params.get("id")
     q = req.params.get("q","")
     collections = tree.getRoot("collections")
 

@@ -130,7 +130,6 @@ def importFileIntoNode(user,realname,tempname,datatype, workflow=0):
         return
     if realname!="":
         n = tree.Node(name=mybasename(realname), type=datatype)
-        print n
         file = importFile(realname,tempname)
         n.addFile(file)
     else:

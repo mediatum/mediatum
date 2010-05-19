@@ -12,97 +12,107 @@
             <small i18n:translate="edit_startpages_explain_table">TEXT</small>
         </p>
 
-        <form id="00" tal:attributes="action python:'edit_content?id='+str(id)+'&tab=startpages'" method="post" enctype="multipart/form-data" name="startpages_add">
-            <input i18n:attributes="value edit_startpages_addnew" type="submit" name="add_page"/>
-        </form>   
-
-        <form id="01" tal:attributes="action python:'edit_content?id='+str(id)+'&tab='+tab" method="post" enctype="multipart/form-data" name="startpages" style="border-color: silver; border-style: solid; border-width: 1px; width: 900px">
+        <form id="01" method="post" name="startpages">
             <style type="text/css">
-                .td00,.th00{
-                    border-color: silver; border-width: 0 1px 1px 0; border-style: solid; /*padding: 0 4px 0 4px;*/
-                }      
-                .td01,.th01{
-                    border-color: silver; border-width: 0 1px 1px 0; border-style: solid; /*padding: 0 4px 0 4px;*/ 
+                #filetable{
+                    border:1px solid silver; border-width:1px 1px 0px 1px
+                }
+                #filetable input{
+                    background-color:transparent; margin:1px; border-width:0px
+                }
+                #filetable input:hover{
+                    border-width:0px
+                }
+                #filetable input[type="text"]{
+                    border:1px solid silver
+                }
+                #filetable input[type="text"]:hover{
+                    border:1px solid black; background-color:#ffffff
+                }
+
+                #filetable th{
+                    background-color:#d8d8d8; padding:3px 5px 2px 3px; border-bottom:1px solid silver; font-variant:small-caps
+                }
+                #filetable tr{
+                    border:1px solid silver
+                }
+                #filetable td{
+                    vertical-align:middle; padding:2px;border-bottom:1px solid silver
+                }
+                #filetable tr:hover{
+                    background-color:silver
+                }
+                #filetable a{
+                    color:#000000; padding:1px:margin:0px
+                }
+                td.silver{
+                    background-color:#efefef
                 }
             </style>
-            <table id="filetable" style="border-color: silver; border-style: solid; border-width: 1px 0 0 1px;" rules="all" cellspacing="0">
-                <tr>
-                    <th tal:repeat="lang languages" style="text-align:center" class="th00" tal:content="python: lang">TEXT</th> 
-                    <td class="td01" i18n:translate="edit_startpages_link">TEXT</td> 
-                    <td class="td01" i18n:translate="edit_startpages_technical_name">TEXT</td> 
-                    <td class="td01" i18n:translate="edit_startpages_file_size">TEXT</td>
-                    <td class="td01" i18n:translate="edit_startpages_ed">TEXT</td> 
-                    <td class="td01" i18n:translate="edit_startpages_delete">TEXT</td> 
-                    <td class="td01" i18n:translate="edit_startpages_descriptive_name">TEXT</td>
-                </tr>
-                
-                <tr tal:repeat="item named_filelist" tal:attributes="id python:item[0];">
-                    <td tal:repeat="lang languages" class="td00">
-                        <input type="radio" style="border:1px solid white" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'radio_'+lang; value python:item[0]; checked python:{'False':None,'True':'checked'}[str(lang in item[7])]"/>
-                    </td> 
-         
-                    <td class="td01">  
-                        <a target="_blank" tal:attributes="href python:item[8]" tal:content="python:item[8]">LINK</a>
-                    </td>
-                    <td class="td01">  
-                        <span tal:content="python:item[0]"/>
-                    </td>
-                    <td class="td01" style="text-align:right">
-                        <span tal:content="python:item[5]"/>
-                    </td>                       
-        
-                    <td class="td01" style="text-align:center;">
-                        <a tal:attributes="href python:'edit_content?id='+id+'&tab=startpages&file_to_edit='+item[0]" i18n:attributes="title edit_startpages_edit">
-                            <img src="/img/edit_opt.png" style="height:14px;"/>
-                        </a> 
-                    </td>
-  
-                    <td class="td01" style="text-align:center; valign:middle;width:75px">
-                        <input tal:attributes="name python:'delete_'+item[0]" i18n:attributes="title edit_startpages_delete" type="image" src="/img/delete.png" onclick="return questionDel()"/>
-                    </td>
-        
-                    <td class="td01">  
-                        <input type="text" tal:attributes="name python: 'descr.'+item[0]; value python:item[1]" style="width: 300px;"/>
-                    </td>  
-                </tr>           
-                
-                <tr>
-                    <td tal:repeat="lang languages" class="td00">
-                        <input type="radio" style="border:1px solid white" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'radio_'+lang; value python:''; checked python:{'False':None,'True':'checked'}[str(node.getStartpageFileNode(lang)==None)]"/>
-                    </td> 
-                    <td style="text-align:left" class="td01" i18n:translate="edit_startpages_none">TEXT</td> 
-                    <td style="text-align:left" class="td01" i18n:translate="edit_startpages_none">TEXT</td> 
-                    <td style="text-align:right" class="td01" i18n:translate="edit_startpages_not_applicable">TEXT</td>
-                    <td class="td01"> &nbsp; </td>
-                    <td class="td01"> &nbsp; </td> 
-                    <td class="td01" i18n:translate="edit_startpages_do_not_use_a_startpage">TEXT</td>
-                </tr>        
+            <table id="filetable" cellpadding="0px" cellspacing="0px">
+                <thead>
+                    <tr>
+                        <th tal:repeat="lang languages" tal:content="lang">TEXT</th> 
+                        <th i18n:translate="edit_startpages_descriptive_name" style="border-left:1px solid silver">TEXT</th>
+                        <th i18n:translate="edit_startpages_technical_name" colspan="2">TEXT</th> 
+                        <th i18n:translate="edit_startpages_file_size">TEXT</th>
+                        <th style="text-align:right"><input i18n:attributes="value edit_startpages_addnew" type="image" src="/img/install.png" name="add_page"/></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tal:block tal:repeat="item named_filelist">
+                        <tr tal:define="cssclass python:named_filelist.index(item)%2 and 'silver' or 'norm'" tal:attributes="class cssclass; id python:item[0];">
+                            <td tal:repeat="lang languages">
+                                <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'radio_'+lang; value python:item[0]; checked python:{'False':None,'True':'checked'}[str(lang in item[7])]"/>
+                            </td> 
+                            <td style="border-left:1px solid silver">  
+                                <input type="text" tal:attributes="name python:'descr.'+item[0]; value python:item[1]" style="width:300px"/>
+                            </td>  
+                            <td tal:content="python:str(item[8])"/>
+                            <td style="width:20px;text-align:right">
+                                <a target="_blank" tal:attributes="href python:item[8]"  i18n:attributes="title edit_startpages_link">
+                                    <img src="/img/rightarrow.png"/>
+                                </a>
+                            </td>
+                            <td style="text-align:right; font-size:9px" tal:content="python:str(item[5])"/>
+                            <td style="text-align:right">
+                                <a tal:attributes="href python:'edit_content?id='+id+'&tab=startpages&file_to_edit='+item[0]" i18n:attributes="title edit_startpages_edit"><img src="/img/edit_opt.png"/></a>
+                                <input tal:attributes="name python:'delete_'+item[0]" i18n:attributes="title edit_startpages_delete" type="image" src="/img/delete.png" onclick="return questionDel()"/>
+                            </td>
+                        </tr>
+                    </tal:block>
+                </tbody>
+                <tfoot>
+                    <tr style="background-color:#d8d8d8">
+                        <td tal:repeat="lang languages">
+                            <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'radio_'+lang; value python:''; checked python:{'False':None,'True':'checked'}[str(node.getStartpageFileNode(lang)==None)]"/>
+                        </td> 
+                        <td style="border-left:1px solid silver" i18n:translate="edit_startpages_do_not_use_a_startpage">TEXT</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                </tfoot>
             </table>
-        
-            <div> &nbsp; </div> 
+            <div>&nbsp;</div> 
             <input i18n:attributes="value edit_startpages_savechanges" type="submit" name="startpages_save"/>
             <input i18n:attributes="value edit_startpages_reset" type="reset" name="startpages_reset"/>
         </form> 
-
-        <form id="02" tal:attributes="action python:'edit_content?id='+str(id)+'&tab=startpages'" tal:define="files python:node.getFiles()" method="post" enctype="multipart/form-data" name="startpages_add">
-            <input i18n:attributes="value edit_startpages_addnew" type="submit" name="add_page"/>
-        </form>  
     </div>
 </metal:block>  
 
 
-<form metal:define-macro="edit_editor" tal:attributes="action python:'?id='+id+'&tab=startpages'" method="post">
-    <span i18n:translate="edit_editor_header">TEXT</span> 
-    <strong>
-        <span tal:content="python: descriptiveLabel">TEXT</span>
-    </strong>
+<form metal:define-macro="edit_editor" method="post">
+    <p>
+        <tal:block i18n:translate="edit_editor_header"/>
+        <strong tal:content="python: descriptiveLabel">TEXT</strong>
+    </p>    
     <tal:block tal:replace="raw python:oFCKeditor.Create()"/>
-
     <p align="center">
         <input tal:attributes="value path" type="hidden" name="file_path"/>
         <input i18n:attributes="value edit_editor_save" type="submit" name="save_page"/>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <input i18n:attributes="value edit_publish_cancel" type="submit" name="cancel_page"/>
+        <input i18n:attributes="value edit_publish_cancel" type="submit" name="cancel_page" style="margin-left:30px"/>
     </p>
 </form>
  

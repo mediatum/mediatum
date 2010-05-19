@@ -25,8 +25,7 @@ import web.edit
 from core.acl import AccessData
 from core.translation import t, lang
 from web.edit.edit_common import writetree, showdir, getHomeDir
-from web.edit.edit import nodeIsChildOfNode
-from edit import *#nodeIsChildOfNode
+from web.edit.edit import * #nodeIsChildOfNode
 from utils.utils import isDirectory
 
 def getInformation():

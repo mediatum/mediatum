@@ -21,8 +21,10 @@ import re
 import core.tree as tree
 import os
 import core.config as config
+import core.athana as athana
 from utils.utils import get_filesize, join_paths, clean_path, getMimeType, formatException
 from core.translation import t
+from core.styles import theme
 import random
 import zipfile
 
@@ -114,13 +116,14 @@ def send_thumbnail(req):
         if f.getType()=="thumb":
             if os.path.isfile(f.retrieveFile()):
                 return req.sendFile(f.retrieveFile(), f.getMimeType())
+    
 
-    for test in ["default_thumb_%s_%s.*" % (n.getContentType(), n.getSchema()), "default_thumb_%s.*" % (n.getSchema()), "default_thumb_%s.*" % (n.getContentType())]:
-        fps = glob.glob(os.path.join(config.basedir, "web", "img", test))
-        if fps:
-            thumb_mimetype, thumb_type = utils.utils.getMimeType(fps[0])
-            return req.sendFile(fps[0], thumb_mimetype, force=1)
-            
+    for p in athana.getFileStorePaths("/img/"):
+        for test in ["default_thumb_%s_%s.*" % (n.getContentType(), n.getSchema()), "default_thumb_%s.*" % (n.getSchema()), "default_thumb_%s.*" % (n.getContentType())]:
+            fps = glob.glob(os.path.join(config.basedir, p[2:], test))
+            if fps:
+                thumb_mimetype, thumb_type = utils.utils.getMimeType(fps[0])
+                return req.sendFile(fps[0], thumb_mimetype, force=1)
     return req.sendFile(config.basedir + "/web/img/questionmark.png", "image/png", force=1)
 
 def send_thumbnail2(req):
@@ -130,11 +133,22 @@ def send_thumbnail2(req):
         return 404
     for f in n.getFiles():
         if f.getType().startswith("presentat"):
-            return req.sendFile(f.retrieveFile(), f.getMimeType())
+            if os.path.isfile(f.retrieveFile()):
+                return req.sendFile(f.retrieveFile(), f.getMimeType())
     #fallback
     for f in n.getFiles():
         if f.getType()=="image":
-            return req.sendFile(f.retrieveFile(), f.getMimeType())
+            if os.path.isfile(f.retrieveFile()):
+                return req.sendFile(f.retrieveFile(), f.getMimeType())
+                
+    #fallback2
+    for p in athana.getFileStorePaths("/img/"):
+        for test in ["default_thumb_%s_%s.*" % (n.getContentType(), n.getSchema()), "default_thumb_%s.*" % (n.getSchema()), "default_thumb_%s.*" % (n.getContentType())]:
+            #fps = glob.glob(os.path.join(config.basedir, theme.getImagePath(), "img", test))
+            fps = glob.glob(os.path.join(config.basedir, p[2:], test))
+            if fps:
+                thumb_mimetype, thumb_type = utils.utils.getMimeType(fps[0])
+                return req.sendFile(fps[0], thumb_mimetype, force=1)
     return 404
     
 
@@ -172,7 +186,7 @@ def send_file(req, download=0):
             file = f
             break
     # try only extension
-    if not file:
+    if not file and n.get("archive_type")=="":
         for f in n.getFiles():
             if os.path.splitext(f.getName())[1] == os.path.splitext(filename)[1]:
                 incUsage(n)
@@ -214,6 +228,7 @@ def send_attachment(req):
 def sendZipFile(req, path):
     tempfile = join_paths(config.get("paths.tempdir"), str(random.random()))+".zip"
     zip = zipfile.ZipFile(tempfile, "w")
+    zip.debug = 3
     def r(p):
         if os.path.isdir(join_paths(path, p)):
             for file in os.listdir(join_paths(path, p)):
@@ -228,11 +243,12 @@ def sendZipFile(req, path):
     r("/")
     zip.close()
     req.reply_headers['Content-Disposition'] = "attachment; filename=shoppingbag.zip"
-    req.sendFile(tempfile, "application/zip")
+    #req.sendFile(tempfile, "application/zip")
+    req.sendFile(tempfile, "application/x-download")
     if os.sep=='/': # Unix?
         os.unlink(tempfile) # unlinking files while still reading them only works on Unix/Linux
 
-
+    
 #
 # send single attachment file to user
 #

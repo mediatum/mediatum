@@ -47,6 +47,8 @@ def import_new(req):
             try:
                 importBibTeX(file.tempname, importdir)
                 req.request["Location"] = req.makeLink("content", {"id":importdir.id})
+            except ValueError, e:
+                req.params["error"] = str(e)
             except MissingMapping,e:
                 req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":str(e)})
             except:

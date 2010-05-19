@@ -28,7 +28,7 @@ import core.acl as acl
 import core.users as users
 import core.config as config
 
-from utils.utils import getMimeType, splitpath
+from utils.utils import getMimeType, splitpath, format_filesize
 from utils.fileutils import importFile
 from core.translation import translate, lang, t
 from core.acl import AccessData
@@ -227,10 +227,12 @@ def getContent(req, ids):
     user = users.getUserFromRequest(req)
     access = AccessData(req)
     node = tree.getNode(ids[0])
-    
-    if "add_page" in req.params:
-       # add new page
-       return  edit_editor(req, node, None)
+
+    for key in req.params:
+        if key.startswith("add_page"):
+            del req.params[key]
+            req.params["add_page"] = ""
+            return  edit_editor(req, node, None)
     
     if "file_to_edit" in req.params:       
         # edit page
@@ -325,13 +327,12 @@ def getContent(req, ids):
             if spn and spn.retrieveFile()==long_path:
                 langlist.append(language)
 
-                
         named_filelist.append( (short_path,
                                 node.get('startpagedescr.'+short_path),
                                 f.type,
                                 f,
                                 file_exists,
-                                file_size,
+                                format_filesize(file_size),
                                 long_path,
                                 langlist,
                                 "/file/%s/%s" % (req.params.get("id","0"), short_path.split('/')[-1])
@@ -359,16 +360,15 @@ def getContent(req, ids):
     
     node.set('startpage.selector', startpage_selector[0:-1])
 
-    return req.getTAL("web/edit/modules/startpages.html",
-                        {"id":req.params.get("id","0"),
-                         "tab":req.params.get("tab", ""),
-                         "node":node,
-                         "named_filelist":named_filelist,
-                         "languages":languages,
-                         "lang2file":lang2file,
-                         "types":['content'],
-                         "d": lang2file and True,
-                        },
-                        macro="edit_startpages")
-
+    v = {}
+    v["id"] =  req.params.get("id","0")
+    v["tab"] = req.params.get("tab", "")
+    v["node"] = node
+    v["named_filelist"] = named_filelist
+    v["languages"] = languages
+    v["lang2file"] = lang2file
+    v["types"] = ['content']
+    v["d"] =  lang2file and True
+   
+    return req.getTAL("web/edit/modules/startpages.html", v, macro="edit_startpages")
 

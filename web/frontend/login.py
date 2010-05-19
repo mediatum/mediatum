@@ -33,6 +33,7 @@ import utils.date as date
 from web.frontend.frame import getNavigationFrame
 from core.translation import lang, t
 from utils.utils import mkKey
+from core.styles import theme
 
 def buildURL(req):
     p = ""
@@ -80,7 +81,7 @@ def login(req):
     user = users.getUserFromRequest(req)
     navframe = getNavigationFrame(req)
     navframe.feedback(req) 
-    navframe.write(req, req.getTAL("web/frontend/login.html", {"error":error, "user":user}, macro="login"))
+    navframe.write(req, req.getTAL(theme.getTemplate("login.html"), {"error":error, "user":user}, macro="login"))
     return athana.HTTP_OK
 
 
@@ -121,7 +122,7 @@ def pwdchange(req, error=0):
   
     navframe = getNavigationFrame(req)
     navframe.feedback(req)
-    contentHTML = req.getTAL("web/frontend/login.html",{"error":error, "user":user}, macro="change_pwd")
+    contentHTML = req.getTAL(theme.getTemplate("login.html"),{"error":error, "user":user}, macro="change_pwd")
     navframe.write(req, contentHTML)
     return athana.HTTP_OK
 
@@ -147,12 +148,12 @@ def pwdforgotten(req):
                 targetuser.set("newpassword.time_activated", date.format_date())
                 logging.getLogger('usertracing').info("new password activated for user: %s - was requested: %s by %s" % (targetuser.getName(), targetuser.get("newpassword.time_requested"), targetuser.get("newpassword.request_ip")))
                 
-                navframe.write(req, req.getTAL("web/frontend/login.html", {"username": targetuser.getName()}, macro="pwdforgotten_password_activated"))
+                navframe.write(req, req.getTAL(theme.getTemplate("login.html"), {"username": targetuser.getName()}, macro="pwdforgotten_password_activated"))
                 return athana.HTTP_OK
             
             else:
                 print "invalid key: wrong key or already used key"
-                navframe.write(req, req.getTAL("web/frontend/login.html", {"message":"pwdforgotten_password_invalid_key"}, macro="pwdforgotten_message"))
+                navframe.write(req, req.getTAL(theme.getTemplate("login.html"), {"message":"pwdforgotten_password_invalid_key"}, macro="pwdforgotten_message"))
                 return athana.HTTP_OK
  
     elif "user" in req.params: # create email with activation information
@@ -188,21 +189,21 @@ def pwdforgotten(req):
                 
                 # going to send the mail                
                 try:
-                    mailtext = req.getTAL("web/frontend/login.html", v, macro="emailtext")
+                    mailtext = req.getTAL(theme.getTemplate("login.html"), v, macro="emailtext")
                     mailtext = mailtext.strip().replace("[$newpassword]", password).replace("[wird eingesetzt]", password)
                     
                     mail.sendmail(config.get("email.admin"),targetuser.getEmail(), t(lang(req),"pwdforgotten_email_subject"), mailtext)
                     logging.getLogger('usertracing').info("new password requested for user: %s - activation email sent" % username)
-                    navframe.write(req, req.getTAL("web/frontend/login.html", {"message":"pwdforgotten_butmailnowsent"}, macro="pwdforgotten_message"))
+                    navframe.write(req, req.getTAL(theme.getTemplate("login.html"), {"message":"pwdforgotten_butmailnowsent"}, macro="pwdforgotten_message"))
                     return athana.HTTP_OK
                     
                 except mail.SocketError:
                     print "Socket error while sending mail"
                     logging.getLogger('usertracing').info("new password requested for user: %s - failed to send activation email" % username)
-                    return req.getTAL("web/frontend/login.html", {"message":"pwdforgotten_emailsenderror"}, macro="pwdforgotten_message")
+                    return req.getTAL(theme.getTemplate("login.html"), {"message":"pwdforgotten_emailsenderror"}, macro="pwdforgotten_message")
 
     # standard operation
-    navframe.write(req, req.getTAL("web/frontend/login.html", {"error":req.params.get("error"), "user":users.getUserFromRequest(req)}, macro="pwdforgotten"))
+    navframe.write(req, req.getTAL(theme.getTemplate("login.html"), {"error":req.params.get("error"), "user":users.getUserFromRequest(req)}, macro="pwdforgotten"))
     return athana.HTTP_OK
   
 

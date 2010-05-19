@@ -35,6 +35,7 @@ from utils.utils import getCollection, getDirectory, Link, iso2utf8, isCollectio
 from core.acl import AccessData,getRootAccess
 from core.translation import translate, lang, t
 from core.metatype import Context
+from core.styles import theme
 
 class Portlet:
     def __init__(self):
@@ -375,18 +376,7 @@ class Collectionlet(Portlet):
             return True
         else:
             return False
-        
-class Navlet(Portlet):
-    def __init__(self):
-        Portlet.__init__(self)
-        self.name="navlet"
-        self.collection = tree.getRoot("collections")
-        self.folded = 0
-    
-    def feedback(self,req):
-        ni_data = []
-        ni_data = list(AccessData(req).filter(tree.getRoot("navigation").getChildren().sort()))
-        self.ni_data = ni_data
+
     
 class Pathlet:
     def __init__(self,currentdir):
@@ -435,10 +425,11 @@ def getSessionSetting(req, name, default):
     return value
 
 class UserLinks:
-    def __init__(self,user):
+    def __init__(self,user, area=""):
         self.user = user
         self.id = None
         self.language = ""
+        self.area = area
         
     def feedback(self,req):
         if "id" in req.params:
@@ -446,24 +437,28 @@ class UserLinks:
         self.language = lang(req)
         
     def getLinks(self):
-        l = [Link("/logout", t(self.language,"sub_header_logout_title"), t(self.language,"sub_header_logout"))]
+
+        l = [Link("/logout", t(self.language,"sub_header_logout_title"), t(self.language,"sub_header_logout"), icon="/img/logout.gif")]
         if config.get("user.guestuser")==self.user.getName():
-            l = [Link("/login", t(self.language,"sub_header_login_title"), t(self.language,"sub_header_login"))]
+            l = [Link("/login", t(self.language,"sub_header_login_title"), t(self.language,"sub_header_login"), icon="/img/login.gif")]
+        
+        if self.area!="":
+            l += [Link("/", t(self.language,"sub_header_frontend_title"), t(self.language,"sub_header_frontend"), icon="/img/frontend.gif")]
         
         if self.user.isEditor():
             idstr = ""
             if self.id:
                 idstr = "?id="+self.id
-            l += [Link("/edit"+idstr, t(self.language,"sub_header_edit_title"), t(self.language,"sub_header_edit"))]
+            l += [Link("/edit"+idstr, t(self.language,"sub_header_edit_title"), t(self.language,"sub_header_edit"), icon="/img/edit.gif")]
         
         if self.user.isAdmin():
-            l += [Link("/admin", t(self.language,"sub_header_administration_title"), t(self.language,"sub_header_administration"))]
+            l += [Link("/admin", t(self.language,"sub_header_administration_title"), t(self.language,"sub_header_administration"), icon="/img/admin.gif")]
         
-        if self.user.isWorkflowEditor():
-            l += [Link("/publish/", t(self.language,"sub_header_workflow_title"), t(self.language,"sub_header_workflow"))]
+        if self.user.isWorkflowEditor() and self.area!="publish":
+            l += [Link("/publish/", t(self.language,"sub_header_workflow_title"), t(self.language,"sub_header_workflow"), icon="/img/workflow.gif")]
 
         if config.get("user.guestuser")!=self.user.getName() and "c" in self.user.getOption():
-            l += [Link("/pwdchange", t(self.language,"sub_header_changepwd_title"), t(self.language,"sub_header_changepwd"), "_parent")]
+            l += [Link("/pwdchange", t(self.language,"sub_header_changepwd_title"), t(self.language,"sub_header_changepwd"), "_parent", icon="/img/changepwd.gif")]
         return l
 
 
@@ -471,12 +466,11 @@ class NavigationFrame:
     def __init__(self):
         self.cmap = CollectionMapping()
         self.collection_portlet = Collectionlet()
-        self.nav_portlet = Navlet()
 
     def feedback(self,req):
         user = users.getUserFromRequest(req)
 
-        userlinks = UserLinks(user)
+        userlinks = UserLinks(user, area=req.session.get("area"))
         userlinks.feedback(req)
 
         #tabs
@@ -498,38 +492,42 @@ class NavigationFrame:
         front_lang["name"] = config.get("i18n.languages").split(",")
         front_lang["actlang"] = lang(req)
 
-        # navitems
-        nav_portlet = self.nav_portlet
-        nav_portlet.feedback(req)
-        navigation["navitem"] = nav_portlet
-
         self.params = {"show_navbar": True, "user": user, "userlinks": userlinks, "navigation":navigation, "language":front_lang}
         
     def write(self, req, contentHTML, show_navbar=1):
+        self.params["show_navbar"] = show_navbar
         self.params["content"] = contentHTML
         self.params["act_node"] = req.params.get("id", req.params.get("dir", ""))
         self.params["acl"] = AccessData(req)
         
+        rootnode = tree.getRoot("collections")
+        self.params["header_items"] =  rootnode.getCustomItems("header")
+        self.params["footer_left_items"] = rootnode.getCustomItems("footer_left")
+        self.params["footer_right_items"] = rootnode.getCustomItems("footer_right")
+        self.params["t"] = time.strftime("%d.%m.%Y %H:%M:%S")
+
         # header
-        self.params["header"] = req.getTAL("web/frontend/frame.html", self.params, macro="frame_header")
+        self.params["header"] = req.getTAL(theme.getTemplate("frame.html"), self.params, macro="frame_header")
         
         # footer
-        self.params["footer"] = req.getTAL("web/frontend/frame.html", {"t":time.strftime("%d.%m.%Y %H:%M:%S")}, macro="frame_footer")
-        
-        # search mask
-        self.params["search"] = req.getTAL("web/frontend/frame.html", {"search":self.params["navigation"]["search"], "act_node":self.params["act_node"]}, macro="frame_search")
+        self.params["footer"] = req.getTAL(theme.getTemplate("frame.html"), self.params, macro="frame_footer")
 
-        # tree
-        self.params["tree"] = req.getTAL("web/frontend/frame.html", {"collections":self.collection_portlet.getCollections(), "acl":self.params["acl"]}, macro="frame_tree")
+        self.params["tree"] = ""
+        self.params["search"] = ""
+        if show_navbar==1:
+            # search mask
+            self.params["search"] = req.getTAL(theme.getTemplate("frame.html"), {"search":self.params["navigation"]["search"], "act_node":self.params["act_node"]}, macro="frame_search")
+            
+            # tree
+            self.params["tree"] = req.getTAL(theme.getTemplate("frame.html"), {"collections":self.collection_portlet.getCollections(), "acl":self.params["acl"]}, macro="frame_tree")
 
-        self.params["show_navbar"] = show_navbar
-        req.writeTAL("web/frontend/frame.html", self.params, macro="frame")
+        req.writeTAL(theme.getTemplate("frame.html"), self.params, macro="frame")
 
 
 def getNavigationFrame(req):
-    try:
+    if "navframe" in req.session:
         c = req.session["navframe"]
-    except KeyError:
+    else:
         c = req.session["navframe"] = NavigationFrame()
     return c
 

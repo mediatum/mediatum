@@ -26,6 +26,7 @@ from core.acl import AccessData
 from core.translation import lang
 from utils.utils import intersection,getAllCollections
 from core.tree import subnodes, searcher
+from core.styles import theme
 
 class SearchResult:
     def __init__(self, resultlist, query, collections=[]):
@@ -54,17 +55,20 @@ class SearchResult:
 
     def getLink(self,collection):
         return 'node?scoll='+collection.id
+        
+    def getContentStyles(self):
+        return []
 
     def html(self,req):
         if self.active<0:
             if len(self.resultlist)==0:
-                return req.getTAL("web/frontend/searchresult.html", {"query":self.query, "r":self, "collections":self.collections, "language":lang(req)}, macro="noresult")
+                return req.getTAL(theme.getTemplate("searchresult.html"), {"query":self.query, "r":self, "collections":self.collections, "language":lang(req)}, macro="noresult")
             else:
                 if len(self.resultlist)==1:
                     self.resultlist[self.active].feedback(req)
                     return self.resultlist[self.active].html(req)
                 else:
-                    return req.getTAL("web/frontend/searchresult.html", {"query":self.query,"collections":self.collections,"reslist":self.resultlist,"r":self, "language":lang(req)}, macro="listcollections")
+                    return req.getTAL(theme.getTemplate("searchresult.html"), {"query":self.query,"collections":self.collections,"reslist":self.resultlist,"r":self, "language":lang(req)}, macro="listcollections")
         else:
             self.resultlist[self.active].feedback(req)
             return self.resultlist[self.active].html(req)

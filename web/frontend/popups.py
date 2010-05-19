@@ -32,6 +32,7 @@ from web.frontend.content import getPaths
 from core.acl import AccessData
 from core.translation import t,lang
 from utils.utils import u
+from core.styles import theme
 
 #
 # execute fullsize method from node-type
@@ -67,7 +68,7 @@ def show_help(req):
     else:
         field = getNode(req.params.get("id",""))
 
-    req.writeTAL("web/frontend/popups.html", {"field":field}, macro="show_help")
+    req.writeTAL(theme.getTemplate("popups.html"), {"field":field}, macro="show_help")
 
 #
 # show attachmentbrowser for given node
@@ -80,8 +81,10 @@ def show_attachmentbrowser(req):
     if not access.hasAccess(node,"data"):
         req.write(t(req, "permission_denied"))
         return
-    if node.getContentType().startswith("document") or node.getContentType().startswith("dissertation"):
-        node.getAttachmentBrowser(req)
+    #if node.getContentType().startswith("document") or node.getContentType().startswith("dissertation"):
+    #    node.getAttachmentBrowser(req)
+    from core.attachment import getAttachmentBrowser
+    getAttachmentBrowser(node, req)
         
     
 def getPrintChildren(req, node, ret):

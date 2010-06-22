@@ -182,9 +182,8 @@ class Document(default.Default):
                 node.addFile(FileNode(name=thumb2name, type="presentation", mimetype="image/jpeg"))
                 node.addFile(FileNode(name=fulltextname, type="fulltext", mimetype="text/plain"))
                 node.addFile(FileNode(name=infoname, type="fileinfo", mimetype="text/plain"))
-        else:
-            raise OperationException("error:wrong filetype")
 
+                
     """ list with technical attributes for type document """
     def getTechnAttributes(node):
         return {"PDF":{"pdf_moddate":"Datum",

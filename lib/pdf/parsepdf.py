@@ -90,7 +90,7 @@ def parsePDF(filename, tempdir):
     infoname = name+".info"
 
     # pdf info (xpdf)
-    p = Popen("pdfinfo -meta %s" % filename, stdout=PIPE)
+    p = Popen(("pdfinfo -meta %s" % filename).split(" "), stdout=PIPE)
     info = parseInfo(p.communicate()[0].strip().split("\n"))
     
     # test for correct rights

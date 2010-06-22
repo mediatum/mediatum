@@ -144,26 +144,33 @@ def ListMetadataFormats(req):
 
          <metadataFormat>
              <metadataPrefix>epicur</metadataPrefix>
-             <schema>urn:nbn:de:1111-2004033116 http://nbn-resolving.de/urn/resolver.pl?urn=urn:nbn:de:1111-2004033116</schema>
+             <schema>http://www.persistent-identifier.de/xepicur/version1.0/xepicur.xsd</schema>
              <metadataNamespace>urn:nbn:de:1111-2004033116</metadataNamespace>
          </metadataFormat>
 
          <metadataFormat>
              <metadataPrefix>xmetadiss</metadataPrefix>
-             <schema>http://www.ddb.de/standards/xmetadiss/xmetadiss.xsd</schema>
-             <metadataNamespace>http://www.ddb.de/standards/xMetaDiss/</metadataNamespace>
+             <schema>http://www.d-nb.de/standards/xmetadiss/xmetadiss.xsd</schema>
+             <metadataNamespace>http://www.d-nb.de/standards/xMetaDiss/</metadataNamespace>
          </metadataFormat>
-         
+
+         <metadataFormat>
+             <metadataPrefix>xmetadissplus</metadataPrefix>
+             <schema>http://www.bsz-bw.de/xmetadissplus/1.3/xmetadissplus.xsd</schema>
+             <metadataNamespace>http://www.bsz-bw.de/xmetadissplus/1.3</metadataNamespace>
+         </metadataFormat>
+
          <metadataFormat>
              <metadataPrefix>mediatum</metadataPrefix>
              <schema>http://mediatum-pages.ub.tum.de/mediatum.xsd</schema>
              <metadataNamespace>http://mediatum-pages.ub.tum.de/</metadataNamespace>
          </metadataFormat>
+         
        </ListMetadataFormats>
     """)
 
 def checkMetaDataFormat(format):
-    return format in ["epicur", "xmetadiss", "oai_dc", "mediatum"]
+    return format in ["epicur", "xmetadiss", "xmetadissplus", "oai_dc", "mediatum"]
 
 def Identify(req):
     if not checkParams(req, ["verb"]):

@@ -177,7 +177,7 @@ class StatisticFile:
     def getProgress(self, type=""):
         items = {}
         if len(self.items)==0:
-            items[0] = {"max":0, "max_p":0, "max_u":0}
+            items[0] = {"items":{},"max":0, "max_p":0, "max_u":0}
             return items
         
         # fill items in structure
@@ -244,7 +244,7 @@ class StatisticFile:
             if len(ips)>max_u:
                 max_u = len(ips)
             
-        items[0] = {"max":max, "max_p":max_p, "max_u":max_u} # deliver max-values on index 0
+        items[0] = {"items":{},"max":max, "max_p":max_p, "max_u":max_u} # deliver max-values on index 0
         return items
         
     def getCountryName(self, id):

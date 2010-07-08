@@ -55,6 +55,7 @@ class MYSQLConnector(Connector):
         function = str(traceback.extract_stack()[-2][0])+":"+str(traceback.extract_stack()[-2][2])
         log.info("Connecting to ["+self.user+"@"+self.database+"] "+function)
 
+        # test base table
         try:
             r = self.runQuery("select id from node where type='root'")
             r[0]
@@ -63,6 +64,15 @@ class MYSQLConnector(Connector):
             initDatabaseValues(self)
         except IndexError:
             initDatabaseValues(self)
+        
+        # test for new views
+        try:
+            r = self.runQuery("select nid from containermapping limit 1")
+            r[0]
+        except MySQLdb.ProgrammingError:
+            self.runQueryNoError("CREATE OR REPLACE VIEW `containermapping` AS select `nodemapping`.`nid` AS `nid`,`nodemapping`.`cid` AS `cid`,`node`.`type` AS `type` from (`nodemapping` join `node` on((`nodemapping`.`cid` = `node`.`id`))) where (locate('/',`node`.`type`) = 0)")
+            self.runQueryNoError("CREATE OR REPLACE VIEW `contentmapping` AS select `nodemapping`.`nid` AS `nid`,`nodemapping`.`cid` AS `cid`,`node`.`type` AS `type` from (`nodemapping` join `node` on((`nodemapping`.`cid` = `node`.`id`))) where (locate('/',`node`.`type`) > 0)")
+
 
         try:
             r = self.runQuery("select * from node where dirty=1 limit 1");

@@ -335,6 +335,9 @@ def buildStat(collection, period=""): # period format = yyyy-mm
             if file.getType()=="statistic":
                 if file.getName()=="stat_"+str(node.id)+"_"+timestamp+"_"+type+".xml":
                     if timestamp==str(format_date(now(), "yyyy-mm")) or timestamp==period: # update current month or given period
+                        
+                        if os.path.exists(file.retrieveFile()):
+                            os.remove(file.retrieveFile())
                         node.removeFile(file) # remove old file and create new
                         f = None
                         break

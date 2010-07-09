@@ -125,7 +125,7 @@ def getAllContainerChildrenNum(node, count=0): # returns the number of children
 def getAllContainerChildrenAbs(node, count=[]): # returns a list with children, each child once
     for n in node.getContainerChildren():
         count = getAllContainerChildrenAbs(n, count)
-    count.extend(node.getContentChildren().ids)
+    count.extend(node.getContentChildren())
     return count
 
 def getAllContainerChildren(node):
@@ -714,11 +714,11 @@ class Node:
         
     def getContainerChildren(self):
         id = db.getContainerChildren(self.id)
-        return NodeList(id)
+        return NodeList(id).sort()
         
     def getContentChildren(self):
         id = db.getContentChildren(self.id)
-        return NodeList(id)
+        return NodeList(id).sort()
 
 
     """ get all parents of this node """

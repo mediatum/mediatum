@@ -2882,6 +2882,27 @@ msgstr "Im Augenblick sind folgende Daten f&uuml;r dieses Archiv hinterlegt:"
 msgid "edit_files_filetype_error"
 msgstr "Austausch nicht möglich, da die Dateitypen nicht übereinstimmen."
 
+msgid "edit_files_files"
+msgstr "Dateien:"
+
+msgid "edit_files_attachments"
+msgstr "Attachments:"
+
+msgid "edit_files_stats"
+msgstr "Statistik:"
+
+msgid "edit_files_dirname"
+msgstr "Verzeichnisname: "
+
+msgid "edit_files_addthumbnail"
+msgstr "Thumbnail neu hochladen:"
+
+msgid "edit_files_add_attdir"
+msgstr "Attachment-Verzeichnis hinzufügen (alle weiteren Attachments werden in diesem Verzeichnis gespeichert)"
+
+msgid "edit_files_add_attfile"
+msgstr "Attachment hinzufügen"
+
 msgid "edit_files_type"
 msgstr "Typ"
 

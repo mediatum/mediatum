@@ -2847,6 +2847,27 @@ msgstr "At the moment the archive contains the following data:"
 msgid "edit_files_filetype_error"
 msgstr "Exchange isn't possible, since the file types do not match."
 
+msgid "edit_files_files"
+msgstr "Files:"
+
+msgid "edit_files_attachments"
+msgstr "Attachments:"
+
+msgid "edit_files_stats"
+msgstr "Statistics:"
+
+msgid "edit_files_dirname"
+msgstr "Directory name: "
+
+msgid "edit_files_addthumbnail"
+msgstr "Add new thumbnail:"
+
+msgid "edit_files_add_attdir"
+msgstr "add attachment directory (all attachments will be saved in this directory)"
+
+msgid "edit_files_add_attfile"
+msgstr "add attachment"
+
 msgid "edit_files_type"
 msgstr "Type"
 

@@ -61,6 +61,33 @@ def importFile(realname,tempname):
         print formatException()
     return None
     
+    
+def importFileIntoDir(destpath, tempname):
+    try:
+        path,filename = os.path.split(tempname)
+        uploaddir = getImportDir()
+        destname = destpath# join_paths(uploaddir, filename)
+        
+        if os.sep=='/':
+            ret = os.system("cp %s %s" %(tempname, destname))
+        else:
+            cmd = "copy %s %s" %(tempname, destname)
+            ret = os.system(cmd.replace('/','\\'))
+
+        if ret&0xff00:
+            raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, destname, str(ret)))
+
+        r = destpath.lower()
+        mimetype = "application/x-download"
+        type = "file"
+        
+        mimetype, type = getMimeType(r)
+
+        return core.tree.FileNode(name=destname,mimetype=mimetype, type=type)
+    except:
+        print formatException()
+    return None
+    
 
 def importFileRandom(tempname):
     #import core.config as config

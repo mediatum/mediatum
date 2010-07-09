@@ -1,17 +1,57 @@
-
+﻿
 <p metal:define-macro="filetype_error" style="color:red" i18n:translate="edit_files_filetype_error">
     TEXT
 </p>
 
 
-<tal:block metal:define-macro="edit_files_file" tal:define="files python:node.getFiles()">
+<tal:block metal:define-macro="edit_files_file">
+    <style type="text/css">
+        #filetable{
+            border:0px solid silver; border-width:1px 1px 0px 1px; width:90%
+        }
+        #filetable input{
+            background-color:transparent; margin:1px; border-width:0px
+        }
+        #filetable input:hover{
+            border-width:0px
+        }
+        #filetable input[type="text"]{
+            border:1px solid silver
+        }
+        #filetable input[type="text"]:hover{
+            border:1px solid black; background-color:#ffffff
+        }
+
+        #filetable th{
+            background-color:#d8d8d8; padding:3px 5px 2px 3px; border-bottom:1px solid silver; font-variant:small-caps
+        }
+        #filetable th.header{
+            background-color:#FFFFFF; padding:3px 5px 2px 3px; border-bottom:1px solid silver; font-variant:small-caps; height:30px; vertical-align:bottom
+        }
+        #filetable tr{
+            border:1px solid silver
+        }
+        #filetable td{
+            vertical-align:middle; padding:2px;border-bottom:1px solid silver
+        }
+        #filetable tr:hover{
+            background-color:silver
+        }
+        #filetable a{
+            color:#000000; padding:1px:margin:0px
+        }
+        td.silver{
+            background-color:#efefef
+        }
+    </style>
     <br/>
     <tal:block tal:condition="python:update_error">
         <p class="error" i18n:translate="file_processingerror">TEXT</p>
     </tal:block>
         
     <form method="post" tal:condition="python:len(files)>0">
-        <table class="files">
+        <table id="filetable" cellpadding="0px" cellspacing="0px">
+            <tr><th colspan="5" class="header" i18n:translate="edit_files_files">TEXT</th></tr>
             <tr>
                 <th i18n:translate="edit_files_type">TEXT</th>
                 <th i18n:translate="edit_files_size">TEXT</th>
@@ -20,8 +60,8 @@
                 <th i18n:translate="edit_files_options">TEXT</th>
              </tr>
 
-            <tr tal:repeat="file files">
-                <tal:block tal:condition="python:user.isAdmin() or file.type!='statistic'">
+            <tr tal:repeat="file python:files">
+                <tal:block tal:condition="python:file.type!='attachment' and (user.isAdmin() or file.type!='statistic')">
                 <td tal:content="python:file.type"/>
                 <td tal:content="python:file.getSize()"/>
                 <td tal:content="python:file.mimetype"/>
@@ -31,6 +71,58 @@
                 <td style="text-align:center"><input tal:condition="python:file.type not in ['original', 'image']" tal:attributes="name python:'del|'+file.type+'|'+file.getName()" type="image" src="/img/delete.png" onclick="return questionDelName('')"/>&nbsp;</td>
                 </tal:block>
             </tr>
+            
+            <tal:block tal:condition="python:len(attfiles)>0">
+            <tr><th colspan="5" class="header" i18n:translate="edit_files_attachments">TEXT</th></tr>
+            <tr>
+                <th i18n:translate="edit_files_type">TEXT</th>
+                <th i18n:translate="edit_files_size">TEXT</th>
+                <th i18n:translate="edit_files_mimetype">TEXT</th>
+                <th i18n:translate="edit_files_location">TEXT</th>
+                <th i18n:translate="edit_files_options">TEXT</th>
+            </tr>
+            <tr tal:repeat="file attfiles">
+                <td tal:content="python:file.type"/>
+                <td tal:content="python:file.getSize()"/>
+                <td tal:content="python:file.mimetype"/>
+                <td>
+                    <a tal:condition="python:file.getSize()>0" tal:attributes="href python:'/file/'+str(node.id)+'/'+file.getName()" tal:content="python:file.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
+                    <b tal:condition="python:file.getSize()==0" tal:content="python:file.getName()"/>
+                </td>
+                <td style="text-align:center"><input tal:condition="python:file.type not in ['original', 'image']" tal:attributes="name python:'del|'+file.type+'|'+file.getName()" type="image" src="/img/delete.png" onclick="return questionDelName('')"/>&nbsp;</td>
+            </tr>
+            <tr tal:repeat="file att">
+                <td tal:content="python:' - '+file.type"/>
+                <td tal:content="python:file.getSize()"/>
+                <td tal:content="python:file.mimetype"/>
+                <td>
+                    <a tal:condition="python:file.getSize()>0" tal:attributes="href python:'/attfile/'+str(node.id)+'/'+file._path" tal:content="python:file.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
+                    <b tal:condition="python:file.getSize()==0" tal:content="python:file.getName()"/>
+                </td>
+                <td style="text-align:center"><input tal:condition="python:file.type not in ['original', 'image']" tal:attributes="name python:'delatt|'+file.type+'|'+file.getName()" type="image" src="/img/delete.png" onclick="return questionDelName('')"/>&nbsp;</td>
+            </tr>
+            </tal:block>
+            
+            <tal:block tal:condition="python:len(statfiles)>0">
+            <tr><th colspan="5" class="header" i18n:translate="edit_files_stats">TEXT</th></tr>
+            <tr>
+                <th i18n:translate="edit_files_type">TEXT</th>
+                <th i18n:translate="edit_files_size">TEXT</th>
+                <th i18n:translate="edit_files_mimetype">TEXT</th>
+                <th i18n:translate="edit_files_location">TEXT</th>
+                <th i18n:translate="edit_files_options">TEXT</th>
+            </tr>
+            <tr tal:repeat="file statfiles">
+                <td tal:content="python:file.type"/>
+                <td tal:content="python:file.getSize()"/>
+                <td tal:content="python:file.mimetype"/>
+                <td>
+                    <a tal:attributes="href python:'/file/'+str(node.id)+'/'+file.getName()" tal:content="python:file.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
+                </td>
+                <td style="text-align:center"><input tal:condition="python:file.type not in ['original', 'image']" tal:attributes="name python:'del|'+file.type+'|'+file.getName()" type="image" src="/img/delete.png" onclick="return questionDelName('')"/>&nbsp;</td>
+            </tr>  
+            </tal:block>
+            
         </table>
         <input type="hidden" name="operation" value="delete"/>
     </form>
@@ -39,23 +131,40 @@
     <form method="post" enctype="multipart/form-data">
         <b><tal:block i18n:translate="edit_files_change"/>:</b>
         <p>
-            <input type="radio" name="change_file" value="yes"/><tal:block i18n:translate="edit_files_change"/>
+            <input type="radio" name="change_file" value="yes" checked="checked" onclick="setInput('')" style="border:1px solid white"/><tal:block i18n:translate="edit_files_change"/>
             <br/>
-            <input type="radio" name="change_file" value="no" checked="checked"/><tal:block i18n:translate="edit_files_add_obj"/>
+            <input type="radio" name="change_file" value="no" onclick="setInput('')" style="border:1px solid white"/><tal:block i18n:translate="edit_files_add_obj"/>
+            <br/>
+            <input type="radio" name="change_file" value="attdir" onclick="setInput('dir')" style="border:1px solid white"/><tal:block i18n:translate="edit_files_add_attdir"/>
+            <br/>
+            <input type="radio" name="change_file" value="attfile" onclick="setInput('')" style="border:1px solid white"/><tal:block i18n:translate="edit_files_add_attfile"/>
             <br/>
         </p>
         <p>
-            <input name="updatefile" type="file" size="50"/>
+            <span id="inputname" style="display:none"><tal:block i18n:translate="edit_files_dirname"/> <input type="text" name="inputname" size="60"/></span>
+            <br/>
+            <span id="updatefile">Datei wählen: <input name="updatefile"  type="file" size="50"/></span>
         </p>
         <p>
             <button i18n:attributes="title edit_upload_upload_label" i18n:translate="edit_upload_upload_label" type="submit" name="addfile" value="submit">TEXT</button>
         </p>
         <input type="hidden" name="operation" value="change"/>
+        <script>
+            function setInput(item){
+                if(item=="dir"){
+                    document.getElementById('inputname').style.display = 'block';
+                    
+                }else{
+                    document.getElementById('inputname').style.display = 'none';
+                }
+            
+            }
+        </script>
     </form>
 
     <hr/>
     <form method="post" enctype="multipart/form-data">
-        <b>Thumbnail neu hochladen:</b>
+        <b i18n:translate="edit_files_addthumbnail">TEXT</b>
         <p>
             <input name="updatefile" type="file" size="50"/>
         </p>

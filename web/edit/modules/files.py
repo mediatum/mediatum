@@ -27,12 +27,11 @@ import core.config as config
 import logging
 import core.acl as acl
 from utils.utils import getMimeType
-from utils.fileutils import importFile, getImportDir
+from utils.fileutils import importFile, getImportDir, importFileIntoDir
 from contenttypes.image import makeThumbNail, makePresentationFormat
 
 
 def getContent(req, ids):
-    
     user = users.getUserFromRequest(req)
     node = tree.getNode(ids[0])
     update_error = False
@@ -49,10 +48,33 @@ def getContent(req, ids):
                     filename = key[4:-2].split("|")
                     for file in node.getFiles():
                         if file.getName()==filename[1] and file.type==filename[0]:
+                            # remove all files in directory
+                            if file.getMimeType()=="inode/directory":
+                                for root, dirs, files in os.walk(file.retrieveFile()):
+                                    for name in files:
+                                        try:
+                                            os.remove(root+"/"+name)
+                                        except:
+                                            pass
+                                    os.removedirs(file.retrieveFile()+"/")
+                            # remove single file
                             node.removeFile(file)
+                            try:
+                                os.remove(file.retrieveFile())
+                            except:
+                                pass
                             break
                     break
-                    
+                elif key.startswith("delatt|"):
+                    for file in node.getFiles():
+                        if file.getMimeType()=="inode/directory":
+                            try:
+                                os.remove(file.retrieveFile()+"/"+key.split("|")[2][:-2])
+                            except:
+                                pass
+                            break
+                    break
+
         elif op=="change":
             uploadfile = req.params.get("updatefile")
 
@@ -64,9 +86,42 @@ def getContent(req, ids):
                             if os.path.exists(f.retrieveFile()): # delete file from disc
                                 os.remove(f.retrieveFile())
 
-                file = importFile(uploadfile.filename, uploadfile.tempname) # add new file
-                node.addFile(file)
-                logging.getLogger('usertracing').info(user.name+" changed file of node "+node.id+" to "+uploadfile.filename+" ("+uploadfile.tempname+")")
+                if req.params.get("change_file") in ["yes", "no"]:
+                    file = importFile(uploadfile.filename, uploadfile.tempname) # add new file
+                    node.addFile(file)
+                    logging.getLogger('usertracing').info(user.name+" changed file of node "+node.id+" to "+uploadfile.filename+" ("+uploadfile.tempname+")")
+                    
+                attpath = ""
+                for f in node.getFiles():
+                    if f.getMimeType()=="inode/directory":
+                        attpath = f.getName()
+                        break
+
+                if req.params.get("change_file")=="attdir": # add attachmentdir
+                    dirname = req.params.get("inputname")
+
+                    if attpath=="": # add attachment directory
+                        attpath = req.params.get("inputname")
+                        if not os.path.exists(getImportDir() + "/" + attpath):
+                            os.mkdir(getImportDir() + "/" + attpath)
+                            node.addFile(tree.FileNode(name=getImportDir() + "/" + attpath, mimetype="inode/directory", type="attachment"))
+
+                        file = importFileIntoDir(getImportDir() + "/" + attpath, uploadfile.tempname) # add new file
+                    pass
+                
+                
+                if req.params.get("change_file")=="attfile": # add file as attachment
+                    if attpath=="":
+                        # no attachment directory existing
+                        file = importFile(uploadfile.filename, uploadfile.tempname) # add new file
+                        file.mimetype = "inode/file"
+                        file.type = "attachment"
+                        node.addFile(file)
+                    else:
+                        # import attachment file into existing attachment directory
+                        file = importFileIntoDir(getImportDir() + "/" + attpath, uploadfile.tempname) # add new file
+                    pass
+
             
         elif op=="addthumb": # create new thumbanil from uploaded file
             uploadfile = req.params.get("updatefile")
@@ -99,5 +154,23 @@ def getContent(req, ids):
                 except "PostprocessingError":
                     update_error = True
             
-    return req.getTAL("web/edit/modules/files.html", {"id":req.params.get("id","0"), "tab":req.params.get("tab", ""), "node":node, "update_error":update_error, "user":user}, macro="edit_files_file")    
+    v = {}
+    v["id"] = req.params.get("id","0")
+    v["tab"] = req.params.get("tab", "")
+    v["node"] = node
+    v["update_error"] = update_error
+    v["user"] = user
+    
+    v["files"] = filter(lambda x: x.type!='statistic', node.getFiles())
+    v["statfiles"] = filter(lambda x: x.type=='statistic', node.getFiles())
+    v["attfiles"] = filter(lambda x: x.type=='attachment', node.getFiles())
+    v["att"] = []
+    for f in v["attfiles"]: # collect all files in attachment directory
+        if f.getMimeType()=="inode/directory":
+            for root, dirs, files in os.walk(f.retrieveFile()):
+                for name in files:
+                    af = tree.FileNode(root+"/"+name, "attachmentfile", getMimeType(name)[0])
+                    v["att"].append(af)
+
+    return req.getTAL("web/edit/modules/files.html", v, macro="edit_files_file")    
     

@@ -145,7 +145,7 @@
 
 
 <metal:block metal:define-macro="build_tree">
-    <a tal:attributes="name python:'node'+id"/>
+    <a tal:attributes="name python:id"/>
     <div class="line">
         <div tal:attributes="style python:'padding-left:'+str(indent)+'px'" class="name">
             <img tal:condition="python:not current" tal:attributes="id python:'img'+id" src="/img/mark_empty.png"/> 

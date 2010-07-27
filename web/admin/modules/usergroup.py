@@ -160,7 +160,7 @@ def editGroup_mask(req, id, err=0):
     if err==0 and id=="":
         # new usergroup
         group = tree.Node("", type="usergroup")
-        
+        newusergroup = 1
     elif id!="":
         #edit usergroup
         group = getGroup(id)

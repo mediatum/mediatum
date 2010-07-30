@@ -145,7 +145,7 @@
 
 
 <metal:block metal:define-macro="build_tree">
-    <a tal:attributes="name python:id"/>
+    <a tal:attributes="name python:'node'+id"/>
     <div class="line">
         <div tal:attributes="style python:'padding-left:'+str(indent)+'px'" class="name">
             <img tal:condition="python:not current" tal:attributes="id python:'img'+id" src="/img/mark_empty.png"/> 
@@ -227,9 +227,9 @@
             </p>
             <div style="margin:5px;border:1px solid silver;padding: 4px;overflow-x:auto;">
                 <tal:block tal:condition="python: notdirectory==1">
-                    <script language="text/javascript">
-                        function fullSizeWindow(id,width,height){
-                            var win1 = window.open('/fullsize?id='+id,'fullsize','width='+width+',height='+height+',directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=1'); 
+                    <script>
+                        function Thumb2Window(id){
+                            var win1 = window.open('/thumbbig?id='+id,'thumbbig','width=100,height=100,directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=1');
                             win1.focus();
                         }
                     </script>

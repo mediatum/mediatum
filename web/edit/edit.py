@@ -546,7 +546,7 @@ def content(req):
                 node = tree.getNode(id)
                 if hasattr(node, "show_node_image"):
                     if not isDirectory(node) and not node.isContainer():
-                        items.append(('javascript:fullSizeWindow(\''+id+'\',\''+str(node.get("width"))+'\',\''+str(node.get("height"))+'\')', node.show_node_image()))
+                        items.append(('javascript:Thumb2Window(\''+id+'\')', node.show_node_image()))
                     else:
                         items.append(("",node.show_node_image()))
         v["items"] = items

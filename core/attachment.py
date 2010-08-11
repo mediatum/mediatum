@@ -49,7 +49,10 @@ def filebrowser(node, req):
                 file["icon"] = fileicons[file["mimetype"]]
                 file["path"] = path
                 file["name"] = f.getName()
-                size = os.path.getsize(config.get("paths.datadir")+path) or 0
+                if os.path.exists(config.get("paths.datadir")+path):
+                    size = os.path.getsize(config.get("paths.datadir")+path)
+                else:
+                    size = 0
                 file["size"] = format_filesize(size)
                 filesize += int(size)
                 files.append(file)

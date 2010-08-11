@@ -49,8 +49,9 @@ def filebrowser(node, req):
                 file["icon"] = fileicons[file["mimetype"]]
                 file["path"] = path
                 file["name"] = f.getName()
-                file["size"] = format_filesize(os.path.getsize(config.get("paths.datadir")+path))
-                filesize += int(os.path.getsize(config.get("paths.datadir")+path))
+                size = os.path.getsize(config.get("paths.datadir")+path) or 0
+                file["size"] = format_filesize(size)
+                filesize += int(size)
                 files.append(file)
        
         return files, filesize
@@ -66,7 +67,8 @@ def filebrowser(node, req):
                 file["icon"] = fileicons[file["mimetype"]]
                 file["path"] = f._path
                 file["name"] = f.getName()
-                file["size"] = format_filesize(f.getSize())
+                size = f.getSize() or 0
+                file["size"] = format_filesize(size)
                 filesize += f.getSize()
                 ret.append(file)
         return ret, filesize

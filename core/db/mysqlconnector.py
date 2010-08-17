@@ -330,9 +330,11 @@ class MYSQLConnector(Connector):
      
     def getDBSize(self):
         l = 0
-        for table in self.runQueryNoError("SHOW TABLE STATUS"):
-            l+= int(table[6])
-            l+= int(table[8])
-            
+        for table in self.runQuery("SHOW TABLE STATUS"):
+            if table[6]:
+                l+= int(table[6])
+            if table[8]:
+                l+= int(table[8])
+
         return int(l)
  

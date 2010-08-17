@@ -210,7 +210,7 @@ def show_shoppingbag(req, msg=""):
     v["user"] = user
     v["msg"] = msg
 
-    req.writeTAL(ttheme.getTemplate("shoppingbag.html"), v, macro="shoppingbag")
+    req.writeTAL(theme.getTemplate("shoppingbag.html"), v, macro="shoppingbag")
     return athana.HTTP_OK
     
 def export_shoppingbag(req):

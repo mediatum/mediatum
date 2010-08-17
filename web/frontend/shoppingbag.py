@@ -37,6 +37,9 @@ FOOTER_HEIGHT=0
 
 def shoppingbag_action(req):
 
+    if "clearall" in req.params.keys():
+        req.session["shoppingbag"] = []
+        
     if "action" in req.params:
         if req.params.get("action")=="add": # add item in shoppingbag
             put_into_shoppingbag(req)
@@ -72,10 +75,7 @@ def shoppingbag_action(req):
                     msg = "error, bag not found."
                 show_shoppingbag(req, msg)
                 return
-
-            if "clearall" in req.params.keys():
-                req.session["shoppingbag"] = []
-                
+ 
             for key in req.params.keys():
                 
                 if key.startswith("load_"):

@@ -96,8 +96,12 @@ def getContent(req, ids):
                 _schemes.append(scheme)
         schemes = _schemes
         schemes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(),translate(y.getLongName(), request=req).lower()))
+    
+    script = """<script>
+        parent.reloadTree('"""+req.params.get("id")+"""');
+    </script>"""
 
-    return req.getTAL("web/edit/modules/upload.html",{"id":req.params.get("id"),"datatypes":dtypes, "schemes":schemes, "objtype":objtype, "error":error},macro="upload_form") + showdir(req, uploaddir)
+    return req.getTAL("web/edit/modules/upload.html",{"id":req.params.get("id"),"datatypes":dtypes, "schemes":schemes, "objtype":objtype, "error":error, "script":script},macro="upload_form") + showdir(req, uploaddir)
 
 
 # differs from os.path.split in that it handles windows as well as unix filenames

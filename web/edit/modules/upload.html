@@ -10,9 +10,7 @@
 
     
     <tal:block tal:condition="python:len(schemes)!=0">
-        <script>
-            parent.reloadTree('');
-        </script>
+        <tal:block tal:content=" raw script"/>
 
         <!-- first step: object selection -->
         <form tal:condition="python:objtype=='' and len(schemes)!=0" tal:attributes="action python:'/edit/edit_content?id='+id" method="post" style="margin:5px">

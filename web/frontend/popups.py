@@ -23,6 +23,7 @@ import core.config as config
 
 from core.tree import getNode
 from web.frontend import shoppingbag
+from web.edit.edit import printmethod
 from schema.schema import getMetaType, getMetadataType
 from lib.pdf import printview
 from utils.log import logException
@@ -100,11 +101,24 @@ def getPrintChildren(req, node, ret):
     
     
 def show_printview(req):
-    """ create a pdf preview of given node (id in path e.g. /print/[id])"""  
+    """ create a pdf preview of given node (id in path e.g. /print/[id]/[area])"""  
+    p = req.path[1:].split("/")
+
     try:
-        nodeid = int(req.path[1:].split("/")[1])
+        nodeid = int(p[1])
     except ValueError:
         raise ValueError("Invalid Printview URL: "+req.path)
+        
+    if len(p)==3:
+        if p[2]=="edit":
+            req.reply_headers['Content-Type'] = "application/pdf"
+            editprint = printmethod(req)
+            if editprint:
+                req.write(editprint)
+            else:
+                req.write("")
+            return
+        
     
     # use objects from session
     if nodeid=="0":
@@ -124,8 +138,10 @@ def show_printview(req):
                 if len(_c)>0:
                     children.append(_c)
     
+
         req.reply_headers['Content-Type'] = "application/pdf"
         req.write(printview.getPrintView(lang(req), None, [["", "", t(lang(req), "")]], [], 3, children))
+       
 
     else:    
         node = getNode(nodeid) 

@@ -456,11 +456,16 @@ class Image(default.Default):
         if (not access.hasAccess(node, "data") and not dozoom(node)) or not access.hasAccess(node,"read"):
             req.write(t(req, "permission_denied"))
             return
+        zoom_exists = 0
+        for file in node.getFiles():
+            if file.getType()=="zoom":
+                zoom_exists = 1
+                break
 
         d = {}
         d["key"] = req.params.get("id", "")
         # we assume that width==origwidth, height==origheight
-        d['flash'] = dozoom(node)
+        d['flash'] = dozoom(node) and zoom_exists
         d['tileurl'] = "/tile/"+node.id+"/"
         req.writeTAL("contenttypes/image.html", d, macro="imageviewer")
         

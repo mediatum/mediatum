@@ -231,7 +231,7 @@ def WorkflowDetail(req, id, err=0):
         v["original_name"] = req.params.get("orig_name","")
         workflow.id = req.params.get("id")
 
-    rule = {"read":workflow.getAccess("read").split(","), "write": workflow.getAccess("write").split(",")}
+    rule = {"read":str(workflow.getAccess("read") or "").split(","), "write": str(workflow.getAccess("write") or "").split(",")}
 
     v["acl_read"] =  makeList(req, "read", removeEmptyStrings(rule["read"]), {}, overload=0, type="read")  
     v["acl_write"] =  makeList(req, "write", removeEmptyStrings(rule["write"]), {}, overload=0, type="write") 

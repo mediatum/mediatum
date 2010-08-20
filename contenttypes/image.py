@@ -49,7 +49,7 @@ def makeThumbNail(image, thumb):
     tmpjpg = config.get("paths.datadir")+"tmp/img"+str(random.random())+".jpg"
     
     if pic.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
-        os.system("convert -quality 100 -fill #fffffe -draw \"rectangle 0,0 1,1\" %s %s" %(image, tmpjpg)) #always get a rgb image
+        os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" %(image, tmpjpg)) #always get a rgb image
         pic = Image.open(tmpjpg)
 
     try:
@@ -91,7 +91,7 @@ def makePresentationFormat(image, thumb):
     pic = Image.open(image)
     tmpjpg = config.get("paths.datadir")+"tmp/img"+str(random.random())+".jpg"
     if pic.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
-        os.system("convert -quality 100 -fill #fffffe -draw \"rectangle 0,0 1,1\" %s %s" %(image, tmpjpg))
+        os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" %(image, tmpjpg))
         pic = Image.open(tmpjpg)
         
     try:
@@ -125,7 +125,7 @@ def makeOriginalFormat(image, thumb):
     pic = Image.open(image)
     if pic.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
     #if image.endswith("jpg") or image.endswith("jpeg"):
-        os.system("convert -quality 100 -fill #fffffe -draw \"rectangle 0,0 1,1\" %s %s" %(image, tmpjpg))
+        os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" %(image, tmpjpg))
         pic = Image.open(tmpjpg)
         
     try:
@@ -213,7 +213,6 @@ class Image(default.Default):
                 tif = "file/"+str(node.id)+"/"+node.get("archive_path")
                 
         files, sum_size = filebrowser(node, req)
-        print "\n\n->Files:", files, sum_size, "\n\n"
 
         obj = {}
         obj['path'] = req and req.params.get("path","") or ""
@@ -226,6 +225,8 @@ class Image(default.Default):
         obj['tileurl'] = "/tile/"+node.id+"/"
         obj['canseeoriginal'] = access.hasAccess(node,"data")
         obj['originallink'] = "getArchivedItem('"+str(node.id)+"/"+tif+"')"
+        obj['archive'] = node.get('archive_type')
+        
         
         if "style" in req.params.keys():
             req.session["full_style"] = req.params.get("style", "full_standard")

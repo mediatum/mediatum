@@ -748,3 +748,9 @@ def showtree(req):
 
     req.writeTAL("web/edit/edit.html", {"script":"var currentfolder = '"+currentid+"'", "scrollid":scrollid, "content":content}, macro="frame_tree")
 
+
+def printmethod(req):
+    getEditModules()
+    if req.params.get("module") in editModules.keys():
+        mod = editModules[req.params.get("module")]
+        return mod.getPrintView(req)

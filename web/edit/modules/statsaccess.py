@@ -271,7 +271,7 @@ class StatsAccessPDF:
                         weekend.append(('BACKGROUND', (k-1,0), (k-1,-1), colors.HexColor('#E6E6E6')))
                     t_data.append('%02d \n%s' %(k, t(self.language, "monthname_"+str(int(self.period[-2:]))+"_short")))
 
-            tb = Table([t_data], 31*[17], 30)
+            tb = Table([t_data], len(t_data)*[17], 30)
             tb.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'),
                     ('ALIGN',(0,0), (-1,-1), 'CENTER'),
                     ('INNERGRID', (0,0), (-1,-1), 1, colors.black),

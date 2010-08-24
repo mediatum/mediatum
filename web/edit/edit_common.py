@@ -222,7 +222,7 @@ def shownodelist(req, nodes, publishwarn=1, markunpublished=0, dir=None):
             uploaddir = dir
         else:
             uploaddir = getUploadDir(user)
-        unpublishedlink = "edit?tab=tab_publish&id="""+uploaddir.id;
+        unpublishedlink = "edit?tab=publish&id="""+uploaddir.id;
 
     return req.getTAL("web/edit/edit_common.html", {"notpublished": notpublished, "chkjavascript": chkjavascript, "unpublishedlink": unpublishedlink, "nodelist":nodelist, "script_array":script_array}, macro="show_nodelist")
 

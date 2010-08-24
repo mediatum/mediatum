@@ -2513,7 +2513,7 @@ msgstr "Dirty-Flag"
 msgid "edit_localread"
 msgstr "Localread-Flag"
 
-msgid "edit_clearformcache"
+msgid "edit_clearfromcache"
 msgstr "Clear node from cache"
 
 ### edit frontendparts ###

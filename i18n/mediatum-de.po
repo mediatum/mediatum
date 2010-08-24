@@ -2634,6 +2634,9 @@ msgstr "Attributwert:"
 msgid "edit_admin_add_attr"
 msgstr "Speichern"
 
+msgid "edit_clearformcache"
+msgstr "Knoten aus Cache löschen"
+
 ### classes ###
 msgid "edit_classes_class_title"
 msgstr "Klassifizieren"
@@ -3152,6 +3155,12 @@ msgstr "OK"
 
 msgid "edit_publish_cancel"
 msgstr "Abbrechen"
+
+msgid "edit_stats_header"
+msgstr "Zugriffsstatistik für Kollektion"
+
+msgid "edit_stats_pages_of"
+msgstr "Seite %s von %s"
 
 msgid "edit_stats_period_header"
 msgstr "Berichtszeitraum"

@@ -2513,6 +2513,9 @@ msgstr "Dirty-Flag"
 msgid "edit_localread"
 msgstr "Localread-Flag"
 
+msgid "edit_clearformcache"
+msgstr "Clear node from cache"
+
 ### edit frontendparts ###
 msgid "item_type_intern"
 msgstr "html page"
@@ -3126,6 +3129,12 @@ msgstr "OK"
 
 msgid "edit_publish_cancel"
 msgstr "Cancel"
+
+msgid "edit_stats_header"
+msgstr "Access Statistics for Collection"
+
+msgid "edit_stats_pages_of"
+msgstr "page %s of %s"
 
 msgid "edit_stats_period_header"
 msgstr "Report Period"

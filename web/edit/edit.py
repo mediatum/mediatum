@@ -35,10 +35,6 @@ from core.acl import AccessData
 from utils.utils import Link, isCollection, Menu, getFormatedString, splitpath, parseMenuString
 
 from edit_common import *
-#from edit_search import edit_search
-#from edit_sort import edit_sort
-#from edit_searchmask import edit_searchmask
-#from edit_publish import edit_publish
 from core.translation import lang, t
 from edit_common import EditorNodeList
 from core.datatypes import loadAllDatatypes

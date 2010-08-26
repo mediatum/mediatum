@@ -41,7 +41,7 @@
 </metal:block>
 
 
-<form metal:define-macro="publish_form" tal:attributes="action python:'/edit/edit_content?id='+str(id)+'&tab=tab_publish'" method="post" style="margin:5px" name="publishform">
+<form metal:define-macro="publish_form" tal:attributes="action python:'/edit/edit_content?id='+str(id)+'&tab=publish'" method="post" style="margin:5px" name="publishform">
     <script>
         function returnvalues(ids, values){
             var obj = document.getElementById("destination");
@@ -52,7 +52,7 @@
     </script>
     <h3 i18n:translate="edit_publish_header">TEXT</h3>
     <p i18n:translate="edit_publish_info">TEXT</p>
-    <div style="width: 200px" class="button" tal:attributes="onclick python:'openWindow(\'edit_action?id='+id+'&tab=tab_publish&style=popup\', 300, 250)'" i18n:translate="edit_publish_button_select">TEXT</div>
+    <div style="width: 200px" class="button" tal:attributes="onclick python:'openWindow(\'edit_action?id='+id+'&tab=publish&style=popup\', 300, 250)'" i18n:translate="edit_publish_button_select">TEXT</div>
     <br/>
     <br/>
     <span i18n:translate="edit_publish_dirs">TEXT</span>

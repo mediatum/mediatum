@@ -631,7 +631,7 @@ def buttons(req):
         node = tree.getNode(req.params.get("id"))
         
     if not node:
-        dirtype = ""
+        dirtype = "%s/%s:" %(t(req, "collection"), t(req, "directory"))
         newcoll = None
         newdir = None
     elif isCollection(node):

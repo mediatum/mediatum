@@ -2262,10 +2262,10 @@ msgid "edit_action_file_delete"
 msgstr "Delete"
 
 msgid "edit_add_folder"
-msgstr "Add Folder"
+msgstr "New Folder"
 
 msgid "edit_add_collection"
-msgstr "Add Collection"
+msgstr "New Collection"
 
 msgid "edit_action_file_edit"
 msgstr "Simultaneous editing"

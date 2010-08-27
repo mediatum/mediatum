@@ -333,10 +333,10 @@ msgid "Directory"
 msgstr "directory (system type)"
 
 msgid "directory"
-msgstr "directory"
+msgstr "Directory"
 
 msgid "collection"
-msgstr "collection"
+msgstr "Collection"
 
 msgid "WorkflowStep_End"
 msgstr "end node (workflow)"

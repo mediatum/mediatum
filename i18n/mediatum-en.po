@@ -208,6 +208,15 @@ msgstr "Start search"
 msgid "search"
 msgstr "Search"
 
+msgid "search_or"
+msgstr "or"
+
+msgid "search_and"
+msgstr "and"
+
+msgid "search_between"
+msgstr "between"
+
 msgid "xsearch"
 msgstr "Advanced search"
 

@@ -23,21 +23,29 @@ import sys
 import utils.date as date
 import logging
 from core.acl import AccessData
-from core.translation import lang
+from core.translation import lang, translate
 from utils.utils import intersection,getAllCollections
 from core.tree import subnodes, searcher
 from core.styles import theme
 
 class SearchResult:
     def __init__(self, resultlist, query, collections=[]):
-        self.resultlist = resultlist
+        print "build Searchresult"
         self.query = query
         self.collections = collections
         self.active = -1
-        for result in resultlist:
-            result.parent = self
-
+        self.error = 0
+        
+        if resultlist==None:
+            self.resultlist = []
+            self.error = 1
+        else:
+            self.resultlist = resultlist
+            for result in resultlist:
+                result.parent = self
+            
     def feedback(self,req):
+        print "seachresult feedback"
         if "scoll" in req.params:
             id = req.params["scoll"]
             for nr in range(len(self.resultlist)):
@@ -60,6 +68,10 @@ class SearchResult:
         return []
 
     def html(self,req):
+        print self.resultlist
+        if self.error>0:
+            return req.getTAL(theme.getTemplate("searchresult.html"), {"query":self.query, "r":self, "collections":self.collections, "language":lang(req)}, macro="error")
+            
         if self.active<0:
             if len(self.resultlist)==0:
                 return req.getTAL(theme.getTemplate("searchresult.html"), {"query":self.query, "r":self, "collections":self.collections, "language":lang(req)}, macro="noresult")
@@ -102,38 +114,39 @@ def simple_search(req):
             collections.append(collection)
 
     num = 0
-    if  req.params.get("act_node",None) and tree.getNode(req.params.get("act_node")).getContentType()!="collections":
-        # actual node is a collection or directory
-        result = tree.getNode(req.params.get("act_node")).search('full='+q)
-        result = access.filter(result)
-        num += len(result)
-        if len(result)>0:
-            cl = ContentList(result, collection, words)
-            cl.feedback(req)
-            cl.linkname = "Suchergebnis"
-            cl.linktarget = ""
-            res.append(cl)
-    else:
-        # actual node is collections-node
-        for collection in collections:
-            result = collection.search('full='+q)
+    logging.getLogger('usertracing').info(access.user.name + " search for '"+q+"', "+str(num)+" results")
+    try:
+        if  req.params.get("act_node",None) and tree.getNode(req.params.get("act_node")).getContentType()!="collections":
+            # actual node is a collection or directory
+            result = tree.getNode(req.params.get("act_node")).search('full='+q)
             result = access.filter(result)
             num += len(result)
-
             if len(result)>0:
                 cl = ContentList(result, collection, words)
                 cl.feedback(req)
                 cl.linkname = "Suchergebnis"
                 cl.linktarget = ""
                 res.append(cl)
+        else:
+            # actual node is collections-node
+            for collection in collections:
+                result = collection.search('full='+q)
+                result = access.filter(result)
+                num += len(result)
 
-    logging.getLogger('usertracing').info(access.user.name + " search for '"+q+"', "+str(num)+" results")
+                if len(result)>0:
+                    cl = ContentList(result, collection, words)
+                    cl.feedback(req)
+                    cl.linkname = "Suchergebnis"
+                    cl.linktarget = ""
+                    res.append(cl)
 
-    if len(res)==1:
-        return res[0]
-    else:
-        return SearchResult(res, q, collections)
-
+        if len(res)==1:
+            return res[0]
+        else:
+            return SearchResult(res, q, collections)
+    except:
+        return SearchResult(None, q, collections)
 
 # method handles all parts of the extended search
 def extended_search(req):
@@ -165,7 +178,8 @@ def extended_search(req):
         
         if not first2:
             q_str += " and "
-            q_user += " and "
+            q_user += " %s " %(translate("search_and", request=req))
+            
         first2 = 0
 
         if not f.isdigit():
@@ -177,11 +191,10 @@ def extended_search(req):
             assert masknode.type == "searchmaskitem"
             first = 1
             q_str += "("
-            q_user += "("
             for metatype in masknode.getChildren():
                 if not first:
                     q_str += " or "
-                    q_user += " or "
+                    q_user += " %s " %(translate("search_or", request=req))
                 first = 0
                 if "query"+str(i)+"-from" in req.params and metatype.getFieldtype()=="date":
                     date_from = "0000-00-00T00:00:00"
@@ -194,32 +207,39 @@ def extended_search(req):
 
                     if date_from=="0000-00-00T00:00:00" and date_to!=date_from: # from value
                         q_str += metatype.getName()+ ' <= '+date_to
-                        q_user += metatype.getName()+ ' <= "'+str(req.params["query"+str(i)+"-to"])+'"'
+                        q_user += "%s &le; \"%s\"" %(metatype.getName(), str(req.params["query"+str(i)+"-to"]))
+                        
                     elif date_to=="0000-00-00T00:00:00" and date_to!=date_from: # to value
                         q_str += metatype.getName()+ ' >= '+date_from
-                        q_user += metatype.getName()+ ' >= "'+str(req.params["query"+str(i)+"-from"])+'"'
+                        q_user += "%s &ge; \"%s\"" %(metatype.getName(), str(req.params["query"+str(i)+"-from"]))
                     else:
                         q_str += '('+metatype.getName()+' >= '+date_from+' and '+metatype.getName()+' <= '+date_to+')'
-                        q_user += '('+metatype.getName()+' zwischen "'+str(req.params["query"+str(i)+"-from"])+'" und '+metatype.getName()+' <= "'+str(req.params["query"+str(i)+"-to"])+'")'
+                        q_user += "(%s %s \"%s\" %s \"%s\")" %(metatype.getName(), translate("search_between", request=req), str(req.params["query"+str(i)+"-from"]), translate("search_and", request=req), str(req.params["query"+str(i)+"-to"]))
                 else:
                     q = req.params.get("query"+str(i),"").strip()
                     q_str += metatype.getName() + '=' + protect(q)
-                    q_user += metatype.getName() + '=' + protect(q)
-            q_str += ")"
-            q_user += ")"
+                    if metatype.getLabel()!="":
+                        q_user += "%s = %s" %(metatype.getLabel(), protect(q))
+                    else:
+                        q_user += "%s = %s" %(metatype.getName(), protect(q))
 
-    if req.params.get("act_node","") and req.params.get("act_node")!=str(collection.id):
-        result = tree.getNode(req.params.get("act_node")).search(q_str)
-    else:
-        result = collection.search(q_str)
-    result = access.filter(result)
-    logging.getLogger('usertracing').info(access.user.name + " xsearch for '"+q_user+"', "+str(len(result))+" results")
-    if len(result)>0:
-        cl = ContentList(result, collection, q_user.strip())
-        cl.feedback(req)
-        cl.linkname = ""
-        cl.linktarget = ""
-        return cl
-    else:
+            q_str += ")"
+
+    try:
+        if req.params.get("act_node","") and req.params.get("act_node")!=str(collection.id):
+            result = tree.getNode(req.params.get("act_node")).search(q_str)
+        else:
+            result = collection.search(q_str)
+    
+        result = access.filter(result)
+        logging.getLogger('usertracing').info(access.user.name + " xsearch for '"+q_user+"', "+str(len(result))+" results")
+        if len(result)>0:
+            cl = ContentList(result, collection, q_user.strip())
+            cl.feedback(req)
+            cl.linkname = ""
+            cl.linktarget = ""
+            return cl
         return SearchResult([],q_user.strip())
+    except:
+        return SearchResult(None,q_user.strip())
 

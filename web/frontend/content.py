@@ -82,7 +82,10 @@ class ContentList(Content):
         self.sortfields = [self.collection.get("sortfield")]*SORT_FIELDS
         if self.sortfields[0]:
             self.files.sort(self.sortfields)
-        self.liststyle = getContentStyles("smallview", self.collection.get("style") or "list")
+        if ";" in self.collection.get("style"):
+            self.liststyle = getContentStyles("smallview", self.collection.get("style").split(";")[0])
+        else:
+            self.liststyle = getContentStyles("smallview", self.collection.get("style") or "list")
 
     def length(self):
         return self.num
@@ -252,7 +255,7 @@ class ContentList(Content):
             i = i + 1
 
         liststyle = req.session.get("liststyle-"+self.collection.id, "") # user/session setting for liststyle?
-        if not liststyle:
+        if not liststyle or liststyle=="":
             # no liststsyle, use collection default
             liststyle = self.liststyle
 
@@ -264,7 +267,6 @@ class ContentList(Content):
         # use template of style and build html content
         contentList = liststyle.renderTemplate(req, {"nav_list":nav_list, "nav_page":nav_page, "act_page":self.page, 
              "files":tal_files, "maxresult":len(self.files), "op":"", "language":lang(req)})
-
         return filesHTML + '<div id="nodes">'+contentList + '</div>' + filesHTML
        
     
@@ -447,7 +449,9 @@ class ContentArea(Content):
     def html(self,req):
         styles = []
         nodeprint = "1" # show print icon
-        styles = self.content.getContentStyles()
+        styles = []
+        if self.content:
+            styles = self.content.getContentStyles()
         #if hasattr(self.content,"in_list") and not (hasattr(self.content,"content") and self.content.content):
         #    styles = getContentStyles("smallview")
         if "raw" in req.params:

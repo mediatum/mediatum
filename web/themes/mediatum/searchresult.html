@@ -1,3 +1,21 @@
+<tal:block metal:define-macro="error">
+    <tal:block tal:condition="python:language=='de'">
+        <br/>
+        <h2>Fehler in Suchanfrage</h2>
+        <p>Ihr(e) Suchbegriff(e) <b>"<tal:block tal:replace="query"/>"</b> ergaben einen Fehler bei Ausf&uuml;hrung der Suche.</p>
+        <br/>
+        <p>Bitte korrigieren Sie Ihre Suchbegriffe und starten Sie die Suche neu.</p>
+    </tal:block>
+    
+    <tal:block tal:condition="python:language=='en'">
+        <br/>
+        <h2>Error in Search query</h2>
+        <p>Your query <b>"<tal:block tal:replace="query"/>"</b> results in an error during execution.</p>
+        <br/>
+        <p>Try different search queries and start a new search.</p>
+    </tal:block>
+</tal:block>
+
 <tal:block metal:define-macro="noresult">
     <tal:block tal:condition="python:language=='de'">
     <br/>

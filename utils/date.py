@@ -50,15 +50,32 @@ class DateTime:
         
     def __str__(self):
         return format_date(self)
+    
     def add(self,seconds):
+
+        def days2month(days, startday, startmonth): # calculate new day, month and year
+            l = [31,28,31,30,31,30,31,31,30,31,30,31]
+            d = days + startday
+            m = startmonth
+            y = 0
+            while d-l[(m-1) % 12]>0:
+                d -= l[(m-1) % 12]
+                m += 1
+                if m>12:
+                    y += 1
+                    m %= 12
+            return d, m, y
+                
         d = DateTime(self.year,self.month,self.day,self.hour,self.minute,self.second)
-        l = [0,31,28,31,30,31,30,31,31,30,31,30,31]
-        d.second += seconds % 60; seconds /= 60
-        d.minute += seconds % 60; seconds /= 60
-        d.hour += seconds % 24; seconds /= 24
-        d.day += seconds % (l[self.month]+1); seconds /= (l[self.month]+1) # no clip years
-        d.month += seconds % 12; seconds /= 12
-        d.year += seconds
+
+        d.second += seconds
+        seconds /= 60; d.second %= 60
+        d.minute += seconds % 60
+        seconds /= 60; d.minute %=60
+        d.hour += seconds % 24
+        seconds /= 24; d.hour %= 24
+        d.day, d.month, _y = days2month(seconds, self.day, self.month)
+        d.year += _y
         return d
 
 def format_date(t=None, format=None):

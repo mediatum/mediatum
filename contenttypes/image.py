@@ -67,7 +67,11 @@ def makeThumbNail(image, thumb):
         newheight = 128
         newwidth = width*newheight/height
     pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
-    im = Image.new(pic.mode, (128, 128), (255, 255, 255))
+    
+    if pic.mode!="RGB":
+        im = Image.new("RGB", (128, 128), (255, 255, 255))
+    else:
+        im = Image.new(pic.mode, (128, 128), (255, 255, 255))
     
     x = (128-newwidth)/2
     y = (128-newheight)/2

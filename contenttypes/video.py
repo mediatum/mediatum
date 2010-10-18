@@ -107,10 +107,13 @@ class Video(default.Default):
                     path,ext = splitfilename(f.retrieveFile())
                     thumbname = path+".thumb"
                     thumbname2 = path+".thumb2"
-                    makeThumbNail(tempname, thumbname)
-                    makePresentationFormat(tempname, thumbname2)
-                    node.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
-                    node.addFile(FileNode(name=thumbname2, type="presentation", mimetype="image/jpeg"))
+                    try:
+                        makeThumbNail(tempname, thumbname)
+                        makePresentationFormat(tempname, thumbname2)
+                        node.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
+                        node.addFile(FileNode(name=thumbname2, type="presentation", mimetype="image/jpeg"))
+                    except:
+                        pass
      
     def isContainer(node):
         return 0

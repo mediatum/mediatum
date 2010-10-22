@@ -222,8 +222,8 @@ def getContent(req, ids):
              # delete file via fck
             send_fckfile(req)
             return ""
-        
-        
+
+            
     user = users.getUserFromRequest(req)
     access = AccessData(req)
     node = tree.getNode(ids[0])
@@ -233,8 +233,8 @@ def getContent(req, ids):
             del req.params[key]
             req.params["add_page"] = ""
             return  edit_editor(req, node, None)
-    
-    if "file_to_edit" in req.params:       
+
+    if "file_to_edit" in req.params and not "save_page" in req.params:
         # edit page
         file_to_edit = req.params.get("file_to_edit", None)
         if not file_to_edit:
@@ -267,9 +267,7 @@ def getContent(req, ids):
                     logging.getLogger('usertracing').error(user.name + " - startpages - error while delete FileNode and file for " + page)
                     logging.getLogger('usertracing').error("%s - %s" % ( sys.exc_info()[0], sys.exc_info()[1]))
                 break
-    
-    
-    
+
         # save page
         if "save_page" in req.params:
             content = ""
@@ -277,12 +275,13 @@ def getContent(req, ids):
                 if key.startswith("file_content_"):
                     content = req.params.get(key, "")
                     break
-            
+                    
             fi = open(req.params.get('file_path'), "w")
             fi.writelines(content)
             fi.close()
             
             del req.params['save_page']
+            del req.params['file_to_edit']
             req.params['tab'] = 'startpages'
             return getContent(req, [node.id])
         

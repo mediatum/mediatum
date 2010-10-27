@@ -31,5 +31,5 @@ class WorkflowStep_End(WorkflowStep):
             node.setDirty()
         except:
             pass
-        #pass
-        #self.removeChild(node)
+        if len(node.getParents())>1:
+            self.removeChild(node)

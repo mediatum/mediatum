@@ -359,8 +359,7 @@ class WorkflowImage:
         for i in range(self.maxx+1):
             for j in range(self.maxy+1):
                 line += str(self.m[i][j]) + "  "
-            print line
-            line = ""         
+            line = ""
 
     """ draw each step and return image (png) """
     def getImage(self):
@@ -586,7 +585,6 @@ class Workflows(tree.Node):
         for workflow in getWorkflowList():
             if access.hasWriteAccess(workflow):
                 list += [workflow]
-
         return req.getTAL(template, {"list":list, "search":req.params.get("workflow_search", ""), "items":workflowSearch(list, req.params.get("workflow_search", ""), access),"getStep": getNodeWorkflowStep,"format_date": formatItemDate}, macro=macro)
 
     def isContainer(node):
@@ -704,7 +702,8 @@ class WorkflowStep(tree.Node):
                     (key != node.get("key")): # no permission
 
                     link = '('+self.name+')'
-                    
+                    #access = acl.AccessData(req)
+                    #return req.getTAL(template, {"workflow":self.getParents()[0], "list":[], "access":access, "search":req.params.get("workflow_search", ""), "items":workflowSearch([node], req.params.get("workflow_search", ""), access), "node": node, "link":link, "email":config.get("email.workflow")}, macro=macro)
                     return req.getTAL(template, {"node": node, "link":link, "email":config.get("email.workflow")}, macro=macro)
 
                 present = 0

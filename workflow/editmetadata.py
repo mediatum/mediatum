@@ -34,7 +34,6 @@ class WorkflowStep_EditMetadata(WorkflowStep):
         if "metaDataEditor" in req.params:
             mask.updateNode([node], req)
             missing = mask.validate([node])
-            print "datum:",  mask.validate([node])
             if not missing or "gofalse" in req.params:
                 op = "gotrue" in req.params
                 return self.forwardAndShow(node, op, req)

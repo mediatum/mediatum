@@ -37,6 +37,8 @@ class m_list(Metatype):
             items = n.getAllAttributeValues(context.field.getName(), context.access)
         except tree.NoSuchNodeError:
             None
+            
+        value = context.value.split(";")
 
         for val in context.field.getValueList():
             indent = 0
@@ -71,6 +73,8 @@ class m_list(Metatype):
 
             if not canbeselected:
                 valuelist.append(("optgroup", "<optgroup label=\""+indentstr+val+"\">","", ""))
+            elif (val in value):
+                valuelist.append(("optionselected", indentstr, val, num))
             else:
                 valuelist.append(("option", indentstr, val, num))
         return valuelist

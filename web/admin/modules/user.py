@@ -307,7 +307,7 @@ def sendmailUser_mask(req, id, err=0):
     x["isEditor"] = user.isEditor()
     x["collections"] = list()
     g = user.getGroups()
-    g = .sort(lambda x, y: cmp(x, y))
+    g.sort(lambda x, y: cmp(x, y))
     x["groups"] = g
     x["language"] = lang(req)
     c = collections

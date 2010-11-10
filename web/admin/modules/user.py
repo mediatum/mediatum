@@ -306,9 +306,13 @@ def sendmailUser_mask(req, id, err=0):
     x["login"] = user.getName()
     x["isEditor"] = user.isEditor()
     x["collections"] = list()
-    x["groups"] = user.getGroups().sort(lambda x, y: cmp(x, y))
+    g = user.getGroups()
+    g = .sort(lambda x, y: cmp(x, y))
+    x["groups"] = g
     x["language"] = lang(req)
-    x["collections"] = collections.sort(lambda x, y: cmp(x, y))
+    c = collections
+    c.sort(lambda x, y: cmp(x, y))
+    x["collections"] = c
 
 
     v["mailtext"] = req.getTAL("web/admin/modules/user.html", x, macro="emailtext").strip()

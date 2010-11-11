@@ -90,9 +90,6 @@ def getContent(req, ids):
     v["nodename"] = tree.getNode
 
     items = v["current_file"].getProgress('country')
-    for item in items:
-        print items[item].keys(), item
-    
     return req.getTAL("web/edit/modules/statsaccess.html", v, macro="edit_stats")
 
     

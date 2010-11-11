@@ -91,5 +91,10 @@
         <tal:block tal:repeat="u_date update_date" tal:content="raw python:u_date[0] + ' ('+u_date[1]+')' "/>
     </small>
     <br/>
+    <tal:block tal:replace="raw python:'<script>'"/>
+        <tal:block tal:repeat="id python:idstr.split(',')">
+            <tal:block tal:replace="python:'allobjects['+id+']=1;'"/>
+        </tal:block>
+    <tal:block tal:replace="raw python:'</script>'"/>
 </tal:block>
     

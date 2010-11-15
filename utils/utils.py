@@ -70,6 +70,21 @@ def splitfilename(path):
     except:
         return path,""
 
+def getSubString(s, maxlength=-1):
+    if len(s)<maxlength or maxlength==-1:
+        return s
+
+    s = s.split(" ")
+    i=1
+    while i<len(s):
+        if len(" ".join(s[:i]))>maxlength and i>1:
+            return " ".join(s[:(i-1)])+"..."
+        else:
+            i+=1
+    if i==1:
+        return " ".join(s)
+    return " ".join(s[:(i-1)])+"..."
+
         
 def findLast(string, char):
     # TODO

@@ -48,10 +48,10 @@ def frameset(req):
 
     user = users.getUserFromRequest(req)
 
-    uploaddir = getUploadDir(user)
-    importdir = getImportDir(user)
-    faultydir = getFaultyDir(user)
-    trashdir = getTrashDir(user)
+    uploaddir = users.getUploadDir(user)
+    importdir = users.getImportDir(user)
+    faultydir = users.getFaultyDir(user)
+    trashdir = users.getTrashDir(user)
 
     try:
         currentdir = tree.getNode(id)
@@ -347,7 +347,7 @@ def action(req):
     global editModules
     access = AccessData(req)
     user = users.getUserFromRequest(req)
-    trashdir = getTrashDir(user)
+    trashdir = users.getTrashDir(user)
 
     if not access.user.isEditor():
         req.write("""permission denied""")
@@ -518,9 +518,9 @@ def content(req):
     tabs = "content"
     if node.type=="root":
         tabs = "content"
-    elif node.id==getUploadDir(user).id:
+    elif node.id==users.getUploadDir(user).id:
         tabs = "upload"
-    elif node.id==getImportDir(user).id:
+    elif node.id==users.getImportDir(user).id:
         tabs = "imports"
     elif hasattr(node, "getDefaultEditTab"):
         tabs = node.getDefaultEditTab()
@@ -618,7 +618,11 @@ def content(req):
         v["script"] = content["script"]
         v["body"] = content["body"]
         v["paging"] = showPaging(req, current, ids)
-        v["node"] = node       
+        v["node"] = node
+        v["ids"] = req.params.get("ids", "").split(",")
+        if req.params.get("ids", "")=="":
+            v["ids"] = req.params.get("id", "").split(",")
+        
         req.writeTAL("web/edit/edit.html", v, macro="frame_content")
     
 # frame with action drop-downs

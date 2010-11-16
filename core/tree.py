@@ -125,7 +125,7 @@ def getAllContainerChildrenNum(node, count=0): # returns the number of children
 def getAllContainerChildrenAbs(node, count=[]): # returns a list with children, each child once
     for n in node.getContainerChildren():
         count = getAllContainerChildrenAbs(n, count)
-    count.extend(node.getContentChildren())
+    count.extend(node.getContentChildren().ids)
     return count
 
 def getAllContainerChildren(node):
@@ -196,6 +196,16 @@ class FileNode:
                         return path
                 except: 
                     logException("file handler retrieveFile() failed")
+        if not os.path.exists(config.settings["paths.datadir"] + self._path):
+            for f in self.node.getFiles():
+                if f.getType().startswith("presentati"):
+                    try:
+                        _n = os.path.dirname(f.retrieveFile())+"/"+self._path
+                        if os.path.exists(_n):
+                            return _n
+                    except:
+                        pass
+
         return config.settings["paths.datadir"] + self._path
     def getMimeType(self):
         return self.mimetype
@@ -714,11 +724,11 @@ class Node:
         
     def getContainerChildren(self):
         id = db.getContainerChildren(self.id)
-        return NodeList(id).sort()
+        return NodeList(id)
         
     def getContentChildren(self):
         id = db.getContentChildren(self.id)
-        return NodeList(id).sort()
+        return NodeList(id)
 
 
     """ get all parents of this node """

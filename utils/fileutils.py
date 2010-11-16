@@ -34,21 +34,31 @@ def getImportDir():
     return uploaddir
 
 
-def importFile(realname,tempname):
+def importFile(realname,tempname, prefix=""):
     try:
         path,filename = os.path.split(tempname)
-
         uploaddir = getImportDir()
-                
-        destname = join_paths(uploaddir, filename)
+        destname = join_paths(uploaddir, prefix+filename)
+
+        if os.path.exists(destname): # rename if existing
+            i = 0
+            while os.path.exists(destname):
+                i+=1
+                p = prefix + str(i)+"_"
+                destname = join_paths(uploaddir, p+filename)
+                if not os.path.exists(destname):
+                    prefix = p
+                    break
+
         if os.sep=='/':
             ret = os.system("cp %s %s" %(tempname, destname))
         else:
-            cmd = "copy %s %s" %(tempname, (os.path.split(destname)[0]))
+            #cmd = "copy %s %s" %(tempname, (os.path.split(destname)[0]))
+            cmd = "copy %s %s" %(tempname, destname)
             ret = os.system(cmd.replace('/','\\'))
 
         if ret&0xff00:
-            raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, destname, str(ret)))
+            raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, prefix+destname, str(ret)))
 
         r = realname.lower()
         mimetype = "application/x-download"

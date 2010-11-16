@@ -42,11 +42,13 @@ class Default(tree.Node):
             separator = "<br/>"
         metatext = list()
         mask = node.getMask("nodesmall")
-        for m in node.getMasks("shortview", language):
-            if m.getName()=="nodesmall":
-                mask = m
+        for m in node.getMasks("shortview", language=language):
+            #if m.getName()=="nodesmall":
+            mask = m
+
         if mask:
-            for field in mask.getViewHTML([node], VIEW_DATA_ONLY):
+            fields = mask.getMaskFields()
+            for field in mask.getViewHTML([node], VIEW_DATA_ONLY, language=language):
                 if len(field)>=2:
                     value = field[1]
                 else:
@@ -57,7 +59,10 @@ class Default(tree.Node):
 
                 if value:
                     if labels:
-                        metatext.append("<b>"+node.getMetaField(field[0]).getLabel()+":</b> "+value)
+                        for f in fields:
+                            if f.getField().getName()==field[0]:
+                                metatext.append("<b>"+f.getLabel()+":</b> "+value)
+                                break
                     else:
                         if field[0].startswith("author"):
                             value = '<span class="author">'+value+'</span>'

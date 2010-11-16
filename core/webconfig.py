@@ -148,7 +148,6 @@ def initContexts():
     athana.addFileStore("/css/", "web/css/")
     athana.addFileStore("/xml/", "web/xml/")
     athana.addFileStore("/img/", ["web/img/", "web/admin/img/", "web/edit/img/"])
-    #athana.addFileStore("/img/", ["img","web/admin/img/", "web/edit/img/"])
     athana.addFileStore("/js/", ["web/js/", "js", "lib/FCKeditor/js/"]) 
     
     # === theme handling ===
@@ -156,10 +155,13 @@ def initContexts():
 
     #athana.addContext("/flush", ".").addFile("core/webconfig.py").addHandler("flush").addPattern("/py")
     
-    for collection in tree.getRoot("collections").getChildren():
-        if collection.get("ftp_user") and collection.get("ftp_passwd"):
-            print "set up ftp server for collection", collection.getName()
-            athana.addFTPHandler(collection_ftpserver(collection))
+    # === check for ftp usage ===
+    if config.get("ftp.activate","")=="true":
+        athana.addFTPHandler(collection_ftpserver(None, port=int(config.get("ftp.port", 21)), debug=config.get("host.type", "testing"))) # dummy handler for users
+    
+        for collection in tree.getRoot("collections").getChildren():
+            if collection.get("ftp.user") and collection.get("ftp.passwd"):
+                athana.addFTPHandler(collection_ftpserver(collection, port=int(config.get("ftp.port", 21)), debug=config.get("host.type", "testing")))
    
 def flush(req):
     athana.flush()

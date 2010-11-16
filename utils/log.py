@@ -43,7 +43,7 @@ def initialize():
     log_everything.addHandler(log_screen)
     log_everything.setLevel(logging.DEBUG)
 
-    for name in ["database","backend","frontend","editor","usertracing","athana","errors"]:
+    for name in ["database","backend","frontend","editor","usertracing","athana","errors", "archive"]:
         log = logging.getLogger(name)
         log.handlers = []
         filename = core.config.get("logging.file."+name, None)

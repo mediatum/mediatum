@@ -2345,6 +2345,57 @@ msgstr "Dirty-Flag"
 msgid "edit_localread"
 msgstr "Localread-Flag"
 
+msgid "edit_ftp_nofiles"
+msgstr "Für das gewählte Verzeichnis sind keine FTP-Daten verfügbar."
+
+msgid "edit_ftp_files"
+msgstr "Dateien:"
+
+msgid "edit_ftp_type"
+msgstr "Typ"
+
+msgid "edit_ftp_size"
+msgstr "Größe"
+
+msgid "edit_ftp_mimetype"
+msgstr "Mimetype"
+
+msgid "edit_ftp_location"
+msgstr "Lokation/Name"
+
+msgid "edit_ftp_options"
+msgstr "Optionen"
+
+msgid "edit_ftp_chooseall_title"
+msgstr "alle auswählen/abwählen"
+
+msgid "edit_ftp_open_title"
+msgstr "Datei öffnen/anzeigen"
+
+msgid "edit_ftp_chooseschema"
+msgstr "- Schema wählen -"
+
+msgid "edit_ftp_delete_title"
+msgstr "Datei löschen..."
+
+msgid "edit_ftp_process_title"
+msgstr "Datei verarbeiten..."
+
+msgid "edit_ftp_deletea_title"
+msgstr "Dateien löschen..."
+
+msgid "edit_ftp_processa_title"
+msgstr "Dateien verarbeiten..."
+
+msgid "edit_ftp_alllabel"
+msgstr "Gewählte Dateien verarbeiten:"
+
+msgid "edit_ftp_error1"
+msgstr "Bearbeitung nicht möglich: Für die gewählte Datei wurde kein Schema angegeben."
+
+msgid "edit_ftp_error2"
+msgstr "Bearbeitung nicht möglich: Für mindestens einen Datentyp wurde kein Schema angegeben."
+
 ### edit frontendparts ###
 msgid "item_type_intern"
 msgstr "HTML-Seite"
@@ -2580,6 +2631,9 @@ msgstr "Digitales Objekt bearbeiten"
 
 msgid "tab_frontendparts"
 msgstr "Kopf-/Fusszeileneinträge"
+
+msgid "tab_ftp"
+msgstr "FTP-Daten verarbeiten"
 
 ### edit acls ###
 msgid "edit_acls_righttype_read"

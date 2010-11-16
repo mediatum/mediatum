@@ -22,7 +22,7 @@ import core.users as users
 import core.tree as tree
 
 from utils.log import logException
-from web.edit.edit_common import showdir, getImportDir
+from web.edit.edit_common import showdir
 from schema.bibtex import importBibTeX, MissingMapping
 
 
@@ -37,7 +37,7 @@ def getContent(req, ids):
 
 def import_new(req):
     user = users.getUserFromRequest(req)
-    importdir= getImportDir(user)
+    importdir= users.getImportDir(user)
     del req.params["upload"]
     
     if "file" in req.params.keys():

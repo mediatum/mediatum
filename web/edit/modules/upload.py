@@ -29,7 +29,7 @@ import zipfile, PIL.Image
 import random 
 import logging
 from core.datatypes import loadAllDatatypes
-from web.edit.edit_common import showdir, getUploadDir
+from web.edit.edit_common import showdir
 import utils.date as date
 from utils.utils import join_paths, OperationException, EncryptionException, formatException
 from utils.fileutils import importFile
@@ -146,7 +146,7 @@ def importFileIntoNode(user,realname,tempname,datatype, workflow=0):
     if hasattr(n,"event_files_changed"):
         try:
             n.event_files_changed()
-            uploaddir = getUploadDir(user)
+            uploaddir = users.getUploadDir(user)
             uploaddir.addChild(n)
 
         except OperationException, e:
@@ -158,7 +158,7 @@ def importFileIntoNode(user,realname,tempname,datatype, workflow=0):
 def upload_new(req):
     user = users.getUserFromRequest(req)
     datatype = req.params.get("datatype", "image")
-    uploaddir = getUploadDir(user)
+    uploaddir = users.getUploadDir(user)
 
     workflow = "" #int(req.params["workflow"])
     

@@ -19,7 +19,7 @@
 """
 import core.tree as tree
 import core.users as users
-from web.edit.edit_common import writetree, getFaultyDir
+from web.edit.edit_common import writetree
 from core.acl import AccessData
 
 
@@ -80,7 +80,7 @@ def getContent(req, ids):
     wrote_nomoreentries_msg = 0
     for node in nodes:
         if len(node.getParents()) == 0:
-            faultydir = getFaultyDir(users.getUserFromRequest(req)).addChild(node)
+            faultydir = users.getFaultyDir(users.getUserFromRequest(req)).addChild(node)
             
             if not wrote_nomoreentries_msg:
                 wrote_nomoreentries_msg = 1

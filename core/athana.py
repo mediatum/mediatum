@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.36 2010/05/18 14:57:46 seiferta Exp $'
+RCS_ID =  '$Id: athana.py,v 1.37 2010/11/16 08:55:33 seiferta Exp $'
 
 import sys
 
@@ -4883,7 +4883,8 @@ class ftp_channel (async_chat):
     # unset this in a derived class in order
     # to enable the commands in 'self.write_commands'
     read_only = 1
-    write_commands = ['appe','dele','mkd','rmd','rnfr','rnto','stor','stou']
+    #write_commands = ['appe','dele','mkd','rmd','rnfr','rnto','stor','stou']
+    write_commands = ['appe','dele','mkd','rmd','stor','stou']
 
     restart_position = 0
 
@@ -5009,6 +5010,12 @@ class ftp_channel (async_chat):
 
     def cdup (self, line):
         return self.filesystem.cdup()
+        
+    def rnfr (self, line):
+        return self.filesystem.rnfr (line)
+        
+    def rnto (self, line):
+        return self.filesystem.rnto (line)
 
     def open (self, path, mode):
         return self.filesystem.open (path, mode)
@@ -5048,7 +5055,8 @@ class ftp_channel (async_chat):
     # --------------------------------------------------
 
     def log (self, message):
-        self.server.logger.log (
+        if self.filesystem and self.filesystem.debug()==1:
+            self.server.logger.log (
                 self.addr[0],
                 '%d %s' % (
                         self.addr[1], message
@@ -5056,7 +5064,8 @@ class ftp_channel (async_chat):
                 )
 
     def respond (self, resp):
-        self.log ('==> %s' % resp)
+        if self.filesystem and self.filesystem.debug()==1:
+            self.log ('==> %s' % resp)
         self.push (resp + '\r\n')
 
     def command_not_understood (self, command):
@@ -5247,7 +5256,7 @@ class ftp_channel (async_chat):
         if self.cdup(line):
             self.respond ('250 CDUP command successful.')
         else:
-            self.respond ('550 No such directory.')
+            self.respond ('550 Permission denied.')
 
     def cmd_pwd (self, line):
         'print the current working directory'
@@ -5256,6 +5265,21 @@ class ftp_channel (async_chat):
                         self.filesystem.current_directory()
                         )
                 )
+                
+    def cmd_rnfr (self, line):
+        'get filename to change'
+        if self.rnfr(line):
+            self.respond ('250 RNFR command successful.')
+        else:
+            self.respond ('550 File not found.')
+            
+    def cmd_rnto (self, line):
+        'get filename change to'
+        if self.rnto(line):
+            self.respond ('250 RNTO command successful.')
+        else:
+            self.respond ('550 File not found.')
+    
 
     # modification time
     # example output:
@@ -5424,7 +5448,7 @@ class ftp_channel (async_chat):
             self.respond ('230 %s' % message)
             self.filesystem = fs
             self.authorized = 1
-            self.log_info('Successful login: Filesystem=%s' % repr(fs))
+            #self.log_info('Successful login: Filesystem=%s' % repr(fs))
         else:
             self.respond ('530 %s' % message)
 
@@ -6937,7 +6961,7 @@ def run(port=8081):
     hs.install_handler (ph)
 
     if len(ftphandlers) > 0:
-        ftp = ftp_server (ftp_authorizer(), port=8021, logger_object=lg)
+        ftp = ftp_server (ftp_authorizer(), port=ftphandlers[0].getPort(), logger_object=lg)
 
     if multithreading_enabled: 
         global threadlist

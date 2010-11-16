@@ -1,50 +1,22 @@
 import StringIO
+import time
 import athana
 import os
+import hashlib
 import utils.utils as utils
 import utils.fileutils as fileutils
 import xmlnode
 import core.tree as tree
+import core.users as users
+from utils.date import parse_date
+import core.config as config
 
-class MetaDataWriter(StringIO.StringIO):
-    def __init__(self, node):
-        StringIO.StringIO.__init__(self)
-        self.node = node
-
-    def close(self):
-        s = self.getvalue()
-        newnode = xmlnode.parseNodeXML(s)
-        #for k,v in self.node.items():
-        #    self.node.set(k, "")
-        print "type",newnode.type
-        for k,v in newnode.items():
-            print "metadata",k,v
-            self.node.set(k,v)
-
-        # FIXME: this is logic for the local TUM university archive, and not universal
-        if "/" in newnode.type and (newnode.getSchema() not in ["lt", "diss"]):
-            self.node.setSchema(newnode.getSchema())
-        else:
-            if newnode.getContentType() == "image":
-                self.node.setSchema("pub-image")
-            elif newnode.getContentType() == "document":
-                self.node.setSchema("pub-book")
-            elif newnode.getContentType() == "directory":
-		if self.node.getContentType() == "image":
-                    self.node.setSchema("pub-image")
-                elif self.node.getContentType() == "document":
-                    self.node.setSchema("pub-book")
-
-        
-        print "-> ", self.node.type
-        
-        self.node.event_metadata_changed()
 
 class FileWriter:
     def __init__(self, node, filename):
         f,ext = os.path.splitext(filename)
         self.realname = filename
-        self.filename = os.tmpnam()+ext
+        self.filename = filename
         self.file = open(self.filename, "wb")
         self.node = node
 
@@ -53,34 +25,53 @@ class FileWriter:
 
     def close(self):
         self.file.close()
-        filenode = fileutils.importFile(self.realname, self.filename)
-
-        for f in self.node.getFiles():
-            self.node.removeFile(f)
-        self.node.addFile(filenode)
-
-        print "content type now",self.node.getContentType()
-        print "new content type",filenode.type
-
-        if self.node.getContentType() == "directory" and filenode.type:
-            self.node.setContentType(filenode.type)
-        self.node.event_files_changed()
-
+        f = fileutils.importFile(self.realname, self.filename, "ftp_")
+        os.remove(self.filename)
+        self.node.addFile(f)
+        
 
 class collection_ftpserver:
-    def __init__(self, collection):
-        self.user = collection.get("ftp_user")
-        self.passwd = collection.get("ftp_passwd")
-        self.collection = collection
-        self.dir = [collection]
-        self.node = collection
+    def __init__(self, basecontainer=None, port=21, debug="testing"):
+        #set initial values
+        self.user = ""
+        self.passwd = ""
+        self.basecontainer = ""
+        self.dir = [basecontainer]
+        self.node = None
+        self.port = port
+        self.logging = debug
+        
+        if basecontainer: # use special container for collections
+            self.user = basecontainer.get("ftp.user")
+            self.passwd = basecontainer.get("ftp.passwd")
+            self.basecontainer = basecontainer
+            self.dir = [basecontainer]
+            self.node = basecontainer
+
+    def debug(self):
+        if self.logging=="testing":
+            return 1
+        return 0
+        
+    def getPort(self):
+        return self.port
+        
+    def setUser(self, username, password="", basecontainer=None):
+        self.user = username
+        self.passwd = password
+        self.basecontainer = basecontainer
+        self.dir = [basecontainer]
+        self.node = basecontainer # homedirectory of user
 
     def has_user(self, username, password):
-        print username, password, self.user, self.passwd
-        if username == self.user and password == self.passwd:
-            return collection_ftpserver(self.collection)
+        if username==self.user and hashlib.md5(password).hexdigest()==self.passwd:
+            return collection_ftpserver(self.basecontainer, port=self.port, debug=self.logging)
         else:
-            return None
+            user = users.checkLogin(username, password)
+            if user:
+                self.setUser(username, password, users.getUploadDir(user))
+                return collection_ftpserver(self.basecontainer, port=self.port, debug=self.logging)
+        return None
 
     def isdir(self, path):
         olddir = self.dir
@@ -100,8 +91,6 @@ class collection_ftpserver:
             for f in self.node.getFiles():
                 if filename == f.getName():
                     result = self.node,f
-            if filename == "metadata.xml":
-                result = self.node,"metadata"
         self.dir = olddir
         self.node = oldnode
         return result
@@ -122,6 +111,8 @@ class collection_ftpserver:
         if f == "metadata":
             raise IOError("Can't delete file")
         else:
+            if os.path.exists(f.retrieveFile()):
+                os.remove(f.retrieveFile())
             node.removeFile(f)
     
     def mkdir(self, path):
@@ -155,10 +146,8 @@ class collection_ftpserver:
         oldnode = self.node
         if not self.cwd(path):
             raise IOError("no such directory: "+path)
-        if filename=="metadata.xml":
-            r = MetaDataWriter(self.node)
-        else:
-            r = FileWriter(self.node, filename)
+        filename = config.get("paths.tempdir") + filename
+        r = FileWriter(self.node, filename)
         self.dir = olddir
         self.node = oldnode
         return r
@@ -166,22 +155,12 @@ class collection_ftpserver:
     def open(self, path, mode):
         if "w" in mode:
             return self.open_for_write(path, mode)
-        if path.endswith("/metadata.xml") or path=="metadata.xml":
-            path,filename = utils.splitpath(path)
-            olddir = self.dir
-            oldnode = self.node
-            if not self.cwd(path):
-                raise IOError("No such file: "+path)
-            xml = xmlnode.getSingleNodeXML(self.node)
-            self.dir = olddir
-            self.node = oldnode
-            return StringIO.StringIO(xml)
-        else:
-            node,f = self.isfile(path)
-            if not f:
-                raise IOError("No such file: "+path)
-            file = f.retrieveFile()
-            return open(file, "rb")
+        
+        node,f = self.isfile(path)
+        if not f:
+            raise IOError("No such file: "+path)
+        file = f.retrieveFile()
+        return open(file, "rb")
     
     def current_directory (self):
         return "/" + ("/".join([d.getName() for d in self.dir[1:]]))
@@ -189,7 +168,7 @@ class collection_ftpserver:
     def cwd(self, dir):
         d = self.dir
         if len(dir) and dir[0] == '/':
-            d = [self.collection]
+            d = [self.basecontainer]
             dir = dir[1:]
         for c in dir.split("/"):
             if not c or c==".":
@@ -205,28 +184,64 @@ class collection_ftpserver:
         if len(self.dir):
             self.node = self.dir[-1]
         else:
-            self.dir = [collection]
-            self.node = collection
+            self.dir = [self.basecontainer]
+            self.node = self.basecontainer
         return 1
+        
+    def cdup(self):
+        if len(self.dir)>1:
+            self.dir = self.dir[:-1]
+            self.cwd("..")
+            return 1
+        return 0
+        
+    def rnfr(self, line):
+        self.filefrom = line[1]
+        return 1
+        
+    def rnto(self, line):
+        if self.filefrom:
+            # check directory
+            for c in self.node.getChildren():
+                if c.getName()==self.filefrom:
+                    c.set("nodename", line[1])
+                    del self.filefrom
+                    return 1
+            #check files
+            for f in self.node.getFiles():
+                if f.retrieveFile().split("/")[-1]==self.filefrom:
+                    if not line[1].startswith("ftp_"):
+                        line[1] = "ftp_" + line[1]
+                    nname = ("/".join(f.retrieveFile().split("/")[:-1]) + "/"+ line[1]).replace(" ", "_")
+                    if not os.path.exists(nname):
+                        os.rename(f.retrieveFile(), nname)
+                        self.node.removeFile(f)
+                        f._path = ("/".join(f._path.split("/")[:-1]) + "/"+ line[1]).replace(" ", "_")
+                        self.node.addFile(f)
+                        del self.filefrom
+                        return 1
+        return 0
 
     def listdir (self, path, long=0):
-
         olddir = self.dir
         oldnode = self.node
 
         if path:
-            print "listdir in",path
             self.cwd(path)
 
         l = []
         for c in self.dir[-1].getChildren():
-            l += ["drwxrwxrwx    1 1001     100          4096 Jan 10  2008 %s" % c.getName()]
+            if c.getName().strip()!="" and c.isContainer():
+                nodedate = c.get("creationtime")
+                if nodedate:
+                    t = parse_date(nodedate)
+                    l += ["drwxrwxrwx    1 1001     100          4096 %d %d %d %s" % (t.month, t.day, t.year, c.getName())]
+                else:
+                    l += ["drwxrwxrwx    1 1001     100          4096 Jan 10  2008 %s" % c.getName()]
         for f in self.dir[-1].getFiles():
-            if not f.getType().startswith('tile'):
-                l += ["-rw-rw-rw-    1 1001     100      %8d Jan 10  2008 %s" % (f.getSize(),f.getName())]
-        if not self.dir[-1].isContainer():
-            l += ["-rw-rw-rw-    1 1001     100          4096 Jan 10  2008 metadata.xml"]
-
+            if not f.getType().startswith('tile') and "ftp_" in f.retrieveFile() and os.path.exists(f.retrieveFile()):
+                t = os.stat(f.retrieveFile())[8] # last modification date
+                l += ["-rw-rw-rw-    1 1001     100      %8d %d %d  %d %s" % (f.getSize(), time.localtime(t)[1], time.localtime(t)[2], time.localtime(t)[0], f.getName())]
         self.dir = olddir
         self.node = oldnode
 

@@ -212,6 +212,7 @@ class NavTreeEntry:
         self.small = small
         self.count = -1
         self.hide_empty = hide_empty
+        self.orderpos = 0
         if len(self.node.getContainerChildren())>0:
             self.hassubdir = 1
             self.folded = 1

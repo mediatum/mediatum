@@ -102,8 +102,8 @@ class ContentStyle:
             return req.getTAL(self.getTemplate(), params)
         except:
             return "error in template"
+         
 
-        
 def readStyleConfig(filename):
     path, file = splitpath(filename)
     attrs = {"type":"", "contenttype":"", "name":"", "label":"", "icon":"", "template":path.replace(config.basedir, "")+"/", "description":"", "default":""}
@@ -118,6 +118,7 @@ def readStyleConfig(filename):
 
         
 def getContentStyles(type, name="", contenttype=""):
+    name = name.split(";")[0]
     global contentstyles
 
     if len(contentstyles)==0:

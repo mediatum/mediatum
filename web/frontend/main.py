@@ -104,6 +104,7 @@ def exportsearch(req, xml=0):  # format 0=pre-formated, 1=xml, 2=plain
     
     id = req.params.get("id")
     q = req.params.get("q","")
+    lang = req.params.get("language", "")
     collections = tree.getRoot("collections")
 
     if xml:
@@ -168,7 +169,7 @@ def exportsearch(req, xml=0):  # format 0=pre-formated, 1=xml, 2=plain
         labels = int(req.params.get("labels",1))
         for node in nodes:
             req.write('a[%d] = new Object();\n' % i);
-            req.write("a[%d]['text'] = '%s';\n" % (i,esc(node.show_node_text(labels=labels))));
+            req.write("a[%d]['text'] = '%s';\n" % (i,esc(node.show_node_text(labels=labels, language=lang))));
             req.write("a[%d]['link'] = 'http://%s?id=%s';\n" % (i, config.get('host.name'),node.id));
             i = i + 1
         req.write('add_data(a);\n')

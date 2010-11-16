@@ -28,6 +28,7 @@ import thread
 import logging
 
 from utils.utils import Option
+from core.translation import getDefaultLanguage, translate
 
 #OPTION_ENHANCED_READRIGHTS = Option("user_option_2", "editreadrights", "r", "img/changereadrights.png", "checkbox")
 #OPTION_MAX_IMAGESIZE = Option("user_option_3", "maximagesize", "0", "img/maximagesize.png", "text")
@@ -390,3 +391,58 @@ def getHideMenusForUser(user):
         g = usergroups.getGroup(g)
         hide += ';'+g.getHideEdit()
     return hide.split(';')
+    
+def getHomeDir(user):
+    username = user.getName()
+    userdir = None
+    for c in tree.getRoot("home").getChildren():
+        if (c.getAccess("read") or "").find("{user "+username+"}")>=0 and (c.getAccess("write") or "").find("{user "+username+"}")>=0:
+            return c
+            
+    # create new userdir
+    userdir = tree.getRoot("home").addChild(tree.Node(name=translate("user_directory", getDefaultLanguage())+" ("+username+")", type="directory"))
+    userdir.setAccess("read","{user "+username+"}")
+    userdir.setAccess("write","{user "+username+"}")
+    userdir.setAccess("data","{user "+username+"}")
+    
+    # re-sort home dirs alphabetically
+    i = 0
+    for child in tree.getRoot("home").getChildren().sort("name"):
+        child.setOrderPos(i)
+        i += 1
+    return userdir
+    
+    
+def getSpecialDir(user, type):
+    nodename = ""
+    if type=="upload":
+        nodename = translate("user_upload", getDefaultLanguage())
+    elif type=="import":
+        nodename = translate("user_import", getDefaultLanguage())
+    elif type=="faulty":
+        nodename = translate("user_faulty", getDefaultLanguage())
+    elif type=="trash":
+        nodename = translate("user_trash", getDefaultLanguage())
+    else:
+        return None
+
+    userdir = getHomeDir(user)
+
+    for c in userdir.getChildren():
+        if c.name==nodename:
+            return c
+    # create new directory
+    return userdir.addChild(tree.Node(name=nodename, type="directory"))
+    
+    
+def getUploadDir(user):
+    return getSpecialDir(user, "upload")
+    
+def getImportDir(user):
+    return getSpecialDir(user, "import")
+    
+def getFaultyDir(user):
+    return getSpecialDir(user, "faulty")
+
+def getTrashDir(user):
+    return getSpecialDir(user, "trash")

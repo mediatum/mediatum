@@ -23,9 +23,9 @@
 
 <tal:block metal:define-macro="workflow_showdata">
     <p tal:content="raw python:prefix"/>
-    <table>
+    <table style="width:100%">
         <tr>
-            <td tal:repeat="field fields" style="width:400px;padding-right:20px">
+            <td tal:repeat="field fields" style="width:50%;padding-right:20px">
                 <tal:block tal:replace="raw field"/>
             </td>
         </tr>

@@ -18,13 +18,12 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from core.acl import AccessData
-from web.edit.edit_common import getFaultyDir,getHomeDir
 import core.users as users
-from utils.date import format_date,parse_date
-from utils.utils import formatException
 import core.tree as tree
-
 import logging
+
+from utils.date import format_date, parse_date
+from utils.utils import formatException
 from core.translation import lang, t
 
 def getContent(req, ids):
@@ -36,7 +35,7 @@ def getContent(req, ids):
 
     access = AccessData(req)
     reload_script = False
-    faultydir = getFaultyDir(user)
+    faultydir = users.getFaultyDir(user)
     metatypes = []
     nodes = []
     masklist = []
@@ -105,7 +104,7 @@ def getContent(req, ids):
 
     if "edit_metadata" in req.params:
         # check and save items
-        userdir = getHomeDir(users.getUserFromRequest(req))
+        userdir = users.getHomeDir(users.getUserFromRequest(req))
 
         for node in nodes:
             if not access.hasWriteAccess(node) or node.id == userdir.id:

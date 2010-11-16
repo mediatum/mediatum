@@ -19,6 +19,7 @@
 """
 import core.users as users
 import core.acl as acl
+import core.tree as tree
 import re
 
 from core.translation import translate, lang
@@ -59,7 +60,7 @@ def makeUserList(req, name, rights, readonlyrights, overload=0, type=""):
     val_right = ""
     rulelist = acl.getRuleList()
     userlist = {}
-    userlist['intern'] = users.loadUsersFromDB()
+    userlist['intern'] = tree.getRoot("users").getChildren() # users.loadUsersFromDB()
     
     for usertype in list(users.getExternalUsers()):
         userlist[usertype.getName()] = users.getExternalUsers(usertype.getName())

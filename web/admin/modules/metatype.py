@@ -589,7 +589,12 @@ def showEditor(req):
         v["editor"] = editor.editItem(req)
     else:
         # show metaEditor
-        v["editor"] = req.getTALstr(editor.getMetaMask(language=lang(req)), {})
+        v["editor"] = ""
+        try:
+            v["editor"] = req.getTALstr(editor.getMetaMask(language=lang(req)), {})
+        except:
+            v["editor"] = editor.getMetaMask(language=lang(req))
+        
     v["title"] = editor.name
     
     return req.getTAL("web/admin/modules/metatype.html", v, macro="editor_popup")

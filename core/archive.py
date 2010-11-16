@@ -131,27 +131,37 @@ class ArchiveManager:
             for manager in self.manager:
                 # search for nodes to archive after access over period (state 2)
                 for n in db.getNodeIdByAttribute("archive_state", "2"):
-                    node = tree.getNode(n)
-                    if node.get("archive_date"):
-                        date_archive = format_date(parse_date(node.get("archive_date"),"%Y-%m-%dT%H:%M:%S"), "yyymmddhhmmss")
-                        if date_now >= date_archive:
-                            archive_nodes_2.append(long(node.id))
+                    try:
+                        node = tree.getNode(n)
+                        if node.get("archive_date"):
+                            date_archive = format_date(parse_date(node.get("archive_date"),"%Y-%m-%dT%H:%M:%S"), "yyymmddhhmmss")
+                            if date_now >= date_archive:
+                                archive_nodes_2.append(long(node.id))
+                    except:
+                        pass
                 
                 # union to get all nodes with state 3 and 2 with over period
                 archive_nodes = union((archive_nodes_3, archive_nodes_2))
                 nodes = intersection((db.getNodeIdByAttribute("archive_type",str(manager)), archive_nodes))
                 
                 # run action defined in manager
-                self.manager[manager].actionArchive(nodes)
+                try:
+                    self.manager[manager].actionArchive(nodes)
+                except:
+                    pass
 
 
 def initialize():
     global init
     archive_manager = []
     if config.get("archive.activate", "").lower()=="true":
-        print "Initializing archive manager:",
+        print "Initializing archive manager:",config.get("archive.activate")
         for paths in config.get("archive.class").split(";"):
-            path, manager = splitpath(paths)
+            try:
+                path, manager = splitpath(paths)
+            except:
+                pass
+            
             if path and path not in sys.path:
                 sys.path += [path]
             m = __import__(manager).__dict__[manager]()
@@ -162,6 +172,6 @@ def initialize():
         None
         # start archiving thread
         thread_id = thread.start_new_thread(archive_thread, ())
-        log.info("started archiving thread, thread_id="+str(thread_id))
+        log.info("started archiving thread")
         
         return archive_manager

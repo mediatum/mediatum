@@ -72,7 +72,11 @@
 </table>
 
 <div metal:define-macro="object_step" id="workflow">
-    <p>Vielen Dank f&uuml;r die Bearbeitung. Sie werden per Email informiert, falls weitere Schritte erforderlich werden.</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p style="text-align:center">Vielen Dank f&uuml;r die Bearbeitung. Sie werden per Email informiert, falls weitere Schritte erforderlich werden.</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
 </div>
 
 <div metal:define-macro="object_list" id="workflow">
@@ -122,13 +126,12 @@
     <p i18n:translate="wf_node_msg2">TEXT<span tal:content="name" i18n:name="name"/></p>
 </tal:block>
 
-
 <div metal:define-macro="workflow_show" id="workflow">
     <p>
     <span style="text-align:left"><a tal:attributes="href python:'/publish/'+workflow.getName()" i18n:translate="workflow_back">TEXT</a></span>
     </p>
     <h2 i18n:translate="workflow_msg3">TEXT <span tal:content="python:step.name" i18n:name="name"/>:</h2>
-    <table id="workflowtable" cellspacing="0px" tal:define="mylist python:step.getChildren().sort('name')">
+    <table id="workflowtable" cellspacing="0px" tal:define="mylist python:children">
         <tr>
             <th i18n:translate="workflow_label_id">TEXT</th>
             <th i18n:translate="workflow_label_date">TEXT</th>
@@ -137,23 +140,23 @@
             <th i18n:translate="workflow_label_editor">TEXT</th>
             <th colspan="2" i18n:translate="workflow_label_forward">TEXT</th>
         </tr>
-        <tr tal:repeat="i python:range(len(mylist))">
+        <tr tal:repeat="i python:range(len(mylist))" tal:define="truestep python:step.getTrueLabel(); falsestep python:step.getFalseLabel()">
             <tal:block tal:define="cssclass python:i%2 and 'norm' or 'silver';node python:mylist[i]">
-                <td tal:attributes="class cssclass" tal:content="python:node.id"/>
-                <td tal:attributes="class cssclass" tal:content="python:format_date(parse_date(node.get('creationtime')),'dd.mm.yyyy HH:MM:SS')"/>
-                <td tal:attributes="class cssclass" tal:content="python:node.getName()"/>
+                <td tal:attributes="class cssclass" tal:content="python:node['id']"/>
+                <td tal:attributes="class cssclass" tal:content="python:node['creationtime']"/>
+                <td tal:attributes="class cssclass" tal:content="python:node['name']"/>
 
-                <td tal:attributes="class cssclass"><a tal:attributes="href python:nodelink+node.id+'&type=editor'" i18n:translate="workflow_show_step">TEXT</a></td>
-                <td tal:attributes="class cssclass"><a target="editorwindow" tal:attributes="href python:'/edit/edit?id='+node.id" i18n:translate="sub_header_edit">TEXT</a></td>
+                <td tal:attributes="class cssclass"><a tal:attributes="href python:nodelink+node['id']+'&type=editor'" i18n:translate="workflow_show_step">TEXT</a></td>
+                <td tal:attributes="class cssclass"><a target="editorwindow" tal:attributes="href python:'/edit/edit?id='+node['id']" i18n:translate="sub_header_edit">TEXT</a></td>
 
-                <td tal:attributes="class cssclass"><a tal:attributes="href python:nodelink+node.id+'&forcefalse=1'" tal:content="raw python:step.getFalseLabel() or '&nbsp;'"/></td>
-                <td tal:attributes="class cssclass"><a tal:attributes="href python:nodelink+node.id+'&forcetrue=1'" tal:content="raw python:step.getTrueLabel() or '&nbsp;'"/></td>
+                <td tal:attributes="class cssclass"><a tal:attributes="href python:nodelink+node['id']+'&forcefalse=1'" tal:content="raw python:falsestep or '&nbsp;'"/></td>
+                <td tal:attributes="class cssclass"><a tal:attributes="href python:nodelink+node['id']+'&forcetrue=1'" tal:content="raw python: truestep or '&nbsp;'"/></td>
             </tal:block>
         </tr>
         <tr>
             <th colspan="7" align="right">
                 <small i18n:translate="workflow_footer">
-                    <tal:block tal:content="python:str(len(list(step.getChildren())))" i18n:name="number"/>
+                    <tal:block tal:content="python:str(len(children))" i18n:name="number"/>
                 </small>
             </th>
         </tr>

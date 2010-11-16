@@ -702,9 +702,10 @@ class WorkflowStep(tree.Node):
                     (key != node.get("key")): # no permission
 
                     link = '('+self.name+')'
-                    #access = acl.AccessData(req)
-                    #return req.getTAL(template, {"workflow":self.getParents()[0], "list":[], "access":access, "search":req.params.get("workflow_search", ""), "items":workflowSearch([node], req.params.get("workflow_search", ""), access), "node": node, "link":link, "email":config.get("email.workflow")}, macro=macro)
-                    return req.getTAL(template, {"node": node, "link":link, "email":config.get("email.workflow")}, macro=macro)
+                    try:
+                        return req.getTAL(template, {"node": node, "link":link, "email":config.get("email.workflow")}, macro=macro)
+                    except:
+                        return ""
 
                 present = 0
                 for p in node.getParents():
@@ -763,7 +764,12 @@ class WorkflowStep(tree.Node):
         if not access.hasWriteAccess(self):
             return '<i>'+t(lang(req),"permission_denied")+'</i>'
         
-        return req.getTAL("workflow/workflow.html", {"workflow":self.getParents()[0], "step": self, "nodelink": "/mask?id="+self.id+"&obj=", "format_date": date.format_date, "parse_date": date.parse_date}, macro="workflow_show")
+        c = []
+        for item in self.getChildren():
+            c.append({"id":str(item.id), "creationtime":date.format_date(date.parse_date(item.get('creationtime')),'dd.mm.yyyy HH:MM:SS'), "name": item.getName()})
+        c.sort(lambda x, y: cmp(x['name'], y['name']))
+
+        return req.getTAL("workflow/workflow.html", {"children":c, "workflow":self.getParents()[0], "step": self, "nodelink": "/mask?id="+self.id+"&obj="}, macro="workflow_show")
     
     def show_node_image(node):
         return """<img border="0" src="/img/directory.png">"""

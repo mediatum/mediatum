@@ -27,6 +27,7 @@ from core.translation import translate, getDefaultLanguage, t, lang
 from utils.log import logException
 from utils.utils import isDirectory, isCollection, EncryptionException
 from utils.fileutils import importFile
+from core.users import getHomeDir, getUploadDir
 
 
 class NodeWrapper:
@@ -97,69 +98,11 @@ def existsHomeDir(user):
             userdir = c
     return (not userdir==None)
 
-def getHomeDir(user):
-    username = user.getName()
-    userdir = None
-    for c in tree.getRoot("home").getChildren():
-        if (c.getAccess("read") or "").find("{user "+username+"}")>=0 and (c.getAccess("write") or "").find("{user "+username+"}")>=0:
-            userdir = c
-    if not userdir:
-        userdir = tree.getRoot("home").addChild(tree.Node(name=translate("user_directory", getDefaultLanguage())+" ("+username+")", type="directory"))
-        userdir.setAccess("read","{user "+username+"}")
-        userdir.setAccess("write","{user "+username+"}")
-        userdir.setAccess("data","{user "+username+"}")
-        
-        # re-sort home dirs alphabetically
-        i = 0
-        for child in tree.getRoot("home").getChildren().sort("name"):
-            child.setOrderPos(i)
-            i += 1
-    return userdir
- 
+
 def renameHomeDir(user, newusername):
     if (existsHomeDir(user)):
         getHomeDir(user).setName(translate("user_directory", getDefaultLanguage())+" ("+newusername+")")
 
-        
-def getUploadDir(user):
-    userdir = getHomeDir(user)
-    uploaddir = None
-    for c in userdir.getChildren():
-        if c.name==translate("user_upload", getDefaultLanguage()):
-            uploaddir = c
-    if not uploaddir:
-        uploaddir = userdir.addChild(tree.Node(name=translate("user_upload", getDefaultLanguage()), type="directory"))
-    return uploaddir
-
-def getImportDir(user):
-    userdir = getHomeDir(user)
-    importdir = None
-    for c in userdir.getChildren():
-        if c.name==translate("user_import", getDefaultLanguage()):
-            importdir = c
-    if not importdir:
-        importdir = userdir.addChild(tree.Node(name=translate("user_import", getDefaultLanguage()), type="directory"))
-    return importdir
-
-def getFaultyDir(user):
-    userdir = getHomeDir(user)
-    faultydir = None
-    for c in userdir.getChildren():
-        if c.name==translate("user_faulty", getDefaultLanguage()):
-            faultydir = c
-    if not faultydir:
-        faultydir = userdir.addChild(tree.Node(name=translate("user_faulty", getDefaultLanguage()), type="directory"))
-    return faultydir
-
-def getTrashDir(user):
-    userdir = getHomeDir(user)
-    trashdir = None
-    for c in userdir.getChildren():
-        if c.name==translate("user_trash", getDefaultLanguage()):
-            trashdir = c
-    if not trashdir:
-        trashdir = userdir.addChild(tree.Node(name=translate("user_trash", getDefaultLanguage()), type="directory"))
-    return trashdir
 
 def showdir(req, node, publishwarn="auto", markunpublished=0):
     if publishwarn=="auto":

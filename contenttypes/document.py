@@ -237,7 +237,7 @@ class Document(default.Default):
                 filename = file.retrieveFile()
                 if os.sep=='/':
                     cmd = "cp %s %s" %(filename, dest)
-                    ret = os.system(mcd)
+                    ret = os.system(cmd)
                 else:
                     cmd = "copy %s %s" %(filename, dest+node.id+".pdf")
                     ret = os.system(cmd.replace('/','\\'))

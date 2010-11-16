@@ -58,5 +58,3 @@ def sendmail(fromemail, email, subject, text):
             server.quit()
         except smtplib.socket.error:
             raise SocketError
-    else:
-        print msg

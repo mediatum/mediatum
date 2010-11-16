@@ -8,6 +8,10 @@ reindex_time=3600
 searcher=fts3  # fts3|magpy|<empty>
 oaibasename=mediatum repository
 
+[ftp]
+activate=false
+port=8021
+
 [paths]
 datadir=/data/
 searchstore=/data/search/

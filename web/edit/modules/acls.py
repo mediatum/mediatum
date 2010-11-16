@@ -44,7 +44,7 @@ def getContent(req, ids):
     if "save" in req.params:
         #save acl level
         
-        userdir = getHomeDir(users.getUserFromRequest(req))
+        userdir = users.getHomeDir(user)
         logging.getLogger('usertracing').info(access.user.name + " change access "+idstr)
         
         if req.params.get("type")=="acl":
@@ -97,16 +97,13 @@ def getContent(req, ids):
                     if error:
                         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
-    runsubmit = "\nfunction runsubmit(){\n"
+    runsubmit = "\nfunction runsubmit(){\n"  
+    retacl = ""
+    retuser = ""
+
     for type in acl_types:
         runsubmit +="\tmark(document.myform.left"+type+");\n"
         runsubmit +="\tmark(document.myform.leftuser"+type+");\n"
-    runsubmit +="\tdocument.myform.submit();\n}\n"
-    
-    retacl = ""
-    retuser = ""
-    
-    for type in acl_types:
         overload = 0
         if type in ("read","data"):
             overload = 1
@@ -119,7 +116,7 @@ def getContent(req, ids):
             if r is None:
                 r = ""
             log.debug(node.name+" "+type+" "+r)
-            if not s or r == s:
+            if not s or r==s:
                 s = r
             else:
                 s = ""
@@ -133,14 +130,16 @@ def getContent(req, ids):
                     else:
                         addNode(p)
             addNode(node)
-
         rights = removeEmptyStrings(s.split(","))
-
         retacl += req.getTAL("web/edit/modules/acls.html", makeList(req, type, rights, parent_rights.keys(), overload, type=type), macro="edit_acls_selectbox")
         retuser += req.getTAL("web/edit/modules/acls.html", makeUserList(req, type, rights, parent_rights.keys(), overload, type=type), macro="edit_acls_userselectbox")
 
-    if not access.getUser().isAdmin():
+    runsubmit +="\tdocument.myform.submit();\n}\n"
+    isadmin = access.getUser().isAdmin()
+    
+    if not isadmin:
         retuser = retacl
 
-    return req.getTAL("web/edit/modules/acls.html", {"runsubmit":runsubmit, "idstr":idstr, "contentacl":retacl, "contentuser":retuser, "adminuser":access.getUser().isAdmin()}, macro="edit_acls")
+    return req.getTAL("web/edit/modules/acls.html", {"runsubmit":runsubmit, "idstr":idstr, "contentacl":retacl, "contentuser":retuser, "adminuser":isadmin}, macro="edit_acls")
 
+    

@@ -260,3 +260,5 @@ class Directory(default.Default):
     def setCustomItems(node, type, items):
         node.set("system."+type, ";".join(str(i) for i in items))
 
+    def event_files_changed(node):
+        print "Postprocessing node",node.id

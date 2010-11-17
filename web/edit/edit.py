@@ -709,7 +709,7 @@ def showtree(req):
         nodename = node.name
         try: nodename = node.getLabel()
         except: 
-            log.logException()
+            utils.log.logException()
 
         if isCollection(node):
             cssclass = "coll_"

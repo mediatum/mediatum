@@ -248,11 +248,11 @@
             </tr>
             <tr tal:define="corrupt python:metadatatype.searchIndexCorrupt()">
                 <td>&nbsp;</td>
-                <td tal:condition="python:not corrupt and str(metadatatype.id)!='None'">
+                <td tal:condition="python: corrupt and str(metadatatype.id)!='None'">
                     <span i18n:translate="admin_metatype_reindex_title">TEXT</span> &nbsp;&nbsp; <button type="submit" tal:attributes="name python:'indexupdate_'+str(metadatatype.id)" i18n:translate="admin_metatype_reindex_button" value="">TEXT</button>
                     <br/>&nbsp;<br/>
                 </td>
-                <td tal:condition="python:corrupt">
+                <td tal:condition="python: not corrupt and str(metadatatype.id)!='None'">
                     <span i18n:translate="admin_metatype_index_ok">TEXT</span><br/>&nbsp;<br/>
                 </td>
             </tr>

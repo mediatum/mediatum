@@ -41,6 +41,7 @@ def getContent(req, ids):
 
     idstr = ",".join(ids)
 
+
     if "save" in req.params:
         #save acl level
         
@@ -99,17 +100,20 @@ def getContent(req, ids):
 
     runsubmit = "\nfunction runsubmit(){\n"  
     retacl = ""
-    retuser = ""
-
+    rights = {}
+    parent_rights = {}
+    overload = {}
     for type in acl_types:
+        s = None
+        parent_rights[type] = {}
+        overload[type] = 0
+        
         runsubmit +="\tmark(document.myform.left"+type+");\n"
         runsubmit +="\tmark(document.myform.leftuser"+type+");\n"
-        overload = 0
-        if type in ("read","data"):
-            overload = 1
         
-        s = None
-        parent_rights = {}
+        if type in ("read","data"):
+            overload[type] = 1
+
         for id in ids:
             node = tree.getNode(id)
             r = node.getAccess(type)
@@ -124,22 +128,26 @@ def getContent(req, ids):
                 for p in node.getParents():
                     aclright = p.getAccess(type)
                     for right in removeEmptyStrings((aclright or "").split(",")):
-                        parent_rights[right] = None
-                    if aclright and overload:
+                        parent_rights[type][right] = None
+                    if aclright and overload[type]:
                         return
                     else:
                         addNode(p)
             addNode(node)
-        rights = removeEmptyStrings(s.split(","))
-        retacl += req.getTAL("web/edit/modules/acls.html", makeList(req, type, rights, parent_rights.keys(), overload, type=type), macro="edit_acls_selectbox")
-        retuser += req.getTAL("web/edit/modules/acls.html", makeUserList(req, type, rights, parent_rights.keys(), overload, type=type), macro="edit_acls_userselectbox")
+        rights[type] = removeEmptyStrings(s.split(","))
+        
+    for type in acl_types:
+        retacl += req.getTAL("web/edit/modules/acls.html", makeList(req, type, rights[type], parent_rights[type].keys(), overload[type], type=type), macro="edit_acls_selectbox")
+
+    if "action" in req.params.keys(): # load additional rights by ajax
+        retuser = ""
+        for type in acl_types:
+            retuser += req.getTAL("web/edit/modules/acls.html", makeUserList(req, type, rights[type], parent_rights[type].keys(), overload[type], type=type), macro="edit_acls_userselectbox")
+        req.write(retuser)
+        return ""
 
     runsubmit +="\tdocument.myform.submit();\n}\n"
-    isadmin = access.getUser().isAdmin()
-    
-    if not isadmin:
-        retuser = retacl
 
-    return req.getTAL("web/edit/modules/acls.html", {"runsubmit":runsubmit, "idstr":idstr, "contentacl":retacl, "contentuser":retuser, "adminuser":isadmin}, macro="edit_acls")
+    return req.getTAL("web/edit/modules/acls.html", {"runsubmit":runsubmit, "idstr":idstr, "contentacl":retacl, "adminuser":access.getUser().isAdmin()}, macro="edit_acls")
 
     

@@ -1,8 +1,17 @@
 <tal:block metal:define-macro="edit_acls">
     <script tal:content="runsubmit" language="javascript">
-        function runsubmit()
-        {
+        function runsubmit(){
             document.myform.submit();
+        }
+    </script>
+    <script language="javascript">
+        var firstload = 1;
+        function getSelect(id) {
+            if (firstload==1){
+                document.getElementById("useracl").innerHTML='<img height="12" src="/img/wait.gif"/>';
+                getEditPage('useracl', id, 'acls', 'get_userlist');
+                firstload=0;
+            }
         }
     </script>
 
@@ -10,12 +19,13 @@
     </script>
     <form class="edit" name="myform" method="post">
         <input type="hidden" name="save" value="save"/>
+        <input type="hidden" name="nodeid" tal:attributes="value idstr"/>
         <p><input i18n:attributes="value edit_save_title" type="button" name="save" onClick="runsubmit()"/></p>
 
         <tal:block tal:condition="adminuser">
             <span i18n:translate="edit_acls_selection">TEXT</span> 
             <a href="#" onclick="showACLGroup()" i18n:translate="edit_acls_selectacl" i18n:attributes="title edit_acls_selectacltitle">TEXT</a> | 
-            <a href="#"  onclick="showACLUser()" i18n:translate="edit_acls_selectuser"  i18n:attributes="title edit_acls_selectusertitle">TEXT</a><br/><br/>
+            <a href="#"  onclick="showACLUser();getSelect(document.myform.nodeid.value)" i18n:translate="edit_acls_selectuser"  i18n:attributes="title edit_acls_selectusertitle">TEXT</a><br/><br/>
         </tal:block>
         
         <div id="acl_div" style="border:1px solid silver;padding:5px">
@@ -25,7 +35,7 @@
         
         <div tal:condition="adminuser" id="user_div" style="border:1px solid silver; display:none; padding:5px">
             <h5 i18n:translate="edit_acls_userheader">TEXT</h5>
-            <tal:block tal:replace="raw contentuser"/>
+            <span id="useracl"/>
         </div><br/><br/>
         
         <p>

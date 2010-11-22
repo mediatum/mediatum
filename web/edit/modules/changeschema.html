@@ -1,0 +1,80 @@
+
+<tal:block metal:define-macro="changeschema_popup">
+
+<script type="text/javascript">
+
+  function getSelect(id, newobjtype) {
+    getEditPage('schema', id, 'changeschema', 'get_schemes_for_'+newobjtype);
+  }
+
+  function showWait() {
+    document.getElementById("schema").innerHTML='<img height="12" src="/img/wait.gif"/>';
+  }
+
+</script>
+    <style type="text/css">
+        #datatable{
+            border:0px solid silver; border-width:1px 1px 0px 1px; width:90%
+        }
+        #datatable th{
+            background-color:#d8d8d8; padding:3px 5px 2px 3px; border-bottom:1px solid silver; font-variant:small-caps
+        }
+        #datatable tr{
+            border:1px solid silver
+        }
+        #datatable td{
+            vertical-align:middle; padding:2px;border-bottom:1px solid silver
+        }
+    </style>
+
+        <p tal:condition="error" tal:content="error" i18n:translate="" class="error" style="text-align:center"/>
+
+        <form id="selection_objtypes"  tal:attributes="action python:'/edit/edit_content?id='+id" method="post" style="margin:5px">
+            <h3 i18n:translate="edit_changeschema_obj_selection">TEXT</h3>
+
+            <input type="hidden" name="nodeid" tal:attributes="value python:id"/>
+            <input type="hidden" name="currentContentType" tal:attributes="value python:currentContentType"/>
+            <input type="hidden" name="currentSchema" tal:attributes="value python:currentSchema"/> 
+            <input type="hidden" name="tab" value="changeschema"/>
+            
+            <table id="datatable" cellpadding="0px" cellspacing="0px">
+                <tr>
+                    <th i18n:translate="edit_changeschema_nodeid"/>
+                    <th i18n:translate="edit_changeschema_objtype"/>
+                    <th tal:condition="python:not isContainer" i18n:translate="edit_changeschema_schemename"/>
+                    <th tal:condition="python:not isContainer" i18n:translate="edit_changeschema_schemeid"/>
+                </tr>
+                <tr>
+                    <td tal:content="python:id"/>
+                    <td tal:content="python:currentContentType" i18n:translate=""/>
+                    <td tal:condition="python:not isContainer" tal:content="python:currentSchemaLongName"/>
+                    <td tal:condition="python:not isContainer" tal:content="python:currentSchema"/>
+                </tr>
+            </table>
+            
+            <p i18n:translate="edit_changeschema_msg2"/>
+            <p>
+                <label i18n:translate="edit_changeschema_obj_sel">TEXT</label>
+                <select name="objtype" onchange="showWait();getSelect(this.form.nodeid.value,this.form.objtype.options[this.form.objtype.selectedIndex].value);">
+                     <option tal:repeat="datatype datatypes" tal:attributes="value python:datatype.getName();selected python:{True:'1', False:nothing}[datatype.getName()==currentContentType]" tal:content="python:datatype.getName()" i18n:translate=""/>
+                </select>
+     
+                <tal:block metal:use-macro="changeschema_selectscheme"/>
+            </p>
+
+            <p><input i18n:attributes="value edit_changeschema_selection_value" type="submit" name="submit"/></p>
+            
+        </form>
+</tal:block>
+
+<tal:block metal:define-macro="changeschema_selectscheme">
+    <span tal:condition="schemes" id="schema" name="schema">
+        <select name="schema">
+             <option tal:repeat="schema schemes" tal:attributes="value python:schema.getName();selected python:{True:'1', False:nothing}[schema.getName()==currentSchema]" tal:content="python:schema.getLongName()" i18n:translate=""/>
+        </select> 
+    </span> 
+
+    <span tal:condition="python:not schemes" id="schema" name="schema">
+        <label>&nbsp;&nbsp;&nbsp;</label><span style="font-weight:bold" i18n:translate="edit_changeschema_noscheme">TEXT</span>
+    </span> 
+</tal:block>

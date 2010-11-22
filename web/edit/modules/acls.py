@@ -31,6 +31,9 @@ from utils.utils import removeEmptyStrings
 log = logging.getLogger('edit')
 acl_types = ["read", "write", "data"]
 
+def getInformation():
+    return {"version":"1.1", "system":0}
+
 def getContent(req, ids):
     ret = ""
     user = users.getUserFromRequest(req)

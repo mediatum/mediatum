@@ -652,6 +652,9 @@ msgstr "workflow functions"
 msgid "e_publish"
 msgstr "publishing"
 
+msgid "e_changeschema"
+msgstr "schema/type-change"
+
 ### user ###
 msgid "yearbook user"
 msgstr "Yearbook User"
@@ -3291,6 +3294,40 @@ msgstr "Items (sum)"
 
 msgid "edit_stats_digobjlabel"
 msgstr "Items (digital)"
+
+### edit changeschema ###
+msgid "tab_changeschema"
+msgstr "Change schema/type"
+
+msgid "edit_changeschema_msg1"
+msgstr "Permission denied. You do not have the permission to edit these parameters. Please contact your administrator."
+
+msgid "edit_changeschema_obj_selection"
+msgstr "Change of object type"
+
+msgid "edit_changeschema_msg2"
+msgstr "Please select the new object type from the list below.<br/>For the selected object type the available schemas will then be reloaded."
+
+msgid "edit_changeschema_obj_sel"
+msgstr "Choose new object type for node"
+
+msgid "edit_changeschema_selection_value"
+msgstr "Set this object type"
+
+msgid "edit_changeschema_nodeid"
+msgstr "Object id"
+
+msgid "edit_changeschema_objtype"
+msgstr "Object type"
+
+msgid "edit_changeschema_schemeid"
+msgstr "Metadata scheme ID"
+
+msgid "edit_changeschema_schemename"
+msgstr "Metadata scheme name"
+
+msgid "edit_changeschema_noscheme"
+msgstr "no metadatatype for this object type"
 
 # mask editor #
 msgid "mask_editor_title"

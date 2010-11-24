@@ -2,6 +2,8 @@
  mediatum - a multimedia content repository
 
  Copyright (C) 2010 Werner Neudenberger <neudenberger@ub.tum.de>
+ Copyright (C) 2010 Matthias Kramm Neudenberger <kramm@in.tum.de>
+ Copyright (C) 2010 Arne Seifert <seiferta@in.tum.de>
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by

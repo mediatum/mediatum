@@ -338,7 +338,7 @@ def getNodes(req):
 
     tokenstring = '<resumptionToken expirationDate="'+ISO8601(date.now().add(3600*24))+'" '+ \
                    'completeListSize="'+str(len(nodes))+'" cursor="'+str(pos)+'">'+token+'</resumptionToken>'
-    if pos + CHUNKSIZE > len(nodes):
+    if pos + CHUNKSIZE >= len(nodes):
         tokenstring = None
         del tokenpositions[token]
     return tree.NodeList(nodes[pos:pos+CHUNKSIZE]), tokenstring, metadataformat
@@ -400,8 +400,6 @@ def GetRecord(req):
 
     id = identifier2id(id)
     
-    print id
-
     try:
         node = tree.getNode(id)
     except TypeError:

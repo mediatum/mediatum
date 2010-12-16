@@ -155,10 +155,10 @@ def ListMetadataFormats(req):
          </metadataFormat>
 
          <metadataFormat>
-             <metadataPrefix>xmetadissplus</metadataPrefix>
-             <schema>http://www.bsz-bw.de/xmetadissplus/1.3/xmetadissplus.xsd</schema>
-             <metadataNamespace>http://www.bsz-bw.de/xmetadissplus/1.3</metadataNamespace>
-         </metadataFormat>
+             <metadataPrefix>xMetaDissPlus</metadataPrefix>
+             <schema>http://www.d-nb.de/standards/xmetadissplus/xmetadissplus.xsd</schema>
+             <metadataNamespace>http://www.d-nb.de/standards/xmetadissplus/</metadataNamespace>
+         </metadataFormat>  
 
          <metadataFormat>
              <metadataPrefix>mediatum</metadataPrefix>
@@ -170,7 +170,10 @@ def ListMetadataFormats(req):
     """)
 
 def checkMetaDataFormat(format):
-    return format in ["epicur", "xmetadiss", "xmetadissplus", "oai_dc", "mediatum"]
+    try:
+        return format.lower() in ["epicur", "xmetadiss", "xmetadissplus", "oai_dc", "mediatum"]
+    except:
+        return False      
 
 def Identify(req):
     if not checkParams(req, ["verb"]):

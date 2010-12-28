@@ -185,3 +185,22 @@ function createRequestObject() {
     return tmpXmlHttpObject;
 }
 
+function handleArchived(nodeid, filename){
+    var url = '/archive/'+nodeid+'/'+filename;
+    obj = document.getElementById("object_highresolution_remark");
+
+    if(obj){
+        obj.style.display = 'inline';
+    }
+    
+    x = http.open('get', url, true);
+    http.send(null);
+    http.onreadystatechange = function(){
+        if(http.readyState==4){
+            if(obj){
+                obj.style.display = 'none';
+            }
+            return unescape(http.responseText);
+        }
+    }
+}

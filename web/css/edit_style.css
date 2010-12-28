@@ -720,5 +720,6 @@ div.editorrow{
 div.editorrow  div.label{
     width:150px; float:left; padding-top:4px
 }
-
-
+.longtext{
+    display: none;
+}

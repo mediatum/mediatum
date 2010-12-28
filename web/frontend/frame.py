@@ -204,6 +204,7 @@ class NavTreeEntry:
         self.col = col
         self.node = node
         self.id = node.id
+        self.orderpos = node.getOrderPos()
         self.indent = indent
         self.defaultopen = indent==0
         self.hassubdir = 0
@@ -361,9 +362,8 @@ class Collectionlet(Portlet):
                
             data = m[node.id]
             col_data += [data]
-
             if not data.folded or data.defaultopen:
-                for c in node.getContainerChildren():
+                for c in node.getContainerChildren().sort():
                     f(col_data,c, indent+1)
 
         f(col_data,tree.getRoot("collections"),0)
@@ -439,10 +439,13 @@ class UserLinks:
         
     def getLinks(self):
 
-        l = [Link("/logout", t(self.language,"sub_header_logout_title"), t(self.language,"sub_header_logout"), icon="/img/logout.gif")]
+        l = [Link("http://"+config.get("host.name")+"/logout", t(self.language,"sub_header_logout_title"), t(self.language,"sub_header_logout"), icon="/img/logout.gif")]
         if config.get("user.guestuser")==self.user.getName():
-            l = [Link("/login", t(self.language,"sub_header_login_title"), t(self.language,"sub_header_login"), icon="/img/login.gif")]
-        
+            if config.get("config.ssh")=="yes":
+                l = [Link("https://"+config.get("host.name")+"/login", t(self.language,"sub_header_login_title"), t(self.language,"sub_header_login"), icon="/img/login.gif")]
+            else:
+                l = [Link("/login", t(self.language,"sub_header_login_title"), t(self.language,"sub_header_login"), icon="/img/login.gif")]
+
         if self.area!="":
             l += [Link("/", t(self.language,"sub_header_frontend_title"), t(self.language,"sub_header_frontend"), icon="/img/frontend.gif")]
         

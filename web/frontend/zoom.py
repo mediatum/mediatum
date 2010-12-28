@@ -75,7 +75,7 @@ class ZoomImage:
             return
 
         for f in self.node.getFiles():
-            if f.type == "image":
+            if f.type=="image":
                 filename = f.retrieveFile()
                 self.filepath = os.path.dirname(filename)
                 break
@@ -124,7 +124,7 @@ class ZoomImage:
 
         if not self.z_file:
             for f in self.node.getFiles():  
-                if f.type=="zoom":
+                if f.type=="zoom" and os.path.exists(self.filepath+"/"+f.getName()):
                     self.z_file = zipfile.ZipFile(self.filepath+"/"+f.getName(), "r")
                     break
         if self.z_file:
@@ -153,7 +153,10 @@ class ZoomImage:
 
         img = self.img.crop((x0,y0,x1,y1)).resize((xl,yl))
         tmpname = self.filepath+"/"+tileid+".jpg"
-        img.save(tmpname)
+        try:
+            img.save(tmpname)
+        except:
+            pass
         return tmpname
 
 def send_imageproperties_xml(req):

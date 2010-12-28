@@ -204,7 +204,8 @@ class PrintPreview:
                 
             values = []
             for item in c:
-                values.append(item[1])    
+                if item[1].strip()!="":
+                    values.append(item[1]) 
             items.append(values)
 
         for item in items:

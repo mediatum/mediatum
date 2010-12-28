@@ -501,13 +501,13 @@ class Metadatatype(tree.Node):
     def setName(self, value):
         self.set("mame", value)
 
-    def getDescription(self):
-        return self.get("description")
+    def getDescription(self, maxlength=-1):
+        return getSubString(self.get("description"), maxlength)
     def setDescription(self, value):
         self.set("description", value)
 
-    def getLongName(self):
-        return self.get("longname")
+    def getLongName(self, maxlength=-1):
+        return getSubString(self.get("longname"), maxlength)
     def setLongName(self, value):
         self.set("longname", value)
 
@@ -532,8 +532,8 @@ class Metadatatype(tree.Node):
     def setDatatype(self, valuelist):
         self.set("datatypes", ", ".join(["%s" %k for k in valuelist]))
  
-    def getDatatypeString(self):
-        return self.get("datatypes")
+    def getDatatypeString(self, maxlength=-1):
+        return getSubString(self.get("datatypes"), maxlength)
     def setDatatypeString(self, value):
         self.set("datatypes", str(value))
    
@@ -615,8 +615,8 @@ class Metadatafield(tree.Node):
     def setName(self, value):
         self.set("name", value)
 
-    def getLabel(self):
-        return self.get("label")
+    def getLabel(self, maxlength=-1):
+        return getSubString(self.get("label"), maxlength)
     def setLabel(self, value):
         self.set("label", value)
 

@@ -172,6 +172,9 @@ def send_doc(req):
 def send_file(req, download=0):
     access = AccessData(req)
     id,filename = splitpath(req.path)
+    if id.endswith(".zip"):
+        id = id[:-4]
+    
     try:
         n = tree.getNode(id)
     except tree.NoSuchNodeError:
@@ -179,6 +182,11 @@ def send_file(req, download=0):
     if not access.hasAccess(n, "data") and n.type not in ["directory", "collections", "collection"]:
         return 403
     file = None
+    
+    if filename==None and n:
+        # build zip-file and return it
+        send_transferzip(req)
+
     # try full filename
     for f in n.getFiles():
         if f.getName()==filename:
@@ -193,8 +201,14 @@ def send_file(req, download=0):
                 file = f
                 break
     # try file from archivemanager
-    if not file and n.get("archive_type")!="":  
-        return req.sendFile(archivemanager.getManager(n.get("archive_type")).getArchivedFileStream(n.get("archive_path")), "image/tif")
+    if not file and n.get("archive_type")!="":
+        am = archivemanager.getManager(n.get("archive_type"))
+        if n.get("archive_state")=="":
+            am.getArchivedFile(n.id)
+        if not am:
+            return
+        return req.sendFile(am.getArchivedFileStream(n.get("archive_path")), "application/x-download")
+
     
     if not file:
         return 404
@@ -243,7 +257,6 @@ def sendZipFile(req, path):
     r("/")
     zip.close()
     req.reply_headers['Content-Disposition'] = "attachment; filename=shoppingbag.zip"
-    #req.sendFile(tempfile, "application/zip")
     req.sendFile(tempfile, "application/x-download")
     if os.sep=='/': # Unix?
         os.unlink(tempfile) # unlinking files while still reading them only works on Unix/Linux
@@ -277,9 +290,14 @@ def get_archived(req):
         req.write("-no archive module loaded-")
         return
     am = archivemanager.getManager(n.get("archive_type"))
-    am.getArchivedFile(n.id)
-    req.write('<script>alert("file delivered")</script>\n<a href="/file/'+str(id)+'/'+filename+'">'+t(req, "image_high_res_title")+'</a>')
-    
+    if am:
+        fname = am.getArchivedFileStream(n.get("archive_path"))
+        if os.path.exists(fname):
+            req.sendFile(fname, "application/x-download")
+    else:
+        print "no archive manager loaded"
+        return 0
+
     
 def get_root(req):
     filename = config.basedir+"/web/root"+req.path
@@ -288,3 +306,9 @@ def get_root(req):
     else:
         return 404
         
+def send_transferzip(req):
+    id, filename = splitpath(req.path)
+    
+    # send transfer file as zip
+    print "build zip", tree.getNode(id[:-4])
+    return

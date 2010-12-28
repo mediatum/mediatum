@@ -1,9 +1,13 @@
 function addscript(src) {
     document.write('<script src="' + src + '" type="text/javascript"' + '>' + '<' + '/script>');
 }
-function mediatum_load(id, limit, sort, query, format){
-    document.write('<div id="mediatum">Loading...</div>');
-    var url = "http://mediatum2.ub.tum.de/jssearch?id="+id;
+function mediatum_load(id, limit, sort, query, format, language){
+    if(language=="de"){
+        document.write('<div id="mediatum">lade...</div>');
+    }else{
+        document.write('<div id="mediatum">Loading...</div>');
+    }
+    var url = "http://mediatum.ub.tum.de/jssearch?id="+id;
     if(query) {
         url+="&q="+escape(query);
     }
@@ -15,6 +19,9 @@ function mediatum_load(id, limit, sort, query, format){
     }
     if(format){
         url+="&format="+format;
+    }
+    if(language){
+        url+="&language="+language;
     }
     addscript(url);
 }

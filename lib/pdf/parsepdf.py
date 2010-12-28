@@ -68,7 +68,7 @@ def parsePDF(filename, tempdir):
         data = {}
         for line in lines:
             for attr in attrs:
-                parts = line[:-1].split(attr+":")
+                parts = line.replace("\n","").replace("\r","").split(attr+":")
                 if len(parts)==2:
                     data[attr] = parts[1].strip()
                     

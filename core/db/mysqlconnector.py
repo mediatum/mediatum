@@ -286,6 +286,8 @@ class MYSQLConnector(Connector):
             self.runQuery('update node set '+field+'="'+newrule+'" where '+field+'="'+rulename+'"')
 
     def createNode(self, name, type):
+        if type=="root": # do not create a second root node
+            return 0
         id = self.mkID()
         orderpos = self.mkOrderPos()
         self.runQuery("insert into node (id, name, type, orderpos) values(" + id + ", " + self.esc(name) + ", '" + type + "',"+str(orderpos)+")")

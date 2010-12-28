@@ -213,6 +213,9 @@ class ContentList(Content):
         else:
             if req.params.get("itemsperpage")=="-1":
                 files_per_page = len(self.files)
+                if files_per_page>100:
+                    files_per_page = 100
+                
             else:
                 files_per_page = int(req.params.get("itemsperpage"))
 

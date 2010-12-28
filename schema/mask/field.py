@@ -126,7 +126,7 @@ class m_field(Metatype):
         
         if flags & VIEW_DATA_ONLY:
             # return a valuelist
-            return [element.getName(), value, element.getLabel(), element.get("type")]
+            return [element.getName(), value, field.getLabel(), element.get("type")]
 
         elif flags & VIEW_SUB_ELEMENT:
             # element in h-group

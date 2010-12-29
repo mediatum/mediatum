@@ -401,6 +401,9 @@ msgstr "document has an attachment"
 msgid "image_high_res_title"
 msgstr "download high resolution version"
 
+msgid "image_high_res_load"
+msgstr "  loading file..."
+
 msgid "doc_fulltext_title"
 msgstr "open fulltext in new window"
 
@@ -2683,6 +2686,9 @@ msgstr "unfold"
 msgid "edit_classes_close_title"
 msgstr "fold"
 
+msgid "edit_classes_noparent"
+msgstr "Operation failed, node is last parent of selected object."
+
 ### edit upload ###
 msgid "edit_upload_msg1"
 msgstr "Permission denied. You do not have the permission to add this object. Please contact your administrator."
@@ -2703,7 +2709,7 @@ msgid "edit_upload_header1"
 msgstr "Upload of digital objects (files) / creation of metadatasets<br/><br/>Step 1: Object type selection '${objtype}'"
 
 msgid "edit_upload_header2"
-msgstr "Step 2: Metadata scheme selection"
+msgstr "Step 2: Metadata scheme selection for Object type"
 
 msgid "edit_upload_header3"
 msgstr "Step 3: Select file for upload"
@@ -2718,13 +2724,19 @@ msgid "edit_upload_msg4"
 msgstr "If you want to upload several files at one time, then store them locally in a ZIP archive (e.g. <a target="newwindow" href="http://www.winzip.com/">WinZip</a>), and upload the .ZIP archive."
 
 msgid "edit_upload_scheme"
-msgstr "Metadata scheme:"
+msgstr "Select Metadata scheme:"
 
 msgid "edit_upload_file"
 msgstr "File"
 
 msgid "edit_upload_upload_label"
 msgstr "Create / Upload"
+
+msgid "edit_upload_typeselection"
+msgstr "-- select Object type --"
+
+msgid "edit_upload_schemeselection"
+msgstr "-- select Metadata scheme --"
 
 ### edit FCKeditor custom file manager ###
 msgid "edit_fckeditor_cfm_filetype"

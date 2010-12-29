@@ -407,6 +407,9 @@ msgstr "Attachment zu Dokument vorhanden"
 msgid "image_high_res_title"
 msgstr "Hochaufgelöste Version herunterladen"
 
+msgid "image_high_res_load"
+msgstr "  Datei wird geladen..."
+
 msgid "doc_fulltext_title"
 msgstr "Volltext in neuem Fenster öffnen"
 
@@ -2716,6 +2719,9 @@ msgstr "Aufklappen"
 msgid "edit_classes_close_title"
 msgstr "Zuklappen"
 
+msgid "edit_classes_noparent"
+msgstr "Operation kann nicht ausgeführt werden, da es sich um den einzigen Eltern-Knoten handelt."
+
 ### edit upload ###
 msgid "edit_upload_msg1"
 msgstr "Sie besitzen nicht die Berechtigung Objekte in das System einzustellen. Bitte wenden Sich an Ihren Administrator"
@@ -2736,7 +2742,7 @@ msgid "edit_upload_header1"
 msgstr "Hochladen von digitalen Objekten (Files) / Anlegen von Metadatensätzen.<br/><br/>1. Schritt: Objekttyp-Auswahl '${objtype}'"
 
 msgid "edit_upload_header2"
-msgstr "2. Schritt: Auswahl des Metadatenschemas"
+msgstr "2. Schritt: Auswahl des Metadatenschemas für Objekttyp"
 
 msgid "edit_upload_header3"
 msgstr "3. Schritt: Auswahl von Dateien für den Upload / entfällt, wenn Sie nur einen Metadatensatz ohne zugehörige Datei anlegen wollen"
@@ -2751,13 +2757,19 @@ msgid "edit_upload_msg4"
 msgstr "Wollen Sie mehrere Dateien auf einmal hochladen, so verpacken Sie diese bitte lokal bei sich in ein .ZIP Archiv (z.B. mit <a target="newwindow" href="http://www.winzip.com/">WinZip</a>), und laden dann das .ZIP Archiv hoch."
 
 msgid "edit_upload_scheme"
-msgstr "Metadatenschema:"
+msgstr "Metadatenschema wählen:"
 
 msgid "edit_upload_file"
 msgstr "Datei"
 
 msgid "edit_upload_upload_label"
 msgstr "Anlegen / Hochladen"
+
+msgid "edit_upload_typeselection"
+msgstr "-- Objekttyp wählen --"
+
+msgid "edit_upload_schemeselection"
+msgstr "-- Metadatenschema wählen --"
 
 ### edit FCKeditor custom file manager ###
 msgid "edit_fckeditor_cfm_filetype"

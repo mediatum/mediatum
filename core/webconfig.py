@@ -132,6 +132,13 @@ def initContexts():
     file.addHandler("content").addPattern("/edit_content")
     file.addHandler("content").addPattern("/edit_content/.*")
     file.addHandler("action").addPattern("/edit_action")
+    
+    # === ajax tree ===    
+    context = athana.addContext("/ftree", ".")
+    handler.addPattern("/ftree")
+    file = context.addFile("web/ftree/ftree.py")
+    file.addHandler("ftree").addPattern("/.*")
+    
 
     # === OAI ===
     context = athana.addContext("/oai/", ".")

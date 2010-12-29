@@ -1,0 +1,42 @@
+    p{
+        font-family:arial;
+        
+    }
+    
+    .tree{
+        margin:0px;
+        margin-left:0px;
+        padding:0px;
+        font-size: 14px;
+        font-weight: normal;
+    }
+    .tree ul{    /* Sub menu groups */
+        margin-left:20px;    /* Left spacing */
+        padding-left:0px;
+        display:none;    /* Initially hide sub nodes */
+    }
+    .tree li{    /* Nodes */
+        list-style-type:none;
+        white-space:nowrap;
+    }
+    .tree li a{    /* Node links */
+        color:#000;
+        text-decoration:none;
+        font-family:arial;
+        font-size:0.8em;
+        padding:1px 5px;
+        padding-left:2px;
+        font-weight: normal;
+    }
+    .tree li a:hover{
+        background-color:#CCC;
+        color:#000;
+        font-weight: normal;
+    }
+    .tree li a.read{
+        color: #999;
+    }
+
+    .tree li a .selection{
+        margin:0px; padding: 0px; color:green;
+    }

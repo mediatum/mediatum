@@ -40,4 +40,38 @@
 </metal:block>
 
 
+<metal:block metal:define-macro="classtree">
+    <link rel="stylesheet" href="/css/ftree.css" type="text/css" />
+    <script type="text/javascript" src="/js/ajax.js"> </script>
+    <script type="text/javascript" src="/js/ftree.js"> </script>
+    <script type="text/javascript" tal:content="script"> </script>
+    <script type="text/javascript"> 
+        function setFolder(){
+            markFolder(true, "", this.id);
+            changeValue(this.id);
+            return false;
+        }
+    </script>
+    <form>
+    <div style="max-height:400px; overflow:auto;border:1px solid silver">
+        <ul id="classtree" class="tree">
+            <li tal:repeat="basedir basedirs" tal:attributes="id python:'Node'+basedir.id"><a tal:attributes="id python:str(basedir.id); title python:basedir.getLabel()+' ('+str(basedir.id)+')'" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
+                <ul>
+                    <li tal:attributes="parentId python:basedir.id" class="spinner.gif"><a href="#" id="node_0"> </a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    </form>
+    <script type="text/javascript">
+        initTree({'idOfFolderTrees': ['classtree'], 'style':'classification', 'multiselect':true});
+    </script>
+    <tal:block tal:replace="raw python:'<script type=&quot;text/javascript&quot;>'"/>
+        <tal:block tal:repeat="id python:idstr.split(',')" tal:replace="python:'allobjects['+id+']=1;'"/>
+    <tal:block tal:replace="raw python:'</script>'"/>
+
+</metal:block>
+
+
+
 

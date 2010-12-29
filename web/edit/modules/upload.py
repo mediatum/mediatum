@@ -40,70 +40,88 @@ from schema.schema import loadTypesFromDB
 
 from core.translation import translate, lang, t
 
-
+def getInformation():
+    return {"version":"1.1", "system":0}
+    
+    
 def elemInList(list, name):
     for item in list:
         if item.getName()==name:
             return True
     return False
 
+    
 def getContent(req, ids):
     error = req.params.get("error")
-    if "file" in req.params or "datatype" in req.params: # create node with/without file
+     
+    def getSchemes(req):
+        schemes = AccessData(req).filter(loadTypesFromDB())
+        return filter(lambda x: x.isActive(), schemes)
+
+    def getDatatypes(req, schemes):
+        dtypes = []
+        datatypes = loadAllDatatypes()
+        for scheme in schemes:
+            for dtype in scheme.getDatatypes():
+                if dtype not in dtypes:
+                    for t in datatypes:
+                        if t.getName()==dtype and not elemInList(dtypes, t.getName()):
+                            dtypes.append(t)
+                     
+        dtypes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
+        return dtypes
+            
+    schemes = getSchemes(req)
+    dtypes = getDatatypes(req, schemes)
+    
+    if "action" in req.params:
+        v = {"id":req.params.get("id")}
+        
+        # step 1
+        if req.params.get("action","").startswith("step1"):
+            v['datatypes'] = dtypes
+            req.writeTAL("web/edit/modules/upload.html", v, macro="step1")
+            
+        # step 2
+        if req.params.get("action","").startswith("step2|"):
+        
+            objtype = req.params.get("action","|").split("|")[1]
+            if objtype=="":
+                req.write("")
+                return ""
+            _schemes = []
+            for scheme in schemes:
+                if objtype in scheme.getDatatypes():
+                    _schemes.append(scheme)
+            schemes = _schemes
+            schemes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(),translate(y.getLongName(), request=req).lower()))
+            
+            for item in dtypes:
+                if item.getName()==objtype:
+                    v['objtype'] = item
+                    break
+
+            v['schemes'] = schemes
+            req.writeTAL("web/edit/modules/upload.html", v, macro="step2")
+
+        # step 3
+        if req.params.get("action","").startswith("step3|"):
+            schema = req.params.get("action","|").split("|")[1]
+            if schema=="":
+                req.write("")
+            else:
+                req.writeTAL("web/edit/modules/upload.html", v, macro="step3")
+        return ""
+    
+    elif "submit" in req.params: # create object
         try:
             upload_new(req)
         except OperationException, e:
             error = e.value
 
+    return req.getTAL("web/edit/modules/upload.html",{"id":req.params.get("id"), "datatypes":dtypes, "schemes":schemes, "error":error},macro="upload_form") + showdir(req, tree.getNode(ids[0]))
 
-    user = users.getUserFromRequest(req)
-    uploaddir = tree.getNode(ids[0])
-
-    schemes = AccessData(req).filter(loadTypesFromDB())
-    _schemes = []
-    for scheme in schemes:
-        if scheme.isActive():
-            _schemes.append(scheme)
-    schemes = _schemes
-
-    # find out which schema allows which datatype, and hence,
-    # which overall data types we should display
-    dtypes = []
-    datatypes = loadAllDatatypes()
-    for scheme in schemes:
-        for dtype in scheme.getDatatypes():
-            if dtype not in dtypes:
-                for t in datatypes:
-                    if t.getName()==dtype and not elemInList(dtypes, t.getName()):
-                        dtypes.append(t)
-                 
-    dtypes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
-
-    objtype = ""
-    if len(dtypes)==1:
-        objtype = dtypes[0]
-    else:
-        for t in datatypes:
-            if t.getName()==req.params.get("objtype",""):
-                objtype = t
-                break
-
-    # filter schemes for special datatypes
-    if req.params.get("objtype","")!="":
-        _schemes = []
-        for scheme in schemes:
-            if req.params.get("objtype","") in scheme.getDatatypes():
-                _schemes.append(scheme)
-        schemes = _schemes
-        schemes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(),translate(y.getLongName(), request=req).lower()))
     
-    script = """<script>
-        parent.reloadTree('"""+req.params.get("id")+"""');
-    </script>"""
-
-    return req.getTAL("web/edit/modules/upload.html",{"id":req.params.get("id"),"datatypes":dtypes, "schemes":schemes, "objtype":objtype, "error":error, "script":script},macro="upload_form") + showdir(req, uploaddir)
-
-
 # differs from os.path.split in that it handles windows as well as unix filenames
 FNAMESPLIT=re.compile(r'(([^/\\]*[/\\])*)([^/\\]*)')
 def mybasename(filename):
@@ -157,7 +175,7 @@ def importFileIntoNode(user,realname,tempname,datatype, workflow=0):
 
 def upload_new(req):
     user = users.getUserFromRequest(req)
-    datatype = req.params.get("datatype", "image")
+    datatype = req.params.get("objtype") + "/" + req.params.get("scheme")
     uploaddir = users.getUploadDir(user)
 
     workflow = "" #int(req.params["workflow"])
@@ -165,6 +183,7 @@ def upload_new(req):
     if "file" in req.params.keys():
         file = req.params["file"]
         del req.params["file"]
+
         if hasattr(file,"filesize") and file.filesize>0:
             try:
                 importFileIntoNode(user, file.filename, file.tempname, datatype, workflow)

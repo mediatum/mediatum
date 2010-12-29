@@ -34,7 +34,6 @@ def getContent(req, ids):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     access = AccessData(req)
-    reload_script = False
     faultydir = users.getFaultyDir(user)
     metatypes = []
     nodes = []
@@ -140,8 +139,6 @@ def getContent(req, ids):
                 faultydir.removeChild(node)
                 node.removeAttribute("faulty")
 
-        reload_script = True
-
     if "edit_metadata" in req.params or node.get("faulty")=="true":
         if not hasattr(mask, "i_am_not_a_mask"):
             req.params["errorlist"] = mask.validate(nodes)
@@ -169,7 +166,6 @@ def getContent(req, ids):
                 creation_date.append([node.get("creator"), datestr])
     
     data = {}
-    data["reload_script"] = reload_script
     data["metatypes"] = metatypes
     data["idstr"] = idstr
     data["node"] = nodes[0]

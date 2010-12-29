@@ -142,27 +142,6 @@
 <i metal:define-macro="access_error" i18n:translate="edit_access_error">TEXT</i>
 
 
-<metal:block metal:define-macro="build_tree">
-    <a tal:attributes="name id"/>
-    <div class="line">
-        <div tal:attributes="style python:'padding-left:'+str(indent)+'px'" class="name">
-            <img tal:condition="python:not current" tal:attributes="id python:'img'+id" src="/img/mark_empty.png"/> 
-            <img tal:condition="current" tal:attributes="id python:'img'+id" src="/img/mark_arrow.png"/>
-            <a tal:condition="python:type==1" tal:attributes="href python:'javascript:openNode(\''+link+'\',\''+id+'\')'" i18n:attributes="title edit_classes_close_title">
-                <img src="/img/edit_box1.gif" border="0"/>
-            </a>
-            <a tal:condition="python:type==2" tal:attributes="href python:'javascript:openNode(\''+link+'\',\''+id+'\')'" i18n:attributes="title edit_classes_open_title">
-                <img src="/img/edit_box2.gif" border="0"/>
-            </a>
-            <img tal:condition="python:type==3" src="/img/edit_box3.gif" border="0"/>
-            <a tal:attributes="class cssclass; title title; href python:'javascript:setFolder('+id+')'">
-                &nbsp;<tal:block tal:replace="python:nodename+items"/>
-            </a>
-        </div>
-    </div>
-</metal:block>
-
-
 <metal:block metal:define-macro="frame_content">
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
     <html>

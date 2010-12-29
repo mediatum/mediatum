@@ -69,13 +69,11 @@
             <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
             <meta content="text/html;charset=UTF-8" http-equiv="content-type">
             <title i18n:translate="edit_main_title">TEXT</title>
-            <link rel="stylesheet" href="/css/editor.css">
-            <script type="text/javascript" src="/js/editor.js">
-            </script>
-            <script type="text/javascript" src="/js/admin.js">
-            </script>
-            <script type="text/javascript" tal:content="raw script">
-            </script>
+            <link rel="stylesheet" href="/css/editor.css" />
+            <script type="text/javascript" src="/js/ajax.js"> </script>
+            <script type="text/javascript" src="/js/editor.js"> </script>
+            <script type="text/javascript" src="/js/admin.js"> </script>
+            <script type="text/javascript" tal:content="raw script"> </script>
 
             <frameset cols="273,*" frameborder="1" framespacing="1" name="frame">
                 <frameset rows="168,*" frameborder="0" framespacing="1">
@@ -145,7 +143,7 @@
 
 
 <metal:block metal:define-macro="build_tree">
-    <a tal:attributes="name python:'node'+id"/>
+    <a tal:attributes="name id"/>
     <div class="line">
         <div tal:attributes="style python:'padding-left:'+str(indent)+'px'" class="name">
             <img tal:condition="python:not current" tal:attributes="id python:'img'+id" src="/img/mark_empty.png"/> 
@@ -186,7 +184,7 @@
                   var s = "";
                   var first = 1;
                   for(var i in allobjects) {
-                      if(allobjects[i]) {
+                      if(allobjects[i] && i!="in_array") {
                           if(first!=1) s += ",";
                           s += i; first = 0;
                       }
@@ -260,47 +258,46 @@
 </metal:block>
 
 
-<html metal:define-macro="frame_tree">
+<metal:block metal:define-macro="frame_tree">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
     <head>
-        <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta content="text/html;charset=UTF-8" http-equiv="content-type">
         <title i18n:translate="edit_tree_editor_title">TEXT</title>
-        <link rel="stylesheet" href="/css/editor.css"/>
-        <link rel="stylesheet" href="/css/edit_tree.css"/>
-
-        <script tal:content="raw script" language="javascript">
-        </script>
-        <script language="javascript">
-            function setFolder(id){
-                var img = document.images['img'+id];
-                if(currentfolder != "") {
-                    lastimg = document.images['img'+currentfolder];
-                    if(lastimg) {
-                        lastimg.src = "/img/mark_empty.png";
-                        lastimg.title = "";
-                    }
-                }
-                if(img) {
-                    img.src = "/img/mark_arrow.png";
-                    img.title = "Selektierter Ordner ("+id+")";
-                }
-                parent.setFolder(id);
-                currentfolder = id;
+        <link rel="stylesheet" href="/css/ftree.css" type="text/css" />
+        <script type="text/javascript" src="/js/ajax.js"> </script>
+        <script type="text/javascript" src="/js/ftree.js"> </script>
+        <script type="text/javascript" tal:content="script"> </script>
+        <script type="text/javascript"> 
+            function setFolder(){
+                markFolder(false, currentfolder, this.id);
+                parent.setFolder(this.id);
+                currentfolder = this.id;
+                return false;
             }
             
             function getFolder() {
                 return currentfolder;
             }
-            
-            function openNode(link,id){
-                document.location.href = link + "&id="+currentfolder + "&scrollid=" + id;
-            }
+
         </script>
     </head>
-    <body tal:content="raw content" tal:attributes="onload python:'location.hash='+scrollid" bgcolor="#ffffff">
+    
+    <body bgcolor="#ffffff" onload="initTree({'idOfFolderTrees':['tree'], 'multiselect':false});">
+        <ul id="tree" class="tree">
+            <li tal:repeat="basedir basedirs" tal:attributes="id python:'Node'+basedir.id"><a tal:attributes="id python:str(basedir.id); title python:basedir.getLabel()+' ('+str(basedir.id)+')'" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
+                <ul>
+                    <li tal:attributes="parentId python:basedir.id" class="spinner.gif"><a href="#" id="node_0"> </a></li>
+                </ul>
+            </li>
+        </ul>
+
+        <!--<a href="#" onclick="expandAll('tree');return false">Expand all</a>
+        <a href="#" onclick="collapseAll('tree');return false">Collapse all</a>-->
+ 
     </body>
 </html>
-
+</metal:block>
 
 <metal:block metal:define-macro="frame_actions">
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">

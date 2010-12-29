@@ -38,7 +38,7 @@ from edit_common import *
 from core.translation import lang, t
 from edit_common import EditorNodeList
 from core.datatypes import loadAllDatatypes
-from core.tree import getRoot
+from core.tree import getRoot, nodes_cache, childids_cache, parentids_cache
 
 logger = logging.getLogger('editor')
 
@@ -118,7 +118,9 @@ def frameset(req):
                     }
                     return 0;
                 } else if(_action == "editsingle") {
+                    alert("editsingle");
                     var ids = content.getAllObjectsString();
+                    alert(ids);
                     if(ids == '') {
                         reloadPage(tree.getFolder(),'');
                     } else {
@@ -153,6 +155,7 @@ def frameset(req):
             }
             function reloadTree(id)
             {
+
                 var src;
                 if(id) {
                     src = id;
@@ -162,6 +165,7 @@ def frameset(req):
                 r = ""+Math.random()*10000;
                 this.tree.location.href = "edit_tree?id="+src+"&r="+r+"#"+src;
             }
+            
             function reloadPage(id, id_to_open)
             {
                 action = "";
@@ -171,31 +175,11 @@ def frameset(req):
                     s = "tree_unfold="+id_to_open+"&";
                 }
                 r = ""+Math.random()*10000;
-                this.tree.location.href = "edit_tree?"+s+"id="+id+"&r="+r+"#"+id;
-                this.content.location.href = "edit_content?id="+id+"&r="+r;
-                this.buttons.location.href = "edit_buttons?id="+id+"&r="+r;
+                this.tree.location.href = "/edit/edit_tree?id="+id;
+                this.buttons.location.href = "/edit/edit_buttons?id="+id+"&r="+r;
+                this.content.location.href = "/edit/edit_content?id="+id+"&r="+r;
             }
-            function reloadURL(url)
-            {
-                this.location.href = url;
-            }
-
-            function openWindow(fileName, width, height)
-            { 
-                win1 = window.open(fileName,'browsePopup','screenX=50,screenY=50,width='+width+',height='+height+',directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=no'); 
-                win1.focus();
-            } 
-            function setFolder(folderid)
-            {
-                var src = tree.getFolder();
-                if(action=="") {
-                    this.content.location.href = "edit_content?id="+folderid;
-                    this.buttons.location.href = "edit_buttons?id="+folderid;
-                } else {
-                    edit_action(action, src, idselection, folderid);
-                    reloadPage(folderid, '');
-                }
-            }
+            
             """
 
     req.writeTAL("web/edit/edit.html", {"id":id, "tab":(tab and "&tab="+tab) or "", "script":script}, macro="edit_main")
@@ -349,6 +333,12 @@ def action(req):
     user = users.getUserFromRequest(req)
     trashdir = users.getTrashDir(user)
 
+    def clearFromCache(node):
+        for n in node.getAllChildren():
+            nodes_cache.remove(int(n.id))
+            childids_cache[int(n.id)] = None
+            parentids_cache[int(n.id)] = None
+ 
     if not access.user.isEditor():
         req.write("""permission denied""")
         return
@@ -385,22 +375,24 @@ def action(req):
         
         newnode.set("creator", user.getName())
         newnode.set("creationtime",  str(time.strftime( '%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
-        req.writeTALstr('<tal:block tal:replace="id"/>',{"id":newnode.id}) # deliver id of new node
-        return
+        clearFromCache(node)
+        req.params["dest"] = newnode.id
 
     try:
-        destid = req.params["dest"]
+        destid = req.params.get("dest", None)
         dest = tree.getNode(destid)
         folderid = destid
     except:
         destid = None
         dest = None
         folderid = srcid
-    
-    action = req.params["action"] 
+
+    action = req.params.get("action")
     idlist = getIDs(req)
     mysrc = None
     errorobj = None
+
+    
     try:
         if action=="clear_trash":
             for n in trashdir.getChildren():
@@ -408,12 +400,16 @@ def action(req):
                     if os.path.exists(f.retrieveFile()):
                         os.remove(f.retrieveFile())
                 trashdir.removeChild(n)
-            logger.info(user.getName()+" cleared trash folder with id "+str(trashdir.id))
+                clearFromCache(trashdir)
+                dest = trashdir
+                
+            logger.info("%s cleared trash folder with id %s" %(user.getName(), trashdir.id))
             return
 
         for id in idlist:
             obj = tree.getNode(id)
             mysrc = src
+
             if isDirectory(obj):
                 mysrc = obj.getParents()[0]
 
@@ -422,42 +418,39 @@ def action(req):
                     if mysrc.id!=trashdir.id:
                         mysrc.removeChild(obj)
                         trashdir.addChild(obj)
-                        logger.info(user.getName()+" removed "+obj.id+" from "+mysrc.id)
+                        clearFromCache(mysrc)
+                        logger.info("%s removed %s from %s" %(user.getName(), obj.id, mysrc.id))
+                        dest = mysrc
+                
                 else:
-                    logger.error(user.getName()+" has no write access for node "+mysrc.id)
+                    logger.error("%s has no write access for node %s" %(user.getName(), mysrc.id))
                     req.writeTALstr('<tal:block i18n:translate="edit_nopermission"/>', {})
+                dest = mysrc
 
-            elif action=="move":
+            elif action in ["move", "copy"]:
                 if dest != mysrc and \
                    access.hasWriteAccess(mysrc) and \
                    access.hasWriteAccess(dest) and \
                    access.hasWriteAccess(obj) and \
                    isDirectory(dest):
                     if not nodeIsChildOfNode(dest,obj):
-                        mysrc.removeChild(obj)
+                        if action=="move":
+                            mysrc.removeChild(obj)
                         dest.addChild(obj)
+                        clearFromCache(dest)
                     else:
-                        logger.error(user.getName()+" could not move "+obj.id+" from "+mysrc.id+" to "+dest.id)
+                        logger.error("%s could not %s %s from %s to %s" %(user.getName(), action, obj.id, mysrc.id, dest.id))
                 else:
-                    req.writeTALstr('<tal:block i18n:translate="edit_nopermission"/>', {})
+                    return
                 mysrc = None
-           
-            elif action=="copy":
-                if dest != mysrc and \
-                   access.hasReadAccess(mysrc) and \
-                   access.hasWriteAccess(dest) and \
-                   access.hasWriteAccess(obj) and \
-                   isDirectory(dest):
-                    if not nodeIsChildOfNode(dest,obj):
-                        dest.addChild(obj)
-                        logger.info(user.getName()+" copied "+obj.id+" from "+mysrc.id+" to "+dest.id)
-                    else:
-                        logger.error(user.getName()+" could not copy "+obj.id+" from "+mysrc.id+" to "+dest.id)
-                mysrc = None
+                
         if not mysrc:
             mysrc = src
     except:
         errorobj = sys.exc_info()
+
+    finally:
+        req.write(dest.id)
 
 
 def isDirectory(node):
@@ -510,17 +503,15 @@ def content(req):
     if req.params.get("type","")=="help" and req.params.get("tab","")=="upload":
         return upload_help(req)
 
-    user = users.getUserFromRequest(req)
-
     if len(ids)>0:
         node = tree.getNode(ids[0])
 
     tabs = "content"
     if node.type=="root":
         tabs = "content"
-    elif node.id==users.getUploadDir(user).id:
+    elif node.id==users.getUploadDir(access.getUser()).id:
         tabs = "upload"
-    elif node.id==users.getImportDir(user).id:
+    elif node.id==users.getImportDir(access.getUser()).id:
         tabs = "imports"
     elif hasattr(node, "getDefaultEditTab"):
         tabs = node.getDefaultEditTab()
@@ -604,15 +595,11 @@ def content(req):
         edit_logo(req, ids)
     else:
         t = current.split("_")[-1]
-        #try:
         if t in editModules.keys():
             content["body"] += editModules[t].getContent(req, ids) # use standard method of module
         else:
             content["body"] += req.getTAL("web/edit/edit.html",{"module":current}, macro="module_error")
-    
-       # except core.athana.TALESError, e:
-        #    content["body"] += req.getTAL("web/edit/edit.html", {"e":e or "", "trace":traceback, "sys":sys}, macro="edit_errortemplate")
-    
+
     if req.params.get("style","")!="popup": # normal page with header
         v["tabs"] = handletabs(req, ids, tabs)
         v["script"] = content["script"]
@@ -634,17 +621,18 @@ def buttons(req):
     if "id" in req.params:
         node = tree.getNode(req.params.get("id"))
         
+    newcoll = None
     if not node:
         dirtype = "%s/%s:" %(t(req, "collection"), t(req, "directory"))
-        newcoll = None
         newdir = None
+        
     elif isCollection(node):
         dirtype = t(req, "collection")+":"
         newcoll = t(req, "edit_action_new")+": " + t(req, "collection")
         newdir = t(req, "edit_action_new")+": " + t(req, "directory")
+        
     else:
         dirtype = t(req, "directory")+":"
-        newcoll = None
         newdir = t(req, "edit_action_new")+": " + t(req, "directory")
 
     if node:
@@ -662,91 +650,14 @@ def buttons(req):
 # build browsing tree-frame
 def showtree(req):
     access = AccessData(req)
-    user = users.getUserFromRequest(req)
-    if not user.isEditor():
+    if not access.getUser().isEditor():
         req.writeTAL("web/edit/edit.html", {}, macro="edit_notree_permission")
         return
-
-    # scroll the tree to either the current id or the parent id
-    # (or to what was requested via the scrollid parameter)
-
-    currentid = req.params.get("id",tree.getRoot().id)
-    p = tree.getNode(currentid).getParents()
-    if len(p): parentid = p[0].id
-    else: parentid = None
-    scrollid = req.params.get("scrollid",parentid)
-    if scrollid is None:
-        scrollid = currentid
-
-    # make sure the scrollid and currentid are never too far
-    # from each other
-    if currentid != scrollid:
-        try:
-            unfoldedids = req.session["lefttreenodes"]
-        except:
-            unfoldedids = {}
-        def countDistance(node, distance):
-            if node.id == currentid:
-                return 1
-            distance[0] = distance[0] + 1
-            if node.id in unfoldedids and unfoldedids[node.id]:
-                for c in node.getChildren().sort("name"):
-                    dist = countDistance(c, distance)
-                    if dist:
-                        return 1
-            return 0
-        dist = [0]
-        if countDistance(tree.getNode(scrollid),dist):
-            if dist[0] > 24:
-                scrollid = currentid
-
-    def f(req,node,objnum,link,indent,type):
-        indent *= 10
-        items = ''
-        if objnum and node.getType().getName()!="root":
-            items = ' ('+str(objnum)+')'
-
-        nodename = node.name
-        try: nodename = node.getLabel()
-        except: 
-            utils.log.logException()
-
-        if isCollection(node):
-            cssclass = "coll_"
-        else:
-            cssclass = "dir_"
-        if access.hasWriteAccess(node):
-            cssclass += "canwrite"
-        else:
-            cssclass += "canread"    
-
-        v = {}
-        v["id"] = str(node.id)
-        v["type"] = type
-        v["indent"] = indent
-        v["current"] = node.id == currentid
-        v["cssclass"] = cssclass
-        v["title"] = nodename + ' (ID'+node.id+')'
-        v["nodename"] = nodename
-        v["items"] = items
-        v["link"] = link
-
-        return req.getTAL("web/edit/edit.html", v, macro="build_tree")
-
-    node = tree.getNode(currentid)
-    o = None
-    if len(node.getParents()):
-        o = [node.getParents()[0]]
-
-    home_omitroot = 1
-    if len(access.filter(tree.getRoot("home").getChildren())) > 1:
-        home_omitroot = 0
-
-    content = ""
-    content += writetree(req, tree.getRoot("home"), f, "", openednodes=o, sessionkey="lefttreenodes", omitroot=home_omitroot)
-    content += writetree(req, tree.getRoot("collections"), f, "", openednodes=o, sessionkey="lefttreenodes", omitroot=0)
-
-    req.writeTAL("web/edit/edit.html", {"script":"var currentfolder = '"+currentid+"'", "scrollid":scrollid, "content":content}, macro="frame_tree")
+        
+    v = {}
+    v["basedirs"] = [tree.getRoot('home'), tree.getRoot('collections')]
+    v["script"] = "var currentfolder = '%s'" %(req.params.get("id",tree.getRoot().id))
+    req.writeTAL("web/edit/edit.html", v, macro="frame_tree")
 
 
 def printmethod(req):

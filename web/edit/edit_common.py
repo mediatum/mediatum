@@ -165,7 +165,7 @@ def shownodelist(req, nodes, publishwarn=1, markunpublished=0, dir=None):
             uploaddir = dir
         else:
             uploaddir = getUploadDir(user)
-        unpublishedlink = "edit?tab=publish&id="""+uploaddir.id;
+        unpublishedlink = "edit_content?tab=publish&id="""+uploaddir.id;
 
     return req.getTAL("web/edit/edit_common.html", {"notpublished": notpublished, "chkjavascript": chkjavascript, "unpublishedlink": unpublishedlink, "nodelist":nodelist, "script_array":script_array}, macro="show_nodelist")
 
@@ -187,11 +187,17 @@ def writenode(req, node, unfoldedids, f, indent, key, access, ret=""):
 
     num = 0
     objnum = 0
-    for c in node.getChildren():
-        if c.type in["directory", "collection"] or c.type.startswith("directory"):
-            num += 1
-        else:
-            objnum += 1
+    children = node.getChildren().sort()
+    
+    num = len(node.getContainerChildren())
+    objnum = len(node.getContentChildren())
+    
+    
+    #for c in children:
+    #    if c.type in["directory", "collection"] or c.type.startswith("directory"):
+    #        num += 1
+    #    else:
+    #        objnum += 1
 
     if num:
         if isunfolded:
@@ -202,7 +208,7 @@ def writenode(req, node, unfoldedids, f, indent, key, access, ret=""):
         ret+=f(req, node, objnum, "", indent, type=3)
 
     if isunfolded:
-        for c in node.getChildren().sort():
+        for c in children:
             ret+= writenode(req, c, unfoldedids, f, indent+1, key, access)
     return ret
 

@@ -1,48 +1,43 @@
-<metal:block metal:define-macro="publish">
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
-<html>
-    <head>
-        <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-        <meta content="text/html;charset=UTF-8" http-equiv="content-type">
-        <link rel="stylesheet" href="/css/editor.css"/>
-        <link rel="stylesheet" href="/css/edit_style.css"/>
-        <script type="text/javascript" src="/js/editor.js"> </script>
-        <script type="text/javascript" src="/js/admin.js"> </script>
-        <script type="text/javascript" src="/js/mediatum.js"> </script>
-        <script>
-            function closewindow(){
-                var v1 = document.getElementById("destination");
-                var v2 = document.getElementById("destnames");
-                opener.returnvalues(v1.value, v2.value);
-                self.close();
-            }
-
-            function cancel(){
-                opener.document.publishform.destination.value = "";
-                self.close();
-            }
-        </script>
-    </head>
-    <body>
-        <form method="post">
-            <h3 i18n:translate="edit_publish_popupheader">TEXT</h3>
-            <tal:block tal:replace="raw publishtree"/>
-            <input tal:attributes="value mark" type="hidden" name="destination" id="destination" />
-            <input tal:attributes="value destnames" type="hidden" name="destnames" id="destnames" />
-
-            <p align="center">
-                <button type="button" onclick="closewindow()" style="width:100px" i18n:translate="edit_publish_ok">TEXT</button>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <button type="button" onclick="cancel()" style="width:100px" i18n:translate="edit_publish_cancel">TEXT</button>
-            </p>
-        </form>
-    </body>
-</html>  
-</metal:block>
-
 
 <form metal:define-macro="publish_form" tal:attributes="action python:'/edit/edit_content?id='+str(id)+'&tab=publish'" method="post" style="margin:5px" name="publishform">
-    <script>
+    <link rel="stylesheet" href="/css/ftree.css" type="text/css" />
+    <script type="text/javascript" src="/js/ajax.js"> </script>
+    <script type="text/javascript" src="/js/ftree.js"> </script>
+    <script type="text/javascript" tal:content="script"> </script>
+    <script type="text/javascript"> 
+        var items = new Array();
+        var itemnames = new Array();
+
+        function setFolder(){
+            check = markFolder(true, "", this.id);
+            obj = document.getElementById('Node'+this.id);
+            label = obj.getElementsByTagName('A')[0].title;
+            if(!check){
+                if(items.in_array(this.id)==-1){
+                    items.push(this.id);
+                }
+                if(itemnames.in_array(label)==-1){
+                    itemnames.push(label);
+                }
+            }else{
+                pos = items.in_array(this.id);
+                if(pos>=0){
+                    items = items.slice(0,pos).concat( items.slice(pos+1) );
+                }
+                
+                pos = itemnames.in_array(label);
+                if(pos>=0){
+                    itemnames = itemnames.slice(0,pos).concat( itemnames.slice(pos+1) );
+                }
+            }
+            names = "";
+            if (itemnames.length>0){
+                names = "- "+itemnames.join("<br/>- ");
+            }
+            returnvalues(items, names);
+            return false;
+        }
+
         function returnvalues(ids, values){
             var obj = document.getElementById("destination");
             obj.value=ids;
@@ -51,37 +46,39 @@
         }
     </script>
     <h3 i18n:translate="edit_publish_header">TEXT</h3>
+    <p tal:condition="python:len(faultylist)>0" class="error">
+        Objekte mit folgender ID konnten nicht publiziert werden:<br/>
+        <tal:block tal:repeat="item faultylist" tal:replace="raw python:'- '+str(id)+'<br/>'"/>
+    </p>
+    
     <p i18n:translate="edit_publish_info">TEXT</p>
-    <div style="width: 200px" class="button" tal:attributes="onclick python:'openWindow(\'edit_action?id='+id+'&tab=publish&style=popup\', 300, 250)'" i18n:translate="edit_publish_button_select">TEXT</div>
-    <br/>
+    <div style="height:250px; overflow:auto;border:1px solid silver">
+        <ul id="classtree" class="tree">
+            <li tal:attributes="id python:'Node'+basedir.id"><a tal:attributes="id python:str(basedir.id); title python:basedir.getLabel()+' ('+str(basedir.id)+')'" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
+                <ul>
+                    <li tal:attributes="parentId python:basedir.id" class="spinner.gif"><a href="#" id="node_0"> </a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
     <br/>
     <span i18n:translate="edit_publish_dirs">TEXT</span>
-    <div id="dest_names" name="dest_names" style="border:1px solid silver;width:400px;padding:5px;margin: 10px 0px" tal:content="stdname">
-
-    </div>
+    <div id="dest_names" name="dest_names" style="border:1px solid silver;padding:5px;margin:10px 0px;min-height:20px" tal:content="stdname"/>
     <p>
         <input type="hidden" name="destination" id="destination" tal:attributes="value stddir" />
         <button type="submit" name="dopublish" i18n:translate="edit_publish_button">TEXT</button>
     </p>
     <tal:block tal:replace="raw showdir">TEXT</tal:block>
-</form>    
-
-
-<metal:block metal:define-macro="build_tree">
-    <a tal:attributes="name python:'node'+id"> </a>
-    <div class="line">
-        <div class="name" tal:attributes="style python:'padding-left: '+str(indent)+'px'">
-            <a tal:condition="python:type==1" i18n:attributes="title edit_classes_close_title" tal:attributes="href link1"><img src="/img/edit_box1.gif" border="0"/></a>
-            <a tal:condition="python:type==2" i18n:attributes="title edit_classes_open_title" tal:attributes="href link1"><img src="/img/edit_box2.gif" border="0"/></a>
-            <img tal:condition="python:type==3" src="/img/edit_box3.gif" border="0"/>
-            &nbsp;<tal:block tal:condition="python:not writeaccess" tal:replace="nodename"></tal:block>
-            <tal:block tal:condition="writeaccess">
-                <b tal:content="nodename">TEXT</b>&nbsp;<a tal:attributes="href link2; title title"><img border="0" tal:attributes="src icon"/></a>
-           </tal:block>
-        </div>
-    </div>
-</metal:block>
+    <script type="text/javascript">
+        initTree({'idOfFolderTrees': ['classtree'], 'style':'classification', 'multiselect':true});
+    </script>
+    <tal:block tal:replace="raw python:'<script type=&quot;text/javascript&quot;>'"/>
+        <tal:block tal:repeat="id python:idstr" tal:replace="python:'allobjects['+id+']=1;'"/>
+    <tal:block tal:replace="raw python:'</script>'"/>
+</form>
 
 <metal:block metal:define-macro="reload">
-    <script tal:content="python:'parent.reloadTree('+id+');'"></script>
+    <tal:block tal:replace="raw python:'<script type=&quot;text/javascript&quot;>'"/>
+        <tal:block tal:repeat="item change" tal:replace="raw python:'parent.tree.updateNodeLabel('+item+');'"/>
+    <tal:block tal:replace="raw python:'</script>'"/>  
 </metal:block>

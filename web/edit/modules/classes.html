@@ -5,41 +5,6 @@
     <span i18n:translate="saved_in_inconsistent_data">TEXT</span>
 </p>
 
-<metal:block metal:define-macro="build_tree">
-    <a tal:attributes="name python:'node'+id"> </a>
-    <div class="line">
-        <div class="name" tal:attributes="style python:'padding-left: '+str(indent)+'px'">
-            <a tal:condition="python:type==1" i18n:attributes="title edit_classes_close_title" tal:attributes="href link1"><img src="/img/edit_box1.gif" border="0"/></a>
-            <a tal:condition="python:type==2" i18n:attributes="title edit_classes_open_title" tal:attributes="href link1"><img src="/img/edit_box2.gif" border="0"/></a>
-            <img tal:condition="python:type==3" src="/img/edit_box3.gif" border="0"/>
-    
-            <tal:block tal:condition="inparents">
-                <font color="#3030ef">
-                    &nbsp;
-                    <b tal:condition="inqueue" tal:content="nodename">TEXT</b>
-                    <tal:block tal:condition="python: not inqueue" tal:replace="nodename">TEXT</tal:block>
-                </font>
-                <a tal:condition="writeaccess" i18n:attributes="title" tal:attributes="title title; href link2"><img tal:attributes="src icon" border="0"/></a>
-                <img tal:condition="python: not writeaccess" border="0" src="/img/haken.gif"/>
-            </tal:block>
-            
-            <tal:block tal:condition="python: not inparents">
-                &nbsp;
-                <font tal:condition="inqueue" color="#3030ef"><b tal:content="nodename">TEXT</b></font>
-                <tal:block tal:condition="python: not inqueue" tal:replace="nodename"></tal:block>
-                <tal:block tal:condition="writeaccess">
-                    &nbsp;
-                    <a i18n:attributes="title" tal:attributes="title title; href link3">
-                        <img border="0" src="/img/haken_n.gif"/>
-                    </a>
-                </tal:block>
-            </tal:block>
-            
-        </div>
-    </div>
-</metal:block>
-
-
 <metal:block metal:define-macro="classtree">
     <link rel="stylesheet" href="/css/ftree.css" type="text/css" />
     <script type="text/javascript" src="/js/ajax.js"> </script>
@@ -63,6 +28,8 @@
         </ul>
     </div>
     </form>
+    <p>debug:</p><p id="debug"> </p>
+    <p>debug-open:</p><p id="debug-open"> </p>
     <script type="text/javascript">
         initTree({'idOfFolderTrees': ['classtree'], 'style':'classification', 'multiselect':true});
     </script>

@@ -119,22 +119,19 @@ Owner of DHTMLgoodies.com
         ajaxObjectArray[ajaxIndex].onCompletion = function() { 
             initExpandedNodes = ajaxObjectArray[ajaxIndex].response;
             startpath = initExpandedNodes.split(",");
-            
             if(initExpandedNodes){
-                showHideNode(false,startpath[0]);
-                startpath.shift();
+                showHideNode(false, startpath[0]);
+                startpath.splice(0,1);
                 markFolder(false, currentfolder, currentfolder);
-                
-                for (i=0;i<startpath.length-1;i++){
-                    if (startpath[i]=='x'){
-                        showHideNode(false,startpath[i+1]);
-                        startpath.slice(i+1);
+                    for (i=0;i<startpath.length-1;i++){
+                        if (startpath[i]=='x'){
+                            showHideNode(false,startpath[i+1]); 
+                            startpath.splice(i, 1);
+                        }
                     }
-                }
-                if(startpath.in_array('('+currentfolder+')')>=0){
-                    markFolder(false, currentfolder, currentfolder);
-                }
-
+                    if(startpath.in_array('('+currentfolder+')')>=0){
+                        markFolder(false, currentfolder, currentfolder);
+                    } 
             }
         };
         ajaxObjectArray[ajaxIndex].runAJAX();
@@ -178,16 +175,11 @@ Owner of DHTMLgoodies.com
             }
             
             id = menuItems[no].id.replace("Node","");
-            
-            if (startpath.in_array(id)>=0 || startpath.in_array('('+id+')')>=0){
-                pos = startpath.in_array('('+id+')');
-                if (pos<0) pos = startpath.in_array(id);
-                
-                startpath = startpath.slice(pos);
+            if (startpath.in_array(id)>=0){
                 showHideNode(false, id);
-                pos = startpath.in_array('('+id+')');
-                if (pos>=0) markFolder(false, id, id);
-
+                startpath.splice(startpath.in_array(id), 1);
+            }else if(startpath.in_array('('+id+')')>=0){
+                markFolder(false, id, id);
             }
         }
     }
@@ -362,7 +354,7 @@ Owner of DHTMLgoodies.com
         ajaxObjectArray[ajaxIndex].runAJAX();        // Execute AJAX function
     }
     
-    
+
     function markFolder(e,oldid, newid)
     {
         if(config['treeStyle']=='classification'){

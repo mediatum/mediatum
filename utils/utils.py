@@ -507,7 +507,7 @@ def formatLongText(value, field):
                     val = item+value
                 
                 
-            return '<div id="'+field.getName()+'_full" style="display:none">'+value+'&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="Text reduzieren" onclick="expandLongMetatext(\''+field.getName()+'\')">&laquo;</a></div><div id="'+field.getName()+'_more">'+val+'...&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="gesamten Text zeigen" onclick="expandLongMetatext(\''+field.getName()+'\')">&raquo;</a></div>'
+            return '<div id="'+field.getName()+'_full" style="display:none">'+value+'&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="Text reduzieren" onclick="expandLongMetatext(\''+field.getName()+'\');return false">&laquo;</a></div><div id="'+field.getName()+'_more">'+val+'...&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="gesamten Text zeigen" onclick="expandLongMetatext(\''+field.getName()+'\');return false">&raquo;</a></div>'
         else:
             return value
     except:

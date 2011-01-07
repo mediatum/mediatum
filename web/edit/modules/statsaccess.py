@@ -160,7 +160,7 @@ class StatsAccessPDF:
         return frames
 
         
-    def getStatTop(self, type):
+    def getStatTop(self, type, namecut=0):
         # frames
         items = []
         d = self.stats.getIDs()
@@ -183,7 +183,13 @@ class StatsAccessPDF:
             for i in range(0, 20):
                 if i<len(d):
                     try:
-                        n = tree.getNode(d[i][0]).getName()+" (" + str(d[i][0])+")"
+                        nodename = tree.getNode(d[i][0]).getName()
+                        suffix = " (" + str(d[i][0])+")"
+                        n = nodename + suffix
+                        if namecut > 0 and len(n) > namecut:
+                            delta = len(n)-namecut
+                            new_length = len(nodename)-delta-3
+                            n = nodename[0:new_length] + "..." + suffix
                     except:
                         n = str(d[i][0])
                     items.append( Paragraph(n, self.bv))
@@ -464,7 +470,7 @@ class StatsAccessPDF:
         
         self.data.append((FrameBreak()))
         # top 10
-        self.data += self.getStatTop("data")
+        self.data += self.getStatTop("data", namecut=60)
         # country
         self.data += self.getStatCountry("data")
 

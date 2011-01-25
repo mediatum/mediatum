@@ -84,8 +84,8 @@ class ZoomImage:
 
         self.img = Image.open(filename)
         tmpjpg = config.get("paths.datadir")+"tmp/img"+str(random.random())+".jpg"
-        if self.img.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or self.img.mode in ["P", "L"]:
-            os.system("convert -quality 100 -fill #fffffe -draw \"rectangle 0,0 1,1\" %s %s" %(filename, tmpjpg))
+        if self.img.mode=="CMYK" and (filename.endswith("jpg") or filename.endswith("jpeg")) or self.img.mode in ["P", "L"]:
+            os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" %(filename, tmpjpg))
             self.img = Image.open(tmpjpg)
         self.img.load()
         l = max(self.img.size)

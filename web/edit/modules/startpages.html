@@ -12,7 +12,9 @@
             <small i18n:translate="edit_startpages_explain_table">TEXT</small>
         </p>
 
-        <form id="01" method="post" name="startpages">
+        <form id="01" method="post" name="startpages" action="/edit/edit_content">
+            <input tal:attributes="value id" type="hidden" name="id"/>
+            <input tal:attributes="value tab" type="hidden" name="tab"/>
             <style type="text/css">
                 #filetable{
                     border:1px solid silver; border-width:1px 1px 0px 1px
@@ -103,7 +105,7 @@
 </metal:block>  
 
 
-<form metal:define-macro="edit_editor" method="post">
+<form metal:define-macro="edit_editor" method="post" action="/edit/edit_content">
     <p>
         <tal:block i18n:translate="edit_editor_header"/>
         <strong tal:content="python: descriptiveLabel">TEXT</strong>
@@ -111,8 +113,11 @@
     <tal:block tal:replace="raw python:oFCKeditor.Create()"/>
     <p align="center">
         <input tal:attributes="value path" type="hidden" name="file_path"/>
+        <input tal:attributes="value id" type="hidden" name="id"/>
+        <input tal:attributes="value tab" type="hidden" name="tab"/>
+        <input tal:attributes="value file_to_edit" type="hidden" name="file_to_edit"/>
         <input i18n:attributes="value edit_editor_save" type="submit" name="save_page"/>
-        <input i18n:attributes="value edit_publish_cancel" type="submit" name="cancel_page" style="margin-left:30px"/>
+        <input i18n:attributes="value edit_publish_cancel" type="submit" name="cancel_page" value="cancel" style="margin-left:30px"/>
     </p>
 </form>
  

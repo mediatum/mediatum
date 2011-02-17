@@ -125,6 +125,8 @@ def edit_editor(req, node, filenode):
         
         v = {
              "id":req.params.get('id'),
+             "tab":req.params.get('tab'),
+             "file_to_edit":req.params.get("file_to_edit"),
              "oFCKeditor":oFCKeditor,
              "path":path,
              "node":node,
@@ -234,7 +236,7 @@ def getContent(req, ids):
             req.params["add_page"] = ""
             return  edit_editor(req, node, None)
 
-    if "file_to_edit" in req.params and not "save_page" in req.params:
+    if "file_to_edit" in req.params and not "save_page" in req.params and not "cancel_page" in req.params:
         # edit page
         file_to_edit = req.params.get("file_to_edit", None)
         if not file_to_edit:
@@ -286,6 +288,7 @@ def getContent(req, ids):
             return getContent(req, [node.id])
         
         if "cancel_page" in req.params:
+            del req.params['file_to_edit']
             del req.params['cancel_page']
             return getContent(req, [node.id])
 

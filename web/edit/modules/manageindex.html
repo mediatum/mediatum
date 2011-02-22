@@ -1,0 +1,117 @@
+﻿<metal:block metal:define-macro="manageform">
+    
+    <script type="text/javascript">
+        var schema = "";
+        var field = "";
+        var values;
+
+        function changeScheme(id, action){
+            schema = action;
+            document.getElementById("indexfields").innerHTML = '<br/><img src="/img/wait_small.gif"/>';
+            document.getElementById("indexvalues").innerHTML = "";
+            getEditPage('indexfields', id, 'manageindex', 'indexfields__'+action);
+        }
+        
+        function getFields(id, action){
+            field = action;
+            document.getElementById("indexvalues").innerHTML = '<br/><img src="/img/wait_small.gif"/>';
+            action += "__"+schema;
+            getEditPage('indexvalues', id, 'manageindex', 'indexvalues__'+action);
+        }
+        
+        function getCurrentCollection(obj, id, action){
+            document.getElementById("currentcollection").innerHTML = '<br/><img src="/img/wait_small.gif"/>';
+            action += "__"+schema+"__"+field+"__";
+            
+            for (var i=0; i<obj.options.length; i++){
+                if (obj.options[i].selected==true){
+                    action +=obj.options[i].value+";"
+                }
+            }
+            getEditPage("currentcollection", id, 'manageindex', action);
+        }
+        
+        function setValue(val){
+            document.getElementById('new_value').value = val;
+        }
+        
+        function checkForm(){
+            if (document.getElementById('empty').checked){
+                if (document.getElementById('old_values').value=="" || document.getElementById('new_value').value==""){
+                    return false;
+                }
+            }
+            return true;
+        }
+    </script>
+    
+    <p tal:condition="message" tal:content="message" class="templateerror" style="text-align:center">
+    
+    </p>
+
+    <form method="post">
+        <h2 i18n:translate="edit_manageindex_step1_header">TEXT</h2>
+        <div id="schemes"><img src="/img/wait_small.gif"/></div>
+        
+        <div id="indexfields">
+        </div>
+
+        <div id="indexvalues">
+        </div>
+
+    </form>
+    
+    <script tal:content="python:'\n\tgetEditPage(\'schemes\', \''+str(id)+'\', \'manageindex\', \'schemes\');\n    '">
+    </script>
+
+</metal:block>
+
+
+<select metal:define-macro="schemes_dropdown" name="schema" tal:attributes="onchange python:'changeScheme(\''+str(id)+'\', this.value)'">
+    <option i18n:translate="edit_manageindex_choose_scheme">TEXT</option>
+    <option tal:repeat="scheme schemes" tal:attributes="value python:scheme.getName()" tal:content="python:scheme.getName()"/>
+</select>
+
+
+<metal:block metal:define-macro="fields_dropdown">
+    <h2 i18n:translate="edit_manageindex_step2_header">TEXT</h2>
+    <select name="fields" tal:attributes="onchange python:'getFields(\''+str(id)+'\', this.value)'">
+        <option i18n:translate="edit_manageindex_choose_field">TEXT</option>
+        <option tal:repeat="field fields" tal:attributes="value python:field.getName()" tal:content="python:field.getLabel()"/>
+    </select>
+</metal:block>
+
+
+<metal:block metal:define-macro="fieldvalues">
+    <h2 i18n:translate="edit_manageindex_step3_header">TEXT</h2>
+    <p>
+        <select size="10" name="old_values" id="old_values" multiple="multiple" style="width:50%" ondblclick="setValue(this.value)" tal:attributes="onchange python:'getCurrentCollection(this, \''+id+'\', \'children\')'">
+            <option tal:repeat="k keys" tal:content="python:k+' ('+str(len(entries[k]))+')'" tal:attributes="value k"/>
+        </select>
+    </p>
+    <div id="currentcollection" style="min-height:40px">
+    
+    </div>
+
+    <h2 i18n:translate="edit_manageindex_step4_header">TEXT</h2>
+    <p>
+        <input type="text" name="new_value" id="new_value" style="width:50%"/><br/>
+        <input type="checkbox" id="empty" value="allow" checked="checked"/> <tal:block i18n:translate="edit_manageindex_empty"/>
+    </p>
+    <p>
+        <button type="submit" name="do_action" onclick="return checkForm()" i18n:translate="edit_manageindex_submit">TEXT</button>
+    </p>
+</metal:block>
+
+
+
+<metal:block metal:define-macro="valueinfo">
+    <tal:block i18n:translate="edit_manageindex_result"/>
+    <ul>
+        <li tal:repeat="k keys" tal:content="python:str(k)+': '+ str(len(items[k]))"/>
+    </ul>
+</metal:block>
+
+<metal:block metal:define-macro="operationinfo" i18n:translate="edit_manageindex_items">
+    <tal:block tal:content="python:str(number)" i18n:name="number"/>
+</metal:block>

@@ -2533,6 +2533,9 @@ msgstr "Header/Footer entries"
 msgid "tab_ftp"
 msgstr "Edit FTP-Files"
 
+msgid "tab_manageindex"
+msgstr "Manage Index-Lists"
+
 ### edit acls ###
 msgid "edit_acls_righttype_read"
 msgstr "User groups which may see these objects:"

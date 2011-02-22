@@ -2709,6 +2709,9 @@ msgstr "Kopf-/Fusszeileneinträge"
 msgid "tab_ftp"
 msgstr "FTP-Daten verarbeiten"
 
+msgid "tab_manageindex"
+msgstr "Indexlisten verwalten"
+
 ### edit acls ###
 msgid "edit_acls_righttype_read"
 msgstr "Usergruppen, die diese Objekte sehen dürfen:"

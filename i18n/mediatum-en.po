@@ -3411,6 +3411,37 @@ msgstr "Metadata scheme name"
 msgid "edit_changeschema_noscheme"
 msgstr "no metadatatype for this object type"
 
+# edit manage-index
+msgid "edit_manageindex_step1_header"
+msgstr "Step 1: Choose a schema"
+
+msgid "edit_manageindex_step2_header"
+msgstr "Step 2: Choose a field"
+
+msgid "edit_manageindex_step3_header"
+msgstr "Step 3: Choose at least one index value"
+
+msgid "edit_manageindex_step4_header"
+msgstr "Step 4: Choose replacement text"
+
+msgid "edit_manageindex_empty"
+msgstr "ignore empty values"
+
+msgid "edit_manageindex_submit"
+msgstr "Do Changes"
+
+msgid "edit_manageindex_choose_scheme"
+msgstr "- choose schema -"
+
+msgid "edit_manageindex_choose_field"
+msgstr "- choose field -"
+
+msgid "edit_manageindex_result"
+msgstr "Following nodes will be changed:"
+
+msgid "edit_manageindex_items"
+msgstr "Operation applied for ${number} nodes"
+
 # mask editor #
 msgid "mask_editor_title"
 msgstr "Mask editor"

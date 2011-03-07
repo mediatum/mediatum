@@ -32,7 +32,7 @@ from schema.schema import VIEW_DATA_ONLY,VIEW_HIDE_EMPTY
 from web.frontend.content import getPaths
 from core.acl import AccessData
 from core.translation import t,lang
-from utils.utils import u
+from utils.utils import u, getCollection
 from core.styles import theme
 
 #
@@ -103,7 +103,6 @@ def getPrintChildren(req, node, ret):
 def show_printview(req):
     """ create a pdf preview of given node (id in path e.g. /print/[id]/[area])"""  
     p = req.path[1:].split("/")
-
     try:
         nodeid = int(p[1])
     except ValueError:
@@ -211,12 +210,19 @@ def show_printview(req):
             if len(children)>1:
                 col = []
                 order = []
-                
+                try:
+                    sort = getCollection(node).get("sortfield")
+                except:
+                    sort = ""
+                    
                 for i in range(0,2):
                     col.append((0,""))
                     order.append(1)
                     if req.params.get("sortfield"+str(i))!="":
-                        sort = req.params.get("sortfield"+str(i),"")
+                        sort = req.params.get("sortfield"+str(i), sort)
+
+                    if sort!="":
+                        #sort = req.params.get("sortfield"+str(i),"")
                         if sort.startswith("-"):
                             sort = sort[1:]
                             order[i] = -1

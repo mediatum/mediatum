@@ -128,7 +128,7 @@ def pwdchange(req, error=0):
 
     
 def pwdforgotten(req):
-    if len(req.params)>2: # user changed to browsing
+    if len(req.params)>3: # user changed to browsing
         return buildURL(req)
 
     navframe = getNavigationFrame(req)

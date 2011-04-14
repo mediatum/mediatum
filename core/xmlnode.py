@@ -24,12 +24,19 @@ import random
 
 from utils.utils import esc, u
 
-def writexml(node, fi, indent=None, written=None, children=True):
+import core.users as users
+from core.acl import AccessData
+
+def writexml(node, fi, indent=None, written=None, children=True, children_access=None, exclude_filetypes=[]):
     if written is None:
         written = {}
     if indent is None:
         indent = 0
-    fi.write((" "*indent) + '<node name="'+esc(node.name)+'" id="'+str(node.id)+'" ')
+    # there are a lot of nodes without name ...
+    nodename_copy = node.name
+    if nodename_copy == None:
+        nodename_copy = ""        
+    fi.write((" "*indent) + '<node name="'+esc(nodename_copy)+'" id="'+str(node.id)+'" ')
     if node.type is None:
         node.type="node"
     fi.write("type=\""+node.type+"\" ")
@@ -39,15 +46,16 @@ def writexml(node, fi, indent=None, written=None, children=True):
         fi.write("write=\""+esc(node.write_access)+"\" ")
     if node.data_access:
         fi.write("data=\""+esc(node.data_access)+"\" ")
+
     fi.write('>'+"\n")
 
     indent += 4
-        
+
     for name,value in node.items():
-        fi.write((" "*indent) + '<attribute name="'+esc(name)+'"><![CDATA['+str(value)+']]></attribute>'+"\n")
+        fi.write((" "*indent) + '<attribute name="'+u(esc(name))+'"><![CDATA['+u(value)+']]></attribute>'+"\n")
 
     for file in node.getFiles():
-        if file.type == "metadata":
+        if file.type == "metadata" or file.type in exclude_filetypes:
             continue
         mimetype = file.mimetype
         if mimetype is None:
@@ -55,14 +63,16 @@ def writexml(node, fi, indent=None, written=None, children=True):
         fi.write((" "*indent) + '<file filename="'+esc(file.getName())+'" mime-type="'+mimetype+'" type="'+(file.type is not None and file.type or "image")+'"/>' + "\n")
     if children:
         for c in node.getChildren().sort():
-            fi.write((" "*indent) + "<child id=\"%s\"/>\n" % str(c.id))
+            if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
+                fi.write((" "*indent) + '''<child id="%s" type="%s"/>\n''' % (str(c.id), c.type))
     indent -= 4
     fi.write((" "*indent) + '</node>'+"\n")
     if(children):
         for c in node.getChildren().sort():
-            if c.id not in written:
-                written[c.id] = None
-                c.writexml(fi, indent)
+            if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
+                if c.id not in written:
+                    written[c.id] = None
+                    c.writexml(fi, indent, children_access=children_access)
 
 class _StringWriter:
     def __init__(self):
@@ -108,9 +118,9 @@ class _NodeLoader:
                 type=attrs["type"].encode("utf-8")
             except:
                 type="directory"
-            
+
             node = tree.Node(name=attrs["name"].encode("utf-8"), type=type)
-            
+
             if "read" in attrs:
                 node.setAccess("read", attrs["read"].encode("utf-8"))
             if "write" in attrs:
@@ -144,7 +154,7 @@ class _NodeLoader:
                 mimetype = attrs["mime-type"].encode("utf-8")
             except:
                 mimetype = None
-            
+
             filename = attrs["filename"].encode("utf-8")
 
             node.addFile(tree.FileNode(name=filename, type=type, mimetype=mimetype))
@@ -182,7 +192,19 @@ def getNodeXML(node):
     _writeNodeXML(node,wr)
     return wr.get()
 
-def getSingleNodeXML(node):
+def getNodeListXMLForUser(node, readuser=None, exclude_filetypes=[]):
+    if readuser:
+        # only write child data if children_access_user has read access
+        children_access = AccessData(user=users.getUser(readuser))
+    else:
+        children_access = None
     wr = _StringWriter()
-    writexml(node,wr,children=False)
+    wr.write("<nodelist>\n")
+    node.writexml(wr, children_access=children_access, exclude_filetypes=exclude_filetypes)
+    wr.write("</nodelist>\n")
+    return wr.get()
+
+def getSingleNodeXML(node, exclude_filetypes=[]):
+    wr = _StringWriter()
+    writexml(node,wr,children=False, exclude_filetypes=exclude_filetypes)
     return wr.get()

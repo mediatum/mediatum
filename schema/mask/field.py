@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.athana as athana
-from utils.utils import formatLongText
+from utils.utils import formatLongText, u
 import core.tree as tree
 from core.tree import Node, getNode
 
@@ -110,7 +110,7 @@ class m_field(Metatype):
             unit = ' ' + field.getUnit()
 
         if flags & VIEW_DATA_ONLY:
-            value = str(t.getFormatedValue(element, nodes[0], language)[1])
+            value = u(t.getFormatedValue(element, nodes[0], language)[1])
             if len(value.strip())>0:
                 value+= str(unit)
         else:
@@ -126,7 +126,7 @@ class m_field(Metatype):
         
         if flags & VIEW_DATA_ONLY:
             # return a valuelist
-            return [element.getName(), value, field.getLabel(), element.get("type")]
+            return [element.getName(), value, element.getLabel(), element.get("type")]
 
         elif flags & VIEW_SUB_ELEMENT:
             # element in h-group

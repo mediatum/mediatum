@@ -23,7 +23,7 @@ import core.config as config
 import core.tree as tree
 
 from core.styles import theme
-
+from utils.pathutils import getSubdirsContaining
 
 def loadThemes():
     # try loading theme from mediatum theme folder
@@ -51,8 +51,72 @@ def loadThemes():
 
     else:
         print "Loading default theme"
+        
+
+def loadServices():
+    CONTEXTPREFIX = config.get("services.contextprefix", "services")
+    datapath = config.get("services.datapath", "").strip()
+    if not os.path.exists(os.path.join(datapath, "common")):
+        try:
+            os.makedirs(os.path.join(datapath, "common"))
+        except OSError:
+            pass
+    
+    if config.get("services.activate", "").strip().lower()=="true":
+        # try loading services from mediatum web/services/ folder
+        servicedirs = getSubdirsContaining(config.basedir+"/web/services/", filelist=['__init__.py', 'servicehandler.py'])
+        for servicedir in servicedirs:
+            if config.get('services.'+servicedir +'.activate', "").strip().lower()=="false":
+                continue
+            if servicedir + '.basecontext' in config.getsubset("services").keys():
+                basecontext = config.getsubset("services")[servicedir + '.basecontext']
+            else:
+                basecontext = CONTEXTPREFIX+'/'+servicedir
+            basecontext = ('/' + basecontext).replace('//', '/').replace('//', '/')
+            
+            context = athana.addContext(basecontext, ".")
+            file = context.addFile("web/services/"+servicedir+"/servicehandler.py")
+            file.addHandler("request_handler").addPattern("/.*")
+
+            servicedata = os.path.join(datapath, servicedir)
+            if not os.path.exists(servicedata):
+                try:
+                    os.makedirs(servicedata)
+                    os.makedirs(os.path.join(servicedata, "cache"))
+                except OSError:
+                    pass
 
 
+        # try loading services from all plugins services/ folder
+        for k,v in config.getsubset("plugins").items():
+            p = os.path.join(config.basedir, v, 'services')
+            if os.path.exists(p):
+                servicedirs = getSubdirsContaining(p, filelist=['__init__.py', 'servicehandler.py'])
+                for servicedir in servicedirs:
+                    if config.get('services.'+ k + '.' + servicedir + '.activate', "").strip().lower()=="false":
+                        continue
+                    if k + '.' + servicedir + '.basecontext' in config.getsubset("services").keys():
+                        basecontext = config.getsubset("services")[k + '.' + servicedir + '.basecontext']
+                    else:
+                        basecontext = k + '/' + servicedir # name of the plugin + name of service folder
+                    basecontext = ('/' + CONTEXTPREFIX + '/' + basecontext).replace('//', '/').replace('//', '/')
+
+                    context = athana.addContext(basecontext, ".")
+                    file = context.addFile(v + "/services/" + servicedir + "/servicehandler.py") # ok
+                    file.addHandler("request_handler").addPattern("/.*")
+
+                    servicedata = os.path.join(datapath, k, servicedir)
+                    if not os.path.exists(servicedata):
+                        try:
+                            os.makedirs(servicedata)
+                            os.makedirs(os.path.join(servicedata, "cache"))
+                        except OSError:
+                            pass
+
+    else:
+        print "web services not activated"
+
+        
 def initContexts():
     athana.setBase(".")
     athana.setTempDir(config.get("paths.tempdir", "/tmp/"))
@@ -79,6 +143,10 @@ def initContexts():
     file = context.addFile("web/frontend/zoom.py")
     file.addHandler("send_imageproperties_xml").addPattern("/tile/[0-9]*/ImageProperties.xml")
     file.addHandler("send_tile").addPattern("/tile/[0-9]*/[^I].*")
+    
+    #file = context.addFile("web/frontend/flippage.py")
+    #file.addHandler("send_bookconfig_xml").addPattern("/[0-9]*/bookconfig.xml")
+    #file.addHandler("send_page").addPattern("/[0-9]*/page/[0-9]*\.jpg")
 
     # === workflow ===
     #file = context.addFile("web/publish/main.py")
@@ -139,7 +207,9 @@ def initContexts():
     file = context.addFile("web/ftree/ftree.py")
     file.addHandler("ftree").addPattern("/.*")
     
-
+    # === services handling ===
+    loadServices()
+    
     # === OAI ===
     context = athana.addContext("/oai/", ".")
     file = context.addFile("export/oai.py")
@@ -152,6 +222,8 @@ def initContexts():
 
     # === static files ===
     athana.addFileStore("/module/", "lib/FCKeditor/files.zip")
+    athana.addFileStore("/module/editor/plugins/", "lib/FCKeditor/plugins")
+    
     athana.addFileStore("/css/", "web/css/")
     athana.addFileStore("/xml/", "web/xml/")
     athana.addFileStore("/img/", ["web/img/", "web/admin/img/", "web/edit/img/"])
@@ -159,6 +231,14 @@ def initContexts():
     
     # === theme handling ===
     loadThemes()
+    
+    # === frontend modules handling ===
+    try:
+        context = athana.addContext("/modules", ".")
+        file = context.addFile("web/frontend/modules/modules.py")
+        file.addHandler("getContent").addPattern("/.*")
+    except IOError:
+        print "no frontend modules found"
 
     #athana.addContext("/flush", ".").addFile("core/webconfig.py").addHandler("flush").addPattern("/py")
     

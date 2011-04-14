@@ -134,8 +134,8 @@
             <span i18n:translate="mask_edit_attribute_field">TEXT</span><br/> 
             <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
             
-            <input tal:condition="python:item.get('fieldtype')!='mapping'" tal:attributes="value python:item.get('mappingfield')" type="text" id="mappingfield" name="mappingfield" style="width:250px;"/><br/>
-            <input tal:condition="python:item.get('fieldtype')=='mapping'" value="" type="text" id="mappingfield" name="mappingfield" style="width:250px;"/><br/>
+            <input tal:condition="python:item.get('fieldtype')!='mapping'" tal:attributes="value python:item.get('mappingfield')" type="text" id="mappingfield" name="mappingfield" style="width:250px;" maxlength=1000 /><br/>
+            <input tal:condition="python:item.get('fieldtype')=='mapping'" value="" type="text" id="mappingfield" name="mappingfield" style="width:250px;" maxlength=1000 /><br/>
             <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
             <span i18n:translate="mask_edit_attribute_description">TEXT</span>
         </fieldset>

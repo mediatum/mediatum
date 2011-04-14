@@ -25,9 +25,10 @@ from core.tree import Node
 from core.metatype import Metatype
 from utils.utils import esc, desc
 from schema.schema import getMetadataType
+import export.exportutils as exportutils
 
 class m_mappingfield(Metatype):
-    
+
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
 
         ns = ""
@@ -59,63 +60,96 @@ class m_mappingfield(Metatype):
 
     def getMetaHTML(self, parent, index, sub=False, language=None, fieldlist={}):
         return "<mappingfield definition>"
-    
-    
+
+
     def getMetaEditor(self, item, req):
         return "<editor for mappingfield>"
 
     def isFieldType(self):
         return False
 
-    def replaceVars(self, s, node, attrnode=None, field_value="", options=[]):
-        try:
-            #if attrnode and node:
-            for var in re.findall( r'\[(.+?)\]', s ):
-                if var.startswith("att:"):
-                    if var=="att:field":
-                        s = s.replace("[" + var + "]", attrnode.getName())
-                    elif var=="att:id":
-                        s = s.replace("[" + var + "]", str(node.id))
-                    elif var=="att:filename":
-                        s = s.replace("[" + var + "]", str(node.getName()))
- 
-                elif var=="field":
-                    s = s.replace("[field]", field_value)
-                elif var=="value":
-                    v = getMetadataType(attrnode.getFieldtype()).getFormatedValue(attrnode, node)[1]
-                    if v=="":
-                        v = node.get(attrnode.getName())
+    def replaceVars(self, s, node, attrnode=None, field_value="", options=[], mask=None):
 
-                    if "t" in options and not v.isdigit():
-                        v = '"' + v + '"'                            
-                    s = s.replace("[value]", v)
-                elif var=="ns":
-                    ns = ""
-                    for mapping in attrnode.get("exportmapping").split(";"):
-                        n = tree.getNode(mapping)
-                        if n.getNamespace()!="" and n.getNamespaceUrl()!="":
-                            ns += 'xmlns:' + n.getNamespace() + '="' + n.getNamespaceUrl() + '" '
-                    s = s.replace("[" + var + "]", ns)
-            
-            ret = ""        
-            for i in range(0, len(s)):
-                if s[i-1]=='\\':
-                    if s[i]=='r':
-                        ret += "\r"
-                    elif s[i]=='n':
-                        ret += "\n"
-                    elif s[i]=='t':
-                        ret += "\t"
-                elif s[i]=='\\':
-                    pass
-                else:
-                    ret += s[i]
-            s = ret
+        try:  
+            if 1:
+                #if attrnode and node:
+                for var in re.findall( r'\[(.+?)\]', s ):
+
+                    if var.startswith("att:"):
+                        if var=="att:field":
+                            s = s.replace("[" + var + "]", attrnode.getName())
+                        elif var=="att:id":
+                            s = s.replace("[" + var + "]", str(node.id))
+                        elif var=="att:filename":
+                            s = s.replace("[" + var + "]", str(node.getName()))
+
+
+                    elif var=="field":
+                        s = s.replace("[field]", field_value)
+
+
+                    elif var.startswith("cmd:translate("):
+                        s = exportutils.handleCommand('cmd:translate', var, s, node, attrnode, field_value, options)
+
+                    elif var.startswith("cmd:translateAttr("):
+                        s = exportutils.handleCommand('cmd:translateAttr', var, s, node, attrnode, field_value, options)
+
+                    elif var.startswith("cmd:loopSplitted("):
+                        s = exportutils.handleCommand('cmd:loopSplitted', var, s, node, attrnode, field_value, options)
+
+                    elif var.startswith("cmd:loopSplittedAttribute("):
+                        s = exportutils.handleCommand('cmd:loopSplittedAttribute', var, s, node, attrnode, field_value, options)
+
+                    elif var.startswith("cmd:loopDissContributors("):
+                        s = exportutils.handleCommand('cmd:loopDissContributors', var, s, node, attrnode, field_value, options)
+
+                    elif var.startswith("cmd:getFileCount("):
+                        s = exportutils.handleCommand('cmd:getFileCount', var, s, node, attrnode, field_value, options)
+
+                    elif var.startswith("cmd:loopFiles("):
+                        s = exportutils.handleCommand('cmd:loopFiles', var, s, node, attrnode, field_value, options)
+
+                    elif var.startswith("cmd:readItemsDict("):
+                        s = exportutils.handleCommand('cmd:readItemsDict', var, s, node, attrnode, field_value, options)
+
+                    elif var.startswith("cmd:getTAL("):
+                        s = exportutils.handleCommand('cmd:getTAL', var, s, node, attrnode, field_value, options, mask)
+
+
+                    elif var=="value":
+                        v = getMetadataType(attrnode.getFieldtype()).getFormatedValue(attrnode, node)[1]
+                        if v=="":
+                            v = node.get(attrnode.getName())
+
+                        if "t" in options and not v.isdigit():
+                            v = '"' + v + '"'
+                        s = s.replace("[value]", v)
+                    elif var=="ns":
+                        ns = ""
+                        for mapping in attrnode.get("exportmapping").split(";"):
+                            n = tree.getNode(mapping)
+                            if n.getNamespace()!="" and n.getNamespaceUrl()!="":
+                                ns += 'xmlns:' + n.getNamespace() + '="' + n.getNamespaceUrl() + '" '
+                        s = s.replace("[" + var + "]", ns)
+
+                ret = ""
+                for i in range(0, len(s)):
+                    if s[i-1]=='\\':
+                        if s[i]=='r':
+                            ret += "\r"
+                        elif s[i]=='n':
+                            ret += "\n"
+                        elif s[i]=='t':
+                            ret += "\t"
+                    elif s[i]=='\\':
+                        pass
+                    else:
+                        ret += s[i]
+                s = ret
         except:
             pass
         return desc(s)
-        
-        
+
         
     def getViewHTML(self, fields, nodes, flags, language=""):
         ret = ""
@@ -126,14 +160,14 @@ class m_mappingfield(Metatype):
 
         if mask.getMappingHeader()!="":
             ret += mask.getMappingHeader() + "\r\n"
-        
+
         for field in fields:
             attrnode = tree.getNode(field.get("attribute"))
 
             if field.get("fieldtype")=="mapping": # mapping to mapping definition
                 mapping = tree.getNode(mask.get("exportmapping").split(";")[0])
                 separator = mapping.get("separator")
-                
+
                 ns = mapping.getNamespace()
                 if ns!="":
                     ns += ":"
@@ -143,14 +177,13 @@ class m_mappingfield(Metatype):
             else: # attributes of node
                 format = field.get("mappingfield")
                 field_value = ""
-            
-            ret += self.replaceVars(format, node, attrnode, field_value, options=mask.getExportOptions())
-            
+
+            ret += self.replaceVars(format, node, attrnode, field_value, options=mask.getExportOptions(), mask=mask)
+
             if not mask.hasExportOption("l") and list(fields).index(field)<len(fields)-1:
                 ret += separator
-                
+
         if mask.getMappingFooter()!="":
             ret += "\r\n" + mask.getMappingFooter()
 
         return self.replaceVars(ret, node, mask)
-    

@@ -69,7 +69,11 @@ class FtsSearcher:
             res = self.db.execute('select distinct(id) from textsearchmeta where textsearchmeta match ?', ['\'value:'+normalize_utf8((protect(u(value))))+ ' type:-directory\''])
             retfull = [str(s[0]) for s in res]
             return union([ret, retfull])
-            
+
+        elif field == "allmetadata": # all metadata 
+            res = self.db.execute('select distinct(id) from fullsearchmeta where fullsearchmeta match ?', ['\'value:'+normalize_utf8(protect(u(value)))+ ' type:-directory\''])
+            return [str(s[0]) for s in res]        
+                        
         elif field == "fulltext": # fulltext
             res = self.db.execute('select distinct(id) from textsearchmeta where textsearchmeta match ?', ['\'value:'+normalize_utf8(protect(u(value)))+ ' type:-directory\''])
             return [str(s[0]) for s in res]

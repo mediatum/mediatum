@@ -23,95 +23,69 @@ import core.config as config
 import core.tree as tree
 
 from core.styles import theme
-from utils.pathutils import getSubdirsContaining
 
 def loadThemes():
-    # try loading theme from mediatum theme folder
+    
+    def manageThemes(themepath, type):
+        name = config.get("config.theme", "")
+        if os.path.exists(config.basedir+"/"+themepath+"themes/"+name+"/"):
+            athana.addFileStore("/theme/", themepath+"themes/"+name+"/")
+            athana.addFileStorePath("/css/", themepath+"themes/"+name+"/css/")
+            athana.addFileStorePath("/img/", themepath+"themes/"+name+"/img/")
+            athana.addFileStorePath("/js/", themepath+"themes/"+name+"/js/")
+            theme.update(name, themepath+"themes/"+name+"/", type)
+            print "Loading theme '%s' (%s)" %(name, type)
+
     if config.get("config.theme", "")!="":
-        p = config.basedir+"/web/themes/"+config.get("config.theme", "")+"/"
-        if os.path.exists(p):
-            print "Loading theme '%s'" %(config.get("config.theme", ""))
-            athana.addFileStore("/theme/", "web/themes/"+config.get("config.theme", "")+"/")
-            athana.addFileStorePath("/css/", "web/themes/"+config.get("config.theme", "")+"/css/")
-            athana.addFileStorePath("/img/", "web/themes/"+config.get("config.theme", "")+"/img/")
-            athana.addFileStorePath("/js/", "web/themes/"+config.get("config.theme", "")+"/js/")
-            
-            theme.update(config.get("config.theme"), "web/themes/"+config.get("config.theme", "")+"/", "intern")
+        manageThemes("web/", "intern") # internal theme
 
-        # try laoding themes from plugin
-        for k,v in config.getsubset("plugins").items():
-            p = config.basedir+"/"+v+"themes/"+config.get("config.theme", "")+"/"
-            if os.path.exists(p):
-                print "Loading external theme '%s'" %(config.get("config.theme", ""))
-                athana.addFileStore("/theme/", v+"themes/"+config.get("config.theme", "")+"/")
-                athana.addFileStorePath("/css/", v+"themes/"+config.get("config.theme", "")+"/css/")
-                athana.addFileStorePath("/img/", v+"themes/"+config.get("config.theme", "")+"/img/")
-                athana.addFileStorePath("/js/", v+"themes/"+config.get("config.theme", "")+"/js/")
-                theme.update(config.get("config.theme"), v+"themes/"+config.get("config.theme", "")+"/", "extern")
-
+        for k,v in config.getsubset("plugins").items(): # themes from plugins
+            manageThemes(v, "extern")
     else:
         print "Loading default theme"
         
 
 def loadServices():
-    CONTEXTPREFIX = config.get("services.contextprefix", "services")
-    datapath = config.get("services.datapath", "").strip()
+    datapath = config.get("services.datapath", "")
     if not os.path.exists(os.path.join(datapath, "common")):
         try:
             os.makedirs(os.path.join(datapath, "common"))
         except OSError:
             pass
-    
-    if config.get("services.activate", "").strip().lower()=="true":
-        # try loading services from mediatum web/services/ folder
-        servicedirs = getSubdirsContaining(config.basedir+"/web/services/", filelist=['__init__.py', 'servicehandler.py'])
-        for servicedir in servicedirs:
-            if config.get('services.'+servicedir +'.activate', "").strip().lower()=="false":
-                continue
-            if servicedir + '.basecontext' in config.getsubset("services").keys():
-                basecontext = config.getsubset("services")[servicedir + '.basecontext']
-            else:
-                basecontext = CONTEXTPREFIX+'/'+servicedir
-            basecontext = ('/' + basecontext).replace('//', '/').replace('//', '/')
             
-            context = athana.addContext(basecontext, ".")
-            file = context.addFile("web/services/"+servicedir+"/servicehandler.py")
+    def manageService(servicename, servicedir, servicedata):
+        if config.get('services.'+servicename +'.activate', "").lower()=="false":
+            return
+        if servicename + '.basecontext' in config.getsubset("services").keys():
+            basecontext = config.getsubset("services")[servicename + '.basecontext']
+        else:
+            basecontext = config.get("services.contextprefix", "services")+'/'+servicename
+        basecontext = ('/' + basecontext).replace('//', '/').replace('//', '/')
+        context = athana.addContext(basecontext, ".")
+        file = context.addFile(servicedir + "services/" + servicename)
+        
+        if  hasattr(file.m, "request_handler"):
             file.addHandler("request_handler").addPattern("/.*")
-
-            servicedata = os.path.join(datapath, servicedir)
+        
             if not os.path.exists(servicedata):
                 try:
                     os.makedirs(servicedata)
                     os.makedirs(os.path.join(servicedata, "cache"))
                 except OSError:
-                    pass
-
+                    return
+    
+    if config.get("services.activate", "").lower()=="true":
+        # try loading services from mediatum web/services/ folder
+        p = config.basedir+"/web/services/"
+        for servicedir in [f for f in os.listdir(p) if os.path.isdir(os.path.join(p, f))]:
+            manageService(servicedir, "web/", os.path.join(datapath, servicedir))
 
         # try loading services from all plugins services/ folder
         for k,v in config.getsubset("plugins").items():
             p = os.path.join(config.basedir, v, 'services')
             if os.path.exists(p):
-                servicedirs = getSubdirsContaining(p, filelist=['__init__.py', 'servicehandler.py'])
-                for servicedir in servicedirs:
-                    if config.get('services.'+ k + '.' + servicedir + '.activate', "").strip().lower()=="false":
-                        continue
-                    if k + '.' + servicedir + '.basecontext' in config.getsubset("services").keys():
-                        basecontext = config.getsubset("services")[k + '.' + servicedir + '.basecontext']
-                    else:
-                        basecontext = k + '/' + servicedir # name of the plugin + name of service folder
-                    basecontext = ('/' + CONTEXTPREFIX + '/' + basecontext).replace('//', '/').replace('//', '/')
-
-                    context = athana.addContext(basecontext, ".")
-                    file = context.addFile(v + "/services/" + servicedir + "/servicehandler.py") # ok
-                    file.addHandler("request_handler").addPattern("/.*")
-
-                    servicedata = os.path.join(datapath, k, servicedir)
-                    if not os.path.exists(servicedata):
-                        try:
-                            os.makedirs(servicedata)
-                            os.makedirs(os.path.join(servicedata, "cache"))
-                        except OSError:
-                            pass
+                for servicedir in [f for f in os.listdir(p) if os.path.isdir(os.path.join(p, f))]:
+                    manageService(servicedir, v, os.path.join(datapath, k, servicedir))
 
     else:
         print "web services not activated"

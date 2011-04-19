@@ -1,0 +1,107 @@
+﻿<metal:block metal:define-macro="editor_popup">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+    <head>
+        <title>Module Selector</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="robots" content="noindex, nofollow">
+        <link href="/module/editor/filemanager/browser/default/browser.css" type="text/css" rel="stylesheet"> 
+        <script type="text/javascript" src="/js/ajax.js"> </script>
+
+        <style type="text/css">
+            .imagecontainer { height:150px; width: 150px; float:left; border:1px solid #888; padding:3px; margin:3px; text-align:center; display:block; vertical-align:middle;}
+            .innerimagecontainer { height:110px; width:144px; border:1px solid #888; }
+            .image { border:1px solid #888;}
+            #closewindowdiv{ clear:left;}
+        </style>
+        <script type="text/javascript">
+            var nodeid = "";
+            var selection_mod = "";
+            var eSelected = "";
+            
+            function loadModuleParameter(value){
+                ajaxObj = new sack();
+                ajaxObj.requestFile = "/modules/init/moduleform/"+value+"?val="+eSelected;
+                ajaxObj.response;
+                ajaxObj.onCompletion = function() { 
+                    document.getElementById('modform').innerHTML = ajaxObj.response;
+                };
+                ajaxObj.runAJAX();
+            }
+
+            var dialog = window.parent ;
+            var oEditor = dialog.InnerDialogLoaded() ;
+            var nodeId = "";
+
+            window.onload = function (){
+                dialog.SetOkButton(true);
+                LoadSelected() ;
+            }
+
+            function LoadSelected(){
+                // Is there anything selected?
+                try{ //firefox
+                    eSelected = oEditor.FCK.EditorDocument.getSelection();
+                }catch(err){ //ie
+                    eSelected = oEditor.FCK.Selection.SelectionData.text ;
+                }                
+                if ( !eSelected )
+                    return ;
+                    
+                parts = eSelected.split('/');
+                if (parts.length>1){
+                    selection_mod = parts[1];
+                }
+                
+                document.getElementById('modname').value = selection_mod;
+                loadModuleParameter(selection_mod);
+            }
+
+            function Ok(){
+                val = "" 
+
+                for(x=0;x<document.mod_params.elements.length;x++){
+                    if (document.mod_params.elements[x].name=='mod_value'){
+                        val += document.mod_params.elements[x].value + '/';
+                    }
+                }
+                if(val.substr(0, 1)=="/"){
+                    val = oEditor.FCK.Config.NodeId+val;
+                }
+                val = document.mod_params.mod_prefix.value + val;
+                oEditor.FCK.InsertHtml('{'+val.substr(0, val.length-1)+'}');
+                return true;
+            }
+
+        </script>
+    </head>
+    <body>
+        <form name="mod_params">
+            <input type="hidden" id="selection" name="selection" style="width:300px"/>
+            <p>
+                Plugin:<br/>
+                <select id="modname" name="modname" onchange="loadModuleParameter(this.value)">
+                    <option value=""/>
+                    <tal:block tal:repeat="mod mods">
+                    <option tal:content="python:mod().getName()" tal:attributes="value python:mod().getId()"/>
+                    </tal:block>
+                </select>
+            </p>
+            
+            <div id="modform">
+                
+            </div>
+        </form>
+    </body>
+    <script type="text/javascript">
+        
+    </script>
+</html>
+</metal:block>
+
+
+<metal:block metal:define-macro="editor_default">
+    <!--<p style="text-align: center">
+        <button type="button" onclick="window.close()" i18n:translate="mask_editor_cancel">TEXT</button>
+    <p>-->
+</metal:block>

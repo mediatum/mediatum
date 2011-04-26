@@ -85,7 +85,7 @@ def format_date(t=None, format=None):
         return "%0.4d-%0.2d-%0.2dT%0.2d:%0.2d:%0.2d" % (t.year, t.month, t.day, t.hour, t.minute, t.second)
     elif format=="rfc822": # e.g. for rss
         import datetime
-        weekdayname = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        weekdayname = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         monthname = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
         dn = weekdayname[datetime.date(t.year, t.month, t.day).weekday()]
         return "%s, %0.2d %s %0.4d %0.2d:%0.2d:%0.2d CET" %(dn, t.day, monthname[t.month], t.year, t.hour, t.minute, t.second)

@@ -112,6 +112,10 @@ def send_thumbnail(req):
         n = tree.getNode(splitpath(req.path)[0])
     except tree.NoSuchNodeError:
         return 404
+    access = AccessData(req)
+    if not access.hasAccess(n, "read"):
+        return 403
+        
     for f in n.getFiles():
         if f.getType()=="thumb":
             if os.path.isfile(f.retrieveFile()):
@@ -131,6 +135,10 @@ def send_thumbnail2(req):
         n = tree.getNode(splitpath(req.path)[0])
     except tree.NoSuchNodeError:
         return 404
+    access = AccessData(req)
+    if not access.hasAccess(n, "read"):
+        return 403
+        
     for f in n.getFiles():
         if f.getType().startswith("presentat"):
             if os.path.isfile(f.retrieveFile()):

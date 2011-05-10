@@ -35,7 +35,7 @@ class Flash(default.Default):
         return "video"
 
     def _prepareData(node, req, words=""):
-        mask = node.getMask("nodebig")
+        mask = node.getFullView(lang(req))
         obj = {}
         obj['metadata'] = mask.getViewHTML([node], 2) # hide empty elements
         obj['node'] = node  

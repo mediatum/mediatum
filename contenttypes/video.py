@@ -44,7 +44,7 @@ class Video(default.Default):
         
     def _prepareData(node, req, words=""):
         access = acl.AccessData(req)
-        mask = node.getMask("nodebig")
+        mask = node.getFullView(lang(req))
         obj = {}
         for filenode in node.getFiles():
             if filenode.getType()=="original" or filenode.getType()=="video":

@@ -140,7 +140,7 @@ class Audio(default.Default):
     # prepare hash table with values for TAL-template
     def _prepareData(node, req):
         access = acl.AccessData(req)     
-        mask = node.getMask("nodebig")
+        mask = node.getFullView(lang(req))
 
         obj = {}
         if mask:

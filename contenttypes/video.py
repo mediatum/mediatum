@@ -30,7 +30,7 @@ from core.acl import AccessData
 from core.tree import Node,FileNode
 from lib.flv.parse import getFLVSize, FLVReader
 from contenttypes.image import makeThumbNail,makePresentationFormat
-from core.translation import t
+from core.translation import t, lang
 from core.styles import getContentStyles
 import default
 

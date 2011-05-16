@@ -25,7 +25,7 @@
             
             for (var i=0; i<obj.options.length; i++){
                 if (obj.options[i].selected==true){
-                    action +=obj.options[i].value+";"
+                    action +=encodeURIComponent(obj.options[i].value)+";"
                 }
             }
             getEditPage("currentcollection", id, 'manageindex', action);

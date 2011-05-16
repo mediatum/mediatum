@@ -21,6 +21,7 @@ import core.tree as tree
 from core.acl import AccessData
 from schema.schema import loadTypesFromDB, getMetaType
 from web.frontend.content import getPaths
+from utils.utils import u
 
 def getInformation():
     return {"version":"1.0", "system":0}
@@ -38,7 +39,7 @@ def getAllAttributeValues(attribute, schema):
     values = {}
     for f in tree.db.runQuery('select nodeattribute.nid, nodeattribute.value from nodeattribute, node where node.id=nodeattribute.nid and node.type like "%'+schema+'" and nodeattribute.name='+tree.db.esc(attribute)):
         for s in f[1].split(";"):
-            s = s.strip()
+            s = u(s.strip())
             if s not in values:
                 values[s] = []
             values[s].append(f[0])
@@ -47,12 +48,12 @@ def getAllAttributeValues(attribute, schema):
     
 def replaceValue(value, oldvalue, replacement):
     ret = []
-    for val in value.split("; "):
-        if val==oldvalue:
+    for val in value.split(";"):
+        if val.strip()==oldvalue.strip():
             ret.append(replacement)
         else:
             ret.append(val)
-    return "; ".join(ret)
+    return ";".join(ret)
 
     
 def getContent(req, ids):
@@ -71,22 +72,20 @@ def getContent(req, ids):
     
     if "do_action" in req.params.keys(): # process nodes
         fieldname = req.params.get("fields")
-        old_values = req.params.get("old_values", "").split(";")
-        new_value = req.params.get("new_value")
+        old_values = u(req.params.get("old_values", "")).split(";")
+        new_value = u(req.params.get("new_value"))
         basenode = tree.getNode(ids)
         entries = getAllAttributeValues(fieldname, req.params.get("schema"))
         
         c = 0
         for old_val in old_values:
-            for id in AccessData(req).filter(entries[old_val]):
+            for n in AccessData(req).filter(tree.NodeList(entries[old_val])):
                 try:
-                    n = tree.getNode(id)
-                    n.set(fieldname, replaceValue(n.get(fieldname), old_val, new_value))
+                    n.set(fieldname, replaceValue(n.get(fieldname), u(old_val), u(new_value)))
                     n.setDirty()
                     c+=1
                 except:
                     pass
-        
         v["message"] = req.getTAL("web/edit/modules/manageindex.html", {"number":c}, macro="operationinfo")
     
     if "style" in req.params.keys(): # load schemes
@@ -132,6 +131,7 @@ def getContent(req, ids):
             
             subitems = {}
             for value in values:
+                value = u(value)
                 if value in all_values:
                     subitems[value] = []
                     for l in all_values[value]:

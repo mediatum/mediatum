@@ -17,16 +17,22 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.tree as tree
-
-from core.acl import AccessData
 import re
 import os
+
+import core.tree as tree
 import core.athana as athana
 import core.config as config
 import default
+
+from core.acl import AccessData
 from core.translation import t, lang
 from utils.utils import CustomItem
+try:
+    import web.frontend.modules.modules as frontendmods
+    frontend_modules = 1
+except:
+    frontend_modules = 0
 
 
 SRC_PATTERN = re.compile('src="([^":/]*)"')
@@ -56,10 +62,28 @@ def includetemplate(node, file, substitute):
                 ret += 'src="/file/'+node.id+'/'+imgname+'"'
                 lastend = match.end()
         fi.close()
-        
-    else:
-        print "Couldn't find",file
     return ret
+    
+    
+def replaceModules(node, req, input):
+    global frontend_modules
+    if frontend_modules:
+        frontend_mods = frontendmods.getFrontendModules()
+
+        def getModString(m):
+            for k in frontend_mods:
+                if m.group(0).startswith('{frontend/'+k+'/'):
+                    return m.group(0), frontend_mods[k]().getContent(req, path=m.group(0)[1:-1].replace('frontend/'+k+'/', ""))
+            return "", ""
+        
+        while 1:
+            m = re.compile('{frontend/.[^{]*}').search(input)
+            if m:
+                mod_str, mod_repl = getModString(m)
+                input = input.replace(mod_str, mod_repl)
+            else:
+                break
+    return input
 
     
 def fileIsNotEmpty(file):
@@ -105,19 +129,27 @@ class Directory(default.Default):
                 shortpath_file = f.retrieveFile().replace(basedir, "")
                 if f.getType()=='content' and f.mimetype=='text/html':
                     res = f
-
-        if verbose:
-            if res:
-                print "getStartpageFileNode(%s, %s) is returning a FileNode: %s" % (node.id, language, str([res.retrieveFile(), res.getType(), res.mimetype]))
-            else:
-                print "getStartpageFileNode(%s, %s) is NOT returning a FileNode: %s" % (node.id, language, str(res))
-        
         return res
 
     """ format big view with standard template """
     def show_node_big(node, req, template="", macro=""):
         content = ""
         link = "node?id="+node.id + "&amp;files=1"
+        sidebar = ""
+        pages = node.getStartpageDict()
+        if node.get("system.sidebar")!="":
+            for sb in node.get("system.sidebar").split(";"):
+                if sb!="":
+                    l, fn = sb.split(":")
+                    if l==lang(req):
+                        for f in node.getFiles():
+                            if fn.endswith(f.getName()):
+                                sidebar = includetemplate(node,f.retrieveFile(), {})
+                                sidebar = replaceModules(node, req, sidebar).strip()
+        if sidebar!="":
+            sidebar = req.getTAL("contenttypes/directory.html", {"content":sidebar}, macro="addcolumn")
+        else:
+            sidebar = ""
         
         if "item" in req.params:
             fpath = config.get("paths.datadir")+"html/"+req.params.get("item")
@@ -125,6 +157,8 @@ class Directory(default.Default):
                 c = open(fpath, "r")
                 content = c.read()
                 c.close()
+                if sidebar!="":
+                    return '<div id="portal-column-one">'+content+'</div>' + sidebar 
                 return content
         
         spn = node.getStartpageFileNode(lang(req))
@@ -132,10 +166,13 @@ class Directory(default.Default):
             long_path = spn.retrieveFile()
             if os.path.isfile(long_path) and fileIsNotEmpty(long_path):
                 content = includetemplate(node, long_path, {'${next}': link})
+                content = replaceModules(node, req, content)
             if content:
+                if sidebar!="":
+                    return '<div id="portal-column-one">'+content+'</div>' + sidebar 
                 return content
 
-        return content
+        return content + sidebar 
     
     """ format node image with standard template """
     def show_node_image(node,language=None):

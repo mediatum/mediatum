@@ -22,7 +22,7 @@ import xml.parsers.expat as expat
 import StringIO
 import random
 
-from utils.utils import esc, u
+from utils.utils import esc, u, u2
 
 import core.users as users
 from core.acl import AccessData
@@ -52,7 +52,7 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
     indent += 4
 
     for name,value in node.items():
-        fi.write((" "*indent) + '<attribute name="'+u(esc(name))+'"><![CDATA['+u(value)+']]></attribute>'+"\n")
+        fi.write((" "*indent) + '<attribute name="'+u(esc(name))+'"><![CDATA['+u2(value)+']]></attribute>'+"\n")
 
     for file in node.getFiles():
         if file.type == "metadata" or file.type in exclude_filetypes:

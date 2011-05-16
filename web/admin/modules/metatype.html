@@ -69,7 +69,7 @@
                     <td tal:content="python:metadatatype.getName()"/>
                     <td tal:content="python:metadatatype.getLongName()"/>
                     <td tal:condition="python:len(metadatatype.getDescription())<=10" tal:content="python:metadatatype.getDescription()"/>
-                    <td tal:condition="python:len(metadatatype.getDescription())>10" tal:attributes="title python:metadatatype.getDescription()" tal:content="python:metadatatype.getDescription()[:10]+'...'"/>
+                    <td tal:condition="python:len(metadatatype.getDescription())>10" tal:attributes="title python:metadatatype.getDescription()" tal:content="python:metadatatype.getDescription(20)"/>
                     <td>
                         &nbsp;&nbsp;&nbsp;<img tal:condition="python:metadatatype.isActive()" i18n:attributes="title admin_meta_active_title" src="/img/haken.gif"/>
                     </td>

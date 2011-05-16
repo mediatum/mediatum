@@ -1341,6 +1341,24 @@ msgstr "Beschreibung"
 msgid "admin_mapping_col_5"
 msgstr "Felder"
 
+msgid "admin_mapping_col_6"
+msgstr "Typ"
+
+msgid "admin_mapping_col_7"
+msgstr "Aktiv"
+
+msgid "admin_mapping_configuration"
+msgstr "Mapping Basis Definition"
+
+msgid "admin_mapping_configtypes"
+msgstr "Mapping Typen:"
+
+msgid "admin_mapping_type"
+msgstr "Mapping Typ"
+
+msgid "admin_mapping_active"
+msgstr "Aktiv"
+
 msgid "admin_mapping_create"
 msgstr "Neues Mapping anlegen"
 
@@ -2558,6 +2576,70 @@ msgstr "Reihenfolge ändern"
 msgid "edit_frontendparts_add_title"
 msgstr "Neuen Eintrag erzeugen"
 
+### edit news ###
+msgid  "edit_news_overviewheader"
+msgstr "Übersicht über die Mitteilungen"
+
+msgid "edit_news_start"
+msgstr "Start"
+
+msgid "edit_news_end"
+msgstr "Ende"
+
+msgid "edit_news_date"
+msgstr "Datum"
+
+msgid "edit_news_active"
+msgstr "Anzeigen"
+
+msgid "edit_news_visible"
+msgstr "Sichtbar"
+
+msgid "edit_news_type"
+msgstr "Typ"
+
+msgid "edit_news_messagedate"
+msgstr "Datum zum Eintrag"
+
+msgid "edit_news_title"
+msgstr "Titel"
+
+msgid "edit_news_message"
+msgstr "Mitteilung"
+
+msgid "edit_news_entries"
+msgstr "Einträge"
+
+msgid "edit_news_addentry"
+msgstr "Eintrag hinzufügen"
+
+msgid "edit_news_editentry"
+msgstr "Eintrag bearbeiten"
+
+msgid "edit_news_datefrom"
+msgstr "Datum ab:"
+
+msgid "edit_news_dateuntil"
+msgstr "Datum bis:"
+
+msgid "edit_news_entrytype"
+msgstr "Meldungstyp"
+
+msgid "edit_news_save"
+msgstr "Speichern"
+
+msgid "edit_news_cancel"
+msgstr "Abbrechen"
+
+msgid "edit_news_addtitle"
+msgstr "Mitteilung hinzufügen"
+
+msgid "edit_news_edittitle"
+msgstr "Mitteilung bearbeiten"
+
+msgid "edit_news_deletetitle"
+msgstr "Mitteilung löschen"
+
 ### edit tabs ###
 msgid "tab_menulayout"
 msgstr "Aussehen"
@@ -2711,6 +2793,9 @@ msgstr "FTP-Daten verarbeiten"
 
 msgid "tab_manageindex"
 msgstr "Indexlisten verwalten"
+
+msgid "tab_news"
+msgstr "Mitteilungen verwalten"
 
 ### edit acls ###
 msgid "edit_acls_righttype_read"
@@ -2886,6 +2971,9 @@ msgstr "Die Datei wurde hochgeladen."
 msgid "edit_startpages_header"
 msgstr "Startseiten"
 
+msgid "edit_startpages_header2"
+msgstr "Sidebar"
+
 msgid "edit_startpages_explain_table"
 msgstr "HTML-Seiten für diesen Node"
 
@@ -2925,8 +3013,14 @@ msgstr "Beschreibender Name"
 msgid "edit_startpages_do_not_use_a_startpage"
 msgstr "Keine Startseite für diese Sprache"
 
+msgid "edit_startpages_do_not_use_a_sidebar"
+msgstr "Keine Sidebar für diese Sprache"
+
 msgid "edit_startpages_selectlanguage"
 msgstr "als Startseite für diese Sprache wählen"
+
+msgid "edit_startpages_sidebarfile"
+msgstr "Dateien"
 
 ### workflow ###
 msgid "edit_workflow_msg1"

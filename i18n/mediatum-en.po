@@ -1326,6 +1326,24 @@ msgstr "Description"
 msgid "admin_mapping_col_5"
 msgstr "Fields"
 
+msgid "admin_mapping_col_6"
+msgstr "Type"
+
+msgid "admin_mapping_col_7"
+msgstr "Active"
+
+msgid "admin_mapping_configuration"
+msgstr "Mapping Base Definition"
+
+msgid "admin_mapping_configtypes"
+msgstr "Mapping Types:"
+
+msgid "admin_mapping_type"
+msgstr "Mapping Type"
+
+msgid "admin_mapping_active"
+msgstr "Active"
+
 msgid "admin_mapping_create"
 msgstr "Create new mapping"
 
@@ -2536,6 +2554,9 @@ msgstr "Edit FTP-Files"
 msgid "tab_manageindex"
 msgstr "Manage Index-Lists"
 
+msgid "tab_news"
+msgstr "Manage Messages"
+
 ### edit acls ###
 msgid "edit_acls_righttype_read"
 msgstr "User groups which may see these objects:"
@@ -2746,6 +2767,61 @@ msgstr "change order"
 msgid "edit_frontendparts_add_title"
 msgstr "create new entry"
 
+### edit news ###
+msgid  "edit_news_overviewheader"
+msgstr "Overview of Entries"
+
+msgid "edit_news_start"
+msgstr "Start"
+
+msgid "edit_news_end"
+msgstr "End"
+
+msgid "edit_news_date"
+msgstr "Date"
+
+msgid "edit_news_active"
+msgstr "Show"
+
+msgid "edit_news_visible"
+msgstr "Visible"
+
+msgid "edit_news_type"
+msgstr "Typy"
+
+msgid "edit_news_messagedate"
+msgstr "Date for Entry"
+
+msgid "edit_news_title"
+msgstr "Title"
+
+msgid "edit_news_message"
+msgstr "Message"
+
+msgid "edit_news_entries"
+msgstr "Entries"
+
+msgid "edit_news_addentry"
+msgstr "Add Entry"
+
+msgid "edit_news_editentry"
+msgstr "Edit Entry"
+
+msgid "edit_news_datefrom"
+msgstr "Date from:"
+
+msgid "edit_news_dateuntil"
+msgstr "Date until:"
+
+msgid "edit_news_entrytype"
+msgstr "Message type"
+
+msgid "edit_news_save"
+msgstr "Save"
+
+msgid "edit_news_cancel"
+msgstr "Cancel"
+
 ### classes ###
 msgid "edit_classes_class_title"
 msgstr "Classify"
@@ -2855,6 +2931,9 @@ msgstr "The file has been uploaded."
 msgid "edit_startpages_header"
 msgstr "Startpages"
 
+msgid "edit_startpages_header2"
+msgstr "Sidebar"
+
 msgid "edit_startpages_explain_table"
 msgstr "html pages for this node"
 
@@ -2894,8 +2973,14 @@ msgstr "Descriptive name"
 msgid "edit_startpages_do_not_use_a_startpage"
 msgstr "Do not use a startpage for this language"
 
+msgid "edit_startpages_do_not_use_a_sidebar"
+msgstr "Do not use a sidebar for this language"
+
 msgid "edit_startpages_selectlanguage"
 msgstr "select as startpage for this language"
+
+msgid "edit_startpages_sidebarfile"
+msgstr "Files"
 
 ### workflow ###
 msgid "edit_workflow_msg1"

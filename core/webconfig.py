@@ -54,6 +54,9 @@ def loadServices():
             pass
             
     def manageService(servicename, servicedir, servicedata):
+        if not os.path.exists(servicedir + "services/" + servicename + "/__init__.py"):
+            return
+
         if config.get('services.'+servicename +'.activate', "").lower()=="false":
             return
         if servicename + '.basecontext' in config.getsubset("services").keys():

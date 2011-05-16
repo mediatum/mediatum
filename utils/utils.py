@@ -172,15 +172,18 @@ def get_hash(filename):
         return hashlib.md5("").hexdigest()
 
 def get_filesize(filename):
-    if os.path.exists(filename):
-        stat = os.stat(filename)
-        return stat[6]
-    import core.config as config
-    if os.path.exists(config.settings["paths.datadir"]+"/"+filename):
-        stat = os.stat(config.settings["paths.datadir"]+"/"+filename)
-        return stat[6]
-    else:
-        print "Warning: File",filename,"not found"
+    try:
+        if os.path.exists(filename):
+            stat = os.stat(filename)
+            return stat[6]
+        import core.config as config
+        if os.path.exists(config.settings["paths.datadir"]+"/"+filename):
+            stat = os.stat(config.settings["paths.datadir"]+"/"+filename)
+            return stat[6]
+        else:
+            print "Warning: File",filename,"not found"
+            return 0
+    except:
         return 0
 
 
@@ -423,6 +426,9 @@ def getMimeType(filename):
     elif filename.endswith(".aif") or filename.endswith(".aiff"):
         mimetype = "audio/x-aiff"
         type = "audio"
+    elif filename.endswith(".new"):
+        mimetype = "text/plain"
+        type = "news"
 
     else:
         mimetype = "other"

@@ -1,18 +1,13 @@
-<metal:block metal:define-macro="view">
-    <!--[if lt IE 7]>
-            <script type="text/javascript">
-                window.attachEvent("onload", buttonfix);
-            </script>
-        <![endif]-->
+﻿<metal:block metal:define-macro="view">
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form name="mappingoverview" method="post" enctype="multipart/form-data" tal:attributes="action page">
         <table class="overview">
             <thead>
                 <tr>
-                    <td colspan="8"><h3 i18n:translate="admin_mapping_existing">TEXT</h3></td>
+                    <td colspan="10"><h3 i18n:translate="admin_mapping_existing">TEXT</h3></td>
                 </tr>
                 <tr>
-                    <td colspan="8">
+                    <td colspan="10">
                         <span i18n:translate="admin_filter_label">TEXT</span>
                         <tal:block tal:repeat="tab tabs">
                             <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
@@ -36,7 +31,7 @@
             </thead>
             <tbody>
                 <tr tal:condition="python:len(mappings)==0">
-                    <td colspan="8"><small i18n:translate="admin_mapping_nomappings">TEXT</small></td>
+                    <td colspan="10"><small i18n:translate="admin_mapping_nomappings">TEXT</small></td>
                 </tr>
                 <tal:block tal:define="start python:pages.getStart();end python:pages.getEnd()" tal:repeat="mapping python:mappings[start:end]">
                     <tr tal:define="cssclass python:mappings.index(mapping)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
@@ -45,7 +40,11 @@
                         <td tal:content="python:mapping.getNamespace()"/>
                         <td tal:content="python:mapping.getNamespaceUrl()"/>
                         <td tal:content="python:mapping.getDescription()"/>
-                        <td tal:content="python:str(len(mapping.getFields()))"/>
+                        <td style="width:40px;padding-right:10px;text-align:right" tal:content="python:str(len(mapping.getFields()))"/>
+                        <td tal:content="python:mapping.getMappingType()"/>
+                        <td style="padding-left:14px">
+                            &nbsp;<img tal:condition="python:mapping.getActive()==1" src="/img/haken.gif"/>
+                        </td>
                         <td>
                             <input tal:attributes="name python:'fieldlist_'+(mapping.id)" i18n:attributes="title admin_mapping_fieldlist_title" type="image" src="/img/rightarrow.png"/>
                         </td>
@@ -61,7 +60,7 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <th colspan="4" align="left">
+                    <th colspan="5" align="left">
                         <small>
                             <span i18n:translate="admin_mapping_overview_footer">
                                 <span i18n:name="number" tal:content="python:str(len(mappings))"/>
@@ -69,11 +68,11 @@
                             <span tal:content="raw python:pages.printPageList()"/>
                         </small>
                     </th>
-                    <th colspan="4" align="right"><small tal:content="raw python:pages.printPageAll()"/></th>
+                    <th colspan="5" align="right"><small tal:content="raw python:pages.printPageAll()"/></th>
                 </tr>
                 <tr>
-                    <td colspan="4">&nbsp;</td>
-                    <td colspan="4" align="right">
+                    <td colspan="5">&nbsp;</td>
+                    <td colspan="5" align="right">
                         <br/>
                         <table style="width:100px">
                             <tr>
@@ -90,7 +89,30 @@
                 </tr>
             </tfoot>
         </table>
-        <br>
+        <br/>
+        <input type="hidden" name="actpage" tal:attributes="value actpage"/>
+        <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
+        <input type="hidden" name="acttype" value="mapping"/>
+    </form>
+    
+    <form name="mappingoverview" method="post" enctype="multipart/form-data" tal:attributes="action page">
+        <h3 i18n:translate="admin_mapping_configuration">TEXT</h3>
+        <table>
+            <tr>
+                <td i18n:translate="admin_mapping_configtypes">TEXT</td>
+                <td>
+                    <textarea tal:content="mappingtypes" name="mappingtypes" cols="80" rows="6">  </textarea>
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>
+                    <button type="submit" name="save_config" i18n:attributes="title admin_save_title" i18n:translate="admin_save">TEXT</button>&nbsp;&nbsp;
+                    <button type="reset" i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" >TEXT</button>
+                </td>
+            </tr>
+        </table>
+        <input type="hidden" name="formtype" value="configuration"/>
         <input type="hidden" name="actpage" tal:attributes="value actpage"/>
         <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
         <input type="hidden" name="acttype" value="mapping"/>
@@ -117,6 +139,14 @@
                 <td><tal:block i18n:translate="admin_mapping_name">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
                     <input tal:attributes="value python:mapping.getName()" type="text" name="name" maxlength="50" size="50"/>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_mapping_type">TEXT</tal:block>:</td>
+                <td>
+                    <select name="mappingtype">
+                        <option tal:repeat="mtype mappingtypes" tal:content="mtype" tal:attributes="value mtype; selected python:{'False':None, 'True':'selected'}[str(mapping.getMappingType()==mtype)]"/>
+                    </select>
                 </td>
             </tr>
             <tr>
@@ -153,6 +183,12 @@
                 <td><tal:block i18n:translate="admin_mapping_separator">TEXT</tal:block>:</td>
                 <td>
                     <input tal:attributes="value python:mapping.getSeparator()" type="text" name="separator" maxlength=50 size="50"/>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_mapping_active"/>:</td>
+                <td>
+                    <input tal:attributes="checked python:{0:None,1:'checked'}[mapping.getActive()]" type="checkbox" name="active" value="1"/>
                 </td>
             </tr>
             <tr>

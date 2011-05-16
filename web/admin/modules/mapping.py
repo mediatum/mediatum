@@ -19,7 +19,7 @@
 """
 import core.tree as tree
 
-from schema.mapping import getMappings, getMapping, updateMapping, deleteMapping, updateMappingField, deleteMappingField, exportMapping, importMapping
+from schema.mapping import getMappings, getMapping, getMappingTypes, updateMapping, deleteMapping, updateMappingField, deleteMappingField, exportMapping, importMapping
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from core.translation import lang, t
 
@@ -28,6 +28,11 @@ def getInformation():
 
 def validate(req, op):
     if req.params.get("acttype", "mapping")=="mapping":
+    
+        if req.params.get("formtype", "")=="configuration" and "save_config" in req.params:
+            mappingroot = tree.getRoot("mappings")
+            mappingroot.set("mappingtypes", req.params.get("mappingtypes", "").replace("\r\n", ";").replace("\n", ";"))
+            return view(req)
     
         if "file" in req.params and hasattr(req.params["file"], "filesize") and req.params["file"].filesize>0:
             # import mapping from xml-file
@@ -62,7 +67,7 @@ def validate(req, op):
             if req.params.get("name","")=="":
                 return editMapping_mask(req, req.params.get("id",""), 1) # empty required field
             else:
-                updateMapping(req.params.get("name"), namespace=req.params.get("namespace"), namespaceurl=req.params.get("namespaceurl"), description=req.params.get("description"), header=req.params.get("header"), footer=req.params.get("footer"), separator=req.params.get("separator"), standardformat=req.params.get("standardformat"), id=req.params.get("id"))
+                updateMapping(req.params.get("name"), namespace=req.params.get("namespace"), namespaceurl=req.params.get("namespaceurl"), description=req.params.get("description"), header=req.params.get("header"), footer=req.params.get("footer"), separator=req.params.get("separator"), standardformat=req.params.get("standardformat"), id=req.params.get("id"), mappingtype=req.params.get("mappingtype"), active=req.params.get("active"))
 
     else:
         # section for mapping fields
@@ -91,7 +96,7 @@ def validate(req, op):
                 _mandatory = False
                 if "mandatory" in req.params.keys():
                     _mandatory = True
-                updateMappingField(req.params.get("parent"), req.params.get("name"), description=req.params.get("description"), exportformat=req.params.get("exportformat"), mandatory=_mandatory, id=req.params.get("id"))               
+                updateMappingField(req.params.get("parent"), req.params.get("name"), description=req.params.get("description"), exportformat=req.params.get("exportformat"), mandatory=_mandatory, id=req.params.get("id"))
         return viewlist(req, req.params.get("parent"))
         
     return view(req)
@@ -129,20 +134,25 @@ def view(req):
             mappings.sort(lambda x, y: cmp(x.getNamespaceUrl().lower(),y.getNamespaceUrl().lower()))
         elif int(order[0:1])==3:
             mappings.sort(lambda x, y: cmp(x.getDescription().lower(),y.getDescription().lower()))
-        elif int(order[0:1])==4:   
+        elif int(order[0:1])==4:
             mappings.sort(lambda x, y: cmp(len(x.getFields()),len(y.getFields())))
+        elif int(order[0:1])==5:
+            mappings.sort(lambda x, y: cmp(x.getMappingType(),y.getMappingType()))
+        elif int(order[0:1])==6:
+            mappings.sort(lambda x, y: cmp(x.getActive(),y.getActive()))
             
         if int(order[1:])==1:
             mappings.reverse()
     else:
         mappings.sort(lambda x, y: cmp(x.getName().lower(),y.getName().lower()))
-    
+
     v = getAdminStdVars(req)
-    v["sortcol"] = pages.OrderColHeader([t(lang(req),"admin_mapping_col_1"), t(lang(req),"admin_mapping_col_2"), t(lang(req),"admin_mapping_col_3"), t(lang(req),"admin_mapping_col_4"), t(lang(req),"admin_mapping_col_5")])
+    v["sortcol"] = pages.OrderColHeader([t(lang(req),"admin_mapping_col_1"), t(lang(req),"admin_mapping_col_2"), t(lang(req),"admin_mapping_col_3"), t(lang(req),"admin_mapping_col_4"), t(lang(req),"admin_mapping_col_5"), t(lang(req),"admin_mapping_col_6"), t(lang(req),"admin_mapping_col_7")])
     v["mappings"] = mappings
     v["options"] = []
     v["pages"] = pages
     v["actfilter"] = actfilter
+    v["mappingtypes"] = "\n".join(getMappingTypes())
     return req.getTAL("web/admin/modules/mapping.html", v, macro="view")
     
     
@@ -166,12 +176,13 @@ def editMapping_mask(req, id, err=0):
         mapping.setFooter(req.params.get("footer"))
         mapping.setSeparator(req.params.get("separator"))
         mapping.setStandardFormat(req.params.get("standardformat"))
-
+    
     v = getAdminStdVars(req)
     v["error"] = err
     v["mapping"] = mapping
     v["id"] = id
     v["actpage"] = req.params.get("actpage")
+    v["mappingtypes"] = getMappingTypes()
     return req.getTAL("web/admin/modules/mapping.html", v, macro="modify")
 
     

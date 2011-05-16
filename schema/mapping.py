@@ -42,8 +42,19 @@ def getMapping(id):
         mappings = tree.getRoot("mappings")
         return mappings.getChild(id)
 
-
-def updateMapping(name, namespace="", namespaceurl="", description="", header="", footer="", separator="", standardformat="", id=0):
+def getMappingTypes():
+    ret = []
+    try:
+        mappings = tree.getRoot("mappings")
+        ret = mappings.get("mappingtypes").split(";")
+        if len(ret)==0 or ret[0]=="":
+            mappings.set("mappingtypes", "default;bibtex;rss;marc21;z3950")
+            return getMappingTypes()
+        return ret
+    except:
+        return ret
+        
+def updateMapping(name, namespace="", namespaceurl="", description="", header="", footer="", separator="", standardformat="", id=0, mappingtype="", active=""):
     if id!="" and int(id)>0:
         mapping = tree.getNode(id)
     else:
@@ -58,6 +69,8 @@ def updateMapping(name, namespace="", namespaceurl="", description="", header=""
     mapping.setFooter(footer)
     mapping.setSeparator(separator)
     mapping.setStandardFormat(standardformat)
+    mapping.setMappingType(mappingtype)
+    mapping.setActive(active)
 
 def deleteMapping(name):
     mappings = tree.getRoot("mappings")
@@ -169,6 +182,24 @@ class Mapping(tree.Node):
     
     def isContainer(node):
         return 0
+        
+    def getActive(self):
+        if self.get("active")=="0":
+            return 0
+        return 1
+        
+    def setActive(self, value):
+        if value==None:
+            value = "0"
+        self.set("active", str(value))
+        
+    def getMappingType(self):
+        if self.get("mappingtype")=="":
+            return "default"
+        return self.get("mappingtype")
+        
+    def setMappingType(self, value):
+        self.set("mappingtype", value)
         
         
         

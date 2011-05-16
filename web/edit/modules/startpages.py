@@ -123,6 +123,9 @@ def edit_editor(req, node, filenode):
         oFCKeditor.Config['LinkBrowserURL'] = ('/edit/edit_content/%s/startpages/filebrowser' % node.id)
         oFCKeditor.Config['ImageUploadURL'] = ('/edit/edit_content/%s/startpages/htmlupload' % node.id)
         
+        # added to ge current nodeid
+        oFCKeditor.Config['NodeId'] = node.id
+        
         v = {
              "id":req.params.get('id'),
              "tab":req.params.get('tab'),
@@ -190,7 +193,11 @@ def send_fckfile(req, download=0):
             break
 
     if file and not os.path.isfile(file.retrieveFile()) and n.get("archive_type")!="":
-        archivemanager.getManager(n.get("archive_type")).getArchivedFile(id)
+        if not archivemanager:
+            import core.archive as archive
+            archivemanager = archive.ArchiveManager()
+        if archivemanager:
+            archivemanager.getManager(n.get("archive_type")).getArchivedFile(id)
 
     if not file:
         return 404
@@ -303,8 +310,12 @@ def getContent(req, ids):
     languages = [language.strip() for language in config.get("i18n.languages").split(",")]
     
     if "startpages_save" in req.params.keys():
-        descriptors  = [k for k in req.params if k.startswith('descr.') ]
-        for k in descriptors:
+        sidebar = ""
+        for k in [k for k in req.params if k.startswith('sidebar_') ]:
+            sidebar += k[8:]+":"+req.params[k]+";"
+        node.set('system.sidebar', sidebar)
+        
+        for k in [k for k in req.params if k.startswith('descr.') ]:
             node.set('startpage'+k, req.params[k])
             
         # build startpage_selector
@@ -314,6 +325,7 @@ def getContent(req, ids):
         node.set('startpage.selector', startpage_selector[0:-1])
         
     named_filelist = []
+
     for f in filelist:
         long_path = f.retrieveFile()
         short_path = long_path.replace(config.get("paths.datadir"), '')
@@ -324,10 +336,13 @@ def getContent(req, ids):
             file_size = os.path.getsize(long_path)
             
         langlist = []
+        sidebar = []
         for language in languages:
             spn = node.getStartpageFileNode(language)
             if spn and spn.retrieveFile()==long_path:
                 langlist.append(language)
+            if node.get('system.sidebar').find(language+":"+ short_path)>=0:
+                sidebar.append(language)
 
         named_filelist.append( (short_path,
                                 node.get('startpagedescr.'+short_path),
@@ -337,9 +352,9 @@ def getContent(req, ids):
                                 format_filesize(file_size),
                                 long_path,
                                 langlist,
-                                "/file/%s/%s" % (req.params.get("id","0"), short_path.split('/')[-1])
+                                "/file/%s/%s" % (req.params.get("id","0"), short_path.split('/')[-1]),
+                                sidebar
                               ) )
-                              
     lang2file = node.getStartpageDict()
     
     # compatibility: there may be old startpages in the database that

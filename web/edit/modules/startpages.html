@@ -1,4 +1,4 @@
-<metal:block metal:define-macro="edit_startpages">
+﻿<metal:block metal:define-macro="edit_startpages">
     <script type="text/javascript">       
         function questionDel(){
             return confirm(unescape(document.getElementById("deleteconfirm").innerHTML));
@@ -7,17 +7,16 @@
     
     <div id="deleteconfirm" i18n:translate="edit_startpages_deleteconfirm" style="display:none">TEXT</div>
     <div>
-        <p>
-            <b i18n:translate="edit_startpages_header">TEXT</b>
-            <small i18n:translate="edit_startpages_explain_table">TEXT</small>
-        </p>
-
         <form id="01" method="post" name="startpages" action="/edit/edit_content">
+            <p>
+                <b i18n:translate="edit_startpages_header">TEXT</b>
+                <small i18n:translate="edit_startpages_explain_table">TEXT</small>
+            </p>
             <input tal:attributes="value id" type="hidden" name="id"/>
             <input tal:attributes="value tab" type="hidden" name="tab"/>
             <style type="text/css">
                 #filetable{
-                    border:1px solid silver; border-width:1px 1px 0px 1px
+                    border:1px solid silver; border-width:1px 1px 0px 1px; width:100%
                 }
                 #filetable input{
                     background-color:transparent; margin:1px; border-width:0px
@@ -39,13 +38,13 @@
                     border:1px solid silver
                 }
                 #filetable td{
-                    vertical-align:middle; padding:2px;border-bottom:1px solid silver
+                    vertical-align:middle; padding:2px; border-bottom:1px solid silver
                 }
                 #filetable tr:hover{
                     background-color:silver
                 }
                 #filetable a{
-                    color:#000000; padding:1px:margin:0px
+                    color:#000000; padding:1px; margin:0px
                 }
                 td.silver{
                     background-color:#efefef
@@ -54,7 +53,7 @@
             <table id="filetable" cellpadding="0px" cellspacing="0px">
                 <thead>
                     <tr>
-                        <th tal:repeat="lang languages" tal:content="lang">TEXT</th> 
+                        <th tal:repeat="lang languages" tal:content="lang" style="width:20px">TEXT</th> 
                         <th i18n:translate="edit_startpages_descriptive_name" style="border-left:1px solid silver">TEXT</th>
                         <th i18n:translate="edit_startpages_technical_name" colspan="2">TEXT</th> 
                         <th i18n:translate="edit_startpages_file_size">TEXT</th>
@@ -97,15 +96,49 @@
                     </tr>
                 </tfoot>
             </table>
+            
             <div>&nbsp;</div> 
+            <p>
+                <b i18n:translate="edit_startpages_header2">TEXT</b>
+                <small i18n:translate="edit_startpages_explain_table">TEXT</small>
+            </p>
+            
+            <table id="filetable" cellpadding="0px" cellspacing="0px">
+                <thead>
+                    <tr>
+                        <th tal:repeat="lang languages" tal:content="lang" style="width:20px">TEXT</th>
+                        <th style="border-left:1px solid silver" i18n:translate="edit_startpages_sidebarfile">Datei</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr tal:repeat="item named_filelist">
+                        <td tal:repeat="lang languages">
+                            <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'sidebar_'+lang; value python:item[0]; checked python:{'False':None,'True':'checked'}[str(lang in item[9])]"/>
+                        </td> 
+                        <td style="border-left:1px solid silver" tal:content="python:str(item[1]+' ('+item[8]+')')"/>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr style="background-color:#d8d8d8">
+                        <td tal:repeat="lang languages">
+                            <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'sidebar_'+lang; value python:''; checked python:{'False':None,'True':'checked'}[str(node.getStartpageFileNode(lang)==None)]"/>
+                        </td> 
+                        <td style="border-left:1px solid silver" i18n:translate="edit_startpages_do_not_use_a_sidebar">TEXT</td>
+                    </tr>
+                </tfoot>
+            </table>
+            
+            
+            <div>&nbsp;</div> 
+            
             <input i18n:attributes="value edit_startpages_savechanges" type="submit" name="startpages_save"/>
             <input i18n:attributes="value edit_startpages_reset" type="reset" name="startpages_reset"/>
-        </form> 
+        </form>
     </div>
 </metal:block>  
 
 
-<form metal:define-macro="edit_editor" method="post" action="/edit/edit_content">
+<form metal:define-macro="edit_editor" method="post" action="/edit/edit_content" name="hidden_values">
     <p>
         <tal:block i18n:translate="edit_editor_header"/>
         <strong tal:content="python: descriptiveLabel">TEXT</strong>
@@ -113,7 +146,7 @@
     <tal:block tal:replace="raw python:oFCKeditor.Create()"/>
     <p align="center">
         <input tal:attributes="value path" type="hidden" name="file_path"/>
-        <input tal:attributes="value id" type="hidden" name="id"/>
+        <input tal:attributes="value id" type="hidden" name="id" id="id"/>
         <input tal:attributes="value tab" type="hidden" name="tab"/>
         <input tal:attributes="value file_to_edit" type="hidden" name="file_to_edit"/>
         <input i18n:attributes="value edit_editor_save" type="submit" name="save_page"/>

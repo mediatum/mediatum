@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.37 2010/11/16 08:55:33 seiferta Exp $'
+RCS_ID =  '$Id: athana.py,v 1.38 2011/05/16 14:18:07 seiferta Exp $'
 
 import sys
 
@@ -2638,7 +2638,7 @@ VARIABLE = re.compile(r'\$(?:(%s)|\{(%s)\})' % (NAME_RE, NAME_RE))
 parsed_files = {}
 parsed_strings = {}
 
-def runTAL(writer, context=None, string=None, file=None, macro=None, language=None, request=None):
+def runTAL(writer, context=None, string=None, file=None, macro=None, language=None, request=None, mode=None):
 
     if file:
         file = getMacroFile(file)
@@ -2662,7 +2662,7 @@ def runTAL(writer, context=None, string=None, file=None, macro=None, language=No
             program,macros,mtime = None,None,None
    
     if not (program and macros):
-        if file and file.endswith("xml"):
+        if file and file.endswith("xml") or mode=="xml":
             talparser = TALParser(TALGenerator(AthanaTALEngine()))
         else:
             talparser = HTMLTALParser(TALGenerator(AthanaTALEngine()))
@@ -2680,7 +2680,7 @@ def runTAL(writer, context=None, string=None, file=None, macro=None, language=No
     engine = AthanaTALEngine(macros, context, language=language, request=request)
     TALInterpreter(program, macros, engine, writer, wrap=0)()
 
-def processTAL(context=None, string=None, file=None, macro=None, language=None, request=None):
+def processTAL(context=None, string=None, file=None, macro=None, language=None, request=None, mode=None):
     class STRWriter:
         def __init__(self):
             self.string = ""
@@ -2692,7 +2692,7 @@ def processTAL(context=None, string=None, file=None, macro=None, language=None, 
         def getvalue(self):
             return self.string
     wr = STRWriter()
-    runTAL(wr, context, string=string, file=file, macro=macro, language=language, request=request)
+    runTAL(wr, context, string=string, file=file, macro=macro, language=language, request=request, mode=mode)
     return wr.getvalue()
 
 
@@ -3955,8 +3955,8 @@ class http_request:
 def getTAL(page,context,macro=None,language=None):
     return processTAL(context,file=page, macro=macro, language=language)
 
-def getTALstr(string,context,macro=None,language=None):
-    return processTAL(context,string=string, macro=macro, language=language)
+def getTALstr(string,context,macro=None,language=None,mode=None):
+    return processTAL(context,string=string, macro=macro, language=language, mode=mode)
 
 # ===========================================================================
 #                                                HTTP Channel Object

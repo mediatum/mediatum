@@ -1,0 +1,105 @@
+<html>
+<head>
+<title>index ws export</title>
+<style type="text/css">
+.blue { color:blue; }
+.underline { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<h2 class="underline">Requests served by the service</h2>
+
+<h3 class="blue"><code>/node/{id}</code></h3>
+
+A request on <code>/node/{id}</code> will return a representation of the node specified by the id. The output format (xml being default) may be specified in the query parameter <code>format</code> (see below).
+
+<h3 class="blue"><code>/node/{id}/parents</code></h3>
+
+A request on <code>/node/{id}/parents</code> will return a representation of a list with the data of the direct predecessors of the specified node.
+
+<h3 class="blue"><code>/node/{id}/children</code></h3>
+
+A request on <code>/node/{id}/children</code> will return a representation of a list with the data of the direct descendants of the specified node.
+
+<h3 class="blue"><code>/node/{id}/allchildren</code></h3>
+
+A request on <code>/node/{id}/allchildren</code> will return a representation of a list with the data of all descendants of the specified node.
+
+<p/>
+
+<h2 class="underline">Query parameters to manipulate result lists</h2>
+
+The result lists can be manipulated using the following query parameters:
+
+<pre>
+<b class="blue">format:</b> specifies the response format. Currently supported: xml (default), json, csv, rss. 
+The default response format is xml. The xml data contains the id, name and type of the node, 
+the attributes and information about the files of the node. 
+Only xml and json give the full data of the node. The csv response is limited to node id, name, type and the attributes.
+
+The csv format can be best viewed with openoffice calc with semicolon as separator and (") as string delimiter. 
+Excel will not detect utf-8 encoding if no byte order marker 'bom' is given. (see below) 
+
+The rss item of the response can be configured in an export mask named <code>rss</code> for the metadatatype of the node.
+If no such export mask is present, the fields of a mask where the name starts with <code>nodesmall</code> of the metadatatype 
+of the node will be used to fill the rss item. 
+The language of this mask can be specified in the query parameter <code>'lang'</code>.
+The surrounding <code>&lt;item/&gt;</code> tag will be added by the handler. 
+The handler will always add the node type as <code>&lt;category/&gt;</code> to the item.
+
+The xml and json responses will contain information on the processing time of different steps of response generation.
+They also contain a shortlist of the result nodelist of the request containing only node id and type.
+This shortlist is not affected by the query parameters <code>start</code> and <code>limit</code> (see below).
+It has been introduced to reduce network traffic when the web service is used for browsing, overview or similar purposes.
+
+<b class="blue">start:</b> specifies the index of the first node to be returned
+<b class="blue">limit:</b> specifies the maximal number of nodes to be returned
+
+<b class="blue">type:</b> only nodes of the specified type (regular expressions are allowed) are returned (/node/{id}/children?type=directory will return a list of the subdirectories of the node)
+
+<b class="blue">i0, i1:</b> specify the slice of the shortlist to be returned like ''shortlist[i0:i1]'' in Python (xml and json only)
+
+<b class="blue">sortfield:</b> specifies a comma-separated attribute list for sorting the result. 
+Besides node attributes the following sortfields may be used: "node.id", "node.name", "node.type", "node.orderpos". 
+The sorting is lexical and upward by default. Downward sorting for a sortfield can be chosen by prefixing it with a minus '-'.
+The default lexical sorting may be overridden with the parameter "sortformat". This uses the flags "s", "i", "f".
+When using 4 sortfields and the second should be read as integer, the fourth as float, the parameter "sortformat=sisf" 
+shoud be added to the query. "s" (for string) specifies lexical sorting.
+  
+Remark: When csv is used as format, the sortfield(s) are advanced to the first column(s) after the node id, type and name
+
+<b class="blue">q:</b> allows specifying a search below the given node to generate the result
+Examples:
+/node/{id}/allchildren/q=tea%20AND%20coffee      full search (metadata and fulltext) for 'tea AND coffee'
+/node/{id}/allchildren/?format=rss&q=year=2011   search in metadata attribute 'year' for value '2011'
+
+<b class="blue">acceptcached:</b> query parameter to indicate the age (measured in seconds) of a cached query that the client would accept as a result. The default value is 0.
+Remark: Only the unsliced and unsorted python data of the result may be cached. 
+The slicing, sorting  and rendering to output formats will - at least in this version - always be computed.
+
+<b class="blue">sep:</b> field separator used for csv format (default: semicolon)
+<b class="blue">delimiter:</b> string delimiter used for csv format (default: ", 'dquote')
+<b class="blue">bom:</b> (no value needed) adds an utf-8 byte order marker to the output to make it more excel friendly
+
+Remark:
+A translation dictionary for the values for sep and delimiter can be configured in the function handlers.struct2csv(...)
+    trans = {
+             'none': u(''),
+             'tab':  u('\t'),
+             'quote':  u("'"),
+             'dquote':  u('"'),
+            }
+
+<b class="blue">mimetype:</b> override the default mime type of the response
+Example:
+Excel fiendly output that would open directly in an excel sheet in Internet Explorer can be generated this way:
+http://host/services/export/node/{id}/children?format=csv&sep=;&delimiter=dquote&bom&mimetype=application/vnd.ms-excel
+</pre>
+
+Remark 1: Firefox is much faster to render large xml responses in this format than Internet Explorer.
+<p/>
+Remark 2: the first queries after a system restart may take quite long time.
+</pre>
+</body>
+</html>

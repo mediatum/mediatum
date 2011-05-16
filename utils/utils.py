@@ -44,6 +44,19 @@ def u(s):
             return s.decode("latin-1").encode("utf-8")
         except:
             return s
+            
+def u2(s):
+    try:
+        return s.encode("utf-8")
+    except:
+        try:
+            s2 = unicode(s, 'utf-8')
+            return s2.encode("utf-8")
+        except:
+            try:
+                return s.decode('latin1').encode('utf-8')
+            except:
+                return s
 
 def iso2utf8(s):
     return unicode(s,"latin-1").encode("utf-8")

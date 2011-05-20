@@ -309,7 +309,8 @@ def upload_for_html(req):
                 if file.getName()==filename:
                     n.removeFile(file)
 
-    if "file" in req.params.keys():
+    if "file" in req.params.keys(): # file
+
         # file upload via (possibly disabled) upload form in custom image browser
         file = req.params["file"]
         del req.params["file"]
@@ -326,10 +327,10 @@ def upload_for_html(req):
                 req.request["Location"] = req.makeLink("content", {"id":id, "tab":"tab_editor", "error":"PostprocessingError_"+datatype[:datatype.find("/")]})
             return send_nodefile_tal(req)
         
-    if "NewFile" in req.params.keys():
-        # file upload via FCKeditor Image Properties / Upload tab
-        file = req.params["NewFile"]
-        del req.params["NewFile"]
+    if "upload" in req.params.keys(): #NewFile
+        # file upload via CKeditor Image Properties / Upload tab
+        file = req.params["upload"]
+        del req.params["upload"]
         if hasattr(file,"filesize") and file.filesize>0:
             try:
                 logging.getLogger('editor').info(user.name + " upload "+file.filename+" ("+file.tempname+")")
@@ -341,22 +342,28 @@ def upload_for_html(req):
                 logException("error during upload")
                 req.request["Location"] = req.makeLink("content", {"id":id, "tab":"tab_editor", "error":"PostprocessingError_"+datatype[:datatype.find("/")]})
 
-            originalName = file.filename
-
             url = '/file/'+id+'/'+file.tempname.split('/')[-1]
-            
-            # the following response is copied from the FCKeditor sources:
-            # lib/FCKeditor/files.zip/editor/filemanager/connectors/py/fckoutput.py
-            return """<script type="text/javascript">
-            (function(){var d=document.domain;while (true){try{var A=window.parent.document.domain;break;}catch(e) {};d=d.replace(/.*?(?:\.|$)/,'');if (d.length==0) break;try{document.domain=d;}catch (e){break;}}})();
 
-            window.parent.OnUploadCompleted(%(errorNumber)s,"%(fileUrl)s","%(fileName)s","%(customMsg)s");
-            </script>""" % {
-            'errorNumber': 0,
+            res = """<script type="text/javascript">
+            
+                // Helper function to get parameters from the query string.
+                function getUrlParam(paramName)
+                {
+                  var reParam = new RegExp('(?:[\?&]|&amp;)' + paramName + '=([^&]+)', 'i') ;
+                  var match = window.location.search.match(reParam) ;
+                 
+                  return (match && match.length > 1) ? match[1] : '' ;
+                }
+            funcNum = getUrlParam('CKEditorFuncNum');
+            
+            window.parent.CKEDITOR.tools.callFunction(funcNum, "%(fileUrl)s","%(customMsg)s");
+            
+            </script>;""" % {
             'fileUrl': url.replace ('"', '\\"'),
-            'fileName': originalName.replace ( '"', '\\"' ) ,
             'customMsg': (t(lang(req), "edit_fckeditor_cfm_uploadsuccess")),
             }
+            
+            return res
 
     return send_nodefile_tal(req)
 

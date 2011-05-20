@@ -27,6 +27,7 @@ import logging
 import core.acl as acl
 import core.users as users
 import core.config as config
+from utils.utils import desc
 
 from utils.utils import getMimeType, splitpath, format_filesize
 from utils.fileutils import importFile
@@ -108,29 +109,14 @@ def edit_editor(req, node, filenode):
         except:
             os.environ['HTTP_USER_AGENT'] = req.request.request_headers['user-agent']
 
-        # these configurations override those in the custom configuration file
-        # the configurations in the custom configuration file overide those in fckconfig.js
-        oFCKeditor = fckeditor.FCKeditor('file_content_'+path)
-        oFCKeditor.BasePath = "/module/"
-        oFCKeditor.Config['CustomConfigurationsPath']='/js/custom_config.js'
-        oFCKeditor.Width="100%"
-        oFCKeditor.Height="500px"
-        oFCKeditor.ToolbarSet = 'mediatum'
-        oFCKeditor.Value = getFileTemplate(req, node, path, {})
-        oFCKeditor.Config['AutoDetectLanguage'] = 'false'  # boolean javascript
-        oFCKeditor.Config['DefaultLanguage'] = lang(req)       
-        oFCKeditor.Config['ImageBrowserURL'] = ('/edit/edit_content/%s/startpages/filebrowser' % node.id)
-        oFCKeditor.Config['LinkBrowserURL'] = ('/edit/edit_content/%s/startpages/filebrowser' % node.id)
-        oFCKeditor.Config['ImageUploadURL'] = ('/edit/edit_content/%s/startpages/htmlupload' % node.id)
-        
-        # added to ge current nodeid
-        oFCKeditor.Config['NodeId'] = node.id
-        
+        tmp = '/edit/edit_content/%s/startpages/filebrowser' % node.id
+        tmp2 = '/edit/edit_content/%s/startpages/htmlupload' % node.id
+        CKcreate="""<script type="text/javascript"> CKEDITOR.replace( 'editor1' , { language : '""" + lang(req) +"""', filebrowserBrowseUrl : '""" + tmp +  """', filebrowserUploadUrl : '""" + tmp +  """', filebrowserImageUploadUrl : '""" + tmp2 +  """', filebrowserImageBrowserUrl : '""" + tmp +  """', currentNodeId : '""" + node.id + """', skin: 'office2003' });</script>"""
+
         v = {
              "id":req.params.get('id'),
              "tab":req.params.get('tab'),
              "file_to_edit":req.params.get("file_to_edit"),
-             "oFCKeditor":oFCKeditor,
              "path":path,
              "node":node,
              "filenode":filenode,
@@ -138,9 +124,11 @@ def edit_editor(req, node, filenode):
              "logoname":node.get("system.logo"),
              "delbutton":False,
              "descriptiveLabel":descriptiveLabel,
+             "fncFileContents":fncFileContents,
+             "ckeditor_create":CKcreate,
+             "replaceCKEditor":replaceCKEditor
             }
-             
-        return req.getTAL("web/edit/modules/startpages.html", v, macro="edit_editor")
+        return desc(req.getTAL("web/edit/modules/startpages.html", v, macro="edit_editor"))
     else:
         return req.getTAL("web/edit/modules/startpages.html", {}, macro="header") + getFileTemplate(req, node, path, {})
 
@@ -389,3 +377,18 @@ def getContent(req, ids):
    
     return req.getTAL("web/edit/modules/startpages.html", v, macro="edit_startpages")
 
+def fncFileContents(absFileName):
+    try:
+        fil = open(absFileName, "r")
+    except IOError:
+        print "File could not be opened: " , absFileName
+        return "Error - evaluation not possible - file could not be opened: " + absFileName
+
+    text = fil.read()
+    fil.close()
+    
+    return text
+    
+def replaceCKEditor(text):
+    return text
+    

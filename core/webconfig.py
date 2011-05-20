@@ -198,14 +198,12 @@ def initContexts():
     file.addHandler("export").addPattern("/.*")
 
     # === static files ===
-    athana.addFileStore("/module/", "lib/FCKeditor/files.zip")
-    athana.addFileStore("/module/editor/plugins/", "lib/FCKeditor/plugins")
-    
+    athana.addFileStore("/ckeditor/", "lib/CKeditor/files.zip")
     athana.addFileStore("/css/", "web/css/")
     athana.addFileStore("/xml/", "web/xml/")
     athana.addFileStore("/img/", ["web/img/", "web/admin/img/", "web/edit/img/"])
-    athana.addFileStore("/js/", ["web/js/", "js", "lib/FCKeditor/js/"]) 
-    
+    athana.addFileStore("/js/", ["web/js/", "js", "lib/CKeditor/js/"]) 
+
     # === theme handling ===
     loadThemes()
     

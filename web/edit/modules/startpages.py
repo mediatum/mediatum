@@ -269,7 +269,7 @@ def getContent(req, ids):
         if "save_page" in req.params:
             content = ""
             for key in req.params.keys():
-                if key.startswith("file_content_"):
+                if key.startswith("editor1"):
                     content = req.params.get(key, "")
                     break
                     

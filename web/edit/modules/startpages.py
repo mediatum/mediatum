@@ -1,4 +1,4 @@
-"""
+﻿"""
  mediatum - a multimedia content repository
 
  Copyright (C) 2008 Arne Seifert <seiferta@in.tum.de>
@@ -125,8 +125,7 @@ def edit_editor(req, node, filenode):
              "delbutton":False,
              "descriptiveLabel":descriptiveLabel,
              "fncFileContents":fncFileContents,
-             "ckeditor_create":CKcreate,
-             "replaceCKEditor":replaceCKEditor
+             "ckeditor_create":CKcreate
             }
         return desc(req.getTAL("web/edit/modules/startpages.html", v, macro="edit_editor"))
     else:
@@ -388,7 +387,3 @@ def fncFileContents(absFileName):
     fil.close()
     
     return text
-    
-def replaceCKEditor(text):
-    return text
-    

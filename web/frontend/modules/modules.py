@@ -1,4 +1,4 @@
-﻿"""
+"""
  mediatum - a multimedia content repository
 
  Copyright (C) 2011 Arne Seifert <seiferta@in.tum.de>
@@ -74,6 +74,8 @@ def getFrontendModules(modname=""):
     import web.frontend.modules
     for root, dirs, files in os.walk(config.basedir+"/web/frontend/modules/"):
         for name in dirs:
+            if name.lower() in ['cvs']: # exclude sys dir
+                continue
             try:
                 m = __import__("web.frontend.modules." + name)
                 m = eval("web.frontend.modules." + name)
@@ -105,6 +107,7 @@ def getEditorModules():
 def getMaintenancePopup(req):
     req.writeTAL("web/frontend/modules/editor.html", {'mods': getEditorModules()}, macro="editor_popup")
 
+    
 def getDefaultModuleForm(req):
     req.writeTAL("web/frontend/modules/editor.html", {}, macro="editor_default")
         

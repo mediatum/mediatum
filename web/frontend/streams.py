@@ -27,6 +27,7 @@ from core.translation import t
 from core.styles import theme
 import random
 import zipfile
+import time
 
 import glob
 import utils.utils
@@ -34,7 +35,7 @@ import utils.utils
 import core.acl as acl
 from core import archivemanager
 from core.acl import AccessData
-from core.tree import getNode
+from core.tree import getNode, nodes_cache, childids_cache, parentids_cache
 from string import atoi
 
 
@@ -112,10 +113,6 @@ def send_thumbnail(req):
         n = tree.getNode(splitpath(req.path)[0])
     except tree.NoSuchNodeError:
         return 404
-    access = AccessData(req)
-    if not access.hasAccess(n, "read"):
-        return 403
-        
     for f in n.getFiles():
         if f.getType()=="thumb":
             if os.path.isfile(f.retrieveFile()):
@@ -135,10 +132,6 @@ def send_thumbnail2(req):
         n = tree.getNode(splitpath(req.path)[0])
     except tree.NoSuchNodeError:
         return 404
-    access = AccessData(req)
-    if not access.hasAccess(n, "read"):
-        return 403
-        
     for f in n.getFiles():
         if f.getType().startswith("presentat"):
             if os.path.isfile(f.retrieveFile()):
@@ -180,9 +173,10 @@ def send_doc(req):
 def send_file(req, download=0):
     access = AccessData(req)
     id,filename = splitpath(req.path)
-    if id.endswith(".zip"):
-        id = id[:-4]
-    
+
+    if id.endswith("_transfer.zip"):
+        id = id[:-13]
+
     try:
         n = tree.getNode(id)
     except tree.NoSuchNodeError:
@@ -190,10 +184,16 @@ def send_file(req, download=0):
     if not access.hasAccess(n, "data") and n.type not in ["directory", "collections", "collection"]:
         return 403
     file = None
-    
+
     if filename==None and n:
         # build zip-file and return it
-        send_transferzip(req)
+        zipfilepath, files_written = build_transferzip(n)
+        if files_written == 0:
+            return 404
+        send_result = req.sendFile(zipfilepath, "application/x-download")
+        if os.sep=='/': # Unix?
+            os.unlink(zipfilepath) # unlinking files while still reading them only works on Unix/Linux
+        return send_result
 
     # try full filename
     for f in n.getFiles():
@@ -209,25 +209,26 @@ def send_file(req, download=0):
                 file = f
                 break
     # try file from archivemanager
-    if not file and n.get("archive_type")!="":
+    if not file and n.get("archive_type")!="":  
         am = archivemanager.getManager(n.get("archive_type"))
-        if n.get("archive_state")=="":
-            am.getArchivedFile(n.id)
-        if not am:
-            return
+        req.reply_headers["Content-Disposition"] = "attachment; filename="+filename
         return req.sendFile(am.getArchivedFileStream(n.get("archive_path")), "application/x-download")
-
     
     if not file:
         return 404
 
-    video = file.getType()=="video"
-
-    if((download or file.getSize()>16*1048576) and not video):
-        req.reply_headers["Content-Disposition"] = "attachment; filename="+filename
-        return req.sendFile(file.retrieveFile(), "application/x-download")
-    else:
-        return req.sendFile(file.retrieveFile(), file.getMimeType())
+    req.reply_headers["Content-Disposition"] = "attachment; filename="+filename
+    return req.sendFile(file.retrieveFile(), "application/x-download")
+    
+    #video = file.getType()=="video"
+    #
+    #if((download or file.getSize()>16*1048576) and not video):
+    #    req.reply_headers["Content-Disposition"] = "attachment; filename="+filename
+    #    return req.sendFile(file.retrieveFile(), "application/x-download")
+    #else:
+    #    req.reply_headers["Content-Disposition"] = "attachment; filename="+filename
+    #    return req.sendFile(file.retrieveFile(), "application/x-download")
+    #    return req.sendFile(file.retrieveFile(), file.getMimeType())
 
 def send_file_as_download(req):
     return send_file(req, download=1)
@@ -286,26 +287,46 @@ def send_attfile(req):
     path = join_paths(config.get("paths.datadir"), filename)
     mime, type = getMimeType(filename)
     if(get_filesize(filename) > 16*1048576):
-        return req.sendFile(path, "application/x-download")
-    else:
-        return req.sendFile(path, mime)
+        req.reply_headers["Content-Disposition"] = "attachment; filename="+filename
+        mime = "application/x-download"
+
+    return req.sendFile(path, mime)
 
         
 def get_archived(req):
+    print "send archived"
     id, filename = splitpath(req.path)
-    n = tree.getNode(id)
+    node = tree.getNode(id)
+    node.set("archive_state", "1")
     if not archivemanager:
         req.write("-no archive module loaded-")
         return
-    am = archivemanager.getManager(n.get("archive_type"))
-    if am:
-        fname = am.getArchivedFileStream(n.get("archive_path"))
-        if os.path.exists(fname):
-            req.sendFile(fname, "application/x-download")
-    else:
-        print "no archive manager loaded"
-        return 0
 
+    archiveclass = ""
+    for item in config.get("archive.class").split(";"):
+        if item.endswith(node.get("archive_type")):
+            archiveclass = item + ".py"
+            break
+    
+    if archiveclass: # start process from archive
+        os.chdir(config.basedir)
+        os.system("python %s %s" %(archiveclass, node.id))
+
+    st = ""
+    while 1: # test if process is still running
+        attrs = tree.db.getAttributes(id)
+        if "archive_state" in attrs.keys():
+            st = attrs['archive_state']
+        time.sleep(1)
+        if st=="2":
+            break
+    
+    for n in node.getAllChildren():
+        nodes_cache.remove(int(n.id))
+        childids_cache[int(n.id)] = None
+        parentids_cache[int(n.id)] = None
+    req.write('done')
+    
     
 def get_root(req):
     filename = config.basedir+"/web/root"+req.path
@@ -313,10 +334,60 @@ def get_root(req):
         return req.sendFile(filename, "text/plain")
     else:
         return 404
-        
-def send_transferzip(req):
-    id, filename = splitpath(req.path)
-    
-    # send transfer file as zip
-    print "build zip", tree.getNode(id[:-4])
-    return
+
+def get_all_file_paths(basedir):
+    res = []
+    for dirpath, dirnames, filenames in os.walk(basedir):
+        for fn in filenames:
+            res.append(os.path.join(dirpath, fn))
+    return res
+
+def build_transferzip(n):
+    id = n.id
+    zipfilepath = join_paths(config.get("paths.tempdir"), id+"_transfer.zip")
+    if os.path.exists(zipfilepath):
+        zipfilepath = join_paths(config.get("paths.tempdir"), id+"_"+str(random.random())+"_transfer.zip")
+
+    zip = zipfile.ZipFile(zipfilepath, "w", zipfile.ZIP_DEFLATED)
+    files_written = 0
+
+    for fn in n.getFiles():
+        if fn.getType() in ['doc', 'document', 'zip', 'attachment', 'other']:
+            fullpath = fn.retrieveFile()
+            if os.path.isfile(fullpath) and os.path.exists(fullpath):
+                dirname, filename = os.path.split(fullpath)
+                print "adding to zip: ", fullpath, "as", filename
+                zip.write(fullpath, filename)
+                files_written += 1
+            if os.path.isdir(fullpath):
+                for f in get_all_file_paths(fullpath):
+                    newpath = f.replace(fullpath, "")
+                    print "adding from ", fullpath, "to zip: ", f, "as", newpath
+                    zip.write(f, newpath)
+                    files_written += 1
+    zip.close()
+
+    return zipfilepath, files_written
+
+def build_filelist(n):
+    "build file list for generation of xmetadissplus xml"
+    files_written = 0
+    result_list = []
+    print "building filelist for xmetadissplus, node.id:", n.id
+
+    for fn in n.getFiles():
+        if fn.getType() in ['doc', 'document', 'zip', 'attachment', 'other']:
+            fullpath = fn.retrieveFile()
+            if os.path.isfile(fullpath) and os.path.exists(fullpath):
+                dirname, filename = os.path.split(fullpath)
+                print "adding file to filelist: ", filename
+                result_list.append([filename, fn.getSize()])
+                files_written += 1
+            if os.path.isdir(fullpath):
+                for f in get_all_file_paths(fullpath):
+                    dirname, filename = os.path.split(f)
+                    print "adding dir content to filelist: ", filename
+                    result_list.append([filename, utils.utils.get_filesize(f)])
+                    files_written += 1
+
+    return result_list

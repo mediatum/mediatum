@@ -145,9 +145,19 @@
     </p>    
     <script type="text/javascript" src="/ckeditor/ckeditor.js">
     </script>
+    <script tal:content="python:'var currentnodeid = '+node.id+';\nvar language = '+language+';\n'"> </script>
    
-    <textarea id="editor1" name="editor1" tal:content="python: fncFileContents(path)">abc </textarea>
-    <tal:block tal:replace="ckeditor_create" />
+    <textarea id="page_content" name="page_content" tal:content="python: fncFileContents(path)"> </textarea>
+    <script type="text/javascript">
+        CKEDITOR.replace( 'page_content' , {
+                language : language,
+                filebrowserBrowseUrl : '/edit/edit_content/'+currentnodeid+'/startpages/filebrowser',
+                filebrowserUploadUrl : '/edit/edit_content/'+currentnodeid+'/startpages/filebrowser',
+                filebrowserImageUploadUrl : '/edit/edit_content/'+currentnodeid+'/startpages/htmlupload',
+                filebrowserImageBrowserUrl : '/edit/edit_content/'+currentnodeid+'/startpages/filebrowser',
+                currentNodeId : currentnodeid,
+                skin: 'office2003' });
+    </script>
     
     <p align="center">
         <input tal:attributes="value path" type="hidden" name="file_path"/>

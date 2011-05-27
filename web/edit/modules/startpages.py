@@ -109,23 +109,19 @@ def edit_editor(req, node, filenode):
         except:
             os.environ['HTTP_USER_AGENT'] = req.request.request_headers['user-agent']
 
-        tmp = '/edit/edit_content/%s/startpages/filebrowser' % node.id
-        tmp2 = '/edit/edit_content/%s/startpages/htmlupload' % node.id
-        CKcreate="""<script type="text/javascript"> CKEDITOR.replace( 'editor1' , { language : '""" + lang(req) +"""', filebrowserBrowseUrl : '""" + tmp +  """', filebrowserUploadUrl : '""" + tmp +  """', filebrowserImageUploadUrl : '""" + tmp2 +  """', filebrowserImageBrowserUrl : '""" + tmp +  """', currentNodeId : '""" + node.id + """', skin: 'office2003' });</script>"""
-
         v = {
-             "id":req.params.get('id'),
-             "tab":req.params.get('tab'),
-             "file_to_edit":req.params.get("file_to_edit"),
-             "path":path,
-             "node":node,
-             "filenode":filenode,
-             "files":node.getFiles(),
-             "logoname":node.get("system.logo"),
-             "delbutton":False,
-             "descriptiveLabel":descriptiveLabel,
-             "fncFileContents":fncFileContents,
-             "ckeditor_create":CKcreate
+             "id": req.params.get('id'),
+             "tab": req.params.get('tab'),
+             "file_to_edit": req.params.get("file_to_edit"),
+             "path": path,
+             "node": node,
+             "filenode": filenode,
+             "files": node.getFiles(),
+             "logoname": node.get("system.logo"),
+             "delbutton": False,
+             "descriptiveLabel": descriptiveLabel,
+             "fncFileContents": fncFileContents,
+             "language": lang(req)
             }
         return desc(req.getTAL("web/edit/modules/startpages.html", v, macro="edit_editor"))
     else:
@@ -159,48 +155,6 @@ def getFileTemplate(req, node, file, substitute):
     else:
         return ""
         
-def send_fckfile(req, download=0):
-    id = req.params.get("id")
-    filename = req.params.get("option")
-
-    try:
-        n = tree.getNode(id)
-    except tree.NoSuchNodeError:
-        return 404
-    access = AccessData(req)
-    if not (access.hasAccess(n,'read') and access.hasAccess(n,'data')):
-        return 403
-    if not access.hasAccess(n,"write") and n.type not in ["directory","collections","collection"]:
-        return 403
-    file = None
-    # try full filename
-    for f in n.getFiles():
-        if f.getName() == filename:
-            file = f
-            break
-
-    if file and not os.path.isfile(file.retrieveFile()) and n.get("archive_type")!="":
-        if not archivemanager:
-            import core.archive as archive
-            archivemanager = archive.ArchiveManager()
-        if archivemanager:
-            archivemanager.getManager(n.get("archive_type")).getArchivedFile(id)
-
-    if not file:
-        return 404
-
-    if req.params.get("delete", "")=="True":
-        user = users.getUserFromRequest(req)
-        logging.getLogger('editor').info(user.name + " going to remove "+file.retrieveFile()+" via startpage editor on node " + id)
-        n.removeFile(file)
-        try:
-            os.remove(file.retrieveFile())
-        except:
-            logException("could not remove file: %s" % file.retrieveFile())
-        return
-
-    return req.sendFile(file.retrieveFile(), file.getMimeType())
-
 
 def getContent(req, ids):
     if "option" in req.params:
@@ -268,7 +222,7 @@ def getContent(req, ids):
         if "save_page" in req.params:
             content = ""
             for key in req.params.keys():
-                if key.startswith("editor1"):
+                if key.startswith("page_content"):
                     content = req.params.get(key, "")
                     break
                     

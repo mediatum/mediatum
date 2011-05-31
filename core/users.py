@@ -195,7 +195,6 @@ def getUser(id):
 def doExternalAuthentification(name, pwd):
     global authenticators
     for a in authenticators:
-        #x = authenticators[a].authenticate_login(name,pwd)#==1:
         if authenticators[a].authenticate_login(name,pwd):
             return authenticators[a].getUser(name)
     return None
@@ -387,6 +386,8 @@ def moveUserToIntern(id):
 
 def getHideMenusForUser(user):
     hide = ''
+    if user.isAdmin():
+        return []
     for g in user.getGroups():
         g = usergroups.getGroup(g)
         hide += ';'+g.getHideEdit()

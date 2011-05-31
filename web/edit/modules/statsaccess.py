@@ -463,11 +463,23 @@ class StatsAccessPDF:
         self.bv.formatRight = 'Helvetica'
         self.formatRight.alignment = 2
         
-        # page 1
-        self.data.append(Paragraph("%s \n'%s'" %(t(self.language, "edit_stats_header"), self.collection.getName()), self.h1))
+        nameColl = self.collection.getName()
+
+        while 1: 
+            # page 1
+            p = Paragraph("%s \n'%s'" %(t(self.language, "edit_stats_header"), nameColl), self.h1)
+            p.wrap(defaultPageSize[0], defaultPageSize[1])
+
+            if p.getActualLineWidths0()[0]<19*cm:
+                break
+            else:
+                nameColl = nameColl[0:-4] + "..."
+
+        self.data.append(p)
+
         self.data.append(Paragraph("%s: %s" %(t(self.language, "edit_stats_period_header"), self.period), self.chartheader))
         self.data.append(Paragraph(t(self.language, "edit_stats_pages_of")%("1", "3"), self.formatRight))
-        
+            
         self.data.append((FrameBreak()))
         # top 10
         self.data += self.getStatTop("data", namecut=60)
@@ -475,7 +487,7 @@ class StatsAccessPDF:
         self.data += self.getStatCountry("data")
 
         self.data.append(PageBreak())
-        
+            
         # page 2
         self.data.append(Paragraph("%s \n'%s' %s - " %(t(self.language, "edit_stats_header"), self.collection.getName(), self.period) + t(self.language, "edit_stats_pages_of")%("2", "3"), self.bv))
         self.data.append((FrameBreak()))
@@ -483,25 +495,25 @@ class StatsAccessPDF:
         self.data += self.getStatDate("data")
 
         self.data.append(PageBreak())
-        
+            
         # page 3
         self.data.append(Paragraph("%s \n'%s' %s - " %(t(self.language, "edit_stats_header"), self.collection.getName(), self.period) + t(self.language, "edit_stats_pages_of")%("3", "3"), self.bv))
         self.data.append((FrameBreak()))
-        
+            
         # weekday
         self.data += self.getStatDay("data")
-        
+            
         # time
         self.data += self.getStatTime("data")
 
         template = SimpleDocTemplate(config.get("paths.tempdir","") +"statsaccess.pdf",showBoundary=0)
         tFirst = PageTemplate(id='First', onPage=self.myPages, pagesize=defaultPageSize)
         tNext = PageTemplate(id='Later', onPage=self.myPages, pagesize=defaultPageSize)
-        
+            
         template.addPageTemplates([tFirst, tNext])
         template.allowSplitting = 1
         BaseDocTemplate.build(template, self.data)
-        
+                
         template.canv.setAuthor(t(self.language, "main_title"))
         template.canv.setTitle("%s \n'%s' - %s: %s" %(t(self.language, "edit_stats_header"), self.collection.getName(),t(self.language, "edit_stats_period_header"), self.period))
         return template.canv._doc.GetPDFData(template.canv)
@@ -515,6 +527,7 @@ def getPrintView(req):
             period, type = getPeriod(f.retrieveFile())
             if type==p.split("_")[0] and period==p.split("_")[1]:
                 data = StatisticFile(f)
+                
     if data:
         pdf = StatsAccessPDF(data, p.split("_")[1], id, lang(req))
         return pdf.build()

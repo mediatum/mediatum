@@ -74,9 +74,9 @@ class FtsSearcher:
             value = normalize_utf8(protect(u(value)))
             
             if type=="full": # all metadata
-                return "select distinct(id) from fullsearchmeta where fullsearchmeta match \'value:"+value+"\' and type <>\'directory\'"
+                return 'select distinct(id) from fullsearchmeta where fullsearchmeta match \'value:'+value+'\' and type <>\'directory\''
             elif type=="fulltext": # fulltext
-                return "select distinct(id) from textsearchmeta where textsearchmeta match \'value:"+value+"\' and type<>\'directory\'"
+                return 'select distinct(id) from textsearchmeta where textsearchmeta match \'value:'+value+'\' and type<>\'directory\''
             elif type=="schema": # schemadef
                 return 'select distinct(id) from fullsearchmeta where schema="'+value.replace("'","")+'"'
             elif type=="objtype": # object type
@@ -86,13 +86,13 @@ class FtsSearcher:
                     value +="T00:00:00"
                 return 'select distinct(id) from searchmeta where updatetime '+spc['op']+' "'+value+'"'
             elif type=="field":
-                return 'select position, name from searchmeta_def where attrname='+value
+                return 'select position, name from searchmeta_def where attrname=\''+value+'\''
             elif type=="spcompare":
-                return 'select distinct(id) from searchmeta where schema="'+spc['pos'][1]+'" and field'+spc['pos'][0]+' '+spc['op']+' "'+value+'"'
+                return 'select distinct(id) from searchmeta where schema="'+str(spc['pos'][1])+'" and field'+str(spc['pos'][0])+' '+spc['op']+' "'+value+'"'
             elif type=="spfield":
-                return 'select distinct(id) from searchmeta where field'+spc['pos'][0]+'=""'
+                return 'select distinct(id) from searchmeta where field'+str(spc['pos'][0])+'=""'
             elif type=="spmatch":
-                return 'select distinct(id) from searchmeta where field'+spc['pos'][0]+' match \''+value+'\' and type <> \'directory\''
+                return 'select distinct(id) from searchmeta where field'+str(spc['pos'][0])+' match \''+value+'\' and type <> \'directory\''
             
         
         global DBTYPE
@@ -120,17 +120,15 @@ class FtsSearcher:
         elif field=="updatetime":
             return [str(s[0]) for s in self.execute(getSQL("updatetime", value, spc={'op':op}), self.connames[DBTYPE]['ext'])]
 
-
         else: # special search
-            for pos in self.execute(getSQL("field", value), self.connames[DBTYPE]['ext']):
+            for pos in self.execute(getSQL("field", field), self.connames[DBTYPE]['ext']):
                 if op in [">=","<="]:
-                    res = self.execute(getSQL("spcompare", value, spc={'op':op, 'pos':str(pos)}), self.connames[DBTYPE]['ext'])
+                    res = self.execute(getSQL("spcompare", value, spc={'op':op, 'pos':pos}), self.connames[DBTYPE]['ext'])
                 else:
                     if value=="''":
-                        res = sqlf.execute(getSQL("spfield", spc={'pos':str(pos)}), self.connames[DBTYPE]['ext'])
+                        res = self.execute(getSQL("spfield", spc={'pos':str(pos)}), self.connames[DBTYPE]['ext'])
                     else:
-                        res = sqlf.execute(getSQL("spmatch", spc={'pos':str(pos)}), self.connames[DBTYPE]['ext'])
-
+                        res = self.execute(getSQL("spmatch", value, spc={'pos':pos}), self.connames[DBTYPE]['ext'])
 
                 res = [str(s[0]) for s in res]
                 if len(ret)==0:
@@ -150,7 +148,6 @@ class FtsSearcher:
 
         def create(sql, type):
             try:
-                #self.execute(sql, self.connames[DBTYPE][type])
                 self.execute(sql, type)
             except:
                 e = sys.exc_info()[1]

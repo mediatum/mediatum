@@ -50,7 +50,7 @@ MAX_SEARCH_FIELDS = 32
     2: each word once with number of occurences
 """
 FULLTEXT_INDEX_MODE = 0
-DBTYPE = 'split' #'std|split'   split = split databases; std = all tables in one db
+DBTYPE = 'std' #'std|split'   split = split databases; std = all tables in one db
 
 class FtsSearcher:
     def __init__(self):
@@ -216,6 +216,20 @@ class FtsSearcher:
             print "error in search indexer operation"
             #self.initIndexer('init')
             #return self.db[self.connames[DBTYPE][type]].execute(sql)
+            
+    def getNodeInformation(self):
+        ret = {}
+        res = self.execute('SELECT distinct(id) FROM fullsearchmeta ORDER BY id', 'full')
+        ret['full'] = [s[0] for s in res]
+
+        res = self.execute('SELECT distinct(id) FROM searchmeta ORDER BY id', 'ext')
+        ret['ext'] = [s[0] for s in res]
+
+        res = self.execute('SELECT distinct(id) FROM textsearchmeta ORDER BY id', 'text')
+        ret['text'] = [s[0] for s in res]
+
+        return ret
+
        
     def nodeToSimpleSearch(self, node, type=""): # build simple search index from node
 

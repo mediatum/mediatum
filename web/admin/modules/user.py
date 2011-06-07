@@ -85,14 +85,14 @@ def validate(req, op):
                 elif existUser(req.params.get("username")):
                     return editUser_mask(req, "", 2) #user still existing
                 else:
-                    create_user(req.params.get("username"), req.params.get("email"), req.params.get("usergroups").replace(";", ","), pwd=req.params.get("password", ""), lastname=req.params.get("lastname",""), firstname=req.params.get("firstname"), telephone=req.params.get("telephone"), comment=req.params.get("comment"), option=_option, organisation=req.params.get("organisation",""), type=req.params.get("usertype", "intern"))
+                    create_user(req.params.get("username"), req.params.get("email"), req.params.get("usergroups").replace(";", ","), pwd=req.params.get("password", ""), lastname=req.params.get("lastname",""), firstname=req.params.get("firstname"), telephone=req.params.get("telephone"), comment=req.params.get("comment"), option=_option, organisation=req.params.get("organisation",""), identificator=req.params.get("identificator",""), type=req.params.get("usertype", "intern"))
 
             elif req.params["form_op"]=="save_edit":
                 # update user
                 if req.params.get("email","")=="" or req.params.get("username","")=="" or req.params.get("usergroups","")=="":
                     return editUser_mask(req, req.params.get("id"), 1) # no username, emai or group selected
                 else:
-                    update_user(req.params.get("id", 0), req.params.get("username",""),req.params.get("email",""), req.params.get("usergroups","").replace(";", ","), lastname=req.params.get("lastname"), firstname=req.params.get("firstname"), telephone=req.params.get("telephone"), comment=req.params.get("comment"), option=_option, organisation=req.params.get("organisation",""), type=req.params.get("usertype", "intern"))
+                    update_user(req.params.get("id", 0), req.params.get("username",""),req.params.get("email",""), req.params.get("usergroups","").replace(";", ","), lastname=req.params.get("lastname"), firstname=req.params.get("firstname"), telephone=req.params.get("telephone"), comment=req.params.get("comment"), option=_option, organisation=req.params.get("organisation",""), identificator=req.params.get("identificator",""), type=req.params.get("usertype", "intern"))
 
         return view(req)
     except:
@@ -306,13 +306,9 @@ def sendmailUser_mask(req, id, err=0):
     x["login"] = user.getName()
     x["isEditor"] = user.isEditor()
     x["collections"] = list()
-    g = user.getGroups()
-    g.sort(lambda x, y: cmp(x, y))
-    x["groups"] = g
+    x["groups"] = user.getGroups().sort(lambda x, y: cmp(x, y))
     x["language"] = lang(req)
-    c = collections
-    c.sort(lambda x, y: cmp(x, y))
-    x["collections"] = c
+    x["collections"] = collections.sort(lambda x, y: cmp(x, y))
 
 
     v["mailtext"] = req.getTAL("web/admin/modules/user.html", x, macro="emailtext").strip()

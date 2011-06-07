@@ -46,7 +46,7 @@ useraccesstable = {}
 #Saves for each user which collection he prefers which search mode
 usercollectionsearchmode = {}
 
-def create_user(name, email, groups, pwd="", lastname="", firstname="", telephone="", comment="", option="", organisation="", type="intern"):    
+def create_user(name, email, groups, pwd="", lastname="", firstname="", telephone="", comment="", option="", organisation="", identificator="", type="intern"):    
     if not pwd:
         pwd = config.get("user.passwd")
     if (type=="intern"):
@@ -63,6 +63,8 @@ def create_user(name, email, groups, pwd="", lastname="", firstname="", telephon
     user.set("telephone", telephone)
     user.set("comment", comment)
     user.set("organisation", organisation)
+    if identificator!="":
+        user.set("identificator", identificator)
 
     for group in groups.split(","):
         g = usergroups.getGroup(group)
@@ -307,7 +309,7 @@ def addUser(user):
     conn.addUser(user)    
 
 
-def update_user(id, name, email, groups, lastname="", firstname="", telephone="", comment="", option="", organisation="", type="intern"):
+def update_user(id, name, email, groups, lastname="", firstname="", telephone="", comment="", option="", organisation="", identificator="", type="intern"):
     if type=="intern":
         user = getUser(id)
     else:
@@ -321,6 +323,9 @@ def update_user(id, name, email, groups, lastname="", firstname="", telephone=""
         user.setComment(comment)
         user.setOption(option)
         user.setOrganisation(organisation)
+        
+        if identificator!="":
+            user.set('identificator', identificator)
 
         # remove user from all groups
         for p in user.getParents():

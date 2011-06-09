@@ -1,7 +1,6 @@
 
 <form metal:define-macro="publish_form" tal:attributes="action python:'/edit/edit_content?id='+str(id)+'&tab=publish'" method="post" style="margin:5px" name="publishform">
     <link rel="stylesheet" href="/css/ftree.css" type="text/css" />
-    <script type="text/javascript" src="/js/ajax.js"> </script>
     <script type="text/javascript" src="/js/ftree.js"> </script>
     <script type="text/javascript" tal:content="script"> </script>
     <script type="text/javascript"> 
@@ -9,7 +8,7 @@
         var itemnames = new Array();
 
         function setFolder(){
-            check = markFolder(true, "", this.id);
+            check = markFolder(false, "", this.id);
             obj = document.getElementById('Node'+this.id);
             label = obj.getElementsByTagName('A')[0].title;
             if(!check){
@@ -73,7 +72,7 @@
         initTree({'idOfFolderTrees': ['classtree'], 'style':'classification', 'multiselect':true});
     </script>
     <tal:block tal:replace="raw python:'<script type=&quot;text/javascript&quot;>'"/>
-        <tal:block tal:repeat="id python:idstr" tal:replace="python:'allobjects['+id+']=1;'"/>
+        <tal:block tal:repeat="id python:idstr" tal:replace="python:'allobjects[\'check'+id+'\'] = 1;'"/>
     <tal:block tal:replace="raw python:'</script>'"/>
 </form>
 

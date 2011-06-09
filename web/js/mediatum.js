@@ -41,6 +41,15 @@ function shoppingbag(shoppingbag_width, shoppingbag_height)
 
 function shoppingBag(nodeid)
 {
+    $.get('/shoppingbag?files='+nodeid+'&action=add', function(data) {
+      alert(unescape(data));
+    });
+
+}
+
+function shoppingBagSav(nodeid)
+{
+    alert ("In shoppingbag " + nodeid);
     var url = '/shoppingbag?files='+nodeid+'&action=add';
     x = http.open('get', url, true);
     http.send(null);

@@ -260,57 +260,39 @@ function showACLUser(){
 
 
 function getEditPage(destname, nodeid, tab, action){
-    //var lastrssbridgeurl = '/edit/edit_content?id='+nodeid+'&tab='+tab+'&tab='+tab+'&action='+action+'&style=popup';
-    var lastrssbridgeurl = '/edit/edit_content?id='+nodeid;
+    var url = '/edit/edit_content?id='+nodeid;
     if (tab!=""){
-        lastrssbridgeurl+='&tab='+tab;
+        url+='&tab='+tab;
     }
     if (action!=""){
-        lastrssbridgeurl+='&action='+action;
+        url+='&action='+action;
     }
-    lastrssbridgeurl+='&style=popup';
-    http.open('get', lastrssbridgeurl, true);
-    http.send(null);
-    http.onreadystatechange =function(){
-        if(http.readyState == 4){
-            document.getElementById(destname).innerHTML = http.responseText;
-        }
-    }
+
+    $.get(url+'&style=popup', function(data){
+        $('#'+destname).html(data);
+    });
 }
 
 
-var ajaxObjectArray = new Array();
 function edit_action(action, src, ids, add){
-    if (!add){
-        var url= '/edit/edit_action?src='+src+'&action='+action+'&ids='+ids+'&style=popup';
-    }
+    var url = '&action='+escape(action);
     if(add==1){ // folder
-        var url= '/edit/edit_action?src='+src+'&newfolder='+escape(action)+'&ids='+ids+'&style=popup';
-    }
-    if(add==2){ // collection
-        var url= '/edit/edit_action?src='+src+'&newcollection='+escape(action)+'&ids='+ids+'&style=popup';
+        url = '&newfolder='+escape(action);
+    }else if (add==2){ //collection
+        url = '&newcollection='+escape(action);
     }
     if (action=="move" || action=="copy"){
-        var url = '/edit/edit_action?src='+src+'&action='+escape(action)+'&dest='+add+'&ids='+ids+'&style=popup';
+        url = '&action='+escape(action)+'&dest='+add;
     }
-
-    ajaxObjectArray[ajaxObjectArray.length] = new sack();
-    var ajaxIndex = ajaxObjectArray.length-1;
-    ajaxObjectArray[ajaxIndex].requestFile = url;
-    ajaxObjectArray[ajaxIndex].response;
-    ajaxObjectArray[ajaxIndex].onCompletion = function() {
     
-        var res = ajaxObjectArray[ajaxIndex].response;
-        if(res!=""){
-        
+    $.get('/edit/edit_action?src='+src+'&ids='+ids+'&style=popup'+url, function(data){
+        if (data!=""){
             if(add==1 || add==2){
-                parent.tree.location.href = "/edit/edit_tree?id="+res;
+                parent.tree.location.href = "/edit/edit_tree?id="+data;
             }
-            parent.content.location.href = "/edit/edit_content?id="+res;
+            parent.content.location.href = "/edit/edit_content?id="+data;
         }
-    
-    };
-    ajaxObjectArray[ajaxIndex].runAJAX();
+    });
 }
 
 

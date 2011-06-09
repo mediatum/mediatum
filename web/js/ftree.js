@@ -102,22 +102,11 @@ Owner of DHTMLgoodies.com
             }
         }        
     }
-    
-    function getNodeDataFromServer(ajaxIndex,ulId,parentId)
-    {
-        document.getElementById(ulId).innerHTML = ajaxObjectArray[ajaxIndex].response;
-        ajaxObjectArray[ajaxIndex] = false;
-        parseSubItems(ulId,parentId);
-    }
-    
+      
     function getNodePath(itemId)
     {
-        ajaxObjectArray[ajaxObjectArray.length] = new sack();
-        var ajaxIndex = ajaxObjectArray.length-1;
-        ajaxObjectArray[ajaxIndex].requestFile = ajaxRequestFile + '?pathTo=' + itemId + '&style='+config['treeStyle'] + "&multiselect="+config['multiselect'];
-        ajaxObjectArray[ajaxIndex].response;
-        ajaxObjectArray[ajaxIndex].onCompletion = function() { 
-            initExpandedNodes = ajaxObjectArray[ajaxIndex].response;
+        $.get(ajaxRequestFile+'?pathTo='+itemId+'&style='+config['treeStyle']+"&multiselect="+config['multiselect'], function(data){
+            initExpandedNodes = data;
             startpath = initExpandedNodes.split(",");
             if(initExpandedNodes){
                 showHideNode(false, startpath[0]);
@@ -133,8 +122,7 @@ Owner of DHTMLgoodies.com
                         markFolder(false, currentfolder, currentfolder);
                     } 
             }
-        };
-        ajaxObjectArray[ajaxIndex].runAJAX();
+            });
     }
 
     
@@ -204,16 +192,15 @@ Owner of DHTMLgoodies.com
             if(!initExpandedNodes)initExpandedNodes = ',';
             if(initExpandedNodes.indexOf(',' + inputId + ',')<0) initExpandedNodes = initExpandedNodes + inputId + ',';
             
-            if(useAjaxToLoadNodesDynamically){    // Using AJAX/XMLHTTP to get data from the server
+            if(useAjaxToLoadNodesDynamically){
                 var firstLi = ul.getElementsByTagName('LI')[0];
                 var parentId = firstLi.getAttribute('parentId');
                 if(!parentId)parentId = firstLi.parentId;
-                if(parentId){
-                    ajaxObjectArray[ajaxObjectArray.length] = new sack();
-                    var ajaxIndex = ajaxObjectArray.length-1;
-                    ajaxObjectArray[ajaxIndex].requestFile = ajaxRequestFile + '?parentId=' + parentId+ '&style=' + config['treeStyle'];
-                    ajaxObjectArray[ajaxIndex].onCompletion = function() { getNodeDataFromServer(ajaxIndex,ul.id,parentId); };    // Specify function that will be executed after file has been found                    
-                    ajaxObjectArray[ajaxIndex].runAJAX();        // Execute AJAX function
+                if(parentId){                   
+                    $.get(ajaxRequestFile+'?parentId='+parentId+'&style='+config['treeStyle'], function(data){
+                        document.getElementById(ul.id).innerHTML = data;
+                        parseSubItems(ul.id, parentId);
+                    });
                 }
             }
             
@@ -278,12 +265,8 @@ Owner of DHTMLgoodies.com
         self.status = 'Ready to save node ' + nodeText + ' which is a sub item of ' + parentId;
         // Use an ajax method here to save this new node. example below:
         /*
-        ajaxObjectArray[ajaxObjectArray.length] = new sack();
-        var ajaxIndex = ajaxObjectArray.length-1;
-        ajaxObjectArray[ajaxIndex].requestFile = ajaxRequestFile + '?newNode=' + nodeText + '&parendId=' + parentId                    
-        ajaxObjectArray[ajaxIndex].onCompletion = function() { self.status = 'New node has been saved'; };    // Specify function that will be executed after file has been found                    
-        ajaxObjectArray[ajaxIndex].runAJAX();        // Execute AJAX function
-        */        
+        $.get(ajaxRequestFile+'?newNode='+nodeText+'&parendId='+parentId, function(data){self.status = 'New node has been saved';});
+        */
     }
     
     function deleteNode()
@@ -310,53 +293,39 @@ Owner of DHTMLgoodies.com
         self.status = 'Ready to delete node' + nodeId;
         // Use an ajax method here to save this new node. example below:
         /*
-        ajaxObjectArray[ajaxObjectArray.length] = new sack();
-        var ajaxIndex = ajaxObjectArray.length-1;
-        ajaxObjectArray[ajaxIndex].requestFile = ajaxRequestFile + '?deleteNodeId=' + nodeId                    
-        ajaxObjectArray[ajaxIndex].onCompletion = function() { self.status = 'Node has been deleted successfully'; };    // Specify function that will be executed after file has been found                    
-        ajaxObjectArray[ajaxIndex].runAJAX();        // Execute AJAX function
+        $.get(ajaxRequestFile+'?deleteNodeId='+nodeId, function(data){self.status = 'Node has been deleted successfully';});
         */
         
     }
     
     function updateNodeLabel(nodeId)
     {
-        ajaxObjectArray[ajaxObjectArray.length] = new sack();
-        var ajaxIndex = ajaxObjectArray.length-1;
-        ajaxObjectArray[ajaxIndex].requestFile = ajaxRequestFile + '?getLabel=' + nodeId + '&style=' + config['treeStyle'];
-        ajaxObjectArray[ajaxIndex].onCompletion = function() {
-            n_node = document.getElementById('Node'+nodeId);
-            if(n_node){
-                t = n_node.getElementsByTagName('A')[0];
-                t.innerHTML = ajaxObjectArray[ajaxIndex].response;
-            }
-        };
-        ajaxObjectArray[ajaxIndex].runAJAX();        // Execute AJAX function
-    
+        $.get(ajaxRequestFile+'?getLabel='+nodeId+'&style='+config['treeStyle'], function(data){
+                n_node = document.getElementById('Node'+nodeId);
+                if(n_node){
+                    t = n_node.getElementsByTagName('A')[0];
+                    t.innerHTML = data;
+                }
+            });
     }
     
     function changeValue(nodeId)
     {
-        ajaxObjectArray[ajaxObjectArray.length] = new sack();
-        var ajaxIndex = ajaxObjectArray.length-1;
-        ajaxObjectArray[ajaxIndex].requestFile = ajaxRequestFile + '?changeCheck=' + nodeId + '&currentitem=' + currentitem;
-        ajaxObjectArray[ajaxIndex].onCompletion = function() {
-            if (ajaxObjectArray[ajaxIndex].response){
-                alert(ajaxObjectArray[ajaxIndex].response);
-                markFolder(false,"", nodeId);
-            }
-            try{
+        markFolder(false,"", nodeId);
+        $.get(ajaxRequestFile+'?changeCheck='+nodeId+'&currentitem='+currentitem, function(data){
+                if(data){
+                    alert(data);
+                }
                 parent.tree.updateNodeLabel(nodeId);
-            }catch(e){
-            
-            }
-        };
-        ajaxObjectArray[ajaxIndex].runAJAX();        // Execute AJAX function
+            });
     }
     
 
     function markFolder(e,oldid, newid)
     {
+        if (e){
+            return false;
+        }
         if(config['treeStyle']=='classification'){
             n_node = document.getElementById('Node'+newid);
             if (n_node){

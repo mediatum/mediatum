@@ -22,5 +22,5 @@ def getInformation():
             "version":"1.0"}
 
 def validate(req, op):
-    return "dummymenu"
-    
+    return "menuoperation"
+

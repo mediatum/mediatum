@@ -44,20 +44,6 @@ function shoppingBag(nodeid)
     $.get('/shoppingbag?files='+nodeid+'&action=add', function(data) {
       alert(unescape(data));
     });
-
-}
-
-function shoppingBagSav(nodeid)
-{
-    alert ("In shoppingbag " + nodeid);
-    var url = '/shoppingbag?files='+nodeid+'&action=add';
-    x = http.open('get', url, true);
-    http.send(null);
-    http.onreadystatechange = function(){
-        if(http.readyState==4){
-            alert(unescape(http.responseText));
-        }
-    }
 }
 
 function addDirToShoppingBag(nodeid)
@@ -118,42 +104,41 @@ function questionDel(){
 /* edit area */
 
 function moveRight(left, right) {
-        if (left.selectedIndex != -1) {
-            for (i=left.length-1; i>=0; i--) {
-                if (left.options[i].selected && left.options[i].value.charAt(0)!='{') {
-                    mytext = left.options[i].text;
-                    myvalue = left.options[i].value;
-                    opt = new Option(mytext,myvalue);
-                    right.options[right.length] = opt;
-                    left.options[i]=null;
-                }
+    if (left.selectedIndex != -1) {
+        for (i=left.length-1; i>=0; i--) {
+            if (left.options[i].selected && left.options[i].value.charAt(0)!='{') {
+                mytext = left.options[i].text;
+                myvalue = left.options[i].value;
+                opt = new Option(mytext,myvalue);
+                right.options[right.length] = opt;
+                left.options[i]=null;
             }
         }
     }
+}
 
-    function moveLeft(left, right) {
-        if (right.selectedIndex!=-1) {
-            for (i=right.length-1; i>=0; i--) {
-                if (right.options[i].selected && right.options[i].value.charAt(0)!='{') {
-                   mytext = right.options[i].text;
-                   myvalue = right.options[i].value;
-                   opt = new Option(mytext, myvalue);
-                   left.options[left.length] = opt;
-                   right.options[i]=null;
-                }
+function moveLeft(left, right) {
+    if (right.selectedIndex!=-1) {
+        for (i=right.length-1; i>=0; i--) {
+            if (right.options[i].selected && right.options[i].value.charAt(0)!='{') {
+               mytext = right.options[i].text;
+               myvalue = right.options[i].value;
+               opt = new Option(mytext, myvalue);
+               left.options[left.length] = opt;
+               right.options[i]=null;
             }
         }
     }
+}
 
-    function mark(list)
-    {
-        if (list){
-            for (i=0; i<list.length; i++)
-            {
-                list.options[i].selected=true;
-            }
+function mark(list){
+    if (list){
+        for (i=0; i<list.length; i++)
+        {
+            list.options[i].selected=true;
         }
     }
+}
 
 function countMeta(obj, maxlength){
     if (maxlength==-1){
@@ -170,46 +155,16 @@ function countMeta(obj, maxlength){
     }
 }
 
-var http = createRequestObject();
-
-function createRequestObject() {
-    var tmpXmlHttpObject = null;
-    try{
-        tmpXmlHttpObject = new XMLHttpRequest();
-    }                
-    catch (ms){
-        try{                        
-            tmpXmlHttpObject = new ActiveXObject("Msxml2.XMLHTTP");
-        }                     
-        catch (nonms){
-            try{                            
-                tmpXmlHttpObject = new ActiveXObject("Microsoft.XMLHTTP");
-            }                         
-            catch (failed){
-                tmpXmlHttpObject = null;
-                alert("fail");
-            }
-        }
-    }
-    return tmpXmlHttpObject;
-}
-
 function handleArchived(nodeid, filename){
-    var url = '/archive/'+nodeid+'/'+filename;
-    obj = document.getElementById("object_highresolution_remark");
-
+    obj = $('#object_highresolution_remark');
     if(obj){
-        obj.style.display = 'inline';
+        obj.css('display', 'inline');
     }
     
-    x = http.open('get', url, true);
-    http.send(null);
-    http.onreadystatechange = function(){
-        if(http.readyState==4){
-            if(obj){
-                obj.style.display = 'none';
-            }
-            return unescape(http.responseText);
+    $.get('/archive/'+nodeid+'/'+filename, function(data) {
+        if(obj){
+            obj.css('display', 'none');
         }
-    }
+        return unescape(data);
+    });
 }

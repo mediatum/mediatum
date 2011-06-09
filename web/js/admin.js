@@ -1,4 +1,4 @@
-function questionDelName(name){
+﻿function questionDelName(name){
     if (name==""){
         return confirm(unescape("Soll dieser Eintrag wirklich gel%F6scht werden?"));
     }else{
@@ -353,63 +353,25 @@ function defaultFocus() {
    }
 }
 
-function createRequestObject() {
-    var tmpXmlHttpObject = null;
-    try{
-        tmpXmlHttpObject = new XMLHttpRequest();
-    }                
-    catch (ms){
-        try{                        
-            tmpXmlHttpObject = new ActiveXObject("Msxml2.XMLHTTP");
-        }                     
-        catch (nonms){
-            try{                            
-                tmpXmlHttpObject = new ActiveXObject("Microsoft.XMLHTTP");
-            }                         
-            catch (failed){
-                tmpXmlHttpObject = null;
-                alert("fail");
-            }
-        }
-    }
-    return tmpXmlHttpObject;
-}
 
 function getAdminPage(module, id, page, subitem){
-    var lastrssbridgeurl = '/admin/'+module+'?style=popup&page='+page+'&subitem='+subitem;
-    http.open('get', lastrssbridgeurl, true);
-    http.send(null);
-    http.onreadystatechange =function(){
-        if(http.readyState == 4){
-            document.getElementById(id).innerHTML = http.responseText;
-        }
-    }
+    $.get('/admin/'+module+'?style=popup&page='+page+'&subitem='+subitem, function(data){
+            $('#'+id).html(data);
+        });
 }
-var http = createRequestObject();
+
 
 function getGroupSchema(obj, name){
     if (obj.title=="..."){
-        var url = '/admin/usergroup?style=popup&action=titleinfo&group='+name;
-        http.open('get', url, true);
-        http.send(null);
-        http.onreadystatechange =function(){
-            if(http.readyState == 4){
-                id = 'usergroup_'+name+'_schema'
-                o = document.getElementById(id);
-                l = http.responseText.split('|').length;
-                o.innerHTML = l;
-                if (l>0){
-                    o.title = http.responseText.split('|');
+        $('#usergroup_'+name+'_schema').html('<img src="/img/wait_small.gif"/>');
+        $.get('/admin/usergroup?style=popup&action=titleinfo&group='+name, function(data){
+                d = data.split('|');
+                $('#usergroup_'+name+'_schema').attr('title', d);
+                if (data.length>0){
+                    $('#usergroup_'+name+'_schema').text(d.length);
                 }else{
-                    o.title = http.responseText;
+                    $('#usergroup_'+name+'_schema').text('0');
                 }
-               
-            }
-        }
+            });
     }
 }
-
-
-
-
-

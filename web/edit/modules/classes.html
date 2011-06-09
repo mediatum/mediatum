@@ -7,7 +7,6 @@
 
 <metal:block metal:define-macro="classtree">
     <link rel="stylesheet" href="/css/ftree.css" type="text/css" />
-    <script type="text/javascript" src="/js/ajax.js"> </script>
     <script type="text/javascript" src="/js/ftree.js"> </script>
     <script type="text/javascript" tal:content="script"> </script>
     <script type="text/javascript"> 
@@ -18,7 +17,7 @@
         }
     </script>
     <form>
-    <div style="max-height:400px; overflow:auto;border:1px solid silver">
+    <div style="height:400px; overflow:auto;border:1px solid silver">
         <ul id="classtree" class="tree">
             <li tal:repeat="basedir basedirs" tal:attributes="id python:'Node'+basedir.id"><a tal:attributes="id python:str(basedir.id); title python:basedir.getLabel()+' ('+str(basedir.id)+')'" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
                 <ul>

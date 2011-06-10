@@ -1,5 +1,5 @@
 var mediatum_config = {};
-var mediatum_config_default = {'fields':['<b>[att:pos]</b>','defaultexport'], 'divider':'<br/>'};
+var mediatum_config_default = {'fields':['<b>[att:pos]</b>','defaultexport'], 'divider':'<br/>', 'target':'internal'};
 var module_count = 0;
 
 var load_script = function(options) {
@@ -31,6 +31,15 @@ function getLocation(){
     }
     return "";
 }
+
+function pad(number, length) {
+    var str = '' + number;
+    while (str.length < length) {
+        str = '0' + str;
+    }
+    return str;
+}
+
 
 function mediatum_load(id, limit, sort, query, format, language){
     baseurl = getLocation();
@@ -67,19 +76,62 @@ function mediatum_load(id, limit, sort, query, format, language){
                 function(data){
                     divider = mediatum_config['divider'+pos] ? mediatum_config['divider'+pos] : mediatum_config_default.divider;
                     fields = mediatum_config['fields'+pos] ? mediatum_config['fields'+pos] : mediatum_config_default.fields;
+                    target = mediatum_config['target'+pos] ? mediatum_config['target'+pos] : mediatum_config_default.target;
                     
+                    if (target=="external"){
+                        target = ' target=\'_blank\'';
+                    }else{
+                        target = '';
+                    }
                     $.each(data.nodelist, function(i,item){
-                        s = '<a href="'+baseurl+'/?id='+item[0].id+'" id="item_link"><div id="item">'
+                        s = '<a href="'+baseurl+'/?id='+item[0].id+'"'+target+' id="item_link"><div id="item">'
                             $.each(fields, function(index, value){
                                 try{
-                                    val = value.replace(/(<\/?[^>]+(>|$)|\[att:|\])/g, "");
-                                    if(val=='pos'){
+                                    val = value.replace(/(.*att:)|(].*)/g, "");
+                             
+                                    if (val.replace(/(.*\|formatdate:)/g, "")!=val){ //date
+                                        format = val.replace(/(.*\|formatdate:)/g, "")
+                                        v = val.replace(/(\|formatdate.*)/g, "");
+                                        d = new Date(Date.parse(item[0]['attributes'][v]));
+                                        format = format.replace("Y", d.getFullYear());
+                                        format = format.replace("M", pad(d.getMonth(), 2));
+                                        format = format.replace("D", pad(d.getDate(), 2));
+                                        format = format.replace("h", pad(d.getHours(), 2));
+                                        format = format.replace("m", pad(d.getMinutes(), 2));
+                                        format = format.replace("s", pad(d.getSeconds(), 2));
+                                        s += value.replace("[att:"+val+"]", format);
+                                    
+                                    } else if (val.replace(/(.*\|substring:)/g, "")!=val){
+                                        format = val.replace(/(.*\|substring:)/g, "").split(",");
+                                        if (format.length==2){
+                                            v = item[0]['attributes'][val.replace(/(\|substring:.*)/g, "")];
+                                            if (v.substring(format[0], format[1])){
+                                                s += value.replace("[att:"+val+"]", v.substring(format[0], format[1]));
+                                            }
+                                        }
+                                    
+                                    } else if (val.replace(/(.*\|splitstring:)/g, "")!=val){
+                                        format = val.replace(/(.*\|splitstring:)/g, "").split(",");
+                                        if (format.length==2){
+                                            v = item[0]['attributes'][val.replace(/(\|splitstring:.*)/g, "")];
+                                            if (v.split(format[0])[format[1]]){
+                                                s += value.replace("[att:"+val+"]", v.split(format[0])[format[1]]);
+                                            }
+                                        }
+
+                                    }else if(val=='pos'){
                                         s += value.replace("[att:"+val+"]", (i+1) + "/" + data.nodelist.length);
-                                    }else if (value==val){
+                                    }else if (value==val && item[0][val]){
                                         s += value.replace(val, item[0][val]);    
                                     }else if (value.indexOf("[att:"+val+"]")!=-1){
-                                        s += value.replace("[att:"+val+"]", item[0]['attributes'][val]);
+                                        d_val = item[0]['attributes'][val];
+                                        if (d_val){ // attribute found
+                                            s += value.replace("[att:"+val+"]", d_val);
+                                        }
+                                    }else{
+                                        s+=value;
                                     }
+                                    
                                     if (fields[fields.length-1]!=value){
                                         s += divider;
                                     }

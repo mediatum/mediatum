@@ -25,6 +25,9 @@ import string
 import hashlib
 import re
 import random
+import StringIO
+
+from HTMLParser import HTMLParser
 
 def esc(s):
     return s.replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;").replace(">", "&gt;")
@@ -44,8 +47,8 @@ def u(s):
             return s.decode("latin-1").encode("utf-8")
         except:
             return s
-            
-def u2(s):
+
+def u2(s):  
     try:
         return s.encode("utf-8")
     except:
@@ -82,21 +85,6 @@ def splitfilename(path):
         return path[0:i],path[i+1:]
     except:
         return path,""
-
-def getSubString(s, maxlength=-1):
-    if len(s)<maxlength or maxlength==-1:
-        return s
-
-    s = s.split(" ")
-    i=1
-    while i<len(s):
-        if len(" ".join(s[:i]))>maxlength and i>1:
-            return " ".join(s[:(i-1)])+"..."
-        else:
-            i+=1
-    if i==1:
-        return " ".join(s)
-    return " ".join(s[:(i-1)])+"..."
 
         
 def findLast(string, char):
@@ -185,18 +173,15 @@ def get_hash(filename):
         return hashlib.md5("").hexdigest()
 
 def get_filesize(filename):
-    try:
-        if os.path.exists(filename):
-            stat = os.stat(filename)
-            return stat[6]
-        import core.config as config
-        if os.path.exists(config.settings["paths.datadir"]+"/"+filename):
-            stat = os.stat(config.settings["paths.datadir"]+"/"+filename)
-            return stat[6]
-        else:
-            print "Warning: File",filename,"not found"
-            return 0
-    except:
+    if os.path.exists(filename):
+        stat = os.stat(filename)
+        return stat[6]
+    import core.config as config
+    if os.path.exists(config.settings["paths.datadir"]+"/"+filename):
+        stat = os.stat(config.settings["paths.datadir"]+"/"+filename)
+        return stat[6]
+    else:
+        print "Warning: File",filename,"not found"
         return 0
 
 
@@ -489,48 +474,112 @@ def splitname(fullname):
     
     return title,firstname,lastname
 
+#
+# cutting text content of html snippet after cutoff
+#
+class HTMLTextCutter(HTMLParser):
 
-# get missing html close tags
-def tag_check(content):
-    r = re.compile("<[^>]*>")
-    tags = r.findall(content)
-    res = []
-    last = ""
-    for tag in tags:
-        if tag in ("<br>", "<br/>"):
-            continue
+    def __init__(self, cutoff=500, output=sys.stdout):
+
+        self.cutoff = cutoff
+        self.count = 0
+        self.output = output
+
+        self.in_style = 0
+        self.in_script = 0
+
+        self.is_cutted = False
+
+        HTMLParser.__init__(self)
+
+    def handle_starttag(self, tag, attrs):
+        if tag.strip().lower() == 'style':
+            self.in_style += 1
+        if tag.strip().lower() == 'script':
+            self.in_script += 1
+        attrlist = ''.join([' %s="%s"' % (k, v) for k, v in attrs])
+        self.output.write("<%s%s>" % (tag, attrlist))
+
+    def handle_endtag(self, tag):
+        if tag.strip().lower() == 'style':
+            self.in_style -= 1
+        if tag.strip().lower() == 'script':
+            self.in_script -= 1
+        self.output.write("</%s>" % tag)
+
+    def handle_startendtag(self, tag, attrs):
+        if self.is_cutted and (tag.strip().lower() in ['br']):
+            res = ""
+        else:
+            attrlist = ''.join([' %s="%s"' % (k, v) for k, v in attrs])
+            res = "<%s%s/>" % (tag, attrlist)
+        self.output.write(res)
+
+    def handle_data(self, data):
+        if self.in_script > 0 or self.in_style > 0:
+            res = data
+        elif self.count >= self.cutoff:
+            res = ""
+            if len(data) > len(res):
+                self.is_cutted = True
+        else:
+            res = data[0:self.cutoff - self.count]
+            self.count += len(res)
+            if len(data) > len(res):
+                self.is_cutted = True
+        self.output.write(res)
+
+    def handle_charref(self, name):
+        if self.in_script > 0 or self.in_style > 0:
+            res = name
+        elif self.count >= self.cutoff:
+            res = ""
+            self.is_cutted = True
+        else:
+            res = name
+            self.count += 1
+        self.output.write("&#%s;" % str(name))
+
+    def handle_entityref(self, name):
+        if self.in_script > 0 or self.in_style > 0:
+            res = name
+        elif self.count >= self.cutoff:
+            res = ""
+            self.is_cutted = True
+        else:
+            res = name
+            self.count += 1
+        self.output.write("&%s;" % str(name))
+
+    def handle_comment(self, data):
+        self.output.write("<!--%s-->" % data)
+
+    def handle_decl(self, decl):
+        self.output.write("<!%s>" % str(decl))
+
+    def handle_pi(self, data):
+        self.output.write("<?%s>" % str(data))
+
+    def close(self):
+        HTMLParser.close(self)
         
-        if len(res)>0:
-            last = res[-1]
-        else:
-            last = ""
-   
-        if last==tag:
-            res = res[:-1]
-        else:
-            res.append(tag.replace("<", "</"))
-    res.reverse()
-    return res  
-
 #
 # returns formated string for long text
 #
-def formatLongText(value, field):
+def formatLongText(value, field, cutoff=500):
     try:
-        if len(value)>500:
-            val = value[:500]
-            for item in tag_check(value[:500]):
-                if item.find("/")>0:
-                    val += item
-                else:
-                    val = item+value
-                
-                
+        out = StringIO.StringIO()
+        p = HTMLTextCutter(cutoff, out)
+        p.feed(value)
+        p.close()
+        if p.is_cutted:
+            val = p.output.getvalue()
+            val = val.rstrip()
             return '<div id="'+field.getName()+'_full" style="display:none">'+value+'&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="Text reduzieren" onclick="expandLongMetatext(\''+field.getName()+'\');return false">&laquo;</a></div><div id="'+field.getName()+'_more">'+val+'...&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="gesamten Text zeigen" onclick="expandLongMetatext(\''+field.getName()+'\');return false">&raquo;</a></div>'
         else:
             return value
     except:
-        return value
+        return value  
     
     
 def checkString(string):

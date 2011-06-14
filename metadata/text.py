@@ -18,21 +18,44 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.athana as athana
+import core.config as config
 import re
 from utils.utils import esc
 from core.metatype import Metatype,charmap
+
+from export.exportutils import runTALSnippet
+from utils.pathutils import isDescendantOf
+
+def getMaskitemForField(field, language=None, mask=None):
+
+    mdt = [p for p in field.getParents() if p.type=='metadatatype'][0]
+    
+    if mask:
+        masks = [mask]
+    else:
+        masks = [m for m in mdt.getChildren() if m.get('masktype') in ['shortview', 'fullview', 'editmask']]
+        if masks and language:
+            masks = [m for m in masks if m.get('language') in [language]]        
+                
+    maskitems = [p for p in field.getParents() if p.type=='maskitem']
+    maskitems = [mi for mi in maskitems if 1 in [isDescendantOf(mi, m) for m in masks]]
+       
+    if maskitems:
+        return maskitems[0]
+    else:
+        return None   
 
 class m_text(Metatype):
 
     def getEditorHTML(self, field, value="", width=40, name="", lock=0, language=None):
         return athana.getTAL("metadata/text.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
 
-
     def getSearchHTML(self, context):
         return athana.getTAL("metadata/text.html",{"context":context}, macro="searchfield", language=context.language)
 
-    def getFormatedValue(self, field, node, language=None, html=1):
+    def getFormatedValue(self, field, node, language=None, html=1, template_from_caller=None, mask=None):
         value = node.get(field.getName()).replace(";","; ")
+        unescaped_value = value
 
         if html:
             value = esc(value)
@@ -48,6 +71,28 @@ class m_text(Metatype):
 
                 value = value.replace("&lt;"+var+"&gt;", val)
         value = value.replace("&lt;", "<").replace("&gt;",">")
+        
+        maskitem = getMaskitemForField(field, language=language, mask=mask)
+        if not maskitem:
+            (field.getLabel(), value)        
+        
+        # use default value from mask if value is empty        
+        if value=='':
+            value = maskitem.getDefault()
+    
+        if template_from_caller and template_from_caller[0] and maskitem and str(maskitem.id)==template_from_caller[3]:
+            value = template_from_caller[0]
+        
+        context = {'node':node, 'host':"http://" + config.get("host.name")}
+        
+        if (template_from_caller and template_from_caller[0]) and (not node.get(field.getName())):
+            value = runTALSnippet(value, context)
+        else: 
+            try:
+                value = runTALSnippet(value, context)
+            except:
+                value = runTALSnippet(unescaped_value, context)
+                                
         return (field.getLabel(), value)
 
     def getFormatedValueForDB(self, field, value):

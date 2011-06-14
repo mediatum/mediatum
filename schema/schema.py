@@ -501,13 +501,13 @@ class Metadatatype(tree.Node):
     def setName(self, value):
         self.set("mame", value)
 
-    def getDescription(self, maxlength=-1):
-        return getSubString(self.get("description"), maxlength)
+    def getDescription(self):
+        return self.get("description")
     def setDescription(self, value):
         self.set("description", value)
 
-    def getLongName(self, maxlength=-1):
-        return getSubString(self.get("longname"), maxlength)
+    def getLongName(self):
+        return self.get("longname")
     def setLongName(self, value):
         self.set("longname", value)
 
@@ -532,8 +532,8 @@ class Metadatatype(tree.Node):
     def setDatatype(self, valuelist):
         self.set("datatypes", ", ".join(["%s" %k for k in valuelist]))
  
-    def getDatatypeString(self, maxlength=-1):
-        return getSubString(self.get("datatypes"), maxlength)
+    def getDatatypeString(self):
+        return self.get("datatypes")
     def setDatatypeString(self, value):
         self.set("datatypes", str(value))
    
@@ -615,8 +615,8 @@ class Metadatafield(tree.Node):
     def setName(self, value):
         self.set("name", value)
 
-    def getLabel(self, maxlength=-1):
-        return getSubString(self.get("label"), maxlength)
+    def getLabel(self):
+        return self.get("label")
     def setLabel(self, value):
         self.set("label", value)
 
@@ -758,7 +758,7 @@ class Mask(tree.Node):
         return ret
 
 
-    def getViewHTML(self, nodes, flags=0, language=None):
+    def getViewHTML(self, nodes, flags=0, language=None, template_from_caller=None, mask=None):
         if not self.getChildren():
             return []
         if flags & 4:
@@ -769,12 +769,12 @@ class Mask(tree.Node):
         if flags & 8: # export mode
             x = self.getChildren()
             x.sort()
-            return getMetadataType("mappingfield").getViewHTML(x, nodes, flags, language=language)
+            return getMetadataType("mappingfield").getViewHTML(x, nodes, flags, language=language, template_from_caller=template_from_caller, mask=mask)
         
         for field in self.getChildren().sort():
             t = getMetadataType(field.get("type"))
             if flags & 4: # data mode
-                v = t.getViewHTML(field, nodes, flags, language=language)
+                v = t.getViewHTML(field, nodes, flags, language=language, template_from_caller=template_from_caller, mask=mask)
                 format = field.getFormat()
                 if format!="":
                     v[1] = format.replace("<value>", v[1])
@@ -786,7 +786,7 @@ class Mask(tree.Node):
                 else:
                     ret.append(v)
             else:
-                ret += t.getViewHTML(field, nodes, flags, language=language)
+                ret += t.getViewHTML(field, nodes, flags, language=language, template_from_caller=template_from_caller, mask=mask)
         return ret
 
 
@@ -1139,6 +1139,11 @@ class Maskitem(tree.Node):
         return self.get("default")
     def setDefault(self, value):
         self.set("default", str(value))
+
+    def getTestNodes(self):
+        return self.get("testnodes")
+    def setTestNodes(self, value):
+        self.set("testnodes", str(value))
 
     def getUnit(self):
         return self.get("unit")

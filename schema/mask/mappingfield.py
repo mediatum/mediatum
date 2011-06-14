@@ -126,7 +126,7 @@ class m_mappingfield(Metatype):
 
 
 
-    def getViewHTML(self, fields, nodes, flags, language=""):
+    def getViewHTML(self, fields, nodes, flags, language="", template_from_caller=None, mask=None):
         ret = ""
         node = nodes[0]
 

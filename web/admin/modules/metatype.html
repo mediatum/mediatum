@@ -69,7 +69,7 @@
                     <td tal:content="python:metadatatype.getName()"/>
                     <td tal:content="python:metadatatype.getLongName()"/>
                     <td tal:condition="python:len(metadatatype.getDescription())<=10" tal:content="python:metadatatype.getDescription()"/>
-                    <td tal:condition="python:len(metadatatype.getDescription())>10" tal:attributes="title python:metadatatype.getDescription()" tal:content="python:metadatatype.getDescription(20)"/>
+                    <td tal:condition="python:len(metadatatype.getDescription())>10" tal:attributes="title python:metadatatype.getDescription()" tal:content="python:metadatatype.getDescription()[:10]+'...'"/>
                     <td>
                         &nbsp;&nbsp;&nbsp;<img tal:condition="python:metadatatype.isActive()" i18n:attributes="title admin_meta_active_title" src="/img/haken.gif"/>
                     </td>
@@ -248,11 +248,11 @@
             </tr>
             <tr tal:define="corrupt python:metadatatype.searchIndexCorrupt()">
                 <td>&nbsp;</td>
-                <td tal:condition="python: corrupt and str(metadatatype.id)!='None'">
+                <td tal:condition="python:not corrupt and str(metadatatype.id)!='None'">
                     <span i18n:translate="admin_metatype_reindex_title">TEXT</span> &nbsp;&nbsp; <button type="submit" tal:attributes="name python:'indexupdate_'+str(metadatatype.id)" i18n:translate="admin_metatype_reindex_button" value="">TEXT</button>
                     <br/>&nbsp;<br/>
                 </td>
-                <td tal:condition="python: not corrupt and str(metadatatype.id)!='None'">
+                <td tal:condition="python:corrupt">
                     <span i18n:translate="admin_metatype_index_ok">TEXT</span><br/>&nbsp;<br/>
                 </td>
             </tr>
@@ -375,6 +375,26 @@
     </html>
 </metal:block>
 
+<metal:block metal:define-macro="view_testnodes">
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+    <html>
+        <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+            <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+
+            <title>mediatum - Admin - Test Nodes</title>
+            <link rel="stylesheet" href="/css/editor.css">
+        </head>
+
+        <body>
+            <tal:block tal:repeat="sec sectionlist">
+                <span style="color:red" tal:content="python: sec['error_flag']">TEXT</span><br/>
+                <span tal:content="raw python: sec['node_html']">TEXT</span><hr/>
+            </tal:block>
+        </body>
+        
+    </html>
+</metal:block>
 
 <html metal:define-macro="editor_popup">
     <head>

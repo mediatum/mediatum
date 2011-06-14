@@ -1,4 +1,3 @@
-#!/bin/sh
 """
  mediatum - a multimedia content repository
 
@@ -37,7 +36,7 @@ class Content:
         return ""
 
 class SingleFile:
-    def __init__(self,file,nr,num,words=None):
+    def __init__(self,file,nr,num,words=None,language=None):
         self.attachment = None
         for f in file.getFiles():
             if f.getType()=="attachment":
@@ -52,7 +51,7 @@ class SingleFile:
 
         self.datatype = file.getType()
         self.image = file.show_node_image()
-        self.text = file.show_node_text(words)
+        self.text = file.show_node_text(words, language=language)
         self.fields = self.datatype.getMetaFields()
         self.thumbnail = self.image
         self.node = file
@@ -82,10 +81,12 @@ class ContentList(Content):
         self.sortfields = [self.collection.get("sortfield")]*SORT_FIELDS
         if self.sortfields[0]:
             self.files.sort(self.sortfields)
-        if ";" in self.collection.get("style"):
-            self.liststyle = getContentStyles("smallview", self.collection.get("style").split(";")[0])
+        ls = self.collection.get("style")
+        if ls:
+            ls = ls.split(";")[0]
         else:
-            self.liststyle = getContentStyles("smallview", self.collection.get("style") or "list")
+            ls = "list"
+        self.liststyle = getContentStyles("smallview", ls)
 
     def length(self):
         return self.num
@@ -201,6 +202,9 @@ class ContentList(Content):
 
 
     def html(self,req):
+        language=lang(req)
+        if not language:
+            language=None    
         if self.content:
             headline = athana.getTAL(theme.getTemplate("content_nav.html"), {"nav": self}, macro="navheadline", language=lang(req))
             return headline + self.content.html(req)
@@ -213,9 +217,6 @@ class ContentList(Content):
         else:
             if req.params.get("itemsperpage")=="-1":
                 files_per_page = len(self.files)
-                if files_per_page>100:
-                    files_per_page = 100
-                
             else:
                 files_per_page = int(req.params.get("itemsperpage"))
 
@@ -254,11 +255,11 @@ class ContentList(Content):
             if i < self.num:
                 file = self.files[i]
                 self.id2pos[self.files[i].id] = i
-                tal_files += [SingleFile(file,i,self.num)]
+                tal_files += [SingleFile(file,i,self.num, language=language)]
             i = i + 1
 
-        liststyle = req.session.get("liststyle-"+self.collection.id, "") # user/session setting for liststyle?
-        if not liststyle or liststyle=="":
+        liststyle = req.session.get("liststyle-"+self.collection.id, "")#.split(";")[0]# user/session setting for liststyle?
+        if not liststyle:
             # no liststsyle, use collection default
             liststyle = self.liststyle
 
@@ -270,6 +271,7 @@ class ContentList(Content):
         # use template of style and build html content
         contentList = liststyle.renderTemplate(req, {"nav_list":nav_list, "nav_page":nav_page, "act_page":self.page, 
              "files":tal_files, "maxresult":len(self.files), "op":"", "language":lang(req)})
+
         return filesHTML + '<div id="nodes">'+contentList + '</div>' + filesHTML
        
     
@@ -452,11 +454,8 @@ class ContentArea(Content):
     def html(self,req):
         styles = []
         nodeprint = "1" # show print icon
-        styles = []
-        if self.content:
-            styles = self.content.getContentStyles()
-        #if hasattr(self.content,"in_list") and not (hasattr(self.content,"content") and self.content.content):
-        #    styles = getContentStyles("smallview")
+        styles = self.content.getContentStyles()
+
         if "raw" in req.params:
             path = ""
         else:
@@ -485,6 +484,7 @@ class ContentArea(Content):
             path = req.getTAL(theme.getTemplate("content_nav.html"), {"params": self.params, "path": breadscrubs, "styles":styles, "logo":self.collectionlogo, "searchmode":req.params.get("searchmode",""), "items":items, "id":id, "nodeprint":nodeprint, "printlink":printlink, "area":req.session.get("area","")}, macro="path")
         return path + '\n<!-- CONTENT START -->\n' +  self.content.html(req) + '\n<!-- CONTENT END -->\n'
 
+        
 class CollectionLogo(Content):
     def __init__(self,collection):
         self.collection = collection
@@ -502,7 +502,6 @@ class CollectionLogo(Content):
     def getShowOnHTML(self):
         return self.collection.get("showonhtml")
         
-
 def getContentArea(req):
     if len(req.params):
         if "contentarea" in req.session:

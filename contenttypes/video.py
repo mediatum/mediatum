@@ -30,8 +30,9 @@ from core.acl import AccessData
 from core.tree import Node,FileNode
 from lib.flv.parse import getFLVSize, FLVReader
 from contenttypes.image import makeThumbNail,makePresentationFormat
-from core.translation import t, lang
+from core.translation import lang, t
 from core.styles import getContentStyles
+from schema.schema import loadTypesFromDB, VIEW_HIDE_EMPTY,VIEW_DATA_ONLY
 import default
 
 """ video class """
@@ -43,15 +44,20 @@ class Video(default.Default):
         return "video"
         
     def _prepareData(node, req, words=""):
+    
         access = acl.AccessData(req)
         mask = node.getFullView(lang(req))
+        
         obj = {}
         for filenode in node.getFiles():
             if filenode.getType()=="original" or filenode.getType()=="video":
                 obj["file"] =  "/file/" + str(node.id) + "/" + filenode.getName()
                 break
 
-        obj['metadata'] = mask.getViewHTML([node], 2) # hide empty elements
+        if mask:
+            obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY, lang(req), mask=mask) # hide empty elements
+        else:
+            obj['metadata'] = [] 
         obj['node'] = node  
         obj['path'] = req.params.get("path","")
         obj['canseeoriginal'] = access.hasAccess(node,"data")
@@ -107,13 +113,10 @@ class Video(default.Default):
                     path,ext = splitfilename(f.retrieveFile())
                     thumbname = path+".thumb"
                     thumbname2 = path+".thumb2"
-                    try:
-                        makeThumbNail(tempname, thumbname)
-                        makePresentationFormat(tempname, thumbname2)
-                        node.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
-                        node.addFile(FileNode(name=thumbname2, type="presentation", mimetype="image/jpeg"))
-                    except:
-                        pass
+                    makeThumbNail(tempname, thumbname)
+                    makePresentationFormat(tempname, thumbname2)
+                    node.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
+                    node.addFile(FileNode(name=thumbname2, type="presentation", mimetype="image/jpeg"))
      
     def isContainer(node):
         return 0

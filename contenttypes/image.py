@@ -67,11 +67,7 @@ def makeThumbNail(image, thumb):
         newheight = 128
         newwidth = width*newheight/height
     pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
-    
-    if pic.mode!="RGB":
-        im = Image.new("RGB", (128, 128), (255, 255, 255))
-    else:
-        im = Image.new(pic.mode, (128, 128), (255, 255, 255))
+    im = Image.new(pic.mode, (128, 128), (255, 255, 255))
     
     x = (128-newwidth)/2
     y = (128-newheight)/2
@@ -219,10 +215,13 @@ class Image(default.Default):
         files, sum_size = filebrowser(node, req)
 
         obj = {}
+        if mask:
+            obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY, lang(req), mask=mask) # hide empty elements
+        else:
+            obj['metadata'] = []          
         obj['path'] = req and req.params.get("path","") or ""
         obj['attachment'] = files
-        obj['sum_size'] = sum_size
-        obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY) # hide empty elements
+        obj['sum_size'] = sum_size      
         obj['node'] = node
         obj['tif'] = tif
         obj['zoom'] = dozoom(node)

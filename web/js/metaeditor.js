@@ -162,3 +162,27 @@ function showPreview(doc, src){
 function countMeta(obj, l){
     /*dummy method*/
 }
+
+function show_testnodes() {
+  
+  var wn = window.open("", "popup", "resizable=1,width=700,height=450,scrollbars");
+  var wndoc = wn.document;
+  
+  var post_action = (""+window.location).split('?')[0]+'/show_testnodes?style=popup';
+  
+  wndoc.write("rendering test nodes ..."); // text node needed for Firefox
+  wndoc.write('<form id="iframe_form01" method="POST" action="'+post_action+'"/>');
+  wndoc.write('<input id="iframe_input_template" type="hidden" name="template"/>');
+  wndoc.write('<input id="iframe_input_testnodes" type="hidden" name="testnodes"/>');
+  wndoc.write('<input id="iframe_input_item_id" type="hidden" name="item_id"/>');
+  wndoc.write('<input id="iframe_input_width" type="hidden" name="width"/>');
+  
+  wndoc.getElementById('iframe_input_template').value = document.getElementById('textarea_template').value;      
+  wndoc.getElementById('iframe_input_testnodes').value = document.getElementById('input_testnodes').value;      
+  wndoc.getElementById('iframe_input_item_id').value = document.getElementById('item_id').value;;      
+  wndoc.getElementById('iframe_input_width').value = document.getElementById('input_width').value;      
+  
+  wndoc.getElementById('iframe_form01').submit();
+  
+}
+

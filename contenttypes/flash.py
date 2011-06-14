@@ -22,9 +22,11 @@ import core.tree as tree
 import core.athana as athana
 
 from core.tree import Node,FileNode
-from core.translation import t, lang
+from core.translation import lang, t
 from core.acl import AccessData
 import default 
+
+from schema.schema import loadTypesFromDB, VIEW_HIDE_EMPTY,VIEW_DATA_ONLY
 
 """ flash class """
 class Flash(default.Default):
@@ -37,7 +39,10 @@ class Flash(default.Default):
     def _prepareData(node, req, words=""):
         mask = node.getFullView(lang(req))
         obj = {}
-        obj['metadata'] = mask.getViewHTML([node], 2) # hide empty elements
+        if mask:
+            obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY, lang(req), mask=mask) # hide empty elements
+        else:
+            obj['metadata'] = []  
         obj['node'] = node  
         obj['path'] = req.params.get("path","")
         return obj

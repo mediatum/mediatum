@@ -1,4 +1,5 @@
 """
+
  mediatum - a multimedia content repository
 
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
@@ -27,9 +28,11 @@ from core.datatypes import loadAllDatatypes
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 from core.tree import Node, getNode, searcher
 from web.common.acl_web import makeList
-from utils.utils import removeEmptyStrings 
+from utils.utils import removeEmptyStrings, esc 
 from core.translation import lang, t
+from core.acl import AccessData
 from schema.schema import loadTypesFromDB, getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, deleteMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
+from schema.schema import VIEW_DEFAULT, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_ONLY, VIEW_DATA_EXPORT
 from schema.mapping import getMappings
 from schema.bibtex import getAllBibTeXTypes
 
@@ -59,6 +62,62 @@ def validate(req, op):
     if len(path)==4 and path[3]=="editor":
         return showEditor(req)
 
+    if len(path)==5 and path[3]=="editor" and path[4]=="show_testnodes": 
+    
+        template = req.params.get('template', '')
+        testnodes_list = req.params.get('testnodes', '')
+        width = req.params.get('width', '400')
+        item_id = req.params.get('item_id', None)
+        
+        mdt_name = path[1]
+        mask_name = path[2]
+        
+        mdt = tree.getRoot('metadatatypes').getChild(mdt_name)
+        mask = mdt.getChild(mask_name)
+        
+        access = AccessData(req)
+        
+        sectionlist = []
+        for nid in [x.strip() for x in testnodes_list.split(',') if x.strip()]:
+            section_descr = {}
+            section_descr['nid'] = nid
+            section_descr['error_flag'] = '' # in case of no error
+            try:
+                node = tree.getNode(nid)
+                section_descr['node'] = node
+                if access.hasAccess(node,"data"):
+                    try:
+                        node_html = mask.getViewHTML([node], VIEW_DEFAULT, template_from_caller=[template, mdt, mask, item_id], mask=mask)
+                        section_descr['node_html'] = node_html
+                    except:
+                        error_text = str(sys.exc_info()[1])
+                        template_line = 'for node id '+str(nid)+': '+error_text
+                        try: 
+                            m = re.match(r".*line (?P<line>\d*), column (?P<column>\d*)", error_text)
+                            if m:
+                                mdict = m.groupdict()
+                                line = int(mdict.get('line', 0))
+                                column = int(mdict.get('column', 0))
+                                error_text = error_text.replace('line %d' % line, 'template line %d' % (line-1))
+                                template_line = 'for node id '+str(nid)+'<br/>'+error_text + '<br/><code>' + esc(template.split("\n")[line-2][0:column-1] )+'<span style="color:red">'+ esc(template.split("\n")[line-2][column-1:] ) + '</span></code>'
+                        except:
+                            pass
+                        section_descr['error_flag'] = 'Error while evaluating template:'
+                        section_descr['node_html'] = template_line                            
+                else:
+                    section_descr['error_flag'] = 'no access'
+                    section_descr['node_html'] = ''
+            except tree.NoSuchNodeError:
+                section_descr['node'] = None
+                section_descr['error_flag'] = 'NoSuchNodeError'
+                section_descr['node_html'] = 'for node id '+str(nid)
+            sectionlist.append(section_descr)
+                   
+        # remark: error messages will be served untranslated in English  
+        # because messages from the python interpreter (in English) will be added
+        
+        return req.getTAL("web/admin/modules/metatype.html", {'sectionlist':sectionlist}, macro="view_testnodes")  
+                
     if len(path)==2 and path[1]=="info":
         return showInfo(req)
     
@@ -524,10 +583,11 @@ def showEditor(req):
         item.setFormat(req.params.get("format", ""))
         item.setSeparator(req.params.get("separator", ""))
         item.setDescription(req.params.get("description",""))
+        item.setTestNodes(req.params.get("testnodes",""))
         if "required" in req.params.keys():
             item.setRequired(1)
         else:
-            item.setRequired(0)
+            item.setRequired(0)          
 
     if "savedetail" in req.params.keys():
         label = req.params.get("label","-new-")

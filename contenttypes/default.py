@@ -48,7 +48,7 @@ class Default(tree.Node):
 
         if mask:
             fields = mask.getMaskFields()
-            for field in mask.getViewHTML([node], VIEW_DATA_ONLY, language=language):
+            for field in mask.getViewHTML([node], VIEW_DATA_ONLY, language=language, mask=mask):
                 if len(field)>=2:
                     value = field[1]
                 else:

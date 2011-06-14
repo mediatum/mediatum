@@ -1,4 +1,4 @@
-﻿"""
+"""
  mediatum - a multimedia content repository
 
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
@@ -36,10 +36,10 @@ def prss(s):
     return esc(no_html(esc(no_html(esc(no_html(esc(u(s))))))))    
 
 def runTALSnippet(s, context, mask=None):
-    header = '''<?xml version="1.0" encoding="UTF-8" ?>\n'''
-    xmlns = '''<talnamespaces xmlns:tal="http://xml.zope.org/namespaces/tal" xmlns:metal="http://xml.zope.org/namespaces/metal">\n'''
-    footer = '''</talnamespaces>\n'''
-    cutter = "----cut-TAL-result-here----"
+    header = '''<?xml version="1.0" encoding="UTF-8" ?>'''
+    xmlns = '''<talnamespaces xmlns:tal="http://xml.zope.org/namespaces/tal" xmlns:metal="http://xml.zope.org/namespaces/metal">'''
+    footer = '''</talnamespaces>'''
+    cutter = "----cut-TAL-result-here----\n"
     
     if mask:
         header += mask.get('exportheader')

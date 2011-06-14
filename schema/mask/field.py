@@ -102,23 +102,40 @@ class m_field(Metatype):
 
 
     """ create view format """
-    def getViewHTML(self, field, nodes, flags, language=None):
+    def getViewHTML(self, field, nodes, flags, language=None, template_from_caller=None, mask=None):
         element = field.getField()
+        fieldtype = element.get("type")
         t = getMetadataType(element.get("type"))
         unit = ''
         if field.getUnit()!="":
             unit = ' ' + field.getUnit()
 
         if flags & VIEW_DATA_ONLY:
-            value = u(t.getFormatedValue(element, nodes[0], language)[1])
+            if fieldtype in ['text']:
+                value = u(t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1])
+            else:
+                value = u(t.getFormatedValue(element, nodes[0], language)[1])    
             if len(value.strip())>0:
                 value+= str(unit)
         else:
             if field.getFormat()!="":
-                value = t.getFormatedValue(element, nodes[0], language)[1]
+                if fieldtype in ['text']:
+                    value = t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1]
+                else:  
+                    value = t.getFormatedValue(element, nodes[0], language)[1]  
                 value = field.getFormat().replace("<value>",value) + str(unit)
             else:
-                value = str(formatLongText(t.getFormatedValue(element, nodes[0], language)[1], element)) + str(unit)  
+                if fieldtype in ['text']:
+                    if template_from_caller and template_from_caller[0]: # checking template on test nodes: show full length
+                        fieldvalue = nodes[0].get(element.name)
+                        if fieldvalue.strip(): # field is filled for this node
+                            value = str(t.getFormatedValue(element, nodes[0], language, template_from_caller=fieldvalue, mask=mask)[1]) + str(unit)
+                        else: # use default
+                            value = str(t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1]) + str(unit)
+                    else: # cut long values
+                        value = str(formatLongText(t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1], element)) + str(unit)
+                else:
+                    value = str(formatLongText(t.getFormatedValue(element, nodes[0], language)[1], element)) + str(unit)      
 
         label = '&nbsp;'
         if field.getLabel()!="":
@@ -136,7 +153,10 @@ class m_field(Metatype):
             # hide empty elements
             return ''
         elif flags & VIEW_DATA_EXPORT:
-            return str(t.getFormatedValue(element, nodes[0], language, html=0)[1])
+            if fieldtype in ['text']:
+                return str(t.getFormatedValue(element, nodes[0], language, html=0, template_from_caller=template_from_caller, mask=mask)[1])
+            else:
+                return str(t.getFormatedValue(element, nodes[0], language, html=0)[1])
             #return element.get("type")
         else:
             # standard view
@@ -267,7 +287,7 @@ class m_field(Metatype):
         
         metafieldtypes = getMetaFieldTypes().values()
         metafieldtypes.sort(lambda x, y: cmp(translate(x.getName(), request=req).lower(), translate(y.getName(), request=req).lower()))
-
+        
         v = {}
         v["op"] = req.params.get("op","")
         v["pid"] = req.params.get("pid","")
@@ -279,6 +299,8 @@ class m_field(Metatype):
         v["t_attrs"] = attr
         v["icons"] = {"externer Link":"/img/extlink.png", "Email":"/img/email.png"}
         v["add_values"] = add_values
+        v["translate"] = translate
+        v["language"] = lang(req)
 
         if pidnode and pidnode.getMasktype()=="export":
             v["mappings"] = []

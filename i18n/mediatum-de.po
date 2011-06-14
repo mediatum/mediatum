@@ -3735,6 +3735,18 @@ msgstr "Kopfzeile"
 msgid "mask_edit_footer"
 msgstr "Fusszeile"
 
+msgid "mask_edit_format"
+msgstr "Format"
+
+msgid "mask_edit_separator"
+msgstr "Separator"
+
+msgid "mask_edit_testnodes"
+msgstr "Testnodes"
+
+msgid "mask_edit_show_testnodes"
+msgstr "Zeige"
+
 ####
 msgid "mask_edit_mappingselection"
 msgstr "Mapping Typ:"

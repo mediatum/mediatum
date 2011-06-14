@@ -3699,6 +3699,18 @@ msgstr "Header"
 msgid "mask_edit_footer"
 msgstr "footer"
 
+msgid "mask_edit_format"
+msgstr "Format"
+
+msgid "mask_edit_separator"
+msgstr "Separator"
+
+msgid "mask_edit_testnodes"
+msgstr "Test nodes"
+
+msgid "mask_edit_show_testnodes"
+msgstr "Show"
+
 ####
 msgid "mask_edit_mappingselection"
 msgstr "Mapping Type:"

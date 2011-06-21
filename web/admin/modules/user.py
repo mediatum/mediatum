@@ -263,9 +263,9 @@ def sendmailUser_mask(req, id, err=0):
     v = getAdminStdVars(req)
     v["path"] = req.path[1:]
     
-    if id=="execute" or id=="execu":
+    if id in["execute", "execu"]:
 
-        userid = req.params["userid"]
+        userid = req.params.get("userid")
         user = getUser(userid)
         if not user:
             path = req.path[1:].split("/")
@@ -274,10 +274,10 @@ def sendmailUser_mask(req, id, err=0):
         password = makeRandomPassword()
         user.resetPassword(password)
 
-        text = req.params["text"]
+        text = req.params.get("text")
         text = text.replace("[wird eingesetzt]", password)
         try:
-            mail.sendmail(req.params["from"],req.params["email"],req.params["subject"],text)
+            mail.sendmail(req.params.get("from"), req.params.get("email"), req.params.get("subject"), text)
         except mail.SocketError:
             print "Socket error while sending mail"
             return req.getTAL("web/admin/modules/user.html", v, macro="sendmailerror")
@@ -299,21 +299,22 @@ def sendmailUser_mask(req, id, err=0):
     for node in tree.getRoot("collections").getChildren():
         if access.hasReadAccess(node) and node.id not in seen:
             collections.append(node.name+" (nur lesen)")
-
     x = {}
-    x["name"] = user.getName()
+    x["name"] = "%s %s" %(user.getFirstName(), user.getLastName())
+    if(x["name"]==""):
+        x["name"] = user.getName()
     x["host"] = config.get("host.name")
     x["login"] = user.getName()
     x["isEditor"] = user.isEditor()
     x["collections"] = list()
-    x["groups"] = user.getGroups().sort(lambda x, y: cmp(x, y))
+    x["groups"] = user.getGroups()
+    x["groups"].sort()
     x["language"] = lang(req)
-    x["collections"] = collections.sort(lambda x, y: cmp(x, y))
-
+    x["collections"] = collections
+    x["collections"].sort()
 
     v["mailtext"] = req.getTAL("web/admin/modules/user.html", x, macro="emailtext").strip()
     v["email"] = user.getEmail()
     v["userid"] = user.getName()
-
     return req.getTAL("web/admin/modules/user.html", v, macro="sendmail")
 

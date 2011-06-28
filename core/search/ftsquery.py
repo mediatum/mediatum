@@ -84,7 +84,7 @@ class FtsSearcher:
             elif type=="updatetime": # update time with operator <|>|=
                 if len(value)==10:
                     value +="T00:00:00"
-                return 'select distinct(id) from searchmeta where updatetime '+spc['op']+' "'+value+'"'
+                return 'select distinct(id) from searchmeta where updatetime '+spc['op']+' "'+value.replace("t", "T")+'"'
             elif type=="field":
                 return 'select position, name from searchmeta_def where attrname=\''+value+'\''
             elif type=="spcompare":

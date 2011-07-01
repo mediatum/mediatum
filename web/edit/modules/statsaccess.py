@@ -140,16 +140,18 @@ class StatsAccessPDF:
             frames.append(Frame(1*cm, 25.5*cm, 19*cm, 3*cm,leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # main header
             # top 10
             frames += self.getStatTop("frames")
+
+        elif page==2: # page 2
+            frames.append(Frame(1*cm, 27.5*cm, 19*cm, 1*cm,leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # main header pages >1
             # countries
             frames += self.getStatCountry("frames")
-            
         
-        elif page==2: # page 2
+        elif page==3: # page 3
             frames.append(Frame(1*cm, 27.5*cm, 19*cm, 1*cm,leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # main header pages >1
             # date
             frames += self.getStatDate("frames")
             
-        elif page==3: # page 3
+        elif page==4: # page 4
             frames.append(Frame(1*cm, 27.5*cm, 19*cm, 1*cm,leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # main header pages >1
             # weekday
             frames += self.getStatDay("frames")
@@ -169,7 +171,7 @@ class StatsAccessPDF:
             max+=1
         if type=="frames":
             items.append(Frame(1*cm, 24.0*cm, 19*cm, 1*cm,leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # header
-            for i in range(0, 20):
+            for i in range(0, 45):
                 if i<len(d):
                     items.append( Frame(1*cm, (22.9-(i*0.5))*cm, 8*cm, 25, leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # label
                     items.append( Frame(9*cm, (23.0-(i*0.5))*cm, d[i][1]*280/max, 25, leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # bar
@@ -180,7 +182,7 @@ class StatsAccessPDF:
             items.append(Paragraph(t(self.language, "edit_stats_access"), self.chartheader))
             items.append((FrameBreak()))
 
-            for i in range(0, 20):
+            for i in range(0, 45):
                 if i<len(d):
                     try:
                         nodename = tree.getNode(d[i][0]).getName()
@@ -207,14 +209,13 @@ class StatsAccessPDF:
         max = float(d[0]["max"])
         
         if type=="frames":
-            items.append(Frame(1*cm, 12.5*cm, 19*cm, 1*cm,leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # header
-            
+            items.append(Frame(1*cm, 26.0*cm, 19*cm, 1*cm, leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # header country
             i = 0
             for v in sorted([(len(d[k]['items']), k) for k in filter(lambda x:x!=0, d.keys())], reverse=True):
                 if v[0]!=0:
-                    items.append( Frame(1*cm, (11.4-(i*0.5))*cm, 3*cm, 25, leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # label
-                    items.append( Frame(4*cm, (11.5-(i*0.5))*cm, v[0]*400/max, 25, leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # bar
-                    items.append( Frame(4*cm+(v[0]*400/max)+5, (11.4-(i*0.5))*cm, 40, 25, leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # number
+                    items.append( Frame(1*cm, (25.1-(i*0.5))*cm, 3*cm, 25, leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # label
+                    items.append( Frame(4*cm, (25.2-(i*0.5))*cm, v[0]*400/max, 25, leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # bar
+                    items.append( Frame(4*cm+(v[0]*400/max)+5, (25.1-(i*0.5))*cm, 40, 25, leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # number
                     i += 1
         
         if type=="data":
@@ -478,31 +479,31 @@ class StatsAccessPDF:
         self.data.append(p)
 
         self.data.append(Paragraph("%s: %s" %(t(self.language, "edit_stats_period_header"), self.period), self.chartheader))
-        self.data.append(Paragraph(t(self.language, "edit_stats_pages_of")%("1", "3"), self.formatRight))
+        self.data.append(Paragraph(t(self.language, "edit_stats_pages_of")%("1", "4"), self.formatRight))
             
         self.data.append((FrameBreak()))
         # top 10
         self.data += self.getStatTop("data", namecut=60)
+       
+        # page 2
+        self.data.append(Paragraph("%s \n'%s' %s - " %(t(self.language, "edit_stats_header"), self.collection.getName(), self.period) + t(self.language, "edit_stats_pages_of")%("2", "4"), self.bv))
+        self.data.append((FrameBreak()))
         # country
         self.data += self.getStatCountry("data")
-
-        self.data.append(PageBreak())
-            
-        # page 2
-        self.data.append(Paragraph("%s \n'%s' %s - " %(t(self.language, "edit_stats_header"), self.collection.getName(), self.period) + t(self.language, "edit_stats_pages_of")%("2", "3"), self.bv))
-        self.data.append((FrameBreak()))
-        # date
-        self.data += self.getStatDate("data")
-
         self.data.append(PageBreak())
             
         # page 3
-        self.data.append(Paragraph("%s \n'%s' %s - " %(t(self.language, "edit_stats_header"), self.collection.getName(), self.period) + t(self.language, "edit_stats_pages_of")%("3", "3"), self.bv))
+        self.data.append(Paragraph("%s \n'%s' %s - " %(t(self.language, "edit_stats_header"), self.collection.getName(), self.period) + t(self.language, "edit_stats_pages_of")%("3", "4"), self.bv))
         self.data.append((FrameBreak()))
+        # date
+        self.data += self.getStatDate("data")
+        self.data.append(PageBreak())
             
+        # page 4
+        self.data.append(Paragraph("%s \n'%s' %s - " %(t(self.language, "edit_stats_header"), self.collection.getName(), self.period) + t(self.language, "edit_stats_pages_of")%("4", "4"), self.bv))
+        self.data.append((FrameBreak()))
         # weekday
-        self.data += self.getStatDay("data")
-            
+        self.data += self.getStatDay("data")  
         # time
         self.data += self.getStatTime("data")
 

@@ -124,7 +124,7 @@ class FtsSearcher:
                     res = self.execute(getSQL("spcompare", value, spc={'op':op, 'pos':pos}), 'ext')
                 else:
                     if value=="''":
-                        res = self.execute(getSQL("spfield", spc={'pos':str(pos)}), 'ext')
+                        res = self.execute(getSQL("spfield", '', spc={'pos':pos}), 'ext')
                     else:
                         res = self.execute(getSQL("spmatch", value, spc={'pos':pos}), 'ext')
 

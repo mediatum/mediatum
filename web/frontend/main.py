@@ -34,6 +34,11 @@ def display(req):
     req.session["area"] = ""
     content = getContentArea(req)
     content.feedback(req)
+    try: # add export mask data of current node to request object
+        mask = getMetaType(content.actNode().getSchema()).getMask('head_meta')
+        req.params['head_meta'] = mask.getViewHTML([content.actNode()], flags=8)
+    except:
+        req.params['head_meta'] = '<meta name="DC.test" content="Hier kommt das Beispiel"/>'
     
     navframe = getNavigationFrame(req)
     navframe.feedback(req)

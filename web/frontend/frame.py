@@ -509,6 +509,7 @@ class NavigationFrame:
         self.params["footer_left_items"] = rootnode.getCustomItems("footer_left")
         self.params["footer_right_items"] = rootnode.getCustomItems("footer_right")
         self.params["t"] = time.strftime("%d.%m.%Y %H:%M:%S")
+        self.params["head_meta"] = req.params.get('head_meta', '')
 
         # header
         self.params["header"] = req.getTAL(theme.getTemplate("frame.html"), self.params, macro="frame_header")

@@ -38,7 +38,7 @@ def display(req):
         mask = getMetaType(content.actNode().getSchema()).getMask('head_meta')
         req.params['head_meta'] = mask.getViewHTML([content.actNode()], flags=8)
     except:
-        req.params['head_meta'] = '<meta name="DC.test" content="Hier kommt das Beispiel"/>'
+        req.params['head_meta'] = ''
     
     navframe = getNavigationFrame(req)
     navframe.feedback(req)

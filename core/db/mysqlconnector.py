@@ -44,11 +44,12 @@ class MYSQLConnector(Connector):
     def __init__(self):
         config.initialize()
         self.dbhost = config.get("database.dbhost", "localhost")
+        self.dbport = int(config.get("database.dbport", "3306"))
         self.database = config.get("database.db", "mediatum")
         self.user = config.get("database.user", "mediatumadmin")
         self.passwd = config.get("database.passwd", "")
 
-        self.db=MySQLdb.connect(host = self.dbhost, user = self.user, passwd = self.passwd, db = self.database)
+        self.db=MySQLdb.connect(host = self.dbhost, port = self.dbport, user = self.user, passwd = self.passwd, db = self.database)
         self.dblock=thread.allocate_lock()
         self.nodes = {}
 

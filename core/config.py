@@ -21,13 +21,8 @@
 
 import os
 import sys
-import athana
 
-basedir = os.path.dirname(athana.__file__).rsplit(os.sep,1)[0] 
-
-print "Base path is at",basedir
-print "Python Version is",sys.version.split("\n")[0]
-
+basedir = None # will be set by initialize()
 settings = None
 
 def get(key,default=None):
@@ -43,7 +38,7 @@ def getsubset(prefix):
             options[k] = v
     return options
 
-def _read_ini_file(filename):
+def _read_ini_file(basedir, filename):
     lineno = 0
     params = {}
     fi = open(os.path.join(basedir,filename), "rb")
@@ -91,8 +86,10 @@ def mkDir(dir):
     except:
         pass #already exists
 
-def initialize(input=None):
-    global settings
+def initialize(athana_basedir=None, input=None):
+    global settings, basedir
+    if athana_basedir:
+        basedir = athana_basedir
     if input is None:
         if settings is not None:
             # already initialized
@@ -100,7 +97,7 @@ def initialize(input=None):
         input = "mediatum.cfg"
 
     if type(input) == type(""):
-        settings = _read_ini_file(input)
+        settings = _read_ini_file(basedir, input)
     else:
         settings = input
 
@@ -117,7 +114,7 @@ def initialize(input=None):
     mkDir(os.path.join(settings["paths.datadir"],"html"))
     mkDir(os.path.join(settings["paths.datadir"],"log"))
 
-    athana.setTempDir(settings["paths.tempdir"])
+    #athana.setTempDir(settings["paths.tempdir"])
 
 #
 # resolve given filename to correct path/file

@@ -20,19 +20,28 @@
 """
 
 import os
+import sys
 import core.config as config
+
+import core.athana as athana
+
+basedir = os.path.dirname(athana.__file__).rsplit(os.sep,1)[0]
+
+print "Base path is at", basedir
+print "Python Version is", sys.version.split("\n")[0] 
+
 if os.getenv("MEDIATUM_CONFIG"):
-    config.initialize(os.getenv("MEDIATUM_CONFIG"))
+    config.initialize(basedir, os.getenv("MEDIATUM_CONFIG"))
 else:
-    config.initialize("mediatum.cfg")
+    config.initialize(basedir, "mediatum.cfg")
+    
+athana.setTempDir(config.settings["paths.tempdir"])    
 
 import utils.log
 utils.log.initialize()
 import logging
 log = logging.getLogger('backend')
 
-import sys
-import os
 import core.tree as tree
 import core.acl as acl
 

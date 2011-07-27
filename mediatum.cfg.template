@@ -18,8 +18,9 @@ searchstore=/data/search/
 tempdir=/tmp/
 
 [database]
-type=sqlite
+type=sqlite # sqlite or mysql
 #dbhost=localhost
+#dbport=3306 # default port for mysql
 #db=mediatum
 #user=mediatumadmin
 #passwd=

@@ -27,7 +27,12 @@ import thread
 import core.config as config
 
 from connector import Connector
-from pysqlite2 import dbapi2 as sqlite
+
+try:
+    import sqlite3 as sqlite
+except:
+    from pysqlite2 import dbapi2 as sqlite
+
 from core.db.database import initDatabaseValues
 from utils import *
 

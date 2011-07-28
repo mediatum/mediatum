@@ -75,7 +75,7 @@ class m_ilist(Metatype):
             logException("missing request parameter")
             return athana.HTTP_NOT_FOUND
 
-        index = tree.getRoot("collections").getAllAttributeValues(name, access).keys()
+        index = tree.getRoot("collections").getAllAttributeValues(name, access, req.params.get('schema')).keys()
         index.sort(lambda x,y: cmp(x.lower(), y.lower()))
         
         if req.params.get("print","")!="":

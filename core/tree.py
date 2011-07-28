@@ -919,12 +919,20 @@ class Node:
 
     
     # fill hashmap with idlists of listvalues
-    def getAllAttributeValues(self, attribute, access):
+    def getAllAttributeValues(self, attribute, access, schema=""):
+        values = {}
+        
+        try:
+            if schema!="":
+                sql = 'select distinct(value) from node, nodeattribute where node.id=nodeattribute.nid and nodeattribute.name="'+attribute+'" and node.type like "%/'+schema+'"'
+                fields = db.runQuery(sql)
+            else:
+                fields = db.getMetaFields(attribute)
+        except:
+            fields = db.getMetaFields(attribute)
 
         # REVERT BACK TO SIMPLE SQL QUERY BECAUSE BELOW CODE TOO *SLOW*
         # MK/2008/10/27
-        values = {}
-        fields = db.getMetaFields(attribute)
         for f in fields:
             for s in f[0].split(";"):
                 s = s.strip()

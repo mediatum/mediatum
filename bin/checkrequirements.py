@@ -1,4 +1,3 @@
-#!/usr/bin/python
 """
  mediatum - a multimedia content repository
 
@@ -84,21 +83,20 @@ def check_fts3_enabled_sqlite(names):
         import sqlite3 as sqlite
         msg = "module '%s' found, " % names[0]
         res[0] = 1
+        con = sqlite.connect(":memory:")
+        con.execute("create virtual table t using fts3(a, b)")
+        res[2] = 1        
     except:
         try:
             from pysqlite2 import dbapi2 as sqlite
             res[1] = 1
-        except:
-            return res
-    
-    if sum(res)>0: # check for enabled fts3
-        try:
             con = sqlite.connect(":memory:")
             con.execute("create virtual table t using fts3(a, b)")
-            res[2] = 1
+            res[2] = 1            
         except:
             pass
-        return res
+    
+    return res
 
         
 # ["name", "short description", ["command", "args"], "fail_comment"]
@@ -229,7 +227,7 @@ def step3():
             msg = "- database.type=%s: sqlite will be used, no further [database] settings required" % (dbtype)
             print msg +" "*(98-len(msg)) + "OK"
 
-            if res_dict['sqlite3']==0: # no sqlite connector present -> exit
+            if 'sqlite3' not in res_dict.keys() or res_dict['sqlite3']==0: # no sqlite connector present -> exit
                 out( "sqlite configured, but no connector (sqlite3 or pysqlite2) present. System won't be functional.", borderchar='*')
                 sys.exit(2)
         else: # use mysql as database
@@ -240,7 +238,7 @@ def step3():
                 
             print msg + " "*(98-len(msg))+"OK"
 
-            if res_dict['MySQLdb']==0: # no mysql connector present -> exit
+            if 'MySQLdb' not in res_dict.keys() or res_dict['MySQLdb']==0: # no mysql connector present -> exit
                 failures["3b"].append(('FAIL', 'config.database(mysql)'))               
                 out("mysql configured, but no connector (MySQLdb) present. System won't be functional.", borderchar='*')
                 sys.exit(2)

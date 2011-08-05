@@ -28,10 +28,35 @@ import core.config as config
 
 from connector import Connector
 
-try:
+SQLITE_API = None
+
+if not SQLITE_API:
+    try:
+        import sqlite3 as _test_sqlite
+        con = _test_sqlite.connect(":memory:")
+        con.execute("create virtual table t using fts3(a, b)")
+        SQLITE_API = "sqlite3"
+    except:
+        try:
+            from pysqlite2 import dbapi2 as _test_sqlite            
+            con = _test_sqlite.connect(":memory:")
+            con.execute("create virtual table t using fts3(a, b)")
+            SQLITE_API = "pysqlite2"
+        except:
+            print 'Warning: no fts3 enabled for sqlite connector'    
+        
+if SQLITE_API == 'sqlite3':
     import sqlite3 as sqlite
-except:
+    print 'using fts3 enabled module sqlite3'
+elif SQLITE_API == 'pysqlite2':
     from pysqlite2 import dbapi2 as sqlite
+    print 'using fts3 enabled module pysqlite2'
+else:
+    try: 
+        import sqlite3 as sqlite
+    except:
+        from pysqlite2 import dbapi2 as sqlite
+
 
 from core.db.database import initDatabaseValues
 from utils import *

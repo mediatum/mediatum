@@ -77,7 +77,7 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
     sfields = d.setdefault('sfields', [])
 
     res = '<?xml version="1.0" encoding="utf-8"?>\r\n'
-    res += '<response status="%s" retrievaldate="%s" servivereactivity="%s sec.">\r\n' % (d['status'], d['retrievaldate'], d['dataready'])
+    res += '<response status="%s" retrievaldate="%s" servicereactivity="%s sec.">\r\n' % (d['status'], d['retrievaldate'], d['dataready'])
     if d['status'] == 'ok':
         if singlenode:
             n = d['nodelist'][0]

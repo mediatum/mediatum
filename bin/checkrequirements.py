@@ -116,6 +116,8 @@ python_module_descrs = [
   [["reportlab"], "reportlab: pdf reporting library (module 'reportlab')", check_python_module, "FAIL"],
   [["simplejson", "json"], "json/simplejson: json encoder and decoder ", check_python_module, "FAIL"],
   [["ldap"], "ldap: LDAP client API (required for LDAP authentication)", check_python_module, "RESTRICTION"],
+  [["PyZ3950"], "PyZ3950: Z39.50 server for python", check_python_module, "RESTRICTION"],
+  [["pymarc"], "pymarc: marc formatter for python", check_python_module, "RESTRICTION"],
 ]
 
 def step1():

@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.38 2011/05/16 14:18:07 seiferta Exp $'
+RCS_ID =  '$Id: athana.py,v 1.39 2011/09/01 10:55:45 seiferta Exp $'
 
 import sys
 
@@ -5574,12 +5574,12 @@ class ftp_server (asyncore.dispatcher):
 
         self.logger = unresolving_logger (logger_object)
 
-        self.log_info('FTP server started at %s\n\tAuthorizer:%s\n\tHostname: %s\n\tPort: %d' % (
+        self.log_info('FTP server started at %s, Port: %d\n\tAuthorizer: %s, Hostname: %s\n' % (
                 time.ctime(time.time()),
+                self.port,
                 repr (self.authorizer),
                 self.hostname,
-                self.port)
-                )
+                ))
 
     def writable (self):
         return 0
@@ -6954,7 +6954,7 @@ class AthanaThread:
 def runthread(athanathread):
     athanathread.worker_thread()
         
-def run(port=8081):
+def run(port=8081, z3950_port=None):
     check_date()
     ph = AthanaHandler()
     hs = http_server ('', port, logger_object = lg)
@@ -6962,6 +6962,10 @@ def run(port=8081):
 
     if len(ftphandlers) > 0:
         ftp = ftp_server (ftp_authorizer(), port=ftphandlers[0].getPort(), logger_object=lg)
+        
+    if z3950_port is not None:
+        import athana_z3950
+        z3950_server = athana_z3950.z3950_server(port=z3950_port, logger_object=lg)
 
     if multithreading_enabled: 
         global threadlist
@@ -7005,7 +7009,8 @@ def mainfunction():
     parser.add_option("-m", "--multithread", dest="multithreading_enabled", help="Enable multithreading",action="store_true")
     parser.add_option("-n", "--number-of-threads", dest="threads", help="Number of threads",action="store",type="int")
     parser.add_option("-T", "--talfile", dest="talfile", help="execute TAL File",action="store",type="string")
-
+    parser.add_option("-Z", "--z3950", dest="enable_z3950", help="enable Z3950 interface", action="store_true", default=False)
+    
     (options, args) = parser.parse_args()
 
     verbose = 0
@@ -7046,7 +7051,7 @@ def mainfunction():
     print "Temp-Path:",GLOBAL_TEMP_DIR
     print "-"*72
 
-    run(port)
+    run(port, options.enable_z3950)
 
 if __name__ == '__main__':
     import athana

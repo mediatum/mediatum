@@ -47,6 +47,13 @@ activate=false
 class=#
 interval=3600
 
+[z3950]
+activate=false
+port=2101
+
+[marc21]
+mapping_name=marc21
+
 [user]
 adminuser=Administrator
 guestuser=Gast
@@ -57,6 +64,7 @@ passwd=ABC
 pageitems=10
 
 [logging]
+path=/data/log/
 file.everything=/data/log/everything.log
 file.database=/data/log/database.log
 file.backend=/data/log/backend.log

@@ -744,6 +744,41 @@ def mkKey():
         s += alphabet[random.randrange(0,len(alphabet)-1)]
     return s
     
+class Template(object):
+    """
+    Simple and fast templating system for '[att:xyz]' references.
+
+    Examples::
+
+        >>> t = Template('a [att:TEST] template for [att:TEST]ing')
+        >>> print( t({'TEST': 'toast'}) )
+        a toast template for toasting
+        >>> print( t({}) )
+        a  template for ing
+    """
+    split_at_vars = re.compile(r'\[att:([^]]*)\]').split
+
+    def __init__(self, template_string):
+        """
+        Split the template string by its attribute references and
+        remember where they are in the resulting list.
+        """
+        self.template_parts = self.split_at_vars(template_string)
+        self.attribute_positions = xrange(1, len(self.template_parts), 2)
+
+    def __call__(self, data_provider):
+        """
+        Interpolate the template using the content of the data
+        provider (dict or MediaTUM tree node).
+        """
+        lookup = data_provider.get
+        text_parts = self.template_parts[:]
+        for i in self.attribute_positions:
+            attribute_name = text_parts[i]
+            if attribute_name:
+                text_parts[i] = lookup(attribute_name) or ''
+        return ''.join(text_parts)
+
     
 if __name__ == "__main__":
     def tt(s):

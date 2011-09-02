@@ -41,7 +41,7 @@ class m_hgroup(Metatype):
         return ret + '</div>'
 
     """ """
-    def getViewHTML(self, field, nodes, flags, language=None):
+    def getViewHTML(self, field, nodes, flags, language=None, template_from_caller=None, mask=None):
 
         if flags & VIEW_DATA_ONLY:
             ret = []

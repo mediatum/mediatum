@@ -39,7 +39,7 @@ class m_vgroup(Metatype):
         return ret
 
     """  """
-    def getViewHTML(self, field, nodes, flags, language=None):
+    def getViewHTML(self, field, nodes, flags, language=None, template_from_caller=None, mask=None):
         if flags & VIEW_DATA_ONLY:
             ret = []
             for item in field.getChildren().sort():

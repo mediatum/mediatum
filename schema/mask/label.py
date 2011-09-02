@@ -28,7 +28,7 @@ class m_label(Metatype):
         return '<b>'+field.getLabel()+'</b><br/>'
 
 
-    def getViewHTML(self, field, nodes, flags, language=None):
+    def getViewHTML(self, field, nodes, flags, language=None, template_from_caller=None, mask=None):
         if flags & VIEW_DATA_ONLY:
             return []
         elif flags & VIEW_DEFAULT:

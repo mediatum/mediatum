@@ -123,7 +123,9 @@ class LDAPUser(ExternalUser):
             
             if user.get("identificator")!= self._getAttribute(config.get("ldap.user_identificator"), data):
                 user.set("identificator", self._getAttribute(config.get("ldap.user_identificator"), data))
-        
+            
+            user.removeAttribute('password')
+            
             for group in self._getAttribute(config.get("ldap.user_group"), data, ",").split(","):
                 if group!="" and not usergroups.existGroup(group):
                     res = usergroups.create_group(group, description="LDAP Usergroup", option="")

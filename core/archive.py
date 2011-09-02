@@ -91,30 +91,23 @@ class ArchiveManager:
 
     def __init__(self):
         self.manager = {}
-
         if config.get("archive.activate", "").lower()=="true":
             print "Initializing archive manager:",
             for paths in config.get("archive.class").split(";"):
                 path, manager = splitpath(paths)
-                if path and path not in sys.path:
-                    sys.path += [path]
-                m = __import__(manager).__dict__[manager]()
-                print str(m.__class__),",",
-                self.manager[manager] = m
-            print len(self.manager), "manager loaded"
-
-        if len(self.manager)>0:
-            None
-            # start archiving thread
-            thread_id = thread.start_new_thread(self.archive_thread, ())
-            archive_log("started archiving thread, thread_id="+str(thread_id))
-    
+                self.manager[manager] = paths
+                
+        print "archivemanager init done", len(self.manager)
+                
     def getManager(self, name=""):
         if name=="":
             return self.manager
         
         if name in self.manager.keys():
-            return self.manager[name]
+            path, manager = splitpath(self.manager[name])
+            if path and path not in sys.path:
+                sys.path += [path]
+            return __import__(manager).__dict__[manager]()
         return None
             
     def archive_thread(self):
@@ -163,7 +156,7 @@ def initialize():
                 pass
             
             if path and path not in sys.path:
-                sys.path += [path]
+                sys.path += [path]   
             m = __import__(manager).__dict__[manager]()
             print str(m.__class__),",",
             archive_manager.append(m)

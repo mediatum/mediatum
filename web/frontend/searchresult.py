@@ -24,13 +24,12 @@ import utils.date as date
 import logging
 from core.acl import AccessData
 from core.translation import lang, translate
-from utils.utils import intersection,getAllCollections
+from utils.utils import intersection,getAllCollections, u
 from core.tree import subnodes, searcher
 from core.styles import theme
 
 class SearchResult:
     def __init__(self, resultlist, query, collections=[]):
-        print "build Searchresult"
         self.query = query
         self.collections = collections
         self.active = -1
@@ -45,7 +44,6 @@ class SearchResult:
                 result.parent = self
             
     def feedback(self,req):
-        print "seachresult feedback"
         if "scoll" in req.params:
             id = req.params["scoll"]
             for nr in range(len(self.resultlist)):
@@ -68,7 +66,6 @@ class SearchResult:
         return []
 
     def html(self,req):
-        print self.resultlist
         if self.error>0:
             return req.getTAL(theme.getTemplate("searchresult.html"), {"query":self.query, "r":self, "collections":self.collections, "language":lang(req)}, macro="error")
             
@@ -97,7 +94,7 @@ def simple_search(req):
     collection_ids = {}
     
     access = AccessData(req)
-    q = req.params.get("query", "")
+    q = u(req.params.get("query", ""))
 
     # test whether this query is restricted to a number of collections
     for key,value in req.params.items():
@@ -170,8 +167,8 @@ def extended_search(req):
     q_user = ''
     first2 = 1
     for i in range(1,max+1):       
-        f = req.params.get("field"+str(i),"").strip()
-        q = req.params.get("query"+str(i),"").strip()
+        f = u(req.params.get("field"+str(i),"").strip())
+        q = u(req.params.get("query"+str(i),"").strip())
 
         if not q and "query"+str(i)+"-from" not in req.params:
             continue
@@ -183,7 +180,7 @@ def extended_search(req):
         first2 = 0
 
         if not f.isdigit():
-            q = req.params.get("query"+str(i),"").strip()
+            q = u(req.params.get("query"+str(i),"").strip())
             q_str += f + '=' + protect(q)
             q_user += f + '=' + protect(q)
         else:
@@ -213,10 +210,12 @@ def extended_search(req):
                         q_str += metatype.getName()+ ' >= '+date_from
                         q_user += "%s &ge; \"%s\"" %(metatype.getName(), str(req.params["query"+str(i)+"-from"]))
                     else:
-                        q_str += '('+metatype.getName()+' >= '+date_from+' and '+metatype.getName()+' <= '+date_to+')'
+                        #q_str += '('+metatype.getName()+' >= '+date_from+' and '+metatype.getName()+' <= '+date_to+')'
+                        q_str += '('+metatype.getName()+' = '+date_from+')'
+                        
                         q_user += "(%s %s \"%s\" %s \"%s\")" %(metatype.getName(), translate("search_between", request=req), str(req.params["query"+str(i)+"-from"]), translate("search_and", request=req), str(req.params["query"+str(i)+"-to"]))
                 else:
-                    q = req.params.get("query"+str(i),"").strip()
+                    q = u(req.params.get("query"+str(i),"").strip())
                     q_str += metatype.getName() + '=' + protect(q)
                     if metatype.getLabel()!="":
                         q_user += "%s = %s" %(metatype.getLabel(), protect(q))
@@ -224,13 +223,11 @@ def extended_search(req):
                         q_user += "%s = %s" %(metatype.getName(), protect(q))
 
             q_str += ")"
-
     try:
         if req.params.get("act_node","") and req.params.get("act_node")!=str(collection.id):
             result = tree.getNode(req.params.get("act_node")).search(q_str)
         else:
             result = collection.search(q_str)
-    
         result = access.filter(result)
         logging.getLogger('usertracing').info(access.user.name + " xsearch for '"+q_user+"', "+str(len(result))+" results")
         if len(result)>0:

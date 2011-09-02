@@ -27,6 +27,12 @@ import logging
 import utils.mail as mail
 log = logging.getLogger('backend')
 
+class MailError(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
+
 def getTALtext(text, context):
     text = '<body xmlns:tal="http://xml.zope.org/namespaces/tal">'+text+'</body>'
     text = athana.getTALstr(text, context)
@@ -42,9 +48,9 @@ class WorkflowStep_SendEmail(WorkflowStep):
         try:
             log.info("sending mail to %s (%s)" % (to,self.get("email")))
             if not to:
-                raise "No receiver address defined"
+                raise MailError("No receiver address defined")
             if not xfrom:
-                raise "No from address defined"
+                raise MailError("No from address defined")
             mail.sendmail(xfrom, to, subject, text)
         except:
             node.set("mailtmp.error",formatException())

@@ -19,7 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from utils.utils import compare_utf8,get_filesize, compare_digit, intersection
+from utils.utils import compare_utf8,get_filesize, compare_digit, intersection, u, iso2utf8
 from utils.log import logException
 from core.db import database
 import logging
@@ -125,7 +125,7 @@ def getAllContainerChildrenNum(node, count=0): # returns the number of children
 def getAllContainerChildrenAbs(node, count=[]): # returns a list with children, each child once
     for n in node.getContainerChildren():
         count = getAllContainerChildrenAbs(n, count)
-    count.extend(node.getContentChildren())
+    count.extend(node.getContentChildren().ids)
     return count
 
 def getAllContainerChildren(node):
@@ -196,6 +196,16 @@ class FileNode:
                         return path
                 except: 
                     logException("file handler retrieveFile() failed")
+        if not os.path.exists(config.settings["paths.datadir"] + self._path):
+            for f in self.node.getFiles():
+                if f.getType().startswith("presentati"):
+                    try:
+                        _n = os.path.dirname(f.retrieveFile())+"/"+self._path
+                        if os.path.exists(_n):
+                            return _n
+                    except:
+                        pass
+
         return config.settings["paths.datadir"] + self._path
     def getMimeType(self):
         return self.mimetype
@@ -371,14 +381,7 @@ class NodeList:
                     elif pos1 > pos2:
                         return 1
                 return 0
-                
-            def fieldcmp_down(id1,id2):
-                return fieldcmp(id2,id1)               
-                
-            if direction=="down":
-                self.ids.sort(fieldcmp_down)
-            else:
-                self.ids.sort(fieldcmp)
+            self.ids.sort(fieldcmp)
             return self
             
     def filter(self, access):
@@ -781,17 +784,10 @@ class Node:
             f()
         
     
-    """ get a metadate or node id, name , type, orderpos"""
+    """ get a metadate """
     def get(self, name):
-        if name.startswith('node'):
-            if name == "nodename" or name == "node.name":
-                return self.getName()        
-            elif name == 'node.id':
-                return self.id
-            elif name == 'node.type':
-                return self.type
-            elif name == 'node.orderpos':
-                return self.orderpos            
+        if name == "nodename":
+            return self.getName()
         if self.attributes is None:
             if not self.id:
                 raise "Internal Error"
@@ -868,12 +864,11 @@ class Node:
     """ run a search query. returns a list of nodes """
     def search(self, q):
         global searcher, subnodes
-        log.info('search: '+q+' for node '+str(self.id)+' '+str(self.name))
+        log.info('search: %s for node %s %s' %(q, str(self.id), str(self.name)))
         self._makePersistent()
         items = subnodes(self)
-        
         if type(items)!= list:
-            items = items.getIDs()
+            items = items.getIDs() 
         return NodeList(intersection([items, searcher.query(q)]))
 
     def __getattr__(self, name):
@@ -921,7 +916,6 @@ class Node:
     # fill hashmap with idlists of listvalues
     def getAllAttributeValues(self, attribute, access, schema=""):
         values = {}
-        
         try:
             if schema!="":
                 sql = 'select distinct(value) from node, nodeattribute where node.id=nodeattribute.nid and nodeattribute.name="'+attribute+'" and node.type like "%/'+schema+'"'
@@ -933,9 +927,10 @@ class Node:
 
         # REVERT BACK TO SIMPLE SQL QUERY BECAUSE BELOW CODE TOO *SLOW*
         # MK/2008/10/27
+        #fields = db.getMetaFields(attribute)
         for f in fields:
             for s in f[0].split(";"):
-                s = s.strip()
+                s = u(s.strip())
                 values[s] = values.get(s,0)+1
         return values
 

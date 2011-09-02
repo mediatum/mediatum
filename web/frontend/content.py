@@ -442,13 +442,15 @@ class ContentArea(Content):
 
     
     def actNode(self):
-        try:
+        if hasattr(self.content, 'files'):
             if self.content.nr>=0 and len(self.content.files)>=self.content.nr:
-                ntype = self.content.files[self.content.nr]
+                return self.content.files[self.content.nr]
             else:
-                ntype = self.content.node
-            return ntype
-        except:
+                return self.content.node
+            
+        elif hasattr(self.content, 'node'):
+            return self.content.node
+        else:
             return None
         
     def html(self,req):

@@ -44,7 +44,6 @@ def makeThumbNail(image, thumb):
     import Image,ImageDraw, ImageChops
     if isnewer(thumb,image):
         return
-    print "Creating thumbnail for image ",image
     pic = Image.open(image)
     tmpjpg = config.get("paths.datadir")+"tmp/img"+str(random.random())+".jpg"
     
@@ -67,7 +66,10 @@ def makeThumbNail(image, thumb):
         newheight = 128
         newwidth = width*newheight/height
     pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
-    im = Image.new(pic.mode, (128, 128), (255, 255, 255))
+    try:
+        im = Image.new(pic.mode, (128, 128), (255, 255, 255))
+    except:
+        im = Image.new("RGB", (128,128), (255, 255, 255))
     
     x = (128-newwidth)/2
     y = (128-newheight)/2
@@ -86,8 +88,6 @@ def makePresentationFormat(image, thumb):
     import Image,ImageDraw
     if isnewer(thumb,image):
         return
-    print "Creating presentation sized version of image ", image
-    
     pic = Image.open(image)
     tmpjpg = config.get("paths.datadir")+"tmp/img"+str(random.random())+".jpg"
     if pic.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
@@ -215,13 +215,10 @@ class Image(default.Default):
         files, sum_size = filebrowser(node, req)
 
         obj = {}
-        if mask:
-            obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY, lang(req), mask=mask) # hide empty elements
-        else:
-            obj['metadata'] = []          
         obj['path'] = req and req.params.get("path","") or ""
         obj['attachment'] = files
-        obj['sum_size'] = sum_size      
+        obj['sum_size'] = sum_size
+        obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY) # hide empty elements
         obj['node'] = node
         obj['tif'] = tif
         obj['zoom'] = dozoom(node)
@@ -295,7 +292,6 @@ class Image(default.Default):
                                 width, height = getImageDimensions(pngname)
                                 node.set("width", width)
                                 node.set("height", height)
-                                print "Found preconverted image",pngname
 
                             node.addFile(FileNode(name=pngname, type="image", mimetype="image/png"))
                             node.addFile(FileNode(name=f.retrieveFile(), type="original", mimetype="image/tiff"))

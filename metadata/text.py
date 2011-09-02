@@ -74,7 +74,7 @@ class m_text(Metatype):
         
         maskitem = getMaskitemForField(field, language=language, mask=mask)
         if not maskitem:
-            (field.getLabel(), value)        
+            return (field.getLabel(), value)        
         
         # use default value from mask if value is empty        
         if value=='':

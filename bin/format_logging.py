@@ -21,9 +21,14 @@ import sys
 sys.path += ["."]
 import os
 import time
+import core
+import core.tree as tree
 import core.config
+from core.stats import buildStat
+from core.db import database
 
 period = time.strftime("%Y-%m")
+force = 0
 
 if len(sys.argv)==3 and sys.argv[1]=="--period":
     period = sys.argv[2]
@@ -37,10 +42,14 @@ else:
         
     period = "-".join(p)
 
+if len(sys.argv)==2 and sys.argv[1]=="--force":
+    print "force reprocess of log data"
+    force = 1
+
 path = [core.config.get("logging.file.everything")]
 outpath = os.path.dirname(core.config.get("logging.file.everything"))+"/"+period+".log"
 
-if os.path.exists(outpath):
+if os.path.exists(outpath) and force==0:
     print "file for period", period, "existing"
     sys.exit()
 
@@ -61,4 +70,11 @@ for line in d:
     fout.write(line)
 fout.close()
 print "done for period", period, ", found", len(d), "lines."
+
+
+if force==1: # force rebuildin stats
+    print "rebuild stats for period", period
+    db = database.getConnection()
+    for id in db.runQuery("select id from node where type='collections' or type='collection'"):
+        buildStat(tree.getNode(id[0]), period)
 

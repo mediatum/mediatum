@@ -22,11 +22,11 @@ import core.tree as tree
 import core.athana as athana
 
 from core.tree import Node,FileNode
-from core.translation import lang, t
+from core.translation import t, lang
 from core.acl import AccessData
 import default 
 
-from schema.schema import loadTypesFromDB, VIEW_HIDE_EMPTY,VIEW_DATA_ONLY
+from schema.schema import loadTypesFromDB, VIEW_HIDE_EMPTY
 
 """ flash class """
 class Flash(default.Default):

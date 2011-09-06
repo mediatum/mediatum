@@ -131,7 +131,7 @@ def request_handler(req):
         s += "\n| sum of execution times: %.3f sec.: %s bytes returned" % (timesum, locale.format("%d", bytes_sent, 1))
         s += '\n'+('-'*80)  
           
-        logging.getLogger('services').info(s)
+    logging.getLogger('services').info(s)
     sys.stdout.flush()
     
     if not matched:

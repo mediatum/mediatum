@@ -40,13 +40,14 @@ class collection_ftpserver:
         self.node = None
         self.port = port
         self.logging = debug
-        
+        print "base:", basecontainer
         if basecontainer: # use special container for collections
             self.user = basecontainer.get("ftp.user")
             self.passwd = basecontainer.get("ftp.passwd")
             self.basecontainer = basecontainer
             self.dir = [basecontainer]
             self.node = basecontainer
+            print self.user, self.passwd
 
     def debug(self):
         if self.logging=="testing":
@@ -64,7 +65,7 @@ class collection_ftpserver:
         self.node = basecontainer # homedirectory of user
 
     def has_user(self, username, password):
-        if username==self.user and hashlib.md5(password).hexdigest()==self.passwd:
+        if username==self.user and (hashlib.md5(password).hexdigest()==self.passwd or password==self.passwd):
             return collection_ftpserver(self.basecontainer, port=self.port, debug=self.logging)
         else:
             user = users.checkLogin(username, password)

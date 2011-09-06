@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.39 2011/09/01 10:55:45 seiferta Exp $'
+RCS_ID =  '$Id: athana.py,v 1.40 2011/09/06 09:38:11 seiferta Exp $'
 
 import sys
 
@@ -2721,17 +2721,29 @@ def ustr(v):
     minimising the chance of raising a UnicodeError. This
     even works with uncooperative objects like Exceptions
     """
-    if type(v) == type(""): #isinstance(v, basestring):
-        return v
-    else:
-        fn = getattr(v,'__str__',None)
-        if fn is not None:
-            v = fn()
-            if isinstance(v, basestring):
-                return v
-            else:
-                raise ValueError('__str__ returned wrong type')
-        return str(v)
+    try:
+        if type(v) == type(""): #isinstance(v, basestring):
+            return v
+        else:
+            fn = getattr(v,'__str__',None)
+            if fn is not None:
+                v = fn()
+                if isinstance(v, basestring):
+                    return v
+                else:
+                    raise ValueError('__str__ returned wrong type')
+            return str(v)
+    except:
+        try:
+            return v.encode("utf-8")
+        except:
+            try: 
+                return unicode(v, 'utf-8').encode("utf-8")
+            except:
+                try:
+                    return v.decode('latin1').encode('utf-8')
+                except:
+                    return v
 
 
 # ================ MEDUSA ===============
@@ -4882,17 +4894,16 @@ class ftp_channel (async_chat):
 
     # unset this in a derived class in order
     # to enable the commands in 'self.write_commands'
-    read_only = 1
-    #write_commands = ['appe','dele','mkd','rmd','rnfr','rnto','stor','stou']
+    read_only = 0 
     write_commands = ['appe','dele','mkd','rmd','stor','stou']
-
+    
     restart_position = 0
 
     # comply with (possibly troublesome) RFC959 requirements
     # This is necessary to correctly run an active data connection
     # through a firewall that triggers on the source port (expected
     # to be 'L-1', or 20 in the normal case).
-    bind_local_minus_one = 0
+    bind_local_minus_one = 1
 
     def __init__ (self, server, conn, addr):
         self.server = server
@@ -5738,7 +5749,10 @@ class xmit_channel (async_chat):
         del c
         del s
         del self.channel
-        async_chat.close (self)
+        try:
+            async_chat.close (self)
+        except:
+            pass
 
 class recv_channel (asyncore.dispatcher):
     def __init__ (self, channel, client_addr, fd):

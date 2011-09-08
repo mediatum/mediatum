@@ -35,7 +35,7 @@ from core.xmlnode import getNodeXML, readNodeXML
 import utils.date as date
 import core.acl as acl
 from schema.schema import showEditor,parseEditorData,getMetaType,VIEW_HIDE_EMPTY
-from core.translation import t,lang
+from core.translation import t,lang, addLabels
 
 import thread
 
@@ -682,6 +682,9 @@ class WorkflowStep(tree.Node):
     
     def getId(self):
         return self.getName()
+        
+    #def getLabels(self):
+    #    return {}
 
     def show_node_big(self, req, template="workflow/workflow.html", macro="object_step"):
 
@@ -901,3 +904,9 @@ def register():
     from publish import WorkflowStep_Publish
     tree.registerNodeClass("workflowstep-publish", WorkflowStep_Publish)
     registerStep("workflowstep-publish")
+    
+    from classify import WorkflowStep_Classify
+    tree.registerNodeClass("workflowstep-classify", WorkflowStep_Classify)
+    registerStep("workflowstep-classify")
+    addLabels(WorkflowStep_Classify(type="workflowstep-classify").getLabels())
+    

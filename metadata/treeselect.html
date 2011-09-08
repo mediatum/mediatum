@@ -1,0 +1,92 @@
+
+<tal:block metal:define-macro="editorfield">
+    <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-26)+'px'; name name; id name; value value; maxlenght python:str(len(value))"/>
+    <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
+        <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onchange python:'handlelock(\''+name+'\')'" type="checkbox"/>
+        <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
+   </span>
+   <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/treeselect?name='+name+'\', \'\', 550, 470)'" style="margin-left:5px;min-width:14px;padding-left:0px;border-width:0px" type="button" i18n:attributes="title treeselect_titlepopupbutton"><img src="/img/ftree/folder.gif" style="height:14px"/></button>
+</tal:block>
+
+<input metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name; value python:context.value" type="text" class="searchfield"/>
+
+<tal:block metal:define-macro="popup">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+        <title i18n:translate="treeselect_popup_title">TEXT</title>
+        <script type="text/javascript" language="javascript" src="http://code.jquery.com/jquery-latest.js"> </script>
+        <script type="text/javascript">
+            var onj_name = "";
+            function init(name){
+                obj_name = name;
+                o = document.getElementById('value'); 
+                if (window.opener && !window.opener.closed){
+                    o.value = window.opener.document.getElementById(name).value;
+                }
+                o.focus();
+                var currentfolder = o.value;
+            }
+            
+            function save(){
+                value = obj_name;
+                if (window.opener && !window.opener.closed){
+                    window.opener.document.getElementById(value).value=document.getElementById('value').value;
+                }
+                window.close();
+            }
+        </script>
+        
+        <style>
+            body{font-size:12px;margin:5px;font-family:arial;background:#fff url(/img/layout/edit_body.jpg) repeat-x scroll left top}
+            #buttons{float:right;margin-top:14px;backgrond-color:#fff}
+        </style>
+    </head>
+    
+    <body tal:attributes="onload python:'init(\''+name+'\')'"> 
+        <link rel="stylesheet" href="/css/ftree.css" type="text/css" />
+        <script type="text/javascript" src="/js/ftree.js"> </script>
+        <script type="text/javascript"> 
+            function setFolder(){
+                n_node = document.getElementById('Node'+this.id);
+                if (n_node){
+                    t = n_node.getElementsByTagName('A');
+                    $('#value').val($('#value').val().replace(this.id+';', ''));
+                    if (t[0].style.backgroundColor=="" && t[0].className==""){
+                        t[0].style.backgroundColor = "#ccc";
+                        t[0].getElementsByTagName('input')[0].src = imageFolder + checkImage;
+                        t[0].getElementsByTagName('input')[0].backgroundColor = "";
+                        $('#value').val($('#value').val()+this.id+';');
+                        return false;
+                    }else{
+                        t[0].style.backgroundColor = "";
+                        t[0].getElementsByTagName('input')[0].src = imageFolder + uncheckImage;
+                        t[0].getElementsByTagName('input')[0].backgroundColor = "";
+                        return true;
+                    }
+                }
+                return false;
+            }
+        </script>
+        <div style="height:400px; overflow:auto;border:1px solid silver">
+            <ul id="classtree" class="tree">
+                <li tal:attributes="id python:'Node'+basedir.id"><a tal:attributes="id python:str(basedir.id); title python:basedir.getLabel()+' ('+str(basedir.id)+')'" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
+                    <ul>
+                        <li tal:attributes="parentId python:basedir.id" class="spinner.gif"><a href="#" id="node_0"> </a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <input type="hidden" name="value" id="value"/>
+        <p style="text-align:center">
+        <button type="button" onclick="save()" i18n:translate="treeselect_done">TEXT</button>
+        </p>
+        <script type="text/javascript">
+            var currentfolder = '998779';
+            initTree({'idOfFolderTrees': ['classtree'], 'style':'classification', 'multiselect':true});
+        </script>
+    </body>
+</html>
+</tal:block>

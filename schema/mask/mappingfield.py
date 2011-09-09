@@ -61,12 +61,12 @@ class m_mappingfield(Metatype):
     def getMetaHTML(self, parent, index, sub=False, language=None, fieldlist={}):
         return "<mappingfield definition>"
 
-
     def getMetaEditor(self, item, req):
         return "<editor for mappingfield>"
 
     def isFieldType(self):
         return False
+
 
     def replaceVars(self, s, node, attrnode=None, field_value="", options=[], mask=None):
 
@@ -123,7 +123,6 @@ class m_mappingfield(Metatype):
         #except:
         #    pass
         return desc(s)
-
 
 
     def getViewHTML(self, fields, nodes, flags, language="", template_from_caller=None, mask=None):

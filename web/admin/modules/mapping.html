@@ -1,4 +1,4 @@
-﻿<metal:block metal:define-macro="view">
+<metal:block metal:define-macro="view">
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form name="mappingoverview" method="post" enctype="multipart/form-data" tal:attributes="action page">
         <table class="overview">
@@ -194,7 +194,7 @@
             <tr>
                 <td><tal:block i18n:translate="admin_mapping_standardformat">TEXT</tal:block>:</td>
                 <td>
-                    <input tal:attributes="value python:mapping.getStandardFormat()" type="text" name="standardformat" maxlength=50 size="50"/>
+                    <input tal:attributes="value python:mapping.getStandardFormat()" type="text" name="standardformat" maxlength=70 size="50"/>
                     <br/>
                     <tal:block i18n:translate="admin_mapping_standardformat_description">TEXT</tal:block>
                 </td>

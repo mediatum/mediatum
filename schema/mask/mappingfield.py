@@ -3,6 +3,7 @@
 
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
  Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
+ Copyright (C) 2011 Peter Heckl <heckl@ub.tum.de>
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -24,9 +25,11 @@ import core.tree as tree
 from core.tree import Node
 from core.metatype import Metatype
 from utils.utils import esc, desc
+from utils.date import parse_date, format_date
 from schema.schema import getMetadataType
 import export.exportutils as exportutils
 
+ 
 class m_mappingfield(Metatype):
 
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
@@ -67,63 +70,91 @@ class m_mappingfield(Metatype):
     def isFieldType(self):
         return False
 
+    def subStr(self, oriString, argString):
+        grp = argString.split(",")
+        try:
+            ret = int(grp[0])
+        except ValueError:
+            ret = 0
+        try:
+            ret2 = int(grp[1])
+        except ValueError:
+            ret2 = None
+        return oriString[ret:ret2]
+        
+    def replaceStr (self, oriString, argString):
+        m = re.match(r"[ \t]*\'([^\']*)\'[ \t]*,[ \t]*\'([^\']*)\'[ \t]*$", argString)
+        if not m or len(m.groups())!=2:
+            return oriString    # syntax error; don't do anything
+        return oriString.replace(m.groups()[0], m.groups()[1])
 
     def replaceVars(self, s, node, attrnode=None, field_value="", options=[], mask=None):
+        #if attrnode and node:
+        for var in re.findall( r'\[(.+?)\]', s ):
+            if var.startswith("att:field|replacestring"):
+                str = self.replaceStr(attrnode.getName(), var[24:])
+                s = s.replace("[" + var + "]", str)  
+                
+            elif var.startswith("att:field|substring"):
+                str = self.subStr(attrnode.getName(), var[20:])
+                s = s.replace("[" + var + "]", str)
+                
+            elif var.startswith("att:"):
+                if var=="att:field":
+                    s = s.replace("[" + var + "]", attrnode.getName())
+                elif var=="att:id":
+                    s = s.replace("[" + var + "]", str(node.id))
+                elif var=="att:filename":
+                    s = s.replace("[" + var + "]", str(node.getName()))
 
-        #try:
-        if 1:
-            #if attrnode and node:
-            for var in re.findall( r'\[(.+?)\]', s ):
+            elif var=="field":
+                s = s.replace("[field]", field_value)
 
-                if var.startswith("att:"):
-                    if var=="att:field":
-                        s = s.replace("[" + var + "]", attrnode.getName())
-                    elif var=="att:id":
-                        s = s.replace("[" + var + "]", str(node.id))
-                    elif var=="att:filename":
-                        s = s.replace("[" + var + "]", str(node.getName()))
+            elif var==("cmd:getTAL"):
+                s = exportutils.handleCommand('cmd:getTAL', var, s, node, attrnode, field_value, options, mask)
 
-                elif var=="field":
-                    s = s.replace("[field]", field_value)
+            elif var.startswith("value|formatdate"):
+                date_from = format_date(parse_date(node.get(attrnode.getName())), var[18:-1])
+                s = s.replace("[" + var + "]", date_from)
 
-                elif var==("cmd:getTAL"):
-                    s = exportutils.handleCommand('cmd:getTAL', var, s, node, attrnode, field_value, options, mask)
+            elif var.startswith("value|replacestring"):
+                str = self.replaceStr(node.get(attrnode.getName()), var[20:])
+                s = s.replace("["+var+"]", str)
 
-                elif var=="value":
-                    v = getMetadataType(attrnode.getFieldtype()).getFormatedValue(attrnode, node)[1]
-                    if v=="":
-                        v = node.get(attrnode.getName())
+            elif var.startswith("value|substring"):
+                str = self.subStr(node.get(attrnode.getName()), var[16:])
+                s = s.replace("["+var+"]", str)
 
-                    if "t" in options and not v.isdigit():
-                        v = '"' + v + '"'
-                    s = s.replace("[value]", v)
+            elif var=="value":
+                v = getMetadataType(attrnode.getFieldtype()).getFormatedValue(attrnode, node)[1]
+                if v=="":
+                    v = node.get(attrnode.getName())
+                if "t" in options and not v.isdigit():
+                    v = '"' + v + '"'
+                s = s.replace("[value]", v)
 
-                elif var=="ns":
-                    ns = ""
-                    for mapping in attrnode.get("exportmapping").split(";"):
-                        n = tree.getNode(mapping)
-                        if n.getNamespace()!="" and n.getNamespaceUrl()!="":
-                            ns += 'xmlns:' + n.getNamespace() + '="' + n.getNamespaceUrl() + '" '
-                    s = s.replace("[" + var + "]", ns)
+            elif var=="ns":
+                ns = ""
+                for mapping in attrnode.get("exportmapping").split(";"):
+                    n = tree.getNode(mapping)
+                    if n.getNamespace()!="" and n.getNamespaceUrl()!="":
+                        ns += 'xmlns:' + n.getNamespace() + '="' + n.getNamespaceUrl() + '" '
+                s = s.replace("[" + var + "]", ns)
 
-            ret = ""
-            for i in range(0, len(s)):
-                if s[i-1]=='\\':
-                    if s[i]=='r':
-                        ret += "\r"
-                    elif s[i]=='n':
-                        ret += "\n"
-                    elif s[i]=='t':
-                        ret += "\t"
-                elif s[i]=='\\':
-                    pass
-                else:
-                    ret += s[i]
-            s = ret
-        #except:
-        #    pass
-        return desc(s)
-
+        ret = ""
+        for i in range(0, len(s)):
+            if s[i-1]=='\\':
+                if s[i]=='r':
+                    ret += "\r"
+                elif s[i]=='n':
+                    ret += "\n"
+                elif s[i]=='t':
+                    ret += "\t"
+            elif s[i]=='\\':
+                pass
+            else:
+                ret += s[i]
+        return desc(ret)
 
     def getViewHTML(self, fields, nodes, flags, language="", template_from_caller=None, mask=None):
         ret = ""
@@ -161,4 +192,3 @@ class m_mappingfield(Metatype):
             ret += "\r\n" + mask.getMappingFooter()
 
         return self.replaceVars(ret, node, mask)
-

@@ -3,6 +3,7 @@
 
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
  Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
+ Copyright (C) 2011 Peter Heckl <heckl@ub.tum.de>
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -20,46 +21,52 @@
 import config
 from utils.utils import join_paths
 import os
+from os.path import join, getsize
 import stat
 import time
 import thread
 
 class _POFile:
-    def __init__(self,filename): 
+    filedates = {}
+    
+    def __init__(self, filenames): 
         self.lock = thread.allocate_lock()
-        self.filename=filename
-        self.loadFile(filename)
-
-    def loadFile(self,filename):
-        self.filedate=os.stat(self.filename)[stat.ST_MTIME]
-        self.lastchecktime=time.time()
+        self.filenames = filenames
         self.map = {}
+        for fil in self.filenames:
+            self.loadFile(fil)
+
+    def loadFile(self, filename):
+        self.filedates[filename] = os.stat(filename)[stat.ST_MTIME]
+        self.lastchecktime = time.time()
+        
         fi = open(filename, "rb")
         id = None
         for line in fi.readlines():
             if line.startswith("msgid"):
                 id = line[5:].strip()
-                if id[0] == '"' and id[-1]=='"':
+                if id[0]=='"' and id[-1]=='"':
                     id = id[1:-1]
             elif line.startswith("msgstr"):
                 text = line[6:].strip()
-                if text[0] == '"' and text[-1]=='"':
+                if text[0]=='"' and text[-1]=='"':
                     text = text[1:-1]
                 self.map[id] = text
         fi.close()
 
-    def getTranslation(self,key):
+    def getTranslation(self, key):
         self.lock.acquire()
         try:
             if self.lastchecktime + 10 < time.time():
                 self.lastchecktime = time.time()
-                if os.stat(self.filename)[stat.ST_MTIME] != self.filedate:
-                    self.loadFile(self.filename)
+                for fil in self.filenames:
+                    if os.stat(fil)[stat.ST_MTIME]!=self.filedates[fil]:
+                        self.loadFile(fil)
         finally:
             self.lock.release()
         return self.map[key]
         
-    def addKeys(self,items):
+    def addKeys(self, items):
         for item in items:
             if item[0] not in self.map.keys():
                 self.map[item[0]] = item[1]
@@ -75,13 +82,16 @@ def translate(key, language=None, request=None):
         return "?"+key+"?"
    
     if language not in lang2po:
-        filename = config.get("i18n."+language)
-        if not filename:
+        plist = []
+        i18dir = os.path.join(config.basedir,"i18n")
+        for root, dirs, files in os.walk(i18dir, topdown=True ):
+            for n in [f for f in files if f.endswith(language+".po")]:
+                plist.append(os.path.join(i18dir, n))
+       
+        if not plist:
             return key
-            
-        items = _POFile(join_paths(config.basedir,config.get("i18n."+language)))
-        
-        lang2po[language] = items
+
+        lang2po[language] = _POFile(plist)
 
     try:
         pofile = lang2po[language]
@@ -128,7 +138,7 @@ def switch_language(req, language):
         raise "Language "+language+" not configured"
     req.session["language"] = language
 
-def t(target,key):
+def t(target, key):
     if type(target) == type(""):
         return translate(key,language=target)
     else:

@@ -459,7 +459,8 @@ def parseEditorData(req,node):
             else:
                 for node in nodes:
                     node.set(name, value)
-
+        else: # value not in request -> remove attribute
+            node.removeAttribute(field.getName())
     return not incorrect
 
 

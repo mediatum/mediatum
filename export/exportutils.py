@@ -24,7 +24,7 @@ import re
 import core.tree as tree
 import core.athana as athana
 
-from utils.utils import esc, u
+from utils.utils import esc, u, u2
 from utils.date import parse_date, format_date
 
 tagpattern = re.compile(r'<[^>]*?>')
@@ -46,8 +46,11 @@ def runTALSnippet(s, context, mask=None):
         footer += mask.get('exportfooter')
 
     to_be_processed = header + xmlns + cutter + s + cutter + footer
-    wr_result = athana.getTALstr(to_be_processed, context, mode='xml')
-    
+    try: # normally only encoding errors
+        wr_result = athana.getTALstr(to_be_processed, context, mode='xml')
+    except: # try with u2 method
+        wr_result = athana.getTALstr(u2(to_be_processed), context, mode='xml')
+
     return wr_result[wr_result.find(cutter)+len(cutter):wr_result.rfind(cutter)]
  
 

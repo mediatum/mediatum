@@ -59,7 +59,7 @@ function mediatum_load(id, limit, sort, query, format, language){
             var url = baseurl+"/services/export/node/"+id+"/allchildren?format=json";
             
             url += query ? "&q="+escape(query) : "";
-            url += (sort.substring(0,1)=="-") ? "&sortfield="+sort.substring(1)+"&sortdirection=down" : "&sortfield="+sort
+            url += "&sortfield="+sort
             url += limit ? "&limit="+limit : "";
             url += format ? "&format="+format : "";
             url += language ? "&lang="+language : "";

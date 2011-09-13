@@ -20,8 +20,6 @@
 
 
 import core.tree as tree
-from core.tree import Node
-
 from schema.schema import getMetaType
 from core.acl import AccessData
 
@@ -36,7 +34,7 @@ def export(req):
     if p[0].isdigit():
         node = tree.getNode(p[0])
     else:
-        raise "node not found"
+        return req.error(404, "Object not found")
         
     if not access.hasAccess(node, "read"):
         req.write(t(req, "permission_denied"))
@@ -44,9 +42,10 @@ def export(req):
         
     mask = getMetaType(node.getSchema()).getMask(p[1])
     if mask:
-
-        req.reply_headers['Content-Type'] = "text/plain; charset=utf-8"
-        req.write(mask.getViewHTML([node], flags=8)) # flags =8 -> export type
+        try:
+            req.reply_headers['Content-Type'] = "text/plain; charset=utf-8"
+            req.write(mask.getViewHTML([node], flags=8)) # flags =8 -> export type
+        except tree.NoSuchNodeError:
+            return req.error(404, "Object not found")
     else:
         req.write("no export mask given")
-

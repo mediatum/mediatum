@@ -70,7 +70,7 @@ class m_mappingfield(Metatype):
     def isFieldType(self):
         return False
 
-    def subStr(self, oriString, argString):
+    def subStr (self, oriString, argString):
         grp = argString.split(",")
         try:
             ret = int(grp[0])
@@ -87,17 +87,17 @@ class m_mappingfield(Metatype):
         if not m or len(m.groups())!=2:
             return oriString    # syntax error; don't do anything
         return oriString.replace(m.groups()[0], m.groups()[1])
-
+        
     def replaceVars(self, s, node, attrnode=None, field_value="", options=[], mask=None):
         #if attrnode and node:
         for var in re.findall( r'\[(.+?)\]', s ):
             if var.startswith("att:field|replacestring"):
-                str = self.replaceStr(attrnode.getName(), var[24:])
-                s = s.replace("[" + var + "]", str)  
+                s2 = self.replaceStr(attrnode.getName(), var[24:])
+                s = s.replace("[" + var + "]", s2)  
                 
             elif var.startswith("att:field|substring"):
-                str = self.subStr(attrnode.getName(), var[20:])
-                s = s.replace("[" + var + "]", str)
+                s2 = self.subStr(attrnode.getName(), var[20:])
+                s = s.replace("[" + var + "]", s2)
                 
             elif var.startswith("att:"):
                 if var=="att:field":
@@ -118,12 +118,12 @@ class m_mappingfield(Metatype):
                 s = s.replace("[" + var + "]", date_from)
 
             elif var.startswith("value|replacestring"):
-                str = self.replaceStr(node.get(attrnode.getName()), var[20:])
-                s = s.replace("["+var+"]", str)
+                s2 = self.replaceStr(node.get(attrnode.getName()), var[20:])
+                s = s.replace("["+var+"]", s2)
 
             elif var.startswith("value|substring"):
-                str = self.subStr(node.get(attrnode.getName()), var[16:])
-                s = s.replace("["+var+"]", str)
+                s2 = self.subStr(node.get(attrnode.getName()), var[16:])
+                s = s.replace("["+var+"]", s2)
 
             elif var=="value":
                 v = getMetadataType(attrnode.getFieldtype()).getFormatedValue(attrnode, node)[1]

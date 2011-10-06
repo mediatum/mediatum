@@ -1,6 +1,6 @@
 
 <div tal:repeat="file python:files" class="preview_list" onmouseover="this.style.backgroundColor='#cccccc'" onmouseout="this.style.backgroundColor='white'">
-    <div style="float:left; width:128px; height:128px; margin: 3px;overflow:hide">
+    <div style="float:left; width:128px; height:128px; margin: 3px;overflow:hidden">
         <a tal:attributes="href python:file.getLink()" tal:content="raw python:file.node.show_node_image()" target="_parent"/>
     </div>
     <p tal:content="python:'['+str(file.nr+1)+'/'+str(file.num)+']'" class="docnum"/>

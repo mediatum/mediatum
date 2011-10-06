@@ -21,16 +21,48 @@ import core.athana as athana
 import core.tree as tree
 import os
 import re
+import sys
+
+if sys.version[0:3] < '2.6':
+    import simplejson as json
+else:
+    import json
 
 import core.acl 
 import core.config as config
+import core.users as users
+import core.xmlnode as xmlnode
 from utils.utils import *
 from core.acl import AccessData
+from core.metatype import Context
+from core.translation import lang
 from web.frontend.frame import getNavigationFrame
 from web.frontend.content import getContentArea, ContentNode
-import core.xmlnode as xmlnode
+from schema.schema import getMetadataType
+
+
+def handle_json_request(req):
+    s = []
+    if req.params.get("cmd")=="get_list_smi":
+        searchmaskitem_id = req.params.get("searchmaskitem_id")
+        f = None
+        g = None
+        if searchmaskitem_id and searchmaskitem_id!="full":
+            f = tree.getNode(searchmaskitem_id).getFirstField()
+        if not f: # All Metadata
+            f = g = getMetadataType("text")
+        s = [f.getSearchHTML(Context(g, value=req.params.get("query_field_value"), width=174, name="query"+str(req.params.get("fieldno")), 
+                               language=lang(req), collection=tree.getNode(req.params.get("collection_id")), 
+                               user=users.getUserFromRequest(req), ip=req.ip))]
+    req.write(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
+    return
 
 def display(req):
+
+    if "jsonrequest" in req.params:
+        handle_json_request(req)
+        return   
+
     req.session["area"] = ""
     content = getContentArea(req)
     content.feedback(req)
@@ -39,7 +71,6 @@ def display(req):
         req.params['head_meta'] = mask.getViewHTML([content.actNode()], flags=8)
     except:
         req.params['head_meta'] = ''
-    
     navframe = getNavigationFrame(req)
     navframe.feedback(req)
 

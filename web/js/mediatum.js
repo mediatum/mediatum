@@ -1,4 +1,4 @@
-﻿var lastmark = "";
+var lastmark = "";
 var lasttime = 0;
     
 function reloadPage()
@@ -61,17 +61,41 @@ function openPopup(url, name, width, height, scroll)
 /* extended search start */
 function chg()
 {
-    document.xsearch.submittype.value = "change";
-    document.xsearch.submit();
+    var fieldno = $("*:focus").attr("name").substr(5,$("*:focus").attr("name").length-1)
+    var sel_index = document.xsearch["field"+fieldno].selectedIndex;
+    var searchmaskitem_id = document.xsearch["field"+fieldno][sel_index].value;
+    var query_field_value = document.xsearch["query"+fieldno].value;
+    var collection_id = $("input[name=collection]").val();
+    
+    $.getJSON("/node?jsoncallback=?",
+    {
+        jsonrequest: "True",
+        cmd: "get_list_smi",
+        fieldno: fieldno,
+        searchmaskitem_id: searchmaskitem_id,
+        collection_id: collection_id,
+        query_field_value: query_field_value,
+        format: "json"
+    },
+    function(data) { 
+        $('#query'+fieldno).replaceWith(data[0]);
+    })
+
+}
+
+function get_smi_id(fieldno)
+{
+    return document.xsearch["field"+fieldno].selectedIndex;
 }
 
 function clearFields()
 {
-    document.xsearch.field1.selectedIndex = 0;
-    document.xsearch.field2.selectedIndex = 0;
-    document.xsearch.field3.selectedIndex = 0;
 
-    for (i=1; i<4; i++){
+    for (i=1; i<11; i++){
+        if (( $("input[name=searchmode]").val() == "extended") && (i == 4)) {
+            break;
+        }    
+        document.xsearch["field"+i].selectedIndex = 0;
         obj = document.getElementById("query"+i);
         if (obj != null){
             if (obj.type == "text"){
@@ -86,7 +110,8 @@ function clearFields()
              obj = document.getElementById("query"+i+"-to").value = "";
         }
     }
-    chg();
+    document.xsearch.submittype.value = "change";
+    document.xsearch.submit();
 }
 /* extended search end */
 

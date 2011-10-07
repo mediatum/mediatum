@@ -331,7 +331,7 @@ def get_archived(req):
 def get_root(req):
     filename = config.basedir+"/web/root"+req.path
     if os.path.isfile(filename):
-        return req.sendFile(filename, "text/plain")
+        return req.sendFile(filename, getMimeType(filename)[0])
     else:
         return 404
 

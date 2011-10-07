@@ -146,6 +146,32 @@
                 
                 </td>
             </tr>
+            
+            <tr>
+                <td i18n:translate="admin_usergroup_metadata">TEXT</td>
+                <td>
+                    <table>
+                        <tr>
+                            <td align="left" valign="top">
+                                <select tal:content="raw valmeta_left" tal:attributes="name python:'leftmodulemeta'; ondblclick python:'moveRight(document.editgroup.leftmodulemeta,document.editgroup.rightmodulemeta)'" style="width:320px" size="6" multiple="multiple">
+                                </select>
+                            </td>
+                            <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
+                                <input tal:attributes="onclick python:'moveLeft(document.editgroup.leftmodulemeta,document.editgroup.rightmodulemeta)'" type="button" value="<<"/>
+                                <br>
+                                <input tal:attributes="onclick python:'moveRight(document.editgroup.leftmodulemeta,document.editgroup.rightmodulemeta)'" type="button" value=">>"/>
+                            </td>
+                            <td align="left" valign="top">
+                                <select tal:content="raw valmeta_right" tal:attributes="name python:'rightmodulemeta';  ondblclick python:'moveLeft(document.editgroup.leftmodulemeta,document.editgroup.rightmodulemeta)'" style="width:320px" size="6" multiple="multiple">
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                
+                </td>
+            </tr>
+            
+            
             <tr>
                 <td>&nbsp;</td>
                 <td>
@@ -177,7 +203,7 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" type="submit" name="submit" value="submit" onclick="mark(document.editgroup.leftmodule)">TEXT</button>&nbsp;&nbsp;
+                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" type="submit" name="submit" value="submit" onclick="mark(document.editgroup.leftmodule);mark(document.editgroup.leftmodulemeta)">TEXT</button>&nbsp;&nbsp;
                     <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
                 </td>
             </tr>

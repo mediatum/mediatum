@@ -3,6 +3,7 @@
 
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
  Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
+ Copyright (C) 2011 Peter Heckl <heckl@ub.tum.de>
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -57,7 +58,40 @@ def create_group(name,description="",option=""):
 """ get number of users containing given group """
 def getNumUsers(grp):
     return len(getGroup(grp).getChildren())
+   
+def getMetadata(grp):
+    results = []
+    if grp.name=="":
+        return results
+    for mdt in tree.getRoot("metadatatypes").getChildren():
+        acc = mdt.getAccess("read")
+        if acc:
+            if grp.name in acc.split(","):
+                results.append(mdt.name)
+    return results
 
+def saveGroupMetadata(group, metaList):
+    for meta in tree.getRoot("metadatatypes").getChildren():
+        acc = meta.getAccess("read")
+        if not acc:
+            accList = []
+        else:
+            accList = acc.split(",")
+        if meta.name in metaList:
+            if group not in accList:
+                if type(accList)==type([]):
+                    if group!="":
+                        accList.append(group)
+                        accList = filter(None, accList)
+                        meta.setAccess("read", ",".join(accList))
+                else:
+                    print "Type error, no list: ", type(accList)
+        else:    
+            if group in accList:
+                accList.remove(group)
+                meta.setAccess("read", ",".join(accList))
+                    
+    
 """ delete given group """
 def deleteGroup(grp):
     # remove users from group

@@ -3,6 +3,7 @@
 
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
  Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
+ Copyright (C) 2011 Peter Heckl <heckl@ub.tum.de>
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -26,9 +27,10 @@ import core.usergroups as usergroups
 import core.config as config
 import re
 import os
+from schema.schema import getMetaType
 
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
-from core.usergroups import groupoption, loadGroupsFromDB, getGroup, existGroup, create_group, updateAclRule, deleteGroup, getNumUsers
+from core.usergroups import groupoption, loadGroupsFromDB, getGroup, existGroup, create_group, updateAclRule, deleteGroup, getNumUsers, getMetadata, saveGroupMetadata
 from core.translation import t, lang
 from utils.utils import splitpath, u
 
@@ -81,6 +83,7 @@ def validate(req, op):
                         updateAclRule(req.params.get("groupname",""), req.params.get("groupname",""))
                     group = create_group(req.params.get("groupname",""), req.params.get("description",""), str(_option))
                     group.setHideEdit(req.params.get("leftmodule","").strip())
+                    saveGroupMetadata(group.name, req.params.get("leftmodulemeta","").strip())
 
             elif req.params.get("form_op")=="save_edit":
                 # save changed values
@@ -93,6 +96,7 @@ def validate(req, op):
                 group.setDescription(req.params.get("description",""))
                 group.setOption(str(_option))
                 group.setHideEdit(req.params.get("leftmodule","").strip())
+                saveGroupMetadata(groupname, req.params.get("leftmodulemeta","").split(";"))
 
         return view(req)
 
@@ -176,6 +180,7 @@ def editGroup_mask(req, id, err=0):
         group.setName(req.params.get("groupname",""))
         group.setDescription(req.params.get("description",""))
         group.setHideEdit(req.params.get("leftmodule","").split(';'))
+        
         group.setOption(option)
 
     v = getAdminStdVars(req)
@@ -185,6 +190,8 @@ def editGroup_mask(req, id, err=0):
     v["modulenames"] = getEditModuleNames()
     v["val_left"] = buildRawModuleLeft(group, lang(req))
     v["val_right"] = buildRawModuleRight(group, lang(req))
+    v["valmeta_left"] = buildRawModuleMetaLeft(group)
+    v["valmeta_right"] = buildRawModuleMetaRight(group)
     v["emails"] = ', '.join([u.get('email') for u in group.getChildren()])
     v["actpage"] = req.params.get("actpage")
     v["newusergroup"] = newusergroup
@@ -219,6 +226,7 @@ def buildRawModuleLeft(group, language):
     hidelist.sort(lambda x, y: cmp(t(language,'e_'+x), t(language,'e_'+y)))
     for hide in hidelist:
         ret += '<option value="%s">%s</option>' %(hide, t(language,'e_'+hide, ))
+        
     return ret
     
 def buildRawModuleRight(group, language):
@@ -230,3 +238,23 @@ def buildRawModuleRight(group, language):
         if mod not in hide:
             ret += '<option value="%s">%s</option>' %(mod, t(language,'e_'+mod, ))
     return ret
+
+
+def buildRawModuleMetaLeft(group):
+    ret = ""
+    metadatanames = getMetadata(group)
+    metadatanames.sort(lambda x, y: cmp(x.lower(), y.lower()))
+    for met in metadatanames:
+        ret += '<option value="%s">%s</option>' %(met, met)
+    return ret
+    
+def buildRawModuleMetaRight(group):
+    ret = ""
+    mdts = [mdt.name for mdt in tree.getRoot("metadatatypes").getChildren()]
+    mdts.sort(lambda x, y: cmp(x.lower(), y.lower()))
+    assignedList = getMetadata(group)
+    for mod in mdts:
+        if mod not in assignedList:
+            ret += '<option value="%s">%s</option>' %(mod, mod)
+    return ret
+

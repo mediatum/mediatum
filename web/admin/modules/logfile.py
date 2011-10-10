@@ -41,19 +41,6 @@ class LogFile:
     def getSize(self):
         return self.size
 
-
-
-def getLogFiles_old():
-    global config
-    f = [LogFile(str("admin_log_everything"), str(config.get("logging.file.everything")))]
-    f += [LogFile("admin_log_database", config.get("logging.file.database"))]
-    f += [LogFile("admin_log_backend", config.get("logging.file.backend"))]
-    f += [LogFile("admin_log_frontend", config.get("logging.file.frontend"))]
-    f += [LogFile("admin_log_editor", config.get("logging.file.editor"))]
-    f += [LogFile("admin_log_user", config.get("logging.file.usertracing"))]
-    f += [LogFile("admin_log_athana", config.get("logging.file.athana"))]
-    return f
-
 def getLogFiles():
     f = []
     logtypes = dlogfiles.keys()
@@ -64,10 +51,8 @@ def getLogFiles():
 
 filelist = getLogFiles()
 
-
 def validate(req, op):
     return view(req, op)
-
 
 def view(req, op):
     global filelist
@@ -109,7 +94,3 @@ def getFileContent(path):
         return _text
     except:
         return ""
-
-
-    
-

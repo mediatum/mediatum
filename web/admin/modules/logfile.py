@@ -22,6 +22,7 @@ import core.config as config
 import os
 
 from utils.utils import format_filesize, get_filesize
+from utils.log import dlogfiles
 from web.admin.adminutils import Overview,getAdminStdVars
 
 def getInformation():
@@ -42,7 +43,7 @@ class LogFile:
 
 
 
-def getLogFiles():
+def getLogFiles_old():
     global config
     f = [LogFile(str("admin_log_everything"), str(config.get("logging.file.everything")))]
     f += [LogFile("admin_log_database", config.get("logging.file.database"))]
@@ -51,6 +52,14 @@ def getLogFiles():
     f += [LogFile("admin_log_editor", config.get("logging.file.editor"))]
     f += [LogFile("admin_log_user", config.get("logging.file.usertracing"))]
     f += [LogFile("admin_log_athana", config.get("logging.file.athana"))]
+    return f
+
+def getLogFiles():
+    f = []
+    logtypes = dlogfiles.keys()
+    logtypes.sort()
+    for name in logtypes:
+        f += [LogFile("admin_log_"+name, dlogfiles[name]['filename'])]
     return f
 
 filelist = getLogFiles()

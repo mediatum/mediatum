@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.40 2011/09/06 09:38:11 seiferta Exp $'
+RCS_ID =  '$Id: athana.py,v 1.41 2011/10/10 15:07:00 wneudenberger Exp $'
 
 import sys
 
@@ -3531,14 +3531,29 @@ class file_logger:
     def debug(self, message):
         self.log(message)
 
-class unresolving_logger:
+class unresolving_logger: #wn
+    "Just in case you don't want to resolve"
+    def __init__ (self, logger):
+        self.logger = logger
+        if self.logger.__class__ == logging.Logger:
+            self.log_func = lambda msg: self.logger.log(logging.INFO, msg)
+        else:
+            self.log_func = logger.log    
+
+    #def log (self, ip, message):
+    #    if self.logger:
+    #        self.logger.log ('%s:%s' % (ip, message))
+
+    def log (self, ip, message):
+        self.log_func ('%s:%s' % (ip, message))
+    
+class unresolving_logger_orig:
     "Just in case you don't want to resolve"
     def __init__ (self, logger):
         self.logger = logger
 
     def log (self, ip, message):
         self.logger.log ('%s:%s' % (ip, message))
-
 
 def strip_eol (line):
     while line and line[-1] in '\r\n':
@@ -3576,7 +3591,7 @@ class http_request:
         (self.channel, self.request,
          self.command, self.uri, self.version,
          self.header) = args
-
+         
         self.outgoing = []
         self.reply_headers = {
                 'Server'        : 'Athana/%s' % ATHANA_VERSION,
@@ -5584,6 +5599,10 @@ class ftp_server (asyncore.dispatcher):
             logger_object = sys.stdout
 
         self.logger = unresolving_logger (logger_object)
+        
+        # wn
+        if logger_object.__class__ in [logging.Logger, logging_logger]:
+            self.log_info = self.logger.log_func
 
         self.log_info('FTP server started at %s, Port: %d\n\tAuthorizer: %s, Hostname: %s\n' % (
                 time.ctime(time.time()),
@@ -6654,6 +6673,9 @@ class ftp_authorizer:
 class logging_logger:
     def __init__(self,name="athana"):
         self.logger = logging.getLogger(name)
+        self.log_info = self.log
+        self.log_debug = self.debug
+        self.log_error = self.error
     def log (self, message):
         self.logger.info(message.rstrip())
     def debug (self, message):
@@ -6662,6 +6684,8 @@ class logging_logger:
         self.logger.info(message.rstrip())
     def error (self, message):
         self.logger.error(message.rstrip())
+
+        
 
 lg = logging_logger()
 lgerr = logging_logger("errors")
@@ -6973,13 +6997,21 @@ def run(port=8081, z3950_port=None):
     ph = AthanaHandler()
     hs = http_server ('', port, logger_object = lg)
     hs.install_handler (ph)
-
+    
+    #log_ftp = logging.getLogger('ftp') #wn
+    
     if len(ftphandlers) > 0:
-        ftp = ftp_server (ftp_authorizer(), port=ftphandlers[0].getPort(), logger_object=lg)
+        #ftp = ftp_server (ftp_authorizer(), port=ftphandlers[0].getPort(), logger_object=lg)
+        log_ftp = logging_logger("ftp") #wn
+        ftp = ftp_server (ftp_authorizer(), port=ftphandlers[0].getPort(), logger_object=log_ftp)
         
+    #log_z3950 = logging.getLogger('z3950') #wn
+    
     if z3950_port is not None:
         import athana_z3950
-        z3950_server = athana_z3950.z3950_server(port=z3950_port, logger_object=lg)
+        #z3950_server = athana_z3950.z3950_server(port=z3950_port, logger_object=lg)
+        log_z3950 = logging_logger("z3950") #wn
+        z3950_server = athana_z3950.z3950_server(port=z3950_port, logger_object=log_z3950)
 
     if multithreading_enabled: 
         global threadlist

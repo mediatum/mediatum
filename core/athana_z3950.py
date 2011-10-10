@@ -166,6 +166,7 @@ class AsyncPyZ3950Server(z3950.Server):
             raise
         self._log_debug('%r', parsed_query)
         node_ids = search_nodes(parsed_query, self._log)
+        #node_ids = search_nodes('1004 = "Kramm, Matthias"', self._log)
         self._log_debug('IDs returned for Z3950 query: %s', len(node_ids))
         return node_ids
 
@@ -223,6 +224,7 @@ class AsyncPyZ3950Server(z3950.Server):
 # Query support
 
 def search_nodes(query, log=dummy_log, mapping_prefix='Z3950_search_'):
+#def search_nodes(query, log=dummy_log, mapping_prefix='marc21_'):
     """
     Search nodes that match the query.
 
@@ -236,6 +238,7 @@ def search_nodes(query, log=dummy_log, mapping_prefix='Z3950_search_'):
     # find root nodes and their mappings
     roots_and_mappings = []
     for mapping_node in mapping.getMappings():
+        #print [x.getName() for x in mapping.getMappings()]
         name = mapping_node.getName()
         if not name.startswith(mapping_prefix):
             continue
@@ -254,6 +257,7 @@ def search_nodes(query, log=dummy_log, mapping_prefix='Z3950_search_'):
 
     log('debug', 'using mapping roots: %s' % (
         [ (n1.id, n2.id) for (n1,n2) in roots_and_mappings ],))
+        
     # run one search per root node
     node_ids = []
     for root_node, mapping_node in roots_and_mappings:
@@ -455,11 +459,14 @@ class z3950_server(asyncore.dispatcher):
             logger_object = sys.stdout
 
         self.logger = unresolving_logger (logger_object)
+        
+        self.log_info = self.logger.log_func        
 
         self.log_info('Z3950 server started at %s, Port: %d\n' % (
                 time.ctime(time.time()),
                 self.port)
                 )
+                
 
     def handle_accept(self):
         conn, addr = self.accept()

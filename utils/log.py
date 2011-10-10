@@ -24,14 +24,57 @@ import logging.handlers
 import sys
 import traceback
 
-LOGTYPES = ["database","backend","frontend","editor","usertracing","athana","errors","services","searchindex"]
+# additional_handlers= []: logs only to own file; ['screen', 'everything']: logs to own file, stdout, everything.log
+DEFAULT_ADDITIONAL_HANDLERS = [] 
+DEFAULT_LOGLEVEL = logging.DEBUG
+DEFAULT_LOGFORMAT = '%(asctime)s %(levelname)s %(message)s'
+
+def cfg(logtype, 
+        additional_handlers = DEFAULT_ADDITIONAL_HANDLERS,
+        logformat = DEFAULT_LOGFORMAT,
+        loglevel = DEFAULT_LOGLEVEL):
+            
+    d = {}
+    d['logtype'] = logtype
+    d['additional_handlers'] = additional_handlers
+    d['logformat'] = logformat
+    d['loglevel'] = loglevel
+    
+    return [logtype, d]
+
+# LOGTYPES = ["database","backend","frontend","editor","usertracing","athana","errors","services","searchindex", "ftp","z3950"]
+
+LOGTYPES = [
+             cfg("database"),
+             cfg("backend"),
+             cfg("frontend"),
+             cfg("editor", ["screen"]),
+             cfg("usertracing", ["screen"]),
+             cfg("athana", ["screen", "everything"]),
+             cfg("errors", ["screen", "everything"]),
+             cfg("services", ["screen"]),
+             cfg("searchindex"),
+             cfg("ftp", ["screen"]),
+             cfg("z3950", ["screen"], logformat='%(asctime)s %(message)s'), 
+           ]
+
+# path's will be required in web/admin/modules/logfile.py
+dlogfiles = {}
+
+import re
+class PatternFilter(logging.Filter):
+    def __init__(self, pattern):
+        self.pattern = pattern
+    def filter(self, record):
+        return re.match(self.pattern, record.getMessage())
 
 def initialize():
     log_screen = logging.getLogger('screen')
     l = logging.StreamHandler(sys.stdout)
     log_screen.handlers = []
     log_screen.addHandler(l)
-    log_screen.setLevel(logging.INFO)
+    log_screen.setLevel(logging.DEBUG)
+    
 
     log_everything = logging.getLogger('everything')
     log_everything.handlers = []
@@ -46,6 +89,8 @@ def initialize():
         filename = filepath + 'everything.log'
     if not filepath and filename:
         filepath = filename[:filename.rfind("/")+1]
+        
+    dlogfiles['everything'] = {'path':filepath, 'filename':filename}
     
     if filename:
         if not os.path.exists(filename[:filename.rfind("/")+1]):
@@ -54,10 +99,10 @@ def initialize():
         l.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
         log_everything.addHandler(l)
 
-    log_everything.addHandler(log_screen)
+    #log_everything.addHandler(log_screen)
     log_everything.setLevel(logging.DEBUG)
 
-    for name in LOGTYPES:
+    for name, cfgDict in LOGTYPES:
         log = logging.getLogger(name)
         log.handlers = []
         filename = core.config.get("logging.file."+name, None)
@@ -68,13 +113,17 @@ def initialize():
             if not os.path.exists(filename[:filename.rfind("/")+1]):
                 os.mkdir(filename[:filename.rfind("/")+1])
             l = logging.handlers.RotatingFileHandler(filename, maxBytes=33554432, backupCount=20)
-            l.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
+            l.setFormatter(logging.Formatter(cfgDict["logformat"]))
             log.addHandler(l)
-            log.addHandler(log_everything)
-            log.setLevel(logging.DEBUG)
+            if "screen" in cfgDict["additional_handlers"]:
+                log.addHandler(log_screen)
+            if "everything" in cfgDict["additional_handlers"]:
+                log.addHandler(log_everything)
+            log.setLevel(cfgDict["loglevel"])
+            
+        dlogfiles[name] = {'path':filepath, 'filename':filename}
 
     logging.getLogger('backend').info('logging initialized (%s)' %(filepath))
-
     
 def logException(message=None):
     errlog = logging.getLogger('errors')

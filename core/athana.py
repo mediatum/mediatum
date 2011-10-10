@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.41 2011/10/10 15:07:00 wneudenberger Exp $'
+RCS_ID =  '$Id: athana.py,v 1.42 2011/10/10 15:34:39 wneudenberger Exp $'
 
 import sys
 

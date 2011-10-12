@@ -3,6 +3,7 @@
 
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
  Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
+ Copyright (C) 2011 Werner Neudenberger <neudenberger@ub.tum.de> 
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -42,8 +43,6 @@ def cfg(logtype,
     
     return [logtype, d]
 
-# LOGTYPES = ["database","backend","frontend","editor","usertracing","athana","errors","services","searchindex", "ftp","z3950"]
-
 LOGTYPES = [
              cfg("database"),
              cfg("backend"),
@@ -55,6 +54,7 @@ LOGTYPES = [
              cfg("services", ["screen"]),
              cfg("searchindex"),
              cfg("ftp", ["screen"]),
+             cfg("oai", ["screen"]),
              cfg("z3950", ["screen"], logformat='%(asctime)s %(message)s'), 
            ]
 

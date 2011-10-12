@@ -184,6 +184,7 @@
                 }
             </script>
             <tal:block tal:replace="script"/>
+            
         </head>
         <body>
             <!--content start-->
@@ -193,7 +194,7 @@
                 <a tal:attributes="href python:'/print/'+str(node.id)" target="_blank"><img src="/img/print_icon.gif"/></a>
                 &nbsp;&nbsp;
             </p>
-            <div style="margin:5px;border:1px solid silver;padding: 4px;overflow-x:auto;">
+            <div style="margin:5px;border:1px solid silver;padding: 4px">
                 <tal:block tal:condition="python: notdirectory==1">
                     <script>
                         function Thumb2Window(id){
@@ -204,15 +205,17 @@
                     
                     <b i18n:translate="edit_taboverview_header">TEXT</b>
                     <br/>
-                    <table border="0">
-                        <tr>
-                            <td tal:repeat="item items" align="center">
-                                <a tal:condition="python:item[0]!=''" tal:attributes="href python:item[0]" tal:content="raw python:item[1]">TEXT</a>
-                                <tal:block tal:condition="python:item[0]==''" tal:replace="raw python:item[1]"/>
-                            </td>
-                            <td width="20">&nbsp;</td>
-                        </tr>
-                    </table>
+                    <div style="overflow-x:auto">
+                        <table border="0">
+                            <tr>
+                                <td tal:repeat="item items" align="center">
+                                    <a tal:condition="python:item[0]!=''" tal:attributes="href python:item[0]" tal:content="raw python:item[1]">TEXT</a>
+                                    <tal:block tal:condition="python:item[0]==''" tal:replace="raw python:item[1]"/>
+                                </td>
+                                <td width="20">&nbsp;</td>
+                            </tr>
+                        </table>
+                    </div>
                 </tal:block>
                 
                 <tal:block tal:condition="python:notdirectory==0">

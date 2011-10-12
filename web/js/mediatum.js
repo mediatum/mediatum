@@ -67,6 +67,8 @@ function chg()
     var query_field_value = document.xsearch["query"+fieldno].value;
     var collection_id = $("input[name=collection]").val();
     
+    $('#query'+fieldno).attr("disabled", true);
+    
     $.getJSON("/node?jsoncallback=?",
     {
         jsonrequest: "True",
@@ -79,6 +81,7 @@ function chg()
     },
     function(data) { 
         $('#query'+fieldno).replaceWith(data[0]);
+        $('#query'+fieldno).removeAttr("disabled");
     })
 
 }

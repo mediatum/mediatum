@@ -2,8 +2,9 @@
     <script type="text/javascript" src="/ckeditor/ckeditor.js"> </script>
     <textarea class="htmlmemo_text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name name; id name; onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:'width:'+str(width-20)+'px'" rows="4">
 <tal:block tal:replace="python:value"/></textarea>
+    <tal:block tal:content="raw python:'<script> var _editor = \''+name+'\';</script>'"/>
     <script type="text/javascript">
-        var editor = CKEDITOR.replace( 'htmlmemo' , {
+        var editor = CKEDITOR.replace( _editor , {
             on :
                 { instanceReady : function( ev ){
                     this.dataProcessor.writer.setRules( 'p', {indent : false, breakBeforeOpen : true, breakAfterOpen : false, breakBeforeClose : false, breakAfterClose : true});

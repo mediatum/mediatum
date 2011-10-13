@@ -1,0 +1,37 @@
+<tal:block metal:define-macro="editorfield">
+    <script type="text/javascript" src="/ckeditor/ckeditor.js"> </script>
+    <textarea class="htmlmemo_text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name name; id name; onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:'width:'+str(width-20)+'px'" rows="4">
+<tal:block tal:replace="python:value"/></textarea>
+    <script type="text/javascript">
+        var editor = CKEDITOR.replace( 'htmlmemo' , {
+            on :
+                { instanceReady : function( ev ){
+                    this.dataProcessor.writer.setRules( 'p', {indent : false, breakBeforeOpen : true, breakAfterOpen : false, breakBeforeClose : false, breakAfterClose : true});
+                    }
+                },
+            skin: 'office2003', height: '300px', width: '385px', resize_maxWidth: '385px', customConfig : 'htmlmemoconfig.js',});
+    </script>
+    <div tal:attributes="style python:'width:'+str(width)+'px'">
+        <div tal:condition="python:field.getValues()!=''" style="text-align:right;padding-right:7px; margin-bottom:7px">
+            <small>
+                <span tal:attributes="id python:'number'+str(name)" tal:content="python:int(field.getValues())-len(value)"/> 
+                <span i18n:translate="editor_htmlmemo_label">TEXT</span>
+            </small>
+        </div>
+    </div>
+    <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
+        <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/>
+        <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
+   </span>
+</tal:block>
+
+
+<tal:block metal:define-macro="searchfield">
+    <input tal:attributes="name python:context.name; id python:context.name; value python:context.value" type="text" style="width:174px;" class="searchfield"/>
+</tal:block>
+
+
+<div metal:define-macro="maskeditor" style="display:none" name="div_memo" id="div_memo">
+    <div class="label" i18n:translate="mask_edit_max_length">TEXT</div>
+    <input tal:attributes="value value" type="text" name="htmlmemo_value" rows="4" style="width:250px"/>
+</div>

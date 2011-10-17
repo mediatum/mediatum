@@ -25,7 +25,6 @@ from utils.utils import formatException
 import core.config as config
 import logging
 import utils.mail as mail
-log = logging.getLogger('backend')
 
 class MailError(Exception):
     def __init__(self, value):
@@ -70,7 +69,16 @@ class WorkflowStep_SendEmail(WorkflowStep):
         link2 = "http://"+config.get("host.name")+"/node?id="+node.id
         try:
             node.set("mailtmp.from", getTALtext(self.get("from"), {"node":node, "link":link, "publiclink":link2}).replace("\n","").strip())
-            node.set("mailtmp.to", getTALtext(self.get("email"), {"node":node, "link":link, "publiclink":link2}).replace("\n","").strip())
+            
+            if "@" in self.get('email'):
+                print "use given email", self.get("email")
+                node.set("mailtmp.to", getTALtext(self.get("email"), {"node":node, "link":link, "publiclink":link2}).replace("\n","").strip())
+            elif "@" in node.get(self.get("email")):
+                print "use email address from attribute", self.get("email"), node.get(self.get("email"))
+                node.set("mailtmp.to", getTALtext(node.get(self.get("email")), {"node":node, "link":link, "publiclink":link2}).replace("\n","").strip())
+            
+            
+            
             node.set("mailtmp.subject", getTALtext(self.get("subject"), {"node":node, "link":link, "publiclink":link2}).replace("\n","").strip())
             node.set("mailtmp.text", getTALtext(self.get("text"), {"node":node, "link":link, "publiclink":link2}))
         except:
@@ -144,3 +152,4 @@ class WorkflowStep_SendEmail(WorkflowStep):
         ret.append(field)
 
         return ret
+

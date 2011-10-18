@@ -353,10 +353,12 @@ def deleteUser(user, usertype="intern"):
     users.removeChild(user)
                 
     for c in tree.getRoot("home").getChildren():
-        if c.getAccess("read").find("{user "+user.getName()+"}")>=0 and c.getAccess("write").find("{user "+user.getName()+"}")>=0:
-            tree.getRoot("home").removeChild(c)
-            break
-        
+        try:
+            if c and c.getAccess("read").find("{user "+user.getName()+"}")>=0 and c.getAccess("write").find("{user "+user.getName()+"}")>=0:
+                tree.getRoot("home").removeChild(c)
+                break
+        except:
+            pass
 
 
 """ check if user with given name still existing in db """

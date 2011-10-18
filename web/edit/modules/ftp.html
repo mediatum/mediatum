@@ -46,17 +46,12 @@
     
     <script>
         function selectall(obj){
-            elementCount = document.all('filecheck').length;
-            if (elementCount){
-                for (i=0; i<elementCount; i++) {
-                    document.all('filecheck', i).checked = obj.checked;
+            $(':checkbox').each(function() { 
+                if(this.id=='filecheck'){
+                    this.checked = obj.checked;
                 }
-            }else{
-                document.getElementById('filecheck').checked = obj.checked;
-            }
-
+            });
         }
-    
     </script>
     
     <p tal:condition="python:len(files)==0" i18n:translate="edit_ftp_nofiles" class="noitem">TEXT</p>
@@ -65,21 +60,22 @@
     
     <form method="post" tal:condition="python:len(files)>0">
         <table id="ftptable" cellpadding="0px" cellspacing="0px">
-            <tr><th colspan="6" class="header" i18n:translate="edit_ftp_files">TEXT</th></tr>
+            <tr><th colspan="8" class="header" i18n:translate="edit_ftp_files">TEXT</th></tr>
             <tr>
                 <th>
-                    <input i18n:attributes="title edit_ftp_chooseall_title" type="checkbox" onclick="selectall(this)"/>
+                    <input i18n:attributes="title edit_ftp_chooseall_title" type="checkbox" onclick="selectall(this)" id="select-all" name="select-all"/>
                 </th>
                 <th i18n:translate="edit_ftp_type">TEXT</th>
                 <th i18n:translate="edit_ftp_size">TEXT</th>
                 <th i18n:translate="edit_ftp_mimetype">TEXT</th>
                 <th i18n:translate="edit_ftp_location">TEXT</th>
-                <th i18n:translate="edit_ftp_options">TEXT</th>
+                <th i18n:translate="edit_ftp_options" colspan="3">TEXT</th>
              </tr>
 
             <tr tal:repeat="file python:files">
                 <td>
-                    <input type="checkbox" tal:attributes="value python:file.type+'|'+file.getName()" id="filecheck" name="selfiles"/>
+                    <input tal:condition="python: file.type in schemes" type="checkbox" tal:attributes="value python:file.type+'|'+file.getName()" id="filecheck" name="selfiles"/>
+                    &nbsp;
                 </td>
                 <td tal:content="python:file.type"/>
                 <td tal:content="python:file.getSize()"/>
@@ -87,25 +83,27 @@
                 <td>
                     <a tal:attributes="href python:'/file/'+str(node.id)+'/'+file.getName()" tal:content="python:file.getName()" i18n:attributes="title edit_ftp_open_title" target="filewindow"/>
                 </td>
-                <td>
+                <td tal:condition="python: file.type in schemes">
                     <select name="schema" style="width:200px">
                         <option selected="selected" value="" i18n:translate="edit_ftp_chooseschema">TEXT</option>
-                        <tal:block tal:repeat="item python:schemes[file.type]">
-                            <option tal:content="python:item.getLongName()" tal:attributes="value python:file.type+'/'+item.getName()"/>
+                        <tal:block >
+                            <option tal:repeat="item python:schemes[file.type]" tal:content="python:item.getLongName()" tal:attributes="value python:file.type+'/'+item.getName()"/>
                         </tal:block>
                     </select>
-                
-                
                     <input tal:attributes="name python:'process|'+file.getName()" type="image" src="/img/rightarrow.png" i18n:attributes="title edit_ftp_process_title"/>
-                    &nbsp;
-                    &nbsp;
-                    &nbsp;
+                </td>
+                <td tal:condition="python: file.type not in schemes" i18n:translate="edit_ftp_wrongtype">TEXT</td>
+                <td style="text-align:right">
                     <input tal:attributes="name python:'del|'+file.getName()" type="image" src="/img/delete.png" onclick="return questionDelName('')" i18n:attributes="title edit_ftp_delete_title"/>
                     &nbsp;
+                    
+                </td>
+                <td>
+                &nbsp;
                 </td>
             </tr>
             <tr>
-                <th colspan="6">
+                <th colspan="8">
                     <b i18n:translate="edit_ftp_alllabel">TEXT</b><br/>
                     <ul>
                     <tal:block tal:repeat="schema usedtypes">

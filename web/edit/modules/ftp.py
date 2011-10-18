@@ -88,7 +88,7 @@ def getContent(req, ids):
                     if "multschema|"+ftype in req.params and req.params.get("multschema|"+ftype)!="":
                         for f in node.getFiles():
                             if f.getName()==fname:
-                                processFile(node, f, ftype)
+                                processFile(node, f, ftype+"/"+req.params.get("multschema|"+ftype) )
                                 break
                     else:
                         error = "edit_ftp_error2"
@@ -99,8 +99,9 @@ def getContent(req, ids):
     types = []
     for f in files:
         if f.getType() not in types:
-            types.append(f.getType())
-            
+            if f.getType() != "other":
+                types.append(f.getType())
+
     dtypes = {}
     for scheme in filter(lambda x: x.isActive(), acl.AccessData(req).filter(loadTypesFromDB())):
         for dtype in scheme.getDatatypes():
@@ -108,10 +109,10 @@ def getContent(req, ids):
                 dtypes[dtype] = []
             if scheme not in dtypes[dtype]:
                 dtypes[dtype].append(scheme)
-
+    
     for t in dtypes:
         dtypes[t].sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
-        
+    
     access = acl.AccessData(req)
     if not access.hasWriteAccess(node):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")

@@ -22,29 +22,48 @@ from workflow import WorkflowStep
 from core.translation import t,lang
 
 class WorkflowStep_TextPage(WorkflowStep):
+    """
+        workflowstep that shows a textpage.
+        attention:
+            if labels are given to true or false operation user has to
+            click buttons to get to next workflow step
+            otherwise forward will be performed automatically by system
+    """
+    
+    def runAction(self, node, op=""):
+        pass
+
     def show_workflow_node(self, node, req):
         if "gotrue" in req.params:
+            self.forward(node, True)
             return self.forwardAndShow(node, True, req)
         if "gofalse" in req.params:
+            self.forward(node, False)
             return self.forwardAndShow(node, False, req)
-        
-        text = self.get("text")
-        
-        return req.getTALstr("""
-    <tal:block tal:replace="raw python:text"/>
-    <form action="/mask" method="post" enctype="multipart/form-data" style="padding:4px">
-        <table>
-            <tal:block tal:replace="raw python:buttons"/>
-        </table>
-    </form>
-                """, {"text":text, "buttons": self.tableRowButtons(node)})
-                
+
+        if self.getTrueLabel()=="" and self.getFalseLabel()=="":
+            buttons = []
+            self.forward(node, True)
+        else:
+            buttons = self.tableRowButtons(node)
+        return req.getTAL("workflow/textpage.html", {"text":self.get("text"), "buttons": buttons}, macro="textpage_show_node")
     
     def metaFields(self, lang=None):
-        ret = list()
         field = tree.Node("text", "metafield")
         field.set("label", t(lang, "admin_wfstep_textpage_text_to_display"))
-        field.set("type", "memo")
-        ret.append(field)
-        return ret
+        field.set("type", "htmlmemo")
+        return [field]
     
+    def getLabels(self):
+        return { "de":
+            [
+                ("workflowstep-textpage", "Textseite anzeigen"),
+                ("admin_wfstep_textpage_text_to_display", "Seiteninhalt"),
+            ],
+           "en":
+            [
+                ("workflowstep-textpage", "show textpage"),
+                ("admin_wfstep_textpage_text_to_display", "Page content"),
+            ]
+            }
+   

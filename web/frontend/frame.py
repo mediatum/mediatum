@@ -200,7 +200,7 @@ class Searchlet(Portlet):
             return ""
 
 class NavTreeEntry:
-    def __init__(self, col, node, indent, small=0, hide_empty=0):
+    def __init__(self, col, node, indent, small=0, hide_empty=0, lang=None):
         self.col = col
         self.node = node
         self.id = node.id
@@ -213,6 +213,7 @@ class NavTreeEntry:
         self.small = small
         self.count = -1
         self.hide_empty = hide_empty
+        self.lang = lang
         self.orderpos = 0
         if len(self.node.getContainerChildren())>0:
             self.hassubdir = 1
@@ -253,9 +254,9 @@ class NavTreeEntry:
                     self.count = self.node.childcount()
 
             if self.count>0:
-                return "%s <small>(%s)</small>" %(self.node.getLabel(), str(self.count))
+                return "%s <small>(%s)</small>" %(self.node.getLabel(lang=self.lang), str(self.count))
             else:
-                return self.node.getLabel()
+                return self.node.getLabel(lang=self.lang)
 
         except:
             logException("error during NavTreeEntry.getText()")
@@ -289,6 +290,7 @@ class Collectionlet(Portlet):
 
     def feedback(self,req):
         Portlet.feedback(self,req)
+        self.lang = lang(req)
         if "dir" in req.params or "id" in req.params:
             id = req.params.get("id", req.params.get("dir"))
             try:
@@ -331,7 +333,7 @@ class Collectionlet(Portlet):
                 return
 
             count = -1
-            m[node.id] = e = NavTreeEntry(self, node, indent, node.type=="directory", hide_empty=hide_empty)
+            m[node.id] = e = NavTreeEntry(self, node, indent, node.type=="directory", hide_empty=hide_empty, lang=self.lang)
             if node.id in opened or e.defaultopen:
                 m[node.id].folded = 0
                 for c in node.getContainerChildren():

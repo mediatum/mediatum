@@ -194,7 +194,9 @@ class Directory(default.Default):
         else:
             return []
 
-    def getLabel(node):
+    def getLabel(node, lang=None):
+        if lang and node.get(str(lang)+'.name')!="":
+            return node.get(str(lang)+'.name')
         label = node.get("label")
         if not label:
             label = node.getName()

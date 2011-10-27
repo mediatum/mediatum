@@ -539,7 +539,7 @@ def ListSets(req):
     req.write('\n<ListSets>')
     # sets configured by container node attributes
     for node in node_list:
-        req.write('\n <set><setSpec>%s</setSpec><setName>%s</setName></set>' %(node.id, exc(node.get('oai.setname'))))
+        req.write('\n <set><setSpec>%s</setSpec><setName>%s</setName></set>' %(node.id, esc(node.get('oai.setname'))))
     
     # sets configured in mediatum.cfg [oai]
     d = config.getsubset('oai')

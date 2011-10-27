@@ -3,6 +3,8 @@
 
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
  Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
+ Copyright (C) 2011 Werner Neudenberger <neudenberger@ub.tum.de>
+ 
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -20,13 +22,42 @@
 import core.tree as tree
 import socket
 import random
+import re
+import time
+import sys
+import logging
 import core.config as config
+import core.users as users
 import utils.date
 from utils.dicts import MaxSizeDict
 import utils.date as date
 import core.acl as acl
 import core.xmlnode
 from utils.utils import esc,getCollection
+from schema.schema import getMetaType
+
+try:
+    import json
+except:
+    import simplejson as json
+
+    
+DEBUG = False
+DATEFIELD = "updatetime"
+EARLIEST_YEAR = 1960
+CHUNKSIZE = 10
+IDPREFIX = "oai:mediatum2.ub.tum.org:node/"
+
+tokenpositions = MaxSizeDict(32)
+
+def OUT(msg, type="info"):
+    if DEBUG:
+        sys.stdout.flush()
+    if type=="info":
+        logging.getLogger('oai').info(msg)
+    elif type=="error":
+        logging.getLogger('oai').error(msg)
+        
 
 errordesc = {
  "badArgument": "The request includes illegal arguments, is missing required arguments, includes a repeated argument, or values for arguments have an illegal syntax.",
@@ -42,21 +73,6 @@ errordesc = {
  "badDateformatFrom" : "Bad argument (from): Date not in OAI format (yyyy-mm-dd or yyyy-mm-ddThh:mm:ssZ)",
 }
 
-EARLIEST_YEAR=1960
-CHUNKSIZE=10
-
-#-----
-#class Export:
-#    def __init__(self, metaDataPrefix, schema, nameSpace):
-#        self.metaDataPrefix = metaDataPrefix
-#        self.schema = schema
-#        self.nameSpace = nameSpace
-#
-#exports = {
-#    "epicur": Export("epicur", "urn:nbn:de:1111-2004033116 http://nbn-resolving.de/urn/resolver.pl?urn=urn:nbn:de:1111-2004033116", "urn:nbn:de:1111-2004033116"),
-#    "xmetadiss": Export("xmetadiss", "http://www.ddb.de/standards/xmetadiss/xmetadiss.xsd", "http://www.ddb.de/standards/xMetaDiss/")
-#}
-#-----
 
 def mklink(req):
     return "http://"+config.get("host.name", socket.gethostname()+":8081")+"/oai/oai"
@@ -68,34 +84,35 @@ def writeHead(req, attributes=""):
         verb = req.params["verb"]
     except KeyError:
         verb = ""
-
+    req.reply_headers['charset'] = 'utf-8'
+    req.reply_headers['Content-Type'] = 'text/xml; charset=utf-8'
     req.write("""<?xml version="1.0" encoding="UTF-8"?>
     <OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
-        <responseDate>"""+d+"""Z</responseDate>
-        <request""")
+        <responseDate>%sZ</responseDate>
+        <request""" %(ISO8601(date.now())))
     if attributes!="noatt":
-        for n in "verb", "identifier", "metadataprefix", "from", "until", "set":
+        for n in ["verb", "identifier", "metadataprefix", "from", "until", "set"]:
             if n in req.params:
-                req.write(' '+n+'="'+esc(req.params[n])+'"')
-    req.write(">"+request+"</request>")
+                req.write(' %s="%s"' %(n, esc(req.params[n])))
+    req.write('>%s</request>' %(request))
 
 def writeTail(req):
-    req.write("""</OAI-PMH>""")
+    req.write('</OAI-PMH>')
 
 def writeError(req, code, detail=""):
-    d = ISO8601(date.now())
-    try:
-        verb = req.params["verb"]
-    except KeyError:
+    if not "verb" in req.params:
         verb = ""
-    if detail!="":
-        req.write("""<error code="%s">%s</error>""" % (code, errordesc[detail]))
-    else:
-        req.write("""<error code="%s">%s</error>""" % (code, errordesc[code]))
 
+    if detail!="":
+        req.write('<error code="%s">%s</error>' %(code, errordesc[detail]))
+    else:
+        req.write('<error code="%s">%s</error>' %(code, errordesc[code]))
+    OUT(code, 'error')
+
+        
 def ISO8601(t=None):
-    # MET summer time 
-    if t is None:
+    # MET summer time
+    if not t:
         t = date.now()
     return "%0.4d-%0.2d-%0.2dT%0.2d:%0.2d:%0.2d" % (t.year, t.month, t.day, t.hour, t.minute, t.second)
 
@@ -122,52 +139,105 @@ def checkParams(req, list):
 
 # FIXME: metadataformats are currently hardcoded- should depend on collection
 
-def ListMetadataFormats(req):
-    if "identifier" in req.params:
-        id = identifier2id(req.params["identifier"])
+def getExportMasks(regexp):
+    exportmasks = [tree.getNode(nid) for nid in tree.getNodesByAttribute('masktype', 'export')]
+    exportmasks = [(n, n.name) for n in exportmasks if re.match(regexp, n.name)]
+    dict_metadatatype2exportmask = {}
+    for exportmask in exportmasks:
+        parents = exportmask[0].getParents()
         try:
-            node = tree.getNode(id)
-        except TypeError:
+            mdt_node = [p for p in parents if p.type == 'metadatatype'][0]
+            mdt = (mdt_node, mdt_node.name)
+            dict_metadatatype2exportmask[mdt] = dict_metadatatype2exportmask.setdefault(mdt, []) + [exportmask]
+        except:
+            pass
+    return dict_metadatatype2exportmask.items()
+
+def getOAIExportFormatsForSchema(schema_name):
+    try:
+        schema_node = [x for x in tree.getRoot('metadatatypes').getChildren() if x.name==schema_name][0]
+        res = [x.name for x in schema_node.getChildren() if (x.type=='mask' and x.get('masktype')=='export')]
+        return [x.replace('oai_','',1) for x in res if x.startswith('oai_')]
+    except:
+        OUT("ERROR in getOAIExportMasksForSchema('%s'):\n%s %s" % (schema_name, str(sys.exc_info()[0]), str(sys.exc_info()[1])), 'error')
+        return []
+
+def getOAIExportFormatsForIdentifier(identifier):
+    nid = identifier2id(identifier)
+    try:
+        node = tree.getNode(nid)
+    except:
+        return []
+    return getOAIExportFormatsForSchema(node.getSchema())
+
+
+def nodeHasOAIExportMask(node, metadataformat):
+    mdt2ems = getExportMasks('oai_%s$' % metadataformat)
+    if node.getSchema() in [x[0][1] for x in mdt2ems]:
+        return True
+    return False
+
+def ListMetadataFormats(req):
+    d = config.getsubset('oai')
+
+    formats = [x.strip() for x in d['formats'].split(',') if x.strip()]
+
+    if "identifier" in req.params:
+        nid = identifier2id(req.params.get("identifier"))
+        try:
+            node = tree.getNode(nid)
+        except (TypeError, KeyError, tree.NoSuchNodeError):
             return writeError(req,"badArgument")
-        except KeyError:
-            return writeError(req,"badArgument")
-        except tree.NoSuchNodeError:
-            return writeError(req,"badArgument")
-    req.write("""
-       <ListMetadataFormats>
 
-         <metadataFormat>
-             <metadataPrefix>oai_dc</metadataPrefix>
-             <schema>http://www.openarchives.org/OAI/2.0/oai_dc.xsd</schema>
-             <metadataNamespace>http://www.openarchives.org/OAI/2.0/oai_dc/</metadataNamespace>
-         </metadataFormat>
+        access = acl.AccessData(req)    
+        if not access.hasReadAccess(node):
+            return writeError(req, "noPermission")    
+        formats = [x for x in formats if nodeHasOAIExportMask(node, x.lower())]
+    elif "set" in req.params:
+        set_type = None
+        setspec = req.params["set"]
+        if setspec:
+            if setspec.decode().isdecimal():
+                try:
+                    col = tree.getNode(setspec)
+                except (TypeError, KeyError, tree.NoSuchNodeError):
+                    return writeError(req,"badArgument")
+                
+                col_formats = [x.strip().lower() for x in col.get('oai.formats').split(',') if x.strip()]
+                formats = [x for x in formats if x.lower() in col_formats]
+                set_type = 'container'
+            else:
+                d_specs = getOAIConfigSpecs()
+                for key in d_specs:
+                    d_spec = d_specs[key]
+                    if d_spec['spec'] == setspec:
+                        set_type = 'virtual'
+                        break
+                spec_formats = []
+                for spec_type in d_spec['types']:
+                    schema_name = spec_type['schema']
+                    spec_formats += getOAIExportFormatsForSchema(schema_name)
+                spec_formats = list(set(spec_formats))
+                formats = [x for x in formats if x.lower() in spec_formats]
 
-         <metadataFormat>
-             <metadataPrefix>epicur</metadataPrefix>
-             <schema>http://www.persistent-identifier.de/xepicur/version1.0/xepicur.xsd</schema>
-             <metadataNamespace>urn:nbn:de:1111-2004033116</metadataNamespace>
-         </metadataFormat>
+                if not set_type:
+                    return writeError(req,"badArgument")
 
-         <metadataFormat>
-             <metadataPrefix>xmetadiss</metadataPrefix>
-             <schema>http://www.d-nb.de/standards/xmetadiss/xmetadiss.xsd</schema>
-             <metadataNamespace>http://www.d-nb.de/standards/xMetaDiss/</metadataNamespace>
-         </metadataFormat>
+    req.write('\n      <ListMetadataFormats>\n')
 
-         <metadataFormat>
-             <metadataPrefix>xMetaDissPlus</metadataPrefix>
-             <schema>http://www.d-nb.de/standards/xmetadissplus/xmetadissplus.xsd</schema>
-             <metadataNamespace>http://www.d-nb.de/standards/xmetadissplus/</metadataNamespace>
-         </metadataFormat>  
+    for mdf in formats:
+        try:
+            req.write("""
+             <metadataFormat>
+                 <metadataPrefix>%s</metadataPrefix>
+                 <schema>%s</schema>
+                 <metadataNamespace>%s</metadataNamespace>
+             </metadataFormat>
+             """ % (mdf, d["schema.%s" % mdf], d["namespace.%s" % mdf]) )
+        except:
+            OUT("%s: OAI error reading oai metadata format %s from config file" % (__file__, mdf), 'error')
+    req.write('\n</ListMetadataFormats>')
 
-         <metadataFormat>
-             <metadataPrefix>mediatum</metadataPrefix>
-             <schema>http://mediatum-pages.ub.tum.de/mediatum.xsd</schema>
-             <metadataNamespace>http://mediatum-pages.ub.tum.de/</metadataNamespace>
-         </metadataFormat>
-         
-       </ListMetadataFormats>
-    """)
 
 def checkMetaDataFormat(format):
     d = config.getsubset('oai')
@@ -178,9 +248,7 @@ def checkMetaDataFormat(format):
 
 def Identify(req):
     if not checkParams(req, ["verb"]):
-        print "Identify: verb missing"
-        return writeError(req, "badArgument")
-    request = mklink(req)
+        return writeError(req, 'Identify: verb missing')
     root = tree.getRoot()
     if config.get("config.oaibasename")=="":
         name = root.getName()
@@ -188,17 +256,15 @@ def Identify(req):
         name = config.get("config.oaibasename")
     req.write("""
         <Identify>
-            <repositoryName>"""+name+"""</repositoryName>
-            <baseURL>"""+request+"""</baseURL>
+            <repositoryName>%s</repositoryName>
+            <baseURL>%s</baseURL>
             <protocolVersion>2.0</protocolVersion>
-            <adminEmail>"""+config.get("email.admin")+"""</adminEmail>
-            <earliestDatestamp>"""+str(EARLIEST_YEAR-1)+"""-01-01T12:00:00Z</earliestDatestamp>
+            <adminEmail>%s</adminEmail>
+            <earliestDatestamp>%s-01-01T12:00:00Z</earliestDatestamp>
             <deletedRecord>no</deletedRecord>
             <granularity>YYYY-MM-DDThh:mm:ssZ</granularity>
-       </Identify>""")
+       </Identify>""" %(name, mklink(req), config.get("email.admin"), str(EARLIEST_YEAR-1)))
 
-#DATEFIELD="date-accepted"
-DATEFIELD="updatetime"
 
 def writeRecord(req, node, metadataformat):
     collection = getCollection(node)
@@ -208,32 +274,24 @@ def writeRecord(req, node, metadataformat):
     else:
         d = ISO8601(date.DateTime(EARLIEST_YEAR-1,12,31,23,59,59))
 
-    req.write(""" 
+    req.write("""
            <record>
-               <header><identifier>"""+mkIdentifier(node.id)+"""</identifier>
-                       <datestamp>"""+d+"""Z</datestamp>
-                       <setSpec>"""+collection.id+"""</setSpec>
+               <header><identifier>%s</identifier>
+                       <datestamp>%sZ</datestamp>
+                       <setSpec>%s</setSpec>
                </header>
-               <metadata>""")
-
-    #<dc: xmlns:dc="http://purl.org/dc/elements/1.1/" 
-    #     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-    #     xsi:schemaLocation="http://purl.org/dc/elements/1.1/">""")
-    #for f in "title", "creator", "contributor", "type", "source", "language", "identifier": 
-    #    value = node.get(f)
-    #    req.write("""<dc:%s>%s</dc:%s>""" % (f,value,f))
+               <metadata>""" %(mkIdentifier(node.id), d, collection.id))
 
     if metadataformat=="mediatum":
         req.write(core.xmlnode.getSingleNodeXML(node))
+    elif nodeHasOAIExportMask(node, metadataformat.lower()): # in [masknode.name for masknode in getMetaType(node.getSchema()).getMasks() if masknode.get('masktype')=='exportmask']:
+        mask = getMetaType(node.getSchema()).getMask("oai_"+metadataformat.lower())
+        req.write(mask.getViewHTML([node], flags=8))
     else:
-        if hasattr(node, "getXML"):
-            req.write(node.getXML(metadataformat))
-        else:
-            req.write("<recordHasNoXMLRepresentation/>")
+        req.write('<recordHasNoXMLRepresentation/>')
 
-    req.write("""</metadata></record>""")
+    req.write('</metadata></record>')
 
-IDPREFIX = "oai:mediatum2.ub.tum.org:node/"
 
 def mkIdentifier(id):
     return IDPREFIX+id
@@ -244,61 +302,118 @@ def identifier2id(id):
     else:
         return id
 
-def retrieveNodes(access, collectionid, date_from=None, date_to=None, metadataformat=None):
-    if collectionid:
-        collection = tree.getNode(collectionid)
+def getOAIConfigSpecs():
+    d_specs = {}
+    d = config.getsubset('oai')
+    for oai_set in [x.strip() for x in d['sets'].split(',') if x.strip()]:
+        #if 1:
+        struct = json.loads(d["set."+oai_set])
+        d_specs[oai_set] = struct
+    return d_specs
+
+def retrieveNodes(access, setspec, date_from=None, date_to=None, metadataformat=None):
+    query_descriptors = []
+    set_type = 'container'
+
+    if metadataformat:
+        mdt_masks_list = getExportMasks("oai_"+metadataformat.lower()+"$") # check exact name
+        schemata = [x[0][1] for x in mdt_masks_list if x[1]]
+
+    #set_type = None # 'container' (collections, collection or directory), 'virtual' (configured in mediatum.cfg)
+    if setspec:
+        if setspec.decode().isdecimal():
+            collection = tree.getNode(setspec)
+        else:
+            d_specs = getOAIConfigSpecs()
+            for key in d_specs:
+                d_spec = d_specs[key]
+                if d_spec['spec'] == setspec:
+                    set_type = 'virtual'
+                    break
+            if not set_type:
+                return []
     else:
         collection = tree.getRoot("collections")
-   
-    if metadataformat == "mediatum":
-        query = "objtype=document"
-    else:
-        query = "objtype=dissertation and schema=diss"
-
-    if date_from:
-        if query:
-            query += " and "
-        query += DATEFIELD + " >= "+str(date_from)
-    if date_to:
-        if query:
-            query += " and "
-        query += DATEFIELD + " <= "+str(date_to)
-    nodes = collection.search(query)
-    print "nodes", nodes
-    if access:
-        nodes = access.filter(nodes)
-
-    print "search below",collection.id,collection.name,"for",query,":",len(nodes),"nodes"
+        collectionid = collection.id
+        
+    if set_type=='container':
+        for schema in schemata:
+            query_descriptors.append( (schema, collection, []) )
     
-    return nodes
+    elif set_type=='virtual':
+        configured_schemata = []
+        for configured_type in d_spec['types']:
+            if not configured_type['schema'] in schemata:
+                OUT('oai export mask missing for schema %s' % (configured_type['schema']), 'error')
+                continue
 
+            if 'base_node' in configured_type.keys():
+                try:
+                    collection = tree.getNode(configured_type['base_node'])
+                except:
+                    OUT('oai base_node %s missing' % (configured_type['basenode']), 'error')
+                    continue
+            else:
+                collection = tree.getRoot("collections")
 
-tokenpositions = MaxSizeDict(32)
+            query_descriptors.append( (configured_type['schema'], collection, configured_type['attributes']) )
+
+    def concatNodeLists(nodelist1, nodelist2):
+        return tree.NodeList(list(set(nodelist1.getIDs() + nodelist2.getIDs())))
+
+    res = tree.NodeList([])
+    for schema, collection, attribute_items in query_descriptors:
+        query = "schema=" + schema
+
+        for attribute_item in attribute_items:
+            query += ' and %s="%s"' % (attribute_item[0], attribute_item[1])
+
+        if date_from:
+            if query:
+                query += " and "
+            query += DATEFIELD + " >= "+str(date_from)
+
+        if date_to:
+            if query:
+                query += " and "
+            query += DATEFIELD + " <= "+str(date_to)
+        nodes = collection.search(query)
+
+        if access:
+            nodes = access.filter(nodes)
+
+        res = concatNodeLists(res, nodes)
+        sys.stdout.flush()
+
+    return res
 
 def getNodes(req):
     global tokenpositions,CHUNKSIZE
     access = acl.AccessData(req)
     nodes = None
-    try:
-        token = req.params["resumptionToken"]
-        try:
-            pos,nodes,metadataformat = tokenpositions[token]
-        except KeyError:
-            return None,"badResumptionToken",None
+
+    if "resumptionToken" in req.params:
+        token = req.params.get("resumptionToken")
+        if token in tokenpositions:
+            pos, nodes, metadataformat = tokenpositions[token]
+        else:
+            return None, "badResumptionToken", None
+
         if not checkParams(req, ["verb", "resumptionToken"]):
-            print "getNodes: additional arguments (only verb and resumptionToken allowed)"
-            return None,"badArgument",None
-    except KeyError:
+            OUT("getNodes: additional arguments (only verb and resumptionToken allowed)")
+            return None, "badArgument", None
+
+    else:
         token = str(random.random())
         tokenpositions[token] = pos = 0
 
-        metadataformat = req.params.get("metadataPrefix",None)
+        metadataformat = req.params.get("metadataPrefix", None)
         if not checkMetaDataFormat(metadataformat):
-            print "ListRecords: metadataPrefix missing"
-            return None,"badArgument",None
-      
-    if nodes is None:
-        string_from,string_to = None,None
+            OUT('ListRecords: metadataPrefix missing', 'error')
+            return None, "badArgument", None
+
+    if not nodes:
+        string_from, string_to = None, None
         try:
             string_from = req.params["from"]
             date_from = parseDate(string_from)
@@ -306,129 +421,143 @@ def getNodes(req):
                 date_from=date.DateTime(0,0,0,0,0,0)
         except:
             if "from" in req.params:
-                return None,"badArgument",None
+                return None, "badArgument", None
             date_from = None
+            
         try:
             date_to = parseDate(req.params["until"])
+            string_to = req.params.get("until")
             if not date_to.has_time:
                 date_to.hour = 23
                 date_to.minute = 59
                 date_to.second = 59
             if date_to.year<EARLIEST_YEAR-1:
                 raise
-            string_to = req.params["until"]
         except:
             if "until" in req.params:
                 return None,"badArgument",None
             date_to = None
-        try:
-            collectionid = req.params["set"]
-        except:
-            collectionid = None
 
+        setspec = None
+        if "set" in req.params:
+            setspec = req.params.get("set")
+        
         if string_from and string_to and (string_from > string_to or len(string_from) != len(string_to)):
-            return None,"badArgument",None
+            return None, "badArgument", None
 
         try:
-            nodes = retrieveNodes(access, collectionid, date_from, date_to, metadataformat)
+            nodes = retrieveNodes(access, setspec, date_from, date_to, metadataformat)
         except tree.NoSuchNodeError:
             # collection doesn't exist
-            return None,"badArgument",None
-    
+            return None, "badArgument", None
+
     tokenpositions[token] = pos + CHUNKSIZE, nodes, metadataformat
 
     tokenstring = '<resumptionToken expirationDate="'+ISO8601(date.now().add(3600*24))+'" '+ \
                    'completeListSize="'+str(len(nodes))+'" cursor="'+str(pos)+'">'+token+'</resumptionToken>'
-    if pos + CHUNKSIZE >= len(nodes):
+    if pos + CHUNKSIZE>=len(nodes):
         tokenstring = None
         del tokenpositions[token]
+    OUT(req.params.get('verb')+": set="+str(req.params.get('set'))+", "+ str(len(nodes))+" objects, format="+metadataformat)
     return tree.NodeList(nodes[pos:pos+CHUNKSIZE]), tokenstring, metadataformat
 
 def ListIdentifiers(req):
-    #if "until" in req.params.keys():
-    #    return writeError(req, 'badArgument')
     nodes, tokenstring, metadataformat = getNodes(req)
     if nodes is None:
         return writeError(req,tokenstring)
     if not len(nodes):
         return writeError(req,'noRecordsMatch')
 
-    req.write("""<ListIdentifiers>""")
+    req.write('<ListIdentifiers>')
     for n in nodes:
         updatetime = n.get(DATEFIELD)
         if updatetime:
             d = ISO8601(date.parse_date(updatetime))
         else:
             d = ISO8601()
-        req.write("""<header><identifier>"""+mkIdentifier(n.id)+"""</identifier><datestamp>"""+d+"""Z</datestamp></header>\n""")
+        req.write('<header><identifier>%s</identifier><datestamp>%sZ</datestamp></header>\n' %(mkIdentifier(n.id), d))
     if tokenstring:
         req.write(tokenstring)
-    req.write("""</ListIdentifiers>""")
+    req.write('</ListIdentifiers>')
+
 
 def ListRecords(req):
-
     eyear = str(EARLIEST_YEAR-1)+"""-01-01T12:00:00Z"""
     if "until" in req.params.keys() and req.params.get("until")<eyear and len(req.params.get("until"))==len(eyear):
         return writeError(req, 'noRecordsMatch')
     if "resumptionToken" in req.params.keys() and "until" in req.params.keys():
         return writeError(req, 'badArgument')
-        
+
     nodes, tokenstring, metadataformat = getNodes(req)
     if nodes is None:
         return writeError(req,tokenstring)
     if not len(nodes):
         return writeError(req,'noRecordsMatch')
 
-    req.write("""<ListRecords>""")
+    req.write('<ListRecords>')
     for n in nodes:
         writeRecord(req, n, metadataformat)
     if tokenstring:
         req.write(tokenstring)
-    req.write("""</ListRecords>""")
+    req.write('</ListRecords>')
+
 
 def GetRecord(req):
     access = acl.AccessData(req)
-    try:
-        id = req.params["identifier"]
-    except KeyError:
-        print "GetRecords: identifier missing"
-        return writeError(req,"badArgument")
-        
-    metadataformat = req.params.get("metadataPrefix",None)
-    if not checkMetaDataFormat(metadataformat):
-        print "GetRecord: metadataPrefix missing"
+    if "identifier" in req.params:
+        id = identifier2id(req.params.get("identifier"))
+    else:
         return writeError(req,"badArgument")
 
-    id = identifier2id(id)
-    
+    metadataformat = req.params.get("metadataPrefix",None)
+    if not checkMetaDataFormat(metadataformat):
+        return writeError(req,"badArgument")
+
     try:
         node = tree.getNode(id)
-    except TypeError:
-        return writeError(req,"idDoesNotExist")
-    except KeyError:
-        return writeError(req,"idDoesNotExist")
-    except tree.NoSuchNodeError:
-        return writeError(req,"idDoesNotExist")
+    except (TypeError, KeyError, tree.NoSuchNodeError):
+        return writeError(req, "idDoesNotExist")
 
     if not access.hasReadAccess(node):
         return writeError(req,"noPermission")
 
-    req.write("""<GetRecord>""")
+    req.write('<GetRecord>')
     writeRecord(req, node, metadataformat)
-    req.write("""</GetRecord>""")
+    req.write('</GetRecord>')
 
 def ListSets(req):
     access = acl.AccessData(req)
-    req.write("""<ListSets>""")
-    def browse(collection):
-        for c in access.filter(collection.getChildren()):
-            if c.type=="collection":
-                spec = c.id
-                name = c.getName()
-                req.write("""<set><setSpec>"""+spec+"""</setSpec><setName>"""+esc(name)+"""</setName></set>""")
-                browse(c)
-    browse(tree.getRoot("collections"))
-    req.write("""</ListSets>""")
+    node_list = tree.NodeList(tree.getNodesByAttribute('oai.setname', '*'))
+    node_list = node_list.sort(field="oai.setname", direction="down")
+
+    node_list = [node for node in node_list if node.type in ['collection', 'directory']]
+    node_list = [node for node in node_list if node.get('oai.setname').strip()]
+    node_list = [node for node in node_list if node.get('oai.formats').strip()]
+
+    node_list = access.filter(node_list, accesstype="read")
+
+    req.write('\n<ListSets>')
+    # sets configured by container node attributes
+    for node in node_list:
+        req.write('\n <set><setSpec>%s</setSpec><setName>%s</setName></set>' %(node.id, exc(node.get('oai.setname'))))
+    
+    # sets configured in mediatum.cfg [oai]
+    d = config.getsubset('oai')
+    oai_sets = []
+    if 'sets' in d:
+        oai_sets = [x.strip() for x in d['sets'].split(',') if x.strip()]
+        for oai_set in oai_sets:
+            if 1:
+                struct = json.loads(d["set."+oai_set])
+                for mdt in struct['types']:
+                    for attr_name, attr_value in mdt['attributes']:
+                        pass
+                req.write('\n <set><setSpec>%s</setSpec><setName>%s</setName></set>' %(struct['spec'], esc(struct['name'])))
+
+            if 0:
+                OUT('error loading oai set parameters from config for oai set: %s' %(str(oai_set)), 'error')
+    req.write('\n</ListSets>')
+    OUT('ListSets: found %s sets' %(len(oai_sets)))
 
 def oaiRequest(req):
     req.request["Content-Type"] = "text/xml"
@@ -437,11 +566,11 @@ def oaiRequest(req):
         try:
             date_to = parseDate(req.params["until"])
         except:
-            writeHead(req, "noatt")  
+            writeHead(req, "noatt")
             writeError(req, "badArgument", "badDateformatUntil")
             writeTail(req)
             return
-            
+
     elif "from" in req.params:
         try:
             date_from = parseDate(req.params["from"])
@@ -454,25 +583,25 @@ def oaiRequest(req):
     if "verb" not in req.params:
         writeHead(req, "noatt")
         writeError(req,"badVerb")
-    
+
     else:
         verb = req.params["verb"]
-        if verb == "Identify":
+        if verb=="Identify":
             writeHead(req)
             Identify(req)
-        elif verb == "ListMetadataFormats":
+        elif verb=="ListMetadataFormats":
             writeHead(req)
             ListMetadataFormats(req)
-        elif verb == "ListSets":
+        elif verb=="ListSets":
             writeHead(req)
             ListSets(req)
-        elif verb == "ListIdentifiers":
+        elif verb=="ListIdentifiers":
             writeHead(req)
             ListIdentifiers(req)
-        elif verb == "ListRecords":
+        elif verb=="ListRecords":
             writeHead(req)
             ListRecords(req)
-        elif verb == "GetRecord":
+        elif verb=="GetRecord":
             writeHead(req)
             GetRecord(req)
         else:
@@ -480,6 +609,4 @@ def oaiRequest(req):
             writeError(req,"badVerb")
 
     writeTail(req)
-
-
 

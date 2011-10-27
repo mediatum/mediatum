@@ -170,10 +170,11 @@ def ListMetadataFormats(req):
     """)
 
 def checkMetaDataFormat(format):
+    d = config.getsubset('oai')
     try:
-        return format.lower() in ["epicur", "xmetadiss", "xmetadissplus", "oai_dc", "mediatum"]
+        return format.lower() in [x.strip().lower() for x in d['formats'].split(',') if x.strip()]
     except:
-        return False      
+        return False
 
 def Identify(req):
     if not checkParams(req, ["verb"]):

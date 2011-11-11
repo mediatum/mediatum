@@ -25,9 +25,12 @@ class FileWriter:
 
     def close(self):
         self.file.close()
-        f = fileutils.importFile(self.realname, self.filename, "ftp_")
-        os.remove(self.filename)
-        self.node.addFile(f)
+        try:
+            f = fileutils.importFile(self.realname, self.filename, "ftp_")
+            os.remove(self.filename)
+            self.node.addFile(f)
+        except:
+            pass
         
 
 class collection_ftpserver:

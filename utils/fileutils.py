@@ -51,11 +51,9 @@ def importFile(realname,tempname, prefix=""):
                     break
 
         if os.sep=='/':
-            ret = os.system("cp %s %s" %(tempname, destname))
+            ret = os.system('cp "%s" "%s"' %(tempname, destname))
         else:
-            #cmd = "copy %s %s" %(tempname, (os.path.split(destname)[0]))
-            cmd = "copy %s %s" %(tempname, destname)
-            ret = os.system(cmd.replace('/','\\'))
+            ret = os.system(('copy "%s" "%s"' %(tempname, destname)).replace('/','\\'))
 
         if ret&0xff00:
             raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, prefix+destname, str(ret)))

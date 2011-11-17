@@ -202,7 +202,7 @@ def deleteMetaField(pid, name):
 # change order of metadatafields: move element up/down
 #
 def moveMetaField(pid, name, direction):
-    up, down = -1,-1
+    up, down = -1, -1
    
     if direction==1:
         down = int(getMetaField(pid, name).getOrderPos())
@@ -212,21 +212,21 @@ def moveMetaField(pid, name, direction):
     i = 0
     for field in getMetaType(pid).getChildren().sort():
         try:
-            if i == up:
-                pos = i-1
-            elif i == up-1:
+            if i==up:
+                pos = i - 1
+            elif i==up-1:
                 pos = up
-            elif i == down:
-                pos = i+1
-            elif i == down+1:
+            elif i==down:
+                pos = i + 1
+            elif i==down+1:
                 pos = down
             else:
                 pos = i
 
             if pos<0:
-                pos=0
+                pos = 0
             field.setOrderPos(pos)
-            i = i + 1
+            i += 1
         except: # FIXME: what kind of exception is raised here?
             pass
         
@@ -242,13 +242,13 @@ def generateMask(metatype, masktype="", force=0):
         return # mask is already there- nothing to do!
     except tree.NoSuchNodeError:
         mask = metatype.addChild(tree.Node("-auto-","mask"))
-        i=0
+        i = 0
         for c in metatype.getChildren().sort():
             if c.type!="mask": 
                 if c.getFieldtype()!="union":
                     n = tree.Node(c.get("label"), "maskitem")
                     n.setOrderPos(i)
-                    i+=1
+                    i += 1
                     field = mask.addChild(n)
                     field.set("width", "400")
                     field.set("type", "field")
@@ -259,7 +259,7 @@ def cloneMask(mask, newmaskname):
         for k,v in m1.items():
             m2.set(k,v)
         for c1 in m1.getChildren().sort():
-            if c1.type == "mask" or c1.type == "maskitem":
+            if c1.type in ["mask", "maskitem"]:
                 c2 = tree.Node(c1.getName(), c1.type)
                 c2.setOrderPos(c1.getOrderPos())
                 m2.addChild(c2)
@@ -299,7 +299,7 @@ def checkMask(mask,fix=0,verbose=1,show_unused=0):
     fieldsused = {}
     masks = []
     for f in metatypes.getChildren():
-        if f.type != "mask":
+        if f.type!="mask":
             field2node[f.name] = f
             fieldsused[f.name] = 0
         else:
@@ -320,7 +320,7 @@ def checkMask(mask,fix=0,verbose=1,show_unused=0):
                 print "Removing orderpos attribute from node",node.id
             node.set("orderpos", "")
         
-        if currentparent.type != "maskitem":
+        if currentparent.type!="maskitem":
             if verbose:
                 print "Field",node.id,node.name,"is not below a maskitem (parent:",currentparent.id,currentparent.name,")"
             error = error + 1 
@@ -329,16 +329,14 @@ def checkMask(mask,fix=0,verbose=1,show_unused=0):
             return
 
         for parent in node.getParents():
-            if parent.type == "metadatatype":
+            if parent.type=="metadatatype":
                 return #OK
-            elif parent.type == "maskitem":
+            elif parent.type in ["maskitem", "mask"]:
                 pass 
-            elif parent.type == "mask":
-                pass
             else:
                 print "Node",node.id,node.name,"has strange parent",parent.id,parent.name
 
-        error = error + 1
+        error += 1
 
         if node.name in field2node:
             node2 = field2node[node.name]
@@ -348,20 +346,20 @@ def checkMask(mask,fix=0,verbose=1,show_unused=0):
             if node.get("required") != node2.get("required"):
                 if verbose:
                     print "required",node.get("required"),"<->","required",node2.get("required")
-                c = c + 1
+                c += 1
             elif node.get("type") != node2.get("type"):
                 if verbose:
                     print "type",node.get("type"),"<->","type",node2.get("type")
-                c = c + 1
+                c += 1
             elif node.get("label") != node2.get("label"):
                 if verbose:
                     print "label",node.get("label"),"<->","label",node2.get("label")
-                c = c + 1
+                c += 1
             elif node.get("opts") != node2.get("opts"):
                 if verbose:
                     print "opts",node.get("opts"),"<->","opts",node2.get("opts")
-                c = c + 1
-            if c == 0 and fix:
+                c += 1
+            if c==0 and fix:
                 currentparent.removeChild(node)
                 currentparent.addChild(node2)
         else:
@@ -399,27 +397,23 @@ def showEditor(node,hiddenvalues={}, allowedFields=None):
         #if field.description != "":
         #    _helpLink = """<a href="#" onclick="openPopup(\'/popup_help?pid=""" + field.pid + """&name=""" + field.name + """\', \'\', 400, 250)"><img src="img/tooltip.png" border="0"></a>"""
         if (field.getRequired()>0):
-            result += ('<tr><td align="left">'+field.getLabel()+': <span class="required">*</span></td>')
+            result += '<tr><td align="left">%s: <span class="required">*</span></td>' %(field.getLabel())
         else:
-            result += ('<tr><td align="left">'+field.getLabel()+':</td>')
+            result += '<tr><td align="left">%s:</td>' %(field.getLabel())
+        result += '<td align="left">%s</td></tr>' %(field.getEditorHTML(value,400,name,lock))
 
-        result += ('<td align="left">')
-        result += (field.getEditorHTML(value,400,name,lock))
-        result += ('</td></tr>')
         
-    result += ('<tr><td>&nbsp;</td><td align="left"><small>(<span class="required">*</span> Pflichtfeld, darf nicht leer sein)</small></td></tr>')
-    result += ('<input type="hidden" name="metaDataEditor" value="metaDataEditor">')
+    result += '<tr><td>&nbsp;</td><td align="left"><small>(<span class="required">*</span> Pflichtfeld, darf nicht leer sein)</small></td></tr>'
+    result += '<input type="hidden" name="metaDataEditor" value="metaDataEditor">'
     
     for k,v in hiddenvalues.items():
-        result += ("""<input type="hidden" name="%s" value="%s">\n""" % (k,v))
+        result += '<input type="hidden" name="%s" value="%s">\n' % (k,v)
     return result
 
 
 def parseEditorData(req,node):
     fields = node.getType().getMetaFields()
-
     nodes = [node]
-
     incorrect = False
     for field in fields:
         name = field.getName()
@@ -446,7 +440,7 @@ def parseEditorData(req,node):
             #    for node in nodes:
             #        node.set(name, value)
 
-            if field.getType() == "date":
+            if field.getType()=="date":
                 f = field.getSystemFormat(field.fieldvalues)
                 try:
                     date = parse_date(str(value),f.getValue())
@@ -623,7 +617,7 @@ class Metadatafield(tree.Node):
 
     def getSchemaNode(node):
         for p in node.getParents():
-            if p.type == "metadatatype":
+            if p.type=="metadatatype":
                 return p
         return None
 
@@ -727,7 +721,7 @@ class MaskType:
     def setSeparator(self, value):
         self.separator = value
     def getSeparator(self):
-        return self.separator        
+        return self.separator
 
 def getMaskTypes(key="."):
     masktypes = {
@@ -851,7 +845,7 @@ class Mask(tree.Node):
         if self.getMasktype()=="export":
             for mapping in self.get("exportmapping").split(";"):
                 for c in tree.getNode(mapping).getMandatoryFields():
-                    mandfields.append(c.id)       
+                    mandfields.append(c.id)
         for item in self.getMaskFields():
             try:
                 mandfields.remove(item.get("mappingfield"))
@@ -871,7 +865,7 @@ class Mask(tree.Node):
                     if field.getName() in req.params.keys():
                         value = t.getFormatedValueForDB(field, req.params.get(field.getName()))
                         node.set(field.getName(), value)
-                    elif field.getFieldtype() == "check":
+                    elif field.getFieldtype()=="check":
                         node.set(field.getName(), 0)
                     
                     ''' raise event for metafield-type '''
@@ -918,10 +912,10 @@ class Mask(tree.Node):
             ret += '<div i18n:translate="mask_editor_no_fields">- keine Felder definiert -</div>'
         else:
             if self.getMappingHeader()!="":
-                ret += '<div class="label" i18n:translate="mask_edit_header">TEXT</div><div class="row">'+esc(self.getMappingHeader())+'</div>'
+                ret += '<div class="label" i18n:translate="mask_edit_header">TEXT</div><div class="row">%s</div>' %(esc(self.getMappingHeader()))
             
         i=0
-        fieldlist = getAllMetaFields()
+        fieldlist = {} #!!!getAllMetaFields()
         for item in self.getChildren().sort():
             t = getMetadataType(item.get("type"))
             ret += t.getMetaHTML(self, i, language=language, fieldlist=fieldlist) # get formated line specific of type (e.g. field)
@@ -929,7 +923,7 @@ class Mask(tree.Node):
         
         if len(self.getChildren())>0:        
             if self.getMappingFooter()!="":
-                ret += '<div class="label" i18n:translate="mask_edit_footer">TEXT</div><div class="row">'+esc(self.getMappingFooter())+'</div>'
+                ret += '<div class="label" i18n:translate="mask_edit_footer">TEXT</div><div class="row">%s</div>' %(esc(self.getMappingFooter()))
         ret += '</form>'
         return ret
 
@@ -940,10 +934,7 @@ class Mask(tree.Node):
             if key.startswith("edit_"):
                 item = tree.getNode(req.params.get("edit", ""))
                 t = getMetadataType(item.get("type")) 
-                ret = '<form method="post" name="myform">'
-                ret += t.getMetaEditor(item, req)
-                ret += '</form>'
-                return ret
+                return '<form method="post" name="myform">%s</form>' %(t.getMetaEditor(item, req))
 
         if (req.params.get("op","")=="new" and req.params.get("type","")!="") or (self.getMasktype()=="export" and req.params.get("op","") in ["newdetail", "new"]):
             # add field
@@ -954,16 +945,11 @@ class Mask(tree.Node):
             else:
                 t = getMetadataType(req.params.get("type"))
 
-            if req.params.get("type","")=="hgroup":
-                req.params["edit"] = item
-            elif req.params.get("type","")=="vgroup":
+            if req.params.get("type","") in ["hgroup", "vgroup"]:
                 req.params["edit"] = item
             else:
                 req.params["edit"] = item.id
-            ret = '<form method="post" name="myform">'
-            ret += t.getMetaEditor(item, req)
-            ret += '</form>'
-            return ret
+            return '<form method="post" name="myform">%s</form>' %(t.getMetaEditor(item, req))
 
         if req.params.get("type","")=="" and self.getMasktype()!="export":
             # type selection for new field
@@ -993,10 +979,7 @@ class Mask(tree.Node):
             # create new node
             item = tree.getNode(req.params.get("id"))
             t = getMetadataType(req.params.get("type"))
-            ret = '<form method="post" name="myform">'
-            ret += t.getMetaEditor(item, req)
-            ret += '</form>'
-            return ret
+            return '<form method="post" name="myform">%s</form>' %(t.getMetaEditor(item, req))
 
     def getDescription(self):
         return self.get("description")
@@ -1037,7 +1020,7 @@ class Mask(tree.Node):
      
         
     def getLanguage(self):
-        if self.get("language") =="":
+        if self.get("language")=="":
             return "no"
         return self.get("language") 
     def setLanguage(self, value):
@@ -1046,7 +1029,7 @@ class Mask(tree.Node):
     def getDefaultMask(self):
         if self.get("defaultmask")=="True":
             return True
-        return False    
+        return False
     def setDefaultMask(self, value):
         if value:
             self.set("defaultmask", "True")
@@ -1090,7 +1073,7 @@ class Mask(tree.Node):
         item = tree.getNode(itemid)
         for parent in item.getParents():
             parent.removeChild(item)
-            i=0
+            i = 0
             for child in parent.getChildren().sort():
                 child.setOrderPos(i)
                 i += 1

@@ -1,7 +1,6 @@
 
 <tal:block metal:define-macro="metaeditor">
-
-     <div class="back">
+    <div class="back">
         <h3 tal:condition="python:op=='edit'" i18n:translate="mask_edit_edit_field">TEXT</h3>
         <h3 tal:condition="python:op=='new'" i18n:translate="mask_edit_create_field">TEXT</h3>
         <br/>
@@ -9,35 +8,30 @@
         <div class="label" i18n:translate="mask_edit_fieldname">TEXT<span class="required">*</span></div>
         <input tal:attributes="value python:item.getLabel()" type="text" name="label" style="width:500px"/>
         <br/>
-
         <tal:block tal:condition="python:op=='new'">
             <div class="label" i18n:translate="mask_edit_position">TEXT</div> 
             <select name="insertposition" style="width:500px">
                 <option value="end" selected="selected" i18n:translate="mask_edit_end">TEXT</option>
                 <tal:block tal:repeat="field fields">
                     <option tal:condition="python:hasattr(field.getField(),'getFieldtype')" tal:attributes="value python:field.id" tal:content="python:field.getLabel()+' ('+field.getField().getFieldtype()+')'"/>
-
                     <option tal:condition="python:not hasattr(field.getField(),'getFieldtype')" tal:attributes="value python:field.id" tal:content="python:field.getLabel()+' ('+field.get('type')+')'"/>
                 </tal:block>
             </select>
             <br/>
          </tal:block>
-
+        <br/>
         <div class="label" i18n:translate="mask_edit_field_selection">TEXT</div> 
-
         <tal:block tal:condition="python:op=='new'">
-            <fieldset>
+            <fieldset style="margin-top:5px;width:500px">
                 <input type="radio" name="fieldtype" value="common" checked="checked"/> 
                 <span i18n:translate="mask_edit_existing_field">TEXT</span>
                 <br/>
                 <div class="label" i18n:translate="mask_edit_field">TEXT</div>
-
                 <select tal:condition="python:len(metafields)>0" name="field" style="width:250px;">
                     <tal:block tal:repeat="metafield metafields">
                         <option tal:attributes="value python:metafield.id" tal:content="python:metafield.getName()+' ('+metafield.getFieldtype()+')'"/>
                     </tal:block>
                 </select>
-
                 <span tal:condition="python:len(metafields)==0" style="color:red" i18n:translate="mask_editor_no_fields">TEXT</span>
                 <br/>
                 <br/>
@@ -58,7 +52,6 @@
             </fieldset>
             <br/>
         </tal:block>
-
         <tal:block tal:condition="python:op=='edit'">
             <select name="field" style="width:250px;" id="newfieldtype" onchange="editmetatypechange(document)">
                 <tal:block tal:repeat="metafield metafields">
@@ -73,9 +66,8 @@
                 editmetatypechange(document);
             </script>
         </tal:block>
-
         <div class="label" i18n:translate="mask_edit_help">TEXT</div>
-        <textarea tal:content="python:item.getDescription()" name="div_description" rows="4" style="width:500px;"/>
+        <textarea tal:content="python:item.getDescription()" name="description" rows="4" style="width:500px"/>
         <br/>
         <div class="label" i18n:translate="mask_edit_required">TEXT</div> 
         <input tal:condition="python:item.getRequired()==1" type="checkbox" name="required" value="1" checked="checked">
@@ -89,7 +81,6 @@
         
         <div class="label" tal:condition="python:item.getField() and item.getField().get('type') not in ['text']" i18n:translate="mask_edit_default">TEXT</div>
         <input tal:condition="python:item.getField() and item.getField().get('type') not in ['text']" tal:attributes="value python:str(item.getDefault())" type="text" name="default" style="width:500px"/> 
-
         <span tal:condition="python:item.getField() and item.getField().get('type') in ['text']">
            <div class="label" i18n:translate="mask_edit_default">TEXT</div>
            <textarea tal:content="python:str(item.getDefault())" id="textarea_template" name="default" style="width:500px;height:100px" wrap="off"/>
@@ -112,15 +103,13 @@
         <input tal:attributes="value python:str(item.id)" type="hidden" name="id" id="item_id"/>
         <input tal:attributes="value pid" type="hidden" name="pid"/>
         <input type="hidden" name="type" value="field"/>
-        <br/>&nbsp;<br/><div class="label">&nbsp;</div>
+        <br/>&nbsp;<br/><div class="label"><small style="color:silver">(id: <tal:block tal:replace="python:item.id"/>)</small></div>
         <button type="submit" name="saveedit" i18n:translate="mask_edit_save">TEXT</button>
         &nbsp;&nbsp;<button type="submit" onclick="setCancel(document.myform.op)" i18n:translate="mask_edit_cancel">TEXT</button>
         <input tal:attributes="value python:op" type="hidden" name="op"/>
     </div>
     
 </tal:block>
-
-
 <tal:block metal:define-macro="metaeditor_export">
     <div class="back">
         <h3 tal:condition="python:op=='edit'" i18n:translate="mask_edit_edit_field">TEXT</h3>
@@ -147,8 +136,9 @@
             <span i18n:translate="mask_edit_attribute_field">TEXT</span><br/> 
             <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
             
-            <input tal:condition="python:item.get('fieldtype')!='mapping'" tal:attributes="value python:item.get('mappingfield')" type="text" id="mappingfield" name="mappingfield" style="width:250px;" maxlength=1000 /><br/>
-            <input tal:condition="python:item.get('fieldtype')=='mapping'" value="" type="text" id="mappingfield" name="mappingfield" style="width:250px;" maxlength=1000 /><br/>
+            <input tal:condition="python:item.get('fieldtype')!='mapping' and item.get('mappingfield').find('[cmd:getTAL]')<0" tal:attributes="value python:item.get('mappingfield')" type="textarea" rows="5" id="mappingfield" name="mappingfield" style="width:250px;" /><br/>
+            <pre tal:condition="python:item.get('fieldtype')!='mapping' and item.get('mappingfield').find('[cmd:getTAL]')>=0"><textarea rows="5" id="mappingfield" name="mappingfield" style="width:100%;" wrap="off"><span tal:replace="python:item.get('mappingfield')"/></textarea></pre><br/>
+            <input tal:condition="python:item.get('fieldtype')=='mapping'" value="" type="text" id="mappingfield" name="mappingfield" style="width:250px;" maxlength=100002 /><br/>
             <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
             <span i18n:translate="mask_edit_attribute_description">TEXT</span>
         </fieldset>

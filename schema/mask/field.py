@@ -104,6 +104,8 @@ class m_field(Metatype):
     """ create view format """
     def getViewHTML(self, field, nodes, flags, language=None, template_from_caller=None, mask=None):
         element = field.getField()
+        if not element:
+            return []
         fieldtype = element.get("type")
         t = getMetadataType(element.get("type"))
         unit = ''
@@ -167,7 +169,6 @@ class m_field(Metatype):
 
     def getMetaHTML(self, parent, index, sub=False, language=None, itemlist=[], ptype="", fieldlist={}):
         """ return formated row for metaeditor """
-        
         if len(itemlist)>0:
             # parent still not existing
             item = getNode(itemlist[index])
@@ -191,50 +192,47 @@ class m_field(Metatype):
             fieldstring = getMetadataType("mappingfield").getEditorHTML(field, width=item.getWidth(), value=attribute.getName(), language=language) + ' ' + item.getUnit()
         
         if item.getDescription()!="":
-            description = '<div id="div_description"><a href="#" onclick="openPopup(\'/popup_help?id='+field.id+'&maskid='+item.id+'\', \'\', 400, 250)"> <img src="/img/tooltip.png" border="0"/></a></div>'
+            description = '<div id="div_description"><a href="#" onclick="openPopup(\'/popup_help?id=%s&maskid=%s\', \'\', 400, 250)"> <img src="/img/tooltip.png" border="0"/></a></div>' %(field.id, item.id)
 
         if len(item.getLabel())>0 and item.getLabel()!="mapping":
-            if ptype in("vgroup","hgroup") or sub==False:
-                if (item.getRequired()>0):
-                    label = '<div class="label">' + item.getLabel() + ': <span class="required">*</span></div>'+description
-                else:
-                    label = '<div class="label">' + item.getLabel() + ': </div>'+description
+            label = item.getLabel() + ': '
+            required = ""
+            if item.getRequired():
+                required = '<span class="required">*</span>'
+            
+            if ptype in("vgroup","hgroup") or not sub:
+                label = '<div class="label">%s %s</div>%s' %(label, required, description)
             else:
-                if (item.getRequired()>0):
-                    label = item.getLabel() + ': <span class="required">*</span> '
-                else:
-                    label = item.getLabel() + ': '
+                label += required
+
         else:
             label = '<div class="label">&nbsp;</div>'
         if not sub:
-            ret += '<div id="'+item.id+'" class="row" onmouseover="pick(this)" onmouseout="unpick(this)" onclick="select(this)">'
-
+            ret += '<div id="%s" class="row" onmouseover="pick(this)" onmouseout="unpick(this)" onclick="select(this)" style="position:relative;min-height:30px">' %(item.id)
+            
         if len(label)>0:
-            ret += label + '<div id="editor_content">'+fieldstring+'</div>'
+            ret += '%s<div id="editor_content">%s</div>' %(label, fieldstring)
         else:
             ret += fieldstring
 
-        if field.getName() in fieldlist.keys():
-            if len(fieldlist[field.getName()])>1:
-                ret += '<div style="color:#ff6666;margin-left: 20px"><div class="label">&nbsp;</div><small><span i18n:translate="mask_edit_multi_label">Attributvorkommen in Schema: </span>'
-                for scheme in fieldlist[field.getName()]:
-                    ret += scheme.getName()
-                    if fieldlist[field.getName()].index(scheme) < len(fieldlist[field.getName()])-1:
-                        ret += ', ';
-                ret += '</small></div>'
-
         if not sub:
-            ret += '<div align="right" id="'+item.id+'_sub" style="display:none" class="edit_tools"><small style="color:silver">('+(item.get("type"))+')</small>'
+            ret += '<div align="right" id="%s_sub" style="display:none; position:absolute; right:1px; top:3px" class="edit_tools">' %(item.id) #<small style="color:silver">('+(item.get("type"))+')</small>'
+
             if index>0:
-                ret += '<input type="image" src="/img/uparrow.png" name="up_'+str(item.id)+'" i18n:attributes="title mask_edit_up_title"/>'
+                ret += '<input type="image" src="/img/uparrow.png" name="up_%s" i18n:attributes="title mask_edit_up_title"/>' %(item.id)
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
             if index<pitems-1:
-                ret += '<input type="image" src="/img/downarrow.png" name="down_'+str(item.id)+'" i18n:attributes="title mask_edit_down_title"/>'
+                ret += '<input type="image" src="/img/downarrow.png" name="down_%s" i18n:attributes="title mask_edit_down_title"/>' %(item.id)
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
-            ret += ' <input type="image" src="/img/edit.png" name="edit_'+str(item.id)+'" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/img/delete.png" name="delete_'+str(item.id)+'" i18n:attributes="title mask_edit_delete_row" onClick="return questionDel()"/></div>'
-            ret += '</div>'
+                
+            if field.getName() in fieldlist.keys():
+                if len(fieldlist[field.getName()])>1:
+                    ret += '&nbsp;<img src="/img/attention.gif" title="%s ' %(translate("mask_edit_multi_label", language))
+                    ret += ", ".join([schema.getName() for schema in fieldlist[field.getName()]]) + '"/>'
+
+            ret += ' <input type="image" src="/img/edit.png" name="edit_%s" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/img/delete.png" name="delete_%s" i18n:attributes="title mask_edit_delete_row" onClick="return questionDel()"/></div></div>' %(item.id, item.id)
         return ret
 
 
@@ -272,7 +270,6 @@ class m_field(Metatype):
                             fields.append(field)
 
         fields.sort(lambda x, y: cmp(x.getOrderPos(),y.getOrderPos()))
-
         add_values = []
         val = ""
         if item.getField():
@@ -306,9 +303,9 @@ class m_field(Metatype):
             v["mappings"] = []
             for m in pidnode.getExportMapping():
                 v["mappings"].append(tree.getNode(m))
-            return req.getTAL("schema/mask/field.html",v,macro="metaeditor_"+pidnode.getMasktype()) 
+            return req.getTAL("schema/mask/field.html", v, macro="metaeditor_"+pidnode.getMasktype()) 
         else:
-            return req.getTAL("schema/mask/field.html",v,macro="metaeditor") 
+            return req.getTAL("schema/mask/field.html", v, macro="metaeditor") 
 
     def isContainer(self):
         return True

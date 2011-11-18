@@ -1,0 +1,15 @@
+msgid "edit_stats_details"
+msgstr "details..."
+
+msgid "edit_stats_schema"
+msgstr "Types of Metadata"
+
+msgid "edit_stats_updatebutton"
+msgstr "Update Statistics"
+
+msgid "edit_stats_allobjlabel"
+msgstr "Items (sum)"
+
+msgid "edit_stats_digobjlabel"
+msgstr "Items (digital)"
+

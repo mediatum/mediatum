@@ -1,0 +1,21 @@
+msgid "edit_admin_setdirty_title"
+msgstr "Mark node for reindex process"
+
+msgid "edit_admin_localread_del_title"
+msgstr "Reprocess Localread (ACL-rights cache)"
+
+msgid "edit_admin_add_attribute"
+msgstr "Create new attribute"
+
+msgid "edit_admin_add_attributename"
+msgstr "Attribute name:"
+
+msgid "edit_admin_add_attributevalue"
+msgstr "Attribute value:"
+
+msgid "edit_admin_add_attr"
+msgstr "Save attribute"
+
+msgid "edit_clearfromcache"
+msgstr "Clear node from cache"
+

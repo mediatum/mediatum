@@ -1,0 +1,64 @@
+### edit news ###
+msgid  "edit_news_overviewheader"
+msgstr "Übersicht über die Mitteilungen"
+
+msgid "edit_news_start"
+msgstr "Start"
+
+msgid "edit_news_end"
+msgstr "Ende"
+
+msgid "edit_news_date"
+msgstr "Datum"
+
+msgid "edit_news_active"
+msgstr "Anzeigen"
+
+msgid "edit_news_visible"
+msgstr "Sichtbar"
+
+msgid "edit_news_type"
+msgstr "Typ"
+
+msgid "edit_news_messagedate"
+msgstr "Datum zum Eintrag"
+
+msgid "edit_news_title"
+msgstr "Titel"
+
+msgid "edit_news_message"
+msgstr "Mitteilung"
+
+msgid "edit_news_entries"
+msgstr "Einträge"
+
+msgid "edit_news_addentry"
+msgstr "Eintrag hinzufügen"
+
+msgid "edit_news_editentry"
+msgstr "Eintrag bearbeiten"
+
+msgid "edit_news_datefrom"
+msgstr "Datum ab:"
+
+msgid "edit_news_dateuntil"
+msgstr "Datum bis:"
+
+msgid "edit_news_entrytype"
+msgstr "Meldungstyp"
+
+msgid "edit_news_save"
+msgstr "Speichern"
+
+msgid "edit_news_cancel"
+msgstr "Abbrechen"
+
+msgid "edit_news_addtitle"
+msgstr "Mitteilung hinzufügen"
+
+msgid "edit_news_edittitle"
+msgstr "Mitteilung bearbeiten"
+
+msgid "edit_news_deletetitle"
+msgstr "Mitteilung löschen"
+

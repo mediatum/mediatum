@@ -1,0 +1,47 @@
+msgid "edit_upload_msg1"
+msgstr "Permission denied. You do not have the permission to add this object. Please contact your administrator."
+
+msgid "edit_upload_obj_selection"
+msgstr "Upload of digital objects (files) / creation of metadatasets<br/><br/>Step 1: Object type selection"
+
+msgid "edit_upload_msg2"
+msgstr "Please select an object type from the list below.<br/>For each type of object special upload forms are available, which offer respective functionality."
+
+msgid "edit_upload_obj_sel"
+msgstr "Choose object type:"
+
+msgid "edit_upload_selecttion_value"
+msgstr "Choose"
+
+msgid "edit_upload_header1"
+msgstr "Upload of digital objects (files) / creation of metadatasets<br/><br/>Step 1: Object type selection '${objtype}'"
+
+msgid "edit_upload_header2"
+msgstr "Step 2: Metadata scheme selection"
+
+msgid "edit_upload_header3"
+msgstr "Step 3: Select file for upload"
+
+msgid "edit_upload_header4"
+msgstr "Step 4: Create object / upload selected file"
+
+msgid "edit_upload_msg3"
+msgstr "Select file from your computer ("
+
+msgid "edit_upload_msg4"
+msgstr "If you want to upload several files at one time, then store them locally in a ZIP archive (e.g. <a target="
+
+msgid "edit_upload_scheme"
+msgstr "Metadata scheme:"
+
+msgid "edit_upload_file"
+msgstr "File"
+
+msgid "edit_upload_upload_label"
+msgstr "Create / Upload"
+
+msgid "edit_upload_typeselection"
+msgstr "-- Choose object type --"
+
+msgid "edit_upload_schemeselection"
+msgstr "-- Choose metadata schema --"

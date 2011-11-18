@@ -1,0 +1,66 @@
+msgid "admin_usergroup_existing"
+msgstr "Existing user groups"
+
+msgid "admin_usergroup_nogroups"
+msgstr "- no user groups defined -"
+
+msgid "admin_usergroup_edit"
+msgstr "edit user group"
+
+msgid "admin_usergroup_delete"
+msgstr "delete user group"
+
+msgid "admin_usergroup_create"
+msgstr "add new user group"
+
+msgid "admin_usergroup_footer"
+msgstr "${number} user groups"
+
+msgid "admin_usergroup_col_1"
+msgstr "user group"
+
+msgid "admin_usergroup_col_2"
+msgstr "# users"
+
+msgid "admin_usergroup_col_3"
+msgstr "# schemas"
+
+msgid "admin_usergroup_col_4"
+msgstr "editor filter"
+
+msgid "usergroup_option_1"
+msgstr "editor rights"
+
+msgid "usergroup_option_2"
+msgstr "workflow rights"
+
+msgid "admin_usergroup_msg1"
+msgstr "only empty user groups can be deleted"
+
+msgid "admin_usergroup_new_label"
+msgstr "add new user group"
+
+msgid "admin_usergroup_edit_label"
+msgstr "edit user groups"
+
+msgid "admin_usergroup_group"
+msgstr "user group"
+
+msgid "admin_usergroup_description"
+msgstr "description"
+
+msgid "admin_usergroup_options"
+msgstr "options"
+
+msgid "admin_usergroup_aclrule"
+msgstr "create access rule for current user group"
+
+msgid "admin_usergroup_hideedit_title"
+msgstr "editor functions with filter"
+
+msgid "admin_usergroup_rights"
+msgstr "hide editor modules:"
+
+msgid "admin_usergroup_emails"
+msgstr "emails:"
+

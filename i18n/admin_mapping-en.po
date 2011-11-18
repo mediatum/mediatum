@@ -1,0 +1,141 @@
+msgid "admin_mapping_existing"
+msgstr "Available Mapping definitions"
+
+msgid "admin_mapping_col_1"
+msgstr "Mapping Name"
+
+msgid "admin_mapping_col_2"
+msgstr "Namespace"
+
+msgid "admin_mapping_col_3"
+msgstr "Namespace URL"
+
+msgid "admin_mapping_col_4"
+msgstr "Description"
+
+msgid "admin_mapping_col_5"
+msgstr "Fields"
+
+msgid "admin_mapping_col_6"
+msgstr "Type"
+
+msgid "admin_mapping_col_7"
+msgstr "Active"
+
+msgid "admin_mapping_configuration"
+msgstr "Mapping Base Definition"
+
+msgid "admin_mapping_configtypes"
+msgstr "Mapping Types:"
+
+msgid "admin_mapping_type"
+msgstr "Mapping Type"
+
+msgid "admin_mapping_active"
+msgstr "Active"
+
+msgid "admin_mapping_create"
+msgstr "Create new mapping"
+
+msgid "admin_mapping_fieldlist_title"
+msgstr "edit fields"
+
+msgid "admin_mapping_edit_title"
+msgstr "edit mapping"
+
+msgid "admin_mapping_delete_title"
+msgstr "delete mapping"
+
+msgid "admin_mapping_new_label"
+msgstr "Create new Mapping"
+
+msgid "admin_mapping_edit_label"
+msgstr "Edit Mapping"
+
+msgid "admin_mapping_name"
+msgstr "Mapping Name"
+
+msgid "admin_mapping_namespace"
+msgstr "Namespace"
+
+msgid "admin_mapping_namespaceurl"
+msgstr "Namespace URL"
+
+msgid "admin_mapping_description"
+msgstr "Description"
+
+msgid "admin_mapping_header"
+msgstr "Header"
+
+msgid "admin_mapping_footer"
+msgstr "Footer"
+
+msgid "admin_mapping_separator"
+msgstr "Separator"
+
+msgid "admin_mapping_standardformat"
+msgstr "Std. format"
+
+msgid "admin_mapping_standardformat_description"
+msgstr "Available Variables:<br/>* [value] = attribute value<br/>* [field] = field name<br/>* [att:field] = name of attribute field<br/>* [att:id] = node id<br/>"
+
+msgid "admin_mapping_overview_footer"
+msgstr "${number} Mappings"
+
+msgid "admin_mapping_msg1"
+msgstr "mapping import (xml-file)"
+
+msgid "admin_mapping_import"
+msgstr "import"
+
+msgid "admin_mapping_exportall_title"
+msgstr "export all mappings"
+
+msgid "admin_mappingfield_existing"
+msgstr "Available Mapping fields of Mapping"
+
+msgid "admin_mappingfield_col_1"
+msgstr "Name"
+
+msgid "admin_mappingfield_col_2"
+msgstr "Description"
+
+msgid "admin_mappingfield_col_3"
+msgstr "Mandatory"
+
+msgid "admin_mappingfield_create"
+msgstr "Create new Mapping field"
+
+msgid "admin_mappingfield_edit_title"
+msgstr "Edit Mapping field"
+
+msgid "admin_mappingfield_delete_title"
+msgstr "delete Mapping field"
+
+msgid "admin_mappingfield_new_label"
+msgstr "Create new Mapping field"
+
+msgid "admin_mappingfield_edit_label"
+msgstr "Edit Mapping field"
+
+msgid "admin_mappingfield_name"
+msgstr "Mapping field Name"
+
+msgid "admin_mappingfield_description"
+msgstr "Description"
+
+msgid "admin_mappingfield_exportformat"
+msgstr "Line format"
+
+msgid "admin_mappingfield_mandatory"
+msgstr "Mandatory"
+
+msgid "admin_mappingfield_parent"
+msgstr "Parent"
+
+msgid "admin_mappingfield_nofields"
+msgstr "- no Mapping fields defined -"
+
+msgid "admin_mappingfield_footer"
+msgstr "${number} Mapping fields"
+

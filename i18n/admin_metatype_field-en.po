@@ -1,0 +1,120 @@
+msgid "admin_metafield_header"
+msgstr "fields of scheme '${name}'"
+
+msgid "admin_metafield_fieldlist"
+msgstr "open fieldlist"
+
+msgid "admin_metafield_col_1"
+msgstr "Name"
+
+msgid "admin_metafield_col_2"
+msgstr "Label"
+
+msgid "admin_metafield_col_3"
+msgstr "Field type"
+
+msgid "admin_metafield_order"
+msgstr "Order"
+
+msgid "admin_metafield_new_title"
+msgstr "add new metadata field"
+
+msgid "admin_metafield_nofield"
+msgstr "- no metadata fields defined -"
+
+msgid "admin_metafield_down_title"
+msgstr "move down"
+
+msgid "admin_metafield_up_title"
+msgstr "move up"
+
+msgid "admin_metafield_edit_title"
+msgstr "edit metadata field"
+
+msgid "admin_metafield_delete_title"
+msgstr "delete metadata field"
+
+msgid "admin_metafield_footer"
+msgstr "${number} fields"
+
+msgid "admin_metafield_msg1"
+msgstr "Field order can only be changed if list is sorted by the 'order' column (arrows will be colored)"
+
+msgid "admin_metafield_msg2"
+msgstr "Description will be used as help popup in metadata masks"
+
+msgid "admin_metafield_new_header"
+msgstr "Create new field for scheme '${name}'"
+
+msgid "admin_metafield_edit_header"
+msgstr "Edit '${field}' of scheme '${name}'"
+
+msgid "admin_metafield_error_1"
+msgstr "Name already assigned for this scheme."
+
+msgid "admin_metafield_name"
+msgstr "Name"
+
+msgid "admin_metafield_label"
+msgstr "Label"
+
+msgid "admin_metafield_type"
+msgstr "Type"
+
+msgid "admin_metafield_help_title"
+msgstr "Show help"
+
+msgid "admin_metafield_listvalues"
+msgstr "List values"
+
+msgid "admin_metafield_dateformat"
+msgstr "Date-/Time-format"
+
+msgid "admin_memofield_maxlength"
+msgstr "max. length"
+
+msgid "metafield_dateformat_std"
+msgstr "std. format (dd.mm.yyyy)"
+
+msgid "metafield_dateformat_year"
+msgstr "Year (yyyy)"
+
+msgid "metafield_dateformat_time"
+msgstr "Time (hh:mm:ss)"
+
+msgid "metafield_dateformat_month"
+msgstr "Month (mm)"
+
+msgid "metafield_dateformat_yearmonth"
+msgstr "Year, month (yyyy-mm)"
+
+msgid "admin_metafield_fields"
+msgstr "Metadata fields"
+
+msgid "admin_metafields_techfields"
+msgstr "Technical metadata field"
+
+msgid "admin_metafield_description"
+msgstr "Description"
+
+msgid "admin_metafield_options"
+msgstr "Options"
+
+msgid "admin_metafield_filter_name"
+msgstr "Name"
+
+msgid "admin_metafield_filter_label"
+msgstr "Label"
+
+msgid "metafield_option1"
+msgstr "search field"
+
+msgid "metafield_option2"
+msgstr "sort field"
+
+msgid "admin_metafield_error_4"
+msgstr "The name may only consist of the characters a to z, A to Z, 0 to 9 as well as '-', '_' and '.' !"
+
+msgid "admin_metafield_error_2"
+msgstr "The name may only consist of the characters a to z, A to Z, 0 to 9 as well as '-', '_' and '.' !"
+

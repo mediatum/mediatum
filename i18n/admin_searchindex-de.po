@@ -1,0 +1,82 @@
+### searchindex ###
+msgid "admin_menu_searchindex"
+msgstr "Suchindex Abgleich"
+
+msgid "admin_modules_searchindex"
+msgstr "Modul Searchindex"
+
+msgid "admin_modules_searchindex_evaluate"
+msgstr "Index untersuchen"
+
+msgid "admin_modules_searchindex_update"
+msgstr "Index aktualisieren"
+
+msgid "admin_modules_searchindex_return"
+msgstr "Zurück"
+
+msgid "admin_searchindex_evaluateIndex_label"
+msgstr "Index auswerten"
+
+msgid "admin_searchindex_evaluateIndex_title"
+msgstr "Index auswerten"
+
+msgid "admin_searchindex_evaluateIndex_description"
+msgstr "Mit dieser Funktion können Sie eine Untersuchung über den Suchindex starten. Es werden Ihre Mediatumdaten mit dem Suchindex verglichen und eine Logdatei geschrieben. Eine Zusammenfassung der Unterschiede wird danach angezeigt. Ein wirklicher Abgleich findet jedoch nicht statt. Die Laufzeit der Funktion kann abhängig vom Umfang Ihrer Daten beträchtlich sein."
+
+msgid "admin_searchindex_executeUpdate_label"
+msgstr "Update ausführen"
+
+msgid "admin_searchindex_executeUpdate_title"
+msgstr "Datenbank-Update ausführen"
+
+msgid "admin_searchindex_executeUpdate_description"
+msgstr "Mit dieser Funktion können Sie basierend auf des Ergebnisses der Untersuchung des Suchindex diesen aktualisieren. Die Aktion ist nicht mehr rückgängig machbar. Die Laufzeit der Funktion kann abhängig vom Umfang Ihrer Daten beträchtlich sein."
+
+msgid "admin_searchindex_examineLogfile_label"
+msgstr "Logfile anzeigen"
+
+msgid "admin_searchindex_examineLogfile_title"
+msgstr "Logfile auswerten"
+
+msgid "admin_searchindex_examineLogfile_description"
+msgstr "Mit dieser Funktion können Sie das Logfile des letzen Laufes zur Untersuchung des Suchindex anzeigen. Haben Sie gerade einen Suchlauf gestartet und das Ergebnis erhalten, so ist diese Funktion unnötig. Sie ist stattdessen gedacht für erneutes Betrachten der Ergebnisse, welche vor einiger Zeit erstellt wurden. Das Datum des letzten Laufs ist Bestandteil der Anzeige."
+
+msgid "admin_searchindex_selectIndex"
+msgstr "Wählen Sie den gewünschten Index (für Sektion Deletes) aus:"
+
+msgid "admin_searchindex_rbAll_title"
+msgstr "Alle Sektionen"
+
+msgid "admin_searchindex_rbDef_title"
+msgstr "Nur Sektion Definitionen"
+
+msgid "admin_searchindex_rbDelete_title"
+msgstr "Nur Sektion Deletes"
+
+msgid "admin_searchindex_rbUpdate_title"
+msgstr "Nur Sektion Updates"
+
+msgid "admin_searchindex_rbNSearch_title"
+msgstr "Normale Suche"
+
+msgid "admin_searchindex_rbESearch_title"
+msgstr "Erweiterte Suche"
+
+msgid "admin_searchindex_rbFSearch_title"
+msgstr "Volltextuche"
+
+msgid "admin_searchindex_resultEval"
+msgstr "<h2>Ergebnis Auswertung</h2>" 
+
+msgid "admin_searchindex_numberDefinitions"
+msgstr "Anzahl Definitionen: "
+
+msgid "admin_searchindex_numberDeletes"
+msgstr "Anzahl Deletes: "
+
+msgid "admin_searchindex_numberUpdates"
+msgstr "Anzahl Updates: "
+
+msgid "admin_searchindex_timeRun"
+msgstr "Zeitpunkt Lauf: "
+

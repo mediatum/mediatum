@@ -1,0 +1,120 @@
+msgid "admin_mask_header"
+msgstr "Masks of metadata scheme '${name}'"
+
+msgid "admin_mask_col_1"
+msgstr "Name"
+
+msgid "admin_mask_col_2"
+msgstr "Masktype"
+
+msgid "admin_mask_col_3"
+msgstr "Description"
+
+msgid "admin_mask_createstd_title"
+msgstr "Create std. mask automatically"
+
+msgid "admin_mask_create_title"
+msgstr "Create new mask"
+
+msgid "admin_mask_create"
+msgstr "Create new mask"
+
+msgid "admin_mask_nomask"
+msgstr "- no mask defined -"
+
+msgid "admin_mask_edit_field"
+msgstr "edit mask fields"
+
+msgid "admin_mask_clone_title"
+msgstr "clone mask"
+
+msgid "admin_mask_edit_title"
+msgstr "edit mask"
+
+msgid "admin_mask_edit"
+msgstr "edit mask"
+
+msgid "admin_mask_delete_title"
+msgstr "delete mask"
+
+msgid "admin_mask_footer"
+msgstr "${number} masks"
+
+msgid "admin_mask_error_1"
+msgstr "Name already assigned."
+
+msgid "admin_mask_name"
+msgstr "Name"
+
+msgid "admin_mask_type"
+msgstr "Mask type"
+
+msgid "admin_mask_description"
+msgstr "Description"
+
+msgid "admin_mask_col_4"
+msgstr "Default"
+
+msgid "admin_mask_col_5"
+msgstr "Language"
+
+msgid "admin_mask_col_6"
+msgstr "ACL"
+
+msgid "admin_mask_default"
+msgstr "Default Mask"
+
+msgid "admin_mask_language"
+msgstr "Language"
+
+msgid "admin_mask_type_text"
+msgstr "For some masktype are no default masks defined."
+
+msgid "admin_mask_exportmapping"
+msgstr "Definition"
+
+msgid "admin_mask_exportheader"
+msgstr "Header"
+
+msgid "admin_mask_exportfooter"
+msgstr "Footer"
+
+msgid "admin_mask_exportoptions"
+msgstr "Options"
+
+msgid "admin_mask_export_validatetypes"
+msgstr "validate datatypes (text in '')"
+
+msgid "admin_mask_export_endseparator"
+msgstr "line separator for last line"
+
+msgid "admin_mask_nomapping"
+msgstr "- no mapping -"
+
+msgid "admin_mask_acl_title"
+msgstr "metadatamask has an ACL-rule"
+
+msgid "admin_mask_separator"
+msgstr "Field Separator"
+
+msgid "masktype_empty"
+msgstr "-no type-"
+
+msgid "masktype_edit"
+msgstr "edit mask"
+
+msgid "masktype_search"
+msgstr "search mask"
+
+msgid "masktype_short"
+msgstr "short view"
+
+msgid "masktype_full"
+msgstr "full view"
+
+msgid "masktype_export"
+msgstr "export mask"
+
+msgid "admin_mask_error_2"
+msgstr "The name may only consist of the characters a to z, A to Z, 0 to 9 as well as '-' and '_' !"
+

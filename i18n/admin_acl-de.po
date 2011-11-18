@@ -1,0 +1,122 @@
+
+### acl ###
+msgid "admin_acl_existing"
+msgstr "Vorhandene Regeln"
+
+msgid "admin_acl_col_1"
+msgstr "Name"
+
+msgid "admin_acl_col_2"
+msgstr "Regel"
+
+msgid "admin_acl_col_3"
+msgstr "Beschreibung"
+
+msgid "admin_acl_create"
+msgstr "Neue Regel anlegen"
+
+msgid "admin_acl_noacl"
+msgstr "- keine Regeln vorhanden -"
+
+msgid "admin_acl_edit_title"
+msgstr "Regel bearbeiten"
+
+msgid "admin_acl_delete_title"
+msgstr "Regel löschen"
+
+msgid "admin_acl_footer"
+msgstr "${number} Regeln"
+
+msgid "admin_acl_rulename"
+msgstr "Regelname"
+
+msgid "admin_acl_description"
+msgstr "Beschreibung"
+
+msgid "admin_acl_rule"
+msgstr "Regel"
+
+msgid "admin_acl_popup_title"
+msgstr "Regel bearbeiten/bestellen"
+
+msgid "admin_acl_reset_title"
+msgstr "Regeleinträge löschen"
+
+msgid "admin_acl_missing_header"
+msgstr "Folgende Regeldefinitionen fehlen, werden aber genutzt:"
+
+### acl editor ###
+msgid "admin_acl_editor_title"
+msgstr "Administration Interface - Regeleditor"
+
+msgid "admin_acl_editor_header"
+msgstr "Regeleditor"
+
+msgid "admin_acl_editor_rulename"
+msgstr "Regel"
+
+msgid "admin_acl_editor_edit_rule"
+msgstr "Regel bearbeiten"
+
+msgid "admin_acl_editor_rename_title"
+msgstr "Regel übernehmen"
+
+msgid "admin_acl_editor_rename"
+msgstr "Übernehmen"
+
+msgid "admin_acl_editor_partlist_title"
+msgstr "Regel in Teileliste übertragen"
+
+msgid "admin_acl_editor_partlist"
+msgstr "in Teileliste"
+
+msgid "admin_acl_editor_argument"
+msgstr "Argument"
+
+msgid "admin_acl_editor_partlist_label"
+msgstr "Teileliste"
+
+msgid "admin_acl_editor_clearlist_title"
+msgstr "Löscht alle Einträge aus der Tileliste"
+
+msgid "admin_acl_editor_clearlist"
+msgstr "alle löschen"
+
+msgid "admin_acl_editor_copy_title"
+msgstr "Kopiert selektierten Eintrag in den Bearbeitungsbereich"
+
+msgid "admin_acl_editor_copy"
+msgstr "Selektion bearbeiten"
+
+msgid "admin_acl_editor_ruletype"
+msgstr "Regelart"
+
+msgid "admin_acl_editor_op1"
+msgstr "Wert 1"
+
+msgid "admin_acl_editor_op2"
+msgstr "Wert 2"
+
+msgid "admin_acl_editor_buttonok"
+msgstr " OK "
+
+msgid "admin_acl_editor_buttoncancel"
+msgstr " Abbrechen "
+
+msgid "admin_acl_editor_user"
+msgstr "User"
+
+msgid "admin_acl_editor_group"
+msgstr "Group"
+
+msgid "admin_acl_editor_operator"
+msgstr "Operator"
+
+msgid "admin_acl_editor_date"
+msgstr "Datum"
+
+msgid "admin_acl_editor_format"
+msgstr "Format"
+
+msgid "admin_acl_editor_ip"
+msgstr "IP"

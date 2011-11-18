@@ -1,0 +1,27 @@
+msgid "edit_meta_info1"
+msgstr "For this node type there aren't editable metadata fields available"
+
+msgid "edit_meta_info2"
+msgstr "Attention, objects with different meta data types were selected! Only objects of type <b>'${n}'</b> will be considered."
+
+msgid "edit_meta_mask_selection"
+msgstr "Mask selection"
+
+msgid "edit_mask"
+msgstr "Mask"
+
+msgid "edit_meta_save"
+msgstr "Save"
+
+msgid "edit_meta_reset"
+msgstr "Reset"
+
+msgid "edit_mask_required"
+msgstr "Required (not empty)"
+
+msgid "edit_meta_created"
+msgstr "created"
+
+msgid "edit_meta_changed"
+msgstr "last edit"
+

@@ -1,0 +1,48 @@
+### edit upload ###
+msgid "edit_upload_msg1"
+msgstr "Sie besitzen nicht die Berechtigung Objekte in das System einzustellen. Bitte wenden Sich an Ihren Administrator"
+
+msgid "edit_upload_obj_selection"
+msgstr "Hochladen von digitalen Objekten (Files) / Anlegen von Metadatensätzen<br/><br/>1. Schritt: Objekttyp-Auswahl"
+
+msgid "edit_upload_msg2"
+msgstr "Bitte wählen Sie aus der Liste unten den gewünschten Typ aus.<br/>Für jeden Objekttyp stehen spezielle Upload-Formulare zur Verfügung, die die entsprechende Funktionalität bieten."
+
+msgid "edit_upload_obj_sel"
+msgstr "Objekttyp wählen:"
+
+msgid "edit_upload_selecttion_value"
+msgstr "Auswählen"
+
+msgid "edit_upload_header1"
+msgstr "Hochladen von digitalen Objekten (Files) / Anlegen von Metadatensätzen.<br/><br/>1. Schritt: Objekttyp-Auswahl '${objtype}'"
+
+msgid "edit_upload_header2"
+msgstr "2. Schritt: Auswahl des Metadatenschemas für Objekttyp"
+
+msgid "edit_upload_header3"
+msgstr "3. Schritt: Auswahl von Dateien für den Upload / entfällt, wenn Sie nur einen Metadatensatz ohne zugehörige Datei anlegen wollen"
+
+msgid "edit_upload_header4"
+msgstr "4. Schritt: Datensatz anlegen / ausgewählte Datei hochladen"
+
+msgid "edit_upload_msg3"
+msgstr "Dazu wählen Sie die ensprechende Datei auf Ihrem Computer aus ("Durchsuchen"-Button) und bestätigen Sie mit "Hochladen"."
+
+msgid "edit_upload_msg4"
+msgstr "Wollen Sie mehrere Dateien auf einmal hochladen, so verpacken Sie diese bitte lokal bei sich in ein .ZIP Archiv (z.B. mit <a target="newwindow" href="http://www.winzip.com/">WinZip</a>), und laden dann das .ZIP Archiv hoch."
+
+msgid "edit_upload_scheme"
+msgstr "Metadatenschema wählen:"
+
+msgid "edit_upload_file"
+msgstr "Datei"
+
+msgid "edit_upload_upload_label"
+msgstr "Anlegen / Hochladen"
+
+msgid "edit_upload_typeselection"
+msgstr "-- Objekttyp wählen --"
+
+msgid "edit_upload_schemeselection"
+msgstr "-- Metadatenschema wählen --"

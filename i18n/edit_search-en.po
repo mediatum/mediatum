@@ -1,0 +1,30 @@
+msgid "edit_search_reset_msg"
+msgstr "Search was form reseted."
+
+msgid "edit_search_noresult_msg"
+msgstr "Your search resulted in no hits."
+
+msgid "edit_search_start"
+msgstr "New search"
+
+msgid "edit_search_search_for"
+msgstr "Search:"
+
+msgid "edit_search_type"
+msgstr "Type:"
+
+msgid "edit_search_fields"
+msgstr "Search fields:"
+
+msgid "edit_search_all_fields"
+msgstr "All meta data:"
+
+msgid "edit_search_search"
+msgstr "Search"
+
+msgid "edit_search_reset"
+msgstr "Reset"
+
+msgid "edit_search_index"
+msgstr "Last search index actualization:"
+

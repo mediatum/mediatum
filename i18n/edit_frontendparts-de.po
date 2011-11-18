@@ -1,0 +1,75 @@
+msgid "edit_frontendparts_name"
+msgstr "Name:"
+
+msgid "edit_frontendparts_type"
+msgstr "Typ:"
+
+msgid "edit_frontendparts_html"
+msgstr "HTML-Datei:"
+
+msgid "edit_frontendparts_link"
+msgstr "Link:"
+
+msgid "edit_frontendparts_node"
+msgstr "Konten:"
+
+msgid "edit_frontendparts_icon"
+msgstr "Icon:"
+
+msgid "edit_frontendparts_save"
+msgstr "Speichern"
+
+msgid "edit_frontendparts_cancel"
+msgstr "Abbrechen"
+
+msgid "edit_frontendparts_item_delete"
+msgstr "Soll der Eintrag wirklich gelöscht werden?"
+
+msgid "edit_frontendparts_header_title"
+msgstr "Header:"
+
+msgid "edit_frontendparts_footerleft_title"
+msgstr "Fußzeile links:"
+
+msgid "edit_frontendparts_footerright_title"
+msgstr "Fußzeile rechts:"
+
+msgid "edit_frontendparts_name_title"
+msgstr "Name"
+
+msgid "edit_frontendparts_link_title"
+msgstr "Link"
+
+msgid "edit_frontendparts_type_title"
+msgstr "Typ"
+
+msgid "edit_frontendparts_icon_title"
+msgstr "Icon"
+
+msgid "edit_frontendparts_selectnode_title"
+msgstr "Konten auswählen (Popup)"
+
+msgid "edit_frontendparts_selecticon_title"
+msgstr "Icon auswählen (Popup)"
+
+msgid "edit_frontendparts_deleteicon_title"
+msgstr "Icon löschen"
+
+msgid "edit_frontendparts_nodeheader"
+msgstr "Wählen Sie einen Knoten aus:"
+
+msgid "edit_frontendparts_iconheader"
+msgstr "Wählen Sie ein Icon aus:"
+
+msgid "edit_frontendparts_delete_title"
+msgstr "Eintrag löschen"
+
+msgid "edit_frontendparts_edit_title"
+msgstr "Eintrag bearbeiten"
+
+msgid "edit_frontendparts_order_title"
+msgstr "Reihenfolge ändern"
+
+msgid "edit_frontendparts_add_title"
+msgstr "Neuen Eintrag erzeugen"
+

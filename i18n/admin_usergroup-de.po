@@ -1,0 +1,66 @@
+### usergroup ###
+msgid "admin_usergroup_existing"
+msgstr "Vorhandene Benutzergruppen"
+
+msgid "admin_usergroup_nogroups"
+msgstr "- keine Benutzergruppen vorhanden -"
+
+msgid "admin_usergroup_edit"
+msgstr "Benutzergruppe bearbeiten"
+
+msgid "admin_usergroup_delete"
+msgstr "Benutzergruppe löschen"
+
+msgid "admin_usergroup_create"
+msgstr "Neue Benutzergruppe anlegen"
+
+msgid "admin_usergroup_footer"
+msgstr "${number} Gruppen"
+
+msgid "admin_usergroup_col_1"
+msgstr "Benutzergruppe"
+
+msgid "admin_usergroup_col_2"
+msgstr "# User"
+
+msgid "admin_usergroup_col_3"
+msgstr "# Schemata"
+
+msgid "admin_usergroup_col_4"
+msgstr "Editor Filter"
+
+msgid "usergroup_option_1"
+msgstr "Editorrechte"
+
+msgid "usergroup_option_2"
+msgstr "Workflowrechte"
+
+msgid "admin_usergroup_msg1"
+msgstr "Nur Gruppen, die keine Benutzer enthalten, können gelöscht werden"
+
+msgid "admin_usergroup_new_label"
+msgstr "Neue Benutzergruppe anlegen"
+
+msgid "admin_usergroup_edit_label"
+msgstr "Benutzergruppe bearbeiten"
+
+msgid "admin_usergroup_group"
+msgstr "Gruppe"
+
+msgid "admin_usergroup_description"
+msgstr "Beschreibung"
+
+msgid "admin_usergroup_options"
+msgstr "Optionen"
+
+msgid "admin_usergroup_aclrule"
+msgstr "Access Regel für diese Gruppe erstellen"
+
+msgid "admin_usergroup_hideedit_title"
+msgstr "Editorfunktionen gefiltert"
+
+msgid "admin_usergroup_rights"
+msgstr "Editormodule ausblenden:"
+
+msgid "admin_usergroup_emails"
+msgstr "eMails:"

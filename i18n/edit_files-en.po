@@ -1,0 +1,77 @@
+msgid "edit_files_filetype_error"
+msgstr "Exchange isn't possible, since the file types do not match."
+
+msgid "edit_files_files"
+msgstr "Files:"
+
+msgid "edit_files_attachments"
+msgstr "Attachments:"
+
+msgid "edit_files_stats"
+msgstr "Statistics:"
+
+msgid "edit_files_dirname"
+msgstr "Directory name: "
+
+msgid "edit_files_addthumbnail"
+msgstr "Add new thumbnail:"
+
+msgid "edit_files_add_attdir"
+msgstr "add attachment directory (all attachments will be saved in this directory)"
+
+msgid "edit_files_add_attfile"
+msgstr "add attachment"
+
+msgid "edit_files_type"
+msgstr "Type"
+
+msgid "edit_files_size"
+msgstr "Size"
+
+msgid "edit_files_mimetype"
+msgstr "Mimetype"
+
+msgid "edit_files_location"
+msgstr "Location / Name"
+
+msgid "edit_files_options"
+msgstr "Options"
+
+msgid "edit_files_opne_title"
+msgstr "Open"
+
+msgid "edit_files_change"
+msgstr "Exchange digital object"
+
+msgid "edit_files_add_obj"
+msgstr "Add digital object"
+
+msgid "edit_files_reprocess"
+msgstr "Re-process digital object"
+
+msgid "edit_files_reprocess_info"
+msgstr "(all technical metadata and thumbnails will be updated)"
+
+msgid "edit_files_obsolete"
+msgstr "Metadata fields not in use"
+
+msgid "edit_files_obsolete_del_title"
+msgstr "delete attribute"
+
+msgid "edit_files_metafields"
+msgstr "Metadata fields"
+
+msgid "edit_files_tech_meta"
+msgstr "technical metadata fields"
+
+msgid "edit_files_del_tech_meta"
+msgstr "delete technical metadata field"
+
+msgid "edit_files_removequestion"
+msgstr "Do you really want to remove selected object?"
+
+msgid "edit_files_order_label"
+msgstr "Change Order of Objects(Drag&Drop"
+
+msgid "edit_files_order_save"
+msgstr "Save Order"

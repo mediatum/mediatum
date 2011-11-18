@@ -1,0 +1,46 @@
+
+### admin logfiles ###
+msgid "admin_log_everything"
+msgstr "Komplett"
+
+msgid "admin_log_database"
+msgstr "Datenbank"
+
+msgid "admin_log_backend"
+msgstr "Backend"
+
+msgid "admin_log_frontend"
+msgstr "Frontend"
+
+msgid "admin_log_editor"
+msgstr "Editor"
+
+msgid "admin_log_usertracing"
+msgstr "User"
+
+msgid "admin_log_athana"
+msgstr "Athana"
+
+msgid "admin_log_existing"
+msgstr "Vorhandene Logdateien"
+
+msgid "admin_log_name"
+msgstr "Name"
+
+msgid "admin_log_path"
+msgstr "Pfad"
+
+msgid "admin_log_filesize"
+msgstr "Dateigröße"
+
+msgid "admin_log_nofiles"
+msgstr "- keine Logdateien vorhanden -"
+
+msgid "admin_log_show_title"
+msgstr "Logfile anzeigen"
+
+msgid "admin_log_footer"
+msgstr "${number} Dateien"
+
+msgid "admin_log_refresh"
+msgstr "Aktualisieren"

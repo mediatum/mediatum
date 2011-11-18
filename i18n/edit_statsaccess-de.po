@@ -1,0 +1,83 @@
+msgid "edit_stats_header"
+msgstr "Zugriffsstatistik für Kollektion"
+
+msgid "edit_stats_pages_of"
+msgstr "Seite %s von %s"
+
+msgid "edit_stats_period_header"
+msgstr "Berichtszeitraum"
+
+msgid "edit_stats_noaccess"
+msgstr "Im aktuell gewählten Berichtszeitraum erfolgten keine Zugriffe."
+
+msgid "edit_stats_stand"
+msgstr "Stand"
+
+msgid "edit_stats_access"
+msgstr "Zugriffe"
+
+msgid "edit_stats_country"
+msgstr "Verteilung nach Ländern"
+
+msgid "edit_stats_spreading"
+msgstr "Verteilung nach Datum"
+
+msgid "edit_stats_spreading_day"
+msgstr "Verteilung nach Wochentag"
+
+msgid "edit_stats_spreading_time"
+msgstr "Verteilung nach Uhrzeit"
+
+msgid "edit_stats_topten"
+msgstr "TOP 10"
+
+msgid "edit_stats_showall"
+msgstr "alle anzeigen..."
+
+msgid "edit_stats_showtopten"
+msgstr "TOP 10 anzeigen..."
+
+msgid "edit_stats_node"
+msgstr "Knoten"
+
+msgid "edit_stats_all"
+msgstr "Alle"
+
+msgid "edit_stats_day"
+msgstr "Tag"
+
+msgid "edit_stats_weekday"
+msgstr "Wochentag"
+
+msgid "edit_stats_diffusers"
+msgstr "unterschiedliche<br/>Besucher"
+
+msgid "edit_stats_pages"
+msgstr "Seiten"
+
+msgid "edit_stats_daytime"
+msgstr "Uhrzeit"
+
+msgid "edit_stats_popuptitle"
+msgstr "Statistik-Aktion"
+
+msgid "edit_stats_popupheader"
+msgstr "Statistik erneuern für aktuellen Knoten"
+
+msgid "edit_stats_popupupdatebutton"
+msgstr "Statistik aktualisieren"
+
+msgid "edit_stats_popuperror"
+msgstr "Daten können nicht aktualisiert werden, da bereits ein Update läuft.<br/>Versuchen Sie es später erneut."
+
+msgid "edit_stats_popup_close"
+msgstr "Fenster schließen"
+
+msgid "edit_stats_popupfooter"
+msgstr "Schließen Sie dieses Fenster erst, wenn Sie dazu aufgefordert werden."
+
+msgid "edit_stats_popupdone"
+msgstr "Die Daten wurden aktualisiert<br/>Sie können das Fenster jetzt schließen."
+
+msgid "edit_stats_sum"
+msgstr "Zugriffe insgesamt"

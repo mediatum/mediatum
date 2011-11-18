@@ -1,0 +1,64 @@
+### edit news ###
+msgid  "edit_news_overviewheader"
+msgstr "News Overview"
+
+msgid "edit_news_start"
+msgstr "Start"
+
+msgid "edit_news_end"
+msgstr "End"
+
+msgid "edit_news_date"
+msgstr "Date"
+
+msgid "edit_news_active"
+msgstr "Active"
+
+msgid "edit_news_visible"
+msgstr "Visible"
+
+msgid "edit_news_type"
+msgstr "Type"
+
+msgid "edit_news_messagedate"
+msgstr "Date belonging to entry"
+
+msgid "edit_news_title"
+msgstr "Title"
+
+msgid "edit_news_message"
+msgstr "Message"
+
+msgid "edit_news_entries"
+msgstr "Entries"
+
+msgid "edit_news_addentry"
+msgstr "Add entry"
+
+msgid "edit_news_editentry"
+msgstr "Edit entry"
+
+msgid "edit_news_datefrom"
+msgstr "Date from:"
+
+msgid "edit_news_dateuntil"
+msgstr "Date until:"
+
+msgid "edit_news_entrytype"
+msgstr "Entry type"
+
+msgid "edit_news_save"
+msgstr "Save"
+
+msgid "edit_news_cancel"
+msgstr "Cancel"
+
+msgid "edit_news_addtitle"
+msgstr "Add title"
+
+msgid "edit_news_edittitle"
+msgstr "Edit title"
+
+msgid "edit_news_deletetitle"
+msgstr "Delete title"
+

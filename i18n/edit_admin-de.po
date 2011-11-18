@@ -1,0 +1,21 @@
+### edit admin ###
+msgid "edit_admin_setdirty_title"
+msgstr "Knoten für Reindizierung markieren"
+
+msgid "edit_admin_localread_del_title"
+msgstr "Localread neu setzen (ACL-Rechte Cache)"
+
+msgid "edit_admin_add_attribute"
+msgstr "Neues Attribut erzeugen"
+
+msgid "edit_admin_add_attributename"
+msgstr "Attributname:"
+
+msgid "edit_admin_add_attributevalue"
+msgstr "Attributwert:"
+
+msgid "edit_admin_add_attr"
+msgstr "Speichern"
+
+msgid "edit_clearfromcache"
+msgstr "Knoten aus Cache löschen"

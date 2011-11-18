@@ -1,0 +1,165 @@
+msgid "admin_meta_existing"
+msgstr "existing metadata schemes"
+
+msgid "admin_meta_create"
+msgstr "add new metadata scheme"
+
+msgid "admin_meta_exportall_title"
+msgstr "export all metadata schemes"
+
+msgid "admin_meta_nometa"
+msgstr "- no metadata schemes defined -"
+
+msgid "admin_meta_editdetail"
+msgstr "edit fields"
+
+msgid "admin_meta_maskdetail_title"
+msgstr "edit masks"
+
+msgid "admin_meta_fieldoverview_title"
+msgstr "open field overview"
+
+msgid "admin_meta_export_title"
+msgstr "export metadata scheme"
+
+msgid "admin_meta_edit_title"
+msgstr "edit metadata scheme"
+
+msgid "admin_meta_delete_title"
+msgstr "delete metadata scheme"
+
+msgid "admin_meta_footer"
+msgstr "${number} schemes"
+
+msgid "admin_meta_msg1"
+msgstr "scheme import (xml-file)"
+
+msgid "admin_meta_msg2"
+msgstr "only metadataschemes without object can be deleted"
+
+msgid "admin_meta_msg3"
+msgstr "only active metadata schemes will be used for upload"
+
+msgid "admin_meta_import_title"
+msgstr "import from file"
+
+msgid "admin_meta_import"
+msgstr "import"
+
+msgid "admin_meta_col_1"
+msgstr "ID"
+
+msgid "admin_meta_col_2"
+msgstr "Name"
+
+msgid "admin_meta_col_3"
+msgstr "Description"
+
+msgid "admin_meta_col_4"
+msgstr "Active"
+
+msgid "admin_meta_col_5"
+msgstr "Datatypes"
+
+msgid "admin_meta_col_6"
+msgstr "ACL"
+
+msgid "admin_meta_col_7"
+msgstr "Searchindex"
+
+msgid "admin_meta_error_1"
+msgstr "Not all required fields were filled in."
+
+msgid "admin_meta_error_2"
+msgstr "Name already assigned."
+
+msgid "admin_meta_error_3"
+msgstr "Name already assigned."
+
+msgid "admin_meta_index_state_ok"
+msgstr "OK"
+
+msgid "admin_meta_index_state_title"
+msgstr "index for schema corrupt"
+
+msgid "admin_meta_id"
+msgstr "ID"
+
+msgid "admin_meta_name"
+msgstr "Name"
+
+msgid "admin_meta_description"
+msgstr "Description"
+
+msgid "wf_edit_stepname"
+msgstr "Workflow Step"
+
+msgid "wf_edit_stepitems"
+msgstr "Number of Objects"
+
+msgid "admin_meta_rights"
+msgstr "Rights"
+
+msgid "admin_meta_writerights"
+msgstr "Write Rights"
+
+msgid "admin_meta_active"
+msgstr "Active"
+
+msgid "admin_meta_datatype"
+msgstr "Datatypes"
+
+msgid "admin_meta_acl_title"
+msgstr "metadatascheme has an ACL-rule"
+
+msgid "admin_meta_active_title"
+msgstr "metadata scheme activated"
+
+msgid "admin_index_update_msg"
+msgstr "Search index is updated. This can take one moment."
+
+msgid "admin_metatype_filter_id"
+msgstr "Schema-ID"
+
+msgid "admin_metatype_filter_name"
+msgstr "Name"
+
+msgid "admin_metatype_reindex_title"
+msgstr "Search index for current schema is not active, update:"
+
+msgid "admin_metatype_reindex_button"
+msgstr "Reindex"
+
+msgid "admin_metatype_index_ok"
+msgstr "Search index for current schema is active."
+
+msgid "admin_infopopup_title"
+msgstr "Info"
+
+msgid "admin_infopopup_header"
+msgstr "Available types"
+
+msgid "admin_defpopup_title"
+msgstr "Metadata scheme info"
+
+msgid "admin_defpopup_header"
+msgstr "metadata scheme '${name}'"
+
+msgid "admin_defpopup_name"
+msgstr "Name"
+
+msgid "admin_defpopup_id"
+msgstr "ID"
+
+msgid "admin_defpopup_type"
+msgstr "Type"
+
+msgid "admin_defpopup_description"
+msgstr "Description"
+
+msgid "admin_meta_bibtex"
+msgstr "bibTeX import mapping"
+
+msgid "admin_meta_bibtex_warning"
+msgstr "(only use this for publications!)"
+

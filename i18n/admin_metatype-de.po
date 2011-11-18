@@ -1,0 +1,168 @@
+
+msgid "admin_meta_existing"
+msgstr "Vorhandene Metadatenschemata"
+
+msgid "admin_meta_create"
+msgstr "Neues Metadatenschema anlegen"
+
+msgid "admin_meta_exportall_title"
+msgstr "Alle Metadatenschemata exportieren"
+
+msgid "admin_meta_nometa"
+msgstr "- keine Metadatenschemata vorhanden -"
+
+msgid "admin_meta_editdetail"
+msgstr "Felder anzeigen/bearbeiten"
+
+msgid "admin_meta_maskdetail_title"
+msgstr "Masken anzeigen/bearbeiten"
+
+msgid "admin_meta_fieldoverview_title"
+msgstr "Feldübersicht über definierte Felder anzeigen"
+
+msgid "admin_meta_export_title"
+msgstr "Metadatenschema exportieren"
+
+msgid "admin_meta_edit_title"
+msgstr "Metadatenschema bearbeiten"
+
+msgid "admin_meta_delete_title"
+msgstr "Metadatenschema löschen"
+
+msgid "admin_meta_footer"
+msgstr "${number} Metadatenschemata"
+
+msgid "admin_meta_msg1"
+msgstr "Schema-Import aus XML-Datei"
+
+msgid "admin_meta_msg2"
+msgstr "nur Metadatenschemata, die keine Objekte enthalten, können gelöscht werden"
+
+msgid "admin_meta_msg3"
+msgstr "nur aktive Metadatenschemata werden für Uploads herangezogen"
+
+msgid "admin_meta_import_title"
+msgstr "aus Datei Importieren"
+
+msgid "admin_meta_import"
+msgstr "Importieren"
+
+msgid "admin_meta_col_1"
+msgstr "ID"
+
+msgid "admin_meta_col_2"
+msgstr "Name"
+
+msgid "admin_meta_col_3"
+msgstr "Beschreibung"
+
+msgid "admin_meta_col_4"
+msgstr "Aktiv"
+
+msgid "admin_meta_col_5"
+msgstr "Datentypen"
+
+msgid "admin_meta_col_6"
+msgstr "ACL"
+
+msgid "admin_meta_col_7"
+msgstr "Suchindex"
+
+msgid "admin_meta_error_1"
+msgstr "Nicht alle Pflichtfelder wurden ausgefüllt."
+
+msgid "admin_meta_error_2"
+msgstr "Ein Metadatenschema mit gleichem Namen ist bereits vorhanden."
+
+msgid "admin_meta_error_3"
+msgstr "Ein Metadatenschema mit gleichem Namen ist bereits für diesen Metadatentyp vorhanden."
+
+msgid "admin_meta_index_state_ok"
+msgstr "OK"
+
+msgid "admin_meta_index_state_title"
+msgstr "Index für Schema nicht synchron"
+
+msgid "admin_meta_id"
+msgstr "ID"
+
+msgid "admin_meta_name"
+msgstr "Name"
+
+msgid "admin_meta_description"
+msgstr "Beschreibung"
+
+msgid "wf_edit_stepname"
+msgstr "Workflow Schritt"
+
+msgid "wf_edit_stepitems"
+msgstr "Anzahl Objekte"
+
+msgid "admin_meta_rights"
+msgstr "Berechtigung"
+
+msgid "admin_meta_writerights"
+msgstr "Schreibrechte"
+
+msgid "admin_meta_active"
+msgstr "Aktiv"
+
+msgid "admin_meta_datatype"
+msgstr "Datentypen"
+
+msgid "admin_meta_acl_title"
+msgstr "Metadatenschema besitzt ACL-Regel"
+
+msgid "admin_meta_active_title"
+msgstr "Metadatendefinition ist aktiv"
+
+msgid "admin_index_update_msg"
+msgstr "Der Suchindex wird aktualisiert. Dies kann einen Moment dauern."
+
+msgid "admin_metatype_filter_id"
+msgstr "Schema-ID"
+
+msgid "admin_metatype_filter_name"
+msgstr "Name"
+
+msgid "admin_metatype_reindex_title"
+msgstr "Der Suchindex für das aktuelle Schema ist nicht aktuell, erneuern:"
+
+msgid "admin_metatype_reindex_button"
+msgstr "Reindex"
+
+msgid "admin_metatype_index_ok"
+msgstr "Der Suchindex für das aktuelle Metadatenschema ist aktuell."
+
+### metatype info popup ###
+msgid "admin_infopopup_title"
+msgstr "Info"
+
+msgid "admin_infopopup_header"
+msgstr "Mögliche Typen"
+
+### metatype definition overview popup ###
+msgid "admin_defpopup_title"
+msgstr "Metadatenschema-Info"
+
+msgid "admin_defpopup_header"
+msgstr "Metadatenschema '${name}'"
+
+msgid "admin_defpopup_name"
+msgstr "Name"
+
+msgid "admin_defpopup_id"
+msgstr "ID"
+
+msgid "admin_defpopup_type"
+msgstr "Typ"
+
+msgid "admin_defpopup_description"
+msgstr "Beschreibung"
+
+msgid "admin_meta_bibtex"
+msgstr "BibTeX-Import-Mapping"
+
+msgid "admin_meta_bibtex_warning"
+msgstr "(Nur für Veröffentlichungen!)"
+

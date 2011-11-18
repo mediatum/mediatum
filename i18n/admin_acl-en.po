@@ -1,0 +1,120 @@
+msgid "admin_acl_existing"
+msgstr "existing rules"
+
+msgid "admin_acl_col_1"
+msgstr "name"
+
+msgid "admin_acl_col_2"
+msgstr "rule"
+
+msgid "admin_acl_col_3"
+msgstr "description"
+
+msgid "admin_acl_create"
+msgstr "create new rule"
+
+msgid "admin_acl_noacl"
+msgstr "- no rules defined -"
+
+msgid "admin_acl_edit_title"
+msgstr "edit rule"
+
+msgid "admin_acl_delete_title"
+msgstr "delete rule"
+
+msgid "admin_acl_footer"
+msgstr "${number} rules"
+
+msgid "admin_acl_rulename"
+msgstr "rule name"
+
+msgid "admin_acl_description"
+msgstr "description"
+
+msgid "admin_acl_rule"
+msgstr "rule"
+
+msgid "admin_acl_popup_title"
+msgstr "edit rule"
+
+msgid "admin_acl_reset_title"
+msgstr "Delete rule entries"
+
+msgid "admin_acl_missing_header"
+msgstr "The following rule definitions are missing, but used in nodes:"
+
+msgid "admin_acl_editor_title"
+msgstr "Administration Interface - rule editor"
+
+msgid "admin_acl_editor_header"
+msgstr "Rule editor"
+
+msgid "admin_acl_editor_rulename"
+msgstr "rule"
+
+msgid "admin_acl_editor_edit_rule"
+msgstr "edit rule"
+
+msgid "admin_acl_editor_rename_title"
+msgstr "accept rule"
+
+msgid "admin_acl_editor_rename"
+msgstr "accept"
+
+msgid "admin_acl_editor_partlist_title"
+msgstr "copy to partlist"
+
+msgid "admin_acl_editor_partlist"
+msgstr "to partlist"
+
+msgid "admin_acl_editor_argument"
+msgstr "argument"
+
+msgid "admin_acl_editor_partlist_label"
+msgstr "partlist"
+
+msgid "admin_acl_editor_clearlist_title"
+msgstr "clear partlist"
+
+msgid "admin_acl_editor_clearlist"
+msgstr "clear all"
+
+msgid "admin_acl_editor_copy_title"
+msgstr "copy selected entry to editor area"
+
+msgid "admin_acl_editor_copy"
+msgstr "edit selection"
+
+msgid "admin_acl_editor_ruletype"
+msgstr "rule type"
+
+msgid "admin_acl_editor_op1"
+msgstr "value 1"
+
+msgid "admin_acl_editor_op2"
+msgstr "value 2"
+
+msgid "admin_acl_editor_buttonok"
+msgstr " OK "
+
+msgid "admin_acl_editor_buttoncancel"
+msgstr " Cancel "
+
+msgid "admin_acl_editor_user"
+msgstr "User"
+
+msgid "admin_acl_editor_group"
+msgstr "Group"
+
+msgid "admin_acl_editor_operator"
+msgstr "Operator"
+
+msgid "admin_acl_editor_date"
+msgstr "Date"
+
+msgid "admin_acl_editor_format"
+msgstr "Format"
+
+msgid "admin_acl_editor_ip"
+msgstr "IP"
+

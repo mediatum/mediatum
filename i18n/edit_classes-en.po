@@ -1,0 +1,14 @@
+msgid "edit_classes_class_title"
+msgstr "Classify"
+
+msgid "edit_classes_disclass_title"
+msgstr "Remove classification"
+
+msgid "edit_classes_open_title"
+msgstr "unfold"
+
+msgid "edit_classes_close_title"
+msgstr "fold"
+
+msgid "edit_classes_noparent"
+msgstr "Operation can not be performed as this is the only parent node."

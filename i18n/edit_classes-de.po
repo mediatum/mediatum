@@ -1,0 +1,17 @@
+### classes ###
+msgid "edit_classes_class_title"
+msgstr "Klassifizieren"
+
+msgid "edit_classes_disclass_title"
+msgstr "Klassifikation entfernen"
+
+msgid "edit_classes_open_title"
+msgstr "Aufklappen"
+
+msgid "edit_classes_close_title"
+msgstr "Zuklappen"
+
+msgid "edit_classes_noparent"
+msgstr "Operation kann nicht ausgeführt werden, da es sich um den einzigen Eltern-Knoten handelt."
+
+

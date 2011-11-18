@@ -1,0 +1,204 @@
+msgid "admin_wf_existing"
+msgstr "Existing workflows"
+
+msgid "admin_wf_col_1"
+msgstr "Name"
+
+msgid "admin_wf_col_2"
+msgstr "Description"
+
+msgid "admin_wf_col_3"
+msgstr "ACL (read)"
+
+msgid "admin_wf_col_4"
+msgstr "ACL (write)"
+
+msgid "admin_wf_exportall_title"
+msgstr "Export all workflows"
+
+msgid "admin_wf_create_title"
+msgstr "create new workflow"
+
+msgid "admin_wf_name"
+msgstr "Name"
+
+msgid "admin_wf_acl_title"
+msgstr "workflow uses ACL-rule"
+
+msgid "admin_wf_nowf"
+msgstr "- no workflows defined -"
+
+msgid "admin_wf_nodeedit_title"
+msgstr "edit workflow node"
+
+msgid "admin_wf_graphic_title"
+msgstr "show workflow definition (diagram)"
+
+msgid "admin_wf_export_title"
+msgstr "export workflow definition"
+
+msgid "admin_wf_edit_title"
+msgstr "edit workflow"
+
+msgid "admin_wf_delete_title"
+msgstr "delete workflow"
+
+msgid "admin_wf_footer"
+msgstr "${number} workflows"
+
+msgid "admin_fw_msg1"
+msgstr "workflow import (xml-file)"
+
+msgid "admin_wf_import"
+msgstr "Import"
+
+msgid "admin_wf_import_title"
+msgstr "Import"
+
+msgid "admin_wf_create_header"
+msgstr "create new workflow"
+
+msgid "admin_wf_edit_header"
+msgstr "edit workflow"
+
+msgid "admin_wf_writerights"
+msgstr "write access"
+
+msgid "admin_wf_nolimit"
+msgstr "-no limitation-"
+
+msgid "admin_wf_description"
+msgstr "Description"
+
+msgid "admin_wf_header"
+msgstr "Node of workflow '${name}'"
+
+msgid "admin_wf_showdef"
+msgstr "open workflow definition"
+
+msgid "admin_wfstep_col_1"
+msgstr "Name"
+
+msgid "admin_wfstep_col_2"
+msgstr "Node type"
+
+msgid "admin_wfstep_col_3"
+msgstr "True"
+
+msgid "admin_wfstep_col_4"
+msgstr "False"
+
+msgid "admin_wfstep_col_5"
+msgstr "Description"
+
+msgid "admin_wfstep_col_6"
+msgstr "ACL (read)"
+
+msgid "admin_wfstep_col_7"
+msgstr "ACL (write)"
+
+msgid "admin_wfstep_acl_title"
+msgstr "step uses ACL-rule"
+
+msgid "admin_wfstep_new_title"
+msgstr "Create new node"
+
+msgid "admin_wfstep_nostep"
+msgstr "- no workflow nodes defined -"
+
+msgid "admin_wfstep_chars"
+msgstr "${number} characters"
+
+msgid "admin_wfstep_edit"
+msgstr "edit node"
+
+msgid "admin_wfstep_delete"
+msgstr "delete node"
+
+msgid "admin_wfstep_footer"
+msgstr "${number} node"
+
+msgid "admin_wfstep_create_header"
+msgstr "create new workflow node"
+
+msgid "admin_wfstep_edit_header"
+msgstr "edit workflow node"
+
+msgid "admin_wfstep_name"
+msgstr "Name"
+
+msgid "admin_wfstep_adminstep"
+msgstr "Adminstep"
+
+msgid "admin_wfstep_msg1"
+msgstr "will be marked in workflow overview"
+
+msgid "admin_wfstep_nodetype"
+msgstr "Node type"
+
+msgid "admin_wfstep_comment"
+msgstr "Comment"
+
+msgid "admin_wfstep_truelabel"
+msgstr "Label for 'True' operation"
+
+msgid "admin_wfstep_truenode"
+msgstr "node for 'True'"
+
+msgid "admin_wfstep_nonode"
+msgstr "-no nodes-"
+
+msgid "admin_wfstep_falselabel"
+msgstr "Label for 'False' operation"
+
+msgid "admin_wfstep_falsenode"
+msgstr "node for 'False'"
+
+msgid "admin_wfstep_additional"
+msgstr "Additional information for current node type"
+
+msgid "admin_wf_definition"
+msgstr "Workflow definition"
+
+msgid "admin_wfstep_text_before_upload_form"
+msgstr "Text before upload form"
+
+msgid "admin_wfstep_text_after_upload_form"
+msgstr "Text after upload form"
+
+#msgid "admin_wfstep_node_types_to_create"
+#msgstr "node types to create (;-separated schema list)"
+
+msgid "admin_wfstep_editor_mask"
+msgstr "Editor mask"
+
+msgid "admin_wfstep_text_before_data"
+msgstr "Text before data"
+
+msgid "admin_wfstep_text_after_data"
+msgstr "Text after data"
+
+msgid "admin_wfstep_masks_to_display"
+msgstr "Masks to display (;-separated list)"
+
+msgid "admin_wfstep_email_sender"
+msgstr "Email address sender"
+
+msgid "admin_wfstep_email_recipient"
+msgstr "Email address recipient"
+
+msgid "admin_wfstep_email_subject"
+msgstr "Subject"
+
+msgid "admin_wfstep_email_text"
+msgstr "Text"
+
+msgid "admin_wfstep_email_text_editable"
+msgstr "Details editable?"
+
+msgid "admin_wfstep_email_text_editable_options"
+msgstr "Yes;No"
+
+msgid "admin_wfstep_textpage_text_to_display"
+msgstr "Text to display"
+

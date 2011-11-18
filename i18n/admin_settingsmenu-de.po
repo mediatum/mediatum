@@ -1,0 +1,62 @@
+
+
+
+msgid "admin_settings_adminmodules_header"
+msgstr "Admin-Menü"
+
+msgid "admin_settings_adminmodules_title"
+msgstr "Administrations-Menüstruktur"
+
+msgid "admin_settings_adminmodules_name"
+msgstr "Modulname"
+
+msgid "admin_settings_adminmodules_view"
+msgstr "Ein/Ausblenden"
+
+msgid "admin_modules_adminmodules_move"
+msgstr "Verschieben"
+
+msgid "admin_modules_adminmodules_std"
+msgstr "Standardmodul"
+
+msgid "admin_modules_adminmodules_showtitle"
+msgstr "Modul einblenden"
+
+msgid "admin_modules_adminmodules_hidetitle"
+msgstr "Modul ausblenden"
+
+msgid "admin_settings_adminmodules_reset"
+msgstr "Menü zurücksetzen"
+
+msgid "admin_settings_editmodules_header"
+msgstr "Edit-Menü"
+
+msgid "admin_settings_editmodule_selecttype"
+msgstr "Datentyp wählen:"
+
+msgid "admin_settings_editmenu_selectmodule"
+msgstr "Menü auswählen"
+
+msgid "admin_settings_editmenu_typeheader"
+msgstr "Edit-Menü für Datentyp:"
+
+msgid "admin_settings_editmodules_reset"
+msgstr "Menü zurücksetzen"
+
+msgid "admin_settings_editmodules_name"
+msgstr "Modulname"
+
+msgid "admin_settings_editmodules_view"
+msgstr "Ein/Ausblenden"
+
+msgid "admin_modules_editmodules_move"
+msgstr "Verschieben"
+
+msgid "admin_modules_editmodules_showtitle"
+msgstr "Modul einblenden"
+
+msgid "admin_modules_editmodules_hidetitle"
+msgstr "Modul ausblenden"
+
+msgid "admin_modules_editmodules_system"
+msgstr "Systemmodul"

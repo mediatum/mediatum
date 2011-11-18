@@ -1,0 +1,15 @@
+
+msgid "edit_stats_details"
+msgstr "details..."
+
+msgid "edit_stats_schema"
+msgstr "Metadatenschemata"
+
+msgid "edit_stats_updatebutton"
+msgstr "Statistik aktualisieren"
+
+msgid "edit_stats_allobjlabel"
+msgstr "Objekte gesamt"
+
+msgid "edit_stats_digobjlabel"
+msgstr "Objekte mit Digitalisat"

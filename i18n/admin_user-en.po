@@ -1,0 +1,135 @@
+msgid "yearbook_user"
+msgstr "Yearbook User"
+
+msgid "ldap_user"
+msgstr "LDAP User"
+
+msgid "user_option_1"
+msgstr "password changeable"
+
+msgid "user_option_2"
+msgstr "favourites savable"
+
+msgid "admin_user_existing"
+msgstr "Existing Users"
+
+msgid "admin_user_create"
+msgstr "create new user"
+
+msgid "admin_user_nousers"
+msgstr "- no users defined -"
+
+msgid "admin_user_stdpwd_title"
+msgstr "start password"
+
+msgid "admin_user_nostdpwd_title"
+msgstr "password has been changed"
+
+msgid "admin_user_sendmail_title"
+msgstr "send email to user"
+
+msgid "admin_user_edit_title"
+msgstr "edit user"
+
+msgid "admin_user_delete_title"
+msgstr "delete user"
+
+msgid "admin_user_footer"
+msgstr "${number} users"
+
+msgid "admin_user_col_1"
+msgstr "username"
+
+msgid "admin_user_col_2"
+msgstr "lastname"
+
+msgid "admin_user_col_3"
+msgstr "firstname"
+
+msgid "admin_user_col_4"
+msgstr "email"
+
+msgid "admin_user_col_5"
+msgstr "organisation"
+
+msgid "admin_user_col_6"
+msgstr "group(s)"
+
+msgid "admin_user_col_7"
+msgstr "std. password"
+
+msgid "admin_user_new_label"
+msgstr "add new user"
+
+msgid "admin_user_edit_label"
+msgstr "edit user"
+
+msgid "admin_user_username"
+msgstr "username"
+
+msgid "admin_user_email"
+msgstr "email"
+
+msgid "admin_user_groups"
+msgstr "user group(s)"
+
+msgid "admin_user_pwdchange_title"
+msgstr "reset password"
+
+msgid "admin_new_pwd"
+msgstr "new password"
+
+msgid "admin_user_msg1"
+msgstr "if empty, std. password will be used"
+
+msgid "admin_user_msg2"
+msgstr "Caution: Pressing the "
+
+msgid "admin_user_options"
+msgstr "options"
+
+msgid "admin_user_sender"
+msgstr "sender"
+
+msgid "admin_user_subject"
+msgstr "subject"
+
+msgid "admin_user_text"
+msgstr "text"
+
+msgid "admin_user_send"
+msgstr "send"
+
+msgid "admin_user_emailsend"
+msgstr "Email was send."
+
+msgid "admin_user_emailsenderror"
+msgstr "Error while sending email to user. No email was send."
+
+msgid "admin_user_filter_username"
+msgstr "username"
+
+msgid "admin_user_filter_lastname"
+msgstr "lastname"
+
+msgid "admin_user_importintern"
+msgstr "import user to intern users"
+
+msgid "admin_user_lastname"
+msgstr "Last Name"
+
+msgid "admin_user_firstname"
+msgstr "First Name"
+
+msgid "admin_user_telephone"
+msgstr "Phone"
+
+msgid "admin_user_comment"
+msgstr "Comment"
+
+msgid "admin_user_organisation"
+msgstr "Organisation"
+
+msgid "admin_user_create_acl"
+msgstr "Create/Update ACL rule"
+

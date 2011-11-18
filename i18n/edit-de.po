@@ -1,0 +1,309 @@
+### edit area ###
+msgid "edit_module_error"
+msgstr "Das Modul '${name}' konnte nicht geladen werden."
+
+msgid "edit_template_error"
+msgstr "Bei der Verarbeitung des Templates ist ein Fehler aufgetreten. Den genauen Fehler können Sie untenstehender Meldung entnehmen:"
+
+msgid "edit_error_msg"
+msgstr "Sie besitzen nicht die notwendigen Rechte, um den Editorbereich zu betreten.<br/> Falls Sie nicht angemeldet sein sollten, können Sie das ${link}"
+
+msgid "edit_linktext"
+msgstr "hier"
+
+msgid "edit_nodeinformation"
+msgstr "Node Informationen"
+
+msgid "edit_id"
+msgstr "Id"
+
+msgid "edit_objecttype"
+msgstr "Objekttyp"
+
+msgid "edit_schema"
+msgstr "Metadatenschema"
+
+msgid "edit_objectname"
+msgstr "Name"
+
+msgid "edit_error"
+msgstr "Fehler"
+
+msgid "edit_nobase"
+msgstr "Kein Basisverzeichnis ausgewählt (${msg})"
+
+msgid "edit_main_title"
+msgstr "mediatum"
+
+msgid "edit_main_noframe"
+msgstr "Ihr Browser unterstützt keine Frames."
+
+msgid "edit_save"
+msgstr "Speichern"
+
+msgid "edit_save_title"
+msgstr "Änderungen speichern"
+
+msgid "edit_ok"
+msgstr "OK"
+
+msgid "edit_cancel"
+msgstr "Abbrechen"
+
+msgid "edit_error_msg1"
+msgstr "Ordner konnte nicht erstellt werden: Der übergeordnete Ordner ist schreibgeschützt."
+
+msgid "edit_action_msg"
+msgstr "Die Aktion ${action} wird ausgeführt"
+
+msgid "edit_add_folder"
+msgstr "Neuer Ordner"
+
+msgid "edit_add_collection"
+msgstr "Neue Kollektion"
+
+msgid "edit_nopermission"
+msgstr "Keine Berechtigung"
+
+msgid "edit_noselection"
+msgstr "nichts ausgewählt"
+
+msgid "edit_taboverview_header"
+msgstr "Ausgewählt/in Bearbeitung:"
+
+msgid "edit_actual_dir"
+msgstr "Aktuelles Verzeichnis:"
+
+msgid "edit_tabarea_msg1"
+msgstr "Die folgende Ansicht zeigt, wie dieses Objekt innerhalb der normalen Rechercheoberfläche aussehen könnte. (Die tatsächliche Ansicht ist möglicherweise etwas anders, je nachdem welches Design bzw. welcher Skin eingerichtet ist)"
+
+msgid "edit_tabarea_msg2"
+msgstr "Durch das Anklicken von Links auf dieser Seite verlassen Sie die Editieroberfläche."
+
+msgid "edit_files"
+msgstr "Dateien:"
+
+msgid "edit_dir"
+msgstr "Ordner:"
+
+msgid "edit_action_file_upload"
+msgstr "Eingeben / Hochladen"
+
+msgid "edit_action_file_import"
+msgstr "BibTex Importieren"
+
+msgid "edit_action_file_move"
+msgstr "Verschieben nach..."
+
+msgid "edit_action_file_copy"
+msgstr "Kopieren nach..."
+
+msgid "edit_action_file_delete"
+msgstr "Löschen"
+
+msgid "edit_action_file_edit"
+msgstr "Gleichzeitig Bearbeiten"
+
+msgid "edit_action_file_editsingle"
+msgstr "Einzeln Bearbeiten"
+
+msgid "edit_action_dir_new"
+msgstr "Neu Anlegen"
+
+msgid "edit_action_new"
+msgstr "Neu Anlegen"
+
+msgid "edit_action_dir_edit"
+msgstr "Bearbeiten"
+
+msgid "edit_action_dir_move"
+msgstr "Verschieben nach..."
+
+msgid "edit_action_dir_sort"
+msgstr "Unterordner sortieren"
+
+msgid "edit_action_dir_copy"
+msgstr "Kopieren nach..."
+
+msgid "edit_action_dir_del"
+msgstr "Löschen"
+
+msgid "edit_action_file_publish"
+msgstr "Publizieren"
+
+msgid "edit_dirty"
+msgstr "Dirty-Flag"
+
+msgid "edit_localread"
+msgstr "Localread-Flag"
+
+### edit frontendparts ###
+msgid "item_type_intern"
+msgstr "HTML-Seite"
+
+msgid "item_type_text"
+msgstr "Text (Label)"
+
+msgid "item_type_link"
+msgstr "Link"
+
+msgid "item_type_node"
+msgstr "mediatum-Knoten"
+
+
+
+### workflow ###
+msgid "edit_workflow_msg1"
+msgstr "Das aktuelle Objekt ist in keinem Workflow eingebunden. Um es in einen Workflow zuzuordnen, w&auml;hlen Sie einen aus der Liste und bestätigen mit 'Speichern'."
+
+msgid "edit_wirfklows_wf"
+msgstr "Workflows"
+
+msgid "edit_workflow_msg2"
+msgstr "Aktuelle Position im Workflow: ${name}"
+
+msgid "edit_workflow_msg3"
+msgstr "Folgende Operationen sind möglich:"
+
+msgid "edit_workflow_delete"
+msgstr "Entfernen"
+
+msgid "edit_workflow_delfromwf"
+msgstr "Aus Workflow entfernen"
+
+msgid "edit_object_not_viewable"
+msgstr "Dieses Objekt hat keine Ansicht"
+
+msgid "edit_save_title"
+msgstr "Speichern"
+
+msgid "delete_folder_question"
+msgstr "Wenn Sie diesen Ordner löschen, sind alle Dateien und Unterverzeichnisse darin unwiderruflich verloren. Löschen durchführen?"
+
+msgid "delete_root_error_msg"
+msgstr "Die gewählte Kollektion kann nicht gelöscht werden!"
+
+msgid "delete_object_question"
+msgstr "Markierte Objekte in den Papierkorb verschieben?"
+
+msgid "clear_trash_question"
+msgstr "Beim Leeren des Papierkorbs gehen alle enthaltenen Dateien und Unterverzeichnisse unwiderruflich verloren. Löschen durchführen?"
+
+msgid "edit_action_clear_trash"
+msgstr "Papierkorb leeren"
+
+
+msgid "select_target_dir"
+msgstr "Zielverzeichnis aussuchen:"
+
+msgid "fieldsmissing"
+msgstr "Nicht alle Pflichtfelder wurden korrekt bef&uuml;llt."
+
+msgid "saved_in_inconsistent_data"
+msgstr "Eine Kopie wurde im Ordner 'Inkonsistente Daten' gespeichert."
+
+msgid "no_more_entries"
+msgstr "Diese Datei war keinem Verzeichnis mehr zugeordnet."
+
+msgid "no_file_transferred"
+msgstr "Es wurde keine Datei auf den Server &uuml;bertragen."
+
+msgid "edit_create_new_folder"
+msgstr "Ordner konnte nicht erstellt werden: Der Übergeordnete Ordner ist schreibgeschützt."
+
+msgid "edit_tree_editor_title"
+msgstr "Tree Editor"
+
+msgid "edit_access_error"
+msgstr "Nicht berechtigt"
+
+msgid "edit_common_mark"
+msgstr "Markieren"
+
+msgid "edit_common_mark_all"
+msgstr "Alles markieren"
+
+msgid "edit_common_dismark"
+msgstr "Markierung aufheben"
+
+msgid "edit_common_mark_invert"
+msgstr "Markierung invertieren"
+
+msgid "edit_common_meta_error"
+msgstr "Metadaten inkonsistent"
+
+msgid "edit_common_bigview_title"
+msgstr "Großansicht"
+
+msgid "edit_common_edit_meta"
+msgstr "Metadaten bearbeiten"
+
+msgid "edit_editor_save"
+msgstr "Speichern"
+
+msgid "edit_editor_save_title"
+msgstr "Änderungen speichern"
+
+msgid "edit_editor_delete"
+msgstr "HTML-Daten löschen"
+
+msgid "edit_editor_delete_title"
+msgstr "HTML-Daten löschen"
+
+msgid "edit_editor_new_file"
+msgstr "neu erzeugte Datei"
+
+msgid "edit_editor_header"
+msgstr "Im Augenblick sind folgende Daten f&uuml;r dieses Archiv hinterlegt:"
+
+msgid "edit_flush"
+msgstr "System Caches wurden geleert"
+
+####
+msgid "user_directory"
+msgstr "Arbeitsverzeichnis"
+
+msgid "user_upload"
+msgstr "Uploads"
+
+msgid "user_import"
+msgstr "Importe"
+
+msgid "unpublished_objects1"
+msgstr "Hinweis: Dieser Ordner enthält unpublizierte Objekte (Objekte die bisher nach aussen nicht sichtbar sind)."
+
+msgid "unpublished_objects2"
+msgstr "Unpublizierte Objekte jetzt publizieren (Quick-Publisher)"
+
+msgid "user_faulty"
+msgstr "Inkonsistente Daten"
+
+msgid "user_trash"
+msgstr "Papierkorb"
+
+msgid "editor_overwrite"
+msgstr "überschreiben"
+
+msgid "editor_from"
+msgstr "von"
+
+msgid "editor_to"
+msgstr "bis"
+
+msgid "editor_input_format"
+msgstr "Eingabeformat: "
+
+msgid "editor_memo_label"
+msgstr "Zeichen übrig"
+
+
+######################################
+
+msgid "editor_main_header"
+msgstr "mediaTUM Editor Interface"
+
+######################################
+
+
+msgid "notpublished"
+msgstr "Nicht publiziert"

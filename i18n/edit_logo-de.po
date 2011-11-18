@@ -1,0 +1,35 @@
+msgid "edit_logo_logoheader"
+msgstr "Logo:"
+
+msgid "edit_logo_del_button"
+msgstr "Logo löschen"
+
+msgid "edit_logo_no_logo"
+msgstr "kein Logo"
+
+msgid "edit_logo_zoom"
+msgstr "(Vergrößerung beim Darüberfahren)"
+
+msgid "edit_logo_addfile"
+msgstr "Datei hinzufügen:"
+
+msgid "edit_logo_selecttitle"
+msgstr "als Logo auswählen"
+
+msgid "edit_logo_link_label"
+msgstr "Link hinter Logo: "
+
+msgid "edit_logo_test_title"
+msgstr "Link testen"
+
+msgid "edit_logo_savechanges"
+msgstr "Änderungen speichern"
+
+msgid "edit_logo_reset"
+msgstr "Zurücksetzen"
+
+msgid "edit_logo_changeheader"
+msgstr "Logo austauschen:"
+
+msgid "edit_logo_filetypeerror"
+msgstr "Die hochgeladene Datei hat keinen unterstützen Dateityp für Logos. Zugelassen sind nur Dateien vom Typ '.jpeg', '.jpg', '.gif' oder '.png'."

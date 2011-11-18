@@ -1,0 +1,31 @@
+
+# edit manage-index
+msgid "edit_manageindex_step1_header"
+msgstr "Step 1: Select a metadata schema"
+
+msgid "edit_manageindex_step2_header"
+msgstr "Step 2: Select the desired field"
+
+msgid "edit_manageindex_step3_header"
+msgstr "Step 3: Select the desired index value(s) for replacement"
+
+msgid "edit_manageindex_step4_header"
+msgstr "Step 4: Select replacement text"
+
+msgid "edit_manageindex_empty"
+msgstr "Ignore empty values"
+
+msgid "edit_manageindex_submit"
+msgstr "Perform changes"
+
+msgid "edit_manageindex_choose_scheme"
+msgstr "- Choose schema -"
+
+msgid "edit_manageindex_choose_field"
+msgstr "- Choose index field -"
+
+msgid "edit_manageindex_result"
+msgstr "The following nodes have been found:"
+
+msgid "edit_manageindex_items"
+msgstr "Operation for ${number} nodes performed"

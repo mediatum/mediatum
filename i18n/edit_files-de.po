@@ -1,0 +1,95 @@
+msgid "edit_files_filetype_error"
+msgstr "Austausch nicht möglich, da die Dateitypen nicht übereinstimmen."
+
+msgid "edit_files_files"
+msgstr "Dateien:"
+
+msgid "edit_files_attachments"
+msgstr "Attachments:"
+
+msgid "edit_files_stats"
+msgstr "Statistik:"
+
+msgid "edit_files_dirname"
+msgstr "Verzeichnisname: "
+
+msgid "edit_files_addthumbnail"
+msgstr "Thumbnail neu hochladen:"
+
+msgid "edit_files_add_attdir"
+msgstr "Attachment-Verzeichnis hinzufügen (alle weiteren Attachments werden in diesem Verzeichnis gespeichert)"
+
+msgid "edit_files_add_attfile"
+msgstr "Attachment hinzufügen"
+
+msgid "edit_files_type"
+msgstr "Typ"
+
+msgid "edit_files_size"
+msgstr "Größe"
+
+msgid "edit_files_mimetype"
+msgstr "Mimetype"
+
+msgid "edit_files_location"
+msgstr "Lokation / Name"
+
+msgid "edit_files_options"
+msgstr "Optionen"
+
+msgid "edit_files_opne_title"
+msgstr "Öffnen"
+
+msgid "edit_files_change"
+msgstr "Digitales Objekt austauschen"
+
+msgid "edit_files_add_obj"
+msgstr "Digitales Objekt hinzufügen"
+
+msgid "edit_files_reprocess"
+msgstr "Digitales Objekt erneut verarbeiten"
+
+msgid "edit_files_reprocess_info"
+msgstr "(dabei werden alle Operationen ausgeführt, die notwendig sind, um Technische-Metadaten und die Thumbnails zu erzeugen)"
+
+msgid "edit_files_obsolete"
+msgstr "nicht verwendete Metadatenfelder"
+
+msgid "edit_files_obsolete_del_title"
+msgstr "Attribut löschen"
+
+msgid "edit_files_metafields"
+msgstr "Metadatenfelder"
+
+msgid "edit_files_tech_meta"
+msgstr "technische Metadatenfelder"
+
+msgid "edit_files_del_tech_meta"
+msgstr "Technische Metadaten löschen"
+
+msgid "edit_files_removequestion"
+msgstr "Soll das Objekt wirklich abgetrennt werden?"
+
+msgid "edit_files_childobjects"
+msgstr "Angehängte Objekte:"
+
+msgid "edit_files_choosefile"
+msgstr "Datei wählen:"
+
+msgid "edit_files_choosedirectory"
+msgstr "Verzeichnisauswahl:"
+
+msgid "edit_files_add_title"
+msgstr "Neu hinzufügen"
+
+msgid "edit_files_edit_child"
+msgstr "Objekt bearbeiten..."
+
+msgid "edit_files_delete_child"
+msgstr "Objekt entfernen..."
+
+msgid "edit_files_order_label"
+msgstr "Reihenfolge der Objekte per Drag&Drop ändern"
+
+msgid "edit_files_order_save"
+msgstr "Reihenfolge speichern"

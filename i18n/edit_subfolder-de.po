@@ -1,0 +1,36 @@
+msgid "edit_sort_header"
+msgstr "Manuell sortieren"
+
+msgid "edit_sort_header2"
+msgstr "Kollektions Sortierung"
+
+msgid "edit_sort_label"
+msgstr "Automatisch sortieren"
+
+msgid "edit_sort_label_1"
+msgstr "Nach Attribut:"
+
+msgid "edit_sort_up"
+msgstr "aufsteigend"
+
+msgid "edit_sort_down"
+msgstr "absteigend"
+
+msgid "edit_sort_position"
+msgstr "Position"
+
+msgid "edit_sort_name"
+msgstr "Name"
+
+msgid "edit_sort_down_title"
+msgstr "nach unten"
+
+msgid "edit_sort_up_title"
+msgstr "nach oben"
+
+msgid "edit_sort_header_auto"
+msgstr "Automatisch sortieren"
+
+msgid "edit_sort_sort"
+msgstr "Sortieren"
+

@@ -1,0 +1,183 @@
+msgid "admin_print_title"
+msgstr "print current page"
+
+msgid "admin_menu_menumain"
+msgstr "Main Menu"
+
+msgid "admin_menu_start"
+msgstr "Start"
+
+msgid "admin_menu_menuuser"
+msgstr "User administration"
+
+msgid "admin_menu_menuuser_description"
+msgstr "Maintenance of Usergroups and Users"
+
+msgid "admin_menu_usergroup"
+msgstr "Usergroups"
+
+msgid "admin_menu_user"
+msgstr "Users"
+
+msgid "admin_menu_menuacl"
+msgstr "Access Rights"
+
+msgid "admin_menu_menuacl_description"
+msgstr "Maintenance of ACL-rules"
+
+msgid "admin_menu_acls"
+msgstr "ACL editor"
+
+msgid "admin_menu_menudata"
+msgstr "Datatypes"
+
+msgid "admin_menu_menudata_description"
+msgstr "Maintenance Datatypes"
+
+msgid "admin_menu_metatype"
+msgstr "Types of Metadata"
+
+msgid "admin_menu_mapping"
+msgstr "Mapping of Metadata"
+
+msgid "admin_menu_menuworkflow"
+msgstr "Workflows"
+
+msgid "admin_menu_menuworkflow_description"
+msgstr "Maintenance of Workflows"
+
+msgid "admin_menu_workflows"
+msgstr "Workflow"
+
+msgid "admin_menu_menusystem"
+msgstr "System"
+
+msgid "admin_menu_menusystem_description"
+msgstr "Maintenance of System Options"
+
+msgid "admin_menu_logfile"
+msgstr "Log Files"
+
+msgid "admin_menu_flush"
+msgstr "Caches"
+
+msgid "admin_menu_settings"
+msgstr "mediatum configuration"
+
+msgid "admin_menu_settingsmenu"
+msgstr "Menu configuration"
+
+msgid "admin_error"
+msgstr "You're not allowed to access the administration area.<br/> You can logon here: ${link}"
+
+msgid "admin_linktext"
+msgstr "here"
+
+msgid "admin_overview"
+msgstr "Overview"
+
+msgid "admin_allelements_title"
+msgstr "show all elements"
+
+msgid "admin_allelements"
+msgstr "show all"
+
+msgid "admin_pageelements_title"
+msgstr "show by page"
+
+msgid "admin_pageelements"
+msgstr "by page"
+
+msgid "admin_page"
+msgstr "page"
+
+msgid "admin_sort_label"
+msgstr "sort values according to current column"
+
+msgid "admin_mandatory_error"
+msgstr "Not all required fields were filled out."
+
+msgid "admin_duplicate_error"
+msgstr "Name already assigned."
+
+msgid "admin_mandatory_info"
+msgstr "Required (not empty)"
+
+msgid "admin_save_title"
+msgstr "save changes"
+
+msgid "admin_save"
+msgstr "Save"
+
+msgid "admin_cancel_title"
+msgstr "Back to overview"
+
+msgid "admin_cancel"
+msgstr "Cancel"
+
+msgid "admin_header"
+msgstr "mediaTUM Administration Interface"
+
+msgid "admin_title"
+msgstr "mediaTUM Administration Interface"
+
+msgid "admin_filter_label"
+msgstr "Filter:"
+
+msgid "e_acls"
+msgstr "acl-functions"
+
+msgid "e_classes"
+msgstr "classifiaction"
+
+msgid "e_editor"
+msgstr "html editor (start page)"
+
+msgid "e_files"
+msgstr "technical metadata"
+
+msgid "e_license"
+msgstr "license functions"
+
+msgid "e_logo"
+msgstr "logo functions"
+
+msgid "e_lza"
+msgstr "long-term preservation"
+
+msgid "e_metadata"
+msgstr "metadata editor"
+
+msgid "e_search"
+msgstr "search"
+
+msgid "e_searchmask"
+msgstr "search mask functions"
+
+msgid "e_sort"
+msgstr "sort functions"
+
+msgid "e_sortfiles"
+msgstr "file sort functions"
+
+msgid "e_subfolder"
+msgstr "sort subfolder"
+
+msgid "e_upload"
+msgstr "file upload"
+
+msgid "e_workflow"
+msgstr "workflow functions"
+
+msgid "e_publish"
+msgstr "publishing"
+
+msgid "e_changeschema"
+msgstr "schema type change"
+
+msgid "admin_filter_all"
+msgstr "all"
+
+msgid "admin_filter_else"
+msgstr "else"
+

@@ -1,0 +1,54 @@
+
+msgid "edit_ftp_nofiles"
+msgstr "For the selected directory there are no FTP data available."
+
+msgid "edit_ftp_files"
+msgstr "Files:"
+
+msgid "edit_ftp_type"
+msgstr "Type"
+
+msgid "edit_ftp_size"
+msgstr "Size"
+
+msgid "edit_ftp_mimetype"
+msgstr "Mimetype"
+
+msgid "edit_ftp_location"
+msgstr "Location/Name"
+
+msgid "edit_ftp_options"
+msgstr "Options"
+
+msgid "edit_ftp_chooseall_title"
+msgstr "select/deselect all"
+
+msgid "edit_ftp_open_title"
+msgstr "open/show file"
+
+msgid "edit_ftp_chooseschema"
+msgstr "- Choose schema -"
+
+msgid "edit_ftp_delete_title"
+msgstr "Delete file..."
+
+msgid "edit_ftp_process_title"
+msgstr "Process file..."
+
+msgid "edit_ftp_deletea_title"
+msgstr "Delete files..."
+
+msgid "edit_ftp_processa_title"
+msgstr "Process files..."
+
+msgid "edit_ftp_alllabel"
+msgstr "Process selected file:"
+
+msgid "edit_ftp_error1"
+msgstr "Processing not possible: For the selected file no schema has been provided."
+
+msgid "edit_ftp_error2"
+msgstr "Processing not possible: For at least one data type no schema has been provided."
+
+msgid "edit_ftp_wrongtype"
+msgstr "- file type not supported -"

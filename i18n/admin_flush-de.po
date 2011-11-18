@@ -1,0 +1,29 @@
+
+### flush ###
+msgid "admin_flush_operations"
+msgstr "Mögliche Funktionen"
+
+msgid "admin_flush_data_label"
+msgstr "Datencache leeren"
+
+msgid "admin_flush_data_title"
+msgstr "Datencache leeren"
+
+msgid "admin_flush_data_description"
+msgstr "In den Datencaches werden die Informationen zu bereits geladenen Knoten gespeichert.<br> Wenn Manipulationen direkt an der Datenbank stattgefunden haben,<br> müssen die Caches geleert werden, damit Änderungen wirksam werden."
+
+msgid "admin_flush_data_cleared"
+msgstr "Datencaches wurden geleert."
+
+msgid "admin_flush_all_label"
+msgstr "Alle Caches leeren"
+
+msgid "admin_flush_all_title"
+msgstr "Alle Caches leeren"
+
+msgid "admin_flush_all_description"
+msgstr "Python Klassen werden in Caches zur Laufzeit zwischengespeichert.<br>Nach Änderungen am Quellcode müssen diese Caches geleert werden, damit Änderungen wirksam werden."
+
+msgid "admin_flush_all_cleared"
+msgstr "Alle Caches wurden geleert."
+

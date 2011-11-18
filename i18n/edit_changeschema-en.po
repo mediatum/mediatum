@@ -1,0 +1,34 @@
+
+### edit changeschema ###
+msgid "tab_changeschema"
+msgstr "Change object type/metadata type"
+
+msgid "edit_changeschema_msg1"
+msgstr "You do not have the rights to perform changes here. Please turn to your administrator"
+
+msgid "edit_changeschema_obj_selection"
+msgstr "Change object type/metadata type selection"
+
+msgid "edit_changeschema_msg2"
+msgstr "Please choose object type from the following list. <br>The available metadata schemas will be loaded then."
+
+msgid "edit_changeschema_obj_sel"
+msgstr "Select object type and metada type for this object anew: "
+
+msgid "edit_changeschema_selection_value"
+msgstr "Set metadata type anew"
+
+msgid "edit_changeschema_nodeid"
+msgstr "Object id"
+
+msgid "edit_changeschema_objtype"
+msgstr "Object type"
+
+msgid "edit_changeschema_schemeid"
+msgstr "Metadata type (id)"
+
+msgid "edit_changeschema_schemename"
+msgstr "Metadata type (name)"
+
+msgid "edit_changeschema_noscheme"
+msgstr "no metadata type for this data type available"

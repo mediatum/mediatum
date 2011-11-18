@@ -1,14 +1,3 @@
-msgid ""
-msgstr ""
-"Project-Id-Version: \n"
-"POT-Creation-Date: \n"
-"PO-Revision-Date: 2010-04-15 14:48+0100\n"
-"Last-Translator: \n"
-"Language-Team: \n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=iso-8859-1\n"
-"Content-Transfer-Encoding: 8bit\n"
-
 msgid "en"
 msgstr "English"
 
@@ -24,6 +13,9 @@ msgstr "username:"
 msgid "password:"
 msgstr "password:"
 
+msgid "new_password:"
+msgstr "new password:"
+
 msgid "invalid"
 msgstr "invalid"
 
@@ -33,7 +25,7 @@ msgstr "mediaTUM - digital collection management at TUM"
 msgid "header_slogan"
 msgstr "mediaTUM - digital collection management at TUM"
 
-msgid "show in new window"
+msgid "show_in_new_window"
 msgstr "open in new window"
 
 msgid "main_title_tum"
@@ -54,14 +46,14 @@ msgstr "List of favourites"
 msgid "sub_header_user"
 msgstr "User"
 
+msgid "footer_impressum"
+msgstr "imprint"
+
 msgid "help_link"
 msgstr "Help"
 
 msgid "help_title"
 msgstr "Show Help"
-
-msgid "footer_impressum"
-msgstr "imprint"
 
 msgid "permission_denied"
 msgstr "access denied"
@@ -98,9 +90,6 @@ msgstr "current password:"
 
 msgid "login_info"
 msgstr "Note:<br/>You might be asked to accept a security certificate for SSL-encryption. Please accept the certificate as trustworthy and load the certificate."
-
-msgid "new_password:"
-msgstr "new password:"
 
 msgid "password_repeat:"
 msgstr "repeat new password:"
@@ -156,7 +145,12 @@ msgstr "Folder:"
 msgid "printview"
 msgstr "Print view"
 
-# sub_header
+msgid "sort_label"
+msgstr "sort by:"
+
+msgid "sort_label2"
+msgstr "and:"
+
 msgid "sub_header_logout_title"
 msgstr "Logout current user"
 
@@ -230,7 +224,7 @@ msgid "all_metafields"
 msgstr "all metadata"
 
 msgid "search_result_header"
-msgstr "Your search string " ${searchstring} " was found in the following collections:"
+msgstr "Your search string "
 
 msgid "reset_field_title"
 msgstr "Reset all fields"
@@ -259,18 +253,8 @@ msgstr "back to complete results"
 msgid "search_hit"
 msgstr "hints"
 
-### datatypes ###
 msgid "Dissertation"
 msgstr "dissertation/postdoc"
-
-msgid "WorkflowStep_ShowData"
-msgstr "editor (workflow)"
-
-msgid "WorkflowStep_Protect"
-msgstr "protect (workflow)"
-
-msgid "WorkflowStep_SendEmail"
-msgstr "email (workflow)"
 
 msgid "Image"
 msgstr "image object"
@@ -281,62 +265,29 @@ msgstr "video object"
 msgid "UserGroup"
 msgstr "usergroup (system type)"
 
-msgid "WorkflowStep_Publish"
-msgstr "publish (workflow)"
-
 msgid "Metadatatype"
 msgstr "metadata scheme (system type)"
 
 msgid "Metadatafield"
 msgstr "metadata field (system type)"
 
-msgid "WorkflowStep_TextPage"
-msgstr "textpage (workflow)"
-
-msgid "WorkflowStep_Delete"
-msgstr "delete (workflow)"
-
-msgid "WorkflowStep"
-msgstr "workflowstep (system type)"
-
 msgid "Maskitem"
 msgstr "mask field (system type)"
-
-msgid "WorkflowStep_Start"
-msgstr "initial step (workflow)"
 
 msgid "Document"
 msgstr "document"
 
-msgid "Workflow"
-msgstr "workflow (system type)"
-
-msgid "WorkflowStep_Jahrbuch"
-msgstr "yearbook transfer (workflow)"
-
 msgid "Collection"
 msgstr "collection (system type)"
 
-msgid "WorkflowStep_AddURN"
-msgstr "create URN (workflow)"
-
 msgid "User"
 msgstr "user (system type)"
-
-msgid "Workflows"
-msgstr "workflows (system type)"
-
-msgid "WorkflowStep_Upload"
-msgstr "upload (workflow)"
 
 msgid "Default"
 msgstr "default type (system type)"
 
 msgid "Mask"
 msgstr "mask (system type)"
-
-msgid "WorkflowStep_EditMetadata"
-msgstr "metadata editor (workflow)"
 
 msgid "Directory"
 msgstr "directory (system type)"
@@ -347,62 +298,20 @@ msgstr "Directory"
 msgid "collection"
 msgstr "Collection"
 
-msgid "WorkflowStep_End"
-msgstr "end node (workflow)"
-
 msgid "Root"
 msgstr "root node (system type)"
 
-### workflow types ###
-msgid "workflowstep-addurn"
-msgstr "create URN"
-
-msgid "workflowstep-delete"
-msgstr "delete entry"
-
-msgid "workflowstep-edit"
-msgstr "edit node"
-
-msgid "workflowstep-jahrbuch"
-msgstr "data export (yearbook)"
-
-msgid "workflowstep-protect"
-msgstr "ACL protection"
-
-msgid "workflowstep-send_email"
-msgstr "send email"
-
-msgid "workflowstep-showdata"
-msgstr "metadata editor"
-
-msgid "workflowstep-start"
-msgstr "start node"
-
-msgid "workflowstep-upload"
-msgstr "upload node"
-
-msgid "workflowstep-publish"
-msgstr "publish"
-
-msgid "workflowstep-wait"
-msgstr "wait"
-
-msgid "workflowstep-end"
-msgstr "end node"
-
-### views ###
 msgid "view_list_add_shoppingbag"
 msgstr "Add object to list of favourites"
 
 msgid "view_list_att_title"
 msgstr "document has an attachment"
 
-### object views ###
 msgid "image_high_res_title"
 msgstr "download high resolution version"
 
 msgid "image_high_res_load"
-msgstr "  loading file..."
+msgstr "  File being loaded..."
 
 msgid "doc_fulltext_title"
 msgstr "open fulltext in new window"
@@ -412,1443 +321,6 @@ msgstr "open BibTeX information in new window"
 
 msgid "doc_att_browser"
 msgstr "open attachment browser..."
-
-### admin area ###
-msgid "admin_print_title"
-msgstr "print current page"
-
-msgid "admin_menu_menumain"
-msgstr "Main Menu"
-
-msgid "admin_menu_start"
-msgstr "Start"
-
-msgid "admin_menu_menuuser"
-msgstr "User administration"
-
-msgid "admin_menu_menuuser_description"
-msgstr "Maintenance of Usergroups and Users"
-
-msgid "admin_menu_usergroup"
-msgstr "Usergroups"
-
-msgid "admin_menu_user"
-msgstr "Users"
-
-msgid "admin_menu_menuacl"
-msgstr "Access Rights"
-
-msgid "admin_menu_menuacl_description"
-msgstr "Maintenance of ACL-rules"
-
-msgid "admin_menu_acls"
-msgstr "ACL editor"
-
-msgid "admin_menu_menudata"
-msgstr "Datatypes"
-
-msgid "admin_menu_menudata_description"
-msgstr "Maintenance Datatypes"
-
-msgid "admin_menu_metatype"
-msgstr "Types of Metadata"
-
-msgid "admin_menu_mapping"
-msgstr "Mapping of Metadata"
-
-msgid "admin_menu_menuworkflow"
-msgstr "Workflows"
-
-msgid "admin_menu_menuworkflow_description"
-msgstr "Maintenance of Workflows"
-
-msgid "admin_menu_workflows"
-msgstr "Workflow"
-
-msgid "admin_menu_menusystem"
-msgstr "System"
-
-msgid "admin_menu_menusystem_description"
-msgstr "Maintenance of System Options"
-
-msgid "admin_menu_logfile"
-msgstr "Log Files"
-
-msgid "admin_menu_flush"
-msgstr "Caches"
-
-msgid "admin_menu_settings"
-msgstr "mediatum configuration"
-
-msgid "admin_menu_settingsmenu"
-msgstr "Menu configuration"
-
-msgid "admin_submenu"
-msgstr "Subelements:"
-
-msgid "admin_error"
-msgstr "You're not allowed to access the administration area.<br/> You can logon here: ${link}"
-
-msgid "admin_linktext"
-msgstr "here"
-
-msgid "admin_overview"
-msgstr "Overview"
-
-msgid "admin_allelements_title"
-msgstr "show all elements"
-
-msgid "admin_allelements"
-msgstr "show all"
-
-msgid "admin_pageelements_title"
-msgstr "show by page"
-
-msgid "admin_pageelements"
-msgstr "by page"
-
-msgid "admin_page"
-msgstr "page"
-
-msgid "admin_sort_label"
-msgstr "sort values according to current column"
-
-msgid "admin_mandatory_error"
-msgstr "Not all required fields were filled out."
-
-msgid "admin_duplicate_error"
-msgstr "Name already assigned."
-
-msgid "admin_mandatory_info"
-msgstr "Required (not empty)"
-
-msgid "admin_save_title"
-msgstr "save changes"
-
-msgid "admin_save"
-msgstr "Save"
-
-msgid "admin_cancel_title"
-msgstr "Back to overview"
-
-msgid "admin_cancel"
-msgstr "Cancel"
-
-msgid "admin_header"
-msgstr "mediaTUM Administration Interface"
-
-msgid "admin_title"
-msgstr "mediaTUM Administration Interface"
-
-msgid "admin_filter_label"
-msgstr "Filter:"
-
-### usergroup ###
-msgid "admin_usergroup_existing"
-msgstr "Existing user groups"
-
-msgid "admin_usergroup_nogroups"
-msgstr "- no user groups defined -"
-
-msgid "admin_usergroup_edit"
-msgstr "edit user group"
-
-msgid "admin_usergroup_delete"
-msgstr "delete user group"
-
-msgid "admin_usergroup_create"
-msgstr "add new user group"
-
-msgid "admin_usergroup_footer"
-msgstr "${number} user groups"
-
-msgid "admin_usergroup_col_1"
-msgstr "user group"
-
-msgid "admin_usergroup_col_2"
-msgstr "# users"
-
-msgid "admin_usergroup_col_3"
-msgstr "# schemas"
-
-msgid "admin_usergroup_col_4"
-msgstr "editor filter"
-
-msgid "usergroup_option_1"
-msgstr "editor rights"
-
-msgid "usergroup_option_2"
-msgstr "workflow rights"
-
-msgid "admin_usergroup_msg1"
-msgstr "only empty user groups can be deleted"
-
-msgid "admin_usergroup_new_label"
-msgstr "add new user group"
-
-msgid "admin_usergroup_edit_label"
-msgstr "edit user groups"
-
-msgid "admin_usergroup_group"
-msgstr "user group"
-
-msgid "admin_usergroup_description"
-msgstr "description"
-
-msgid "admin_usergroup_options"
-msgstr "options"
-
-msgid "admin_usergroup_aclrule"
-msgstr "create access rule for current user group"
-
-msgid "admin_usergroup_hideedit_title"
-msgstr "editor functions with filter"
-
-msgid "admin_usergroup_rights"
-msgstr "hide editor modules:"
-
-msgid "e_acls"
-msgstr "acl-functions"
-
-msgid "e_classes"
-msgstr "classifiaction"
-
-msgid "e_editor"
-msgstr "html editor (start page)"
-
-msgid "e_files"
-msgstr "technical metadata"
-
-msgid "e_license"
-msgstr "license functions"
-
-msgid "e_logo"
-msgstr "logo functions"
-
-msgid "e_lza"
-msgstr "long-term preservation"
-
-msgid "e_metadata"
-msgstr "metadata editor"
-
-msgid "e_search"
-msgstr "search"
-
-msgid "e_searchmask"
-msgstr "search mask functions"
-
-msgid "e_sort"
-msgstr "sort functions"
-
-msgid "e_sortfiles"
-msgstr "file sort functions"
-
-msgid "e_subfolder"
-msgstr "sort subfolder"
-
-msgid "e_upload"
-msgstr "file upload"
-
-msgid "e_workflow"
-msgstr "workflow functions"
-
-msgid "e_publish"
-msgstr "publishing"
-
-msgid "e_changeschema"
-msgstr "schema/type-change"
-
-### user ###
-msgid "yearbook user"
-msgstr "Yearbook User"
-
-msgid "ldap user"
-msgstr "LDAP User"
-
-msgid "user_option_1"
-msgstr "password changeable"
-
-msgid "user_option_2"
-msgstr "favourites savable"
-
-msgid "admin_user_existing"
-msgstr "Existing Users"
-
-msgid "admin_user_create"
-msgstr "create new user"
-
-msgid "admin_user_nousers"
-msgstr "- no users defined -"
-
-msgid "admin_user_stdpwd_title"
-msgstr "start password"
-
-msgid "admin_user_nostdpwd_title"
-msgstr "password has been changed"
-
-msgid "admin_user_sendmail_title"
-msgstr "send email to user"
-
-msgid "admin_user_edit_title"
-msgstr "edit user"
-
-msgid "admin_user_delete_title"
-msgstr "delete user"
-
-msgid "admin_user_footer"
-msgstr "${number} users"
-
-msgid "admin_user_col_1"
-msgstr "username"
-
-msgid "admin_user_col_2"
-msgstr "lastname"
-
-msgid "admin_user_col_3"
-msgstr "firstname"
-
-msgid "admin_user_col_4"
-msgstr "email"
-
-msgid "admin_user_col_5"
-msgstr "organisation"
-
-msgid "admin_user_col_6"
-msgstr "group(s)"
-
-msgid "admin_user_col_7"
-msgstr "std. password"
-
-msgid "admin_filter_all"
-msgstr "all"
-
-msgid "admin_filter_else"
-msgstr "else"
-
-msgid "admin_user_new_label"
-msgstr "add new user"
-
-msgid "admin_user_edit_label"
-msgstr "edit user"
-
-msgid "admin_user_username"
-msgstr "username"
-
-msgid "admin_user_email"
-msgstr "email"
-
-msgid "admin_user_groups"
-msgstr "user group(s)"
-
-msgid "admin_user_pwdchange_title"
-msgstr "reset password"
-
-msgid "admin_new_pwd"
-msgstr "new password"
-
-msgid "admin_user_msg1"
-msgstr "if empty, std. password will be used"
-
-msgid "admin_user_msg2"
-msgstr "Caution: Pressing the "send" button will reset the user password to the standard password."
-
-msgid "admin_user_options"
-msgstr "options"
-
-msgid "admin_user_sender"
-msgstr "sender"
-
-msgid "admin_user_subject"
-msgstr "subject"
-
-msgid "admin_user_text"
-msgstr "text"
-
-msgid "admin_user_send"
-msgstr "send"
-
-msgid "admin_user_emailsend"
-msgstr "Email was send."
-
-msgid "admin_user_emailsenderror"
-msgstr "Error while sending email to user. No email was send."
-
-msgid "admin_user_filter_username"
-msgstr "username"
-
-msgid "admin_user_filter_lastname"
-msgstr "lastname"
-
-msgid "admin_user_importintern"
-msgstr "import user to intern users"
-
-msgid "admin_user_lastname"
-msgstr "Last Name"
-
-msgid "admin_user_firstname"
-msgstr "First Name"
-
-msgid "admin_user_telephone"
-msgstr "Phone"
-
-msgid "admin_user_comment"
-msgstr "Comment"
-
-msgid "admin_user_organisation"
-msgstr "Organisation"
-
-msgid "admin_user_create_acl"
-msgstr "Create/Update ACL rule"
-
-### acl ###
-msgid "admin_acl_existing"
-msgstr "existing rules"
-
-msgid "admin_acl_col_1"
-msgstr "name"
-
-msgid "admin_acl_col_2"
-msgstr "rule"
-
-msgid "admin_acl_col_3"
-msgstr "description"
-
-msgid "admin_acl_create"
-msgstr "create new rule"
-
-msgid "admin_acl_noacl"
-msgstr "- no rules defined -"
-
-msgid "admin_acl_edit_title"
-msgstr "edit rule"
-
-msgid "admin_acl_delete_title"
-msgstr "delete rule"
-
-msgid "admin_acl_footer"
-msgstr "${number} rules"
-
-msgid "admin_acl_rulename"
-msgstr "rule name"
-
-msgid "admin_acl_description"
-msgstr "description"
-
-msgid "admin_acl_rule"
-msgstr "rule"
-
-msgid "admin_acl_popup_title"
-msgstr "edit rule"
-
-msgid "admin_acl_reset_title"
-msgstr "Delete rule entries"
-
-msgid "admin_acl_missing_header"
-msgstr "The following rule definitions are missing, but used in nodes:"
-
-### acl editor ###
-msgid "admin_acl_editor_title"
-msgstr "Administration Interface - rule editor"
-
-msgid "admin_acl_editor_header"
-msgstr "Rule editor"
-
-msgid "admin_acl_editor_rulename"
-msgstr "rule"
-
-msgid "admin_acl_editor_edit_rule"
-msgstr "edit rule"
-
-msgid "admin_acl_editor_rename_title"
-msgstr "accept rule"
-
-msgid "admin_acl_editor_rename"
-msgstr "accept"
-
-msgid "admin_acl_editor_partlist_title"
-msgstr "copy to partlist"
-
-msgid "admin_acl_editor_partlist"
-msgstr "to partlist"
-
-msgid "admin_acl_editor_argument"
-msgstr "argument"
-
-msgid "admin_acl_editor_partlist_label"
-msgstr "partlist"
-
-msgid "admin_acl_editor_clearlist_title"
-msgstr "clear partlist"
-
-msgid "admin_acl_editor_clearlist"
-msgstr "clear all"
-
-msgid "admin_acl_editor_copy_title"
-msgstr "copy selected entry to editor area"
-
-msgid "admin_acl_editor_copy"
-msgstr "edit selection"
-
-msgid "admin_acl_editor_ruletype"
-msgstr "rule type"
-
-msgid "admin_acl_editor_op1"
-msgstr "value 1"
-
-msgid "admin_acl_editor_op2"
-msgstr "value 2"
-
-msgid "admin_acl_editor_buttonok"
-msgstr " OK "
-
-msgid "admin_acl_editor_buttoncancel"
-msgstr " Cancel "
-
-msgid "admin_acl_editor_user"
-msgstr "User"
-
-msgid "admin_acl_editor_group"
-msgstr "Group"
-
-msgid "admin_acl_editor_operator"
-msgstr "Operator"
-
-msgid "admin_acl_editor_date"
-msgstr "Date"
-
-msgid "admin_acl_editor_format"
-msgstr "Format"
-
-msgid "admin_acl_editor_ip"
-msgstr "IP"
-
-### metadatatype ###
-msgid "metafield_option1"
-msgstr "search field"
-
-msgid "metafield_option2"
-msgstr "sort field"
-
-msgid "admin_meta_existing"
-msgstr "existing metadata schemes"
-
-msgid "admin_meta_create"
-msgstr "add new metadata scheme"
-
-msgid "admin_meta_exportall_title"
-msgstr "export all metadata schemes"
-
-msgid "admin_meta_nometa"
-msgstr "- no metadata schemes defined -"
-
-msgid "admin_meta_editdetail"
-msgstr "edit fields"
-
-msgid "admin_meta_maskdetail_title"
-msgstr "edit masks"
-
-msgid "admin_meta_fieldoverview_title"
-msgstr "open field overview"
-
-msgid "admin_meta_export_title"
-msgstr "export metadata scheme"
-
-msgid "admin_meta_edit_title"
-msgstr "edit metadata scheme"
-
-msgid "admin_meta_delete_title"
-msgstr "delete metadata scheme"
-
-msgid "admin_meta_footer"
-msgstr "${number} schemes"
-
-msgid "admin_meta_msg1"
-msgstr "scheme import (xml-file)"
-
-msgid "admin_meta_msg2"
-msgstr "only metadataschemes without object can be deleted"
-
-msgid "admin_meta_msg3"
-msgstr "only active metadata schemes will be used for upload"
-
-msgid "admin_meta_import_title"
-msgstr "import from file"
-
-msgid "admin_meta_import"
-msgstr "import"
-
-msgid "admin_meta_col_1"
-msgstr "ID"
-
-msgid "admin_meta_col_2"
-msgstr "Name"
-
-msgid "admin_meta_col_3"
-msgstr "Description"
-
-msgid "admin_meta_col_4"
-msgstr "Active"
-
-msgid "admin_meta_col_5"
-msgstr "Datatypes"
-
-msgid "admin_meta_col_6"
-msgstr "ACL"
-
-msgid "admin_meta_col_7"
-msgstr "Searchindex"
-
-msgid "admin_meta_error_1"
-msgstr "Not all required fields were filled in."
-
-msgid "admin_meta_error_2"
-msgstr "Name already assigned."
-
-msgid "admin_meta_error_3"
-msgstr "Name already assigned."
-
-msgid "admin_meta_index_state_ok"
-msgstr "OK"
-
-msgid "admin_meta_index_state_title"
-msgstr "index for schema corrupt"
-
-msgid "admin_meta_id"
-msgstr "ID"
-
-msgid "admin_meta_name"
-msgstr "Name"
-
-msgid "admin_meta_description"
-msgstr "Description"
-
-msgid "admin_meta_rights"
-msgstr "Rights"
-
-msgid "admin_meta_active"
-msgstr "Active"
-
-msgid "admin_meta_datatype"
-msgstr "Datatypes"
-
-msgid "admin_meta_acl_title"
-msgstr "metadatascheme has an ACL-rule"
-
-msgid "admin_meta_active_title"
-msgstr "metadata scheme activated"
-
-msgid "admin_metafield_header"
-msgstr "fields of scheme '${name}'"
-
-msgid "admin_metafield_fieldlist"
-msgstr "open fieldlist"
-
-msgid "admin_metafield_col_1"
-msgstr "Name"
-
-msgid "admin_metafield_col_2"
-msgstr "Label"
-
-msgid "admin_metafield_col_3"
-msgstr "Field type"
-
-msgid "admin_metafield_order"
-msgstr "Order"
-
-msgid "admin_metafield_new_title"
-msgstr "add new metadata field"
-
-msgid "admin_metafield_nofield"
-msgstr "- no metadata fields defined -"
-
-msgid "admin_metafield_down_title"
-msgstr "move down"
-
-msgid "admin_metafield_up_title"
-msgstr "move up"
-
-msgid "admin_metafield_edit_title"
-msgstr "edit metadata field"
-
-msgid "admin_metafield_delete_title"
-msgstr "delete metadata field"
-
-msgid "admin_metafield_footer"
-msgstr "${number} fields"
-
-msgid "admin_metafield_msg1"
-msgstr "Field order can only be changed if list is sorted by the 'order' column (arrows will be colored)"
-
-msgid "admin_metafield_msg2"
-msgstr "Description will be used as help popup in metadata masks"
-
-msgid "admin_metafield_new_header"
-msgstr "Create new field for scheme '${name}'"
-
-msgid "admin_metafield_edit_header"
-msgstr "Edit '${field}' of scheme '${name}'"
-
-msgid "admin_metafield_error_1"
-msgstr "Name already assigned for this scheme."
-
-msgid "admin_metafield_name"
-msgstr "Name"
-
-msgid "admin_metafield_label"
-msgstr "Label"
-
-msgid "admin_metafield_type"
-msgstr "Type"
-
-msgid "admin_metafield_help_title"
-msgstr "Show help"
-
-msgid "admin_metafield_listvalues"
-msgstr "List values"
-
-msgid "admin_metafield_dateformat"
-msgstr "Date-/Time-format"
-
-msgid "admin_memofield_maxlength"
-msgstr "max. length"
-
-msgid "metafield_dateformat_std"
-msgstr "std. format (dd.mm.yyyy)"
-
-msgid "metafield_dateformat_year"
-msgstr "Year (yyyy)"
-
-msgid "metafield_dateformat_month"
-msgstr "Month (mm)"
-
-msgid "metafield_dateformat_yearmonth"
-msgstr "Year, month (yyyy-mm)"
-
-msgid "metafield_dateformat_time"
-msgstr "Time (hh:mm:ss)"
-
-msgid "admin_metafield_fields"
-msgstr "Metadata fields"
-
-msgid "admin_metafields_techfields"
-msgstr "Technical metadata field"
-
-msgid "admin_metafield_description"
-msgstr "Description"
-
-msgid "admin_metafield_options"
-msgstr "Options"
-
-msgid "admin_index_update_msg"
-msgstr "Search index is updated. This can take one moment."
-
-msgid "admin_metatype_filter_id"
-msgstr "Schema-ID"
-
-msgid "admin_metatype_filter_name"
-msgstr "Name"
-
-msgid "admin_metafield_filter_name"
-msgstr "Name"
-
-msgid "admin_metafield_filter_label"
-msgstr "Label"
-
-msgid "admin_metatype_reindex_title"
-msgstr "Search index for current schema is not active, update:"
-
-msgid "admin_metatype_reindex_button"
-msgstr "Reindex"
-
-msgid "admin_metatype_index_ok"
-msgstr "Search index for current schema is active."
-
-### meta masks ###
-msgid "admin_mask_header"
-msgstr "Masks of metadata scheme '${name}'"
-
-msgid "admin_mask_col_1"
-msgstr "Name"
-
-msgid "admin_mask_col_2"
-msgstr "Masktype"
-
-msgid "admin_mask_col_3"
-msgstr "Description"
-
-msgid "admin_mask_createstd_title"
-msgstr "Create std. mask automatically"
-
-msgid "admin_mask_create_title"
-msgstr "Create new mask"
-
-msgid "admin_mask_create"
-msgstr "Create new mask"
-
-msgid "admin_mask_nomask"
-msgstr "- no mask defined -"
-
-msgid "admin_mask_edit_field"
-msgstr "edit mask fields"
-
-msgid "admin_mask_clone_title"
-msgstr "clone mask"
-
-msgid "admin_mask_edit_title"
-msgstr "edit mask"
-
-msgid "admin_mask_edit"
-msgstr "edit mask"
-
-msgid "admin_mask_delete_title"
-msgstr "delete mask"
-
-msgid "admin_mask_footer"
-msgstr "${number} masks"
-
-msgid "admin_mask_error_1"
-msgstr "Name already assigned."
-
-msgid "admin_mask_name"
-msgstr "Name"
-
-msgid "admin_mask_type"
-msgstr "Mask type"
-
-msgid "admin_mask_description"
-msgstr "Description"
-
-msgid "admin_mask_col_4"
-msgstr "Default"
-
-msgid "admin_mask_col_5"
-msgstr "Language"
-
-msgid "admin_mask_col_6"
-msgstr "ACL"
-
-msgid "admin_mask_default"
-msgstr "Default Mask"
-
-msgid "admin_mask_language"
-msgstr "Language"
-
-msgid "admin_mask_type_text"
-msgstr "For some masktype are no default masks defined."
-
-msgid "admin_mask_exportmapping"
-msgstr "Definition"
-
-msgid "admin_mask_exportheader"
-msgstr "Header"
-
-msgid "admin_mask_exportfooter"
-msgstr "Footer"
-
-msgid "admin_mask_exportoptions"
-msgstr "Options"
-
-msgid "admin_mask_export_validatetypes"
-msgstr "validate datatypes (text in '')"
-
-msgid "admin_mask_export_endseparator"
-msgstr "line separator for last line"
-
-msgid "admin_mask_nomapping"
-msgstr "- no mapping -"
-
-msgid "admin_mask_acl_title"
-msgstr "metadatamask has an ACL-rule"
-
-msgid "admin_mask_separator"
-msgstr "Field Separator"
-
-msgid "masktype_empty"
-msgstr "-no type-"
-
-msgid "masktype_edit"
-msgstr "edit mask"
-
-msgid "masktype_search"
-msgstr "search mask"
-
-msgid "masktype_short"
-msgstr "short view"
-
-msgid "masktype_full"
-msgstr "full view"
-
-msgid "masktype_export"
-msgstr "export mask"
-
-### metatype info popup ###
-msgid "admin_infopopup_title"
-msgstr "Info"
-
-msgid "admin_infopopup_header"
-msgstr "Available types"
-
-### metatype definition overview popup ###
-msgid "admin_defpopup_title"
-msgstr "Metadata scheme info"
-
-msgid "admin_defpopup_header"
-msgstr "metadata scheme '${name}'"
-
-msgid "admin_defpopup_name"
-msgstr "Name"
-
-msgid "admin_defpopup_id"
-msgstr "ID"
-
-msgid "admin_defpopup_type"
-msgstr "Type"
-
-msgid "admin_defpopup_description"
-msgstr "Description"
-
-### admin mappings ###
-msgid "admin_mapping_existing"
-msgstr "Available Mapping definitions"
-
-msgid "admin_mapping_col_1"
-msgstr "Mapping Name"
-
-msgid "admin_mapping_col_2"
-msgstr "Namespace"
-
-msgid "admin_mapping_col_3"
-msgstr "Namespace URL"
-
-msgid "admin_mapping_col_4"
-msgstr "Description"
-
-msgid "admin_mapping_col_5"
-msgstr "Fields"
-
-msgid "admin_mapping_col_6"
-msgstr "Type"
-
-msgid "admin_mapping_col_7"
-msgstr "Active"
-
-msgid "admin_mapping_configuration"
-msgstr "Mapping Base Definition"
-
-msgid "admin_mapping_configtypes"
-msgstr "Mapping Types:"
-
-msgid "admin_mapping_type"
-msgstr "Mapping Type"
-
-msgid "admin_mapping_active"
-msgstr "Active"
-
-msgid "admin_mapping_create"
-msgstr "Create new mapping"
-
-msgid "admin_mapping_fieldlist_title"
-msgstr "edit fields"
-
-msgid "admin_mapping_edit_title"
-msgstr "edit mapping"
-
-msgid "admin_mapping_delete_title"
-msgstr "delete mapping"
-
-msgid "admin_mapping_new_label"
-msgstr "Create new Mapping"
-
-msgid "admin_mapping_edit_label"
-msgstr "Edit Mapping"
-
-msgid "admin_mapping_name"
-msgstr "Mapping Name"
-
-msgid "admin_mapping_namespace"
-msgstr "Namespace"
-
-msgid "admin_mapping_namespaceurl"
-msgstr "Namespace URL"
-
-msgid "admin_mapping_description"
-msgstr "Description"
-
-msgid "admin_mapping_header"
-msgstr "Header"
-
-msgid "admin_mapping_footer"
-msgstr "Footer"
-
-msgid "admin_mapping_separator"
-msgstr "Separator"
-
-msgid "admin_mapping_standardformat"
-msgstr "Std. format"
-
-msgid "admin_mapping_standardformat_description"
-msgstr "Available Variables:<br/>* [value] = attribute value<br/>* [field] = field name<br/>* [att:field] = name of attribute field<br/>* [att:id] = node id<br/>"
-
-msgid "admin_mapping_overview_footer"
-msgstr "${number} Mappings"
-
-msgid "admin_mapping_msg1"
-msgstr "mapping import (xml-file)"
-
-msgid "admin_mapping_import"
-msgstr "import"
-
-msgid "admin_mapping_exportall_title"
-msgstr "export all mappings"
-
-msgid "admin_mappingfield_existing"
-msgstr "Available Mapping fields of Mapping"
-
-msgid "admin_mappingfield_col_1"
-msgstr "Name"
-
-msgid "admin_mappingfield_col_2"
-msgstr "Description"
-
-msgid "admin_mappingfield_col_3"
-msgstr "Mandatory"
-
-msgid "admin_mappingfield_create"
-msgstr "Create new Mapping field"
-
-msgid "admin_mappingfield_edit_title"
-msgstr "Edit Mapping field"
-
-msgid "admin_mappingfield_delete_title"
-msgstr "delete Mapping field"
-
-msgid "admin_mappingfield_new_label"
-msgstr "Create new Mapping field"
-
-msgid "admin_mappingfield_edit_label"
-msgstr "Edit Mapping field"
-
-msgid "admin_mappingfield_name"
-msgstr "Mapping field Name"
-
-msgid "admin_mappingfield_description"
-msgstr "Description"
-
-msgid "admin_mappingfield_exportformat"
-msgstr "Line format"
-
-msgid "admin_mappingfield_mandatory"
-msgstr "Mandatory"
-
-msgid "admin_mappingfield_parent"
-msgstr "Parent"
-
-msgid "admin_mappingfield_nofields"
-msgstr "- no Mapping fields defined -"
-
-msgid "admin_mappingfield_footer"
-msgstr "${number} Mapping fields"
-
-### admin logfiles ###
-msgid "admin_log_everything"
-msgstr "Complete"
-
-msgid "admin_log_database"
-msgstr "Database"
-
-msgid "admin_log_backend"
-msgstr "Backend"
-
-msgid "admin_log_frontend"
-msgstr "Frontend"
-
-msgid "admin_log_editor"
-msgstr "Editor"
-
-msgid "admin_log_usertracing"
-msgstr "User"
-
-msgid "admin_log_athana"
-msgstr "Athana"
-
-msgid "admin_log_existing"
-msgstr "existing log files"
-
-msgid "admin_log_name"
-msgstr "Name"
-
-msgid "admin_log_path"
-msgstr "Path"
-
-msgid "admin_log_filesize"
-msgstr "File size"
-
-msgid "admin_log_nofiles"
-msgstr "- logfiles don't exist -"
-
-msgid "admin_log_show_title"
-msgstr "show log file"
-
-msgid "admin_log_footer"
-msgstr "${number} files"
-
-msgid "admin_log_refresh"
-msgstr "refresh"
-
-
-
-### searchindex ###
-msgid "admin_menu_searchindex"
-msgstr "Searchindex Match"
-
-msgid "admin_modules_searchindex"
-msgstr "Module Searchindex"
-
-msgid "admin_modules_searchindex_evaluate"
-msgstr "Evaluate index"
-
-msgid "admin_modules_searchindex_update"
-msgstr "Update index"
-
-msgid "admin_searchindex_examineLogfile_title"
-msgstr "Examine Logfile"
-
-msgid "admin_modules_searchindex_return"
-msgstr "Back"
-
-msgid "admin_searchindex_evaluateIndex_label"
-msgstr "Evaluate index"
-
-msgid "admin_searchindex_evaluateIndex_title"
-msgstr "Evaluate index"
-
-msgid "admin_searchindex_evaluateIndex_description"
-msgstr "With this functionality you can start the examination of the search index. Your mediatum data are compared with the search index and the results written to a logfile. A summary of the differences will be displayed. An actual matching does not take place. Depending on the extent of the data long runs can be expected."
-
-msgid "admin_searchindex_executeUpdate_label"
-msgstr "Update ausführen"
-
-msgid "admin_searchindex_executeUpdate_title"
-msgstr "Datenbank-Update ausführen"
-
-msgid "admin_searchindex_executeUpdate_description"
-msgstr "With this functionality you can update the search index based on the results of the search index examination. It is irreversible. Depending on the extent of the data long runs can be expected."
-
-msgid "admin_searchindex_examineLogfile_label"
-msgstr "Show logfile"
-
-msgid "admin_searchindex_examineLogfile_title"
-msgstr "Show logfile"
-
-msgid "admin_searchindex_examineLogfile_description"
-msgstr "With this functionality you can display the result of the last run. If you have just started a searchindex examination and gotten the result it makes no sense to use this functionality. It is meant to display results again from runs that have taken place some time ago. The date of the last run is part of the display."
-
-msgid "admin_searchindex_rbAll_title"
-msgstr "all sections"
-
-msgid "admin_searchindex_rbDef_title"
-msgstr "section Definitions only"
-
-msgid "admin_searchindex_rbDelete_title"
-msgstr "section Deletes only"
-
-msgid "admin_searchindex_rbUpdate_title"
-msgstr "section Updates only"
-
-msgid "admin_searchindex_rbNSearch_title"
-msgstr "normal search"
-
-msgid "admin_searchindex_rbESearch_title"
-msgstr "extended Search"
-
-msgid "admin_searchindex_rbFSearch_title"
-msgstr "full text search"
-
-
-### workflows ###
-msgid "admin_wf_existing"
-msgstr "Existing workflows"
-
-msgid "admin_wf_col_1"
-msgstr "Name"
-
-msgid "admin_wf_col_2"
-msgstr "Description"
-
-msgid "admin_wf_col_3"
-msgstr "ACL (read)"
-
-msgid "admin_wf_col_4"
-msgstr "ACL (write)"
-
-msgid "admin_wf_exportall_title"
-msgstr "Export all workflows"
-
-msgid "admin_wf_create_title"
-msgstr "create new workflow"
-
-msgid "admin_wf_name"
-msgstr "Name"
-
-msgid "admin_wf_acl_title"
-msgstr "workflow uses ACL-rule"
-
-msgid "admin_wf_nowf"
-msgstr "- no workflows defined -"
-
-msgid "admin_wf_nodeedit_title"
-msgstr "edit workflow node"
-
-msgid "admin_wf_graphic_title"
-msgstr "show workflow definition (diagram)"
-
-msgid "admin_wf_export_title"
-msgstr "export workflow definition"
-
-msgid "admin_wf_edit_title"
-msgstr "edit workflow"
-
-msgid "admin_wf_delete_title"
-msgstr "delete workflow"
-
-msgid "admin_wf_footer"
-msgstr "${number} workflows"
-
-msgid "admin_fw_msg1"
-msgstr "workflow import (xml-file)"
-
-msgid "admin_wf_import"
-msgstr "Import"
-
-msgid "admin_wf_import_title"
-msgstr "Import"
-
-msgid "admin_wf_create_header"
-msgstr "create new workflow"
-
-msgid "admin_wf_edit_header"
-msgstr "edit workflow"
-
-msgid "admin_wf_writerights"
-msgstr "write access"
-
-msgid "admin_wf_nolimit"
-msgstr "-no limitation-"
-
-msgid "admin_wf_description"
-msgstr "Description"
-
-msgid "admin_wf_header"
-msgstr "Node of workflow '${name}'"
-
-msgid "admin_wf_showdef"
-msgstr "open workflow definition"
-
-msgid "admin_wfstep_col_1"
-msgstr "Name"
-
-msgid "admin_wfstep_col_2"
-msgstr "Node type"
-
-msgid "admin_wfstep_col_3"
-msgstr "True"
-
-msgid "admin_wfstep_col_4"
-msgstr "False"
-
-msgid "admin_wfstep_col_5"
-msgstr "Description"
-
-msgid "admin_wfstep_col_6"
-msgstr "ACL"
-
-msgid "admin_wfstep_acl_title"
-msgstr "step uses ACL-rule"
-
-msgid "admin_wfstep_new_title"
-msgstr "Create new node"
-
-msgid "admin_wfstep_nostep"
-msgstr "- no workflow nodes defined -"
-
-msgid "admin_wfstep_chars"
-msgstr "${number} characters"
-
-msgid "admin_wfstep_edit"
-msgstr "edit node"
-
-msgid "admin_wfstep_delete"
-msgstr "delete node"
-
-msgid "admin_wfstep_footer"
-msgstr "${number} node"
-
-msgid "admin_wfstep_create_header"
-msgstr "create new workflow node"
-
-msgid "admin_wfstep_edit_header"
-msgstr "edit workflow node"
-
-msgid "admin_wfstep_name"
-msgstr "Name"
-
-msgid "admin_wfstep_adminstep"
-msgstr "Adminstep"
-
-msgid "admin_wfstep_msg1"
-msgstr "will be marked in workflow overview"
-
-msgid "admin_wfstep_nodetype"
-msgstr "Node type"
-
-msgid "admin_wfstep_comment"
-msgstr "Comment"
-
-msgid "admin_wfstep_truelabel"
-msgstr "Label for 'True' operation"
-
-msgid "admin_wfstep_truenode"
-msgstr "node for 'True'"
-
-msgid "admin_wfstep_nonode"
-msgstr "-no nodes-"
-
-msgid "admin_wfstep_falselabel"
-msgstr "Label for 'False' operation"
-
-msgid "admin_wfstep_falsenode"
-msgstr "node for 'False'"
-
-msgid "admin_wfstep_additional"
-msgstr "Additional information for current node type"
-
-msgid "admin_wf_definition"
-msgstr "Workflow definition"
-
-msgid "admin_wfstep_text_before_upload_form"
-msgstr "Text before upload form"
-
-msgid "admin_wfstep_text_after_upload_form"
-msgstr "Text after upload form"
-
-msgid "admin_wfstep_node_types_to_create"
-msgstr "node types to create (;-separated schema list)"
-
-msgid "admin_wfstep_editor_mask"
-msgstr "Editor mask"
-
-msgid "admin_wfstep_text_before_data"
-msgstr "Text before data"
-
-msgid "admin_wfstep_text_after_data"
-msgstr "Text after data"
-
-msgid "admin_wfstep_masks_to_display"
-msgstr "Masks to display (;-separated list)"
-
-msgid "admin_wfstep_email_sender"
-msgstr "Email address sender"
-
-msgid "admin_wfstep_email_recipient"
-msgstr "Email address recipient"
-
-msgid "admin_wfstep_email_subject"
-msgstr "Subject"
-
-msgid "admin_wfstep_email_text"
-msgstr "Text"
-
-msgid "admin_wfstep_email_text_editable"
-msgstr "Details editable?"
-
-msgid "admin_wfstep_email_text_editable_options"
-msgstr "Yes;No"
-
-msgid "admin_wfstep_textpage_text_to_display"
-msgstr "Text to display"
-
-### flush ###
-msgid "admin_flush_operations"
-msgstr "Possible operations"
-
-msgid "admin_flush_data_label"
-msgstr "clear data cache"
-
-msgid "admin_flush_data_title"
-msgstr "clear data cache"
-
-msgid "admin_flush_data_description"
-msgstr "Already loaded nodes will be stored in data cache.<br>If manipulations took place directly at the data base,<br> these caches must be cleared, so that changes become effective."
-
-msgid "admin_flush_data_cleared"
-msgstr "Data cache has been cleared."
-
-msgid "admin_flush_all_label"
-msgstr "clear all caches"
-
-msgid "admin_flush_all_title"
-msgstr "clear all caches"
-
-msgid "admin_flush_all_description"
-msgstr "Python classes will be stored into caches at run-time. <br> After changes at the source code this caches must be cleared, so that changes become effective."
-
-msgid "admin_flush_all_cleared"
-msgstr "All chaches have been cleared."
-
-### admin settings ###
-msgid "admin_settings_header"
-msgstr "Information:"
-
-msgid "admin_settings_python_header"
-msgstr "Python"
-
-msgid "admin_settings_mediatum_header"
-msgstr "Mediatum"
-
-msgid "admin_settings_database_header"
-msgstr "Datenbank"
-
-msgid "admin_settings_search_header"
-msgstr "Searchengine"
-
-msgid "admin_settings_searchconfig_header"
-msgstr "Search Configuration"
-
-msgid "searchreplace_chars"
-msgstr "Character to be replaced:"
-
-msgid "searchreplace_words"
-msgstr "Word to be replaced:"
-
-msgid "admin_settings_other_header"
-msgstr "Other"
-
-msgid "admin_settings_pythonversion"
-msgstr "Python Version:"
-
-msgid "admin_settings_platform"
-msgstr "OS:"
-
-msgid "admin_settings_config"
-msgstr "Mediatum Configuration:"
-
-msgid "admin_settings_nomodule"
-msgstr "Module not installed."
-
-msgid "admin_settings_mediatum_version"
-msgstr "Mediatum Version:"
-
-msgid "admin_settings_dbdriver"
-msgstr "Database Driver:"
-
-msgid "admin_settings_dbdriverversion"
-msgstr "Database Driver Version:"
-
-msgid "admin_settings_db_status"
-msgstr "Database Information:"
-
-msgid "admin_settings_db_size"
-msgstr "Size:"
 
 msgid "sqlite_type"
 msgstr "Type:"
@@ -1919,221 +391,6 @@ msgstr "Creation Options:"
 msgid "mysql_comment"
 msgstr "Comment:"
 
-msgid "admin_settings_search_type"
-msgstr "Search Engine:"
-
-msgid "admin_settings_search_status"
-msgstr "Search Engine Status:"
-
-msgid "sqplite_items_count"
-msgstr "Rows:"
-
-msgid "admin_settings_search_size"
-msgstr "Size:"
-
-msgid "admin_settings_python_copyright"
-msgstr "Python Copyright:"
-
-msgid "admin_settings_archive_header"
-msgstr "Archiving settings"
-
-msgid "admin_settings_archive_activate"
-msgstr "Archiving activated:"
-
-msgid "admin_settings_archive_interval"
-msgstr "Period for living active (s):"
-
-msgid "admin_settings_archive_manager"
-msgstr "Installed manager(s):"
-
-msgid "admin_settings_archive_name"
-msgstr "Manager name:"
-
-msgid "admin_settings_archive_stat"
-msgstr "Statistics"
-
-msgid "admin_settings_archive_used"
-msgstr "Used"
-
-msgid "admin_settings_archive_state1"
-msgstr "state 1 (inside archive)"
-
-msgid "admin_settings_archive_state2"
-msgstr "state 2 (period reached)"
-
-msgid "admin_settings_archive_state3"
-msgstr "state 3 (write back to archive)"
-
-msgid "admin_settings_adminmodules_header"
-msgstr "Admin Menu"
-
-msgid "admin_settings_adminmodules_title"
-msgstr "Administration Menu Structure"
-
-msgid "admin_settings_adminmodules_name"
-msgstr "Module Name"
-
-msgid "admin_settings_adminmodules_view"
-msgstr "Show/Hide"
-
-msgid "admin_modules_adminmodules_move"
-msgstr "Move"
-
-msgid "admin_modules_adminmodules_std"
-msgstr "Std. Module"
-
-msgid "admin_modules_adminmodules_showtitle"
-msgstr "Show Module"
-
-msgid "admin_modules_adminmodules_hidetitle"
-msgstr "Hide Module"
-
-msgid "admin_modules_editmodules_hidetitle"
-msgstr "Hide Module"
-
-msgid "admin_modules_editmodules_showtitle"
-msgstr "Show Module"
-
-msgid "admin_settings_editmodule_selecttype"
-msgstr "Select Datatype:"
-
-msgid "admin_settings_editmenu_selectmodule"
-msgstr "Select Menu"
-
-msgid "admin_settings_editmenu_typeheader"
-msgstr "Edit Menu for Datatype:"
-
-msgid "admin_settings_adminmodules_reset"
-msgstr "Reset Menu Structure"
-
-msgid "admin_modules_editmodules_system"
-msgstr "System Type"
-
-msgid "admin_settings_editmodules_view"
-msgstr "Show/Hide"
-
-msgid "admin_settings_editmodules_name"
-msgstr "Module Name"
-
-msgid "admin_settings_editmodules_reset"
-msgstr "Reset Menu"
-
-msgid "admin_settings_editmodules_header"
-msgstr "Edit Menu"
-
-msgid "admin_modules_editmodules_move"
-msgstr "Move"
-
-### workflows ###
-msgid "wf_edit_header"
-msgstr "Editable workflows"
-
-msgid "wf_edit_name"
-msgstr "Name"
-
-msgid "wf_edit_description"
-msgstr "Description"
-
-msgid "wf_list_header"
-msgstr "${number} objects in workflow '"
-
-msgid "wf_list_objects"
-msgstr "${number} objects"
-
-msgid "wf_show_details_title"
-msgstr "show details"
-
-msgid "wf_step_msg1"
-msgstr "Thank you for your input.<br/>Object ${name} was stored and has entered the next processing step."
-
-msgid "wf_step_ready"
-msgstr "Ready"
-
-msgid "wf_node_msg1"
-msgstr "Object ${name} is still being processed."
-
-msgid "wf_node_msg2"
-msgstr "Current processing step (${name}) permits no manual changes."
-
-msgid "workflow_msg3"
-msgstr "Objects in step ${name}:"
-
-msgid "workflow_msg4"
-msgstr "Processing of object ${name} was finished. It has left the workflow."
-
-msgid "workflow_msg5"
-msgstr "If additional work on this object should be required from your side, we will contact you by email"
-
-msgid "workflow_msg6"
-msgstr "For questions or problems you reach our support team at ${email}"
-
-msgid "workflow_label_id"
-msgstr "ID"
-
-msgid "workflow_label_date"
-msgstr "Date"
-
-msgid "workflow_label_name"
-msgstr "Name"
-
-msgid "workflow_label_step"
-msgstr "Step"
-
-msgid "workflow_label_editor"
-msgstr "Editor"
-
-msgid "workflow_label_forward"
-msgstr "Pass"
-
-msgid "workflow_show_step"
-msgstr "Show step"
-
-msgid "workflow_footer"
-msgstr "${number} elements in current workflow step"
-
-msgid "workflow_error_msg"
-msgstr "Please fill out and correct the missing fields."
-
-msgid "workflow_create_object"
-msgstr "Create new object"
-
-msgid "workflow_start_submit"
-msgstr "Create"
-
-msgid "workflow_email_msg_1"
-msgstr "The following error occured while sending the mail:"
-
-msgid "workflow_email_resend"
-msgstr "Try again to send"
-
-msgid "workflow_filelist_type"
-msgstr "Type"
-
-msgid "workflow_filelist_size"
-msgstr "Size"
-
-msgid "workflow_filelist_mimetype"
-msgstr "Mimetype"
-
-msgid "workflow_filelist_open_title"
-msgstr "Attach file"
-
-msgid "workflow_filelist_delete_title"
-msgstr "delete file"
-
-msgid "workflow_add_file"
-msgstr "add file:"
-
-msgid "workflow_upload_button"
-msgstr "Upload"
-
-msgid "workflow_ready_msg"
-msgstr "Objekt ${name} has reached the end of the current workflow."
-
-msgid "workflow_step_ready_msg"
-msgstr "Objekt ${name} has reached the end of the current workflow."
-
-### shoppingbag popup ###
 msgid "shoppingbag_object_added"
 msgstr "Object added to favourites."
 
@@ -2266,155 +523,14 @@ msgstr "Mark all objects"
 msgid "popup_shoppingbag_unmarkall"
 msgstr "Unmark selection"
 
-### popup help###
 msgid "popup_help_title"
-msgstr "Help for metadata field "${name}""
+msgstr "Help for metadata field "
 
-### edit area ###
-msgid "edit_module_error"
-msgstr "Module '${name}' couldn't be loaded."
-
-msgid "edit_template_error"
-msgstr "Error while lading template. See the description below for closer information:"
-
-msgid "edit_error_msg"
-msgstr "You're not allowed to access the editor area.<br/> You can logon here: ${link}"
-
-msgid "edit_linktext"
-msgstr "here"
-
-msgid "edit_nodeinformation"
-msgstr "node-information"
-
-msgid "edit_id"
-msgstr "id"
-
-msgid "edit_objecttype"
-msgstr "object type"
-
-msgid "edit_schema"
-msgstr "meta schmeme"
-
-msgid "edit_error"
-msgstr "Error"
-
-msgid "edit_nobase"
-msgstr "No base directory selected (${msg})"
-
-msgid "edit_main_title"
-msgstr "mediatum"
-
-msgid "edit_objectname"
-msgstr "Name"
-
-msgid "edit_main_noframe"
-msgstr "Your Browser doesn't support frames."
-
-msgid "edit_save"
-msgstr "Save"
-
-msgid "title edit_save_title"
-msgstr "Save changes"
-
-msgid "edit_ok"
-msgstr "OK"
-
-msgid "edit_error_msg1"
-msgstr "Folder couldn't be created. Parent object is write protected."
-
-msgid "edit_action_msg"
-msgstr "Action ${action} is starded"
-
-msgid "edit_nopermission"
-msgstr "permission denied"
-
-msgid "edit_noselection"
-msgstr "nothing selected"
-
-msgid "edit_taboverview_header"
-msgstr "Selected/Editing:"
-
-msgid "edit_actual_dir"
-msgstr "Actual folder:"
-
-msgid "edit_tabarea_msg1"
-msgstr "The following view shows how this object would look within the public search interface. (the actual view is possibly different, depending on selected skin or layout)"
-
-msgid "edit_tabarea_msg2"
-msgstr "You will leave the editor interface by following links on this page."
-
-msgid "edit_files"
-msgstr "Files:"
-
-msgid "edit_dir"
-msgstr "Folder:"
-
-msgid "edit_action_file_upload"
-msgstr "Create / Upload"
-
-msgid "edit_action_file_import"
-msgstr "Import bibtex"
-
-msgid "edit_action_file_move"
-msgstr "Move to..."
-
-msgid "edit_action_file_copy"
-msgstr "Copy to..."
-
-msgid "edit_action_file_delete"
-msgstr "Delete"
-
-msgid "edit_add_folder"
-msgstr "New Folder"
-
-msgid "edit_add_collection"
-msgstr "New Collection"
-
-msgid "edit_action_file_edit"
-msgstr "Simultaneous editing"
-
-msgid "edit_action_file_editsingle"
-msgstr "Single object editing"
-
-msgid "edit_action_new"
-msgstr "Create"
-
-msgid "edit_action_dir_new"
-msgstr "Create new"
-
-msgid "edit_action_dir_edit"
-msgstr "Edit"
-
-msgid "edit_action_dir_move"
-msgstr "Move to..."
-
-msgid "edit_action_dir_sort"
-msgstr "Sort subfolders"
-
-msgid "edit_action_dir_copy"
-msgstr "Copy to..."
-
-msgid "edit_action_dir_del"
-msgstr "Delete"
-
-msgid "edit_action_file_publish"
-msgstr "Publish"
-
-### edit tabs ###
 msgid "tab_menulayout"
 msgstr "Layout"
 
 msgid "tab_metadata_col"
 msgstr "Configuration"
-
-msgid "tab_menuclasses"
-msgstr "Classification"
-
-msgid "tab_metadata"
-msgstr "Edit metadata"
-
-msgid "tab_menumetadata"
-msgstr "Edit metadata"
 
 msgid "tab_menuoperation"
 msgstr "Special-functions"
@@ -2422,41 +538,29 @@ msgstr "Special-functions"
 msgid "tab_menusecurity"
 msgstr "Rights"
 
-msgid "tab_metadata_dir"
-msgstr "Edit metadata"
-
-msgid "tab_files"
-msgstr "Change/add digital object"
-
-msgid "tab_files_title"
-msgstr "Edit technical metadata"
+msgid "tab_upload"
+msgstr "Upload"
 
 msgid "tab_editor"
 msgstr "Edit start page"
 
-msgid "tab_editor_title"
-msgstr "Edit HTML-pages"
-
-msgid "tab_files_obj"
-msgstr "Change/add digital object"
-
-msgid "tab_upload"
-msgstr "Upload"
-
-msgid "tab_html"
-msgstr "Edit startpage"
-
 msgid "tab_startpages"
 msgstr "Manage startpages"
 
-msgid "tab_meta_col"
-msgstr "View"
+msgid "tab_metadata_dir"
+msgstr "Edit metadata"
 
-msgid "tab_meta_dir"
-msgstr "View"
+msgid "tab_techmeta"
+msgstr "Technincal Meta Data"
+
+msgid "tab_meta"
+msgstr "Meta Data"
 
 msgid "tab_logo"
 msgstr "Edit Logo"
+
+msgid "tab_editor_title"
+msgstr "Edit HTML-pages"
 
 msgid "tab_html_title"
 msgstr "Edit HTML pages"
@@ -2464,8 +568,11 @@ msgstr "Edit HTML pages"
 msgid "tab_upload_title"
 msgstr "View upload area"
 
-msgid "tab_meta"
-msgstr "Meta Data"
+msgid "tab_metadata"
+msgstr "Edit metadata"
+
+msgid "tab_menumetadata"
+msgstr "Edit metadata"
 
 msgid "tab_meta_title"
 msgstr "Open Meta Data editor"
@@ -2503,14 +610,14 @@ msgstr "Object lists/Checksum"
 msgid "tab_license_title"
 msgstr "Open Object list/Checksums"
 
-msgid "tab_techmeta"
-msgstr "Technincal Meta Data"
+msgid "tab_files"
+msgstr "Change/add digital object"
 
-msgid "tab_techmeta_title"
-msgstr "Open Technical Meta Data"
+msgid "tab_files_title"
+msgstr "Edit technical metadata"
 
-msgid "tab_techmeta_obj"
-msgstr "Edit Digital Object"
+msgid "tab_files_obj"
+msgstr "Change/add digital object"
 
 msgid "tab_view"
 msgstr "Preview"
@@ -2530,14 +637,11 @@ msgstr "Place in Browsing Structure"
 msgid "tab_classes_title"
 msgstr "Show Classification"
 
+msgid "tab_menuclasses"
+msgstr "Classification"
+
 msgid "tab_admin"
 msgstr "Administration"
-
-msgid "tab_statsaccess"
-msgstr "User-Statistics"
-
-msgid "tab_statsfiles"
-msgstr "File-Statistics"
 
 msgid "tab_imports"
 msgstr "System module Upload"
@@ -2545,723 +649,39 @@ msgstr "System module Upload"
 msgid "tab_publish"
 msgstr "System module Publish"
 
+msgid "tab_statsaccess"
+msgstr "User-Statistics"
+
+msgid "tab_statsfiles"
+msgstr "File-Statistics"
+
+msgid "tab_meta_col"
+msgstr "View"
+
+msgid "tab_meta_dir"
+msgstr "View"
+
+msgid "tab_techmeta_title"
+msgstr "Open Technical Meta Data"
+
+msgid "tab_html"
+msgstr "Edit startpage"
+
+msgid "tab_techmeta_obj"
+msgstr "Edit Digital Object"
+
 msgid "tab_frontendparts"
 msgstr "Header/Footer entries"
 
 msgid "tab_ftp"
-msgstr "Edit FTP-Files"
+msgstr "Process FTP data"
 
 msgid "tab_manageindex"
-msgstr "Manage Index-Lists"
+msgstr "Manage index lists"
 
 msgid "tab_news"
-msgstr "Manage Messages"
+msgstr "Manage messages"
 
-### edit acls ###
-msgid "edit_acls_righttype_read"
-msgstr "User groups which may see these objects:"
-
-msgid "edit_acls_righttype_write"
-msgstr "User groups which may edit these objects:"
-
-msgid "edit_acls_righttype_data"
-msgstr "User groups which may download originals (TIFF/JPG/PNG/BMP of original size, PDF files, Videos, etc.):"
-
-msgid "edit_acls_userrighttype_read"
-msgstr "User groups which may see these objects:"
-
-msgid "edit_acls_userrighttype_write"
-msgstr "User groups which may edit these objects:"
-
-msgid "edit_acls_userrighttype_data"
-msgstr "User groups which may download originals (TIFF/JPG/PNG/BMP of original size, PDF files, Videos, etc.):"
-
-msgid "edit_acls_groupheader"
-msgstr "Group level (ACL)"
-
-msgid "edit_acls_userheader"
-msgstr "User level"
-
-msgid "edit_acls_selection"
-msgstr "Select selection level:"
-
-msgid "edit_acls_selectacl"
-msgstr "Group level/ACL"
-
-msgid "edit_acls_selectacltitle"
-msgstr "Changes on group level"
-
-msgid "edit_acls_selectuser"
-msgstr "User level"
-
-msgid "edit_acls_selectusertitle"
-msgstr "Changes on user level"
-
-msgid "edit_acl_special_rule"
-msgstr "[special user rule]"
-
-### edit admin ###
-msgid "edit_admin_setdirty_title"
-msgstr "Mark node for reindex process"
-
-msgid "edit_admin_localread_del_title"
-msgstr "Reprocess Localread (ACL-rights cache)"
-
-msgid "edit_admin_add_attribute"
-msgstr "Create new attribute"
-
-msgid "edit_admin_add_attributename"
-msgstr "Attribute name:"
-
-msgid "edit_admin_add_attributevalue"
-msgstr "Attribute value:"
-
-msgid "edit_admin_add_attr"
-msgstr "Save attribute"
-
-msgid "edit_dirty"
-msgstr "Dirty-Flag"
-
-msgid "edit_localread"
-msgstr "Localread-Flag"
-
-msgid "edit_ftp_nofiles"
-msgstr "Current Directory has no FTP-Files."
-
-msgid "edit_ftp_files"
-msgstr "Files:"
-
-msgid "edit_ftp_type"
-msgstr "Type"
-
-msgid "edit_ftp_size"
-msgstr "Size"
-
-msgid "edit_ftp_mimetype"
-msgstr "Mimetype"
-
-msgid "edit_ftp_location"
-msgstr "Location/Name"
-
-msgid "edit_ftp_options"
-msgstr "Options"
-
-msgid "edit_ftp_chooseall_title"
-msgstr "choose all"
-
-msgid "edit_ftp_open_title"
-msgstr "open file"
-
-msgid "edit_ftp_chooseschema"
-msgstr "- choose schema -"
-
-msgid "edit_ftp_delete_title"
-msgstr "delete file..."
-
-msgid "edit_ftp_process_title"
-msgstr "process file..."
-
-msgid "edit_ftp_deletea_title"
-msgstr "delete files..."
-
-msgid "edit_ftp_processa_title"
-msgstr "process files..."
-
-msgid "edit_ftp_alllabel"
-msgstr "Process selected files:"
-
-msgid "edit_ftp_error1"
-msgstr "Error: Please choose a schema for file."
-
-msgid "edit_ftp_error2"
-msgstr "Error: Missing schema for at least one file."
-
-msgid "edit_clearfromcache"
-msgstr "Clear node from cache"
-
-### edit frontendparts ###
-msgid "item_type_intern"
-msgstr "html page"
-
-msgid "item_type_text"
-msgstr "text (label)"
-
-msgid "item_type_link"
-msgstr "link"
-
-msgid "item_type_node"
-msgstr "mediatum node"
-
-msgid "edit_frontendparts_name"
-msgstr "Name:"
-
-msgid "edit_frontendparts_type"
-msgstr "Type:"
-
-msgid "edit_frontendparts_html"
-msgstr "HTML file:"
-
-msgid "edit_frontendparts_link"
-msgstr "Link:"
-
-msgid "edit_frontendparts_node"
-msgstr "Node:"
-
-msgid "edit_frontendparts_icon"
-msgstr "Icon:"
-
-msgid "edit_frontendparts_save"
-msgstr "Save"
-
-msgid "edit_frontendparts_cancel"
-msgstr "Cancel"
-
-msgid "edit_frontendparts_item_delete"
-msgstr "Do you really want to delete this entry?"
-
-msgid "edit_frontendparts_header_title"
-msgstr "Header:"
-
-msgid "edit_frontendparts_footerleft_title"
-msgstr "Footer left:"
-
-msgid "edit_frontendparts_footerright_title"
-msgstr "Footer right:"
-
-msgid "edit_frontendparts_name_title"
-msgstr "Name"
-
-msgid "edit_frontendparts_link_title"
-msgstr "Link"
-
-msgid "edit_frontendparts_type_title"
-msgstr "Type"
-
-msgid "edit_frontendparts_icon_title"
-msgstr "Icon"
-
-msgid "edit_frontendparts_selectnode_title"
-msgstr "Select node (popup)"
-
-msgid "edit_frontendparts_selecticon_title"
-msgstr "Select icon (popup)"
-
-msgid "edit_frontendparts_deleteicon_title"
-msgstr "delete icon"
-
-msgid "edit_frontendparts_nodeheader"
-msgstr "Choose a node:"
-
-msgid "edit_frontendparts_iconheader"
-msgstr "Choose an icon:"
-
-msgid "edit_frontendparts_delete_title"
-msgstr "delete entry"
-
-msgid "edit_frontendparts_edit_title"
-msgstr "edit entry"
-
-msgid "edit_frontendparts_order_title"
-msgstr "change order"
-
-msgid "edit_frontendparts_add_title"
-msgstr "create new entry"
-
-### edit news ###
-msgid  "edit_news_overviewheader"
-msgstr "Overview of Entries"
-
-msgid "edit_news_start"
-msgstr "Start"
-
-msgid "edit_news_end"
-msgstr "End"
-
-msgid "edit_news_date"
-msgstr "Date"
-
-msgid "edit_news_active"
-msgstr "Show"
-
-msgid "edit_news_visible"
-msgstr "Visible"
-
-msgid "edit_news_type"
-msgstr "Typy"
-
-msgid "edit_news_messagedate"
-msgstr "Date for Entry"
-
-msgid "edit_news_title"
-msgstr "Title"
-
-msgid "edit_news_message"
-msgstr "Message"
-
-msgid "edit_news_entries"
-msgstr "Entries"
-
-msgid "edit_news_addentry"
-msgstr "Add Entry"
-
-msgid "edit_news_editentry"
-msgstr "Edit Entry"
-
-msgid "edit_news_datefrom"
-msgstr "Date from:"
-
-msgid "edit_news_dateuntil"
-msgstr "Date until:"
-
-msgid "edit_news_entrytype"
-msgstr "Message type"
-
-msgid "edit_news_save"
-msgstr "Save"
-
-msgid "edit_news_cancel"
-msgstr "Cancel"
-
-### classes ###
-msgid "edit_classes_class_title"
-msgstr "Classify"
-
-msgid "edit_classes_disclass_title"
-msgstr "Remove classification"
-
-msgid "edit_classes_open_title"
-msgstr "unfold"
-
-msgid "edit_classes_close_title"
-msgstr "fold"
-
-msgid "edit_classes_noparent"
-msgstr "Operation failed, node is last parent of selected object."
-
-### edit upload ###
-msgid "edit_upload_msg1"
-msgstr "Permission denied. You do not have the permission to add this object. Please contact your administrator."
-
-msgid "edit_upload_obj_selection"
-msgstr "Upload of digital objects (files) / creation of metadatasets<br/><br/>Step 1: Object type selection"
-
-msgid "edit_upload_msg2"
-msgstr "Please select an object type from the list below.<br/>For each type of object special upload forms are available, which offer respective functionality."
-
-msgid "edit_upload_obj_sel"
-msgstr "Choose object type:"
-
-msgid "edit_upload_selecttion_value"
-msgstr "Choose"
-
-msgid "edit_upload_header1"
-msgstr "Upload of digital objects (files) / creation of metadatasets<br/><br/>Step 1: Object type selection '${objtype}'"
-
-msgid "edit_upload_header2"
-msgstr "Step 2: Metadata scheme selection for Object type"
-
-msgid "edit_upload_header3"
-msgstr "Step 3: Select file for upload"
-
-msgid "edit_upload_header4"
-msgstr "Step 4: Create object / upload selected file"
-
-msgid "edit_upload_msg3"
-msgstr "Select file from your computer ("search button") and confirm by "upload"."
-
-msgid "edit_upload_msg4"
-msgstr "If you want to upload several files at one time, then store them locally in a ZIP archive (e.g. <a target="newwindow" href="http://www.winzip.com/">WinZip</a>), and upload the .ZIP archive."
-
-msgid "edit_upload_scheme"
-msgstr "Select Metadata scheme:"
-
-msgid "edit_upload_file"
-msgstr "File"
-
-msgid "edit_upload_upload_label"
-msgstr "Create / Upload"
-
-msgid "edit_upload_typeselection"
-msgstr "-- select Object type --"
-
-msgid "edit_upload_schemeselection"
-msgstr "-- select Metadata scheme --"
-
-### edit FCKeditor custom file manager ###
-msgid "edit_fckeditor_cfm_filetype"
-msgstr "Type"
-
-msgid "edit_fckeditor_cfm_filesize"
-msgstr "Size"
-
-msgid "edit_fckeditor_cfm_mimetype"
-msgstr "Mimetype"
-
-msgid "edit_fckeditor_cfm_nameonserver"
-msgstr "Name on server"
-
-msgid "edit_fckeditor_cfm_delete"
-msgstr "delete"
-
-msgid "edit_fckeditor_cfm_clicktochoose"
-msgstr "Click on an image to select"
-
-msgid "edit_fckeditor_cfm_hasnoimages"
-msgstr "No images uploaded for this page. Upload an image first."
-
-msgid "edit_fckeditor_cfm_closewindow"
-msgstr "Close Window"
-
-msgid "edit_fckeditor_cfm_imageislogo"
-msgstr "image is logo"
-
-msgid "edit_fckeditor_cfm_uploadexplain"
-msgstr "You can upload a new file to this node:"
-
-msgid "edit_fckeditor_cfm_uploadbutton"
-msgstr "upload to server"
-
-msgid "edit_fckeditor_cfm_deleteconfirm"
-msgstr "Do you really want to delete this file?"
-
-msgid "edit_fckeditor_cfm_uploadsuccess"
-msgstr "The file has been uploaded."
-
-### edit startpages ###
-msgid "edit_startpages_header"
-msgstr "Startpages"
-
-msgid "edit_startpages_header2"
-msgstr "Sidebar"
-
-msgid "edit_startpages_explain_table"
-msgstr "html pages for this node"
-
-msgid "edit_startpages_edit"
-msgstr "click to edit this page"
-
-msgid "edit_startpages_delete"
-msgstr "click to delete this page from the server"
-
-msgid "edit_startpages_deleteconfirm"
-msgstr "Do you really want to delete this page?"
-
-msgid "edit_startpages_savechanges"
-msgstr "Save changes"
-
-msgid "edit_startpages_reset"
-msgstr "Reset"
-
-msgid "edit_startpages_explain_addbutton"
-msgstr "Click this button to open a new page in the html editor"
-
-msgid "edit_startpages_addnew"
-msgstr "Create new page"
-
-msgid "edit_startpages_link"
-msgstr "Link to the page"
-
-msgid "edit_startpages_technical_name"
-msgstr "Tech. Name"
-
-msgid "edit_startpages_file_size"
-msgstr "size"
-
-msgid "edit_startpages_descriptive_name"
-msgstr "Descriptive name"
-
-msgid "edit_startpages_do_not_use_a_startpage"
-msgstr "Do not use a startpage for this language"
-
-msgid "edit_startpages_do_not_use_a_sidebar"
-msgstr "Do not use a sidebar for this language"
-
-msgid "edit_startpages_selectlanguage"
-msgstr "select as startpage for this language"
-
-msgid "edit_startpages_sidebarfile"
-msgstr "Files"
-
-### workflow ###
-msgid "edit_workflow_msg1"
-msgstr "Current object has no workflow. To assign it into a workflow choose one of the list and confirm with 'save'."
-
-msgid "edit_wirfklows_wf"
-msgstr "Workflows"
-
-msgid "edit_workflow_msg2"
-msgstr "Current workflow position: ${name}"
-
-msgid "edit_workflow_msg3"
-msgstr "Following operations are possible:"
-
-msgid "edit_workflow_delete"
-msgstr "Delete"
-
-msgid "edit_workflow_delfromwf"
-msgstr "Delete from workflow"
-
-msgid "edit_object_not_viewable"
-msgstr "This object doesn't have a skin"
-
-msgid "edit_save_title"
-msgstr "Save"
-
-msgid "delete_folder_question"
-msgstr "If you delete this file, all files and subfolders in it will be irrevocably lost. Perform delete operation?"
-
-msgid "delete_root_error_msg"
-msgstr "Delete operation denied for current collection!"
-
-msgid "delete_object_question"
-msgstr "Move objects into trashbox?"
-
-msgid "edit_action_clear_trash"
-msgstr "Clear Trashbox"
-
-msgid "clear_trash_question"
-msgstr "All elements in the trashbox will be lost while clearing. Perform delete operation?"
-
-msgid "select_target_dir"
-msgstr "Select target directory:"
-
-msgid "fieldsmissing"
-msgstr "Not all required fields were filled correctly."
-
-msgid "saved_in_inconsistent_data"
-msgstr "A copy was stored in the directory 'inconsistent data'."
-
-msgid "no more entries"
-msgstr "This file wasn't assigned to any directory."
-
-# new 14-05-2007
-msgid "edit_create_new_folder"
-msgstr "Directory could not be created: The parent directory is write protected."
-
-msgid "edit_tree_editor_title"
-msgstr "Tree Editor"
-
-msgid "edit_access_error"
-msgstr "Access denied"
-
-msgid "edit_common_mark"
-msgstr "Mark"
-
-msgid "edit_common_mark_all"
-msgstr "Mark all"
-
-msgid "edit_common_dismark"
-msgstr "Unmark"
-
-msgid "edit_common_mark_invert"
-msgstr "Invert marks"
-
-msgid "edit_common_meta_error"
-msgstr "Inconsistent metadata"
-
-msgid "edit_common_bigview_title"
-msgstr "Full view"
-
-msgid "edit_common_edit_meta"
-msgstr "Edit metadata"
-
-msgid "edit_editor_save"
-msgstr "Save"
-
-msgid "edit_editor_save_title"
-msgstr "Save changes"
-
-msgid "edit_editor_delete"
-msgstr "Delete HTML files"
-
-msgid "edit_editor_delete_title"
-msgstr "Delete HTML files"
-
-msgid "edit_editor_new_file"
-msgstr "newly created file"
-
-msgid "edit_editor_header"
-msgstr "At the moment the archive contains the following data:"
-
-msgid "edit_files_filetype_error"
-msgstr "Exchange isn't possible, since the file types do not match."
-
-msgid "edit_files_files"
-msgstr "Files:"
-
-msgid "edit_files_attachments"
-msgstr "Attachments:"
-
-msgid "edit_files_stats"
-msgstr "Statistics:"
-
-msgid "edit_files_dirname"
-msgstr "Directory name: "
-
-msgid "edit_files_addthumbnail"
-msgstr "Add new thumbnail:"
-
-msgid "edit_files_add_attdir"
-msgstr "add attachment directory (all attachments will be saved in this directory)"
-
-msgid "edit_files_add_attfile"
-msgstr "add attachment"
-
-msgid "edit_files_type"
-msgstr "Type"
-
-msgid "edit_files_size"
-msgstr "Size"
-
-msgid "edit_files_mimetype"
-msgstr "Mimetype"
-
-msgid "edit_files_location"
-msgstr "Location / Name"
-
-msgid "edit_files_options"
-msgstr "Options"
-
-msgid "edit_files_opne_title"
-msgstr "Open"
-
-msgid "edit_files_change"
-msgstr "Exchange digital object"
-
-msgid "edit_files_add_obj"
-msgstr "Add digital object"
-
-msgid "edit_files_reprocess"
-msgstr "Re-process digital object"
-
-msgid "edit_files_reprocess_info"
-msgstr "(all technical metadata and thumbnails will be updated)"
-
-msgid "edit_files_obsolete"
-msgstr "Metadata fields not in use"
-
-msgid "edit_files_obsolete_del_title"
-msgstr "delete attribute"
-
-msgid "edit_files_metafields"
-msgstr "Metadata fields"
-
-msgid "edit_files_tech_meta"
-msgstr "technical metadata fields"
-
-msgid "edit_files_del_tech_meta"
-msgstr "delete technical metadata field"
-
-msgid "edit_license_info"
-msgstr "With the following Link you can create checksum lists of your objects for e.g. licensing purposes:"
-
-msgid "edit_license_gen"
-msgstr "Create object list"
-
-msgid "edit_license_obj_list"
-msgstr "Object list"
-
-msgid "edit_license_name"
-msgstr "Name"
-
-msgid "edit_license_file"
-msgstr "File"
-
-msgid "edit_license_hash"
-msgstr "Checksum"
-
-msgid "edit_license_size"
-msgstr "Size"
-
-msgid "edit_meta_info1"
-msgstr "For this node type there aren't editable metadata fields available"
-
-msgid "edit_meta_info2"
-msgstr "Attention, objects with different meta data types were selected! Only objects of type <b>'${n}'</b> will be considered."
-
-msgid "edit_meta_mask_selection"
-msgstr "Mask selection"
-
-msgid "edit_meta_save"
-msgstr "Save"
-
-msgid "edit_meta_reset"
-msgstr "Reset"
-
-msgid "edit_mask_required"
-msgstr "Required (not empty)"
-
-msgid "edit_meta_created"
-msgstr "created"
-
-msgid "edit_meta_changed"
-msgstr "last edit"
-
-msgid "edit_sort_header"
-msgstr "Sort manually"
-
-msgid "edit_sort_header2"
-msgstr "Sort Collections"
-
-msgid "edit_sort_label"
-msgstr "Sort automatically"
-
-msgid "edit_sort_label_1"
-msgstr "Attribute:"
-
-msgid "edit_sort_up"
-msgstr "ascending"
-
-msgid "edit_sort_down"
-msgstr "descending"
-
-msgid "edit_mask"
-msgstr "Mask"
-
-msgid "edit_sort_position"
-msgstr "Position"
-
-msgid "edit_sort_name"
-msgstr "Name"
-
-msgid "edit_sort_down_title"
-msgstr "down"
-
-msgid "edit_sort_up_title"
-msgstr "up"
-
-msgid "edit_sort_header_auto"
-msgstr "Sort automatically"
-
-msgid "edit_sort_sort"
-msgstr "Sort"
-
-msgid "edit_search_start"
-msgstr "New search"
-
-msgid "edit_search_search_for"
-msgstr "Search:"
-
-msgid "edit_search_type"
-msgstr "Type:"
-
-msgid "edit_search_fields"
-msgstr "Search fields:"
-
-msgid "edit_search_all_fields"
-msgstr "All meta data:"
-
-msgid "edit_search_search"
-msgstr "Search"
-
-msgid "edit_search_reset"
-msgstr "Reset"
-
-msgid "edit_search_index"
-msgstr "Last search index actualization:"
-
-msgid "edit_flush"
-msgstr "System Caches were flushed"
 
 msgid "Text-Ansicht"
 msgstr "text view"
@@ -3272,8 +692,11 @@ msgstr "thumbnail view"
 msgid "Listen-Ansicht"
 msgstr "list view"
 
-msgid "no_file_transferred"
-msgstr "No file was transferred to the server."
+msgid "full_standard_doc_title"
+msgstr "Default view for documents"
+
+msgid "full_text_doc_title"
+msgstr "Text view for documents"
 
 msgid "print_view_header"
 msgstr "mediaTUM object"
@@ -3290,247 +713,6 @@ msgstr "page"
 msgid "print_preview_occurences"
 msgstr "Occurences"
 
-msgid "full_standard_doc_title"
-msgstr "Default view for documents"
-
-msgid "full_text_doc_title"
-msgstr "Text view for documents"
-
-msgid "sort_label"
-msgstr "sort by:"
-
-msgid "sort_label2"
-msgstr "and:"
-
-msgid "edit_logo_logoheader"
-msgstr "Logo:"
-
-msgid "edit_logo_del_button"
-msgstr "Delete Logo"
-
-msgid "edit_logo_no_logo"
-msgstr "no Logo"
-
-msgid "edit_logo_zoom"
-msgstr "(mouseover for zoom)"
-
-msgid "edit_logo_addfile"
-msgstr "Upload file:"
-
-msgid "edit_logo_selecttitle"
-msgstr "select as logo"
-
-msgid "edit_logo_link_label"
-msgstr "Link behind Logo: "
-
-msgid "edit_logo_test_title"
-msgstr "Test Link"
-
-msgid "edit_logo_savechanges"
-msgstr "Save Changes"
-
-msgid "edit_logo_reset"
-msgstr "Reset"
-
-msgid "edit_logo_changeheader"
-msgstr "Change Logo:"
-
-msgid "edit_logo_filetypeerror"
-msgstr "Uploaded filetype is not supported for Logos. Allowed types are '.jpeg', '.jpg', '.gif' or '.png'."
-
-# edit publish #
-msgid "edit_publish_header"
-msgstr "Publish Objects (Quick Publisher)"
-
-msgid "edit_publish_warning"
-msgstr "Attention: This refers to unpublished objects (marked with red text), not to your current selection. You can select objects to be published in the next step."
-
-msgid "edit_publish_info"
-msgstr "All selected objects will be published in selected directory."
-
-msgid "edit_publish_dirs"
-msgstr "Actual Destination-Directory:"
-
-msgid "edit_publish_button_select"
-msgstr "Choose publish directory"
-
-msgid "edit_publish_button"
-msgstr "Publish"
-
-msgid "edit_publish_popupheader"
-msgstr "Choose Destination:"
-
-msgid "edit_publish_ok"
-msgstr "OK"
-
-msgid "edit_publish_cancel"
-msgstr "Cancel"
-
-msgid "edit_stats_header"
-msgstr "Access Statistics for Collection"
-
-msgid "edit_stats_pages_of"
-msgstr "page %s of %s"
-
-msgid "edit_stats_period_header"
-msgstr "Report Period"
-
-msgid "edit_stats_noaccess"
-msgstr "No user access in chosen report period."
-
-msgid "edit_stats_stand"
-msgstr "stand"
-
-msgid "edit_stats_access"
-msgstr "Access"
-
-msgid "edit_stats_country"
-msgstr "Access spreading (country)"
-
-msgid "edit_stats_spreading"
-msgstr "Access spreading (date)"
-
-msgid "edit_stats_spreading_day"
-msgstr "Access spreading (weekday)"
-
-msgid "edit_stats_spreading_time"
-msgstr "Access spreading (time)"
-
-msgid "edit_stats_topten"
-msgstr "TOP 10"
-
-msgid "edit_stats_showall"
-msgstr "show all..."
-
-msgid "edit_stats_showtopten"
-msgstr "show TOP 10..."
-
-msgid "edit_stats_node"
-msgstr "Nodes"
-
-msgid "edit_stats_all"
-msgstr "All"
-
-msgid "edit_stats_day"
-msgstr "Day"
-
-msgid "edit_stats_weekday"
-msgstr "Weekday"
-
-msgid "edit_stats_diffusers"
-msgstr "Different<br/>Users"
-
-msgid "edit_stats_pages"
-msgstr "Pages"
-
-msgid "edit_stats_daytime"
-msgstr "Time"
-
-msgid "edit_stats_popuptitle"
-msgstr "Statistics action"
-
-msgid "edit_stats_popupheader"
-msgstr "Refresh statistics for current node"
-
-msgid "edit_stats_popupupdatebutton"
-msgstr "refresh statistics"
-
-msgid "edit_stats_popuperror"
-msgstr "Data cannot be refreshed, since an update is running.<br/>Try it again later."
-
-msgid "edit_stats_popup_close"
-msgstr "close window"
-
-msgid "edit_stats_popupfooter"
-msgstr "Close this window only if requested."
-
-msgid "edit_stats_popupdone"
-msgstr "Statisics data were updated.<br/>You can close this window now."
-
-msgid "edit_stats_sum"
-msgstr "Access (total)"
-
-msgid "edit_stats_details"
-msgstr "details..."
-
-msgid "edit_stats_schema"
-msgstr "Types of Metadata"
-
-msgid "edit_stats_updatebutton"
-msgstr "Update Statistics"
-
-msgid "edit_stats_allobjlabel"
-msgstr "Items (sum)"
-
-msgid "edit_stats_digobjlabel"
-msgstr "Items (digital)"
-
-### edit changeschema ###
-msgid "tab_changeschema"
-msgstr "Change schema/type"
-
-msgid "edit_changeschema_msg1"
-msgstr "Permission denied. You do not have the permission to edit these parameters. Please contact your administrator."
-
-msgid "edit_changeschema_obj_selection"
-msgstr "Change of object type"
-
-msgid "edit_changeschema_msg2"
-msgstr "Please select the new object type from the list below.<br/>For the selected object type the available schemas will then be reloaded."
-
-msgid "edit_changeschema_obj_sel"
-msgstr "Choose new object type for node"
-
-msgid "edit_changeschema_selection_value"
-msgstr "Set this object type"
-
-msgid "edit_changeschema_nodeid"
-msgstr "Object id"
-
-msgid "edit_changeschema_objtype"
-msgstr "Object type"
-
-msgid "edit_changeschema_schemeid"
-msgstr "Metadata scheme ID"
-
-msgid "edit_changeschema_schemename"
-msgstr "Metadata scheme name"
-
-msgid "edit_changeschema_noscheme"
-msgstr "no metadatatype for this object type"
-
-# edit manage-index
-msgid "edit_manageindex_step1_header"
-msgstr "Step 1: Choose a schema"
-
-msgid "edit_manageindex_step2_header"
-msgstr "Step 2: Choose a field"
-
-msgid "edit_manageindex_step3_header"
-msgstr "Step 3: Choose at least one index value"
-
-msgid "edit_manageindex_step4_header"
-msgstr "Step 4: Choose replacement text"
-
-msgid "edit_manageindex_empty"
-msgstr "ignore empty values"
-
-msgid "edit_manageindex_submit"
-msgstr "Do Changes"
-
-msgid "edit_manageindex_choose_scheme"
-msgstr "- choose schema -"
-
-msgid "edit_manageindex_choose_field"
-msgstr "- choose field -"
-
-msgid "edit_manageindex_result"
-msgstr "Following nodes will be changed:"
-
-msgid "edit_manageindex_items"
-msgstr "Operation applied for ${number} nodes"
-
-# mask editor #
 msgid "mask_editor_title"
 msgstr "Mask editor"
 
@@ -3633,6 +815,9 @@ msgstr "Type:"
 msgid "mask_edit_help"
 msgstr "Help text:"
 
+msgid "mask_edit_max_length"
+msgstr "Maximum length"
+
 msgid "mask_edit_required"
 msgstr "Required:"
 
@@ -3699,8 +884,17 @@ msgstr "Header"
 msgid "mask_edit_footer"
 msgstr "footer"
 
-msgid "mask_edit_format"
-msgstr "Format"
+msgid "mask_edit_mappingselection"
+msgstr "Mapping Type:"
+
+msgid "mask_edit_mapping_field"
+msgstr "Field of mapping definition"
+
+msgid "mask_edit_attribute_field"
+msgstr "Format description"
+
+msgid "mask_edit_attribute_description"
+msgstr "possible variables:<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [value] = attribute value of 'Field'<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [att:field] = attributename<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [att:id] = node ID<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (&lt;[att:field]&gt;[value]&lt;/[att:field]&gt;)"
 
 msgid "mask_edit_separator"
 msgstr "Separator"
@@ -3711,87 +905,13 @@ msgstr "Test nodes"
 msgid "mask_edit_show_testnodes"
 msgstr "Show"
 
-####
-msgid "mask_edit_mappingselection"
-msgstr "Mapping Type:"
-
-msgid "mask_edit_mapping_field"
-msgstr "Field of mapping definition"
-
-msgid "mask_edit_attribute_description"
-msgstr "possible variables:<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [value] = attribute value of 'Field'<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [att:field] = attributename<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;* [att:id] = node ID<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (&lt;[att:field]&gt;[value]&lt;/[att:field]&gt;)"
-
-msgid "mask_edit_attribute_field"
-msgstr "Format description"
-
-msgid "mask_edit_max_length"
-msgstr "Maximum length"
-
-####
-msgid "user_directory"
-msgstr "User directory"
-
-msgid "user_upload"
-msgstr "Uploads"
-
-msgid "user_import"
-msgstr "Imports"
-
-msgid "unpublished_objects1"
-msgstr "Notice: This Folder contains unpublished objects (objects which are not publicly visible)."
-
-msgid "unpublished_objects2"
-msgstr "Publish these objects (Quick publisher)"
-
-msgid "user_faulty"
-msgstr "Inconsistent data"
-
-msgid "user_trash"
-msgstr "Trashbox"
-
-msgid "editor_overwrite"
-msgstr "overwrite"
-
-msgid "editor_from"
-msgstr "from"
-
-msgid "editor_to"
-msgstr "until"
-
-msgid "editor_input_format"
-msgstr "Input format: "
-
-msgid "editor_memo_label"
-msgstr "characters remaining"
-
-msgid "popup_help_header"
-msgstr "Help"
-
-msgid "popup_full_view"
-msgstr "Full View"
-
-msgid "popup_fullview_decrease"
-msgstr "Zoom out"
-
-msgid "popup_fullview_increase"
-msgstr "Zoom in"
-
-msgid "popup_fullview_original"
-msgstr "Fit to window"
-
-msgid "edit_search_reset_msg"
-msgstr "Search was form reseted."
-
-msgid "edit_search_noresult_msg"
-msgstr "Your search resulted in no hits."
-
 msgid "PostprocessingError_document"
 msgstr "Document could not be uploaded into the system.<br>This may be caused by a possibly copy-protected or damaged PDF file."
 
 msgid "EncryptionError_document"
 msgstr "This document couldn't be uploaded- the PDF is copy-protected. Please remove the encryption and try uploading it again."
 
-msgid "Your browser doesn't support cookies"
+msgid "Your_browser_doesnt_support_cookies"
 msgstr "Your browser doesn't support cookies. Maybe the 'Allow Cookies' option in your browser is deactivated. Please switch on Cookies again to proceed."
 
 msgid "off"
@@ -3815,16 +935,6 @@ msgstr "documents (Ph.D. theses)"
 msgid "videos"
 msgstr "videos"
 
-msgid "admin_mask_error_2"
-msgstr "The name may only consist of the characters a to z, A to Z, 0 to 9 as well as '-' and '_' !"
-
-msgid "admin_metafield_error_2"
-msgstr "The name may only consist of the characters a to z, A to Z, 0 to 9 as well as '-', '_' and '.' !"
-
-msgid "admin_metafield_error_4"
-msgstr "The name may only consist of the characters a to z, A to Z, 0 to 9 as well as '-', '_' and '.' !"
-
-# attachment browser
 msgid "att_browser_title"
 msgstr "Attachment-Browser"
 
@@ -3849,9 +959,6 @@ msgstr "show video"
 msgid "flash_showvideo"
 msgstr "show video"
 
-msgid "editor_main_header"
-msgstr "mediaTUM Editor Interface"
-
 msgid "search_result_text"
 msgstr "The search covered the following collections:"
 
@@ -3870,10 +977,25 @@ msgstr "Error while processing file! Please check processed file."
 msgid "searchresult"
 msgstr "Searchresult"
 
-msgid "If you experience problems opening this document, please try"
+msgid "If_you_experience_problems_opening_this_document_please_try"
 msgstr "If you experience problems opening this document, please try"
 
-msgid "this link"
+msgid "popup_help_header"
+msgstr "Help"
+
+msgid "popup_full_view"
+msgstr "Full View"
+
+msgid "popup_fullview_decrease"
+msgstr "Zoom out"
+
+msgid "popup_fullview_increase"
+msgstr "Zoom in"
+
+msgid "popup_fullview_original"
+msgstr "Fit to window"
+
+msgid "this_link"
 msgstr "this link"
 
 msgid "tab_globals"
@@ -3882,17 +1004,20 @@ msgstr "global settings"
 msgid "settings"
 msgstr "settings"
 
-msgid "don't display logo"
-msgstr "don't display logo"
-
-msgid "no extended search"
-msgstr "no extended search:"
-
-msgid "full view style"
-msgstr "full view style:"
-
 msgid "style"
 msgstr "shot view style:"
+
+msgid "dont_display_logo"
+msgstr "don't display logo"
+
+msgid "no_extended_search"
+msgstr "no extended search:"
+
+msgid "full_view_style"
+msgstr "full view style:"
+
+msgid "node_name"
+msgstr "name:"
 
 msgid "no_extsearch"
 msgstr "no extended search:"
@@ -3900,23 +1025,35 @@ msgstr "no extended search:"
 msgid "fieldname"
 msgstr "field name"
 
-msgid "Search within the following fields:"
-msgstr "Search within the following fields:"
-
-msgid "search mask"
-msgstr "search mask"
-
 msgid "none"
 msgstr "none"
 
-msgid "from parent"
+msgid "from_parent"
 msgstr "from parent"
 
-msgid "define new"
+msgid "define_new"
 msgstr "define new"
 
-msgid "node name"
-msgstr "name:"
+msgid "search_mask"
+msgstr "search mask"
+
+msgid "search_field"
+msgstr "search field"
+
+msgid "schema"
+msgstr "schema"
+
+msgid "field"
+msgstr "Field"
+
+msgid "append_new_field"
+msgstr "append_new_field"
+
+msgid "Search_within_the_following_fields:"
+msgstr "Search within the following fields:"
+
+msgid "add"
+msgstr "add"
 
 msgid "sub_header_frontend"
 msgstr "View Website"
@@ -3924,40 +1061,7 @@ msgstr "View Website"
 msgid "tab_lza"
 msgstr "Long-Term Preservation"
 
-msgid "edit_lza_wrongfiletype"
-msgstr "No suitable format for createion of Long-Term Object."
-
-msgid "edit_lza_ioerror"
-msgstr "Long-Term Object not found but listed in Object Definition."
-
-msgid "edit_lza_create_label"
-msgstr "Create Long-Term Object"
-
-msgid "edit_lza_remove_label"
-msgstr "Delete Long-Term Object"
-
-msgid "edit_lza_node"
-msgstr "Long-Term Preservation Information for Object with id"
-
-msgid "edit_import_header"
-msgstr "Import bibtex data"
-
-msgid "edit_import"
-msgstr "In order to upload bibtex publications, please select a file on your computer and click 'upload'."
-
-msgid "notpublished"
-msgstr "not published"
-
-msgid "admin_usergroup_emails"
-msgstr "emails:"
-
-msgid "admin_meta_bibtex"
-msgstr "bibTeX import mapping"
-
-msgid "admin_meta_bibtex_warning"
-msgstr "(only use this for publications!)"
-
-msgid "hide empty directories"
+msgid "hide_empty_directories"
 msgstr "hide empty directories"
 
 msgid "yearbookuser"
@@ -3966,19 +1070,6 @@ msgstr "Yearbook"
 msgid "intern"
 msgstr "Intern"
 
-msgid "field"
-msgstr "Field"
-
-msgid "append new field"
-msgstr "append new field"
-
-msgid "search field"
-msgstr "search field"
-
-msgid "schema"
-msgstr "schema"
-
-########## colors
 msgid "color_black"
 msgstr "Black"
 
@@ -3996,9 +1087,6 @@ msgstr "yes"
 
 msgid "view_no"
 msgstr "no"
-
-msgid "add"
-msgstr "add"
 
 msgid "style_normal"
 msgstr "normal"
@@ -4107,4 +1195,25 @@ msgstr "Saturday"
 
 msgid "dayname_6_long"
 msgstr "Sunday"
+
+msgid "document_view"
+msgstr "Document view"
+
+msgid "document_view_text"
+msgstr "Text view"
+
+msgid "list_view"
+msgstr "List view"
+
+msgid "thumb_view"
+msgstr "Thumbnail view"
+
+msgid "text_view"
+msgstr "Text view"
+
+msgid "image_view"
+msgstr "Image/text view"
+
+msgid "image_view_big"
+msgstr "Image view"
 

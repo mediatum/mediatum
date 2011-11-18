@@ -1,0 +1,30 @@
+msgid "edit_search_reset_msg"
+msgstr "Suchformular zurückgesetzt"
+
+msgid "edit_search_noresult_msg"
+msgstr "Ihre Suche erbrachte keine Resultate"
+
+msgid "edit_search_start"
+msgstr "Neue Suche starten"
+
+msgid "edit_search_search_for"
+msgstr "Suche nach/in:"
+
+msgid "edit_search_type"
+msgstr "Typ:"
+
+msgid "edit_search_fields"
+msgstr "Suchfelder:"
+
+msgid "edit_search_all_fields"
+msgstr "Alle Metadaten:"
+
+msgid "edit_search_search"
+msgstr "Suchen"
+
+msgid "edit_search_reset"
+msgstr "Reset"
+
+msgid "edit_search_index"
+msgstr "Letzte Suchindex-Aktualisierung:"
+

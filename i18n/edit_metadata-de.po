@@ -1,0 +1,26 @@
+msgid "edit_meta_info1"
+msgstr "Für diesen Knotentyp sind keine Metadaten verfügbar, die editiert werden können."
+
+msgid "edit_meta_info2"
+msgstr "Achtung, es wurden Objekte mit unterschiedlichen Metadatentypen ausgewählt!<br/>Es werden nur Objekte vom Schema <b>'${n}'</b> berücksichtigt."
+
+msgid "edit_meta_mask_selection"
+msgstr "Maskenauswahl"
+
+msgid "edit_mask"
+msgstr "Maske"
+
+msgid "edit_meta_save"
+msgstr "Speichern"
+
+msgid "edit_meta_reset"
+msgstr "Zurücksetzen"
+
+msgid "edit_mask_required"
+msgstr "Pflichtfeld, darf nicht leer sein"
+
+msgid "edit_meta_created"
+msgstr "erstellt"
+
+msgid "edit_meta_changed"
+msgstr "zuletzt geändert"

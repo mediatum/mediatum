@@ -1,0 +1,294 @@
+msgid "edit_module_error"
+msgstr "Module '${name}' couldn't be loaded."
+
+msgid "edit_template_error"
+msgstr "Error while lading template. See the description below for closer information:"
+
+msgid "edit_error_msg"
+msgstr "You're not allowed to access the editor area.<br/> You can logon here: ${link}"
+
+msgid "edit_linktext"
+msgstr "here"
+
+msgid "edit_nodeinformation"
+msgstr "node-information"
+
+msgid "edit_id"
+msgstr "id"
+
+msgid "edit_objecttype"
+msgstr "object type"
+
+msgid "edit_schema"
+msgstr "meta schmeme"
+
+msgid "edit_objectname"
+msgstr "Name"
+
+msgid "edit_error"
+msgstr "Error"
+
+msgid "edit_nobase"
+msgstr "No base directory selected (${msg})"
+
+msgid "edit_main_title"
+msgstr "mediatum"
+
+msgid "edit_main_noframe"
+msgstr "Your Browser doesn't support frames."
+
+msgid "edit_save"
+msgstr "Save"
+
+msgid "edit_save_title"
+msgstr "Save changes"
+
+msgid "edit_ok"
+msgstr "OK"
+
+msgid "edit_error_msg1"
+msgstr "Folder couldn't be created. Parent object is write protected."
+
+msgid "edit_action_msg"
+msgstr "Action ${action} is starded"
+
+msgid "edit_add_folder"
+msgstr "New Folder"
+
+msgid "edit_add_collection"
+msgstr "New Collection"
+
+msgid "edit_nopermission"
+msgstr "permission denied"
+
+msgid "edit_noselection"
+msgstr "nothing selected"
+
+msgid "edit_taboverview_header"
+msgstr "Selected/Editing:"
+
+msgid "edit_actual_dir"
+msgstr "Actual folder:"
+
+msgid "edit_tabarea_msg1"
+msgstr "The following view shows how this object would look within the public search interface. (the actual view is possibly different, depending on selected skin or layout)"
+
+msgid "edit_tabarea_msg2"
+msgstr "You will leave the editor interface by following links on this page."
+
+msgid "edit_files"
+msgstr "Files:"
+
+msgid "edit_dir"
+msgstr "Folder:"
+
+msgid "edit_action_file_upload"
+msgstr "Create / Upload"
+
+msgid "edit_action_file_import"
+msgstr "Import bibtex"
+
+msgid "edit_action_file_move"
+msgstr "Move to..."
+
+msgid "edit_action_file_copy"
+msgstr "Copy to..."
+
+msgid "edit_action_file_delete"
+msgstr "Delete"
+
+msgid "edit_action_file_edit"
+msgstr "Simultaneous editing"
+
+msgid "edit_action_file_editsingle"
+msgstr "Single object editing"
+
+msgid "edit_action_dir_new"
+msgstr "Create new"
+
+msgid "edit_action_new"
+msgstr "Create"
+
+msgid "edit_action_dir_edit"
+msgstr "Edit"
+
+msgid "edit_action_dir_move"
+msgstr "Move to..."
+
+msgid "edit_action_dir_sort"
+msgstr "Sort subfolders"
+
+msgid "edit_action_dir_copy"
+msgstr "Copy to..."
+
+msgid "edit_action_dir_del"
+msgstr "Delete"
+
+msgid "edit_action_file_publish"
+msgstr "Publish"
+
+msgid "edit_dirty"
+msgstr "Dirty-Flag"
+
+msgid "edit_localread"
+msgstr "Localread-Flag"
+
+msgid "item_type_intern"
+msgstr "html page"
+
+msgid "item_type_text"
+msgstr "text (label)"
+
+msgid "item_type_link"
+msgstr "link"
+
+msgid "item_type_node"
+msgstr "mediatum node"
+
+msgid "edit_workflow_msg1"
+msgstr "Current object has no workflow. To assign it into a workflow choose one of the list and confirm with 'save'."
+
+msgid "edit_wirfklows_wf"
+msgstr "Workflows"
+
+msgid "edit_workflow_msg2"
+msgstr "Current workflow position: ${name}"
+
+msgid "edit_workflow_msg3"
+msgstr "Following operations are possible:"
+
+msgid "edit_workflow_delete"
+msgstr "Delete"
+
+msgid "edit_workflow_delfromwf"
+msgstr "Delete from workflow"
+
+msgid "edit_object_not_viewable"
+msgstr "This object doesn't have a skin"
+
+msgid "edit_save_title"
+msgstr "Save"
+
+msgid "delete_folder_question"
+msgstr "If you delete this file, all files and subfolders in it will be irrevocably lost. Perform delete operation?"
+
+msgid "delete_root_error_msg"
+msgstr "Delete operation denied for current collection!"
+
+msgid "delete_object_question"
+msgstr "Move objects into trashbox?"
+
+msgid "clear_trash_question"
+msgstr "All elements in the trashbox will be lost while clearing. Perform delete operation?"
+
+msgid "edit_action_clear_trash"
+msgstr "Clear Trashbox"
+
+msgid "select_target_dir"
+msgstr "Select target directory:"
+
+msgid "fieldsmissing"
+msgstr "Not all required fields were filled correctly."
+
+msgid "saved_in_inconsistent_data"
+msgstr "A copy was stored in the directory 'inconsistent data'."
+
+msgid "no_more_entries"
+msgstr "This file wasn't assigned to any directory."
+
+msgid "no_file_transferred"
+msgstr "No file was transferred to the server."
+
+msgid "edit_create_new_folder"
+msgstr "Directory could not be created: The parent directory is write protected."
+
+msgid "edit_tree_editor_title"
+msgstr "Tree Editor"
+
+msgid "edit_access_error"
+msgstr "Access denied"
+
+msgid "edit_common_mark"
+msgstr "Mark"
+
+msgid "edit_common_mark_all"
+msgstr "Mark all"
+
+msgid "edit_common_dismark"
+msgstr "Unmark"
+
+msgid "edit_common_mark_invert"
+msgstr "Invert marks"
+
+msgid "edit_common_meta_error"
+msgstr "Inconsistent metadata"
+
+msgid "edit_common_bigview_title"
+msgstr "Full view"
+
+msgid "edit_common_edit_meta"
+msgstr "Edit metadata"
+
+msgid "edit_editor_save"
+msgstr "Save"
+
+msgid "edit_editor_save_title"
+msgstr "Save changes"
+
+msgid "edit_editor_delete"
+msgstr "Delete HTML files"
+
+msgid "edit_editor_delete_title"
+msgstr "Delete HTML files"
+
+msgid "edit_editor_new_file"
+msgstr "newly created file"
+
+msgid "edit_editor_header"
+msgstr "At the moment the archive contains the following data:"
+
+msgid "edit_flush"
+msgstr "System Caches were flushed"
+
+msgid "user_directory"
+msgstr "User directory"
+
+msgid "user_upload"
+msgstr "Uploads"
+
+msgid "user_import"
+msgstr "Imports"
+
+msgid "unpublished_objects1"
+msgstr "Notice: This Folder contains unpublished objects (objects which are not publicly visible)."
+
+msgid "unpublished_objects2"
+msgstr "Publish these objects (Quick publisher)"
+
+msgid "user_faulty"
+msgstr "Inconsistent data"
+
+msgid "user_trash"
+msgstr "Trashbox"
+
+msgid "editor_overwrite"
+msgstr "overwrite"
+
+msgid "editor_from"
+msgstr "from"
+
+msgid "editor_to"
+msgstr "until"
+
+msgid "editor_input_format"
+msgstr "Input format: "
+
+msgid "editor_memo_label"
+msgstr "characters remaining"
+
+msgid "editor_main_header"
+msgstr "mediaTUM Editor Interface"
+
+msgid "notpublished"
+msgstr "not published"
+

@@ -1,0 +1,135 @@
+### user ###
+msgid "yearbook_user"
+msgstr "Jahrbuch Benutzer"
+
+msgid "ldap_user"
+msgstr "LDAP Benutzer"
+
+msgid "user_option_1"
+msgstr "Passwort änderbar"
+
+msgid "user_option_2"
+msgstr "Merkliste speicherbar"
+
+msgid "admin_user_existing"
+msgstr "Vorhandene Benutzer"
+
+msgid "admin_user_create"
+msgstr "Neuen Benutzer anlegen"
+
+msgid "admin_user_nousers"
+msgstr "- keine Benutzer vorhanden -"
+
+msgid "admin_user_stdpwd_title"
+msgstr "Standardpasswort"
+
+msgid "admin_user_nostdpwd_title"
+msgstr "Passwort geändert"
+
+msgid "admin_user_sendmail_title"
+msgstr "Benutzer eine Mail schicken"
+
+msgid "admin_user_edit_title"
+msgstr "Benutzer bearbeiten"
+
+msgid "admin_user_delete_title"
+msgstr "Benutzer löschen"
+
+msgid "admin_user_footer"
+msgstr "${number} Benutzer"
+
+msgid "admin_user_col_1"
+msgstr "Benutzername"
+
+msgid "admin_user_col_2"
+msgstr "Nachname"
+
+msgid "admin_user_col_3"
+msgstr "Vorname"
+
+msgid "admin_user_col_4"
+msgstr "Email"
+
+msgid "admin_user_col_5"
+msgstr "Organisation"
+
+msgid "admin_user_col_6"
+msgstr "Gruppe(n)"
+
+msgid "admin_user_col_7"
+msgstr "Std. Passwort"
+
+msgid "admin_user_new_label"
+msgstr "Neuen Benutzer anlegen"
+
+msgid "admin_user_edit_label"
+msgstr "Benutzer bearbeiten"
+
+msgid "admin_user_username"
+msgstr "Benutzername"
+
+msgid "admin_user_email"
+msgstr "Email"
+
+msgid "admin_user_groups"
+msgstr "Benutzergruppe(n)"
+
+msgid "admin_user_pwdchange_title"
+msgstr "Passwort zurücksetzen"
+
+msgid "admin_new_pwd"
+msgstr "Neues Passwort"
+
+msgid "admin_user_msg1"
+msgstr "bei leerem Feld wird automatisch das Standardpasswort verwendet"
+
+msgid "admin_user_msg2"
+msgstr "Hinweis: Bei Anklicken des "Senden" Knopfes wird das Passwort des Users auf das Standardpasswort zurückgesetzt."
+
+msgid "admin_user_options"
+msgstr "Optionen"
+
+msgid "admin_user_sender"
+msgstr "Absender"
+
+msgid "admin_user_subject"
+msgstr "Subject"
+
+msgid "admin_user_text"
+msgstr "Text"
+
+msgid "admin_user_send"
+msgstr "Senden"
+
+msgid "admin_user_emailsend"
+msgstr "Email wurde verschickt."
+
+msgid "admin_user_emailsenderror"
+msgstr "Es ist ein Fehler beim Senden der Email an den Benutzer aufgetreten. Es wurde keine Email verschickt."
+
+msgid "admin_user_filter_username"
+msgstr "Benutzername"
+
+msgid "admin_user_filter_lastname"
+msgstr "Nachname"
+
+msgid "admin_user_importintern"
+msgstr "Benutzer zu den internen Benutzern importieren"
+
+msgid "admin_user_lastname"
+msgstr "Nachname"
+
+msgid "admin_user_firstname"
+msgstr "Vorname"
+
+msgid "admin_user_telephone"
+msgstr "Telefonnummer"
+
+msgid "admin_user_comment"
+msgstr "Bemerkung"
+
+msgid "admin_user_organisation"
+msgstr "Organisation"
+
+msgid "admin_user_create_acl"
+msgstr "ACL Regel anlegen / modifizieren"

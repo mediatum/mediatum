@@ -1,0 +1,6 @@
+msgid "edit_import_header"
+msgstr "Import bibtex data"
+
+msgid "edit_import"
+msgstr "In order to upload bibtex publications, please select a file on your computer and click 'upload'."
+

@@ -1,0 +1,204 @@
+msgid "wf_edit_header"
+msgstr "Editable workflows"
+
+msgid "wf_edit_no_header"
+msgstr "No workflows for processing."
+
+msgid "wf_edit_nosearchresults"
+msgstr "- no hits -"
+
+msgid "wf_edit_search"
+msgstr "Search"
+
+msgid "wf_edit_name"
+msgstr "Name"
+
+msgid "wf_edit_description"
+msgstr "Description"
+
+msgid "wf_list_header"
+msgstr "${number} objects in workflow '"
+
+msgid "wf_list_objects"
+msgstr "${number} objects"
+
+msgid "wf_show_details_title"
+msgstr "show details"
+
+msgid "wf_step_msg1"
+msgstr "Thank you for your input.<br/>Object ${name} was stored and has entered the next processing step."
+
+msgid "wf_step_ready"
+msgstr "Ready"
+
+msgid "wf_node_msg1"
+msgstr "Object ${name} is still being processed."
+
+msgid "wf_node_msg2"
+msgstr "Current processing step (${name}) permits no manual changes."
+
+msgid "workflow_msg3"
+msgstr "Objects in step ${name}:"
+
+msgid "workflow_msg4"
+msgstr "Processing of object ${name} was finished. It has left the workflow."
+
+msgid "workflow_msg5"
+msgstr "If additional work on this object should be required from your side, we will contact you by email"
+
+msgid "workflow_msg6"
+msgstr "For questions or problems you reach our support team at ${email}"
+
+msgid "workflow_label_id"
+msgstr "ID"
+
+msgid "workflow_label_date"
+msgstr "Date"
+
+msgid "workflow_label_name"
+msgstr "Name"
+
+msgid "workflow_label_step"
+msgstr "Step"
+
+msgid "workflow_label_editor"
+msgstr "Editor"
+
+msgid "workflow_label_forward"
+msgstr "Pass"
+
+msgid "workflow_show_step"
+msgstr "Show step"
+
+msgid "workflow_footer"
+msgstr "${number} elements in current workflow step"
+
+msgid "workflow_searchfooter"
+msgstr "${number} entries found"
+
+msgid "workflow_error_msg"
+msgstr "Please fill out and correct the missing fields."
+
+msgid "workflow_create_object"
+msgstr "Create new object"
+
+msgid "workflow_start_submit"
+msgstr "Create"
+
+msgid "workflow_email_msg_1"
+msgstr "The following error occured while sending the mail:"
+
+msgid "workflow_email_resend"
+msgstr "Try again to send"
+
+msgid "workflow_filelist_type"
+msgstr "Type"
+
+msgid "workflow_filelist_size"
+msgstr "Size"
+
+msgid "workflow_filelist_mimetype"
+msgstr "Mimetype"
+
+msgid "workflow_filelist_open_title"
+msgstr "Attach file"
+
+msgid "workflow_filelist_delete_title"
+msgstr "delete file"
+
+msgid "workflow_add_file"
+msgstr "add file:"
+
+msgid "workflow_upload_button"
+msgstr "Upload"
+
+msgid "workflow_ready_msg"
+msgstr "Objekt ${name} has reached the end of the current workflow."
+
+msgid "workflow_step_ready_msg"
+msgstr "Objekt ${name} has reached the end of the current workflow."
+
+msgid "workflow_back"
+msgstr "Back"
+
+msgid "workflowstep-addurn"
+msgstr "create URN"
+
+msgid "workflowstep-delete"
+msgstr "delete entry"
+
+msgid "workflowstep-edit"
+msgstr "edit node"
+
+msgid "workflowstep-jahrbuch"
+msgstr "data export (yearbook)"
+
+msgid "workflowstep-protect"
+msgstr "ACL protection"
+
+msgid "workflowstep-send_email"
+msgstr "send email"
+
+msgid "workflowstep-showdata"
+msgstr "metadata editor"
+
+#msgid "workflowstep-start"
+#msgstr "start node"
+
+msgid "workflowstep-upload"
+msgstr "upload node"
+
+msgid "workflowstep-publish"
+msgstr "publish"
+
+msgid "workflowstep-wait"
+msgstr "wait"
+
+#msgid "workflowstep-end"
+#msgstr "end node"
+
+msgid "WorkflowStep_ShowData"
+msgstr "editor (workflow)"
+
+msgid "WorkflowStep_Protect"
+msgstr "protect (workflow)"
+
+msgid "WorkflowStep_SendEmail"
+msgstr "email (workflow)"
+
+msgid "WorkflowStep_Publish"
+msgstr "publish (workflow)"
+
+msgid "WorkflowStep_TextPage"
+msgstr "textpage (workflow)"
+
+msgid "WorkflowStep_Delete"
+msgstr "delete (workflow)"
+
+msgid "WorkflowStep"
+msgstr "workflowstep (system type)"
+
+msgid "WorkflowStep_Start"
+msgstr "initial step (workflow)"
+
+msgid "Workflow"
+msgstr "workflow (system type)"
+
+msgid "WorkflowStep_Jahrbuch"
+msgstr "yearbook transfer (workflow)"
+
+msgid "WorkflowStep_AddURN"
+msgstr "create URN (workflow)"
+
+msgid "Workflows"
+msgstr "workflows (system type)"
+
+msgid "WorkflowStep_Upload"
+msgstr "upload (workflow)"
+
+msgid "WorkflowStep_EditMetadata"
+msgstr "metadata editor (workflow)"
+
+msgid "WorkflowStep_End"
+msgstr "end node (workflow)"
+

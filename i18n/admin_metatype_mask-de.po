@@ -1,0 +1,121 @@
+
+### meta masks ###
+msgid "admin_mask_header"
+msgstr "Masken des Metadatenschemas '${name}'"
+
+msgid "admin_mask_col_1"
+msgstr "Name"
+
+msgid "admin_mask_col_2"
+msgstr "Maskentyp"
+
+msgid "admin_mask_col_3"
+msgstr "Beschreibung"
+
+msgid "admin_mask_createstd_title"
+msgstr "Standardmaske automatisch anlegen"
+
+msgid "admin_mask_create_title"
+msgstr "Neues Maske anlegen"
+
+msgid "admin_mask_create"
+msgstr "Neue Maske anlegen"
+
+msgid "admin_mask_nomask"
+msgstr "- keine Masken vorhanden -"
+
+msgid "admin_mask_edit_field"
+msgstr "Maskenfelder bearbeiten"
+
+msgid "admin_mask_clone_title"
+msgstr "Maske klonen"
+
+msgid "admin_mask_edit_title"
+msgstr "Maske bearbeiten"
+
+msgid "admin_mask_edit"
+msgstr "Maske bearbeiten"
+
+msgid "admin_mask_delete_title"
+msgstr "Maske löschen"
+
+msgid "admin_mask_footer"
+msgstr "${number} Masken"
+
+msgid "admin_mask_error_1"
+msgstr "Ein Maske mit gleichem Namen ist bereits für dieses Metadatenschema vorhanden."
+
+msgid "admin_mask_name"
+msgstr "Name"
+
+msgid "admin_mask_type"
+msgstr "Maskentyp"
+
+msgid "admin_mask_description"
+msgstr "Beschreibung"
+
+msgid "admin_mask_col_4"
+msgstr "Std. Maske"
+
+msgid "admin_mask_col_5"
+msgstr "Sprache"
+
+msgid "admin_mask_col_6"
+msgstr "ACL"
+
+msgid "admin_mask_default"
+msgstr "Standard Maske"
+
+msgid "admin_mask_language"
+msgstr "Sprache"
+
+msgid "admin_mask_type_text"
+msgstr "Es wurden nicht für alle Maskentypen Standardmasken definiert."
+
+msgid "admin_mask_exportmapping"
+msgstr "Definition"
+
+msgid "admin_mask_exportheader"
+msgstr "Kopfzeile"
+
+msgid "admin_mask_exportfooter"
+msgstr "Fusszeile"
+
+msgid "admin_mask_exportoptions"
+msgstr "Optionen"
+
+msgid "admin_mask_export_validatetypes"
+msgstr "Datentypen validieren (Text in '')"
+
+msgid "admin_mask_export_endseparator"
+msgstr "Zeilentrenner auch bei letzter Zeile"
+
+msgid "admin_mask_nomapping"
+msgstr "- kein Mapping -"
+
+msgid "admin_mask_acl_title"
+msgstr "Metadatenmaske besitzt ACL-Regel"
+
+msgid "admin_mask_separator"
+msgstr "Feld-Trenner"
+
+msgid "masktype_empty"
+msgstr "-kein Typ-"
+
+msgid "masktype_edit"
+msgstr "Editormaske"
+
+msgid "masktype_search"
+msgstr "Suchmaske"
+
+msgid "masktype_short"
+msgstr "Kurzanzeige"
+
+msgid "masktype_full"
+msgstr "Vollansicht"
+
+msgid "masktype_export"
+msgstr "Export-Maske"
+
+msgid "admin_mask_error_2"
+msgstr "Der Name darf ausschliesslich aus den Zeichen a bis z, A bis Z, 0 bis 9 sowie '-' und '_' bestehen!"

@@ -1,0 +1,42 @@
+msgid "edit_acls_righttype_read"
+msgstr "User groups which may see these objects:"
+
+msgid "edit_acls_righttype_write"
+msgstr "User groups which may edit these objects:"
+
+msgid "edit_acls_righttype_data"
+msgstr "User groups which may download originals (TIFF/JPG/PNG/BMP of original size, PDF files, Videos, etc.):"
+
+msgid "edit_acls_userrighttype_read"
+msgstr "User groups which may see these objects:"
+
+msgid "edit_acls_userrighttype_write"
+msgstr "User groups which may edit these objects:"
+
+msgid "edit_acls_userrighttype_data"
+msgstr "User groups which may download originals (TIFF/JPG/PNG/BMP of original size, PDF files, Videos, etc.):"
+
+msgid "edit_acls_groupheader"
+msgstr "Group level (ACL)"
+
+msgid "edit_acls_userheader"
+msgstr "User level"
+
+msgid "edit_acls_selection"
+msgstr "Select selection level:"
+
+msgid "edit_acls_selectacl"
+msgstr "Group level/ACL"
+
+msgid "edit_acls_selectacltitle"
+msgstr "Changes on group level"
+
+msgid "edit_acls_selectuser"
+msgstr "User level"
+
+msgid "edit_acls_selectusertitle"
+msgstr "Changes on user level"
+
+msgid "edit_acl_special_rule"
+msgstr "[special user rule]"
+

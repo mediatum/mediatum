@@ -1,0 +1,99 @@
+msgid "admin_settings_header"
+msgstr "Information:"
+
+msgid "admin_settings_python_header"
+msgstr "Python"
+
+msgid "admin_settings_mediatum_header"
+msgstr "Mediatum"
+
+msgid "admin_settings_database_header"
+msgstr "Datenbank"
+
+msgid "admin_settings_search_header"
+msgstr "Searchengine"
+
+msgid "admin_settings_searchconfig_header"
+msgstr "Search Configuration"
+
+msgid "searchreplace_chars"
+msgstr "Character to be replaced:"
+
+msgid "searchreplace_words"
+msgstr "Word to be replaced:"
+
+msgid "admin_settings_other_header"
+msgstr "Other"
+
+msgid "admin_settings_pythonversion"
+msgstr "Python Version:"
+
+msgid "admin_settings_platform"
+msgstr "OS:"
+
+msgid "admin_settings_config"
+msgstr "Mediatum Configuration:"
+
+msgid "admin_settings_nomodule"
+msgstr "Module not installed."
+
+msgid "admin_settings_mediatum_version"
+msgstr "Mediatum Version:"
+
+msgid "admin_settings_dbdriver"
+msgstr "Database Driver:"
+
+msgid "admin_settings_dbdriverversion"
+msgstr "Database Driver Version:"
+
+msgid "admin_settings_db_status"
+msgstr "Database Information:"
+
+msgid "admin_settings_db_size"
+msgstr "Size:"
+
+msgid "admin_settings_search_type"
+msgstr "Search Engine:"
+
+msgid "admin_settings_search_status"
+msgstr "Search Engine Status:"
+
+msgid "sqplite_items_count"
+msgstr "Rows:"
+
+msgid "admin_settings_search_size"
+msgstr "Size:"
+
+msgid "admin_settings_python_copyright"
+msgstr "Python Copyright:"
+
+msgid "admin_settings_archive_header"
+msgstr "Archiving settings"
+
+msgid "admin_settings_archive_activate"
+msgstr "Archiving activated:"
+
+msgid "admin_settings_archive_interval"
+msgstr "Period for living active (s):"
+
+msgid "admin_settings_archive_manager"
+msgstr "Installed manager(s):"
+
+msgid "admin_settings_archive_name"
+msgstr "Manager name:"
+
+msgid "admin_settings_archive_stat"
+msgstr "Statistics"
+
+msgid "admin_settings_archive_used"
+msgstr "Used"
+
+msgid "admin_settings_archive_state1"
+msgstr "state 1 (inside archive)"
+
+msgid "admin_settings_archive_state2"
+msgstr "state 2 (period reached)"
+
+msgid "admin_settings_archive_state3"
+msgstr "state 3 (write back to archive)"
+

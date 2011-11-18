@@ -1,0 +1,5 @@
+msgid "edit_import_header"
+msgstr "Import von Bibtex-Dateien"
+
+msgid "edit_import"
+msgstr "Diese Funktionalität erlaubt Ihnen, Dateien mit Veröffentlichungen im bibtex-Format hochzuladen. Dazu wählen Sie bitte die entsprechende Datei auf Ihrem Recher aus und klicken auf 'Hochladen'"

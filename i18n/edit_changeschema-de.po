@@ -1,0 +1,34 @@
+
+### edit changeschema ###
+msgid "tab_changeschema"
+msgstr "Objekttyp/Metadatentyp ändern"
+
+msgid "edit_changeschema_msg1"
+msgstr "Sie besitzen nicht die Berechtigung, hieran Veränderungen vorzunehmen. Bitte wenden Sich an Ihren Administrator"
+
+msgid "edit_changeschema_obj_selection"
+msgstr "Wechseln des Objekttyps/Metadatentyps"
+
+msgid "edit_changeschema_msg2"
+msgstr "Neuen Objekttyp bitte aus folgender Liste wählen. <br>Die verfügbaren Matadaten-Schemata werden dann nachgeladen."
+
+msgid "edit_changeschema_obj_sel"
+msgstr "Objekttyp und Metadatentyp für dieses Objekt neu wählen: "
+
+msgid "edit_changeschema_selection_value"
+msgstr "Metadatentyp neu setzen"
+
+msgid "edit_changeschema_nodeid"
+msgstr "Objektid"
+
+msgid "edit_changeschema_objtype"
+msgstr "Objekttyp"
+
+msgid "edit_changeschema_schemeid"
+msgstr "Metadatentyp (id)"
+
+msgid "edit_changeschema_schemename"
+msgstr "Metadatentyp (Name)"
+
+msgid "edit_changeschema_noscheme"
+msgstr "kein Metadatentyp für diesen Datentyp vorhanden"

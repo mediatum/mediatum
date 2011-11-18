@@ -1,0 +1,3 @@
+
+msgid "admin_submenu"
+msgstr "Unterpunkte:"

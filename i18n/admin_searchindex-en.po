@@ -1,0 +1,81 @@
+msgid "admin_menu_searchindex"
+msgstr "Searchindex Match"
+
+msgid "admin_modules_searchindex"
+msgstr "Module Searchindex"
+
+msgid "admin_modules_searchindex_evaluate"
+msgstr "Evaluate index"
+
+msgid "admin_modules_searchindex_update"
+msgstr "Update index"
+
+msgid "admin_modules_searchindex_return"
+msgstr "Back"
+
+msgid "admin_searchindex_evaluateIndex_label"
+msgstr "Evaluate index"
+
+msgid "admin_searchindex_evaluateIndex_title"
+msgstr "Evaluate index"
+
+msgid "admin_searchindex_evaluateIndex_description"
+msgstr "With this functionality you can start the examination of the search index. Your mediatum data are compared with the search index and the results written to a logfile. A summary of the differences will be displayed. An actual matching does not take place. Depending on the extent of the data long runs can be expected."
+
+msgid "admin_searchindex_executeUpdate_label"
+msgstr "Execute update"
+
+msgid "admin_searchindex_executeUpdate_title"
+msgstr "Execute database update"
+
+msgid "admin_searchindex_executeUpdate_description"
+msgstr "With this functionality you can update the search index based on the results of the search index examination. It is irreversible. Depending on the extent of the data long runs can be expected."
+
+msgid "admin_searchindex_examineLogfile_label"
+msgstr "Show logfile"
+
+msgid "admin_searchindex_examineLogfile_title"
+msgstr "Examine Logfile"
+
+msgid "admin_searchindex_examineLogfile_description"
+msgstr "With this functionality you can display the result of the last run. If you have just started a searchindex examination and gotten the result it makes no sense to use this functionality. It is meant to display results again from runs that have taken place some time ago. The date of the last run is part of the display."
+
+msgid "admin_searchindex_selectIndex"
+msgstr "Please choose the desired index (for section Deletes):"
+
+msgid "admin_searchindex_rbAll_title"
+msgstr "all sections"
+
+msgid "admin_searchindex_rbDef_title"
+msgstr "section Definitions only"
+
+msgid "admin_searchindex_rbDelete_title"
+msgstr "section Deletes only"
+
+msgid "admin_searchindex_rbUpdate_title"
+msgstr "section Updates only"
+
+msgid "admin_searchindex_rbNSearch_title"
+msgstr "normal search"
+
+msgid "admin_searchindex_rbESearch_title"
+msgstr "extended search"
+
+msgid "admin_searchindex_rbFSearch_title"
+msgstr "full text search"
+
+msgid "admin_searchindex_resultEval"
+msgstr "<h2>Result Evaluation</h2>" 
+
+msgid "admin_searchindex_numberDefinitions"
+msgstr "Number of Definitions: "
+
+msgid "admin_searchindex_numberDeletes"
+msgstr "Number of Deletes: "
+
+msgid "admin_searchindex_numberUpdates"
+msgstr "Number of Updates: "
+
+msgid "admin_searchindex_timeRun"
+msgstr "Time of run: "
+

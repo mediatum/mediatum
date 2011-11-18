@@ -1,0 +1,27 @@
+msgid "edit_publish_header"
+msgstr "Publish Objects (Quick Publisher)"
+
+msgid "edit_publish_warning"
+msgstr "Attention: This refers to unpublished objects (marked with red text), not to your current selection. You can select objects to be published in the next step."
+
+msgid "edit_publish_info"
+msgstr "All selected objects will be published in selected directory."
+
+msgid "edit_publish_dirs"
+msgstr "Actual Destination-Directory:"
+
+msgid "edit_publish_button_select"
+msgstr "Choose publish directory"
+
+msgid "edit_publish_button"
+msgstr "Publish"
+
+msgid "edit_publish_popupheader"
+msgstr "Choose Destination:"
+
+msgid "edit_publish_ok"
+msgstr "OK"
+
+msgid "edit_publish_cancel"
+msgstr "Cancel"
+

@@ -1,0 +1,60 @@
+msgid "admin_settings_adminmodules_header"
+msgstr "Admin Menu"
+
+msgid "admin_settings_adminmodules_title"
+msgstr "Administration Menu Structure"
+
+msgid "admin_settings_adminmodules_name"
+msgstr "Module Name"
+
+msgid "admin_settings_adminmodules_view"
+msgstr "Show/Hide"
+
+msgid "admin_modules_adminmodules_move"
+msgstr "Move"
+
+msgid "admin_modules_adminmodules_std"
+msgstr "Std. Module"
+
+msgid "admin_modules_adminmodules_showtitle"
+msgstr "Show Module"
+
+msgid "admin_modules_adminmodules_hidetitle"
+msgstr "Hide Module"
+
+msgid "admin_settings_adminmodules_reset"
+msgstr "Reset Menu Structure"
+
+msgid "admin_settings_editmodules_header"
+msgstr "Edit Menu"
+
+msgid "admin_settings_editmodule_selecttype"
+msgstr "Select Datatype:"
+
+msgid "admin_settings_editmenu_selectmodule"
+msgstr "Select Menu"
+
+msgid "admin_settings_editmenu_typeheader"
+msgstr "Edit Menu for Datatype:"
+
+msgid "admin_settings_editmodules_reset"
+msgstr "Reset Menu"
+
+msgid "admin_settings_editmodules_name"
+msgstr "Module Name"
+
+msgid "admin_settings_editmodules_view"
+msgstr "Show/Hide"
+
+msgid "admin_modules_editmodules_move"
+msgstr "Move"
+
+msgid "admin_modules_editmodules_showtitle"
+msgstr "Show Module"
+
+msgid "admin_modules_editmodules_hidetitle"
+msgstr "Hide Module"
+
+msgid "admin_modules_editmodules_system"
+msgstr "System Type"
+

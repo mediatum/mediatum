@@ -1,0 +1,207 @@
+### workflows ###
+msgid "wf_edit_header"
+msgstr "Workflows, die von Ihnen bearbeitet werden können"
+
+msgid "wf_edit_no_header"
+msgstr "Keine Workflows zur Bearbeitung vorhanden."
+
+msgid "wf_edit_nosearchresults"
+msgstr "- keine Treffer -"
+
+msgid "wf_edit_search"
+msgstr "Suchen"
+
+msgid "wf_edit_name"
+msgstr "Name"
+
+msgid "wf_edit_description"
+msgstr "Beschreibung"
+
+msgid "wf_list_header"
+msgstr "${number} Objekte im Workflow '${name}'"
+
+msgid "wf_list_objects"
+msgstr "${number} Objekte"
+
+msgid "wf_show_details_title"
+msgstr "Details anzeigen"
+
+msgid "wf_step_msg1"
+msgstr "Vielen Dank für Ihre Eingabe/Bearbeitung.<br/>Das Objekt ${name} wurde gespeichert und befindet sich jetzt im Verarbeitungsschritt ${link}."
+
+msgid "wf_step_ready"
+msgstr "Fertig"
+
+msgid "wf_node_msg1"
+msgstr "Das Objekt ${name} wird gerade verarbeitet."
+
+msgid "wf_node_msg2"
+msgstr "Der momentane Bearbeitungsschritt (${name}) läßt keinen manuellen Eingriff (mehr) zu."
+
+msgid "workflow_msg3"
+msgstr "Objekte in Schritt ${name}:"
+
+msgid "workflow_msg4"
+msgstr "Das Objekt ${name} wurde fertiggestellt und hat den Workflow verlassen."
+
+msgid "workflow_msg5"
+msgstr "Falls von Ihrer Seite noch einmal Arbeit an diesem Objekt notwendig sein sollte, werden wir uns per Mail bei Ihnen melden."
+
+msgid "workflow_msg6"
+msgstr "Bei Fragen oder Problemen erreichen Sie unser Support-Team unter ${email}"
+
+msgid "workflow_label_id"
+msgstr "ID"
+
+msgid "workflow_label_date"
+msgstr "Datum"
+
+msgid "workflow_label_name"
+msgstr "Name"
+
+msgid "workflow_label_step"
+msgstr "Schritt"
+
+msgid "workflow_label_editor"
+msgstr "Editor"
+
+msgid "workflow_label_forward"
+msgstr "Weiterleiten"
+
+msgid "workflow_show_step"
+msgstr "Schritt anzeigen"
+
+msgid "workflow_footer"
+msgstr "${number} Objekte im aktuellen Workflowschritt"
+
+msgid "workflow_searchfooter"
+msgstr "${number} Einträge gefunden"
+
+msgid "workflow_error_msg"
+msgstr "Bitte füllen Sie die fehlenden Pflichtfelder aus bzw. kontrollieren Sie die fehlerhaften Eingaben."
+
+msgid "workflow_create_object"
+msgstr "Neues Objekt anlegen"
+
+msgid "workflow_start_submit"
+msgstr "Erzeugen"
+
+msgid "workflow_email_msg_1"
+msgstr "Folgender Fehler ist beim Versenden aufgetreten:"
+
+msgid "workflow_email_resend"
+msgstr "Erneut versenden"
+
+msgid "workflow_filelist_type"
+msgstr "Typ"
+
+msgid "workflow_filelist_size"
+msgstr "Größe"
+
+msgid "workflow_filelist_mimetype"
+msgstr "Mimetype"
+
+msgid "workflow_filelist_open_title"
+msgstr "Datei anzeigen"
+
+msgid "workflow_filelist_delete_title"
+msgstr "Datei löschen"
+
+msgid "workflow_add_file"
+msgstr "Neue Datei hinzufügen:"
+
+msgid "workflow_upload_button"
+msgstr "Hochladen"
+
+msgid "workflow_ready_msg"
+msgstr "Das Objekt ${name} ist am Ende des Workflows angekommen."
+
+msgid "workflow_step_ready_msg"
+msgstr "Das Objekt ${name} ist am Ende des Workflows angekommen."
+
+msgid "workflow_back"
+msgstr "Zurück"
+
+### workflow types ###
+msgid "workflowstep-addurn"
+msgstr "URN-erzeugen"
+
+msgid "workflowstep-delete"
+msgstr "Eintrag löschen"
+
+msgid "workflowstep-edit"
+msgstr "Knotenbearbeitung"
+
+msgid "workflowstep-jahrbuch"
+msgstr "Datenexport (Jahrbuch)"
+
+msgid "workflowstep-protect"
+msgstr "ACL Änderungen"
+
+msgid "workflowstep-send_email"
+msgstr "Email senden"
+
+msgid "workflowstep-showdata"
+msgstr "Metadateneditor"
+
+#msgid "workflowstep-start"
+#msgstr "Startknoten"
+
+msgid "workflowstep-upload"
+msgstr "Uploadknoten"
+
+msgid "workflowstep-publish"
+msgstr "Freischaltung"
+
+msgid "workflowstep-wait"
+msgstr "Warten"
+
+msgid "workflowstep-end"
+msgstr "Endknoten"
+
+#datatypes
+msgid "WorkflowStep_ShowData"
+msgstr "Editor (Workflow)"
+
+msgid "WorkflowStep_Protect"
+msgstr "Rechteänderung (Workflow)"
+
+msgid "WorkflowStep_SendEmail"
+msgstr "Email-Senden (Workflow)"
+
+msgid "WorkflowStep_Publish"
+msgstr "Publizieren (Workflow)"
+
+msgid "WorkflowStep_TextPage"
+msgstr "Textseite (Workflow)"
+
+msgid "WorkflowStep_Delete"
+msgstr "Löschen (Workflow)"
+
+msgid "WorkflowStep"
+msgstr "Workflowschritt (Systemtyp)"
+
+msgid "WorkflowStep_Start"
+msgstr "Initialschritt (Workflow)"
+
+msgid "Workflow"
+msgstr "Workflow (Systemtyp)"
+
+msgid "WorkflowStep_Jahrbuch"
+msgstr "Transfer Jahrbuch (Workflow)"
+
+msgid "WorkflowStep_AddURN"
+msgstr "URN erzeugen (Workflow)"
+
+msgid "Workflows"
+msgstr "Workflows (Systemtyp)"
+
+msgid "WorkflowStep_Upload"
+msgstr "Upload (Workflow)"
+
+msgid "WorkflowStep_EditMetadata"
+msgstr "Metadateneditor (Workflow)"
+
+msgid "WorkflowStep_End"
+msgstr "Endknoten (Workflow)"
+

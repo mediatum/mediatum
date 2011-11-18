@@ -1,0 +1,27 @@
+# edit publish #
+msgid "edit_publish_header"
+msgstr "Objekte Publizieren (Quick-Publisher)"
+
+msgid "edit_publish_warning"
+msgstr "Achtung: Dies bezieht sich auf die (mit rotem Text markierten) unpublizierten Objekte, nicht auf die von Ihnen ausgewählten Objekte. Sie haben aber im Nachfolgenden die Möglichkeit, die zu publizierenden Objekte auszuwählen."
+
+msgid "edit_publish_info"
+msgstr "Alle unten markierten Objekte können automatisch in ein Verzeichnis verschoben werden."
+
+msgid "edit_publish_dirs"
+msgstr "Aktuelle(s) Zielverzeichnis(e):"
+
+msgid "edit_publish_button_select"
+msgstr "Zielverzeichnis auswählen"
+
+msgid "edit_publish_button"
+msgstr "Publizieren"
+
+msgid "edit_publish_popupheader"
+msgstr "Ziel auswählen:"
+
+msgid "edit_publish_ok"
+msgstr "OK"
+
+msgid "edit_publish_cancel"
+msgstr "Abbrechen"

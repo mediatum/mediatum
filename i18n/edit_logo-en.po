@@ -1,0 +1,36 @@
+msgid "edit_logo_logoheader"
+msgstr "Logo:"
+
+msgid "edit_logo_del_button"
+msgstr "Delete Logo"
+
+msgid "edit_logo_no_logo"
+msgstr "no Logo"
+
+msgid "edit_logo_zoom"
+msgstr "(mouseover for zoom)"
+
+msgid "edit_logo_addfile"
+msgstr "Upload file:"
+
+msgid "edit_logo_selecttitle"
+msgstr "select as logo"
+
+msgid "edit_logo_link_label"
+msgstr "Link behind Logo: "
+
+msgid "edit_logo_test_title"
+msgstr "Test Link"
+
+msgid "edit_logo_savechanges"
+msgstr "Save Changes"
+
+msgid "edit_logo_reset"
+msgstr "Reset"
+
+msgid "edit_logo_changeheader"
+msgstr "Change Logo:"
+
+msgid "edit_logo_filetypeerror"
+msgstr "Uploaded filetype is not supported for Logos. Allowed types are '.jpeg', '.jpg', '.gif' or '.png'."
+

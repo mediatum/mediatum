@@ -1,0 +1,121 @@
+
+msgid "admin_metafield_header"
+msgstr "Felder des Metadatenschemas '${name}'"
+
+msgid "admin_metafield_fieldlist"
+msgstr "Feldliste anzeigen"
+
+msgid "admin_metafield_col_1"
+msgstr "Name"
+
+msgid "admin_metafield_col_2"
+msgstr "Label"
+
+msgid "admin_metafield_col_3"
+msgstr "Feldtyp"
+
+msgid "admin_metafield_order"
+msgstr "Reihenfolge"
+
+msgid "admin_metafield_new_title"
+msgstr "Neues Metadatenfeld anlegen"
+
+msgid "admin_metafield_nofield"
+msgstr "- keine Metadatenfelder vorhanden -"
+
+msgid "admin_metafield_down_title"
+msgstr "Feld nach unten"
+
+msgid "admin_metafield_up_title"
+msgstr "Feld nach oben"
+
+msgid "admin_metafield_edit_title"
+msgstr "Metadatenfeld bearbeiten"
+
+msgid "admin_metafield_delete_title"
+msgstr "Metadatenfeld löschen"
+
+msgid "admin_metafield_footer"
+msgstr "${number} Felder"
+
+msgid "admin_metafield_msg1"
+msgstr "Die Reihenfolge der Felder kann nur geändert werden, wenn nach der Spalte 'Reihenfolge' sortiert worden ist. Dann erscheinen die Pfeile in Farbe"
+
+msgid "admin_metafield_msg2"
+msgstr "Die Beschreibung wird als Hilfetext im Metadateneditor angezeigt"
+
+msgid "admin_metafield_new_header"
+msgstr "Neues Metadatenfeld im Schema '${name}' erstellen"
+
+msgid "admin_metafield_edit_header"
+msgstr "Metadatenfeld '${field}' des Metadatenschemas '${name}' bearbeiten"
+
+msgid "admin_metafield_error_1"
+msgstr "Ein Metadatenfeld mit gleichem Namen ist bereits für dieses Metadatenschema vorhanden."
+
+msgid "admin_metafield_name"
+msgstr "Name"
+
+msgid "admin_metafield_label"
+msgstr "Label"
+
+msgid "admin_metafield_type"
+msgstr "Typ"
+
+msgid "admin_metafield_help_title"
+msgstr "Hilfe anzeigen"
+
+msgid "admin_metafield_listvalues"
+msgstr "Listenwerte"
+
+msgid "admin_metafield_dateformat"
+msgstr "Datums-/Zeitformat"
+
+msgid "admin_memofield_maxlength"
+msgstr "Maximallänge"
+
+msgid "metafield_dateformat_std"
+msgstr "Standardformat (dd.mm.yyyy)"
+
+msgid "metafield_dateformat_year"
+msgstr "Jahr (yyyy)"
+
+msgid "metafield_dateformat_time"
+msgstr "Uhrzeit (hh:mm:ss)"
+
+msgid "metafield_dateformat_month"
+msgstr "Monat (mm)"
+
+msgid "metafield_dateformat_yearmonth"
+msgstr "Jahr, Monat (yyyy-mm)"
+
+msgid "admin_metafield_fields"
+msgstr "Metadatenfelder"
+
+msgid "admin_metafields_techfields"
+msgstr "Technisches Metadatenfeld"
+
+msgid "admin_metafield_description"
+msgstr "Beschreibung"
+
+msgid "admin_metafield_options"
+msgstr "Optionen"
+
+msgid "admin_metafield_filter_name"
+msgstr "Name"
+
+msgid "admin_metafield_filter_label"
+msgstr "Label"
+
+### metadatatype ###
+msgid "metafield_option1"
+msgstr "Suchfeld"
+
+msgid "metafield_option2"
+msgstr "Sortierfeld"
+
+msgid "admin_metafield_error_4"
+msgstr "Der Name darf ausschliesslich aus den Zeichen a bis z, A bis Z, 0 bis 9 sowie '-', '_' und '.' bestehen!"
+
+msgid "admin_metafield_error_2"
+msgstr "Der Name darf ausschliesslich aus den Zeichen a bis z, A bis Z, 0 bis 9 sowie '-', '_' und '.' bestehen!"

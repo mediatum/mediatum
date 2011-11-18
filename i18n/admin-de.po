@@ -1,0 +1,187 @@
+### admin area ###
+msgid "admin_print_title"
+msgstr "Aktuelle Seite drucken"
+
+msgid "admin_menu_menumain"
+msgstr "Hauptmenü"
+
+msgid "admin_menu_start"
+msgstr "Start"
+
+msgid "admin_menu_menuuser"
+msgstr "Benutzerverwaltung"
+
+msgid "admin_menu_menuuser_description"
+msgstr "Verwaltung von Benutzern und Gruppen"
+
+msgid "admin_menu_usergroup"
+msgstr "Benutzergruppe"
+
+msgid "admin_menu_user"
+msgstr "Benutzer"
+
+msgid "admin_menu_menuacl"
+msgstr "Zugriffsrechte"
+
+msgid "admin_menu_menuacl_description"
+msgstr "Verwaltung der ACL-Regeln"
+
+msgid "admin_menu_acls"
+msgstr "ACL Editor"
+
+msgid "admin_menu_menudata"
+msgstr "Datentypen"
+
+msgid "admin_menu_menudata_description"
+msgstr "Verwaltung der Metadatendefinitionen"
+
+msgid "admin_menu_metatype"
+msgstr "Metadatentypen"
+
+msgid "admin_menu_mapping"
+msgstr "Metadatenmapping"
+
+msgid "admin_menu_menuworkflow"
+msgstr "Workflows"
+
+msgid "admin_menu_menuworkflow_description"
+msgstr "Verwaltung der Workflows"
+
+msgid "admin_menu_workflows"
+msgstr "Workflow"
+
+msgid "admin_menu_menusystem"
+msgstr "System-Einstellungen"
+
+msgid "admin_menu_menusystem_description"
+msgstr "Verwaltung der Systemeinstellungen"
+
+msgid "admin_menu_logfile"
+msgstr "Log-Dateien"
+
+msgid "admin_menu_flush"
+msgstr "Caches"
+
+msgid "admin_menu_settings"
+msgstr "Mediatum Konfiguration"
+
+msgid "admin_menu_settingsmenu"
+msgstr "Menü Konfiguration"
+
+msgid "admin_error"
+msgstr "Sie besitzen nicht die notwendigen Rechte, um den Administrationsbereich zu betreten.<br/> Falls Sie nicht angemeldet sein sollten, können Sie das ${link}"
+
+msgid "admin_linktext"
+msgstr "hier"
+
+msgid "admin_overview"
+msgstr "zur Übersicht"
+
+msgid "admin_allelements_title"
+msgstr "Alle Elemente anzeigen"
+
+msgid "admin_allelements"
+msgstr "alle anzeigen"
+
+msgid "admin_pageelements_title"
+msgstr "Elemente seitenweise anzeigen"
+
+msgid "admin_pageelements"
+msgstr "seitenweise anzeigen"
+
+msgid "admin_page"
+msgstr "Seite"
+
+msgid "admin_sort_label"
+msgstr "Werte nach aktueller Spalte sortieren"
+
+msgid "admin_mandatory_error"
+msgstr "Nicht alle Pflichtfelder wurden ausgefüllt."
+
+msgid "admin_duplicate_error"
+msgstr "Ein Objekt mit selbem Namen ist bereits vorhanden."
+
+msgid "admin_mandatory_info"
+msgstr "Pflichtfeld, darf nicht leer sein"
+
+msgid "admin_save_title"
+msgstr "Änderungen speichern"
+
+msgid "admin_save"
+msgstr "Speichern"
+
+msgid "admin_cancel_title"
+msgstr "Zurück zur Übersicht"
+
+msgid "admin_cancel"
+msgstr "Abbrechen"
+
+msgid "admin_header"
+msgstr "mediaTUM Administration Interface"
+
+msgid "admin_title"
+msgstr "mediaTUM Administration Interface"
+
+msgid "admin_filter_label"
+msgstr "Filter:"
+
+
+msgid "e_acls"
+msgstr "ACL-Funktionen"
+
+msgid "e_classes"
+msgstr "Klassifikationsfunktion"
+
+msgid "e_editor"
+msgstr "Startseiteneditor"
+
+msgid "e_files"
+msgstr "Technische Metadaten"
+
+msgid "e_license"
+msgstr "Lizensierung"
+
+msgid "e_logo"
+msgstr "Logo Funktionen"
+
+msgid "e_lza"
+msgstr "Langzeitarchivierung"
+
+msgid "e_metadata"
+msgstr "Metadateneditor"
+
+msgid "e_search"
+msgstr "Suche"
+
+msgid "e_searchmask"
+msgstr "Suchmaskenfunktionen"
+
+msgid "e_sort"
+msgstr "Sortierfunktionen"
+
+msgid "e_sortfiles"
+msgstr "Dateien sortieren"
+
+msgid "e_subfolder"
+msgstr "Unterordner sortieren"
+
+msgid "e_upload"
+msgstr "Daten hochladen"
+
+msgid "e_workflow"
+msgstr "Workflow Funktionen"
+
+msgid "e_publish"
+msgstr "Veröffentlichung"
+
+msgid "e_changeschema"
+msgstr "Schema/Typ-Änderung"
+
+
+msgid "admin_filter_all"
+msgstr "alle"
+
+msgid "admin_filter_else"
+msgstr "sonstige"
+
+

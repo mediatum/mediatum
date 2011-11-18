@@ -1,0 +1,84 @@
+msgid "edit_stats_header"
+msgstr "Access Statistics for Collection"
+
+msgid "edit_stats_pages_of"
+msgstr "page %s of %s"
+
+msgid "edit_stats_period_header"
+msgstr "Report Period"
+
+msgid "edit_stats_noaccess"
+msgstr "No user access in chosen report period."
+
+msgid "edit_stats_stand"
+msgstr "stand"
+
+msgid "edit_stats_access"
+msgstr "Access"
+
+msgid "edit_stats_country"
+msgstr "Access spreading (country)"
+
+msgid "edit_stats_spreading"
+msgstr "Access spreading (date)"
+
+msgid "edit_stats_spreading_day"
+msgstr "Access spreading (weekday)"
+
+msgid "edit_stats_spreading_time"
+msgstr "Access spreading (time)"
+
+msgid "edit_stats_topten"
+msgstr "TOP 10"
+
+msgid "edit_stats_showall"
+msgstr "show all..."
+
+msgid "edit_stats_showtopten"
+msgstr "show TOP 10..."
+
+msgid "edit_stats_node"
+msgstr "Nodes"
+
+msgid "edit_stats_all"
+msgstr "All"
+
+msgid "edit_stats_day"
+msgstr "Day"
+
+msgid "edit_stats_weekday"
+msgstr "Weekday"
+
+msgid "edit_stats_diffusers"
+msgstr "Different<br/>Users"
+
+msgid "edit_stats_pages"
+msgstr "Pages"
+
+msgid "edit_stats_daytime"
+msgstr "Time"
+
+msgid "edit_stats_popuptitle"
+msgstr "Statistics action"
+
+msgid "edit_stats_popupheader"
+msgstr "Refresh statistics for current node"
+
+msgid "edit_stats_popupupdatebutton"
+msgstr "refresh statistics"
+
+msgid "edit_stats_popuperror"
+msgstr "Data cannot be refreshed, since an update is running.<br/>Try it again later."
+
+msgid "edit_stats_popup_close"
+msgstr "close window"
+
+msgid "edit_stats_popupfooter"
+msgstr "Close this window only if requested."
+
+msgid "edit_stats_popupdone"
+msgstr "Statisics data were updated.<br/>You can close this window now."
+
+msgid "edit_stats_sum"
+msgstr "Access (total)"
+

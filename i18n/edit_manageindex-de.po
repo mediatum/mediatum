@@ -1,0 +1,31 @@
+
+# edit manage-index
+msgid "edit_manageindex_step1_header"
+msgstr "Schritt 1: Wählen Sie ein Metadatenschema aus"
+
+msgid "edit_manageindex_step2_header"
+msgstr "Schritt 2: Wählen Sie das gewünschte Feld"
+
+msgid "edit_manageindex_step3_header"
+msgstr "Schritt 3: Wählen Sie den/die gewünschten Indexwert(e) zur Ersetzung"
+
+msgid "edit_manageindex_step4_header"
+msgstr "Schritt 4: Ersetzungstext wählen"
+
+msgid "edit_manageindex_empty"
+msgstr "leere Werte ignorieren"
+
+msgid "edit_manageindex_submit"
+msgstr "Änderungen durchführen"
+
+msgid "edit_manageindex_choose_scheme"
+msgstr "- Schema wählen -"
+
+msgid "edit_manageindex_choose_field"
+msgstr "- Indexfeld wählen -"
+
+msgid "edit_manageindex_result"
+msgstr "folgende Konten wurden gefunden:"
+
+msgid "edit_manageindex_items"
+msgstr "Operation für ${number} Knoten ausgeführt"

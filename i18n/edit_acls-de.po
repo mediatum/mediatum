@@ -1,0 +1,42 @@
+### edit acls ###
+msgid "edit_acls_righttype_read"
+msgstr "Usergruppen, die diese Objekte sehen dürfen:"
+
+msgid "edit_acls_righttype_write"
+msgstr "Usergruppen, die diese Objekte bearbeiten dürfen:"
+
+msgid "edit_acls_righttype_data"
+msgstr "Usergruppen, die Originale (TIFF/JPG/PNG/BMP in Originalgröße, PDF Files etc.) herunterladen dürfen:"
+
+msgid "edit_acls_userrighttype_read"
+msgstr "Benutzer, die diese Objekte sehen dürfen:"
+
+msgid "edit_acls_userrighttype_write"
+msgstr "Benutzer, die diese Objekte bearbeiten dürfen:"
+
+msgid "edit_acls_userrighttype_data"
+msgstr "Benutzer, die Originale (TIFF/JPG/PNG/BMP in Originalgröße, PDF Files etc.) herunterladen dürfen:"
+
+msgid "edit_acls_groupheader"
+msgstr "Regelvergabe auf Gruppenebene/ACL"
+
+msgid "edit_acls_userheader"
+msgstr "Regelvergabe auf Benutzerebene"
+
+msgid "edit_acls_selection"
+msgstr "Auswahlebene auswählen:"
+
+msgid "edit_acls_selectacl"
+msgstr "Gruppenebene/ACL"
+
+msgid "edit_acls_selectacltitle"
+msgstr "Bearbeitung auf Gruppenebene/ACL-Regel"
+
+msgid "edit_acls_selectuser"
+msgstr "Benutzerebene"
+
+msgid "edit_acls_selectusertitle"
+msgstr "Bearbeitung auf Benutzerebene"
+
+msgid "edit_acl_special_rule"
+msgstr "[Spezial-Benutzerregel]"

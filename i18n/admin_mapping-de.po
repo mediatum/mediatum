@@ -1,0 +1,142 @@
+
+### admin mappings ###
+msgid "admin_mapping_existing"
+msgstr "Vorhandene Mappingdefinitionen"
+
+msgid "admin_mapping_col_1"
+msgstr "Mappingname"
+
+msgid "admin_mapping_col_2"
+msgstr "Namespace"
+
+msgid "admin_mapping_col_3"
+msgstr "Namespace URL"
+
+msgid "admin_mapping_col_4"
+msgstr "Beschreibung"
+
+msgid "admin_mapping_col_5"
+msgstr "Felder"
+
+msgid "admin_mapping_col_6"
+msgstr "Typ"
+
+msgid "admin_mapping_col_7"
+msgstr "Aktiv"
+
+msgid "admin_mapping_configuration"
+msgstr "Mapping Basis Definition"
+
+msgid "admin_mapping_configtypes"
+msgstr "Mapping Typen:"
+
+msgid "admin_mapping_type"
+msgstr "Mapping Typ"
+
+msgid "admin_mapping_active"
+msgstr "Aktiv"
+
+msgid "admin_mapping_create"
+msgstr "Neues Mapping anlegen"
+
+msgid "admin_mapping_fieldlist_title"
+msgstr "Felder anzeigen/bearbeiten"
+
+msgid "admin_mapping_edit_title"
+msgstr "Mapping bearbeiten"
+
+msgid "admin_mapping_delete_title"
+msgstr "Mapping löschen"
+
+msgid "admin_mapping_new_label"
+msgstr "Neues Mapping anlegen"
+
+msgid "admin_mapping_edit_label"
+msgstr "Mapping bearbeiten"
+
+msgid "admin_mapping_name"
+msgstr "Mapping Name"
+
+msgid "admin_mapping_namespace"
+msgstr "Namespace"
+
+msgid "admin_mapping_namespaceurl"
+msgstr "Namespace URL"
+
+msgid "admin_mapping_description"
+msgstr "Beschreibung"
+
+msgid "admin_mapping_header"
+msgstr "Kopfzeile"
+
+msgid "admin_mapping_footer"
+msgstr "Fußzeile"
+
+msgid "admin_mapping_separator"
+msgstr "Zeilentrenner"
+
+msgid "admin_mapping_standardformat"
+msgstr "Zeilenformat"
+
+msgid "admin_mapping_standardformat_description"
+msgstr "mögliche Variablen:<br/>* [value] = Attributwert<br/>* [field] = Feldname<br/>* [att:field] = Attributfeldname<br/>* [att:id] = Knoten-ID<br/>"
+
+msgid "admin_mapping_overview_footer"
+msgstr "${number} Mappings"
+
+msgid "admin_mapping_msg1"
+msgstr "Mapping-Import aus XML-Datei"
+
+msgid "admin_mapping_import"
+msgstr "Importieren"
+
+msgid "admin_mapping_exportall_title"
+msgstr "Alle Mappings exportieren"
+
+msgid "admin_mappingfield_existing"
+msgstr "Vorhandene Mappingfelder des Mappings"
+
+msgid "admin_mappingfield_col_1"
+msgstr "Name"
+
+msgid "admin_mappingfield_col_2"
+msgstr "Beschreibung"
+
+msgid "admin_mappingfield_col_3"
+msgstr "Pflichtfeld"
+
+msgid "admin_mappingfield_create"
+msgstr "Neues Mappingfeld anlegen"
+
+msgid "admin_mappingfield_edit_title"
+msgstr "Mappingfeld anlegen/bearbeiten"
+
+msgid "admin_mappingfield_delete_title"
+msgstr "Mappingfeld löschen"
+
+msgid "admin_mappingfield_new_label"
+msgstr "Neues Mappingfeld anlegen"
+
+msgid "admin_mappingfield_edit_label"
+msgstr "Mappingfeld bearbeiten"
+
+msgid "admin_mappingfield_name"
+msgstr "Mappingfeld Name"
+
+msgid "admin_mappingfield_description"
+msgstr "Beschreibung"
+
+msgid "admin_mappingfield_exportformat"
+msgstr "Zeilenformat"
+
+msgid "admin_mappingfield_mandatory"
+msgstr "Pflichtfeld"
+
+msgid "admin_mappingfield_parent"
+msgstr "Vererbt"
+
+msgid "admin_mappingfield_nofields"
+msgstr "- keine Mappingfelder definiert -"
+
+msgid "admin_mappingfield_footer"
+msgstr "${number} Mappingfelder"

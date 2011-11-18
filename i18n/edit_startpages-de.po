@@ -1,0 +1,94 @@
+### edit FCKeditor custom file manager ###
+msgid "edit_fckeditor_cfm_filetype"
+msgstr "Typ"
+
+msgid "edit_fckeditor_cfm_filesize"
+msgstr "Größe"
+
+msgid "edit_fckeditor_cfm_mimetype"
+msgstr "Mimetype"
+
+msgid "edit_fckeditor_cfm_nameonserver"
+msgstr "Name auf Server"
+
+msgid "edit_fckeditor_cfm_delete"
+msgstr "löschen"
+
+msgid "edit_fckeditor_cfm_clicktochoose"
+msgstr "Bild durch Anklicken auswählen"
+
+msgid "edit_fckeditor_cfm_hasnoimages"
+msgstr "Es sind noch keine Bilder für diese Seite hochgeladen. Bitte zuerst ein Bild hochladen."
+
+msgid "edit_fckeditor_cfm_closewindow"
+msgstr "Fenster schließen"
+
+msgid "edit_fckeditor_cfm_imageislogo"
+msgstr "Bild ist Logo"
+
+msgid "edit_fckeditor_cfm_uploadexplain"
+msgstr "Sie können eine neue Datei für diesen Node hochladen:"
+
+msgid "edit_fckeditor_cfm_uploadbutton"
+msgstr "auf Server hochladen"
+
+msgid "edit_fckeditor_cfm_deleteconfirm"
+msgstr "Wollen Sie diese Datei wirklich löschen?"
+
+msgid "edit_fckeditor_cfm_uploadsuccess"
+msgstr "Die Datei wurde hochgeladen."
+
+### edit startpages ###
+msgid "edit_startpages_header"
+msgstr "Startseiten"
+
+msgid "edit_startpages_header2"
+msgstr "Sidebar"
+
+msgid "edit_startpages_explain_table"
+msgstr "HTML-Seiten für diesen Node"
+
+msgid "edit_startpages_edit"
+msgstr "diese Seite bearbeiten"
+
+msgid "edit_startpages_delete"
+msgstr "diese Seite vom Server löschen"
+
+msgid "edit_startpages_savechanges"
+msgstr "Änderungen speichern"
+
+msgid "edit_startpages_reset"
+msgstr "Zurücksetzen"
+
+msgid "edit_startpages_explain_addbutton"
+msgstr "Klicken Sie auf den Schalter, um eine neue Seite im HTML-Editor zu bearbeiten."
+
+msgid "edit_startpages_addnew"
+msgstr "Neue Seite erzeugen"
+
+msgid "edit_startpages_link"
+msgstr "Link zur Seite"
+
+msgid "edit_startpages_technical_name"
+msgstr "Tech. Name"
+
+msgid "edit_startpages_file_size"
+msgstr "Größe"
+
+msgid "edit_startpages_deleteconfirm"
+msgstr "Wollen Sie diese Seite wirklich löschen?"
+
+msgid "edit_startpages_descriptive_name"
+msgstr "Beschreibender Name"
+
+msgid "edit_startpages_do_not_use_a_startpage"
+msgstr "Keine Startseite für diese Sprache"
+
+msgid "edit_startpages_do_not_use_a_sidebar"
+msgstr "Keine Sidebar für diese Sprache"
+
+msgid "edit_startpages_selectlanguage"
+msgstr "als Startseite für diese Sprache wählen"
+
+msgid "edit_startpages_sidebarfile"
+msgstr "Dateien"

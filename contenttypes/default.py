@@ -32,8 +32,8 @@ class Default(tree.Node):
     def show_node_big(node, req, template="", macro=""):
         return "Unknown datatype: "+node.type
 
-    def show_node_image(node):
-        return """<img border="0" src="/img/questionmark.png">"""
+    def show_node_image(node, language=None):
+        return athana.getTAL("contenttypes/default.html", {'children':node.getChildren().sort(), 'node':node}, macro="show_node_image")
 
     """ format preview node text """
     def show_node_text(node, words=None, language=None, separator="", labels=0):

@@ -1,0 +1,6 @@
+<div style="position:relative" metal:define-macro="show_node_image">
+    <img tal:attributes="src python:'/thumbs/'+node.id" class="thumbnail" border="0"/>
+    <div style="position:absolute;left:2px;bottom:2px;width:128px;height:30px;overflow:hidden" tal:condition="python:len(children)>0" title="Details vorhanden">
+        <img tal:repeat="child children" tal:attributes="src python:'/thumbs/'+child.id" class="thumbnail" border="0px" style="width:28px;height:28px;border:1px solid black"/>
+    </div>
+</div>

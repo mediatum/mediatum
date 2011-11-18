@@ -167,10 +167,6 @@ class Audio(default.Default):
                 template = styles[0].getTemplate()
         return req.getTAL(template, node._prepareData(req), macro)
     
-    """ format node image with standard template """
-    def show_node_image(node, language=None):
-        return '<img src="/thumbs/'+node.id+'" class="thumbnail" border="0"/>'
-    
     def isContainer(node):
         return 0
 

@@ -22,7 +22,6 @@ import core.config as config
 import Image
 import core.tree as tree
 import core.users as users
-import core.athana as athana
 import core.acl as acl
 import random
 import os
@@ -246,11 +245,7 @@ class Image(default.Default):
             styles = getContentStyles("bigview", contenttype=node.getContentType())
             if len(styles)>=1:
                 template = styles[0].getTemplate()
-        return req.getTAL(template, node._prepareData(req), macro)
-    
-    """ format node image with standard template """
-    def show_node_image(node, language=None):
-        return '<img src="/thumbs/'+node.id+'" class="thumbnail" border="0"/>'
+        return req.getTAL(template, node._prepareData(req), macro)    
     
     def isContainer(node):
         return 0

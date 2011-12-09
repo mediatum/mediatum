@@ -1,32 +1,33 @@
-<form metal:define-macro="sendmail" tal:attributes="action page" name="mailuser" method="post">
-    <input type="hidden" name="sendout" value=".">
-    <table>
-        <tr>
-            <td colspan="2">
-                    <h3>Mail schicken</h3>
-            </td>
-        </tr>
-        <tr>
-            <td>Von: <span class="required">*</span></td>
-            <td><input type="text" name="from" tal:attributes="value from" maxlength=50 size="50" /></td>
-        </tr>
-        <tr>
-            <td>An: <span class="required">*</span></td>
-            <td><input type="text" name="to" tal:attributes="value to" value="" maxlength=50 size="50" /></td>
-        </tr>
-        <tr>
-            <td>Subject: <span class="required">*</span></td>
-            <td><input type="text" name="subject" tal:attributes="value subject" maxlength=50 size="50" /></td>
-        </tr>
-        <tr>
-            <td>Text: <span class="required">*</span></td>
-            <td><textarea name="text" tal:content="text" cols="100" rows="30"></textarea></td>
-        </tr>
-        <tr>
-            <td>&nbsp;</td>
-            <td>
-                <button type="submit" name="submit" value="submit" title="Mail abschicken" >Schicken</button>
-            </td>
-        </tr>
-    </table>
-</form>
+<tal:block metal:define-macro="sendmail">
+    <div style="width:100%;position:relative">
+    <form tal:attributes="action page" name="mailuser" method="post">
+        <h2>Email versenden</h2>
+        <p>&nbsp;</p>
+        <table style="width:100%" border="1px" cellspacing="5px">
+            <tr>
+                <td>Von: <span class="required">*</span></td>
+                <td><input type="text" name="from" tal:attributes="value from" maxlength=50 size="50" /></td>
+            </tr>
+            <tr>
+                <td>An: <span class="required">*</span></td>
+                <td><input type="text" name="to" tal:attributes="value to" value="" maxlength=50 size="50" /></td>
+            </tr>
+            <tr>
+                <td>Subject: <span class="required">*</span></td>
+                <td><input type="text" name="subject" tal:attributes="value subject" maxlength=50 size="50" /></td>
+            </tr>
+            <tr>
+                <td style="vertical-align:top">Text: <span class="required">*</span></td>
+                <td><textarea name="text" tal:content="text" style="width:400px;height:300px;font-family:arial"> </textarea></td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>
+                    <button type="submit" name="sendout">Email absenden</button>
+                    <button tal:condition="python:wfnode.getFalseId()" type="submit" name="gofalse" tal:content="python:wfnode.getFalseLabel()" style="margin-left:300px"/>
+                </td>
+            </tr>
+        </table>
+    </form>
+    </div>
+</tal:block>

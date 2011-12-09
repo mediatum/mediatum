@@ -25,6 +25,7 @@ from utils.utils import formatException
 import core.config as config
 import logging
 import utils.mail as mail
+log = logging.getLogger('backend')
 
 class MailError(Exception):
     def __init__(self, value):
@@ -68,23 +69,21 @@ class WorkflowStep_SendEmail(WorkflowStep):
         link = "http://"+config.get("host.name")+"/pnode?id="+node.id+"&key="+node.get("key")
         link2 = "http://"+config.get("host.name")+"/node?id="+node.id
         try:
-            node.set("mailtmp.from", getTALtext(self.get("from"), {"node":node, "link":link, "publiclink":link2}).replace("\n","").strip())
-            
+            if "@" in self.get('from'):
+                node.set("mailtmp.from", getTALtext(self.get("from"), {"node":node, "link":link, "publiclink":link2}).replace("\n","").strip())
+            elif "@" in node.get(self.get('from')):
+                node.set("mailtmp.from", getTALtext(node.get(self.get("from")), {"node":node, "link":link, "publiclink":link2}).replace("\n","").strip())
+
             if "@" in self.get('email'):
-                print "use given email", self.get("email")
                 node.set("mailtmp.to", getTALtext(self.get("email"), {"node":node, "link":link, "publiclink":link2}).replace("\n","").strip())
             elif "@" in node.get(self.get("email")):
-                print "use email address from attribute", self.get("email"), node.get(self.get("email"))
                 node.set("mailtmp.to", getTALtext(node.get(self.get("email")), {"node":node, "link":link, "publiclink":link2}).replace("\n","").strip())
-            
-            
-            
+
             node.set("mailtmp.subject", getTALtext(self.get("subject"), {"node":node, "link":link, "publiclink":link2}).replace("\n","").strip())
-            node.set("mailtmp.text", getTALtext(self.get("text"), {"node":node, "link":link, "publiclink":link2}))
+            node.set("mailtmp.text", getTALtext(self.get("text"), {"node":node, "link":link, "link2":link2}))
         except:
             node.set("mailtmp.talerror",formatException())
             return
-
         if self.get("allowedit").lower().startswith("n"):
             if(self.sendOut(node)):
                 self.forward(node, True)
@@ -104,6 +103,10 @@ class WorkflowStep_SendEmail(WorkflowStep):
                 return self.forwardAndShow(node, True, req)
             else:
                 return self.show_node_big(req)
+        if "gofalse" in req.params:
+            return self.forwardAndShow(node, False, req)
+            
+        
         elif node.get("mailtmp.talerror"):
             node.removeAttribute("mailtmp.talerror")
             self.runAction(node,"true")
@@ -111,7 +114,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
                 return """<pre>%s</pre>""" % node.get("mailtmp.talerror")
             else:
                 return self.show_node_big(req)
-        elif node.get("mailtmp.error"):           
+        elif node.get("mailtmp.error"):
             result = t(lang(req), "workflow_email_msg_1")+'<br/>'
             result += '<pre>%s</pre><br>' % node.get("mailtmp.error")
             result += '&gt;<a href="' +req.makeSelfLink({"sendout":"true"})+ '">'+t(lang(req), "workflow_email_resend")+'</a>&lt;'
@@ -121,7 +124,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
             to = node.get("mailtmp.to")
             text = node.get("mailtmp.text")
             subject = node.get("mailtmp.subject")
-            return req.getTAL("workflow/email.html", {"page":"node?id="+self.id+"&obj="+node.id, "from":xfrom, "to":to, "text":text, "subject":subject}, macro="sendmail")
+            return req.getTAL("workflow/email.html", {"page":"node?id="+self.id+"&obj="+node.id, "from":xfrom, "to":to, "text":text, "subject":subject, "node":node, "wfnode":self}, macro="sendmail")
 
     def metaFields(self, lang=None):
         ret = list()

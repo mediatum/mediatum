@@ -25,7 +25,10 @@ from schema.schema import getMetaType,VIEW_HIDE_EMPTY
 def mkfilelist(node, deletebutton=0, language=None, request=None):
     return request.getTAL("workflow/showdata.html", {"files":node.getFiles(), "node":node, "delbutton":deletebutton} , macro="workflow_filelist")
     
+def mkfilelistshort(node, deletebutton=0, language=None, request=None):
+    return request.getTAL("workflow/showdata.html", {"files":node.getFiles(), "node":node, "delbutton":deletebutton} , macro="workflow_filelist_short")
 
+    
 class WorkflowStep_ShowData(WorkflowStep):
 
     def show_workflow_node(self, node, req):
@@ -54,10 +57,13 @@ class WorkflowStep_ShowData(WorkflowStep):
                 fieldmap += [mask.getViewHTML([node],VIEW_HIDE_EMPTY,language=lang(req))]
 
         filelist = ""
+        filelistshort = ""
+        
         if node.getFiles():
             filelist = mkfilelist(node, request=req)
+            filelistshort = mkfilelistshort(node, request=req)
 
-        return req.getTAL("workflow/showdata.html", {"key": key, "filelist": filelist, "fields": fieldmap, "prefix": prefix, "suffix": suffix, "buttons": self.tableRowButtons(node)}, macro="workflow_showdata")
+        return req.getTAL("workflow/showdata.html", {"key":key, "filelist":filelist, "filelistshort":filelistshort, "fields":fieldmap, "prefix":prefix, "suffix":suffix, "buttons":self.tableRowButtons(node)}, macro="workflow_showdata")
 
 
     def metaFields(self, lang=None):

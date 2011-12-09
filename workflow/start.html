@@ -1,17 +1,16 @@
 <tal:block metal:define-macro="workflow_start">
-    <h2 i18n:translate="workflow_create_object">TEXT</h2>
-    <p>&nbsp;</p>
-
     <tal:block tal:content="raw js"/>
-
+    <tal:block tal:replace="raw starttext"/>
     <form action="/mask" method="post">
         <input type="hidden" name="id" tal:attributes="value python:id"/>
-        <select name="selected_schema">
-        <tal:block tal:repeat="schema types">
-            <option tal:attributes="value python:schema[1]" 
-                    tal:content="python:schema[0].getLongName()"/>
-        </tal:block>
+        <input tal:condition="python:len(types)==1" tal:attributes="value python:types[0][1]" type="hidden" name="selected_schema"/>
+        
+        <select tal:condition="python:len(types)>1" name="selected_schema">
+            <option tal:repeat="schema types" tal:attributes="value python:schema[1]" tal:content="python:schema[0].getLongName()"/>
         </select>
+        
+        <p class="typename" tal:content="python:types[0][0].getLongName()"/>
+        <br/><br/>
         <input i18n:attributes="value workflow_start_submit" type="submit" name="Erstellen"/>
     </form>
     <p>&nbsp;</p>

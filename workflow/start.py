@@ -18,22 +18,26 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.tree as tree
-from upload import WorkflowStep #relative import
+from workflow import WorkflowStep, registerStep
 from schema.schema import getMetaType
-from core.translation import t,lang
+from core.translation import t,lang, addLabels
 import utils.date as date
 from utils.utils import mkKey
 
+def register():
+    tree.registerNodeClass("workflowstep-start", WorkflowStep_Start)
+    registerStep("workflowstep-start")
+    addLabels(getLabels())
+
 class WorkflowStep_Start(WorkflowStep):
+
     def show_workflow_step(self, req):
-        typename = self.get("newnodetype")
+        typenames = self.get("newnodetype").split(";")
         
         # check existence of metadata types listed in the definition of the start node
-        schemalist = typename.split(";")
         mdts = tree.getRoot("metadatatypes")
-        for schema in schemalist:
-            type = schema.strip().split("/")[-1]
-            if not mdts.hasChild(type):
+        for schema in typenames:
+            if not mdts.hasChild(schema.strip().split("/")[-1]):
                 return ('<i>' + t(lang(req),"permission_denied") + ': %s </i>') % schema
 
         if "Erstellen" in req.params:
@@ -47,7 +51,7 @@ class WorkflowStep_Start(WorkflowStep):
             return self.forwardAndShow(node, True, req)
        
         types = []
-        for a in typename.split(";"):
+        for a in typenames:
             if a:
                 m = getMetaType(a)
                 # we could now check m.isActive(), but for now let's
@@ -68,13 +72,31 @@ class WorkflowStep_Start(WorkflowStep):
         cookie_test();
         </script>""" % cookie_error
 
-        return req.getTAL("workflow/start.html", {"types":types, "id":self.id, "js":js}, macro="workflow_start")
+        return req.getTAL("workflow/start.html", {"types":types, "id":self.id, "js":js, "starttext":self.get('starttext')}, macro="workflow_start")
         
     def metaFields(self, lang=None):
-        ret = list()
+        ret = []
         field = tree.Node("newnodetype", "metafield")
         field.set("label", t(lang, "admin_wfstep_node_types_to_create"))
         field.set("type", "text")
         ret.append(field)
+        field = tree.Node("starttext", "metafield")
+        field.set("label", t(lang, "admin_wfstep_starttext"))
+        field.set("type", "htmlmemo")
+        ret.append(field)
         return ret
     
+def getLabels(key=None, lang=None):
+    return { "de":
+        [
+            ("workflowstep-start", "Startknoten"),
+            ("admin_wfstep_starttext", "Text vor Auswahl"),
+            ("admin_wfstep_node_types_to_create", "Erstellbare Node-Typen (;-separiert)"),
+        ],
+       "en":
+        [
+            ("workflowstep-start", "Start node"),
+            ("admin_wfstep_starttext", "Text in front of selection"),
+            ("admin_wfstep_node_types_to_create", "Node types to create (;-separated schema list)"),
+        ]
+        }

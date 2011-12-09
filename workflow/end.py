@@ -18,11 +18,24 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from workflow import WorkflowStep
+import core.tree as tree
+from core.translation import t, lang
+import core.config as config
 
 class WorkflowStep_End(WorkflowStep):
        
     def show_workflow_node(self, node, req):
-        # only for debugging
+        
+        if self.get("endremove")!="":
+            # remove obj from workflownode
+            self.removeChild(node)
+        
+        node.setDirty()
+        
+        if self.get("endtext")!="":
+            link = "http://"+config.get("host.name")+"/pnode?id="+node.id+"&key="+node.get("key")
+            link2 = "http://"+config.get("host.name")+"/node?id="+node.id
+            return req.getTALstr(self.get("endtext"), {"node":node, "link":link, "link2":link2})
         return req.getTALstr('<p><a href="/publish" i18n:translate="workflow_back">TEXT</a></p><h2 i18n:translate="wf_step_ready">Fertig</h2><p>&nbsp;</p><p i18n:translate="workflow_step_ready_msg">Das Objekt <span tal:content="node" i18n:name="name"/> ist am Ende des Workflows angekommen.</p>', {"node":str(node.id)})
        
     def runAction(self, node, op=""):
@@ -33,3 +46,17 @@ class WorkflowStep_End(WorkflowStep):
             pass
         if len(node.getParents())>1:
             self.removeChild(node)
+            
+    def metaFields(self, lang=None):
+        ret = []
+        field = tree.Node("endtext", "metafield")
+        field.set("label", t(lang, "admin_wfstep_endtext"))
+        field.set("type", "memo")
+        ret.append(field)
+        
+        field = tree.Node("endremove", "metafield")
+        field.set("label", t(lang, "admin_wfstep_endremove"))
+        field.set("type", "check")
+        ret.append(field)
+        
+        return ret

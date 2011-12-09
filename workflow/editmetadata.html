@@ -1,26 +1,19 @@
-<tal:block metal:define-macro="workflow_metadateneditor">
+<div metal:define-macro="workflow_metadateneditor" id="clean-container">
     <form class="edit" action="/mask" method="post">
         <h2 tal:content="name"/>
         <span tal:replace="raw error"/>
         <input tal:attributes="value key" type="hidden" name="key"/>
         <input type="hidden" name="metaDataEditor" value="metaDataEditor"/>
-    <div style="position:relative">
-        <table style="width:100%; position:relative" cellspacing="0" cellpadding="0">
-            <tr>
-                <td tal:content="raw mask" align="left"/>
-            <tr>
-            <tr>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td style="text-align:left"><div class="label">&nbsp;</div><img src="/img/emtyDot1Pix.gif" style="width:16px"/>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info"/>)</td>
-            </tr>
-            <tr>
-                <td>
-                    <tal:block tal:content="raw buttons"/>
-                </td>
-            </tr>
-        </table>
-    </div>
+        <div style="position:relative">
+            <tal:block tal:replace="raw mask"/>
+            <table style="width:100%; position:relative" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td style="text-align:left"><div class="label">&nbsp;</div><img src="/img/emtyDot1Pix.gif" style="width:16px"/>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info"/>)</td>
+                </tr>
+                <tr>
+                    <td tal:content="raw buttons"/>
+                </tr>
+            </table>
+        </div>
     </form>
-</tal:block>
+</div>

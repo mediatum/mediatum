@@ -6,15 +6,16 @@
     <p tal:condition="python:len(error)>0" tal:content="structure error" class="error"/>
 
     <form action="/mask" method="post">
-        <tal:block tal:replace="raw filelist"/>
+        <span id="filelist" tal:content="raw filelist"/>
+        <span id="filelistshort" tal:content="raw filelistshort"/>
+
         <input type="hidden" name="id" tal:attributes="value id">
         <input type="hidden" name="obj" tal:attributes="value obj">
     </form>
 
-    <h2 i18n:translate="workflow_add_file">TEXT</h2>
-
     <form action="/mask" method="post" enctype="multipart/form-data" style="padding:4px">
-        <div>
+        <div tal:condition="python:not (len(node.getFiles())>0 and str(singlefile)=='1')">
+            <h2 i18n:translate="workflow_add_file">TEXT</h2>
             <input type="file" name="file"/>
             <input i18n:attributes="value workflow_upload_button" type="submit" name="submit"/>
         </div>

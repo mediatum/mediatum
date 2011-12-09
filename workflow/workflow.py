@@ -165,6 +165,17 @@ def registerStep(nodename):
     if "-" in nodename:
         name = nodename[nodename.index("-")+1:]
     workflowtypes[nodename] = name
+    
+def registerWorkflowStep(nodename, cls):
+    name = nodename
+    if "-" in nodename:
+        name = nodename[nodename.index("-")+1:]
+    workflowtypes[nodename] = name
+    
+    addLabels(cls.getLabels())
+    
+    
+    
 
 def getWorkflowTypes():
     return workflowtypes
@@ -679,13 +690,10 @@ class Workflow(tree.Node):
 workflow_lock = thread.allocate_lock()
 
 class WorkflowStep(tree.Node):
-    
+
     def getId(self):
         return self.getName()
         
-    #def getLabels(self):
-    #    return {}
-
     def show_node_big(self, req, template="workflow/workflow.html", macro="object_step"):
 
         # the workflow operations (node forwarding, key assignment,
@@ -867,14 +875,32 @@ class WorkflowStep(tree.Node):
         
     def getTypeName(self):
         return self.getName()
+        
+    def getShortName(self, req):
+        l = lang(req)
+        if self.get('shortstepname_'+l)!="":
+            return self.get('shortstepname_'+l)
+        elif self.get('shortstepname')!="":
+            return self.get('shortstepname')
+        else:
+            return ""
+
+    def setShortName(self, value, lang=""):
+        if lang!="":
+            self.set('shortstepname_'+lang, value.strip())
+        else:
+            self.set('shortstepname', value.strip())
+        
 
 def register():
     tree.registerNodeClass("workflows", Workflows)
     tree.registerNodeClass("workflow", Workflow)
     tree.registerNodeClass("workflowstep", WorkflowStep)
-    from start import WorkflowStep_Start
-    tree.registerNodeClass("workflowstep-start", WorkflowStep_Start)
-    registerStep("workflowstep-start")
+    
+    # register wf-steps
+    import start as WorkflowStep_Start
+    WorkflowStep_Start.register()
+
     from end import WorkflowStep_End
     tree.registerNodeClass("workflowstep-end", WorkflowStep_End)
     registerStep("workflowstep-end")
@@ -901,6 +927,8 @@ def register():
     from textpage import WorkflowStep_TextPage
     tree.registerNodeClass("workflowstep-textpage", WorkflowStep_TextPage)
     registerStep("workflowstep-textpage")
+    addLabels(WorkflowStep_TextPage(type="workflowstep-textpage").getLabels())
+    
     from publish import WorkflowStep_Publish
     tree.registerNodeClass("workflowstep-publish", WorkflowStep_Publish)
     registerStep("workflowstep-publish")

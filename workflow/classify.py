@@ -19,22 +19,55 @@
 
 from upload import WorkflowStep
 from core.translation import t
+from utils.utils import isNumeric
 import core.tree as tree
 
 
 class WorkflowStep_Classify(WorkflowStep):
     """
-        workflowstep that add item to selectable nodes.
-        nodelist stored in attribute 'destination', ;-separated
+        workflowstep that adds item to selectable nodes.
+        attributes:
+            - destination: list of node ids ;-separated
+            - [destination_attr]: attribute name for destination folder
+                |substring:start,end for substing of of attribute value
+                e.g. 'year|substring:0,4' only year part of date
+            - [only_sub]: 0|1 node will only be stored in the subnode
     """
     
     def show_workflow_node(self, node, req):
         return self.forwardAndShow(node, True, req)
         
     def runAction(self, node, op=""):
+        name = ""
+        func = start = end = None
+        attr = self.get('destination_attr')
+        if attr!="" and "|" in attr:
+            attr, func = attr.split("|")
+            
+        if attr!="": # name of subnode
+            name = node.get(attr)
+        if func and func.startswith('substring'): # check for function
+            start, end = func[10:].split(",")
+        if end and isNumeric(end):
+            name = name[:int(end)]
+        if start and isNumeric(start):
+            name = name[int(start):]
+
         for nid in self.get('destination').split(";"):
             try:
-                tree.getNode(nid).addChild(node)
+                pnode = tree.getNode(nid)
+                cnode = None
+                if name!="":
+                    try:
+                        cnode = pnode.getChild(name)
+                    except tree.NoSuchNodeError:
+                        cnode = tree.Node(name, type="directory")
+                        pnode.addChild(cnode)
+               
+                if cnode: # add node to child given by attributename
+                    cnode.addChild(node)
+                if self.get('only_sub')!='1': # add to node (no hierarchy)
+                    pnode.addChild(node)
             except tree.NoSuchNodeError:
                 pass
 
@@ -44,6 +77,14 @@ class WorkflowStep_Classify(WorkflowStep):
         field.set("label", t(lang, "admin_wfstep_classify_destination"))
         field.set("type", "treeselect")
         ret.append(field)
+        field = tree.Node("destination_attr", "metafield")
+        field.set("label", t(lang, "admin_wfstep_classify_destination_attr"))
+        field.set("type", "text")
+        ret.append(field)
+        field = tree.Node("only_sub", "metafield")
+        field.set("label", t(lang, "admin_wfstep_classify_only_sub"))
+        field.set("type", "check")
+        ret.append(field)
         return ret
         
     def getLabels(self):
@@ -51,11 +92,15 @@ class WorkflowStep_Classify(WorkflowStep):
             [
                 ("workflowstep-classify", "Klassifizieren"),
                 ("admin_wfstep_classify_destination", "Zielknoten-ID"),
+                ("admin_wfstep_classify_destination_attr", "Unterknoten Attribut"),
+                ("admin_wfstep_classify_only_sub", "Nur Unterknoten"),
             ],
            "en":
             [
                 ("workflowstep-classify", "classify"),
                 ("admin_wfstep_classify_destination", "ID of destination node"),
+                ("admin_wfstep_classify_destination_attr", "attribute name"),
+                ("admin_wfstep_classify_only_sub", "only subnode"),
             ]
             }
         

@@ -21,7 +21,7 @@ import core.tree as tree
 from workflow import WorkflowStep
 import utils.fileutils as fileutils
 from utils.utils import OperationException
-from showdata import mkfilelist
+from showdata import mkfilelist, mkfilelistshort
 from core.translation import t,lang
 
 class WorkflowStep_Upload(WorkflowStep):
@@ -32,8 +32,15 @@ class WorkflowStep_Upload(WorkflowStep):
         for key in req.params.keys():
             if key.startswith("delete_"):
                 filename = key[7:-2]
+                all = 0
                 for file in node.getFiles():
-                    if file.getName() == filename:
+                    if file.getName()==filename:
+                        if file.type in ['document', 'image']: # original -> delete all
+                            all = 1
+                        node.removeFile(file)
+                        
+                if all==1: # delete all files
+                    for file in node.getFiles():
                         node.removeFile(file)
             
         if "file" in req.params:
@@ -66,11 +73,9 @@ class WorkflowStep_Upload(WorkflowStep):
                 error = t(req, "no_file_transferred") 
 
         filelist = mkfilelist(node, 1, request=req)
+        filelistshort = mkfilelistshort(node, 1, request=req)
         
-        prefix = self.get("prefix")
-        suffix = self.get("suffix")
-        
-        return req.getTAL("workflow/upload.html", {"obj": node.id, "id": self.id,"prefix": prefix, "suffix": suffix, "filelist": filelist, "node": node, "buttons": self.tableRowButtons(node), "error":error}, macro="workflow_upload")
+        return req.getTAL("workflow/upload.html", {"obj": node.id, "id": self.id,"prefix": self.get("prefix"), "suffix": self.get("suffix"), "filelist": filelist, "filelistshort":filelistshort, "node": node, "buttons": self.tableRowButtons(node),"singlefile":self.get('singleobj'), "error":error}, macro="workflow_upload")
 
     def metaFields(self, lang=None):
         ret = list()
@@ -80,8 +85,13 @@ class WorkflowStep_Upload(WorkflowStep):
         ret.append(field)
         
         field = tree.Node("suffix", "metafield")
-        field.set("label", t(lang, "admin_wfstep_text_after_upload_form")) #Text nach dem Upload-Formular")
+        field.set("label", t(lang, "admin_wfstep_text_after_upload_form"))
         field.set("type", "memo")
+        ret.append(field)
+        
+        field = tree.Node("singleobj", "metafield")
+        field.set("label", t(lang, "admin_wfstep_single_upload"))
+        field.set("type", "check")
         ret.append(field)
         return ret
     

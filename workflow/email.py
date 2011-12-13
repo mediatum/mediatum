@@ -37,7 +37,7 @@ def getTALtext(text, context):
     text = '<body xmlns:tal="http://xml.zope.org/namespaces/tal">'+text+'</body>'
     text = athana.getTALstr(text, context)
     text = text.replace("<body>","").replace("</body>","").replace("<body/>","")
-    return text
+    return text.replace("\n","").strip()
 
 class WorkflowStep_SendEmail(WorkflowStep):
     def sendOut(self, node):
@@ -68,19 +68,20 @@ class WorkflowStep_SendEmail(WorkflowStep):
     def runAction(self, node, op=""):
         link = "http://"+config.get("host.name")+"/pnode?id="+node.id+"&key="+node.get("key")
         link2 = "http://"+config.get("host.name")+"/node?id="+node.id
+        attrs = {"node":node, "link":link, "publiclink":link2}
         try:
             if "@" in self.get('from'):
-                node.set("mailtmp.from", getTALtext(self.get("from"), {"node":node, "link":link, "publiclink":link2}).replace("\n","").strip())
+                node.set("mailtmp.from", getTALtext(self.get("from"), attrs))
             elif "@" in node.get(self.get('from')):
-                node.set("mailtmp.from", getTALtext(node.get(self.get("from")), {"node":node, "link":link, "publiclink":link2}).replace("\n","").strip())
+                node.set("mailtmp.from", getTALtext(node.get(self.get("from")), attrs))
 
             if "@" in self.get('email'):
-                node.set("mailtmp.to", getTALtext(self.get("email"), {"node":node, "link":link, "publiclink":link2}).replace("\n","").strip())
+                node.set("mailtmp.to", getTALtext(self.get("email"), attrs))
             elif "@" in node.get(self.get("email")):
-                node.set("mailtmp.to", getTALtext(node.get(self.get("email")), {"node":node, "link":link, "publiclink":link2}).replace("\n","").strip())
+                node.set("mailtmp.to", getTALtext(node.get(self.get("email")), attrs))
 
-            node.set("mailtmp.subject", getTALtext(self.get("subject"), {"node":node, "link":link, "publiclink":link2}).replace("\n","").strip())
-            node.set("mailtmp.text", getTALtext(self.get("text"), {"node":node, "link":link, "link2":link2}))
+            node.set("mailtmp.subject", getTALtext(self.get("subject"), attrs))
+            node.set("mailtmp.text", getTALtext(self.get("text"), attrs))
         except:
             node.set("mailtmp.talerror",formatException())
             return

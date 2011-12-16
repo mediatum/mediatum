@@ -1,4 +1,4 @@
-﻿"""
+"""
  mediatum - a multimedia content repository
 
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
@@ -23,14 +23,13 @@ import sys
 import os
 import re
 import time
+import logging
 
 import core.tree as tree
 import core.users as users
 import core.xmlnode as xmlnode
 
 from core import config
-host = "http://" + config.get("host.name")
-
 from core.acl import AccessData
 from schema.schema import getMetaType, VIEW_DATA_ONLY
 
@@ -46,20 +45,25 @@ if sys.version[0:3] < '2.6':
 else:
     import json
 
+logger = logging.getLogger('services')
+host = "http://" + config.get("host.name")
+
 guestAccess = AccessData(user=users.getUser('Gast'))
 collections = tree.getRoot('collections')
 
 from web.services.cache import Cache
 from web.services.cache import date2string as cache_date2string
-
 import web.services.serviceutils as serviceutils
 
-d_filtercache = {}
+FILTERCACHE_NODECOUNT_THRESHOLD = 2000000
+
 filtercache = Cache(maxcount=10, verbose=True)
 searchcache = Cache(maxcount=10, verbose=True)
 resultcache = Cache(maxcount=25, verbose=True)
 
-def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=False):
+SEND_TIMETABLE = False
+
+def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
 
     def attr_list_join(attr_list):
         sformat = '''<attribute name="%s"><![CDATA[%s]]></attribute>'''
@@ -118,28 +122,22 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
 
     else:
         res += '''<errormessage><![CDATA[%s]]></errormessage>\r\n''' % d['errormessage']
-        
-    res += '</response>\r\n'
-
-    return res
+    return res +'</response>\r\n'
 
 
-def struct2json(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=False):
-
+def struct2json(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
     atime = starttime = time.time()
-
     nodelist = d['nodelist']
-    nodedescriptorlist = [jsonnode.buildNodeDescriptor(req, n, children=send_children) for n in nodelist]
-    d['nodelist'] = nodedescriptorlist
-
-    json_timetable = d['timetable'][:]
     
+    if not 'add_shortlist' in req.params:
+        d['result_shortlist'] = []
+
+    d['nodelist'] = [jsonnode.buildNodeDescriptor(req, n, children=send_children) for n in nodelist]
+    json_timetable = d['timetable'][:]
+
+    d['timetable'] = []
     if send_timetable:
         d['timetable'] = json_timetable
-    else:
-        d['timetable']= []
-           
-    d['dataready'] = ( "%.3f" % (time.time()-d['build_response_start']) )
 
     try:
         s = json.dumps(d, indent=4, encoding="UTF-8")
@@ -147,7 +145,7 @@ def struct2json(req, path, params, data, d, debug=False, singlenode=False, send_
         s = json.dumps(d, encoding='latin1')
 
     d['timetable'] = json_timetable
-
+    d['dataready'] = ( "%.3f" % (time.time()-d['build_response_start']) )
     return s
 
 def struct2csv(req, path, params, data, d, debug=False, sep=';', string_delimiter='"', singlenode=False, send_children=False):
@@ -170,7 +168,6 @@ def struct2csv(req, path, params, data, d, debug=False, sep=';', string_delimite
         sep = trans[sep.lower()]
 
     def join_row(row):
-
         row = [u(x) for x in row]
 
         try:
@@ -184,15 +181,15 @@ def struct2csv(req, path, params, data, d, debug=False, sep=';', string_delimite
                 if string_delimiter:
                     x = x.replace(string_delimiter, u("'"))
                 try:
-                    res = res + string_delimiter + u(x) + string_delimiter + sep
+                    res += string_delimiter + u(x) + string_delimiter + sep
                 except:
                     try:
-                        res = res + string_delimiter + x.decode('utf-8') + string_delimiter + sep
+                        res += string_delimiter + x.decode('utf-8') + string_delimiter + sep
                     except:
                         try:
-                            res = res + string_delimiter + x.decode('latin1') + string_delimiter + sep
+                            res += string_delimiter + x.decode('latin1') + string_delimiter + sep
                         except:
-                            res = res + string_delimiter + x + string_delimiter + sep
+                            res += string_delimiter + x + string_delimiter + sep
             if res:
                 res = res[0:-len(sep)]
         return u(res)
@@ -201,17 +198,13 @@ def struct2csv(req, path, params, data, d, debug=False, sep=';', string_delimite
 
     if d['status'].lower() == 'fail':
         header = ['status', 'html_response_code', 'errormessage', 'retrievaldate', 'dataready']
-        r = join_row(header)  + u('\r\n')
-        row = map(lambda x: u(d[x]), header)
-        r += join_row(row)
-
+        r = join_row(header) + u('\r\n')
+        r += join_row(map(lambda x: u(d[x]), header))
         return u(r)
 
     rd = {}
     keys = set()
-
     csv_nodelist = d['nodelist'][:]
-    
     csvattrs = []
     if 'csvattrs' in params:
         csvattrs = [attr.strip() for attr in params['csvattrs'].split(',')]
@@ -238,7 +231,6 @@ def struct2csv(req, path, params, data, d, debug=False, sep=';', string_delimite
                 attr_header.remove(sfield)
         attr_header = d['sfields'] + attr_header
     header = [u('count'), u('id'), u('type'), u('name')] + attr_header
-
     r = join_row(header)  + u('\r\n')
 
     for i, n in enumerate(csv_nodelist):
@@ -258,24 +250,18 @@ def struct2csv(req, path, params, data, d, debug=False, sep=';', string_delimite
         r = codecs.BOM_UTF8 + r
     return u(r)
     
+    
 def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_children=False):
-
     atime = starttime = time.time()
-    
     nodelist = d['nodelist']
-    
     language = params.get('lang', 'en')
-    
     items_list = []
-    
     mdts = tree.getRoot("metadatatypes").getChildren()
     
     for n in nodelist:
-    
         nodename = n.name
         nodeid = n.id
         nodetype = n.type 
-        
         updatetime = utime = try_node_date(n)
         
         # categories to be included in all items - mask generated or not
@@ -288,21 +274,20 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
             schema = n.getSchema()
             try:
                 mdt = [x for x in mdts if x.name==schema][0]
-            except:    
+            except:
                 mdt = None
             mask = mdt.getMask('rss')
             if mask.get('masktype') != 'export':
                 mask = None
-        except:    
+        except:
             mask = None
             
         if mask:
             item_xml = '<item>\r\n' + mask.getViewHTML([n], flags=8) + default_categories + '\r\n</item>\r\n'
             items_list = items_list + [ (updatetime, nodename, nodeid, item_xml ) ] 
-            continue          
+            continue
     
         # no rss export mask: build default item from nodesmall mask
-
         item_d = {}
 
         browsingPathList = getBrowsingPathList(n)
@@ -316,7 +301,7 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
         try:
             most_detailed_path = x[0][2]
         except:  # browsing path list may be empty (for directories, collections, ...)
-            most_detailed_path = ''       
+            most_detailed_path = ''
 
         if nodename:
             item_d['title'] = esc( nodename + ' (' + nodeid + ', ' + nodetype + ') ' + ('/'.join(most_detailed_path)) )
@@ -344,13 +329,10 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
             description = description + ('''<b>%s: </b>%s<br/>\r\n''' % (u(x[2]), (x[1])))
             
         item_d['description'] = description
-
         categories = default_categories
         
         for x in browsingPathList_names:
             categories = categories + '<category>' + esc('/'.join(x)) + '</category>\r\n'
-            
-        #categories = categories + '<category>node type: ' + n.type + '</category>\r\n'    
 
         ddcs = n.get('ddc').strip()
         if ddcs.strip():
@@ -378,7 +360,6 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
     items = ''
     for x in items_list:
         items += (x[3] + '\r\n')
-
 
     pubDate = lastBuildDate = format_date(format='rfc822')
 
@@ -409,15 +390,14 @@ supported_formats = [
  [['json'], struct2json, 'text/plain'], 
  [['csv'], struct2csv, 'text/plain'], 
  [['rss'], struct2rss, 'application/rss+xml'], 
-]    
+]
+
 
 def get_node_children_struct(req, path, params, data, id, debug=True, allchildren=False, singlenode=False, parents=False, send_children=False):
-
     starttime = time.time()
     retrievaldate = format_date()
 
     res = {} # holds the resulting data structure
-
     res['build_response_start'] = starttime
     res['retrievaldate'] = retrievaldate
     res['method'] = req.command
@@ -435,16 +415,10 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
     # query parameters
     nodelist_type = params.get('type', '') # return only nodes of given type like dissertation/diss
     mdt = params.get('mdt', '')
-    
     attrreg = params.get('attrreg', '')
-
     q = params.get('q', '') # node query
-
     sortfield = params.get('sortfield', '')
-
     sortformat = params.get('sortformat', '') # 'sissfi'
-
-     
     sfields = [] # sortfields
     
     if sortfield:
@@ -452,16 +426,14 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
     num_sfields = len(sfields) 
     
     sortdirection = ''
-    
     for i in range(num_sfields):
-        if sfields[i][0] == '-':
+        if sfields[i] and sfields[i][0] == '-':
             sfields[i] = sfields[i][1:]
             sortdirection += 'd'
         else:
-            sortdirection += 'u'    
+            sortdirection += 'u'
         
     psort = params.get('sort', 'orderpos')
-
     sortresult = ''
 
     default_nodelist_start = 0
@@ -482,10 +454,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
         nodelist_limit = 1  
     
     # accept results calculated and cached up to this amount of seconds
-    
     acceptcached = float(params.get('acceptcached', '0'))         
-
-    # build response structure
 
     # check node existence
     try:
@@ -512,7 +481,6 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
         return res
 
     atime = time.time()
-    
     searchresult = []
     if q:
         cache_key = (path).split('?')[0]+'|q='+q  # req.path
@@ -554,7 +522,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
         if typed_node_id_list:
             typed_nodelist = tree.NodeList(typed_node_id_list)
             timetable.append(['''generated typed node list -> (%d nodes)''' % (len(typed_nodelist)), time.time()-atime]); atime = time.time() 
-                     
+        
     if singlenode:
         nodelist = [node]
     elif parents:
@@ -573,7 +541,18 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
             nodelist = intersection([filtered_nodelist, searchresult])
             timetable.append(['''intersection of typed (%s) nodes with searchresult -> (%d nodes)''' % (mdt, len(nodelist)), time.time()-atime]); atime = time.time()
         else:
-            nodelist = node.getAllChildren()
+            # refuse request for all children on collections root
+            if node.id != tree.getRoot('collections').id:
+                nodelist = node.getAllChildren()
+            else:
+                nodelist = []   
+                res['status'] = 'fail'
+                res['html_response_code'] = '403' # forbidden (authorization will not help)
+                res['errormessage'] = 'no access'
+                res['build_response_end'] = time.time()
+                dataready = "%.3f" % (res['build_response_end'] - starttime)
+                res['dataready'] = dataready
+                return res                 
             timetable.append(['''get all children for node %s, '%s', '%s' -> (%d nodes)''' % (str(node.id), node.name, node.type, len(nodelist)), time.time()-atime]); atime = time.time()
     else:
         nodelist = node.getChildren()
@@ -587,30 +566,46 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
 
     req_path = req.path
 
-    if type(nodelist)!= list:
-        set_nodelist_ids = set(nodelist.getIDs())
-    else:
-        set_nodelist_ids = set(nodelist)
-
+    #if type(nodelist)!= list:
+    #    set_nodelist_ids = set(nodelist.getIDs())
+    #else:
+    #    set_nodelist_ids = set(nodelist)
+        
+    set_nodeid_localread = set(["%s_%s" % (str(n.id), str(n.localread)) for n in nodelist])  
+    
     timetable.append(['get set of ids of nodelist', time.time()-atime]); atime = time.time()
+    
+    try:
+        from core.acl import getDefaultGuestAccessRule
+        default_guest_access_name = getDefaultGuestAccessRule().name
+    except:
+        default_guest_access_name = None    
+        
+    if not default_guest_access_name:
+        logger.warning('No default guest access name set in config file: will use hasAccess method, which may cost web service performance')        
     
     if not mdt and not q:
         resultcode, cachecontent = filtercache.retrieve(req_path)
-        if resultcode == 'hit' and len(set_nodelist_ids.difference(cachecontent[-1][0]))==0:
+        if resultcode == 'hit' and len(set_nodeid_localread.difference(cachecontent[-1][0]))==0:
             filtered_nodelist = cachecontent[-1][1]
             timetable.append(['retrieved filtered access from cache (%d nodes -> %d nodes)' % (len(nodelist), len(filtered_nodelist)), time.time()-atime]); atime = time.time()
             nodelist = filtered_nodelist
         elif not q:
-            if singlenode or parents:
-                filtered_nodelist = [x for x in nodelist if (guestAccess.hasAccess(x, 'read') and (isDescendantOf(x, collections)))]
+
+            if 0 and default_guest_access_name:
+                filtered_nodelist = [x for x in nodelist if default_guest_access_name in x.localread.split(',')]
+                timetable.append(['filter access with localread == "%s" (%d nodes -> %d nodes)' % (default_guest_access_name, len(nodelist), len(filtered_nodelist)), time.time()-atime]); atime = time.time()
             else:
-                filtered_nodelist = [x for x in nodelist if (guestAccess.hasAccess(x, 'read') and (isDescendantOf(x, collections)))]
-            filtered = len(filtered_nodelist)
-            timetable.append(['filter access (%d nodes -> %d nodes)' % (len(nodelist), len(filtered_nodelist)), time.time()-atime]); atime = time.time()
+                if singlenode or parents:
+                    filtered_nodelist = [x for x in nodelist if (guestAccess.hasAccess(x, 'read') )]
+                else:
+                    filtered_nodelist = [x for x in nodelist if (guestAccess.hasAccess(x, 'read') )]
+                timetable.append(['filter access with hasAccess (%d nodes -> %d nodes)' % (len(nodelist), len(filtered_nodelist)), time.time()-atime]); atime = time.time()    
+
             nodelist = filtered_nodelist
-    
-            if not singlenode and len(filtered_nodelist) > 50:
-                filtercache.update(req_path, [set_nodelist_ids, filtered_nodelist])
+            
+            if not singlenode and len(filtered_nodelist) > FILTERCACHE_NODECOUNT_THRESHOLD:
+                filtercache.update(req_path, [set_nodeid_localread, filtered_nodelist])
                 timetable.append(['added filtered nodelist to filtercache (%d nodes)' % (len(filtered_nodelist)), time.time()-atime]); atime = time.time()
 
     # 'sort' may be removed later (undocumented feature)
@@ -633,7 +628,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
                 res['build_response_end'] = time.time()
                 dataready = "%.3f" % (res['build_response_end'] - starttime)
                 res['dataready'] = dataready
-                return res            
+                return res
                 
             newly_filtered = [x for x in nodelist if regexp_stype.match(x.type)]
             typefiltered_nodelist += newly_filtered
@@ -661,7 +656,6 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
         
 
     if sortfield:
-    
         def reformat(inputlist, i, f):
             '''the i.th column in a list of list  is formated (i.e. from string to integer, float, ...'''
             for t in inputlist:
@@ -671,17 +665,17 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
         def nodeValueGetter(node, valuename):
             '''get node related values in uniform fashion: like 'node.id', 'node.name', 'node.type', 'orderpos', attributes'''
             if valuename.startswith('node.'):
-                if valuename == 'node.id':
+                if valuename=='node.id':
                     return node.id
-                elif valuename == 'node.name':
+                elif valuename=='node.name':
                     return node.name
-                elif valuename == 'node.type':
+                elif valuename=='node.type':
                     return node.type
-                elif valuename == 'node.orderpos':
+                elif valuename=='node.orderpos':
                     return node.orderpos
             else:
                 return node.get(valuename)     
-                        
+                
         nodetuples = [map(lambda sfield: nodeValueGetter(x, sfield), sfields)+[ x.id, x] for x in nodelist]
         
         data = nodetuples[:]
@@ -692,9 +686,9 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
             fReverse = False # default
             try:
                 field_sortdirection = sortdirection[pos]
-                if field_sortdirection == 'u':
+                if field_sortdirection=='u':
                     fReverse = False
-                elif field_sortdirection == 'd':
+                elif field_sortdirection=='d':
                     fReverse = True
                 else:
                     # perhaps return "failed" in this case ?
@@ -706,22 +700,21 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
                 try:
                     return int(float(x[pos]))
                 except:
-                    return 0  
+                    return 0
                     
             def float_getter(pos, x):
                 try:
                     return float(x[pos])
                 except:
-                    return 0.0  
-                       
+                    return 0.0
         
             # map formats for sortfield (defaul: string)
             sortkey = lambda x: serviceutils.din5007v2(x[pos])
             try:
                 field_format = sortformat[pos] 
-                if field_format == 'i':
+                if field_format=='i':
                     sortkey = lambda x: int_getter(pos, x)
-                elif fieldformat == 'f':
+                elif fieldformat=='f':
                     sortkey = lambda x: float_getter(pos, x)
                 else:
                     pass
@@ -731,9 +724,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
             data = sorted(data, key=sortkey, reverse=fReverse)
 
         nodetuples = data[:]
-
         nodelist = [x[len(sfields) + 1] for x in nodetuples] # sorted
-
         timetable.append(["sort nodelist (%d nodes): sortfield='%s', sortdirection='%s', sortformat='%s'" % (len(nodelist), sortfield, sortdirection, sortformat), time.time()-atime]); atime = time.time()
 
     nodelist_countall = len(nodelist)
@@ -747,19 +738,19 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
     i0 = int(params.get('i0', '0'))
     i1 = int(params.get('i1', len(nodelist)))
 
-    if sortfield:
-        result_shortlist = [[i, x.id, x.name, x.type, attr_list(x, sfields)] for i, x in enumerate(nodelist)][i0:i1]
-        timetable.append(['build result_shortlist for %d nodes and %d sortfields' % (len(result_shortlist), len(sfields)), time.time()-atime]); atime = time.time()
-    else:
-        result_shortlist = [[i, x.id, x.name, x.type] for i, x in enumerate(nodelist)][i0:i1]
-        timetable.append(['build result_shortlist for %d nodes (no sortfield)' % len(result_shortlist), time.time()-atime]); atime = time.time()
-
+    if 'add_shortlist' in req.params:
+        if sortfield:
+            result_shortlist = [[i, x.id, x.name, x.type, attr_list(x, sfields)] for i, x in enumerate(nodelist)][i0:i1]
+            timetable.append(['build result_shortlist for %d nodes and %d sortfields' % (len(result_shortlist), len(sfields)), time.time()-atime]); atime = time.time()
+        else:
+            result_shortlist = [[i, x.id, x.name, x.type] for i, x in enumerate(nodelist)][i0:i1]
+            timetable.append(['build result_shortlist for %d nodes (no sortfield)' % len(result_shortlist), time.time()-atime]); atime = time.time()
 
     if 'limit' in params:
         nodelist = nodelist[nodelist_start:nodelist_start + nodelist_limit]
     else:
         nodelist = nodelist[nodelist_start:]
-
+        
     res['nodelist'] = nodelist
     res['sfields'] = sfields
     res['sortfield'] = sortfield
@@ -770,14 +761,11 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
     res['nodelist_limit'] = nodelist_limit
     res['nodelist_countall'] = nodelist_countall
     res['path'] = req.path
-
     res['status'] = 'ok'
     res['html_response_code'] = '200' # ok
-
     res['build_response_end'] = time.time()
     dataready = "%.3f" % (res['build_response_end'] - starttime)
     res['dataready'] = dataready
-
     return res
 
 def write_formatted_response(req, path, params, data, id, debug=True, allchildren=False, singlenode=False, parents=False, send_children=False):
@@ -785,19 +773,29 @@ def write_formatted_response(req, path, params, data, id, debug=True, allchildre
     atime = starttime = time.time()
     r_timetable = []
     
-    cache_key = '|'.join(map(str, [path, params, allchildren, singlenode, parents, send_children]))
+    _p = params.copy()
+    if "jsoncallback" in _p:
+        del _p['jsoncallback']
+    if "_" in _p:
+        del _p['_']
+
+    cache_key = '|'.join(map(str, [path, _p, allchildren, singlenode, parents, send_children]))
     cache_key = cache_key.replace(' ', '_')
     
     acceptcached = float(params.get('acceptcached', '0'))
     
     result_from_cache = None
     if acceptcached > 0.0:
-        resultcode, cachecontent = resultcache.retrieve(cache_key, acceptcached) 
+        resultcode, cachecontent = resultcache.retrieve(cache_key, acceptcached)
         if resultcode == 'hit':
             cache_name = 'resultcache'
             timestamp_from_cache = time_cached = resultcache.getTimestamp(cache_key)
             time_delta = starttime - time_cached
             result_from_cache, mimetype_from_cache = cachecontent[-1]
+            # replace jQuery, jsonp callback value
+            if result_from_cache.startswith('jQuery') or result_from_cache.startswith('jsonp'):
+                result_from_cache = str(params['jsoncallback']) + result_from_cache[result_from_cache.find("({"):]
+
             r_timetable.append(["retrieved filtered result from 'resultcache': (%d bytes), time_delta: %.3f lower acceptcached %.3f sec." % (len(result_from_cache), time_delta, acceptcached), time.time()-atime]); atime = time.time()
         elif resultcode == 'refused':
             time_cached = resultcache.getTimestamp(cache_key)
@@ -842,7 +840,9 @@ def write_formatted_response(req, path, params, data, id, debug=True, allchildre
             
         if acceptcached > 0: # only write to cache for these requests 
             resultcache.update(cache_key, [s, mimetype])
-            d['timetable'].append(["wrote result to 'resultcache' (%d bytes), now in cache: %d entries: %s" % (len(s), resultcache.getKeysCount(), "#".join(resultcache.getKeys())), time.time()-atime]); atime = time.time()
+            d['timetable'].append(["wrote result to 'resultcache' (%d bytes), now in cache: %d entries" % (len(s), resultcache.getKeysCount()), time.time()-atime]); atime = time.time()
+            #d['timetable'].append(["wrote result to 'resultcache' (%d bytes), now in cache: %d entries: \r\n%s" % (len(s), resultcache.getKeysCount(), resultcache.report()), time.time()-atime]); atime = time.time()
+            #d['timetable'].append(["wrote result to 'resultcache' (%d bytes), now in cache: %d entries: %s" % (len(s), resultcache.getKeysCount(), "#".join(resultcache.getKeys())), time.time()-atime]); atime = time.time()
             
     else:
             d = {}
@@ -854,9 +854,56 @@ def write_formatted_response(req, path, params, data, id, debug=True, allchildre
             s = result_from_cache
             d['timetable'].append(["serving %.3f sec. old response (%d bytes) from '%s', cache_key: %s" % (time.time()-timestamp_from_cache, len(s), cache_name, cache_key), time.time()-atime]); atime = time.time()
             req.reply_headers['Content-Type'] = mimetype_from_cache+"; charset=utf-8" 
+            mimetype = mimetype_from_cache
+
+    def compressForDeflate(s):
+        import gzip
+        return gzip.zlib.compress(s,9)
+        
+    def compressForGzip(s):
+        import cStringIO, gzip
+        buffer = cStringIO.StringIO()
+        gzfile = gzip.GzipFile(mode='wb', fileobj=buffer, compresslevel=9)
+        gzfile.write(s)
+        gzfile.close()
+        return buffer.getvalue()        
             
-    req.write(s)
+    if 'deflate' in req.params:
+        size_uncompressed = len(s)
+        compressed_s = compressForDeflate(s)
+        s = compressed_s
+        size_compressed = len(s)
+        try:
+            percentage = 100.0 * size_compressed / size_uncompressed
+        except:
+            percentage = 100.0
+        req.reply_headers['Content-Encoding'] = "deflate"
+        d['timetable'].append(["'deflate' in request: executed compressForDeflate(s), %d bytes -> %d bytes (compressed to: %.1f %%)" % (size_uncompressed, size_compressed, percentage), time.time()-atime]); atime = time.time()
+
+    elif 'gzip' in req.params:
+        size_uncompressed = len(s)
+        compressed_s = compressForGzip(s)
+        s = compressed_s
+        size_compressed = len(s)
+        try:
+            percentage = 100.0 * size_compressed / size_uncompressed
+        except:
+            percentage = 100.0
+        req.reply_headers['Content-Encoding'] = "gzip"
+        d['timetable'].append(["'gzip' in request: executed compressForGzip(s), %d bytes -> %d bytes (compressed to: %.1f %%)" % (size_uncompressed, size_compressed, percentage), time.time()-atime]); atime = time.time()
+
     
+    req.reply_headers['Content-Length'] = len(s)
+    
+    # (format) Expires: Mon, 28 Nov 2011 12:41:22 GMT
+    # see core.athana.build_http_date
+    #req.reply_headers['Expires'] = time.strftime ('%a, %d %b %Y %H:%M:%S GMT', time.gmtime(time.time()+60.0)) # 1 minute
+    
+    
+    # remark: on 2011-12-01 switched response from req.write to req.sendAsBuffer for performance reasons
+    # (before: ) req.write(s)
+    req.sendAsBuffer(s, mimetype, force=1)
+    d['timetable'].append(["executed req.sendAsBuffer, %d bytes, mimetype='%s'" % (len(s), mimetype), time.time()-atime]); atime = time.time()          
     return d['html_response_code'], len(s), d 
 
 def get_node_single(req, path, params, data, id):
@@ -887,21 +934,40 @@ def get_cachestatus(req, path, params, data):
     d['timetable'] = timetable        
     req.reply_headers['Content-Type'] = "text/plain" + "; charset=utf-8"
     
-    s = 'searchcache content: %s\r\n' % cache_date2string(atime, '%04d-%02d-%02d-%02d-%02d-%02d')
+    s = 'searchcache content: %s\r\n' % cache_date2string(time.time(), '%04d-%02d-%02d-%02d-%02d-%02d')
     s += searchcache.report()
     d['timetable'].append(["retrieved report for searchcache", time.time()-atime]); atime = time.time()
     
-    s += '\r\n\r\nfiltercache content: %s\r\n' % cache_date2string(atime, '%04d-%02d-%02d-%02d-%02d-%02d')
+    s += '\r\n\r\nfiltercache content: %s\r\n' % cache_date2string(time.time(), '%04d-%02d-%02d-%02d-%02d-%02d')
     s += filtercache.report()
     d['timetable'].append(["retrieved report for filtercache", time.time()-atime]); atime = time.time() 
        
-    s += '\r\n\r\nresultcache content: %s\r\n' % cache_date2string(atime, '%04d-%02d-%02d-%02d-%02d-%02d')
+    s += '\r\n\r\nresultcache content: %s\r\n' % cache_date2string(time.time(), '%04d-%02d-%02d-%02d-%02d-%02d')
     s += resultcache.report()
     d['timetable'].append(["retrieved report for resultcache", time.time()-atime]); atime = time.time() 
-       
+    
     req.write(s)
+    
     d['timetable'].append(["writing cache reports to request", time.time()-atime]); atime = time.time()
     return d['html_response_code'], len(s), d
+    
+def get_maskcachestatus(req, path, params, data):
+    atime = time.time()
+    from contenttypes.default import get_maskcache_report, maskcache_accesscount #, nodemasks
+    timetable = []
+    d = {}
+    d['status'] = 'ok'
+    d['html_response_code'] = '200'
+    d['timetable'] = timetable        
+    req.reply_headers['Content-Type'] = "text/plain" + "; charset=utf-8"
+    
+    s = 'mask cache content (lookup keys): %s\r\n\r\n' % cache_date2string(time.time(), '%04d-%02d-%02d-%02d-%02d-%02d')
+    
+    s += get_maskcache_report()
+        
+    req.write(s)
+    d['timetable'].append(["writing masks cache access counts to request", time.time()-atime]); atime = time.time()
+    return d['html_response_code'], len(s), d    
 
 # alternative base dir for static html files
 #
@@ -914,10 +980,9 @@ def get_cachestatus(req, path, params, data):
 #WEBROOT="./web/services/static01/files/" 
 
 # no WEBROOT configured, default will be used
-WEBROOT=None
+WEBROOT = None
 
 def serve_file(req, path, params, data, filepath):
-
     atime = starttime = time.time()
     
     d = {}

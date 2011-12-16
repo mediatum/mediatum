@@ -1,4 +1,4 @@
-﻿"""
+"""
  mediatum - a multimedia content repository
 
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
@@ -102,14 +102,17 @@ class Cache:
         self.lock.acquire()
         keys = sorted(self.entries.keys())
 
-        header = 'tupd,upd,hit,refused,date,key'.split(',')
+        header = '|tupd,upd,hit,refused,date,key'.split(',')
         hformat = "%4s|%4s|%4s|%4s|%19s|%-s"
         res = hformat % tuple(header)
-        res += '\r\n' + '-'*len(res)
-        rformat = "\r\n%4d|%4d|%4d|%7d|%s|%-s"
+        hline = '\r\n|' + '-'*len(res)
+        res += hline
+        rformat = "\r\n|%4d|%4d|%4d|%7d|%s|%-s"
 
         for key in keys:
             res += rformat % tuple(self.entries[key][1:6]+[key])
+            
+        res += hline    
 
         self.lock.release()
 

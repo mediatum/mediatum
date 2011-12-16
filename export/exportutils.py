@@ -23,8 +23,10 @@ import re
 
 import core.tree as tree
 import core.athana as athana
+import core.config as config
+import utils.date as date
 
-from utils.utils import esc, u, u2
+from utils.utils import esc, u, u2, splitname
 from utils.date import parse_date, format_date
 
 tagpattern = re.compile(r'<[^>]*?>')
@@ -35,11 +37,35 @@ def prss(s):
     '''protect rss item elements'''
     return esc(no_html(esc(no_html(esc(no_html(esc(u(s))))))))    
 
+def cdata(s):
+    return '<![CDATA[%s]]>' % s
+    
+def get_udate(node):
+    udate = node.get("updatetime")
+    if udate:
+        udate = date.parse_date(udate)
+    else:
+        udate = date.now()
+    return date.format_date(udate, "%Y-%m-%d") 
+    
+def getContributorList(node, type):
+    '''type in ["advisor", "referee"]'''
+    result = []
+    for person in node.get(type).split(";"):
+        if person:
+            cfullname = person.strip()
+            title, firstname, lastname = splitname(cfullname)
+            result.append((cfullname, firstname, lastname, title))
+    return result
+
 def runTALSnippet(s, context, mask=None):
     header = '''<?xml version="1.0" encoding="UTF-8" ?>'''
     xmlns = '''<talnamespaces xmlns:tal="http://xml.zope.org/namespaces/tal" xmlns:metal="http://xml.zope.org/namespaces/metal">'''
     footer = '''</talnamespaces>'''
     cutter = "----cut-TAL-result-here----\n"
+    
+    if "tal:" not in s:
+        return s
     
     if mask:
         header += mask.get('exportheader')
@@ -52,24 +78,28 @@ def runTALSnippet(s, context, mask=None):
         wr_result = athana.getTALstr(u2(to_be_processed), context, mode='xml')
 
     return wr_result[wr_result.find(cutter)+len(cutter):wr_result.rfind(cutter)]
- 
+
+default_context = {} 
+default_context['tree'] = tree
+default_context['esc'] = esc  # may be needed for example in escaping rss item elements
+default_context['no_html'] = no_html 
+default_context['u'] = u 
+default_context['prss'] = prss # protect rss
+default_context['parse_date'] = parse_date 
+default_context['format_date'] = format_date
+default_context['cdata'] = cdata
+default_context['get_udate'] = get_udate        
+default_context['config_get'] = config.get
+default_context['getContributorList'] = getContributorList
 
 def handleCommand(cmd, var, s, node, attrnode=None, field_value="", options=[], mask=None):
-
+    global default_context
+    from web.frontend.streams import build_filelist, get_transfer_url
+    
     if cmd=='cmd:getTAL':
-        context = dict(node.items())
-        # not all metafields may have values
-        # default behavior should be taken care of in the TAL
-
-        context['tree'] = tree
+        context = default_context.copy()
         context['node'] = node
-        context['esc'] = esc  # may be needed for example in escaping rss item elements
-        context['no_html'] = no_html 
-        context['u'] = u 
-        context['prss'] = prss # protect rss
-        context['parse_date'] = parse_date 
-        context['format_date'] = format_date
-        
+        context['build_filelist'] = build_filelist
+        context['get_transfer_url'] = get_transfer_url        
         result = runTALSnippet(s, context, mask)
-
         return result.replace("[" + var + "]", "")

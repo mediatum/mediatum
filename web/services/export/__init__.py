@@ -1,4 +1,4 @@
-﻿"""
+"""
  mediatum - a multimedia content repository
 
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
@@ -61,9 +61,10 @@ urls = [
 
         ["GET", "/static/(?P<filepath>.*)$", handlers.serve_file, None, SERVICES_URL_HAS_HANDLER, None],
         ["GET", "/cachestatus/{0,1}$", handlers.get_cachestatus, None, SERVICES_URL_HAS_HANDLER, None], 
+        ["GET", "/maskcachestatus/{0,1}$", handlers.get_maskcachestatus, None, SERVICES_URL_HAS_HANDLER, None], 
        ]
 
-DEBUG = False
+DEBUG = True
 
 def request_handler(req):
 

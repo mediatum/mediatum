@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.42 2011/10/10 15:34:39 wneudenberger Exp $'
+RCS_ID =  '$Id: athana.py,v 1.43 2011/12/16 14:57:14 seiferta Exp $'
 
 import sys
 
@@ -3531,7 +3531,7 @@ class file_logger:
     def debug(self, message):
         self.log(message)
 
-class unresolving_logger: #wn
+class unresolving_logger:
     "Just in case you don't want to resolve"
     def __init__ (self, logger):
         self.logger = logger
@@ -3540,21 +3540,9 @@ class unresolving_logger: #wn
         else:
             self.log_func = logger.log    
 
-    #def log (self, ip, message):
-    #    if self.logger:
-    #        self.logger.log ('%s:%s' % (ip, message))
-
     def log (self, ip, message):
         self.log_func ('%s:%s' % (ip, message))
     
-class unresolving_logger_orig:
-    "Just in case you don't want to resolve"
-    def __init__ (self, logger):
-        self.logger = logger
-
-    def log (self, ip, message):
-        self.logger.log ('%s:%s' % (ip, message))
-
 def strip_eol (line):
     while line and line[-1] in '\r\n':
         line = line[:-1]
@@ -3879,6 +3867,55 @@ class http_request:
             self.error (404)
             print "404"
             return
+            
+        self.reply_headers['Last-Modified'] = build_http_date (mtime)
+        self.reply_headers['Content-Length'] = file_length
+        self.reply_headers['Content-Type'] = content_type
+        self.reply_headers['Connection'] = 'close';
+        if self.command == 'GET':
+            self.push(file_producer(file))
+        return
+            
+    def sendAsBuffer(self,text,content_type,force=0):
+        from StringIO import StringIO
+        stringio = StringIO(text)
+
+        try:
+            file_length = len(stringio.buf)
+        except OSError:
+            self.error (404)
+            return
+
+        ims = get_header_match (IF_MODIFIED_SINCE, self.header)
+        length_match = 1
+        if ims:
+            length = ims.group (4)
+            if length:
+                try:
+                    length = string.atoi (length)
+                    if length != file_length:
+                        length_match = 0
+                except:
+                    pass
+        ims_date = 0
+        if ims:
+            ims_date = parse_http_date (ims.group (1))
+
+        try:
+            import time
+            mtime = time.time() #os.stat (path)[stat.ST_MTIME]
+        except:
+            self.error (404)
+            return
+        if length_match and ims_date:
+            if mtime <= ims_date and not force:
+                self.reply_code = 304
+                return
+        try:
+            file = stringio
+        except IOError:
+            self.error (404)
+            return
 
         self.reply_headers['Last-Modified'] = build_http_date (mtime)
         self.reply_headers['Content-Length'] = file_length
@@ -3887,7 +3924,7 @@ class http_request:
         if self.command == 'GET':
             self.push(file_producer(file))
         return
-
+        
     def setCookie(self, name, value, expire=None):
         if expire is None:
             s = name+'='+value;
@@ -5600,7 +5637,6 @@ class ftp_server (asyncore.dispatcher):
 
         self.logger = unresolving_logger (logger_object)
         
-        # wn
         if logger_object.__class__ in [logging.Logger, logging_logger]:
             self.log_info = self.logger.log_func
 
@@ -6685,8 +6721,6 @@ class logging_logger:
     def error (self, message):
         self.logger.error(message.rstrip())
 
-        
-
 lg = logging_logger()
 lgerr = logging_logger("errors")
 
@@ -6961,9 +6995,7 @@ class AthanaThread:
                     self.prof.stop()
                     self.prof.close()
                     st = hotshot.stats.load("/tmp/athana%d.prof" % self.number)
-                    #st.strip_dirs()
                     st.sort_stats('cumulative', 'time')
-                    #"/tmp/athana%d.txt" % self.number)
                     class myio:
                         def __init__(self, old):
                             self.txt = ""
@@ -6997,20 +7029,14 @@ def run(port=8081, z3950_port=None):
     ph = AthanaHandler()
     hs = http_server ('', port, logger_object = lg)
     hs.install_handler (ph)
-    
-    #log_ftp = logging.getLogger('ftp') #wn
-    
-    if len(ftphandlers) > 0:
-        #ftp = ftp_server (ftp_authorizer(), port=ftphandlers[0].getPort(), logger_object=lg)
-        log_ftp = logging_logger("ftp") #wn
+
+    if len(ftphandlers)>0:
+        log_ftp = logging_logger("ftp") 
         ftp = ftp_server (ftp_authorizer(), port=ftphandlers[0].getPort(), logger_object=log_ftp)
-        
-    #log_z3950 = logging.getLogger('z3950') #wn
-    
+
     if z3950_port is not None:
         import athana_z3950
-        #z3950_server = athana_z3950.z3950_server(port=z3950_port, logger_object=lg)
-        log_z3950 = logging_logger("z3950") #wn
+        log_z3950 = logging_logger("z3950")
         z3950_server = athana_z3950.z3950_server(port=z3950_port, logger_object=log_z3950)
 
     if multithreading_enabled: 

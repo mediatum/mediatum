@@ -48,8 +48,15 @@ The language of this mask can be specified in the query parameter <code>'lang'</
 The surrounding <code>&lt;item/&gt;</code> tag will be added by the handler. 
 The handler will always add the node type as <code>&lt;category/&gt;</code> to the item.
 
+A compressed response may be requested by adding &gzip or &deflate to the query for all formats. 
+This will reduce the payload and may be an option over slow network connections.
+The compression rates for gzip and deflate are virtually the same (as the formats will only differ
+by an 8 bytes prefix).
+
 The xml and json responses will contain information on the processing time of different steps of response generation.
-They also contain a shortlist of the result nodelist of the request containing only node id and type.
+They also contain a shortlist of the result nodelist of the request containing only node id and type if the query 
+<br>parameter 'add_shortlist' is added to the request.
+
 This shortlist is not affected by the query parameters <code>start</code> and <code>limit</code> (see below).
 It has been introduced to reduce network traffic when the web service is used for browsing, overview or similar purposes.
 
@@ -100,6 +107,42 @@ http://host/services/export/node/{id}/children?format=csv&sep=;&delimiter=dquote
 Remark 1: Firefox is much faster to render large xml responses in this format than Internet Explorer.
 <p/>
 Remark 2: the first queries after a system restart may take quite long time.
+<p/>
+Remark 3: For compatability with with the JavaScript export the json response will evaluate the following parameters:
+<pre>
+<b class="blue">mask</b>: 'none', 'default' (-> 'none' being the deafult value)
+html markup of the default shortview mask content for each node if the query 'mask=default' is added to request.
+
+<b class="blue">maskcache</b>: 'none', 'deep', 'shallow' (-> 'deep' being the default value)
+For performance reasons the masks switched on by 'mask=default' will be cached. 
+This cache may be switched off with 'maskcache=none', or to a shallower, but not that performant shallow cache
+using 'maskcache=shallow'. These caches will be flushed when a mask is edited.
+The hit statistics of the deep mask cache may be found under
+/services/export/maskcachestatus.
+
+<b class="blue">attrspec</b>: 'none', 'all', 'default_mask' (-> 'default_mask' being the default value)
+A single node may have more than a hundred attributes. The output of all or none of them may be triggered
+with 'attrspec=all' or 'attrspec=none'. With 'attrspec=default_mask' only the attributes for the fields 
+of the default shortview mask of the nodes metadata type will be sent. 
+
+<b class="blue">attrlist</b>:
+The set of attributes chosen with 'attrspec' may be enriched by the 
+(comma separated) attribute list in 'attrlist'.
+
+Remark: If fields are specified in 'mediatum_config' in the JavaScript export, 
+'attrspec=all' will be added to the query run by 'mediatum_load'. 
+
+Some examples to help to illustrate this:
+
+all attributes plus mask                          &mask=default&attrspec=all
+mask plus mask attributes                         &mask=default
+no mask, only mask attributes                     (this is the default)
+only mask, no attributs                           &mask=default&attrspec=none
+no mask, only 1 attribute (title)                 &mask=none&attrspec=none&attrlist=title
+no mask, 3 attributes                             &mask=none&attrspec=none&attrlist=year,title,author.fullname
+no mask, mask attributes + update-,creationtime   &mask=none&attrlist=updatetime,creationtime
+
 </pre>
+
 </body>
 </html>

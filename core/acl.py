@@ -574,6 +574,12 @@ def resetNodeRule(rulename):
     global conn
     conn.resetNodeRule(rulename)
     
+def getDefaultGuestAccessRule():
+    name = config.get("config.default_guest_access_name", "").strip()
+    if not name:
+        raise BaseException("no default guest name definded in configuration file")
+    return AccessRule(name, rulestr="(true)")
+    
 def flush():
     global rules, aclrule2privilege, aclrule2privilege_length, aclrule2privilege_count,userip2level
     rules.clear()

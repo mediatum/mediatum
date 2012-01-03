@@ -260,7 +260,7 @@ def show_printview(req):
                 children = sorted_children
         
         req.reply_headers['Content-Type'] = "application/pdf"
-        req.write(printview.getPrintView(lang(req), imagepath, metadata, getPaths(node, AccessData(req)), style, children))
+        req.write(printview.getPrintView(lang(req), imagepath, metadata, getPaths(node, AccessData(req)), style, children, getCollection(node)))
 
 # use popup method of  metadatatype  
 def popup_metatype(req):

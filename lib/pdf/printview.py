@@ -43,6 +43,8 @@ class PrintPreview:
         self.host = host
         self.data = []
         self.image = 0
+        self.image2 = 0
+        self.headerWidth = 0
         self.styleSheet = getSampleStyleSheet()
 
         self.styleSheet.add(ParagraphStyle(name='paths',
@@ -82,15 +84,29 @@ class PrintPreview:
         canvas.restoreState()
 
 
-    def setHeader(self):
+    def setHeader(self, collection):
         h1 = self.styleSheet['Heading1']
         h1.fontName = 'Helvetica'
-        self.header = Paragraph(t(self.language, "print_view_header"), h1)
-        self.addData(self.header)
-        self.addData(FrameBreak())
+        if not collection:
+            self.header = Paragraph(t(self.language, "print_view_header"), h1)
+        else:
+            p = Paragraph(t(self.language, collection.name), h1)
+            p.wrap(defaultPageSize[0], defaultPageSize[1])
+            self.headerWidth = p.getActualLineWidths0()[0]
+            self.header = p
+            self.addData(self.header)
+            self.addData(FrameBreak())
+            if len(collection.get("system.logo"))>1:
+                for f in collection.getFiles():
+                    fn = f.getName()
+                    if fn.endswith(collection.get("system.logo")):
+                        self.addImage(f.retrieveFile(), 1)
+                        self.addData(FrameBreak())
+                        
 
     def getStyle(self, page, config):
-        frameHeader = Frame(1*cm, 25.5*cm, 19*cm, 3*cm,leftPadding=0, rightPadding=0, id='normal')
+        frameHeader = Frame(1*cm, 25.5*cm, 11.5*cm, 3*cm,leftPadding=0, rightPadding=0, id='normal')
+        frameHeader_hide = Frame(1*cm, 25.5*cm, 19*cm, 3*cm,leftPadding=0, rightPadding=0, id='normal')
         frameFollow = Frame(1*cm, 2.5*cm, 19*cm, 26*cm,leftPadding=0, rightPadding=0, id='normal')
 
         if config==1:
@@ -108,8 +124,17 @@ class PrintPreview:
             else:
                 return [frameFollow]
         else:
+            if page == 1 and self.image2==1 and self.headerWidth > 9*cm and self.headerWidth < 14*cm: #otherwise image appears too small
+                corrWidth = self.headerWidth - 9*cm 
+            else:
+                corrWidth = 0
+
+            frameHeader = Frame(1*cm, 25.5*cm, 11.5*cm+corrWidth, 3*cm,leftPadding=0, rightPadding=0, id='normal')
             frameImage = Frame(10.5*cm, 25.5*cm-self.image_h-1*cm, 9.5*cm, self.image_h+1*cm, leftPadding=0, rightPadding=0, id='normal')
-            frameImage_hide = Frame(20.0*cm, 25.5*cm-self.image_h-1*cm, 0.01*cm, self.image_h+1*cm, leftPadding=0, rightPadding=0, id='normal')
+            frameImage_hide = Frame(20.0*cm, 25.5*cm-self.image_h, 0.01*cm, self.image_h+1*cm, leftPadding=0, rightPadding=0, id='normal')
+
+            frameHeaderImage = Frame(12.5*cm+corrWidth, 25.5*cm, 7*cm-corrWidth, 3*cm, leftPadding=0, rightPadding=0, id='normal')
+            frameHeaderImage_hide = Frame(20.0*cm, 25.5*cm, 0.01*cm, 3*cm, leftPadding=0, rightPadding=0, id='normal')
             
             frameMeta = Frame(1*cm, 25.5*cm-self.image_h-1*cm, 9.5*cm, self.image_h+1*cm, leftPadding=10, topPadding=12, rightPadding=0, id='normal')
             frameMeta_hide = Frame(1*cm, 25.5*cm-self.image_h-1*cm, 19.0*cm, self.image_h+1*cm, leftPadding=10, topPadding=12, rightPadding=0, id='normal')
@@ -117,9 +142,15 @@ class PrintPreview:
 
             if page==1:
                 if self.image==1:
-                    return [frameHeader, frameImage, frameMeta, frameMeta2]
+                    if self.image2==1:
+                        return [frameHeader, frameHeaderImage, frameImage, frameMeta, frameMeta2]
+                    else:
+                        return [frameHeader, frameHeaderImage_hide, frameImage, frameMeta, frameMeta2]
                 else:
-                    return [frameHeader, frameImage_hide, frameMeta_hide, frameMeta2]
+                    if self.image2==1:
+                        return [frameHeader, frameHeaderImage, frameImage_hide, frameMeta, frameMeta2]
+                    else:
+                        return [frameHeader, frameImage_hide, frameMeta, frameMeta2]
             else:
                 return [frameFollow]
 
@@ -155,19 +186,25 @@ class PrintPreview:
             self.addData(l)
             self.addData(v)
 
-
-    def addImage(self, path):
+    def addImage(self, path, headerFlag=0):
         if not path:
             return
         if not os.path.isfile(path):
             path = config.basedir+"/web/img/questionmark.png"
         im = Image.open(path)
         im.load()
-        self.image_w = 9.5*cm
-        self.image_h = self.image_w/im.size[0]*im.size[1]
+        if headerFlag:
+            if self.image_h > 2*cm:
+                self.image_h = 2*cm
+                self.image_w = self.image_w * 2*cm / self.image_h
+            self.image2 = 1
+        else:
+            self.image_w = 9.5*cm
+            self.image_h = self.image_w/im.size[0]*im.size[1]
+            self.image = 1
+
         self.data.append(PdfImage(path, width=self.image_w, height=self.image_h, kind="proportional"))
-        self.image = 1
-    
+
     def addPaths(self, pathlist):
         if len(pathlist)>0:
             self.addData(Paragraph(t(self.language, "print_preview_occurences")+":", self.bp))
@@ -212,13 +249,12 @@ class PrintPreview:
             self.addData(Paragraph("["+str(_c)+"/"+str(len(children)-_head)+"]: "+", ".join(item), self.bv))
             _c+=1    
             
-def getPrintView(lang, imagepath, metadata, paths, style=1, children=[]): # style=1: object, style=3: liststyle
+def getPrintView(lang, imagepath, metadata, paths, style=1, children=[], collection=None): # style=1: object, style=3: liststyle
     """ returns pdf content of given item """
     if not reportlab:
         return None
- 
     pv = PrintPreview(lang, config.get("host.name"))
-    pv.setHeader()
+    pv.setHeader(collection)
     
     if style==1 or style==2:
         # single object (with children)

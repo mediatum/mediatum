@@ -55,6 +55,9 @@ msgstr "click to delete this page from the server"
 msgid "edit_startpages_savechanges"
 msgstr "Save changes"
 
+msgid "edit_startpages_file_missing"
+msgstr "Could not open file: "
+
 msgid "edit_startpages_reset"
 msgstr "Reset"
 

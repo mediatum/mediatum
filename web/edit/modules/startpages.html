@@ -1,4 +1,4 @@
-﻿<metal:block metal:define-macro="edit_startpages">
+<metal:block metal:define-macro="edit_startpages">
     <script type="text/javascript">       
         function questionDel(){
             return confirm(unescape(document.getElementById("deleteconfirm").innerHTML));
@@ -137,8 +137,14 @@
     </div>
 </metal:block>  
 
-
 <form metal:define-macro="edit_editor" method="post" action="/edit/edit_content" name="hidden_values">
+    <div id="startpage_error_label" i18n:translate="edit_startpages_file_missing" style="display:none">
+        <tal:block i18n:name="filename" tal:content="file_to_edit"/>
+    </div>
+     
+    <script type="text/javascript" tal:condition="python:currentmissing">
+        alert($('#startpage_error_label').text());
+    </script>
     <p>
         <tal:block i18n:translate="edit_editor_header"/>
         <strong tal:content="python: descriptiveLabel">TEXT</strong>
@@ -150,6 +156,19 @@
     <textarea id="page_content" name="page_content" tal:content="python: fncFileContents(path)"> </textarea>
     <script type="text/javascript">
         CKEDITOR.replace( 'page_content' , {
+                on :
+                    {
+                    instanceReady : function( ev )
+                        {
+                        var tags = ['p', 'li']; 
+                        for (var key in tags) {
+                            this.dataProcessor.writer.setRules( tags[key],
+                            {
+                                indent : false, breakBeforeOpen : true, breakAfterOpen : false, breakBeforeClose : false, breakAfterClose : true
+                            });
+                        }
+                        }
+                    },
                 language : language,
                 filebrowserBrowseUrl : '/edit/edit_content/'+currentnodeid+'/startpages/filebrowser',
                 filebrowserUploadUrl : '/edit/edit_content/'+currentnodeid+'/startpages/filebrowser',
@@ -168,8 +187,6 @@
         <input i18n:attributes="value edit_publish_cancel" type="submit" name="cancel_page" value="cancel" style="margin-left:30px"/>
     </p>
 </form>
- 
-
 
 <p metal:define-macro="header">
     <span i18n:translate="edit_editor_header">TEXT</span> 

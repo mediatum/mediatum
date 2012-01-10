@@ -57,6 +57,9 @@ msgstr "diese Seite vom Server löschen"
 msgid "edit_startpages_savechanges"
 msgstr "Änderungen speichern"
 
+msgid "edit_startpages_file_missing"
+msgstr "Datei konnte nicht geöffnet werden: ${filename}"
+
 msgid "edit_startpages_reset"
 msgstr "Zurücksetzen"
 

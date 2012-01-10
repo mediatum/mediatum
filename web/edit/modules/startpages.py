@@ -108,7 +108,7 @@ def edit_editor(req, node, filenode):
             os.environ['HTTP_USER_AGENT'] = req.request.request_headers['HTTP_USER_AGENT']
         except:
             os.environ['HTTP_USER_AGENT'] = req.request.request_headers['user-agent']
-
+        
         v = {
              "id": req.params.get('id'),
              "tab": req.params.get('tab'),
@@ -121,7 +121,8 @@ def edit_editor(req, node, filenode):
              "delbutton": False,
              "descriptiveLabel": descriptiveLabel,
              "fncFileContents": fncFileContents,
-             "language": lang(req)
+             "language": lang(req),
+             "currentmissing": (not "add_page.x" in req.params and not os.path.isfile(path))
             }
         return desc(req.getTAL("web/edit/modules/startpages.html", v, macro="edit_editor"))
     else:
@@ -331,13 +332,11 @@ def getContent(req, ids):
     return req.getTAL("web/edit/modules/startpages.html", v, macro="edit_startpages")
 
 def fncFileContents(absFileName):
+    text = ""
     try:
         fil = open(absFileName, "r")
+        text = fil.read()
+        fil.close()
     except IOError:
-        print "File could not be opened: " , absFileName
-        return "Error - evaluation not possible - file could not be opened: " + absFileName
-
-    text = fil.read()
-    fil.close()
-    
+        pass
     return text

@@ -122,7 +122,7 @@ def edit_editor(req, node, filenode):
              "descriptiveLabel": descriptiveLabel,
              "fncFileContents": fncFileContents,
              "language": lang(req),
-             "currentmissing": (not "add_page.x" in req.params and not os.path.isfile(path))
+             "currentmissing": not("add_page" in req.params or os.path.isfile(path))
             }
         return desc(req.getTAL("web/edit/modules/startpages.html", v, macro="edit_editor"))
     else:

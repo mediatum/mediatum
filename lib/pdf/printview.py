@@ -96,13 +96,12 @@ class PrintPreview:
             self.header = p
             self.addData(self.header)
             self.addData(FrameBreak())
-            if len(collection.get("system.logo"))>1:
+
+            if len(collection.get("system.logo")) > 1:
                 for f in collection.getFiles():
                     fn = f.getName()
                     if fn.endswith(collection.get("system.logo")):
-                        self.addImage(f.retrieveFile(), 1)
-                        self.addData(FrameBreak())
-                        
+                        self.addImage(f.retrieveFile(),1)
 
     def getStyle(self, page, config):
         frameHeader = Frame(1*cm, 25.5*cm, 11.5*cm, 3*cm,leftPadding=0, rightPadding=0, id='normal')
@@ -148,7 +147,7 @@ class PrintPreview:
                         return [frameHeader, frameHeaderImage_hide, frameImage, frameMeta, frameMeta2]
                 else:
                     if self.image2==1:
-                        return [frameHeader, frameHeaderImage, frameImage_hide, frameMeta, frameMeta2]
+                        return [frameHeader, frameHeaderImage,  frameMeta, frameMeta2]
                     else:
                         return [frameHeader, frameImage_hide, frameMeta, frameMeta2]
             else:
@@ -193,17 +192,24 @@ class PrintPreview:
             path = config.basedir+"/web/img/questionmark.png"
         im = Image.open(path)
         im.load()
+        width, height = im.size
+        wt, ht = 0,0
         if headerFlag:
-            if self.image_h > 2*cm:
-                self.image_h = 2*cm
-                self.image_w = self.image_w * 2*cm / self.image_h
+            if height > 2*cm:
+                wt = width * 2*cm / height
+                ht = 2*cm
+            if width > 7*cm:
+                ht = height * 7*cm / width
+                wt = 7*cm
             self.image2 = 1
+
         else:
             self.image_w = 9.5*cm
             self.image_h = self.image_w/im.size[0]*im.size[1]
             self.image = 1
+            wt, ht = self.image_w, self.image_h
 
-        self.data.append(PdfImage(path, width=self.image_w, height=self.image_h, kind="proportional"))
+        self.data.append(PdfImage(path, width=wt, height=ht, kind="proportional"))
 
     def addPaths(self, pathlist):
         if len(pathlist)>0:

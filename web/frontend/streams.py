@@ -209,7 +209,7 @@ def send_file(req, download=0):
                 file = f
                 break
     # try file from archivemanager
-    if not file and n.get("archive_type")!="":  
+    if not file and n.get("archive_type")!="":
         am = archivemanager.getManager(n.get("archive_type"))
         req.reply_headers["Content-Disposition"] = "attachment; filename="+filename
         return req.sendFile(am.getArchivedFileStream(n.get("archive_path")), "application/x-download")
@@ -341,53 +341,63 @@ def get_all_file_paths(basedir):
         for fn in filenames:
             res.append(os.path.join(dirpath, fn))
     return res
-
-def build_transferzip(n):
-    id = n.id
-    zipfilepath = join_paths(config.get("paths.tempdir"), id+"_transfer.zip")
+    
+def build_transferzip(node):
+    nid = node.id
+    zipfilepath = join_paths(config.get("paths.tempdir"), nid+"_transfer.zip")
     if os.path.exists(zipfilepath):
-        zipfilepath = join_paths(config.get("paths.tempdir"), id+"_"+str(random.random())+"_transfer.zip")
+        zipfilepath = join_paths(config.get("paths.tempdir"), nid+"_"+str(random.random())+"_transfer.zip")
 
     zip = zipfile.ZipFile(zipfilepath, "w", zipfile.ZIP_DEFLATED)
     files_written = 0
-
-    for fn in n.getFiles():
-        if fn.getType() in ['doc', 'document', 'zip', 'attachment', 'other']:
-            fullpath = fn.retrieveFile()
-            if os.path.isfile(fullpath) and os.path.exists(fullpath):
-                dirname, filename = os.path.split(fullpath)
-                print "adding to zip: ", fullpath, "as", filename
-                zip.write(fullpath, filename)
-                files_written += 1
-            if os.path.isdir(fullpath):
-                for f in get_all_file_paths(fullpath):
-                    newpath = f.replace(fullpath, "")
-                    print "adding from ", fullpath, "to zip: ", f, "as", newpath
-                    zip.write(f, newpath)
+    
+    for n in node.getAllChildren():    
+        for fn in n.getFiles():
+            if fn.getType() in ['doc', 'document', 'zip', 'attachment', 'other']:                
+                fullpath = fn.retrieveFile()
+                if os.path.isfile(fullpath) and os.path.exists(fullpath):
+                    dirname, filename = os.path.split(fullpath)
+                    print "adding to zip: ", fullpath, "as", filename
+                    zip.write(fullpath, filename)
                     files_written += 1
+                if os.path.isdir(fullpath):
+                    for f in get_all_file_paths(fullpath):
+                        newpath = f.replace(fullpath, "")
+                        print "adding from ", fullpath, "to zip: ", f, "as", newpath
+                        zip.write(f, newpath)
+                        files_written += 1
     zip.close()
 
     return zipfilepath, files_written
 
-def build_filelist(n):
+def build_filelist(node):
     "build file list for generation of xmetadissplus xml"
     files_written = 0
     result_list = []
-    print "building filelist for xmetadissplus, node.id:", n.id
-
-    for fn in n.getFiles():
-        if fn.getType() in ['doc', 'document', 'zip', 'attachment', 'other']:
-            fullpath = fn.retrieveFile()
-            if os.path.isfile(fullpath) and os.path.exists(fullpath):
-                dirname, filename = os.path.split(fullpath)
-                print "adding file to filelist: ", filename
-                result_list.append([filename, fn.getSize()])
-                files_written += 1
-            if os.path.isdir(fullpath):
-                for f in get_all_file_paths(fullpath):
-                    dirname, filename = os.path.split(f)
-                    print "adding dir content to filelist: ", filename
-                    result_list.append([filename, utils.utils.get_filesize(f)])
+    
+    for n in node.getAllChildren():
+        for fn in n.getFiles():
+            if fn.getType() in ['doc', 'document', 'zip', 'attachment', 'other']:
+                fullpath = fn.retrieveFile()
+                if os.path.isfile(fullpath) and os.path.exists(fullpath):                
+                    dirname, filename = os.path.split(fullpath)
+                    result_list.append([filename, fn.getSize()])
                     files_written += 1
+                if os.path.isdir(fullpath):
+                    for f in get_all_file_paths(fullpath):
+                        dirname, filename = os.path.split(f)
+                        result_list.append([filename, utils.utils.get_filesize(f)])
+                        files_written += 1
 
-    return result_list
+    return result_list    
+
+def get_transfer_url(n):
+    "get transfer url for oai format xmetadissplus"
+    filecount = len(build_filelist(n))
+    if filecount<2:
+        transfer_filename = n.id + ".pdf"
+        transferurl = "http://" + config.get("host.name")+"/doc/"+n.id+"/"+transfer_filename
+    else:
+        transfer_filename = n.id+"_transfer.zip"
+        transferurl = "http://" + config.get("host.name")+"/file/"+transfer_filename
+    return transferurl

@@ -1,4 +1,4 @@
-﻿"""
+"""
  mediatum - a multimedia content repository
 
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
@@ -103,7 +103,7 @@ def getBrowsingPathList(node):
         return []
 
 def isDescendantOf(node, parent):
-    if node == parent:
+    if node.id == parent.id:
         return 1
     for p in node.getParents():
         if isDescendantOf(p, parent):

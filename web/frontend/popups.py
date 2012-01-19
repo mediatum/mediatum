@@ -120,7 +120,7 @@ def show_printview(req):
         
     
     # use objects from session
-    if nodeid=="0":
+    if str(nodeid)=="0":
         children = []
         if "contentarea" in req.session:
             try:

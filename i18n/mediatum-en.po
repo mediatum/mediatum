@@ -767,6 +767,9 @@ msgstr "Not all mandatory field of mapping definition are used. This can result 
 msgid "mask_editor_msg1"
 msgstr "There are different field types available for mask fields. Standard is the 'normal field'"
 
+msgid "mask_editor_order_label"
+msgstr "(change order by Drag&Drop)"
+
 msgid "mask_edit_up_title"
 msgstr "move up"
 
@@ -1005,7 +1008,7 @@ msgid "settings"
 msgstr "settings"
 
 msgid "style"
-msgstr "shot view style:"
+msgstr "short view style:"
 
 msgid "dont_display_logo"
 msgstr "don't display logo"

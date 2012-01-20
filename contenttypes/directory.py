@@ -212,14 +212,14 @@ class Directory(default.Default):
             if file.getType()=='image':
                 items.append(file.getName())
  
-        if not "system.logo" in node.attributes.keys() and len(items)==1:
-            return items[0]
+        if not "system.logo" in node.attributes.keys():
+            return ""
         else:
             logoname = node.get("system.logo")
             for item in items:
                 if item==logoname:
-                    return item
-        return ""
+                     return item
+            return ""
 
     def metaFields(node, lang=None):
         ret = list()

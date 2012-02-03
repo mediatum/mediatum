@@ -1,0 +1,8 @@
+<tal:block metal:define-macro="textpage_show_node">
+    <tal:block tal:replace="raw python:text"/>
+    <form tal:condition="python:len(buttons)>0" action="/mask" method="post" enctype="multipart/form-data" style="padding:4px">
+        <table>
+            <tal:block tal:replace="raw python:buttons"/>
+        </table>
+    </form>
+</tal:block>

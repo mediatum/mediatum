@@ -52,9 +52,8 @@ def getContent(req, ids):
         for obj_id in objlist:
             faultylist = []
             obj = tree.getNode(obj_id)
-            
             for mask in obj.getType().getMasks(type="edit"): # check required fields
-                if access.hasReadAccess(mask):
+                if access.hasReadAccess(mask) and mask.getName()==obj.get("edit.lastmask"):
                     for f in mask.validateNodelist([obj]):
                         faultylist.append(f)
 

@@ -38,7 +38,6 @@ class m_url(Metatype):
         return athana.getTAL("metadata/url.html", {"lock":lock, "value":val, "fielddef":fielddef, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
 
     def getAdminFieldsHTML(self, values={}):
-        print "addfields attribute html for field-editor"
         return athana.getTAL("metadata/url.html",{"valuelist":values["valuelist"], "icons":m_url.icons,"url_targets":m_url.targets}, macro="fieldeditor", language=values["language"])
         
         
@@ -87,16 +86,14 @@ class m_url(Metatype):
 
             if len(fielddef)<4:
                 fielddef[3] = ""
-                
             if fielddef[0]!="" and fielddef[1]=="": # link but no text
                 fielddef[1] = "link"
                     
-            if fielddef[0]=='' and fielddef[1]=='': # link + text empty
+            if fielddef[0]=='' : # link empty, no matter if text empty or not
                 value = ''
-            elif fielddef[0]=='' and fielddef[1]!='': # link empty, text not empty
-                value = fielddef[1]
+                fielddef[2] = ""
             else:   
-                if fielddef[3] in ["","_blank"]:
+                if fielddef[3] in ["", "_blank"]:
                     value = '<a href="'+str(fielddef[0])+'" target="_blank" title="'+t(language,'show in new window')+'">'+str(fielddef[1])+'</a>' 
                 else:
                     value = '<a href="'+str(fielddef[0])+'">'+str(fielddef[1])+'</a>' 

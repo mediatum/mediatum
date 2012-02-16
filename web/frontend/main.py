@@ -116,13 +116,18 @@ def publish(req):
     return display_noframe(req)
 
 def show_parent_node(req):
-    id = req.params.get("id")
-    node = tree.getNode(id)
     parent = None
+    try:
+        node = tree.getNode(req.params.get("id"))
+    except tree.NoSuchNodeError:
+        return display_noframe(req)
+    
     for p in node.getParents():
         if p.type != "directory" and p.type != "collection":
             parent = p
-    
+    if not parent:
+        return display_noframe(req)
+
     req.params["id"] = parent.id
     req.params["obj"] = node.id
 

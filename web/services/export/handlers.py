@@ -1002,7 +1002,8 @@ def serve_file(req, path, params, data, filepath):
     else:
         basedir = os.path.dirname(os.path.abspath( __file__ ))
     abspath = os.path.join(basedir, 'static', filepath)
-    print "web service trying to serve:", abspath
+    msg = "web service trying to serve: " + str(abspath)
+    logger.info(msg)
     if os.path.isfile(abspath):
         filesize = os.path.getsize(abspath)
         req.sendFile(abspath, mimetype, force=1)

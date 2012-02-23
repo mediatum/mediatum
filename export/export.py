@@ -22,6 +22,7 @@
 import core.tree as tree
 from schema.schema import getMetaType
 from core.acl import AccessData
+from core.translation import t
 
 def export(req):
     p = req.path[1:].split("/")

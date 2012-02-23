@@ -51,10 +51,10 @@ LOGTYPES = [
              cfg("usertracing", ["screen"]),
              cfg("athana", ["screen", "everything"]),
              cfg("errors", ["screen", "everything"]),
-             cfg("services", ["screen"]),
+             cfg("services"),
              cfg("searchindex"),
              cfg("ftp", ["screen"]),
-             cfg("oai", ["screen"]),
+             cfg("oai"),
              cfg("z3950", ["screen"], logformat='%(asctime)s %(message)s'), 
            ]
 

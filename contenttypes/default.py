@@ -58,13 +58,13 @@ def get_maskcache_report():
         
 def flush_maskcache(req=None):
     global maskcache, maskcache_accesscount, maskcache_shallow, maskcache_msg
-    logging.getLogger("screen").info("going to flush maskcache, content is: \r\n" + get_maskcache_report())
+    logging.getLogger("everything").info("going to flush maskcache, content is: \r\n" + get_maskcache_report())
     maskcache = {}
     maskcache_accesscount = {}
     maskcache_shallow = {}
     if req:
         user = users.getUserFromRequest(req)
-        logging.getLogger("screen").info("flush of masks cache triggered by user %s with request on '%s'" % (user.name, req.path))
+        logging.getLogger("everything").info("flush of masks cache triggered by user %s with request on '%s'" % (user.name, req.path))
         
         sys.stdout.flush()
     maskcache_msg = '| cache last flushed %s\r\n|\r\n' % cache_date2string(time.time(), '%04d-%02d-%02d-%02d-%02d-%02d')     

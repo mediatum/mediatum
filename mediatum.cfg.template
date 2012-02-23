@@ -81,6 +81,12 @@ mail=mysmtpserver.com
 admin=admin@mediatum.org
 workflow=admin@mediatum.org
 
+[oai]
+formats=mediatum # format for testing
+
+schema.mediatum=http://mediatum/no-schema-defined
+namespace.mediatum=http://www.mediatum.org/oai/mediatum
+
 [plugins]
 
 [i18n]

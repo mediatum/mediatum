@@ -211,5 +211,11 @@ msgstr "Yes;No"
 msgid "admin_wfstep_textpage_text_to_display"
 msgstr "Text to display"
 
+msgid "admin_wfstep_endtext"
+msgstr "Text to display"
+
+msgid "admin_wfstep_endremove"
+msgstr "Remove from Workflow"
+
 msgid "WorkflowStep_InvalidFileType"
 msgstr "Type of chosen file invalid"

@@ -213,5 +213,11 @@ msgstr "Ja;Nein"
 msgid "admin_wfstep_textpage_text_to_display"
 msgstr "anzuzeigender Text"
 
+msgid "admin_wfstep_endtext"
+msgstr "Textmeldung"
+
+msgid "admin_wfstep_endremove"
+msgstr "Aus Workflow entfernen"
+
 msgid "WorkflowStep_InvalidFileType"
 msgstr "Typ der ausgewählten Datei ungültig"

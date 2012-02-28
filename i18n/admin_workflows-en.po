@@ -166,6 +166,9 @@ msgstr "Text before upload form"
 msgid "admin_wfstep_text_after_upload_form"
 msgstr "Text after upload form"
 
+msgid "admin_wfstep_uploadtype"
+msgstr "Extensions allowed for upload"
+
 #msgid "admin_wfstep_node_types_to_create"
 #msgstr "node types to create (;-separated schema list)"
 
@@ -202,3 +205,5 @@ msgstr "Yes;No"
 msgid "admin_wfstep_textpage_text_to_display"
 msgstr "Text to display"
 
+msgid "WorkflowStep_InvalidFileType"
+msgstr "Type of chosen file invalid"

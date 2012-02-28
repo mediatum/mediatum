@@ -168,6 +168,9 @@ msgstr "Text vor dem Upload-Formular"
 msgid "admin_wfstep_text_after_upload_form"
 msgstr "Text nach dem Upload-Formular"
 
+msgid "admin_wfstep_uploadtype"
+msgstr "Dateiendungen für Upload"
+
 #msgid "admin_wfstep_node_types_to_create"
 #msgstr "erstellbare Node-Typen (;-separiert)"
 
@@ -203,3 +206,6 @@ msgstr "Ja;Nein"
 
 msgid "admin_wfstep_textpage_text_to_display"
 msgstr "anzuzeigender Text"
+
+msgid "WorkflowStep_InvalidFileType"
+msgstr "Typ der ausgewählten Datei ungültig"

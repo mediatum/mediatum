@@ -3,6 +3,7 @@
 
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
  Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
+ Copyright (C) 2012 Peter Heckl <heckl@ub.tum.de>
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -23,6 +24,7 @@ import utils.fileutils as fileutils
 from utils.utils import OperationException
 from showdata import mkfilelist, mkfilelistshort
 from core.translation import t,lang
+import os
 
 class WorkflowStep_Upload(WorkflowStep):
 
@@ -46,15 +48,20 @@ class WorkflowStep_Upload(WorkflowStep):
         if "file" in req.params:
             file = req.params["file"]
             del req.params["file"]
-            if hasattr(file,"filename") and file.filename:
-                file = fileutils.importFile(file.filename,file.tempname)
-                node.addFile(file)
-                if hasattr(node,"event_files_changed"):
-                    try:
-                        node.event_files_changed()
-                    except OperationException, ex:
-                        error = ex.value
+            fileExtension = os.path.splitext(file.filename)[1][1:].strip().lower()
 
+            if fileExtension in self.get("limit").lower().split(";") or self.get("limit").strip() in ['*', '']:
+                if hasattr(file,"filename") and file.filename:
+                    file = fileutils.importFile(file.filename,file.tempname)
+                    node.addFile(file)
+                    if hasattr(node,"event_files_changed"):
+                        try:
+                            node.event_files_changed()
+                        except OperationException, ex:
+                            error = ex.value
+            else:
+                error = t(req, "WorkflowStep_InvalidFileType") 
+            
         
         if "gotrue" in req.params:
             if hasattr(node,"event_files_changed"):
@@ -75,7 +82,7 @@ class WorkflowStep_Upload(WorkflowStep):
         filelist = mkfilelist(node, 1, request=req)
         filelistshort = mkfilelistshort(node, 1, request=req)
         
-        return req.getTAL("workflow/upload.html", {"obj": node.id, "id": self.id,"prefix": self.get("prefix"), "suffix": self.get("suffix"), "filelist": filelist, "filelistshort":filelistshort, "node": node, "buttons": self.tableRowButtons(node),"singlefile":self.get('singleobj'), "error":error}, macro="workflow_upload")
+        return req.getTAL("workflow/upload.html", {"obj": node.id, "id": self.id,"prefix": self.get("prefix"), "suffix": self.get("suffix"), "limit": self.get("limit"), "filelist": filelist, "filelistshort":filelistshort, "node": node, "buttons": self.tableRowButtons(node),"singlefile":self.get('singleobj'), "error":error}, macro="workflow_upload")
 
     def metaFields(self, lang=None):
         ret = list()
@@ -93,5 +100,11 @@ class WorkflowStep_Upload(WorkflowStep):
         field.set("label", t(lang, "admin_wfstep_single_upload"))
         field.set("type", "check")
         ret.append(field)
+
+        field = tree.Node("limit", "metafield")
+        field.set("label", t(lang, "admin_wfstep_uploadtype"))
+        field.set("type", "text")
+        ret.append(field)
+
         return ret
     

@@ -166,6 +166,12 @@ msgstr "Text before upload form"
 msgid "admin_wfstep_text_after_upload_form"
 msgstr "Text after upload form"
 
+msgid "admin_wfstep_single_upload"
+msgstr "Upload only single file"
+
+msgid "workflow_filelist_delete_label"
+msgstr "Delete File"
+
 msgid "admin_wfstep_uploadtype"
 msgstr "Extensions allowed for upload"
 

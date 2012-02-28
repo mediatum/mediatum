@@ -3,6 +3,7 @@
 
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
  Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
+ Copyright (C) 2012 Peter Heckl <heckl@ub.tum.de>
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -105,7 +106,8 @@ class m_ilist(Metatype):
                 ("popup_ok","OK"),
                 ("popup_cancel","Abbrechen"),
                 ("fieldtype_ilist", "Werteliste mit Index"),
-                ("fieldtype_ilist_desc", "Eingabefeld mit Index als Popup")
+                ("fieldtype_ilist_desc", "Eingabefeld mit Index als Popup"),
+                ("ilist_titlepopupbutton", "Editiermaske \xc3\xb6ffnen")
             ],
           "en":
             [
@@ -120,7 +122,8 @@ class m_ilist(Metatype):
                 ("popup_clearselection_title","Unselect all values"),
                 ("popup_indexnumber","values selected"),
                 ("fieldtype_ilist", "indexlist"),
-                ("fieldtype_ilist_desc", "input field with index")              
+                ("fieldtype_ilist_desc", "input field with index"),        
+                ("ilist_titlepopupbutton", "open editor mask")
             ]
         }
         

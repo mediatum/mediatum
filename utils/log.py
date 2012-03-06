@@ -56,6 +56,7 @@ LOGTYPES = [
              cfg("ftp", ["screen"]),
              cfg("oai"),
              cfg("z3950", ["screen"], logformat='%(asctime)s %(message)s'), 
+             cfg("workflows"), 
            ]
 
 # path's will be required in web/admin/modules/logfile.py

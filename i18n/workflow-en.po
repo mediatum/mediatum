@@ -154,6 +154,9 @@ msgstr "publish"
 msgid "workflowstep-wait"
 msgstr "wait"
 
+msgid "workflowstep-checkdoublet"
+msgstr "check for doublet metadata (record linkage)"
+
 #msgid "workflowstep-end"
 #msgstr "end node"
 
@@ -201,4 +204,3 @@ msgstr "metadata editor (workflow)"
 
 msgid "WorkflowStep_End"
 msgstr "end node (workflow)"
-

@@ -370,7 +370,6 @@ class WorkflowImage:
         for i in range(self.maxx+1):
             for j in range(self.maxy+1):
                 line += str(self.m[i][j]) + "  "
-            line = ""
 
     """ draw each step and return image (png) """
     def getImage(self):
@@ -738,6 +737,7 @@ class WorkflowStep(tree.Node):
                     return self.show_workflow_notexist(node, req)
             else:
                 return self.show_workflow_step(req)
+
         finally:
             workflow_lock.release()
 
@@ -774,12 +774,10 @@ class WorkflowStep(tree.Node):
         access = acl.AccessData(req)
         if not access.hasWriteAccess(self):
             return '<i>'+t(lang(req),"permission_denied")+'</i>'
-        
         c = []
         for item in self.getChildren():
             c.append({"id":str(item.id), "creationtime":date.format_date(date.parse_date(item.get('creationtime')),'dd.mm.yyyy HH:MM:SS'), "name": item.getName()})
         c.sort(lambda x, y: cmp(x['name'], y['name']))
-
         return req.getTAL("workflow/workflow.html", {"children":c, "workflow":self.getParents()[0], "step": self, "nodelink": "/mask?id="+self.id+"&obj="}, macro="workflow_show")
     
     def show_node_image(node):
@@ -932,9 +930,13 @@ def register():
     from publish import WorkflowStep_Publish
     tree.registerNodeClass("workflowstep-publish", WorkflowStep_Publish)
     registerStep("workflowstep-publish")
-    
     from classify import WorkflowStep_Classify
     tree.registerNodeClass("workflowstep-classify", WorkflowStep_Classify)
     registerStep("workflowstep-classify")
     addLabels(WorkflowStep_Classify(type="workflowstep-classify").getLabels())
+
+    from checkdoublet import WorkflowStep_CheckDoublet
+    tree.registerNodeClass("workflowstep-checkdoublet", WorkflowStep_CheckDoublet)
+    registerStep("workflowstep-checkdoublet")
+
     

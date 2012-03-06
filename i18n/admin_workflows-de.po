@@ -168,15 +168,6 @@ msgstr "Text vor dem Upload-Formular"
 msgid "admin_wfstep_text_after_upload_form"
 msgstr "Text nach dem Upload-Formular"
 
-msgid "admin_wfstep_single_upload"
-msgstr "Nur eine Datei erlaubt"
-
-msgid "workflow_filelist_delete_label"
-msgstr "Datei löschen"
-
-msgid "admin_wfstep_uploadtype"
-msgstr "Dateiendungen für Upload"
-
 #msgid "admin_wfstep_node_types_to_create"
 #msgstr "erstellbare Node-Typen (;-separiert)"
 
@@ -213,11 +204,23 @@ msgstr "Ja;Nein"
 msgid "admin_wfstep_textpage_text_to_display"
 msgstr "anzuzeigender Text"
 
-msgid "admin_wfstep_endtext"
-msgstr "Textmeldung"
+msgid "admin_wfstep_checkdoublet_names_of_attributes_to_check"
+msgstr "Namen geprüfter Attribute (;-separiert)"
 
-msgid "admin_wfstep_endremove"
-msgstr "Aus Workflow entfernen"
+msgid "admin_wfstep_checkdoublet_exact_field"
+msgstr "Exakt passendes Attribut"
 
-msgid "WorkflowStep_InvalidFileType"
-msgstr "Typ der ausgewählten Datei ungültig"
+msgid "admin_wfstep_checkdoublet_additional_attribute_to_show"
+msgstr "Liste zusätzlich zu zeigender Attribute (;-separiert)"
+
+msgid "admin_wfstep_checkdoublet_masklist_for_labels"
+msgstr "Maskenliste für Labelbestimmung (;-separiert)"
+
+msgid "admin_wfstep_checkdoublet_check_to_remove"
+msgstr "Doubletten bei 'True'-Operation löschen"
+
+msgid "admin_wfstep_checkdoublet_keep"
+msgstr "behalten"
+
+msgid "admin_wfstep_checkdoublet_creationtime"
+msgstr "erstellt am"

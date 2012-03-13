@@ -750,11 +750,10 @@ class WorkflowStep(tree.Node):
 
     def show_workflow_notexist(self, node, req, template="workflow/workflow.html", macro="workflow_node"):
         step = getNodeWorkflowStep(node)
-
         link = ""
         if step:
             link = """/mask?id=%s&obj=%s""" % (step.id,node.id)
-            return """<script language="javascript">document.location.href = "%s";</script> <a href="%s">%s</a>""" % (link,link,step.name)
+            return """<script language="javascript">document.location.href = "%s";</script> <a href="%s">%s</a>""" % (link, link, step.name)
         else:
             return '<i>'+t(lang(req),"permission_denied")+'</i>'
 
@@ -813,29 +812,39 @@ class WorkflowStep(tree.Node):
             op = "false"
         return runWorkflowStep(node, op)
    
-    def forwardAndShow(self, node, op, req, link=None):
+    def forwardAndShow(self, node, op, req, link=None, data=None):
         newnode = self.forward(node, op)
 
         if newnode is None:
             return req.getTAL("workflow/workflow.html", {"node":node}, macro="workflow_forward")
 
         if link is None:
-            newloc = req.makeLink("/mask", {"id":newnode.id, "obj":node.id})
+            context = {"id":newnode.id, "obj":node.id}
+            if data and type(data)==type({}):
+               for k in data:
+                   if not k in context:
+                       context[k] = data[k]
+                   else:
+                       msg_t = (getNodeWorkflow(node).name, getNodeWorkflowStep(node).name, node.id, k, data[k])
+                       log.warning("workflow '%s', step '%s', node %s: ignored data key '%s' (value='%s')" % msg_t)
+                
+            newloc = req.makeLink("/mask", context)
         else:
             newloc = link
         redirect = 1
-        if redirect == 0:
+        if redirect==0:
             return req.getTAL("workflow/workflow.html", {"newnodename":newnode.name, "email":config.get("email.workflow")}, macro="workflow_forward2")
         else:
+            if config.get("config.ssh", "")=="yes":
+                if not newloc.lower().startswith("https:"):
+                    newloc = "https://"+config.get("host.name") + newloc.replace("http://"+config.get("host.name"), "")
             return """<script language="javascript">document.location.href = "%s";</script>""" % newloc
 
     def getTrueId(self):
-        id = self.get("truestep")
-        return id
+        return self.get("truestep")
 
     def getFalseId(self):
-        id = self.get("falsestep")
-        return id
+        return self.get("falsestep")
 
     def getTrueLabel(self):
         return self.get("truelabel")
@@ -857,8 +866,7 @@ class WorkflowStep(tree.Node):
 
     def tableRowButtons(self, node):
         result = '<table id="workflowbuttons"><tr><td align="left">'
-        result += '<input type="hidden" name="id" value="%s"/>' % self.id
-        result += '<input type="hidden" name="obj" value="%s"/>' % node.id
+        result += '<input type="hidden" name="id" value="%s"/>'<input type="hidden" name="obj" value="%s"/>' % (self.id, node.id)
         if self.getFalseId():
             result += '<input type="submit" name="gofalse" value="%s"/>' % self.getFalseLabel()
         else:
@@ -868,8 +876,7 @@ class WorkflowStep(tree.Node):
             result += '<input type="submit" name="gotrue" value="%s"/>' % self.getTrueLabel()
         else:
             result += '&nbsp;'
-        result += '</td></tr></table>'
-        return result
+        return result+'</td></tr></table>'
         
     def getTypeName(self):
         return self.getName()
@@ -939,4 +946,7 @@ def register():
     tree.registerNodeClass("workflowstep-checkdoublet", WorkflowStep_CheckDoublet)
     registerStep("workflowstep-checkdoublet")
 
-    
+    from ldapauth import WorkflowStep_LdapAuth
+    tree.registerNodeClass("workflowstep-ldapauth", WorkflowStep_LdapAuth)
+    registerStep("workflowstep-ldapauth")    
+

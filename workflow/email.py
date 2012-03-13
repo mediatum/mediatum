@@ -3,7 +3,8 @@
 
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
  Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
-
+ Copyright (C) 2012 Peter Heckl <heckl@ub.tum.de>
+ 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
@@ -34,8 +35,7 @@ class MailError(Exception):
         return repr(self.value)
 
 def getTALtext(text, context):
-    text = '<body xmlns:tal="http://xml.zope.org/namespaces/tal">'+text+'</body>'
-    text = athana.getTALstr(text, context)
+    text = athana.getTALstr('<body xmlns:tal="http://xml.zope.org/namespaces/tal">'+text+'</body>', context)
     text = text.replace("<body>","").replace("</body>","").replace("<body/>","")
     return text.replace("\n","").strip()
 
@@ -43,19 +43,35 @@ class WorkflowStep_SendEmail(WorkflowStep):
     def sendOut(self, node):
         xfrom = node.get("mailtmp.from")
         to = node.get("mailtmp.to")
-        subject = node.get("mailtmp.subject")
-        text = node.get("mailtmp.text")
+        sendcondition = self.get("sendcondition")
+        sendOk = 1
+        
         try:
-            log.info("sending mail to %s (%s)" % (to,self.get("email")))
-            if not to:
-                raise MailError("No receiver address defined")
-            if not xfrom:
-                raise MailError("No from address defined")
-            mail.sendmail(xfrom, to, subject, text)
+            if sendcondition.startswith("attr:") and "=" in sendcondition:
+                arrname, value = sendcondition[5:].split("=")
+                if node.get(arrname)!=value:
+                    sendOk = 0
+            elif (sendcondition.startswith("schema=") and node.getSchema() not in sendcondition[7:].split(";")) or (sendcondition.startswith("type=") and not node.get("type") in sendcondition[5:].split(";")) or (sendcondition=="hasfile" and len(node.getFiles())==0):
+                sendOk = 0
         except:
-            node.set("mailtmp.error",formatException())
-            log.info("Error while sending mail- node stays in workflowstep "+self.id+" "+self.name)
+            log.info("syntax error in email condition: %s" %(sendcondition))
+            
+        if sendOk:
+            try:
+                log.info("sending mail to %s (%s)" %(to, self.get("email")))
+                if not to:
+                    raise MailError("No receiver address defined")
+                if not xfrom:
+                    raise MailError("No from address defined")
+                mail.sendmail(xfrom, to, node.get("mailtmp.subject"), node.get("mailtmp.text"))
+            except:
+                node.set("mailtmp.error", formatException())
+                log.info("Error while sending mail- node stays in workflowstep %s %s" %(self.id, self.name))
+                return
+        else:
+            log.info("sending mail prevented by condition %s " %(sendcondition))
             return
+            
         node.removeAttribute("mailtmp.send")
         node.removeAttribute("mailtmp.from")
         node.removeAttribute("mailtmp.to")
@@ -66,8 +82,8 @@ class WorkflowStep_SendEmail(WorkflowStep):
         return 1
 
     def runAction(self, node, op=""):
-        link = "http://"+config.get("host.name")+"/pnode?id="+node.id+"&key="+node.get("key")
-        link2 = "http://"+config.get("host.name")+"/node?id="+node.id
+        link = "http://%s/pnode?id=%s&key=%s" %(config.get("host.name"), node.id, node.get("key"))
+        link2 = "http://%s/node?id=%s" %(config.get("host.name"), node.id)
         attrs = {"node":node, "link":link, "publiclink":link2}
         try:
             if "@" in self.get('from'):
@@ -83,7 +99,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
             node.set("mailtmp.subject", getTALtext(self.get("subject"), attrs))
             node.set("mailtmp.text", getTALtext(self.get("text"), attrs))
         except:
-            node.set("mailtmp.talerror",formatException())
+            node.set("mailtmp.talerror", formatException())
             return
         if self.get("allowedit").lower().startswith("n"):
             if(self.sendOut(node)):
@@ -110,22 +126,19 @@ class WorkflowStep_SendEmail(WorkflowStep):
         
         elif node.get("mailtmp.talerror"):
             node.removeAttribute("mailtmp.talerror")
-            self.runAction(node,"true")
+            self.runAction(node, "true")
             if node.get("mailtmp.talerror"):
                 return """<pre>%s</pre>""" % node.get("mailtmp.talerror")
             else:
                 return self.show_node_big(req)
         elif node.get("mailtmp.error"):
-            result = t(lang(req), "workflow_email_msg_1")+'<br/>'
-            result += '<pre>%s</pre><br>' % node.get("mailtmp.error")
-            result += '&gt;<a href="' +req.makeSelfLink({"sendout":"true"})+ '">'+t(lang(req), "workflow_email_resend")+'</a>&lt;'
-            return result
+            return '%s<br/><pre>%s</pre><br>&gt;<a href="%s">%s</a>&lt;' %(t(lang(req), "workflow_email_msg_1"), node.get("mailtmp.error"), req.makeSelfLink({"sendout":"true"}), t(lang(req), "workflow_email_resend"))
         else:
             xfrom = node.get("mailtmp.from")
             to = node.get("mailtmp.to")
             text = node.get("mailtmp.text")
             subject = node.get("mailtmp.subject")
-            return req.getTAL("workflow/email.html", {"page":"node?id="+self.id+"&obj="+node.id, "from":xfrom, "to":to, "text":text, "subject":subject, "node":node, "wfnode":self}, macro="sendmail")
+            return req.getTAL("workflow/email.html", {"page":"node?id="+self.id+"&obj="+node.id, "from":xfrom, "to":to, "text":text, "subject":subject, "node":node, "sendcondition":self.get("sendcondition"), "wfnode":self}, macro="sendmail")
 
     def metaFields(self, lang=None):
         ret = list()
@@ -155,5 +168,9 @@ class WorkflowStep_SendEmail(WorkflowStep):
         field.set("valuelist", t(lang, "admin_wfstep_email_text_editable_options"))
         ret.append(field)
 
+        field = tree.Node("sendcondition", "metafield")
+        field.set("label", t(lang, "admin_wfstep_email_sendcondition"))
+        field.set("type", "text")
+        ret.append(field)
         return ret
 

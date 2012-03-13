@@ -866,7 +866,7 @@ class WorkflowStep(tree.Node):
 
     def tableRowButtons(self, node):
         result = '<table id="workflowbuttons"><tr><td align="left">'
-        result += '<input type="hidden" name="id" value="%s"/>'<input type="hidden" name="obj" value="%s"/>' % (self.id, node.id)
+        result += '<input type="hidden" name="id" value="%s"/><input type="hidden" name="obj" value="%s"/>' % (self.id, node.id)
         if self.getFalseId():
             result += '<input type="submit" name="gofalse" value="%s"/>' % self.getFalseLabel()
         else:

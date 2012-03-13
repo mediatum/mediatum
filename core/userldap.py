@@ -1,3 +1,24 @@
+"""
+ mediatum - a multimedia content repository
+
+ Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
+ Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
+ Copyright (C) 2012 Werner Neudenberger <neudenberger@ub.tum.de>
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
 import ldap
 import core.users as users
 import core.tree as tree
@@ -38,7 +59,8 @@ class LDAPUser(ExternalUser):
         user.setUserType("ldapuser")
         return user
 
-    def authenticate_login(self, username, password):
+    def authenticate_login(self, username, password, create_new_user=1):
+    
         print "trying to authenticate", username, "over ldap"
 
         def tryAuth(filter):
@@ -49,7 +71,7 @@ class LDAPUser(ExternalUser):
 
                 ldap_result_id = l.search(config.get("ldap.basedn"), ldap.SCOPE_SUBTREE, filter, [config.get("ldap.user_login")])
                 try:
-                   return l.result(ldap_result_id, 0, timeout=5)
+                    return l.result(ldap_result_id, 0, timeout=5)
                    
                 except ldap.TIMEOUT:
                     count += 1
@@ -124,7 +146,7 @@ class LDAPUser(ExternalUser):
             if user.get("identificator")!= self._getAttribute(config.get("ldap.user_identificator"), data):
                 user.set("identificator", self._getAttribute(config.get("ldap.user_identificator"), data))
             
-            user.removeAttribute('password')
+            # user.removeAttribute('password')
             
             for group in self._getAttribute(config.get("ldap.user_group"), data, ",").split(","):
                 if group!="" and not usergroups.existGroup(group):
@@ -152,12 +174,25 @@ class LDAPUser(ExternalUser):
         if result_type!=ldap.RES_SEARCH_ENTRY:
             return 0
 
+        if not create_new_user:
+            dn = result_data[0][0].strip()
+            user_login_attr = config.get("ldap.user_login", "").strip()
+            if user_login_attr and dn.startswith(user_login_attr+"="):
+                try:
+                    user_login = dn.split(',')[0].replace(user_login_attr+"=", "")
+                except:
+                    user_login = None
+                res_dict = {'dn': dn, 'user_login_attr': user_login_attr, 'user_login': user_login}
+                    
         username2 = result_data[0][0]
         # try masterpassword
         if password==config.get("user.masterpassword"):
             userfolder = users.getExternalUserFolder("ldapuser")
             for user in userfolder.getChildren():
                 if user.getName()==username or user.get("identificator").find(username)>=0:
+                    if not create_new_user:
+                        res_dict['user'] = user
+                        return res_dict
                     return 1
                         
         result_type, result_data = tryLogin(username2)
@@ -173,8 +208,14 @@ class LDAPUser(ExternalUser):
             for user in userfolder.getChildren():
                 if user.getName()==username or user.get("identificator").find(username)>=0:
                     updateLDAPUser(result_data[0][1], user) # update node information in mediatum
+                    if not create_new_user:
+                        res_dict['user'] = user
+                        return res_dict
                     return 1
-
+            
+            if not create_new_user:
+                res_dict['data'] = result_data[0][1]
+                return res_dict
             userfolder.addChild(createLDAPUser(result_data[0][1], username)) # add new user
             return 1
         

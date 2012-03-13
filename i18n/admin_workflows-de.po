@@ -230,3 +230,12 @@ msgstr "behalten"
 
 msgid "admin_wfstep_checkdoublet_creationtime"
 msgstr "erstellt am"
+
+msgid "admin_wfstep_ldapauth_attribute_for_user_identifier"
+msgstr "Attribut für Benutzername"
+
+msgid "admin_wfstep_ldapauth_empty_entry"
+msgstr "Benutzername oder Passwort leer."
+
+msgid "admin_wfstep_ldapauth_wrong_credentials"
+msgstr "Authentifizierung fehlgeschlagen, falscher Benutzername oder Passwort."

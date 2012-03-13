@@ -231,3 +231,12 @@ msgstr "keep"
 
 msgid "admin_wfstep_checkdoublet_creationtime"
 msgstr "creation time"
+
+msgid "admin_wfstep_ldapauth_attribute_for_user_identifier"
+msgstr "attribute for username"
+
+msgid "admin_wfstep_ldapauth_empty_entry"
+msgstr "username or password empty"
+
+msgid "admin_wfstep_ldapauth_wrong_credentials"
+msgstr "wrong credentials: wrong password or username"

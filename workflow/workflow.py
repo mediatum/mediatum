@@ -948,5 +948,11 @@ def register():
 
     from ldapauth import WorkflowStep_LdapAuth
     tree.registerNodeClass("workflowstep-ldapauth", WorkflowStep_LdapAuth)
-    registerStep("workflowstep-ldapauth")    
+    registerStep("workflowstep-ldapauth")   
+    addLabels(WorkflowStep_LdapAuth(type="workflowstep-ldapauth").getLabels())
+    
+    from condition import WorkflowStep_Condition
+    tree.registerNodeClass("workflowstep-condition", WorkflowStep_Condition)
+    registerStep("workflowstep-condition")
+    addLabels(WorkflowStep_Condition(type="workflowstep-condition").getLabels())
 

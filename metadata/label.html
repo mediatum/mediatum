@@ -1,0 +1,6 @@
+
+<tal:block metal:define-macro="editorfield">
+    <tal:block tal:replace="structure value"/> <tal:block tal:replace="structure python:field.get('value')"/>
+</tal:block>
+
+<input metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name; value python:context.value" type="text" class="searchfield"/>

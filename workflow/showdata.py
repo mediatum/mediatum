@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.tree as tree
+import logging
 from workflow import WorkflowStep
 from core.translation import t,lang
 from schema.schema import getMetaType,VIEW_HIDE_EMPTY
@@ -54,8 +55,12 @@ class WorkflowStep_ShowData(WorkflowStep):
             t = getMetaType(node.type)
             if t:
                 mask = t.getMask(maskname)
-                fieldmap += [mask.getViewHTML([node],VIEW_HIDE_EMPTY,language=lang(req))]
-
+                try:
+                    fieldmap += [mask.getViewHTML([node],VIEW_HIDE_EMPTY,language=lang(req))]
+                except:
+                    logging.getLogger("error").error("mask %s defined for workflow step not found." % mask)
+                    return ""
+                    
         filelist = ""
         filelistshort = ""
         

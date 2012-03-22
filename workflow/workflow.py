@@ -951,6 +951,11 @@ def register():
     registerStep("workflowstep-ldapauth")   
     addLabels(WorkflowStep_LdapAuth(type="workflowstep-ldapauth").getLabels())
     
+    from defer import WorkflowStep_Defer
+    tree.registerNodeClass("workflowstep-defer", WorkflowStep_Defer)
+    registerStep("workflowstep-defer")
+    addLabels(WorkflowStep_Defer(type="workflowstep-defer").getLabels())
+    
     from condition import WorkflowStep_Condition
     tree.registerNodeClass("workflowstep-condition", WorkflowStep_Condition)
     registerStep("workflowstep-condition")

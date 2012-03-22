@@ -23,17 +23,35 @@
 import logging
 import core.tree as tree
 import core.users as users
+import core.config as config
 from workflow import WorkflowStep,getNodeWorkflow,getNodeWorkflowStep
 from core.translation import t,lang
-from core.userldap import LDAPUser
 from utils.date import format_date
 
+LDAP_AVAILABLE = False
+LDAP_MODULE_PRESENT = True
 DEFAULT_ATTRIBUTE_FOR_USERNAME = "system.ldapauth_username"
+
+try:
+    import ldap
+except:
+    LDAP_MODULE_PRESENT = False
+
+if LDAP_MODULE_PRESENT and config.get("ldap.activate", "").lower()=="true":
+    from core.userldap import LDAPUser
+else:
+    LDAP_AVAILABLE = False
+
 
 class WorkflowStep_LdapAuth(WorkflowStep):
 
     def show_workflow_node(self, node, req, data=None):
         if "gotrue" in req.params:
+        
+            if not LDAP_AVAILABLE:
+                del req.params['gotrue']
+                return self.show_workflow_node(node, req)
+                
             current_workflow = getNodeWorkflow(node)
             username = req.params.get("username", "")
             password = req.params.get("password", "")
@@ -54,10 +72,10 @@ class WorkflowStep_LdapAuth(WorkflowStep):
                 # save user_identifier in node attribute
                 attr_name = self.get("attribute_for_user_identifier").strip()
                 if not attr_name:
-                    attr_name = DEFAULT_ATTRIBUTE_FOR_USERNAME 
+                    attr_name = DEFAULT_ATTRIBUTE_FOR_USERNAME
                     
                 node.set(attr_name, user_identifier)
-                logging.getLogger("workflows").info("workflow '%s', node %s: success authenticating username '%s': identified as '%s'" % (current_workflow.name, node.id, username, user_identifier)) 
+                logging.getLogger("workflows").info("workflow '%s', node %s: success authenticating username '%s': identified as '%s'" % (current_workflow.name, node.id, username, user_identifier))
                 return self.forwardAndShow(node, True, req)
                 
             else:
@@ -78,14 +96,25 @@ class WorkflowStep_LdapAuth(WorkflowStep):
             return self.forwardAndShow(node, False, req)
 
         context = {"key": req.params.get("key", req.session.get("key","")),
-                   "error": req.params.get('ldapauth_error', ''),
                    "user": users.getUserFromRequest(req),
                    "prefix": self.get("prefix"),
                    "buttons": self.tableRowButtons(node)}
-                   
+
+        if LDAP_AVAILABLE:
+            context['error'] = req.params.get('ldapauth_error', "")
+        else:
+            context['error'] = t(lang(req),"xadmin_wfstep_ldapauth_no_ldap")
+            
         return req.getTAL("workflow/ldapauth.html", context, macro="workflow_ldapauth")
             
     def metaFields(self, lang=None):
+        if not LDAP_AVAILABLE:
+            field = tree.Node("infotext", "metafield")
+            field.set("label", t(lang, "xadmin_wfstep_ldapauth_label"))
+            field.set("type", "label")
+            field.set("value", '<span style="color:#ff0000">'+t(lang, "xadmin_wfstep_ldapauth_text")+'</span>')
+            return [field]
+                
         ret = list()
         field = tree.Node("prefix", "metafield")
         field.set("label", t(lang, "admin_wfstep_text_before_data"))
@@ -97,3 +126,18 @@ class WorkflowStep_LdapAuth(WorkflowStep):
         field.set("type", "text")
         ret.append(field)
         return ret
+        
+    def getLabels(self):
+        return { "de":
+            [
+                ("xadmin_wfstep_ldapauth_label", 'WARNUNG'),
+                ("xadmin_wfstep_ldapauth_text", 'Dieser Workflow-Step ist nicht funktional, ldap-Modul oder Konfiguration nicht vorhanden'),
+                ("xadmin_wfstep_ldapauth_no_ldap", 'Dieser Schritt ist nicht funktional, da das ldap-Modul oder die Konfiguration fehlen.'),
+            ],
+           "en":
+            [
+                ("xadmin_wfstep_ldapauth_label", 'WARNING'),
+                ("xadmin_wfstep_ldapauth_text", 'this workflow step is not functional, ldap module or configuration missing'),
+                ("xadmin_wfstep_ldapauth_no_ldap", 'this workflow step is not functional, ldap module or configuration missing.'),
+            ]
+            }

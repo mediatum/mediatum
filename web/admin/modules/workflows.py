@@ -140,7 +140,10 @@ def validate(req, op):
                     # update workflowstep
                     wnode = updateWorkflowStep(getWorkflow(req.params.get("parent")), oldname=req.params.get("orig_name",""), newname=req.params.get("nname",""), type=req.params.get("ntype",""), trueid=req.params.get("ntrueid",""), falseid=req.params.get("nfalseid",""), truelabel=req.params.get("ntruelabel",""), falselabel=req.params.get("nfalselabel",""), comment=req.params.get("ncomment",""), adminstep=req.params.get("adminstep",""))
 
-                wfs = getWorkflow(req.params.get("parent")).getStep(req.params.get("orig_name",""))
+                try:
+                    wfs = getWorkflow(req.params.get("parent")).getStep(req.params.get("orig_name",""))
+                except:
+                    wfs = getWorkflow(req.params.get("parent")).getStep(req.params.get("nname",""))                
                 if wfs:
                     wfs.setAccess("read", "")
                     for key in req.params.keys():
@@ -152,8 +155,7 @@ def validate(req, op):
                         if key.startswith("left_write"):
                             wfs.setAccess(key[10:], req.params.get(key).replace(";",","))
                             break 
-                    
-                    
+
                 if "metaDataEditor" in req.params.keys():
                     parseEditorData(req, wnode)
 
@@ -301,19 +303,22 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
     workflow = getWorkflow(wid)
     nodelist = workflow.getSteps()
     v = getAdminStdVars(req)
-       
+    
     if err==0 and wnid=="":
         # new workflowstep
         workflowstep = createWorkflowStep(name="", trueid="", falseid="", truelabel="", falselabel="", comment="")
         workflowstep.id = ""
         v["orig_name"] = req.params.get("orig_name","")
 
-    elif err==-1:
+    elif err==-1: 
         # update steptype
-        err=0
-        workflowstep = createWorkflowStep(name=req.params.get("nname",""), type=req.params.get("ntype","workflowstep"), trueid=req.params.get("ntrueid",""), falseid=req.params.get("nfalseid",""), truelabel=req.params.get("ntruelabel",""), falselabel=req.params.get("nfalselabel",""),  comment=req.params.get("ncomment",""))
-        if req.params.get("wnid","")=="":
-            workflowstep.id = ""
+        if req.params.get("stepid", ""): 
+            workflowstep = updateWorkflowStep(workflow, oldname=req.params.get("nname",""), newname=req.params.get("nname",""), type=req.params.get("ntype","workflowstep"), trueid=req.params.get("ntrueid",""), falseid=req.params.get("nfalseid",""), truelabel=req.params.get("ntruelabel",""), falselabel=req.params.get("nfalselabel",""),  comment=req.params.get("ncomment",""))
+        else:
+            err = 0
+            workflowstep = createWorkflowStep(name=req.params.get("nname",""), type=req.params.get("ntype","workflowstep"), trueid=req.params.get("ntrueid",""), falseid=req.params.get("nfalseid",""), truelabel=req.params.get("ntruelabel",""), falselabel=req.params.get("nfalselabel",""),  comment=req.params.get("ncomment",""))
+            if req.params.get("wnid","")=="":
+                workflowstep.id = ""
         v["orig_name"] = workflowstep.getName()
 
     elif wnid!="" and req.params.get("nname")!="":

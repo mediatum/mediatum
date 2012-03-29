@@ -249,6 +249,7 @@ class ContentList(Content):
             nav_page.append(max)
 
         tal_files = []
+        tal_ids = []
 
         i = 0
         for i in range(self.page*files_per_page,(self.page+1)*files_per_page):
@@ -256,6 +257,7 @@ class ContentList(Content):
                 file = self.files[i]
                 self.id2pos[self.files[i].id] = i
                 tal_files += [SingleFile(file,i,self.num, language=language)]
+                tal_ids += [SingleFile(file,i,self.num, language=language).node.id]
             i = i + 1
 
         liststyle = req.session.get("liststyle-"+self.collection.id, "")#.split(";")[0]# user/session setting for liststyle?
@@ -266,7 +268,8 @@ class ContentList(Content):
         filesHTML = req.getTAL(theme.getTemplate("content_nav.html"), {
                  "nav_list":nav_list, "nav_page":nav_page, "act_page":self.page, 
                  "sortfields":self.sortfields, "sortfieldslist":self.getSortFieldsList(),
-                 "files":tal_files, "maxresult":len(self.files), "op":"", "query":req.params.get("query", "")}, macro="files")
+                 "files":tal_files, "ids":",".join(tal_ids), "maxresult":len(self.files), 
+                 "op":"", "query":req.params.get("query", "")}, macro="files")
 
         # use template of style and build html content
         contentList = liststyle.renderTemplate(req, {"nav_list":nav_list, "nav_page":nav_page, "act_page":self.page, 

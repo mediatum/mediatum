@@ -308,6 +308,9 @@ msgstr "Root-Knoten (Systemtyp)"
 msgid "view_list_add_shoppingbag"
 msgstr "Objekt zur Merkliste hinzufügen"
 
+msgid "view_lists_add_shoppintbag"
+msgstr "Aufgelistete Objekte in die Merkliste hinzufügen"
+
 msgid "view_list_att_title"
 msgstr "Attachment zu Dokument vorhanden"
 
@@ -403,8 +406,14 @@ msgstr "Bemerkung:"
 msgid "shoppingbag_object_added"
 msgstr "Objekt wurde zur Merkliste hinzugefügt."
 
+msgid "shoppingbag_objects_added"
+msgstr "Objecte wurden zur Merkliste hinzugefügt."
+
 msgid "shoppingbag_object_still_added"
-msgstr "Objekt befindet dich bereit in der Merkliste."
+msgstr "Objekt befindet sich bereits in der Merkliste."
+
+msgid "shoppingbag_objects_still_added"
+msgstr "Objekte befinden sich bereits in der Merkliste."
 
 msgid "popup_shoppingbag_img_title"
 msgstr "Bilder können per Drag&Drop in eine Anwendung (z.B. Powerpoint) durch Ziehen exportiert werden:"

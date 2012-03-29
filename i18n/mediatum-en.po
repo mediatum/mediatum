@@ -304,6 +304,9 @@ msgstr "root node (system type)"
 msgid "view_list_add_shoppingbag"
 msgstr "Add object to list of favourites"
 
+msgid "view_lists_add_shoppingbag"
+msgstr "Add listed objects to the favourites list"
+
 msgid "view_list_att_title"
 msgstr "document has an attachment"
 
@@ -394,8 +397,14 @@ msgstr "Comment:"
 msgid "shoppingbag_object_added"
 msgstr "Object added to favourites."
 
+msgid "shoppingbag_objects_added"
+msgstr "Objects added to favourites."
+
 msgid "shoppingbag_object_still_added"
-msgstr "Object was in favourites."
+msgstr "Object is already in favourites."
+
+msgid "shoppingbag_objects_still_added"
+msgstr "Objects are already in favourites."
 
 msgid "popup_shoppingbag_img_title"
 msgstr "Pictures can be exported via Drag&Drop into most applications (e.g. Powerpoint):"

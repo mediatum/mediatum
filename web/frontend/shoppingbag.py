@@ -133,10 +133,14 @@ def put_into_shoppingbag(req):
             err_count+=1
 
     req.session["shoppingbag"] = f
+    
+    s = ""
+    if len(files)>1:
+        s = "s"
     if err_count==0:
-        req.writeTALstr('<tal:block i18n:translate="shoppingbag_object_added"/>',{})
+        req.writeTALstr('<tal:block i18n:translate="shoppingbag_object%s_added"/>' %(s),{})
     else:
-        req.writeTALstr('<tal:block i18n:translate="shoppingbag_object_still_added"/>',{})
+        req.writeTALstr('<tal:block i18n:translate="shoppingbag_object%s_still_added"/>' %(s),{})
     return athana.HTTP_OK
 
     

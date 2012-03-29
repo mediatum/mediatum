@@ -44,6 +44,7 @@ function shoppingBag(nodeid)
     $.get('/shoppingbag?files='+nodeid+'&action=add', function(data) {
       alert(unescape(data));
     });
+    return false;
 }
 
 function addDirToShoppingBag(nodeid)

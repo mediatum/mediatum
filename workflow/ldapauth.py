@@ -28,7 +28,7 @@ from workflow import WorkflowStep,getNodeWorkflow,getNodeWorkflowStep
 from core.translation import t,lang
 from utils.date import format_date
 
-LDAP_AVAILABLE = False
+LDAP_AVAILABLE = True
 LDAP_MODULE_PRESENT = True
 DEFAULT_ATTRIBUTE_FOR_USERNAME = "system.ldapauth_username"
 

@@ -21,6 +21,7 @@ from workflow import WorkflowStep
 import core.tree as tree
 from core.translation import t, lang
 import core.config as config
+from utils.date import now
 
 class WorkflowStep_End(WorkflowStep):
        
@@ -42,6 +43,7 @@ class WorkflowStep_End(WorkflowStep):
         # insert node into searchindex
         try:
             node.setDirty()
+            node.set('updatetime', str(now()))
         except:
             pass
         if len(node.getParents())>1:

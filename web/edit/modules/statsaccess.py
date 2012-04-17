@@ -222,7 +222,7 @@ class StatsAccessPDF:
             items.append(Paragraph(t(self.language, "edit_stats_country"), self.chartheader))
             items.append((FrameBreak()))
 
-            for v in sorted([(len(d[k]['items']), k) for k in filter(lambda x:x!=0, d.keys())], reverse=True)[:20]:
+            for v in sorted([(len(d[k]['items']), k) for k in filter(lambda x:x!=0, d.keys())], reverse=True)[:50]:
                 if v[0]!=0:
                     items.append( Paragraph(str(v[1]), self.bv))
                     items.append((FrameBreak()))

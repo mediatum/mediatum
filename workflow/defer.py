@@ -45,12 +45,13 @@ class WorkflowStep_Defer(WorkflowStep):
         if l_date:
             if date.validateDateString(l_date):
                 try:
+                    node.set('updatetime', date.format_date(date.parse_date(l_date)))
                     l_date = date.format_date(date.parse_date(l_date), "dd.mm.yyyy")
-                    for item in node.get(self.get('accesstype')).split(';'):
+                    for item in self.get('accesstype').split(';'):
                         node.setAccess(item, "{date >= %s}" % l_date)
+                    node.getLocalRead()
                 except ValueError, e:
                     print "Error: %s" % e
-                    
 
     def show_workflow_node(self, node, req):
         return self.forwardAndShow(node, True, req)

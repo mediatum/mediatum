@@ -22,7 +22,7 @@ import core.users as users
 import core.tree as tree
 import logging
 
-from utils.date import format_date, parse_date
+from utils.date import format_date, parse_date, now
 from utils.utils import formatException
 from core.translation import lang, t
 
@@ -113,7 +113,8 @@ def getContent(req, ids):
 
         for node in nodes:
             node.set("updateuser", user.getName())
-            node.set("updatetime", str(format_date()))
+            if node.get('updatetime')<str(now()):
+                node.set("updatetime", str(format_date()))
 
         if not hasattr(mask,"i_am_not_a_mask"):
             nodes = mask.updateNode(nodes, req)

@@ -42,7 +42,7 @@ class WorkflowStep_End(WorkflowStep):
     def runAction(self, node, op=""):
         # insert node into searchindex
         try:
-            if node.get('updatetime')<=now(): # do only if date in the past
+            if node.get('updatetime')<=str(now()): # do only if date in the past
                 node.set('updatetime', str(now()))
             node.setDirty()
         except:

@@ -874,7 +874,8 @@ class Mask(tree.Node):
             ''' raise event for node '''
             if hasattr(node,"event_metadata_changed"):
                 node.event_metadata_changed()
-            node.set("updatetime", str(format_date()))
+            if node.get('updatetime')<str(now()):
+                node.set("updatetime", str(format_date()))
 
         return nodes
         

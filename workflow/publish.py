@@ -23,9 +23,9 @@ class WorkflowStep_Publish(WorkflowStep):
     def runAction(self, node, op=""):
         newaccess = []
         a = node.getAccess("read")
-        if a:
+        if a and not a.startswith("{date >="):
             for right in a.split(','):
                 if right != "{user workflow}":
                     newaccess += [right]
-            node.setAccess("read", ",".join(newaccess))
+                node.setAccess("read", ",".join(newaccess))
         self.forward(node, True)

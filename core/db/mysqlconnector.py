@@ -109,18 +109,24 @@ class MYSQLConnector(Connector):
         return self.db
 
     def esc(self,s):
-        try:
-            return self.db.escape(s)
-        except:
+        if type(s)==unicode:
             try:
-                return MySQLdb.escape(s,self.db.converter)
+                return "'"+self.db.escape(s)+"'"
             except:
-                #TODO: this should not be necessary.
-                #maybe switch to
-                #       cursor.execute("select whatever from whomever where something = %s", my_parameter)
-                #?
-                s = str(s)
-                return "'" + s.replace('\\','\\\\').replace('"','\\"').replace('\'','\\\'') + "'"
+                raise ValueError("file %s: Error escaping unicode string %s for db" % (__file__, s))
+        else:
+            try:
+                return self.db.escape(s)
+            except:
+                try:
+                    return MySQLdb.escape(s,self.db.converter)
+                except:
+                    #TODO: this should not be necessary.
+                    #maybe switch to
+                    #       cursor.execute("select whatever from whomever where something = %s", my_parameter)
+                    #?
+                    s = str(s)
+                    return "'" + s.replace('\\','\\\\').replace('"','\\"').replace('\'','\\\'') + "'"
 
     def execute(self,sql):
         self.dblock.acquire()

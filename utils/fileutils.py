@@ -70,6 +70,42 @@ def importFile(realname,tempname, prefix=""):
     return None
     
     
+def importFileToRealname(realname, tempname, prefix="", typeprefix=""):
+    try:
+        path, filename = os.path.split(realname)
+        uploaddir = getImportDir()
+        destname = join_paths(uploaddir, prefix + filename)
+
+        if os.path.exists(destname):  # rename if existing
+            i = 0
+            while os.path.exists(destname):
+                i += 1
+                p = prefix + str(i) + "_"
+                destname = join_paths(uploaddir, p + filename)
+                if not os.path.exists(destname):
+                    prefix = p
+                    break
+
+        if os.sep == '/':
+            ret = os.system('cp "%s" "%s"' % (tempname, destname))
+        else:
+            ret = os.system(('copy "%s" "%s"' % (tempname, destname)).replace('/', '\\'))
+
+        if ret & 0xff00:
+            raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, prefix + destname, str(ret)))
+
+        r = realname.lower()
+        mimetype = "application/x-download"
+        type = "file"
+
+        mimetype, type = getMimeType(r)
+
+        return core.tree.FileNode(name=destname, mimetype=mimetype, type=typeprefix + type)
+    except:
+        print formatException()
+    return None
+
+
 def importFileIntoDir(destpath, tempname):
     try:
         path,filename = os.path.split(tempname)

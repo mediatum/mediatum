@@ -136,8 +136,11 @@ class m_field(Metatype):
                             value = str(t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1]) + str(unit)
                     else: # cut long values
                         value = str(formatLongText(t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1], element)) + str(unit)
+                elif fieldtype in ['upload']:
+                    #passing mask necessary for fieldtype='upload'
+                    value = str(formatLongText(t.getFormatedValue(element, nodes[0], language, mask=mask)[1], element)) + str(unit)
                 else:
-                    value = str(formatLongText(t.getFormatedValue(element, nodes[0], language)[1], element)) + str(unit)      
+                    value = str(formatLongText(t.getFormatedValue(element, nodes[0], language)[1], element)) + str(unit)
 
         label = '&nbsp;'
         if field.getLabel()!="":
@@ -162,7 +165,7 @@ class m_field(Metatype):
             #return element.get("type")
         else:
             # standard view
-            ret = '<div class="mask_row"><div>'
+            ret = '<div class="mask_row field-'+element.getName()+'"><div>'
             ret += '<div class="mask_label">'+label+'</div>\n<div class="mask_value">'+value+'&nbsp;</div>\n'
             ret += '</div></div>'
             return ret

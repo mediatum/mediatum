@@ -31,119 +31,129 @@ from utils.utils import esc, u, u2
 
 
 def buildNodeDescriptor(req, node, indent=None, written=None, children=True, children_access=None, parents=False,):
-    nd =[]
+    nd = []
     d = {}
     if written is None:
         written = {}
-    
+
     nodedict = {}
     nodedict['id'] = node.id
-    
+
     mask = req.params.get('mask', 'none').lower()
 
     attrlist = req.params.get('attrlist', [])
     if attrlist:
         attrlist = attrlist.split(',')
-        
-    attrspec = req.params.get('attrspec', 'default_mask') 
+
+    attrspec = req.params.get('attrspec', 'default_mask')
     # 'all': no restriction, send all attributes
     # 'none': to not send any attribute at all
     # 'default_mask' (default): only send attributes that correspond to the default mask fields
     #
     # remark: attributes specified comma separated in 'attrlist' are added to those specified by 'attrspec'
-    #       
+    #
 
-    if mask == 'default': 
-        maskcachetype = req.params.get('maskcache', 'deep') # 'deep', 'shallow', 'none' 
-        nodedict['defaultexport'] = node.show_node_text(labels=1,language=req.params.get('lang', ''), cachetype = maskcachetype)
+    if mask == 'default':
+        maskcachetype = req.params.get('maskcache', 'deep')  # 'deep', 'shallow', 'none'
+        nodedict['defaultexport'] = node.show_node_text(labels=1, language=req.params.get('lang', ''), cachetype=maskcachetype)
         #except:
         #    logging.getLogger('services').error('Error: web.services.jsonnode: could not get default mask content')
-        #    nodedict['defaultexport'] = [] 
-        
+        #    nodedict['defaultexport'] = []
+
     if children:
         nodedict['children'] = []
         for c in node.getChildren().sort():
             if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
                 nodedict['children'].append({'id': str(c.id), 'type': c.type, 'name': esc(c.name)})
-                
+
     if parents:
         nodedict['parents'] = []
         for c in node.getParents().sort():
             if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
-                nodedict['parents'].append({'id': str(c.id), 'type': c.type, 'name': esc(c.name)}) 
-                
+                nodedict['parents'].append({'id': str(c.id), 'type': c.type, 'name': esc(c.name)})
+
     nd.append(nodedict)
-                
+
     if(children):
         for c in node.getChildren().sort():
             if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
                 if c.id not in written:
                     written[c.id] = None
                     childnodedict = buildNodeDescriptor(req, c, indent, children_access=children_access)
-                    nd.append(childnodedict)        
-        
+                    nd.append(childnodedict)
+
     #if node.read_access:
     #    nodedict['read'] = esc(node.read_access)
     #if node.write_access:
     #    nodedict['write'] = esc(node.write_access)
     #if node.data_access:
-    #    nodedict['data'] = esc(node.data_access) 
+    #    nodedict['data'] = esc(node.data_access)
 
     nodeattributes_dict = {}
-    
+
     if attrspec == 'none':
         # no attributes should be sent
         pass
     elif attrspec == 'default_mask' or attrspec not in ['none', 'all']:
         from contenttypes.default import make_lookup_key, get_maskcache_entry, maskcache
-        language=req.params.get('lang', '')
+        language = req.params.get('lang', '')
         lookup_key = make_lookup_key(node, language=language, labels=False)
         if not lookup_key in maskcache:
             # fill cache
-            node.show_node_text(labels=False,language=language, cachetype = 'deep')
+            node.show_node_text(labels=False, language=language, cachetype='deep')
+
         field_descriptors = get_maskcache_entry(lookup_key)
-        
-        for field_descriptor in field_descriptors:
-            field_attribute = field_descriptor[0]
-            if field_attribute not in attrlist:
-                # attrlist may be an empty list or filled from the request parameters
-                attrlist.append(field_attribute) 
+
+        try:
+            mask = field_descriptors[0]
+            for field_descriptor in field_descriptors[1:]:
+                field_attribute = field_descriptor[0]
+                #fd = field_descriptor[1]
+                if field_attribute not in attrlist:
+                    # attrlist may be an empty list or filled from the request parameters
+                    attrlist.append(field_attribute)
+        except:
+            # no mask for this metadata type
+            msg = "no 'nodesmall' or 'shortview' for node %s" % str(node.id)
+            logging.getLogger("services").warning(msg)
+
     elif attrspec == 'all':
         nodeattributes_dict = node.attributes.copy()
         if nodeattributes_dict:
             for k in nodeattributes_dict.keys():
                 nodeattributes_dict[k] = u2((nodeattributes_dict[k]))
-                nodedict['attributes'] = nodeattributes_dict                       
+                nodedict['attributes'] = nodeattributes_dict
 
     if attrlist:
         for attr in attrlist:
             nodeattributes_dict[attr] = u2(node.get(attr))
-    
+
     if nodeattributes_dict:
         nodedict['attributes'] = nodeattributes_dict
-    
+
     if 'files' in req.params:
-    
+
         nodedict['files'] = []
-        
+
         for file in node.getFiles():
             if file.type == "metadata" or file.type == "statistic":
                 continue
             mimetype = file.mimetype
             if mimetype is None:
                 mimetype = "application/x-download"
-            nodedict['files'].append({'filename':esc(file.getName()), 'mime-type': mimetype, 'type': file.type})
-        
+            nodedict['files'].append({'filename': esc(file.getName()), 'mime-type': mimetype, 'type': file.type})
+
     if 'nodename' in req.params:
-        nodedict['name'] = node.name 
-        
+        nodedict['name'] = node.name
+
     if 'nodetype' in req.params:
         if node.type is None:
             nodedict['type'] = 'node'
         else:
-            nodedict['type'] = node.type          
+            nodedict['type'] = node.type
     return nd
-    
+
+
 def getSingleNodeJSON(req, node, children=False):
-    nd = buildNodeDescriptor(req, node,children=children)
-    return json.dumps(nd, indent=4) 
+    nd = buildNodeDescriptor(req, node, children=children)
+    return json.dumps(nd, indent=4)

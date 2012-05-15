@@ -1,0 +1,743 @@
+<tal:block metal:define-macro="workflow_addpic2pdf">
+
+<script src="js/jquery-ui.js"> </script>
+
+<script tal:content="python:'var pdf_dim = '+str(json_pdf_dimensions)+';'">;</script>
+<script tal:content="python:'var keep_params = '+str(keep_params)+';'">;</script>
+<script tal:content="python:'var logo_info_list = '+str(logo_info_list)+';'">;</script>
+<script tal:content="python:'var node_id = '+str(node.id)+';'">;</script>
+<script tal:content="python:'var startpageno = '+str(startpageno)+';'">;</script>
+<script tal:content="python:'var FATAL_ERROR = '+str(FATAL_ERROR)+';'">;</script>
+
+
+<script>
+
+  var BIGPAGE_HEIGHT = 600;
+
+  var scale_height;
+
+  var orig_width;
+  var orig_height;
+
+  var logo_dpi = 'no-info';
+  var use_dpi = 72; // default value
+
+  var logo_zIndex = 0;
+
+  var position;
+
+  var logo_offset;
+  var drag_logo_poffset;
+
+  var drag_logo_px = 0;
+  var drag_logo_py = 0;
+
+  var current_pdf_page = 0;
+  var curr_pdf_height;
+  var curr_pdf_width;
+  var curr_pdf_rotate;
+  var curr_pdf_grid_url = "";
+  var use_as_pdf_height;
+
+  $(document).ready(function() {
+
+    $.each(keep_params, function(k, v) {
+        $('#'+k).val(v);
+      }
+    );
+
+    if (FATAL_ERROR) {
+      $("#element").hide();
+      $("#div_right").hide();
+      $("input[name^=radio_select_targetpages]").attr('disabled',true);
+      $("input[name^=radio_apply_reset_accept]").attr('disabled',true);
+      $("input[name^=input_select_targetpages]").attr('disabled',true);
+      $("input[name^=gotrue]").attr('disabled',true);
+      document.body.style.cursor = 'default';
+      return;
+    }
+
+    pageno = $('#input_current_page').val();
+    pageno = (pageno == '') ? startpageno : pageno;
+    $('#select_pdf_page').val(pageno);
+
+    current_pdf_page = pageno;
+
+    curr_pdf_width = pdf_dim['d_pageno2size'][current_pdf_page][0];
+    curr_pdf_height = pdf_dim['d_pageno2size'][current_pdf_page][1];
+    curr_pdf_rotate = pdf_dim['d_pageno2rotate'][current_pdf_page];
+
+    g('pdfpage_select_for_node_'+node_id, pageno);
+
+    $("#input_pdf_pos").val($("#img_pdf_page").position().left+", "+$("#img_pdf_page").position().top);
+    $("#input_pdf_size").val($("#thumb_inner > img").width()+", "+$("#thumb_inner > img").height());
+    $("#input_drag_logo_fullname").val('');
+
+    logo_offset = get_logo_offset();
+
+    gridCheckboxEvent(false);
+    $("#element").hide();
+
+    document.body.style.cursor = 'default';
+
+
+  }); // $(document).ready(...)
+
+
+  function g(sname, pageno) {
+
+    $("#input_current_page").val(pageno);
+
+    get_pdf_page_image(sname, pageno);
+
+    current_pdf_page = pageno;
+
+    curr_pdf_width = pdf_dim['d_pageno2size'][current_pdf_page][0];
+    curr_pdf_height = pdf_dim['d_pageno2size'][current_pdf_page][1];
+    curr_pdf_rotate = pdf_dim['d_pageno2rotate'][current_pdf_page];
+
+    $("#input_pdf_orig_size").val(curr_pdf_width+', '+curr_pdf_height);
+    $("#input_pdf_orig_rotate").val(curr_pdf_rotate);
+
+    use_as_pdf_height = pdf_dim['d_pageno2size'][current_pdf_page][1];
+    if (curr_pdf_rotate % 180) {
+      use_as_pdf_height = pdf_dim['d_pageno2size'][current_pdf_page][0];
+    }
+
+    $("#drag_logo > img").height( 1.0*$("#thumb_inner > img").height()/use_as_pdf_height*orig_height*72.0/use_dpi);
+    $("#input_drag_logo_size").val($("#drag_logo > img").width()+", "+$("#drag_logo > img").height());
+
+    setGridUrl();
+    place_grid();
+    adjust_drag_logo_poffset();
+  }
+
+  function scalePage(pageno, max_ext) {
+
+    var orig_w = pdf_dim['d_pageno2size'][pageno][0];
+    var orig_h = pdf_dim['d_pageno2size'][pageno][1];
+    var orig_rotate = pdf_dim['d_pageno2rotate'][pageno];
+
+    if (orig_rotate % 180) {
+      var dummy = orig_w;
+      orig_w = orig_h;
+      orig_h = dummy;
+    }
+
+    var res = new Object();
+    if (orig_h >= orig_w) {
+      res.h = max_ext;
+      res.w = 1.0 * max_ext / orig_h * orig_w;
+    }
+    else {
+      res.w = max_ext;
+      res.h = 1.0 * max_ext / orig_w * orig_h;
+    }
+    return res;
+  }
+
+  function get_pdf_page_image(selection_name, pageno) {
+
+    $("#select_pdf_page").blur();
+
+    var offs = $("#img_pdf_page").position();
+    var x = $('<img width="24" height="24" id="img_pdf_page" src="/img/wait.gif" style="margin-top:200px;z-index=1;"/>');
+
+    $("#img_pdf_page").replaceWith(x);
+
+    var url = '/wfs_addpic2pdf?jsoncallback=?';
+
+    var options = {
+      type: 'POST',
+      cmd: 'get_pdf_page_image',
+      pageno: pageno,
+      node_id: node_id,
+      selection_name: selection_name,
+      };
+
+      $.getJSON(url, options, function(data) {
+
+        var pdf_page_image_url = data['pdf_page_image_url'];
+
+        if (pdf_page_image_url) {
+
+          var page_img_dim = scalePage(pageno, BIGPAGE_HEIGHT);
+          var img_w = fround(page_img_dim.w, 0);
+          var img_h = fround(page_img_dim.h, 0);
+
+          var img_top_margin = fround(1.0 * (BIGPAGE_HEIGHT - img_h) / 2, 0);
+
+          var x = $("<img/>").attr('height', fround(page_img_dim.h))
+             .attr('width', fround(page_img_dim.w))
+             .attr('id', 'img_pdf_page')
+             .css('margin-top', img_top_margin)
+             .attr('src', '/wfs_addpic2pdf/serve_page/'+pageno+'?node_id='+node_id);
+
+          $("#img_pdf_page").replaceWith(x);
+          $("#thumb").attr('style', 'text-align: center;');
+
+        }
+
+      });
+      $("#select_pdf_page").blur();
+  }
+
+  function radio_clicked(fileindex) {
+
+    $("#drag_logo").remove();
+
+    if (fileindex==-1) {
+      $("#input_drag_logo_fullname").val('');
+      return;
+    }
+
+    var div_logo = $('#div_logo_'+fileindex).clone();
+
+    div_logo.attr('id', 'drag_logo');
+    div_logo.hide();
+
+    div_logo.insertAfter("#thumb_inner");
+
+    $('#element').mousedown(function(ev) {
+      if (ev.pageX > div_logo.offset().left &&
+          ev.pageX < div_logo.offset().left + div_logo.width() &&
+          ev.pageY > div_logo.offset().top &&
+          ev.pageY < div_logo.offset().top + div_logo.height()) {
+
+      div_logo.trigger(ev);
+
+      }
+    });
+
+    div_logo.attr("style", "display:none; position:absolute; top:0px; left:0px; z-index:"+logo_zIndex+";");
+
+    orig_width = logo_info_list[fileindex]['size'][0];
+    orig_height = logo_info_list[fileindex]['size'][1];
+
+    $("#input_orig_logo_size").val(orig_width+", "+orig_height);
+
+    logo_dpi = logo_info_list[fileindex]['dpi'];
+    $("#input_logo_dpi").val(logo_dpi);
+
+    use_dpi = 72;
+    if (logo_dpi != 'no_info') {
+      use_dpi = parseInt(logo_dpi);
+    }
+    else {
+      // to do: info: using default dpi ...
+    }
+
+    var use_as_pdf_height = pdf_dim['d_pageno2size'][current_pdf_page][1];
+    if (curr_pdf_rotate % 180) {
+      use_as_pdf_height = pdf_dim['d_pageno2size'][current_pdf_page][0];
+    }
+
+    $("#drag_logo > img").height( 1.0*$("#thumb_inner > img").height()/use_as_pdf_height*orig_height*72.0/use_dpi);
+
+    var drag_options = {
+        drag: function(event, ui) {
+                $("#input_drag_logo_pos").val($("#drag_logo").position().left+", "+$("#drag_logo").position().top);
+                $("#input_drag_logo_size").val($("#drag_logo > img").width()+", "+$("#drag_logo > img").height());
+                $("#select_pdf_page").blur();
+                position = $("#drag_logo").position();
+                logo_offset = get_logo_offset();
+                },
+        zIndex: logo_zIndex,
+
+    };
+
+    div_logo.draggable(drag_options);
+
+    $("#input_drag_logo_pos").val($("#drag_logo").position().left+", "+$("#drag_logo").position().top);
+    $("#input_drag_logo_size").val($("#drag_logo > img").width()+", "+$("#drag_logo > img").height());
+    $("#input_drag_logo_fullname").val($("#radio_logo_"+fileindex+"_fullname").text());
+
+    // leave this in for debugging
+    $("#input_pdf_size").val($("#thumb_inner > img").width()+", "+$("#thumb_inner > img").height());
+    $("#input_pdf_pos").val($("#img_pdf_page").position().left+", "+$("#img_pdf_page").position().top);
+
+    var d_top = $("#thumb_inner > img").css('top');
+    var d_left = $("#thumb_inner > img").css('left');
+
+    place_grid();
+
+    position = $("#drag_logo").position();
+
+    place_drag_logo(0, 0, "bottom_left");
+
+    logo_offset = get_logo_offset();
+
+    adjust_drag_logo_size();
+
+  } // function radio_clicked(fileindex)
+
+
+  $("div").mousemove(function(ev){
+    var pageCoords = "( " + ev.pageX + ", " + ev.pageY + " )";
+    var clientCoords = "( " + ev.clientX + ", " + ev.clientY + " )";
+    var msg = "( ev.pageX, ev.pageY ) : " + pageCoords + " | " + "( ev.clientX, ev.clientY ) : " + clientCoords;
+    $("#input_mouse_pos").val(msg);
+  });
+
+
+  function gridCheckboxEvent(checked) {
+    $("#element").hide();
+    place_grid();
+    if (checked == true) {
+      setGridUrl();
+      $("#element").show();
+    }
+    else {
+      $("#element").hide();
+    }
+    $("#input_cb_grid").val(checked);
+  }
+
+  function zIndexCheckboxEvent(checked) {
+    if (checked == true) {
+      logo_zIndex=1;
+    }
+    else {
+      logo_zIndex=0;
+    }
+    $(".ui-draggable").css("z-index", logo_zIndex);
+    $("#input_cb_logo_zindex").val(checked);
+  }
+
+  function handleKeys(ev) {
+
+    var draggable = $('#drag_logo'),
+        container = $('#bigpage'),
+        distance = 1;
+
+    position = draggable.position();
+
+    switch (ev.keyCode) {
+        case 37: position.left -= distance; break; // left
+        case 38: position.top  -= distance; break; // up
+        case 39: position.left += distance; break; // right
+        case 40: position.top  += distance; break; // down
+        default: return true;
+    }
+
+    draggable.css(position);
+    logo_offset = get_logo_offset();
+    ev.preventDefault();
+  }
+
+  $(document).unbind('keypress'); // needed for IE
+  $(document).keydown(handleKeys);
+
+
+  function fround(x, n)
+  {
+  return x;
+  return parseFloat(parseFloat(x).toFixed(n));
+  }
+
+  function get_logo_offset() {
+
+    var or = oi = $("#thumb_inner > img").offset();
+    var od = $("#drag_logo").offset();
+
+    if (od) {
+
+      or.left = od.left - oi.left;
+      or.top  = od.top - oi.top;
+
+      $("#input_doffset").val(fround(or.left, 2)+", "+fround(or.top, 2));
+
+      drag_logo_p_x = or.left;
+      drag_logo_p_y = $("#thumb_inner > img").height() - or.top - $("#drag_logo").height();
+      $("#input_poffset").val(fround(drag_logo_p_x, 2)+", "+fround(drag_logo_p_y, 2));
+
+      var cm_pro_pixel = 2.54 * use_as_pdf_height / 72.0 / $("#thumb_inner > img").height();
+
+      $("#input_poffset_cm").val(fround(drag_logo_p_x * cm_pro_pixel, 2)+", "+fround(drag_logo_p_y * cm_pro_pixel, 2));
+
+      $("#input_drag_logo_pos").val($("#drag_logo").position().left+", "+$("#drag_logo").position().top);
+      $("#input_drag_logo_size").val($("#drag_logo > img").width()+", "+$("#drag_logo > img").height());
+
+      return or;
+
+    }
+    else {
+
+      or.left = 0;
+      or.top = 0;
+      return or;
+
+    }
+
+  }
+
+  function place_drag_logo(x, y, orig) {
+
+    $("#drag_logo").show();
+    $("#drag_logo").offset( $("#thumb_inner > img").offset() );
+
+    var d = $("#drag_logo").position();
+
+    if (orig == "bottom_left") {
+
+      d.left = d.left + x;
+      d.top  = d.top + $("#thumb_inner > img").height()  - $("#drag_logo").height() - y;
+
+    }
+    else if (orig == "top_left") {
+
+      d.left = d.left + x;
+      d.top  = d.top + y;
+
+    }
+    drag_logo_poffset = d;
+    $("#drag_logo").css(d);
+  }
+
+
+  function get_drag_logo_poffset(orig) {
+
+    var d = $("#drag_logo").position();
+
+    if (orig == "bottom_left") {
+
+      d.left = d.left;
+      d.top  = d.top + $("#thumb_inner > img").height()  - $("#drag_logo").height();
+
+    }
+    else if (orig == "top_left") {
+
+      d.left = d.left + x;
+      d.top  = d.top + y;
+
+    }
+    return d;
+  }
+
+  function place_grid() {
+
+    if ($("#thumb_inner > img").height() < 200) {
+      $("#element").hide();
+      return;
+    }
+
+    if ($("#checkbox_grid").attr("checked") == true) {
+      $("#element").show();
+    }
+    else {
+      $("#element").hide();
+    }
+    $("#grid").attr("style", "position:relative;");
+    $("#grid").offset( $("#thumb_inner > img").offset() );
+
+    setGridUrl();
+  }
+
+  window.onresize = function() {
+
+    place_grid();
+
+    var e_offs = $("#grid").position();
+    var d_offs = $("#drag_logo").position();
+
+    if (d_offs) {
+
+      $("#input_drag_logo_pos").val($("#drag_logo").position().left+", "+$("#drag_logo").position().top);
+
+      var or = oi = $("#thumb_inner > img").offset();
+      var od = $("#drag_logo").offset();
+
+      or.left = oi.left + logo_offset.left;
+      or.top  = oi.top  + logo_offset.to;
+
+      $("#drag_logo").offset(or)
+
+      $("#input_doffset").val(fround(logo_offset.left, 2)+", "+fround(logo_offset.top, 2));
+    }
+
+    place_grid();
+
+  }
+
+  function adjust_drag_logo_size() {
+      curr_pdf_height = pdf_dim['d_pageno2size'][current_pdf_page][1];
+
+      var use_as_pdf_height = pdf_dim['d_pageno2size'][current_pdf_page][1];
+      if (curr_pdf_rotate % 180) {
+        use_as_pdf_height = pdf_dim['d_pageno2size'][current_pdf_page][0];
+      }
+
+      $("#drag_logo > img").height( 1.0*$("#thumb_inner > img").height()/use_as_pdf_height*orig_height*72.0/use_dpi);
+
+      $("#input_drag_logo_size").val($("#drag_logo > img").width()+", "+$("#drag_logo > img").height());
+  }
+
+  function adjust_drag_logo_poffset() {
+
+    var poffset_cm_str = $("#input_poffset_cm").val();
+
+    if (!poffset_cm_str) return;
+
+    var poffset_cm = eval("["+poffset_cm_str+"]");
+    var cm_pro_pixel = 841.8898;
+
+    if (curr_pdf_rotate % 180) {
+      cm_pro_pixel = 2.54 * curr_pdf_width / 72.0 / $("#thumb_inner > img").height();
+    }
+    else {
+      cm_pro_pixel = 2.54 * curr_pdf_height / 72.0 / $("#thumb_inner > img").height();
+    }
+
+    place_drag_logo(fround(poffset_cm[0] / cm_pro_pixel, 0), fround(poffset_cm[1] / cm_pro_pixel, 0), "bottom_left");
+    $("#input_poffset_cm_pro_pixel").val(cm_pro_pixel);
+
+  }
+
+  var checkZoom_active = window.setInterval("place_grid();place_grid();adjust_drag_logo_size();adjust_drag_logo_poffset();adjust_drag_logo_poffset();", 1000);
+
+  function setGridUrl() {
+
+      var grid_src = "/wfs_addpic2pdf/grid?pdf_w="+curr_pdf_width;
+      grid_src += "&pdf_h="+curr_pdf_height;
+      grid_src += "&thumb_w="+fround($("#thumb_inner > img").width(), 0);
+      grid_src += "&thumb_h="+fround($("#thumb_inner > img").height(), 0);
+      grid_src += "&dpi_w=72";
+      grid_src += "&dpi_h=72";
+      grid_src += "&thick=5";
+      grid_src += "&orig=bottom_left";
+      grid_src += "&rotate="+curr_pdf_rotate;
+
+
+      if ($("#grid").attr("src") != grid_src) {
+        $("#grid").attr("src", grid_src);
+      }
+  }
+
+</script>
+
+<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.1/themes/base/jquery-ui.css" />
+
+<style>
+
+  #div_left {
+    font-size: 0.83em;
+    float: left;
+    width: 34%;
+    margin: 0 0 0 0; padding: 0;  /* 788 */
+    position: relative;
+  }
+
+  #div_right {
+    float: right;
+    width: 64%;
+    margin: 0 0 0 0; padding: 0;
+    background-color: #EEEEEE;
+    border: 1px solid silver;
+    position: relative;
+  }
+
+  #div_prefix {
+    width: 100%;
+    position: relative;
+  }
+
+  #div_sub_left {
+    float: left;
+    width: 45%;
+    border: 1px solid silver;
+    margin-top: 2;
+    padding: 1;
+    background-color: #EEEEEE;
+    overflow: hidden;
+    position: absolute;
+  }
+
+  #div_sub_right {
+    float: right;
+    width: 50%;
+    border: 1px solid silver;
+    margin-top: 2;
+    padding-left: 10px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .clear {
+    clear:both;
+  }
+
+  .clear_left {
+    clear:left;
+  }
+
+  .clear_right {
+    clear:right;
+  }
+
+  .ie_float_bug {
+  }
+
+  .div_dashed_border {
+    width: 98%;
+    margin: 0 0 0 0; padding: 0;
+    background-color: #ffffff;
+    border: 1px dashed silver;
+    position: relative;
+  }
+
+  .leerzeile {  line-height: 2px; font-size: 2px}
+
+
+</style>
+
+<p id="div_error" tal:condition="python:len(error)>0" tal:content="structure error" class="error"/>
+
+<div class="ie_float_bug">
+
+  <div id="div_right">
+      <div id="bigpage" style="text-align: center;height:600px;">
+        <div id="thumb">
+          <div id="thumb_inner">
+            <img width="24" height="24" id="img_pdf_page" src="/img/wait.gif" style="margin-top:200;"/>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:center;">
+        <input id="checkbox_grid" type="checkbox" name="grid" onClick="gridCheckboxEvent(this.checked);"><span i18n:translate="admin_wfstep_addpic2pdf_cb_grid">Grid</span> |
+        <input id="checkbox_logo_zindex" type="checkbox" name="logo_zindex" onClick="zIndexCheckboxEvent(this.checked);"><span i18n:translate="admin_wfstep_addpic2pdf_cb_logo_above_grid">logo above grid</span> |
+        <a target="_blank" tal:attributes="href python:'/wfs_addpic2pdf/serve_page/p_document.pdf?node_id='+str(node.id);"><span i18n:translate="admin_wfstep_addpic2pdf_link_processed">currently processed</span></a> |
+        <a target="_blank" tal:attributes="href python:'/wfs_addpic2pdf/serve_page/document.pdf?node_id='+str(node.id);"><span i18n:translate="admin_wfstep_addpic2pdf_link_original">original</span></a>
+      </div>
+  </div>
+
+  <div id="div_left">
+
+    <div id="div_prefix" tal:content="raw python:prefix" > TEXT </div>
+
+    <div id="div_sub_right">
+      <p class="leerzeile">&nbsp;</p>
+      <div id="submit_form">
+        <form action="/mask" method="post">
+          <div class="select">
+            <span i18n:translate="admin_wfstep_addpic2pdf_select_page_to_preview">Select page to preview</span>:
+            <select id="select_pdf_page" tal:attributes="name python:'pdfpage_select_for_node_'+str(node.id)" size=1 onchange="g(this.name, this.value);" onselect="g(this.name, this.value);" onkeyup="g(this.name, this.value);">
+              <tal:block tal:repeat="i python: range(pdf_page_count)">
+                <option tal:attributes="value python:str(i)" tal:content="python: str(i+1)" />
+              </tal:block>
+            </select>
+          </div>
+          <p class="leerzeile">&nbsp;</p>
+
+          <div class="div_dashed_border">
+
+          <div id="div_select_targetpages">
+              <input type="radio" name="radio_select_targetpages" value="current_page" checked="checked" /><span i18n:translate="admin_wfstep_addpic2pdf_range_only_current_page">Only current page</span><br/>
+              <input type="radio" name="radio_select_targetpages" value="all" /><span i18n:translate="admin_wfstep_addpic2pdf_all_pages">All pages</span><br/>
+              <input type="radio" name="radio_select_targetpages" value="pair" /><span i18n:translate="admin_wfstep_addpic2pdf_pair">Pair (with range)</span><br/>
+              <input type="radio" name="radio_select_targetpages" value="impair" /><span i18n:translate="admin_wfstep_addpic2pdf_impair">Impair (with range)</span><br/>
+              <input type="radio" name="radio_select_targetpages" value="range_only" /><span i18n:translate="admin_wfstep_addpic2pdf_only_range">Only range</span><br/>
+          </div>
+
+          <span i18n:translate="admin_wfstep_addpic2pdf_define_range">Define range (example: 1-10;12;17;30-):</span><br/>
+          <input type="text" name="input_select_targetpages" /><br/>
+
+          </div>
+          <hr/>
+          <div class="div_dashed_border">
+            <b><span i18n:translate="admin_wfstep_addpic2pdf_option_a">Option A:</span></b><br/>
+            <div id="div_select_test_or_finish">
+                <input type="radio" name="radio_apply_reset_accept" value="apply" checked="checked" /><span i18n:translate="admin_wfstep_addpic2pdf_apply">Apply the current logo</span><br/>
+                <input type="radio" name="radio_apply_reset_accept" value="reset" /><span i18n:translate="admin_wfstep_addpic2pdf_reset">Reset to the last accepted version (or original)</span><br/>
+                <input type="radio" name="radio_apply_reset_accept" value="accept" /><span i18n:translate="admin_wfstep_addpic2pdf_accept">Accept the last processed version and proceed to next workflow step</span> (<span tal:replace="python: wfs.getTrueLabel()"></span>)<br/>
+            </div>
+
+            <input type="submit" name="gotrue" style="width:100%;" i18n:attributes="value admin_wfstep_addpic2pdf_true_button" onclick="document.body.style.cursor = 'wait';"/>
+
+          </div>
+          <hr/>
+          <div class="div_dashed_border">
+            <b><span i18n:translate="admin_wfstep_addpic2pdf_option_b">Option B:</span></b><br/>
+            <span tal:replace="python: wfs.getFalseLabel()"></span><br/>
+            <input type="submit" style="width:100%;" name="gofalse" i18n:attributes="value admin_wfstep_addpic2pdf_false_button" />
+          </div>
+          <p class="leerzeile">&nbsp;</p>
+
+          <!-- ++++++++++++ hidden parameters ++++++++++++ -->
+          <div id="hidden_parameters" style="display:none;">
+
+              <input id="input_mouse_pos" name="input_mouse_pos" size="75" />(input_mouse_pos)<br/>
+
+              <input id="input_key" tal:attributes="value key" name="key"/>(key)<br/>
+              <input id="input_error" tal:attributes="value error" name="error"/>(error)<br/>
+
+              <input id="input_pdf_pos" name="input_pdf_pos"/>(input_pdf_pos)<br/>
+              <input id="input_pdf_size" name="input_pdf_size"/>(input_pdf_size)<br/>
+
+              <input id="input_pdf_orig_size" name="input_pdf_orig_size"/>(input_pdf_orig_size)<br/>
+              <input id="input_pdf_orig_rotate" name="input_pdf_orig_rotate"/>(input_pdf_orig_rotate)<br/>
+
+              <input id="input_doffset" name="input_doffset" size="75" />(input_doffset)<br/>
+              <input id="input_poffset" name="input_poffset" size="75" />(input_poffset)<br/>
+              <input id="input_poffset_cm" name="input_poffset_cm" size="75" />(input_poffset_cm)<br/>
+              <input id="input_poffset_cm_pro_pixel" name="input_poffset_cm_pro_pixel" size="75" />(input_poffset_cm_pro_pixel)<br/>
+
+
+              <input id="input_drag_logo_pos" name="input_drag_logo_pos"/>(input_drag_logo_pos)<br/>
+              <input id="input_drag_logo_size" name="input_drag_logo_size"/>(input_drag_logo_size)<br/>
+              <input id="input_drag_logo_fullname" name="input_drag_logo_fullname"/>(input_drag_logo_fullname)<br/>
+
+              <input id="input_orig_logo_size" name="input_orig_logo_size"/>(input_orig_logo_size)<br/>
+              <input id="input_logo_dpi" name="input_logo_dpi"/>(input_logo_dpi)<br/>
+
+              <input name="id" tal:attributes="value python:wfs.id" />(current wfs id)<br/>
+              <input name="obj" tal:attributes="value python: node.id" />(obj id)<br/>
+
+              <input id="input_cb_grid" name="input_cb_grid" />(input_cb_grid)<br/>
+              <input id="input_cb_logo_zindex" name="input_cb_logo_zindex" />(input_cb_logo_zindex)<br/>
+              <input id="input_current_page" name="input_current_page" />(input_current_page)<br/>
+
+          </div>
+          <!-- ++++++++++++ hidden parameters ++++++++++++ -->
+
+        </form>
+
+      </div>
+    </div>
+
+    <div id="div_sub_left">
+      <div>
+        <input name="radio_logo" type="radio" checked="checked" onclick="radio_clicked(this.value);" tal:attributes="id python:'radio_logo_none'; value python:-1"/> <span i18n:translate="admin_wfstep_addpic2pdf_logo_none">None</span>
+      </div>
+      <div class="logos" style="overflow:auto;">
+        <tal:block tal:repeat="fileindex python: range(len(wfs_files))">
+          <div>
+            <tal:block tal:condition="python:wfs_files[fileindex].getName().startswith('m_upload_logoupload')">
+              <div style="border:1px solid silver; padding:5px; overflow: auto" class="subcontainer_logo" style="float:left">
+                <input name="radio_logo" type="radio" onclick="radio_clicked(this.value);" tal:attributes="id python:'radio_logo_'+str(fileindex); value python:str(fileindex);"/>
+                <tal:block tal:replace="python:wfs_files[fileindex].getName().replace('m_upload_logoupload_', '')" />
+                <span style="display:none" tal:content="python:wfs_files[fileindex].getName()" tal:attributes="id python:'radio_logo_'+str(fileindex)+'_fullname';" />
+                <br/>
+                <div tal:attributes="id python:'div_logo_small_'+str(fileindex);  title python:str(logo_info_list[fileindex])">
+                  <img tal:attributes="src python:'/file/'+wfs.id+'/'+wfs_files[fileindex].getName();id python:'image_logo_'+str(fileindex); height python: '60px';" />
+                </div>
+                <div style="display:none;" tal:attributes="id python:'div_logo_'+str(fileindex)">
+                  <img  tal:attributes="src python:'/file/'+wfs.id+'/'+wfs_files[fileindex].getName();id python:'image_logo_'+str(fileindex); style python:'height:'+str(float(logo_info_list[fileindex]['size'][1])/float(logo_info_list[fileindex]['dpi'])*2.54)+'cm'" />
+                </div>
+              </div>
+              </tal:block>
+          </div>
+          </tal:block>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<div>
+  <div id="element" style="height:0;">
+     <img id="grid" src="/img/blank.png" style="margin-top:200px;"/>
+  </div>
+</div>
+
+</tal:block>

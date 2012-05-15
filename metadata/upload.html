@@ -1,0 +1,430 @@
+<div metal:define-macro="m_upload_filelist" id="m_upload_table">
+
+<style type="text/css">
+
+    #filetable_edit{
+        border:1px solid silver; border-width:1px 1px 1px 1px; width:100%
+    }
+    #filetable_edit input{
+        background-color:transparent; margin:1px; border-width:0px
+    }
+    #filetable_edit input:hover{
+        border-width:0px
+    }
+    #filetable_edit input[type="text"]{
+        border:1px solid silver
+    }
+    #filetable_edit input[type="text"]:hover{
+        border:1px solid black; background-color:#ffffff
+    }
+    #filetable_edit th{
+        background-color:#d8d8d8; padding:3px 5px 2px 3px; border-bottom:1px solid silver; font-variant:small-caps
+    }
+    #filetable_edit tr{
+        background-color:#f0f0f0; border:1px solid silver
+    }
+    #filetable_edit td{
+        vertical-align:middle; padding:2px; border-bottom:1px solid silver
+    }
+    #filetable_edit tr:hover{
+        background-color:silver
+    }
+    #filetable_edit a{
+        color:#000000; padding:1px; margin:0px
+    }
+    td.silver{
+        background-color:#efefef
+    }
+
+</style>
+
+    <table id="filetable_edit">
+        <tr tal:condition="python:len(files)!=0">
+            <th i18n:translate="upload_filelist_type">TEXT</th>
+            <th i18n:translate="upload_filelist_size">TEXT</th>
+            <th i18n:translate="upload_filelist_mimetype">TEXT</th>
+            <th i18n:translate="upload_filelist_loc">TEXT</th>
+            <th tal:condition="delbutton">&nbsp;</th>
+        </tr>
+        <tr tal:repeat="file files">
+            <td tal:content="python:file.type"/>
+            <td tal:content="python:str(file.getSize())+' bytes'" style="text-align:right;width:100px"/>
+            <td tal:content="python:file.mimetype"/>
+            <td>
+                <a i18n:attributes="title upload_filelist_open_title" target="filewindow"
+                 tal:attributes="href python:'/file/'+node.id+'/'+file.getName()"
+                 tal:content="python:file.getName()"/>
+            </td>
+            <td tal:condition="delbutton">
+                <input tal:attributes="name python:'delete_'+file.getName()" i18n:attributes="title upload_filelist_delete_title"  onclick="return delete_file_json_for_targetnode_FOR_____FIELDNAME____(this.name)" type="image" src="/img/delete.png" />
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div metal:define-macro="m_upload_filelist_nodebig" id="m_upload_table">
+
+<style type="text/css">
+
+    #filetable_nodebig{
+        border:1px solid silver; border-width:1px 1px 1px 1px; width:100%
+    }
+    #filetable_nodebig input{
+        background-color:transparent; margin:1px; border-width:0px
+    }
+    #filetable_nodebig input:hover{
+        border-width:0px
+    }
+    #filetable_nodebig input[type="text"]{
+        border:1px solid silver
+    }
+    #filetable_nodebig input[type="text"]:hover{
+        border:1px solid black; background-color:#ffffff
+    }
+    #filetable_nodebig th{
+        background-color:#d8d8d8; padding:3px 5px 2px 3px; border-bottom:1px solid silver; font-variant:small-caps
+    }
+    #filetable_nodebig tr{
+        background-color:#f0f0f0; border:1px solid silver
+    }
+    #filetable_nodebig td{
+        vertical-align:middle; padding:2px; border-bottom:1px solid silver
+    }
+    #filetable_nodebig tr:hover{
+        background-color:silver
+    }
+    #filetable_nodebig a{
+        color:#000000; padding:1px; margin:0px
+    }
+    td.silver{
+        background-color:#efefef
+    }
+
+</style>
+
+    <table id="filetable_nodebig">
+        <tr tal:condition="python:len(files)!=0">
+            <th i18n:translate="upload_filelist_loc">TEXT</th>
+            <th i18n:translate="upload_filelist_size">TEXT</th>
+            <th tal:condition="delbutton">&nbsp;</th>
+        </tr>
+        <tr tal:repeat="file files">
+            <td>
+                <a i18n:attributes="title upload_filelist_open_title" target="filewindow"
+                 tal:attributes="href python:'/file/'+node.id+'/'+file.getName()"
+                 tal:content="python:file.getName()"/>
+            </td>
+            <td tal:content="python:str(file.getSize())+' bytes'" style="text-align:right;width:100px"/>
+            <td tal:condition="delbutton">
+                <input tal:attributes="name python:'delete_'+file.getName()" i18n:attributes="title upload_filelist_delete_title"  onclick="return delete_file_json_for_targetnode_FOR_____FIELDNAME____(this.name)" type="image" src="/img/delete.png" />
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div metal:define-macro="m_upload_filelist_short" id="m_upload_tableshort">
+    <tal:block tal:repeat="file files">
+        <tal:block tal:condition="python:file.type=='thumb'">
+            <div id="thumb" style="float:left">
+                <img tal:attributes="src python:'/file/'+node.id+'/'+file.getName()"/>
+            </div>
+        </tal:block>
+    </tal:block>
+    <tal:block tal:repeat="file files">
+        <tal:block tal:condition="python:file.type in ['document', 'image']">
+            <div style="padding:20px;margin-left:150px">
+                <p tal:content="python:str(file.getSize())+' bytes'"/>
+                <a i18n:attributes="title upload_filelist_open_title" target="filewindow"
+             tal:attributes="href python:'/file/'+node.id+'/'+file.getName()"
+             tal:content="python:file.getName()"/>
+             <p style="padding-top:20px" tal:condition="delbutton">
+                <input tal:attributes="name python:'delete_'+file.getName()" i18n:attributes="title upload_filelist_delete_title" onclick="return delete_file_json_for_targetnode_FOR_____FIELDNAME____(this.name)" type="image" src="/img/delete.png" />
+                <span i18n:translate="upload_filelist_delete_label">TEXT</span>
+             </p>
+            </div>
+        </tal:block>
+    </tal:block>
+    <div style="clear:both">&nbsp;</div>
+</div>
+
+<tal:block metal:define-macro="editorfield">
+
+    <!-- source: http://jquery.malsup.com/form/ -->
+    <script src="http://malsup.github.com/jquery.form.js"></script>
+
+    <script tal:content="python:'var m_upload_field_name_FOR_____FIELDNAME____ = \''+name+'\';'">;</script>
+
+    <script>
+
+    function getTargetNodeID() {
+
+       var targetnodeid = "";
+
+        try {
+            // if this snippet is shown in a workflow-step editor
+            targetnodeid = $('input[name=stepid]').val();
+        }
+        catch (err){
+            targetnodeid = "";
+        }
+
+        if (!targetnodeid) {
+          try {
+           // if this snippet is shown in a metadata editor
+           var changeform = $("#changeform");
+           var action_edit_content = changeform.attr("action");
+           var metadata = changeform.children(':input[name="tab"]').val();
+           var edit_id = changeform.children(':input[name="id"]').val();
+           targetnodeid = edit_id;
+         }
+         catch (err) {
+         }
+
+        }
+        return targetnodeid;
+    }
+
+    function whereAreWe() {
+
+       var targetnodeid = "";
+       var we_are_now = "";
+
+        try {
+            // if this snippet is shown in a workflow-step editor
+            targetnodeid = $('input[name=stepid]').val();
+        }
+        catch (err){
+            targetnodeid = "";
+        }
+
+        if (targetnodeid) {
+          we_are_now = "admin_workflow_step_editor";
+        }
+
+        if (!targetnodeid) {
+          try {
+           // if this snippet is shown in a metadata editor
+           var changeform = $("#changeform");
+           var action_edit_content = changeform.attr("action");
+           var metadata = changeform.children(':input[name="tab"]').val();
+           var edit_id = changeform.children(':input[name="id"]').val();
+           targetnodeid = edit_id;
+         }
+         catch (err) {
+         }
+
+          if (targetnodeid) {
+            we_are_now = "edit_metadata_editor";
+          }
+        }
+        //alert("we_are_now: "+we_are_now);
+        return we_are_now;
+    }
+
+    function questionDelName(name){
+        if (name==""){
+            return confirm(unescape("Soll dieser Eintrag wirklich gel%F6scht werden?"));
+        }else{
+            return confirm(unescape("Soll der Eintrag '"+name+"' wirklich gel%F6scht werden?"));
+        }
+    }
+
+    function delete_file_json_for_targetnode_FOR_____FIELDNAME____(filename) {
+
+      if (!questionDelName(filename)){
+          return false;
+      }
+
+      var url = '/md_upload?jsoncallback=?';
+
+      var options = {
+        type: 'POST',
+        cmd: 'delete_file',
+        targetnodeid: getTargetNodeID(),
+        m_upload_field_name: '____FIELDNAME____',
+        prefixed_filename: filename,
+        };
+        $.getJSON(url, options, function(data) {
+
+                      var errors=data['errors'];
+                      if (errors) {
+                        $("#response_FOR_____FIELDNAME____").html("");
+                          $.each(errors, function(index, value) {
+                            $("<div/>").html(value).attr('style', 'color:red').appendTo("#response_FOR_____FIELDNAME____");
+                          }
+                        );
+                      }
+                      else {
+                        $("#response_FOR_____FIELDNAME____").html("");
+                      }
+
+                      var filelist=data['filelist'];
+                      if (filelist) {
+                        $("<div/>").html(data['html_filelist']).appendTo("#file_list_FOR_____FIELDNAME____");
+                      }
+
+                    });
+
+    setTimeout(function() {load_file_list_json_for_targetnode_FOR_____FIELDNAME____(getTargetNodeID()); }, 1000);
+    return false;
+
+    }
+
+    function load_file_list_json_for_targetnode_FOR_____FIELDNAME____(targetnodeid) {
+
+      var url = '/md_upload?jsoncallback=?';
+
+      var options = {
+        type: 'POST',
+        cmd: 'list_files',
+        targetnodeid: targetnodeid,
+        m_upload_field_name: '____FIELDNAME____',
+        };
+        $.getJSON(url, options, function(data) {
+
+                      var filelist=data['filelist'];
+                      if (filelist) {
+                        $("#file_list_FOR_____FIELDNAME____").html("");
+                        $("<div/>").html(data['html_filelist']).appendTo("#file_list_FOR_____FIELDNAME____");
+                      }
+
+                    });
+    }
+
+    $(document).ready(function() {
+
+        var targetnodeid = getTargetNodeID();
+
+        if (! targetnodeid=="") {
+           $('input[name=targetnodeid_FOR_____FIELDNAME____]').val(targetnodeid);
+           $('input[name=upload_submit_FOR_____FIELDNAME____]').val("Submit");
+           $('div[name=upload_warn_div_FOR_____FIELDNAME____]').hide();
+
+            $('input[name=m_upload_file_FOR_____FIELDNAME____]').removeAttr("disabled"); // type=file
+            $('input[name=upload_submit_FOR_____FIELDNAME____]').removeAttr("disabled"); // type=submit
+            $('input[name=upload_submit_FOR_____FIELDNAME____]').val("Submit");
+            $('div[name=upload_warn_div_FOR_____FIELDNAME____]').hide();
+
+           load_file_list_json_for_targetnode_FOR_____FIELDNAME____(targetnodeid);
+
+        }
+        else {
+            $('input[name=m_upload_file_FOR_____FIELDNAME____]').attr("disabled","disabled"); // type=file
+            $('input[name=upload_submit_FOR_____FIELDNAME____]').attr("disabled","disabled"); // type=submit
+            $('input[name=upload_submit_FOR_____FIELDNAME____]').val("Submit (disabled)");
+            $('div[name=upload_warn_div_FOR_____FIELDNAME____]').show();
+        }
+    });
+
+    function remove_other_parentdiv__FOR_____FIELDNAME____() {
+
+            var disabled_fields = {};
+            fieldid = 'upload_div_FOR_____FIELDNAME____';
+            flds = $('div[id^=upload_div_FOR_]');
+            $.each(flds, function(index, fld) {
+              fld_id = $(fld).attr('id');
+              if (fld_id != ''+fieldid) {
+                var html = $('#'+fld_id).html();
+                $(fld).html('---');
+                disabled_fields[fld_id] = html;
+              }
+            });
+
+            return disabled_fields;
+    }
+
+    function restore_other_parentdiv__FOR_____FIELDNAME____(d) {
+
+                for(var key in d){
+                    if (d.hasOwnProperty(key)){
+                        var html=d[key];
+                        $("#"+key).html(html);
+                    }
+                }
+    }
+
+    function submit_FOR_____FIELDNAME____() {
+
+        $('#submitter_class_____FIELDNAME____').val('m_upload');
+        $('input[name=submitter_FOR_____FIELDNAME____]').val("____FIELDNAME____");
+        $('input[name=submitter]').val("____FIELDNAME____");
+
+        var we_are_now = whereAreWe();
+        var current_form_id = '#addmfield';
+
+        if (we_are_now == "admin_workflow_step_editor") {
+          current_form_id = '#addmfield';
+        }
+        else if (we_are_now == "edit_metadata_editor") {
+          current_form_id = '#myform';
+        }
+
+        var options = {
+          url: '/md_upload',
+          type: 'POST',
+          success:   function(data) {
+
+                      var res = jQuery.parseJSON(data);
+
+                      $("#response_FOR_____FIELDNAME____").html("");
+
+                      var errors = res['errors'];
+                      if (errors) {
+
+                          $.each(errors, function(index, value) {
+                            $("<div/>").html(value).attr('style', 'color:red').appendTo("#response_FOR_____FIELDNAME____");
+                          }
+                        );
+                      }
+
+                      var copy_report = res['copy_report'];
+                      if (copy_report) {
+                        $("<div/>").html(copy_report).attr('style', 'color:blue').appendTo("#response_FOR_____FIELDNAME____");
+                      }
+
+          },
+          error: function() { alert("error_FOR_____FIELDNAME____"); },
+          complete: function() {
+                                $(current_form_id).unbind();
+                               },
+        };
+
+            var res = $(current_form_id).submit(function() {
+
+               $(this).ajaxSubmit(options);
+             return false;
+            });
+            var targetnodeid = getTargetNodeID();
+
+            setTimeout(function() {
+                                    load_file_list_json_for_targetnode_FOR_____FIELDNAME____(getTargetNodeID());
+
+                                    var x = $('input[name=m_upload_file_FOR_____FIELDNAME____]');
+                                        x.replaceWith($('<input/>').attr('type', 'file').attr('name', 'm_upload_file_FOR_____FIELDNAME____').attr('id', '____FIELDNAME____').attr('size', '60%'));
+
+                                  }, 1000);
+
+            return false;
+    }
+
+    </script>
+
+<div style="border:thin solid blue;" tal:attributes="id python:'upload_div_FOR_____FIELDNAME____'; name python:'upload_div_FOR_____FIELDNAME____'; style python:'width:'+str(width)+'px'">
+
+        <input type="hidden" tal:attributes="id python:'submitter_class_'+name" name="submitter_class" value="" />
+        <input type="hidden" tal:attributes="id python:'submitter02_FOR_____FIELDNAME____'; value python:name" name="submitter_FOR_____FIELDNAME____" />
+        <input type="hidden" tal:attributes="id python:'submitter_FOR_____FIELDNAME____'; value python:name" name="submitter" />
+        <input type="hidden" tal:attributes="id python:'targetnodeid_'+name" name="targetnodeid_FOR_____FIELDNAME____" value="" />
+        <div name="upload_warn_div_FOR_____FIELDNAME____" style="color:red;" tal:content="python:warning"> TEXT </div>
+
+<!-- zero width spaces (#8203) needed for IE(8) and metadata mask editor -->
+&#8203;<input type="file" size="60%" disabled="disabled" tal:attributes="name python:'m_upload_file_FOR_____FIELDNAME____'; id name; value value;" />
+&#8203;<br/>
+&#8203;<input id="upload_submit_FOR_____FIELDNAME____" name="upload_submit_FOR_____FIELDNAME____" type="submit" value="Submit (disabled)" disabled="disabled" onclick="submit_FOR_____FIELDNAME____()" />
+      <div id="response_FOR_____FIELDNAME____"> </div>
+      <div id="file_list_FOR_____FIELDNAME____"> </div>
+
+</div>
+
+</tal:block>
+

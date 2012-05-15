@@ -37,8 +37,8 @@ def lightesc(s):
 
 def desc(s):
     return s.replace("&amp;", "&").replace("&quot;", "\"").replace("&lt;","<").replace("&gt;",">")
-    
-def u(s):  
+
+def u(s):
     try:
         return s.encode("utf-8")
     except:
@@ -48,7 +48,7 @@ def u(s):
         except:
             return s
 
-def u2(s):  
+def u2(s):
     try:
         return s.encode("utf-8")
     except:
@@ -63,7 +63,7 @@ def u2(s):
 
 def iso2utf8(s):
     return unicode(s,"latin-1").encode("utf-8")
-    
+
 def utf82iso(s):
     try:
         return unicode(s,"utf-8").encode("latin-1")
@@ -86,7 +86,7 @@ def splitfilename(path):
     except:
         return path,""
 
-        
+
 def findLast(string, char):
     # TODO
     """Finds the last occurrence of char in string and returns its index. If the char cannot be found, return -1"""
@@ -119,14 +119,14 @@ class Link:
 
     def getTitle(self):
         return self.title
-    
+
 class CustomItem:
     def __init__(self, name, filename, type="intern", icon=""):
         self.name = name
         self.filename = filename
         self.type = type
         self.icon = icon
-        
+
     def getName(self):
         return self.name
 
@@ -138,17 +138,17 @@ class CustomItem:
         elif self.type=="text":
             return ""
         return self.filename
-            
+
     def getType(self):
         return self.type
 
     def getIcon(self):
         return self.icon
-        
+
     def __str__(self):
         return "%s|%s|%s|%s" %(self.name, self.filename, self.type, self.icon)
-    
-    
+
+
 def format_filesize(size):
     try:
         size = int(size)
@@ -173,15 +173,18 @@ def get_hash(filename):
         return hashlib.md5("").hexdigest()
 
 def get_filesize(filename):
-    if os.path.exists(filename):
-        stat = os.stat(filename)
-        return stat[6]
-    import core.config as config
-    if os.path.exists(config.settings["paths.datadir"]+"/"+filename):
-        stat = os.stat(config.settings["paths.datadir"]+"/"+filename)
-        return stat[6]
-    else:
-        print "Warning: File",filename,"not found"
+    try:
+        if os.path.exists(filename):
+            stat = os.stat(filename)
+            return stat[6]
+        import core.config as config
+        if os.path.exists(config.settings["paths.datadir"]+"/"+filename):
+            stat = os.stat(config.settings["paths.datadir"]+"/"+filename)
+            return stat[6]
+        else:
+            print "Warning: File",filename,"not found"
+            return 0
+    except:
         return 0
 
 
@@ -196,17 +199,17 @@ normalization_items = {"chars":[("00e4", "ae"),\
                         ("00e9", "e")],\
                      "words":[]}
 
-    
+
 def normalize_utf8(s):
     global normalization_items
-    
+
     s = s.lower()
     # Process special characters for search
     for key,value in normalization_items["chars"]:
         repl = unichr(int(key, 16)).encode("utf-8")
         s = s.replace(repl, value)
     return s
-    
+
 def replace_words(s):
     global normalization_items
     s = s.lower()
@@ -219,7 +222,7 @@ import locale
 def compare_utf8(s1,s2):
     return locale.strcoll(normalize_utf8(s1), normalize_utf8(s2))
 
-    
+
 def compare_digit(s1,s2):
     if int(s1)<int(s2):
         return -1
@@ -242,7 +245,7 @@ class Option:
         return self.shortname
     def setShortName(self, value):
         self.shortname = value
-    
+
     def getValue(self):
         return self.value
     def setValue(self, value):
@@ -252,13 +255,13 @@ class Option:
         return self.imgsource
     def setImagesource(self, value):
         self.imagesource = value
-        
+
     def getOptionType(self):
         return self.optiontype
     def setOptionType(self, value):
         self.optiontype = value
-    
-    
+
+
 def isCollection(node):
     try:
         if node.type in["collection", "collections"]:
@@ -300,7 +303,7 @@ def isDirectory(node):
         return 1
     else:
         return 0
-        
+
 def getDirectory(node):
     def p(node):
         import core.tree
@@ -369,7 +372,7 @@ def highlight(string, words, left, right):
 # mimetype validator
 #
 def getMimeType(filename):
-    
+
     filename = filename.lower().strip()
     mimetype = "application/x-download"
     type = "file"
@@ -442,10 +445,10 @@ def formatTechAttrs(attrs):
             ret[item]=attrs[sects][item]
     return ret
 
-    
+
 def splitname(fullname):
     fullname = fullname.strip()
-    
+
     firstname=lastname=title=""
 
     if fullname[-1] == ')':
@@ -471,12 +474,15 @@ def splitname(fullname):
         parts = fullname.split(" ")
         lastname = parts.pop().strip()
         firstname = " ".join(parts).strip()
-    
+
     return title,firstname,lastname
+
 
 #
 # cutting text content of html snippet after cutoff
 #
+
+
 class HTMLTextCutter(HTMLParser):
 
     def __init__(self, cutoff=500, output=sys.stdout):
@@ -488,6 +494,8 @@ class HTMLTextCutter(HTMLParser):
         self.in_style = 0
         self.in_script = 0
 
+        self.has_cutted_tr = False
+
         self.is_cutted = False
 
         HTMLParser.__init__(self)
@@ -497,6 +505,9 @@ class HTMLTextCutter(HTMLParser):
             self.in_style += 1
         if tag.strip().lower() == 'script':
             self.in_script += 1
+        if tag.strip().lower() in ['tr', 'td'] and self.is_cutted:
+            self.has_cutted_tr = True
+            return
         attrlist = ''.join([' %s="%s"' % (k, v) for k, v in attrs])
         self.output.write("<%s%s>" % (tag, attrlist))
 
@@ -505,6 +516,8 @@ class HTMLTextCutter(HTMLParser):
             self.in_style -= 1
         if tag.strip().lower() == 'script':
             self.in_script -= 1
+        if tag.strip().lower() in ['tr', 'td'] and self.has_cutted_tr:
+            return
         self.output.write("</%s>" % tag)
 
     def handle_startendtag(self, tag, attrs):
@@ -562,10 +575,13 @@ class HTMLTextCutter(HTMLParser):
 
     def close(self):
         HTMLParser.close(self)
-        
+
+
 #
 # returns formated string for long text
 #
+
+
 def formatLongText(value, field, cutoff=500):
     try:
         out = StringIO.StringIO()
@@ -579,14 +595,14 @@ def formatLongText(value, field, cutoff=500):
         else:
             return value
     except:
-        return value  
-    
-    
+        return value
+
+
 def checkString(string):
     """ Checks a string, if it only contains alphanumeric chars as well as "-" """
     result = re.match("([\w\-]+)", string)
     if result and result.group(0)==string:
-       return True
+        return True
     return False
 
 
@@ -611,7 +627,7 @@ def clean_path(path):
         newpath += c
     return newpath
 
-    
+
 def union(definition): # or
     if not definition:
         return []
@@ -638,10 +654,10 @@ def isParentOf(node, parent):
             return 1
     return 0
 
-    
+
 def intersection(definition): # and
-    if not definition: 
-        return [] 
+    if not definition:
+        return []
     if type(definition[0])!=dict:
         result1 = definition[0]
     else:
@@ -659,24 +675,24 @@ def intersection(definition): # and
         return result.keys()
     else:
         return result
-    
+
 class EncryptionException(Exception):
     def __init__(self, value=""):
         self.value = value
-        
+
     def __str__(self):
         return repr(self.value)
-    
+
 class OperationException(Exception):
     def __init__(self, value=""):
         self.value = value
     def __str__(self):
         return repr(self.value)
 
-        
+
 class FileException:
     pass
-    
+
 class Menu:
     def __init__(self, name, link="", target="_self"):
         self.name = name
@@ -684,12 +700,12 @@ class Menu:
         self.target = target
         self.item = list()
         self.default = ""
-        
+
     def getLink(self):
         if self.link=="":
             return "."
         return self.link
-        
+
     def getString(self):
         return self.getName() + "(" + ";".join(self.getItemList()) + ")"
 
@@ -700,16 +716,16 @@ class Menu:
 
     def addItem(self, itemname):
         self.item.append(itemname)
-        
+
     def getItemList(self):
         return self.item
-        
+
     def setDefault(self, name):
         self.default = name
-        
+
     def getDefault(self):
         return self.default
-        
+
 def parseMenuString(menustring):
     menu = []
     submenu = None
@@ -719,7 +735,7 @@ def parseMenuString(menustring):
     for m in menus:
         items = re.split("\(|;", m)
         for item in items:
-            
+
             if items.index(item)==0 and item.startswith("menu"):
                 # menu
                 submenu = Menu(item) # do not optimize, submenu obj needed
@@ -729,8 +745,8 @@ def parseMenuString(menustring):
                 if (item!=""):
                     submenu.addItem(item)
     return menu
-    
-        
+
+
 def getFormatedString(s):
     l = ["b", "sub", "sup", "em"]
     for i in l:
@@ -743,7 +759,7 @@ def mkKey():
     for i in range(0,16):
         s += alphabet[random.randrange(0,len(alphabet)-1)]
     return s
-    
+
 class Template(object):
     """
     Simple and fast templating system for '[att:xyz]' references.
@@ -779,7 +795,7 @@ class Template(object):
                 text_parts[i] = lookup(attribute_name) or ''
         return ''.join(text_parts)
 
-    
+
 if __name__ == "__main__":
     def tt(s):
         t,f,l = splitname(s)

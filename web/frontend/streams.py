@@ -204,11 +204,12 @@ def send_file(req, download=0):
     # try only extension
     if not file and n.get("archive_type")=="":
         for f in n.getFiles():
-            if os.path.splitext(f.getName())[1] == os.path.splitext(filename)[1]:
+            if os.path.splitext(f.getName())[1] == file_ext and f.getType() in ['doc', 'document', 'original', ]:
                 incUsage(n)
                 file = f
                 break
     # try file from archivemanager
+
     if not file and n.get("archive_type")!="":
         am = archivemanager.getManager(n.get("archive_type"))
         req.reply_headers["Content-Disposition"] = "attachment; filename="+filename
@@ -335,6 +336,7 @@ def get_root(req):
     else:
         return 404
 
+
 def get_all_file_paths(basedir):
     res = []
     for dirpath, dirnames, filenames in os.walk(basedir):
@@ -352,6 +354,7 @@ def build_transferzip(node):
     files_written = 0
     
     for n in node.getAllChildren():    
+
         for fn in n.getFiles():
             if fn.getType() in ['doc', 'document', 'zip', 'attachment', 'other']:                
                 fullpath = fn.retrieveFile()
@@ -376,6 +379,7 @@ def build_filelist(node):
     result_list = []
     
     for n in node.getAllChildren():
+
         for fn in n.getFiles():
             if fn.getType() in ['doc', 'document', 'zip', 'attachment', 'other']:
                 fullpath = fn.retrieveFile()

@@ -945,10 +945,10 @@ def register():
     from checkdoublet import WorkflowStep_CheckDoublet
     tree.registerNodeClass("workflowstep-checkdoublet", WorkflowStep_CheckDoublet)
     registerStep("workflowstep-checkdoublet")
-
+    
     from ldapauth import WorkflowStep_LdapAuth
     tree.registerNodeClass("workflowstep-ldapauth", WorkflowStep_LdapAuth)
-    registerStep("workflowstep-ldapauth")   
+    registerStep("workflowstep-ldapauth")
     addLabels(WorkflowStep_LdapAuth(type="workflowstep-ldapauth").getLabels())
     
     from defer import WorkflowStep_Defer
@@ -961,3 +961,7 @@ def register():
     registerStep("workflowstep-condition")
     addLabels(WorkflowStep_Condition(type="workflowstep-condition").getLabels())
 
+    from addpic2pdf import WorkflowStep_AddPic2Pdf
+    tree.registerNodeClass("workflowstep-addpic2pdf", WorkflowStep_AddPic2Pdf)
+    registerStep("workflowstep-addpic2pdf")
+    addLabels(WorkflowStep_AddPic2Pdf(type="workflowstep-addpic2pdf").getLabels())

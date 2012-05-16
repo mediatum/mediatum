@@ -203,6 +203,7 @@ def send_file(req, download=0):
             break
     # try only extension
     if not file and n.get("archive_type")=="":
+        file_ext = os.path.splitext(filename)[1]
         for f in n.getFiles():
             if os.path.splitext(f.getName())[1] == file_ext and f.getType() in ['doc', 'document', 'original', ]:
                 incUsage(n)

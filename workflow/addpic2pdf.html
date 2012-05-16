@@ -141,7 +141,7 @@
     $("#select_pdf_page").blur();
 
     var offs = $("#img_pdf_page").position();
-    var x = $('<img width="24" height="24" id="img_pdf_page" src="/img/wait.gif" style="margin-top:200px;z-index=1;"/>');
+    var x = $('<img width="24" height="24" id="img_pdf_page" src="/img/wait.gif" style="margin-top:200px;z-index:1;"/>');
 
     $("#img_pdf_page").replaceWith(x);
 
@@ -515,8 +515,6 @@
 
 </script>
 
-<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.1/themes/base/jquery-ui.css" />
-
 <style>
 
   #div_left {
@@ -544,11 +542,12 @@
   #div_sub_left {
     float: left;
     width: 45%;
+    max-height: 400px;
     border: 1px solid silver;
     margin-top: 2;
     padding: 1;
     background-color: #EEEEEE;
-    overflow: hidden;
+    overflow-y: auto;
     position: absolute;
   }
 
@@ -558,7 +557,7 @@
     border: 1px solid silver;
     margin-top: 2;
     padding-left: 10px;
-    overflow: hidden;
+    /* overflow: hidden; */
     position: relative;
   }
 
@@ -708,11 +707,11 @@
       <div>
         <input name="radio_logo" type="radio" checked="checked" onclick="radio_clicked(this.value);" tal:attributes="id python:'radio_logo_none'; value python:-1"/> <span i18n:translate="admin_wfstep_addpic2pdf_logo_none">None</span>
       </div>
-      <div class="logos" style="overflow:auto;">
+      <div class="logos" style="overflow:none;">
         <tal:block tal:repeat="fileindex python: range(len(wfs_files))">
-          <div>
+          <div style="overflow:hidden;">
             <tal:block tal:condition="python:wfs_files[fileindex].getName().startswith('m_upload_logoupload')">
-              <div style="border:1px solid silver; padding:5px; overflow: auto" class="subcontainer_logo" style="float:left">
+              <div style="border:1px solid silver; padding:5px; overflow:none;" class="subcontainer_logo" style="float:left">
                 <input name="radio_logo" type="radio" onclick="radio_clicked(this.value);" tal:attributes="id python:'radio_logo_'+str(fileindex); value python:str(fileindex);"/>
                 <tal:block tal:replace="python:wfs_files[fileindex].getName().replace('m_upload_logoupload_', '')" />
                 <span style="display:none" tal:content="python:wfs_files[fileindex].getName()" tal:attributes="id python:'radio_logo_'+str(fileindex)+'_fullname';" />

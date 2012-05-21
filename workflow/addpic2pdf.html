@@ -1,6 +1,6 @@
 <tal:block metal:define-macro="workflow_addpic2pdf">
 
-<script src="js/jquery-ui.js"> </script>
+<script type="text/javascript" language="javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/jquery-ui.js"> </script>
 
 <script tal:content="python:'var pdf_dim = '+str(json_pdf_dimensions)+';'">;</script>
 <script tal:content="python:'var keep_params = '+str(keep_params)+';'">;</script>
@@ -281,7 +281,6 @@
 
 
   function gridCheckboxEvent(checked) {
-    $("#element").hide();
     place_grid();
     if (checked == true) {
       setGridUrl();
@@ -420,8 +419,8 @@
       $("#element").hide();
       return;
     }
-
-    if ($("#checkbox_grid").attr("checked") == true) {
+    
+    if ($("#checkbox_grid").is(':checked') == true) {
       $("#element").show();
     }
     else {
@@ -544,7 +543,7 @@
     width: 45%;
     max-height: 400px;
     border: 1px solid silver;
-    margin-top: 2;
+    margin-top: 2px;
     padding: 1;
     background-color: #EEEEEE;
     overflow-y: auto;
@@ -555,7 +554,7 @@
     float: right;
     width: 50%;
     border: 1px solid silver;
-    margin-top: 2;
+    margin-top: 2px;
     padding-left: 10px;
     /* overflow: hidden; */
     position: relative;
@@ -597,11 +596,11 @@
       <div id="bigpage" style="text-align: center;height:600px;">
         <div id="thumb">
           <div id="thumb_inner">
-            <img width="24" height="24" id="img_pdf_page" src="/img/wait.gif" style="margin-top:200;"/>
+            <img width="24" height="24px" id="img_pdf_page" src="/img/wait.gif" style="margin-top:200px;"/>
           </div>
         </div>
       </div>
-      <div style="text-align:center;">
+      <div style="text-align:center; padding:2px;">
         <input id="checkbox_grid" type="checkbox" name="grid" onClick="gridCheckboxEvent(this.checked);"><span i18n:translate="admin_wfstep_addpic2pdf_cb_grid">Grid</span> |
         <input id="checkbox_logo_zindex" type="checkbox" name="logo_zindex" onClick="zIndexCheckboxEvent(this.checked);"><span i18n:translate="admin_wfstep_addpic2pdf_cb_logo_above_grid">logo above grid</span> |
         <a target="_blank" tal:attributes="href python:'/wfs_addpic2pdf/serve_page/p_document.pdf?node_id='+str(node.id);"><span i18n:translate="admin_wfstep_addpic2pdf_link_processed">currently processed</span></a> |
@@ -707,11 +706,11 @@
       <div>
         <input name="radio_logo" type="radio" checked="checked" onclick="radio_clicked(this.value);" tal:attributes="id python:'radio_logo_none'; value python:-1"/> <span i18n:translate="admin_wfstep_addpic2pdf_logo_none">None</span>
       </div>
-      <div class="logos" style="overflow:none;">
+      <div class="logos" style="overflow:hidden;">
         <tal:block tal:repeat="fileindex python: range(len(wfs_files))">
           <div style="overflow:hidden;">
             <tal:block tal:condition="python:wfs_files[fileindex].getName().startswith('m_upload_logoupload')">
-              <div style="border:1px solid silver; padding:5px; overflow:none;" class="subcontainer_logo" style="float:left">
+              <div style="border:1px solid silver; padding:5px; overflow:hidden;" class="subcontainer_logo" style="float:left;">
                 <input name="radio_logo" type="radio" onclick="radio_clicked(this.value);" tal:attributes="id python:'radio_logo_'+str(fileindex); value python:str(fileindex);"/>
                 <tal:block tal:replace="python:wfs_files[fileindex].getName().replace('m_upload_logoupload_', '')" />
                 <span style="display:none" tal:content="python:wfs_files[fileindex].getName()" tal:attributes="id python:'radio_logo_'+str(fileindex)+'_fullname';" />
@@ -734,7 +733,7 @@
 </div>
 
 <div>
-  <div id="element" style="height:0;">
+  <div id="element" style="height:0px;">
      <img id="grid" src="/img/blank.png" style="margin-top:200px;"/>
   </div>
 </div>

@@ -21,6 +21,7 @@ import core
 import core.tree as tree
 from core.acl import AccessData
 from web.frontend.content import getPaths
+from core.translation import translate
 
 
 def getData(req):
@@ -32,42 +33,57 @@ def getData(req):
     for c in tree.getNode(pid).getChildren().sort():
         if not access.hasReadAccess(c):
             continue
-        if c.isContainer():
-            cnum = len(c.getContainerChildren())
-            inum = len(c.getContentChildren())
-            
-            label = c.getLabel()
-            title = c.getLabel()+" ("+str(c.id)+")"
-            
-            cls = "folder"
-            
-            itemcls = ""
-            if not access.hasWriteAccess(c):
-                itemcls = "read"
+        try:
+            if c.isContainer():
+                cnum = len(c.getContainerChildren())
+                inum = len(c.getContentChildren())
+                
+                label = c.getLabel()
+                title = c.getLabel()+" ("+str(c.id)+")"
+                
+                cls = "folder"
+                
+                itemcls = ""
+                if not access.hasWriteAccess(c):
+                    itemcls = "read"
 
-            if c.type=="collection":
-                cls = "collection"
-            
-            if style=="edittree": # standard tree for edit area
-                if inum>0:
-                    label += " <small>("+str(inum)+")</small>"
+                if c.type=="collection": #or "collection" in c.type:
+                    cls = "collection"
+                if hasattr(c, 'treeiconclass'):
+                    cls = c.treeiconclass();
                     
-                ret.append('<li class="'+cls+'.gif" id="Node'+c.id+'">')
-                ret.append('<a href="#" title="'+title+'" id="'+c.id+'" class="'+itemcls+'">'+label+'</a>')
+                if c.getName().startswith(translate('user_trash', request=req)):
+                    cls = "trashicon"
+                elif c.getName().startswith(translate('user_upload', request=req)):
+                    cls = "uploadicon"
+                elif c.getName().startswith(translate('user_import', request=req)):
+                    cls = "importicon"
+                elif c.getName().startswith(translate('user_faulty', request=req)):
+                    cls = "faultyicon"
+                elif c.getName().startswith(translate('user_directory', request=req)):
+                    cls = "homeicon"
                 
-                if cnum>0:
-                    ret.append('<ul><li parentId="'+c.id+'" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>')
+                if style=="edittree": # standard tree for edit area
+                    if inum>0:
+                        label += " <small>("+str(inum)+")</small>"
+                        
+                    ret.append('<li class="'+cls+'.gif" id="Node'+c.id+'">')
+                    ret.append('<a href="#" title="'+title+'" id="'+c.id+'" class="'+itemcls+'">'+label+'</a>')
+                    
+                    if cnum>0:
+                        ret.append('<ul><li parentId="'+c.id+'" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>')
+                    ret.append('</li>')
                 
-                ret.append('</li>')
-            
-            elif style=="classification": # style for classification
-                ret.append('<li class="'+cls+'.gif" id="Node'+c.id+'">')
-                ret.append('<a href="#" title="'+title+'" id="'+c.id+'" class="'+itemcls+'">'+label+' <input type="image" src="/img/ftree/uncheck.gif"/></a>')
-                
-                if cnum>0:
-                    ret.append('<ul><li parentId="'+c.id+'" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>')
-                
-                ret.append('</li>')
+                elif style=="classification": # style for classification
+                    ret.append('<li class="'+cls+'.gif" id="Node'+c.id+'">')
+                    ret.append('<a href="#" title="'+title+'" id="'+c.id+'" class="'+itemcls+'">'+label+' <input type="image" src="/img/ftree/uncheck.gif"/></a>')
+                    
+                    if cnum>0:
+                        ret.append('<ul><li parentId="'+c.id+'" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>')
+                    
+                    ret.append('</li>')
+        except:
+            pass
 
     req.write("\n".join(ret))
     return

@@ -403,6 +403,9 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
     res['method'] = req.command
     res['path'] = req.path
     res['query'] = req.query
+    
+    if params.get('user'):
+        guestAccess = AccessData(user=users.getUser(params.get('user')))
 
     timetable = []
     result_shortlist = []

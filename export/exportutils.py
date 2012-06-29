@@ -26,11 +26,13 @@ import logging
 import core.tree as tree
 import core.athana as athana
 import core.config as config
+import core.users as users
 
 import utils.date as date
 
 from utils.utils import esc, u, u2
 from utils.date import parse_date, format_date
+from core.acl import AccessData
 
 import oaisets
 
@@ -51,7 +53,25 @@ def get_udate(node):
         udate = parse_date(udate)
     else:
         udate = date.now()
-    return format_date(udate, "%Y-%m-%d") 
+    return format_date(udate, "%Y-%m-%d")
+    
+def getAccessRights(node):
+    """ Get acccess rights for the public.
+    The values returned descend from 
+    http://wiki.surffoundation.nl/display/standards/info-eu-repo/#info-eu-repo-AccessRights.
+    This values are used by OpenAIRE portal.
+
+    """
+    guestAccess = AccessData(user=users.getUser('Gast'))
+    if date.now() < parse_date(node.get('updatetime')):
+        return "embargoedAccess"
+    elif guestAccess.hasAccess(node, 'read'):
+        if guestAccess.hasAccess(node, 'data'):
+            return "openAccess"
+        else:
+            return "restrictedAccess"
+    else:
+        return "closedAccess"
     
 def runTALSnippet(s, context, mask=None):
     if s.find('tal:') < 0:
@@ -83,7 +103,8 @@ default_context['prss'] = prss # protect rss
 default_context['parse_date'] = parse_date 
 default_context['format_date'] = format_date
 default_context['cdata'] = cdata
-default_context['get_udate'] = get_udate        
+default_context['get_udate'] = get_udate
+default_context['getAccessRights'] = getAccessRights
 default_context['config_get'] = config.get
 
 def registerDefaultContextEntry(key, entry):

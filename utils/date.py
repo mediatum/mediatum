@@ -32,11 +32,14 @@ class DateTime:
         self.has_month = month>0
         self.has_day = day>0
         self.has_time = hour or minute or second
+        
     def split(self):
         return (self.year,self.month,self.day,self.hour,self.minute,self.second)
+        
     def int(self):
         # for sorting
         return self.second+60*(self.minute+60*(self.hour+24*(self.day+32*(self.month+366*self.year))))
+        
     def daynum(self):
         return self.year*32*12 + self.month*32 + self.day
         
@@ -50,6 +53,18 @@ class DateTime:
         
     def __str__(self):
         return format_date(self)
+        
+    def __lt__(self, other):
+        """ Enamble the comparison 'less than (<)' """
+        if self.year < other.year:
+            return True
+        elif self.year == other.year:
+            if self.month < other.month:
+                return True
+            elif self.month == other.month:
+                if self.day < other.day:
+                    return True
+        return False
     
     def add(self,seconds):
 

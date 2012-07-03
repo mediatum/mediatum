@@ -132,6 +132,9 @@ def makeMetaData(node, audiofile):
 class Audio(default.Default):
     def getTypeAlias(node):
         return "audio"
+
+    def getOriginalTypeName(node):
+        return "original"
         
     def getCategoryName(node):
         return "audio"

@@ -39,6 +39,9 @@ import default
 class Video(default.Default):
     def getTypeAlias(node):
         return "video"
+
+    def getOriginalTypeName(node):
+        return "original"
         
     def getCategoryName(node):
         return "video"

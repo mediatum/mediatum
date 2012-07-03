@@ -184,6 +184,9 @@ def dozoom(node):
 class Image(default.Default):
     def getTypeAlias(node):
         return "image"
+
+    def getOriginalTypeName(node):
+        return "original"
         
     def getCategoryName(node):
         return "image"

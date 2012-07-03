@@ -97,6 +97,9 @@ class Default(tree.Node):
     def getTypeAlias(node):
         return "default"
 
+    def getOriginalTypeName(node):
+        return "original"
+
     def getCategoryName(node):
         return "undefined"
 
@@ -430,7 +433,6 @@ class Default(tree.Node):
             for m in masks:
                 if m.getLanguage() == language:
                     return m
-            #if not mask:
             for m in masks:
                 if m.getLanguage() in ["", "no"]:
                     return m

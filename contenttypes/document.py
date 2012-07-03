@@ -32,6 +32,9 @@ from core.attachment import filebrowser
 class Document(default.Default):
     def getTypeAlias(node):
         return "document"
+
+    def getOriginalTypeName(node):
+        return "document"
         
     def getCategoryName(node):
         return "document"

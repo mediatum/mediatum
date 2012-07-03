@@ -48,12 +48,10 @@ def cdata(s):
     return '<![CDATA[%s]]>' % s  
     
 def get_udate(node):
-    udate = node.get("updatetime")
-    if udate:
-        udate = parse_date(udate)
-    else:
-        udate = date.now()
-    return format_date(udate, "%Y-%m-%d")
+    try:
+        return format_date(parse_date (node.get("updatetime")), "%Y-%m-%d")
+    except:
+        return format_date(date.now(), "%Y-%m-%d")
     
 def getAccessRights(node):
     """ Get acccess rights for the public.
@@ -62,8 +60,12 @@ def getAccessRights(node):
     This values are used by OpenAIRE portal.
 
     """
+    try: # if node.get('updatetime') is empty, the method parse_date would raise an exception
+        l_date = parse_date(node.get('updatetime'))
+    except:
+        l_date = date.now()
     guestAccess = AccessData(user=users.getUser('Gast'))
-    if date.now() < parse_date(node.get('updatetime')):
+    if date.now() < l_date:
         return "embargoedAccess"
     elif guestAccess.hasAccess(node, 'read'):
         if guestAccess.hasAccess(node, 'data'):

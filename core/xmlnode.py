@@ -155,7 +155,14 @@ class _NodeLoader:
         p.ParseFile(fi)
         fi.close()
 
-        mappings = tree.getRoot("mappings")
+        try:
+            mappings = tree.getRoot("mappings")
+        except tree.NoSuchNodeError:
+            mappings = tree.getRoot().addChild(tree.Node(name="mappings", type="mappings"))
+            msg = "no mappings root found: added mappings root"
+            logging.getLogger("backend").info(msg)
+            print msg
+                
         for node in self.nodes:
             if node.type == "mapping":
                 if node.name not in [n.name for n in mappings.getChildren() if n.type == "mapping"]:

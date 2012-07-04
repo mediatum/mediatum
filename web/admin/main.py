@@ -58,6 +58,10 @@ def show_node(req):
 
 """ export definition: url contains /[type]/[id] """
 def export(req):
+    user = users.getUserFromRequest(req)
+    if not user.isAdmin():
+        return athana.HTTP_FORBIDDEN
+    
     path = req.path[1:].split("/")
     try:
         module = findmodule(path[1])

@@ -162,7 +162,7 @@ def initContexts():
     # === admin area ===
     context = athana.addContext("/admin", ".")
     file = context.addFile("web/admin/main.py")
-    file.addHandler("show_node").addPattern("/.*")
+    file.addHandler("show_node").addPattern("/(?!export/).*")
     file.addHandler("export").addPattern("/export/.*")
 
     # === edit area ===

@@ -44,23 +44,22 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
     nodename_copy = node.name
     if nodename_copy == None:
         nodename_copy = ""
-    fi.write((" " * indent) + '<node name="' + esc(nodename_copy) + '" id="' + str(node.id) + '" ')
+    fi.write('%s<node name="%s" id="%s" ' % ((" " * indent), esc(nodename_copy), str(node.id)))
     if node.type is None:
         node.type = "node"
-    fi.write("type=\"" + node.type + "\" ")
+    fi.write('type="%s" ' % node.type)
     if node.read_access:
-        fi.write("read=\"" + esc(node.read_access) + "\" ")
+        fi.write('read="%s" ' % esc(node.read_access))
     if node.write_access:
-        fi.write("write=\"" + esc(node.write_access) + "\" ")
+        fi.write('write="%s" ' % esc(node.write_access))
     if node.data_access:
-        fi.write("data=\"" + esc(node.data_access) + "\" ")
-
-    fi.write('>' + "\n")
+        fi.write('data="%s" ' % esc(node.data_access))
+    fi.write(">\n")
 
     indent += 4
 
     for name, value in node.items():
-        fi.write((" " * indent) + '<attribute name="' + u(esc(name)) + '"><![CDATA[' + u2(value) + ']]></attribute>' + "\n")
+        fi.write('%s<attribute name="%s"><![CDATA[%s]]></attribute>\n' %((" " * indent), u(esc(name)), u2(value)))
 
     for file in node.getFiles():
         if file.type == "metadata" or file.type in exclude_filetypes:
@@ -68,14 +67,15 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
         mimetype = file.mimetype
         if mimetype is None:
             mimetype = "application/x-download"
-        fi.write((" " * indent) + '<file filename="' + esc(file.getName()) + '" mime-type="' + mimetype + '" type="' + (file.type is not None and file.type or "image") + '"/>' + "\n")
+        fi.write('%s<file filename="%s" mime-type="%s" type="%s"/>\n' %((" " * indent), esc(file.getName()), mimetype, (file.type is not None and file.type or "image")))
     if children:
         for c in node.getChildren().sort():
             if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
                 if not c.type in exclude_children_types:
-                    fi.write((" " * indent) + '''<child id="%s" type="%s"/>\n''' % (str(c.id), c.type))
+                    fi.write('%s<child id="%s" type="%s"/>\n' % ((" " * indent), str(c.id), c.type))
+
     indent -= 4
-    fi.write((" " * indent) + '</node>' + "\n")
+    fi.write("%s</node>\n" %(" " * indent))
     if(children):
         for c in node.getChildren().sort():
             if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
@@ -152,17 +152,20 @@ class _NodeLoader:
         p.StartElementHandler = lambda name, attrs: self.xml_start_element(name, attrs)
         p.EndElementHandler = lambda name: self.xml_end_element(name)
         p.CharacterDataHandler = lambda d: self.xml_char_data(d)
-        p.ParseFile(fi)
-        fi.close()
+        try:
+            p.ParseFile(fi)
+        except expat.ExpatError as e:
+            print "\tfile not well-formed in line %s, %s" %(e.lineno, e.offset)
+            return
+        finally:
+            fi.close()
 
         try:
             mappings = tree.getRoot("mappings")
         except tree.NoSuchNodeError:
             mappings = tree.getRoot().addChild(tree.Node(name="mappings", type="mappings"))
-            msg = "no mappings root found: added mappings root"
-            logging.getLogger("backend").info(msg)
-            print msg
-                
+            logging.getLogger("backend").info("no mappings root found: added mappings root")
+ 
         for node in self.nodes:
             if node.type == "mapping":
                 if node.name not in [n.name for n in mappings.getChildren() if n.type == "mapping"]:
@@ -210,9 +213,8 @@ class _NodeLoader:
                         msg = "adjusting node attribute for mask '%s',  name='exportmapping':, value old='%s' -> new='%s'" % (str(node.id), exportmapping, exportmapping_new)
                         logging.getLogger("backend").info(msg)
 
-        msg = "xml import done"
-        logging.getLogger("backend").info(msg)
-        print msg
+        logging.getLogger("backend").info("xml import done")
+
 
     def xml_start_element(self, name, attrs):
         try:
@@ -221,9 +223,7 @@ class _NodeLoader:
             node = None
         if name == "nodelist":
             if "exportversion" in attrs:
-                msg = "starting xml import: %s" % str(attrs)
-                logging.getLogger("backend").info(msg)
-                print msg
+                logging.getLogger("backend").info("starting xml import: %s" % str(attrs))
 
         elif name == "node":
             self.node_already_seen = False
@@ -320,15 +320,15 @@ tree.registerNodeFunction("writexml", writexml)
 
 
 def parseNodeXML(s):
-    file = StringIO.StringIO(s)
-    n = _NodeLoader(file)
-    return n.root
+    return _NodeLoader(StringIO.StringIO(s)).root
 
 
 def readNodeXML(filename):
-    file = open(filename, "rb")
-    n = _NodeLoader(file)
-    return n.root
+    try:
+        return _NodeLoader(open(filename, "rb")).root
+    except IOError:
+        return None
+
 
 
 def writeNodeXML(node, filename):

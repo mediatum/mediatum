@@ -224,7 +224,10 @@ def searchfields():
 def importfile(filename):
     global node
     child = xmlnode.readNodeXML(filename)
-    node.addChild(child)
+    if child:
+        node.addChild(child)
+    else:
+        print "\tfile '%s' not found" % filename
     
 def exportfile(filename):
     global node

@@ -58,10 +58,16 @@ def shoppingbag_action(req):
                             show_shoppingbag(req)
                             return
                             
-                if key.startswith("do_export"): # export selected items
-                    export_shoppingbag(req)
+                if key.startswith("do_export_zip"): # export selected items in a zip-file
+                    export_shoppingbag_zip(req)
                     show_shoppingbag(req)
                     return
+                
+                if key.startswith("do_export_bibtex"): # export selected items in a bibtex-file
+                    export_shoppingbag_bibtex(req)
+                    show_shoppingbag(req)
+                    return
+                    
         elif req.params.get("action")=="bags":
             user = users.getUserFromRequest(req)
             if req.params.get("operation")=="save_bag":
@@ -216,8 +222,55 @@ def show_shoppingbag(req, msg=""):
 
     req.writeTAL(theme.getTemplate("shoppingbag.html"), v, macro="shoppingbag")
     return athana.HTTP_OK
+
+
+def export_shoppingbag_bibtex(req):
+    """
+    Export the metadata of selected nodes in a BibTeX-format
+    """
+    from web.frontend.streams import sendBibFile
+    from schema.schema import getMetaType
+    from utils.utils import join_paths
+    import core.config as config
+    import random
+    import os
     
-def export_shoppingbag(req):
+    items = [] # list of nodes to be exported
+    for key in req.params.keys():
+        if key.startswith("select_"):
+            items.append(key[7:])
+            
+    #dest = join_paths(config.get("paths.tempdir"), str(random.random())) + "/"
+    dest = config.get("paths.tempdir")+ str(random.random())+".bib"
+    
+    #if not os.path.isdir(dest):
+    #    os.mkdir(dest)
+        
+    f = open(dest, "a")
+    for item in items:
+        node = tree.getNode(item)
+        mask = getMetaType(node.getSchema()).getMask("bibtex")
+        print "\n\n---->" + str(mask) + "<----\n\n"
+        if mask is not None:
+            print "if mask is not None"
+            f.write(mask.getViewHTML([node], flags=8)) # flags =8 -> export type
+        else:
+            print "else: "
+            f.write("The selected document type doesn't have any bibtex export mask")
+    f.close()
+    
+    if len(items)>0:
+        sendBibFile(req, dest)
+    #    for root, dirs, files in os.walk(dest, topdown=False):
+    #        for name in files:
+    #            os.remove(os.path.join(root, name))
+    #            for name in dirs:
+    #                os.rmdir(os.path.join(root, name))
+    #    if os.path.isdir(dest):
+    #        os.rmdir(dest)
+
+    
+def export_shoppingbag_zip(req):
     from web.frontend.streams import sendZipFile
     from utils.utils import join_paths
     import core.config as config

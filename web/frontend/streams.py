@@ -249,6 +249,12 @@ def send_attachment(req):
         if file.getType()=="attachment":
             sendZipFile(req, file.retrieveFile())
             break
+        
+def sendBibFile(req, path):
+    req.reply_headers['Content-Disposition'] = "attachment; filename=export.bib"
+    req.sendFile(path, getMimeType(path))
+    if os.sep=='/': # Unix?
+        os.unlink(path) # unlinking files while still reading them only works on Unix/Linux
 
 def sendZipFile(req, path):
     tempfile = join_paths(config.get("paths.tempdir"), str(random.random()))+".zip"

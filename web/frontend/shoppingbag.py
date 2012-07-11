@@ -240,34 +240,27 @@ def export_shoppingbag_bibtex(req):
         if key.startswith("select_"):
             items.append(key[7:])
             
-    #dest = join_paths(config.get("paths.tempdir"), str(random.random())) + "/"
     dest = config.get("paths.tempdir")+ str(random.random())+".bib"
     
-    #if not os.path.isdir(dest):
-    #    os.mkdir(dest)
-        
     f = open(dest, "a")
     for item in items:
         node = tree.getNode(item)
         mask = getMetaType(node.getSchema()).getMask("bibtex")
-        print "\n\n---->" + str(mask) + "<----\n\n"
         if mask is not None:
-            print "if mask is not None"
             f.write(mask.getViewHTML([node], flags=8)) # flags =8 -> export type
         else:
-            print "else: "
             f.write("The selected document type doesn't have any bibtex export mask")
     f.close()
     
     if len(items)>0:
         sendBibFile(req, dest)
-    #    for root, dirs, files in os.walk(dest, topdown=False):
-    #        for name in files:
-    #            os.remove(os.path.join(root, name))
-    #            for name in dirs:
-    #                os.rmdir(os.path.join(root, name))
-    #    if os.path.isdir(dest):
-    #        os.rmdir(dest)
+        for root, dirs, files in os.walk(dest, topdown=False):
+            for name in files:
+                os.remove(os.path.join(root, name))
+                for name in dirs:
+                    os.rmdir(os.path.join(root, name))
+        if os.path.isdir(dest):
+            os.rmdir(dest)
 
     
 def export_shoppingbag_zip(req):

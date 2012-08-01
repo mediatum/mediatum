@@ -38,7 +38,16 @@ def buildChecksum(urn):
     return str(sum / int(digit))[-1:]
 
 def buildNBN(snid1,snid2,niss):
-    urn = "urn:nbn:de:"+str(snid1)+":"+str(snid2)+"-"+niss+"-"
+    """
+    ----- urn structure -----
+    urn:<NID>:<NID-specific Part>
+    
+    NID - Namespace IDentifier
+    The complete list of Univorm Resource Names Namespaces
+    can be referenced here:
+    http://www.iana.org/assignments/urn-namespaces/urn-namespaces.xml
+    """
+    urn = "urn:"+str(snid1)+":"+str(snid2)+"-"+niss+"-"
     return urn+buildChecksum(urn)
 
 def increaseURN(urn):

@@ -246,8 +246,10 @@ def getEditModules(force=0):
                     editModules[name[:-3]] = m
                 except SyntaxError:
                     logger.error("syntax error in module "+name[:-3])
-                except:
-                    logger.error("error in module "+name[:-3])
+                except ImportError, e:
+                    logger.error("import error in module "+name[:-3]+"\n"+str(e))
+                except Exception, e:
+                    logger.error(str(e))
              
         # test for external modules by plugin
         for k,v in config.getsubset("plugins").items():

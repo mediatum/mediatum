@@ -34,6 +34,21 @@ def calcChecksum(filename, method):
         return h.hexdigest()
     else:
         return ""
+    
+def calcChecksumFromMetadata(node):
+    h = hashlib.sha1()
+    h.update(node.id)
+    h.update(node.getName())
+    
+    def attributesToString(node):
+        string = ""
+        for item in node.items():
+            string += item[0] + item[1]
+        return string
+    
+    h.update(attributesToString(node))
+    
+    return h.hexdigest()
 
 def getChecksum(nodeId, method="SHA-1", filepath=""):
     if method not in ["SHA-1", "RIPEMD-160"]:
@@ -46,9 +61,11 @@ def getChecksum(nodeId, method="SHA-1", filepath=""):
             for f in node.getFiles():
                 if f.getType()==node.getOriginalTypeName():
                     return calcChecksum(f.retrieveFile(), method)
-            return ""
+            return calcChecksumFromMetadata(node)
             
     except tree.NoSuchNodeError, e:
         print "Node not present in mediaTUM:",e
     except IOError, e:
         print "File doesn't exist on filesystem", e
+    except Exception:
+        print "Error occured in hash.getChecksum"

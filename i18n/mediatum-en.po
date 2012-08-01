@@ -691,6 +691,9 @@ msgstr "Manage index lists"
 msgid "tab_news"
 msgstr "Manage messages"
 
+msgid "tab_identifier"
+msgstr "Create identifier"
+
 
 msgid "Text-Ansicht"
 msgstr "text view"

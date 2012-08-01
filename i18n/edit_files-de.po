@@ -93,3 +93,6 @@ msgstr "Reihenfolge der Objekte per Drag&Drop ändern"
 
 msgid "edit_files_order_save"
 msgstr "Reihenfolge speichern"
+
+msgid "edit_files_create_identifier"
+msgstr "Erzeugen"

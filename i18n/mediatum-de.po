@@ -702,6 +702,10 @@ msgstr "Indexlisten verwalten"
 msgid "tab_news"
 msgstr "Mitteilungen verwalten"
 
+msgid "tab_identifier"
+msgstr "Objektidentifikator erzeugen"
+
+
 msgid "Text-Ansicht"
 msgstr "Text-Ansicht"
 

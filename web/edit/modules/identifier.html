@@ -1,0 +1,23 @@
+<tal:block metal:define-macro="set_identifier">
+    
+    <p tal:content="msg"/>
+    
+    <form method="post">
+        <input type="radio" name="id_type" value="hash"/> HASH <br/>
+        <input type="radio" name="id_type" value="urn"/> URN
+            <select name="namespace">
+                <tal:block tal:repeat="namespace namespaces">
+                    <option tal:content="namespace"/>
+                </tal:block>
+            </select>
+            <select name="urn_type">
+                <tal:block tal:repeat="pubtype urn_pubtypes">
+                    <option tal:content="pubtype"/>
+                </tal:block>
+            </select>
+        <br/>
+        <p style="padding-left: 30px">
+            <input i18n:attributes="value edit_files_create_identifier" type="submit" name="submit"/>
+        </p>
+    </form>
+</tal:block>

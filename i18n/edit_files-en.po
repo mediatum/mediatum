@@ -75,3 +75,6 @@ msgstr "Change Order of Objects(Drag&Drop"
 
 msgid "edit_files_order_save"
 msgstr "Save Order"
+
+msgid "edit_files_create_identifier"
+msgstr "Create"

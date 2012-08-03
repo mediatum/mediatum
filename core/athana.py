@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.43 2011/12/16 14:57:14 seiferta Exp $'
+RCS_ID =  '$Id: athana.py,v 1.44 2012/08/03 11:16:50 wneudenberger Exp $'
 
 import sys
 
@@ -7024,7 +7024,10 @@ class AthanaThread:
 def runthread(athanathread):
     athanathread.worker_thread()
         
+ATHANA_STARTED = False
+        
 def run(port=8081, z3950_port=None):
+    global ATHANA_STARTED
     check_date()
     ph = AthanaHandler()
     hs = http_server ('', port, logger_object = lg)
@@ -7046,6 +7049,8 @@ def run(port=8081, z3950_port=None):
             athanathread = AthanaThread(ph, i)
             thread.start_new_thread(runthread, (athanathread,))
             threadlist += [athanathread]
+            
+    ATHANA_STARTED = True  
 
     while 1:
         try:

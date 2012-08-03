@@ -39,7 +39,7 @@ if config.get("config.searcher", "").startswith("fts"):
 else:
     import core.search.query
     core.search.query.startThread()
-    
+
 
 def startWebServer():
     global webserverprocess
@@ -50,9 +50,18 @@ def startWebServer():
     fileHandle.close()
 
 if config.get("config.restart_time", "00:00:00")=="00:00:00":
+
+    import core.schedules
+    try:
+        core.schedules.startThread()
+    except:
+        msg = "Error starting scheduler thread: %s %s" % (str(sys.exc_info()[0]), str(sys.exc_info()[1]))
+        core.schedules.OUT(msg, logger='backend', print_stdout=True, level='error')
+
     # no internal restart process
     core.webconfig.startWebServer()
-    
+
+
 else:
     # use internal restart process
     while (1):

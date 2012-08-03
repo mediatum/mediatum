@@ -1,0 +1,454 @@
+
+<tal:block metal:define-macro="schedule_popup">
+
+<script type="text/javascript" language="javascript" src="http://code.jquery.com/jquery-latest.js">
+</script>
+<script type="text/javascript" language="javascript" src="/js/mediatum.js">
+</script>
+
+<script type="text/javascript" src="/ckeditor/ckeditor.js"> </script>
+
+<script tal:content="python:'var submitbutton_run_now_label = \''+submitbutton_run_now_label+'\';'">;</script>
+<script tal:content="python:'var edit_schedule_submit_run_now_button_confirm = \''+edit_schedule_submit_run_now_button_confirm+'\';'">;</script>
+<script tal:content="python:'var edit_schedule_delete_schedule_confirm = \''+edit_schedule_delete_schedule_confirm+'\';'">;</script>
+<script tal:content="python:'var loaded_schedule_id = \''+str(loaded_schedule_id)+'\';'">;</script>
+
+<script type="text/javascript">
+
+    function getSelect(ids, schedule_func) {
+
+      if (schedule_func == "") {
+
+        document.getElementById("submitbutton").disabled = true;
+        document.getElementById("submitbutton").style.display='none';
+        document.getElementById("div_additional_nodes").style.display='none';
+        document.getElementById("submitbutton_run_now").style.display='none';
+
+        div_additional_nodes
+
+        document.getElementById("dest_for_function_fields").innerHTML=document.getElementById("span_nofunc");
+
+        document.getElementById("schema").style.display='none';
+        document.getElementById("span_nofunc").style.display='inline';
+
+        return;
+      }
+
+      getEditPage('dest_for_function_fields', ids, 'schedule', 'get_fields_for_'+schedule_func);
+      document.getElementById("submitbutton").disabled = false;
+      document.getElementById("submitbutton").style.display='inline';
+      document.getElementById("div_additional_nodes").style.display='inline';
+
+      var x = $("<input/>").attr('id', 'submitbutton_run_now')
+               .attr('type', 'submit')
+               .attr('name', 'submit_run_now')
+               .attr('value', submitbutton_run_now_label)
+               .attr('onClick', 'return confirm(edit_schedule_submit_run_now_button_confirm);');
+
+      if ($('#select_function').val() && !document.getElementById("submitbutton_run_now")) {
+          x.insertAfter(document.getElementById("submitbutton"));
+      }
+      document.getElementById("submitbutton_run_now").style.display='inline';
+
+    }
+
+    function showWait() {
+      document.getElementById("dest_for_function_fields").innerHTML='<img height="12" src="/img/wait.gif"/>';
+    }
+
+    function load_schedule(ids, schedule_id) {
+      getEditPage('div_schedule_data', ids, 'schedule', 'load_schedule_'+schedule_id);
+    }
+
+    function delete_node_from_schedule(node_id, schedule_id) {
+
+      if (!questionDelName(node_id)){
+          return false;
+      }
+
+      var url = 'edit_content?tab=schedule&jsoncallback=?';
+
+      var options = {
+        type: 'GET',
+        action: 'delete_node_from_schedule',
+        style: 'popup',
+        node_id: node_id,
+        id: node_id,
+        schedule_id: schedule_id,
+        };
+
+      $.getJSON(url, options, function(data) {
+
+        var errors=data['errors'];
+        if (errors) {
+          $("#response").html("");
+            $.each(errors, function(index, value) {
+              $("<div/>").html(value).attr('style', 'color:red').appendTo("#response");
+            }
+          );
+        }
+        else {
+          $("#response").html("");
+        }
+
+        var delete_table_rows=data['delete_table_rows'];
+        if (delete_table_rows) {
+            $.each(delete_table_rows, function(index, value) {
+              $("#"+value).html("");
+            }
+          );
+        }
+
+      }); // getJSON
+
+      var ids = $("#idlist").val();
+      load_table_nid2schedules(ids);
+      ids = $("#idlist").val();
+      load_table_schedule2nids(ids);
+
+      ids = $("#idlist").val();
+      load_table_nid2schedules(ids);
+      load_table_schedule2nids(ids);
+
+      return false;
+
+    }
+
+    function delete_schedule(schedule_id, single_trigger) {
+
+      var msg = edit_schedule_delete_schedule_confirm + " " + single_trigger + " (" + schedule_id + ")";
+
+      if (!confirm(msg)){
+          return false;
+      }
+      var url = 'edit_content?tab=schedule&jsoncallback=?';
+
+      var ids = $("#idlist").val();
+
+      var options = {
+        type: 'GET',
+        action: 'delete_schedule',
+        style: 'popup',
+        schedule_id: schedule_id,
+        id: ids,
+        };
+
+      $.getJSON(url, options, function(data) {
+        var errors=data['errors'];
+        if (errors) {
+          $("#response").html("");
+            $.each(errors, function(index, value) {
+              $("<div/>").html(value).attr('style', 'color:red').appendTo("#response");
+            }
+          );
+        }
+        else {
+          $("#response").html("");
+        }
+
+        var delete_table_rows=data['delete_table_rows'];
+        if (delete_table_rows) {
+            $.each(delete_table_rows, function(index, value) {
+              $("#"+value).html("");
+            }
+          );
+        }
+
+      }); // getJSON
+
+      var ids = $("#idlist").val();
+      load_table_nid2schedules(ids);
+      ids = $("#idlist").val();
+      load_table_schedule2nids(ids);
+
+      ids = $("#idlist").val();
+      load_table_nid2schedules(ids);
+      load_table_schedule2nids(ids);
+
+      return false;
+
+    }
+
+        function load_table_nid2schedule(ids) {
+
+          var url = 'edit_content?tab=schedule&jsoncallback=?';
+
+          var options = {
+            type: 'GET',
+            action: 'load_table_nid2schedule',
+            style: 'popup',
+            ids: ids,
+            };
+
+          $.getJSON(url, options, function(data) {
+
+            var errors=data['errors'];
+            if (errors) {
+              $("#response").html("");
+                $.each(errors, function(index, value) {
+                  $("<div/>").html(value).attr('style', 'color:red').appendTo("#response");
+                }
+              );
+            }
+            else {
+              $("#response").html("");
+            }
+
+            var delete_table_rows=data['delete_table_rows'];
+            if (delete_table_rows) {
+                $.each(delete_table_rows, function(index, value) {
+                  $("#"+value).html("");
+                }
+              );
+            }
+
+          }); // getJSON
+
+        return false;
+
+      }
+
+    function load_table_nid2schedules(ids) {
+      getEditPage('div_table_nid2schedules', ids, 'schedule', 'load_table_nid2schedules');
+    }
+
+    function load_table_schedule2nids(ids) {
+      getEditPage('div_table_schedule2nids', ids, 'schedule', 'load_table_schedule2nids');
+      $('#sid_'+loaded_schedule_id).css('backgroundColor', '#eeee00');
+    }
+
+    function highlight_loaded_schedule() {
+      var x = $('#sid_'+loaded_schedule_id);
+      $('#sid_'+loaded_schedule_id).css('backgroundColor', '#eeee00');
+    }
+
+    var highlight_loaded_s = window.setInterval("highlight_loaded_schedule();", 1000);
+
+    // load both tables (nid2schedules, schedule2nids) - one may be enough ?
+    $(document).ready(function() {
+
+      var x = $("<input/>").attr('id', 'submitbutton_run_now')
+               .attr('type', 'submit')
+               .attr('name', 'submit_run_now')
+               .attr('value', submitbutton_run_now_label)
+               .attr('onClick', 'return confirm(edit_schedule_submit_run_now_button_confirm);');
+
+      if ($('#select_function').val() && !document.getElementById("submitbutton_run_now")) {
+          x.insertAfter(document.getElementById("submitbutton"));
+      }
+      if (document.getElementById("submitbutton_run_now"))  {
+        document.getElementById("submitbutton_run_now").style.display='inline';
+      }
+
+     var ids = $("#idlist").val();
+     load_table_nid2schedules(ids);
+     load_table_schedule2nids(ids);
+
+    });
+
+</script>
+
+<style type="text/css">
+
+    .datatable{
+        border:0px solid silver; border-width:1px 1px 0px 1px; width:90%
+    }
+    .datatable th{
+        background-color:#d8d8d8; padding:3px 5px 2px 3px; border-bottom:1px solid silver; font-variant:small-caps
+    }
+    .datatable tr{
+        border:1px solid silver
+    }
+    .datatable td{
+        vertical-align:middle; padding:2px;border-bottom:1px solid silver
+    }
+
+    div.editorerror{
+        border: 1px solid red; padding: 1px; margin: 1px; white-space: nowrap;
+    }
+
+    div.editorrow{
+        border: 1px solid white; padding: 1px; margin: 1px; white-space: nowrap;
+    }
+
+    pre.error{
+        background-color:#ffeeee; border: 1px solid red; padding: 1px; margin: 1px; white-space: nowrap;
+    }
+
+</style>
+
+    <h3 i18n:translate="edit_schedule_function_selection">TEXT</h3>
+
+    <p tal:condition="error" tal:content="raw error" i18n:translate="" class="error" >TEXT</p>
+
+    <span id="result" style="color:blue" tal:condition="python: result" tal:content="python: result">TEXT</span>
+
+    <form id="selection_schedule_properties"  tal:attributes="action python:'/edit/edit_content?id='+id" method="post" style="margin:5px">
+
+        <input type="hidden" name="nodeid" id="idlist" tal:attributes="value python:id"/>
+        <input tal:condition="python: loaded_schedule" type="hidden" name="schedule_id" tal:attributes="value python:loaded_schedule.id"/>
+        <input type="hidden" name="tab" value="schedule"/>
+
+        <br/>
+
+        <div tal:condition="python: input_datetime_error" class="editorerror">
+            <div i18n:translate="edit_schedule_input_datetime_label">TEXT</div>
+            <input maxlength="16" class="text field" type="text" name="datetime" style="margin-bottom:2px" tal:attributes="value python: input_datetime"> <!-- <span class="required">*</span> -->
+        </div>
+
+        <div tal:condition="python: not input_datetime_error" class="editorrow">
+            <div i18n:translate="edit_schedule_input_datetime_label">TEXT</div>
+            <input tal:condition="python: loaded_schedule" maxlength="16" class="text field" type="text" name="datetime" style="margin-bottom:2px" tal:attributes="value python: loaded_schedule.get('single_trigger')">
+            <input tal:condition="python: not loaded_schedule" maxlength="16" class="text field" type="text" name="datetime" style="margin-bottom:2px" tal:attributes="value python: input_datetime"> <!-- <span class="required">*</span>  -->
+            <span tal:condition="python: loaded_schedule">(<span i18n:translate="edit_schedule_explain_schedule_id" /> <span tal:content="python:loaded_schedule.id" />) </span>
+        </div>
+
+        <hr/>
+
+        <p i18n:translate="edit_schedule_sel_func_explain"/>
+        <p>
+            <label i18n:translate="edit_schedule_sel_func">TEXT</label>
+            <select id="select_function" name="schedule_function" onchange="showWait();getSelect(this.form.nodeid.value,this.form.schedule_function.options[this.form.schedule_function.selectedIndex].value);">
+                <option tal:repeat="func_name python:['']+sorted(fc_dict.keys(), key=lambda x: fc_dict[x].getSortorderKey(language))" tal:attributes="value python:func_name;selected python:{True:'1', False:nothing}[func_name==currentFunction]">
+                    <tal:block tal:replace="python: ( (func_name != '') and str(fc_dict[func_name].getLongname(language) ) or '')"> TEXT </tal:block>
+                </option>
+            </select>
+        </p>
+
+        <div tal:condition="python: True or not currentFunction" id="dest_for_function_fields">
+            <tal:block metal:use-macro="schedule_func_show_fields_and_explanation"/>
+        </div>
+
+        <hr/>
+
+        <div id="div_additional_nodes" tal:attributes="class python:{True:'editorerror'}.get(additional_nodes_error, 'editorrow');style python:{True:'', False:'display:none'}.get(bool(loaded_schedule or created_new_schedule or currentFunction))">
+            <div i18n:translate="edit_schedule_explain_additional_nodes">TEXT</div>
+            <input class="text field" type="text" size="40" name="additional_nodes" style="margin-bottom:2px" tal:attributes="value python: additional_nodes">
+        </div>
+
+        <p tal:condition="python: currentFunction">
+            <input tal:condition="python: loaded_schedule" style="display:inline" i18n:attributes="value edit_schedule_submit_edit_button" type="submit" name="submit" id="submitbutton"/>
+            <input tal:condition="python: not loaded_schedule" style="display:inline" i18n:attributes="value edit_schedule_submit_new_button" type="submit" name="submit" id="submitbutton"/>
+            <input tal:condition="python: loaded_schedule or created_new_schedule" style="display:inline" tal:attributes="value python: t(language, 'edit_schedule_submit_run_now_button'); onClick python: 'return confirm(\''+t(language, 'edit_schedule_submit_run_now_button_confirm')+'\')';" type="submit" name="submit_run_now" id="submitbutton_run_now"  />
+        </p>
+
+        <p tal:condition="python: not currentFunction">
+            <input style="display:none" i18n:attributes="value edit_schedule_submit_new_button" type="submit" name="submit" id="submitbutton"/>
+        </p>
+
+    </form>
+
+    <div id="div_table_nid2schedules" style="overflow-x:auto; overflow-y:auto; max-height:500px">
+        <img height="12" src="/img/wait.gif"/>
+    </div>
+
+    <p>
+    </p>
+
+    <div id="div_table_schedule2nids" style="overflow-x:auto; overflow-y:auto; max-height:200px">
+        <img height="12" src="/img/wait.gif"/>
+    </div>
+
+</tal:block>
+
+
+<tal:block metal:define-macro="schedule_func_show_fields_and_explanation">
+
+    <div tal:content="python: explain_func">TEXT</div>
+
+    <span id="span_nofunc" tal:condition="python: not currentFunction" i18n:translate="edit_schedule_no_function_selected" display="inline"> TEXT123 </span>
+    <span tal:condition="fieldDicts" id="schema" name="schema">
+
+        <tal:block tal:repeat="dfield fieldDicts">
+            <br/>
+            <div tal:condition="python: dfield['evaluation_error']" class="editorerror">
+                <tal:block tal:replace="structure python:dfield['field'].label"/> <br/>
+                <tal:block tal:replace="structure python:dfield['field'].getEditorHTML(dfield['field'], width=400, value=str(dfield['value']), name=str(dfield['field'].name))"/>
+            </div>
+            <div tal:condition="python: not dfield['evaluation_error']" class="editorrow">
+                <tal:block tal:replace="structure python:dfield['field'].label"/> <br/>
+                <tal:block tal:replace="structure python:dfield['field'].getEditorHTML(dfield['field'], width=400, value=str(dfield['value']), name=str(dfield['field'].name))"/>
+            </div>
+        </tal:block>
+
+    </span>
+
+</tal:block>
+
+
+<tal:block metal:define-macro="table_nid2schedules">
+
+<tal:block: tal:define="global show_thumbs python: False"/>
+    <div tal:condition="python: nid2active_schedules">
+        <div i18n:translate="edit_schedule_explain_table_nid2schedules">TEXT</div>
+        <table id="nid2schedule_table" class="datatable" cellpadding="0px" cellspacing="0px">
+            <tr>
+                <th i18n:translate="edit_schedule_nodeid">TEXT</th>
+                <tal:block tal:condition="show_thumbs">
+                <th i18n:translate="edit_schedule_node_thumb">TEXT</th>
+                </tal:block>
+                <th i18n:translate="edit_schedule_schedulecount">TEXT</th>
+                <th i18n:translate="edit_schedule_single_trigger">TEXT</th>
+            </tr>
+            <tr tal:repeat="nid python:sorted(nid2active_schedules.keys())">
+                <td tal:attributes="title python:nid2active_schedules[nid]['title']">
+                    <a tal:content="python: nid" tal:attributes="href python:'edit_content?id='+nid+'&tab=schedule'"/>
+                </td>
+                <tal:block tal:condition="show_thumbs">
+                <td tal:attributes="title python:nid2active_schedules[nid]['title']">
+                    <a tal:attributes="href python:'edit_content?id='+nid+'&tab=schedule'">
+                        <image height="45" width="45" tal:attributes="src python:'/thumb2/'+nid; href python:'edit_content?id='+nid+'&tab=schedule'"/>
+                    </a>
+                </td>
+                </tal:block>
+                <td tal:content="python:len(nid2active_schedules[nid]['schedule_list'])" i18n:translate=""/>
+                <td>
+                    <a tal:repeat="schedule python: [s for s in sorted(nid2active_schedules[nid]['schedule_list'], key=lambda x: x.get('single_trigger'))]" tal:content="python: schedule.get('single_trigger')+' '" tal:attributes="href python:'edit_content?id='+schedule.get('nodelist')+'&tab=schedule&schedule_id='+schedule.id"/>
+                </td>
+            </tr>
+        </table>
+    </div>
+</tal:block>
+
+
+<tal:block metal:define-macro="table_schedule2nids">
+    <div tal:condition="python: schedule2nids">
+        <div i18n:translate="edit_schedule_explain_table_schedule2nids">TEXT</div>
+        <table  id="schedule2nid_table" class="datatable" cellpadding="0px" cellspacing="0px">
+            <tr>
+                <th i18n:translate="edit_schedule_schedule_status">TEXT</th>
+                <th i18n:translate="edit_schedule_single_trigger">TEXT</th>
+                <th i18n:translate="edit_schedule_delete_schedule">TEXT</th>
+                <th i18n:translate="edit_schedule_nodecount_subset_selection">TEXT</th>
+                <th i18n:translate="edit_schedule_nodecount_all">TEXT</th>
+                <th i18n:translate="edit_schedule_nids">TEXT</th>
+                <th tal:condition="python:len(nid2schedules.keys())==1" i18n:translate="edit_schedule_delete_node_from_schedule"/>
+            </tr>
+            <tr tal:repeat="schedule_id python:sorted(schedule2nids.keys(), key=lambda x: schedule2nids[x]['schedule'].get('single_trigger'))" tal:attributes="id python:'sid_'+schedule_id; ">
+                <td>
+                    <span tal:replace="python: schedule2nids[schedule_id]['status']">TEXT</span>
+                </td>
+                <td>
+                    <a tal:content="python: schedule2nids[schedule_id]['schedule'].get('single_trigger')" tal:attributes="href python:'edit_content?id='+schedule2nids[schedule_id]['schedule'].get('nodelist')+'&tab=schedule&schedule_id='+schedule_id"/>
+                </td>
+                <td>
+                    <input tal:attributes="name python:'delete_schedule_'+schedule_id; onclick python:'return delete_schedule('+schedule_id+',\''+schedule2nids[schedule_id]['schedule'].get('single_trigger')+'\')'" i18n:attributes="title edit_schedule_delete_schedule_title" type="image" src="/img/delete.png" />
+                </td>
+                <td tal:content="python:len(schedule2nids[schedule_id]['nids'])" tal:attributes="title python: str(schedule2nids[schedule_id]['nids'])"/>
+                <td tal:content="python:len(schedule2nids[schedule_id]['nids_all'])" tal:attributes="title python: str(schedule2nids[schedule_id]['nids_all'])"/>
+                <td>
+                    <tal:block tal:condition="python: len(schedule2nids[schedule_id]['nids'])>100">
+                        <a tal:repeat="nid python: sorted(schedule2nids[schedule_id]['nids'])[0:10]" tal:content="python: nid" tal:attributes="href python:'edit_content?id='+nid+'&tab=schedule';title python:nid2schedules[nid]['title']"/>
+                        ...
+                    </tal:block>
+                    <tal:block tal:condition="python: len(schedule2nids[schedule_id]['nids'])<=100" >
+                        <a tal:repeat="nid python: sorted(schedule2nids[schedule_id]['nids'])" tal:content="python: nid" tal:attributes="href python:'edit_content?id='+nid+'&tab=schedule';title python:nid2schedules[nid]['title']"/>
+                    </tal:block>
+                </td>
+                <td tal:condition="python:len(nid2schedules.keys())==1">
+                    <input tal:attributes="name python:'delete_node_'+nid2schedules.keys()[0]+'_from_schedule_'+schedule_id; onclick python:'return delete_node_from_schedule('+nid2schedules.keys()[0]+','+schedule_id+')'" i18n:attributes="title edit_schedule_delete_node_title" type="image" src="/img/delete.png" />
+                </td>
+            </tr>
+        </table>
+    </div>
+</tal:block>

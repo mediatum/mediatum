@@ -55,7 +55,7 @@ else:
 logger = logging.getLogger("backend")
 
 SLEEP_INTERVAL = 1
-TRIGGER_INTERVAL = 60  # seconds (times SLEEP_INTERVAL)
+TRIGGER_INTERVAL = 15  # seconds (times SLEEP_INTERVAL)
 DEBUG = False
 
 GRACE_SECONDS = 60
@@ -992,6 +992,13 @@ Eine erste Funktion zum Versenden von Mail. Es wird eine Mail an eine vorgegeben
 Der Text der Mail kann ein TAL-Template sein. Im Kontext stehen die Liste 'nidlist' der ID's der Knotenauswahl und die Funktion
 'getItemDict', die die Object-ID's auf ein Dictionary mit den Attributen abbildet, zur Auswahl.
 '''
+
+test_sendmail01_explain_en =\
+'''
+This function will send an email. The body may be a TAL template with the context variable 'nidlist' holding the id's of the objects selected in the editor
+and the function 'getItemDict' mapping the object id's to a dictionary holding the attributes of the respective objects node.
+'''
+
 label_test_sendmail01 = {
            "de":
             [
@@ -1004,11 +1011,11 @@ label_test_sendmail01 = {
             ],
            "en":
             [
-                ("test_sendmail01_attribute_attr_recipient", '... to be translated ... Zieladresse der Mail'),
-                ("test_sendmail01_attribute_attr_subject", 'subject of the mail'),
-                ("test_sendmail01_attribute_attr_body", 'content of the mail - should not be empty'),
+                ("test_sendmail01_attribute_attr_recipient", '(;-separated) recipient addresses of the mail'),
+                ("test_sendmail01_attribute_attr_subject", 'Subject of the mail'),
+                ("test_sendmail01_attribute_attr_body", 'Body of the mail - should not be empty'),
                 ("test_sendmail01_longname", 'Test Function send mail'),
-                ("test_sendmail01_explanation", '.. to be translated ...'),
+                ("test_sendmail01_explanation", test_sendmail01_explain_en),
 
             ]
             }

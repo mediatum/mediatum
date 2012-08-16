@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.tree as tree
+import core.athana as athana
 from schema.schema import VIEW_DATA_ONLY, VIEW_DEFAULT
 from core.tree import Node, getNode
 from core.metatype import Metatype
@@ -83,7 +84,7 @@ class m_label(Metatype):
         v["pid"] = req.params.get("pid", "")
         v["item"] = item
         v["fields"] = fields
-        return req.getTAL("schema/mask/label.html", v, macro="metaeditor")
+        return req.getTAL("metadata/label.html", v, macro="metaeditor")
 
     def getEditorHTML(self, field, value="", width=40, name="", lock=0, language=None):
         return athana.getTAL("metadata/label.html", {"lock": lock, "value": value, "width": width, "name": name, "field": field}, macro="editorfield", language=language)

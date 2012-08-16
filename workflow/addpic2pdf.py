@@ -367,8 +367,9 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
             ret = list()
 
             field = tree.Node("infotext", "metafield")
-            field.set("label", t(lang, "admin_wfstep_addpic2pdf_no_pypdf"))
+            field.set("label", t(lang, "admin_wfstep_addpic2pdf_hint"))
             field.set("type", "label")
+            field.set("value", t(lang, "admin_wfstep_addpic2pdf_no_pypdf"))
             ret.append(field)
 
             return ret
@@ -390,7 +391,9 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
     def getLabels(self):
         return {"de":
             [
+                ("admin_wfstep_addpic2pdf_hint", 'Hinweis'),
                 ("admin_wfstep_addpic2pdf_no_pypdf", '<b style="color:red;">WARNUNG:</b> Python-Modul pyPdf ist nicht installiert - dieser Workflow-Schritt ist nicht funktional'),
+                
                 ("admin_wfstep_addpic2pdf_no_pdf_document_for_this_node", 'Kein PDF-Document vom Typ "document" gefunden - dieser Workflow-Schritt ist f\xc3\xbcr diesen Knoten nicht funktional'),
                 ("admin_wfstep_addpic2pdf_no_logo_selected", 'Es wurde kein Bild zum Einf\xc3\xbcgen ausgew\xc3\xa4hlt'),
                 ("admin_wfstep_addpic2pdf_printer_range_error", 'Fehler bei der Definition des Seitenbereiches'),
@@ -430,7 +433,9 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
             ],
            "en":
             [
+                ("admin_wfstep_addpic2pdf_hint", 'Hint'),
                 ("admin_wfstep_addpic2pdf_no_pypdf", '<b style="color:red;">WARNING:</b> Python module pyPdf is not installed - this workflow step is not functional'),
+                
                 ("admin_wfstep_addpic2pdf_no_pdf_document_for_this_node", 'No PDF of type "document" found - this workflow step is not functional for this node'),
                 ("admin_wfstep_addpic2pdf_no_logo_selected", 'No picture has been selected'),
                 ("admin_wfstep_addpic2pdf_printer_range_error", 'Error in page range definition'),

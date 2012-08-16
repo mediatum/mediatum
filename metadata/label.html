@@ -4,3 +4,34 @@
 </tal:block>
 
 <input metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name; value python:context.value" type="text" class="searchfield"/>
+
+<div metal:define-macro="metaeditor" class="back">
+    <h3 tal:condition="python:op=='edit'" i18n:translate="mask_edit_edit_label">TEXT</h3>
+    <h3 tal:condition="python:op=='new'" i18n:translate="mask_edit_new_label">TEXT</h3>
+    <br/>
+    <br/>
+    <div class="label" i18n:translate="mask_edit_label">TEXT</div><input tal:attributes="value python:item.getLabel()" type="text" name="label" style="width:500px"/>
+    <br/>
+    <tal:block tal:condition="python:op=='new'">
+        <div class="label" i18n:translate="mask_edit_position">TEXT</div>
+        <select name="insertposition" style="width:500px">
+            <option value="end" selected="selected" i18n:translate="mask_edit_end">TEXT</option>
+            <tal:block tal:repeat="field fields">
+                <option tal:condition="python:hasattr(field.getField(),'getFieldtype')" tal:attributes="value python:field.id" tal:content="python:field.getLabel()+' ('+field.getField().getFieldtype()+')'"/>
+
+                <option tal:condition="python:not hasattr(field.getField(),'getFieldtype')" tal:attributes="value python:field.id" tal:content="python:field.getLabel()+' ('+field.get('type')+')'"/>
+            </tal:block>
+        </select>
+        <br/>
+    </tal:block>
+    
+    <input tal:attributes="value python:item.id" type="hidden" name="id"/>
+    <input tal:attributes="value pid" type="hidden" name="pid" />
+    <input type="hidden" name="type" value="label"/>
+    <input type="hidden" name="field" value="0"/>
+    <br/>&nbsp;<br/>
+    <div class="label">&nbsp;</div>
+    <button type="submit" name="saveedit" i18n:translate="mask_edit_save">TEXT</button>
+    &nbsp;&nbsp;<button type="submit" onclick="setCancel(document.myform.op)" i18n:translate="mask_edit_cancel">TEXT</button>
+    <input tal:attributes="value op" type="hidden" name="op"/>
+</div>

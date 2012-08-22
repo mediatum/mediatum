@@ -394,6 +394,7 @@ supported_formats = [
 
 
 def get_node_children_struct(req, path, params, data, id, debug=True, allchildren=False, singlenode=False, parents=False, send_children=False):
+    global guestAccess
     starttime = time.time()
     retrievaldate = format_date()
 

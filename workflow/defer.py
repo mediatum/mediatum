@@ -21,6 +21,7 @@
 
 import core.tree as tree
 import utils.date as date
+import core.schedules as schedules
 from workflow import WorkflowStep
 from core.translation import t
 
@@ -33,6 +34,7 @@ class WorkflowStep_Defer(WorkflowStep):
     suppressed shall be given. They will be saved in nodes attrname and 
     accesstype respectively.
     """
+    
 
     def runAction(self, node, op=""):
         """
@@ -46,15 +48,26 @@ class WorkflowStep_Defer(WorkflowStep):
             if date.validateDateString(l_date):
                 try:
                     node.set('updatetime', date.format_date(date.parse_date(l_date)))
-                    l_date = date.format_date(date.parse_date(l_date), "dd.mm.yyyy")
+                    formated_date = date.format_date(date.parse_date(l_date), "dd.mm.yyyy")
                     for item in self.get('accesstype').split(';'):
-                        node.setAccess(item, "{date >= %s}" % l_date)
+                        node.setAccess(item, "{date >= %s}" % formated_date)
                     node.getLocalRead()
+                    
+                    if self.get('recipient'): # if the recipient-email was entered, create a scheduler
+                        attr_dict = {'single_trigger': l_date, 'function': "test_sendmail01",
+                                     'nodelist': list(node.id),'attr_recipient': self.get('recipient'),
+                                     'attr_subject': self.get('subject') + " ID: " + str(node.id),
+                                     'attr_body': self.get('body')}
+                        
+                        schedules.create_schedule("WorkflowStep_Defer", attr_dict)
+                    
                 except ValueError, e:
                     print "Error: %s" % e
+                    
 
     def show_workflow_node(self, node, req):
         return self.forwardAndShow(node, True, req)
+        
         
     def metaFields(self, lang=None):
         ret = list()
@@ -68,7 +81,24 @@ class WorkflowStep_Defer(WorkflowStep):
         field.set("type", "mlist")
         field.set("valuelist", ";read;write;data")
         ret.append(field)
+        
+        field = tree.Node("recipient", "metafield")
+        field.set("label", t(lang, "admin_wfstep_email_recipient"))
+        field.set("type", "text")
+        ret.append(field)
+        
+        field = tree.Node("subject", "metafield")
+        field.set("label", t(lang, "admin_wfstep_email_subject"))
+        field.set("type", "text")
+        ret.append(field)
+
+        field = tree.Node("body", "metafield")
+        field.set("label", t(lang, "admin_wfstep_email_text"))
+        field.set("type", "memo")
+        ret.append(field)
+        
         return ret
+    
         
     def getLabels(self):
         return { "de":

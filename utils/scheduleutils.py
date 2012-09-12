@@ -55,7 +55,7 @@ else:
 logger = logging.getLogger("backend")
 
 SLEEP_INTERVAL = 1
-TRIGGER_INTERVAL = 15  # seconds (times SLEEP_INTERVAL)
+TRIGGER_INTERVAL = 3600  # seconds (times SLEEP_INTERVAL)
 DEBUG = False
 
 GRACE_SECONDS = 60

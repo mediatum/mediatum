@@ -391,6 +391,8 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
     def getLabels(self):
         return {"de":
             [
+                ("workflowstep-addpic2pdf", 'AddPictureToPDF'),
+                
                 ("admin_wfstep_addpic2pdf_hint", 'Hinweis'),
                 ("admin_wfstep_addpic2pdf_no_pypdf", '<b style="color:red;">WARNUNG:</b> Python-Modul pyPdf ist nicht installiert - dieser Workflow-Schritt ist nicht funktional'),
                 
@@ -433,6 +435,8 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
             ],
            "en":
             [
+                ("workflowstep-addpic2pdf", 'AddPictureToPDF'),
+            
                 ("admin_wfstep_addpic2pdf_hint", 'Hint'),
                 ("admin_wfstep_addpic2pdf_no_pypdf", '<b style="color:red;">WARNING:</b> Python module pyPdf is not installed - this workflow step is not functional'),
                 

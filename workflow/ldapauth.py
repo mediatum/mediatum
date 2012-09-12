@@ -130,12 +130,16 @@ class WorkflowStep_LdapAuth(WorkflowStep):
     def getLabels(self):
         return { "de":
             [
+                ("workflowstep-ldapauth", 'LdapAuth'),
+            
                 ("xadmin_wfstep_ldapauth_label", 'WARNUNG'),
                 ("xadmin_wfstep_ldapauth_text", 'Dieser Workflow-Step ist nicht funktional, ldap-Modul oder Konfiguration nicht vorhanden'),
                 ("xadmin_wfstep_ldapauth_no_ldap", 'Dieser Schritt ist nicht funktional, da das ldap-Modul oder die Konfiguration fehlen.'),
             ],
            "en":
             [
+                ("workflowstep-ldapauth", 'LdapAuth'),
+                            
                 ("xadmin_wfstep_ldapauth_label", 'WARNING'),
                 ("xadmin_wfstep_ldapauth_text", 'this workflow step is not functional, ldap module or configuration missing'),
                 ("xadmin_wfstep_ldapauth_no_ldap", 'this workflow step is not functional, ldap module or configuration missing.'),

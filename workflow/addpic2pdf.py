@@ -99,6 +99,10 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
 
         current_workflow = getNodeWorkflow(node)
         current_workflow_step = getNodeWorkflowStep(node)
+        
+        FATAL_ERROR = False
+        FATAL_ERROR_STR = ""
+        
 
         if "gotrue" in req.params:
 
@@ -317,20 +321,49 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                            "buttons": self.tableRowButtons(node)}
 
                 return req.getTAL("workflow/addpic2pdf.html", context, macro="workflow_addpic2pdf")
+        try:
+            pdf_dimensions = get_pdf_dimensions(pdf_filepath)
+            pdf_pagecount = get_pdf_pagecount(pdf_filepath)
+        except Exception, e:
+            msg = "workflow step addpic2pdf(%s): Error: %s" % (current_workflow_step.id, str(e))
+            logging.getLogger("backend").error(msg)        
+            print "Error:", msg
+            pdf_dimensions = {}
+            pdf_dimensions['d_pages'] = 0
+            pdf_dimensions['d_pageno2size'] = (0,0)
+            pdf_dimensions['d_pageno2rotate'] = 0
+            pdf_pagecount = 0
+            FATAL_ERROR = True
+            FATAL_ERROR_STR = FATAL_ERROR_STR + " - " + str(e)
 
-        pdf_dimensions = get_pdf_dimensions(pdf_filepath)
-
-        wfs_files = current_workflow_step.getFiles()
+        wfs_files = [f for f in current_workflow_step.getFiles() if os.path.isfile(f.retrieveFile())]
         logo_info = {}
         logo_info_list = []
         for f in [f for f in wfs_files if f.getName().startswith('m_upload_logoupload')]:
             f_path = f.retrieveFile()
-            _size = list(get_pic_size(f_path))
-            _dpi = get_pic_dpi(f_path)
+            
+            try:
+                _size = list(get_pic_size(f_path))
+                _dpi = get_pic_dpi(f_path)
+            except Exception, e:
+                msg = "workflow step addpic2pdf(%s): Error: %s" % (current_workflow_step.id, str(e))
+                logging.getLogger("backend").error(msg)        
+                print "Error:", msg            
+                FATAL_ERROR = True
+                FATAL_ERROR_STR = FATAL_ERROR_STR + (" - ERROR loading logo '%s'" % str(f_path)) + str(e)
+                continue
+                                 
             logo_info[f.getName()] = {'size': _size, 'dpi': _dpi}
             if _dpi == 'no-info':
                 _dpi = 72.0
             logo_info_list.append({'size': _size, 'dpi': _dpi})
+            
+        if len(logo_info) == 0:
+            msg = "workflow step addpic2pdf(%s): Error: no logo images found" % (current_workflow_step.id)
+            logging.getLogger("backend").error(msg)        
+            print "Error:", msg            
+            FATAL_ERROR = True
+            FATAL_ERROR_STR = FATAL_ERROR_STR + " - " + "Error: no logo images found" 
 
         keep_params = copyDictValues(req.params, {}, KEEP_PARAMS)
 
@@ -346,17 +379,20 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                    "logo_info_list": logo_info_list,
 
                    "getImageSize": get_pic_size,
-                   "pdf_page_count": get_pdf_pagecount(pdf_filepath),
+                   "pdf_page_count": pdf_pagecount,
                    "pdf_dimensions": pdf_dimensions,
                    "json_pdf_dimensions": json.dumps(pdf_dimensions),
                    "keep_params": json.dumps(keep_params),
                    "startpageno": startpageno,
 
-                   "FATAL_ERROR": 'false',
+                   "FATAL_ERROR": {False: 'false', True: 'true'}[bool(FATAL_ERROR)],
 
                    "user": users.getUserFromRequest(req),
                    "prefix": self.get("prefix"),
                    "buttons": self.tableRowButtons(node)}
+
+        if FATAL_ERROR:
+            context["error"] = context["error"] + " - " + FATAL_ERROR_STR
 
         return req.getTAL("workflow/addpic2pdf.html", context, macro="workflow_addpic2pdf")
 

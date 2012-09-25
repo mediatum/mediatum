@@ -18,13 +18,15 @@
     <tal:block tal:repeat="v valuelist">
         <option tal:condition="python:v[0]=='optionselected' and v[2] in context.value.split(';') and context.value!=''" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]" selected="selected"/>
         <option tal:condition="python:v[0]=='option' and v[2] not in (context.value.split(';') or context.value=='')" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]"/>
-        
         <optgroup tal:condition="python:v[0]=='optgroup'" tal:replace="raw python:v[1]"/>
     </tal:block>
 </select>
 
 
 <div metal:define-macro="maskeditor" style="display:none" name="div_mlist" id="div_mlist">
+    <div class="label" i18n:translate="list_list_values_file">TEXT</div>
+    <input type="file" name="valuesfile">
+    <br/>
     <div class="label" i18n:translate="mlist_list_values">TEXT</div>
     <textarea name="mlist_value" rows="4" style="width:250px"><tal:block tal:replace="value"/></textarea>
 </div>

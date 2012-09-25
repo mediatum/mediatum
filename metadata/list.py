@@ -108,27 +108,15 @@ class m_list(Metatype):
                 
 
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
-        print "getEditorHTML\n"
-        print "-----------------\n"
-        print "field: " + str(field) + "\n"
-        print "value: " + str(value) + "\n"
         context = Context(field, value=value, width=width, name=name, lock=lock, language=language)
         return athana.getTAL("metadata/list.html", {"context":context, "valuelist":filter(lambda x:x!="", self.formatValues(context))}, macro="editorfield", language=language)
 
 
     def getSearchHTML(self, context):
-        print "getSearchHTML\n"
-        print "-----------------\n"
-        print "context.value:  " + str(context.value) + "\n"
-        print "context.field:  " + str(context.field) + "\n"
         return athana.getTAL("metadata/list.html", {"context":context, "valuelist":filter(lambda x:x!="", self.formatValues(context))}, macro="searchfield", language=context.language)
 
 
     def getFormatedValue(self, field, node, language=None, html=1):
-        print "getFormatedValue\n"
-        print "-----------------\n"
-        print "field: " + str(field) + "\n"
-        print "node.id:  " + str(node.id) + "\n"
         value = node.get(field.getName())
         if html:
             value = esc(value)
@@ -136,12 +124,7 @@ class m_list(Metatype):
 
 
     def getMaskEditorHTML(self, value="", metadatatype=None, language=None):
-        print "getMaskEditorHTML\n"
-        print "-----------------------\n"
-        print "value:    " + str(value) + "\n"
-        print "metatype: " + str(metadatatype) + "\n"
-        print "metadatatype.id: " + str(metadatatype.id) + "\n"
-        return athana.getTAL("metadata/list.html", {"value":value, "node":metadatatype}, macro="maskeditor", language=language)
+        return athana.getTAL("metadata/list.html", {"value":value}, macro="maskeditor", language=language)
 
 
     def getName(self):

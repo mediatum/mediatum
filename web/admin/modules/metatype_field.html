@@ -150,7 +150,7 @@
     <p>
         <a tal:attributes="href python:'./metatype?detailof='+metadatatype.getName()+page" i18n:translate="admin_overview">TEXT</a>
     </p>
-    <form tal:attributes="action page" name="addmfield" id="addmfield" method="post" action="#" onload="metatypechange(document)">
+    <form tal:attributes="action page" name="addmfield" id="addmfield" method="post" action="#" onload="metatypechange(document)" enctype="multipart/form-data">
         <table>
             <tr>
                 <td colspan="2">

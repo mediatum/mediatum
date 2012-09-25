@@ -142,6 +142,7 @@ class m_list(Metatype):
 
     labels = { "de":
             [
+                ("list_list_values_file", "Datei mit Listenwerten:"),
                 ("list_list_values", "Listenwerte:"),
                 ("fieldtype_list", "Werteliste"),
                 ("fieldtype_list_desc", "Werte-Auswahlfeld als Drop-Down Liste"),
@@ -149,6 +150,7 @@ class m_list(Metatype):
             ],
            "en":
             [
+                ("list_list_values_file", "Textfile with list values:"),
                 ("list_list_values", "List values:"),
                 ("fieldtype_list", "valuelist"),
                 ("fieldtype_list_desc", "drop down valuelist"),

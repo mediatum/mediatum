@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import os.path
 import core.athana as athana
 import core.tree as tree
 from utils.utils import esc
@@ -130,12 +131,14 @@ class m_mlist(Metatype):
 
     labels = { "de":
             [
+                ("list_list_values_file", "Datei mit Listenwerten:"),
                 ("mlist_list_values", "Listenwerte:"),
                 ("fieldtype_mlist", "Mehrfachauswahl"),
                 ("fieldtype_mlist_desc", "Werte-Auswahlfeld als Multiselect-Liste")
             ],
            "en":
             [
+                ("list_list_values_file", "Textfile with list values:"),
                 ("mlist_list_values", "List values:"),
                 ("fieldtype_mlist", "multilist"),
                 ("fieldtype_mlist_desc", "selection list for multiple values")                

@@ -23,6 +23,7 @@ import sys
 import traceback
 import core.tree as tree
 import core.config as config
+import os.path
 
 from core.datatypes import loadAllDatatypes
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
@@ -35,7 +36,7 @@ from schema.schema import loadTypesFromDB, getMetaFieldTypeNames, getMetaType, u
 from schema.schema import VIEW_DEFAULT, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_ONLY, VIEW_DATA_EXPORT
 from schema.mapping import getMappings
 from schema.bibtex import getAllBibTeXTypes
-
+from utils.fileutils import importFile
 # metafield methods
 from metatype_field import showDetailList, FieldDetail
 # meta mask methods
@@ -56,6 +57,7 @@ def checkString(string):
 """ standard method for admin module """
 def validate(req, op):
     path = req.path[1:].split("/")
+    
     if len(path)==3 and path[2]=="overview":
         return showFieldOverview(req)
 
@@ -232,7 +234,18 @@ def validate(req, op):
             _fieldvalue = ""
             if req.params.get("mtype","") + "_value" in req.params.keys():
                 _fieldvalue = str(req.params.get(req.params.get("mtype") + "_value"))
-            updateMetaField(req.params.get("parent",""), req.params.get("mname",""), req.params.get("mlabel",""), req.params.get("orderpos",""), req.params.get("mtype",""), _option, req.params.get("mdescription",""), _fieldvalue, fieldid=req.params.get("fieldid",""))
+            
+            _filenode = None
+            if "valuesfile" in req.params.keys():
+                valuesfile = req.params.get("valuesfile")
+                del req.params["valuesfile"]
+                _filenode = importFile(valuesfile.filename, valuesfile.tempname)
+            
+            updateMetaField(req.params.get("parent",""), req.params.get("mname",""),
+                            req.params.get("mlabel",""), req.params.get("orderpos",""),
+                            req.params.get("mtype",""), _option, req.params.get("mdescription",""),
+                            _fieldvalue, fieldid=req.params.get("fieldid",""),
+                            filenode=_filenode)
 
         return showDetailList(req, req.params.get("parent"))
 

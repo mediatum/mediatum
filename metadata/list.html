@@ -22,6 +22,9 @@
 
 
 <div metal:define-macro="maskeditor" style="display:none" name="div_list" id="div_list">
+    <div class="label" i18n:translate="list_list_values_file">TEXT</div>
+    <input type="file" name="valuesfile">
+    <br/>
     <div class="label" i18n:translate="list_list_values">TEXT</div>
     <textarea name="list_value" rows="4" style="width:250px"><tal:block tal:replace="value"/></textarea>
 </div>

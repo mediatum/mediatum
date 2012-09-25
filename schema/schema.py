@@ -164,18 +164,24 @@ def existMetaField(pid, name):
 
 
 """ update/create metadatafield """
-def updateMetaField(parent, name, label, orderpos, fieldtype, option="", description="", fieldvalues="", fieldvaluenum="", fieldid=""):
+def updateMetaField(parent, name, label, orderpos, fieldtype, option="", description="",
+                    fieldvalues="", fieldvaluenum="", fieldid="", filenode=None):
     metatype = getMetaType(parent)
     try:
-        #field = metatype.getChild(fieldid)
         field = tree.getNode(fieldid)
         field.setName(name)
-        #field.setOrderPos(orderpos)
     except tree.NoSuchNodeError:
         field = tree.Node(name=name, type="metafield")
         metatype.addChild(field)
         field.setOrderPos(len(metatype.getChildren())-1)
-        
+    
+    # all files of the field will be removed before a new file kann be added
+    for fnode in field.getFiles():
+        field.removeFile(fnode)
+    
+    if filenode:
+        field.addFile(filenode)
+    
     field.set("label", label)   
     field.set("type", fieldtype)
     field.set("opts", option)
@@ -606,6 +612,7 @@ class Metadatatype(tree.Node):
 """ fields for metadata """
 class Metadatafield(tree.Node):
     def getName(self):
+        print "Metadatafield, getName: " + str(self.get("name"))
         return self.get("name")
     def setName(self, value):
         self.set("name", value)
@@ -622,6 +629,7 @@ class Metadatafield(tree.Node):
         return None
 
     def getFieldtype(self):
+        print "Metadatafield, getFieldtype: " + str(self.get("type"))
         return self.get("type")
     def setFieldtype(self, value):
         self.set("type", value)
@@ -681,6 +689,7 @@ class Metadatafield(tree.Node):
             except ValueError:
                 value = v
         else:
+            print "Metadatafield, getValue: " + str(node.get(self.name))
             value = node.get(self.name)
         return value
 

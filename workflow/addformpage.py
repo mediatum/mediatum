@@ -70,9 +70,6 @@ def fillPDFForm(formPdf, fields, outputPdf="filled.pdf", input_is_fullpath=False
         fout.write(res)
         fout.close()
 
-        if not input_is_fullpath:
-            formPdf = config.get('plugins.tum') + 'inf/'+formPdf
-
         # fill data in form pdf and generate pdf
         if editable:
             os.system('pdftk %s fill_form %sinfdata.fdf output %s%s' %(formPdf, config.get('paths.tempdir'), config.get('paths.tempdir'), outputPdf))

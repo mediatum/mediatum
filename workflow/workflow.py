@@ -965,3 +965,8 @@ def register():
     tree.registerNodeClass("workflowstep-addpic2pdf", WorkflowStep_AddPic2Pdf)
     registerStep("workflowstep-addpic2pdf")
     addLabels(WorkflowStep_AddPic2Pdf(type="workflowstep-addpic2pdf").getLabels())
+
+    from addformpage import WorkflowStep_AddFormPage
+    tree.registerNodeClass("workflowstep-addformpage", WorkflowStep_AddFormPage)
+    registerStep("workflowstep-addformpage")
+    addLabels(WorkflowStep_AddFormPage(type="workflowstep-addformpage").getLabels())

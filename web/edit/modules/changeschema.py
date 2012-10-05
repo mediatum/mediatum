@@ -134,6 +134,7 @@ def getContent(req, ids):
         if newType != oldType:
             node.setTypeName(newType)
             msg = "%s changed node schema for node %s '%s' from '%s' to '%s'" % (user.name, node.id, node.name, oldType, newType)
+            node.setDirty()
             logging.getLogger('usertracing').info(msg)   
                         
             currentContentType = node.getContentType()

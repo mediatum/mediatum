@@ -20,11 +20,11 @@
 
 import core.users as users
 import core.tree as tree
+import schema.bibtex as bibtex
 
 from utils.log import logException
 from web.edit.edit_common import showdir
-from schema.bibtex import importBibTeX, MissingMapping
-
+ 
 
 def getInformation():
     return {"version":"1.0", "system":1}
@@ -36,6 +36,7 @@ def getContent(req, ids):
     return req.getTAL("web/edit/modules/imports.html",{"error":req.params.get("error")},macro="upload_form") + showdir(req, tree.getNode(ids[0]))
 
 def import_new(req):
+    reload(bibtex) 
     user = users.getUserFromRequest(req)
     importdir= users.getImportDir(user)
     del req.params["upload"]
@@ -45,12 +46,13 @@ def import_new(req):
         del req.params["file"]
         if hasattr(file,"filesize") and file.filesize>0:
             try:
-                importBibTeX(file.tempname, importdir)
+                bibtex.importBibTeX(file.tempname, importdir, req)
                 req.request["Location"] = req.makeLink("content", {"id":importdir.id})
             except ValueError, e:
                 req.params["error"] = str(e)
-            except MissingMapping,e:
+            except bibtex.MissingMapping,e:
                 req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":str(e)})
+                req.params["error"] = str(e)
             except:
                 logException("error during upload")
                 req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"PostprocessingError"})
@@ -60,4 +62,3 @@ def import_new(req):
     # error while import, no file given
     req.params["error"] = "no_file_transferred"
     return getContent(req, [importdir.id])
-

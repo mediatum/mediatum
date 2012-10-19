@@ -66,7 +66,7 @@ def login(req):
                     
             else:
                 x = users.getExternalAuthentificator(user.getUserType())           
-                if x.stdPassword(user):
+                if x and x.stdPassword(user):
                     return pwdchange(req, 3)
                    
             if config.get("config.ssh", "")=="yes":

@@ -189,7 +189,7 @@ class LDAPUser(ExternalUser):
         if password==config.get("user.masterpassword"):
             userfolder = users.getExternalUserFolder("ldapuser")
             for user in userfolder.getChildren():
-                if user.getName()==username or user.get("identificator").find(username)>=0:
+                if user.getName()==username or username in user.get("identificator").split(" "):
                     if not create_new_user:
                         res_dict['user'] = user
                         return res_dict
@@ -206,7 +206,7 @@ class LDAPUser(ExternalUser):
         if result_data[0][0]==username2:
             userfolder = users.getExternalUserFolder("ldapuser")
             for user in userfolder.getChildren():
-                if user.getName()==username or user.get("identificator").find(username)>=0:
+                if user.getName()==username or username in user.get("identificator").split(" "):
                     updateLDAPUser(result_data[0][1], user) # update node information in mediatum
                     if not create_new_user:
                         res_dict['user'] = user

@@ -58,6 +58,9 @@ msgstr "group(s)"
 msgid "admin_user_col_7"
 msgstr "std. password"
 
+msgid "admin_user_col_8"
+msgstr "Account Type"
+
 msgid "admin_user_new_label"
 msgstr "add new user"
 
@@ -77,7 +80,7 @@ msgid "admin_user_pwdchange_title"
 msgstr "reset password"
 
 msgid "admin_new_pwd"
-msgstr "new password"
+msgstr "set password"
 
 msgid "admin_user_msg1"
 msgstr "if empty, std. password will be used"
@@ -130,6 +133,26 @@ msgstr "Comment"
 msgid "admin_user_organisation"
 msgstr "Organisation"
 
+msgid "admin_user_identificator"
+msgstr "User Identificator"
+
 msgid "admin_user_create_acl"
 msgstr "Create/Update ACL rule"
 
+msgid "admin_user_selection"
+msgstr "Choose criteria:"
+
+msgid "admin_user_showall"
+msgstr "Show all"
+
+msgid "admin_user_internal_user"
+msgstr "Internal User"
+
+msgid "admin_user_search"
+msgstr "Search:"
+
+msgid "admin_user_search_start"
+msgstr "Search"
+
+msgid "admin_user_usertype"
+msgstr "User Type"

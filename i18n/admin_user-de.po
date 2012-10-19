@@ -59,6 +59,9 @@ msgstr "Gruppe(n)"
 msgid "admin_user_col_7"
 msgstr "Std. Passwort"
 
+msgid "admin_user_col_8"
+msgstr "Accounttyp"
+
 msgid "admin_user_new_label"
 msgstr "Neuen Benutzer anlegen"
 
@@ -78,7 +81,7 @@ msgid "admin_user_pwdchange_title"
 msgstr "Passwort zurücksetzen"
 
 msgid "admin_new_pwd"
-msgstr "Neues Passwort"
+msgstr "Passwort setzen"
 
 msgid "admin_user_msg1"
 msgstr "bei leerem Feld wird automatisch das Standardpasswort verwendet"
@@ -131,5 +134,26 @@ msgstr "Bemerkung"
 msgid "admin_user_organisation"
 msgstr "Organisation"
 
+msgid "admin_user_identificator"
+msgstr "Benutzer Identifikator"
+
 msgid "admin_user_create_acl"
 msgstr "ACL Regel anlegen / modifizieren"
+
+msgid "admin_user_selection"
+msgstr "Anzeige-Kriterien wählen:"
+
+msgid "admin_user_showall"
+msgstr "Alle anzeigen"
+
+msgid "admin_user_internal_user"
+msgstr "Interne Benutzer"
+
+msgid "admin_user_search"
+msgstr "Suche:"
+
+msgid "admin_user_search_start"
+msgstr "Suchen"
+
+msgid "admin_user_usertype"
+msgstr "Benutzertyp"

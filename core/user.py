@@ -125,10 +125,22 @@ class User(tree.Node):
     def setUserType(self, value):
         self.usertype = value
     def getUserType(self):
-        try:
-            return self.usertype
-        except AttributeError:
-            return ""
+        for p in self.getParents():
+            if p.type=="usergroup":
+                continue
+            return p.getName()
+        
+        #try:
+        #    print "else", self.usertype
+        #    return self.usertype
+        #except AttributeError:
+        #    print " ->", self.getName()
+        #    for p in self.getParents():
+        #        
+        #        print "   p:", p.getName(), p.id, p.type
+        #        if p.type=="usergroup":
+        #            continue
+        #        return p.getName()
 
     def setOrganisation(self, value):
         self.set("organisation", value)
@@ -161,7 +173,7 @@ class User(tree.Node):
         sb = tree.Node(name, type="shoppingbag")
         sb.setItems(items)
         self.addChild(sb)
-    
+
   
 class ExternalUser:
 
@@ -183,3 +195,6 @@ class ExternalUser:
     def canChangePWD(self):
         raise "not implemented"
         
+    def getAdminOperation(self, req, params={}):
+        raise "not implemented"
+

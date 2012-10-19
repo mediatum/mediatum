@@ -1,5 +1,61 @@
-<metal:block metal:define-macro="view">
+﻿<metal:block metal:define-macro="view">
+    <style>
+        .usertype{
+            border:1px solid green;
+        }
+        .selected{
+            border:1px solid red;
+        }
+    </style>
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
+    <h3>
+        <span i18n:translate="admin_user_existing">TEXT</span>
+    </h3>
+    <fieldset>
+        <legend i18n:translate="admin_user_selection">TEXT</legend>
+        <h4 style="height:50px">
+            <a href="#" onclick="return loadDetails('all')" i18n:translate="admin_user_showall">TEXT</a> |
+            <a href="#" onclick="return loadDetails('intern')" i18n:translate="admin_user_internal_user">TEXT</a> |
+            <tal:block tal:repeat="auttype python:list(auth)">
+                <a href="#" tal:attributes="onclick python:'return loadDetails(\''+auttype+'\')'" i18n:translate="" tal:content="python:auth[auttype].getName()"/> | 
+            </tal:block>
+            
+            <tal:block i18n:translate="admin_user_search"/> <input type="text" name="searchterm" id="searchterm" style="border:1px solid silver"/> <button type="button" onclick="searchUser($('#searchterm').val())" i18n:translate="admin_user_search_start">TEXT</button>
+            <form action="#" tal:attributes="action page" style="border-width:0px">
+                <input i18n:attributes="title admin_user_create" type="image" src="/img/install.png" name="new"/>
+                <input type="hidden" name="actpage" tal:attributes="value actpage"/>
+                <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
+            </form>
+        </h4>
+        
+        <div id="details" tal:condition="python:details==0"> </div>
+        <div id="details" tal:condition="python:details==1">
+            <tal:block metal:use-macro="web/admin/modules/user.html/details"/>
+        </div>
+        
+    </fieldset>
+    <script>
+        function searchUser(name){
+            $('#details').html('<img src="/img/wait_small.gif"/>');
+            $.get('/admin/user?style=popup&action=search&searchterm='+name+'&jsoncallback=?', function(data) {
+              $('#details').html(data);
+            });
+        }
+        
+        function loadDetails(type){
+            $('#details').html('<img src="/img/wait_small.gif"/>');
+            $.get('/admin/user?style=popup&action=details&usertype='+type+'&jsoncallback=?', function(data) {
+              $('#details').html(data);
+              $('#searchterm').val("")
+            });
+            return false;
+        }
+    
+    </script>
+</metal:block>
+
+
+<metal:block metal:define-macro="details">
     <form name="useroverview" method="post" action="#" tal:attributes="action page">
         <table class="overview">
             <thead>
@@ -7,17 +63,7 @@
                     <td colspan="11">
                         <h3>
                             <span i18n:translate="admin_user_existing">TEXT</span>
-                            <span tal:condition="python:usertype!='intern'">(<span tal:content="python:auth[usertype].getName()" i18n:translate="">TEXT</span>)</span>
                         </h3>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="11">
-                        <h4>Benutzertyp: <a href="/admin/user">Intern</a>
-                            <tal:block tal:repeat="auttype python:list(auth)">
-                                | <a tal:attributes="href python:'/admin/user/'+auttype" i18n:translate="" tal:content="python:auth[auttype].getName()"/>
-                            </tal:block>
-                        </h4>
                     </td>
                 </tr>
                 <tr>
@@ -41,15 +87,12 @@
                     <th style="padding:0px;margin:0px">
                         <tal:block metal:use-macro="web/admin/frame.html/optionheader"/>
                     </th>
-                    <th align="right">&nbsp;</th>
-                    <th align="right">
-                        &nbsp;<input tal:condition="python:usertype=='intern' or auth[usertype].allowAdd()" i18n:attributes="title admin_user_create" type="image" src="/img/install.png" name="new"/>
-                    </th>
+                    <th align="right" colspan="2">&nbsp;</th>
                 </tr>
             </thead>
             <tbody>
                 <tr tal:condition="python:len(users)==0">
-                    <td colspan="8"><small i18n:translate="admin_user_nousers">TEXT</small></td>
+                    <td colspan="12"><small i18n:translate="admin_user_nousers">TEXT</small></td>
                 </tr>
                 <tal:block tal:repeat="user python:users[pages.getStart():pages.getEnd()]">
                     <tr tal:define="cssclass python:users.index(user)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
@@ -73,6 +116,10 @@
                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img i18n:attributes="title admin_user_nostdpwd_title" src="/img/archive.png"/>
                         </td>
                         <td>
+                            <tal:block i18n:translate="" tal:condition="python:user.getUserType()!='users'" tal:content="python:auth[user.getUserType()].getName()"/>
+                            &nbsp;
+                        </td>
+                        <td>
                             <table>
                                 <tr>
                                     <td tal:repeat="option options" style="width:20px; text-align:center">
@@ -83,10 +130,6 @@
                             </table>
                         </td>
                         <td>
-                            <input tal:condition="python:usertype=='intern' or auth[usertype].allowAdd()" tal:attributes="name python:str('sendmail_'+user.getName())" i18n:attributes="title admin_user_sendmail_title" type="image" src="/img/email.png"/>
-                            <input tal:condition="python:usertype!='intern'" tal:attributes="name python:'tointern_'+str(user.id); onclick python:'return questionMoveUser(\''+user.getName()+'\')'" i18n:attributes="title admin_user_importintern" type="image" src="/img/rightarrow.png" />
-                        </td>
-                        <td>
                             <input tal:attributes="name python:str('edit_'+str(user.id))" i18n:attributes="title admin_user_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
                             <input tal:attributes="name python:str('delete_'+str(user.id)); onclick python:'return questionDelName(\''+user.getName()+'\')'" i18n:attributes="title admin_user_delete_title" type="image" src="/img/delete.png"/>
                         </td>
@@ -95,7 +138,7 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <th colspan="6" align="left">
+                    <th colspan="7" align="left">
                         <small>
                             <span i18n:translate="admin_user_footer">
                                 <span i18n:name="number" tal:content="python:str(len(users))"/>
@@ -108,7 +151,6 @@
             </tfoot>
         </table>
         <br/>
-        <input type="hidden" name="usertype" tal:attributes="value usertype"/>
         <input type="hidden" name="actpage" tal:attributes="value actpage"/>
         <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
     </form>
@@ -116,11 +158,22 @@
 
 
 <metal:block metal:define-macro="modify">
+    <script type="text/javascript" language="javascript" src="/js/jquery.textarearesizer.js"> </script>
+    <style type="text/css">
+        .tsmsselect { width:220px; float: left;}
+        .tsmsselect select { width: 100%;}
+        .tsmsoptions { width: 50px; float: left; padding:20px; padding-top:50px}
+        .tsmsoptions p { margin: 2px; text-align: center; font-size: larger; cursor: pointer;border:1px solid silver}
+        .tsmsoptions p:hover { color:white; background-color:silver;}
+        input[type="text"]{width:520px}
+        select{width:530px}
+    </style>
+    <script type="text/javascript" src="/js/jquery.twosidedmultiselect.js"> </script>
     <p>
         <a tal:condition="python: usertype=='intern'" i18n:translate="admin_overview" href="/admin/user">TEXT</a>
         <a tal:condition="python: usertype!='intern'" i18n:translate="admin_overview" href=".">TEXT</a>
     </p>
-    <form tal:attributes="action page" name="edituser" method="post">
+    <form name="edituser" method="post" action="/admin/user">
         <table>
             <tr>
                 <td colspan="2">
@@ -142,6 +195,17 @@
                 <td>
                     <input tal:attributes="value python:user.getName()" type="hidden" name="oldusername" maxlength="50" size="50"/>
                     <input tal:attributes="value python:user.getName()" type="text" name="username" maxlength="50" size="50"/>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_user_usertype">TEXT</tal:block>:</td>
+                <td>
+                    <select name="usertype" style="height:24px">
+                        <option value="intern" tal:attributes="selected python:{'True':'selected', 'False':None}[str(user.getUserType()=='intern')]">Intern</option>
+                        <tal:block tal:repeat="utype python:list(usertypes)">
+                            <option tal:attributes="value utype;selected python:{'True':'selected', 'False':None}[str(user.getUserType()==utype)]" tal:content="python:utype" i18n:translate="">TEXT</option>
+                        </tal:block>
+                    </select>
                 </td>
             </tr>
             <tr>
@@ -171,7 +235,7 @@
             <tr>
                 <td><tal:block i18n:translate="admin_user_groups">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
-                    <select name="usergroups" multiple="multiple">
+                     <select name="usergroups" multiple="multiple" size="15" class="multiselect">
                         <tal:block tal:repeat="group groups">
                             <option tal:condition="python:group.getName() in ugroups or user.inGroup(group.getName())" tal:content="python:group.getName()" selected="selected"/>
                             <option tal:condition="python:not (group.getName() in ugroups) and not ( user.inGroup(group.getName()))" tal:content="python:group.getName()"/>
@@ -182,13 +246,13 @@
             <tr>
                 <td><tal:block i18n:translate="admin_user_comment">TEXT</tal:block>:</td>
                 <td>
-                    <textarea name="comment" tal:content="python:user.getComment()" rows="4" cols="35"></textarea>
+                    <textarea class="comment" name="comment" tal:content="python:user.getComment()" rows="4" cols="35" style="width:526px;margin-bottom:0px"></textarea>
                 </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_user_organisation">TEXT</tal:block>:</td>
                 <td>
-                    <input tal:attributes="value python:user.getOrganisation()" type="text" name="organisation" size="50"/>
+                    <input tal:attributes="value python:user.getOrganisation()" type="text" name="organisation" size="50" style="width:520px"/>
                 </td>
             </tr>
             <tr>
@@ -198,11 +262,15 @@
                 </td>
             </tr>
             <tr>
-                <td>&nbsp;</td>
+                <td><tal:block i18n:translate="admin_new_pwd">TEXT</tal:block>:</td>
                 <td>
-                    <input tal:attributes="name python:'reset_'+user.getName()" i18n:attributes="title admin_user_pwdchange_title" type="image" src="/img/reset_pwd.png"/>
-                    <tal:block i18n:translate="admin_new_pwd">TEXT</tal:block>: <input type="password" name="change_passwd" /><br>
-                    <small>(<span i18n:translate="admin_user_msg1">TEXT</span>)</small>
+                    <div style="position:relative">
+                    <input type="password" name="change_passwd" style="width:170px"/>
+                    <input tal:attributes="name python:'reset_'+user.getName()" i18n:attributes="title admin_user_pwdchange_title" type="image" src="/img/reset_pwd.png" style="padding:3px 5px;border:1px solid silver;position:absolute;bottom:0px"/>
+                    <small style="margin-left:50px">(<span i18n:translate="admin_user_msg1">TEXT</span>)</small>
+                    
+                    </div>
+                    <br/>
                 </td>
             </tr>
             <tr>
@@ -231,7 +299,7 @@
             </tr>
             <tr>
                 <td>&nbsp;</td>
-                <td>
+                <td style="padding-top:20px">
                     <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
                     <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
                 </td>
@@ -239,11 +307,16 @@
         </table>
         <input tal:attributes="value python:id=='' and 'save_new' or 'save_edit'" type="hidden" name="form_op" id="form_op"/>
         <input tal:attributes="value id" type="hidden" name="id"/>
-        <input tal:attributes="value usertype" type="hidden" name="usertype"/>
         <input type="hidden" name="actpage" tal:attributes="value actpage"/>
         <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
         <input type="hidden" name="filtertype" tal:attributes="value filtertype"/>
     </form>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('textarea.comment:not(.processed)').TextAreaResizer();
+            $(".multiselect").twosidedmultiselect();
+        });
+    </script>
 </metal:block>
 
 

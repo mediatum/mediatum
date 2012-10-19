@@ -33,16 +33,51 @@ from core.usergroups import loadGroupsFromDB
 from core.users import loadUsersFromDB, useroption, getUser, getExternalUser, update_user, existUser, create_user, makeRandomPassword, deleteUser, getExternalUsers, getExternalUser, moveUserToIntern, getExternalAuthentificators
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from core.translation import lang, t
+from core.user import User
+
+users_cache = []
 
 def getInformation():
     return{"version":"1.0"}
 
 
+
+def searchUser(value):
+    global users_cache
+
+    res = []
+    value = value.lower().split("*")
+
+    if len(users_cache)<1:
+        users = loadUsersFromDB()
+        for usertype in list(getExternalUsers()):
+            users += list(usertype.getChildren())
+    else:
+        users = users_cache
+
+    for user in users:
+        user_data = user.getName().lower() + ("").join([i[1].lower().strip() for i in user.items()])
+        
+        n_found = 0
+        for v in value: # test each value
+            if v not in user_data:
+                n_found += 1
+        if n_found==0:
+            res.append(user)
+    return res
+    
+    
 #
 # standard validator
 #
 def validate(req, op):
+    global users_cache
     try:
+
+        if "style" in req.params:
+            req.write(view(req))
+            return ""
+
         for key in req.params.keys():
             if key.startswith("new"):
                 # create new user
@@ -78,7 +113,7 @@ def validate(req, op):
                 if key.startswith("option_"):
                     _option += key[7]
                         
-            if req.params["form_op"]=="save_new":
+            if req.params.get("form_op")=="save_new":
                 # save user values
                 if req.params.get("username","")=="" or req.params.get("usergroups", "")=="" or req.params.get("email","")=="":
                     return editUser_mask(req, "", 1) # no username or group selected
@@ -90,10 +125,10 @@ def validate(req, op):
             elif req.params["form_op"]=="save_edit":
                 # update user
                 if req.params.get("email","")=="" or req.params.get("username","")=="" or req.params.get("usergroups","")=="":
-                    return editUser_mask(req, req.params.get("id"), 1) # no username, emai or group selected
+                    return editUser_mask(req, req.params.get("id"), 1) # no username, email or group selected
                 else:
                     update_user(req.params.get("id", 0), req.params.get("username",""),req.params.get("email",""), req.params.get("usergroups","").replace(";", ","), lastname=req.params.get("lastname"), firstname=req.params.get("firstname"), telephone=req.params.get("telephone"), comment=req.params.get("comment"), option=_option, organisation=req.params.get("organisation",""), identificator=req.params.get("identificator",""), type=req.params.get("usertype", "intern"))
-
+            users_cache = []
         return view(req)
     except:
         print "Warning: couldn't load module for type",type
@@ -105,31 +140,50 @@ def validate(req, op):
 # show all users
 #
 def view(req):
-    global useroption
-    path = req.path[1:].split("/")
-    users = list()
-    usertypes = list(getExternalUsers())
-    
-    auth = getExternalAuthentificators()
-    
-    if len(path)==2:
-        usertype = "extern"
-        for usertype in usertypes:
-            if usertype.getName()==path[1]:
-                users = list(usertype.getChildren())
-                usertype = path[1]
-                break
-    else:
-        users = list(loadUsersFromDB())
-        usertype = "intern"
+    global useroption, users_cache
 
+    users = []
     order = getSortCol(req)
     actfilter = getFilter(req)
-  
+    showdetails = 0
+    macro = "view"
+    
+    if "action" in req.params:
+        macro = "details"
+    
+        if req.params.get("action")=="details": # load all users of given type
+
+            if len(users_cache)<1: # load users in cache
+                users = list(loadUsersFromDB())
+                for usertype in list(getExternalUsers()):
+                    users += list(usertype.getChildren())
+                users_cache = users
+            else: # use users from cache
+                users = users_cache
+                
+                
+            if req.params.get("usertype")=="intern":
+                users = filter(lambda x: x.getUserType()=='users', users)
+            elif req.params.get("usertype")=="all":
+                pass
+            else:
+                users = filter(lambda x: x.getUserType()==req.params.get("usertype"), users)
+
+            
+        elif req.params.get("action")=="search": # load all users with matching search
+            req.params["page"] = "0"
+            users = searchUser(req.params.get('searchterm'))
+    
+    elif "actpage" in req.params or "actfilter" in req.params or "filterbutton" in req.params:
+        users = users_cache
+        showdetails = 1
+        if "cancel" in req.params:
+            showdetails = 0
+
     # filter
     if actfilter!="":
         if actfilter in ("all", "*", t(lang(req),"admin_filter_all")):
-            None # all users
+            None
         elif actfilter=="0-9":
             num = re.compile(r'([0-9])')
             if req.params.get("filtertype","")=="username":
@@ -148,8 +202,6 @@ def view(req):
             else:
                 users = filter(lambda x: x.get("lastname").lower().startswith(actfilter), users)
             
-    pages = Overview(req, users)
-
     # sorting
     if order != "":
         if int(order[0:1])==0:
@@ -170,19 +222,20 @@ def view(req):
             users.reverse()
     else:
         users.sort(lambda x, y: cmp(x.getName().lower(),y.getName().lower()))
-
+    
+    pages = Overview(req, users)
     v = pages.getStdVars()
     v["filterattrs"] = [("username","admin_user_filter_username"),("lastname","admin_user_filter_lastname")]
     v["filterarg"] = req.params.get("filtertype", "username")
-    v["sortcol"] = pages.OrderColHeader([t(lang(req),"admin_user_col_1"), t(lang(req),"admin_user_col_2"), t(lang(req),"admin_user_col_3"), t(lang(req),"admin_user_col_4"), t(lang(req),"admin_user_col_5"), t(lang(req),"admin_user_col_6"), t(lang(req),"admin_user_col_7")])
+    v["sortcol"] = pages.OrderColHeader([ t(lang(req),"admin_user_col_"+str(i)) for i in range(1,9)])
+    
     v["options"] = list(useroption)
     v["users"] = users
     v["pages"] = pages
-    v["usertype"] = usertype
     v["actfilter"] = actfilter
-    v["auth"] = auth
-    
-    return req.getTAL("web/admin/modules/user.html", v, macro="view")
+    v["auth"] = getExternalAuthentificators()
+    v["details"] = showdetails
+    return req.getTAL("web/admin/modules/user.html", v, macro=macro)
 
 #
 # edit/create user
@@ -193,14 +246,12 @@ def editUser_mask(req, id, err=0):
     usertype = req.params.get("usertype", "intern")
     newuser = 0
     
-    if err==0 and id=="":
-        # new user
+    if err==0 and id=="": # new user
         user = tree.Node("", type="user")
         user.setOption("c")
         newuser = 1
         
-    elif err==0 and id!="":
-        #edit user
+    elif err==0 and id!="": #edit user
         if usertype=="intern":
             user = getUser(id)
         else:
@@ -236,6 +287,7 @@ def editUser_mask(req, id, err=0):
     v["filtertype"] = req.params.get("filtertype","")
     v["actpage"] = req.params.get("actpage")
     v["newuser"] = newuser
+    v["usertypes"] = getExternalAuthentificators()
     return req.getTAL("web/admin/modules/user.html", v, macro="modify")
 
     

@@ -174,23 +174,22 @@ def getUser(id):
     
     if id.isdigit():
         try:
-            #return tree.getNode(id)
             user = tree.getNode(id)
-            user.setUserType("intern")
             return user
         except tree.NoSuchNodeError,e:
             return None
     else:
         try:
-            #return users.getChild(id)
             user = users.getChild(id)
-            user.setUserType("intern")
             return user
         except tree.NoSuchNodeError,e:
             for key in getExternalAuthentificators():
                 u = getExternalUser(id, type=key)
                 if u:
-                    u.setUserType(key)
+                    #u.setUserType(key)
+                    return u
+            for u in tree.getRoot("users").getChildren():
+                if u.get('service.userkey')==id:
                     return u
             return None
 
@@ -246,7 +245,7 @@ def checkLogin(name, pwd):
     user = getUser(name)
     digest1 = hashlib.md5(pwd).hexdigest()
 
-    if user and user.getUserType()=="intern":
+    if user and user.getUserType()=="users":
         if digest1==user.getPassword():
             return user
         if config.get("user.masterpassword")!="" and name!="Administrator" and pwd==config.get("user.masterpassword"): # test masterpassword
@@ -310,10 +309,26 @@ def addUser(user):
 
 
 def update_user(id, name, email, groups, lastname="", firstname="", telephone="", comment="", option="", organisation="", identificator="", type="intern"):
-    if type=="intern":
+    
+    try: # internal user
         user = getUser(id)
-    else:
-        user = getExternalUser(id, type)
+    except: # external user
+        user = getExternalUser(id)
+
+    if user:
+        for p in user.getParents():
+            if p.type!="usergroup":
+                p.removeChild(user)
+        if type=="intern":
+            tree.getRoot("users").addChild(user)
+        else:
+            getExternalUserFolder(type).addChild(user)
+    
+    if user.getName()!=name: # username changed -> update home directory
+        hd = getHomeDir(user)
+        hd.setAccess("read", "{user %s}" %(user.getName()))
+        hd.setAccess("write", "{user %s}" %(user.getName()))
+
     if user:
         user.setName(name)
         user.setEmail(email)
@@ -329,7 +344,7 @@ def update_user(id, name, email, groups, lastname="", firstname="", telephone=""
 
         # remove user from all groups
         for p in user.getParents():
-            if p.type == "usergroup":
+            if p.type=="usergroup":
                 p.removeChild(user)
         # add user to the "new" groups
         for group in groups.split(","):

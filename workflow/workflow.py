@@ -921,6 +921,7 @@ def register():
     from email import WorkflowStep_SendEmail
     tree.registerNodeClass("workflowstep-send_email", WorkflowStep_SendEmail)
     registerStep("workflowstep-send_email")
+    addLabels(WorkflowStep_SendEmail(type="workflowstep-send_email").getLabels())    
     from showdata import WorkflowStep_ShowData
     tree.registerNodeClass("workflowstep-showdata", WorkflowStep_ShowData)
     tree.registerNodeClass("workflowstep-wait", WorkflowStep_ShowData)
@@ -937,6 +938,7 @@ def register():
     from publish import WorkflowStep_Publish
     tree.registerNodeClass("workflowstep-publish", WorkflowStep_Publish)
     registerStep("workflowstep-publish")
+    
     from classify import WorkflowStep_Classify
     tree.registerNodeClass("workflowstep-classify", WorkflowStep_Classify)
     registerStep("workflowstep-classify")

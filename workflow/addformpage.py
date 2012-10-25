@@ -19,11 +19,15 @@
 
 import os
 import os.path
+import shutil
 import logging
 
 from workflow import WorkflowStep, getNodeWorkflow, getNodeWorkflowStep
 from core.translation import t
 from metadata.upload import getFilelist
+from schema.schema import getMetaType
+from utils.fileutils import getImportDir
+from utils.utils import join_paths
 
 import utils.utils as utils
 import core.tree as tree
@@ -117,11 +121,17 @@ class WorkflowStep_AddFormPage(WorkflowStep):
         formfilelist, formfilelist2 = getFilelist(current_workflow_step, 'upload_pdfform')
 
         pdf_fields_editable = current_workflow_step.get("pdf_fields_editable")
+        pdf_form_separate = current_workflow_step.get("pdf_form_separate")
         
         if pdf_fields_editable.lower() in ["1", "true"]:
             pdf_fields_editable = True
         else:
             pdf_fields_editable = False
+            
+        if pdf_form_separate.lower() in ["1", "true"]:
+            pdf_form_separate = True
+        else:
+            pdf_form_separate = False            
 
         fields = []
         f_retrieve_path = None
@@ -140,6 +150,18 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                         value = node.get(fieldname)
                         if fieldname.find('author') >= 0:
                             value = reformatAuthors(value)
+                    elif fieldname.lower() == 'node.schema':
+                        value = getMetaType(node.getSchema()).getLongName()
+                    elif fieldname.lower() == 'node.id':
+                        value = str(node.id)
+                    elif fieldname.lower() == 'node.type':
+                        value = node.type
+                    elif fieldname.find("+") > 0:
+                        _fieldnames = fieldname.split('+')
+                        for _fn in _fieldnames:
+                            value = node.get(_fn)
+                            if value:
+                                break
                     else:
                         msg = "workflowstep %s (%s): could not find attribute for pdf form field '%s' - node: '%s' (%s)" % (current_workflow_step.name, str(current_workflow_step.id), fieldname, node.name, node.id)
                         logger.warning(msg)
@@ -147,8 +169,9 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                     fields.append((fieldname, value))
 
 
-        if fnode and f_retrieve_path and os.path.isfile(f_retrieve_path):
+        if not pdf_form_separate and fnode and f_retrieve_path and os.path.isfile(f_retrieve_path):
             pages = fillPDFForm(f_retrieve_path, fields, input_is_fullpath=True, editable=pdf_fields_editable)
+            
             origname = fnode.retrieveFile()
             outfile = addPagesToPDF(pages, origname)
 
@@ -158,9 +181,24 @@ class WorkflowStep_AddFormPage(WorkflowStep):
             node.addFile(fnode)
             node.addFile(tree.FileNode(origname, 'upload', 'application/pdf')) # store original filename
             node.event_files_changed()
-
             logger.info("workflow '%s' (%s), workflowstep '%s' (%s): added pdf form to pdf (node '%s' (%s)) fields: %s" % (current_workflow.name, str(current_workflow.id), current_workflow_step.name, str(current_workflow_step.id), node.name, node.id, str(fields)))
-
+        elif pdf_form_separate and f_retrieve_path and os.path.isfile(f_retrieve_path):
+            pages = fillPDFForm(f_retrieve_path, fields, input_is_fullpath=True, editable=pdf_fields_editable)
+            importdir = getImportDir()
+            print '----> importdir:', importdir
+            try:
+                new_form_name = str(node.id) + "_" + f_name
+                new_form_path = join_paths(importdir, new_form_name)
+                counter = 0
+                while os.path.isfile(new_form_path):
+                    counter = counter + 1
+                    new_form_name = str(node.id) + "_" + str(counter) + "_" + f_name
+                    new_form_path = join_paths(importdir, new_form_name)
+                shutil.copy(pages, new_form_path)
+            except Exception, e:
+                logger.error("workflowstep %s (%s): could not copy pdf form to import directory - node: '%s' (%s), import directory: '%s'" % (current_workflow_step.name, str(current_workflow_step.id), node.name, node.id, importdir))
+            node.addFile(tree.FileNode(new_form_path, 'pdf_form', 'application/pdf'))                
+            logger.info("workflow '%s' (%s), workflowstep '%s' (%s): added separate pdf form to node (node '%s' (%s)) fields: %s, path: '%s'" % (current_workflow.name, str(current_workflow.id), current_workflow_step.name, str(current_workflow_step.id), node.name, node.id, str(fields), new_form_path))
         else:
             logger.warning("workflowstep %s (%s): could not process pdf form - node: '%s' (%s)" % (current_workflow_step.name, str(current_workflow_step.id), node.name, node.id))
 
@@ -180,6 +218,11 @@ class WorkflowStep_AddFormPage(WorkflowStep):
         field.set("label", t(lang, "workflowstep-addformpage_label_pdf_fields_editable"))
         field.set("type", "check")
         ret.append(field)
+        
+        field = tree.Node("pdf_form_separate", "metafield")
+        field.set("label", t(lang, "workflowstep-addformpage_label_pdf_form_separate"))
+        field.set("type", "check")
+        ret.append(field)        
         return ret
 
     def getLabels(self):
@@ -188,11 +231,13 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                 ("workflowstep-addformpage", "PDF-Seiten hinzuf\xc3\xbcgen"),
                 ("workflowstep-addformpage_label_upload_pdfform", "Eine PDF-Form hier hochladen"),
                 ("workflowstep-addformpage_label_pdf_fields_editable", "PDF-Form-Felder editierbar"),
+                ("workflowstep-addformpage_label_pdf_form_separate", "PDF-Form separat an Knoten anh\xc3\xa4ngen"),
             ],
            "en":
             [
                 ("workflowstep-addformpage", "add PDF pages"),
                 ("workflowstep-addformpage_label_upload_pdfform", "Upload one PDF form here"),
                 ("workflowstep-addformpage_label_pdf_fields_editable", "PDF form fields editable"),
+                ("workflowstep-addformpage_label_pdf_form_separate", "append PDF form separately to node"),                
             ]
             }

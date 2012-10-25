@@ -28,6 +28,8 @@ import StringIO
 import Image
 import ImageDraw
 
+from datetime import datetime
+
 from reportlab.pdfgen import canvas
 from pyPdf import PdfFileWriter, PdfFileReader
 
@@ -210,6 +212,104 @@ def place_pic(fn_in, fn_pic, fn_out, x0, y0, scale=1.0, mask=None, pages=[], fol
 
     pdf.stream.close()
 
+    return
+    
+    
+def build_logo_overlay_pdf(fn_matrix_pdf,
+                           fn_pic, fn_out,
+                           x0,
+                           y0,
+                           scale=1.0,
+                           mask=None,
+                           pages='auto',  #[],
+                           follow_rotate=False,
+                           url=''):
+
+    str_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f")
+    #str_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    
+    fn_logo_temp = fn_matrix_pdf.replace(".pdf",  "__logo_temp__" + str_datetime + ".pdf")
+
+    pdf_dim = get_pdf_dimensions(fn_matrix_pdf)
+    pagecount = pdf_dim['numPages']
+    pic_width, pic_height = get_pic_size(fn_pic)
+
+    output = PdfFileWriter()
+    outputStream = file(fn_logo_temp, "wb")
+
+    for i in range(pagecount):
+
+        rotate = int(pdf_dim['d_pageno2rotate'][i]) % 360
+        w, h = pdf_dim['d_pageno2size'][i]
+        translation_scale = 1.0
+
+        s_out = StringIO.StringIO()
+
+        if rotate % 180:
+            c = canvas.Canvas(s_out, pagesize=(h, w))
+        else:
+            c = canvas.Canvas(s_out, pagesize=(w, h))
+
+        x1 = x0 * translation_scale
+        y1 = y0 * translation_scale - 0.51
+
+        if rotate and not follow_rotate:
+
+            if rotate == 90:
+                c.translate(w, 0)
+            elif rotate == 180:
+                c.translate(w, h)
+            elif rotate == 270:
+                c.translate(0, h)
+
+            c.rotate(rotate)
+
+        c.setFont("Helvetica", 10.5)
+
+        if i in pages:
+
+            width = int(pic_width * scale + 0.5)
+            height = int(pic_height * scale + 0.5)
+
+            c.drawImage(fn_pic,
+                        x1,
+                        y1,
+                        width=int(pic_width * scale + 0.5),
+                        height=int(pic_height * scale + 0.5),
+                        preserveAspectRatio=True,
+                        mask=mask)
+
+            if url:
+                pass
+                
+                #r1 = (x1, y1, x1 + width, y1 + height)
+                #
+                #c.linkURL(url,
+                #          r1,
+                #          thickness=1,
+                #          color=colors.green)
+
+                c.drawString(x1 + int(pic_width * scale + 0.5), y1 + int(pic_height * scale + 0.5)/2, url)
+
+        else:
+            c.drawString(0, 0, '')
+
+        c.save()
+
+        watermark = PdfFileReader(s_out)
+
+        p  = watermark.getPage(0)
+
+        output.addPage(p)
+
+
+    output.write(outputStream)
+
+    outputStream.close()
+    cmd = "pdftk %s multistamp %s output %s" % (fn_matrix_pdf, fn_logo_temp, fn_out)
+    p = os.popen(cmd)
+    s = p.read()
+    p.close()
     return
 
 

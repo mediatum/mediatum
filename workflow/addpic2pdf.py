@@ -37,6 +37,8 @@ from utils.utils import getMimeType
 from utils.fileutils import importFileToRealname
 from utils.date import format_date
 
+from metadata.upload import getFilelist
+
 from reportlab.lib.units import cm
 
 if sys.version[0:3] < '2.6':
@@ -55,7 +57,7 @@ if PYPDF_MODULE_PRESENT:
                               get_pdf_dimensions, get_pdf_page_image, \
                               get_pic_size, get_pic_info, \
                               get_pic_dpi, place_pic, parse_printer_range, \
-                              getGridBuffer
+                              getGridBuffer, build_logo_overlay_pdf
 
 
 def check_context():
@@ -86,6 +88,7 @@ def copyDictValues(dsource, dtarget, keylist, skip_empty=True):
 
 KEEP_PARAMS = ['input_current_page']
 startpageno = 0  # page of the pdf that will be shown on page load
+ADD_NBSP = 1
 
 
 class WorkflowStep_AddPic2Pdf(WorkflowStep):
@@ -235,24 +238,21 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                     else:
                         scale = 1.0 * 72.0 / dpi
                 else:
-                    dpi = 72
-                    scale = 1.0
+                    dpi = 300
+                    scale = 1.0 * 72.0 / dpi
+                    #dpi = 72
+                    #scale = 1.0
 
                 tmppath = config.get("paths.datadir") + "tmp/"
                 date_str = format_date().replace('T', '-').replace(' ', '').replace(':', '-')
                 filetempname = tmppath + "temp_addpic_pdf_wfs_%s_node_%s_%s_%s_.pdf" % (str(current_workflow_step.id), str(node.id), date_str, str(random.random()))
 
-                place_pic(
-                          pdf_in_filepath,
-                          drag_logo_filepath,
-                          filetempname,
-                          x,
-                          y,
-                          scale=scale,
-                          mask=None,
-                          pages=printer_range,
-                          follow_rotate=False
-                         )
+                url = req.params.get('input_drag_logo_url', '')
+                
+                fn_out = filetempname
+                
+                build_logo_overlay_pdf(pdf_in_filepath, drag_logo_filepath, fn_out, x, y, scale=scale,
+                           mask='auto', pages=printer_range, follow_rotate=True, url=(" "*ADD_NBSP)+url)                       
 
                 for f in node.getFiles():
                     f_name = f.getName()
@@ -336,7 +336,14 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
             FATAL_ERROR = True
             FATAL_ERROR_STR = FATAL_ERROR_STR + " - " + str(e)
 
-        wfs_files = [f for f in current_workflow_step.getFiles() if os.path.isfile(f.retrieveFile())]
+        #wfs_files = [f for f in current_workflow_step.getFiles() if os.path.isfile(f.retrieveFile())]
+        
+        wfs_files0, wfs_files = getFilelist(current_workflow_step, 'logoupload')
+        
+        
+        url_mapping = [line.strip() for line in current_workflow_step.get("url_mapping").splitlines() if line.strip() and line.find("|")> 0]
+        url_mapping = dict(map(lambda x: (x[0].strip(), x[1].strip()), [line.split("|", 1) for line in url_mapping]))
+        
         logo_info = {}
         logo_info_list = []
         for f in [f for f in wfs_files if f.getName().startswith('m_upload_logoupload')]:
@@ -352,11 +359,19 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                 FATAL_ERROR = True
                 FATAL_ERROR_STR = FATAL_ERROR_STR + (" - ERROR loading logo '%s'" % str(f_path)) + str(e)
                 continue
-                                 
-            logo_info[f.getName()] = {'size': _size, 'dpi': _dpi}
+            
+            logo_filename = f.getName()                                 
+            
+            logo_url = ""
+            for key in url_mapping:
+                if logo_filename.find(key) >= 0:
+                    logo_url = url_mapping[key]
+                    break
+            
+            logo_info[logo_filename] = {'size': _size, 'dpi': _dpi, 'url': logo_url}
             if _dpi == 'no-info':
                 _dpi = 72.0
-            logo_info_list.append({'size': _size, 'dpi': _dpi})
+            logo_info_list.append({'size': _size, 'dpi': _dpi, 'url': logo_url})
             
         if len(logo_info) == 0:
             msg = "workflow step addpic2pdf(%s): Error: no logo images found" % (current_workflow_step.id)
@@ -374,7 +389,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                    "files": node.getFiles(),
                    "wfs": current_workflow_step,
                    "wfs_files": wfs_files,
-
+                   
                    "logo_info": logo_info,
                    "logo_info_list": logo_info_list,
 
@@ -390,7 +405,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                    "user": users.getUserFromRequest(req),
                    "prefix": self.get("prefix"),
                    "buttons": self.tableRowButtons(node)}
-
+                   
         if FATAL_ERROR:
             context["error"] = context["error"] + " - " + FATAL_ERROR_STR
 
@@ -421,6 +436,13 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
         field.set("label", t(lang, "admin_wfstep_addpic2pdf_upload01"))
         field.set("type", "upload")
         ret.append(field)
+        
+        field = tree.Node("url_mapping", "metafield")
+        field.set("label", t(lang, "admin_wfstep_addpic2pdf_label_url_mapping"))
+        field.set("type", "memo")
+        ret.append(field)
+        
+        
 
         return ret
 
@@ -439,7 +461,8 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                 ("admin_wfstep_addpic2pdf_logo_dpix_dpiy", 'Das gew\xc3\xa4hlte Bild hat unterschiedliche dpi-Werte in x- und y-Richtung: Darstellungsfehler'),
 
                 ("admin_wfstep_addpic2pdf_upload01", 'Logo hier hochladen'),
-
+                ("admin_wfstep_addpic2pdf_label_url_mapping", 'URL-Mapping (Separator: |)'),
+                
                 ("admin_wfstep_addpic2pdf_logo_none", 'Nichts'),
 
                 ("admin_wfstep_addpic2pdf_select_page_to_preview", 'Vorschau (Seite)'),
@@ -452,19 +475,17 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
 
                 ("admin_wfstep_addpic2pdf_define_range", 'Bereich festlegen:<br/>(Beispiel: 1-10;12;17;30-)'),
 
-                ("admin_wfstep_addpic2pdf_apply", 'Aktuelles Bild einf\xc3\xbcgen'),
-                ("admin_wfstep_addpic2pdf_reset", 'Zur\xc3\xbccksetzen'),
-                ("admin_wfstep_addpic2pdf_accept", 'Letzte Einf\xc3\xbcgung akzeptieren und zu n\xc3\xa4chstem Workflow-Schritt'),
+                ("admin_wfstep_addpic2pdf_button_accept_image_position", 'Bild in PDF hineindrucken'),
+                ("admin_wfstep_addpic2pdf_button_back_to_original", 'Zur\xc3\xbccksetzen zum Original'),
+                ("admin_wfstep_addpic2pdf_button_continue", 'Weiter'),
 
                 ("admin_wfstep_addpic2pdf_cb_grid", 'Gitter'),
                 ("admin_wfstep_addpic2pdf_cb_logo_above_grid", 'Bild \xc3\xbcber Gitter'),
                 ("admin_wfstep_addpic2pdf_link_processed", 'in Bearbeitung'),
                 ("admin_wfstep_addpic2pdf_link_original", 'Original'),
 
-                ("admin_wfstep_addpic2pdf_option_a", 'Option A:'),
-                ("admin_wfstep_addpic2pdf_true_button", 'Option A'),
+                ("admin_wfstep_addpic2pdf_true_button", 'Weiter'),
 
-                ("admin_wfstep_addpic2pdf_option_b", 'Option B:'),
                 ("admin_wfstep_addpic2pdf_false_button", 'Option B'),
 
                 ("admin_wfstep_addpic2pdf_grid_origin_label", 'Nullpunkt'),
@@ -483,6 +504,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                 ("admin_wfstep_addpic2pdf_logo_dpix_dpiy", 'The chosen picture has different resolutions (dpi) in x and y direction: scale errors are possible'),
 
                 ("admin_wfstep_addpic2pdf_upload01", 'Upload logo here'),
+                ("admin_wfstep_addpic2pdf_label_url_mapping", 'URL mapping (separator: |)'),                
 
                 ("admin_wfstep_addpic2pdf_logo_none", 'None'),
 
@@ -496,19 +518,17 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
 
                 ("admin_wfstep_addpic2pdf_define_range", 'Define range:<br/>(example: 1-10;12;17;30-)'),
 
-                ("admin_wfstep_addpic2pdf_apply", 'Apply the current picture'),
-                ("admin_wfstep_addpic2pdf_reset", 'Reset to last accepted version'),
-                ("admin_wfstep_addpic2pdf_accept", 'Accept the last processed version and proceed to next workflow step'),
+                ("admin_wfstep_addpic2pdf_button_accept_image_position", 'Print picture into PDF'),
+                ("admin_wfstep_addpic2pdf_button_back_to_original", 'Reset to original'),
+                ("admin_wfstep_addpic2pdf_button_continue", 'Continue'),
 
                 ("admin_wfstep_addpic2pdf_cb_grid", 'Grid'),
                 ("admin_wfstep_addpic2pdf_cb_logo_above_grid", 'Picture above grid'),
                 ("admin_wfstep_addpic2pdf_link_processed", 'Currently processed'),
                 ("admin_wfstep_addpic2pdf_link_original", 'Original'),
 
-                ("admin_wfstep_addpic2pdf_option_a", 'Option A:'),
-                ("admin_wfstep_addpic2pdf_true_button", 'Option A'),
+                ("admin_wfstep_addpic2pdf_true_button", 'Continue'),
 
-                ("admin_wfstep_addpic2pdf_option_b", 'Option B:'),
                 ("admin_wfstep_addpic2pdf_false_button", 'Option B'),
 
                 ("admin_wfstep_addpic2pdf_grid_origin_label", 'Origin'),
@@ -595,7 +615,7 @@ def handle_request(req):
         if not node.id in current_workflow_step_children_ids:
             return 403  # forbidden
 
-        if not access.hasAccess(node, "read"):
+        if False:  # and not access.hasAccess(node, "read"):
             req.params["addpic2pdf_error"] = "%s: %s" % (format_date().replace('T', ' - '), t(lang(req), "admin_wfstep_addpic2pdf_no_access"))
             msg = "workflow step addpic2pdf(%s): no access to node %s for request from user '%s' (%s)" % (current_workflow_step.id, str(node.id), user.name, str(req.ip))
             logging.getLogger("backend").info(msg)
@@ -681,7 +701,7 @@ def handle_request(req):
     except:
         return 403  # forbidden
 
-    if not access.hasAccess(node, "read"):
+    if False:  # not access.hasAccess(node, "read"):
         req.params["addpic2pdf_error"] = "%s: %s" % (format_date().replace('T', ' - '), t(lang(req), "admin_wfstep_addpic2pdf_no_access"))
         msg = "workflow step addpic2pdf(%s): no access to node %s for request from user '%s' (%s)" % (current_workflow_step.id, str(node.id), user.name, str(req.ip))
         logging.getLogger("backend").info(msg)

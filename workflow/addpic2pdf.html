@@ -1,14 +1,15 @@
 <tal:block metal:define-macro="workflow_addpic2pdf">
 
 <script type="text/javascript" language="javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.22/jquery-ui.js"> </script>
+<!-- <script src="js/jquery-ui.js"> </script> -->
 
 <script tal:content="python:'var pdf_dim = '+str(json_pdf_dimensions)+';'">;</script>
 <script tal:content="python:'var keep_params = '+str(keep_params)+';'">;</script>
 <script tal:content="python:'var logo_info_list = '+str(logo_info_list)+';'">;</script>
+<script tal:content="python:'var logo_info = '+str(logo_info)+';'">;</script>
 <script tal:content="python:'var node_id = '+str(node.id)+';'">;</script>
 <script tal:content="python:'var startpageno = '+str(startpageno)+';'">;</script>
 <script tal:content="python:'var FATAL_ERROR = '+str(FATAL_ERROR)+';'">;</script>
-
 
 <script>
 
@@ -194,6 +195,7 @@
     var div_logo = $('#div_logo_'+fileindex).clone();
 
     div_logo.attr('id', 'drag_logo');
+    
     div_logo.hide();
 
     div_logo.insertAfter("#thumb_inner");
@@ -268,7 +270,27 @@
     logo_offset = get_logo_offset();
 
     adjust_drag_logo_size();
-
+    
+    var logo_url = $("#input_radio_logo_"+fileindex).val();
+    $("#input_drag_logo_url").val(logo_url);
+    
+    var x = $("<span/>").html('&nbsp;'+logo_url);
+    
+    x.attr('id', 'drag_link');
+    x.attr('class', 'no_wrap');
+    x.attr('align', 'middle');
+    
+    x.insertAfter($("#drag_logo > img"));
+    
+    var old_size = parseFloat(x.css('font-size'));
+    x.css('font-size', '6.35pt');
+    var new_size = parseFloat(x.css('font-size'));
+    
+    $("#drag_logo > img").attr('align', 'middle');
+    $("#drag_logo").attr('class', 'no_wrap');
+    
+    //$("#drag_logo > img").hide();
+    
   } // function radio_clicked(fileindex)
 
 
@@ -371,6 +393,8 @@
   }
 
   function place_drag_logo(x, y, orig) {
+  
+   if (!$("#drag_logo")) return; 
 
     $("#drag_logo").show();
     $("#drag_logo").offset( $("#thumb_inner > img").offset() );
@@ -395,6 +419,8 @@
 
 
   function get_drag_logo_poffset(orig) {
+  
+   if (!$("#drag_logo")) return;
 
     var d = $("#drag_logo").position();
 
@@ -489,10 +515,10 @@
 
     place_drag_logo(fround(poffset_cm[0] / cm_pro_pixel, 0), fround(poffset_cm[1] / cm_pro_pixel, 0), "bottom_left");
     $("#input_poffset_cm_pro_pixel").val(cm_pro_pixel);
-
+    $("#drag_logo").css("z-index", logo_zIndex);
   }
 
-  var checkZoom_active = window.setInterval("place_grid();place_grid();adjust_drag_logo_size();adjust_drag_logo_poffset();adjust_drag_logo_poffset();", 1000);
+  var checkZoom_active = window.setInterval("place_grid();place_grid();adjust_drag_logo_size();adjust_drag_logo_poffset();adjust_drag_logo_poffset();", 500);
 
   function setGridUrl() {
 
@@ -541,7 +567,7 @@
   #div_sub_left {
     float: left;
     width: 45%;
-    max-height: 400px;
+    max-height: 350px;
     border: 1px solid silver;
     margin-top: 2px;
     padding: 1;
@@ -553,10 +579,12 @@
   #div_sub_right {
     float: right;
     width: 50%;
+    max-height: 350px;    
     border: 1px solid silver;
     margin-top: 2px;
     padding-left: 10px;
     /* overflow: hidden; */
+    overflow-y: auto;
     position: relative;
   }
 
@@ -584,6 +612,12 @@
   }
 
   .leerzeile {  line-height: 2px; font-size: 2px}
+  
+  .no_wrap {
+    /*overflow-x: auto;*/
+    white-space: nowrap;
+  }
+  
 
 
 </style>
@@ -615,7 +649,7 @@
     <div id="div_sub_right">
       <p class="leerzeile">&nbsp;</p>
       <div id="submit_form">
-        <form action="/mask" method="post">
+        <form id="form_left" action="/mask" method="post">
           <div class="select">
             <span i18n:translate="admin_wfstep_addpic2pdf_select_page_to_preview">Select page to preview</span>:
             <select id="select_pdf_page" tal:attributes="name python:'pdfpage_select_for_node_'+str(node.id)" size=1 onchange="g(this.name, this.value);" onselect="g(this.name, this.value);" onkeyup="g(this.name, this.value);">
@@ -639,24 +673,24 @@
           <span i18n:translate="admin_wfstep_addpic2pdf_define_range">Define range (example: 1-10;12;17;30-):</span><br/>
           <input type="text" name="input_select_targetpages" /><br/>
 
+          <input type="button" name="button_accept_image_position" style="width:100%;" i18n:attributes="value admin_wfstep_addpic2pdf_button_accept_image_position" onclick="$('#radio_apply').attr('checked', 'checked');document.body.style.cursor = 'wait';$('#button_option_a').click();"/>
+          <input type="button" name="button_back_to_original" style="width:100%;" i18n:attributes="value admin_wfstep_addpic2pdf_button_back_to_original" onclick="$('#radio_reset').attr('checked', 'checked');document.body.style.cursor = 'wait';$('#button_option_a').click();"/>
+
+
           </div>
           <hr/>
           <div class="div_dashed_border">
-            <b><span i18n:translate="admin_wfstep_addpic2pdf_option_a">Option A:</span></b><br/>
             <div id="div_select_test_or_finish">
-                <input type="radio" name="radio_apply_reset_accept" value="apply" checked="checked" /><span i18n:translate="admin_wfstep_addpic2pdf_apply">Apply the current logo</span><br/>
-                <input type="radio" name="radio_apply_reset_accept" value="reset" /><span i18n:translate="admin_wfstep_addpic2pdf_reset">Reset to the last accepted version (or original)</span><br/>
-                <input type="radio" name="radio_apply_reset_accept" value="accept" /><span i18n:translate="admin_wfstep_addpic2pdf_accept">Accept the last processed version and proceed to next workflow step</span> (<span tal:replace="python: wfs.getTrueLabel()"></span>)<br/>
+                <!-- <input type="button" name="button_continue" style="width:100%;" tal:attributes="value python:wfs.getTrueLabel()" onclick="$('#radio_accept').attr('checked', 'checked');document.body.style.cursor = 'wait';$('#button_option_a').click();"/>  -->
+                <button name="button_continue" style="width:100%;" tal:content="python:wfs.getTrueLabel()" onclick="$('#radio_accept').attr('checked', 'checked');document.body.style.cursor = 'wait';$('#button_option_a').click();" />
             </div>
 
-            <input type="submit" name="gotrue" style="width:100%;" i18n:attributes="value admin_wfstep_addpic2pdf_true_button" onclick="document.body.style.cursor = 'wait';"/>
+            <input id="button_option_a" type="submit" name="gotrue" style="width:100%;display:none" tal:attributes="value python:wfs.getTrueLabel()" onclick="document.body.style.cursor = 'wait';"/>
 
           </div>
           <hr/>
           <div class="div_dashed_border">
-            <b><span i18n:translate="admin_wfstep_addpic2pdf_option_b">Option B:</span></b><br/>
-            <span tal:replace="python: wfs.getFalseLabel()"></span><br/>
-            <input type="submit" style="width:100%;" name="gofalse" i18n:attributes="value admin_wfstep_addpic2pdf_false_button" />
+            <button type="submit" style="width:100%;" name="gofalse" tal:content="python:wfs.getFalseLabel()" />
           </div>
           <p class="leerzeile">&nbsp;</p>
 
@@ -683,6 +717,7 @@
               <input id="input_drag_logo_pos" name="input_drag_logo_pos"/>(input_drag_logo_pos)<br/>
               <input id="input_drag_logo_size" name="input_drag_logo_size"/>(input_drag_logo_size)<br/>
               <input id="input_drag_logo_fullname" name="input_drag_logo_fullname"/>(input_drag_logo_fullname)<br/>
+              <input id="input_drag_logo_url" name="input_drag_logo_url"/>(input_drag_logo_url)<br/>
 
               <input id="input_orig_logo_size" name="input_orig_logo_size"/>(input_orig_logo_size)<br/>
               <input id="input_logo_dpi" name="input_logo_dpi"/>(input_logo_dpi)<br/>
@@ -693,6 +728,10 @@
               <input id="input_cb_grid" name="input_cb_grid" />(input_cb_grid)<br/>
               <input id="input_cb_logo_zindex" name="input_cb_logo_zindex" />(input_cb_logo_zindex)<br/>
               <input id="input_current_page" name="input_current_page" />(input_current_page)<br/>
+              
+              <input type="radio" id="radio_apply" name="radio_apply_reset_accept" value="apply" checked="checked" /><span i18n:translate="admin_wfstep_addpic2pdf_apply">Apply the current logo</span><br/>
+              <input type="radio" id="radio_reset" name="radio_apply_reset_accept" value="reset" /><span i18n:translate="admin_wfstep_addpic2pdf_reset">Reset to the last accepted version (or original)</span><br/>
+              <input type="radio" id="radio_accept" name="radio_apply_reset_accept" value="accept" /><span i18n:translate="admin_wfstep_addpic2pdf_accept">Accept the last processed version and proceed to next workflow step</span> (<span tal:replace="python: wfs.getTrueLabel()"></span>)<br/>
 
           </div>
           <!-- ++++++++++++ hidden parameters ++++++++++++ -->
@@ -710,16 +749,24 @@
         <tal:block tal:repeat="fileindex python: range(len(wfs_files))">
           <div style="overflow:hidden;">
             <tal:block tal:condition="python:wfs_files[fileindex].getName().startswith('m_upload_logoupload')">
-              <div style="border:1px solid silver; padding:5px; overflow:hidden;" class="subcontainer_logo" style="float:left;">
+              <div style="border:1px solid silver; padding:5px; overflow:auto;" class="subcontainer_logo" style="float:left;">
                 <input name="radio_logo" type="radio" onclick="radio_clicked(this.value);" tal:attributes="id python:'radio_logo_'+str(fileindex); value python:str(fileindex);"/>
+
                 <tal:block tal:replace="python:wfs_files[fileindex].getName().replace('m_upload_logoupload_', '')" />
+                
+                <div style="border:1px solid silver; padding:5px; overflow:auto;" style="float:left;">
+                                
                 <span style="display:none" tal:content="python:wfs_files[fileindex].getName()" tal:attributes="id python:'radio_logo_'+str(fileindex)+'_fullname';" />
-                <br/>
+                <!-- <br/> -->
                 <div tal:attributes="id python:'div_logo_small_'+str(fileindex);  title python:str(logo_info_list[fileindex])">
                   <img tal:attributes="src python:'/file/'+wfs.id+'/'+wfs_files[fileindex].getName();id python:'image_logo_'+str(fileindex); height python: '60px';" />
                 </div>
                 <div style="display:none;" tal:attributes="id python:'div_logo_'+str(fileindex)">
                   <img  tal:attributes="src python:'/file/'+wfs.id+'/'+wfs_files[fileindex].getName();id python:'image_logo_'+str(fileindex); style python:'height:'+str(float(logo_info_list[fileindex]['size'][1])/float(logo_info_list[fileindex]['dpi'])*2.54)+'cm'" />
+                </div>
+                <div class="no_wrap">
+                <input type="text" tal:attributes="value python:logo_info[wfs_files[fileindex].getName()]['url']; id python:'input_radio_logo_'+str(fileindex); size python:max(len(logo_info[wfs_files[fileindex].getName()]['url'])+10, 40)"/>
+                </div>
                 </div>
               </div>
               </tal:block>

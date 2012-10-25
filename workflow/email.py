@@ -18,6 +18,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
+import os.path
 import core.tree as tree
 from workflow import WorkflowStep
 import core.athana as athana
@@ -44,6 +46,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
         xfrom = node.get("mailtmp.from")
         to = node.get("mailtmp.to")
         sendcondition = self.get("sendcondition")
+        attach_pdf_form = bool(self.get("attach_pdf_form"))
         sendOk = 1
         
         try:
@@ -63,7 +66,20 @@ class WorkflowStep_SendEmail(WorkflowStep):
                     raise MailError("No receiver address defined")
                 if not xfrom:
                     raise MailError("No from address defined")
-                mail.sendmail(xfrom, to, node.get("mailtmp.subject"), node.get("mailtmp.text"))
+                attachments_paths_and_filenames = []    
+                if attach_pdf_form:
+                    for f in node.getFiles():
+                        print f, f.getName(), f.getType(), f.retrieveFile()
+                    pdf_form_files = [f for f in node.getFiles() if f.getType() == 'pdf_form']
+                    for i, f in enumerate(pdf_form_files):
+                        if not os.path.isfile(f.retrieveFile()):
+                            raise MailError("Attachment file not found: '%s'" % f.retrieveFile())
+                        else:
+                            attachments_paths_and_filenames.append((f.retrieveFile(), 'contract_' + str(i) + '_' + str(node.id) + '.pdf'))
+                    pass        
+                    #attachments_paths_and_filenames = [(f.retrieveFile(), 'contract_' + str(node.id) + '.pdf') for f in pdf_form_files]
+                print '----> attachments_paths_and_filenames:', attachments_paths_and_filenames    
+                mail.sendmail(xfrom, to, node.get("mailtmp.subject"), node.get("mailtmp.text"), attachments_paths_and_filenames=attachments_paths_and_filenames)
             except:
                 node.set("mailtmp.error", formatException())
                 log.info("Error while sending mail- node stays in workflowstep %s %s" %(self.id, self.name))
@@ -172,5 +188,23 @@ class WorkflowStep_SendEmail(WorkflowStep):
         field.set("label", t(lang, "admin_wfstep_email_sendcondition"))
         field.set("type", "text")
         ret.append(field)
+        
+        field = tree.Node("attach_pdf_form", "metafield")
+        field.set("label", t(lang, "workflowstep-email_label_attach_pdf_form"))
+        field.set("type", "check")
+        ret.append(field)              
+        
         return ret
+        
+    def getLabels(self):
+        return { "de":
+            [
+                ("workflowstep-email_label_attach_pdf_form", "PDF-Form als Anhang senden"),
+                
+            ],
+           "en":
+            [
+                ("workflowstep-email_label_attach_pdf_form", "Send PDF from as attachment"),
+            ]
+            }        
 

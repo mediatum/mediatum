@@ -23,8 +23,9 @@ from core.tree import Node
 from core.metatype import Metatype
 
 class m_meta(Metatype):
-    def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
-        return athana.getTAL("metadata/meta.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
+    
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
+        return athana.getTAL("metadata/meta.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
 
 
     def getSearchHTML(self, context):
@@ -35,9 +36,11 @@ class m_meta(Metatype):
         return (field.getLabel(), node.get(field.getValues()))
 
 
-    def getMaskEditorHTML(self, value="", metadatatype=None, language=None):
+    def getMaskEditorHTML(self, field, metadatatype=None, language=None):
+        value = ""
+        if field:
+            value = field.getValues()
         attr = {}
-        
         if metadatatype:
             for t in metadatatype.getDatatypes():
                 node = tree.Node(type=t)

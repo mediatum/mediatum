@@ -27,8 +27,8 @@ import hashlib
 
 class m_password(Metatype):
 
-    def getEditorHTML(self, field, value="", width=40, name="", lock=0, language=None):
-        return athana.getTAL("metadata/password.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
+    def getEditorHTML(self, field, value="", width=40, lock=0, language=None):
+        return athana.getTAL("metadata/password.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
 
 
     def getSearchHTML(self, context):

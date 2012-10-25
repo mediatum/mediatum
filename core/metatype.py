@@ -37,7 +37,7 @@ class Context:
         
 class Metatype:
 
-    def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
         return ""
 
     def getSearchHTML(self, context):
@@ -49,7 +49,7 @@ class Metatype:
     def getFormatedValueForDB(self, field, value, language=None):
         return value
 
-    def getMaskEditorHTML(self, value="", metadatatype=None, language=None):
+    def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         return ""
 
     def isContainer(self):
@@ -57,8 +57,7 @@ class Metatype:
         
     def isFieldType(self):
         return True
-
-
+        
     def getName(self):
         return ""
         

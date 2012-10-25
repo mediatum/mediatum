@@ -35,8 +35,8 @@ FONTSIZE = 40
 
 class m_watermark(Metatype):
     """ This class implements the metatype watermark and everything that is needed to handle it """
-    def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
-        return athana.getTAL("metadata/watermark.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
+        return athana.getTAL("metadata/watermark.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
 
 
     def getSearchHTML(self, context):

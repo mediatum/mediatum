@@ -97,11 +97,12 @@ class m_mlist(Metatype):
                 valuelist.append(("optionselected", indentstr, val, num))
             else:
                 valuelist.append(("option", indentstr, val, num))
+        
         return valuelist
 
         
-    def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):    
-        context = Context(field, value=value, width=width, name=name, lock=lock, language=language)
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):    
+        context = Context(field, value=value, width=width, name=field.getName(), lock=lock, language=language)
         return athana.getTAL("metadata/mlist.html", {"context":context, "valuelist":self.formatValues(context)}, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
@@ -116,7 +117,10 @@ class m_mlist(Metatype):
     def getFormatedValueForDB(self, field, value):
         return value.replace("; ",";")
 
-    def getMaskEditorHTML(self, value="", metadatatype=None, language=None):
+    def getMaskEditorHTML(self, field, metadatatype=None, language=None):
+        value = ""
+        if field:
+            value = field.getValues()
         return athana.getTAL("metadata/mlist.html", {"value":value}, macro="maskeditor", language=language)
 
     def getName(self):

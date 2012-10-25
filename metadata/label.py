@@ -86,8 +86,8 @@ class m_label(Metatype):
         v["fields"] = fields
         return req.getTAL("metadata/label.html", v, macro="metaeditor")
 
-    def getEditorHTML(self, field, value="", width=40, name="", lock=0, language=None):
-        return athana.getTAL("metadata/label.html", {"lock": lock, "value": value, "width": width, "name": name, "field": field}, macro="editorfield", language=language)
+    def getEditorHTML(self, field, value="", width=40, lock=0, language=None):
+        return athana.getTAL("metadata/label.html", {"lock": lock, "value": value, "width": width, "name": field.getName(), "field": field}, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
         return athana.getTAL("metadata/label.html", {"context": context}, macro="searchfield", language=context.language)

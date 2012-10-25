@@ -21,8 +21,9 @@ import core.athana as athana
 from core.metatype import Metatype
 
 class m_check(Metatype):
-    def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
-        return athana.getTAL("metadata/check.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
+    
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
+        return athana.getTAL("metadata/check.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
         return athana.getTAL("metadata/check.html",{"context":context}, macro="searchfield", language=context.language)

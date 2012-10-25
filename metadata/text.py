@@ -47,8 +47,8 @@ def getMaskitemForField(field, language=None, mask=None):
 
 class m_text(Metatype):
 
-    def getEditorHTML(self, field, value="", width=40, name="", lock=0, language=None):
-        return athana.getTAL("metadata/text.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
+    def getEditorHTML(self, field, value="", width=40, lock=0, language=None):
+        return athana.getTAL("metadata/text.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
         return athana.getTAL("metadata/text.html",{"context":context}, macro="searchfield", language=context.language)

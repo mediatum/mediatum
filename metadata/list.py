@@ -18,19 +18,18 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import os.path
+import os
 import core.athana as athana
 import core.tree as tree
 
 from utils.utils import esc
 from core.metatype import Metatype, Context
-from core.translation import t, lang
-
+    
 class m_list(Metatype):
     
+    
     def formatValues(self, context):
-        valuelist = [] 
-
+        valuelist = []
         items = {}
         try:
             n = context.collection
@@ -43,28 +42,28 @@ class m_list(Metatype):
         tempvalues = context.field.getValueList()
         valuesfiles = context.field.getFiles()
         
-        if len(valuesfiles) > 0: # a text file with list values was uploaded
+        if len(valuesfiles): # a text file with list values was uploaded
             if os.path.isfile(valuesfiles[0].retrieveFile()):
                 valuesfile = open(valuesfiles[0].retrieveFile(), 'r')
                 tempvalues = valuesfile.readlines()
                 valuesfile.close()
         
-        if tempvalues[0].find('|') > 0: # there are values in different languages available
-            languages = [x.strip() for x in tempvalues[0].split('|')] # find out the languages
-            valuesdict = dict((lang,[]) for lang in languages)        # create a dictionary with languages as keys,
-                                                                      # and list of respective values as dictionary values
-            for i in range(len(tempvalues)):
-                if i: # if i not 0 - the language names itself shouldn't be included to the values
-                    tmp = tempvalues[i].split('|')
-                    for j in range(len(tmp)):
-                        valuesdict[languages[j]].append(tmp[j])
-            
-            lang = context.language
-                      
-            if (not lang) or (lang not in valuesdict.keys()):    # if there is no default language, the first language-value will be used
-                lang = languages[0]
+        if len(tempvalues): # Has the user entered any values?
+            if tempvalues[0].find('|') > 0: # there are values in different languages available
+                languages = [x.strip() for x in tempvalues[0].split('|')] # find out the languages
+                valuesdict = dict((lang,[]) for lang in languages)        # create a dictionary with languages as keys,
+                                                                          # and list of respective values as dictionary values
+                for i in range(len(tempvalues)):
+                    if i: # if i not 0 - the language names itself shouldn't be included to the values
+                        tmp = tempvalues[i].split('|')
+                        for j in range(len(tmp)):
+                            valuesdict[languages[j]].append(tmp[j])
                 
-            tempvalues = valuesdict[lang]
+                lang = context.language         
+                if (not lang) or (lang not in valuesdict.keys()):    # if there is no default language, the first language-value will be used
+                    lang = languages[0]
+                    
+                tempvalues = valuesdict[lang]
             
         for val in tempvalues:
             indent = 0
@@ -96,7 +95,6 @@ class m_list(Metatype):
                 num = ""
                 
             val = esc(val)
-
             if not canbeselected:
                 valuelist.append(("optgroup", "<optgroup label=\""+indentstr+val+"\">","", ""))
             elif (val in context.value.split(";")):
@@ -106,30 +104,42 @@ class m_list(Metatype):
                 
         return valuelist
                 
-
-    def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
-        context = Context(field, value=value, width=width, name=name, lock=lock, language=language)
+    
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
+        context = Context(field, value=value, width=width, name=field.getName(), lock=lock, language=language)
         return athana.getTAL("metadata/list.html", {"context":context, "valuelist":filter(lambda x:x!="", self.formatValues(context))}, macro="editorfield", language=language)
-
-
+        
+        
     def getSearchHTML(self, context):
         return athana.getTAL("metadata/list.html", {"context":context, "valuelist":filter(lambda x:x!="", self.formatValues(context))}, macro="searchfield", language=context.language)
-
-
+        
+        
     def getFormatedValue(self, field, node, language=None, html=1):
-        value = node.get(field.getName())
+        value = node.get(field.getName()).replace(";", "; ")
         if html:
             value = esc(value)
         return (field.getLabel(), value)
-
-
-    def getMaskEditorHTML(self, value="", metadatatype=None, language=None):
-        return athana.getTAL("metadata/list.html", {"value":value}, macro="maskeditor", language=language)
-
-
+    
+    
+    def getFormatedValueForDB(self, field, value):
+        return value.replace("; ", ";")
+        
+        
+    def getMaskEditorHTML(self, field, metadatatype=None, language=None):
+        value = ""
+        filename = ""
+        multiple_list = ""
+        if field:
+            value = field.getValues()
+            if field.id and len(field.getFiles()) > 0:
+                filename = os.path.basename(field.getFiles()[0].retrieveFile())
+                multiple_list = field.get('multiple')
+        return athana.getTAL("metadata/list.html", {"value":value, "filename":filename, "multiple_list":multiple_list}, macro="maskeditor", language=language)
+        
+        
     def getName(self):
         return "fieldtype_list"
-    
+        
         
     def getInformation(self):
         return {"moduleversion":"1.1", "softwareversion":"1.1"}
@@ -138,23 +148,27 @@ class m_list(Metatype):
     # method for additional keys of type list
     def getLabels(self):
         return m_list.labels
-
-
+        
+        
     labels = { "de":
             [
+                ("list_multiple", "Mehrfachauswahl"),
+                ("current_file", "Aktuelle Textdatei: "),
+                ("delete_valuesfile", "Vorhandene Datei l&ouml;schen"),
                 ("list_list_values_file", "Datei mit Listenwerten:"),
                 ("list_list_values", "Listenwerte:"),
                 ("fieldtype_list", "Werteliste"),
-                ("fieldtype_list_desc", "Werte-Auswahlfeld als Drop-Down Liste"),
-                ("upload_values_file", "Textdatei mit Listenwerten hier hochladen")
+                ("fieldtype_list_desc", "Werte-Auswahlfeld als Drop-Down Liste")
             ],
            "en":
             [
+                ("list_multiple", "Multiple choice"),
+                ("current_file", "Current values file: "),
+                ("delete_valuesfile", "Delete the current text file"),
                 ("list_list_values_file", "Textfile with list values:"),
                 ("list_list_values", "List values:"),
                 ("fieldtype_list", "valuelist"),
-                ("fieldtype_list_desc", "drop down valuelist"),
-                ("upload_values_file", "Upload the textfile with listvalues here")
+                ("fieldtype_list_desc", "drop down valuelist")
             ]
           }
-    
+          

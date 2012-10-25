@@ -25,7 +25,7 @@ from core.metatype import Metatype
 
 class m_date(Metatype):
 
-    def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
         global dateoption
 
         d = field.getSystemFormat(str(field.getValues()))
@@ -37,7 +37,7 @@ class m_date(Metatype):
         except:
             pass
 
-        return athana.getTAL("metadata/date.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
+        return athana.getTAL("metadata/date.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
 
 
     def getSearchHTML(self, context):
@@ -72,7 +72,10 @@ class m_date(Metatype):
         return format_date(d, format='%Y-%m-%dT%H:%M:%S')
 
 
-    def getMaskEditorHTML(self, value="", metadatatype=None, language=None):
+    def getMaskEditorHTML(self, field, metadatatype=None, language=None):
+        value = ""
+        if field:
+            value = field.getValues()
         return athana.getTAL("metadata/date.html", {"value":value, "dateoption":dateoption}, macro="maskeditor", language=language)
 
     def getName(self):

@@ -21,11 +21,11 @@ import core.athana as athana
 from core.metatype import Metatype
 
 class m_message(Metatype):
-    def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
         value = value.split(";")
         if len(value)<2:
             value = ["",0,"black",0]         
-        return athana.getTAL("metadata/message.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
+        return athana.getTAL("metadata/message.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
         return athana.getTAL("metadata/message.html",{"context":context}, macro="searchfield", language=context.language)

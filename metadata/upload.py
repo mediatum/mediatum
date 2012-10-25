@@ -100,7 +100,7 @@ class m_upload(Metatype):
 
     disabled = "0"
 
-    def getEditorHTML(self, field, value="", width=40, name="", lock=0, language=None):
+    def getEditorHTML(self, field, value="", width=40, lock=0, language=None):
 
         check_context()
 
@@ -126,7 +126,7 @@ class m_upload(Metatype):
                    "lock": lock,
                    "value": value,
                    "width": width,
-                   "name": name,
+                   "name": field.getName(),
                    "field": field,
                    "language": language,
                    "warning": warning,
@@ -144,9 +144,8 @@ class m_upload(Metatype):
             pass
 
         s = athana.getTAL("metadata/upload.html", context, macro="editorfield", language=language)
-
-        if name:
-            s = s.replace("____FIELDNAME____", "%s" % name)
+        if field.getName():
+            s = s.replace("____FIELDNAME____", "%s" % field.getName())
         elif fieldname:
             s = s.replace("____FIELDNAME____", "%s" % fieldname)
         else:

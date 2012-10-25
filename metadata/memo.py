@@ -21,8 +21,8 @@ import core.athana as athana
 from core.metatype import Metatype, charmap
 
 class m_memo(Metatype):
-    def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
-        return athana.getTAL("metadata/memo.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
+        return athana.getTAL("metadata/memo.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
         return athana.getTAL("metadata/memo.html",{"context":context}, macro="searchfield", language=context.language)
@@ -31,7 +31,10 @@ class m_memo(Metatype):
         value = node.get(field.getName()).replace(";","; ")
         return (field.getLabel(), value)
 
-    def getMaskEditorHTML(self, value="", metadatatype=None, language=None):
+    def getMaskEditorHTML(self, field, metadatatype=None, language=None):
+        value = ""
+        if field:
+            value = field.getValues()
         return athana.getTAL("metadata/memo.html", {"value":value}, macro="maskeditor", language=language)
 
     def getName(self):

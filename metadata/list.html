@@ -1,11 +1,22 @@
 
 <tal:block metal:define-macro="editorfield">
-    <select class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[int(context.lock)]; style python:'width:'+str(context.width-16)+'px'; name python:context.name; id python:context.name;">
-        <tal:block tal:repeat="v valuelist">
-            <option tal:condition="python:v[0] in ['optionselected','option']" tal:attributes="value python:v[2]; selected python:{'True':'selected','False':None}[str(v[0]=='optionselected')]" tal:content="raw python:v[1]+v[2]+v[3]"/>
-            <optgroup tal:condition="python:v[0]=='optgroup'" tal:replace="raw python:v[1]"/>
-        </tal:block>
-    </select>
+    <tal:block tal:condition="python:not bool(context.field.get('multiple'))">
+        <select class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[int(context.lock)]; style python:'width:'+str(context.width-16)+'px'; name python:context.name; id python:context.name;">
+            <tal:block tal:repeat="v valuelist">
+                <option tal:condition="python:v[0] in ['optionselected','option']" tal:attributes="value python:v[2]; selected python:{'True':'selected','False':None}[str(v[0]=='optionselected')]" tal:content="raw python:v[1]+v[2]+v[3]"/>
+                <optgroup tal:condition="python:v[0]=='optgroup'" tal:replace="raw python:v[1]"/>
+            </tal:block>
+        </select>
+    </tal:block>
+    <tal:block tal:condition="python:bool(context.field.get('multiple'))">
+        <select class="multitext" tal:attributes="disabled python:{0:None,1:'disabled'}[int(context.lock)]; style python:'width:'+str(context.width-16)+'px'; name python: context.name; id python: context.name;" multiple="multiple">
+            <tal:block tal:repeat="v valuelist">
+                <option tal:condition="python:v[0]=='optionselected'" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]" selected="selected"/>
+                <option tal:condition="python:v[0]=='option'" tal:attributes="value python:v[2]" tal:content="raw python:v[1]+v[2]+v[3]"/>
+                <optgroup tal:condition="python:v[0]=='optgroup'" tal:replace="raw python:v[1]"/>
+            </tal:block>
+        </select>
+    </tal:block>
     <tal:block tal:condition="python:context.lock!=0" tal:attributes="id python:'lockspan_'+context.name">&nbsp;
         <input tal:attributes="name python:'lock_'+context.name; id python:'lock_'+context.name; onclick python:'handlelock(\''+context.name+'\')'" type="checkbox"/>
         <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
@@ -15,16 +26,27 @@
 
 <select metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name;" class="searchfield">
     <tal:block tal:repeat="v valuelist">
-    <option tal:condition="python:v[0]!='optgroup'" tal:attributes="value python:''+v[2]+''; selected python:{'True':'selected','False':None}[str(context.value==''+v[2]+'')]" tal:content="raw python:v[1]+v[2]+v[3]"/>
+       <option tal:condition="python:v[0]!='optgroup'" tal:attributes="value python:''+v[2]+''; selected python:{'True':'selected','False':None}[str(context.value==''+v[2]+'')]" tal:content="raw python:v[1]+v[2]+v[3]"/>
        <optgroup tal:condition="python:v[0]=='optgroup'" tal:replace="raw python:v[1]"/>
     </tal:block>
 </select>
 
 
 <div metal:define-macro="maskeditor" style="display:none" name="div_list" id="div_list">
-    <div class="label" i18n:translate="list_list_values_file">TEXT</div>
-    <input type="file" name="valuesfile">
-    <br/>
+    <div class="label" i18n:translate="list_multiple">TEXT</div>
+    <input type="checkbox" name="list_value" value="multiple" tal:attributes="checked python:'checked' if multiple_list else None" />
+    <br />
+    <br />
     <div class="label" i18n:translate="list_list_values">TEXT</div>
     <textarea name="list_value" rows="4" style="width:250px"><tal:block tal:replace="value"/></textarea>
+    <br />
+    <div class="label" i18n:translate="list_list_values_file">TEXT</div>
+    <input type="file" name="valuesfile" />
+    <br />
+    <tal:block tal:condition="python:filename">
+        <div class="label" i18n:translate="current_file">TEXT</div><br />
+        <span tal:replace="filename">filename</span><br />
+        <div class="label" i18n:translate="delete_valuesfile">TEXT</div>
+        <input type="checkbox" name="list_value" value="delete" unchecked="unchecked" />
+    </tal:block>
 </div>

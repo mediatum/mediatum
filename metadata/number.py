@@ -23,8 +23,8 @@ from core.metatype import Metatype, Context
 
 class m_number(Metatype):
 
-    def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
-        return athana.getTAL("metadata/number.html", {"lock":lock, "value":value, "width":width, "name":name, "field":field}, macro="editorfield", language=language)
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
+        return athana.getTAL("metadata/number.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
 
 
     def getSearchHTML(self, context):

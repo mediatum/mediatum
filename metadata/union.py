@@ -22,9 +22,7 @@ from utils.utils import esc
 from core.metatype import Metatype
 
 class m_union(Metatype):
-    def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
-        return "" # Union fields should not be edited in the editor
-
+    
     def getSearchHTML(self, context):
         return athana.getTAL("metadata/text.html",{"context":context}, macro="searchfield", language=context.language)
 

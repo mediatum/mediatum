@@ -1,5 +1,4 @@
 """
-
  mediatum - a multimedia content repository
 
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
@@ -36,11 +35,15 @@ from schema.schema import loadTypesFromDB, getMetaFieldTypeNames, getMetaType, u
 from schema.schema import VIEW_DEFAULT, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_ONLY, VIEW_DATA_EXPORT
 from schema.mapping import getMappings
 from schema.bibtex import getAllBibTeXTypes
-from utils.fileutils import importFile
+
+from utils.fileutils import importFileToRealname
 # metafield methods
 from metatype_field import showDetailList, FieldDetail
 # meta mask methods
 from metatype_mask import showMaskList, MaskDetails
+
+from contenttypes.default import flush_maskcache
+
 
 
 def getInformation():
@@ -62,7 +65,10 @@ def validate(req, op):
         return showFieldOverview(req)
 
     if len(path)==4 and path[3]=="editor":
-        return showEditor(req)
+        res = showEditor(req)
+        # mask may have been edited: flush masks cache
+        flush_maskcache(req=req)
+        return res
 
     if len(path)==5 and path[3]=="editor" and path[4]=="show_testnodes": 
     
@@ -118,8 +124,8 @@ def validate(req, op):
         # remark: error messages will be served untranslated in English  
         # because messages from the python interpreter (in English) will be added
         
-        return req.getTAL("web/admin/modules/metatype.html", {'sectionlist':sectionlist}, macro="view_testnodes")  
-                
+        return req.getTAL("web/admin/modules/metatype.html", {'sectionlist':sectionlist}, macro="view_testnodes")
+        
     if len(path)==2 and path[1]=="info":
         return showInfo(req)
     
@@ -237,9 +243,8 @@ def validate(req, op):
             
             _filenode = None
             if "valuesfile" in req.params.keys():
-                valuesfile = req.params.get("valuesfile")
-                del req.params["valuesfile"]
-                _filenode = importFile(valuesfile.filename, valuesfile.tempname)
+                valuesfile = req.params.pop("valuesfile")
+                _filenode = importFileToRealname(valuesfile.filename, valuesfile.tempname)
             
             updateMetaField(req.params.get("parent",""), req.params.get("mname",""),
                             req.params.get("mlabel",""), req.params.get("orderpos",""),
@@ -251,6 +256,10 @@ def validate(req, op):
 
     
     elif req.params.get("acttype")=="mask":
+        
+        # mask may have been edited: flush masks cache
+        flush_maskcache(req=req)
+
         # section for masks
         for key in req.params.keys():
         
@@ -530,7 +539,7 @@ def showEditor(req):
                 if req.params.get("fieldtype")=="mapping": # mapping field of mapping definition selected
                     item.set("mappingfield", mf[0])
                 else: # attribute name as object name
-                    item.set("mappingfield", mf[1])
+                    item.set("mappingfield", ";".join(mf[1:]))
             else:
                 f = tree.getNode(long(req.params.get("field")))
             
@@ -563,19 +572,21 @@ def showEditor(req):
                     fieldid = ""
                 else:
                     # normal field
-                    updateMetaField(parent, req.params.get("fieldname"), label, 0, req.params.get("newfieldtype"), option="", description=req.params.get("description",""), fieldvalues=fieldvalue, fieldvaluenum="", fieldid="")
+                    updateMetaField(parent, req.params.get("fieldname"), label, 0, 
+                                    req.params.get("newfieldtype"), option="", description=req.params.get("description",""), 
+                                    fieldvalues=fieldvalue, fieldvaluenum="", fieldid="")
                     fieldid = str(getMetaField(parent, req.params.get("fieldname")).id)
             
             item = editor.addMaskitem( label, req.params.get("type"), fieldid, req.params.get("pid","0") )
 
-            if "mappingfield" in req.params.keys():              
+            if "mappingfield" in req.params.keys():
                 item.set("attribute", req.params.get("attribute"))
                 item.set("fieldtype", req.params.get("fieldtype"))
                 mf = req.params.get("mappingfield").split(";")
                 if req.params.get("fieldtype")=="mapping": # mapping field of mapping definition selected
                     item.set("mappingfield", mf[0])
                 else: # attribute name as object name
-                    item.set("mappingfield", mf[1])
+                    item.set("mappingfield", ";".join(mf[1:]))
              
             position = req.params.get("insertposition", "end")
             if position=="end":
@@ -600,7 +611,7 @@ def showEditor(req):
         if "required" in req.params.keys():
             item.setRequired(1)
         else:
-            item.setRequired(0)          
+            item.setRequired(0)
 
     if "savedetail" in req.params.keys():
         label = req.params.get("label","-new-")

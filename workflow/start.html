@@ -9,7 +9,7 @@
             <option tal:repeat="schema types" tal:attributes="value python:schema[1]" tal:content="python:schema[0].getLongName()"/>
         </select>
         
-        <p class="typename" tal:content="python:types[0][0].getLongName()"/>
+        <p class="typename" tal:condition="python:len(types)==1" tal:content="python:types[0][0].getLongName()"/>
         <br/><br/>
         <input i18n:attributes="value workflow_start_submit" type="submit" name="Erstellen"/>
     </form>

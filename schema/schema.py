@@ -658,7 +658,6 @@ class Metadatafield(tree.Node):
         return None
 
     def getFieldtype(self):
-        print "Metadatafield, getFieldtype: " + str(self.get("type"))
         return self.get("type")
     def setFieldtype(self, value):
         self.set("type", value)

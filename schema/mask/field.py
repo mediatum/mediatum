@@ -95,7 +95,7 @@ class m_field(Metatype):
         if field.getUnit()!="":
             unit += field.getUnit()
         
-        ret += '<div id="editor_content">'+t.getEditorHTML(element, value=val, width=field.getWidth(), name=element.getName(), lock=lock, language=lang(req))+unit+'</div>'
+        ret += '<div id="editor_content">'+t.getEditorHTML(element, value=val, width=field.getWidth(), lock=lock, language=lang(req))+unit+'</div>'
         if not sub:
             ret += '</div>'
         return ret
@@ -274,13 +274,13 @@ class m_field(Metatype):
 
         fields.sort(lambda x, y: cmp(x.getOrderPos(),y.getOrderPos()))
         add_values = []
-        val = ""
+        field = None
         if item.getField():
-            val = item.getField().getValues()
+            field = item.getField()
         
         for t in getMetaFieldTypeNames():
             f = getMetadataType(t)
-            add_values.append(f.getMaskEditorHTML(val, metadatatype=metadatatype, language=lang(req)))
+            add_values.append(f.getMaskEditorHTML(field, metadatatype=metadatatype, language=lang(req)))
 
         metafields = metadatatype.getMetaFields()
         metafields.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))

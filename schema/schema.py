@@ -3,6 +3,7 @@
 
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
  Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
+ Copyright (C) 2012 Iryna Feuerstein <feuersti@in.tum.de>
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -30,7 +31,7 @@ import core.translation as translation
 from utils.utils import *
 from utils.date import *
 from utils.log import logException
-from core.tree import nodeclasses, Node
+from core.tree import nodeclasses, Node, FileNode
 from core.config import *
 from core.xmlnode import getNodeXML, readNodeXML
 from core.db.database import getConnection
@@ -164,8 +165,7 @@ def existMetaField(pid, name):
 
 
 """ update/create metadatafield """
-def updateMetaField(parent, name, label, orderpos, fieldtype, option="", description="",
-                    fieldvalues="", fieldvaluenum="", fieldid="", filenode=None):
+def updateMetaField(parent, name, label, orderpos, fieldtype, option="", description="", fieldvalues="", fieldvaluenum="", fieldid="", filenode=None):
     metatype = getMetaType(parent)
     try:
         field = tree.getNode(fieldid)
@@ -174,6 +174,33 @@ def updateMetaField(parent, name, label, orderpos, fieldtype, option="", descrip
         field = tree.Node(name=name, type="metafield")
         metatype.addChild(field)
         field.setOrderPos(len(metatype.getChildren())-1)
+        
+    #<----- Begin: For fields of list type ----->
+    
+    if filenode:
+        # all files of the field will be removed before a new file kann be added
+        for fnode in field.getFiles():
+            field.removeFile(fnode)         # remove the file from the node tree
+            try:
+                os.remove(fnode.retrieveFile()) # delete the file from the hard drive
+            except Exception, e:
+                logException(e)
+        field.addFile(filenode)
+        
+    if fieldvalues.startswith("multiple"):
+        field.set("multiple", True)
+        fieldvalues = fieldvalues.replace("multiple;", "", 1)
+    else:
+        field.removeAttribute("multiple")
+        
+    if fieldvalues.endswith("delete"): # the checkbox 'delete' was checked
+        # all files of the field will be removed
+        for fnode in field.getFiles():
+            field.removeFile(fnode)         # remove the file from the node tree
+            os.remove(fnode.retrieveFile()) # delete the file from the hard drive
+        fieldvalues = fieldvalues.replace(";delete", "", 1)
+        
+    #<----- End: For fields of list type ----->
     
     # all files of the field will be removed before a new file kann be added
     for fnode in field.getFiles():
@@ -181,7 +208,7 @@ def updateMetaField(parent, name, label, orderpos, fieldtype, option="", descrip
     
     if filenode:
         field.addFile(filenode)
-    
+
     field.set("label", label)   
     field.set("type", fieldtype)
     field.set("opts", option)
@@ -219,11 +246,11 @@ def moveMetaField(pid, name, direction):
     for field in getMetaType(pid).getChildren().sort():
         try:
             if i==up:
-                pos = i - 1
+                pos = i-1
             elif i==up-1:
                 pos = up
             elif i==down:
-                pos = i + 1
+                pos = i+1
             elif i==down+1:
                 pos = down
             else:
@@ -249,12 +276,14 @@ def generateMask(metatype, masktype="", force=0):
     except tree.NoSuchNodeError:
         mask = metatype.addChild(tree.Node("-auto-","mask"))
         i = 0
+
         for c in metatype.getChildren().sort():
             if c.type!="mask": 
                 if c.getFieldtype()!="union":
                     n = tree.Node(c.get("label"), "maskitem")
                     n.setOrderPos(i)
                     i += 1
+
                     field = mask.addChild(n)
                     field.set("width", "400")
                     field.set("type", "field")
@@ -269,7 +298,7 @@ def cloneMask(mask, newmaskname):
                 c2 = tree.Node(c1.getName(), c1.type)
                 c2.setOrderPos(c1.getOrderPos())
                 m2.addChild(c2)
-                recurse(c1,c2)
+                recurse(c1, c2)
             else:
                 m2.addChild(c1)
 
@@ -278,7 +307,7 @@ def cloneMask(mask, newmaskname):
         raise "Mask has no parents"
     if len(p)>1:
         raise "Mask has more than one parent"
-    if mask.type != "mask":
+    if mask.type!="mask":
         raise "Not a mask"
     newmask = tree.Node(newmaskname, mask.type)
     p[0].addChild(newmask)
@@ -329,7 +358,7 @@ def checkMask(mask,fix=0,verbose=1,show_unused=0):
         if currentparent.type!="maskitem":
             if verbose:
                 print "Field",node.id,node.name,"is not below a maskitem (parent:",currentparent.id,currentparent.name,")"
-            error = error + 1 
+            error += 1
             if fix:
                 currentparent.removeChild(node)
             return
@@ -407,7 +436,7 @@ def showEditor(node,hiddenvalues={}, allowedFields=None):
         else:
             result += '<tr><td align="left">%s:</td>' %(field.getLabel())
         result += '<td align="left">%s</td></tr>' %(field.getEditorHTML(value,400,name,lock))
-
+        
         
     result += '<tr><td>&nbsp;</td><td align="left"><small>(<span class="required">*</span> Pflichtfeld, darf nicht leer sein)</small></td></tr>'
     result += '<input type="hidden" name="metaDataEditor" value="metaDataEditor">'
@@ -663,6 +692,9 @@ class Metadatafield(tree.Node):
         return self.get("valuelist").replace(";","\r\n")
     def setValues(self, value):
         self.set("valuelist", value)
+    def removeValue(self, value):
+        self.set("valuelist", self.get("valuelist").replace(value,""))
+
 
     def Sortfield(self):
         return "o" in self.getOption()
@@ -730,7 +762,7 @@ class MaskType:
     def setSeparator(self, value):
         self.separator = value
     def getSeparator(self):
-        return self.separator
+        return self.separator        
 
 def getMaskTypes(key="."):
     masktypes = {
@@ -854,7 +886,7 @@ class Mask(tree.Node):
         if self.getMasktype()=="export":
             for mapping in self.get("exportmapping").split(";"):
                 for c in tree.getNode(mapping).getMandatoryFields():
-                    mandfields.append(c.id)
+                    mandfields.append(c.id)       
         for item in self.getMaskFields():
             try:
                 mandfields.remove(item.get("mappingfield"))
@@ -923,7 +955,7 @@ class Mask(tree.Node):
         else:
             if self.getMappingHeader()!="":
                 ret += '<div class="label" i18n:translate="mask_edit_header">TEXT</div><div class="row">%s</div>' %(esc(self.getMappingHeader()))
-            
+
         i=0
         fieldlist = {} #!!!getAllMetaFields()
         for item in self.getChildren().sort():
@@ -943,7 +975,7 @@ class Mask(tree.Node):
             # edit field
             if key.startswith("edit_"):
                 item = tree.getNode(req.params.get("edit", ""))
-                t = getMetadataType(item.get("type")) 
+                t = getMetadataType(item.get("type"))
                 return '<form method="post" name="myform">%s</form>' %(t.getMetaEditor(item, req))
 
         if (req.params.get("op","")=="new" and req.params.get("type","")!="") or (self.getMasktype()=="export" and req.params.get("op","") in ["newdetail", "new"]):

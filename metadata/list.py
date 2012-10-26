@@ -152,7 +152,7 @@ class m_list(Metatype):
         
     labels = { "de":
             [
-                ("list_multiple", "Mehrfachauswahl"),
+                ("list_multiple", "Mehrfachauswahl:"),
                 ("current_file", "Aktuelle Textdatei: "),
                 ("delete_valuesfile", "Vorhandene Datei l&ouml;schen"),
                 ("list_list_values_file", "Datei mit Listenwerten:"),
@@ -162,7 +162,7 @@ class m_list(Metatype):
             ],
            "en":
             [
-                ("list_multiple", "Multiple choice"),
+                ("list_multiple", "Multiple choice:"),
                 ("current_file", "Current values file: "),
                 ("delete_valuesfile", "Delete the current text file"),
                 ("list_list_values_file", "Textfile with list values:"),

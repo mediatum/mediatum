@@ -18,6 +18,7 @@
 """
 
 import os
+import re
 import os.path
 import shutil
 import logging
@@ -28,6 +29,7 @@ from metadata.upload import getFilelist
 from schema.schema import getMetaType
 from utils.fileutils import getImportDir
 from utils.utils import join_paths
+from utils.date import format_date, now
 
 import utils.utils as utils
 import core.tree as tree
@@ -52,9 +54,9 @@ def parse_pdftk_fields_dump(s):
                 field_dicts.append(d)
                 d = {}
         elif line.find(':') > 0:
-            key, value = line.split(':')
-            key = key.strip()
-            d[key] = value.strip()
+            vals = line.split(':')
+            #key, value = line.split(':')
+            d[vals[0].strip()] = ":".join(vals[1:]).strip()
     field_dicts.append(d)
     return field_dicts
 
@@ -127,11 +129,11 @@ class WorkflowStep_AddFormPage(WorkflowStep):
             pdf_fields_editable = True
         else:
             pdf_fields_editable = False
-            
+
         if pdf_form_separate.lower() in ["1", "true"]:
             pdf_form_separate = True
         else:
-            pdf_form_separate = False            
+            pdf_form_separate = False
 
         fields = []
         f_retrieve_path = None
@@ -139,34 +141,47 @@ class WorkflowStep_AddFormPage(WorkflowStep):
         if formfilelist:
             # take newest (mtime)
             f_mtime, f_name, f_mimetype, f_size, f_type, f_retrieve_path, f = formfilelist[-1]
-
-            pdftk_fields_dump = get_pdftk_fields_dump(f_retrieve_path)
-
-            for field_dict in parse_pdftk_fields_dump(pdftk_fields_dump):
+            
+            for field_dict in parse_pdftk_fields_dump(get_pdftk_fields_dump(f_retrieve_path)):
                 fieldname = field_dict.get('FieldName', None)
                 if fieldname:
                     value = ''
                     if fieldname in dict(node.items()):
                         value = node.get(fieldname)
-                        if fieldname.find('author') >= 0:
+                        if fieldname.find('author')>=0:
                             value = reformatAuthors(value)
-                    elif fieldname.lower() == 'node.schema':
+                    elif fieldname.lower()=='node.schema':
                         value = getMetaType(node.getSchema()).getLongName()
-                    elif fieldname.lower() == 'node.id':
+                    elif fieldname.lower()=='node.id':
                         value = str(node.id)
-                    elif fieldname.lower() == 'node.type':
+                    elif fieldname.lower()=='node.type':
                         value = node.type
-                    elif fieldname.find("+") > 0:
-                        _fieldnames = fieldname.split('+')
-                        for _fn in _fieldnames:
+                    elif fieldname.lower()=='date()':
+                        value = format_date(now(), format='%d.%m.%Y')
+                    elif fieldname.lower()=='time()':
+                        value = format_date(now(), format='%H:%M:%S')
+                    elif fieldname.find("+")>0:
+                        for _fn in fieldname.split('+'):
                             value = node.get(_fn)
                             if value:
                                 break
+                    elif '[att:' in fieldname:
+                        value = fieldname
+                        while '[att:' in value:
+                            m = re.search('(?<=\[att:)([^&\]]+)', value)
+                            if m:
+                                if m.group(0)=='id':
+                                    v = node.id
+                                elif m.group(0)=='type':
+                                    v = node.type
+                                elif m.group(0)=='schema':
+                                    v = node.getMetaType(node.getSchema()).getLongName()
+                                else:
+                                    v = node.get(m.group(0))
+                                value = value.replace('[att:%s]' %(m.group(0)), v)
                     else:
-                        msg = "workflowstep %s (%s): could not find attribute for pdf form field '%s' - node: '%s' (%s)" % (current_workflow_step.name, str(current_workflow_step.id), fieldname, node.name, node.id)
-                        logger.warning(msg)
-                    value = utils.utf82iso(value)
-                    fields.append((fieldname, value))
+                        logger.warning("workflowstep %s (%s): could not find attribute for pdf form field '%s' - node: '%s' (%s)" % (current_workflow_step.name, str(current_workflow_step.id), fieldname, node.name, node.id))
+                    fields.append((fieldname, utils.utf82iso(value)))
 
 
         if not pdf_form_separate and fnode and f_retrieve_path and os.path.isfile(f_retrieve_path):
@@ -185,15 +200,12 @@ class WorkflowStep_AddFormPage(WorkflowStep):
         elif pdf_form_separate and f_retrieve_path and os.path.isfile(f_retrieve_path):
             pages = fillPDFForm(f_retrieve_path, fields, input_is_fullpath=True, editable=pdf_fields_editable)
             importdir = getImportDir()
-            print '----> importdir:', importdir
             try:
-                new_form_name = str(node.id) + "_" + f_name
-                new_form_path = join_paths(importdir, new_form_name)
+                new_form_path = join_paths(importdir, "%s_%s" %(node.id, f_name))
                 counter = 0
                 while os.path.isfile(new_form_path):
-                    counter = counter + 1
-                    new_form_name = str(node.id) + "_" + str(counter) + "_" + f_name
-                    new_form_path = join_paths(importdir, new_form_name)
+                    counter += 1
+                    new_form_path = join_paths(importdir, "%s_%s_%s" %(node.id, counter, f_name))
                 shutil.copy(pages, new_form_path)
             except Exception, e:
                 logger.error("workflowstep %s (%s): could not copy pdf form to import directory - node: '%s' (%s), import directory: '%s'" % (current_workflow_step.name, str(current_workflow_step.id), node.name, node.id, importdir))

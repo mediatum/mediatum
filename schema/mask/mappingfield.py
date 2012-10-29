@@ -32,7 +32,7 @@ import export.exportutils as exportutils
  
 class m_mappingfield(Metatype):
 
-    def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
 
         ns = ""
         if field.get("fieldtype")=="mapping":

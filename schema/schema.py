@@ -197,18 +197,14 @@ def updateMetaField(parent, name, label, orderpos, fieldtype, option="", descrip
         # all files of the field will be removed
         for fnode in field.getFiles():
             field.removeFile(fnode)         # remove the file from the node tree
-            os.remove(fnode.retrieveFile()) # delete the file from the hard drive
+            try:
+                os.remove(fnode.retrieveFile()) # delete the file from the hard drive
+            except Exception, e:
+                logException(e)
         fieldvalues = fieldvalues.replace(";delete", "", 1)
         
     #<----- End: For fields of list type ----->
     
-    # all files of the field will be removed before a new file kann be added
-    for fnode in field.getFiles():
-        field.removeFile(fnode)
-    
-    if filenode:
-        field.addFile(filenode)
-
     field.set("label", label)   
     field.set("type", fieldtype)
     field.set("opts", option)
@@ -435,7 +431,7 @@ def showEditor(node,hiddenvalues={}, allowedFields=None):
             result += '<tr><td align="left">%s: <span class="required">*</span></td>' %(field.getLabel())
         else:
             result += '<tr><td align="left">%s:</td>' %(field.getLabel())
-        result += '<td align="left">%s</td></tr>' %(field.getEditorHTML(value,400,name,lock))
+        result += '<td align="left">%s</td></tr>' %(field.getEditorHTML(value,400,lock))
         
         
     result += '<tr><td>&nbsp;</td><td align="left"><small>(<span class="required">*</span> Pflichtfeld, darf nicht leer sein)</small></td></tr>'
@@ -724,12 +720,12 @@ class Metadatafield(tree.Node):
             value = node.get(self.name)
         return value
 
-    def getEditorHTML(self, val="", width=400, name="", lock=0, language=None):
+    def getEditorHTML(self, val="", width=400, lock=0, language=None):
         try:
             t = getMetadataType(self.getFieldtype())
         except LookupError:
             t = getMetadataType("default")
-        return t.getEditorHTML(self, val, width, name, lock, language=language)
+        return t.getEditorHTML(self, val, width, lock, language=language)
 
     def getSearchHTML(self, context):
         try:

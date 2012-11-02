@@ -57,10 +57,12 @@ def login(req):
     elif "LoginSubmit" in req.params: # try given values
         user = users.checkLogin(username, password)
         if user:
+            if "contentarea" in req.session:
+                del req.session["contentarea"]
             req.session["user"] = user
             logging.getLogger('usertracing').info(user.name + " logged in")
             
-            if user.getUserType()=="intern":
+            if user.getUserType()=="users":
                 if user.stdPassword():
                     return pwdchange(req, 3)
                     

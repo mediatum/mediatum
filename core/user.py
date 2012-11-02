@@ -153,7 +153,7 @@ class User(tree.Node):
     def canChangePWD(self):
         if self.isAdmin():
             return 0
-        if self.getUserType()=="intern":
+        if self.getUserType()=="users":
             return "c" in self.getOption()
         else:
             from core.users import authenticators

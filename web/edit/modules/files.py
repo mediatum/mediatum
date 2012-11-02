@@ -38,7 +38,52 @@ def getContent(req, ids):
     access = acl.AccessData(req)
     if not access.hasWriteAccess(node) or "files" in users.getHideMenusForUser(user):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+    
+    if 'data' in req.params:
+        if req.params.get('data')=='children': # get formated list of childnodes of selected directory
+            req.writeTAL("web/edit/modules/files.html", {'children':node.getChildren()}, macro="edit_files_popup_children")
         
+        if req.params.get('data')=='additems': # add selected node as children
+            for childid in req.params.get('items').split(";"):
+                if childid.strip()!="":
+                    childnode = tree.getNode(childid.strip())
+                    for p in childnode.getParents():
+                        p.removeChild(childnode)
+                    node.addChild(childnode)
+            req.writeTAL("web/edit/modules/files.html", {'children':node.getChildren(), 'node':node}, macro="edit_files_children_list")
+            
+        if req.params.get('data')=='removeitem': # remove selected childnode node
+            try:
+                remnode = tree.getNode(req.params.get('remove'))
+                if len(remnode.getParents())==1:
+                    users.getUploadDir(user).addChild(remnode)
+                node.removeChild(remnode)
+            except: # node not found
+                pass
+            req.writeTAL("web/edit/modules/files.html", {'children':node.getChildren(), 'node':node}, macro="edit_files_children_list")
+       
+        if req.params.get('data')=='reorder':
+            i = 0
+            for id in req.params.get('order').split(","):
+                if id!="":
+                    n = tree.getNode(id)
+                    n.setOrderPos(i)
+                    i += 1
+
+        if req.params.get('data')=='translate':
+            req.writeTALstr('<tal:block i18n:translate="" tal:content="msgstr"/>',{'msgstr':req.params.get('msgstr')})
+        return ""
+        
+    
+    if req.params.get("style")=="popup":
+        v = {} 
+        v["basedirs"] = [tree.getRoot('home'), tree.getRoot('collections')]
+        id = req.params.get("id",tree.getRoot().id)
+        v["script"] = "var currentitem = '%s';\nvar currentfolder = '%s';\nvar node = %s;" %(id, req.params.get('parent'), id)
+        v["idstr"] = ",".join(ids)
+        v["node"] = node
+        req.writeTAL("web/edit/modules/files.html", v, macro="edit_files_popup_selection")
+        return ""
         
     if "operation" in req.params:
         op = req.params.get("operation")
@@ -172,5 +217,5 @@ def getContent(req, ids):
                     af = tree.FileNode(root+"/"+name, "attachmentfile", getMimeType(name)[0])
                     v["att"].append(af)
 
-    return req.getTAL("web/edit/modules/files.html", v, macro="edit_files_file")    
+    return req.getTAL("web/edit/modules/files.html", v, macro="edit_files_file")
     

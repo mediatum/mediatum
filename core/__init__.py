@@ -21,11 +21,13 @@
 
 import os
 import sys
+import hashlib
 import core.config as config
 
 import core.athana as athana
 
 basedir = os.path.dirname(athana.__file__).rsplit(os.sep,1)[0]
+editmodulepaths = [('', 'web/edit/modules')]
 
 print "Base path is at", basedir
 print "Python Version is", sys.version.split("\n")[0] 
@@ -35,7 +37,9 @@ if os.getenv("MEDIATUM_CONFIG"):
 else:
     config.initialize(basedir, "mediatum.cfg")
     
-athana.setTempDir(config.settings["paths.tempdir"])    
+athana.setTempDir(config.settings["paths.tempdir"])
+athana.setServiceUser(config.get("host.serviceuser",""))
+athana.setServicePwd(hashlib.md5(config.get("host.servicepwd", "")).hexdigest())
 
 import utils.log
 utils.log.initialize()
@@ -51,12 +55,15 @@ tree.initialize()
 
 from contenttypes.directory import Directory
 tree.registerNodeClass("directory", Directory)
+from contenttypes.project import Project
+tree.registerNodeClass("project", Project)
 
 # only for compatibility with older databases
 tree.registerNodeClass("collection", Directory)
 tree.registerNodeClass("collections", Directory)
 tree.registerNodeClass("root", Directory)
 tree.registerNodeClass("home", Directory)
+
 
 # register types in definition directory /contenttypes
 log.info("Loading Content types")
@@ -132,3 +139,10 @@ for k,v in config.getsubset("plugins").items():
     if path and path not in sys.path:
         sys.path += [path]
     m = __import__(module)
+
+    if hasattr(m, 'pofiles'): # add po file paths
+        if len(m.pofiles)>0:
+            print "  load translation files"
+            for fp in m.pofiles:
+                translation.addPoFilepath([fp])
+

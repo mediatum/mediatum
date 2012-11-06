@@ -29,7 +29,7 @@ import thread
 class _POFile:
     filedates = {}
     
-    def __init__(self, filenames): 
+    def __init__(self, filenames):
         self.lock = thread.allocate_lock()
         self.filenames = filenames
         self.map = {}
@@ -70,9 +70,14 @@ class _POFile:
         for item in items:
             if item[0] not in self.map.keys():
                 self.map[item[0]] = item[1]
+                
+    def addFilename(self, filepath):
+        if filepath not in self.filenames:
+            self.filenames.append(filepath)
 
 lang2po = {}
 addlangitems = {}
+addlangfiles = []
 
 def translate(key, language=None, request=None):
     if request and not language:
@@ -87,7 +92,11 @@ def translate(key, language=None, request=None):
         for root, dirs, files in os.walk(i18dir, topdown=True ):
             for n in [f for f in files if f.endswith(language+".po")]:
                 plist.append(os.path.join(i18dir, n))
-       
+        
+        for f in addlangfiles:
+            if os.path.exists(f):
+                plist.append(f)
+                
         if not plist:
             return key
 
@@ -103,7 +112,6 @@ def translate(key, language=None, request=None):
         except KeyError:
             return key
        
-       
 def addLabels(labels={}):
     for key in labels:
         if not key in addlangitems.keys():
@@ -111,6 +119,11 @@ def addLabels(labels={}):
         
         for item in labels[key]:
             addlangitems[key][item[0]] = item[1]
+            
+def addPoFilepath(filepath=[]):
+    for f in filepath:
+        if f not in addlangfiles:
+            addlangfiles.append(f)
 
 def lang(req):
     if "change_language" in req.params and req.params["change_language"]:

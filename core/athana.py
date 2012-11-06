@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.44 2012/08/03 11:16:50 wneudenberger Exp $'
+RCS_ID =  '$Id: athana.py,v 1.45 2012/11/06 06:57:38 seiferta Exp $'
 
 import sys
 
@@ -6841,7 +6841,15 @@ def addContext(webpath, localpath):
     c = WebContext(webpath, localpath)
     contexts += [c]
     return c
+    
+def setServiceUser(u):
+    global service_user
+    service_user = u
 
+def setServicePwd(p):
+    global service_pwd
+    service_pwd = p
+    
 def flush():
     global contexts,translators,ftphandlers,macroresolvers,global_modules
     contexts[:] = []
@@ -6867,7 +6875,7 @@ def getFileStorePaths(webpath):
             for h in context.handlers:
                 ret.append(h.filesystem.root)
     return ret
-                
+
 def addFileStorePath(webpath, path):
     global contexts
     for context in contexts:

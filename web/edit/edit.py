@@ -32,7 +32,7 @@ import core.athana as athana
 import utils.log
 import logging
 from core.acl import AccessData
-from utils.utils import Link, isCollection, Menu, getFormatedString, splitpath, parseMenuString
+from utils.utils import Link, isCollection, Menu, getFormatedString, splitpath, parseMenuString, isDirectory
 
 from edit_common import *
 from core.translation import lang, t
@@ -200,8 +200,6 @@ def filterMenu(menuitems, user):
         for item in menu.getItemList():
             if item not in hide:    
                 i.append(item)
-            else:
-                print "hide editor menu:", item
         menu.item = i
         ret.append(menu)
         
@@ -237,36 +235,26 @@ def error(req):
 editModules = {} 
 def getEditModules(force=0):
     if len(editModules)==0:
-        path = os.walk(os.path.join(config.basedir, 'web/edit/modules'))
-        for root, dirs, files in path:
-            for name in [f for f in files if f.endswith(".py") and f!="__init__.py"]:
-                try:
-                    m = __import__("web.edit.modules." + name[:-3])
-                    m = eval("m.edit.modules."+name[:-3])
-                    editModules[name[:-3]] = m
-                except SyntaxError:
-                    logger.error("syntax error in module "+name[:-3])
-                except ImportError, e:
-                    logger.error("import error in module "+name[:-3]+"\n"+str(e))
-                except Exception, e:
-                    logger.error(str(e))
-             
-        # test for external modules by plugin
-        for k,v in config.getsubset("plugins").items():
-            path,module = splitpath(v)
-            try:
-                sys.path += [path+".editmodules"]
-                
-                for root, dirs, files in os.walk(os.path.join(config.basedir, v+"/editmodules")):
-                    for name in [f for f in files if f.endswith(".py") and f!="__init__.py"]:
-                        m = __import__(module+".editmodules."+name[:-3])
-                        m = eval("m.editmodules."+name[:-3])
+
+        for modpath in core.editmodulepaths: # paths with edit modules
+            path = os.walk(os.path.join(config.basedir, modpath[1]))
+            for root, dirs, files in path:
+                for name in [f for f in files if f.endswith(".py") and f!="__init__.py"]:
+                    #try:
+                        path,module = splitpath(modpath[1])
+                        if modpath[0]=='':
+                            m = __import__("web.edit.modules." + name[:-3])
+                            m = eval("m.edit.modules."+name[:-3])
+                        else:
+                            sys.path += [path]
+                            m = __import__(module.replace("/", ".")+"."+name[:-3])
+                            m = eval("m."+name[:-3])
                         editModules[name[:-3]] = m
-            except ImportError:
-                pass # no edit modules in plugin
-
-    return editModules
-
+                    #except ImportError:
+                    #    logger.error("import error in module "+name[:-3])
+                    #except SyntaxError:
+                    #    logger.error("syntax error in module "+name[:-3])
+    return editModules    
 
     
 def getIDs(req):
@@ -455,9 +443,6 @@ def action(req):
         req.write(dest.id)
 
 
-def isDirectory(node):
-    return node.type=="directory" or node.type=="root" or node.type=="collection" or node.type=="collections"
-
 def showPaging(req, tab, ids):
     nodelist = req.session.get("nodelist", None)
     nextid = previd = None
@@ -519,7 +504,6 @@ def content(req):
         tabs = node.getDefaultEditTab()
 
     current = req.params.get("tab", tabs)
-
     # some tabs operate on only one file
     #if current in ["files", "view", "upload"]:
     if current in ["files", "upload"]:

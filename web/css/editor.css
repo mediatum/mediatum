@@ -33,7 +33,7 @@ div.back {
     margin-left:220px; top:0px
 }
 #div_description {
-    float:left; border:1px solid white
+    float:left; border:0px solid white; width:16px;diplay:block;
 }
 #hitem {
     display: inline; float:left; margin-right: 5px
@@ -114,4 +114,31 @@ img.thumbnail{
 }
 textarea{
     font-family:arial, helvetica, sans-serif
+}
+
+#vtab {
+    margin: 0px; width: 620px; height: 100%;
+}
+#vtab > ul > li {
+    width: 215px; background-color: #fff !important; list-style-type: none; display: block; font-size:12px;
+    margin: auto; padding-bottom: 15px; border: 1px solid #fff; position: relative; border-right: none; padding-top:15px; padding-left:5px;
+}
+
+#vtab > ul > li.selected {
+    border: 1px solid #ddd; border-right: none;
+    z-index: 10; background-color: #fafafa !important; position: relative;
+}
+#vtab > ul {
+    float: left; width: 110px; text-align: left; display: block; margin: auto 0; padding: 0; position: relative; top: 0px;
+}
+#vtab > div {
+    background-color: #fafafa; margin-left: 220px; border: 1px solid #ddd; min-height: 200px; padding-left: 12px; position: relative;z-index: 9
+}
+
+#vtab  > ul > li.enabled{
+ cursor:pointer; font-weight:bold;
+}
+
+#vtab input, #vtab select, #vtab textarea{
+    background-color:white;
 }

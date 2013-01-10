@@ -166,7 +166,6 @@ class AsyncPyZ3950Server(z3950.Server):
             raise
         self._log_debug('%r', parsed_query)
         node_ids = search_nodes(parsed_query, self._log)
-        #node_ids = search_nodes('1004 = "Kramm, Matthias"', self._log)
         self._log_debug('IDs returned for Z3950 query: %s', len(node_ids))
         return node_ids
 
@@ -224,7 +223,6 @@ class AsyncPyZ3950Server(z3950.Server):
 # Query support
 
 def search_nodes(query, log=dummy_log, mapping_prefix='Z3950_search_'):
-#def search_nodes(query, log=dummy_log, mapping_prefix='marc21_'):
     """
     Search nodes that match the query.
 
@@ -238,7 +236,6 @@ def search_nodes(query, log=dummy_log, mapping_prefix='Z3950_search_'):
     # find root nodes and their mappings
     roots_and_mappings = []
     for mapping_node in mapping.getMappings():
-        #print [x.getName() for x in mapping.getMappings()]
         name = mapping_node.getName()
         if not name.startswith(mapping_prefix):
             continue
@@ -306,6 +303,7 @@ def merge_ids_as_round_robin(id_sets):
                 nexts.remove(next_func)
             del to_drop[:]
     return ids
+
 
 def protect(s):
     """
@@ -467,7 +465,6 @@ class z3950_server(asyncore.dispatcher):
                 self.port)
                 )
                 
-
     def handle_accept(self):
         conn, addr = self.accept()
         self.total_sessions.increment()

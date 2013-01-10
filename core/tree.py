@@ -187,6 +187,7 @@ class FileNode:
                       return
               except: 
                   logException("file handler delete() failed")
+    
     def retrieveFile(self):
         for f in filehandlers:
             if hasattr(f, "retrieveFile"):
@@ -196,17 +197,25 @@ class FileNode:
                         return path
                 except: 
                     logException("file handler retrieveFile() failed")
+        
+        if os.path.exists(self._path):
+            return self._path
+
+        if os.path.exists(config.basedir+"/" + self._path):
+            return config.basedir+"/" + self._path
+
         if not os.path.exists(config.settings["paths.datadir"] + self._path):
             for f in self.node.getFiles():
                 if f.getType().startswith("presentati"):
                     try:
-                        _n = os.path.dirname(f.retrieveFile())+"/"+self._path
+                        #_n = os.path.dirname(f.retrieveFile())+"/"+self._path
+                        _n = os.path.dirname(f._path)+"/"+self._path
                         if os.path.exists(_n):
                             return _n
                     except:
                         pass
-
         return config.settings["paths.datadir"] + self._path
+        
     def getMimeType(self):
         return self.mimetype
     def getSize(self):
@@ -216,8 +225,11 @@ class FileNode:
                     size = f.getSize(self)
                     if size:
                         return size
+                    else:
+                        return 0
                 except: 
                     logException("file handler getSize() failed")
+                    return -1
         return get_filesize(self.retrieveFile())
     def getHash(self):
         for f in filehandlers:
@@ -339,6 +351,7 @@ class NodeList:
             return nodes
         elif field == "name":
             nodes = []
+            
             for id in self.ids:
                 nodes += [getNode(str(id))]
                 def namecmp(n1,n2):
@@ -786,8 +799,15 @@ class Node:
     
     """ get a metadate """
     def get(self, name):
-        if name == "nodename":
-            return self.getName()
+        if name.startswith('node'):
+            if name in ["nodename", "node.name"]:
+                return self.getName()        
+            elif name=='node.id':
+                return self.id
+            elif name=='node.type':
+                return self.type
+            elif name=='node.orderpos':
+                return self.orderpos            
         if self.attributes is None:
             if not self.id:
                 raise "Internal Error"
@@ -1051,6 +1071,8 @@ def flush():
 def registerNodeClass(type, nodeclass):
     global nodeclasses
     nodeclasses[type] = nodeclass
+    #if hasattr(nodeclass,'getLabels'):
+    #    nodeclass.getLabels()
 
 def registerNodeFunction(name, nodefunction):
     global nodefunctions

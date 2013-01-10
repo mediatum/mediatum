@@ -298,7 +298,6 @@ def getAllCollections():
     return l
 
 def isDirectory(node):
-    #if node.type.startswith("directory"):
     if node.getContentType()=="directory" or node.isContainer():
         return 1
     else:
@@ -486,7 +485,6 @@ def splitname(fullname):
 class HTMLTextCutter(HTMLParser):
 
     def __init__(self, cutoff=500, output=sys.stdout):
-
         self.cutoff = cutoff
         self.count = 0
         self.output = output
@@ -495,26 +493,23 @@ class HTMLTextCutter(HTMLParser):
         self.in_script = 0
 
         self.has_cutted_tr = False
-
         self.is_cutted = False
-
         HTMLParser.__init__(self)
 
     def handle_starttag(self, tag, attrs):
-        if tag.strip().lower() == 'style':
+        if tag.strip().lower()=='style':
             self.in_style += 1
-        if tag.strip().lower() == 'script':
+        if tag.strip().lower()=='script':
             self.in_script += 1
         if tag.strip().lower() in ['tr', 'td'] and self.is_cutted:
             self.has_cutted_tr = True
             return
-        attrlist = ''.join([' %s="%s"' % (k, v) for k, v in attrs])
-        self.output.write("<%s%s>" % (tag, attrlist))
+        self.output.write("<%s%s>" % (tag, ''.join([' %s="%s"' % (k, v) for k, v in attrs])))
 
     def handle_endtag(self, tag):
-        if tag.strip().lower() == 'style':
+        if tag.strip().lower()=='style':
             self.in_style -= 1
-        if tag.strip().lower() == 'script':
+        if tag.strip().lower()=='script':
             self.in_script -= 1
         if tag.strip().lower() in ['tr', 'td'] and self.has_cutted_tr:
             return
@@ -522,47 +517,41 @@ class HTMLTextCutter(HTMLParser):
 
     def handle_startendtag(self, tag, attrs):
         if self.is_cutted and (tag.strip().lower() in ['br']):
-            res = ""
+            self.output.write("")
         else:
-            attrlist = ''.join([' %s="%s"' % (k, v) for k, v in attrs])
-            res = "<%s%s/>" % (tag, attrlist)
-        self.output.write(res)
+            self.output.write("<%s%s/>" % (tag, ''.join([' %s="%s"' % (k, v) for k, v in attrs])))
 
     def handle_data(self, data):
-        if self.in_script > 0 or self.in_style > 0:
+        if self.in_script+self.in_style>0:
             res = data
-        elif self.count >= self.cutoff:
+        elif self.count>=self.cutoff:
             res = ""
-            if len(data) > len(res):
+            if len(data)>len(res):
                 self.is_cutted = True
         else:
             res = data[0:self.cutoff - self.count]
             self.count += len(res)
-            if len(data) > len(res):
+            if len(data)>len(res):
                 self.is_cutted = True
         self.output.write(res)
 
     def handle_charref(self, name):
-        if self.in_script > 0 or self.in_style > 0:
-            res = name
-        elif self.count >= self.cutoff:
-            res = ""
+        if self.in_script+self.in_style>0:
+            self.output.write("&#%s;" % str(name))
+        elif self.count>=self.cutoff:
             self.is_cutted = True
         else:
-            res = name
             self.count += 1
-        self.output.write("&#%s;" % str(name))
+            self.output.write("&#%s;" % str(name))
 
     def handle_entityref(self, name):
-        if self.in_script > 0 or self.in_style > 0:
-            res = name
-        elif self.count >= self.cutoff:
-            res = ""
+        if self.in_script+self.in_style>0:
+            self.output.write("&%s;" % str(name))
+        elif self.count>=self.cutoff:
             self.is_cutted = True
         else:
-            res = name
             self.count += 1
-        self.output.write("&%s;" % str(name))
+            self.output.write("&%s;" % str(name))
 
     def handle_comment(self, data):
         self.output.write("<!--%s-->" % data)
@@ -748,8 +737,7 @@ def parseMenuString(menustring):
 
 
 def getFormatedString(s):
-    l = ["b", "sub", "sup", "em"]
-    for i in l:
+    for i in ["b", "sub", "sup", "em"]:
         s = s.replace("&lt;"+i+"&gt;", "<"+i+">").replace("&lt;/"+i+"&gt;", "</"+i+">")
     return s
 
@@ -790,10 +778,39 @@ class Template(object):
         lookup = data_provider.get
         text_parts = self.template_parts[:]
         for i in self.attribute_positions:
-            attribute_name = text_parts[i]
+            func = ""
+            attribute_name = text_parts[i].strip()
+            if "|" in attribute_name:
+                parts = re.split('\||\:|\,', attribute_name)
+                attribute_name = parts[0]
+                func = parts[1:]
             if attribute_name:
                 text_parts[i] = lookup(attribute_name) or ''
+                try:
+                    if func[0]=="substring":
+                        text_parts[i] = self._substring(text_parts[i], func[1:])
+                    if func[0]=="split":
+                        text_parts[i] = self._split(text_parts[i], func[1:])
+                except:
+                    pass
         return ''.join(text_parts)
+        
+        
+    def _substring(self, s, attrs):
+        try:
+            if len(attrs)==1:
+                return s[int(attrs[0]):]
+            elif len(attrs)==2:
+                return s[int(attrs[0]):int(attrs[1])]
+        except:
+            return s
+            
+    def _split(self, s, attrs):
+        try:
+            if len(attrs)==2:
+                return s.split(attrs[0])[int(attrs[1])]
+        except:
+            return s
 
 
 if __name__ == "__main__":

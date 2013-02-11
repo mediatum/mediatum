@@ -81,7 +81,7 @@ def escape_bibtexkey(s, default_char="_"):
             res = res + default_char
     return res
 
-token = re.compile(r'@\w+\s*{\s*|[a-zA-Z-]+\s*=\s*{?["\'{]|[a-zA-Z-]+\s*=\s+[0-9a-zA-Z_]')
+token = re.compile(r'@\w+\s*{\s*|[a-zA-Z0-9.-]+\s*=\s*{?["\'{]|[a-zA-Z0-9.-]+\s*=\s*[0-9a-zA-Z_]')
 comment = re.compile(r'%[^\n]*\n')
 delim = re.compile(r'\W')
 delim2 = re.compile(r'^(?u)\s*[\w+_\-\:]*\s*\,')
@@ -421,6 +421,9 @@ def importBibTeX(file, node=None, req=None):
             if mask:
                 for f in mask.getMaskFields():
                     try:
+                        _bib_name = "not defined"
+                        _mfield = "not defined"
+                        _med_name = "not defined"
                         _bib_name = tree.getNode(f.get("mappingfield")).getName()
                         _mfield = tree.getNode(f.get("attribute"))
                         _med_name = _mfield.getName()

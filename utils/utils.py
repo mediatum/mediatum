@@ -27,6 +27,7 @@ import re
 import random
 import StringIO
 
+import xml.parsers.expat 
 from HTMLParser import HTMLParser
 
 def esc(s):
@@ -429,6 +430,12 @@ def getMimeType(filename):
     elif filename.endswith(".new"):
         mimetype = "text/plain"
         type = "news"
+    elif filename.endswith(".bib"):
+        mimetype = "text/x-bibtex"
+        type = "bibtex"
+    elif filename.endswith(".sur"):
+        mimetype = "text/plain"
+        type = "survey"
 
     else:
         mimetype = "other"
@@ -812,7 +819,31 @@ class Template(object):
         except:
             return s
 
-
+            
+def fixXMLString(s, i=100):
+    if i==0: # loop check
+        return s
+    parser = xml.parsers.expat.ParserCreate() 
+    try:
+        parser.Parse(s)
+        return s
+    
+    except xml.parsers.expat.ExpatError as err:
+        # remove error char
+        s2 = s.split('\n')
+        s2[err.lineno-1] = s2[err.lineno-1][:(err.offset)] + s2[err.lineno-1][(err.offset+2):] 
+        return fixXMLString("\n".join(s2), i-1)
+    return s
+    
+def checkXMLString(s):
+    parser = xml.parsers.expat.ParserCreate() 
+    try:
+        parser.Parse(s)
+        return 1
+    except xml.parsers.expat.ExpatError as err:
+        return 0
+        
+        
 if __name__ == "__main__":
     def tt(s):
         t,f,l = splitname(s)

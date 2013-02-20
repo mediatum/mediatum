@@ -357,7 +357,12 @@ def detecttype(doctype, fields):
         return None
 
 
-def importBibTeX(file, node=None, req=None):
+def importBibTeX(file, node=None, req=None, originalfiles=None):
+    """
+    @originalfiles - files, that have to be appanded to the appropriate
+                     bibtex entries. Their names are saved in the bibtex field
+                     'originalfilename'
+    """
 
     if req:
         try:
@@ -450,6 +455,11 @@ def importBibTeX(file, node=None, req=None):
                     doc.set(k, v)
                 except Exception, e:
                     doc.set(k, u(v))
+                    
+            if "originalfilename" in fields.keys():
+                for fl in originalfiles:
+                    if fl.getName().endswith(fields["originalfilename"]):
+                        doc.addFile(fl)
 
             child_id = None
             child_type = None

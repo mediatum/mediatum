@@ -142,6 +142,14 @@ no mask, only 1 attribute (title)                 &mask=none&attrspec=none&attrl
 no mask, 3 attributes                             &mask=none&attrspec=none&attrlist=year,title,author.fullname
 no mask, mask attributes + update-,creationtime   &mask=none&attrlist=updatetime,creationtime
 
+<b class="blue">parent_type:</b> only return nodes whose parents have one of the given type (regular expressions are allowed)
+(/node/{id}/allchildren?parent_type=directory,collection will return a list of e.g. all documents that are direct child
+of a directory or collection but not documents that are child of a document)
+
+<b class="blue">exif_location_rect:</b> specify a rect given by two gps coordinates (lat_lower,lon_lower,lat_upper,lon_upper).
+Returns only nodes that have an EXIF location that lies between the given lower and upper lon,lat values.
+(/node/{id}/allchildren?exif_location_rect=48,11.0,48.14,12 will return a list of e.g. all images in the center of munich)
+
 </pre>
 
 </body>

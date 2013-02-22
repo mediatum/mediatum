@@ -68,8 +68,37 @@ def importFile(realname,tempname, prefix=""):
     except:
         print formatException()
     return None
-    
-    
+
+
+def importFileFromData(filename, data, prefix=""):
+    try:
+        uploaddir = getImportDir()
+        destname = join_paths(uploaddir, prefix+filename)
+
+        if os.path.exists(destname): # rename if existing
+            i = 0
+            while os.path.exists(destname):
+                i+=1
+                p = prefix + str(i)+"_"
+                destname = join_paths(uploaddir, p+filename)
+                if not os.path.exists(destname):
+                    prefix = p
+                    break
+                
+        file_handle = open(destname, 'wb')
+        file_handle.write(data)
+        file_handle.close()
+
+        mimetype = "application/x-download"
+        type = "file"
+        mimetype, type = getMimeType(filename.lower())
+
+        return core.tree.FileNode(name=destname,mimetype=mimetype, type=type)
+    except:
+        print formatException()
+    return None
+
+
 def importFileToRealname(realname, tempname, prefix="", typeprefix=""):
     try:
         path, filename = os.path.split(realname)

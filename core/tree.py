@@ -19,7 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from utils.utils import compare_utf8,get_filesize, compare_digit, intersection, u, iso2utf8
+from utils.utils import compare_utf8,get_filesize, compare_digit, intersection, u, iso2utf8, float_from_gps_format
 from utils.log import logException
 from core.db import database
 import logging
@@ -795,7 +795,27 @@ class Node:
         f = self.getoverloadedfunction("event_metadata_changed")
         if f:
             f()
+
+
+    """ get formated gps information """
+    def get_location(self):
+        exif_lon = self.get("exif_GPS_GPSLongitude")
+        exif_lon_ref = self.get("exif_GPS_GPSLongitudeRef")
+        exif_lat = self.get("exif_GPS_GPSLatitude")
+        exif_lat_ref = self.get("exif_GPS_GPSLatitudeRef")
         
+        if exif_lon=="" or exif_lon_ref=="" or exif_lat=="" or exif_lat_ref=="":
+            return {}
+         
+        lon = float_from_gps_format(exif_lon)
+        if exif_lon_ref=="W":
+            lon *= -1;
+            
+        lat = float_from_gps_format(exif_lat)
+        if exif_lat_ref=="S":
+            lat *= -1;
+        return {"lon":lon, "lat":lat}
+    
     
     """ get a metadate """
     def get(self, name):
@@ -822,7 +842,10 @@ class Node:
             if not self.id:
                 raise "Internal Error"
         else:
-            self.attributes[name] = str(value)
+            if isinstance(value, unicode):
+                self.attributes[name] = value
+            else:
+                self.attributes[name] = str(value)
 
         if self.id:
             db.setAttribute(self.id, name, value,check=(not bulk))

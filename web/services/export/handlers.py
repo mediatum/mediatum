@@ -35,7 +35,7 @@ from schema.schema import getMetaType, VIEW_DATA_ONLY
 
 from utils.date import format_date
 from utils.pathutils import getBrowsingPathList, isDescendantOf
-from utils.utils import u, u2, esc, intersection, getMimeType
+from utils.utils import u, u2, esc, intersection, getMimeType, float_from_gps_format
 
 import web.services.jsonnode as jsonnode
 from web.services.rssnode import template_rss_channel, template_rss_item, feed_channel_dict, try_node_date
@@ -383,7 +383,7 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
     fcd['items'] = items
     s = template_rss_channel % fcd # params['feed_info']
 
-    return s    
+    return s
     
 supported_formats = [ 
  [['xml', ''], struct2xml, 'text/xml'], 
@@ -405,8 +405,17 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
     res['path'] = req.path
     res['query'] = req.query
     
+    #verify signature if a user is given, otherwise use guest user
     if params.get('user'):
         guestAccess = AccessData(user=users.getUser(params.get('user')))
+        if guestAccess.user:
+            valid = guestAccess.verify_request_signature(req.fullpath, params)
+            if not valid:
+                guestAccess = None
+        else:
+            guestAccess = None
+    else:
+        guestAccess = AccessData(user=users.getUser('Gast'))
 
     timetable = []
     result_shortlist = []
@@ -418,6 +427,8 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
 
     # query parameters
     nodelist_type = params.get('type', '') # return only nodes of given type like dissertation/diss
+    parent_type = params.get('parent_type', '') # return only nodes that have only parents of  given type like folder or collection
+    exif_location_rect = params.get('exif_location_rect', '') #return only nodes that have an EXIF location that lies between the given lon,lat values
     mdt = params.get('mdt', '')
     attrreg = params.get('attrreg', '')
     q = params.get('q', '') # node query
@@ -473,7 +484,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
         return res
 
     # check node access
-    if guestAccess.hasAccess(node, "read") and isDescendantOf(node, collections):
+    if guestAccess!=None and guestAccess.hasAccess(node, "read") and isDescendantOf(node, collections):
         pass
     else:
         res['status'] = 'fail'
@@ -639,6 +650,73 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
             timetable.append(['filter node type %s (-> %d nodes)' % (stype, len(newly_filtered)), time.time()-atime]); atime = time.time()
         nodelist = tree.NodeList(list(set(typefiltered_nodelist)))
         timetable.append(['built set from type filter results (total: %d nodes)' % (len(nodelist)), time.time()-atime]); atime = time.time()
+        
+    if parent_type:
+        # filter all nodes with parents that are not of one of the specified types
+        typefiltered_nodelist = []
+        for stype in [x.strip() for x in parent_type.split(',')]:
+            try:
+                regexp_stype = re.compile(stype)
+            except:
+                res['status'] = 'fail'
+                res['html_response_code'] = '403' # not found
+                res['errormessage'] = "invalid expression '%s' in parameter '%s'" % (stype, 'type')
+                res['build_response_end'] = time.time()
+                dataready = "%.3f" % (res['build_response_end'] - starttime)
+                res['dataready'] = dataready
+                return res
+                
+            newly_filtered = [] #[x for x in nodelist if regexp_stype.match(x.type)]
+            
+            for one_node in nodelist:
+                parents_comply = True
+                for one_parent in one_node.getParents():
+                    if regexp_stype.match(one_parent.type):
+                        pass
+                    else:
+                        parents_comply = False
+                        break
+                
+                if parents_comply:
+                    newly_filtered.append(one_node)
+            
+            typefiltered_nodelist += newly_filtered
+            timetable.append(['filter parent type %s (-> %d nodes)' % (stype, len(newly_filtered)), time.time()-atime]); atime = time.time()
+        nodelist = tree.NodeList(list(set(typefiltered_nodelist)))
+        timetable.append(['built set from type filter results (total: %d nodes)' % (len(nodelist)), time.time()-atime]); atime = time.time()
+
+    if exif_location_rect:
+        # filter all nodes that have an EXIF location inside the given rectangle 
+        components = exif_location_rect.split(',')
+        
+        if len(components)!=4:
+            res['status'] = 'fail'
+            res['html_response_code'] = '403' # not found
+            res['errormessage'] = "invalid expression '%s' in parameter '%s'" % (stype, 'type')
+            res['build_response_end'] = time.time()
+            dataready = "%.3f" % (res['build_response_end'] - starttime)
+            res['dataready'] = dataready
+            return res
+         
+        typefiltered_nodelist = []
+        
+        for one_node in nodelist:
+            location = one_node.get_location()
+            if "lon" in location and "lat" in location:
+                node_lon = location["lon"]
+                node_lat = location["lat"]
+                
+                test_lat_lower = float(components[0])
+                test_lon_lower = float(components[1])
+                test_lat_upper = float(components[2])
+                test_lon_upper = float(components[3])
+                
+                if node_lon>test_lon_lower and node_lon<test_lon_upper and node_lat>test_lat_lower and node_lat<test_lat_upper:
+                    typefiltered_nodelist.append(one_node)
+            
+        timetable.append(['filter exif location rect %s (-> %d nodes)' % (exif_location_rect, len(typefiltered_nodelist)), time.time()-atime]); atime = time.time()
+        nodelist = tree.NodeList(list(set(typefiltered_nodelist)))
+        timetable.append(['built set from type filter results (total: %d nodes)' % (len(nodelist)), time.time()-atime]); atime = time.time()  
         
     if attrreg:
         attrreg_filtered_nodelist = []

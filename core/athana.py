@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.45 2012/11/06 06:57:38 seiferta Exp $'
+RCS_ID =  '$Id: athana.py,v 1.46 2013/02/22 14:30:45 seiferta Exp $'
 
 import sys
 
@@ -6073,11 +6073,13 @@ class WebContext:
             return None
         def call_and_close(f,req):
             status = f(req)
+            if type("1")==type(status):
+                status = int(status)
             if status is not None and type(1)==type(status) and status>10:
                 req.reply_code = status
-                if status == 404:
+                if status==404:
                     return req.error(status, "not found")
-                elif(status >= 400 and status <= 500):
+                elif(status>=400 and status<=500):
                     return req.error(status)
             return req.done()
         return lambda req: call_and_close(function,req)
@@ -6733,6 +6735,9 @@ class zip_filesystem:
         self.lock = thread.allocate_lock()
         for f in self.z.filelist:
             self.m['/' + f.filename] = f
+        
+        if "/index.html" in self.m:
+            self.m['/'] = self.m['/index.html']
 
     def current_directory(self):
         return self.wd

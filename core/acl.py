@@ -29,6 +29,7 @@ from core.db import database
 from utils.boolparser import BoolParser
 import thread
 import time
+import md5
 
 logb = logging.getLogger('backend')
 
@@ -235,6 +236,41 @@ class AccessData:
         #logb.info("Filtering "+str(len(nodelist))+" nodes for read-access: "+str(len(newlist))+" nodes")
         logb.info("Filtering "+str(len(nodelist))+" nodes for "+accesstype+"-access: "+str(len(newlist))+" nodes")
         return newlist
+
+
+    def verify_request_signature(self, req_path, params):
+        #we generate the signature from the shared secret, the request path and all sorted parameters
+        #as described in the upload api documentation
+        _p = params.copy()
+        
+        if not 'user' in _p and not 'sign' in _p:
+            return False
+        try:
+            workingString = self.getUser().get("oauthkey")
+        except:
+            return False
+        
+        workingString += req_path
+
+        #remove signature form parameters before we calculate the test signature
+        signature = _p['sign']
+        del _p['sign']
+        
+        keylist = _p.keys()
+        keylist.sort()
+        
+        isFirst = True
+        
+        for oneKey in keylist:
+            oneValue = _p[oneKey]
+            if not isFirst:
+                workingString += '&'
+            else:
+                isFirst = False
+            workingString += oneKey + '=' + oneValue
+        testSignature = md5.new(workingString).hexdigest()
+        return (testSignature==signature)
+
 
 def getRootAccess():
     return AccessData(user=users.getUser(config.get('user.adminuser', 'Administrator')))

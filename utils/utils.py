@@ -110,6 +110,29 @@ def isNumeric(s):
     else:
         return 1
 
+def float_from_gps_format(string): #e.g [48, 214/25, 0]
+    if string[0]=='[' and string[-1]=='[':
+        string = string[1:-1]
+        components = string.split(",")
+        
+        if len(components)!=3:
+            return 0
+        
+        result = 0
+        result += float_from_fraction(components[0])
+        result += float_from_fraction(components[1])/60
+        result += float_from_fraction(components[2])/3600
+        return result
+    return 0
+
+def float_from_fraction(string):
+    components = string.split("/")
+    if len(components)==1:
+        return float(components[0])
+    elif len(components)==2:
+        return float(components[0])/float(components[1])
+    return 0
+
 class Link:
     def __init__(self, link, title, label, target="_self", icon="/img/blank.gif"):
         self.link = link

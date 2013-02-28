@@ -20,22 +20,25 @@
 import core.athana as athana
 import core.config as config
 import re
-from utils.utils import esc
+from utils.utils import esc, lightesc
 from core.metatype import Metatype,charmap
 
 from export.exportutils import runTALSnippet
 from utils.pathutils import isDescendantOf
 
 def getMaskitemForField(field, language=None, mask=None):
-
-    mdt = [p for p in field.getParents() if p.type=='metadatatype'][0]
+    mdt = [p for p in field.getParents() if p.type=='metadatatype']
+    if len(mdt)>0:
+        mdt = mdt[0]
+    else:
+        return None
     
     if mask:
         masks = [mask]
     else:
         masks = [m for m in mdt.getChildren() if m.get('masktype') in ['shortview', 'fullview', 'editmask']]
         if masks and language:
-            masks = [m for m in masks if m.get('language') in [language]]        
+            masks = [m for m in masks if m.get('language') in [language]]
                 
     maskitems = [p for p in field.getParents() if p.type=='maskitem']
     maskitems = [mi for mi in maskitems if 1 in [isDescendantOf(mi, m) for m in masks]]
@@ -48,7 +51,7 @@ def getMaskitemForField(field, language=None, mask=None):
 class m_text(Metatype):
 
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None):
-        return athana.getTAL("metadata/text.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
+        return athana.getTAL("metadata/text.html", {"lock":lock, "value":str(value), "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
         return athana.getTAL("metadata/text.html",{"context":context}, macro="searchfield", language=context.language)
@@ -59,7 +62,6 @@ class m_text(Metatype):
 
         if html:
             value = esc(value)
-            
         # replace variables
         for var in re.findall( r'&lt;(.+?)&gt;', value ):
             if var=="att:id":
@@ -71,12 +73,11 @@ class m_text(Metatype):
 
                 value = value.replace("&lt;"+var+"&gt;", val)
         value = value.replace("&lt;", "<").replace("&gt;",">")
-        
         maskitem = getMaskitemForField(field, language=language, mask=mask)
         if not maskitem:
-            return (field.getLabel(), value)        
+            return (field.getLabel(), value)
         
-        # use default value from mask if value is empty        
+        # use default value from mask if value is empty
         if value=='':
             value = maskitem.getDefault()
     
@@ -91,8 +92,11 @@ class m_text(Metatype):
             try:
                 value = runTALSnippet(value, context)
             except:
-                value = runTALSnippet(unescaped_value, context)
-                                
+                try:
+                    value = runTALSnippet(unescaped_value, context)
+                except:
+                    value = runTALSnippet(lightesc(value), context)
+                    
         return (field.getLabel(), value)
 
     def getFormatedValueForDB(self, field, value):

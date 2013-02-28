@@ -175,6 +175,10 @@ def send_tile(req):
     jpg = req.path[req.path.rindex("/")+1:-4]
     zoom,x,y = map(int, jpg.split("-"))
 
-    tmpname = img.getTile(zoom, x, y)
-    req.write(tmpname)
+    try:
+        tmpname = img.getTile(zoom, x, y)
+        req.write(tmpname)
+        return 200
+    except:
+        return 404
     return tmpname

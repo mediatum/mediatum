@@ -32,7 +32,7 @@
 Parse HTML and compile to TALInterpreter intermediate code.
 """
 
-RCS_ID =  '$Id: athana.py,v 1.47 2013/02/27 08:52:18 seiferta Exp $'
+RCS_ID =  '$Id: athana.py,v 1.48 2013/02/28 07:28:19 seiferta Exp $'
 
 import sys
 
@@ -6073,8 +6073,8 @@ class WebContext:
             return None
         def call_and_close(f,req):
             status = f(req)
-            #if type("1")==type(status):
-            #    status = int(status)
+            if type("1")==type(status):
+                status = int(status)
             if status is not None and type(1)==type(status) and status>10:
                 req.reply_code = status
                 if status==404:

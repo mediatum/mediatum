@@ -79,6 +79,10 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
 
     # sortfields
     sfields = d.setdefault('sfields', [])
+    
+    #mask
+    mask = req.params.get('mask', 'default').lower()
+    maskcachetype = req.params.get('maskcache', 'deep')  # 'deep', 'shallow', 'none'
 
     res = '<?xml version="1.0" encoding="utf-8"?>\r\n'
     res += '<response status="%s" retrievaldate="%s" servicereactivity="%s sec.">\r\n' % (d['status'], d['retrievaldate'], d['dataready'])
@@ -89,10 +93,28 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
                 res += xmlnode.getSingleNodeXML(n, exclude_filetypes=exclude_filetypes)
             else:
                 res += xmlnode.getNodeListXMLForUser(n, readuser='Gast', exclude_filetypes=exclude_filetypes)
+
+            # mask handling
+            formated = n.show_node_text(labels=1, language=req.params.get('lang', ''), cachetype=maskcachetype)
+            if mask not in ["", "none"]: # deliver every mask
+                mask_obj = getMetaType(n.getSchema()).getMask(mask)
+                if mask_obj:
+                    formated = mask_obj.getViewHTML([n], flags=8)
+            res = '%s\n    <mask name="%s"><![CDATA[%s]]></mask>\n%s' %(res[:-9], mask, formated, res[-8:])
+
         else:
             res += '<nodelist start="%d" count="%d" countall="%d">\r\n' % (d['nodelist_start'], d['nodelist_limit'], d['nodelist_countall'])
             for n in d['nodelist']:
                 res += xmlnode.getSingleNodeXML(n, exclude_filetypes=exclude_filetypes)
+
+                # mask handling
+                formated = n.show_node_text(labels=1, language=req.params.get('lang', ''), cachetype=maskcachetype)
+                if mask not in ["", "none"]: # deliver every mask
+                    mask_obj = getMetaType(n.getSchema()).getMask(mask)
+                    if mask_obj:
+                        formated = mask_obj.getViewHTML([n], flags=8)
+                res = '%s\n    <mask name="%s"><![CDATA[%s]]></mask>\n%s' %(res[:-9], mask, formated, res[-8:])
+
             res += '</nodelist>\r\n'
         
         # append a shortlist with id, name and type of the nodes    

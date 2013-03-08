@@ -100,6 +100,8 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
                 mask_obj = getMetaType(n.getSchema()).getMask(mask)
                 if mask_obj:
                     formated = mask_obj.getViewHTML([n], flags=8)
+                else:
+                    mask = 'default'
             res = '%s\n    <mask name="%s"><![CDATA[%s]]></mask>\n%s' %(res[:-9], mask, formated, res[-8:])
 
         else:
@@ -113,6 +115,8 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
                     mask_obj = getMetaType(n.getSchema()).getMask(mask)
                     if mask_obj:
                         formated = mask_obj.getViewHTML([n], flags=8)
+                    else:
+                        mask = 'default'
                 res = '%s\n    <mask name="%s"><![CDATA[%s]]></mask>\n%s' %(res[:-9], mask, formated, res[-8:])
 
             res += '</nodelist>\r\n'

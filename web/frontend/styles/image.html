@@ -4,7 +4,6 @@
         <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png"/></a>
     <a tal:attributes="href python:'/print/'+str(node.id)" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
 </div>
-
 <div id="object_image" tal:condition="python:canseeoriginal">
     <tal:block tal:condition="python:not zoom">
     <a>
@@ -19,7 +18,7 @@
     </tal:block>
     
     <div tal:condition="python:tif!=''" id="object_highresolution" style="padding-top:10px">
-        <a tal:attributes="href python:str(tif); onclick python:'return handleArchived('+str(node.id)+', \''+str(tif)+'\')'" i18n:translate="image_high_res_title">TEXT</a>
+        <a tal:attributes="href python:'/file/'+node.id+'/'+str(tif)" i18n:translate="image_high_res_title">TEXT</a>
         <img id="object_highresolution_remark" style="display:none;" src="/img/wait_small.gif"/>
     </div>
 
@@ -37,3 +36,14 @@
 
 <div tal:content="raw metadata" style="margin-left:330px"/>
 <div style="clear:both"/>
+<div tal:define="children python:node.getChildren().sort()" tal:condition="python:len(children)>0" style="width:100%">
+    <p>Details:</p>
+    <div tal:repeat="child children" style="float:left; padding:2px;border:1px solid silver;margin:2px;text-align:center;">
+        <img tal:attributes="src python:'/thumbs/'+child.id"/>
+        <br/>
+        <small>
+            <tal:block tal:replace="python:child.getName()"/><br/>
+            <a tal:attributes="href python:'?id='+child.id">Details...</a>
+        </small>
+    </div>
+</div>

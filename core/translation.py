@@ -158,4 +158,4 @@ def t(target, key):
         return translate(key,request=target)
 
 def getDefaultLanguage():
-    return config.get("i18n.languages").split(",")[0]
+    return config.get("i18n.languages").split(",")[0].strip()

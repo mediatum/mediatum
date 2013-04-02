@@ -38,8 +38,9 @@ class SortedDict:
     def __getitem__(self, key): 
         return self._key2data[key]
 
-    def __setitem__(self, key, item): 
-        self._keys += [key]
+    def __setitem__(self, key, item):
+        if not key in self._keys:
+            self._keys += [key]
         self._key2data[key] = item
 
     def __delitem__(self, key): 
@@ -92,6 +93,16 @@ class SortedDict:
 
     def __contains__(self, key):
         return key in self._key2data
+        
+    def __str__(self):
+        res = '{'
+        for k in self._keys:
+            res += '''\n '%s': "%s",''' % (k, (str(self[k])))
+        res += '\n}'
+        return res
+        
+    def __repr__(self):
+        return self.__str__()        
 
         
 """A dictionary which is ordered by the values for purposes of the extended search"""

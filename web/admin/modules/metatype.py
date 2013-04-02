@@ -124,7 +124,7 @@ def validate(req, op):
         # remark: error messages will be served untranslated in English  
         # because messages from the python interpreter (in English) will be added
         
-        return req.getTAL("web/admin/modules/metatype.html", {'sectionlist':sectionlist}, macro="view_testnodes")
+        return req.getTAL("web/admin/modules/metatype.html", {'sectionlist':sectionlist}, macro="view_testnodes")  
         
     if len(path)==2 and path[1]=="info":
         return showInfo(req)
@@ -240,17 +240,28 @@ def validate(req, op):
             _fieldvalue = ""
             if req.params.get("mtype","") + "_value" in req.params.keys():
                 _fieldvalue = str(req.params.get(req.params.get("mtype") + "_value"))
-            
+
             _filenode = None
             if "valuesfile" in req.params.keys():
                 valuesfile = req.params.pop("valuesfile")
                 _filenode = importFileToRealname(valuesfile.filename, valuesfile.tempname)
-            
+                
+            _attr_dict = {}
+            if req.params.get("mtype","") + "_handle_attrs" in req.params.keys():
+                
+                attr_names = [s.strip() for s in req.params.get(req.params.get("mtype","") + "_handle_attrs").split(",")]
+                key_prefix = req.params.get("mtype","") + "_attr_"
+                
+                for attr_name in attr_names:
+                    attr_value = req.params.get(key_prefix + attr_name, "")
+                    _attr_dict[attr_name] = attr_value 
+                
             updateMetaField(req.params.get("parent",""), req.params.get("mname",""),
                             req.params.get("mlabel",""), req.params.get("orderpos",""),
                             req.params.get("mtype",""), _option, req.params.get("mdescription",""),
                             _fieldvalue, fieldid=req.params.get("fieldid",""),
-                            filenode=_filenode)
+                            filenode=_filenode,
+                            attr_dict=_attr_dict)            
 
         return showDetailList(req, req.params.get("parent"))
 
@@ -472,7 +483,7 @@ def export(req, name):
 def xmlimport(req, filename):
     importMetaSchema(filename)
        
-def showEditor(req):   
+def showEditor(req): 
     path = req.path[1:].split("/")
     mtype = getMetaType(path[1])
     editor = mtype.getMask(path[2])
@@ -574,7 +585,7 @@ def showEditor(req):
                     # normal field
                     updateMetaField(parent, req.params.get("fieldname"), label, 0, 
                                     req.params.get("newfieldtype"), option="", description=req.params.get("description",""), 
-                                    fieldvalues=fieldvalue, fieldvaluenum="", fieldid="")
+                                    fieldvalues=fieldvalue, fieldvaluenum="", fieldid="")                    
                     fieldid = str(getMetaField(parent, req.params.get("fieldname")).id)
             
             item = editor.addMaskitem( label, req.params.get("type"), fieldid, req.params.get("pid","0") )
@@ -607,7 +618,9 @@ def showEditor(req):
         item.setFormat(req.params.get("format", ""))
         item.setSeparator(req.params.get("separator", ""))
         item.setDescription(req.params.get("description",""))
-        item.setTestNodes(req.params.get("testnodes",""))
+        item.setTestNodes(req.params.get("testnodes",""))  
+        item.setMultilang(req.params.get("multilang",""))  
+              
         if "required" in req.params.keys():
             item.setRequired(1)
         else:

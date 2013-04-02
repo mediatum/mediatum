@@ -126,6 +126,8 @@ def shownodelist(req, nodes, publishwarn=1, markunpublished=0, dir=None):
     nodelist = []
         
     user = users.getUserFromRequest(req)
+    
+    language = lang(req)    
 
     for child in nodes:
         if isDirectory(child) or isCollection(child):
@@ -167,7 +169,7 @@ def shownodelist(req, nodes, publishwarn=1, markunpublished=0, dir=None):
             uploaddir = getUploadDir(user)
         unpublishedlink = "edit_content?tab=publish&id="""+uploaddir.id;
 
-    return req.getTAL("web/edit/edit_common.html", {"notpublished": notpublished, "chkjavascript": chkjavascript, "unpublishedlink": unpublishedlink, "nodelist":nodelist, "script_array":script_array}, macro="show_nodelist")
+    return req.getTAL("web/edit/edit_common.html", {"notpublished": notpublished, "chkjavascript": chkjavascript, "unpublishedlink": unpublishedlink, "nodelist":nodelist, "script_array":script_array, "language":language}, macro="show_nodelist")
 
 
 def isUnFolded(unfoldedids, id):

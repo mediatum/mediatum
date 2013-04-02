@@ -118,9 +118,7 @@ def frameset(req):
                     }
                     return 0;
                 } else if(_action == "editsingle") {
-                    alert("editsingle");
                     var ids = content.getAllObjectsString();
-                    alert(ids);
                     if(ids == '') {
                         reloadPage(tree.getFolder(),'');
                     } else {
@@ -235,12 +233,11 @@ def error(req):
 editModules = {} 
 def getEditModules(force=0):
     if len(editModules)==0:
-
         for modpath in core.editmodulepaths: # paths with edit modules
             path = os.walk(os.path.join(config.basedir, modpath[1]))
             for root, dirs, files in path:
                 for name in [f for f in files if f.endswith(".py") and f!="__init__.py"]:
-                    #try:
+                    try:
                         path,module = splitpath(modpath[1])
                         if modpath[0]=='':
                             m = __import__("web.edit.modules." + name[:-3])
@@ -250,10 +247,10 @@ def getEditModules(force=0):
                             m = __import__(module.replace("/", ".")+"."+name[:-3])
                             m = eval("m."+name[:-3])
                         editModules[name[:-3]] = m
-                    #except ImportError:
-                    #    logger.error("import error in module "+name[:-3])
-                    #except SyntaxError:
-                    #    logger.error("syntax error in module "+name[:-3])
+                    except ImportError:
+                        logger.error("import error in module "+name[:-3])
+                    except SyntaxError:
+                        logger.error("syntax error in module "+name[:-3])
     return editModules    
 
     

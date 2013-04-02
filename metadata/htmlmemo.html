@@ -1,10 +1,147 @@
 <tal:block metal:define-macro="editorfield">
+
+    <!-- for mask editor -->
+    <script type="text/javascript" language="javascript" src="http://code.jquery.com/jquery-latest.js"> </script>
+    
+    <script type="text/javascript" language="javascript" src="/js/jquery.textarearesizer.js"> </script>
+    
+    <script tal:content="python:'var field_name = \''+str(name)+'\';'">;</script>
+    <script tal:content="python:'var field_id = \''+str(ident)+'\';'">;</script>
+    
+    <script tal:content="python:'var current_lang = \''+str(current_lang)+'\';'">;</script>
+    <script tal:content="python:'var languages = '+str(langdict.keys())+';'">;</script> 
+    <script tal:content="python:'var value_is_multilang = \''+str(value_is_multilang)+'\';'">;</script> 
+    <script tal:content="python:'var enable_multilang = \''+str(enable_multilang)+'\';'">;</script> 
+    <script tal:content="python:'var expand_multilang = \''+str(expand_multilang)+'\';'">;</script> 
+    
+    <script tal:content="python:'var label_htmlmemo_show_multilang = \''+str(t(current_lang, 'htmlmemo_show_multilang'))+'\';'">;</script>
+    <script tal:content="python:'var label_htmlmemo_hide_multilang = \''+str(t(current_lang, 'htmlmemo_hide_multilang'))+'\';'">;</script> 
+    
+    <script language="javascript" type="text/javascript">
+
+      var src_img_show_multilang = "/img/mlang.png";
+      var src_img_hide_multilang = "/img/slang.png";
+
+      function toggleHTMLMemoDiv(src, divId, labelId, hiddenInputId) 
+      {
+          
+          $("#"+divId).toggle();
+          $("#"+labelId).toggle();
+          
+          var hinput = $("#"+hiddenInputId);
+          hinput.val(hinput.val() == 'multi' ? 'single' : 'multi');
+
+          var button = $("#"+src.id);
+          var new_title = (src.title == label_show_multilang ? label_hide_multilang : label_show_multilang);
+          button.attr("title", new_title);
+          var new_button_src = (button.attr("src") == src_img_show_multilang ? src_img_hide_multilang : src_img_show_multilang);
+          button.attr("src", new_button_src);
+          
+          if (src.title == label_htmlmemo_show_multilang) {
+            $("#"+src.id).css("margin-left", "5px");
+            
+          } else {
+            $("#"+src.id).css("margin-left", "25px");
+          }
+          return false;
+      }    
+      
+      
+      function expandHTMLMemoMultilang(field_id) 
+      {
+          $("#"+field_id+"_label").show();
+          $("#"+field_id+"_multilang").show();
+          
+          var hinput = $("#"+field_id+"_show_multilang");
+          hinput.val('multi');
+          
+          var toggle_button = $("#button_toggle_"+field_id);
+          toggle_button.attr("title", label_htmlmemo_hide_multilang); 
+          toggle_button.css("margin-left", "25px"); 
+          return true;
+          
+      } 
+      
+      
+      function collapseHTMLMemoMultilang(field_id) 
+      {
+          $("#"+field_id+"_label").hide();
+          $("#"+field_id+"_multilang").hide();
+          
+          var hinput = $("#"+field_id+"_show_multilang");
+          hinput.val('single');
+          
+          var toggle_button = $("#button_toggle_"+field_id);
+          toggle_button.value = label_htmlmemo_show_multilang; 
+          toggle_button.css("margin-left", "5px"); 
+          return true;
+          
+      }                
+        
+        
+    </script> 
+
     <script type="text/javascript" src="/ckeditor/ckeditor.js"> </script>
-    <textarea class="htmlmemo_text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name name; id name; onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:'width:'+str(width-20)+'px'" rows="4">
-<tal:block tal:replace="python:value"/></textarea>
-    <tal:block tal:content="raw python:'<script> var _editor = \''+name+'\';</script>'"/>
+
+<div>
+
+<div style="float:left;">  <div style="float:left; width: 20px"> 
+    <label tal:attributes="id python:ident+'_label'; style python: multilang_display;"  tal:content="python:defaultlang + ':'"></label>
+  </div><textarea  tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name python:defaultlang+'__'+name; id python:defaultlang+'__'+name; onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:'width:'+str(width-20)+'px'" rows="4">
+<tal:block tal:replace="python:langdict[defaultlang]"/></textarea></div>
+  <span tal:condition="python: enable_multilang and not expand_multilang">
+    <img tal:attributes="title python:t(current_lang, 'htmlmemo_hide_multilang'); id python:'button_toggle_'+ident; onclick python:'toggleHTMLMemoDiv(this, \''+ident+'_multilang\',\''+ident+'_label\',\''+ident+'_show_multilang\')';" style="margin-left:5px;" src="/img/mlang.png" />
+  </span>
+  <span tal:condition="python: enable_multilang and expand_multilang">
+    <img tal:attributes="title python:t(current_lang, 'htmlmemo_show_multilang'); id python:'button_toggle_'+ident; onclick python:'toggleHTMLMemoDiv(this, \''+ident+'_multilang\',\''+ident+'_label\',\''+ident+'_show_multilang\')';" style="margin-left:5px;"  src="/img/slang.png" />
+  </span>
+    </div>
+<span tal:content="raw python:'<script> var _editor = \''+defaultlang+'__'+name+'\';</script>'" />
+
     <script type="text/javascript">
         var editor = CKEDITOR.replace( _editor , {
+            on :
+                { instanceReady : function( ev ){
+                    this.dataProcessor.writer.setRules( 'p', {indent : false, breakBeforeOpen : true, breakAfterOpen : false, breakBeforeClose : false, breakAfterClose : true});
+                    }
+                },
+            skin: 'office2003', height: '300px', width: '385px', resize_maxWidth: '385px', customConfig : 'htmlmemoconfig.js',});
+    </script>
+
+
+    <div tal:attributes="style python:'width:'+str(width)+'px'">
+        <div tal:condition="python:field.getValues()!=''" style="text-align:right;padding-right:7px; margin-bottom:7px">
+            <small>
+                <span tal:attributes="id python:'number'+str(name)" tal:content="python:int(field.getValues())-len(value)"/> 
+                <span i18n:translate="editor_htmlmemo_label">TEXT</span>
+            </small>
+        </div>
+    </div>
+   
+  <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
+    <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/>
+    <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
+  </span>
+
+<div style="clear:both"> </div>   
+   
+
+<tal:block tal:condition="python: name and enable_multilang">
+
+  <div tal:attributes="id python:ident+'_multilang'; style python: multilang_display" >
+    <tal:block tal:repeat="lang languages">
+      <div>    
+        <div style="float:left;">
+          <label tal:content="python:lang + ': '" style="padding-left:0px;float:left; width: 20px"></label>
+        </div>
+        <div tal:attributes="id python:'div_'+lang+'__'+name" style="padding-left:2px;float:left;">
+  <div>
+    
+<textarea class="htmlmemo_text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name python:lang+'__'+name; id python:lang+'__'+name; onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:'width:'+str(width-20)+'px'" rows="4">
+<tal:block tal:replace="python:langdict[lang]"/></textarea>
+<tal:block tal:content="raw python:('<script> var _editor_%s = \''+lang+'__'+name+'\';</script>') % ident"/>
+    <script type="text/javascript">
+        var editor = CKEDITOR.replace( _editor_REPLACE_WITH_IDENT , {
             on :
                 { instanceReady : function( ev ){
                     this.dataProcessor.writer.setRules( 'p', {indent : false, breakBeforeOpen : true, breakAfterOpen : false, breakBeforeClose : false, breakAfterClose : true});
@@ -24,6 +161,37 @@
         <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/>
         <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
    </span>
+   
+  </div>
+        <br /> 
+      </div> 
+      <div style="clear:both"> </div>    
+    </tal:block>
+  </div>
+  <div style="clear:both"> </div>
+   
+</tal:block>
+
+<div style="clear:left"> </div>
+    
+<div id="hidden_parameters" style="display:none;" >
+  <input tal:attributes="id python:ident+'_show_multilang'; name python:ident+'_show_multilang'; value python: value_is_multilang" size="75" />(_show_multilang)<br/>
+</div>  
+
+
+
+   
+  <script type="text/javascript">
+   
+     if (expand_multilang == "True") {
+       expandHTMLMemoMultilang(field_id);
+     } else {
+       collapseHTMLMemoMultilang(field_id);
+     }
+  
+  </script>    
+    
+   
 </tal:block>
 
 
@@ -32,7 +200,13 @@
 </tal:block>
 
 
-<div metal:define-macro="maskeditor" style="display:none" name="div_memo" id="div_memo">
+<div metal:define-macro="maskeditor" style="display:none" name="div_htmlmemo" id="div_htmlmemo">
+
     <div class="label" i18n:translate="mask_edit_max_length">TEXT</div>
-    <input tal:attributes="value value" type="text" name="htmlmemo_value" rows="4" style="width:250px"/>
+    <input tal:attributes="value value" type="text" name="htmlmemo_value" rows="4" style="width:250px"/><br/>
+
+    <div class="label" i18n:translate="mask_edit_enable_multilang">TEXT</div>
+    <input name="htmlmemo_handle_attrs" type="hidden" tal:attributes="value python: additional_attrs" />
+    <input name="htmlmemo_attr_multilang" value="1" type="checkbox" tal:attributes="checked python:{'False':None,'True':'checked'}[str(str(multilang)==str(1))]" />
+    
 </div>

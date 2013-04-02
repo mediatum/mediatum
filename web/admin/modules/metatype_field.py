@@ -19,6 +19,7 @@
 """
 
 import re
+import inspect
 import core.tree as tree
 
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
@@ -158,15 +159,30 @@ def FieldDetail(req, pid, id, err=0):
     v["metafields"] = metafields
     v["filtertype"] = req.params.get("filtertype","")
     v["actpage"] = req.params.get("actpage")
+
     v["icons"] = {"externer Link":"/img/extlink.png", "Email":"/img/email.png"}
     v["url_targets"] = {"selbes Fenster":"same", "neues Fenster":"_blank"}
+    v["valuelist"] = ("", "", "", "")
+    if field.getFieldtype()=="url":
+        v["valuelist"] = field.getValueList()
+        while len(v["valuelist"])!=4:
+            v["valuelist"].append("")
+    else:
+        v["valuelist"] = field.getValueList()
+
     v["field"] = None
     if field.id:
         v["field"] = field
-    v["adminfields"] = []
 
+    v["adminfields"] = []
     for t in getMetaFieldTypeNames():
         f = getMetadataType(t)
-        v["adminfields"].append(f.getMaskEditorHTML( v["field"], metadatatype=metadatatype, language=lang(req) ))
-            
+        
+        if 'attr_dict' in inspect.getargspec(f.getMaskEditorHTML).args:
+            attr_dict = dict(field.items())
+            v["adminfields"] .append(f.getMaskEditorHTML(v["field"], metadatatype=metadatatype, language=lang(req), attr_dict=attr_dict))
+        else:    
+            v["adminfields"] .append(f.getMaskEditorHTML(v["field"], metadatatype=metadatatype, language=lang(req)))
+     
     return req.getTAL("web/admin/modules/metatype_field.html", v, macro="modify_field")
+    

@@ -4,7 +4,7 @@
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
  Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
  Copyright (C) 2012 Iryna Feuerstein <feuersti@in.tum.de>
-
+ 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
@@ -165,7 +165,7 @@ def existMetaField(pid, name):
 
 
 """ update/create metadatafield """
-def updateMetaField(parent, name, label, orderpos, fieldtype, option="", description="", fieldvalues="", fieldvaluenum="", fieldid="", filenode=None):
+def updateMetaField(parent, name, label, orderpos, fieldtype, option="", description="", fieldvalues="", fieldvaluenum="", fieldid="", filenode=None, attr_dict={}):
     metatype = getMetaType(parent)
     try:
         field = tree.getNode(fieldid)
@@ -204,14 +204,16 @@ def updateMetaField(parent, name, label, orderpos, fieldtype, option="", descrip
         fieldvalues = fieldvalues.replace(";delete", "", 1)
         
     #<----- End: For fields of list type ----->
-    
+	
     field.set("label", label)   
     field.set("type", fieldtype)
     field.set("opts", option)
     field.set("valuelist", fieldvalues.replace("\r\n",";"))
     field.set("valuelistnum", fieldvaluenum)
     field.set("description", description)
-
+    
+    for attr_name, attr_value in attr_dict.items():
+        field.set(attr_name, attr_value)
 
 
 #
@@ -242,11 +244,11 @@ def moveMetaField(pid, name, direction):
     for field in getMetaType(pid).getChildren().sort():
         try:
             if i==up:
-                pos = i-1
+                pos = i - 1
             elif i==up-1:
                 pos = up
             elif i==down:
-                pos = i+1
+                pos = i + 1
             elif i==down+1:
                 pos = down
             else:
@@ -272,14 +274,12 @@ def generateMask(metatype, masktype="", force=0):
     except tree.NoSuchNodeError:
         mask = metatype.addChild(tree.Node("-auto-","mask"))
         i = 0
-
         for c in metatype.getChildren().sort():
             if c.type!="mask": 
                 if c.getFieldtype()!="union":
                     n = tree.Node(c.get("label"), "maskitem")
                     n.setOrderPos(i)
                     i += 1
-
                     field = mask.addChild(n)
                     field.set("width", "400")
                     field.set("type", "field")
@@ -294,7 +294,7 @@ def cloneMask(mask, newmaskname):
                 c2 = tree.Node(c1.getName(), c1.type)
                 c2.setOrderPos(c1.getOrderPos())
                 m2.addChild(c2)
-                recurse(c1, c2)
+                recurse(c1,c2)
             else:
                 m2.addChild(c1)
 
@@ -303,7 +303,7 @@ def cloneMask(mask, newmaskname):
         raise "Mask has no parents"
     if len(p)>1:
         raise "Mask has more than one parent"
-    if mask.type!="mask":
+    if mask.type != "mask":
         raise "Not a mask"
     newmask = tree.Node(newmaskname, mask.type)
     p[0].addChild(newmask)
@@ -354,7 +354,7 @@ def checkMask(mask,fix=0,verbose=1,show_unused=0):
         if currentparent.type!="maskitem":
             if verbose:
                 print "Field",node.id,node.name,"is not below a maskitem (parent:",currentparent.id,currentparent.name,")"
-            error += 1
+            error += 1 
             if fix:
                 currentparent.removeChild(node)
             return
@@ -412,35 +412,41 @@ def checkMask(mask,fix=0,verbose=1,show_unused=0):
                 if "s" not in field.get("opts"):
                     print "Unused field:",field.id,field.name
     return error
-
+    
 def showEditor(node,hiddenvalues={}, allowedFields=None):
     result = ""
     fields = node.getType().getMetaFields()
 
     for field in fields:
         name = field.getName()
+        langNames = None
+        if field.get("text"):
+            langNames = [lang + name for lang in config.get("i18n.languages").split(",")]
         if allowedFields and name not in allowedFields:
             continue
-        value = node.get(name)
+        value = ""
+        if langNames:
+            for langName in langNames:
+                value += langName + "\n" + node.get(langName + "__" + name) + "\n"
+        else:
+            value = node.get(name)
         lock = 0
-
+        
         #_helpLink = "&nbsp;"
         #if field.description != "":
         #    _helpLink = """<a href="#" onclick="openPopup(\'/popup_help?pid=""" + field.pid + """&name=""" + field.name + """\', \'\', 400, 250)"><img src="img/tooltip.png" border="0"></a>"""
         if (field.getRequired()>0):
-            result += '<tr><td align="left">%s: <span class="required">*</span></td>' %(field.getLabel())
+            result += ('<tr><td align="left">'+field.getLabel()+': <span class="required">*</span></td>')
         else:
             result += '<tr><td align="left">%s:</td>' %(field.getLabel())
         result += '<td align="left">%s</td></tr>' %(field.getEditorHTML(value,400,lock))
-        
-        
-    result += '<tr><td>&nbsp;</td><td align="left"><small>(<span class="required">*</span> Pflichtfeld, darf nicht leer sein)</small></td></tr>'
-    result += '<input type="hidden" name="metaDataEditor" value="metaDataEditor">'
+    result += ('<tr><td>&nbsp;</td><td align="left"><small>(<span class="required">*</span> Pflichtfeld, darf nicht leer sein)</small></td></tr>')
+    result += ('<input type="hidden" name="metaDataEditor" value="metaDataEditor">')
     
     for k,v in hiddenvalues.items():
-        result += '<input type="hidden" name="%s" value="%s">\n' % (k,v)
+        result += ("""<input type="hidden" name="%s" value="%s">\n""" % (k,v))
     return result
-
+    
 
 def parseEditorData(req,node):
     fields = node.getType().getMetaFields()
@@ -637,7 +643,6 @@ class Metadatatype(tree.Node):
 """ fields for metadata """
 class Metadatafield(tree.Node):
     def getName(self):
-        print "Metadatafield, getName: " + str(self.get("name"))
         return self.get("name")
     def setName(self, value):
         self.set("name", value)
@@ -689,8 +694,7 @@ class Metadatafield(tree.Node):
         self.set("valuelist", value)
     def removeValue(self, value):
         self.set("valuelist", self.get("valuelist").replace(value,""))
-
-
+        
     def Sortfield(self):
         return "o" in self.getOption()
     def Searchfield(self):
@@ -716,7 +720,6 @@ class Metadatafield(tree.Node):
             except ValueError:
                 value = v
         else:
-            print "Metadatafield, getValue: " + str(node.get(self.name))
             value = node.get(self.name)
         return value
 
@@ -757,7 +760,7 @@ class MaskType:
     def setSeparator(self, value):
         self.separator = value
     def getSeparator(self):
-        return self.separator        
+        return self.separator
 
 def getMaskTypes(key="."):
     masktypes = {
@@ -881,7 +884,7 @@ class Mask(tree.Node):
         if self.getMasktype()=="export":
             for mapping in self.get("exportmapping").split(";"):
                 for c in tree.getNode(mapping).getMandatoryFields():
-                    mandfields.append(c.id)       
+                    mandfields.append(c.id)
         for item in self.getMaskFields():
             try:
                 mandfields.remove(item.get("mappingfield"))
@@ -893,6 +896,7 @@ class Mask(tree.Node):
 
     ''' update given node with given request values '''
     def updateNode(self, nodes, req):
+        default_language = translation.getDefaultLanguage()
         for node in nodes:
             for item in self.getMaskFields():
                 field = item.getField()
@@ -900,9 +904,47 @@ class Mask(tree.Node):
                     t = getMetadataType(field.get("type"))
                     if field.getName() in req.params.keys():
                         value = t.getFormatedValueForDB(field, req.params.get(field.getName()))
+                        language = translation.lang(req)
                         node.set(field.getName(), value)
                     elif field.getFieldtype()=="check":
                         node.set(field.getName(), 0)
+                        
+                    else:
+                        # if multilingual textfields were used, their names are
+                        # saved in form en__Name, de__Name, de-AU__Name, en-US__Name etc.
+                        for item in req.params.keys():
+                            langPos = item.find('__')
+                            if langPos != -1 and item[langPos+2:] == field.getName(): 
+                                # cut the language identifier (en__, fr__, etc)
+                                if (req.params.get(str(field.id) + '_show_multilang','') == 'multi'
+                                    and hasattr(t, "language_update")):
+                                    value_old = node.get(field.getName())
+                                    value_new = req.params.get(item)
+                                    value = t.language_update(value_old, value_new, item[:langPos])
+                                    node.set(field.getName(), value)
+                                elif req.params.get(str(field.id) + '_show_multilang', '') == 'single':
+                                    if item[0:langPos] == translation.lang(req):
+                                        new_value = req.params.get(item)
+                                        node.set(field.getName(), new_value)                            
+                                elif (req.params.get(str(field.id) + '_show_multilang','') == 'multi'
+                                     and not hasattr(t, "language_update")):
+                                    value = t.getFormatedValueForDB(field, req.params.get(item))
+                                    oldValue = node.get(field.getName())
+                                    position = oldValue.find(item[:langPos]+t.joiner)
+                                    if position != -1:
+                                        # there is already a value for this language
+                                        newValue = (oldValue[:position+langPos+len(t.joiner)] 
+                                                       + value 
+                                                       + oldValue[oldValue.find(t.joiner,
+                                                                  position+langPos+len(t.joiner)):])
+                                        node.set(field.getName(), newValue)
+                                    else: # there is no value for this language yet
+                                        if oldValue.find(t.joiner) == -1:
+                                            # there are no values at all yet
+                                            node.set(field.getName(), item[:langPos]+t.joiner+value+t.joiner)
+                                        else:
+                                            # there are some values for other languages, but not for the current
+                                            node.set(field.getName(), oldValue+item[:langPos]+t.joiner+value+t.joiner) 
                     
                     ''' raise event for metafield-type '''
                     if hasattr(t,"event_metafield_changed"):
@@ -950,7 +992,7 @@ class Mask(tree.Node):
         else:
             if self.getMappingHeader()!="":
                 ret += '<div class="label" i18n:translate="mask_edit_header">TEXT</div><div class="row">%s</div>' %(esc(self.getMappingHeader()))
-
+            
         i=0
         fieldlist = {} #!!!getAllMetaFields()
         for item in self.getChildren().sort():
@@ -1165,6 +1207,17 @@ class Maskitem(tree.Node):
         return self.get("testnodes")
     def setTestNodes(self, value):
         self.set("testnodes", str(value))
+        
+    def getMultilang(self):
+        field = [c for c in self.getChildren() if c.type=="metafield"][0]
+        multilang = field.get("multilang")
+        if multilang:
+            return int(multilang)
+        else:
+            return 0
+    def setMultilang(self, value):
+        field = [c for c in self.getChildren() if c.type=="metafield"][0]
+        field.set("multilang", str(value))
 
     def getUnit(self):
         return self.get("unit")

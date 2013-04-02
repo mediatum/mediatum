@@ -1,14 +1,124 @@
-
 <tal:block metal:define-macro="editorfield">
-    <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-26)+'px'; name name; id name; value value; maxlenght python:str(len(value))"/>
+    <script tal:content="python:'var field_id = \''+str(ident)+'\';'"></script>
+    <script tal:content="python:'var expand_multilang = \''+str(expand_multilang)+'\';'"></script> 
+    
+<script tal:content="python:'var pwidth = \''+str(width)+'\';'">;</script>    
+    
+    <script tal:content="python:'var label_show_multilang = \''+str(t(defaultlang, 'text_show_multilang'))+'\';'">;</script>
+    <script tal:content="python:'var label_hide_multilang = \''+str(t(defaultlang, 'text_hide_multilang'))+'\';'">;</script>      
+    
+    <script language="javascript" type="text/javascript">
+    
+        var src_img_show_multilang = "/img/mlang.png";
+        var src_img_hide_multilang = "/img/slang.png";    
+    
+        function toggleDiv(src, divId, labelId, textId, width, hiddenInput)
+        {
+            $("#"+divId).toggle();
+            $("#"+labelId).toggle();
+            var currentWidth = $("#"+textId).width()
+            /*
+            if (currentWidth == width - 26)
+            {
+                $("#"+textId).width(currentWidth-23)
+            }
+            else
+            {
+                $("#"+textId).width(currentWidth+23)
+            }
+            */
+            var hin = $("#"+hiddenInput);
+            hin.val(hin.val() == 'multi' ? 'single' : 'multi');
+            
+            
+            var button = $("#"+src.id);
+            var new_title = (src.title == label_show_multilang ? label_hide_multilang : label_show_multilang);
+            button.attr("title", new_title);
+            var new_button_src = (button.attr("src") == src_img_show_multilang ? src_img_hide_multilang : src_img_show_multilang);
+            button.attr("src", new_button_src);     
+            
+            return false;
+        }
+        
+        function expandMultilang(field_id) 
+        {
+          $("#"+field_id+"_label").show();
+          $("#"+field_id+"_multilang").show();
+          
+          var hin = $("#"+field_id+"_show_multilang");
+          hin.val('multi');
+          
+          return true;
+          
+        } 
+      
+        function collapseMultilang(field_id) 
+        {
+          $("#"+field_id+"_label").hide();
+          $("#"+field_id+"_multilang").hide();
+          
+          var hin = $("#"+field_id+"_show_multilang");
+          hin.val('single');
+          
+          return true;
+        }
+    </script>
+    
+    
+    <span tal:attributes="id python:ident+'_label'" style="display: none" tal:condition="languages">
+    <span style="float:left; width: 20px"> 
+    <label style="display: inline-block; width: 20px" tal:content="python:defaultlang + ':'"></label>
+    </span>
+    </span>
+    
+    <div class="surr" style="padding-left:1px;">
+    <input type="text" class="text"
+           tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-26)+'px'; name python:defaultlang+'__'+name; id python:defaultlang+'__'+name; value python:value if not values else values.get(defaultlang+'__'+name) "/>
+    </div>           
     <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
         <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onchange python:'handlelock(\''+name+'\')'" type="checkbox"/>
         <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
-   </span>
-   <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/text?name='+name+'\', \'\', 550, 470)'" style="margin-left:5px;width:14px;padding-left:0px;border-width:0px" type="button" i18n:attributes="title text_titlepopupbutton"><img src="/img/edit_spc.png" style="height:14px"/></button>
+    </span>
+
+    <img tal:attributes="title python:t(defaultlang, 'text_hide_multilang') if expand_multilang else t(defaultlang, 'text_show_multilang'); src python:'/img/slang.png' if expand_multilang else '/img/mlang.png'; id python:'button_toggle_'+ident; onclick python:'toggleDiv(this, \''+ident+'_multilang\', \''+ident+'_label\',\''+defaultlang+'__'+name+'\',\''+str(width)+'\', \''+ident+'_show_multilang\')'" style="margin-left:1px;" tal:condition="languages" />
+
+           
+    <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/text?name='+defaultlang+'__'+name+'\', \'\', 550, 470)'"
+            style="margin-left:5px;width:14px;padding-left:0px;border-width:0px" type="button"
+            i18n:attributes="title text_titlepopupbutton" tal:condition="python:not languages">
+        <img src="/img/edit_spc.png" style="height:14px"/>
+    </button>
+
+<br/>
+<br/>
+    
+    <div tal:attributes="id python:ident+'_multilang'" style="display: none" tal:condition="languages">
+        <tal:block tal:repeat="lang languages">
+            <label tal:content="python:lang + ': '" style="display: inline-block; width: 20px"></label>
+            <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-26)+'px'; name python:lang + '__' + name; id python:lang+'__'+name; value python:values.get(lang+'__'+name) "/>
+            <br />
+        </tal:block>
+    </div>
+    
+    <div id="hidden_parameters" style="display:none;" >
+        <input tal:attributes="id python:ident+'_show_multilang'; name python:ident+'_show_multilang';" value="single" size="75" />(_show_multilang)<br/>
+    </div>
+    
+    <script type="text/javascript">
+        if (expand_multilang == "True") {
+            expandMultilang(field_id);
+        } else {
+            collapseMultilang(field_id);
+        }  
+    </script>
 </tal:block>
 
 <input metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name; value python:context.value" type="text" class="searchfield"/>
+
+<div metal:define-macro="maskeditor" style="display:none" name="div_text" id="div_text">
+    <div class="label" i18n:translate="text_multilingual">TEXT</div>
+    <input type="checkbox" name="text_value" value="multilingual" tal:attributes="checked python:'checked' if multilingual else None" />
+</div>
 
 <tal:block metal:define-macro="popup">
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">

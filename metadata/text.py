@@ -3,6 +3,7 @@
 
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
  Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
+ Copyright (C) 2013 Iryna Feuerstein <feuersti@in.tum.de> 
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -20,25 +21,25 @@
 import core.athana as athana
 import core.config as config
 import re
-from utils.utils import esc, lightesc
-from core.metatype import Metatype,charmap
-
-from export.exportutils import runTALSnippet
+from utils.utils import esc
+from utils.log import logException
 from utils.pathutils import isDescendantOf
+from core.metatype import Metatype,charmap
+from core.translation import t
+from export.exportutils import runTALSnippet
+
+
 
 def getMaskitemForField(field, language=None, mask=None):
-    mdt = [p for p in field.getParents() if p.type=='metadatatype']
-    if len(mdt)>0:
-        mdt = mdt[0]
-    else:
-        return None
+
+    mdt = [p for p in field.getParents() if p.type=='metadatatype'][0]
     
     if mask:
         masks = [mask]
     else:
         masks = [m for m in mdt.getChildren() if m.get('masktype') in ['shortview', 'fullview', 'editmask']]
         if masks and language:
-            masks = [m for m in masks if m.get('language') in [language]]
+            masks = [m for m in masks if m.get('language') in [language]]        
                 
     maskitems = [p for p in field.getParents() if p.type=='maskitem']
     maskitems = [mi for mi in maskitems if 1 in [isDescendantOf(mi, m) for m in masks]]
@@ -51,17 +52,58 @@ def getMaskitemForField(field, language=None, mask=None):
 class m_text(Metatype):
 
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None):
-        return athana.getTAL("metadata/text.html", {"lock":lock, "value":str(value), "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
+        values = None
+        lang = None
+        languages = config.get("i18n.languages")
+        if field.getValues() and "multilingual" in field.getValues():
+            lang = [l.strip() for l in languages.split(',') if (l != language)]
+        valueList = value.split("\n")
+        values = dict()
+        i = 0
+        while i+1 < len(valueList):
+            values[valueList[i]+"__"+field.getName()] = valueList[i+1]
+            i = i + 2
+        context = {
+            "lock": lock,
+            "values": values,
+            "value": value,
+            "width": width,
+            "name": field.getName(),
+            "field": field,
+            "ident": field.id if field.id else "",
+            "t": t,            
+            "languages": lang,
+            "defaultlang": language if language else "" if not lang else lang[0],
+            "expand_multilang": True if value.find('\n') != -1 else False
+        }
+        return athana.getTAL("metadata/text.html", context, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
         return athana.getTAL("metadata/text.html",{"context":context}, macro="searchfield", language=context.language)
+    
+    def getMaskEditorHTML(self, field, metadatatype=None, language=None):
+        multilingual = ""
+        if field:
+            if field.id:
+                multilingual = field.getValues()
+        return athana.getTAL("metadata/text.html", {"multilingual":multilingual}, macro="maskeditor", language=language)
 
     def getFormatedValue(self, field, node, language=None, html=1, template_from_caller=None, mask=None):
         value = node.get(field.getName()).replace(";","; ")
+        if value.find('\n') != -1:
+            valuesList = value.split('\n')
+            index = 0
+            try:
+                index = valuesList.index(language)
+                value = valuesList[index+1]
+            except ValueError, e:
+                logException(e)
+                value = ""
         unescaped_value = value
 
         if html:
             value = esc(value)
+            
         # replace variables
         for var in re.findall( r'&lt;(.+?)&gt;', value ):
             if var=="att:id":
@@ -73,11 +115,12 @@ class m_text(Metatype):
 
                 value = value.replace("&lt;"+var+"&gt;", val)
         value = value.replace("&lt;", "<").replace("&gt;",">")
+        
         maskitem = getMaskitemForField(field, language=language, mask=mask)
         if not maskitem:
-            return (field.getLabel(), value)
+            return (field.getLabel(), value)        
         
-        # use default value from mask if value is empty
+        # use default value from mask if value is empty        
         if value=='':
             value = maskitem.getDefault()
     
@@ -92,11 +135,8 @@ class m_text(Metatype):
             try:
                 value = runTALSnippet(value, context)
             except:
-                try:
-                    value = runTALSnippet(unescaped_value, context)
-                except:
-                    value = runTALSnippet(lightesc(value), context)
-                    
+                value = runTALSnippet(unescaped_value, context)
+                                
         return (field.getLabel(), value)
 
     def getFormatedValueForDB(self, field, value):
@@ -135,7 +175,10 @@ class m_text(Metatype):
                 ("text_bold_title", "Markierten Text 'Fett' setzen"),
                 ("text_italic_title", "Markierten Text 'Kursiv' setzen"),
                 ("text_sub_title", "Markierten Text 'tiefstellen'"),
-                ("text_sup_title", "Markierten Text 'hochstellen'")
+                ("text_sup_title", "Markierten Text 'hochstellen'"),
+                ("text_show_multilang", "umschalten zu mehrsprachig"),
+                ("text_hide_multilang", "umschalten zu einsprachig"),                
+				("text_multilingual", "Mehrsprachigkeit aktivieren")
             ],
            "en":
             [
@@ -151,6 +194,9 @@ class m_text(Metatype):
                 ("text_bold_title", "set marked text 'bold'"),
                 ("text_italic_title", "set marked text 'italic'"),
                 ("text_sub_title", "set marked text 'subscript'"),
-                ("text_sup_title", "set marked text 'superscript'")
+                ("text_sup_title", "set marked text 'superscript'"),
+                ("text_show_multilang", "switch to multilingual"),
+                ("text_hide_multilang", "switch to monolingual"),                
+				("text_multilingual", "Activate multilingual mode")
             ]
          }

@@ -3,7 +3,8 @@
 
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
  Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
-
+ Copyright (C) 2013 Iryna Feuerstein <feuersti@in.tum.de> 
+ 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
@@ -36,6 +37,8 @@ class Context:
 
         
 class Metatype:
+
+    joiner = '\n'
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
         return ""

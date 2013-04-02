@@ -157,7 +157,7 @@ class Default(tree.Node):
 
     # deep caching
     def show_node_text_deep(node, words=None, language=None, separator="", labels=0):
-
+    
         def render_mask_template(node, mfs, words=None, separator="", skip_empty_fields=True):
             '''
                mfs: [mask] + list_of_maskfields
@@ -177,6 +177,11 @@ class Default(tree.Node):
                         value = fd['metadatatype'].getFormatedValue(fd['element'], node, language=language)[1]
                 else:
                     value = node.get(node_attribute)
+                    
+                    metadatatype = fd['metadatatype']
+                    if hasattr(metadatatype, "language_snipper"):
+                        value = metadatatype.language_snipper(value, language)
+                    
                     if value.find('&lt;') >= 0:
                         # replace variables
                         for var in re.findall(r'&lt;(.+?)&gt;', value):

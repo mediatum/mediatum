@@ -178,7 +178,7 @@ class m_text(Metatype):
                 ("text_sup_title", "Markierten Text 'hochstellen'"),
                 ("text_show_multilang", "umschalten zu mehrsprachig"),
                 ("text_hide_multilang", "umschalten zu einsprachig"),                
-				("text_multilingual", "Mehrsprachigkeit aktivieren")
+                ("text_multilingual", "Mehrsprachigkeit aktivieren")
             ],
            "en":
             [
@@ -197,6 +197,6 @@ class m_text(Metatype):
                 ("text_sup_title", "set marked text 'superscript'"),
                 ("text_show_multilang", "switch to multilingual"),
                 ("text_hide_multilang", "switch to monolingual"),                
-				("text_multilingual", "Activate multilingual mode")
+                ("text_multilingual", "Activate multilingual mode")
             ]
          }

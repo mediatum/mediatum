@@ -52,7 +52,6 @@ def getMaskitemForField(field, language=None, mask=None):
 class m_text(Metatype):
 
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None):
-        values = None
         lang = None
         languages = config.get("i18n.languages")
         if field.getValues() and "multilingual" in field.getValues():
@@ -71,7 +70,6 @@ class m_text(Metatype):
             "name": field.getName(),
             "field": field,
             "ident": field.id if field.id else "",
-            "t": t,            
             "languages": lang,
             "defaultlang": language if language else "" if not lang else lang[0],
             "expand_multilang": True if value.find('\n') != -1 else False
@@ -82,10 +80,10 @@ class m_text(Metatype):
         return athana.getTAL("metadata/text.html",{"context":context}, macro="searchfield", language=context.language)
     
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
-        multilingual = ""
-        if field:
-            if field.id:
-                multilingual = field.getValues()
+        try:
+            multilingual = field.getValues()
+        except:
+            multilingual = ""
         return athana.getTAL("metadata/text.html", {"multilingual":multilingual}, macro="maskeditor", language=language)
 
     def getFormatedValue(self, field, node, language=None, html=1, template_from_caller=None, mask=None):
@@ -154,7 +152,10 @@ class m_text(Metatype):
     
     # method for popup methods of type text
     def getPopup(self, req):
-        req.writeTAL("metadata/text.html", {"charmap":charmap, "name":req.params.get("name"), "value":req.params.get("value")}, macro="popup")
+        if "type" in req.params:
+            req.writeTAL("metadata/text.html", {}, macro="javascript")
+        else:
+            req.writeTAL("metadata/text.html", {"charmap":charmap, "name":req.params.get("name"), "value":req.params.get("value")}, macro="popup")
         return athana.HTTP_OK
     
     # method for additional keys of type text

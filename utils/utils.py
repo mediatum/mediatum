@@ -244,6 +244,10 @@ def replace_words(s):
 
 import locale
 def compare_utf8(s1,s2):
+    if not s1:
+        s1 = ""
+    if not s2:
+        s2 = ""
     return locale.strcoll(normalize_utf8(s1), normalize_utf8(s2))
 
 

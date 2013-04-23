@@ -78,7 +78,10 @@ class Connector:
         return self.runQuery("select value from nodeattribute where name=" + self.esc(name))
     
     def getSortOrder(self, field):
-        return self.runQuery("select nid,value from nodeattribute where name="+self.esc(field))
+        if field == "nodename":
+            return self.runQuery("select id,name from node")
+        else:
+            return self.runQuery("select nid,value from nodeattribute where name="+self.esc(field))
 
     def getActiveACLs(self):
         mylist = self.runQuery("select distinct readaccess from node where readaccess not like '{user %}'")

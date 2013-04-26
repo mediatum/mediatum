@@ -1209,15 +1209,15 @@ class Maskitem(tree.Node):
         self.set("testnodes", str(value))
         
     def getMultilang(self):
-        field = [c for c in self.getChildren() if c.type=="metafield"][0]
-        multilang = field.get("multilang")
-        if multilang:
-            return int(multilang)
-        else:
-            return 0
+        field = [c for c in self.getChildren() if c.type=="metafield"]
+        if len(field)>0:
+            if field[0].get("multilang"):
+                return 1
+        return 0
     def setMultilang(self, value):
-        field = [c for c in self.getChildren() if c.type=="metafield"][0]
-        field.set("multilang", str(value))
+        field = [c for c in self.getChildren() if c.type=="metafield"]
+        if len(field)>0:
+            field[0].set("multilang", str(value))
 
     def getUnit(self):
         return self.get("unit")

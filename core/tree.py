@@ -274,7 +274,7 @@ def changed_metadata(node):
         last_changed_metadata_node = node.id
 
 def createSortOrder(field):
-    log.info("retrieving sort order for field "+field)
+    log.info("retrieving sort order for field '"+field+"'")
     t1 = time.time()
     reverse=0
     if field[0]=='-':
@@ -305,7 +305,7 @@ def createSortOrder(field):
             v = value
             i = i + 1
         id2pos[int(id)] = i
-    msg = "sort order retrieved, "+str(time.time()-t1)+" seconds  -  "
+    msg = "sort order retrieved for field '"+field+"': "+str(time.time()-t1)+" seconds  -  "
     msg += "id2pos has %d keys" % len(id2pos)
     log.info(msg)
     return id2pos

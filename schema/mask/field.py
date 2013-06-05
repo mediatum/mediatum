@@ -116,31 +116,32 @@ class m_field(Metatype):
             if fieldtype in ['text']:
                 value = u(t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1])
             else:
-                value = u(t.getFormatedValue(element, nodes[0], language)[1])    
-            if len(value.strip())>0:
-                value+= str(unit)
+                value = u(t.getFormatedValue(element, nodes[0], language)[1])
         else:
             if field.getFormat()!="":
                 if fieldtype in ['text']:
                     value = t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1]
                 else:  
-                    value = t.getFormatedValue(element, nodes[0], language)[1]  
-                value = field.getFormat().replace("<value>",value) + str(unit)
+                    value = t.getFormatedValue(element, nodes[0], language)[1]
+                value = field.getFormat().replace("<value>",value)
             else:
                 if fieldtype in ['text']:
                     if template_from_caller and template_from_caller[0]: # checking template on test nodes: show full length
                         fieldvalue = nodes[0].get(element.name)
                         if fieldvalue.strip(): # field is filled for this node
-                            value = str(t.getFormatedValue(element, nodes[0], language, template_from_caller=fieldvalue, mask=mask)[1]) + str(unit)
+                            value = str(t.getFormatedValue(element, nodes[0], language, template_from_caller=fieldvalue, mask=mask)[1])
                         else: # use default
-                            value = str(t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1]) + str(unit)
+                            value = str(t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1])
                     else: # cut long values
-                        value = str(formatLongText(t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1], element)) + str(unit)
+                        value = str(formatLongText(t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1], element))
                 elif fieldtype in ['upload']:
                     #passing mask necessary for fieldtype='upload'
-                    value = str(formatLongText(t.getFormatedValue(element, nodes[0], language, mask=mask)[1], element)) + str(unit)
+                    value = str(formatLongText(t.getFormatedValue(element, nodes[0], language, mask=mask)[1], element))
                 else:
-                    value = str(formatLongText(t.getFormatedValue(element, nodes[0], language)[1], element)) + str(unit)
+                    value = str(formatLongText(t.getFormatedValue(element, nodes[0], language)[1], element))
+
+        if len(value.strip())>0:
+            value += str(unit)
 
         label = '&nbsp;'
         if field.getLabel()!="":
@@ -169,6 +170,7 @@ class m_field(Metatype):
             ret += '<div class="mask_label">'+label+'</div>\n<div class="mask_value">'+value+'&nbsp;</div>\n'
             ret += '</div></div>'
             return ret
+
 
     def getMetaHTML(self, parent, index, sub=False, language=None, itemlist=[], ptype="", fieldlist={}):
         """ return formated row for metaeditor """

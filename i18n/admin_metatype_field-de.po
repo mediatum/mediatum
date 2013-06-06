@@ -89,6 +89,9 @@ msgstr "Monat (mm)"
 msgid "metafield_dateformat_yearmonth"
 msgstr "Jahr, Monat (yyyy-mm)"
 
+msgid "metafield_dateformat_long"
+msgstr "Datum lang (dd.mm.yyyy hh:mm:ss)"
+
 msgid "admin_metafield_fields"
 msgstr "Metadatenfelder"
 

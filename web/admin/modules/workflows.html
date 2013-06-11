@@ -404,7 +404,7 @@
                     </select>
                 </td>
             </tr>
-            <div tal:replace="structure editor"/>
+            <div tal:replace="raw editor"/>
             <tr>
                 <td><tal:block i18n:translate="admin_meta_writerights">TEXT</tal:block>:</td>
                 <td>
@@ -480,7 +480,7 @@
                 <span tal:replace="python:field.getLabel()"/>:
             </td>
             <td>
-                <span tal:replace="structure python:field.getEditorHTML(value,400)"/>
+                <span tal:replace="raw python:field.getEditorHTML(value, width=400)"/>
             </td>
         </tr>
     </tal:block>

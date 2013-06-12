@@ -96,7 +96,7 @@ def validate(req, op):
                 _mandatory = False
                 if "mandatory" in req.params.keys():
                     _mandatory = True
-                updateMappingField(req.params.get("parent"), req.params.get("name"), description=req.params.get("description"), exportformat=req.params.get("exportformat"), mandatory=_mandatory, id=req.params.get("id"))
+                updateMappingField(req.params.get("parent"), req.params.get("name"), description=req.params.get("description"), exportformat=req.params.get("exportformat"), mandatory=_mandatory, default=req.params.get("default"), id=req.params.get("id"))
         return viewlist(req, req.params.get("parent"))
         
     return view(req)

@@ -306,6 +306,12 @@
                 </td>
             </tr>
             <tr>
+                <td><tal:block i18n:translate="admin_mappingfield_default">TEXT</tal:block>: </td>
+                <td>
+                    <input tal:attributes="value python:field.getDefault()" type="text" name="default" maxlength="50" size="50"/>
+                </td>
+            </tr>
+            <tr>
                 <td><tal:block i18n:translate="admin_mappingfield_description">TEXT</tal:block>:</td>
                 <td>
                     <input tal:attributes="value python:field.getDescription()" type="text" name="description" maxlength=50 size="50"/>

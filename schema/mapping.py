@@ -77,7 +77,7 @@ def deleteMapping(name):
     mappings.removeChild(getMapping(name))
     
     
-def updateMappingField(parentid, name, description="", exportformat="", mandatory=False, id=0):
+def updateMappingField(parentid, name, description="", exportformat="", mandatory=False, default="", id=0):
     mapping = tree.getNode(parentid)
     if id!="" and int(id)>0:
         mappingfield = tree.getNode(id)
@@ -88,6 +88,7 @@ def updateMappingField(parentid, name, description="", exportformat="", mandator
     mappingfield.setDescription(description)
     mappingfield.setExportFormat(exportformat)
     mappingfield.setMandatory(mandatory)
+    mappingfield.setDefault(default)
     
 
 def deleteMappingField(name):
@@ -255,3 +256,8 @@ class MappingField(tree.Node):
         
     def getFieldtype(self):
         return "mappingfield"
+        
+    def getDefault(self):
+        return self.get("default")
+    def setDefault(self, value):
+        self.set('default', value)

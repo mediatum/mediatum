@@ -121,6 +121,9 @@ msgstr "Edit Mapping field"
 msgid "admin_mappingfield_name"
 msgstr "Mapping field Name"
 
+msgid "admin_mappingfield_default"
+msgstr "Default value"
+
 msgid "admin_mappingfield_description"
 msgstr "Description"
 

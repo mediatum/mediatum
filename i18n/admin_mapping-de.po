@@ -123,6 +123,9 @@ msgstr "Mappingfeld bearbeiten"
 msgid "admin_mappingfield_name"
 msgstr "Mappingfeld Name"
 
+msgid "admin_mappingfield_default"
+msgstr "Standardwert"
+
 msgid "admin_mappingfield_description"
 msgstr "Beschreibung"
 

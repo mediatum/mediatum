@@ -25,3 +25,32 @@ msgstr "created"
 msgid "edit_meta_changed"
 msgstr "last edit"
 
+msgid "edit_meta_version_information"
+msgstr "Version information"
+
+msgid "edit_meta_comment"
+msgstr "Comment"
+
+msgid "edit_meta_generate_new_version"
+msgstr "Generate new version"
+
+msgid "edit_meta_version"
+msgstr "Version"
+
+msgid "edit_meta_delete"
+msgstr "Delete"
+
+msgid "edit_meta_restore"
+msgstr "Restore"
+
+msgid "edit_meta_timestamp_comment"
+msgstr "Timestamp / Comment"
+
+msgid "edit_meta_updateduser"
+msgstr "Updated user"
+
+msgid "edit_meta_delete_confirm"
+msgstr "Do you really want to delete version ${version}?"
+
+msgid "edit_meta_restore_confirm"
+msgstr "Do you really want to restore version ${version}?"

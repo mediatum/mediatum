@@ -42,10 +42,14 @@ class Document(default.Default):
         
     def getCategoryName(node):
         return "document"
+
     def _prepareData(node, req, words=""):
         access = acl.AccessData(req)
         mask = node.getFullView(lang(req))
-        obj = {}
+        obj = {'deleted':False}
+        if node.get('deleted')=='true':
+            node = node.getActiveVersion()
+            obj['deleted'] = True
         if mask:
             obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY, lang(req), mask=mask) # hide empty elements
         else:

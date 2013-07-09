@@ -28,6 +28,7 @@ import sys
 import os
 from utils.dicts import MaxSizeDict
 from utils.utils import get_hash
+from utils.date import format_date, parse_date, STANDARD_FORMAT, now
 import core.config as config
 import thread
 import traceback
@@ -274,8 +275,7 @@ def changed_metadata(node):
         last_changed_metadata_node = node.id
 
 def createSortOrder(field):
-    field_orig = field
-    log.info("retrieving sort order for field '"+field_orig+"'")
+    log.info("retrieving sort order for field "+field)
     t1 = time.time()
     reverse=0
     if field[0]=='-':
@@ -306,7 +306,7 @@ def createSortOrder(field):
             v = value
             i = i + 1
         id2pos[int(id)] = i
-    msg = "sort order retrieved for field '"+field_orig+"': "+str(time.time()-t1)+" seconds  -  "
+    msg = "sort order retrieved, "+str(time.time()-t1)+" seconds  -  "
     msg += "id2pos has %d keys" % len(id2pos)
     log.info(msg)
     return id2pos
@@ -413,6 +413,8 @@ class Node:
             if type == None:
                 raise "Node must have a type"
             self.id = None
+            self.prev_nid = '0'
+            self.next_nid = '0'
             self.name = name
             self.type = type
             self.read_access = None
@@ -430,6 +432,8 @@ class Node:
             id,name,type,read,write,data,orderpos,localread = dbnode
 
             self.id = id
+            self.prev_nid = db.getAttributes(self.id).get('system.prev_id', '0')
+            self.next_nid = db.getAttributes(self.id).get('system.next_id', '0')
             self.name = name
             self.type = type
             self.read_access = read
@@ -464,6 +468,14 @@ class Node:
                     db.setNodeDataAccess(self.id,self.data_access)
             finally:
                 tree_lock.release()
+
+    def setNextID(self, id):
+        self.next_nid = id        
+        self.set('system.next_id', id)
+
+    def setPrevID(self, id):
+        self.prev_nid = id
+        self.set('system.prev_id', id)
 
     def setDirty(self):
         db.setDirty(self.id)
@@ -1081,8 +1093,102 @@ class Node:
             result.append(r)
         result = ",".join(result)
         return result        
-   
-            
+
+    def createNewVersion(self, user):
+        version_id = self.get('system.version.id')
+        if version_id=='': 
+            version_id = 1
+            self.set('system.version.id', version_id)
+        
+        n = Node(name=self.name, type=self.type)
+        n.set("creator", self.get('creator'))
+        n.set("creationtime", self.get('creationtime'))
+        n.set("updateuser", user.getName())
+        n.set("edit.lastmask", self.get('edit.lastmask'))
+        
+        if self.get('updatetime')<str(now()):
+            n.set("updatetime", str(format_date()))
+        else:
+            n.set("updatetime", str(self.get('updatetime')))
+
+        for f in self.getFiles():
+            n.addFile(f)
+
+        activeNode = self.getActiveVersion()
+        for pid in db.getParents(activeNode.id):
+            parentNode = getNode(pid)
+            parentNode.addChild(n)
+            parentNode.removeChild(activeNode)
+        
+        for cid in db.getChildren(activeNode.id):
+            childNode = getNode(cid)
+            n.addChild(childNode)
+        n.set("system.version.id", self.getLastVersionID()+1)
+
+        n.setPrevID(activeNode.id)
+        activeNode.setNextID(n.id)
+        return n
+
+    def getActiveVersion(self):
+        print "getActiveVersion", self.id
+        node = self
+        _node = node
+        while _node.next_nid and _node.next_nid!='0':
+            _node = getNode(_node.next_nid)
+            if _node.get("deleted")!="true":
+                node = _node
+        return node
+
+    def getLastVersionID(self):
+        print "getLastVersionID", self.id
+        last_version_id = 1
+        node = self.getActiveVersion()
+        version_id = node.get("system.version.id")
+        if version_id!="": last_version_id = int(version_id)
+
+        while node.prev_nid and node.prev_nid!='0' :
+            node = getNode(node.prev_nid)
+            version_id = node.get("system.version.id")
+            if version_id!="":
+                if int(version_id)>last_version_id:
+                    last_version_id = int(version_id)
+        return last_version_id
+
+    def getVersionList(self):
+        print "getVersionList", self.id
+        node_versions = []
+        node = self.getActiveVersion()
+        if node.get("deleted")!="true":
+            node_versions.append(node)
+        while node.prev_nid and node.prev_nid!='0':
+            node = getNode(node.prev_nid)
+            if node.get("deleted")!="true":
+                node_versions.append(node)
+
+        for i in range(len(node_versions)-1):
+            nodei = node_versions[i]
+            last_version_id = nodei.get("system.version.id")
+            last_version_id = last_version_id!="" and int(last_version_id) or 1
+            for j in range(i+1, len(node_versions)):
+                node = node_versions[j]
+                version_id = node.get("system.version.id")
+                version_id = version_id!="" and int(version_id) or 1
+                if version_id>last_version_id:
+                    last_version_id = version_id
+                    node_versions[i] = node
+                    node_versions[j] = nodei
+                
+        return node_versions
+
+    def getUpdatedDate(self, format=None):
+        if format==None:
+            format = STANDARD_FORMAT
+        if self.get('updatetime'):
+            return format_date(parse_date(self.get('updatetime')), '%d.%m.%Y, %H:%M:%S')
+        if self.get('creationtime'):
+            return format_date(parse_date(self.get('creationtime')), '%d.%m.%Y, %H:%M:%S')
+        return ''
+    
 def flush():
     global childids_cache,nodes_cache,parentids_cache,_root,db,sortorders
     tree_lock.acquire()

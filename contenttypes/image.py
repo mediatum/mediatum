@@ -193,7 +193,6 @@ class Image(default.Default):
 
     # prepare hash table with values for TAL-template
     def _prepareData(node, req):
-        #tifs
         mask = node.getFullView(lang(req))
 
         tif = ""
@@ -216,7 +215,10 @@ class Image(default.Default):
                 
         files, sum_size = filebrowser(node, req)
 
-        obj = {}
+        obj = {'deleted':False}
+        if node.get('deleted') == 'true':
+            node = node.getActiveVersion()
+            obj['deleted'] = True
         obj['path'] = req and req.params.get("path","") or ""
         obj['attachment'] = files
         obj['sum_size'] = sum_size

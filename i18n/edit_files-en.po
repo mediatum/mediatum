@@ -70,6 +70,9 @@ msgstr "delete technical metadata field"
 msgid "edit_files_removequestion"
 msgstr "Do you really want to remove selected object?"
 
+msgid "edit_files_choosefile"
+msgstr "Select file:"
+
 msgid "edit_files_order_label"
 msgstr "Change Order of Objects(Drag&Drop"
 
@@ -78,3 +81,21 @@ msgstr "Save Order"
 
 msgid "edit_files_create_identifier"
 msgstr "Create"
+
+msgid "edit_files_create_a_new_version_with_uploading"
+msgstr "Create a new version with uploading"
+
+msgid "edit_files_comment"
+msgstr "Comment"
+
+msgid "edit_files_new_version_adding_comment"
+msgstr "digital object added"
+
+msgid "edit_files_new_version_exchanging_comment"
+msgstr "digital object exchanged"
+
+msgid "edit_files_new_version_attachment_directory_comment"
+msgstr "attachment directory added"
+
+msgid "edit_files_new_version_attachment_comment"
+msgstr "attachment added"

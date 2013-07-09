@@ -47,11 +47,14 @@ class Video(default.Default):
         return "video"
         
     def _prepareData(node, req, words=""):
-    
+        
         access = acl.AccessData(req)
         mask = node.getFullView(lang(req))
         
-        obj = {}
+        obj = {'deleted':False}
+        if node.get('deleted') == 'true':
+            node = node.getActiveVersion()
+            obj['deleted'] = True
         for filenode in node.getFiles():
             if filenode.getType()=="original" or filenode.getType()=="video":
                 obj["file"] =  "/file/" + str(node.id) + "/" + filenode.getName()

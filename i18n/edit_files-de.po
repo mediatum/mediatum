@@ -96,3 +96,21 @@ msgstr "Reihenfolge speichern"
 
 msgid "edit_files_create_identifier"
 msgstr "Erzeugen"
+
+msgid "edit_files_create_a_new_version_with_uploading"
+msgstr "Mit dem Hochladen eine neue Version erstellen"
+
+msgid "edit_files_comment"
+msgstr "Kommentar"
+
+msgid "edit_files_new_version_adding_comment"
+msgstr "digitales Objekt hinzugefügt"
+
+msgid "edit_files_new_version_exchanging_comment"
+msgstr "digitales Objekt ausgetauscht"
+
+msgid "edit_files_new_version_attachment_directory_comment"
+msgstr "Befestigung Verzeichnis hinzugefügt"
+
+msgid "edit_files_new_version_attachment_comment"
+msgstr "Anhang hinzugefügt"

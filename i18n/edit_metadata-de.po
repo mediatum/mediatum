@@ -24,3 +24,33 @@ msgstr "erstellt"
 
 msgid "edit_meta_changed"
 msgstr "zuletzt geändert"
+
+msgid "edit_meta_version_information"
+msgstr "Version Informationen"
+
+msgid "edit_meta_comment"
+msgstr "Kommentar"
+
+msgid "edit_meta_generate_new_version"
+msgstr "Neuen Version"
+
+msgid "edit_meta_version"
+msgstr "Version"
+
+msgid "edit_meta_delete"
+msgstr "Löschen"
+
+msgid "edit_meta_restore"
+msgstr "Wiederherstellen"
+
+msgid "edit_meta_timestamp_comment"
+msgstr "Timestamp / Kommentar"
+
+msgid "edit_meta_updateduser"
+msgstr "Aktualisiert Benutzer"
+
+msgid "edit_meta_delete_confirm"
+msgstr "Möchten Sie Version ${version} wirklich löschen?"
+
+msgid "edit_meta_restore_confirm"
+msgstr "Wollen Sie wirklich Version ${version} wiederherstellen?"

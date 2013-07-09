@@ -67,6 +67,88 @@
         </tal:block>
         <br/>
         <br/>
+        <tal:block tal:condition="python:not hasattr(node, 'metaFields') and access.hasWriteAccess(node)">
+        <div class="editorrow">
+            <div class="label"><tal:block i18n:translate="edit_meta_version_information"/></div>
+            <div id="div_description">&nbsp;</div>
+            <div id="editor_content">&nbsp;</div>
+        </div>
+        <br/>
+        <div class="editorrow">
+            <div class="label"><tal:block i18n:translate="edit_meta_generate_new_version"/></div>
+            <div id="div_description">&nbsp;</div>
+            <div id="editor_content">
+                <input type="checkbox" name="generate_new_version" onchange="onNewVersionChecked(this);return false;" />
+            </div>
+        </div>
+        <div class="editorrow" id="version_comment" style="display:none">
+            <div class="label"><tal:block i18n:translate="edit_meta_comment"/>:<span class="required">*</span></div>
+            <div id="div_description">&nbsp;</div>
+            <div id="editor_content">
+                <textarea name="version_comment" rows="4" style="width:380px" tal:content="python:''">TEXT</textarea>
+            </div>
+        </div>
+        <style>
+            table.version-list td {
+                white-space:normal;
+            }
+            table.version-list td a {
+                font-weight: normal;
+                color: #000000;
+            }
+            table.version-list tr.active {
+                background: #f1f1f1;
+            }
+            table.version-list tr th {
+                background: #d6d6d6;
+                color: #5e5e5e;
+            }
+        </style>
+        <script language="javascript">
+            function onNewVersionChecked (self) {
+                if (self.checked) {
+                    document.getElementById('version_comment').style.display = 'block';
+                } else {
+                    document.getElementById('version_comment').style.display = 'none';
+                }
+            }
+        </script>
+        <div class="editorrow">
+            <div class="label">&nbsp;</div>
+            <div id="div_description">&nbsp;</div>
+            <div id="editor_content">
+                <table class="version-list" width="380" cellspacing="1" cellpadding="5">
+                    <tr>
+                        <th><tal:block i18n:translate="edit_meta_version"/></th>
+                        <th><tal:block i18n:translate="edit_meta_delete"/></th>
+                        <th><tal:block i18n:translate="edit_meta_restore"/></th>
+                        <th><tal:block i18n:translate="edit_meta_timestamp_comment"/></th>
+                        <th><tal:block i18n:translate="edit_meta_updateduser"/></th>
+                    </tr>
+                    <tal:block tal:repeat="v versions">
+                    <tr tal:attributes="class python:(v.next_nid=='0' or v.next_nid==None) and 'row active' or 'row' ">
+                        <td><a href="/" tal:attributes="href python:'?id='+v.id+'&amp;tab=metadata'" tal:content="python:'V' + str(v.get('system.version.id')=='' and 1 or v.get('system.version.id'))">Version</a></td>
+                        <td><a href="/" tal:attributes="href python:'?id='+node.id+'&amp;tab=metadata&amp;action=delete&amp;vid='+v.id; onclick python:'if(!confirm(deleteConfirm'+v.id+'))return false;;'"><tal:block i18n:translate="edit_meta_delete"/></a></td>
+                        <td><a href="/" tal:attributes="href python:'?id='+node.id+'&amp;tab=metadata&amp;action=restore&amp;vid='+v.id; onclick python:'if(!confirm(restoreConfirm'+v.id+'))return false;;'"><tal:block i18n:translate="edit_meta_restore"/></a></td>
+                        <td>
+                        <div tal:content="python:v.getUpdatedDate()"></div>
+                        <div tal:content="python:v.get('system.version.comment')"></div>
+                        </td>
+                        <td>
+                        <div tal:content="python:v.get('updateuser') and v.get('updateuser') or v.get('creator')"></div>
+                        <tal:block tal:replace="raw python:'<script type=&quot;text/javascript&quot;>'"/>
+                            <tal:block tal:replace="raw python:'var deleteConfirm'+v.id+'=\''"/><tal:block i18n:translate="edit_meta_delete_confirm"><tal:block i18n:name="version" tal:replace="python:v.get('system.version.id')=='' and 1 or v.get('system.version.id')" /></tal:block><tal:block tal:replace="raw python:'\';'"/>
+                            <tal:block tal:replace="raw python:'var restoreConfirm'+v.id+'=\''"/><tal:block i18n:translate="edit_meta_restore_confirm"><tal:block i18n:name="version" tal:replace="python:v.get('system.version.id')=='' and 1 or v.get('system.version.id')" /></tal:block><tal:block tal:replace="raw python:'\';'"/>
+                        <tal:block tal:replace="raw python:'</script>'"/>  
+                        </td>
+                    </tr>
+                    </tal:block>
+                </table>
+            </div>
+        </div>
+        </tal:block>
+        <br/>
+        <br/>
         <div class="label">&nbsp;</div>
         <small>(<span class="required">*</span> <span i18n:translate="edit_mask_required">TEXT</span>)</small>
         <br/>
@@ -96,3 +178,9 @@
     <tal:block tal:replace="raw python:'</script>'"/>
 </tal:block>
     
+<metal:block metal:define-macro="redirect">
+    <tal:block tal:replace="raw python:'<script type=&quot;text/javascript&quot;>'"/>
+        <tal:block tal:condition="pid" tal:replace="raw python:'parent.tree.updateNodeLabel('+pid+');'"/>
+        <tal:block tal:replace="raw python:'window.location.href=\''+url+'\';'"/>
+    <tal:block tal:replace="raw python:'</script>'"/>  
+</metal:block>

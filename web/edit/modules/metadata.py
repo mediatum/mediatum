@@ -18,6 +18,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from core.acl import AccessData
+from core.db import database
+
 import core.users as users
 import core.tree as tree
 import logging
@@ -25,6 +27,8 @@ import logging
 from utils.date import format_date, parse_date, now
 from utils.utils import formatException
 from core.translation import lang, t
+
+db = database.getConnection()
 
 def getContent(req, ids):
     ret = ""
@@ -49,7 +53,7 @@ def getContent(req, ids):
             metatypes.append(schema)
         if len(nodes)==0 or nodes[0].getSchema()==schema:
             nodes += [node]
-    
+
     idstr = ",".join(ids)
 
     for m in node.getType().getMasks(type="edit"):
@@ -101,6 +105,76 @@ def getContent(req, ids):
     if not mask:
         return req.getTAL("web/edit/modules/metadata.html", {}, macro="no_mask")
 
+    action = req.params.get('action', '').strip()
+    
+    if (action=='restore'):
+        vid = req.params.get('vid', '0')
+        node = nodes[0].getActiveVersion()
+        if (vid!='0' and vid!=node.id):
+            n = tree.getNode(vid)
+            # Not active version
+            if n.next_nid!='0':
+                if n.prev_nid!='0':
+                    prev = tree.getNode(n.prev_nid)
+                    prev.setNextID(n.next_nid)
+                next = tree.getNode(n.next_nid)
+                next.setPrevID(n.prev_nid)
+                node.setNextID(n.id)
+
+                n.setPrevID(node.id)
+                n.setNextID('0')
+
+                pids = db.getParents(node.id)
+                for pid in pids:
+                    parentNode = tree.getNode(pid)
+                    parentNode.addChild(n)
+                    parentNode.removeChild(node)
+
+                nodes = [n]
+                ids = [n.id]
+                return req.getTAL("web/edit/modules/metadata.html", {'url':'?id='+n.id+'&tab=metadata', 'pid':None}, macro="redirect")
+
+    if (action=='delete'):
+        vid = req.params.get('vid', '0')
+        if (vid != '0'):
+            node = nodes[0].getActiveVersion()
+            n = tree.getNode(vid)
+            
+            if (vid!=node.id):
+                n.set("deleted", "true")
+            else:
+                pids = db.getParents(n.id)
+                
+                # Active version
+                prev = None
+                if n.prev_nid!='0':
+                    prev = tree.getNode(n.prev_nid)
+                    while prev.prev_nid!=None and prev.prev_nid!='0' and prev.get("deleted")=="true":
+                        prev = tree.getNode(prev.prev_nid)
+                
+                if prev!=None and prev.get("deleted")!="true":
+                    prev.setNextID('0')
+                    for pid in pids:
+                        parentNode = tree.getNode(pid)
+                        parentNode.addChild(prev)
+                    nodes = [prev]
+                    ids = [prev.id]
+                    n.set("deleted", "true")
+                    for pid in pids:
+                        parentNode = tree.getNode(pid)
+                        parentNode.removeChild(n)
+                    return req.getTAL("web/edit/modules/metadata.html", {'url':'?id='+prev.id+'&tab=metadata', 'pid':None}, macro="redirect")
+                else:
+                    # Version 0
+                    # Move node to trash
+                    trashdir = users.getTrashDir(user)
+                    trashdir.addChild(n)
+                    for pid in pids:
+                        parentNode = tree.getNode(pid)
+                        parentNode.removeChild(n)
+
+                    return req.getTAL("web/edit/modules/metadata.html", {'url':'?id='+pids[0]+'&tab=content', 'pid':pids[0]}, macro="redirect")
+
     if "edit_metadata" in req.params:
         # check and save items
         userdir = users.getHomeDir(users.getUserFromRequest(req))
@@ -117,20 +191,42 @@ def getContent(req, ids):
                 node.set("updatetime", str(format_date()))
 
         if not hasattr(mask,"i_am_not_a_mask"):
-            nodes = mask.updateNode(nodes, req)
-            errorlist = mask.validateNodelist(nodes)
+            errorlist = []
+            if (req.params.get('generate_new_version')):
+                # Create new node version
+                _ids = []
+                _nodes = []
+                for node in nodes:
+                    if (req.params.get('version_comment', '').strip()==''
+                        or req.params.get('version_comment', '').strip()=='&nbsp;'):
+                        errorlist.append(node.id)
+                        _nodes.append(node)
+                        _ids.append(node.id)
+                    else:
+                        n = node.createNewVersion(user)
+                        n.set("system.version.comment", '('+t(req, "document_new_version_comment")+')\n'+req.params.get('version_comment', ''))
+                        
+                        _nodes.append(n)
+                        _ids.append(n.id)
+
+                ids = _ids
+                idstr = ",".join(ids)
+                nodes = _nodes
+                nodes = mask.updateNode(nodes, req)
+                errorlist += mask.validateNodelist(nodes)
+                if len(errorlist)==0:
+                    ret += req.getTAL("web/edit/modules/metadata.html", {'url':'?id='+nodes[0].id+'&tab=metadata', 'pid':None}, macro="redirect")
+            else:
+                nodes = mask.updateNode(nodes, req)
+                errorlist += mask.validateNodelist(nodes)
         else:
             for field in mask.metaFields():
-                field_name = field.getName()
-                if field_name == 'nodename' and maskname == 'settings':
-                    #field_name = getDefaultLanguage()+'__nodename'  # no multilang here !
-                    field_name = '__nodename'  # no multilang here !
-                value = req.params.get(field_name, None)
+                value = req.params.get(field.getName(), None)
                 if value is not None:
                     for node in nodes:
                         node.set(field.getName(), value)
                 else:
-                    node.set(field.getName(), "")            
+                    node.set(field.getName(), "")
             errorlist = []
 
         if len(errorlist)>0 and "save" in req.params:
@@ -169,11 +265,16 @@ def getContent(req, ids):
                 except:
                     datestr = node.get("creationtime")
                 creation_date.append([node.get("creator"), datestr])
+
+    node_versions = nodes[0].getVersionList()
     
     data = {}
+    data["user"] = user
+    data["access"] = access
     data["metatypes"] = metatypes
     data["idstr"] = idstr
     data["node"] = nodes[0]
+    data["versions"] = node_versions
     data["masklist"] = masklist
     data["maskname"] = maskname
     data["creation_date"] = creation_date

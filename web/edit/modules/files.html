@@ -3,6 +3,8 @@
     TEXT
 </p>
 
+<p class="error" metal:define-macro="version_error"><tal:block i18n:translate="fieldsmissing">TEXT</tal:block><br/><tal:block i18n:translate="saved_in_inconsistent_data">TEXT</tal:block></p>
+
 
 <tal:block metal:define-macro="edit_files_file">
     <style type="text/css">
@@ -192,6 +194,19 @@
             <span id="inputname" style="display:none"><tal:block i18n:translate="edit_files_dirname"/> <input type="text" name="inputname" size="60"/></span>
             <br/>
             <span id="updatefile"><tal:block i18n:translate="edit_files_choosefile"/> <input name="updatefile"  type="file" size="50"/></span>
+            <span id="generate_new_version" tal:condition="python:not hasattr(node, 'metaFields') and access.hasWriteAccess(node)">
+                <br />
+                <br />
+                <br />
+                <input type="checkbox" name="generate_new_version" onchange="onNewVersionChecked(this);return false;" />
+                <tal:block i18n:translate="edit_files_create_a_new_version_with_uploading"/>
+                <br />
+                <span id="version_comment">
+                <br />
+                <b><tal:block i18n:translate="edit_files_comment"/>:<span class="required">*</span></b><br />
+                <textarea name="version_comment" rows="4" style="width:380px" tal:content="python:''">TEXT</textarea>
+                </span>
+            </span>
         </p>
         <p>
             <button i18n:attributes="title edit_upload_upload_label" i18n:translate="edit_upload_upload_label" type="submit" name="addfile" value="submit">TEXT</button>
@@ -205,7 +220,7 @@
                     document.getElementById('inputname').style.display = 'none';
                 }
             }
-            
+
             $("#sortable" ).sortable({
                 connectWith: ".connectedSortable",
                 stop: function(event, ui) {
@@ -223,6 +238,16 @@
                     });
                 }
             });
+        </script>
+        <script language="javascript">
+            document.getElementById('version_comment').style.display = 'none';
+            function onNewVersionChecked (self) {
+                if (self.checked) {
+                    document.getElementById('version_comment').style.display = 'block';
+                } else {
+                    document.getElementById('version_comment').style.display = 'none';
+                }
+            }
         </script>
     </form>
 

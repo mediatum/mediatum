@@ -1,3 +1,22 @@
+<div style="width:100%;text-align:center;color:red;" tal:condition="python:node.next_nid!=None and node.next_nid!='0' and node.get('deleted')!='true'"
+    tal:define="v python:node.getActiveVersion()">
+    <p class="info" i18n:translate="document_view_new_version_exist">
+    <span i18n:name="a_open" tal:replace="structure python:'<a href=&quot;/''?id='+v.id+'&quot;>'"></span>
+    <span i18n:name="a_close" tal:replace="structure python:'</a>'"></span>
+    There is a new version of the desired document.
+    </p>
+</div>
+
+<div style="width:100%;text-align:center;color:red;" tal:condition="deleted"
+    tal:define="v python:node.getActiveVersion();">
+    <p class="error" i18n:translate="document_view_version_deleted">
+    <span i18n:name="a_open" tal:replace="structure python:'<a href=&quot;/''?id='+v.id+'&quot;>'"></span>
+    <span i18n:name="a_close" tal:replace="structure python:'</a>'"></span>
+The desired version of the document has been deleted.<br />
+The document is displayed in the <a href="/" tal:attributes="href python:'?id='+v.id">latest version</a>.
+    </p>
+</div>
+
 <div style="width:100%; text-align:right">
     <a tal:attributes="href python:'javascript:shoppingBag(\''+str(node.id)+'\')'">
         <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png"/></a>
@@ -9,6 +28,18 @@
         <img tal:condition="python:not canseeoriginal" tal:attributes="src python:'/thumb2/'+str(node.id)" style="border:0px;width:300px"/>
         <br/>
         <p style="padding-top:20px"><small i18n:translate="video_plugin_info">TEXT</small></p>
+        <div id="object_versions">
+            <div><tal:block i18n:translate="document_view_current_version_from">Current version: <span i18n:name="version" tal:replace="python:'Version ' + str(node.get('system.version.id')=='' and 1 or node.get('system.version.id'))">Version</span> from</tal:block> <tal:block tal:condition="python:node.get('updatetime') or node.get('creationtime')" tal:replace="python:node.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:node.get('updateuser') and node.get('updateuser') or node.get('creator')" /></div>
+            <div i18n:translate="document_view_other_versions_of_the_document">Other versions of the document:</div>
+            <tal:block tal:define="versions python:node.getVersionList()">
+                <tal:block tal:repeat="v versions">
+                    <div>
+                        <a href="/" tal:attributes="href python:'?id='+v.id"><span tal:content="python:'Version ' + str(v.get('system.version.id')=='' and 1 or v.get('system.version.id'))">Version</span>
+                        <span tal:condition="python:v.get('updatetime') or v.get('creationtime')">(<tal:block i18n:translate="document_view_from">from</tal:block> <tal:block tal:replace="python:v.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:v.get('updateuser') and v.get('updateuser') or v.get('creator')" />)</span></a>
+                    </div>
+                </tal:block>
+            </tal:block>
+        </div>
     </div>
     <div id="object_meta" tal:content="raw metadata">TEXT</div>
 </div>

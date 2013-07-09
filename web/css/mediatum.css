@@ -527,3 +527,5 @@ span.required{
 p.error{
     background: #FFE7E7; color: #AF0101;  padding: 7px; border: 1px solid #AF0101; margin-left: 20px; margin-right: 20px ; text-align: center;
 }
+p.info{background: #FCF8E3; color: #C09853;  padding: 7px; border: 1px solid #FCEED5; margin-left: 20px; margin-right: 20px ; text-align: center;}
+p.info a{color: #C09853;}

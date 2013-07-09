@@ -1130,7 +1130,6 @@ class Node:
         return n
 
     def getActiveVersion(self):
-        print "getActiveVersion", self.id
         node = self
         _node = node
         while _node.next_nid and _node.next_nid!='0':
@@ -1140,7 +1139,6 @@ class Node:
         return node
 
     def getLastVersionID(self):
-        print "getLastVersionID", self.id
         last_version_id = 1
         node = self.getActiveVersion()
         version_id = node.get("system.version.id")
@@ -1155,7 +1153,6 @@ class Node:
         return last_version_id
 
     def getVersionList(self):
-        print "getVersionList", self.id
         node_versions = []
         node = self.getActiveVersion()
         if node.get("deleted")!="true":

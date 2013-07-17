@@ -45,11 +45,7 @@ def shoppingbag_action(req):
             put_into_shoppingbag(req)
             return
             
-        if req.params.get("action")=="delmsg":
-            req.writeTALstr('<tal:block i18n:translate="popup_shoppingbag_object_delete"/>',{})
-            return
-            
-        elif req.params.get("action")=="items":
+        if req.params.get("action")=="items":
             for key in req.params.keys():
                 if key.startswith("del_"): # delete item from list
                     for item in req.session["shoppingbag"]:
@@ -194,14 +190,17 @@ def show_shoppingbag(req, msg=""):
             return ""
 
     access = AccessData(req)
-    for node in access.filter(tree.NodeList(req.session.get("shoppingbag",[]))):
-        if node.getCategoryName()=="image":
-            img = True
-        if node.getCategoryName()=="document":
-            doc = True
-        if node.getCategoryName() in ["audio", "video"]:
-            media = True
-        f.append(node)
+    try:
+        for node in access.filter(tree.NodeList(req.session.get("shoppingbag",[]))):
+            if node.getCategoryName()=="image":
+                img = True
+            if node.getCategoryName()=="document":
+                doc = True
+            if node.getCategoryName() in ["audio", "video"]:
+                media = True
+            f.append(node)
+    except:
+        pass
         
     if len(f)!=len(req.session.get("shoppingbag",[])) and msg=="":
         msg = "popup_shoppingbag_items_filtered"
@@ -331,6 +330,9 @@ def export_shoppingbag_zip(req):
                     print "file not found"
 
     # metadata
+    def flatten(arr):
+        return sum(map(lambda a: flatten(a) if isinstance(a,(list)) else [a],arr),[])
+    
     if req.params.get("metadata") in ["yes", "meta"]:
         for item in items:
             node = tree.getNode(item)
@@ -338,9 +340,16 @@ def export_shoppingbag_zip(req):
                 os.mkdir(dest)
             
             content = {"header":[], "content":[]}
-            for i in node.getFullView(lang(req)).getViewHTML([node], VIEW_DATA_ONLY):
-                content["header"].append(i[0])
-                content["content"].append(i[1])
+            c = flatten(node.getFullView(lang(req)).getViewHTML([node], VIEW_DATA_ONLY))
+            i=0
+            while i<len(c):
+                try:
+                    content["header"].append(c[i])
+                    content["content"].append(c[i+1])
+                except:
+                    pass
+                finally:
+                    i+=5
 
             f = open(dest+item+".txt", "w")
             f.write("\t".join(content["header"])+"\n")

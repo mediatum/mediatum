@@ -5,152 +5,252 @@
             <META http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
             <meta content="text/html;charset=UTF-8" http-equiv="content-type"/>
             <link rel="stylesheet" href="/css/shoppingbag.css"/>
-            <link rel="stylesheet" href="/css/mediatum.css"/>
-            <script type="text/javascript" language="javascript" src="/js/mediatum.js">
-            </script>
+            <script type="text/javascript" language="javascript" src="/js/mediatum.js"> </script>
+            <script type="text/javascript" language="javascript" src="/js/jquery.js"> </script>
             <script type="text/javascript" language="javascript">
                 function img_exportDiv(name){
-                    var obj = document.getElementById(name);
-                        if (obj.style.display=="none"){
-                            obj.style.display="block";
-                        }else{
-                            obj.style.display="none";
-                        }
-                 }
+                    $('#'+name).toggle();
+                }
                  
                 function data_change(field){
                     var value = field.value;
-                    for(var i=0;i < field.value.length; ++i){
+                    for(var i=0; i<field.value.length; ++i){
                         var new_key = value.charAt(i);
-                        if(((new_key < "0") || (new_key > "9")) && !(new_key == "")){
+                        if(((new_key<"0") || (new_key>"9")) && !(new_key=="")){
                             field.style.backgroundColor = "red";
                             return;
                         }
                     }
                     field.style.backgroundColor = "white";
-                 }
-            
+                }
+                 
+                function getSelected(dest_name){
+                    var ids = new Array();
+                    $('input[name^="select_"]:checked').each(function( index ) {
+                        ids.push($(this).attr('name').substring(7));
+                    });
+                    $("#"+dest_name).val(ids);
+                }
+                
+                function makeSelection(type){
+                    $('input[name^="select_"]').each(function( index ) {
+                        console.log( index + ": " + $(this).attr('name') );
+                        if (type==1){
+                            $(this).attr('checked', true);
+                        }else{
+                            $(this).attr('checked', false);
+                        }
+                    });
+                    return false;
+                }
+
+                function questionDel(){
+                    return confirm($("#delmsg").html());
+                }
             </script>
-            <title i18n:translate="header_shoopingbag_alt">TEXT</title>
+            <title i18n:translate="popup_shoppingbag_title">TEXT</title>
         </head>
-        <body style="margin:5px;">
+        <body>
+            <div style="display:none" id="delmsg" i18n:translate="popup_shoppingbag_object_delete">TEXT</div>
+        
+            <div tal:condition="python:msg!=''" tal:content="msg" i18n:translate="" class="message">TEXT</div>
             <div tal:condition="python:len(files)>0">
-                <style>
-                    .image_preview{
-                        border:1px solid silver;border:1px solid silver;background-color:white;
-                    }
-                </style>
-                <form tal:condition="python:image==True" metod="post">
-                    <tal:block i18n:translate="popup_shoppinbag_msg1"/><br/>
-                    <tal:block tal:repeat="file files">
-                        <div tal:condition="python: file.getContentType()=='image'" tal:define="width python:file.get('width');height python:file.get('height')" class="imagebox" style="position:relative;float:left;margin:5px;">
-                            <img tal:attributes="src python:'/images/'+str(file.id); style python:calc_dim(file)" class="image_preview"/>
-                            <br/>
-                            <small tal:content="python:width+'x'+height+'px'">TEXT</small>
-                            <input tal:attributes="name python:'select_'+file.id" type="checkbox" style="position:absolute;bottom:0px;right:15px"/>
-                            <input tal:attributes="name python:'del_'+file.id; title python:'Objekt aus Merkliste entfernen'" type="image" src="/img/delete.png" style="position:absolute;right:1px;bottom:1px"/>
-                        </div>
-                    </tal:block>
-                    <input type="hidden" name="action" value="items"/>
-                    <input type="hidden" name="type" value="image"/>
-                    <div style="clear:both;"> </div>
-                    <a href="javascript:img_exportDiv('exportoptionsimg')">Export...</a><br/>
-                    
-                    <div id="exportoptionsimg" style="border:1px solid silver;font-size:10px;padding:5px;display:none;">
-                        <div style="width:150px;float:left;position:relative">
-                            Metadaten:
-                            <p><input type="radio" name="metadata" value="no" checked="checked"/> Nur Bilder</p>
-                            <p><input type="radio" name="metadata" value="yes"/> Bilder und Metadaten</p>
-                            <p><input type="radio" name="metadata" value="meta"/> Nur Metadaten</p>
-                        </div>
-                        <div style="width:280px;float:left">
-                            Gr&ouml;&szlig;e:
-                            <p><input type="radio" name="format_type" value="perc" checked="checked"> <span>Bildgr&ouml;&szlig;e:</span>
-                                <select name="img_perc" style="font-size:10px">
-                                    <option value=""> </option>
-                                    <option tal:repeat="i python:img_perc_range" tal:content="python:str(i*10)+'%'" tal:attributes="value python:i*10; selected python:['None', 'selected'][i==10]">TEXT</option>
-                                </select>
-                                oder
-                                <input name="img_perc" style="width:40px;font-size:10px" onkeyup="data_change(this);"/> %
-                            </p>
-                            <p><input type="radio" name="format_type" value="pix"> <span>Max. Seitenl&auml;nge:</span>
-                                <select name="img_pix" style="font-size:10px">
-                                    <option value=""> </option>
-                                    <option tal:repeat="i img_perc_range" tal:content="python:str(i*100)+' px'" tal:attributes="value python:i*100">TEXT</option>
-                                </select>
-                                oder
-                                <input type="text" name="img_pix" style="width:40px;font-size:10px" onkeyup="data_change(this);"/>px
-                            </p>
-                            
-                            <p><input type="radio" name="format_type" value="std"> <span>Std. Gr&ouml;&szlig;e:</span>
-                                <select name="img_pix" style="font-size:10px">
-                                    <option value=""> </option>
-                                    <option tal:repeat="pix_size img_pix_sizes" tal:content="python:pix_size+' px'" tal:attributes="value pix_size">TEXT</option>
-                                </select>
-                            </p>
-                        </div>
-                        <div>
-                        Format:
-                        <br/><br/>
-                        <input type="image" title="Als Zip-Datei exportieren" name="do_export_zip" src="/img/zip.gif"/>
-                        <input type="image" title="Als Bibtex-Datei exportieren" name="do_export_bibtex" src="/img/bibtex.gif"/>
-                        </div>
-                        <div style="clear:both;"> </div>
-                    </div>
-                </form>
-
-                
-                <form tal:condition="python:document==True" method="post">
-                    <tal:block i18n:translate="popup_shoppingbag_msg2"/><br/>
-                    <tal:block tal:repeat="file files">
-                        <div tal:condition="python: file.getContentType() in ('document', 'dissertation')" style="float:left;margin:5px;border:1px solid silver;">
-                            <img tal:attributes="src python:'/thumbs/'+str(file.id); onClick python:'fullSizePopup('+str(file.id)+', 400, 400)'" height="90" width="90" border="0" style="cursor:pointer"/>
-                        </div>
-                    </tal:block>
-                    <input type="hidden" name="action" value="items"/>
-                    <input type="hidden" name="type" value="document"/>
-                    <div style="clear:both;"> </div>
-                    <a href="javascript:img_exportDiv('exportoptionsdoc')">Export...</a><br/>
-                    <div id="exportoptionsdoc" style="border:1px solid silver;font-size:10px;padding:5px;display:none;">
-                        <div style="width:150px;float:left;position:relative">
-                            Metadaten:
-                            <p><input type="radio" name="metadata" value="no" checked="checked"/> Nur Dokumente</p>
-                            <p><input type="radio" name="metadata" value="yes"/> Dokumente und Metadaten</p>
-                            <p><input type="radio" name="metadata" value="meta"/> Nur Metadaten</p>
-                        </div>
-                        <div style="width:280px;float:left;display:block;height:50px">
-                            ...
-                        </div>
-                        <div>
-                        Format:
-                        <br/><br/>
-                        <input type="image" title="Als Zip-Datei exportieren" name="do_export_zip" src="/img/zip.gif"/>
-                        <input type="image" title="Als Bibtex-Datei exportieren" name="do_export_bibtex" src="/img/bibtex.gif"/>
-                        </div>
-                        <div style="clear:both;"> </div>
-                    </div>
-                </form>
-                
+                <tal:block metal:use-macro="sectionimage"/>
+                <tal:block metal:use-macro="sectiondocument"/>
+                <tal:block metal:use-macro="sectionmedia"/>
                 <form method="post">
-                <div style="width:100%;text-align:center;padding-top:10px;">
-                    <input type="hidden" name="shoppingbag" value="clear"/>
-                    <button type="submit" name="clearall">
-                        <img src="/img/delete.png" border="0"/>
-                        <tal:block i18n:translate="popup_shoppingbag_delete"/>
-                    </button>
-                </div>
+                    <div id="bagopts">
+                        <p>
+                            <input type="hidden" name="shoppingbag" value="clear"/>
+                            <button type="button" onclick="javascript:makeSelection(1)">
+                                <img src="/img/haken_g.gif" border="0"/> <tal:block i18n:translate="popup_shoppingbag_markall"/>
+                            </button>
+                            <button type="button" onclick="javascript:makeSelection(0)">
+                                <img src="/img/haken_n.gif" border="0"/> <tal:block i18n:translate="popup_shoppingbag_unmarkall"/>
+                            </button>
+                            <button type="submit" name="clearall" id="clearall">
+                                <img src="/img/delete.png" border="0"/> <tal:block i18n:translate="popup_shoppingbag_delete"/>
+                            </button>
+                        </p>
+                    </div>
+                    <tal:block metal:use-macro="shoppinglist"/>
                 </form>
             </div>
 
-
-            <div tal:condition="python:len(files)==0" class="message" align="center">
+            <div tal:condition="python:len(files)==0" >
                 <p>&nbsp;</p>
                 <p>&nbsp;</p>
                 <p>&nbsp;</p>
-                <p i18n:translate="popup_shoppingbag_msg3">TEXT</p>
+                <p i18n:translate="popup_shoppingbag_no_items" class="message">TEXT</p>
                 <p>&nbsp;</p>
-                <p><a i18n:translate="close_window" href="#" onclick="self.close()">TEXT</a></p>
             </div>
+            <form tal:condition="python:len(files)==0" form method="post">
+                <tal:block metal:use-macro="shoppinglist"/>
+            </form>
         </body>
     </html>
 </metal:block>
+
+
+<form metal:define-macro="sectionimage" tal:condition="python:image==True" id="image-form" name="images">
+    <tal:block i18n:translate="popup_shoppingbag_img_title"/><br/>
+    <tal:block tal:repeat="file files">
+        <div tal:condition="python: file.getCategoryName()=='image'" tal:define="width python:file.get('width');height python:file.get('height')" class="imagebox">
+            <img tal:attributes="src python:'/images/'+str(file.id); style python:calc_dim(file)" class="image_preview"/>
+            <br/>
+            <small tal:condition="python:width+height!=''" tal:content="python:width+'x'+height+'px'">TEXT</small>
+            <small tal:condition="python:width+height==''">&nbsp;</small>
+            <input tal:attributes="name python:'select_'+file.id" type="checkbox" class="checkbox"/>
+            <input tal:attributes="name python:'del_'+file.id" i18n:attributes="title shoppingbag_clear_item" type="image" src="/img/delete.png" class="delbutton"/>
+        </div>
+    </tal:block>
+    <input type="hidden" name="action" value="items"/>
+    <input type="hidden" name="type" value="image"/>
+    <div style="clear:both;"> </div>
+    <a href="javascript:img_exportDiv('exportoptionsimg')" i18n:translate="popup_shoppingbag_export">TEXT</a><br/>
+    
+    <div id="exportoptionsimg" style="border:1px solid silver;font-size:10px;padding:5px;display:none;">
+        <div style="width:150px;float:left;position:relative">
+            <b i18n:translate="popup_shoppingbag_metadata">TEXT</b>
+            <p><input type="radio" name="metadata" value="no" checked="checked"/> <tal:block i18n:translate="popup_shoppingbag_imageonly"/></p>
+            <p><input type="radio" name="metadata" value="yes"/> <tal:block i18n:translate="popup_shoppingbag_imagemeta"/></p>
+            <p><input type="radio" name="metadata" value="meta"/> <tal:block i18n:translate="popup_shoppingbag_metaonly"/></p>
+        </div>
+        <div style="width:280px;float:left">
+            <b i18n:translate="popup_shoppingbag_size">TEXT</b>
+            <p><input type="radio" name="format_type" value="perc" checked="checked"> <span i18n:translate="popup_shoppingbag_imagesize"/>
+                <select name="img_perc" style="font-size:10px">
+                    <option value=""> </option>
+                    <option tal:repeat="i python:img_perc_range" tal:content="python:str(i*10)+'%'" tal:attributes="value python:i*10; selected python:['None', 'selected'][i==10]">TEXT</option>
+                </select>
+                <tal:block i18n:translate="popup_shoppingbag_or"/>
+                <input name="img_perc" style="width:40px;font-size:10px" onkeyup="data_change(this);"/> %
+            </p>
+            <p><input type="radio" name="format_type" value="pix"> <span i18n:translate="popup_shoppingbag_maximgsize"/>
+                <select name="img_pix" style="font-size:10px">
+                    <option value=""> </option>
+                    <option tal:repeat="i img_perc_range" tal:content="python:str(i*100)+' px'" tal:attributes="value python:i*100">TEXT</option>
+                </select>
+                <tal:block i18n:translate="popup_shoppingbag_or"/>
+                <input type="text" name="img_pix" style="width:40px;font-size:10px" onkeyup="data_change(this);"/> px
+            </p>
+            
+            <p><input type="radio" name="format_type" value="std"> <span i18n:translate="popup_shoppingbag_stdsize"/>
+                <select name="img_pix" style="font-size:10px">
+                    <option value=""> </option>
+                    <option tal:repeat="pix_size img_pix_sizes" tal:content="python:pix_size+' px'" tal:attributes="value pix_size">TEXT</option>
+                </select>
+            </p>
+        </div>
+        <div>
+            <b i18n:translate="popup_shoppingbag_format">TEXT</b>
+            <br/><br/>
+            <input type="image" i18n:attributes="title popup_shoppingbag_ziptitle" name="do_export_zip" src="/img/zip.gif"/>
+            <input type="image" i18n:attributes="title popup_shoppingbag_bibtex" name="do_export_bibtex" src="/img/bibtex.gif"/>
+        </div>
+        <div style="clear:both;"> </div>
+    </div>
+    <hr/>
+</form>
+
+<form metal:define-macro="sectiondocument" tal:condition="python:document==True" id="document-form">
+    <tal:block i18n:translate="popup_shoppingbag_doc_title"/><br/>
+    <tal:block tal:repeat="file files">
+        <div tal:condition="python: file.getCategoryName()=='document'" class="imagebox">
+            <img tal:attributes="src python:'/thumbs/'+str(file.id); onClick python:'fullSizePopup('+str(file.id)+', 400, 400)'" height="90" width="90" class="document_preview"/>
+            <br/>
+            <small tal:content="python:calc_size(file)">TEXT</small>
+            <input tal:attributes="name python:'select_'+file.id" type="checkbox" class="checkbox"/>
+            <input tal:attributes="name python:'del_'+file.id" i18n:attributes="title shoppingbag_clear_item" type="image" src="/img/delete.png" class="delbutton"/>
+        </div>
+    </tal:block>
+    <input type="hidden" name="action" value="items"/>
+    <input type="hidden" name="type" value="document"/>
+    <div style="clear:both;"> </div>
+    <a href="javascript:img_exportDiv('exportoptionsdoc')" i18n:translate="popup_shoppingbag_export">TEXT</a><br/>
+    <div id="exportoptionsdoc" style="border:1px solid silver;font-size:10px;padding:5px;display:none;">
+        <div style="width:150px;float:left;position:relative">
+            <b i18n:translate="popup_shoppingbag_metadata">TEXT</b>
+            <p><input type="radio" name="metadata" value="no" checked="checked"/> <tal:block i18n:translate="popup_shoppingbag_doconly"/></p>
+            <p><input type="radio" name="metadata" value="yes"/> <tal:block i18n:translate="popup_shoppingbag_docmeta"/></p>
+            <p><input type="radio" name="metadata" value="meta"/> <tal:block i18n:translate="popup_shoppingbag_metaonly"/></p>
+        </div>
+        <div style="width:280px;float:left;display:block;height:50px">
+            &nbsp;
+        </div>
+        <div>
+        <b i18n:translate="popup_shoppingbag_format">TEXT</b>
+        <br/><br/>
+        <input type="image" i18n:attributes="title popup_shoppingbag_ziptitle" name="do_export_zip" src="/img/zip.gif"/>
+        <input type="image" i18n:attributes="title popup_shoppingbag_bibtex" name="do_export_bibtex" src="/img/bibtex.gif"/>
+        </div>
+        <div style="clear:both;"> </div>
+    </div>
+    <hr/>
+</form>
+
+<form metal:define-macro="sectionmedia" tal:condition="python:media==True" id="media-form">
+    <tal:block i18n:translate="popup_shoppingbag_media_title"/><br/>
+    <tal:block tal:repeat="file files">
+        <div tal:condition="python: file.getCategoryName() in ['audio','video']" class="imagebox">
+            <img tal:attributes="src python:'/thumbs/'+str(file.id); onClick python:'fullSizePopup('+str(file.id)+', 400, 400)'" height="90" width="90" class="document_preview"/>
+            <br/>
+            <small tal:content="python:calc_length(file)">TEXT</small>
+            <input tal:attributes="name python:'select_'+file.id" type="checkbox" class="checkbox"/>
+            <input tal:attributes="name python:'del_'+file.id" i18n:attributes="title shoppingbag_clear_item" type="image" src="/img/delete.png" class="delbutton"/>
+        </div>
+    </tal:block>
+    <input type="hidden" name="action" value="items"/>
+    <input type="hidden" name="type" value="media"/>
+    <div style="clear:both;"> </div>
+    <a href="javascript:img_exportDiv('exportoptionsmedia')" i18n:translate="popup_shoppingbag_export">TEXT</a><br/>
+    <div id="exportoptionsmedia" style="border:1px solid silver;font-size:10px;padding:5px;display:none;">
+        <div style="width:150px;float:left;position:relative">
+            <b i18n:translate="popup_shoppingbag_metadata">TEXT</b>
+            <p><input type="radio" name="metadata" value="no" checked="checked"/> <tal:block i18n:translate="popup_shoppingbag_mediaonly"/></p>
+            <p><input type="radio" name="metadata" value="yes"/> <tal:block i18n:translate="popup_shoppingbag_mediameta"/></p>
+            <p><input type="radio" name="metadata" value="meta"/> <tal:block i18n:translate="popup_shoppingbag_metaonly"/></p>
+        </div>
+        <div style="width:280px;float:left;display:block;height:50px">
+            &nbsp;
+        </div>
+        <div>
+        <b i18n:translate="popup_shoppingbag_format">TEXT</b>
+        <br/><br/>
+        <input type="image" i18n:attributes="title popup_shoppingbag_ziptitle" name="do_export_zip" src="/img/zip.gif"/>
+        <input type="image" i18n:attributes="title popup_shoppingbag_bibtex" name="do_export_bibtex" src="/img/bibtex.gif"/>        </div>
+        <div style="clear:both;"> </div>
+    </div>
+</form>
+
+<div metal:define-macro="shoppinglist" tal:condition="python:user.getOptionList()['user_option_2']" id="bagcontainer">
+    <div id="ownbags">
+        <b i18n:translate="popup_shoppingbag_ownbags">TEXT</b> (<small><img src="/img/greynotpublic.gif"/> <tal:block i18n:translate="popup_shoppingbag_privateinfo"/></small>)
+        <p tal:repeat="shoppingbag shoppingbags" class="bags">
+            <tal:block tal:condition="python:shoppingbag.isShared()"><img src="/img/16x16.gif" class="blank"/></tal:block>
+            <tal:block tal:condition="python:not shoppingbag.isShared()"><img i18n:attributes="title popup_shoppingbag_private" src="/img/greynotpublic.gif"/></tal:block>
+            <tal:block tal:content="python:shoppingbag.getName()"/>
+            <small tal:condition="python:shoppingbag.isShared()" tal:content="python:'('+shoppingbag.getSharedKey()+')'" style="color:#000000"/>
+            <button tal:attributes="name python:'share_'+shoppingbag.id" i18n:attributes="title popup_shoppingbag_share_bag"><img src="/img/greyshare.gif"/></button>
+            <button tal:attributes="name python:'delete_'+shoppingbag.id" i18n:attributes="title popup_shoppingbag_delete_bag" onclick="return questionDel();"><img src="/img/greydelete.gif"/></button>
+            <button tal:attributes="name python:'load_'+shoppingbag.id" i18n:attributes="title popup_shoppingbag_load_bag"><img src="/img/greyarrow.gif"/></button>
+        </p>
+    </div>
+    
+    <div id="bagoperation">
+        <tal:block tal:condition="python:len(files)>0">
+        <b i18n:translate="popup_shoppingbag_savebag">TEXT</b>
+        <p><tal:block i18n:translate="popup_shoppingbag_name"/> <input type="text" name="bagname" value=""/>
+            <button onclick="getSelected('bagitems')" name="operation" value="save_bag" i18n:translate="popup_shoppingbag_save">TEXT</button>
+            <input type="hidden" name="bagitems" id="bagitems"/>
+        </p>
+        <hr/>
+        </tal:block>
+        <b i18n:translate="popup_shoppingbag_loadbag">TEXT</b>
+        <p><tal:block i18n:translate="popup_shoppingbag_key"/> <input type="text" name="bagkey" value=""/>
+            <button name="operation" value="load_bag" i18n:translate="popup_shoppingbag_load">TEXT</button>
+        </p>
+    </div>   
+    <div style="clear:left"> </div>
+    <input type="hidden" name="action" value="bags"/>
+</div>

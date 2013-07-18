@@ -331,7 +331,7 @@ def export_shoppingbag_zip(req):
 
     # metadata
     def flatten(arr):
-        return sum(map(lambda a: flatten(a) if isinstance(a,(list)) else [a],arr),[])
+        return sum(map(lambda a: flatten(a) if (a and isinstance(a[0], list) and a!="") else [a], [a for a in arr if a not in['', []]]),[])
     
     if req.params.get("metadata") in ["yes", "meta"]:
         for item in items:
@@ -340,16 +340,9 @@ def export_shoppingbag_zip(req):
                 os.mkdir(dest)
             
             content = {"header":[], "content":[]}
-            c = flatten(node.getFullView(lang(req)).getViewHTML([node], VIEW_DATA_ONLY))
-            i=0
-            while i<len(c):
-                try:
-                    content["header"].append(c[i])
-                    content["content"].append(c[i+1])
-                except:
-                    pass
-                finally:
-                    i+=5
+            for c in flatten(node.getFullView(lang(req)).getViewHTML([node], VIEW_DATA_ONLY)):
+                content["header"].append(c[0])
+                content["content"].append(c[1])
 
             f = open(dest+item+".txt", "w")
             f.write("\t".join(content["header"])+"\n")

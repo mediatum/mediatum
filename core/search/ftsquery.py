@@ -43,6 +43,7 @@ DB_NAME_FULL = 'searchindex_full.db' # database for simple search
 DB_NAME_EXT = 'searchindex_ext.db' # database for extended search
 DB_NAME_TEXT = 'searchindex_text.db' # database for fulltext search
 MAX_SEARCH_FIELDS = 32
+SYSTEMATTRS = ['updateuser', 'updatetime', 'edit.lastmask', 'creationtime', 'creator']
 
 """
     0: index fulltext without changes
@@ -69,7 +70,6 @@ class FtsSearcher:
         self.normalization_items = None
 
     def run_search(self, field, op, value):
-        
         def getSQL(type, value, spc ={}): # deliver sql for given type
             value = normalize_utf8(protect(u(value)))
             
@@ -93,6 +93,13 @@ class FtsSearcher:
                 return 'select distinct(id) from searchmeta where field'+str(spc['pos'][0])+'=""'
             elif type=="spmatch":
                 return 'select distinct(id) from searchmeta where field'+str(spc['pos'][0])+' match \''+value+'\' and type <> \'directory\''
+                
+            elif type=="content_full":
+                return 'select id, type, schema, value from fullsearchmeta where id=\''+value+'\''
+            elif type=="content_ext":
+                return 'select * from searchmeta where id=\''+value+'\''
+            elif type=="content_text":
+                return 'select * from textsearchmeta where id=\''+value+'\''
             
         ret = []
         if value=="" or field=="" or op=="":
@@ -117,6 +124,16 @@ class FtsSearcher:
 
         elif field=="updatetime":
             return [str(s[0]) for s in self.execute(getSQL("updatetime", value, spc={'op':op}), 'ext')]
+        
+        elif field=="searchcontent":
+            ret = [[],[],[]]
+            for item in self.execute(getSQL("content_full", value), 'full'): # value = id
+                ret[0]+=[[i for i in item if i]]
+            for item in self.execute(getSQL("content_ext", value), 'ext'): # value = id
+                ret[1]+=[[i for i in item if i]]
+            for item in self.execute(getSQL("content_text", value), 'text'): # value = id
+                ret[2]+=[[i for i in item if i]]
+            return ret
 
         else: # special search
             for pos in self.execute(getSQL("field", field), self.connames[DBTYPE]['ext']):
@@ -214,20 +231,13 @@ class FtsSearcher:
             return self.db[self.connames[DBTYPE][type]].execute(sql)
         except:
             print "error in search indexer operation"
-            #self.initIndexer('init')
-            #return self.db[self.connames[DBTYPE][type]].execute(sql)
-            
+
+    
     def getNodeInformation(self):
         ret = {}
-        res = self.execute('SELECT distinct(id) FROM fullsearchmeta ORDER BY id', 'full')
-        ret['full'] = [s[0] for s in res]
-
-        res = self.execute('SELECT distinct(id) FROM searchmeta ORDER BY id', 'ext')
-        ret['ext'] = [s[0] for s in res]
-
-        res = self.execute('SELECT distinct(id) FROM textsearchmeta ORDER BY id', 'text')
-        ret['text'] = [s[0] for s in res]
-
+        ret['full'] = [s[0] for s in self.execute('SELECT distinct(id) FROM fullsearchmeta ORDER BY id', 'full')]
+        ret['ext'] = [s[0] for s in self.execute('SELECT distinct(id) FROM searchmeta ORDER BY id', 'ext')]
+        ret['text'] = [s[0] for s in self.execute('SELECT distinct(id) FROM textsearchmeta ORDER BY id', 'text')]
         return ret
 
        
@@ -239,7 +249,8 @@ class FtsSearcher:
         # attributes
         val = ''
         for key,value in node.items():
-            val += protect(u(value))+'| '
+            if key not in SYSTEMATTRS: # ignore system attributes
+                val += protect(u(value))+'| '
         for v in val.split(" "):
             v = u(v)
             if normalize_utf8(v)!=v.lower():
@@ -398,7 +409,7 @@ class FtsSearcher:
             err['ext'].append(node.id)
         if not self.nodeToFulltextSearch(node):
             err['text'].append(node.id)
-                      
+        
         node.set("updatesearchindex", str(format_date()))
         return err
 
@@ -475,7 +486,6 @@ class FtsSearcher:
     def getSearchSize(self):
         import os
         return os.stat(config.settings["paths.searchstore"]+"searchindex.db")[6]
-
      
     
 ftsSearcher = FtsSearcher()

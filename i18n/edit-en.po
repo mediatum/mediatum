@@ -86,7 +86,7 @@ msgid "edit_action_file_upload"
 msgstr "Create / Upload"
 
 msgid "edit_action_file_import"
-msgstr "Import bibtex"
+msgstr "Import (BibTeX / DOI)"
 
 msgid "edit_action_file_move"
 msgstr "Move to..."

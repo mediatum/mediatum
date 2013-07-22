@@ -1,6 +1,17 @@
 msgid "edit_import_header"
-msgstr "Import bibtex data"
+msgstr "Import from BibTeX or by DOI"
 
-msgid "edit_import"
-msgstr "In order to upload bibtex publications, please select a file on your computer and click 'upload'."
+msgid "edit_import_bibtex"
+msgstr "In order to upload bibtex publications, please select a file on your computer and click 'Create / Upload'."
 
+msgid "edit_import_doi"
+msgstr "To import metadata for a publication with a Digital Object Identifier, please enter the DOI below and click 'Create / Upload'."
+
+msgid "edit_import_nothing"
+msgstr "No file was specified and no DOI was given."
+
+msgid "doi_unknown"
+msgstr "The specified DOI doesn't exist"
+
+msgid "doi_and_bibtex_given"
+msgstr "Both file and DOI given, please specify only one."

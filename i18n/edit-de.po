@@ -90,7 +90,7 @@ msgid "edit_action_file_upload"
 msgstr "Eingeben / Hochladen"
 
 msgid "edit_action_file_import"
-msgstr "BibTex Importieren"
+msgstr "Importieren (BibTeX / DOI)"
 
 msgid "edit_action_file_move"
 msgstr "Verschieben nach..."

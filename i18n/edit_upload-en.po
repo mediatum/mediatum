@@ -37,6 +37,9 @@ msgstr "Metadata scheme:"
 msgid "edit_upload_file"
 msgstr "File"
 
+msgid "edit_upload_bibtex"
+msgstr "BibTeX file"
+
 msgid "edit_upload_upload_label"
 msgstr "Create / Upload"
 

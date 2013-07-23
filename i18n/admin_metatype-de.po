@@ -1,4 +1,3 @@
-
 msgid "admin_meta_existing"
 msgstr "Vorhandene Metadatenschemata"
 
@@ -166,3 +165,5 @@ msgstr "BibTeX-Import-Mapping"
 msgid "admin_meta_bibtex_warning"
 msgstr "(Nur für Veröffentlichungen!)"
 
+msgid "admin_meta_citeproc"
+msgstr "citeproc / CSL mapping"

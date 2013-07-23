@@ -133,12 +133,14 @@ msgstr "Reindex"
 msgid "admin_metatype_index_ok"
 msgstr "Search index for current schema is active."
 
+### metatype info popup ###
 msgid "admin_infopopup_title"
 msgstr "Info"
 
 msgid "admin_infopopup_header"
 msgstr "Available types"
 
+### metatype definition overview popup ###
 msgid "admin_defpopup_title"
 msgstr "Metadata scheme info"
 

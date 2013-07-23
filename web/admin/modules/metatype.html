@@ -219,6 +219,19 @@
                     </select>
                 </td>
             </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_meta_citeproc">TEXT</tal:block>: <br>
+                </td>
+                <td>
+                    <select name="mciteproc" multiple="multiple" style="width:300px" size="5">
+                        <option tal:repeat="citeproctype citeproctypes" 
+                            tal:attributes="value python:citeproctype; selected python:{'False':None,'True':'selected'}[str(citeproctype in citeprocselected)]" 
+                            tal:content="python:citeproctype" 
+                            i18n:translate=""
+                        />
+                    </select>
+                </td>
+            </tr>
 
             <tr>
                 <td><tal:block i18n:translate="admin_meta_rights">TEXT</tal:block>:</td>

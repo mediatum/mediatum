@@ -35,6 +35,7 @@ from schema.schema import loadTypesFromDB, getMetaFieldTypeNames, getMetaType, u
 from schema.schema import VIEW_DEFAULT, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_ONLY, VIEW_DATA_EXPORT
 from schema.mapping import getMappings
 from schema.bibtex import getAllBibTeXTypes
+from schema import citeproc
 
 from utils.fileutils import importFileToRealname
 # metafield methods
@@ -185,6 +186,7 @@ def validate(req, op):
                            longname=req.params.get("mlongname",""), active=_active, 
                            datatypes=req.params.get("mdatatypes","").replace(";", ", "), 
                            bibtexmapping=req.params.get("mbibtex",""), 
+                           citeprocmapping=req.params.get("mciteproc",""), 
                            orig_name=req.params.get("mname_orig",""))
             mtype = getMetaType(req.params.get("mname"))
             if mtype:
@@ -432,6 +434,7 @@ def MetatypeDetail(req, id, err=0):
         metadatatype.setActive("mactive" in req.params)
         metadatatype.setDatatypeString(req.params.get("mdatatypes","").replace(";",", "))
         metadatatype.set("bibtexmapping", req.params.get("mbibtex",""))
+        metadatatype.set("citeprocmapping", req.params.get("mciteproc",""))
 
         v["original_name"] = req.params["mname_orig"]
 
@@ -441,6 +444,8 @@ def MetatypeDetail(req, id, err=0):
     v["error"] = err
     v["bibtextypes"] = getAllBibTeXTypes()
     v["bibtexselected"] = metadatatype.get("bibtexmapping").split(";")
+    v["citeproctypes"] = citeproc.TYPES
+    v["citeprocselected"] = metadatatype.get("citeprocmapping").split(";")
     
     rule = metadatatype.getAccess("read")
     if rule:

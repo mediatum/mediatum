@@ -163,3 +163,6 @@ msgstr "bibTeX import mapping"
 msgid "admin_meta_bibtex_warning"
 msgstr "(only use this for publications!)"
 
+msgid "admin_meta_citeproc"
+msgstr "citeproc / CSL mapping"
+

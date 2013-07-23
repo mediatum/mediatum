@@ -334,6 +334,10 @@ def bibtex():
     import schema.bibtex as bibtex
     bibtex.checkMappings()
     
+def citeproc():
+    import schema.citeproc as citeproc
+    citeproc.check_mappings()
+    
 def quit():
     sys.exit(1)
     
@@ -411,6 +415,7 @@ commands = {
  "acl": Command(get_acl, ["type"]),
  "rm": Command(remove_node, ["name"]),
  "bibtex": Command(bibtex, []),
+ "citeproc": Command(citeproc, []),
  "search": Command(search, ["query"]),
  "searchids": Command(searchids, ["query"]),
  "searchsort": Command(searchsort, ["query","sortfield"]),

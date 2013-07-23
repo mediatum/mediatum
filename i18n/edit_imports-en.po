@@ -11,7 +11,10 @@ msgid "edit_import_nothing"
 msgstr "No file was specified and no DOI was given."
 
 msgid "doi_unknown"
-msgstr "The specified DOI doesn't exist"
+msgstr "The specified DOI doesn't exist."
+
+msgid "doi_type_not_mapped"
+msgstr "No mapping defined for type of given DOI."
 
 msgid "doi_and_bibtex_given"
 msgstr "Both file and DOI given, please specify only one."

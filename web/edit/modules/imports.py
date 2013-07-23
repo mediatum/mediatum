@@ -23,6 +23,7 @@ import core.users as users
 import core.tree as tree
 import schema.bibtex as bibtex
 import schema.citeproc as citeproc
+import schema.importbase as importbase
 
 from utils.log import logException
 from web.edit.edit_common import showdir
@@ -77,6 +78,10 @@ def import_new(req):
             logg.error("DOI not found: '%s'", doi)
             req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"doi_unknown"})
             req.params["error"] = "doi_unknown"
+        except importbase.NoMappingFound as e:
+            logg.error("no mapping found for DOI: '%s', type '%s'", doi, e.typ)
+            req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"doi_type_not_mapped"})
+            req.params["error"] = "doi_type_not_mapped"
         else:
             req.request["Location"] = req.makeLink("content", {"id":importdir.id})
     else:

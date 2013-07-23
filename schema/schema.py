@@ -102,7 +102,7 @@ def existMetaType(name):
 #
 # update/create metatype by given object
 #
-def updateMetaType(name, description="", longname="", active=0, datatypes="", bibtexmapping="", orig_name=""):
+def updateMetaType(name, description="", longname="", active=0, datatypes="", bibtexmapping="", orig_name="", citeprocmapping=""):
     metadatatypes = tree.getRoot("metadatatypes")
     try:
         metadatatype = metadatatypes.getChild(orig_name)
@@ -116,6 +116,7 @@ def updateMetaType(name, description="", longname="", active=0, datatypes="", bi
     metadatatype.set("active", str(active))
     metadatatype.set("datatypes", datatypes)
     metadatatype.set("bibtexmapping", bibtexmapping)
+    metadatatype.set("citeprocmapping", citeprocmapping)
         
 
 #

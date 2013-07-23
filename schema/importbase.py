@@ -19,9 +19,20 @@
 """
 
 import logging
-import schema
+from . import schema
 
 logg = logging.getLogger("backend")
+
+class ImportException(Exception):
+    pass
+
+
+class NoMappingFound(ImportException):
+    def __init__(self, msg="Error", typ=""):
+        if typ:
+            msg = "{} for type '{}'".format(msg, typ)
+        ImportException.__init__(self, msg)
+        self.typ = typ
 
 
 def get_all_import_mappings(mapping_type):

@@ -196,6 +196,12 @@ def import_doi(doi, target=None):
             continue
 
         value = get_converted_from_csl_record(csl_name)
+        
+        # fixes for special fields
+        mfield_type = mfield.get("type")
+        if  mfield_type == "url":
+            value += ";Link"
+        
         if value is not None:
             node.set(med_name, value)
 

@@ -13,6 +13,9 @@ msgstr "Es wurden weder Datei noch DOI angegeben."
 msgid "doi_unknown"
 msgstr "Der angegebene DOI existiert nicht."
 
+msgid "doi_invalid"
+msgstr "Dies sieht nicht wie eine gültige DOI aus! (muss eine Zeichenkette enthalten, die mit 10. beginnt)"
+
 msgid "doi_type_not_mapped"
 msgstr "Für den Typ der angegebenen DOI ist kein Mapping definiert."
 

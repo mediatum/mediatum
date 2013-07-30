@@ -73,7 +73,12 @@ def import_new(req):
         doi = req.params["doi"]
         logg.info("processing DOI import for: %s", doi)
         try:
-            citeproc.import_doi(doi, importdir)
+            doi_extracted = citeproc.extract_and_check_doi(doi)
+            citeproc.import_doi(doi_extracted, importdir)
+        except citeproc.InvalidDOI:
+            logg.error("Invalid DOI: '%s'", doi)
+            req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"doi_invalid"})
+            req.params["error"] = "doi_invalid"
         except citeproc.DOINotFound:
             logg.error("DOI not found: '%s'", doi)
             req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"doi_unknown"})

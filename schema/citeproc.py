@@ -22,11 +22,12 @@ import citeproc metadata in CSL, JSON variant as served by dx.doi.org.
 """
 
 from collections import defaultdict
+import datetime
 import json
 import logging
+import re
 from pprint import pprint
 import requests
-import datetime
 
 from core import tree
 from schema import getMetaType
@@ -103,6 +104,10 @@ class DOINotFound(Exception):
     pass
 
 
+class InvalidDOI(Exception):
+    pass
+
+
 def check_mappings():
     s = importbase.get_all_import_mappings("citeproc")
     for typ in TYPES:
@@ -149,6 +154,21 @@ def get_citeproc_json(doi):
     except ValueError:
         raise DOINotFound()
     return record
+
+
+DOI_RE = re.compile("(10[.].+/.+)", re.U)
+
+def extract_and_check_doi(doi_or_uri):
+    """Extract DOI if URL like http://dx.doi.org/10.01/test is given"""
+    # simple case: starts with 10., treat it as doi
+    if doi_or_uri.startswith("10.") and "/" in doi_or_uri:
+        return doi_or_uri
+    # try a regular expression match for other cases, like http
+    match = DOI_RE.search(doi_or_uri)
+    if match:
+        return match.group(1)
+    else:
+        raise InvalidDOI
 
 
 def import_doi(doi, target=None):

@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 import os
 import sys
 import core.config as config
@@ -100,7 +101,8 @@ class ContentStyle:
     def renderTemplate(self, req, params={}):
         try:
             return req.getTAL(self.getTemplate(), params)
-        except:
+        except Exception as e:
+            logg.error("error in template", exc_info=1)
             return "error in template"
          
 

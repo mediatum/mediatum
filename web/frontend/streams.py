@@ -164,10 +164,7 @@ def send_doc(req):
     for f in n.getFiles():
         if f.getType() in ["doc", "document"]:
             incUsage(n)
-            if(f.getSize()>16*1048576):
-                return req.sendFile(f.retrieveFile(), "application/x-download")
-            else:
-                return req.sendFile(f.retrieveFile(), f.getMimeType())
+            return req.sendFile(f.retrieveFile(), f.getMimeType())
     return 404
 
 def send_file(req, download=0):
@@ -190,7 +187,7 @@ def send_file(req, download=0):
         zipfilepath, files_written = build_transferzip(n)
         if files_written == 0:
             return 404
-        send_result = req.sendFile(zipfilepath, "application/x-download")
+        send_result = req.sendFile(zipfilepath, "application/zip")
         if os.sep=='/': # Unix?
             os.unlink(zipfilepath) # unlinking files while still reading them only works on Unix/Linux
         return send_result
@@ -213,25 +210,15 @@ def send_file(req, download=0):
 
     if not file and n.get("archive_type")!="":
         am = archivemanager.getManager(n.get("archive_type"))
-        req.reply_headers["Content-Disposition"] = "attachment; filename="+filename
+        req.reply_headers["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
         return req.sendFile(am.getArchivedFileStream(n.get("archive_path")), "application/x-download")
     
     if not file:
         return 404
 
-    req.reply_headers["Content-Disposition"] = "attachment; filename="+filename
-    return req.sendFile(file.retrieveFile(), "application/x-download")
+    req.reply_headers["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
+    return req.sendFile(file.retrieveFile(), f.getMimeType())
     
-    #video = file.getType()=="video"
-    #
-    #if((download or file.getSize()>16*1048576) and not video):
-    #    req.reply_headers["Content-Disposition"] = "attachment; filename="+filename
-    #    return req.sendFile(file.retrieveFile(), "application/x-download")
-    #else:
-    #    req.reply_headers["Content-Disposition"] = "attachment; filename="+filename
-    #    return req.sendFile(file.retrieveFile(), "application/x-download")
-    #    return req.sendFile(file.retrieveFile(), file.getMimeType())
-
 def send_file_as_download(req):
     return send_file(req, download=1)
 
@@ -274,7 +261,7 @@ def sendZipFile(req, path):
     r("/")
     zip.close()
     req.reply_headers['Content-Disposition'] = "attachment; filename=shoppingbag.zip"
-    req.sendFile(tempfile, "application/x-download")
+    req.sendFile(tempfile, "application/zip")
     if os.sep=='/': # Unix?
         os.unlink(tempfile) # unlinking files while still reading them only works on Unix/Linux
 
@@ -298,8 +285,7 @@ def send_attfile(req):
     path = join_paths(config.get("paths.datadir"), filename)
     mime, type = getMimeType(filename)
     if(get_filesize(filename) > 16*1048576):
-        req.reply_headers["Content-Disposition"] = "attachment; filename="+filename
-        mime = "application/x-download"
+        req.reply_headers["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
 
     return req.sendFile(path, mime)
 

@@ -12,13 +12,13 @@
         </tal:block>
         <br/> <span i18n:translate="url_edit_linktext">TEXT</span>
         <tal:block tal:condition="python:fielddef[1]==''">
-            <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-116)+'px'; name name; id name; value python:str(value[1])"/>
+            <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-116)+'px'; name python:name+'_text'; id python: name+'_text'; value python:str(value[1])"/>
             <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
                 <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/><small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
             </span>
         </tal:block>
         <tal:block tal:condition="python:fielddef[1]!=''">
-            <i>[<span tal:replace="python:str(fielddef[1])"/>]</i><input type="hidden" tal:attributes="name name; id name" value=""/>
+            <i>[<span tal:replace="python:str(fielddef[1])"/>]</i><input type="hidden" tal:attributes="name python: name+'_text'; id python: name+'_text'" value=""/>
         </tal:block>
 
 </tal:block>

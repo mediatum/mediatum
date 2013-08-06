@@ -26,6 +26,8 @@ import hashlib
 import re
 import random
 import StringIO
+from urlparse import parse_qsl, urlsplit, urlunsplit
+from urllib import quote, urlencode
 
 import xml.parsers.expat 
 from HTMLParser import HTMLParser
@@ -873,6 +875,16 @@ def checkXMLString(s):
     except xml.parsers.expat.ExpatError as err:
         return 0
         
+        
+def quote_uri(uri):
+    """Quote path parts and query parameters of a URI and return the resulting URI.
+    """
+    parsed_uri = urlsplit(uri)
+    path = "/".join(quote(s) for s in parsed_uri.path.split("/"))
+    query = urlencode(parse_qsl(parsed_uri.query))
+    quoted_uri = urlunsplit((parsed_uri.scheme, parsed_uri.netloc, path, query, parsed_uri.fragment))
+    return quoted_uri
+
         
 if __name__ == "__main__":
     def tt(s):

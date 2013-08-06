@@ -35,7 +35,8 @@ class m_treeselect(Metatype):
             value = esc(value)
         return (field.getLabel(), value)
 
-    def getFormatedValueForDB(self, field, value):
+    def format_request_value_for_db(self, field, params, item, language=None):
+        value = params.get(item)
         try:
             return value.replace("; ",";")
         except:

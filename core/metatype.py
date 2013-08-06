@@ -49,8 +49,14 @@ class Metatype:
     def getFormatedValue(self, field, node, language=None):
         None
 
-    def getFormatedValueForDB(self, field, value, language=None):
-        return value
+    def format_request_value_for_db(self, field, params, item, language=None):
+        """Prepare value for the database from update request params.
+        :param field: associated field
+        :param params: dict which contains POST form values
+        :param item: field name prepended with language specifier. Is the same as field name for non-multilingual fields.
+        """
+        # just fetch the unmodified alue from the params dict
+        return params.get(item)
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         return ""

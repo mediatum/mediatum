@@ -114,7 +114,8 @@ class m_mlist(Metatype):
             value = esc(value)
         return (field.getLabel(), value)
 
-    def getFormatedValueForDB(self, field, value):
+    def format_request_value_for_db(self, field, params, item, language=None):
+        value = params.get(item)
         return value.replace("; ",";")
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):

@@ -20,6 +20,7 @@
 import core.athana as athana
 import core.tree as tree
 import os
+import logging
 import re
 import sys
 
@@ -36,9 +37,13 @@ from utils.utils import *
 from core.acl import AccessData
 from core.metatype import Context
 from core.translation import lang
+from core.tree import db
 from web.frontend.frame import getNavigationFrame
 from web.frontend.content import getContentArea, ContentNode
 from schema.schema import getMetadataType, getMetaType
+
+
+logg = logging.getLogger("frontend")
 
 
 def handle_json_request(req):
@@ -57,8 +62,39 @@ def handle_json_request(req):
     req.write(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
     return
 
-def display(req):
 
+DISPLAY_PATH = re.compile("/(.*)$")
+known_node_aliases = {
+}
+
+def display_alias(req):
+    match = DISPLAY_PATH.match(req.path)
+    if match:
+        alias = match.group(1)
+        node_id = known_node_aliases.get(alias)
+        if node_id is not None:
+            logg.debug("known node alias in cache '%s' -> '%s'", alias, node_id)
+            req.params["id"] = node_id
+            display(req)
+#             Alternative: do redirect
+#             req.request["Location"] = "/node?id=" + node_id
+#             return athana.HTTP_MOVED_TEMPORARILY
+        else:
+            res = db.execute("SELECT nid FROM nodeattribute WHERE name='system.aliascol' AND value='{}'".format(alias))
+            if res:
+                node_id = str(res[0][0])
+                known_node_aliases[alias] = node_id
+                req.params["id"] = node_id
+                logg.debug("node alias from DB '%s' -> '%s'", alias, node_id)
+            else:
+                logg.debug("node alias not found: '%s'", alias)
+#             Alternative: rude 404
+#             else:
+#                 return athana.HTTP_NOT_FOUND
+            display(req)
+    
+
+def display(req):
     if "jsonrequest" in req.params:
         handle_json_request(req)
         return

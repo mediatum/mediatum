@@ -129,7 +129,7 @@ def initContexts():
     #file = context.addFile("web/publish/main.py")
     #file.addHandler("publish").addPattern("/publish/.*")
     
-    file = context.addFile("web/frontend/main.py")
+    main_file = file = context.addFile("web/frontend/main.py")
     handler = file.addHandler("display")
     handler.addPattern("/")
     handler.addPattern("/node")
@@ -203,6 +203,12 @@ def initContexts():
     athana.addFileStore("/xml/", "web/xml/")
     athana.addFileStore("/img/", ["web/img/", "web/admin/img/", "web/edit/img/"])
     athana.addFileStore("/js/", ["web/js/", "js", "lib/CKeditor/js/"]) 
+    
+    
+    # === last: path aliasing for collections ===
+    handler = main_file.addHandler("display_alias")
+    handler.addPattern("/.*")
+    
 
     # === theme handling ===
     loadThemes()

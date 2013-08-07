@@ -189,7 +189,7 @@ def writenode(req, node, unfoldedids, f, indent, key, access, ret=""):
 
     num = 0
     objnum = 0
-    children = node.getChildren().sort()
+    children = node.getChildren().sort_by_orderpos()
     
     num = len(node.getContainerChildren())
     objnum = len(node.getContentChildren())
@@ -247,7 +247,7 @@ def writetree(req, node, f, key="", openednodes=None, sessionkey="unfoldedids", 
         pass
    
     if omitroot:
-        for c in node.getChildren().sort("name"):
+        for c in node.getChildren().sort_by_name():
             ret += writenode(req, c, unfoldedids, f, 0, key, access)
     else:
         ret += writenode(req, node, unfoldedids, f, 0, key, access)

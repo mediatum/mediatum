@@ -146,7 +146,7 @@ def hasTableAccess(user, node):
 def loadUsersFromDB():
     """ load all users from db """
     users = tree.getRoot("users")
-    return users.getChildren().sort(field="name")
+    return users.getChildren().sort_by_name()
 
 
 def getDynamicUserAuthenticators():
@@ -468,7 +468,7 @@ def getHomeDir(user):
 
     # re-sort home dirs alphabetically
     i = 0
-    for child in tree.getRoot("home").getChildren().sort("name"):
+    for child in tree.getRoot("home").getChildren().sort_by_name():
         child.setOrderPos(i)
         i += 1
     return userdir

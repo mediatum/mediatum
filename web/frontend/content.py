@@ -80,7 +80,7 @@ class ContentList(Content):
         self.id2pos = {}
         self.sortfields = [self.collection.get("sortfield")]*SORT_FIELDS
         if self.sortfields[0]:
-            self.files.sort(self.sortfields)
+            self.files.sort_by_fields(self.sortfields)
         ls = self.collection.get("style")
         if ls:
             ls = ls.split(";")[0]
@@ -140,7 +140,7 @@ class ContentList(Content):
         for i in range(SORT_FIELDS):
             if ("sortfield%d"%i) in req.params:
                 self.sortfields[i] = req.params["sortfield%d"%i]
-                self.files.sort(self.sortfields)
+                self.files.sort_by_fields(self.sortfields)
 
         self.content = None
         if self.nr>=0 and self.nr<self.num:

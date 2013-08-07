@@ -27,7 +27,7 @@ class m_hgroup(Metatype):
 
     def getFormHTML(self, field, nodes, req):
         cls = "editorrow"
-        for item in field.getChildren().sort():
+        for item in field.getChildren().sort_by_orderpos():
             if item.getField().id in req.params.get("errorlist", []):
               cls = "editorerror"
               break
@@ -35,7 +35,7 @@ class m_hgroup(Metatype):
 
         ret += '<div class="mask_label">'+field.getLabel()+'</div>'
 
-        for item in field.getChildren().sort():
+        for item in field.getChildren().sort_by_orderpos():
             f = getMetadataType(item.get("type"))
             ret += f.getFormHTML(item, nodes, req, True)
         return ret + '</div>'
@@ -45,14 +45,14 @@ class m_hgroup(Metatype):
 
         if flags & VIEW_DATA_ONLY:
             ret = []
-            for item in field.getChildren().sort():
+            for item in field.getChildren().sort_by_orderpos():
                 f = getMetadataType(item.get("type"))
                 ret.append(f.getViewHTML(item, nodes, flags,language=language))
             return ret
         else:
             ret = ''
             # standard view
-            for item in field.getChildren().sort():
+            for item in field.getChildren().sort_by_orderpos():
                 ret += '<div class="mask_row">'
                 f = getMetadataType(item.get("type"))
                 ret += f.getViewHTML(item, nodes, flags|VIEW_SUB_ELEMENT, language=language)
@@ -61,7 +61,7 @@ class m_hgroup(Metatype):
 
     """ """
     def getMetaHTML(self, parent, index, sub=False, language=None, fieldlist={}):
-        item = parent.getChildren().sort()[index]
+        item = parent.getChildren().sort_by_orderpos()[index]
         ret = ''
         i = 0
         
@@ -72,7 +72,7 @@ class m_hgroup(Metatype):
             ret += '<div class="hgroup_label">'+item.getLabel()+'</div>'
         
         ret += '<div id="editor_content">'
-        for field in item.getChildren().sort():
+        for field in item.getChildren().sort_by_orderpos():
             f = getMetadataType(field.get("type"))
             ret += '<div id="hitem">'+f.getMetaHTML(item, i, True, language=language, fieldlist=fieldlist)+'</div>'
             i += 1
@@ -112,7 +112,7 @@ class m_hgroup(Metatype):
 
         details =""
         i = 0
-        for field in item.getChildren().sort():
+        for field in item.getChildren().sort_by_orderpos():
             f = getMetadataType(field.get("type"))
             details += f.getMetaHTML(item, i, False, fieldlist=fieldlist)
             i += 1

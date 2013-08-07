@@ -30,13 +30,13 @@ import core.tree as tree
 import acl
 
 groupoption = []
-groupoption += [Option("usergroup_option_1", "editor", "e", "img/edit_opt.png"), 
+groupoption += [Option("usergroup_option_1", "editor", "e", "img/edit_opt.png"),
                 Option("usergroup_option_2", "workfloweditor", "w", "img/edit_opt.png")]
 
 """ load all groups from db """
 def loadGroupsFromDB():
     groups = tree.getRoot("usergroups")
-    return groups.getChildren().sort()
+    return groups.getChildren().sort_by_name()
 
 """ get group from db """
 def getGroup(id):
@@ -54,11 +54,11 @@ def create_group(name,description="",option=""):
     group.set("opts",option)
     groups.addChild(group)
     return group
-    
+
 """ get number of users containing given group """
 def getNumUsers(grp):
     return len(getGroup(grp).getChildren())
-   
+
 def getMetadata(grp):
     results = []
     if grp.name=="":
@@ -86,12 +86,12 @@ def saveGroupMetadata(group, metaList):
                         meta.setAccess("read", ",".join(accList))
                 else:
                     print "Type error, no list: ", type(accList)
-        else:    
+        else:
             if group in accList:
                 accList.remove(group)
                 meta.setAccess("read", ",".join(accList))
-                    
-    
+
+
 """ delete given group """
 def deleteGroup(grp):
     # remove users from group
@@ -119,7 +119,7 @@ def updateAclRule(oldname, newname):
        acl.addRule(newrule)
 
 def sortUserGroups():
-    groups = tree.getRoot("usergroups").getChildren().sort("name")
+    groups = tree.getRoot("usergroups").getChildren().sort_by_fields("name")
     for g in groups:
         g.setOrderPos(groups.index(g))
 

@@ -54,7 +54,7 @@ class UserGroup(tree.Node):
 
     def getUserNames(self):
         ret = []
-        for user in self.getChildren().sort():
+        for user in self.getChildren().sort_by_orderpos():
             ret.append(user.getName())
         return ", ".join(ret)
     

@@ -178,7 +178,7 @@ class m_field(Metatype):
             item = getNode(itemlist[index])
             pitems = len(itemlist)
         else:
-            item = parent.getChildren().sort()[index]
+            item = parent.getChildren().sort_by_orderpos()[index]
             ptype = parent.get("type")
             pitems = len(parent.getChildren())
         

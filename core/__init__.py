@@ -22,6 +22,7 @@
 import os
 import sys
 import hashlib
+import locale
 import core.config as config
 
 import core.athana as athana
@@ -40,6 +41,10 @@ else:
 athana.setTempDir(config.settings["paths.tempdir"])
 athana.setServiceUser(config.get("host.serviceuser",""))
 athana.setServicePwd(hashlib.md5(config.get("host.servicepwd", "")).hexdigest())
+
+# locale setting for sorting, default to system locale
+default_locale = locale.getdefaultlocale()
+locale.setlocale(locale.LC_COLLATE, default_locale)
 
 import utils.log
 utils.log.initialize()

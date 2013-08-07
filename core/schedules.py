@@ -197,7 +197,7 @@ def startThread():
 def getSchedules():
     schedules = tree.getRoot("schedules")
     children = [c for c in schedules.getChildren() if c.type == 'schedule']
-    children = children.sort(field="name")  # sort by execution datetime ?
+    children = children.sort_by_name()  # sort by execution datetime ?
     return children
 
 
@@ -248,6 +248,6 @@ def update_schedule(id, name=None, attr_dict={}):
 
 
 def sortSchedules():
-    groups = tree.getRoot("usergroups").getChildren().sort("name")
+    groups = tree.getRoot("usergroups").getChildren().sort_by_name()
     for g in groups:
         g.setOrderPos(groups.index(g))

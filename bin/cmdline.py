@@ -47,7 +47,7 @@ def findNode(node, id):
         pass
     except TypeError:
         pass
-    for c in node.getChildren().sort():
+    for c in node.getChildren().sort_by_orderpos():
         if c.name == id:
             return c
     return None
@@ -61,10 +61,10 @@ def show_node():
     global node
     print node.id,node.name,"(type="+node.type+")"
     print "    Parents:"
-    for c in node.getParents().sort():
+    for c in node.getParents().sort_by_orderpos():
         print "        ",c.id,c.name
     print "    Subnodes:"
-    for c in node.getChildren().sort():
+    for c in node.getChildren().sort_by_orderpos():
         print "        ",c.id,c.name
     print "    Nodedata:"
     if node.type.find("/")>0:
@@ -161,7 +161,7 @@ def search(query):
 
 def searchsort(query,sortfield):
     global node
-    nodelist = node.search(query).sort(sortfield)
+    nodelist = node.search(query).sort_by_fields(sortfield)
     print len(nodelist),"matches"
     i = 0
     for n in nodelist:
@@ -228,7 +228,7 @@ def importfile(filename):
         node.addChild(child)
     else:
         print "\tfile '%s' not found" % filename
-    
+
 def exportfile(filename):
     global node
     xmlnode.writeNodeXML(node, filename)
@@ -241,7 +241,7 @@ def dumptree(filename):
         print s,node.name
         fi.write(s + " " + node.name + "\n")
         num = 1
-        for c in node.getChildren().sort():
+        for c in node.getChildren().sort_by_orderpos():
             if c.type == "directory" or c.type == "collection" or c.type == "collections":
                 recurse_chapters(fi, c, numbers + [num])
                 num = num+1
@@ -273,7 +273,7 @@ def genmasks(masktype):
     if masktype not in ["nodebig","nodesmall","editmask"]:
         print "Unknown mask type",masktype
         return
-    for metatype in tree.getRoot("metadatatypes").getChildren().sort():
+    for metatype in tree.getRoot("metadatatypes").getChildren().sort_by_orderpos():
         metadatatypes.generateMask(metatype,masktype, 0)
 
 def checkmask():
@@ -283,7 +283,7 @@ def fixmask():
     metadatatypes.checkMask(node,fix=1,verbose=1)
 
 def checkmasks():
-    for metatype in tree.getRoot("metadatatypes").getChildren().sort():
+    for metatype in tree.getRoot("metadatatypes").getChildren().sort_by_orderpos():
         for mask in metatype.getMasks():
             errornum = metadatatypes.checkMask(mask,fix=0,verbose=0)
             if errornum:
@@ -297,7 +297,7 @@ def showlist():
     print "known commands:"
     for name,command in commands.items():
         print "\t-", name, " ".join(['<'+a+'>' for a in command.args])
- 
+
 def changescheme(collection_id, newschemename, write=0):
     """ changes all elements (except directories) to given metascheme """
     node = tree.getNode(collection_id)
@@ -323,7 +323,7 @@ def reindex():
     nodes = node.getAllChildren()
     print "reindex started for",len(nodes), "nodes"
     searcher.reindex(nodelist=nodes)
-   
+
 def event(etype="meta"):
     if etype=="meta":
         node.event_metadata_changed()
@@ -333,20 +333,20 @@ def event(etype="meta"):
 def bibtex():
     import schema.bibtex as bibtex
     bibtex.checkMappings()
-    
+
 def quit():
     sys.exit(1)
-    
-    
+
+
 def searchindex():
     global node
     from core.tree import searcher
     print "writing indexvalues of searchindex for node", "'"+node.name+"'", "(id "+str(node.id)+") in file 'searchindex.log'"
-    
+
     fi = open("searchindex.log", "wb")
     fi.write("searchindex for node '"+node.name+"' (id: "+str(node.id)+")\n\n")
     fi.write("* FULLSEARCHMETA:\n\n")
-    
+
     i = 0
     fullfields = ["id", "type", "schema", "value"]
     for line in searcher.db.execute('select * from fullsearchmeta where fullsearchmeta match ?', ['\'id:'+str(node.id)+ '\'']):
@@ -354,26 +354,26 @@ def searchindex():
                 for p in part.split("| "):
                     if i<len(fullfields):
                         fi.write(fullfields[i]+":\n")
-                    
+
                     fi.write("  "+p+"\n")
                     i+=1
-    
+
     fi.write("\n\n* SEARCHMETA:\n\n")
     i = 0
     fields = ["id", "type", "schema", "date"]
 
-    sfields = searcher.db.execute('select position, attrname from searchmeta_def where name=\''+str(node.getSchema())+ '\'',[])    
+    sfields = searcher.db.execute('select position, attrname from searchmeta_def where name=\''+str(node.getSchema())+ '\'',[])
     sfields.sort(lambda x, y: cmp(int(x[0]),int(y[0])))
     for f in sfields:
         fields.append(f[1])
-    
+
     for line in searcher.db.execute('select * from searchmeta where searchmeta match ?', ['\'id:'+str(node.id)+ '\'']):
         for part in line:
             if i<len(fields):
                 fi.write(fields[i]+":\n")
                 fi.write(" "+str(part)+"\n")
             i+=1
-   
+
     fi.write("\n\n* SEARCHMETA:\n\n")
     i = 0
     fields = ["id", "type", "schema", "date"]
@@ -471,5 +471,5 @@ while 1:
             command.f(**hashtable)
     else:
         print "Unknown command:",cmd
-            
+
 

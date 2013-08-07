@@ -69,7 +69,7 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
             mimetype = "application/x-download"
         fi.write('%s<file filename="%s" mime-type="%s" type="%s"/>\n' %((" " * indent), esc(file.getName()), mimetype, (file.type is not None and file.type or "image")))
     if children:
-        for c in node.getChildren().sort():
+        for c in node.getChildren().sort_by_orderpos():
             if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
                 if not c.type in exclude_children_types:
                     fi.write('%s<child id="%s" type="%s"/>\n' % ((" " * indent), str(c.id), c.type))
@@ -77,7 +77,7 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
     indent -= 4
     fi.write("%s</node>\n" %(" " * indent))
     if(children):
-        for c in node.getChildren().sort():
+        for c in node.getChildren().sort_by_orderpos():
             if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
                 if not c.type in exclude_children_types:
                     if c.id not in written:

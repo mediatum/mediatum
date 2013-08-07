@@ -29,6 +29,7 @@ import os
 from utils.dicts import MaxSizeDict
 from utils.utils import get_hash
 from utils.date import format_date, parse_date, STANDARD_FORMAT, now
+from locale import setlocale, strxfrm, LC_COLLATE, getlocale
 import core.config as config
 import thread
 import traceback
@@ -44,7 +45,7 @@ bulk = 0
 testmode = 0
 nocache = 0
 
-log = logging.getLogger("backend")
+log = logg = logging.getLogger("backend")
 
 nodes_cache = None
 
@@ -255,8 +256,6 @@ def getType(name):
         nodetypes[name] = name
         return nodetypes[name]
 
-sortorders = {}
-
 changed_metadata_nodes = {}
 last_changed_metadata_node = None
 def flush_changed_metadata():
@@ -339,67 +338,60 @@ class NodeList:
         
     def getDescription(self):
         return self.description
-    def sort(self,field="orderpos", direction="up"):
-        if field == "orderpos":
-            nodes = []
-            for id in self.ids:
-                nodes += [getNode(str(id))]
-            def orderposcmp(n1,n2):
-                if n1.orderpos > n2.orderpos:
-                    return 1
-                elif n1.orderpos < n2.orderpos:
-                    return -1
-                else:
-                    return 0
-            nodes.sort(orderposcmp)
-            return nodes
-        elif field == "name":
-            nodes = []
-            
-            for id in self.ids:
-                nodes += [getNode(str(id))]
-                def namecmp(n1,n2):
-                    result = compare_utf8(n1.name,n2.name)
-                    return result
-                if direction=="up":
-                    nodes.sort(namecmp)
-                
-                def namecmp_down(n1,n2):
-                    result = compare_utf8(n2.name,n1.name)
-                    return result
-                if direction=="down":
-                    nodes.sort(namecmp_down)
-            # we don't return a NodeList here, but a normal
-            # list. The main difference between those two is
-            # that a normal list doesn't have an "intersect" operation.
-            # That's ok because we don't want to intersect sorted
-            # lists.
-            return nodes
-        else:
-            if not field:
-                return self
-            if type(field) == type(""):
-                field = [field]
-            sortlists = []
-            for f in field:
-                if f:
-                    if f not in sortorders:
-                        sortorders[f] = createSortOrder(f)
-                    sortlists.append(sortorders[f])
-            if not sortorders:
-                return self
-
-            def fieldcmp(id1,id2):
-                for s in sortlists:
-                    pos1 = s.get(int(id1),-1)
-                    pos2 = s.get(int(id2),-1)
-                    if pos1 < pos2:
-                        return -1
-                    elif pos1 > pos2:
-                        return 1
-                return 0
-            self.ids.sort(fieldcmp)
+    
+    def sort_by_fields(self, field):
+        sortorders = {}
+        if field == "name":
+            return self.sort_by_name("up")
+        elif field == "-name":
+            return self.sort_by_name("down")
+        elif field in ("orderpos", "-orderpos"):
+            raise NotImplementedError("this method should not be used for orderpos sorting!")
+        if not field:
             return self
+        if type(field) == type(""):
+            field = [field]
+        sortlists = []
+        for f in field:
+            if f:
+                if f not in sortorders:
+                    sortorders[f] = createSortOrder(f)
+                sortlists.append(sortorders[f])
+        if not sortorders:
+            return self
+        def fieldcmp(id1,id2):
+            for s in sortlists:
+                pos1 = s.get(int(id1),-1)
+                pos2 = s.get(int(id2),-1)
+                if pos1 < pos2:
+                    return -1
+                elif pos1 > pos2:
+                    return 1
+            return 0
+        self.ids.sort(fieldcmp)
+        return self
+    
+    def sort_by_orderpos(self):
+        nodes = [getNode(str(i)) for i in self.ids]
+        nodes.sort(key=lambda n: n.orderpos)
+        return nodes
+    
+    def sort_by_name(self, direction="up", locale=None):
+        reverse = direction == "down"
+        nodes = [getNode(str(i)) for i in self.ids]
+        # set locale and restore current value after sorting if given
+        if locale:
+            last_locale = getlocale(LC_COLLATE)
+            setlocale(locale)
+        nodes.sort(key=lambda n: strxfrm(n.name), reverse=reverse)
+        if locale:
+            setlocale(LC_COLLATE, last_locale)
+        # we don't return a NodeList here, but a normal
+        # list. The main difference between those two is
+        # that a normal list doesn't have an "intersect" operation.
+        # That's ok because we don't want to intersect sorted
+        # lists.
+        return nodes
             
     def filter(self, access):
         return access.filter(self)

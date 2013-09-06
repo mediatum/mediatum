@@ -276,7 +276,7 @@ def changed_metadata(node):
 
 def createSortOrder(field):
     field_orig = field
-    log.info("retrieving sort order for field '"+field_orig+"'")
+    log.info("retrieving sort order for field '%s'" %(field_orig))
     t1 = time.time()
     reverse=0
     if field[0]=='-':
@@ -307,9 +307,7 @@ def createSortOrder(field):
             v = value
             i = i + 1
         id2pos[int(id)] = i
-    msg = "sort order retrieved for field '"+field_orig+"': "+str(time.time()-t1)+" seconds  -  "
-    msg += "id2pos has %d keys" % len(id2pos)
-    log.info(msg)
+    log.info("sort order retrieved for field '%s': %.3f seconds  -  id2pos has %d keys" %(field_orig, (time.time()-t1), len(id2pos)))
     return id2pos
 
 class NodeList:
@@ -471,7 +469,7 @@ class Node:
                 tree_lock.release()
 
     def setNextID(self, id):
-        self.next_nid = id        
+        self.next_nid = id
         self.set('system.next_id', id)
 
     def setPrevID(self, id):
@@ -1092,14 +1090,11 @@ class Node:
                 if temp==oldrulestr:
                     r = r.replace(oldrulestr, newrulestr)
             result.append(r)
-        result = ",".join(result)
-        return result        
+        return ",".join(result)
 
     def createNewVersion(self, user):
-        version_id = self.get('system.version.id')
-        if version_id=='': 
-            version_id = 1
-            self.set('system.version.id', version_id)
+        if self.get('system.version.id')=='':
+            self.set('system.version.id', '1')
         
         n = Node(name=self.name, type=self.type)
         n.set("creator", self.get('creator'))
@@ -1120,14 +1115,15 @@ class Node:
             parentNode = getNode(pid)
             parentNode.addChild(n)
             parentNode.removeChild(activeNode)
-        
+
         for cid in db.getChildren(activeNode.id):
-            childNode = getNode(cid)
-            n.addChild(childNode)
+            if cid!=activeNode.prev_nid:
+                n.addChild(getNode(cid))
         n.set("system.version.id", self.getLastVersionID()+1)
 
         n.setPrevID(activeNode.id)
         activeNode.setNextID(n.id)
+        n.addChild(activeNode)
         n.setDirty()
         return n
 
@@ -1146,7 +1142,7 @@ class Node:
         version_id = node.get("system.version.id")
         if version_id!="": last_version_id = int(version_id)
 
-        while node.prev_nid and node.prev_nid!='0' :
+        while node.prev_nid and node.prev_nid!='0':
             node = getNode(node.prev_nid)
             version_id = node.get("system.version.id")
             if version_id!="":
@@ -1176,7 +1172,7 @@ class Node:
                     last_version_id = version_id
                     node_versions[i] = node
                     node_versions[j] = nodei
-                
+                    nodei = node
         return node_versions
 
     def getUpdatedDate(self, format=None):

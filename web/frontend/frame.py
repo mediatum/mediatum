@@ -139,7 +139,10 @@ class Searchlet(Portlet):
             if name=="full" or not name:
                 f = None
             else:
-                f = tree.getNode(name).getFirstField()
+                try:
+                    f = tree.getNode(name).getFirstField()
+                except tree.NoSuchNodeError:
+                    f = None
 
             if "query"+str(i) in req.params or "query"+str(i)+"-from" in req.params:
                 if f and f.getFieldtype()=="date":

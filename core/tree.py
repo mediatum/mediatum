@@ -1128,6 +1128,7 @@ class Node:
 
         n.setPrevID(activeNode.id)
         activeNode.setNextID(n.id)
+        n.setDirty()
         return n
 
     def getActiveVersion(self):

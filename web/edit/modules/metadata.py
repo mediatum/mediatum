@@ -107,41 +107,65 @@ def getContent(req, ids):
 
     action = req.params.get('action', '').strip()
     
-    if (action=='restore'):
+    if action=='restore':
         vid = req.params.get('vid', '0')
         node = nodes[0].getActiveVersion()
         if (vid!='0' and vid!=node.id):
             n = tree.getNode(vid)
             # Not active version
             if n.next_nid!='0':
+                    
+                next = tree.getNode(n.next_nid)
+                if next.prev_nid!='0':
+                    next.removeChild(tree.getNode(next.prev_nid))
+                next.setPrevID(n.prev_nid)
+
                 if n.prev_nid!='0':
                     prev = tree.getNode(n.prev_nid)
                     prev.setNextID(n.next_nid)
-                next = tree.getNode(n.next_nid)
-                next.setPrevID(n.prev_nid)
+                    n.removeChild(prev)
+                    next.addChild(prev)
                 node.setNextID(n.id)
 
                 n.setPrevID(node.id)
                 n.setNextID('0')
 
-                pids = db.getParents(node.id)
-                for pid in pids:
+                for pid in db.getParents(node.id):
                     parentNode = tree.getNode(pid)
                     parentNode.addChild(n)
                     parentNode.removeChild(node)
-
+                n.addChild(node)
+                
                 nodes = [n]
                 ids = [n.id]
                 return req.getTAL("web/edit/modules/metadata.html", {'url':'?id='+n.id+'&tab=metadata', 'pid':None}, macro="redirect")
 
-    if (action=='delete'):
+    if action=='delete':
         vid = req.params.get('vid', '0')
-        if (vid != '0'):
+        if (vid!='0'):
             node = nodes[0].getActiveVersion()
             n = tree.getNode(vid)
             
             if (vid!=node.id):
                 n.set("deleted", "true")
+                for pid in db.getParents(n.id):
+                    parentNode = tree.getNode(pid)
+                    parentNode.removeChild(n)
+                for cid in db.getChildren(n.id):
+                    n.removeChild(tree.getNode(cid))
+                if n.next_nid!='0' and n.prev_nid!='0':
+                    _next = tree.getNode(n.next_nid)
+                    _next.addChild(tree.getNode(n.prev_nid))
+                    
+                if n.next_nid!='0':
+                    _next = tree.getNode(n.next_nid)
+                    if n.prev_nid!='0':
+                        _next.setPrevID(n.prev_nid)
+
+                if n.prev_nid!='0':
+                    _prev = tree.getNode(n.prev_nid)
+                    if n.next_nid!='0':
+                        _prev.setNextID(n.next_nid)
             else:
                 pids = db.getParents(n.id)
                 
@@ -163,6 +187,14 @@ def getContent(req, ids):
                     for pid in pids:
                         parentNode = tree.getNode(pid)
                         parentNode.removeChild(n)
+
+                    for cid in db.getChildren(n.id):
+                        n.removeChild(tree.getNode(cid))
+
+                    if n.next_nid!='0' and n.prev_nid!='0':
+                        _next = tree.getNode(n.next_nid)
+                        _next.addChild(tree.getNode(n.prev_nid))
+
                     return req.getTAL("web/edit/modules/metadata.html", {'url':'?id='+prev.id+'&tab=metadata', 'pid':None}, macro="redirect")
                 else:
                     # Version 0
@@ -184,11 +216,6 @@ def getContent(req, ids):
                 return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
         logging.getLogger('usertracing').info(access.user.name + " change metadata "+idstr)
-
-        for node in nodes:
-            node.set("updateuser", user.getName())
-            if node.get('updatetime')<str(now()):
-                node.set("updatetime", str(format_date()))
 
         if not hasattr(mask,"i_am_not_a_mask"):
             errorlist = []
@@ -221,11 +248,7 @@ def getContent(req, ids):
                 errorlist += mask.validateNodelist(nodes)
         else:
             for field in mask.metaFields():
-                field_name = field.getName()
-                if field_name == 'nodename' and maskname == 'settings':
-                    #field_name = getDefaultLanguage()+'__nodename'  # no multilang here !
-                    field_name = '__nodename'  # no multilang here !
-                value = req.params.get(field_name, None)
+                value = req.params.get(field.getName(), None)
                 if value is not None:
                     for node in nodes:
                         node.set(field.getName(), value)
@@ -235,6 +258,11 @@ def getContent(req, ids):
 
         if len(errorlist)>0 and "save" in req.params:
             ret+= '<p class="error">'+t(lang(req), "fieldsmissing") + '<br>'+t(lang(req), 'saved_in_inconsistent_data')+'</p>'
+
+        for node in nodes:
+            node.set("updateuser", user.getName())
+            if node.get('updatetime')<str(now()):
+                node.set("updatetime", str(format_date()))
 
         for node in nodes:
             if node.id in errorlist:

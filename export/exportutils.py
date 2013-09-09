@@ -20,7 +20,10 @@
 """
 
 import re
+import os
 import string
+import inspect
+import codecs
 import logging
 
 import core.tree as tree
@@ -30,7 +33,7 @@ import core.users as users
 
 import utils.date as date
 
-from utils.utils import esc, u, u2
+from utils.utils import esc, u, u2, esc2, utf82iso, iso2utf8
 from utils.date import parse_date, format_date
 from core.acl import AccessData
 
@@ -74,11 +77,158 @@ def getAccessRights(node):
             return "restrictedAccess"
     else:
         return "closedAccess"
+        
+
+def load_iso_639_2_b_names():
+    filename = "ISO-639-2_utf-8.txt"
+    try:
+        abs_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+        abs_path = os.path.join(abs_dir, filename)
+        f = codecs.open(abs_path, 'rb', 'utf8')
+        text = f.read()
+        f.close()
+        lines = text.splitlines()
+        msg = "exportutils read file 'ISO-639-2_utf-8.txt': %d lines" % len(lines)
+        logging.getLogger("backend").info(msg)
+    except:    
+        lines = []
+        logging.getLogger("backend").warning("exportutils coult not load file 'ISO-639-2_utf-8.txt'")
+    return lines
+    
+    
+iso_639_2_list = load_iso_639_2_b_names()
+
+        
+def normLanguage_iso_639_2_b(s, emptyval=''):
+    """
+    source: http://www.loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt
+    retrieved: 2013-05-02
+    
+    for oai_dc language tags
+    using iso 639.2
+    deciding for (b)ibliographic in case of b/t-ambiguity (t=terminology)
+    
+    http://en.wikipedia.org/wiki/Languages_used_on_the_Internet
+    1 	English 	54.9%
+    2 	Russian 	6.1%
+    3 	German 	5.3%
+    4 	Spanish 	4.8%
+    5 	Chinese 	4.4%
+    6 	French 	4.3%
+    7 	Japanese 	4.2%
+    8 	Portuguese 	2.3%
+    9 	Polish 	1.8%
+    10 	Italian 	1.5%
+    
+    (set of these languages corresponed on 2013-05-02 with most used languages 
+     on wikipedia encyclopedia)
+    
+    """
+    s1 = s.strip().lower()
+    
+    if not s1:
+        return emptyval
+        
+    s1 = s1[0:3]
+        
+    if s1 == 'en' or s1.startswith('en'):
+        return 'eng'
+    elif s1 == 'de' or s1.startswith('de') or s1.startswith('ger'):
+        return 'ger'
+    elif s1 == 'ru' or s1.startswith('rus'):
+        return 'rus'
+    elif s1 == 'fr' or s1.startswith('fre'):
+        return 'fre'
+    elif s1.startswith('ch'):
+        return 'chi'
+    elif s1 == 'jp' or s1.startswith('jap'):
+        return 'jpn'
+    elif s1 == 'es' or s1.startswith('spa'):
+        return 'spa'
+    elif s.lower().startswith('sonst'):
+        return emptyval
+    else:
+        s2 = s1 + "|"
+        s3 = "|" + s2
+        for line in iso_639_2_list:
+            if line.startswith(s2):
+                return s1
+            elif line.find(s3) > 0:
+                return line.split("|")[0]
+        msg = 'normLanguage_iso_639_2_b(...) -> language was not matched, returning emtyval="%s" s="%s", s1="%s"' % (emptyval, s, s1)
+        logging.getLogger("backend").error(msg)
+        return emptyval
+
+
+def normLanguage_iso_639_2_t(s, emptyval=''):
+    """
+    source: http://www.loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt
+    retrieved: 2013-05-02
+    
+    for oai_dc language tags
+    using iso 639.2
+    deciding for (t)erminology in case of b/t-ambiguity
+    
+    http://en.wikipedia.org/wiki/Languages_used_on_the_Internet
+    1 	English 	54.9%
+    2 	Russian 	6.1%
+    3 	German 	5.3%
+    4 	Spanish 	4.8%
+    5 	Chinese 	4.4%
+    6 	French 	4.3%
+    7 	Japanese 	4.2%
+    8 	Portuguese 	2.3%
+    9 	Polish 	1.8%
+    10 	Italian 	1.5%
+    
+    (set of these languages corresponed on 2013-05-02 with most used languages 
+     on wikipedia encyclopedia)
+    
+    """
+    s1 = s.strip().lower()
+    
+    if not s1:
+        return emptyval
+        
+    s1 = s1[0:3]    
+        
+    if s1 == 'en' or s1.startswith('en'):
+        return 'eng'
+    elif s1 == 'de' or s1.startswith('de') or s1.startswith('ger'):
+        return 'deu'
+    elif s1 == 'ru' or s1.startswith('rus'):
+        return 'rus'
+    elif s1 == 'fr' or s1.startswith('fre'):
+        return 'fra'
+    elif s1.startswith('ch'):
+        return 'zho'
+    elif s1 == 'jp' or s1.startswith('jap'):
+        return 'jpn'
+    elif s1 == 'es' or s1.startswith('spa'):
+        return 'spa'
+    elif s.lower().startswith('sonst'):
+        return emptyval
+    else:
+        s2 = s1 + "|"
+        s3 = "|" + s2
+        for line in iso_639_2_list:
+            _b, _t, _two, _english, _french = list.split('|')
+            if s1 in [_b, _t]:
+                if _t:
+                    return _t
+                else:
+                    return _b    
+            elif line.find(s3) > 0:
+                return line.split("|")[0]
+        msg = 'normLanguage_iso_639_2_t(...) -> language was not matched, returning emtyval="%s" s="%s", s1="%s"' % (emptyval, s, s1)
+        logging.getLogger("backend").error(msg)
+        return emptyval  
+
     
 def runTALSnippet(s, context, mask=None):
     if s.find('tal:') < 0:
         return s
-        
+
     header = '''<?xml version="1.0" encoding="UTF-8" ?>'''
     xmlns = '''<talnamespaces xmlns:tal="http://xml.zope.org/namespaces/tal" xmlns:metal="http://xml.zope.org/namespaces/metal">'''
     footer = '''</talnamespaces>'''
@@ -92,15 +242,22 @@ def runTALSnippet(s, context, mask=None):
     try: # normally only encoding errors
         wr_result = athana.getTALstr(to_be_processed, context, mode='xml')
     except: # try with u2 method
-        wr_result = athana.getTALstr(u2(to_be_processed), context, mode='xml')
-    
+        try:
+            wr_result = athana.getTALstr(u2(to_be_processed), context, mode='xml')
+        except:
+            wr_result = athana.getTALstr(u2(to_be_processed), context)
+        #wr_result = athana.getTALstr(u2(to_be_processed), context, mode='xml')
+        
     return wr_result[wr_result.find(cutter)+len(cutter):wr_result.rfind(cutter)]
  
 default_context = {} 
 default_context['tree'] = tree
 default_context['esc'] = esc  # may be needed for example in escaping rss item elements
+default_context['esc2'] = esc2  # may be needed for example in escaping rss item elements
 default_context['no_html'] = no_html 
 default_context['u'] = u 
+default_context['utf82iso'] = utf82iso
+default_context['iso2utf8'] = iso2utf8
 default_context['prss'] = prss # protect rss
 default_context['parse_date'] = parse_date 
 default_context['format_date'] = format_date
@@ -108,6 +265,9 @@ default_context['cdata'] = cdata
 default_context['get_udate'] = get_udate
 default_context['getAccessRights'] = getAccessRights
 default_context['config_get'] = config.get
+default_context['normLanguage_iso_639_2_b'] = normLanguage_iso_639_2_b
+default_context['normLanguage_iso_639_2_t'] = normLanguage_iso_639_2_t
+
 
 def registerDefaultContextEntry(key, entry):
     global default_context

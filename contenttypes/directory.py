@@ -188,12 +188,10 @@ class Directory(default.Default):
         return ["statistic", "image"]
     
     def getPossibleChildContainers():
-        if self.type == "directory":
+        if self.type.startswith("directory"):
             return ["directory"]
-        elif self.type == "collection" or self.type == "collections":
+        elif self.type in ["collection", "collections"]:
             return ["directory","collection"]
-        elif self.type.startswith("directory"):
-            return ["directory"]
         else:
             return []
 
@@ -232,25 +230,20 @@ class Directory(default.Default):
         field.set("type", "text")
         ret.append(field)
         
+        field = tree.Node("style_full", "metafield")
+        field.set("label", t(lang,"full view style"))
+        field.set("type", "list")
+        field.set("valuelist", "full_standard;full_text")
+        ret.append(field)
+        
+        field = tree.Node("style", "metafield")
+        field.set("label", t(lang,"style"))
+        field.set("type", "list")
+        field.set("valuelist", "thumbnail;list;text")
+        ret.append(field)
+        
         if node.type.startswith("collection"):
             # special fields for collections
-            field = tree.Node("style", "metafield")
-            field.set("label", t(lang,"style"))
-            field.set("type", "list")
-            field.set("valuelist", "thumbnail;list;text")
-            ret.append(field)
-
-            #field = tree.Node("url", "metafield")
-            #field.set("label", t(lang,"don't display logo"))
-            #field.set("type", "text")
-            #ret.append(field) no longer required
-            
-            field = tree.Node("style_full", "metafield")
-            field.set("label", t(lang,"full view style"))
-            field.set("type", "list")
-            field.set("valuelist", "full_standard;full_text")
-            ret.append(field)
-            
             field = tree.Node("style_hide_empty", "metafield")
             field.set("label", t(lang,"hide empty directories"))
             field.set("type", "check")
@@ -258,17 +251,7 @@ class Directory(default.Default):
             
         elif node.type.startswith("directory"):
             # special fields for directories
-            field = tree.Node("style", "metafield")
-            field.set("label", t(lang,"style"))
-            field.set("type", "list")
-            field.set("valuelist", "thumbnail;list;text")
-            ret.append(field)
-            
-            field = tree.Node("style_full", "metafield")
-            field.set("label", t(lang,"full view style"))
-            field.set("type", "list")
-            field.set("valuelist", "full_standard;full_text")
-            ret.append(field)
+            pass
             
         return ret
 

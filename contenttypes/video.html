@@ -1,4 +1,78 @@
+<!-- use jwplayer -->
+<html metal:define-macro="fullsize_flv_jwplayer">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta content="text/html;charset=UTF-8" http-equiv="content-type">
 
+        <title i18n:translate="video_showvideo">TEXT</title>
+        <script type="text/javascript" src="/js/jwplayer.min.js"> </script>
+        
+        <script tal:content="python:'var file_url = \''+str(file)+'\';'">;</script>
+        <script tal:content="python:'var thumbnail_url = \'/thumb2/'+node.id+'\';'">;</script>
+        <script tal:content="python:'var captions_info = '+str(captions_info)+';'">;</script>
+        
+        <style>
+            body {margin:0px;padding:0px;}
+            html {height:100%;}
+        </style>
+    </head>
+    <body>
+        <a tal:attributes="href file" style="display:block;" id="player"> </a>
+        
+          <script type="text/javascript">
+          
+              function get_captions_plugin() {
+                if (captions_info && typeof captions_info["file_list"] != 'undefined' && captions_info["file_list"].length > 0) {
+                    return {
+                      '/js/captions.js': {
+                          state: true,  // initial state on/off
+                          
+                          // default values - may be overridden by styling in caption files
+                          back: false,  // underlay with rectangle to increase readability
+                          color: '#FFF',  // font color
+                          fontSize: 14,
+                          fontFamily: 'Arial,sans-serif',  // 'Courier'
+                          fontStyle: 'normal',  // 'normal' or 'italic'
+                          fontWeight: 'normal',  // 'normal' or 'bold'
+                          textDecoration: 'none',  // 'none' or 'underline'
+                          
+                          files: captions_info['file_list'],
+                          labels: captions_info['label_list'],
+                          label: captions_info['preset_label']
+                      }
+                  }
+                }
+                else {
+                    return null;
+                }
+              }
+              
+              jwplayer("player").setup({
+                  file: file_url,
+                  height: "100%",
+                  image: thumbnail_url,
+                  stretching: 'uniform',
+                  plugins: get_captions_plugin(),
+                  flashplayer: '/img/player.swf',
+                  width: "100%",
+                  autostart: true,
+                  debug: 'console'                
+              });
+              
+              // make the player stop 1 second before end of movie:
+              // http://www.longtailvideo.com/support/forums/bits-on-the-run/content-delivery/25830/leave-last-frame-on-screen/              
+              jwplayer().onTime(
+                                  function(object) {
+                                      if(object.position > object.duration - 1) {
+                                          this.pause();
+                                      }
+                                  }
+              );    
+          </script>
+    </body>
+</html>
+
+<!-- use flowplayer -->
 <html metal:define-macro="fullsize_flv">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -8,12 +82,8 @@
         <script src="/js/flowplayer-3.0.5.min.js"> </script>
         
         <style>
-            body{
-                margin:0px;padding:0px;
-            }
-            html{
-                height:100%;
-            }
+            body {margin:0px;padding:0px;}
+            html {height:100%;}
         </style>
     
     </head>
@@ -38,9 +108,7 @@
                         scaling: 'fit'
                         }
                 }
-                
             );
-
         </script>
     </body>
 </html>

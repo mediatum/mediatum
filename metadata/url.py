@@ -108,10 +108,10 @@ class m_url(Metatype):
             return (field.getLabel(), "")
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
-        value = ""
-        if field:
-            value = field.getValues()
-        value = value.split("\r\n")
+        try:
+            value = field.getValues().split("\r\n")
+        except:
+            value = []
         while len(value)<4:
             value.append("")
         return athana.getTAL("metadata/url.html", {"value":value, "icons":m_url.icons, "url_targets":m_url.targets}, macro="maskeditor", language=language)

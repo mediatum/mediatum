@@ -118,9 +118,10 @@ class m_mlist(Metatype):
         return value.replace("; ",";")
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
-        value = ""
-        if field:
+        try:
             value = field.getValues()
+        except:
+            value = ""
         return athana.getTAL("metadata/mlist.html", {"value":value}, macro="maskeditor", language=language)
 
     def getName(self):

@@ -37,9 +37,10 @@ class m_meta(Metatype):
 
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
-        value = ""
-        if field:
+        try:
             value = field.getValues()
+        except:
+            value = ""
         attr = {}
         if metadatatype:
             for t in metadatatype.getDatatypes():

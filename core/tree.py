@@ -275,8 +275,7 @@ def changed_metadata(node):
         last_changed_metadata_node = node.id
 
 def createSortOrder(field):
-    field_orig = field
-    log.info("retrieving sort order for field '%s'" %(field_orig))
+    log.info("retrieving sort order for field "+field)
     t1 = time.time()
     reverse=0
     if field[0]=='-':
@@ -307,7 +306,7 @@ def createSortOrder(field):
             v = value
             i = i + 1
         id2pos[int(id)] = i
-    log.info("sort order retrieved for field '%s': %.3f seconds  -  id2pos has %d keys" %(field_orig, (time.time()-t1), len(id2pos)))
+    log.info("sort order retrieved, %s seconds  -  id2pos has %d keys" %((time.time()-t1), len(id2pos)))
     return id2pos
 
 class NodeList:
@@ -925,6 +924,8 @@ class Node:
         global searcher, subnodes
         log.info('search: %s for node %s %s' %(q, str(self.id), str(self.name)))
         self._makePersistent()
+        if q.startswith('searchcontent='):
+            return searcher.query(q)
         items = subnodes(self)
         if type(items)!= list:
             items = items.getIDs() 
@@ -1124,7 +1125,6 @@ class Node:
         n.setPrevID(activeNode.id)
         activeNode.setNextID(n.id)
         n.addChild(activeNode)
-        n.setDirty()
         return n
 
     def getActiveVersion(self):

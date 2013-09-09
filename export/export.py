@@ -29,7 +29,7 @@ def export(req):
     access = AccessData(req)
 
     if len(p)!=2:
-        req.write("no export mask given")
+        req.error(404, "Object not found")
         return
     
     if p[0].isdigit():
@@ -49,4 +49,5 @@ def export(req):
         except tree.NoSuchNodeError:
             return req.error(404, "Object not found")
     else:
-        req.write("no export mask given")
+        req.error(404, "Object not found")
+        return

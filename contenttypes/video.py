@@ -21,8 +21,10 @@ import core.config as config
 import core.tree as tree
 import core.athana as athana
 import core.acl as acl
+import sys
 import os
 import Image
+import logging
 
 from utils.utils import splitfilename, splitpath
 from utils.date import format_date, make_date
@@ -33,7 +35,55 @@ from contenttypes.image import makeThumbNail,makePresentationFormat
 from core.translation import lang, t
 from core.styles import getContentStyles
 from schema.schema import loadTypesFromDB, VIEW_HIDE_EMPTY,VIEW_DATA_ONLY
+from metadata.upload import getFilelist
+
 import default
+
+if sys.version[0:3] < '2.6':
+    import simplejson as json
+else:
+    import json
+
+
+logger = logging.getLogger("backend")
+
+
+def getCaptionInfoDict(node):
+    d = {}
+    
+    file_url_list = []
+    file_label_list = []
+    preset_label = ""
+    
+    counter = 0
+    
+    filelist, filelist2 = getFilelist(node, fieldname='.*captions.*')
+    
+    for filenode in filelist2:
+        if filenode.getType() in ["u_other", "u_xml"]:
+            filename = filenode.getName()
+            file_ext = filename.split('.')[-1]
+            if file_ext in ['srt', 'xml']:
+                counter += 1
+                file_url =  "/file/" + str(node.id) + "/" + filename
+                file_url_list.append(file_url)
+                
+                x = filename[0:-len('.'+file_ext)].split('-')
+                if len(x) > 1 and len(x[-1]):
+                    file_label = x[-1]
+                else:
+                    file_label = "Track " + str(counter)
+                file_label_list.append(file_label) 
+                
+                if filename.find('preset') >= 0:
+                    preset_label = file_label
+                
+    if file_url_list:
+        d['file_list'] = ",".join([x.strip() for x in file_url_list])
+        d['label_list'] = ",".join([x.strip() for x in file_label_list])
+        d['preset_label'] = preset_label
+    return d
+    
 
 """ video class """
 class Video(default.Default):
@@ -47,7 +97,7 @@ class Video(default.Default):
         return "video"
         
     def _prepareData(node, req, words=""):
-        
+    
         access = acl.AccessData(req)
         mask = node.getFullView(lang(req))
         
@@ -75,7 +125,17 @@ class Video(default.Default):
             styles = getContentStyles("bigview", contenttype=node.getContentType())
             if len(styles)>=1:
                 template = styles[0].getTemplate()
-        return req.getTAL(template, node._prepareData(req), macro)
+                
+        captions_info = getCaptionInfoDict(node)
+        
+        if captions_info:
+            msg = "video: '%s' (%s): captions: dictionary 'captions_info': %s" % (node.name, str(node.id), str(captions_info))
+            logger.info(msg)
+        
+        context = node._prepareData(req)
+        context["captions_info"] = json.dumps(captions_info)
+        
+        return req.getTAL(template, context, macro)
 
     """ returns preview image """
     def show_node_image(node):
@@ -163,6 +223,7 @@ class Video(default.Default):
 
     """ popup window for actual nodetype """
     def popup_fullsize(node, req):
+    
         access = AccessData(req)
         if not access.hasAccess(node, "data") or not access.hasAccess(node,"read"):
             req.write(t(req, "permission_denied"))
@@ -179,8 +240,28 @@ class Video(default.Default):
             script = """<p href=\""""+file+"""\" style="display:block;width:"""+str(int(node.get('vid-width') or '0')+64)+"""px;height:"""+str(int(node.get('vid-height') or '0')+53)+"""px;" id="player"/p>"""
         else:
             script = ""
-
-        req.writeTAL("contenttypes/video.html", {"file":file, "script":script, "node":node, "width":int(node.get('vid-width') or '0')+64, "height":int(node.get('vid-height') or '0')+53}, macro="fullsize_flv")
+        
+        # use jw player
+        
+        captions_info = getCaptionInfoDict(node)
+        
+        if captions_info:
+            msg = "video: '%s' (%s): captions: dictionary 'captions_info': %s" % (node.name, str(node.id), str(captions_info))
+            logger.info(msg)
+        
+        context = {
+            "file":file,
+            "script":script, 
+            "node":node,
+            "width":int(node.get('vid-width') or '0')+64,
+            "height":int(node.get('vid-height') or '0')+53,
+            "captions_info": json.dumps(captions_info),
+        }
+        
+        req.writeTAL("contenttypes/video.html", context, macro="fullsize_flv_jwplayer")
+        
+        # use flowplayer
+        #req.writeTAL("contenttypes/video.html", {"file":file, "script":script, "node":node, "width":int(node.get('vid-width') or '0')+64, "height":int(node.get('vid-height') or '0')+53}, macro="fullsize_flv")
 
     def popup_thumbbig(node, req):
         node.popup_fullsize(req)

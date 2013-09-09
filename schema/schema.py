@@ -51,6 +51,7 @@ fieldoption += [Option("metafield_option2", "sort", "o", "/img/ordersel.png")]
 
 dateoption = []
 dateoption +=[Option("metafield_dateformat_std", "dd.mm.yyyy", "%d.%m.%Y" )]
+dateoption +=[Option("metafield_dateformat_long", "dd.mm.yyyy hh:mm:ss", "%d.%m.%Y %H:%M:%S" )]
 dateoption +=[Option("metafield_dateformat_year", "yyyy", "%Y" )]
 dateoption +=[Option("metafield_dateformat_yearmonth", "yyyy-mm", "%Y-%m" )]
 dateoption +=[Option("metafield_dateformat_month", "mm", "%m" )]
@@ -449,12 +450,16 @@ def showEditor(node,hiddenvalues={}, allowedFields=None):
     
 
 def parseEditorData(req,node):
-    fields = node.getType().getMetaFields()
     nodes = [node]
     incorrect = False
-    for field in fields:
+    defaultlang = translation.lang(req)
+    
+    for field in node.getType().getMetaFields():
         name = field.getName()
-        value = req.params.get(name, "? ")
+        if "%s__%s" %(defaultlang, name) in req.params:
+            value = req.params.get("%s__%s" %(defaultlang, name), "? ")
+        else:
+            value = req.params.get(name, "? ")
 
         if value!="? ":
             #if (field.getRequired()==1):
@@ -1030,7 +1035,7 @@ class Mask(tree.Node):
                 req.params["edit"] = item.id
             return '<form method="post" name="myform">%s</form>' %(t.getMetaEditor(item, req))
 
-        if req.params.get("type","")=="" and self.getMasktype()!="export":
+        if (req.params.get("type","")=="" and self.getMasktype()!="export") or req.params.get('op')=='newdetail':
             # type selection for new field
             ret = """
             <form method="post" name="myform">

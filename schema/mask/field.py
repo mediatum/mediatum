@@ -94,7 +94,7 @@ class m_field(Metatype):
         
         if field.getUnit()!="":
             unit += field.getUnit()
-        
+
         ret += '<div id="editor_content">'+t.getEditorHTML(element, value=val, width=field.getWidth(), lock=lock, language=lang(req))+unit+'</div>'
         if not sub:
             ret += '</div>'
@@ -116,13 +116,13 @@ class m_field(Metatype):
             if fieldtype in ['text']:
                 value = u(t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1])
             else:
-                value = u(t.getFormatedValue(element, nodes[0], language)[1])
+                value = u(t.getFormatedValue(element, nodes[0], language)[1])    
         else:
             if field.getFormat()!="":
                 if fieldtype in ['text']:
                     value = t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1]
                 else:  
-                    value = t.getFormatedValue(element, nodes[0], language)[1]
+                    value = t.getFormatedValue(element, nodes[0], language)[1]  
                 value = field.getFormat().replace("<value>",value)
             else:
                 if fieldtype in ['text']:
@@ -141,7 +141,7 @@ class m_field(Metatype):
                     value = str(formatLongText(t.getFormatedValue(element, nodes[0], language)[1], element))
 
         if len(value.strip())>0:
-            value += str(unit)
+            value+= str(unit)
 
         label = '&nbsp;'
         if field.getLabel()!="":
@@ -170,7 +170,6 @@ class m_field(Metatype):
             ret += '<div class="mask_label">'+label+'</div>\n<div class="mask_value">'+value+'&nbsp;</div>\n'
             ret += '</div></div>'
             return ret
-
 
     def getMetaHTML(self, parent, index, sub=False, language=None, itemlist=[], ptype="", fieldlist={}):
         """ return formated row for metaeditor """
@@ -264,7 +263,7 @@ class m_field(Metatype):
 
         if req.params.get("op","")=="new":
             pidnode = tree.getNode(req.params.get("pid"))
-            if pidnode.getMasktype() in ("vgroup", "hgroup"):
+            if hasattr(pidnode, 'getMasktype') and pidnode.getMasktype() in ("vgroup", "hgroup"):
                 for field in pidnode.getAllChildren():
                     if field.getType().getName()=="maskitem" and field.id!=pidnode.id:
                         fields.append(field)
@@ -276,13 +275,13 @@ class m_field(Metatype):
 
         fields.sort(lambda x, y: cmp(x.getOrderPos(),y.getOrderPos()))
         add_values = []
-        field = None
+        val = ""
         if item.getField():
-            field = item.getField()
+            val = item.getField().getValues()
         
         for t in getMetaFieldTypeNames():
             f = getMetadataType(t)
-            add_values.append(f.getMaskEditorHTML(field, metadatatype=metadatatype, language=lang(req)))
+            add_values.append(f.getMaskEditorHTML(val, metadatatype=metadatatype, language=lang(req)))
 
         metafields = metadatatype.getMetaFields()
         metafields.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))
@@ -304,7 +303,7 @@ class m_field(Metatype):
         v["translate"] = translate
         v["language"] = lang(req)
 
-        if pidnode and pidnode.getMasktype()=="export":
+        if pidnode and hasattr(pidnode, 'getMasktype') and pidnode.getMasktype()=="export":
             v["mappings"] = []
             for m in pidnode.getExportMapping():
                 v["mappings"].append(tree.getNode(m))

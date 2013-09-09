@@ -47,13 +47,13 @@ if len(sys.argv)==2 and sys.argv[1]=="--force":
     force = 1
 
 path = [core.config.get("logging.file.everything")]
-outpath = os.path.dirname(core.config.get("logging.file.everything"))+"/"+period+".log"
+outpath = "%s%s.log" %(core.config.get("logging.save", os.path.dirname(core.config.get("logging.file.everything"))+'/'), period)
 
 if os.path.exists(outpath) and force==0:
-    print "file for period", period, "existing"
+    print "file for period", period, "existing", outpath
     sys.exit()
 
-for i in range(1, 21):
+for i in range(1, 11):
     path.append(core.config.get("logging.file.everything")+"."+str(i))
 
 d = []

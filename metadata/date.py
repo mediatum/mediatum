@@ -73,9 +73,13 @@ class m_date(Metatype):
 
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
-        value = ""
-        if field:
+        try:
             value = field.getValues()
+        except:
+            value = ""
+        #value = ""
+        #if field:
+        #    value = field.getValues()
         return athana.getTAL("metadata/date.html", {"value":value, "dateoption":dateoption}, macro="maskeditor", language=language)
 
     def getName(self):

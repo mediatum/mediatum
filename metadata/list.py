@@ -129,11 +129,16 @@ class m_list(Metatype):
         value = ""
         filename = ""
         multiple_list = ""
-        if field:
-            value = field.getValues()
-            if field.id and len(field.getFiles()) > 0:
-                filename = os.path.basename(field.getFiles()[0].retrieveFile())
-                multiple_list = field.get('multiple')
+        try:
+            if field:
+                value = field.getValues()
+                if field.id and len(field.getFiles()) > 0:
+                    filename = os.path.basename(field.getFiles()[0].retrieveFile())
+                    multiple_list = field.get('multiple')
+        except:
+            value = ""
+            filename = ""
+            multiple_list = ""
         return athana.getTAL("metadata/list.html", {"value":value, "filename":filename, "multiple_list":multiple_list}, macro="maskeditor", language=language)
         
         

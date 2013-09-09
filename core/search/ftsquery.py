@@ -70,6 +70,7 @@ class FtsSearcher:
         self.normalization_items = None
 
     def run_search(self, field, op, value):
+        
         def getSQL(type, value, spc ={}): # deliver sql for given type
             value = normalize_utf8(protect(u(value)))
             
@@ -92,14 +93,13 @@ class FtsSearcher:
             elif type=="spfield":
                 return 'select distinct(id) from searchmeta where field'+str(spc['pos'][0])+'=""'
             elif type=="spmatch":
-                return 'select distinct(id) from searchmeta where field'+str(spc['pos'][0])+' match \''+value+'\' and type <> \'directory\''
-                
+                return 'select distinct(id) from searchmeta where schema=\''+str(spc['pos'][1])+'\' and field'+str(spc['pos'][0])+' match \''+value+'\''
             elif type=="content_full":
-                return 'select id, type, schema, value from fullsearchmeta where id=\''+value+'\''
-            elif type=="content_ext":
-                return 'select * from searchmeta where id=\''+value+'\''
+                return 'select * from fullsearchmeta where id=\''+value+'\''
             elif type=="content_text":
                 return 'select * from textsearchmeta where id=\''+value+'\''
+            elif type=="content_ext":
+                return 'select * from searchmeta where id=\''+value+'\''
             
         ret = []
         if value=="" or field=="" or op=="":
@@ -124,17 +124,17 @@ class FtsSearcher:
 
         elif field=="updatetime":
             return [str(s[0]) for s in self.execute(getSQL("updatetime", value, spc={'op':op}), 'ext')]
-        
+
         elif field=="searchcontent":
             ret = [[],[],[]]
             for item in self.execute(getSQL("content_full", value), 'full'): # value = id
-                ret[0]+=[[i for i in item if i]]
-            for item in self.execute(getSQL("content_ext", value), 'ext'): # value = id
-                ret[1]+=[[i for i in item if i]]
+                ret[0]+=[i for i in item if i]
+            for item in self.execute(getSQL("content_ext", value), 'ext'):
+                ret[1]+=[i for i in item if i]
             for item in self.execute(getSQL("content_text", value), 'text'): # value = id
-                ret[2]+=[[i for i in item if i]]
+                ret[2]+=[i for i in item if i]
             return ret
-
+            
         else: # special search
             for pos in self.execute(getSQL("field", field), self.connames[DBTYPE]['ext']):
                 if op in [">=","<="]:
@@ -231,13 +231,20 @@ class FtsSearcher:
             return self.db[self.connames[DBTYPE][type]].execute(sql)
         except:
             print "error in search indexer operation"
-
-    
+            #self.initIndexer('init')
+            #return self.db[self.connames[DBTYPE][type]].execute(sql)
+            
     def getNodeInformation(self):
         ret = {}
-        ret['full'] = [s[0] for s in self.execute('SELECT distinct(id) FROM fullsearchmeta ORDER BY id', 'full')]
-        ret['ext'] = [s[0] for s in self.execute('SELECT distinct(id) FROM searchmeta ORDER BY id', 'ext')]
-        ret['text'] = [s[0] for s in self.execute('SELECT distinct(id) FROM textsearchmeta ORDER BY id', 'text')]
+        res = self.execute('SELECT distinct(id) FROM fullsearchmeta ORDER BY id', 'full')
+        ret['full'] = [s[0] for s in res]
+
+        res = self.execute('SELECT distinct(id) FROM searchmeta ORDER BY id', 'ext')
+        ret['ext'] = [s[0] for s in res]
+
+        res = self.execute('SELECT distinct(id) FROM textsearchmeta ORDER BY id', 'text')
+        ret['text'] = [s[0] for s in res]
+
         return ret
 
        
@@ -350,7 +357,7 @@ class FtsSearcher:
             # the new files. Only problem is, DELETE from a FTS3 table is prohibitively
             # slow.
             return
-        
+
         for file in node.getFiles():
             w = ''
             if file.getType()=="fulltext" and os.path.exists(file.retrieveFile()):
@@ -409,7 +416,7 @@ class FtsSearcher:
             err['ext'].append(node.id)
         if not self.nodeToFulltextSearch(node):
             err['text'].append(node.id)
-        
+                      
         node.set("updatesearchindex", str(format_date()))
         return err
 
@@ -486,6 +493,7 @@ class FtsSearcher:
     def getSearchSize(self):
         import os
         return os.stat(config.settings["paths.searchstore"]+"searchindex.db")[6]
+
      
     
 ftsSearcher = FtsSearcher()

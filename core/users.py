@@ -36,7 +36,8 @@ from core.translation import getDefaultLanguage, translate
 useroption = []
 #useroption += [OPTION_ENHANCED_READRIGHTS]
 useroption += [Option("user_option_1", "editpwd", "c", "img/changepwd_opt.png", "checkbox"),\
-               Option("user_option_2", "editshopping", "s", "img/editshopping_opt.png", "checkbox")]
+               Option("user_option_2", "editshopping", "s", "img/editshopping_opt.png", "checkbox"),\
+               Option("user_option_3", "useroptions", "o", "img/editshopping_opt.png", "checkbox")]
 
 authenticators = {}
 

@@ -20,6 +20,8 @@
 """
 
 import ldap
+import re
+
 import core.users as users
 import core.tree as tree
 import core.config as config
@@ -49,10 +51,16 @@ class LDAPUser(ExternalUser):
         return ret.strip()
     
     def getUser(self, name):
+        identificator = name
+        if name.find("@") < 0:
+            user_url = config.get("ldap.user_url", "")
+            if user_url:
+                identificator = name + "@" + user_url
+        pattern = re.compile("(^|.* )%s($| )" % identificator)
         user = users.getExternalUser(name, "ldapuser")
         if not user:
             for n in users.getExternalUsers("ldapuser"):
-                if n.getName()==name or n.get("identificator").find(name)>=0:
+                if n.getName()==name or pattern.match(n.get("identificator")):
                     user = n
                     break
 
@@ -113,17 +121,21 @@ class LDAPUser(ExternalUser):
             if user.get("lastname")!="" and user.get("firstname")!="":
                 user.setName("%s %s" %(user.get("lastname"), user.get("firstname")))
 
+            added_to_groups = 0
             for group in self._getAttribute(config.get("ldap.user_group"), data, ",").split(","):
                 if group!="" and not usergroups.existGroup(group):
-                    res = usergroups.create_group(group, description="LDAP Usergroup", option="")
-                    res.set("ldapusergroup.creationtime", date.format_date())
-                    logging.getLogger('usertracing').info("created ldap user group: " + group)
-                
+                    #res = usergroups.create_group(group, description="LDAP Usergroup", option="")
+                    #res.set("ldapusergroup.creationtime", date.format_date())
+                    logging.getLogger('usertracing').info("skipped creation of ldap user group: " + group)
+                    continue
                 g = usergroups.getGroup(group)
                 if g:
                     g.addChild(user)
+                    added_to_groups += 1
             
             logging.getLogger('usertracing').info("created ldap user: "+uname)
+            if not added_to_groups:
+                logging.getLogger('usertracing').warning("created ldap user %r, %r not added to any group" % (uname, user.id))
             return user
  
  

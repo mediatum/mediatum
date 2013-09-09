@@ -37,6 +37,8 @@ MAX_SEARCH_FIELDS = 32
 DB_NAME = 'searchindex.db'
 FULLTEXT_INDEX_MODE = 0
 
+SYSTEMATTRS = ['updateuser', 'updatetime', 'edit.lastmask', 'creationtime', 'creator']
+
 def protect(s):
     return s.replace('"','')
 
@@ -53,13 +55,7 @@ class SearchIndexer:
         global FULLTEXT_INDEX_MODE
         
         self.tablenames = ["fullsearchmeta", "searchmeta", "textsearchmeta"]
-    
-        s = ''
-        for i in range(1, MAX_SEARCH_FIELDS):
-            s += 'field'+ str(i)+", "
-        s = s[:-2]
-
-        db = sqlite.SQLiteConnector(config.get("paths.searchstore") + DB_NAME)
+        self.db = sqlite.SQLiteConnector(config.get("paths.searchstore") + DB_NAME)
         
         self.schemafields = {}
 
@@ -72,13 +68,18 @@ class SearchIndexer:
                 createTables(self)
 
     def createTables(self):
+        s = ''
+        for i in range(1, MAX_SEARCH_FIELDS):
+            s += 'field'+ str(i)+", "
+        s = s[:-2]
+
         # simple search table
-        self.execute('CREATE VIRTUAL TABLE fullsearchmeta USING fts3(id, type, schema, value)')
+        self.db.execute('CREATE VIRTUAL TABLE fullsearchmeta USING fts3(id, type, schema, value)')
         # extended search table
-        self.execute('CREATE VIRTUAL TABLE searchmeta USING fts3(id, type, schema, '+s+')')
-        self.execute('CREATE VIRTUAL TABLE searchmeta_def USING fts3(name, position, attrname)')
+        self.db.execute('CREATE VIRTUAL TABLE searchmeta USING fts3(id, type, schema, %s)' %(s))
+        self.db.execute('CREATE VIRTUAL TABLE searchmeta_def USING fts3(name, position, attrname)')
         # fulltext search table
-        self.execute('CREATE VIRTUAL TABLE textsearchmeta USING fts3(id, type, schema, value)')
+        self.db.execute('CREATE VIRTUAL TABLE textsearchmeta USING fts3(id, type, schema, value)')
         
     def getAllTableNames(self):
         ret = []
@@ -124,7 +125,8 @@ class SearchIndexer:
             # attributes
             a = ''
             for key,value in node.items():
-                a += protect(u(value))+'| '
+                if key not in SYSTEMATTRS:
+                    a += protect(u(value))+'| '
             a = normalize_utf8(a)
             sql += a
             # files
@@ -256,7 +258,6 @@ class SearchIndexer:
             err['ext'].append(node.id)
         if not self.nodeToFulltextSearch(node):
             err['text'].append(node.id)
-        #print "update search index for node",node.id
         node.set("updatesearchindex", str(format_date()))
         return err
 

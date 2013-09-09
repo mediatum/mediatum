@@ -36,7 +36,7 @@ groupoption += [Option("usergroup_option_1", "editor", "e", "img/edit_opt.png"),
 """ load all groups from db """
 def loadGroupsFromDB():
     groups = tree.getRoot("usergroups")
-    return groups.getChildren().sort("name")
+    return groups.getChildren().sort()
 
 """ get group from db """
 def getGroup(id):
@@ -117,3 +117,9 @@ def updateAclRule(oldname, newname):
 
     else:
        acl.addRule(newrule)
+
+def sortUserGroups():
+    groups = tree.getRoot("usergroups").getChildren().sort("name")
+    for g in groups:
+        g.setOrderPos(groups.index(g))
+

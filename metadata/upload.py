@@ -71,10 +71,15 @@ def normalizeFilename(s, chars=ALLOWED_CHARACTERS):
     return res
 
 
-def getFilelist(node, fieldname):
+def getFilelist(node, fieldname=''):
 
     fs = node.getFiles()
-    pattern = r'm_upload_%s_' % fieldname
+    if fieldname:
+        # get files for this fieldname only
+        pattern = r'm_upload_%s_' % fieldname
+    else:
+        # get files for all m_upload fields 
+        pattern = r'm_upload_'
 
     filelist = []
 
@@ -101,21 +106,17 @@ class m_upload(Metatype):
     disabled = "0"
 
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None):
-
         check_context()
-
-        fieldid = None
-        fieldname = None
 
         try:
             fieldid = field.id
         except:
-            pass
+            fieldid = None
 
         try:
             fieldname = field.name
         except:
-            pass
+            fieldname = None
 
         try:
             warning = [t[1] for t in self.labels[language] if t[0] == 'upload_notarget_warning'][0]
@@ -130,9 +131,8 @@ class m_upload(Metatype):
                    "field": field,
                    "language": language,
                    "warning": warning,
+                   "system_lock": 0,
                   }
-
-        context['system_lock'] = 0
 
         if lock:
             context['system_lock'] = 1
@@ -149,9 +149,7 @@ class m_upload(Metatype):
         elif fieldname:
             s = s.replace("____FIELDNAME____", "%s" % fieldname)
         else:
-            msg = "metadata: m_upload: no fieldname found"
-            logging.getLogger('backend').warning(msg)
-
+            logging.getLogger('backend').warning("metadata: m_upload: no fieldname found")
         return s
 
     def getFormatedValue(self, field, node, language=None, html=1, template_from_caller=None, mask=None):

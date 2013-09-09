@@ -30,7 +30,7 @@ import os
 from schema.schema import getMetaType
 
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
-from core.usergroups import groupoption, loadGroupsFromDB, getGroup, existGroup, create_group, updateAclRule, deleteGroup, getNumUsers, getMetadata, saveGroupMetadata
+from core.usergroups import groupoption, loadGroupsFromDB, getGroup, existGroup, create_group, updateAclRule, deleteGroup, getNumUsers, getMetadata, saveGroupMetadata, sortUserGroups
 from core.translation import t, lang
 from utils.utils import splitpath, u
 
@@ -97,7 +97,7 @@ def validate(req, op):
                 group.setOption(str(_option))
                 group.setHideEdit(req.params.get("leftmodule","").strip())
                 saveGroupMetadata(groupname, req.params.get("leftmodulemeta","").split(";"))
-
+            sortUserGroups()
         return view(req)
 
     except:
@@ -108,7 +108,7 @@ def validate(req, op):
 def view(req):
 
     global groupoption
-    groups = list(loadGroupsFromDB())   
+    groups = list(loadGroupsFromDB())
     order = getSortCol(req)
     actfilter = getFilter(req)
     
@@ -143,8 +143,8 @@ def view(req):
             
         if int(order[1:])==1:
             groups.reverse()
-    else:
-        groups.sort(lambda x, y: cmp(x.getName().lower(),y.getName().lower())) 
+    #else:
+    #    groups.sort(lambda x, y: cmp(x.getName().lower(),y.getName().lower())) 
 
     v = getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader([t(lang(req), "admin_usergroup_col_1"), t(lang(req), "admin_usergroup_col_2"), t(lang(req), "admin_usergroup_col_3"), t(lang(req), "admin_usergroup_col_4")])

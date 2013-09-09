@@ -21,7 +21,6 @@
 import core.athana as athana
 from core.metatype import Metatype, charmap
 
-
 from core.translation import t, getDefaultLanguage
 
 from utils.dicts import SortedDict
@@ -47,22 +46,20 @@ class m_htmlmemo(Metatype):
 
 
     def language_snipper(self, s, language, joiner=""):
-        lines = s.splitlines(True)
         res = []
         append_line = True
-        for line in lines:
+        for line in s.splitlines(True):
             m = self.CUTTER_PATTERN.match(line.strip())
             if not m:
                 if append_line:
                     res.append(line)
             else:
-                if m.groupdict()["lang"] == language:
+                if m.groupdict()["lang"]==language:
                     res = []
                     append_line = True
                 else:
                     append_line = False
-        s = joiner.join(res)       
-        return s
+        return joiner.join(res)
 
   
     def str2dict(self, s, key_joiner="__", join_stringlists=True, only_config_langs=True):
@@ -71,25 +68,21 @@ class m_htmlmemo(Metatype):
             d = SortedDict()
             
             for lang in config_languages:
-                if lang == config_default_language:
+                if lang==config_default_language:
                    d[lang] = s
                 else:
                    d[lang] = ''
             
-            return d  
-        
-        lines = s.splitlines(True)
-
+            return d
+            
         d = SortedDict()
-
-        key = config_default_language
         key = "untagged"
 
         value = []
         d[key] = value
         append_line = True
 
-        for line in lines:
+        for line in s.splitlines(True):
             m = self.CUTTER_PATTERN.match(line)
             if not m:
                 d[key].append(line)
@@ -107,15 +100,13 @@ class m_htmlmemo(Metatype):
                 d[key] = value
 
         # handle unused config_languages
-        keys = d.keys()
         for lang in config_languages:
-            if not lang in keys:
+            if not lang in d.keys():
                 d[lang] = []
             
         # ignore keys not in config_languages
         if only_config_langs:
-            keys = d.keys()
-            for k in keys:
+            for k in d.keys():
                 if not k in config_languages:
                     del d[k]          
        
@@ -133,20 +124,21 @@ class m_htmlmemo(Metatype):
 
         d[language] = new_str_lang
 
-        keys = d.keys()
         res_list = []
-        for k in keys:
+        for k in d.keys():
             val = d[k]
             res_list.append(self.CUTTER_TEMPLATE % k)  # how should empty values look like?
             if val:
                 res_list.append(val)
-        res_str = joiner.join(res_list)
-        return res_str
+        return joiner.join(res_list)
 
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
 
         enable_multilang = bool(field.get('multilang'))
+        
+        if not language:
+            language = getDefaultLanguage()
 
         context = {
                     "lock": lock, 
@@ -154,8 +146,7 @@ class m_htmlmemo(Metatype):
                     "width": width, 
                     "name": field.getName(), 
                     "field": field, 
-                    "t": t,
-                    "ident": field.id,
+                    "ident": str(field.id),
                     "current_lang": language,
                     "defaultlang": language,  # not the systems default language
                     "languages": [],
@@ -167,16 +158,12 @@ class m_htmlmemo(Metatype):
                     "expand_multilang": False,                  
                   }
         
-        
         if enable_multilang:
-            languages = config_languages
-            lang = [l for l in languages if l != language]
-
-            langdict = self.str2dict(value)
+            lang = [l for l in config_languages if l != language]
             context.update(
                       { 
                         "languages": lang,
-                        "langdict": langdict,
+                        "langdict": self.str2dict(value),
                         "value_is_multilang": {True:'multi', False:'single'}[self.has_language_cutter(value)], 
                         "multilang_display": {True:'', False:'display: none'}[self.has_language_cutter(value)], 
                       } )
@@ -187,9 +174,8 @@ class m_htmlmemo(Metatype):
                 context["expand_multilang"] = False 
                 
         s = athana.getTAL("metadata/htmlmemo.html", context, macro="editorfield", language=language) 
-        s = s.replace("REPLACE_WITH_IDENT", str(field.id))                       
-        
-        return s        
+        return s.replace("REPLACE_WITH_IDENT", str(field.id))
+
 
     def getSearchHTML(self, context):
         return athana.getTAL("metadata/htmlmemo.html",{"context":context}, macro="searchfield", language=context.language)
@@ -197,14 +183,15 @@ class m_htmlmemo(Metatype):
     def getFormatedValue(self, field, node, language=None, html=1):
         value = node.get(field.getName()).replace(";","; ")
         value = self.language_snipper(value, language, joiner="\n")
-        return (field.getLabel(), value)    
+        return (field.getLabel(), value)
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None, attr_dict={}):
     
-        value = ""
-        if field:
-            value = field.getValues()    
-    
+        try:
+            value = field.getValues()
+        except:
+            value = ""
+        
         context = {
                     "value": value,
                     "additional_attrs": ",".join(self.additional_attrs), 
@@ -214,9 +201,18 @@ class m_htmlmemo(Metatype):
             context[attr_name] = ''
         
         context.update(attr_dict)
-        
         return athana.getTAL("metadata/htmlmemo.html", context, macro="maskeditor", language=language)    
-
+    
+    def getPopup(self, req):
+        if "type" in req.params:
+            req.reply_headers['Content-Type'] = "application/javascript"
+            if req.params.get('type')=="configfile":
+                from core.translation import lang
+                req.writeTAL("metadata/htmlmemo.html", {'lang': lang(req)}, macro="ckconfig")
+            elif req.params.get('type')=="javascript":
+                req.writeTAL("metadata/htmlmemo.html", {}, macro="javascript")
+        return athana.HTTP_OK
+        
     def getName(self):
         return "fieldtype_htmlmemo"
         

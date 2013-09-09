@@ -103,7 +103,7 @@ def parsePDF(filename, tempdir):
     finfo.close()
 
     # convert first page to image (imagemagick + ghostview)
-    os.system("convert -thumbnail x300 %s[0] %s" % (filename, imgfile))
+    os.system("convert -alpha off -colorspace RGB %s[0] -background white -thumbnail x300  %s" % (filename, imgfile))
     makeThumbs(imgfile, thumb128, thumb300)
 
     # extract fulltext (xpdf)

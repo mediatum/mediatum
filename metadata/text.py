@@ -54,6 +54,8 @@ class m_text(Metatype):
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None):
         lang = None
         languages = config.get("i18n.languages")
+        if language==None:
+            language = languages.split(",")[0].strip()
         if field.getValues() and "multilingual" in field.getValues():
             lang = [l.strip() for l in languages.split(',') if (l != language)]
         valueList = value.split("\n")
@@ -62,6 +64,14 @@ class m_text(Metatype):
         while i+1 < len(valueList):
             values[valueList[i]+"__"+field.getName()] = valueList[i+1]
             i = i + 2
+            
+        if language:
+            defaultlang = language
+        elif lang:
+            defaultlang = lang[0]
+        else:
+            defaultlang = "" 
+            
         context = {
             "lock": lock,
             "values": values,
@@ -71,7 +81,7 @@ class m_text(Metatype):
             "field": field,
             "ident": field.id if field.id else "",
             "languages": lang,
-            "defaultlang": language if language else "" if not lang else lang[0],
+            "defaultlang": defaultlang,
             "expand_multilang": True if value.find('\n') != -1 else False
         }
         return athana.getTAL("metadata/text.html", context, macro="editorfield", language=language)

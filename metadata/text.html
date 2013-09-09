@@ -10,32 +10,38 @@
     <script tal:content="python:'var expand_multilang = \''+str(expand_multilang)+'\';'"> </script> 
     <script language="javascript" tal:attributes="src python:'/metatype/text?type=javascript'" type="text/javascript"> </script>
 
-    <span class="surround" style="padding-left:0px;">
-        <span tal:attributes="id python:ident+'_label'; class python:{'True':'multilang_show', 'False':'multilang_hide'}[str(len(languages)>0 and expand_multilang)]" tal:condition="python:languages">
-            <label style="display: inline-block; width:25px" tal:content="python:defaultlang + ':'"> </label>
+    <div style="float:left;position:relative;">
+        <div tal:attributes="id python:ident+'_label'; class python:{'True':'multilang_show', 'False':'multilang_hide'}[str(len(languages)>0 and expand_multilang)]" tal:condition="python:languages" style="position:absolute;left:-20px;top:5px;" tal:content="python:defaultlang + ':'">TEXT</div>
+        <span class="surround" style="padding-left:0px;overflow:visible;">
+            <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-26)+'px'; name python:defaultlang+'__'+name; id python:defaultlang+'__'+name; value python:value if not values else values.get(defaultlang+'__'+name) "/>
+            <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/text?name='+defaultlang+'__'+name+'\', \'\', 550, 470)'"
+                    style="margin-left:5px;width:14px;padding-left:0px;border-width:0px;" type="button"
+                    i18n:attributes="title text_titlepopupbutton">
+                <img src="/img/edit_spc.png" style="height:14px"/>
+            </button>
         </span>
-        <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-26)+'px'; name python:defaultlang+'__'+name; id python:defaultlang+'__'+name; value python:value if not values else values.get(defaultlang+'__'+name) "/>
-        <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/text?name='+defaultlang+'__'+name+'\', \'\', 550, 470)'"
-                style="margin-left:5px;width:14px;padding-left:0px;border-width:0px;" type="button"
-                i18n:attributes="title text_titlepopupbutton" tal:condition="python:not languages">
-            <img src="/img/edit_spc.png" style="height:14px"/>
-        </button>
-    </span>
-    
-    <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
-        <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onchange python:'handlelock(\''+name+'\')'" type="checkbox"/>
-        <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
-    </span>
+        
+        <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
+            <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onchange python:'handlelock(\''+name+'\')'" type="checkbox"/>
+            <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
+        </span>
 
-    <img tal:attributes="title python:{'True':'text_hide_multilang', 'False':'text_show_multilang'}[str(expand_multilang)]; src python:'/img/slang.png' if expand_multilang else '/img/mlang.png'; id python:'button_toggle_'+ident; onclick python:'toggleDiv(this, '+ident+')'" i18n:attributes="title" style="margin-left:1px;cursor:pointer;" tal:condition="languages" />
+        <img tal:attributes="title python:{'True':'text_hide_multilang', 'False':'text_show_multilang'}[str(expand_multilang)]; src python:'/img/slang.png' if expand_multilang else '/img/mlang.png'; id python:'button_toggle_'+ident; onclick python:'toggleDiv(this, '+ident+')'" i18n:attributes="title" style="margin-left:5px;cursor:pointer;" tal:condition="languages" />
 
-    <div tal:attributes="id python:ident+'_multilang'; class python:{'True':'multilang_show', 'False':'multilang_hide'}[str(len(languages)>0 and expand_multilang)]" tal:condition="languages">
-        <tal:block tal:repeat="lang languages">
-            <label tal:content="python:lang + ': '" style="display: inline-block; width: 25px">TEXT</label>
-            <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-26)+'px'; name python:lang + '__' + name; id python:lang+'__'+name; value python:values.get(lang+'__'+name) "/>
-            <br />
-        </tal:block>
+        <div tal:attributes="id python:ident+'_multilang'; class python:{'True':'multilang_show', 'False':'multilang_hide'}[str(len(languages)>0 and expand_multilang)]" tal:condition="languages" style="position:relative;">
+            <tal:block tal:repeat="lang languages">
+                <div style="position:absolute;left:-20px;top:5px;" tal:content="python:lang + ': '">TEXT</div>
+                <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-26)+'px'; name python:lang + '__' + name; id python:lang+'__'+name; value python:values.get(lang+'__'+name) "/>
+                <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/text?name='+lang+'__'+name+'\', \'\', 550, 470)'"
+                    style="margin-left:5px;width:14px;padding-left:0px;border-width:0px;" type="button"
+                    i18n:attributes="title text_titlepopupbutton">
+                    <img src="/img/edit_spc.png" style="height:14px"/>
+                </button>
+                <br/>
+            </tal:block>
+        </div>
     </div>
+    <div style="clear:both;"> </div>
     <input type="hidden" tal:attributes="id python:ident+'_show_multilang'; name python:ident+'_show_multilang'; value python:{'True':'multi', 'False':'single'}[str(expand_multilang)]" size="75" />
 </tal:block>
 
@@ -54,7 +60,7 @@
         $('#'+id+'_multilang').toggle();
         $('#'+id+'_label').toggle();
         $('#'+id+'_show_multilang').val($('#'+id+'_show_multilang').val() == 'multi' ? 'single' : 'multi');
-        $(src).attr("title", ($(src).attr("title")==$('#text_show_multilang').html() ? $('#text_hide_multilang:first').html() : $('#text_show_multilang').html()));
+        $(src).attr("title", ($(src).attr("title")==$('#text_show_multilang:first').html() ? $('#text_hide_multilang:first').html() : $('#text_show_multilang:first').html()));
         $(src).attr("src", ($(src).attr("src") == src_img_show_multilang ? src_img_hide_multilang : src_img_show_multilang));
         return false;
     }
@@ -67,6 +73,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta content="text/html;charset=UTF-8" http-equiv="content-type">
         <title i18n:translate="text_popup_title">TEXT</title>
+        <script type="text/javascript" language="javascript" src="/js/jquery.js"> </script>
         <script type="text/javascript">
             function detail(value, title){
                 o = document.getElementById("spcvalue");

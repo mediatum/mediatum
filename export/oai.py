@@ -36,7 +36,7 @@ import oaisets
 import utils.date as date
 import core.acl as acl
 import core.xmlnode
-from utils.utils import esc
+from utils.utils import esc, fixXMLString
 from schema.schema import getMetaType
 from utils.pathutils import isDescendantOf
 
@@ -327,7 +327,10 @@ def writeRecord(req, node, metadataformat):
     elif nodeHasOAIExportMask(node, metadataformat.lower()): # in [masknode.name for masknode in getMetaType(node.getSchema()).getMasks() if masknode.get('masktype')=='exportmask']:
         mask = getMetaType(node.getSchema()).getMask("oai_"+metadataformat.lower())
         if DEBUG: timetable_update(req, """ in writeRecord: mask = getMetaType(node.getSchema()).getMask("oai_"+metadataformat.lower()): node.id='%s', metadataformat='%s'""" % ( str(node.id), metadataformat ) ) 
-        req.write(mask.getViewHTML([node], flags=8))
+        try:
+            req.write(fixXMLString(mask.getViewHTML([node], flags=8))) # fix xml errors
+        except:
+            req.write(mask.getViewHTML([node], flags=8))
         if DEBUG: timetable_update(req, " in writeRecord: req.write(mask.getViewHTML([node], flags=8)): node.id='%s', metadataformat='%s'" % ( str(node.id), metadataformat ) ) 
         
     else:
@@ -551,8 +554,11 @@ def GetRecord(req):
     except (TypeError, KeyError, tree.NoSuchNodeError):
         return writeError(req, "idDoesNotExist")
         
+    if metadataformat and (metadataformat.lower() in FORMAT_FILTERS.keys()) and not filterFormat(node, metadataformat.lower()):
+        return writeError(req, "noPermission")
+        
     if parentIsMedia(node):
-        return writeError(req, "noPermission")         
+        return writeError(req, "noPermission")
 
     if not access.hasReadAccess(node):
         return writeError(req,"noPermission")
@@ -654,8 +660,7 @@ def oaiRequest(req):
         
     exit_time = now() 
     
-    msg = "%s:%d OAI (exit after %.3f sec.) %s - (user-agent: %s)" % (req.ip, req.channel.addr[1], (exit_time-start_time), (req.path + req.uri).replace('//','/'), useragent)
-    OUT(msg)
+    OUT("%s:%d OAI (exit after %.3f sec.) %s - (user-agent: %s)" % (req.ip, req.channel.addr[1], (exit_time-start_time), (req.path + req.uri).replace('//','/'), useragent))
     
     if DEBUG: OUT(timetable_string(req))
     

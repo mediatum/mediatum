@@ -32,9 +32,14 @@ if not given, current month will be used as period
 db = database.getConnection()
 args = sys.argv
 period = time.strftime("%Y-%m")
+fname = None
 
 if len(args)==2:  #period given
     period = args[1]
+    
+if len(args)==3: # period and filename given
+    period = args[1]
+    fname = args[2]
 
 for id in db.runQuery("select id from node where type='collections' or type='collection'"):
-    buildStat(tree.getNode(id[0]), period)
+    buildStat(tree.getNode(id[0]), period, fname)

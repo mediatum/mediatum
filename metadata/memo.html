@@ -1,175 +1,81 @@
 
 <tal:block metal:define-macro="editorfield">
     <style type="text/css">
-        div.grippie {
-            background:#EEEEEE url(/img/grippie.png) no-repeat scroll center 2px; cursor:s-resize; height:9px; width:100%; margin:0px 0x 5px 0px; padding:0px 0px 0px 0px;
-        }
-        .surr{
-            float:left; margin:0px; padding:0px; display:inline
-        }
-        div .resizable-textarea{
-            overflow:hidden;position:relative
-        }
-    </style>
-    
+        div.grippie{background:#EEEEEE url(/img/grippie.png) no-repeat scroll center 2px; cursor:s-resize; height:9px; width:100%; margin-bottom:10px !important; padding:0px;}
+        .surr{float:left; margin:0px; padding:0px; display:inline;}
+        div .resizable-textarea{overflow:hidden;position:relative;}
+        textarea.memo_text{margin-bottom:0px !important;}
+    </style>    
     <!-- for mask editor -->
-    <script type="text/javascript" language="javascript" src="http://code.jquery.com/jquery-latest.js"> </script>
-    
+    <script type="text/javascript" language="javascript" src="/js/jquery.js"> </script>
     <script type="text/javascript" language="javascript" src="/js/jquery.textarearesizer.js"> </script>
-    
-    <script tal:content="python:'var field_name = \''+str(name)+'\';'">;</script>
-    <script tal:content="python:'var field_id = \''+str(ident)+'\';'">;</script>
-    
-    <script tal:content="python:'var current_lang = \''+str(current_lang)+'\';'">;</script>
-    <script tal:content="python:'var languages = '+str(langdict.keys())+';'">;</script> 
-    <script tal:content="python:'var value_is_multilang = \''+str(value_is_multilang)+'\';'">;</script> 
-    <script tal:content="python:'var enable_multilang = \''+str(enable_multilang)+'\';'">;</script> 
-    <script tal:content="python:'var expand_multilang = \''+str(expand_multilang)+'\';'">;</script> 
-    
-    <script tal:content="python:'var label_show_multilang = \''+str(t(current_lang, 'memo_show_multilang'))+'\';'">;</script>
-    <script tal:content="python:'var label_hide_multilang = \''+str(t(current_lang, 'memo_hide_multilang'))+'\';'">;</script>
-    
-    <script language="javascript" type="text/javascript">
+    <script type="text/javascript" language="javascript" src="/metatype/memo?type=javascript"> </script>
+    <div id="text_show_multilang" style="display:none" i18n:translate="memo_show_multilang">TEXT</div>
+    <div id="text_hide_multilang" style="display:none" i18n:translate="memo_hide_multilang">TEXT</div>
 
-      var src_img_show_multilang = "/img/mlang.png";
-      var src_img_hide_multilang = "/img/slang.png";
-
-      function toggleMemoDiv(src, divId, labelId, hiddenInputId) 
-      {
-          
-          $("#"+divId).toggle();
-          $("#"+labelId).toggle();
-          
-          var hinput = $("#"+hiddenInputId);
-          hinput.val(hinput.val() == 'multi' ? 'single' : 'multi');
-          
-          var button = $("#"+src.id);
-          var new_title = (src.title == label_show_multilang ? label_hide_multilang : label_show_multilang);
-          button.attr("title", new_title);
-          var new_button_src = (button.attr("src") == src_img_show_multilang ? src_img_hide_multilang : src_img_show_multilang);
-          button.attr("src", new_button_src);
-          return false;
-      }    
-      
-      
-      function expandMultilang(field_id) 
-      {
-          
-          $("#"+field_id+"_label").show();
-          $("#"+field_id+"_multilang").show();
-          
-          var hinput = $("#"+field_id+"_show_multilang");
-          hinput.val('multi');
-          
-          var toggle_button = $("#button_toggle_"+field_id);
-          toggle_button.value = label_hide_multilang; 
-          
-          return true;
-          
-      } 
-      
-      
-      function collapseMultilang(field_id) 
-      {
-          
-          $("#"+field_id+"_label").hide();
-          $("#"+field_id+"_multilang").hide();
-          
-          var hinput = $("#"+field_id+"_show_multilang");
-          hinput.val('single');
-          
-          var toggle_button = $("#button_toggle_"+field_id);
-          toggle_button.value = label_show_multilang; 
-          
-          return true;
-          
-      }                
-        
-        
-    </script> 
-
-<div style="float:left;">  
-    
-  <span style="float:left; width: 20px"> 
-    <label tal:attributes="id python:ident+'_label'; style python: multilang_display;"  tal:content="python:defaultlang + ':'"></label>
-  </span>
-
-  <div class="surr" style="padding-left:2px;">    
-<!-- leave following linebreak in for the mask editor to display correctly, and otherwise leading linebreaks will also be deleted -->   
-<textarea class="memo_text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name python:defaultlang+'__'+name; id python:defaultlang+'__'+name; onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:'width:'+str(width-20)+'px'" rows="4">
-<tal:block tal:replace="python:langdict[defaultlang]"/></textarea>
-  </div>
-
-  <tal:block tal:condition="python: enable_multilang and expand_multilang">
-    <img tal:attributes="title python:t(current_lang, 'memo_hide_multilang'); id python:'button_toggle_'+ident; onclick python:'toggleMemoDiv(this, \''+ident+'_multilang\',\''+ident+'_label\',\''+ident+'_show_multilang\')';" style="margin-left:5px;" src="/img/slang.png" />
-  </tal:block>
-  <tal:block tal:condition="python: enable_multilang and not expand_multilang">
-    <img tal:attributes="title python:t(current_lang, 'memo_show_multilang'); id python:'button_toggle_'+ident; onclick python:'toggleMemoDiv(this, \''+ident+'_multilang\',\''+ident+'_label\',\''+ident+'_show_multilang\')';" style="margin-left:5px;"  src="/img/mlang.png" />
-    
-  </tal:block>       
-  <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/memo?name='+defaultlang+'__'+name+'\', \'\', 550, 600)'" style="margin-left:12px;width:14px;padding-left:0px;border-width:0px" type="button" i18n:attributes="title memo_titlepopupbutton"><img src="/img/edit_spc.png" style="height:14px;"/></button>
-    
-  <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
-    <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/>
-    <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
-  </span>
-
-</div>
-<div style="clear:both"> </div>
-
-<tal:block tal:condition="python: name and enable_multilang">
-
-  <div tal:attributes="id python:ident+'_multilang'; style python: multilang_display" >
-    <tal:block tal:repeat="lang languages">
-      <div>    
-        <div style="float:left;">
-          <label tal:content="python:lang + ': '" style="padding-left:0px;float:left; width: 20px"></label>
+    <div style="float:left;position:relative;">  
+        <div style="width: 20px;position:absolute;left:-20px;"> 
+            <label tal:attributes="id python:ident+'_label'; style python: multilang_display;" tal:content="python:defaultlang+':'">TEXT</label>
         </div>
-        <div tal:attributes="id python:'div_'+lang+'__'+name" style="padding-left:2px;float:left;">
-          <div>
-            <div class="surr">
 
-<!-- leave following linebreak in, otherwise leading linebreaks will be deleted -->    
+        <div class="surr">
+<textarea class="memo_text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name python:defaultlang+'__'+name; id python:defaultlang+'__'+name; onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:'width:'+str(width-20)+'px'" rows="4">
+<tal:block tal:replace="python:langdict[defaultlang] or ''"/></textarea>
+        </div>
+        <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/memo?name='+defaultlang+'__'+name+'\', \'\', 550, 600)'" style="margin-left:12px;width:14px;padding-left:0px;border-width:0px" type="button" i18n:attributes="title memo_titlepopupbutton"><img src="/img/edit_spc.png" style="height:14px;"/></button>
+
+        <img tal:condition="python: enable_multilang" i18n:attributes="title" tal:attributes="title python:'memo_hide_multilang' if expand_multilang else 'memo_show_multilang'; id python:'button_toggle_'+ident; onclick python:'toggleMemoDiv(this, \''+ident+'\')'; src python:'/img/slang.png' if expand_multilang else '/img/mlang.png'" style="margin-left:5px;cursor:pointer;"/>
+        
+        <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
+            <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/>
+            <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
+        </span>
+    </div>
+    
+    <div style="clear:both"> </div>
+    
+    <div tal:condition="python: name and enable_multilang" tal:attributes="id python:ident+'_multilang'; style python: multilang_display" >
+        <div tal:repeat="lang languages" style="position:relative;">
+
+            <div style="width: 20px;position:absolute;left:-20px;" tal:content="python:lang+': '">TEXT</div>
+            <div tal:attributes="id python:'div_'+lang+'__'+name" style="float:left;">
+                <div>
+                    <div class="surr">
 <textarea class="memo_text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name python:lang+'__'+name; id python:lang+'__'+name; onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:'width:'+str(width-20)+'px'" rows="4">
 <tal:block tal:replace="python:langdict[lang]" /></textarea>
-    
+                    </div>
+                    <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
+                        <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/>
+                        <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
+                    </span>
+                </div>
             </div>
-            <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
-              <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/>
-              <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
-            </span>  
-          </div> 
+            <div style="padding-left:2px;float:left;">
+                <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/memo?name='+lang+'__'+name+'\', \'\', 550, 600)'" style="margin-left:5px;width:14px;padding-left:0px;border-width:0px" type="button" i18n:attributes="title memo_titlepopupbutton"><img src="/img/edit_spc.png" style="height:14px;"/></button>
+            </div>
+            <br/>
         </div>
-        <div style="padding-left:2px;float:left;">
-          <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/memo?name='+lang+'__'+name+'\', \'\', 550, 600)'" style="margin-left:5px;width:14px;padding-left:0px;border-width:0px" type="button" i18n:attributes="title memo_titlepopupbutton"><img src="/img/edit_spc.png" style="height:14px;"/></button>
-        </div>  
-        <br /> 
-      </div> 
-      <div style="clear:both"> </div>    
-    </tal:block>
-  </div>
-  <div style="clear:both"> </div>
-   
+    </div>
+
+    <div style="clear:left"> </div>
+    <input tal:attributes="id python:ident+'_show_multilang'; name python:ident+'_show_multilang'; value python: value_is_multilang" type="hidden" size="75" />
 </tal:block>
 
-<div style="clear:left"> </div>
+
+<tal:block metal:define-macro="javascript">
+    var src_img_show_multilang = "/img/mlang.png";
+    var src_img_hide_multilang = "/img/slang.png";
+
+    function toggleMemoDiv(src, id) {
+        $("#"+id+'_multilang').toggle();
+        $("#"+id+'_label').toggle();
+        $("#"+id+"_show_multilang").val($("#"+id+"_show_multilang").val() == 'multi' ? 'single' : 'multi');
+        $("#"+src.id).attr("title", (src.title == $('#text_show_multilang:first').html() ? $('#text_hide_multilang:first').html() : $('#text_show_multilang:first').html()));
+        $("#"+src.id).attr("src", ($("#"+src.id).attr("src") == src_img_show_multilang ? src_img_hide_multilang : src_img_show_multilang));
+        return false;
+    }
     
-<div id="hidden_parameters" style="display:none;" >
-  <input tal:attributes="id python:ident+'_show_multilang'; name python:ident+'_show_multilang'; value python: value_is_multilang" size="75" />(_show_multilang)<br/>
-</div>    
-   
-  <script type="text/javascript">
-   
-     if (expand_multilang == "True") {
-       expandMultilang(field_id);
-     } else {
-       collapseMultilang(field_id);
-     }
-     
-     $(document).ready(function() {$('textarea.memo_text:not(.processed)').TextAreaResizer();});
-  
-  </script>    
-    
+    $(document).ready(function() {$('textarea.memo_text:not(.processed)').TextAreaResizer();});
 </tal:block>
 
 

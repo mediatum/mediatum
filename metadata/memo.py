@@ -18,7 +18,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.athana as athana
-import core.config as config
 from core.metatype import Metatype, charmap
 from core.translation import t, getDefaultLanguage
 
@@ -115,7 +114,7 @@ class m_memo(Metatype):
             keys = d.keys()
             for k in keys:
                 if not k in config_languages:
-                    del d[k]          
+                    del d[k]
        
         if join_stringlists: 
             for k in d.keys():
@@ -143,9 +142,12 @@ class m_memo(Metatype):
 
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
-
+        
         enable_multilang = bool(field.get('multilang'))
 
+        if not language:
+            language = getDefaultLanguage()
+        
         context = {
                     "lock": lock, 
                     "value": value, 
@@ -153,7 +155,7 @@ class m_memo(Metatype):
                     "name": field.getName(), 
                     "field": field, 
                     "t": t,
-                    "ident": field.id,
+                    "ident": str(field.id),
                     "current_lang": language,
                     "defaultlang": language,  # not the systems default language
                     "languages": [],
@@ -162,10 +164,9 @@ class m_memo(Metatype):
                     "value_is_multilang": 'single', 
                     "multilang_display": 'display: none', 
                     "enable_multilang": enable_multilang, 
-                    "expand_multilang": False,                  
+                    "expand_multilang": False,
                   }
-        
-        
+
         if enable_multilang:
             languages = config_languages
             lang = [l for l in languages if l != language]
@@ -182,7 +183,7 @@ class m_memo(Metatype):
             if enable_multilang and self.has_language_cutter(value):
                 context["expand_multilang"] = True
             else:
-                context["expand_multilang"] = False         
+                context["expand_multilang"] = False
         
         return athana.getTAL("metadata/memo.html", context, macro="editorfield", language=language)
 
@@ -199,9 +200,14 @@ class m_memo(Metatype):
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None, attr_dict={}):
 
-        value = ""
-        if field:
+        try:
             value = field.getValues()
+        except:
+            value = ""
+        
+        #value = ""
+        #if field:
+        #    value = field.getValues()
 
         context = {
                     "value": value,
@@ -223,7 +229,13 @@ class m_memo(Metatype):
 
     # method for popup methods of type memo
     def getPopup(self, req):
-        req.writeTAL("metadata/memo.html", {"charmap":charmap, "name":req.params.get("name"), "value":req.params.get("value")}, macro="popup")
+        if "type" in req.params:
+            if req.params.get('type')=='javascript':
+                req.reply_headers['Content-Type'] = "application/javascript"
+                from core.translation import lang
+                req.writeTAL("metadata/memo.html", {'lang': lang(req)}, macro="javascript")
+        else:
+            req.writeTAL("metadata/memo.html", {"charmap":charmap, "name":req.params.get("name"), "value":req.params.get("value")}, macro="popup")
         return athana.HTTP_OK
 
     # method for additional keys of type memo

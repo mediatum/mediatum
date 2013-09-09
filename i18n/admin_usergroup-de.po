@@ -64,3 +64,6 @@ msgstr "Editormodule ausblenden:"
 
 msgid "admin_usergroup_emails"
 msgstr "eMails:"
+
+msgid "admin_usergroup_metadata"
+msgstr "Metadatenschemata auswählen:"

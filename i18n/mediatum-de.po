@@ -28,6 +28,9 @@ msgstr "mediatum - digital collection management"
 msgid "show_in_new_window"
 msgstr "In neuem Fenster anzeigen"
 
+msgid "show in new window"
+msgstr "In neuem Fenster anzeigen"
+
 msgid "main_title_tum"
 msgstr "mediaTUM - Der Medienserver der TU München"
 
@@ -308,7 +311,7 @@ msgstr "Root-Knoten (Systemtyp)"
 msgid "view_list_add_shoppingbag"
 msgstr "Objekt zur Merkliste hinzufügen"
 
-msgid "view_lists_add_shoppintbag"
+msgid "view_lists_add_shoppingbag"
 msgstr "Aufgelistete Objekte in die Merkliste hinzufügen"
 
 msgid "view_list_att_title"
@@ -407,7 +410,7 @@ msgid "shoppingbag_object_added"
 msgstr "Objekt wurde zur Merkliste hinzugefügt."
 
 msgid "shoppingbag_objects_added"
-msgstr "Objecte wurden zur Merkliste hinzugefügt."
+msgstr "Objekte wurden zur Merkliste hinzugefügt."
 
 msgid "shoppingbag_object_still_added"
 msgstr "Objekt befindet sich bereits in der Merkliste."
@@ -1250,4 +1253,25 @@ msgstr "Bild/Text-Ansicht"
 
 msgid "image_view_big"
 msgstr "Bild-Ansicht"
+
+msgid "document_view_new_version_exist"
+msgstr "Es ist eine ${a_open}neuere Version${a_close} des gewünschten Dokuments verfügbar."
+
+msgid "document_view_version_deleted"
+msgstr "Die gewünschte Version des Dokuments wurde gelöscht.<br />Das Dokument wird in der ${a_open}neuesten Version${a_close} angezeigt."
+
+msgid "document_view_from"
+msgstr "von"
+
+msgid "document_view_current_version_from"
+msgstr "<b>Angezeigte Version: </b><br/>${version} vom"
+
+msgid "document_view_other_versions_of_the_document"
+msgstr "<b>Andere Versionen des Dokuments:</b><br/>"
+
+msgid "document_view_by"
+msgstr "von"
+
+msgid "document_new_version_comment"
+msgstr "Änderungen an den Metadaten"
 

@@ -19,3 +19,14 @@ msgstr "Save attribute"
 msgid "edit_clearfromcache"
 msgstr "Clear node from cache"
 
+msgid "edit_admin_index_button"
+msgstr "Load Search index"
+
+msgid "edit_admin_simplesearch"
+msgstr "Simple Search"
+
+msgid "edit_admin_extsearch"
+msgstr "Extended Search"
+
+msgid "edit_admin_textsearch"
+msgstr "Fulltext Search"

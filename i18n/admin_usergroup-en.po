@@ -64,3 +64,5 @@ msgstr "hide editor modules:"
 msgid "admin_usergroup_emails"
 msgstr "emails:"
 
+msgid "admin_usergroup_metadata"
+msgstr "Select metadata schemas:"

@@ -107,6 +107,9 @@ msgstr "Datei anzeigen"
 msgid "workflow_filelist_delete_title"
 msgstr "Datei löschen"
 
+msgid "workflow_filelist_delete_label"
+msgstr "Datei löschen und zurück zum Upload"
+
 msgid "workflow_add_file"
 msgstr "Neue Datei hinzufügen:"
 
@@ -144,8 +147,8 @@ msgstr "Email senden"
 msgid "workflowstep-showdata"
 msgstr "Metadateneditor"
 
-#msgid "workflowstep-start"
-#msgstr "Startknoten"
+msgid "workflowstep-start"
+msgstr "Startknoten"
 
 msgid "workflowstep-upload"
 msgstr "Uploadknoten"

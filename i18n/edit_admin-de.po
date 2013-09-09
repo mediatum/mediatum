@@ -19,3 +19,15 @@ msgstr "Speichern"
 
 msgid "edit_clearfromcache"
 msgstr "Knoten aus Cache löschen"
+
+msgid "edit_admin_index_button"
+msgstr "Suchindex laden"
+
+msgid "edit_admin_simplesearch"
+msgstr "Einfache Suche"
+
+msgid "edit_admin_extsearch"
+msgstr "Erweiterte Suche"
+
+msgid "edit_admin_textsearch"
+msgstr "Volltext Suche"

@@ -34,6 +34,7 @@ from lib.geoip.geoip import GeoIP, getFullCountyName
 class LogItem:
 
     def __init__(self, data):
+        self.id = ""
         try:
             m = re.split(' INFO | - - \[| \] \"GET | HTTP/1.1\"', data)
             self.date, self.time = m[0][:-4].split(" ")
@@ -288,17 +289,22 @@ class StatisticFile:
 
 
 logdata = {}
-def readLogFiles():
+def readLogFiles(fname=None):
     global logdata
     path = config.get("logging.file.everything")
     files = []
-    files.append(path)
+    
+    if not fname:
+        files.append(path)
 
-    if len(logdata)!=0:
-        return logdata
+        if len(logdata)!=0:
+            return logdata
 
-    for i in range(1, 21):
-        files.append(path+"."+str(i))
+        for i in range(1, 21):
+            files.append(path+"."+str(i))
+    else:
+        files.append(fname)
+        print "using given filename", fname
 
     data = {}  # data [yyyy-mm][id][type]
     for file in files:
@@ -324,7 +330,7 @@ def readLogFiles():
 
 ip2c = None
 
-def buildStat(collection, period=""): # period format = yyyy-mm
+def buildStat(collection, period="", fname=None): # period format = yyyy-mm
     gi = GeoIP()
     logging.getLogger('editor').info("update stats for node %s and period %s" % (collection.id, period))
     statfiles = []
@@ -373,7 +379,7 @@ def buildStat(collection, period=""): # period format = yyyy-mm
     items = collection.getAllChildren()
     for item in items:
         ids.append(item.id)
-    data = readLogFiles()
+    data = readLogFiles(fname)
 
     for timestamp in data.keys():
         for id in data[timestamp].keys():

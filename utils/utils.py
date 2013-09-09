@@ -33,6 +33,9 @@ from HTMLParser import HTMLParser
 def esc(s):
     return s.replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;").replace(">", "&gt;")
 
+def esc2(s):
+    return s.replace("&", "&amp;").replace("\"", "'").replace("<", "&lt;").replace(">", "&gt;")
+
 def lightesc(s):
     return s.replace("<", "&lt;").replace(">", "&gt;")
 

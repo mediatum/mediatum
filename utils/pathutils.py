@@ -109,3 +109,13 @@ def isDescendantOf(node, parent):
         if isDescendantOf(p, parent):
             return 1
     return 0
+
+def getSubdirsContaining(path, filelist=[]):
+    '''returns those (direct) sub folders of path containing all files from filelist'''
+    if not os.path.exists(path): # path not found
+        return []
+        
+    result = [p for p in os.listdir(path) if os.path.isdir(os.path.join(path, p))]
+    if filelist:
+        result = [d for d in result if set(filelist).issubset(os.listdir(os.path.join(path, d)))]
+    return result

@@ -83,7 +83,7 @@ def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]
                 msg = MIMEText(text, _subtype="plain", _charset="utf-8")
                     
                 mime_multipart.attach(msg)
-                # from example in python docu
+                # from exapmle in python docu
                 for path, filename in attachments_paths_and_filenames:
                     if not os.path.isfile(path):
                         logger.error("error sending mail to '%s' ('%s'): attachment: no such file: '%s', skipping file" % (str(toaddrs_string),
@@ -122,3 +122,4 @@ def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]
             except Exception, e:
                 logger.error("error sending mail: " + str(e))
                 raise e
+

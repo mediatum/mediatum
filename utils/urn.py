@@ -1,4 +1,4 @@
-﻿"""
+"""
  mediatum - a multimedia content repository
 
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
@@ -51,13 +51,14 @@ def buildNBN(snid1,snid2,niss):
     return urn+buildChecksum(urn)
 
 def increaseURN(urn):
+    checksum = 0
+    dashes = 0
     if urn.startswith("urn:nbn"):
         # nbn urns have a checksum digit at the end
         checksum = 1
         urn = urn[0:-1]
-    dashes = 0
     while urn.endswith("-"):
-        dashes = dashes + 1
+        dashes += 1
         urn = urn[:-1]
     # increate the urn, starting with the last number
     i = len(urn)-1

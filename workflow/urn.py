@@ -53,7 +53,7 @@ class WorkflowStep_Urn(WorkflowStep):
                         except:
                             pass
                         niss = niss.replace("["+var+"]", val)
-                node.set(attrname, utilsurn.buildNBN( "nbn:de:"+self.get("snid1"), self.get("snid2"), niss))
+                node.set(attrname, utilsurn.buildNBN(self.get("snid1"), self.get("snid2"), niss))
         return self.forwardAndShow(node, True, req)
         
         

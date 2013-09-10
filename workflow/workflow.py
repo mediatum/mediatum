@@ -972,3 +972,9 @@ def register():
     tree.registerNodeClass("workflowstep-addformpage", WorkflowStep_AddFormPage)
     registerStep("workflowstep-addformpage")
     addLabels(WorkflowStep_AddFormPage(type="workflowstep-addformpage").getLabels())
+    
+    from urn import WorkflowStep_Urn
+    tree.registerNodeClass("workflowstep-addurn", WorkflowStep_Urn)
+    registerStep("workflowstep-addformpage")
+    addLabels(WorkflowStep_Urn(type="workflowstep-addurn").getLabels())
+

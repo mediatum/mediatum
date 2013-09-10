@@ -47,8 +47,6 @@ class WorkflowStep_End(WorkflowStep):
             node.setDirty()
         except:
             pass
-        if len(node.getParents())>1:
-            self.removeChild(node)
             
     def metaFields(self, lang=None):
         ret = []

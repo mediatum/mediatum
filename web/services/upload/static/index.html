@@ -1,0 +1,70 @@
+<html>
+<head>
+<title>index ws upload</title>
+<style type="text/css">
+.blue { color:blue; }
+.underline { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<h2 class="underline">Upload artifacts to the system</h2>
+
+<h2 id="toc0">
+	Authentication
+</h2>
+<p>
+	The authentication needs to fulfill two use cases:<br>
+</p>
+<ul>
+	<li>Know which user is sending a request
+	</li>
+	<li>Make sure the user is who he says he is
+	</li>
+</ul>
+<p>
+	We accomplish those use cases by using request signing like proposed in the OAuth standard (<a class="wiki_link_ext" href="http://oauth.net/core/1.0a/#signing_process" rel="nofollow">http://oauth.net/core/1.0a/#signing_process</a>).<br>
+	<br>
+	Thus we are sending the username in plain text and sign the whole request using a shared secret per user that is never transferred and only known to both the server and the client.<br>
+	<br>
+	The request is signed by creating a MD5 sum of the concatenated string of the request URL, the parameters and the shared secret. This way the signature can only be computed if the shared secret is known and the signature is only valid for exactly this request. Hence the only thing an attacker can do is to execute the same requests again since the signature will be invalid if any parameter is changed.<br>
+</p>
+<h2 id="toc1">
+</h2>
+<h2 id="toc2">
+	<a name="x-Signing a Request"></a>Signing a Request
+</h2>
+<p>
+	The signing is based on a common signing algorithm on both the server and client side.<br>
+	<br>
+</p>
+<ol>
+	<li>Sort the parameters alphabetically ( yxz=foo user=MyUsername abc=baz <strong>becomes</strong> abc=baz user=MyUsername yxz=foo)
+	</li>
+	<li>Concatenate the keys and values to one string like in URL ( <strong>=&gt;</strong> abc=baz&amp;user=MyUsername&amp;yxz=foo)
+	</li>
+	<li>Prefix the string with the request path (/<strong>service/export/</strong>abc=baz&amp;user=MyUsername&amp;yxz=foo)
+	</li>
+	<li>Prefix the resulting string with the shared secret (<strong>MySharedSecret</strong>/service/export/abc=baz&amp;user=MyUsername&amp;yxz=foo)
+	</li>
+	<li>Create the MD5 sum of that string ( <strong>MD5 =</strong> 1676a3873fc5dd035d362a3a01450dcc)
+	</li>
+	<li>Use this hash string as parameter <em>sign</em>.
+	</li>
+</ol>
+<p>
+	<br>
+	The resulting request would look like:<br>
+	http://server.de/service/export/?yxz=foo&amp;user=MyUsername&amp;abc=baz&amp;sign=1676a3873fc5dd035d362a3a01450dcc<br>
+	<br>
+</p>
+<h2 id="toc3">
+	<a name="x-Verifying a Request"></a>Verifying a Request
+</h2>
+<p>
+	The server does the same steps as the client using the shared secret stored for the given username. If the calculated hash value matches the one provided by the <em>sign</em> parameter, the request is verified.
+</p>
+
+
+</body>
+</html>

@@ -222,7 +222,6 @@ def show_printview(req):
                         sort = req.params.get("sortfield"+str(i), sort)
 
                     if sort!="":
-                        #sort = req.params.get("sortfield"+str(i),"")
                         if sort.startswith("-"):
                             sort = sort[1:]
                             order[i] = -1
@@ -233,15 +232,23 @@ def show_printview(req):
                             _i+=1
                     if col[i][1]=="":
                         col[i]=(0, children[0][0][0])
-                            
+                              
                 # sort method for items
-                def myCmp(x, y, col, order):                   
-                    if  x[col[0][0]][1].lower()>y[col[0][0]][1].lower():
+                def myCmp(x, y, col, order):
+                    cx = ""
+                    cy = ""
+                    for item in x:
+                        if item[0]==col[0][1]:
+                            cx = item[1]
+                            break
+                    for item in y:
+                        if item[0]==col[0][1]:
+                            cy = item[1]
+                            break
+                    if cx.lower()>cy.lower():
                         return 1*order[0]
-                    elif x[col[0][0]][1].lower()==y[col[0][0]][1].lower():
-                        if len(col[1:])>0:
-                            return myCmp(x,y, col[1:], order[1:]) 
                     return -1*order[0]
+
                 
                 sorted_children = []
                 tmp = []
@@ -256,7 +263,6 @@ def show_printview(req):
                         tmp.append(item)
                 tmp.sort(lambda x, y: myCmp(x,y, col, order))
                 sorted_children.extend(tmp)
-                
                 children = sorted_children
         
         req.reply_headers['Content-Type'] = "application/pdf"
@@ -269,4 +275,4 @@ def popup_metatype(req):
         mtype.getPopup(req)
     else:
         print "error, no popup method found"
-        
+

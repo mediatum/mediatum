@@ -38,7 +38,7 @@ from core.metatype import Context
 from core.translation import lang
 from web.frontend.frame import getNavigationFrame
 from web.frontend.content import getContentArea, ContentNode
-from schema.schema import getMetadataType
+from schema.schema import getMetadataType, getMetaType
 
 
 def handle_json_request(req):

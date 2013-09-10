@@ -50,6 +50,7 @@ host = "http://" + config.get("host.name")
 
 guestAccess = AccessData(user=users.getUser('Gast'))
 collections = tree.getRoot('collections')
+home = tree.getRoot('home')
 
 from web.services.cache import Cache
 from web.services.cache import date2string as cache_date2string
@@ -510,7 +511,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
         return res
 
     # check node access
-    if guestAccess!=None and guestAccess.hasAccess(node, "read") and isDescendantOf(node, collections):
+    if guestAccess!=None and guestAccess.hasAccess(node, "read") and (isDescendantOf(node, collections) or isDescendantOf(node, home)):
         pass
     else:
         res['status'] = 'fail'

@@ -28,6 +28,7 @@ else:
     import json
 
 from utils.utils import esc, u, u2
+from schema.schema import getMetaType
 
 
 def buildNodeDescriptor(req, node, indent=None, written=None, children=True, children_access=None, parents=False,):
@@ -59,6 +60,16 @@ def buildNodeDescriptor(req, node, indent=None, written=None, children=True, chi
         #except:
         #    logging.getLogger('services').error('Error: web.services.jsonnode: could not get default mask content')
         #    nodedict['defaultexport'] = []
+        
+    elif mask not in ["", "none"]: # deliver every mask
+        try:
+            mask_obj = getMetaType(node.getSchema()).getMask(mask)
+            if mask_obj:
+                nodedict['defaultexport'] = mask_obj.getViewHTML([node], flags=8)
+            else:
+                nodedict['defaultexport'] = "mask not found"
+        except:
+            nodedict['defaultexport'] = "error"
 
     if children:
         nodedict['children'] = []

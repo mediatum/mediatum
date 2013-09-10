@@ -26,13 +26,13 @@ msgid "edit_meta_changed"
 msgstr "zuletzt geändert"
 
 msgid "edit_meta_version_information"
-msgstr "Version Informationen"
+msgstr "Versionierungs-Informationen"
 
 msgid "edit_meta_comment"
 msgstr "Kommentar"
 
 msgid "edit_meta_generate_new_version"
-msgstr "Neuen Version"
+msgstr "Neue Version erstellen"
 
 msgid "edit_meta_version"
 msgstr "Version"
@@ -47,7 +47,7 @@ msgid "edit_meta_timestamp_comment"
 msgstr "Timestamp / Kommentar"
 
 msgid "edit_meta_updateduser"
-msgstr "Aktualisiert Benutzer"
+msgstr "Aktualisiert von"
 
 msgid "edit_meta_delete_confirm"
 msgstr "Möchten Sie Version ${version} wirklich löschen?"

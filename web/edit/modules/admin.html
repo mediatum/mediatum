@@ -80,7 +80,7 @@
 
             <tr tal:condition="python:len(technfields)>0">
                 <td colspan="3">
-                    <button name="deltechn" type="submit" onclick="return questionDel();document.meta.type.value='technical'" i18n:translate="edit_files_del_tech_meta">TEXT</button>
+                    <button name="deltechn" type="submit" onclick="return questionDel();setActionType('technical')" i18n:translate="edit_files_del_tech_meta">TEXT</button>
                 </td>
             </tr>
             <tr>
@@ -91,19 +91,69 @@
             </tr>
             <tr>
                 <td i18n:translate="edit_admin_add_attributename">TEXT</td>
-                <td colspan="2"><input type="text" name="new_name"/></td>
+                <td colspan="3"><input type="text" name="new_name"/></td>
             </tr>
             <tr>
                 <td i18n:translate="edit_admin_add_attributevalue">TEXT</td>
-                <td colspan="2"><input type="text" name="new_value"/></td>
+                <td colspan="3"><input type="text" name="new_value"/></td>
             </tr>
             <tr>
                 <td colspan="3">
-                    <button name="addattr" type="submit" onclick="document.meta.type.value='addattr'" i18n:translate="edit_admin_add_attr">TEXT</button>
+                    <button name="addattr" type="submit" onclick="setActionType('addattr')" i18n:translate="edit_admin_add_attr">TEXT</button>
                 </td>
             </tr>
         </table>
-        <input type="hidden" name="type" value=""/>
+        <div>
+            <hr/>
+            <button type="button" onclick="getSearchData()" i18n:translate="edit_admin_index_button">TEXT</button>
+        </div>
+        <div id="searchdata" />
+        <input type="hidden" name="type" id="type" value=""/>
     </form>
-
+    <script tal:content="python:'var id='+node.id" />
+    <script>
+        /*$(document).ready(function() {
+            $.get('/edit/edit_content?id='+id+'&tab=admin&action=getsearchdata&style=popup', function(data) {
+                $('#searchdata').html(data);
+            });
+        });*/
+        
+        function getSearchData(){
+            $.get('/edit/edit_content?id='+id+'&tab=admin&action=getsearchdata&style=popup', function(data) {
+                $('#searchdata').html(data);
+            });
+        }
+        
+        function setActionType(value){
+            $("#type").val(value);
+        }
+    </script>
+    
 </tal:block>
+
+<tal:block metal:define-macro="searchdata">
+    <style>
+        div.searchinfo{overflow:auto;width:100%;position:relative;max-height:200px;border:1px solid silver}
+    </style>
+    <h5 i18n:translate="edit_admin_simplesearch">TEXT</h5>
+    <div class="searchinfo">
+        <tal:block tal:repeat="i python:searchdata[0]">
+            <span tal:content="i">.</span><br/>
+        </tal:block>
+    </div>
+    
+    <h5 i18n:translate="edit_admin_extsearch">TEXT</h5>
+    <div class="searchinfo">
+        <tal:block tal:repeat="i python:searchdata[1]">
+            <span tal:content="i">.</span><br/>
+        </tal:block>
+    </div>
+    
+    <h5 i18n:translate="edit_admin_textsearch">TEXT</h5>
+    <div class="searchinfo">
+        <tal:block tal:repeat="i python:searchdata[1]">
+            <span tal:content="i">.</span><br/>
+        </tal:block>
+    </div>
+</tal:block>
+

@@ -31,6 +31,10 @@ def getContent(req, ids):
     access = acl.AccessData(req)
     if not access.hasWriteAccess(node) or "admin" in users.getHideMenusForUser(user):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+        
+    if req.params.get('action')=='getsearchdata':
+        req.writeTAL("web/edit/modules/admin.html", {'searchdata':node.search('searchcontent='+node.id)}, macro="searchdata")
+        return ''
 
     if req.params.get("type","")=="addattr" and req.params.get("new_name", "")!="" and req.params.get("new_value", "")!="":
         node.set(req.params.get("new_name", ""), req.params.get("new_value", ""))
@@ -112,3 +116,4 @@ def formatdate(value, format=""):
         return format_date(parse_date(value,"%Y-%m-%dT%H:%M:%S"), format=format)
     except:
         return value
+

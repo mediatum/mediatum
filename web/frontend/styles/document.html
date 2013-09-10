@@ -12,57 +12,70 @@
     <p class="error" i18n:translate="document_view_version_deleted">
     <span i18n:name="a_open" tal:replace="structure python:'<a href=&quot;/''?id='+v.id+'&quot;>'"></span>
     <span i18n:name="a_close" tal:replace="structure python:'</a>'"></span>
-The desired version of the document has been deleted.<br />
-The document is displayed in the <a href="/" tal:attributes="href python:'?id='+v.id">latest version</a>.
+    The desired version of the document has been deleted.<br />
+    The document is displayed in the <a href="/" tal:attributes="href python:'?id='+v.id">latest version</a>.
     </p>
 </div>
 
 <div style="width:100%;text-align:right">
     <img tal:condition="python:node.get('metis_url')!=''" tal:attributes="src python:node.get('metis_url')" width="1" height="1" alt="" />
-    <a tal:attributes="href python:'javascript:shoppingBag(\''+str(node.id)+'\')'" style="text-decoration:none">
-        <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png"/>
-    </a>
-    <a tal:condition="print_url" tal:attributes="href python:print_url" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
+    <img i18n:attributes="title view_list_add_shoppingbag" tal:attributes="onclick python:'javascript:shoppingBag(\''+str(node.id)+'\')'" border="0" src="/img/favourite_add.png" style="cursor:pointer"/>
+    <a tal:condition="print_url" tal:attributes="href python:print_url" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif" style="margin-top:-5px"/></a>
 </div>
-
-<div id="object_image">
-    <tal:block tal:condition="python: len(node.getFiles())>0">
-    <tal:block tal:condition="python:canseeoriginal">
-        <a tal:attributes="href documentlink" i18n:attributes="title doc_fulltext_title" target="pdfdocument">
-            <img tal:attributes="src documentthumb" style="cursor:pointer" border="0" width="300" />
-        </a>
-        <p>&nbsp;</p>
-        <tal:block tal:condition="documentdownload" i18n:translate="">
-            If you experience problems opening this document, please try 
-        </tal:block>
-        <a tal:attributes="href documentdownload" i18n:translate="">this link</a>.
-    </tal:block>
-    <tal:block tal:condition="python:not canseeoriginal">
-        <img tal:attributes="src documentthumb" border="0" width="300"/>
-    </tal:block>
-    <br/>
-    <div tal:condition="python:len(attachment)>0" id="object_attachment">
-        <a tal:attributes="onclick python:'javascript:openPopup(\'/attachmentbrowser?id='+str(node.id)+'&path='+path+'\', \'Attachment\', 400, 400)'" i18n:translate="doc_att_browser" href="#" >TEXT</a>
-    </div>
-    <tal:block tal:condition="bibtex">
-        <br/>
-        <a tal:attributes="href python:'/export/'+str(node.id)+'/bibtex'" target="bibtexdocument" i18n:attributes="title doc_bibtex_title"><img src="/img/bibtex.gif"/></a>
-    </tal:block>
-    </tal:block>
-
-    <div id="object_versions">
-        <div><tal:block i18n:translate="document_view_current_version_from">Current version: <span i18n:name="version" tal:replace="python:'Version ' + str(node.get('system.version.id')=='' and 1 or node.get('system.version.id'))">Version</span> from</tal:block> <tal:block tal:condition="python:node.get('updatetime') or node.get('creationtime')" tal:replace="python:node.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:node.get('updateuser') and node.get('updateuser') or node.get('creator')" /></div>
-        <div i18n:translate="document_view_other_versions_of_the_document">Other versions of the document:</div>
-        <tal:block tal:define="versions python:node.getVersionList()">
-            <tal:block tal:repeat="v versions">
-                <div>
-                    <a href="/" tal:attributes="href python:'?id='+v.id"><span tal:content="python:'Version ' + str(v.get('system.version.id')=='' and 1 or v.get('system.version.id'))">Version</span>
-                    <span tal:condition="python:v.get('updatetime') or v.get('creationtime')">(<tal:block i18n:translate="document_view_from">from</tal:block> <tal:block tal:replace="python:v.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:v.get('updateuser') and v.get('updateuser') or v.get('creator')" />)</span></a>
-                </div>
+<div id="object_main">
+    <div tal:condition="python: len(node.getFiles())>0" id="object_image">
+        <tal:block tal:condition="python:canseeoriginal">
+            <a tal:attributes="href documentlink" i18n:attributes="title doc_fulltext_title" target="pdfdocument">
+                <img tal:attributes="src documentthumb" style="cursor:pointer" border="0" width="300" />
+            </a>
+            <p>&nbsp;</p>
+            <tal:block tal:condition="documentdownload" i18n:translate="">
+                If you experience problems opening this document, please try 
             </tal:block>
+            <a tal:attributes="href documentdownload" i18n:translate="">this link</a>.
         </tal:block>
-    </div>
+        <tal:block tal:condition="python:not canseeoriginal">
+            <img tal:attributes="src documentthumb" border="0" width="300"/>
+        </tal:block>
+        <br/>
+        <div tal:condition="python:len(attachment)>0" id="object_attachment">
+            <a tal:attributes="onclick python:'javascript:openPopup(\'/attachmentbrowser?id='+str(node.id)+'&path='+path+'\', \'Attachment\', 400, 400)'" i18n:translate="doc_att_browser" href="#" >TEXT</a>
+        </div>
+        <tal:block tal:condition="bibtex">
+            <br/>
+            <a tal:attributes="href python:'/export/'+str(node.id)+'/bibtex'" target="bibtexdocument" i18n:attributes="title doc_bibtex_title"><img src="/img/bibtex.gif"/></a>
+        </tal:block>
+                
+        <div id="object_versions" tal:define="versions python:node.getVersionList()" tal:condition="python:len(versions)>1">
+            <div><tal:block i18n:translate="document_view_current_version_from">Current version:<br/><span i18n:name="version" tal:replace="python:'Version ' + str(node.get('system.version.id')=='' and 1 or node.get('system.version.id'))">Version</span> from</tal:block> <tal:block tal:condition="python:node.get('updatetime') or node.get('creationtime')" tal:replace="python:node.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:node.get('updateuser') and node.get('updateuser') or node.get('creator')" /></div>
 
+            <div i18n:translate="document_view_other_versions_of_the_document">Other versions of the document:</div>
+            <div tal:repeat="v versions">
+                <a href="/" tal:attributes="href python:'?id='+v.id"><span tal:content="python:'Version ' + str(v.get('system.version.id')=='' and 1 or v.get('system.version.id'))">Version</span>
+                <span tal:condition="python:v.get('updatetime') or v.get('creationtime')">(<tal:block i18n:translate="document_view_from">from</tal:block> <tal:block tal:replace="python:v.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:v.get('updateuser') and v.get('updateuser') or v.get('creator')" />)</span></a>
+            </div>
+        </div>
+        
+    </div>
+    <tal:block tal:condition="python: len(node.getFiles())==0">
+        <div id="object_meta" style="margin-left:0px" tal:content="raw metadata"/>
+        <tal:block tal:condition="bibtex">
+            <br/>
+            <a tal:attributes="href python:'/export/'+str(node.id)+'/bibtex'" target="bibtexdocument" i18n:attributes="title doc_bibtex_title"><img src="/img/bibtex.gif"/></a>
+        </tal:block>
+    </tal:block>
+    <div tal:condition="python: len(node.getFiles())>0" id="object_meta" tal:content="raw metadata"/>
 </div>
-<div tal:condition="python: len(node.getFiles())==0" id="object_meta" style="margin-left:0px" tal:content="raw metadata"/>
-<div tal:condition="python: len(node.getFiles())>0" id="object_meta" tal:content="raw metadata"/>
+
+<div tal:define="children python:node.getChildren().sort()" tal:condition="python:len(children)>0" style="width:100%">
+    <p>Details:</p>
+    <div tal:repeat="child children" style="float:left; padding:2px;border:1px solid silver;margin:2px;text-align:center">
+        <img tal:attributes="src python:'/thumbs/'+child.id"/>
+        <br/>
+        <small>
+            <tal:block tal:replace="python:child.getName()"/><br/>
+            <a tal:attributes="href python:'?id='+child.id">Details...</a>
+        </small>
+    </div>
+</div>
+<div style="clear:left"> </div>

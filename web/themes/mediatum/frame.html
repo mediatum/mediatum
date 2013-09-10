@@ -119,11 +119,11 @@
             <input type="hidden" name="submittype" value="search"/>
             <input type="hidden" name="collection" tal:attributes="value python:search.collection.id"/>
             <input type="hidden" name="act_node" tal:attributes="value python:act_node"/>
-            <input type="hidden" name="searchmode" tal:attributes="value python:['extendedsuper','extended'][search.isExtendedNormal()]"/>
-            <table tal:define="max python:[4,11][search.isExtendedSuper()]">
+            <input type="hidden" name="searchmode" id="searchmodeId" tal:attributes="value python:['extendedsuper','extended'][search.isExtendedNormal()]"/>
+            <table id="abc" name="xsearchtable" tal:define="max python:[4,11][search.isExtendedSuper()]">
                 <tr tal:repeat="i python:range(1,max)">
                     <td valign="top">
-                        <select tal:attributes="name python:'field'+str(i)" onchange="chg()">
+                        <select tal:attributes="name python:'field'+str(i);id python:'id'+str(i); onchange python: 'chg_new('+str(i)+', '+str(search.collection.id)+')'">
                             <option tal:attributes="selected python:[None,'selected'][search.names[i]=='full']" i18n:translate="all_metafields" value="full"/>
                             <tal:block tal:repeat="a python:search.getSearchFields().keys()">
                                 <option tal:attributes="value a; selected python:[None,'selected'][search.names[i]==a]" tal:content="python:search.getSearchFields()[a]"/>

@@ -143,7 +143,7 @@ def getContent(req, ids):
     data["schemas"] = schema.loadTypesFromDB()
     data["searchfields"] = fields
     data["selectedfield"] = selectedfield
-    data["newfieldlink"] = "edit_content?id=%s&tab=searchmask" % node.id
+    data["newfieldlink"] = "edit_content?id=%s&tab=tab_searchmask" % node.id
    
     if myschema:
         data["defaultschemaid"] = myschema.id

@@ -248,7 +248,10 @@ def getContent(req, ids):
                 errorlist += mask.validateNodelist(nodes)
         else:
             for field in mask.metaFields():
-                value = req.params.get(field.getName(), None)
+                field_name = field.getName()
+                if field_name=='nodename':
+                    field_name = getDefaultLanguage()+'__nodename' 
+                value = req.params.get(field_name, None)
                 if value is not None:
                     for node in nodes:
                         node.set(field.getName(), value)

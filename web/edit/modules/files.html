@@ -1,4 +1,4 @@
-﻿
+
 <p metal:define-macro="filetype_error" style="color:red" i18n:translate="edit_files_filetype_error">
     TEXT
 </p>
@@ -179,7 +179,7 @@
     
     <hr/>
     <form method="post" enctype="multipart/form-data">
-        <b><tal:block i18n:translate="edit_files_change"/>:</b>
+        <b><tal:block i18n:translate="edit_files_change">TEXT</tal:block>:</b>
         <p>
             <input type="radio" name="change_file" value="yes" checked="checked" onclick="setInput('')" style="border:1px solid white"/><tal:block i18n:translate="edit_files_change"/>
             <br/>
@@ -190,24 +190,24 @@
             <input type="radio" name="change_file" value="attfile" onclick="setInput('')" style="border:1px solid white"/><tal:block i18n:translate="edit_files_add_attfile"/>
             <br/>
         </p>
-        <p>
-            <span id="inputname" style="display:none"><tal:block i18n:translate="edit_files_dirname"/> <input type="text" name="inputname" size="60"/></span>
+
+        <span id="inputname" style="display:none"><tal:block i18n:translate="edit_files_dirname">TEXT</tal:block> <input type="text" name="inputname" size="60"/></span>
+        <br/>
+        <span id="updatefile"><tal:block i18n:translate="edit_files_choosefile">TEXT</tal:block> <input name="updatefile"  type="file" size="50"/></span>
+        <span id="generate_new_version" tal:condition="python:not hasattr(node, 'metaFields') and access.hasWriteAccess(node)">
             <br/>
-            <span id="updatefile"><tal:block i18n:translate="edit_files_choosefile"/> <input name="updatefile"  type="file" size="50"/></span>
-            <span id="generate_new_version" tal:condition="python:not hasattr(node, 'metaFields') and access.hasWriteAccess(node)">
-                <br />
-                <br />
-                <br />
-                <input type="checkbox" name="generate_new_version" onchange="onNewVersionChecked(this);return false;" />
-                <tal:block i18n:translate="edit_files_create_a_new_version_with_uploading"/>
-                <br />
-                <span id="version_comment">
-                <br />
-                <b><tal:block i18n:translate="edit_files_comment"/>:<span class="required">*</span></b><br />
-                <textarea name="version_comment" rows="4" style="width:380px" tal:content="python:''">TEXT</textarea>
-                </span>
+            <br/>
+            <br/>
+            <input type="checkbox" name="generate_new_version" onchange="onNewVersionChecked(this);return false;" />
+            <tal:block i18n:translate="edit_files_create_a_new_version_with_uploading">TEXT</tal:block>
+            <br/>
+            <span id="version_comment">
+            <br/>
+            <b><tal:block i18n:translate="edit_files_comment">TEXT</tal:block>:<span class="required">*</span></b>
+            <br/>
+            <textarea name="version_comment" rows="4" style="width:380px" tal:content="python:''">TEXT </textarea>
             </span>
-        </p>
+        </span>
         <p>
             <button i18n:attributes="title edit_upload_upload_label" i18n:translate="edit_upload_upload_label" type="submit" name="addfile" value="submit">TEXT</button>
         </p>
@@ -240,12 +240,12 @@
             });
         </script>
         <script language="javascript">
-            document.getElementById('version_comment').style.display = 'none';
+            $('#version_comment').hide();
             function onNewVersionChecked (self) {
                 if (self.checked) {
-                    document.getElementById('version_comment').style.display = 'block';
+                    $('#version_comment').show();
                 } else {
-                    document.getElementById('version_comment').style.display = 'none';
+                    $('#version_comment').hide();
                 }
             }
         </script>

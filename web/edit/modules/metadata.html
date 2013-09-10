@@ -60,7 +60,7 @@
                     <div class="label" tal:content="python:field.getLabel()">TEXT</div>
                     <div id="description">&nbsp;</div>
                     <div id="editor_content">
-                        <span tal:define="name python:field.getFieldtype()=='meta' and field.getValue() or field.getName(); value python:node.get(name)" tal:replace="structure python:field.getEditorHTML(value,400)"/>
+                        <span tal:define="name python:field.getFieldtype() in ['meta', 'metytype'] and field.getValue() or field.getName(); value python:node.get(name)" tal:replace="structure python:field.getEditorHTML(value, 400)"/>
                     </div>
                 </div>
             </tal:block>

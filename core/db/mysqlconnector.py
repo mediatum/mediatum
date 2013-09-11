@@ -65,7 +65,7 @@ class MYSQLConnector(Connector):
             initDatabaseValues(self)
         except IndexError:
             initDatabaseValues(self)
-        
+
         # test for new views
         try:
             r = self.runQuery("select nid from containermapping limit 1")
@@ -210,10 +210,10 @@ class MYSQLConnector(Connector):
     def createTables(self):
         self.runQueryNoError("create table node (id integer not null, name varbinary(255), type varbinary(32) not null, readaccess text, writeaccess text, dataaccess text, orderpos int default '1', dirty bool, primary key (id), localread text)")
         self.runQueryNoError("create table nodefile (nid integer not null, filename text not null , type varbinary(16) not null, mimetype varbinary(20))")
-        self.runQueryNoError("create table nodeattribute (nid integer not null, name varbinary(50) not null, value text ) ") 
+        self.runQueryNoError("create table nodeattribute (nid integer not null, name varbinary(50) not null, value text ) ")
         self.runQueryNoError("create table nodemapping (nid integer not null, cid integer not null)")
         self.runQueryNoError("create table access (name varchar(64) not null, description text , rule text , primary key (name))")
-       
+
         self.runQueryNoError("alter table node add index(type);")
         self.runQueryNoError("alter table node add index(name);")
         self.runQueryNoError("alter table node add index(orderpos);")
@@ -237,7 +237,7 @@ class MYSQLConnector(Connector):
         self.runQueryNoError("drop table nodeattribute")
         self.runQueryNoError("drop table nodemapping")
         log.info("tables deleted")
-    
+
     def getRule(self, name):
         rule = self.runQuery("select name, description, rule from access where name=" + self.esc(name))
         if len(rule)==1:
@@ -246,19 +246,19 @@ class MYSQLConnector(Connector):
             raise DatabaseException("duplicate rule")
         else:
             raise DatabaseException("rule not found")
-    
+
 
     def getRuleList(self):
         return self.runQuery("select name, description, rule from access order by name")
 
-           
+
     def updateRule(self, newrule, oldname):
         try:
             self.runQuery("update access set name=" + self.esc(newrule.getName()) + ", rule=" + self.esc(newrule.getRuleStr()) + ", description=" + self.esc(newrule.getDescription()) + " where name=" + self.esc(oldname))
             return True
         except:
-            return False        
-            
+            return False
+
 
     def addRule(self, rule):
         try:
@@ -283,7 +283,7 @@ class MYSQLConnector(Connector):
                     if rule!="":
                         ret[rule]=""
         return ret.keys()
-        
+
     def ruleUsage(self, rulename):
         result = self.runQuery('select count(*) from node where readaccess="'+rulename+'" or writeaccess="'+rulename+'" or dataaccess="'+rulename+'"')
         return int(result[0][0])
@@ -299,7 +299,7 @@ class MYSQLConnector(Connector):
         orderpos = self.mkOrderPos()
         self.runQuery("insert into node (id, name, type, orderpos) values(" + id + ", " + self.esc(name) + ", '" + type + "',"+str(orderpos)+")")
         return str(id)
-    
+
     def addChild(self, nodeid, childid, check=1):
         if check:
             if childid == nodeid:
@@ -336,7 +336,7 @@ class MYSQLConnector(Connector):
                 i += 1
             ret.append(t)
         return ret
-     
+
     def getDBSize(self):
         l = 0
         for table in self.runQuery("SHOW TABLE STATUS"):
@@ -346,4 +346,97 @@ class MYSQLConnector(Connector):
                 l+= int(table[8])
 
         return int(l)
- 
+
+    def _sort_nodes_by_fields_ignore_missing(self, nids, fields):
+        """Sorts nodes by field (attribute) values.
+        :param nids: node ids
+        :param fields: field names to sort for. Prepend - to sort descending
+
+        Returns only nodes given by `nids`, but ignores nodes which don't have an attribute with name == `fields[0]`.
+        This one is slow (and may fail) for large nid counts, but faster than _sort_nodes_by_fields_get_all() for small counts.
+        """
+        q = "SELECT nid from {} " \
+            "WHERE nid IN ({}) AND {} " \
+            "ORDER BY {};"
+
+        join_parts = []
+        where_name_parts = []
+        order_parts = []
+
+        for i, f in enumerate(fields):
+            alias = "a" + str(i)
+            if i > 0:
+                join_parts.append("nodeattribute AS " + alias)
+            fname, direction = self._sql_sort_field_name_and_dir(f)
+            where_name_parts.append("{}.name={}".format(alias, fname))
+            order_parts.append("CAST(BINARY({}.value) as CHAR CHARACTER SET utf8) COLLATE utf8_general_ci{}".format(alias, direction))
+
+        # looks like nodeattribute as a0 INNER JOIN nodeattribute as a1 USING (nid) INNER JOIN ...
+        if len(fields) > 1:
+            join_clause = "nodeattribute as a0 INNER JOIN " + "INNER JOIN".join(j + " USING (nid)" for j in join_parts)
+        else:
+            join_clause = "nodeattribute as a0"
+        where_name_clause = " AND ".join(where_name_parts)
+        order_clause = ", ".join(order_parts)
+        query = q.format(join_clause, nids, where_name_clause, order_clause)
+        return [str(r[0]) for r in self.runQuery(query)]
+
+    def _sort_nodes_by_fields_get_all(self, nids, fields):
+        """This one ignores nids and returns all nodes which have a field with name == fields[0].
+        Works for every nid count but is slower than _sort_nodes_by_fields_ignore_missing() for small counts.
+        """
+
+        q = "SELECT nid from {} " \
+            "WHERE {} " \
+            "ORDER BY {};"
+
+        join_parts = []
+        where_name_parts = []
+        order_parts = []
+
+        for i, f in enumerate(fields):
+            alias = "a" + str(i)
+            if i > 0:
+                join_parts.append("nodeattribute AS " + alias)
+            fname, direction = self._sql_sort_field_name_and_dir(f)
+            where_name_parts.append("{}.name={}".format(alias, fname))
+            order_parts.append("CAST(BINARY({}.value) as CHAR CHARACTER SET utf8) COLLATE utf8_general_ci{}".format(alias, direction))
+
+        # looks like nodeattribute as a0 INNER JOIN nodeattribute as a1 USING (nid) INNER JOIN ...
+        if len(fields) > 1:
+            join_clause = "nodeattribute as a0 INNER JOIN " + "INNER JOIN".join(j + " USING (nid)" for j in join_parts)
+        else:
+            join_clause = "nodeattribute as a0"
+        where_name_clause = " AND ".join(where_name_parts)
+        order_clause = ", ".join(order_parts)
+        query = q.format(join_clause, where_name_clause, order_clause)
+        return [str(r[0]) for r in self.runQuery(query)]
+
+    def _sort_nodes_by_fields_full(self, nids, fields):
+        """This one is very slow, but sorts by each field even when some sort fields are missing.
+        Only returns matching nids.
+        """
+        q = "SELECT nid from (SELECT id AS nid FROM node WHERE id IN ({})) as n LEFT JOIN {} " \
+            "ORDER BY {};"
+
+        join_parts = []
+        order_parts = []
+
+        for i, f in enumerate(fields):
+            alias = "a" + str(i)
+            fname, direction = self._sql_sort_field_name_and_dir(f)
+            join_parts.append("(SELECT nid, value from nodeattribute WHERE name={} AND nid IN ({})) AS {}".format(fname, nids, alias))
+            order_parts.append("CAST(BINARY({}.value) as CHAR CHARACTER SET utf8) COLLATE utf8_general_ci{}".format(alias, direction))
+
+        join_clause = " LEFT JOIN ".join(j + " USING (nid)" for j in join_parts)
+        order_clause = ", ".join(order_parts)
+        query = q.format(nids, join_clause, order_clause)
+        return [str(r[0]) for r in self.runQuery(query)]
+
+    def sort_nodes_by_fields(self, nids, fields):
+        """Sorts nodes by field (attribute) values.
+        :param nids: node ids
+        :param fields: field names to sort for. Prepend - to sort descending
+        """
+        return self._sort_nodes_by_fields_get_all(nids, fields)
+

@@ -19,10 +19,9 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from utils.utils import compare_utf8,get_filesize, compare_digit, intersection, u, iso2utf8, float_from_gps_format
+from utils.utils import get_filesize, intersection, u, float_from_gps_format
 from utils.log import logException
 from core.db import database
-from collections import OrderedDict
 import logging
 import time
 import sys
@@ -274,125 +273,6 @@ def changed_metadata(node):
         changed_metadata_nodes[node.id] = None
         last_changed_metadata_node = node.id
 
-def createSortOrder(field):
-    field_orig = field
-
-    reverse=0
-    if field[0]=='-':
-        field = field[1:]
-        reverse=1
-
-    idlist = list(db.getSortOrder(field))
-
-    if reverse:
-        def mycmp(n1,n2):
-            if str(n1[1]).isdigit() and str(n2[1]).isdigit():
-                return compare_digit(n2[1],n1[1])
-            else:
-                return compare_utf8(n2[1],n1[1])
-    else:
-        def mycmp(n1,n2):
-            if str(n1[1]).isdigit() and str(n2[1]).isdigit():
-                return compare_digit(n1[1],n2[1])
-            else:
-                return compare_utf8(n1[1],n2[1])
-    idlist.sort(mycmp)
-
-    i = 0
-    v = None
-    id2pos = {}
-    for id,value in idlist:
-        if value != v:
-            v = value
-            i = i + 1
-        id2pos[int(id)] = i
-    return id2pos
-
-
-def _sql_sort_field_name_and_dir(f):
-        if f.startswith("-"):
-            direction = " DESC"
-            fname = f[1:]
-        else:
-            direction = " ASC"
-            fname = f
-        return (db.esc(fname), direction)
-
-
-def _sql_sort_multiple_fields_ignore_missing(nids, fields):
-    q = "SELECT nid from {} " \
-        "WHERE nid IN ({}) AND {} " \
-        "ORDER BY {};"
-
-    join_parts = []
-    where_name_parts = []
-    order_parts = []
-
-    for i, f in enumerate(fields):
-        alias = "a" + str(i)
-        if i > 0:
-            join_parts.append("nodeattribute AS " + alias)
-        fname, direction = _sql_sort_field_name_and_dir(f)
-        where_name_parts.append("{}.name={}".format(alias, fname))
-        order_parts.append("CAST(BINARY({}.value) as CHAR CHARACTER SET utf8) COLLATE utf8_general_ci{}".format(alias, direction))
-
-    # looks like nodeattribute as a0 INNER JOIN nodeattribute as a1 USING (nid) INNER JOIN ...
-    if len(fields) > 1:
-        join_clause = "nodeattribute as a0 INNER JOIN " + "INNER JOIN".join(j + " USING (nid)" for j in join_parts)
-    else:
-        join_clause = "nodeattribute as a0"
-    where_name_clause = " AND ".join(where_name_parts)
-    order_clause = ", ".join(order_parts)
-    return q.format(join_clause, nids, where_name_clause, order_clause)
-
-
-def _sql_sort_multiple_fields_get_all(nids, fields):
-    q = "SELECT nid from {} " \
-        "WHERE {} " \
-        "ORDER BY {};"
-
-    join_parts = []
-    where_name_parts = []
-    order_parts = []
-
-    for i, f in enumerate(fields):
-        alias = "a" + str(i)
-        if i > 0:
-            join_parts.append("nodeattribute AS " + alias)
-        fname, direction = _sql_sort_field_name_and_dir(f)
-        where_name_parts.append("{}.name={}".format(alias, fname))
-        order_parts.append("CAST(BINARY({}.value) as CHAR CHARACTER SET utf8) COLLATE utf8_general_ci{}".format(alias, direction))
-
-    # looks like nodeattribute as a0 INNER JOIN nodeattribute as a1 USING (nid) INNER JOIN ...
-    if len(fields) > 1:
-        join_clause = "nodeattribute as a0 INNER JOIN " + "INNER JOIN".join(j + " USING (nid)" for j in join_parts)
-    else:
-        join_clause = "nodeattribute as a0"
-    where_name_clause = " AND ".join(where_name_parts)
-    order_clause = ", ".join(order_parts)
-    return q.format(join_clause, where_name_clause, order_clause)
-
-
-def _sql_sort_multiple_fields(nids, fields):
-    q = "SELECT nid from (SELECT id AS nid FROM node WHERE id IN ({})) as n LEFT JOIN {} " \
-        "ORDER BY {};"
-
-    join_parts = []
-    order_parts = []
-
-    for i, f in enumerate(fields):
-        alias = "a" + str(i)
-        fname, direction = _sql_sort_field_name_and_dir(f)
-        join_parts.append("(SELECT nid, value from nodeattribute WHERE name={} AND nid IN ({})) AS {}".format(fname, nids, alias))
-        order_parts.append("CAST(BINARY({}.value) as CHAR CHARACTER SET utf8) COLLATE utf8_general_ci{}".format(alias, direction))
-
-    # looks like nodeattribute as a0 INNER JOIN nodeattribute as a1 USING (nid) INNER JOIN ...
-    join_clause = " LEFT JOIN ".join(j + " USING (nid)" for j in join_parts)
-    order_clause = ", ".join(order_parts)
-    return q.format(nids, join_clause, order_clause)
-
-
-sortorders = {}
 
 class NodeList:
     def __init__(self, ids, description=""):
@@ -424,32 +304,7 @@ class NodeList:
     def getDescription(self):
         return self.description
 
-    def sort_by_fields_old(self, fields):
-        if not fields:
-            return self
-        if isinstance(fields, str):
-            fields = [fields]
-        sortlists = []
-        for f in fields:
-            if f:
-                if f not in sortorders:
-                    sortorders[f] = createSortOrder(f)
-                sortlists.append(sortorders[f])
-        if not sortorders:
-            return self
-        def fieldcmp(id1,id2):
-            for s in sortlists:
-                pos1 = s.get(int(id1),-1)
-                pos2 = s.get(int(id2),-1)
-                if pos1 < pos2:
-                    return -1
-                elif pos1 > pos2:
-                    return 1
-            return 0
-        self.ids.sort(fieldcmp)
-        return self
-
-    def sort_by_fields(self, field, _sort_query_func=_sql_sort_multiple_fields_get_all):
+    def sort_by_fields(self, field):
         if not field or not self.ids:
             return self
         if isinstance(field, str):
@@ -468,10 +323,7 @@ class NodeList:
             fields = [f for f in field if f]
         t1 = time.time()
         nids = ",".join("'" + i +  "'" for i in self.ids)
-        query = _sort_query_func(nids, fields)
-        logg.debug("sort query:\n%s", query)
-#         import ipdb; ipdb.set_trace()
-        sorted_nids = [str(r[0]) for r in db.execute(query)]
+        sorted_nids = db.sort_nodes_by_fields(nids, fields)
         missing_nids = set(self.ids) - set(sorted_nids)
         if missing_nids:
             # query returned too few nids, add missing ids unsorted
@@ -976,9 +828,6 @@ class Node:
         if self.id:
             db.setAttribute(self.id, name, value,check=(not bulk))
 
-        try: del sortorders[name]
-        except: pass
-
     """ get all metadates (key/value) pairs """
     def items(self):
         if self.attributes is None:
@@ -1296,14 +1145,13 @@ class Node:
         return ''
 
 def flush():
-    global childids_cache,nodes_cache,parentids_cache,_root,db,sortorders
+    global childids_cache,nodes_cache,parentids_cache,_root,db
     tree_lock.acquire()
     try:
         childids_cache = None
         nodes_cache = MaxSizeDict(int(config.get("db.cache_size","100000")), keep_weakrefs=1)
         parentids_cache = None
         db = database.getConnection()
-        sortorders = {}
         _root = None
     finally:
         tree_lock.release()

@@ -26,7 +26,7 @@ import logging
 
 from utils.date import format_date, parse_date, now
 from utils.utils import formatException
-from core.translation import lang, t
+from core.translation import lang, t, getDefaultLanguage
 
 db = database.getConnection()
 

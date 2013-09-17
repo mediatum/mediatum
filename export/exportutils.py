@@ -92,7 +92,7 @@ def load_iso_639_2_b_names():
         logging.getLogger("backend").info(msg)
     except:    
         lines = []
-        logging.getLogger("backend").warning("exportutils coult not load file 'ISO-639-2_utf-8.txt'")
+        logging.getLogger("backend").warning("exportutils could not load file 'ISO-639-2_utf-8.txt'")
     return lines
     
     

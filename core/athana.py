@@ -3824,7 +3824,7 @@ class http_request:
                     query += "?"
                 else:
                     query += "&"
-                query += urllib.quote(k)+"="+urllib.quote(v)
+                query += "%s=%s"  %(urllib.quote(k), urllib.quote(v))
                 first = 0
         return page+";"+self.sessionid+query
 

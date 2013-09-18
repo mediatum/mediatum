@@ -51,6 +51,22 @@ def getMaskitemForField(field, language=None, mask=None):
 
 class m_text(Metatype):
 
+    def language_snipper(self, s, language, joiner="\n"):
+
+        if s.find(joiner) <= 0:
+            return s
+
+        valueList = s.split(joiner)
+
+        # copied from self.getEditorHTML
+        lang2value = dict()
+        i = 0
+        while i+1 < len(valueList):
+            lang2value[valueList[i]] = valueList[i+1]
+            i = i + 2
+
+        return lang2value.get(language, '')
+
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None):
         lang = None
         languages = config.get("i18n.languages")

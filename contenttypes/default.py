@@ -39,6 +39,8 @@ context = default_context.copy()
 context['host'] = "http://" + config.get("host.name")
 
 DEFAULT_MASKCACHE = 'deep'  # 'deep' | 'shallow' | None
+# remark 2013-09-18 wn: only deep cache compatible with multilingual text/memo/htmlmemo fields
+
 
 # for deep mask caching
 maskcache = {}
@@ -177,11 +179,15 @@ class Default(tree.Node):
                         value = fd['metadatatype'].getFormatedValue(fd['element'], node, language=language)[1]
                 else:
                     value = node.get(node_attribute)
-                    
                     metadatatype = fd['metadatatype']
+
                     if hasattr(metadatatype, "language_snipper"):
-                        value = metadatatype.language_snipper(value, language)
-                    
+                        metafield = fd['element']
+                        if (metafield.get("type") == "text" and metafield.get("valuelist") == "multilingual") \
+                            or \
+                           (metafield.get("type") in ['memo', 'htmlmemo'] and metafield.get("multilang") == '1'):
+                            value = metadatatype.language_snipper(value, language)
+
                     if value.find('&lt;') >= 0:
                         # replace variables
                         for var in re.findall(r'&lt;(.+?)&gt;', value):

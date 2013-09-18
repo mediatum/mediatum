@@ -1230,14 +1230,43 @@ def initialize(load=1):
     schema = schema
 
     if config.get("config.searcher","")=="fts3": # use fts3
-        print "fts3 searcher initialized"
+
         from core.search.ftsquery import subnodes, ftsSearcher
         from core.search.ftsparser import ftsSearchParser
-        
+
         subnodes = subnodes
         searchParser = ftsSearchParser
         searcher = ftsSearcher
-        
+
+        def getTablenames(searcher):
+            res = searcher.execute("SELECT * FROM sqlite_master WHERE type='table'")
+            tablenames = [t[1] for t in res]
+            return tablenames
+
+        # check fts database for tables
+        msg = "looking for tables in sqlite database of the searcher ..."
+        log.info(msg)
+        try:
+            tablenames = getTablenames(searcher)
+            if tablenames:
+                msg = "found %d tables in sqlite database of the searcher: %r" % (len(tablenames), tablenames)
+                log.info(msg)
+                print "fts3 searcher initialized"
+            else:
+                msg = "found no tables in sqlite database of the searcher ... trying to initialize database"
+                log.warning(msg)
+                searcher.initIndexer(option="init")
+                tablenames = getTablenames(searcher)
+                if tablenames:
+                    msg = "found %d tables in newly initialized sqlite database of the searcher: %r" % (len(tablenames), tablenames)
+                    log.info(msg)
+                    print "fts3 searcher initialized"
+                else:
+                    raise
+        except:
+            msg = "could not query tables from fts sqlite database ... searcher may not be functional"
+            log.error(msg)
+
     else: # use magpy
         print "magpy searcher initialized"
         from core.search.query import subnodes, mgSearcher

@@ -56,7 +56,7 @@ DBTYPE = 'std' #'std|split'   split = split databases; std = all tables in one d
 class FtsSearcher:
     def __init__(self):
         global DBTYPE
-        self.connames = {'std':{'full':'std', 'ext':'std', 'text':'std'},
+        self.connames = {'std':{'full':'std', 'ext':'std', 'text':'std', 'std':'std'},
                                 'split':{'full':'full', 'ext':'ext', 'text':'text'}}
         self.tablenames = {'full':"fullsearchmeta", 'ext':"searchmeta", 'text':"textsearchmeta"}
         self.db = {}
@@ -161,9 +161,9 @@ class FtsSearcher:
     def initIndexer(self, option=""):
         global MAX_SEARCH_FIELDS 
 
-        def create(sql, type):
+        def create(sql, _type):
             try:
-                self.execute(sql, type)
+                self.execute(sql, _type)
             except:
                 e = sys.exc_info()[1]
                 if "already exists" not in str(e):
@@ -225,10 +225,10 @@ class FtsSearcher:
             ret[id] = attr
         return ret
 
-    def execute(self, sql, type='std'):
+    def execute(self, sql, _type='std'):
         global DBTYPE
         try:
-            return self.db[self.connames[DBTYPE][type]].execute(sql)
+            return self.db[self.connames[DBTYPE][_type]].execute(sql)
         except:
             print "error in search indexer operation"
             #self.initIndexer('init')
@@ -348,7 +348,7 @@ class FtsSearcher:
 
     def nodeToFulltextSearch(self, node): # build fulltext index from node
         
-        if not node.getCategoryName()=="document": # only build fulltext of document nodes
+        if not hasattr(node, "getCategoryName") or not node.getCategoryName()=="document": # only build fulltext of document nodes
             return True
         r = re.compile("[a-zA-Z0-9]+")
        

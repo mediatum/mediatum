@@ -4,6 +4,7 @@
                 window.attachEvent("onload", buttonfix);
             </script>
         <![endif]-->
+        
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form name="usergroupoverview" method="post" action="#" tal:attributes="action page">
         <table class="overview">
@@ -170,7 +171,23 @@
                 
                 </td>
             </tr>
-            
+
+            <tr tal:condition="python:allow_dynamic_users">
+                 <td i18n:translate="admin_usergroup_allow_dynamic">TEXT</td>
+                 <td>
+                     <table>
+                        <tr>
+                            <td align="left" valign="top">
+                                <input type="checkbox" tal:attributes="checked python:{'1':'checked'}.get(allow_dynamic, None)" i18n:attributes="title admin_usergroup_allow_dynamic_checkbox_tooltip" name="checkbox_allow_dynamic" onClick="">
+                            </td>
+                            <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
+                                <textarea id="input_allow_dynamic" tal:content="python:group.get('dynamic_users')" i18n:attributes="title admin_usergroup_allow_dynamic_textarea_tooltip" name="dynamic_users" size="75"/>
+                            </td>
+                        </tr>                     
+                     </table>
+                 </td>            
+            </tr>            
+
             
             <tr>
                 <td>&nbsp;</td>
@@ -196,6 +213,8 @@
                     </fieldset>
                 </td>
             </tr>
+            
+
             <tr>
                 <td>&nbsp;</td>
                 <td><small>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info">TEXT</span>)</small></td>

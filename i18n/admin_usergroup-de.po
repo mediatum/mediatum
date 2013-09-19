@@ -67,3 +67,12 @@ msgstr "eMails:"
 
 msgid "admin_usergroup_metadata"
 msgstr "Metadatenschemata auswählen:"
+
+msgid "admin_usergroup_allow_dynamic"
+msgstr "dynamische Benutzer:"
+
+msgid "admin_usergroup_allow_dynamic_checkbox_tooltip"
+msgstr "dynamische Benutzer aus rechtem Textfeld aktivieren/deaktivieren"
+
+msgid "admin_usergroup_allow_dynamic_textarea_tooltip"
+msgstr "hier login-Namen (CN) der zugelassenen Benutzer eingeben, getrennt durch Komma oder Zeilenwechsel"

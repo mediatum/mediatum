@@ -37,21 +37,23 @@ from utils.utils import splitpath, u
 def getInformation():
     return{"version":"1.0"}
 
+ALLOW_DYNAMIC_USERS = False
+
 #
 # standard validator
 #
 def validate(req, op):
+    global ALLOW_DYNAMIC_USERS
+
     try:
-    
+
         if "action" in req.params.keys():
             if req.params.get("action")=="titleinfo":
                 group = getGroup(u(req.params.get("group")))
                 schema = group.getSchemas()
                 req.write('|'.join(schema))
             return ""
-    
-    
-    
+
         for key in req.params.keys():
             if key.startswith("new"):
                 # create new group
@@ -66,12 +68,12 @@ def validate(req, op):
                 deleteGroup(key[7:-2])
                 break
 
-        if "form_op" in req.params.keys():     
+        if "form_op" in req.params.keys():
             _option =""
             for key in req.params.keys():
                 if key.startswith("option_"):
                     _option += key[7]
-                            
+
             if req.params.get("form_op","")=="save_new":
                 # save new group values
                 if req.params.get("groupname","")=="":
@@ -97,6 +99,16 @@ def validate(req, op):
                 group.setOption(str(_option))
                 group.setHideEdit(req.params.get("leftmodule","").strip())
                 saveGroupMetadata(groupname, req.params.get("leftmodulemeta","").split(";"))
+
+                if ALLOW_DYNAMIC_USERS:
+                    allow_dynamic = req.params.get("checkbox_allow_dynamic", "")
+                    dynamic_users = req.params.get("dynamic_users", "")
+                    if allow_dynamic.lower() in ['on', 'true', '1']:
+                        group.set("allow_dynamic", "1")
+                    else:
+                        group.set("allow_dynamic", "")
+                    group.set("dynamic_users", dynamic_users)
+
             sortUserGroups()
         return view(req)
 
@@ -111,7 +123,7 @@ def view(req):
     groups = list(loadGroupsFromDB())
     order = getSortCol(req)
     actfilter = getFilter(req)
-    
+
     # filter
     if actfilter!="":
         if actfilter in("all", t(lang(req),"admin_filter_all"), "*"):
@@ -126,25 +138,25 @@ def view(req):
             groups = filter(lambda x: x.getName().lower().startswith(actfilter), groups)
 
     pages = Overview(req, groups)
-       
+
     # sorting
     if order != "":
         if int(order[0:1])==0:
-            groups.sort(lambda x, y: cmp(x.getName().lower(),y.getName().lower())) 
+            groups.sort(lambda x, y: cmp(x.getName().lower(),y.getName().lower()))
         elif int(order[0:1])==1:
-            groups.sort(lambda x, y: cmp(getNumUsers(x.getName()),getNumUsers(y.getName())))  
+            groups.sort(lambda x, y: cmp(getNumUsers(x.getName()),getNumUsers(y.getName())))
         elif int(order[0:1])==2:
             gl = {}
             for g in groups:
                 gl[g.id] = g.getSchemas()
             groups.sort(lambda x, y: cmp(len(gl[x.id]),len(gl[y.id])))
         elif int(order[0:1])==3:
-            groups.sort(lambda x, y: cmp(x.getHideEdit()=="",y.getHideEdit()=="")) 
-            
+            groups.sort(lambda x, y: cmp(x.getHideEdit()=="",y.getHideEdit()==""))
+
         if int(order[1:])==1:
             groups.reverse()
     #else:
-    #    groups.sort(lambda x, y: cmp(x.getName().lower(),y.getName().lower())) 
+    #    groups.sort(lambda x, y: cmp(x.getName().lower(),y.getName().lower()))
 
     v = getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader([t(lang(req), "admin_usergroup_col_1"), t(lang(req), "admin_usergroup_col_2"), t(lang(req), "admin_usergroup_col_3"), t(lang(req), "admin_usergroup_col_4")])
@@ -158,8 +170,8 @@ def view(req):
 # edit/create usergroup
 #
 def editGroup_mask(req, id, err=0):
-    global groupoption
-    
+    global groupoption, ALLOW_DYNAMIC_USERS
+
     newusergroup = 0
     if err==0 and id=="":
         # new usergroup
@@ -180,7 +192,7 @@ def editGroup_mask(req, id, err=0):
         group.setName(req.params.get("groupname",""))
         group.setDescription(req.params.get("description",""))
         group.setHideEdit(req.params.get("leftmodule","").split(';'))
-        
+
         group.setOption(option)
 
     v = getAdminStdVars(req)
@@ -195,8 +207,13 @@ def editGroup_mask(req, id, err=0):
     v["emails"] = ', '.join([u.get('email') for u in group.getChildren()])
     v["actpage"] = req.params.get("actpage")
     v["newusergroup"] = newusergroup
+
+    v["allow_dynamic_users"] = ALLOW_DYNAMIC_USERS  # global flag
+    v["allow_dynamic"] = group.get("allow_dynamic")  # for checkbox
+    v["dynamic_users"] = group.get("dynamic_users")
+
     return req.getTAL("/web/admin/modules/usergroup.html", v, macro="modify")
-    
+
 
 def getEditModuleNames():
     ret = []
@@ -204,20 +221,20 @@ def getEditModuleNames():
     for root, dirs, files in path:
         for name in [f for f in files if f.endswith(".py") and f!="__init__.py"]:
             ret.append(name[:-3])
-         
+
     # test for external modules by plugin
     for k,v in config.getsubset("plugins").items():
         path,module = splitpath(v)
         try:
             sys.path += [path+".editmodules"]
-            
+
             for root, dirs, files in os.walk(os.path.join(config.basedir, v+"/editmodules")):
                 for name in [f for f in files if f.endswith(".py") and f!="__init__.py"]:
                     ret.append(name[:-3])
         except ImportError:
             pass # no edit modules in plugin
     return ret
-    
+
 def buildRawModuleLeft(group, language):
     ret = ""
     if group.getHideEdit()=="":
@@ -226,9 +243,9 @@ def buildRawModuleLeft(group, language):
     hidelist.sort(lambda x, y: cmp(t(language,'e_'+x), t(language,'e_'+y)))
     for hide in hidelist:
         ret += '<option value="%s">%s</option>' %(hide, t(language,'e_'+hide, ))
-        
+
     return ret
-    
+
 def buildRawModuleRight(group, language):
     ret = ""
     hide = group.getHideEdit().split(';')
@@ -247,7 +264,7 @@ def buildRawModuleMetaLeft(group):
     for met in metadatanames:
         ret += '<option value="%s">%s</option>' %(met, met)
     return ret
-    
+
 def buildRawModuleMetaRight(group):
     ret = ""
     mdts = [mdt.name for mdt in tree.getRoot("metadatatypes").getChildren()]
@@ -257,4 +274,3 @@ def buildRawModuleMetaRight(group):
         if mod not in assignedList:
             ret += '<option value="%s">%s</option>' %(mod, mod)
     return ret
-

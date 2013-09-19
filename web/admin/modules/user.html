@@ -56,6 +56,11 @@
 
 
 <metal:block metal:define-macro="details">
+
+    <!-- expose some variables/constants to javascript -->
+    <script tal:content="python:'var confirm_msg_delete_user = \''+str(t(language, 'admin_user_confirm_msg_delete_user'))+'\';'">;</script>
+    <script tal:content="python:'var confirm_msg_logout_user = \''+str(t(language, 'admin_user_confirm_msg_logout_user'))+'\';'">;</script>    
+
     <form name="useroverview" method="post" action="#" tal:attributes="action page">
         <table class="overview">
             <thead>
@@ -97,7 +102,8 @@
                 <tal:block tal:repeat="user python:users[pages.getStart():pages.getEnd()]">
                     <tr tal:define="cssclass python:users.index(user)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
                         <td tal:content="python:str(users.index(user)+1)+'.'"/>
-                        <td tal:content="python:user.getName()"/>
+                        <td tal:condition="python:not user.isDynamicUser()" tal:content="python:user.getName()"/>
+                        <td tal:condition="python:user.isDynamicUser()" tal:content="python:user.getName()" tal:attributes="title python:user.get('login_time_iso')+' (since '+str(now().replace(microsecond=0)-user.get('login_datetime').replace(microsecond=0))+')\n'+user.get('login_ip')+'\n'+user.get('useragent')"/>
                         <td tal:content="python:user.getLastName()"/>
                         <td tal:content="python:user.getFirstName()"/>
                         <td tal:content="python:user.getEmail()"/>
@@ -130,8 +136,9 @@
                             </table>
                         </td>
                         <td>
-                            <input tal:attributes="name python:str('edit_'+str(user.id))" i18n:attributes="title admin_user_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
-                            <input tal:attributes="name python:str('delete_'+str(user.id)); onclick python:'return questionDelName(\''+user.getName()+'\')'" i18n:attributes="title admin_user_delete_title" type="image" src="/img/delete.png"/>
+                            <input tal:condition="python:not user.isDynamicUser()" tal:attributes="name python:str('edit_'+str(user.id))" i18n:attributes="title admin_user_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
+                            <input tal:condition="python:not user.isDynamicUser()" tal:attributes="name python:str('delete_'+str(user.id)); onclick python:'return confirm(confirm_msg_delete_user.replace(\'${username}\', \''+user.getName()+'\'))'" i18n:attributes="title admin_user_delete_title" type="image" src="/img/delete.png"/>
+                            <input tal:condition="python:user.isDynamicUser()" tal:attributes="name python:str('delete_'+str(user.id)); onclick python:'return confirm(confirm_msg_logout_user.replace(\'${username}\', \''+user.getName()+'\'))'" i18n:attributes="title admin_user_logout_title" type="image" src="/img/delete.png"/>
                         </td>
                     </tr>
                 </tal:block>
@@ -153,6 +160,7 @@
         <br/>
         <input type="hidden" name="actpage" tal:attributes="value actpage"/>
         <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
+        <input type="hidden" name="usertype" tal:attributes="value usertype"/>
     </form>
 </metal:block>
 

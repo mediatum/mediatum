@@ -27,10 +27,11 @@ import core.acl as acl
 import utils.mail as mail
 import core.users as users
 import re
+import datetime
 from utils.utils import getAllCollections, formatException
 
 from core.usergroups import loadGroupsFromDB
-from core.users import loadUsersFromDB, useroption, getUser, getExternalUser, update_user, existUser, create_user, makeRandomPassword, deleteUser, getExternalUsers, getExternalUser, moveUserToIntern, getExternalAuthentificators
+from core.users import loadUsersFromDB, useroption, getUser, getExternalUser, update_user, existUser, create_user, makeRandomPassword, deleteUser, getExternalUsers, getExternalUser, moveUserToIntern, getExternalAuthentificators, getDynamicUserAuthenticators
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from core.translation import lang, t
 from core.user import User
@@ -93,7 +94,17 @@ def validate(req, op):
 
             elif key.startswith("delete_"):
                 # delete user
-                deleteUser(getUser(key[7:-2]), usertype=req.params.get("usertype", "intern"))
+                username_from_form = key[7:-2]
+                dyn_auths = getDynamicUserAuthenticators()
+                isDynamic = False
+                for dyn_auth in dyn_auths:
+                    if username_from_form.startswith(dyn_auth + "|"):
+                        isDynamic = (username_from_form, dyn_auth)
+                        break
+                if isDynamic:             
+                    deleteUser(isDynamic[0], isDynamic[1])
+                else:
+                    deleteUser(getUser(key[7:-2]), usertype=req.params.get("usertype", "intern"))
                 break
             elif key.startswith("tointern_"):
                 moveUserToIntern(key[9:-2])
@@ -147,18 +158,22 @@ def view(req):
     actfilter = getFilter(req)
     showdetails = 0
     macro = "view"
-    
+
+    usertype = req.params.get("usertype", "")
+
     if "action" in req.params:
         macro = "details"
     
         if req.params.get("action")=="details": # load all users of given type
-
-            if len(users_cache)<1: # load users in cache
+        
+            if 1:  #len(users_cache)<1: # load users in cache
+                # always load users anew: cache-update for dynamic users seems 
+                # uneconomic: loading users seems to run fast
                 users = list(loadUsersFromDB())
-                for usertype in list(getExternalUsers()):
-                    users += list(usertype.getChildren())
+                for _usertype in list(getExternalUsers()):
+                    users += list(_usertype.getChildren())
                 users_cache = users
-            else: # use users from cache
+            else:  # use users from cache
                 users = users_cache
                 
                 
@@ -222,7 +237,18 @@ def view(req):
             users.reverse()
     else:
         users.sort(lambda x, y: cmp(x.getName().lower(),y.getName().lower()))
-    
+
+    def getUsers(req, users):
+        if req.params.get("usertype")=="intern":
+            users = filter(lambda x: x.getUserType()=='users', users)
+        elif req.params.get("usertype")=="all":
+            pass
+        else:
+            users = filter(lambda x: x.getUserType()==req.params.get("usertype"), users)
+        return users    
+
+    if usertype:
+        users = getUsers(req, users)
     pages = Overview(req, users)
     v = pages.getStdVars()
     v["filterattrs"] = [("username","admin_user_filter_username"),("lastname","admin_user_filter_lastname")]
@@ -235,6 +261,12 @@ def view(req):
     v["actfilter"] = actfilter
     v["auth"] = getExternalAuthentificators()
     v["details"] = showdetails
+
+    v["language"] = lang(req)
+    v["t"] = t
+    v["now"] = datetime.datetime.now
+    v["usertype"] = usertype
+
     return req.getTAL("web/admin/modules/user.html", v, macro=macro)
 
 #

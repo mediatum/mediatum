@@ -22,11 +22,13 @@ import core.athana as athana
 import core
 import core.tree as tree
 import core.users as users
+from core.tree import db
 from core.translation import lang
 from core.acl import AccessData
 from core.styles import theme
 from schema.schema import VIEW_HIDE_EMPTY, VIEW_DATA_ONLY
 from utils.utils import format_filesize
+from utils.pathutils import isDescendantOf  
 
 
 WIDTH=102
@@ -45,7 +47,11 @@ def shoppingbag_action(req):
             put_into_shoppingbag(req)
             return
             
-        if req.params.get("action")=="items":
+        if req.params.get("action")=="delmsg":
+            req.writeTALstr('<tal:block i18n:translate="popup_shoppingbag_object_delete"/>',{})
+            return
+            
+        elif req.params.get("action")=="items":
             for key in req.params.keys():
                 if key.startswith("del_"): # delete item from list
                     for item in req.session["shoppingbag"]:
@@ -109,16 +115,28 @@ def shoppingbag_action(req):
     show_shoppingbag(req)
 
 def load_shoppingbagByKey(req):
-    if req.params.get("bagkey")=="":
+    bagkey = req.params.get("bagkey", "")
+    if bagkey == "":
         return 1
     for user in users.loadUsersFromDB():
         for c in user.getShoppingBag():
-            if c.getSharedKey()==req.params.get("bagkey"):
+            if c.getSharedKey() == bagkey:
                 req.session["shoppingbag"] = c.getItems()
                 return 1
+
+    candidates = db.getNodeIdByAttribute("key", bagkey)
+    home_root = tree.getRoot("home")
+    for cand in candidates:
+        n = tree.getNode(cand)
+        if not n.getContentType() == "shoppingbag":
+            continue
+        if isDescendantOf(n, home_root):
+            req.session["shoppingbag"] = n.getItems()
+            return 1
+
     return 0
 
-    
+
 def put_into_shoppingbag(req):
     """add item to shoppingbag"""
     files = req.params["files"].split(',')
@@ -135,7 +153,7 @@ def put_into_shoppingbag(req):
             err_count+=1
 
     req.session["shoppingbag"] = f
-    
+
     s = ""
     if len(files)>1:
         s = "s"
@@ -190,17 +208,17 @@ def show_shoppingbag(req, msg=""):
             return ""
 
     access = AccessData(req)
-    try:
-        for node in access.filter(tree.NodeList(req.session.get("shoppingbag",[]))):
-            if node.getCategoryName()=="image":
-                img = True
-            if node.getCategoryName()=="document":
-                doc = True
-            if node.getCategoryName() in ["audio", "video"]:
-                media = True
-            f.append(node)
-    except:
-        pass
+
+    sb = req.session.get("shoppingbag",[])
+    sb = [nid for nid in sb if nid.strip()]
+    for node in access.filter(tree.NodeList(sb)):
+        if node.getCategoryName()=="image":
+            img = True
+        if node.getCategoryName()=="document":
+            doc = True
+        if node.getCategoryName() in ["audio", "video"]:
+            media = True
+        f.append(node)
         
     if len(f)!=len(req.session.get("shoppingbag",[])) and msg=="":
         msg = "popup_shoppingbag_items_filtered"

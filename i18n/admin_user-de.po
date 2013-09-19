@@ -35,6 +35,15 @@ msgstr "Benutzer bearbeiten"
 msgid "admin_user_delete_title"
 msgstr "Benutzer löschen"
 
+msgid "admin_user_logout_title"
+msgstr "Benutzer ausloggen"
+
+msgid "admin_user_confirm_msg_delete_user"
+msgstr "Benutzer \"${username}\" wirklich löschen?"
+
+msgid "admin_user_confirm_msg_logout_user"
+msgstr "Benutzer \"${username}\" wirklich ausloggen?"
+
 msgid "admin_user_footer"
 msgstr "${number} Benutzer"
 

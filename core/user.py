@@ -174,6 +174,10 @@ class User(tree.Node):
         sb.setItems(items)
         self.addChild(sb)
 
+    def isDynamicUser(self):
+        """user objects that are not persisted in the database are labeled 'dynamic'"""
+        return False
+
   
 class ExternalUser:
 
@@ -198,3 +202,6 @@ class ExternalUser:
     def getAdminOperation(self, req, params={}):
         raise "not implemented"
 
+    def isDynamicUser(self):
+        """user objects that are not persisted in the database are labeled 'dynamic'"""
+        return False

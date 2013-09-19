@@ -34,6 +34,15 @@ msgstr "edit user"
 msgid "admin_user_delete_title"
 msgstr "delete user"
 
+msgid "admin_user_logout_title"
+msgstr "logout user"
+
+msgid "admin_user_confirm_msg_delete_user"
+msgstr "Do you confirm to delete user \"${username}\"?"
+
+msgid "admin_user_confirm_msg_logout_user"
+msgstr "Do you confirm to logout user \"${username}\"?"
+
 msgid "admin_user_footer"
 msgstr "${number} users"
 

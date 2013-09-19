@@ -1,4 +1,4 @@
-﻿"""
+"""
  mediatum - a multimedia content repository
 
  Copyright (C) 2010 Arne Seifert <seiferta@in.tum.de>
@@ -27,22 +27,25 @@ class ShoppingBag(tree.Node):
 
     def getItems(self):
         return self.get("items").split(";")
+
     def setItems(self, items=[]):
         self.set("items", ";".join(items))
 
     def isShared(self):
-        if self.get("key")!="":
+        if self.get("key") != "":
             return 1
         return 0
-        
+
     def getSharedKey(self):
         return self.get("key")
-        
+
     def createShareKey(self):
         k = mkKey()
         self.set("key", k)
         return k
-        
+
     def stopShare(self):
         self.removeAttribute("key")
-        
+
+    def isContainer(self):
+        return False

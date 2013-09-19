@@ -41,20 +41,21 @@ useroption += [Option("user_option_1", "editpwd", "c", "img/changepwd_opt.png", 
 
 authenticators = {}
 
-#Saves a hashtable for every user which holds if he has access on a specific node...
+#Saves a hashtable for every user which holds if he has access on a specific node
 useraccesstable = {}
 
 #Saves for each user which collection he prefers which search mode
 usercollectionsearchmode = {}
 
-def create_user(name, email, groups, pwd="", lastname="", firstname="", telephone="", comment="", option="", organisation="", identificator="", type="intern"):    
+
+def create_user(name, email, groups, pwd="", lastname="", firstname="", telephone="", comment="", option="", organisation="", identificator="", type="intern"):
     if not pwd:
         pwd = config.get("user.passwd")
-    if (type=="intern"):
+    if (type == "intern"):
         users = tree.getRoot("users")
     else:
         users = getExternalUserFolder(type)
-    
+
     user = tree.Node(name=name, type="user")
     user.set("email", email)
     user.set("password", hashlib.md5(pwd).hexdigest())
@@ -64,7 +65,7 @@ def create_user(name, email, groups, pwd="", lastname="", firstname="", telephon
     user.set("telephone", telephone)
     user.set("comment", comment)
     user.set("organisation", organisation)
-    if identificator!="":
+    if identificator != "":
         user.set("identificator", identificator)
 
     for group in groups.split(","):
@@ -74,11 +75,15 @@ def create_user(name, email, groups, pwd="", lastname="", firstname="", telephon
     users.addChild(user)
     return user
 
+
 # Methods for manipulation of access hashtable
+
+
 def getAccessTable(user):
     if not useraccesstable.has_key(user.id):
         useraccesstable[user.id] = {}
     return useraccesstable[user.id]
+
 
 def clearAllTableAccess():
     """ Clears the complete cache """
@@ -86,15 +91,15 @@ def clearAllTableAccess():
     for k in allkeys:
         useraccesstable[k].clear()
 
-        
+
 def clearTableAccess(user):
     """Clears all entries from a hashtable"""
     try:
         getAccessTable(user).clear()
-    except:                         
+    except:
         sys.exc_info()[0]
 
-        
+
 def getCollectionSearchMode(user, collectionid):
     """ Returns -1, is current user has no search mode specified for a collection"""
     if (usercollectionsearchmode.has_key(user)):
@@ -102,7 +107,7 @@ def getCollectionSearchMode(user, collectionid):
             return usercollectionsearchmode[user][collectionid]
     return -1
 
-    
+
 def setCollectionSearchMode(user, collectionid, searchmode):
     if (not usercollectionsearchmode.has_key(user)):
         usercollectionsearchmode[user] = {}
@@ -111,11 +116,11 @@ def setCollectionSearchMode(user, collectionid, searchmode):
 
 def setTableAccess(user, node, access):
     """Sets the rights of a node"""
-    if node.type=="collections":
+    if node.type == "collections":
         return
     getAccessTable(user)[node.id] = access
 
-    
+
 def setTableAccessWithParents(user, node, access):
     """Sets the rights of a node and its direct parents"""
     setTableAccess(user, node, access)
@@ -123,7 +128,7 @@ def setTableAccessWithParents(user, node, access):
         if p.type != "collections":
             setTableAccess(user, p, access)
 
-            
+
 def getTableAccess(user, node):
     """Retrieves the access rights of a node. Returns 0, if there are either no rights available or the node has no rights"""
     accesstable = getAccessTable(user)
@@ -136,81 +141,96 @@ def hasTableAccess(user, node):
     """Checks if the user has access on a specific node and if he is even allowed to use the hashtable """
     return getAccessTable(user).has_key(node.id)
 # End of methods for access hashtable manipulation
-   
-    
-""" load all users from db """
+
+
 def loadUsersFromDB():
+    """ load all users from db """
     users = tree.getRoot("users")
     return users.getChildren().sort(field="name")
-    
-def getExternalUsers(type=""):
-    if type=="":
-        return getExternalUserFolder().getChildren()
+
+
+def getDynamicUserAuthenticators():
+    return [a for a in authenticators if hasattr(authenticators[a], "isDYNUserAuthenticator") and authenticators[a].isDYNUserAuthenticator]
+
+
+def getExternalUsers(atype=""):
+
+    dyn_auths = getDynamicUserAuthenticators()
+
+    if atype in dyn_auths:
+        return authenticators[atype].LOGGED_IN_DYNUSERS.values()
+
+    if atype == "":
+        return list(getExternalUserFolder().getChildren()) + [authenticators[a] for a in dyn_auths]
     else:
         for usertype in getExternalUserFolder().getChildren():
-            if usertype.getName()==type:
+            if usertype.getName() == atype:
                 return usertype.getChildren()
         return []
-    
-""" returns user object from db """
+
+
 def getExternalUser(name, type="intern"):
+    """ returns user object from db """
     users = getExternalUserFolder()
     if name.isdigit():
         try:
             return tree.getNode(name)
-        except tree.NoSuchNodeError,e:
+        except tree.NoSuchNodeError, e:
             try:
                 return users.getChild(name)
             except tree.NoSuchNodeError:
                 return None
     else:
         for n in getExternalUsers(type):
-            if n.getName()==name:
+            if n.getName() == name:
                 return n
-        
 
-""" returns user object from db """
+
 def getUser(id):
+    """ returns user object from db """
     users = tree.getRoot("users")
-    
+
     if id.isdigit():
         try:
             user = tree.getNode(id)
             return user
-        except tree.NoSuchNodeError,e:
+        except tree.NoSuchNodeError, e:
             return None
     else:
         try:
             user = users.getChild(id)
             return user
-        except tree.NoSuchNodeError,e:
+        except tree.NoSuchNodeError, e:
             for key in getExternalAuthentificators():
                 u = getExternalUser(id, type=key)
                 if u:
                     #u.setUserType(key)
                     return u
             for u in tree.getRoot("users").getChildren():
-                if u.get('service.userkey')==id:
+                if u.get('service.userkey') == id:
                     return u
             return None
 
-def doExternalAuthentification(name, pwd):
+
+def doExternalAuthentification(name, pwd, req=None):
     global authenticators
     for a in authenticators:
-        if authenticators[a].authenticate_login(name,pwd):
+        if authenticators[a].authenticate_login(name, pwd, req=req):
             return authenticators[a].getUser(name)
     return None
-    
+
+
 def getExternalAuthentificator(name):
     global authenticators
     if name in authenticators.keys():
         return authenticators[name]
     return None
 
+
 def getExternalAuthentificators():
     global authenticators
     return authenticators
-  
+
 
 def getUserFromRequest(req):
     try:
@@ -220,8 +240,9 @@ def getUserFromRequest(req):
     except KeyError:
         user = getUser(config.get("user.guestuser"))
         if not user:
-            raise "User not found: \"" + config.get("user.guestuser")+"\""
+            raise "User not found: \"" + config.get("user.guestuser") + "\""
     return user
+
 
 def getExternalUserFolder(type=""):
     try:
@@ -229,31 +250,32 @@ def getExternalUserFolder(type=""):
     except tree.NoSuchNodeError:
         extusers = tree.Node("external_users", "users")
         tree.getRoot().addChild(extusers)
-        
-    if type!="":
+
+    if type != "":
         try:
             users = extusers.getChild(type)
         except tree.NoSuchNodeError:
             users = tree.Node(type, "directory")
             extusers.addChild(users)
         return users
-    else: 
+    else:
         return extusers
 
 extuser_lock = thread.allocate_lock()
 
-def checkLogin(name, pwd):
+
+def checkLogin(name, pwd, req=None):
     user = getUser(name)
     digest1 = hashlib.md5(pwd).hexdigest()
 
-    if user and user.getUserType()=="users":
-        if digest1==user.getPassword():
+    if user and user.getUserType() == "users":
+        if digest1 == user.getPassword():
             return user
-        if config.get("user.masterpassword")!="" and name!="Administrator" and pwd==config.get("user.masterpassword"): # test masterpassword
+        if config.get("user.masterpassword") != "" and name != "Administrator" and pwd == config.get("user.masterpassword"):  # test masterpassword
             logging.getLogger('usertracing').info(user.name + " logged in with masterpassword")
             return user
-        
-    auth = doExternalAuthentification(name, pwd)
+
+    auth = doExternalAuthentification(name, pwd, req=req)
     #if doExternalAuthentification(name, pwd):
         # if an external authenticator was able to log this
         # user in, store the user name and hashed password
@@ -263,16 +285,15 @@ def checkLogin(name, pwd):
         # potential security problem: if a local user has
         # the same name as some other external
         # user, that external user can log in using his own
-        # password (and overwrite the internal password). 
-        # This only happens if the names (user ids) are not 
+        # password (and overwrite the internal password).
+        # This only happens if the names (user ids) are not
         # the email addresses, however.
-        
+
     if auth:
         return auth
     else:
         return None
-    
-    
+
     if auth[0]:
         if user:
             # overwrite password by the one used for
@@ -295,40 +316,42 @@ def checkLogin(name, pwd):
                 extuser_lock.release()
         return 1
 
+
 def changePWD(name, pwd):
     user = getUser(name)
     user.setPassword(hashlib.md5(pwd).hexdigest())
-        
-""" add new user in db """
+
+
 def addUser(user):
+    """ add new user in db """
     global conn
     tmp = ""
     for grp in user.getGroups():
         tmp += grp + ","
     user.setGroups(tmp[:-1])
-    conn.addUser(user)    
+    conn.addUser(user)
 
 
 def update_user(id, name, email, groups, lastname="", firstname="", telephone="", comment="", option="", organisation="", identificator="", type="intern"):
-    
-    try: # internal user
+
+    try:  # internal user
         user = getUser(id)
-    except: # external user
+    except:  # external user
         user = getExternalUser(id)
 
     if user:
         for p in user.getParents():
-            if p.type!="usergroup":
+            if p.type != "usergroup":
                 p.removeChild(user)
-        if type=="intern":
+        if type == "intern":
             tree.getRoot("users").addChild(user)
         else:
             getExternalUserFolder(type).addChild(user)
-    
-    if user.getName()!=name: # username changed -> update home directory
+
+    if user.getName() != name:  # username changed -> update home directory
         hd = getHomeDir(user)
-        hd.setAccess("read", "{user %s}" %(user.getName()))
-        hd.setAccess("write", "{user %s}" %(user.getName()))
+        hd.setAccess("read", "{user %s}" % (user.getName()))
+        hd.setAccess("write", "{user %s}" % (user.getName()))
 
     if user:
         user.setName(name)
@@ -339,13 +362,13 @@ def update_user(id, name, email, groups, lastname="", firstname="", telephone=""
         user.setComment(comment)
         user.setOption(option)
         user.setOrganisation(organisation)
-        
-        if identificator!="":
+
+        if identificator != "":
             user.set('identificator', identificator)
 
         # remove user from all groups
         for p in user.getParents():
-            if p.type=="usergroup":
+            if p.type == "usergroup":
                 p.removeChild(user)
         # add user to the "new" groups
         for group in groups.split(","):
@@ -355,57 +378,70 @@ def update_user(id, name, email, groups, lastname="", firstname="", telephone=""
         print "user not found"
     return user
 
-""" delete user from db """
+
 def deleteUser(user, usertype="intern"):
+    """ delete user from db """
+    if usertype in getDynamicUserAuthenticators():
+        a = getExternalAuthentificator(usertype)
+        for u in a.LOGGED_IN_DYNUSERS.values():
+            if user == u.id:
+                a.log_user_out(u.cn, u.session_id)
+                return
+        return
+
     for group in tree.getRoot("usergroups").getChildren():
         for guser in group.getChildren():
-            if guser.getName()==user.getName():
+            if guser.getName() == user.getName():
                 group.removeChild(guser)
-    if usertype!="intern":
+    if usertype != "intern":
         users = getExternalUserFolder(usertype)
     else:
         users = tree.getRoot("users")
-        
+
     users.removeChild(user)
-                
+
     for c in tree.getRoot("home").getChildren():
         try:
-            if c and c.getAccess("read").find("{user "+user.getName()+"}")>=0 and c.getAccess("write").find("{user "+user.getName()+"}")>=0:
+            if c and c.getAccess("read").find("{user " + user.getName() + "}") >= 0 and c.getAccess("write").find("{user " + user.getName() + "}") >= 0:
                 tree.getRoot("home").removeChild(c)
                 break
         except:
             pass
 
 
-""" check if user with given name still existing in db """
 def existUser(username):
+    """ check if user with given name still existing in db """
     return getUser(username) != None
+
 
 def makeRandomPassword():
     a = "abcdfghijklmnopqrstuvwxyz"
     c = "bcdfghjklmnpqrstvwxyz"
     v = "aeiuo"
     i = "0123456789"
-    char1 = c[random.randint(0,len(c)-1)]
-    char2 = v[random.randint(0,len(v)-1)]
-    char3 = c[random.randint(0,len(c)-1)]
-    nr1 = i[random.randint(0,len(i)-1)]
-    nr2 = i[random.randint(0,len(i)-1)]
-    char4 = a[random.randint(0,len(a)-1)]
-    return char1+char2+char3+nr1+nr2+char4
+    char1 = c[random.randint(0, len(c) - 1)]
+    char2 = v[random.randint(0, len(v) - 1)]
+    char3 = c[random.randint(0, len(c) - 1)]
+    nr1 = i[random.randint(0, len(i) - 1)]
+    nr2 = i[random.randint(0, len(i) - 1)]
+    char4 = a[random.randint(0, len(a) - 1)]
+    return char1 + char2 + char3 + nr1 + nr2 + char4
+
 
 def registerAuthenticator(auth, name):
     global authenticators
     authenticators[name] = auth
-    
+
+
 def moveUserToIntern(id):
     user = getUser(id)
     for p in user.getParents():
-        if p.type == "users" and p.getName()=="external_users":
+        if p.type == "users" and p.getName() == "external_users":
             p.removeChild(user)
-            
+
     users = tree.getRoot("users")
     users.addChild(user)
+
 
 def getHideMenusForUser(user):
     hide = ''
@@ -413,39 +449,40 @@ def getHideMenusForUser(user):
         return []
     for g in user.getGroups():
         g = usergroups.getGroup(g)
-        hide += ';'+g.getHideEdit()
+        hide += ';' + g.getHideEdit()
     return hide.split(';')
-    
+
+
 def getHomeDir(user):
     username = user.getName()
     userdir = None
     for c in tree.getRoot("home").getChildren():
-        if (c.getAccess("read") or "").find("{user "+username+"}")>=0 and (c.getAccess("write") or "").find("{user "+username+"}")>=0:
+        if (c.getAccess("read") or "").find("{user " + username + "}") >= 0 and (c.getAccess("write") or "").find("{user " + username + "}") >= 0:
             return c
-            
+
     # create new userdir
-    userdir = tree.getRoot("home").addChild(tree.Node(name=translate("user_directory", getDefaultLanguage())+" ("+username+")", type="directory"))
-    userdir.setAccess("read","{user "+username+"}")
-    userdir.setAccess("write","{user "+username+"}")
-    userdir.setAccess("data","{user "+username+"}")
-    
+    userdir = tree.getRoot("home").addChild(tree.Node(name=translate("user_directory", getDefaultLanguage()) + " (" + username + ")", type="directory"))
+    userdir.setAccess("read", "{user " + username + "}")
+    userdir.setAccess("write", "{user " + username + "}")
+    userdir.setAccess("data", "{user " + username + "}")
+
     # re-sort home dirs alphabetically
     i = 0
     for child in tree.getRoot("home").getChildren().sort("name"):
         child.setOrderPos(i)
         i += 1
     return userdir
-    
-    
+
+
 def getSpecialDir(user, type):
     nodename = ""
-    if type=="upload":
+    if type == "upload":
         nodename = translate("user_upload", getDefaultLanguage())
-    elif type=="import":
+    elif type == "import":
         nodename = translate("user_import", getDefaultLanguage())
-    elif type=="faulty":
+    elif type == "faulty":
         nodename = translate("user_faulty", getDefaultLanguage())
-    elif type=="trash":
+    elif type == "trash":
         nodename = translate("user_trash", getDefaultLanguage())
     else:
         return None
@@ -453,20 +490,23 @@ def getSpecialDir(user, type):
     userdir = getHomeDir(user)
 
     for c in userdir.getChildren():
-        if c.name==nodename:
+        if c.name == nodename:
             return c
     # create new directory
     return userdir.addChild(tree.Node(name=nodename, type="directory"))
-    
-    
+
+
 def getUploadDir(user):
     return getSpecialDir(user, "upload")
-    
+
+
 def getImportDir(user):
     return getSpecialDir(user, "import")
-    
+
+
 def getFaultyDir(user):
     return getSpecialDir(user, "faulty")
+
 
 def getTrashDir(user):
     return getSpecialDir(user, "trash")

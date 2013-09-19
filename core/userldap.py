@@ -67,7 +67,7 @@ class LDAPUser(ExternalUser):
         user.setUserType("ldapuser")
         return user
 
-    def authenticate_login(self, username, password, create_new_user=1):
+    def authenticate_login(self, username, password, create_new_user=1, req=None):
     
         print "trying to authenticate", username, "over ldap"
 

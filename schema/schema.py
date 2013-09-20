@@ -989,7 +989,7 @@ class Mask(tree.Node):
         ret = '<form method="post" name="myform">'
         ret += '<div class="back"><h3 i18n:translate="mask_editor_field_definition">Felddefinition </h3>'
 
-        if self.get("exportmapping") == "":
+        if self.getMasktype() == "export" and self.get("exportmapping") == "":
             # no mapping defined, we just emit an error msg and skip the rest
             ret += '<p i18n:translate="mask_editor_no_export_mapping_defined" class="error">TEXT</p></div><br/>'
             return ret

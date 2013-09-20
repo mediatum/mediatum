@@ -38,13 +38,13 @@ if not SQLITE_API:
         SQLITE_API = "sqlite3"
     except:
         try:
-            from pysqlite2 import dbapi2 as _test_sqlite            
+            from pysqlite2 import dbapi2 as _test_sqlite
             con = _test_sqlite.connect(":memory:")
             con.execute("create virtual table t using fts3(a, b)")
             SQLITE_API = "pysqlite2"
         except:
-            print 'Warning: no fts3 enabled for sqlite connector'    
-        
+            print 'Warning: no fts3 enabled for sqlite connector'
+
 if SQLITE_API == 'sqlite3':
     import sqlite3 as sqlite
     print 'using fts3 enabled module sqlite3'
@@ -52,7 +52,7 @@ elif SQLITE_API == 'pysqlite2':
     from pysqlite2 import dbapi2 as sqlite
     print 'using fts3 enabled module pysqlite2'
 else:
-    try: 
+    try:
         import sqlite3 as sqlite
     except:
         from pysqlite2 import dbapi2 as sqlite
@@ -74,7 +74,7 @@ class SQLiteConnector(Connector):
     def __init__(self,db=None):
         config.initialize()
         if db==None:
-            if not os.path.exists(config.get("paths.datadir")+"db/imagearch.db"):   
+            if not os.path.exists(config.get("paths.datadir")+"db/imagearch.db"):
                 try:
                     os.makedirs(os.path.dirname(config.get("paths.datadir")+"db/"))
                 except OSError:
@@ -101,7 +101,7 @@ class SQLiteConnector(Connector):
 
     def esc(self, text):
         return "'"+text.replace("'","\\'")+"'"
-    
+
     def close(self):
         pass
 
@@ -148,7 +148,7 @@ class SQLiteConnector(Connector):
         self.runQueryNoError("CREATE TABLE [nodeattribute] ([nid] INTEGER DEFAULT '0' NOT NULL, [name] VARCHAR(50)  NOT NULL, [value] TEXT  NULL)")
         self.runQueryNoError("CREATE TABLE [nodefile] ([nid] INTEGER DEFAULT '0' NOT NULL, [filename] TEXT  NOT NULL, [type] VARCHAR(32)  NOT NULL, [mimetype] VARCHAR(32)  NULL)")
         self.runQueryNoError("CREATE TABLE [nodemapping] ([nid] INTEGER DEFAULT '0' NOT NULL, [cid] INTEGER DEFAULT '0' NOT NULL)")
-        
+
         self.runQueryNoError("CREATE INDEX [IDX_NODE_ID] ON [node]([id]  ASC)")
         self.runQueryNoError("CREATE INDEX [IDX_NODE_TYPE] ON [node]([type]  ASC)")
         self.runQueryNoError("CREATE INDEX [IDX_NODE_ORDERPOS] ON [node]([orderpos]  ASC)")
@@ -181,16 +181,16 @@ class SQLiteConnector(Connector):
         self.runQueryNoError("delete from nodemapping")
         #self.commit()
         log.info("tables cleared")
-        
+
     def getRule(self, name):
         rule = self.runQuery("select name, description, rule from nodeaccess where name=" + self.esc(name))
         if len(rule)==1:
             return rule[0][2], rule[0][1]
         elif len(rule)>1:
-            raise "DuplicateRuleError"
+            raise Exception("DuplicateRuleError")
         else:
-            raise "RuleNotFoundError"
-    
+            raise Exception("RuleNotFoundError")
+
     def getRuleList(self):
         return self.runQuery("select name, description, rule from nodeaccess order by name")
 
@@ -201,7 +201,7 @@ class SQLiteConnector(Connector):
         return True
         #except:
         #    return False
-    
+
     def addRule(self, rule):
         try:
             self.runQuery("insert into nodeaccess (name, rule, description) values('"+rule.getName()+"', '"+rule.getRuleStr()+"', '"+rule.getDescription()+"')")
@@ -224,17 +224,17 @@ class SQLiteConnector(Connector):
                 for rule in rules:
                     if rule!="":
                         ret[rule]=""
-        return ret.keys()   
-        
+        return ret.keys()
+
     def ruleUsage(self, rulename):
         result = self.runQuery('select count(*) from node where readaccess="'+rulename+'" or writeaccess="'+rulename+'" or dataaccess="'+rulename+'"')
         return int(result[0][0])
-        
+
     def resetNodeRule(self, rulename):
         for field in ["readaccess", "writeaccess", "dataaccess"]:
             self.runQuery('update node set '+field+'="" where '+field+'="'+rulename+'"')
-            
-            
+
+
     """ node section """
     def createNode(self, name, type):
         orderpos = self.mkOrderPos()
@@ -242,11 +242,11 @@ class SQLiteConnector(Connector):
         self.runQuery("insert into node (id,name,type,orderpos) values(?,?,?,?)",(id,name,type,orderpos))
         res = self.runQuery("select max(id) from node")
         return str(res[0][0])
-    
+
     def addChild(self, nodeid, childid, check=1):
         if check:
             if childid == nodeid:
-                raise "Tried to add node "+nodeid+" to itself as child"
+                raise ValueError("Tried to add node "+nodeid+" to itself as child")
             # does this child already exist?
             t = self.runQuery("select count(*) as num from nodemapping where nid="+nodeid+" and cid="+childid)
             if t[0][0]>0:
@@ -254,18 +254,18 @@ class SQLiteConnector(Connector):
         self.setNodeOrderPos(childid, self.mkOrderPos())
         self.runQuery("insert into nodemapping (nid, cid) values(?,?)",(nodeid,childid))
 
-        
+
     def setAttribute(self, nodeid, attname, attvalue, check=1):
         if attvalue is None:
-            raise "Attribute value is None"
+            raise TypeError("Attribute value is None")
         if check:
             t = self.runQuery("select count(*) as num from nodeattribute where nid="+nodeid+" and name='"+attname+"'")
             if len(t)>0 and t[0][0]>0:
                 self.runQuery("update nodeattribute set value='"+str(attvalue)+"' where nid="+nodeid+" and name='"+attname+"'")
                 return
         self.runQuery("insert into nodeattribute (nid, name, value) values(?,?,?)", (nodeid,attname,str(attvalue)))
-       
-        
+
+
     def addFile(self, nodeid, path, type, mimetype):
         self.runQuery("insert into nodefile (nid, filename, type, mimetype) values(?,?,?,?)", (nodeid,path,type,mimetype))
 
@@ -279,7 +279,7 @@ class SQLiteConnector(Connector):
             for item in table:
                 t.append((key[i],item))
                 i += 1
-                
+
             items = []
             try:
                 items = self.runQuery("select * from sqlite_stat1 where tbl='"+t[2][1]+"'")
@@ -292,7 +292,7 @@ class SQLiteConnector(Connector):
 
         return ret
 
-        
+
     def getDBSize(self):
         import os
         return os.stat(config.get("paths.datadir")+"db/imagearch.db")[6]

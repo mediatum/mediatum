@@ -65,7 +65,7 @@ class MYSQLConnector(Connector):
             initDatabaseValues(self)
         except IndexError:
             initDatabaseValues(self)
-        
+
         # test for new views
         try:
             r = self.runQuery("select nid from containermapping limit 1")
@@ -99,7 +99,7 @@ class MYSQLConnector(Connector):
             if self.db:
                 #self.db.ping()
                 ok = 1
-        except MySQLdb.OperationalError, nr:
+        except MySQLdb.OperationalError as nr:
             ok = 0
             log.warning("Pinging failed ("+str(nr)+")... reconnecting to ["+self.user+"@"+self.database+"]")
             self.db = None
@@ -140,7 +140,7 @@ class MYSQLConnector(Connector):
                     c.close()
                     self.db.commit()
                     return result
-                except MySQLdb.OperationalError, nr:
+                except MySQLdb.OperationalError as nr:
                     if nr[0] == 2002:
                         log.error("can't connect to sql server while executing \""+sql+"\"")
                         self.db = None
@@ -193,7 +193,7 @@ class MYSQLConnector(Connector):
             log.debug(sql)
         try:
             return self.execute(sql)
-        except MySQLdb.OperationalError, nr:
+        except MySQLdb.OperationalError as nr:
             if nr[0] == 1050:
                 log.info("table already exists: "+sql)
                 return None
@@ -210,10 +210,10 @@ class MYSQLConnector(Connector):
     def createTables(self):
         self.runQueryNoError("create table node (id integer not null, name varbinary(255), type varbinary(32) not null, readaccess text, writeaccess text, dataaccess text, orderpos int default '1', dirty bool, primary key (id), localread text)")
         self.runQueryNoError("create table nodefile (nid integer not null, filename text not null , type varbinary(16) not null, mimetype varbinary(20))")
-        self.runQueryNoError("create table nodeattribute (nid integer not null, name varbinary(50) not null, value text ) ") 
+        self.runQueryNoError("create table nodeattribute (nid integer not null, name varbinary(50) not null, value text ) ")
         self.runQueryNoError("create table nodemapping (nid integer not null, cid integer not null)")
         self.runQueryNoError("create table access (name varchar(64) not null, description text , rule text , primary key (name))")
-       
+
         self.runQueryNoError("alter table node add index(type);")
         self.runQueryNoError("alter table node add index(name);")
         self.runQueryNoError("alter table node add index(orderpos);")
@@ -237,7 +237,7 @@ class MYSQLConnector(Connector):
         self.runQueryNoError("drop table nodeattribute")
         self.runQueryNoError("drop table nodemapping")
         log.info("tables deleted")
-    
+
     def getRule(self, name):
         rule = self.runQuery("select name, description, rule from access where name=" + self.esc(name))
         if len(rule)==1:
@@ -246,19 +246,19 @@ class MYSQLConnector(Connector):
             raise DatabaseException("duplicate rule")
         else:
             raise DatabaseException("rule not found")
-    
+
 
     def getRuleList(self):
         return self.runQuery("select name, description, rule from access order by name")
 
-           
+
     def updateRule(self, newrule, oldname):
         try:
             self.runQuery("update access set name=" + self.esc(newrule.getName()) + ", rule=" + self.esc(newrule.getRuleStr()) + ", description=" + self.esc(newrule.getDescription()) + " where name=" + self.esc(oldname))
             return True
         except:
-            return False        
-            
+            return False
+
 
     def addRule(self, rule):
         try:
@@ -283,7 +283,7 @@ class MYSQLConnector(Connector):
                     if rule!="":
                         ret[rule]=""
         return ret.keys()
-        
+
     def ruleUsage(self, rulename):
         result = self.runQuery('select count(*) from node where readaccess="'+rulename+'" or writeaccess="'+rulename+'" or dataaccess="'+rulename+'"')
         return int(result[0][0])
@@ -299,11 +299,11 @@ class MYSQLConnector(Connector):
         orderpos = self.mkOrderPos()
         self.runQuery("insert into node (id, name, type, orderpos) values(" + id + ", " + self.esc(name) + ", '" + type + "',"+str(orderpos)+")")
         return str(id)
-    
+
     def addChild(self, nodeid, childid, check=1):
         if check:
             if childid == nodeid:
-                raise "Tried to add node "+nodeid+" to itself as child"
+                raise ValueError("Tried to add node "+nodeid+" to itself as child")
             # does this child already exist?
             t = self.runQuery("select count(*) as num from nodemapping where nid=" + nodeid + " and cid=" + childid + "")
             if t[0][0]>0:
@@ -313,7 +313,7 @@ class MYSQLConnector(Connector):
 
     def setAttribute(self, nodeid, attname, attvalue, check=1):
         if attvalue is None:
-            raise "Attribute value is None"
+            raise TypeError("Attribute value is None")
         if check:
             t = self.runQuery("select count(*) as num from nodeattribute where nid=" + nodeid + " and name=" + self.esc(attname))
             if len(t)>0 and t[0][0]>0:
@@ -336,7 +336,7 @@ class MYSQLConnector(Connector):
                 i += 1
             ret.append(t)
         return ret
-     
+
     def getDBSize(self):
         l = 0
         for table in self.runQuery("SHOW TABLE STATUS"):
@@ -346,4 +346,4 @@ class MYSQLConnector(Connector):
                 l+= int(table[8])
 
         return int(l)
- 
+

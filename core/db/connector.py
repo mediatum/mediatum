@@ -33,7 +33,7 @@ log = logging.getLogger('database')
 class Connector:
     def esc(self, text):
         return "'"+text.replace("'","\\'")+"'"
-    
+
     def removeChild(self, nodeid, childid):
         self.runQuery("delete from nodemapping where nid=" + nodeid + " and cid=" + childid)
 
@@ -43,7 +43,7 @@ class Connector:
         for id in t:
             idlist += [str(id[0])]
         return idlist
-        
+
     def getContainerChildren(self, nodeid):
         t = self.runQuery("select cid from containermapping where nid="+nodeid+" order by cid")
         idlist = []
@@ -73,10 +73,10 @@ class Connector:
             if value:
                 attributes[name] = value
         return attributes
-    
+
     def getMetaFields(self, name):
         return self.runQuery("select value from nodeattribute where name=" + self.esc(name))
-    
+
     def getSortOrder(self, field):
         if field == "nodename":
             return self.runQuery("select id,name from node")
@@ -96,7 +96,7 @@ class Connector:
         self.runQuery("delete from nodefile where nid = "+nodeid+" and filename="+self.esc(path))
     def removeAttribute(self, nodeid, attname):
         self.runQuery("delete from nodeattribute where nid=" + nodeid + " and name=" + self.esc(attname))
-    
+
     def setDirty(self, nodeid):
         self.runQuery("update node set dirty=1 where id=" + str(nodeid))
     def cleanDirty(self, nodeid):
@@ -111,13 +111,13 @@ class Connector:
             ids = self.runQuery("select id from node where dirty=1")
         ids2 = [id[0] for id in ids]
         return ids2
-    
+
     def setNodeName(self, id, name):
         self.runQuery("update node set name = "+self.esc(name)+" where id = "+id)
 
     def setNodeOrderPos(self, id, orderpos):
         self.runQuery("update node set orderpos = "+str(orderpos)+" where id = "+id)
-    
+
     def setNodeLocalRead(self, id, localread):
         self.runQuery("update node set localread = "+self.esc(localread)+" where id = "+id)
 
@@ -132,7 +132,7 @@ class Connector:
 
     def setNodeType(self, id, type):
         self.runQuery("update node set type = "+self.esc(type)+" where id = "+id)
-    
+
     def getMappings(self, direction):
         if direction>0:
             return self.runQuery("select nid,cid from nodemapping order by nid,cid")
@@ -145,9 +145,9 @@ class Connector:
         if len(nodes)<=0:
             return None
         if len(nodes)>1:
-            raise "More than one root node"
+            raise Exception("More than one root node")
         return str(nodes[0][0])
-        
+
     def getNode(self, id):
         t = self.runQuery("select id,name,type,readaccess,writeaccess,dataaccess,orderpos,localread from node where id=" + str(id))
         if len(t) == 1:
@@ -157,8 +157,8 @@ class Connector:
             return None
         else:
             log.error("More than one node for id "+str(id))
-            return None       
-    
+            return None
+
     def getNodeIdByAttribute(self, attributename, attributevalue):
         if attributename.endswith("access"):
             t = self.runQuery("select id from node where "+attributename+" like '%" + str(attributevalue)+"%'")
@@ -174,8 +174,8 @@ class Connector:
             for i in t:
                 if i[0] not in ret:
                     ret.append(i[0])
-            return ret    
- 
+            return ret
+
     def getNamedNode(self, parentid, name):
         t = self.runQuery("select id from node,nodemapping where node.name="+self.esc(name)+" and node.id = nodemapping.cid and nodemapping.nid = "+parentid)
         if len(t) == 0:
@@ -185,14 +185,14 @@ class Connector:
             else:
                 return None
         else:
-            return t[0][0]  
+            return t[0][0]
 
     def deleteNode(self, id):
         self.runQuery("delete from node where id=" + id)
         self.runQuery("delete from nodemapping where cid=" + id)
         self.runQuery("delete from nodeattribute where nid=" + id)
         self.runQuery("delete from nodefile where nid=" + id)
-   
+
 
         # WARNING: this might create orphans
         self.runQuery("delete from nodemapping where nid=" + id)
@@ -203,11 +203,11 @@ class Connector:
         if len(t)==0 or t[0][0] is None:
             return "1"
         orderpos = t[0][0] + 1
-        return orderpos  
-    
+        return orderpos
+
     def getNodeIDsForSchema(self, schema, datatype="*"):
         return self.runQuery('select id from node where type like "%/'+schema+'" or type ="'+schema+'"')
-        
+
     def mkID(self):
         t = self.runQuery("select max(id) as maxid from node")
         if len(t)==0 or t[0][0] is None:

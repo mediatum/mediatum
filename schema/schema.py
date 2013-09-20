@@ -908,7 +908,7 @@ class Mask(tree.Node):
                 if field and field.getContentType()=="metafield" and req.params.get(field.getName(),"").find("?")!=0:
                     t = getMetadataType(field.get("type"))
                     if field.getName() in req.params.keys():
-                        value = t.getFormatedValueForDB(field, req.params.get(field.getName()))
+                        value = t.format_request_value_for_db(field, req.params, field.getName())
                         language = translation.lang(req)
                         node.set(field.getName(), value)
                     elif field.getFieldtype()=="check":
@@ -933,7 +933,7 @@ class Mask(tree.Node):
                                         node.set(field.getName(), new_value)
                                 elif (req.params.get(str(field.id) + '_show_multilang','') == 'multi'
                                      and not hasattr(t, "language_update")):
-                                    value = t.getFormatedValueForDB(field, req.params.get(item))
+                                    value = t.format_request_value_for_db(field, req.params, item)
                                     oldValue = node.get(field.getName())
                                     position = oldValue.find(item[:langPos]+t.joiner)
                                     if position != -1:

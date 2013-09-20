@@ -53,7 +53,8 @@ class m_password(Metatype):
         value = value.replace("&lt;", "<").replace("&gt;",">")
         return (field.getLabel(), value)
 
-    def getFormatedValueForDB(self, field, value):
+    def format_request_value_for_db(self, field, params, item, language=None):
+        value = params.get(item)
         encrypted = hashlib.md5(value).hexdigest()
         if len(value) == 32:
             return value

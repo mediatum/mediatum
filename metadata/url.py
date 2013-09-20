@@ -18,9 +18,29 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.athana as athana
+import logging
 import re
 from core.metatype import Metatype
 from core.translation import t
+from urllib import unquote
+from utils.utils import quote_uri
+
+
+logg = logging.getLogger("frontend")
+
+
+def _replace_vars(node, s):
+    for var in re.findall(r'<(.+?)>', s):
+        if var == "att:id":
+            s = s.replace("<" + var + ">", node.id)
+        elif var.startswith("att:"):
+            val = node.get(var[4:])
+            if val == "":
+                val = "____"
+            s = s.replace("<" + var + ">", val)
+        
+    return s
+
 
 class m_url(Metatype):
 
@@ -32,6 +52,7 @@ class m_url(Metatype):
         if len(fielddef)!=3:
             fielddef = ("","","")
         val = value.split(";")
+        # XXX: ???
         if len(val)!=2:
             val = ("","")
 
@@ -55,58 +76,54 @@ class m_url(Metatype):
             while len(fielddef)<4:
                 fielddef.append("")
 
-            l = ""
+            l = []
             for i in range(0,4):
                 try:
-                    if value[i]!="":
-                        l += value[i] + ";"
+                    if value[i]:
+                        l.append(value[i])
                     else:
-                        l += fielddef[i] + ";"
+                        l.append(fielddef[i])
                 except:
-                    l += fielddef[i] + ";"
-            fielddef = l
+                    l.append(fielddef[i])
+            
+            uri, linktext, icon, target = [_replace_vars(node, p) for p in l]
 
-            # replace variables
-            for var in re.findall( r'<(.+?)>', fielddef ):
-                if var=="att:id":
-                    fielddef = fielddef.replace("<"+var+">", node.id)
-                elif var.startswith("att:"):
-                    val = node.get(var[4:])
-                    if val=="":
-                        val = "____"
-
-                    fielddef = fielddef.replace("<"+var+">", val)
-
-            fielddef = fielddef.split(";")
-
-            if str(fielddef[0]).find("____")>=0:
-                fielddef[0] = ''               
-            if str(fielddef[1]).find("____")>=0:
-                fielddef[1] = ''
+            # find unsatisfied variables
+            if str(uri).find("____")>=0:
+                uri = ''               
+            if str(linktext).find("____")>=0:
+                linktext = ''
 
             if len(fielddef)<4:
-                fielddef[3] = ""
-            if fielddef[0]!="" and fielddef[1]=="": # link but no text
-                fielddef[1] = fielddef[0] #"link"
+                target = ""
+            if uri!="" and linktext=="":
+                linktext = unquote(uri)
                     
-            if fielddef[0]=='' and fielddef[1]=='': # link + text empty
-                value = ''
-                fielddef[2] = ""
-            elif fielddef[0]=='' and fielddef[1]!='': # link empty, text not empty
-                value = fielddef[1]
-                fielddef[2] = ""
+            if uri=='' and linktext=='':
+                value = icon = ""
+            # XXX: ???
+            elif uri=='' and linktext!='':
+                value = linktext
+                icon = ""
             else:  #link and text given 
-                if fielddef[3] in ["", "_blank"]:
-                    value = '<a href="'+str(fielddef[0])+'" target="_blank" title="'+t(language,'show in new window')+'">'+str(fielddef[1])+'</a>' 
+                if target in ["", "_blank"]:
+                    value = '<a href="{}" target="_blank" title="{}">{}</a>'.format(uri, t(language,'show in new window'), linktext) 
                 else:
-                    value = '<a href="'+str(fielddef[0])+'">'+str(fielddef[1])+'</a>' 
-            if fielddef[2]!="":
-                value += ' <img src="'+str(fielddef[2])+'"/>'
-
+                    value = '<a href="{}">{}</a>'.format(uri, linktext)
+            if icon!="":
+                value += '<img src="{}"/>'.format(icon)
+            
             return (field.getLabel(), value)
         except:
+            logg.error("error getting formatted value for URI", exc_info=1)
             return (field.getLabel(), "")
 
+    def format_request_value_for_db(self, field, params, item, language=None):
+        uri = params.get(item)
+        quoted_uri = quote_uri(uri)
+        linktext = params.get(item + "_text").replace(";", u"\u037e")
+        return "{};{}".format(quoted_uri, linktext)
+    
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         try:
             value = field.getValues().split("\r\n")

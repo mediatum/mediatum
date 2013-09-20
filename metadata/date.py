@@ -59,7 +59,8 @@ class m_date(Metatype):
         return (field.getLabel(), value)
 
 
-    def getFormatedValueForDB(self, field, value, language=None):
+    def format_request_value_for_db(self, field, params, item, language=None):
+        value = params.get(item)
         f = field.getSystemFormat(str(field.getValues()))
         if not f:
             return ""

@@ -57,7 +57,8 @@ class m_ilist(Metatype):
         return (field.getLabel(), value)
 
 
-    def getFormatedValueForDB(self, field, value, language=None):
+    def format_request_value_for_db(self, field, params, item, language=None):
+        value = params.get(item)
         #value = value.replace(", ",";")
         return value
 

@@ -788,6 +788,9 @@ msgstr "Horizontale Feldgruppe"
 msgid "mask_editor_label"
 msgstr "Label"
 
+msgid "mask_editor_no_export_mapping_defined"
+msgstr "Es wurde kein Mapping definiert."
+
 msgid "mask_editor_export_error"
 msgstr "Nicht alle Pflichtfelder der Mappings wurden definiert. Das kann zu ungültigen Exporten führen."
 

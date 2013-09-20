@@ -10,6 +10,9 @@ msgstr "password changeable"
 msgid "user_option_2"
 msgstr "favourites savable"
 
+msgid "user_option_3"
+msgstr "user options locked"
+
 msgid "admin_user_existing"
 msgstr "Existing Users"
 

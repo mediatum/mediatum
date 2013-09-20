@@ -194,9 +194,9 @@ class SQLiteConnector(Connector):
         if len(rule)==1:
             return rule[0][2], rule[0][1]
         elif len(rule)>1:
-            raise "DuplicateRuleError"
+            raise Exception("DuplicateRuleError")
         else:
-            raise "RuleNotFoundError"
+            raise Exception("RuleNotFoundError")
 
     def getRuleList(self):
         return self.runQuery("select name, description, rule from nodeaccess order by name")
@@ -253,7 +253,7 @@ class SQLiteConnector(Connector):
     def addChild(self, nodeid, childid, check=1):
         if check:
             if childid == nodeid:
-                raise "Tried to add node "+nodeid+" to itself as child"
+                raise ValueError("Tried to add node "+nodeid+" to itself as child")
             # does this child already exist?
             t = self.runQuery("select count(*) as num from nodemapping where nid="+nodeid+" and cid="+childid)
             if t[0][0]>0:
@@ -264,7 +264,7 @@ class SQLiteConnector(Connector):
 
     def setAttribute(self, nodeid, attname, attvalue, check=1):
         if attvalue is None:
-            raise "Attribute value is None"
+            raise TypeError("Attribute value is None")
         if check:
             t = self.runQuery("select count(*) as num from nodeattribute where nid="+nodeid+" and name='"+attname+"'")
             if len(t)>0 and t[0][0]>0:

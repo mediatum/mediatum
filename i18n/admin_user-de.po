@@ -11,6 +11,9 @@ msgstr "Passwort änderbar"
 msgid "user_option_2"
 msgstr "Merkliste speicherbar"
 
+msgid "user_option_3"
+msgstr "Benutzerprofilbearbeitung deaktiviert"
+
 msgid "admin_user_existing"
 msgstr "Vorhandene Benutzer"
 

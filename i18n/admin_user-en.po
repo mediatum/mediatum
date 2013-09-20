@@ -10,6 +10,9 @@ msgstr "password changeable"
 msgid "user_option_2"
 msgstr "favourites savable"
 
+msgid "user_option_3"
+msgstr "user options locked"
+
 msgid "admin_user_existing"
 msgstr "Existing Users"
 
@@ -33,6 +36,15 @@ msgstr "edit user"
 
 msgid "admin_user_delete_title"
 msgstr "delete user"
+
+msgid "admin_user_logout_title"
+msgstr "logout user"
+
+msgid "admin_user_confirm_msg_delete_user"
+msgstr "Do you confirm to delete user \"${username}\"?"
+
+msgid "admin_user_confirm_msg_logout_user"
+msgstr "Do you confirm to logout user \"${username}\"?"
 
 msgid "admin_user_footer"
 msgstr "${number} users"

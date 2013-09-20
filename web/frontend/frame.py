@@ -444,7 +444,7 @@ class UserLinks:
         
     def getLinks(self):
 
-        l = [Link("/logout", t(self.language,"sub_header_logout_title"), t(self.language,"sub_header_logout"), icon="/img/logout.gif")]
+        l = [Link("http://"+config.get("host.name")+"/logout", t(self.language,"sub_header_logout_title"), t(self.language,"sub_header_logout"), icon="/img/logout.gif")]
         if config.get("user.guestuser")==self.user.getName():
             if config.get("config.ssh")=="yes":
                 l = [Link("https://"+config.get("host.name")+"/login", t(self.language,"sub_header_login_title"), t(self.language,"sub_header_login"), icon="/img/login.gif")]

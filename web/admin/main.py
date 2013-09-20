@@ -22,6 +22,7 @@ import core.athana as athana
 import core.config as config
 import random
 import core.users as users
+import core.help as help
 
 from version import mediatum_version
 from utils.utils import join_paths, Menu
@@ -48,6 +49,7 @@ def show_node(req):
     if user.isWorkflowEditor():
         v["spc"].append(Menu("sub_header_workflow", "../publish"))
     v["spc"].append(Menu("sub_header_logout", "/logout"))
+    v["hashelp"] = help.getHelpPath(['admin', 'modules', req.path.split('/')[1]])
     
     if len(p)>0:
         if style == "":

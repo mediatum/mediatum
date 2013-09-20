@@ -40,10 +40,10 @@ def validate(req, op):
                 op = "db"
                 return view(req, op)
                 
-            if key.startswith("flush_all"):
-                print "flush all"
-                op = "all"
-                return view(req, op)
+            #if key.startswith("flush_all"):
+            #    print "flush all"
+            #    op = "all"
+            #    return view(req, op)
     return view(req, op)
 
 
@@ -54,7 +54,7 @@ def view(req, op):
     v["op"] = op
     if op == "db":
         v["msg"] = "admin_flush_data_cleared" 
-    elif op == "all":
-        v["msg"] = "admin_flush_all_cleared" 
+    #elif op == "all":
+    #    v["msg"] = "admin_flush_all_cleared" 
     return req.getTAL("web/admin/modules/flush.html", v, macro="view")
     

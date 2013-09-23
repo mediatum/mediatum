@@ -90,13 +90,13 @@ class ContentList(Content):
 
     def length(self):
         return self.num
-    
+
     def actual(self):
         return "(%d/%d)" % (int(self.nr)+1, self.num)
 
     def in_list(self,id):
         return id in self.id2pos
-    
+
     def link_first(self):
         self.id2pos[self.files[0].id] = 0
         return "/node?id=" + self.files[0].id
@@ -118,7 +118,7 @@ class ContentList(Content):
             return self.link_last()
     def link_back(self):
         return "node?back=y"
-    
+
     def feedback(self,req):
         myid = req.params.get("id")
         if myid:
@@ -132,21 +132,22 @@ class ContentList(Content):
         if "page" in req.params:
             self.page = int(req.params.get("page"))
             self.nr = -1
-       
+
         if "back" in req.params:
             self.nr = -1
-            
+
 
         for i in range(SORT_FIELDS):
             if ("sortfield%d"%i) in req.params:
                 self.sortfields[i] = req.params["sortfield%d"%i]
-                self.files.sort_by_fields(self.sortfields)
+
+        self.files.sort_by_fields(self.sortfields)
 
         self.content = None
         if self.nr>=0 and self.nr<self.num:
             self.content = ContentNode(self.files[self.nr],self.nr,self.num,self.words,self.collection)
 
-        
+
         # style selection
         if "style" in req.params:
             newstyle = req.params.get("style")
@@ -156,7 +157,7 @@ class ContentList(Content):
                 req.session["style-"+self.content.node.getContentType()] = getContentStyles("bigview", name=newstyle, contenttype=self.content.node.getContentType())[0]
         if self.content:
             return self.content.feedback(req)
-    
+
     def getSortFieldsList(self):
         class SortChoice:
             def __init__(self, label, value, descending, selected):
@@ -193,7 +194,7 @@ class ContentList(Content):
             return []
         else:
             return l
-            
+
     def getContentStyles(self):
         if self.content.__class__==ContentNode:
             return getContentStyles("bigview", contenttype=self.content.node.getContentType())
@@ -204,14 +205,14 @@ class ContentList(Content):
     def html(self,req):
         language=lang(req)
         if not language:
-            language=None    
+            language=None
         if self.content:
             headline = athana.getTAL(theme.getTemplate("content_nav.html"), {"nav": self}, macro="navheadline", language=lang(req))
             return headline + self.content.html(req)
 
         nav_list = list()
         nav_page = list()
- 
+
         if not "itemsperpage" in req.params:
             files_per_page = 9
         else:
@@ -224,7 +225,7 @@ class ContentList(Content):
         max = (len(self.files)+files_per_page-1)/files_per_page-1
         left = self.page - 6
         right = self.page + 6
- 
+
         if left < 0:
             left = 0
         if right > max or right >= max-2:
@@ -241,7 +242,7 @@ class ContentList(Content):
         for a in range(left, right+1):
             nav_list.append("/node?page="+str(a))
             nav_page.append(a)
-        
+
         if right < max:
             nav_list.append('...')
             nav_list.append("/node?page="+str(max))
@@ -266,18 +267,18 @@ class ContentList(Content):
             liststyle = self.liststyle
 
         filesHTML = req.getTAL(theme.getTemplate("content_nav.html"), {
-                 "nav_list":nav_list, "nav_page":nav_page, "act_page":self.page, 
+                 "nav_list":nav_list, "nav_page":nav_page, "act_page":self.page,
                  "sortfields":self.sortfields, "sortfieldslist":self.getSortFieldsList(),
-                 "files":tal_files, "ids":",".join(tal_ids), "maxresult":len(self.files), 
+                 "files":tal_files, "ids":",".join(tal_ids), "maxresult":len(self.files),
                  "op":"", "query":req.params.get("query", "")}, macro="files")
 
         # use template of style and build html content
-        contentList = liststyle.renderTemplate(req, {"nav_list":nav_list, "nav_page":nav_page, "act_page":self.page, 
+        contentList = liststyle.renderTemplate(req, {"nav_list":nav_list, "nav_page":nav_page, "act_page":self.page,
              "files":tal_files, "maxresult":len(self.files), "op":"", "language":lang(req)})
 
         return filesHTML + '<div id="nodes">'+contentList + '</div>' + filesHTML
-       
-    
+
+
 #paths
 def getPaths(node, access):
     list = []
@@ -289,9 +290,9 @@ def getPaths(node, access):
             if p is not tree.getRoot("collections"):
                 r(p, path)
         return path
-        
+
     paths = []
-    
+
     p = r(node, [])
     omit = 0
     if p:
@@ -326,10 +327,10 @@ class ContentNode(Content):
         else:
             self.collection = getCollection(node)
         collections={}
-       
+
     def actual(self):
         return "(%d/%d)" % (int(self.nr)+1, self.num)
-        
+
     def getContentStyles(self):
         return getContentStyles("bigview", contenttype=self.node.getContentType())
 
@@ -337,7 +338,7 @@ class ContentNode(Content):
         paths = ""
         stylebig = self.getContentStyles()
         liststyle = req.session.get("style-"+self.node.getContentType(), "")
-        
+
         if not self.node.isContainer():
             plist = getPaths(self.node, AccessData(req))
             paths = athana.getTAL(theme.getTemplate("content_nav.html"), {"paths": plist}, macro="paths", language=lang(req))
@@ -361,7 +362,7 @@ def fileIsNotEmpty(file):
     f.close()
     if s: return 1
     else: return 0
-        
+
 def mkContentNode(req):
     access = AccessData(req)
     id = req.params.get("id", tree.getRoot("collections").id)
@@ -388,14 +389,14 @@ def mkContentNode(req):
     else:
         return ContentNode(node)
 
-        
+
 class ContentError(Content):
     def __init__(self,error):
         self.error = error
 
     def html(self,req):
         return athana.getTAL(theme.getTemplate("content_error.html"), {"error":self.error}, language=lang(req))
-        
+
     def getContentStyles(self):
         return []
 
@@ -411,7 +412,7 @@ class ContentArea(Content):
         if hasattr(self.content,"node"):
             cd = self.content.node
             if cd != None:
-                path.append(Link('', cd.getLabel(), ''))   
+                path.append(Link('', cd.getLabel(), ''))
                 while 1:
                     parents = cd.getParents()
                     if(len(parents)==0):
@@ -419,7 +420,7 @@ class ContentArea(Content):
                     cd = parents[0]
                     if cd is tree.getRoot("collections") or cd is tree.getRoot():
                         break
-                    path.append(Link('/?id='+cd.id+'&dir='+cd.id, cd.getLabel(), cd.getLabel())) 
+                    path.append(Link('/?id='+cd.id+'&dir='+cd.id, cd.getLabel(), cd.getLabel()))
         elif hasattr(self.content,"linkname") and hasattr(self.content,"linktarget"):
             path.append(Link(self.content.linktarget,self.content.linkname,self.content.linkname))
         path.reverse()
@@ -443,19 +444,19 @@ class ContentArea(Content):
         if hasattr(self.content,"getParams"):
             self.params = '&'+self.content.getParams()
 
-    
+
     def actNode(self):
         if hasattr(self.content, 'files'):
             if self.content.nr>=0 and len(self.content.files)>=self.content.nr:
                 return self.content.files[self.content.nr]
             else:
                 return self.content.node
-            
+
         elif hasattr(self.content, 'node'):
             return self.content.node
         else:
             return None
-        
+
     def html(self,req):
         styles = []
         nodeprint = "1" # show print icon
@@ -468,7 +469,7 @@ class ContentArea(Content):
             try:
                 id = self.content.node.id
                 node = self.content.node
-                
+
                 if not node.getContentType() in ['collection', 'directory']:
                     nodeprint = 0
                 else:
@@ -485,11 +486,11 @@ class ContentArea(Content):
                 breadscrubs = []
             else:
                 breadscrubs = self.getPath()
-            
+
             path = req.getTAL(theme.getTemplate("content_nav.html"), {"params": self.params, "path": breadscrubs, "styles":styles, "logo":self.collectionlogo, "searchmode":req.params.get("searchmode",""), "items":items, "id":id, "nodeprint":nodeprint, "printlink":printlink, "area":req.session.get("area","")}, macro="path")
         return path + '\n<!-- CONTENT START -->\n' +  self.content.html(req) + '\n<!-- CONTENT END -->\n'
 
-        
+
 class CollectionLogo(Content):
     def __init__(self,collection):
         self.collection = collection
@@ -506,7 +507,7 @@ class CollectionLogo(Content):
 
     def getShowOnHTML(self):
         return self.collection.get("showonhtml")
-        
+
 def getContentArea(req):
     if len(req.params):
         if "contentarea" in req.session:

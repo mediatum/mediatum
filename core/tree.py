@@ -321,6 +321,9 @@ class NodeList:
         else:
             # remove empty sortfields
             fields = [f for f in field if f]
+            if not fields:
+                # no fields left, all empty...
+                return self
         t1 = time.time()
         nids = ",".join("'" + i +  "'" for i in self.ids)
         sorted_nids = db.sort_nodes_by_fields(nids, fields)

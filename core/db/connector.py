@@ -215,3 +215,22 @@ class Connector:
         id = t[0][0] + 1
         return str(id)
 
+    ### node sorting
+
+    def _sql_sort_field_name_and_dir(self, f):
+        """Convert node field name to escaped name and sort direction."""
+        if f.startswith("-"):
+            direction = " DESC"
+            fname = f[1:]
+        else:
+            direction = " ASC"
+            fname = f
+        return (self.esc(fname), direction)
+
+
+    def sort_nodes_by_fields(self, nids, fields):
+        """Sorts nodes by field (attribute) values.
+        :param nids: node ids
+        :param fields: field names to sort for. Prepend - to sort descending
+        """
+        raise NotImplementedError()

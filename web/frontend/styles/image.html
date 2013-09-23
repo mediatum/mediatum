@@ -28,13 +28,13 @@ The document is displayed in the <a href="/" tal:attributes="href python:'?id='+
         <img tal:attributes="src python:'/thumb2/'+str(node.id); onClick python:'fullSizePopup('+str(node.id)+', ' + str(node.get('width')) +', ' + str(node.get('height')) +')'" style="cursor:pointer;border:1px double silver;" border="1px" />
     </a>
     </tal:block>
-    
+
     <tal:block tal:condition="python:zoom">
     <a>
         <img tal:attributes="src python:'/thumb2/'+str(node.id); onClick python:'fullSizePopup('+str(node.id)+', 700, 700)'" style="width:300px;cursor:pointer;border:1px double silver;" border="1px" />
     </a>
     </tal:block>
-    
+
     <div tal:condition="python:tif!=''" id="object_highresolution" style="padding-top:10px">
         <a tal:attributes="href python:'/file/'+node.id+'/'+str(tif)" i18n:translate="image_high_res_title">TEXT</a>
         <img id="object_highresolution_remark" style="display:none;" src="/img/wait_small.gif"/>
@@ -43,7 +43,7 @@ The document is displayed in the <a href="/" tal:attributes="href python:'?id='+
     <div tal:condition="python:len(attachment)>0" id="object_attachment" style="padding:10px 0px">
         <a tal:attributes="onclick python:'javascript:openPopup(\'/attachmentbrowser?id='+str(node.id)+'&path='+path+'\', \'Attachment\', 400, 400)'" i18n:translate="doc_att_browser" href="#" >TEXT</a>
     </div>
-    
+
     <div id="object_versions" tal:define="versions python:node.getVersionList()" tal:condition="python:len(versions)>1">
         <div><tal:block i18n:translate="document_view_current_version_from">Current version:<br/><span i18n:name="version" tal:replace="python:'Version ' + str(node.get('system.version.id')=='' and 1 or node.get('system.version.id'))">Version</span> from</tal:block> <tal:block tal:condition="python:node.get('updatetime') or node.get('creationtime')" tal:replace="python:node.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:node.get('updateuser') and node.get('updateuser') or node.get('creator')" /></div>
 
@@ -76,7 +76,7 @@ The document is displayed in the <a href="/" tal:attributes="href python:'?id='+
 
 <div tal:content="raw metadata" style="margin-left:330px"/>
 <div style="clear:both"/>
-<div tal:define="children python:node.getChildren().sort()" tal:condition="python:len(children)>0" style="width:100%">
+<div tal:define="children python:node.getChildren().sort_by_orderpos()" tal:condition="python:len(children)>0" style="width:100%">
     <p>Details:</p>
     <div tal:repeat="child children" style="float:left; padding:2px;border:1px solid silver;margin:2px;text-align:center;">
         <img tal:attributes="src python:'/thumbs/'+child.id"/>

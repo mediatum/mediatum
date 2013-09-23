@@ -30,7 +30,7 @@
             </a>
             <p>&nbsp;</p>
             <tal:block tal:condition="documentdownload" i18n:translate="">
-                If you experience problems opening this document, please try 
+                If you experience problems opening this document, please try
             </tal:block>
             <a tal:attributes="href documentdownload" i18n:translate="">this link</a>.
         </tal:block>
@@ -45,7 +45,7 @@
             <br/>
             <a tal:attributes="href python:'/export/'+str(node.id)+'/bibtex'" target="bibtexdocument" i18n:attributes="title doc_bibtex_title"><img src="/img/bibtex.gif"/></a>
         </tal:block>
-                
+
         <div id="object_versions" tal:define="versions python:node.getVersionList()" tal:condition="python:len(versions)>1">
             <div><tal:block i18n:translate="document_view_current_version_from">Current version:<br/><span i18n:name="version" tal:replace="python:'Version ' + str(node.get('system.version.id')=='' and 1 or node.get('system.version.id'))">Version</span> from</tal:block> <tal:block tal:condition="python:node.get('updatetime') or node.get('creationtime')" tal:replace="python:node.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:node.get('updateuser') and node.get('updateuser') or node.get('creator')" /></div>
 
@@ -55,7 +55,7 @@
                 <span tal:condition="python:v.get('updatetime') or v.get('creationtime')">(<tal:block i18n:translate="document_view_from">from</tal:block> <tal:block tal:replace="python:v.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:v.get('updateuser') and v.get('updateuser') or v.get('creator')" />)</span></a>
             </div>
         </div>
-        
+
     </div>
     <tal:block tal:condition="python: len(node.getFiles())==0">
         <div id="object_meta" style="margin-left:0px" tal:content="raw metadata"/>
@@ -67,7 +67,7 @@
     <div tal:condition="python: len(node.getFiles())>0" id="object_meta" tal:content="raw metadata"/>
 </div>
 
-<div tal:define="children python:node.getChildren().sort()" tal:condition="python:len(children)>0" style="width:100%">
+<div tal:define="children python:node.getChildren().sort_by_orderpos()" tal:condition="python:len(children)>0" style="width:100%">
     <p>Details:</p>
     <div tal:repeat="child children" style="float:left; padding:2px;border:1px solid silver;margin:2px;text-align:center">
         <img tal:attributes="src python:'/thumbs/'+child.id"/>

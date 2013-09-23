@@ -109,7 +109,7 @@ class Default(tree.Node):
         return "Unknown datatype: "+node.type
 
     def show_node_image(node, language=None):
-        return athana.getTAL("contenttypes/default.html", {'children':node.getChildren().sort(), 'node':node}, macro="show_node_image")
+        return athana.getTAL("contenttypes/default.html", {'children':node.getChildren().sort_by_orderpos(), 'node':node}, macro="show_node_image")
 
     def show_node_text(node, words=None, language=None, separator="", labels=0, cachetype=DEFAULT_MASKCACHE):
         if cachetype not in ['shallow', 'deep']:

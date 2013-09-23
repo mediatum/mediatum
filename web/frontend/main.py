@@ -28,7 +28,7 @@ if sys.version[0:3] < '2.6':
 else:
     import json
 
-import core.acl 
+import core.acl
 import core.config as config
 import core.users as users
 import core.xmlnode as xmlnode
@@ -51,8 +51,8 @@ def handle_json_request(req):
             f = tree.getNode(searchmaskitem_id).getFirstField()
         if not f: # All Metadata
             f = g = getMetadataType("text")
-        s = [f.getSearchHTML(Context(g, value=req.params.get("query_field_value"), width=174, name="query"+str(req.params.get("fieldno")), 
-                               language=lang(req), collection=tree.getNode(req.params.get("collection_id")), 
+        s = [f.getSearchHTML(Context(g, value=req.params.get("query_field_value"), width=174, name="query"+str(req.params.get("fieldno")),
+                               language=lang(req), collection=tree.getNode(req.params.get("collection_id")),
                                user=users.getUserFromRequest(req), ip=req.ip))]
     req.write(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
     return
@@ -61,7 +61,7 @@ def display(req):
 
     if "jsonrequest" in req.params:
         handle_json_request(req)
-        return   
+        return
 
     req.session["area"] = ""
     content = getContentArea(req)
@@ -80,13 +80,13 @@ def display(req):
 def display_noframe(req):
     content = getContentArea(req)
     content.feedback(req)
-    
+
     navframe = getNavigationFrame(req)
     navframe.feedback(req)
     req.params["show_navbar"] = 0
 
     contentHTML = content.html(req)
-    
+
     if "raw" in req.params:
         req.write(contentHTML)
     else:
@@ -99,20 +99,20 @@ def publish(req):
     m = PUBPATH.match(req.path)
 
     node = tree.getRoot("workflows")
-    if m: 
+    if m:
         for a in m.group(2).split("/"):
-            if a: 
+            if a:
                 try:
                     node = node.getChild(a)
                 except tree.NoSuchNodeError:
                     return 404
-    
+
     req.params["id"] = node.id
 
     content = getContentArea(req)
     content.content = ContentNode(node)
     req.session["area"] = "publish"
-    
+
     return display_noframe(req)
 
 def show_parent_node(req):
@@ -121,7 +121,7 @@ def show_parent_node(req):
         node = tree.getNode(req.params.get("id"))
     except tree.NoSuchNodeError:
         return display_noframe(req)
-    
+
     for p in node.getParents():
         if p.type != "directory" and p.type != "collection":
             parent = p
@@ -142,7 +142,7 @@ def esc(v):
 def exportsearch(req, xml=0):  # format 0=pre-formated, 1=xml, 2=plain
     access = AccessData(req)
     access = core.acl.getRootAccess()
-    
+
     id = req.params.get("id")
     q = req.params.get("q","")
     lang = req.params.get("language", "")
@@ -178,9 +178,9 @@ def exportsearch(req, xml=0):  # format 0=pre-formated, 1=xml, 2=plain
 
     limit = int(req.params.get("limit", 99999))
     sortfield = req.params.get("sort", None)
-    
+
     if sortfield:
-        nodes = nodes.sort(sortfield)
+        nodes = nodes.sort_by_fields(sortfield)
 
     if limit < len(nodes):
         nodes = nodes[0:limit]
@@ -215,7 +215,7 @@ def exportsearch(req, xml=0):  # format 0=pre-formated, 1=xml, 2=plain
             i = i + 1
         req.write('add_data(a);\n')
     print "%d node entries xml=%d" % (i, xml)
-       
+
 def xmlsearch(req):
     return exportsearch(req, xml=1)
 

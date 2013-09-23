@@ -19,7 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from utils.utils import compare_utf8,get_filesize, compare_digit, intersection, u, iso2utf8, float_from_gps_format
+from utils.utils import get_filesize, intersection, u, float_from_gps_format
 from utils.log import logException
 from core.db import database
 import logging
@@ -29,6 +29,7 @@ import os
 from utils.dicts import MaxSizeDict
 from utils.utils import get_hash
 from utils.date import format_date, parse_date, STANDARD_FORMAT, now
+from locale import setlocale, strxfrm, LC_COLLATE, getlocale
 import core.config as config
 import thread
 import traceback
@@ -44,7 +45,7 @@ bulk = 0
 testmode = 0
 nocache = 0
 
-log = logging.getLogger("backend")
+log = logg = logging.getLogger("backend")
 
 nodes_cache = None
 
@@ -115,14 +116,14 @@ def getNode(id):
         tree_lock.release()
     node = nodes_cache[long(id)] = Node(dbid=id)
     return node
-    
+
 def getAllContainerChildrenNum(node, count=0): # returns the number of children
     for n in node.getContainerChildren():
         count = getAllContainerChildrenNum(n, count)
     count += len(node.getContentChildren())
     return count
 
-    
+
 def getAllContainerChildrenAbs(node, count=[]): # returns a list with children, each child once
     for n in node.getContainerChildren():
         count = getAllContainerChildrenAbs(n, count)
@@ -134,13 +135,13 @@ def getAllContainerChildren(node):
     #return getAllContainerChildrenNum(node, 0) # get number of children (faster)
     #return 0 # suppress number (fastest)
 
-    
+
 def getNodesByAttribute(attributename, attributevalue=""):
     return db.getNodeIdByAttribute(attributename, attributevalue)
 
 def getDirtyNodes(num=0):
     return NodeList(db.getDirty(num))
-    
+
 
 class NoSuchNodeError:
     def __init__(self,id=None):
@@ -160,7 +161,7 @@ class FileNode:
         self.type = type
         self.mimetype = mimetype
         self.node = node
-        
+
     def clone(self, node):
         """Creates a deep copy of this filenode, i.e. there is a new version of the file on the drive being created!"""
         from utils.fileutils import importFileRandom
@@ -178,7 +179,7 @@ class FileNode:
               try:
                   if f.add(self):
                       return
-              except: 
+              except:
                   logException("file handler add() failed")
     def _delete(self):
         for f in filehandlers:
@@ -186,9 +187,9 @@ class FileNode:
               try:
                   if f.delete(self):
                       return
-              except: 
+              except:
                   logException("file handler delete() failed")
-    
+
     def retrieveFile(self):
         for f in filehandlers:
             if hasattr(f, "retrieveFile"):
@@ -196,9 +197,9 @@ class FileNode:
                     path = f.retrieveFile(self)
                     if path:
                         return path
-                except: 
+                except:
                     logException("file handler retrieveFile() failed")
-        
+
         if os.path.exists(self._path):
             return self._path
 
@@ -216,7 +217,7 @@ class FileNode:
                     except:
                         pass
         return config.settings["paths.datadir"] + self._path
-        
+
     def getMimeType(self):
         return self.mimetype
     def getSize(self):
@@ -228,7 +229,7 @@ class FileNode:
                         return size
                     else:
                         return 0
-                except: 
+                except:
                     logException("file handler getSize() failed")
                     return -1
         return get_filesize(self.retrieveFile())
@@ -239,12 +240,12 @@ class FileNode:
                     h = f.getHash(self)
                     if h:
                         return h
-                except: 
+                except:
                     logException("file handler getHash() failed")
         return get_hash(self.retrieveFile())
     def getName(self):
         return os.path.basename(self._path)
-        
+
 nodetypes = {}
 
 ' TODO update for current tree implementation'
@@ -255,12 +256,10 @@ def getType(name):
         nodetypes[name] = name
         return nodetypes[name]
 
-sortorders = {}
-
 changed_metadata_nodes = {}
 last_changed_metadata_node = None
 def flush_changed_metadata():
-  
+
     global searcher
 
     for nid in changed_metadata_nodes.keys():
@@ -268,47 +267,12 @@ def flush_changed_metadata():
 
     changed_metadata_nodes.clear()
     last_changed_metadata_node = None
-    
+
 def changed_metadata(node):
     if node.id:
         changed_metadata_nodes[node.id] = None
         last_changed_metadata_node = node.id
 
-def createSortOrder(field):
-    field_orig = field
-    log.info("retrieving sort order for field '%s'" %(field_orig))
-    t1 = time.time()
-    reverse=0
-    if field[0]=='-':
-        field = field[1:]
-        reverse=1
-
-    idlist = list(db.getSortOrder(field))
-
-    if reverse:
-        def mycmp(n1,n2):
-            if str(n1[1]).isdigit() and str(n2[1]).isdigit():
-                return compare_digit(n2[1],n1[1])
-            else:
-                return compare_utf8(n2[1],n1[1])
-    else:
-        def mycmp(n1,n2):
-            if str(n1[1]).isdigit() and str(n2[1]).isdigit():
-                return compare_digit(n1[1],n2[1])
-            else:
-                return compare_utf8(n1[1],n2[1])
-    idlist.sort(mycmp)
-
-    i = 0
-    v = None
-    id2pos = {}
-    for id,value in idlist:
-        if value != v:
-            v = value
-            i = i + 1
-        id2pos[int(id)] = i
-    log.info("sort order retrieved for field '%s', %.3f seconds  -  id2pos has %d keys" %(field_orig, (time.time()-t1), len(id2pos)))
-    return id2pos
 
 class NodeList:
     def __init__(self, ids, description=""):
@@ -319,7 +283,7 @@ class NodeList:
             ids = [None]*len(nodes)
             for i,n in enumerate(nodes):
                 ids[i]=n.id
-        self.ids = ids
+        self.ids = [str(i) for i in ids]
         self.len = len(ids)
         self.description = description
     def __len__(self):
@@ -328,79 +292,80 @@ class NodeList:
         if type(i) == slice:
             nodes = []
             for id in self.ids[i]:
-                nodes += [getNode(str(id))]
+                nodes += [getNode(id)]
             return nodes
         elif i >= self.len:
             raise IndexError(str(i)+" >= "+str(self.len))
-        return getNode(str(self.ids[i]))
-    
+        return getNode(self.ids[i])
+
     def getIDs(self):
         return self.ids
-        
+
     def getDescription(self):
         return self.description
-    def sort(self,field="orderpos", direction="up"):
-        if field == "orderpos":
-            nodes = []
-            for id in self.ids:
-                nodes += [getNode(str(id))]
-            def orderposcmp(n1,n2):
-                if n1.orderpos > n2.orderpos:
-                    return 1
-                elif n1.orderpos < n2.orderpos:
-                    return -1
-                else:
-                    return 0
-            nodes.sort(orderposcmp)
-            return nodes
-        elif field == "name":
-            nodes = []
-            
-            for id in self.ids:
-                nodes += [getNode(str(id))]
-                def namecmp(n1,n2):
-                    result = compare_utf8(n1.name,n2.name)
-                    return result
-                if direction=="up":
-                    nodes.sort(namecmp)
-                
-                def namecmp_down(n1,n2):
-                    result = compare_utf8(n2.name,n1.name)
-                    return result
-                if direction=="down":
-                    nodes.sort(namecmp_down)
-            # we don't return a NodeList here, but a normal
-            # list. The main difference between those two is
-            # that a normal list doesn't have an "intersect" operation.
-            # That's ok because we don't want to intersect sorted
-            # lists.
-            return nodes
-        else:
-            if not field:
-                return self
-            if type(field) == type(""):
-                field = [field]
-            sortlists = []
-            for f in field:
-                if f:
-                    if f not in sortorders:
-                        sortorders[f] = createSortOrder(f)
-                    sortlists.append(sortorders[f])
-            if not sortorders:
-                return self
 
-            def fieldcmp(id1,id2):
-                for s in sortlists:
-                    pos1 = s.get(int(id1),-1)
-                    pos2 = s.get(int(id2),-1)
-                    if pos1 < pos2:
-                        return -1
-                    elif pos1 > pos2:
-                        return 1
-                return 0
-            self.ids.sort(fieldcmp)
+    def sort_by_fields(self, field):
+        if not field or not self.ids:
             return self
-            
+        if isinstance(field, str):
+            # handle some special cases
+            if field == "name":
+                return self.sort_by_name("up")
+            elif field == "-name":
+                return self.sort_by_name("down")
+            elif field in ("orderpos", "-orderpos"):
+                raise NotImplementedError("this method must not be used for orderpos sorting!")
+            else:
+                # sort query function needs seq of sortfields, convert
+                fields = [field]
+        else:
+            # remove empty sortfields
+            fields = [f for f in field if f]
+            if not fields:
+                # no fields left, all empty...
+                return self
+        t1 = time.time()
+        nids = ",".join("'" + i +  "'" for i in self.ids)
+        sorted_nids = db.sort_nodes_by_fields(nids, fields)
+        missing_nids = set(self.ids) - set(sorted_nids)
+        if missing_nids:
+            # query returned too few nids, add missing ids unsorted
+            logg.info("fields missing for %s nodes when sorting by %s", len(missing_nids), fields)
+#             logg.debug("node IDs with missing fields: %s", missing_nids)
+            sorted_nids += missing_nids
+        extra_nids = set(sorted_nids) - set(self.ids)
+        if extra_nids:
+            # query returned too many nids, remove extra nids
+            logg.info("query return %s extra nids", len(extra_nids))
+            sorted_nids = [i for i in sorted_nids if i not in extra_nids]
+        self.ids = sorted_nids
+        if log.isEnabledFor(logging.DEBUG):
+            msg = "sorting for {} with {} ids took {} seconds".format(fields, len(self.ids), time.time()-t1)
+            log.debug(msg)
+        return self
+
+    def sort_by_orderpos(self):
+        nodes = [getNode(str(i)) for i in self.ids]
+        nodes.sort(key=lambda n: n.orderpos)
+        return nodes
+
+    def sort_by_name(self, direction="up", locale=None):
+        reverse = direction == "down"
+        nodes = [getNode(str(i)) for i in self.ids]
+        # set locale and restore current value after sorting if given
+        if locale:
+            last_locale = getlocale(LC_COLLATE)
+            setlocale(locale)
+        nodes.sort(key=lambda n: strxfrm(n.name), reverse=reverse)
+        if locale:
+            setlocale(LC_COLLATE, last_locale)
+        # we don't return a NodeList here, but a normal
+        # list. The main difference between those two is
+        # that a normal list doesn't have an "intersect" operation.
+        # That's ok because we don't want to intersect sorted
+        # lists.
+        return nodes
+
     def filter(self, access):
         return access.filter(self)
 
@@ -478,13 +443,13 @@ class Node:
 
     def setDirty(self):
         db.setDirty(self.id)
-        
+
     def isDirty(self):
         if db.isDirty(self.id):
             return 1
         else:
             return 0
-    
+
     def cleanDirty(self):
         db.cleanDirty(self.id)
 
@@ -494,7 +459,7 @@ class Node:
 
 
     """ set the node name """
-    def setName(self,name):  
+    def setName(self,name):
         self.name = name
         if self.id:
             db.setNodeName(self.id,name)
@@ -504,7 +469,7 @@ class Node:
         return self.orderpos
 
     """ set the position that this node appears in nodelists """
-    def setOrderPos(self,orderpos):  
+    def setOrderPos(self,orderpos):
         self._makePersistent()
         self.orderpos = orderpos
         db.setNodeOrderPos(self.id,orderpos)
@@ -535,7 +500,7 @@ class Node:
             c.invalidateLocalRead()
 
     def getLocalRead(self):
-        if not self.localread:            
+        if not self.localread:
             if self.id is None:
                 return self.read_access
 
@@ -552,11 +517,11 @@ class Node:
             self.localread = ",".join(rights.keys())
             db.setNodeLocalRead(self.id, self.localread)
         return self.localread
-        
+
     def resetLocalRead(self):
         self.localread = ""
         db.setNodeLocalRead(self.id, self.localread)
-           
+
     """ set the node type (as string) """
     def setTypeName(self,type):
         changed_metadata(self)
@@ -622,7 +587,7 @@ class Node:
                 parentids_cache[id] = None
         finally:
             tree_lock.release()
-    
+
     """ add a child node """
     def addChild(self,child):
         self._makePersistent()
@@ -651,7 +616,7 @@ class Node:
         child.resetLocalRead()
         self._flushOccurences()
 
-        
+
     """ get all FileNode subnodes of this node """
     def getFiles(self):
         self._makePersistent()
@@ -660,7 +625,7 @@ class Node:
         for filename,type,mimetype in dbfiles:
             files += [FileNode(filename,type,mimetype,self)]
         return files
-    
+
 
     """ add a FileNode to this node """
     def addFile(self, file):
@@ -722,7 +687,7 @@ class Node:
                 cache = parentids_cache
             else:
                 cache = childids_cache
-            try: 
+            try:
                 idlist = cache[long(self.id)]
             except KeyError:
                 return []
@@ -750,11 +715,11 @@ class Node:
         if not id:
             raise NoSuchNodeError("child:"+str(name))
         return getNode(str(id))
-        
+
     def getContainerChildren(self):
         id = db.getContainerChildren(self.id)
         return NodeList(id)
-        
+
     def getContentChildren(self):
         id = db.getContentChildren(self.id)
         return NodeList(id)
@@ -804,7 +769,7 @@ class Node:
     def getAllChildren(self):
         return NodeList(self._getAllChildIDs().keys())
 
-        
+
     def event_metadata_changed(self):
         global searcher
         searcher.node_changed(self)
@@ -819,31 +784,31 @@ class Node:
         exif_lon_ref = self.get("exif_GPS_GPSLongitudeRef")
         exif_lat = self.get("exif_GPS_GPSLatitude")
         exif_lat_ref = self.get("exif_GPS_GPSLatitudeRef")
-        
+
         if exif_lon=="" or exif_lon_ref=="" or exif_lat=="" or exif_lat_ref=="":
             return {}
-         
+
         lon = float_from_gps_format(exif_lon)
         if exif_lon_ref=="W":
             lon *= -1;
-            
+
         lat = float_from_gps_format(exif_lat)
         if exif_lat_ref=="S":
             lat *= -1;
         return {"lon":lon, "lat":lat}
-    
-    
+
+
     """ get a metadate """
     def get(self, name):
         if name.startswith('node'):
             if name in ["nodename", "node.name"]:
-                return self.getName()        
+                return self.getName()
             elif name=='node.id':
                 return self.id
             elif name=='node.type':
                 return self.type
             elif name=='node.orderpos':
-                return self.orderpos            
+                return self.orderpos
         if self.attributes is None:
             if not self.id:
                 raise "Internal Error"
@@ -865,9 +830,6 @@ class Node:
 
         if self.id:
             db.setAttribute(self.id, name, value,check=(not bulk))
-
-        try: del sortorders[name]
-        except: pass
 
     """ get all metadates (key/value) pairs """
     def items(self):
@@ -919,7 +881,7 @@ class Node:
             else:
                 print "not found", s
         return ret
-    
+
     """ run a search query. returns a list of nodes """
     def search(self, q):
         global searcher, subnodes
@@ -929,7 +891,7 @@ class Node:
             return searcher.query(q)
         items = subnodes(self)
         if type(items)!= list:
-            items = items.getIDs() 
+            items = items.getIDs()
         return NodeList(intersection([items, searcher.query(q)]))
 
     def __getattr__(self, name):
@@ -941,7 +903,7 @@ class Node:
         f = self.getoverloadedfunction(name)
         if f:
             return f
-                
+
         if self.attributes is None and self.id:
             self.attributes = db.getAttributes(self.id)
         if name in self.attributes:
@@ -973,7 +935,7 @@ class Node:
             return lambda *x,**y: nodefunctions[name](self, *x,**y)
         return None
 
-    
+
     # fill hashmap with idlists of listvalues
     def getAllAttributeValues(self, attribute, access, schema=""):
         values = {}
@@ -996,16 +958,16 @@ class Node:
         return values
 
         ALL = -1
-            
+
         self.lock.acquire() #FIXME: this lock is aquired way too long
         try:
             if not hasattr(self, 'attrlist') or attribute not in self.attrlist.keys():
                 self.attrlist = {}
                 self.attrlist[attribute] = {}
-                
+
                 # current attribute not listed -> create id list
                 if not ALL in self.attrlist[attribute].keys():
-                    self.attrlist[attribute][ALL] = {}            
+                    self.attrlist[attribute][ALL] = {}
                     ret = {}
 
                     # TODO: optimize this
@@ -1033,8 +995,8 @@ class Node:
 
     #def getTechnAttributes(self):
     #    return {}
-            
-    
+
+
     def overwriteAccess(self, newrule, oldrule):
         """ Replaces the old access with new accessname"""
         """ Oldname is the old rules name
@@ -1067,7 +1029,7 @@ class Node:
             tree_lock.release()
             self.invalidateLocalRead()
 
-            
+
     def overwriteRule(self, rulestring, oldname, newname, oldrulestr, newrulestr):
         """ rulestring is the access string, holding all access rules of this node
             Oldname is the old rule name
@@ -1081,7 +1043,7 @@ class Node:
             if r==oldname and not oldname=="":
                 #Either its exactly the rulename
                 r = newname
-                
+
             elif oldrulestr in r and not oldrulestr=="":
                 #Or its the rule string. There it first tests, if it is within the current rule. If it is there, it is tested, if it is exactly the rule.
                 temp = r
@@ -1097,13 +1059,13 @@ class Node:
     def createNewVersion(self, user):
         if self.get('system.version.id')=='':
             self.set('system.version.id', '1')
-        
+
         n = Node(name=self.name, type=self.type)
         n.set("creator", self.get('creator'))
         n.set("creationtime", self.get('creationtime'))
         n.set("updateuser", user.getName())
         n.set("edit.lastmask", self.get('edit.lastmask'))
-        
+
         if self.get('updatetime')<str(now()):
             n.set("updatetime", str(format_date()))
         else:
@@ -1184,16 +1146,15 @@ class Node:
         if self.get('creationtime'):
             return format_date(parse_date(self.get('creationtime')), '%d.%m.%Y, %H:%M:%S')
         return ''
-    
+
 def flush():
-    global childids_cache,nodes_cache,parentids_cache,_root,db,sortorders
+    global childids_cache,nodes_cache,parentids_cache,_root,db
     tree_lock.acquire()
     try:
         childids_cache = None
         nodes_cache = MaxSizeDict(int(config.get("db.cache_size","100000")), keep_weakrefs=1)
         parentids_cache = None
         db = database.getConnection()
-        sortorders = {}
         _root = None
     finally:
         tree_lock.release()
@@ -1271,12 +1232,12 @@ def initialize(load=1):
         print "magpy searcher initialized"
         from core.search.query import subnodes, mgSearcher
         from core.search.parser import searchParser
-        
+
         subnodes = subnodes
         searchParser = searchParser
         searcher = mgSearcher
-        
-        
+
+
     # load char replacement table
 
     file = None
@@ -1286,7 +1247,7 @@ def initialize(load=1):
         if f.retrieveFile().endswith("searchconfig.txt"):
             file = f
             break
-            
+
     if file and os.path.exists(file.retrieveFile()):
         section = ""
         for line in open(file.retrieveFile(), "r"):

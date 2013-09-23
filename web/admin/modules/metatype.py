@@ -700,7 +700,7 @@ def showEditor(req):
 def changeOrder(parent, up, down):
     """ change order of given nodes """
     i = 0
-    for child in parent.getChildren().sort():
+    for child in parent.getChildren().sort_by_orderpos():
         try:
             if i == up:
                 pos = i-1

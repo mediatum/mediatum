@@ -84,7 +84,7 @@ def getMetaType(name):
 # load all meta-types from db
 #
 def loadTypesFromDB():
-    return list(tree.getRoot("metadatatypes").getChildren().sort('name'))
+    return list(tree.getRoot("metadatatypes").getChildren().sort_by_name())
 
 def getNumberNodes(name):
     return 1
@@ -226,7 +226,7 @@ def deleteMetaField(pid, name):
     metadatatype.removeChild(field)
 
     i=0
-    for field in getMetaType(pid).getChildren().sort():
+    for field in getMetaType(pid).getChildren().sort_by_orderpos():
         field.setOrderPos(i)
         i += 1
 
@@ -242,7 +242,7 @@ def moveMetaField(pid, name, direction):
         up = int(getMetaField(pid, name).getOrderPos())
 
     i = 0
-    for field in getMetaType(pid).getChildren().sort():
+    for field in getMetaType(pid).getChildren().sort_by_orderpos():
         try:
             if i==up:
                 pos = i - 1
@@ -275,7 +275,7 @@ def generateMask(metatype, masktype="", force=0):
     except tree.NoSuchNodeError:
         mask = metatype.addChild(tree.Node("-auto-","mask"))
         i = 0
-        for c in metatype.getChildren().sort():
+        for c in metatype.getChildren().sort_by_orderpos():
             if c.type!="mask":
                 if c.getFieldtype()!="union":
                     n = tree.Node(c.get("label"), "maskitem")
@@ -290,7 +290,7 @@ def cloneMask(mask, newmaskname):
     def recurse(m1,m2):
         for k,v in m1.items():
             m2.set(k,v)
-        for c1 in m1.getChildren().sort():
+        for c1 in m1.getChildren().sort_by_orderpos():
             if c1.type in ["mask", "maskitem"]:
                 c2 = tree.Node(c1.getName(), c1.type)
                 c2.setOrderPos(c1.getOrderPos())
@@ -582,7 +582,7 @@ class Metadatatype(tree.Node):
 
     def getMetaFields(self,type=None):
         fields = []
-        for item in self.getChildren().sort():
+        for item in self.getChildren().sort_by_orderpos():
             if item.getContentType()=="metafield":
                 if not type or type in item.getOption():
                     fields.append(item)
@@ -597,7 +597,7 @@ class Metadatatype(tree.Node):
 
     def getMasks(self, type="", language=""):
         masks = []
-        for item in self.getChildren().sort():
+        for item in self.getChildren().sort_by_orderpos():
             if item.getContentType()=="mask":
                 if type=="":
                     if item.getLanguage() in [language,"no"] or language=="":
@@ -790,7 +790,7 @@ class Mask(tree.Node):
             return None
 
         ret = ''
-        for field in self.getChildren().sort():
+        for field in self.getChildren().sort_by_orderpos():
             element = field.getField()
             t = getMetadataType(field.get("type"))
             ret += t.getFormHTML(field, nodes, req)
@@ -807,10 +807,9 @@ class Mask(tree.Node):
 
         if flags & 8: # export mode
             x = self.getChildren()
-            x.sort()
+            x.sort_by_orderpos()
             return getMetadataType("mappingfield").getViewHTML(x, nodes, flags, language=language, template_from_caller=template_from_caller, mask=mask)
-
-        for field in self.getChildren().sort():
+        for field in self.getChildren().sort_by_orderpos():
             t = getMetadataType(field.get("type"))
             if flags & 4: # data mode
                 v = t.getViewHTML(field, nodes, flags, language=language, template_from_caller=template_from_caller, mask=mask)
@@ -836,7 +835,7 @@ class Mask(tree.Node):
             ret = []
         else:
             ret = ''
-        for field in self.getChildren().sort():
+        for field in self.getChildren().sort_by_orderpos():
             t = getMetadataType(field.get("type"))
             if flags & 4:
                 ret.append(t.getViewHTML(field, node, flags, language=language))
@@ -1009,7 +1008,7 @@ class Mask(tree.Node):
 
         i=0
         fieldlist = {} #!!!getAllMetaFields()
-        for item in self.getChildren().sort():
+        for item in self.getChildren().sort_by_orderpos():
             t = getMetadataType(item.get("type"))
             ret += t.getMetaHTML(self, i, language=language, fieldlist=fieldlist) # get formated line specific of type (e.g. field)
             i += 1
@@ -1167,7 +1166,7 @@ class Mask(tree.Node):
         for parent in item.getParents():
             parent.removeChild(item)
             i = 0
-            for child in parent.getChildren().sort():
+            for child in parent.getChildren().sort_by_orderpos():
                 child.setOrderPos(i)
                 i += 1
 

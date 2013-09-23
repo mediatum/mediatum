@@ -40,7 +40,7 @@ class m_label(Metatype):
 
     def getMetaHTML(self, parent, index, sub=False, language=None, fieldlist={}):
         """ return formated row for metaeditor """
-        item = parent.getChildren().sort()[index]
+        item = parent.getChildren().sort_by_orderpos()[index]
         ret = ''
         if not sub:
             ret += '<div id="' + item.id + '" class="row" onmouseover="pick(this)" onmouseout="unpick(this)" onclick="select(this)">'

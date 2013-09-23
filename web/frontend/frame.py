@@ -110,7 +110,7 @@ class Searchlet(Portlet):
         self.searchfields = SortedDict()
 
         if self.searchmask:
-            for field in self.searchmask.getChildren().sort():
+            for field in self.searchmask.getChildren().sort_by_orderpos():
                 self.searchfields[field.id] = field.name
         self.names = [None] * 11
 
@@ -368,7 +368,7 @@ class Collectionlet(Portlet):
             data = m[node.id]
             col_data += [data]
             if not data.folded or data.defaultopen:
-                for c in node.getContainerChildren().sort():
+                for c in node.getContainerChildren().sort_by_orderpos():
                     f(col_data,c, indent+1)
 
         f(col_data,tree.getRoot("collections"),0)

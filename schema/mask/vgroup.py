@@ -29,7 +29,7 @@ class m_vgroup(Metatype):
         if field.getLabel()!="":
             ret += '<legend>'+field.getLabel()+'</legend>'
 
-        for item in field.getChildren().sort():
+        for item in field.getChildren().sort_by_orderpos():
             if item.get("type") in ("hgroup", "vgroup", "field", "label"):
                 f = getMetadataType(item.get("type"))
                 ret += f.getFormHTML(item, nodes, req)
@@ -42,7 +42,7 @@ class m_vgroup(Metatype):
     def getViewHTML(self, field, nodes, flags, language=None, template_from_caller=None, mask=None):
         if flags & VIEW_DATA_ONLY:
             ret = []
-            for item in field.getChildren().sort():
+            for item in field.getChildren().sort_by_orderpos():
                 f = getMetadataType(item.get("type"))
                 ret.append(f.getViewHTML(item, nodes, flags, language=language))
             return ret
@@ -51,7 +51,7 @@ class m_vgroup(Metatype):
 
             ret = '<div class="mask_row"><fieldset>\n'
             ret += '<legend>'+field.getLabel()+'</legend>'
-            for item in field.getChildren().sort():
+            for item in field.getChildren().sort_by_orderpos():
                 f = getMetadataType(item.get("type"))
                 ret += '<div class="mask_row">' + f.getViewHTML(item, nodes, flags) + '</div>\n'
             ret += '</fieldset></div>\n'
@@ -60,7 +60,7 @@ class m_vgroup(Metatype):
 
     """ """
     def getMetaHTML(self, parent, index, sub=False, language=None, fieldlist={}):
-        item = parent.getChildren().sort()[index]
+        item = parent.getChildren().sort_by_orderpos()[index]
         ret = ''
         i = 0
         
@@ -71,7 +71,7 @@ class m_vgroup(Metatype):
         if item.getLabel()!="":
             ret += '<legend>'+item.getLabel()+'</legend>'
         
-        for field in item.getChildren().sort():
+        for field in item.getChildren().sort_by_orderpos():
             f = getMetadataType(field.get("type"))
             ret += f.getMetaHTML(item, i, True, language=language, fieldlist=fieldlist) + '<br/>'
             i += 1
@@ -110,7 +110,7 @@ class m_vgroup(Metatype):
 
         details =""
         i = 0
-        for field in item.getChildren().sort():
+        for field in item.getChildren().sort_by_orderpos():
             f = getMetadataType(field.get("type"))
             details += f.getMetaHTML(item, i, False, fieldlist=fieldlist, language=lang(req))
             i += 1

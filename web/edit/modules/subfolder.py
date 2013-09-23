@@ -34,7 +34,7 @@ def getContent(req, ids):
     user = users.getUserFromRequest(req)
     access = AccessData(req)
     node = tree.getNode(ids[0])
-    
+
     if "sort" in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
@@ -52,15 +52,18 @@ def getContent(req, ids):
     if "resort" in req.params:
         # sort criteria
         i = 0
-        for child in node.getChildren().sort(req.params.get("sortattribute"), req.params.get("sortdirection","up")):
+        sort_dir = req.params.get("sortdirection","up")
+        sort_attribute = sort_dir + req.params.get("sortattribute")
+        sorted_children = node.getChildren().sort_by_fields(sort_attribute)
+        for child in sorted_children:
             child.setOrderPos(i)
             i += 1
         runscript = True
- 
+
 
     if up>=0 or down>=0:
         i = 0
-        for child in node.getChildren().sort():
+        for child in node.getChildren().sort_by_orderpos():
             try:
                 if child.isContainer():
                     if i==up:
@@ -79,12 +82,12 @@ def getContent(req, ids):
                 pass
 
         runscript = True
-        
+
     nodelist = []
     attributes = []
     fields = {}
     i = 0
-    for child in list(node.getChildren().sort()):
+    for child in list(node.getChildren().sort_by_orderpos()):
         try:
             if child.isContainer():
                 i += 1 # count container children
@@ -95,7 +98,7 @@ def getContent(req, ids):
                     fields[field] += 1
         except:
             pass
-    
+
     for field in fields:
         if i==fields[field]:
             attributes.append(field)

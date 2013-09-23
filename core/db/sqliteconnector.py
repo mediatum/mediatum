@@ -65,7 +65,7 @@ if __name__ == "__main__":
     sys.path += [".."]
 
 debug = 0
-log = logging.getLogger('database')
+log = logg = logging.getLogger('database')
 
 sqlite_lock = thread.allocate_lock()
 
@@ -83,6 +83,7 @@ class SQLiteConnector(Connector):
             self.isInitialized()
         else:
             self.db = db
+
 
     def applyPatches(self):
         self.runQueryNoError("alter table node add column ([localread] TEXT NULL)")
@@ -127,6 +128,9 @@ class SQLiteConnector(Connector):
             con.commit()
             con.close()
             return s
+        except sqlite.OperationalError as e:
+            logg.error("execute() failed for statement '%s'", sql, exc_info=1)
+            raise
         finally:
             sqlite_lock.release()
 
@@ -303,3 +307,35 @@ class SQLiteConnector(Connector):
     def getDBSize(self):
         import os
         return os.stat(config.get("paths.datadir")+"db/imagearch.db")[6]
+
+    def sort_nodes_by_fields(self, nids, fields):
+        """Sorts nodes by field (attribute) values.
+        :param nids: node ids (ignored)
+        :param fields: field names to sort for. Prepend - to sort descending
+        :return: all ordered node ids which have an attr called fields[0]
+        """
+        q = "SELECT nid from {} " \
+            "WHERE {} " \
+            "ORDER BY {};"
+
+        join_parts = []
+        where_name_parts = []
+        order_parts = []
+
+        for i, f in enumerate(fields):
+            alias = "a" + str(i)
+            if i > 0:
+                join_parts.append("nodeattribute AS " + alias)
+            fname, direction = self._sql_sort_field_name_and_dir(f)
+            where_name_parts.append("{}.name={}".format(alias, fname))
+            order_parts.append("{}.value{}".format(alias, direction))
+
+        # looks like nodeattribute as a0 INNER JOIN nodeattribute as a1 USING (nid) INNER JOIN ...
+        if len(fields) > 1:
+            join_clause = "nodeattribute as a0 INNER JOIN " + "INNER JOIN".join(j + " USING (nid)" for j in join_parts)
+        else:
+            join_clause = "nodeattribute as a0"
+        where_name_clause = " AND ".join(where_name_parts)
+        order_clause = ", ".join(order_parts)
+        query = q.format(join_clause, where_name_clause, order_clause)
+        return [str(r[0]) for r in self.runQuery(query)]

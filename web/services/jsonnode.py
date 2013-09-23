@@ -60,7 +60,7 @@ def buildNodeDescriptor(req, node, indent=None, written=None, children=True, chi
         #except:
         #    logging.getLogger('services').error('Error: web.services.jsonnode: could not get default mask content')
         #    nodedict['defaultexport'] = []
-        
+
     elif mask not in ["", "none"]: # deliver every mask
         try:
             mask_obj = getMetaType(node.getSchema()).getMask(mask)
@@ -73,20 +73,20 @@ def buildNodeDescriptor(req, node, indent=None, written=None, children=True, chi
 
     if children:
         nodedict['children'] = []
-        for c in node.getChildren().sort():
+        for c in node.getChildren().sort_by_orderpos():
             if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
                 nodedict['children'].append({'id': str(c.id), 'type': c.type, 'name': esc(c.name)})
 
     if parents:
         nodedict['parents'] = []
-        for c in node.getParents().sort():
+        for c in node.getParents().sort_by_orderpos():
             if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
                 nodedict['parents'].append({'id': str(c.id), 'type': c.type, 'name': esc(c.name)})
 
     nd.append(nodedict)
 
     if(children):
-        for c in node.getChildren().sort():
+        for c in node.getChildren().sort_by_orderpos():
             if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
                 if c.id not in written:
                     written[c.id] = None

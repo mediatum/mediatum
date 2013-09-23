@@ -30,7 +30,7 @@ def getData(req):
     style = req.params.get("style", "edittree")
     ret = []
 
-    for c in tree.getNode(pid).getChildren().sort():
+    for c in tree.getNode(pid).getChildren().sort_by_orderpos():
         if not access.hasReadAccess(c):
             continue
         try:

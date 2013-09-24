@@ -1,10 +1,14 @@
 <tal:block metal:define-macro="upload_form">
     <p tal:condition="error" tal:content="error" i18n:translate="" class="error" style="text-align:center"/>
     <h3 i18n:translate="edit_import_header">TEXT</h3>
-    <p i18n:translate="edit_import">TEXT</p>
     <form method="post" enctype="multipart/form-data" style="padding:4px">
-        <div class="label"><tal:block i18n:translate="edit_upload_file">TEXT</tal:block>:</div>
+        <p i18n:translate="edit_import_bibtex">TEXT</p>
+        <div class="label"><tal:block i18n:translate="edit_upload_bibtex">TEXT</tal:block>:</div>
         <input type="file" name="file" style="width:400px"/>
+        <br>
+        <p i18n:translate="edit_import_doi">TEXT</p>
+        <div class="label"><tal:block i18n:translate="edit_upload_or_doi">TEXT</tal:block>:</div>
+        <input type="text" name="doi" style="width:392px"/>
         <br>
         <input i18n:attributes="value edit_upload_upload_label" type="submit" name="submit"/>
         <input type="hidden" name="upload" value="uploadfile"/>

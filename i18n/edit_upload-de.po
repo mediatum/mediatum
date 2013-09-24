@@ -38,6 +38,12 @@ msgstr "Metadatenschema wählen:"
 msgid "edit_upload_file"
 msgstr "Datei"
 
+msgid "edit_upload_bibtex"
+msgstr "BibTeX Datei"
+
+msgid "edit_upload_or_doi"
+msgstr "oder DOI"
+
 msgid "edit_upload_upload_label"
 msgstr "Anlegen / Hochladen"
 

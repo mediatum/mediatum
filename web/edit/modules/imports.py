@@ -17,32 +17,40 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 
 import core.users as users
 import core.tree as tree
 import schema.bibtex as bibtex
+import schema.citeproc as citeproc
+import schema.importbase as importbase
 
 from utils.log import logException
 from web.edit.edit_common import showdir
- 
+
+logg = logging.getLogger("editor")
 
 
 def getInformation():
     return {"version":"1.0", "system":1}
-    
-def getContent(req, ids):   
+
+def getContent(req, ids):
     if req.params.get("upload")=="uploadfile":
         # try to import file
         return import_new(req)
     return req.getTAL("web/edit/modules/imports.html",{"error":req.params.get("error")},macro="upload_form") + showdir(req, tree.getNode(ids[0]))
 
 def import_new(req):
-    reload(bibtex) 
+    reload(bibtex)
     user = users.getUserFromRequest(req)
     importdir= users.getImportDir(user)
     del req.params["upload"]
-    
-    if "file" in req.params.keys():
+
+    if "file" in req.params and req.params["doi"]:
+        req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"doi_and_bibtex_given"})
+        req.params["error"] = "doi_and_bibtex_given"
+
+    elif "file" in req.params.keys():
         file = req.params["file"]
         del req.params["file"]
         if hasattr(file,"filesize") and file.filesize>0:
@@ -50,6 +58,7 @@ def import_new(req):
                 bibtex.importBibTeX(file.tempname, importdir, req)
                 req.request["Location"] = req.makeLink("content", {"id":importdir.id})
             except ValueError, e:
+                req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":str(e)})
                 req.params["error"] = str(e)
             except bibtex.MissingMapping,e:
                 req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":str(e)})
@@ -59,7 +68,29 @@ def import_new(req):
                 req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"PostprocessingError"})
                 req.params["error"] = "file_processingerror"
             return getContent(req, [importdir.id])
-    
-    # error while import, no file given
-    req.params["error"] = "no_file_transferred"
+
+    elif req.params["doi"]:
+        doi = req.params["doi"]
+        logg.info("processing DOI import for: %s", doi)
+        try:
+            doi_extracted = citeproc.extract_and_check_doi(doi)
+            citeproc.import_doi(doi_extracted, importdir)
+        except citeproc.InvalidDOI:
+            logg.error("Invalid DOI: '%s'", doi)
+            req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"doi_invalid"})
+            req.params["error"] = "doi_invalid"
+        except citeproc.DOINotFound:
+            logg.error("DOI not found: '%s'", doi)
+            req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"doi_unknown"})
+            req.params["error"] = "doi_unknown"
+        except importbase.NoMappingFound as e:
+            logg.error("no mapping found for DOI: '%s', type '%s'", doi, e.typ)
+            req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"doi_type_not_mapped"})
+            req.params["error"] = "doi_type_not_mapped"
+        else:
+            req.request["Location"] = req.makeLink("content", {"id":importdir.id})
+    else:
+        # error while import, nothing given
+        req.params["error"] = "edit_import_nothing"
+
     return getContent(req, [importdir.id])

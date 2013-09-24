@@ -48,7 +48,7 @@ def getMappingTypes():
         mappings = tree.getRoot("mappings")
         ret = mappings.get("mappingtypes").split(";")
         if len(ret)==0 or ret[0]=="":
-            mappings.set("mappingtypes", "default;bibtex;rss;marc21;z3950")
+            mappings.set("mappingtypes", "default;bibtex;rss;marc21;z3950;citeproc")
             return getMappingTypes()
         return ret
     except:

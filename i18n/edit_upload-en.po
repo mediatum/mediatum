@@ -1,3 +1,4 @@
+### edit upload ###
 msgid "edit_upload_msg1"
 msgstr "Permission denied. You do not have the permission to add this object. Please contact your administrator."
 
@@ -36,6 +37,12 @@ msgstr "Metadata scheme:"
 
 msgid "edit_upload_file"
 msgstr "File"
+
+msgid "edit_upload_bibtex"
+msgstr "BibTeX file"
+
+msgid "edit_upload_or_doi"
+msgstr "or DOI"
 
 msgid "edit_upload_upload_label"
 msgstr "Create / Upload"

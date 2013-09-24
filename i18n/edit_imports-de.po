@@ -1,5 +1,23 @@
 msgid "edit_import_header"
-msgstr "Import von Bibtex-Dateien"
+msgstr "Import von Bibtex-Dateien oder mit DOI"
 
-msgid "edit_import"
-msgstr "Diese Funktionalität erlaubt Ihnen, Dateien mit Veröffentlichungen im bibtex-Format hochzuladen. Dazu wählen Sie bitte die entsprechende Datei auf Ihrem Recher aus und klicken auf 'Hochladen'"
+msgid "edit_import_bibtex"
+msgstr "Diese Funktionalität erlaubt Ihnen, Dateien mit Veröffentlichungen im bibtex-Format hochzuladen. Dazu wählen Sie bitte die entsprechende Datei auf Ihrem Recher aus und klicken auf 'Anlegen / Hochladen'"
+
+msgid "edit_import_doi"
+msgstr "Um Metadaten für eine Publikation mit einem Digital Object Identifier zu importieren, bitte DOI eingeben und 'Anlegen / Hochladen' anklicken."
+
+msgid "edit_import_nothing"
+msgstr "Es wurden weder Datei noch DOI angegeben."
+
+msgid "doi_unknown"
+msgstr "Der angegebene DOI existiert nicht."
+
+msgid "doi_invalid"
+msgstr "Dies sieht nicht wie eine gültige DOI aus! (muss eine Zeichenkette enthalten, die mit 10. beginnt)"
+
+msgid "doi_type_not_mapped"
+msgstr "Für den Typ der angegebenen DOI ist kein Mapping definiert."
+
+msgid "doi_and_bibtex_given"
+msgstr "Sowohl Datei als auch DOI angegeben; bitte entweder Datei oder DOI angeben."

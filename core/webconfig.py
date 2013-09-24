@@ -25,7 +25,7 @@ import core.tree as tree
 from core.styles import theme
 
 def loadThemes():
-    
+
     def manageThemes(themepath, type):
         name = config.get("config.theme", "")
         if os.path.exists(config.basedir+"/"+themepath+"themes/"+name+"/"):
@@ -43,7 +43,7 @@ def loadThemes():
             manageThemes(v, "extern")
     else:
         print "Loading default theme"
-        
+
 
 def loadServices():
     datapath = config.get("services.datapath", "")
@@ -52,7 +52,7 @@ def loadServices():
             os.makedirs(os.path.join(datapath, "common"))
         except OSError:
             pass
-            
+
     def manageService(servicename, servicedir, servicedata):
         if not os.path.exists(servicedir + "services/" + servicename + "/__init__.py"):
             return
@@ -66,17 +66,17 @@ def loadServices():
         basecontext = ('/' + basecontext).replace('//', '/').replace('//', '/')
         context = athana.addContext(basecontext, ".")
         file = context.addFile(servicedir + "services/" + servicename)
-        
+
         if  hasattr(file.m, "request_handler"):
             file.addHandler("request_handler").addPattern("/.*")
-        
+
             if not os.path.exists(servicedata):
                 try:
                     os.makedirs(servicedata)
                     os.makedirs(os.path.join(servicedata, "cache"))
                 except OSError:
                     return
-    
+
     if config.get("services.activate", "").lower()=="true":
         # try loading services from mediatum web/services/ folder
         p = config.basedir+"/web/services/"
@@ -93,7 +93,7 @@ def loadServices():
     else:
         print "web services not activated"
 
-        
+
 def initContexts():
     athana.setBase(".")
     athana.setTempDir(config.get("paths.tempdir", "/tmp/"))
@@ -102,7 +102,7 @@ def initContexts():
     from core.ftp import collection_ftpserver
     athana.addMacroResolver(resolve_filename)
     athana.addTranslator(translate)
-    
+
     context = athana.addContext("/", ".")
     # === public area ===
     file = context.addFile("web/frontend/streams.py")
@@ -116,11 +116,11 @@ def initContexts():
     file.addHandler("send_attfile").addPattern("/attfile/.*")
     file.addHandler("get_archived").addPattern("/archive/.*")
     file.addHandler("get_root").addPattern("/[a-z,0-9]*\.[a-z]*") # root directory added /web/root (only files with extensions)
-    
+
     file = context.addFile("web/frontend/zoom.py")
     file.addHandler("send_imageproperties_xml").addPattern("/tile/[0-9]*/ImageProperties.xml")
     file.addHandler("send_tile").addPattern("/tile/[0-9]*/[^I].*")
-    
+
     #file = context.addFile("web/frontend/flippage.py")
     #file.addHandler("send_bookconfig_xml").addPattern("/[0-9]*/bookconfig.xml")
     #file.addHandler("send_page").addPattern("/[0-9]*/page/[0-9]*\.jpg")
@@ -128,7 +128,7 @@ def initContexts():
     # === workflow ===
     #file = context.addFile("web/publish/main.py")
     #file.addHandler("publish").addPattern("/publish/.*")
-    
+
     main_file = file = context.addFile("web/frontend/main.py")
     handler = file.addHandler("display")
     handler.addPattern("/")
@@ -146,10 +146,10 @@ def initContexts():
     file.addHandler("show_help").addPattern("/popup_help")
     file.addHandler("show_attachmentbrowser").addPattern("/attachmentbrowser")
     file.addHandler("show_printview").addPattern("/print/.*")
-    
+
     file = context.addFile("web/frontend/shoppingbag.py")
     file.addHandler("shoppingbag_action").addPattern("/shoppingbag")
-    
+
     file = context.addFile("web/frontend/login.py")
     file.addHandler("login").addPattern("/login")
     file.addHandler("logout").addPattern("/logout")
@@ -177,16 +177,16 @@ def initContexts():
     file.addHandler("content").addPattern("/edit_content")
     file.addHandler("content").addPattern("/edit_content/.*")
     file.addHandler("action").addPattern("/edit_action")
-    
-    # === ajax tree ===    
+
+    # === ajax tree ===
     context = athana.addContext("/ftree", ".")
     handler.addPattern("/ftree")
     file = context.addFile("web/ftree/ftree.py")
     file.addHandler("ftree").addPattern("/.*")
-    
+
     # === services handling ===
     loadServices()
-    
+
     # === OAI ===
     context = athana.addContext("/oai/", ".")
     file = context.addFile("export/oai.py")
@@ -202,17 +202,17 @@ def initContexts():
     athana.addFileStore("/css/", "web/css/")
     athana.addFileStore("/xml/", "web/xml/")
     athana.addFileStore("/img/", ["web/img/", "web/admin/img/", "web/edit/img/"])
-    athana.addFileStore("/js/", ["web/js/", "js", "lib/CKeditor/js/"]) 
-    
-    
+    athana.addFileStore("/js/", ["web/js/", "js", "lib/CKeditor/js/"])
+
+
     # === last: path aliasing for collections ===
     handler = main_file.addHandler("display_alias")
-    handler.addPattern("/.*")
-    
+    handler.addPattern("/.+$")
+
 
     # === theme handling ===
     loadThemes()
-    
+
     # === frontend modules handling ===
     try:
         context = athana.addContext("/modules", ".")
@@ -222,15 +222,15 @@ def initContexts():
         print "no frontend modules found"
 
     #athana.addContext("/flush", ".").addFile("core/webconfig.py").addHandler("flush").addPattern("/py")
-    
+
     # === check for ftp usage ===
     if config.get("ftp.activate","")=="true":
         athana.addFTPHandler(collection_ftpserver(None, port=int(config.get("ftp.port", 21)), debug=config.get("host.type", "testing"))) # dummy handler for users
-    
+
         for collection in tree.getRoot("collections").getChildren():
             if collection.get("ftp.user") and collection.get("ftp.passwd"):
                 athana.addFTPHandler(collection_ftpserver(collection, port=int(config.get("ftp.port", 21)), debug=config.get("host.type", "testing")))
-   
+
 def flush(req):
     athana.flush()
     import core.__init__ as c

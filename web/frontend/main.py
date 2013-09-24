@@ -63,14 +63,13 @@ def handle_json_request(req):
     return
 
 
-DISPLAY_PATH = re.compile("/(.*)$")
-known_node_aliases = {
-}
+DISPLAY_PATH = re.compile("/(.+)$")
+known_node_aliases = {}
 
 def display_alias(req):
     match = DISPLAY_PATH.match(req.path)
     if match:
-        alias = match.group(1)
+        alias = match.group(1).rstrip("/").lower()
         node_id = known_node_aliases.get(alias)
         if node_id is not None:
             logg.debug("known node alias in cache '%s' -> '%s'", alias, node_id)
@@ -87,12 +86,12 @@ def display_alias(req):
                 req.params["id"] = node_id
                 logg.debug("node alias from DB '%s' -> '%s'", alias, node_id)
             else:
-                logg.debug("node alias not found: '%s'", alias)
-#             Alternative: rude 404
-#             else:
-#                 return athana.HTTP_NOT_FOUND
+                logg.info("node alias not found: '%s'", alias)
+
+                # pass illegal id => niec error msg is displayed
+                req.params["id"] = "-1"
             display(req)
-    
+
 
 def display(req):
     if "jsonrequest" in req.params:

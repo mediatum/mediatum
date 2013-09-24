@@ -31,20 +31,20 @@ basedir = os.path.dirname(athana.__file__).rsplit(os.sep,1)[0]
 editmodulepaths = [('', 'web/edit/modules')]
 
 print "Base path is at", basedir
-print "Python Version is", sys.version.split("\n")[0] 
+print "Python Version is", sys.version.split("\n")[0]
 
 if os.getenv("MEDIATUM_CONFIG"):
     config.initialize(basedir, os.getenv("MEDIATUM_CONFIG"))
 else:
     config.initialize(basedir, "mediatum.cfg")
-    
+
 athana.setTempDir(config.settings["paths.tempdir"])
 athana.setServiceUser(config.get("host.serviceuser",""))
 athana.setServicePwd(hashlib.md5(config.get("host.servicepwd", "")).hexdigest())
 
 # locale setting for sorting, default to system locale
-default_locale = locale.getdefaultlocale()
-locale.setlocale(locale.LC_COLLATE, default_locale)
+loc = locale.setlocale(locale.LC_COLLATE, '')
+print("using locale {} for sorting".format(loc))
 
 import utils.log
 utils.log.initialize()

@@ -309,9 +309,9 @@ class NodeList:
             return self
         if isinstance(field, str):
             # handle some special cases
-            if field == "name":
+            if field == "name" or field == "nodename":
                 return self.sort_by_name("up")
-            elif field == "-name":
+            elif field == "-name" or field == "nodename":
                 return self.sort_by_name("down")
             elif field in ("orderpos", "-orderpos"):
                 raise NotImplementedError("this method must not be used for orderpos sorting!")

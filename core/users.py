@@ -385,7 +385,7 @@ def deleteUser(user, usertype="intern"):
         a = getExternalAuthentificator(usertype)
         for u in a.LOGGED_IN_DYNUSERS.values():
             if user == u.id:
-                a.log_user_out(u.cn, u.session_id)
+                a.log_user_out(u.dirid, u.session_id)
                 return
         return
 

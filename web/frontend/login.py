@@ -96,7 +96,7 @@ def logout(req):
     # if the session has expired, there may be no user in the session dictionary
     user = req.session.get("user", None)
     if user and user.getUserType() in users.getDynamicUserAuthenticators():
-        users.authenticators[user.getUserType()].log_user_out(user.cn, req.session.id)
+        users.authenticators[user.getUserType()].log_user_out(user.dirid, req.session.id)
     try:
         del req.session["user"]
     except:

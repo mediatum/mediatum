@@ -103,7 +103,7 @@
                     <tr tal:define="cssclass python:users.index(user)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
                         <td tal:content="python:str(users.index(user)+1)+'.'"/>
                         <td tal:condition="python:not user.isDynamicUser()" tal:content="python:user.getName()"/>
-                        <td tal:condition="python:user.isDynamicUser()" tal:content="python:user.getName()" tal:attributes="title python:user.get('login_time_iso')+' (since '+str(now().replace(microsecond=0)-user.get('login_datetime').replace(microsecond=0))+')\n'+user.get('login_ip')+'\n'+user.get('useragent')"/>
+                        <td tal:condition="python:user.isDynamicUser()" tal:content="python:user.getName()" tal:attributes="title python:'login-time'+user.get('login_time_iso')+' (since '+str(now().replace(microsecond=0)-user.get('login_datetime').replace(microsecond=0))+')\nip: '+user.get('login_ip')+'\nuser agent: '+user.get('useragent')+'\ndirid: '+user.dirid+'\ndir_groups: '+str(user.DIRIDS)"/>
                         <td tal:content="python:user.getLastName()"/>
                         <td tal:content="python:user.getFirstName()"/>
                         <td tal:content="python:user.getEmail()"/>

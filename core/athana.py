@@ -967,7 +967,7 @@ class TALGenerator:
 
     def emitRepeat(self, arg):
 
-        
+
         m = re.match("(?s)\s*(%s)\s+(.*)\Z" % NAME_RE, arg)
         if not m:
             raise TALError("invalid repeat syntax: " + `arg`,
@@ -1393,7 +1393,7 @@ class TALGenerator:
             assert (varname[1]
                     in [I18N_REPLACE, I18N_CONTENT, I18N_EXPRESSION])
             self.emitI18nVariable(varname)
-        if msgid is not None: 
+        if msgid is not None:
             if varname and (varname[1] <> I18N_CONTENT):
                 self.emitTranslation(msgid, i18ndata)
         if repeat:
@@ -1433,7 +1433,7 @@ def _parseI18nAttributes(i18nattrs, attrlist, repldict, position,
     d = {}
     if ';' in i18nattrs:
         i18nattrlist = i18nattrs.split(';')
-        i18nattrlist = [attr.strip().split() 
+        i18nattrlist = [attr.strip().split()
                         for attr in i18nattrlist if attr.strip()]
         for parts in i18nattrlist:
             if len(parts) > 2:
@@ -1454,7 +1454,7 @@ def _parseI18nAttributes(i18nattrs, attrlist, repldict, position,
             if (not i18nattrlist[1] in staticattrs) and (
                 not i18nattrlist[1] in repldict):
                 attr, msgid = i18nattrlist
-                addAttribute(d, attr, msgid, position, xml)    
+                addAttribute(d, attr, msgid, position, xml)
             else:
                 import warnings
                 warnings.warn(I18N_ATTRIBUTES_WARNING
@@ -1462,15 +1462,15 @@ def _parseI18nAttributes(i18nattrs, attrlist, repldict, position,
                 , DeprecationWarning)
                 msgid = None
                 for attr in i18nattrlist:
-                    addAttribute(d, attr, msgid, position, xml)    
-        else:    
+                    addAttribute(d, attr, msgid, position, xml)
+        else:
             import warnings
             warnings.warn(I18N_ATTRIBUTES_WARNING
             % (source_file, str(position), i18nattrs)
             , DeprecationWarning)
             msgid = None
             for attr in i18nattrlist:
-                addAttribute(d, attr, msgid, position, xml)    
+                addAttribute(d, attr, msgid, position, xml)
     return d
 
 I18N_ATTRIBUTES_WARNING = (
@@ -1957,7 +1957,7 @@ class TALInterpreter:
         else:
             self.col = len(s) - (i + 1)
     bytecode_handlers["insertText"] = do_insertText
-    
+
     def do_insertRawText_tal(self, stuff):
         text = self.engine.evaluateText(stuff[0])
         if text is None:
@@ -2580,7 +2580,7 @@ class AthanaTALEngine:
                 text = f(msgid, language=self.language, request=self.request)
                 if text and text!=msgid:
                     break
-            except: 
+            except:
                 pass
         def repl(m, mapping=mapping):
             return ustr(mapping[m.group(m.lastindex).lower()])
@@ -2588,7 +2588,7 @@ class AthanaTALEngine:
 
 
 class Iterator:
-   
+
     def __init__(self, name, seq, engine):
         self.name = name
         self.seq = seq
@@ -2631,7 +2631,7 @@ class Iterator:
 
     def length(self):
         return len(self.seq)
-    
+
 
 VARIABLE = re.compile(r'\$(?:(%s)|\{(%s)\})' % (NAME_RE, NAME_RE))
 
@@ -2660,7 +2660,7 @@ def runTAL(writer, context=None, string=None, file=None, macro=None, language=No
                 mtime = mtime_file
         else:
             program,macros,mtime = None,None,None
-   
+
     if not (program and macros):
         if file and file.endswith("xml") or mode=="xml":
             talparser = TALParser(TALGenerator(AthanaTALEngine()))
@@ -2737,7 +2737,7 @@ def ustr(v):
         try:
             return v.encode("utf-8")
         except:
-            try: 
+            try:
                 return unicode(v, 'utf-8').encode("utf-8")
             except:
                 try:
@@ -2762,6 +2762,10 @@ import mimetypes
 import glob
 from cgi import escape
 from urllib import unquote, splitquery
+try:
+    from collections import OrderedDict
+except:
+    from utils.dicts import SortedDict as OrderedDict
 
 # async modules
 import asyncore
@@ -2912,7 +2916,7 @@ class async_chat (asyncore.dispatcher):
                         try:
                             self.close()
                         except KeyError:
-                            # FIXME: tends to happen sometimes, seems to 
+                            # FIXME: tends to happen sometimes, seems to
                             # be a race condition in asyncore
                             try:
                                 self._fileno = None
@@ -3538,11 +3542,11 @@ class unresolving_logger:
         if self.logger.__class__ == logging.Logger:
             self.log_func = lambda msg: self.logger.log(logging.INFO, msg)
         else:
-            self.log_func = logger.log    
+            self.log_func = logger.log
 
     def log (self, ip, message):
         self.log_func ('%s:%s' % (ip, message))
-    
+
 def strip_eol (line):
     while line and line[-1] in '\r\n':
         line = line[:-1]
@@ -3579,7 +3583,7 @@ class http_request:
         (self.channel, self.request,
          self.command, self.uri, self.version,
          self.header) = args
-         
+
         self.outgoing = []
         self.reply_headers = {
                 'Server'        : 'Athana/%s' % ATHANA_VERSION,
@@ -3714,7 +3718,7 @@ class http_request:
 
     def done (self):
         "finalize this transaction - send output to the http channel"
-       
+
         if hasattr(self,"tempfiles"):
             for f in self.tempfiles:
                 os.unlink(f)
@@ -3867,7 +3871,7 @@ class http_request:
             self.error (404)
             print "404"
             return
-            
+
         self.reply_headers['Last-Modified'] = build_http_date (mtime)
         self.reply_headers['Content-Length'] = file_length
         self.reply_headers['Content-Type'] = content_type
@@ -3875,7 +3879,7 @@ class http_request:
         if self.command == 'GET':
             self.push(file_producer(file))
         return
-            
+
     def sendAsBuffer(self,text,content_type,force=0):
         from StringIO import StringIO
         stringio = StringIO(text)
@@ -3924,7 +3928,7 @@ class http_request:
         if self.command == 'GET':
             self.push(file_producer(file))
         return
-        
+
     def setCookie(self, name, value, expire=None):
         if expire is None:
             s = name+'='+value;
@@ -3947,10 +3951,10 @@ class http_request:
                 except: pass
         ret = self.makeLink(self.fullpath, params2)
         return ret
-        
+
     def writeTAL(self,page,context,macro=None):
         runTAL(self, context, file=page, macro=macro, request=self)
-    
+
     def writeTALstr(self,string,context,macro=None):
         runTAL(self, context, string=string, macro=macro, request=self)
 
@@ -4069,15 +4073,15 @@ class http_channel (async_chat):
         finally:
             self.producer_lock.release()
         self.initiate_send()
-    
+
     def close_when_done (self):
         self.producer_lock.acquire()
         try:
             self.producer_fifo.push (None)
         finally:
             self.producer_lock.release()
-        
-        #results in select.error: (9, 'Bad file descriptor') if the socket map is poll'ed 
+
+        #results in select.error: (9, 'Bad file descriptor') if the socket map is poll'ed
         #while this socket is being closed
         #we do it anyway, and catch the select.error in the main loop
 
@@ -4479,7 +4483,7 @@ class default_handler:
 
         if '%' in path:
             path = unquote (path)
-        
+
         # strip off all leading slashes
         while path and path[0] == '/':
             path = path[1:]
@@ -4516,7 +4520,7 @@ class default_handler:
         file_length = self.filesystem.stat (path)[stat.ST_SIZE]
 
         ims = get_header_match (IF_MODIFIED_SINCE, request.header)
-        
+
         length_match = 1
         if ims:
             length = ims.group (4)
@@ -4538,7 +4542,7 @@ class default_handler:
         except:
             request.error (404)
             return
-        
+
         if length_match and ims_date:
             if mtime <= ims_date:
                 request.reply_code = 304
@@ -4946,9 +4950,9 @@ class ftp_channel (async_chat):
 
     # unset this in a derived class in order
     # to enable the commands in 'self.write_commands'
-    read_only = 0 
+    read_only = 0
     write_commands = ['appe','dele','mkd','rmd','stor','stou']
-    
+
     restart_position = 0
 
     # comply with (possibly troublesome) RFC959 requirements
@@ -5073,10 +5077,10 @@ class ftp_channel (async_chat):
 
     def cdup (self, line):
         return self.filesystem.cdup()
-        
+
     def rnfr (self, line):
         return self.filesystem.rnfr (line)
-        
+
     def rnto (self, line):
         return self.filesystem.rnto (line)
 
@@ -5328,21 +5332,21 @@ class ftp_channel (async_chat):
                         self.filesystem.current_directory()
                         )
                 )
-                
+
     def cmd_rnfr (self, line):
         'get filename to change'
         if self.rnfr(line):
             self.respond ('250 RNFR command successful.')
         else:
             self.respond ('550 File not found.')
-            
+
     def cmd_rnto (self, line):
         'get filename change to'
         if self.rnto(line):
             self.respond ('250 RNTO command successful.')
         else:
             self.respond ('550 File not found.')
-    
+
 
     # modification time
     # example output:
@@ -5636,7 +5640,7 @@ class ftp_server (asyncore.dispatcher):
             logger_object = sys.stdout
 
         self.logger = unresolving_logger (logger_object)
-        
+
         if logger_object.__class__ in [logging.Logger, logging_logger]:
             self.log_info = self.logger.log_func
 
@@ -5916,7 +5920,7 @@ HTTP_NOT_EXTENDED                 = 510
 
 GLOBAL_TEMP_DIR="/tmp/"
 GLOBAL_ROOT_DIR="no-root-dir-set"
-verbose = 0
+verbose = 1
 multithreading_enabled = 0
 number_of_threads = 32
 
@@ -5950,7 +5954,7 @@ def getMacroFile(filename):
             f = r(filename)
             if f is not None and os.path.isfile(f):
                 return f
-        except: 
+        except:
             pass
     if os.path.isfile(filename):
         return filename
@@ -5958,7 +5962,7 @@ def getMacroFile(filename):
     if os.path.isfile(filename2):
         return filename2
     raise IOError("No such file: "+filename2)
-   
+
 
 global_modules={}
 
@@ -5977,7 +5981,7 @@ def _make_inifiles(root, path):
 def _load_module(filename):
     global global_modules
     b = BASENAME.match(filename)
-    
+
     # filename e.g. /my/modules/test.py
     # b.group(1) = /my/modules/
     # b.group(2) = test.py
@@ -5986,7 +5990,7 @@ def _load_module(filename):
     module = b.group(2)
     if module is None:
         raise "Internal error with filename "+filename
-            
+
     while filename.startswith("./"):
         filename = filename[2:]
 
@@ -6003,7 +6007,7 @@ def _load_module(filename):
         path = path[1:]
     while len(path) and path[-1] != '.':
         path = path + "."
-   
+
     module2 = (path + module)
     if lg:
         lg.log("Loading module "+module2)
@@ -6035,7 +6039,7 @@ class WebContext:
         self.startupfile = None
         if root:
             self.root = qualify_path(root)
-        self.pattern_to_function = {}
+        self.pattern_to_function = OrderedDict()
         self.id_to_function = {}
 
     def addFile(self, filename):
@@ -6057,20 +6061,6 @@ class WebContext:
         return self.startupfile
 
     def match(self, path):
-        function = None
-        for pattern,call in self.pattern_to_function.items():
-            if pattern.match(path):
-                function,desc = call
-                if verbose:
-                    lg.log("Request %s matches (%s)" % (path, desc))
-        if function is None:
-            for id,call in self.id_to_function.items():
-                if path == id:
-                    function,desc = call
-                    if verbose:
-                        lg.log("Request %s matches handler (%s)" % (req.path, desc))
-        if not function:
-            return None
         def call_and_close(f,req):
             status = f(req)
             if type("1")==type(status):
@@ -6082,7 +6072,23 @@ class WebContext:
                 elif(status>=400 and status<=500):
                     return req.error(status)
             return req.done()
-        return lambda req: call_and_close(function,req)
+
+        # try handlers
+        for id,call in self.id_to_function.items():
+            if path == id:
+                function,desc = call
+                if verbose:
+                    lg.log("Request %s matches handler (%s)" % (path, desc))
+                return lambda req: call_and_close(function,req)
+        # no matching handler, try patterns
+        for pattern,call in self.pattern_to_function.items():
+            if pattern.match(path):
+                function,desc = call
+                if verbose:
+                    lg.log("Request %s matches (%s)" % (path, desc))
+                return lambda req: call_and_close(function,req)
+
+        return None
 
 class FileStore:
     def __init__(self, name, root=None):
@@ -6144,7 +6150,7 @@ class WebFile:
         m = self.m
         try:
             f = eval("m."+macroresolver)
-            if f is None: 
+            if f is None:
                 raise
             macroresolvers += [f]
         except:
@@ -6157,7 +6163,7 @@ class WebFile:
         m = self.m
         try:
             f = eval("m."+translator)
-            if f is None: 
+            if f is None:
                 raise
             translators += [f]
         except:
@@ -6175,7 +6181,7 @@ class WebHandler:
         m = file.m
         try:
             self.f = eval("m."+function)
-            if self.f is None: 
+            if self.f is None:
                 raise
         except:
             lgerr.log("Error in Handler:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
@@ -6192,8 +6198,8 @@ class WebHandler:
 
 class WebPattern:
     def __init__(self, handler, pattern):
-        self.handler = handler 
-        self.pattern = pattern 
+        self.handler = handler
+        self.pattern = pattern
         if not pattern.endswith('$'):
             pattern = pattern + "$"
         self.compiled = re.compile(pattern)
@@ -6216,7 +6222,7 @@ def read_ini_file(filename):
         if hashpos>=0:
             line = line[0:hashpos]
         line = line.strip()
-        
+
         if line == "":
             continue #skip empty line
 
@@ -6235,13 +6241,13 @@ def read_ini_file(filename):
             sys.path += [GLOBAL_ROOT_DIR]
         elif key == "filestore":
             if len(value) and value[0] != '/':
-                value = "/" + value 
+                value = "/" + value
             filestore = FileStore(value)
             contexts += [filestore]
             context = None
         elif key == "context":
             if len(value) and value[0] != '/':
-                value = "/" + value 
+                value = "/" + value
             contextname = value
             context = WebContext(contextname)
             contexts += [context]
@@ -6294,7 +6300,7 @@ def headers_to_map(mylist):
             if len(h.strip())>0:
                 lg.log("invalid header: "+str(h))
     return headers
-                    
+
 class AthanaFile:
     def __init__(self,fieldname, parammap,filename,content_type):
         self.fieldname = fieldname
@@ -6424,7 +6430,7 @@ class upload_input_collector:
     def collect_incoming_data (self, newdata):
         self.pos += len(newdata)
         self.data += newdata
-       
+
         while len(self.data)>0:
             if self.data.startswith(self.end_marker):
                 self.data = self.data[len(self.end_marker):]
@@ -6469,7 +6475,7 @@ class upload_input_collector:
         if self.file is not None:
             self.file.close()
             self.file = None
-            
+
         self.request.collector = None
         self.request.channel.set_terminator('\r\n\r\n')
         d=self.data;del self.data
@@ -6511,7 +6517,7 @@ class AthanaHandler:
         path, params, query, fragment = request.split_uri()
         #lg.log("===== request:"+path+"=====")
         return 1
-    
+
     def handle_request (self, request):
         headers = headers_to_map(request.header)
         request.request_headers = headers
@@ -6659,14 +6665,14 @@ class AthanaHandler:
             request.setCookie('PSESSION', sessionid, time.time()+3600*2)
 
         request.channel.current_request = None
-        
+
         if path=="/threadstatus":
             return thread_status(request)
         if path=="/profilingstatus":
             return profiling_status(request)
 
         function = context.match(path)
-       
+
         if function is not None:
             if not multithreading_enabled:
                 self.callhandler(function, request)
@@ -6678,7 +6684,7 @@ class AthanaHandler:
         else:
             lg.log("Request %s matches no pattern (context: %s)" % (request.path,context.name))
             return request.error(404, "File %s not found" % request.path)
-        
+
     def callhandler(self, function, req):
         request = req.request
         s = None
@@ -6735,7 +6741,7 @@ class zip_filesystem:
         self.lock = thread.allocate_lock()
         for f in self.z.filelist:
             self.m['/' + f.filename] = f
-        
+
         if "/index.html" in self.m:
             self.m['/'] = self.m['/index.html']
 
@@ -6824,11 +6830,11 @@ class zip_filesystem:
 def setBase(base):
     global GLOBAL_ROOT_DIR
     GLOBAL_ROOT_DIR = qualify_path(base)
-   
+
 def setTempDir(tempdir):
     global GLOBAL_TEMP_DIR
     GLOBAL_TEMP_DIR = qualify_path(tempdir)
-    
+
 def addMacroResolver(m):
     global macroresolvers
     macroresolvers += [m]
@@ -6846,7 +6852,7 @@ def addContext(webpath, localpath):
     c = WebContext(webpath, localpath)
     contexts += [c]
     return c
-    
+
 def setServiceUser(u):
     global service_user
     service_user = u
@@ -6854,7 +6860,7 @@ def setServiceUser(u):
 def setServicePwd(p):
     global service_pwd
     service_pwd = p
-    
+
 def flush():
     global contexts,translators,ftphandlers,macroresolvers,global_modules
     contexts[:] = []
@@ -6867,11 +6873,11 @@ def flush():
 def addFileStore(webpath, localpaths):
     global contexts
     if len(webpath) and webpath[0] != '/':
-        webpath = "/" + webpath 
+        webpath = "/" + webpath
     c = FileStore(webpath, localpaths)
     contexts += [c]
     return c
-    
+
 def getFileStorePaths(webpath):
     global contexts
     ret = []
@@ -7036,9 +7042,9 @@ class AthanaThread:
 
 def runthread(athanathread):
     athanathread.worker_thread()
-        
+
 ATHANA_STARTED = False
-        
+
 def run(port=8081, z3950_port=None):
     global ATHANA_STARTED
     check_date()
@@ -7047,7 +7053,7 @@ def run(port=8081, z3950_port=None):
     hs.install_handler (ph)
 
     if len(ftphandlers)>0:
-        log_ftp = logging_logger("ftp") 
+        log_ftp = logging_logger("ftp")
         ftp = ftp_server (ftp_authorizer(), port=ftphandlers[0].getPort(), logger_object=log_ftp)
 
     if z3950_port is not None:
@@ -7055,15 +7061,15 @@ def run(port=8081, z3950_port=None):
         log_z3950 = logging_logger("z3950")
         z3950_server = athana_z3950.z3950_server(port=z3950_port, logger_object=log_z3950)
 
-    if multithreading_enabled: 
+    if multithreading_enabled:
         global threadlist
         threadlist = []
         for i in range(number_of_threads):
             athanathread = AthanaThread(ph, i)
             thread.start_new_thread(runthread, (athanathread,))
             threadlist += [athanathread]
-            
-    ATHANA_STARTED = True  
+
+    ATHANA_STARTED = True
 
     while 1:
         try:
@@ -7072,7 +7078,7 @@ def run(port=8081, z3950_port=None):
             continue
 
 """
-TODO: 
+TODO:
     * session clearup
     * temp directory in .cfg file
 """
@@ -7100,7 +7106,7 @@ def mainfunction():
     parser.add_option("-n", "--number-of-threads", dest="threads", help="Number of threads",action="store",type="int")
     parser.add_option("-T", "--talfile", dest="talfile", help="execute TAL File",action="store",type="string")
     parser.add_option("-Z", "--z3950", dest="enable_z3950", help="enable Z3950 interface", action="store_true", default=False)
-    
+
     (options, args) = parser.parse_args()
 
     verbose = 0
@@ -7108,7 +7114,7 @@ def mainfunction():
     log_file=None
     temp_path="/tmp/"
     port=8081
-    
+
     if options.verbose != None : verbose = 2
     if options.quiet != None : verbose = 0
     if options.debug != None : verbose = 3
@@ -7125,7 +7131,7 @@ def mainfunction():
 
     if init_file:
         contexts += [read_ini_file(init_file)]
-    
+
     if log_file is not None:
         fi = open(log_file, "wb")
         lg = file_logger (fi)

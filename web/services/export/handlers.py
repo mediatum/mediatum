@@ -98,7 +98,10 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
             # mask handling
             formated = n.show_node_text(labels=1, language=req.params.get('lang', ''), cachetype=maskcachetype)
             if mask not in ["", "none"]: # deliver every mask
-                mask_obj = getMetaType(n.getSchema()).getMask(mask)
+                try:
+                    mask_obj = getMetaType(n.getSchema()).getMask(mask)
+                except:
+                    mask_obj = None
                 if mask_obj:
                     formated = mask_obj.getViewHTML([n], flags=8)
                 else:
@@ -113,7 +116,10 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
                 # mask handling
                 formated = n.show_node_text(labels=1, language=req.params.get('lang', ''), cachetype=maskcachetype)
                 if mask not in ["", "none"]: # deliver every mask
-                    mask_obj = getMetaType(n.getSchema()).getMask(mask)
+                    try:
+                        mask_obj = getMetaType(n.getSchema()).getMask(mask)
+                    except:
+                        mask_obj = None
                     if mask_obj:
                         formated = mask_obj.getViewHTML([n], flags=8)
                     else:

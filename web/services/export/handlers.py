@@ -40,6 +40,8 @@ from utils.utils import u, u2, esc, intersection, getMimeType, float_from_gps_fo
 import web.services.jsonnode as jsonnode
 from web.services.rssnode import template_rss_channel, template_rss_item, feed_channel_dict, try_node_date
 
+from export.exportutils import is_active_version
+
 if sys.version[0:3] < '2.6':
     import simplejson as json
 else:
@@ -459,15 +461,16 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
     res['nodelist'] = nodelist
 
     # query parameters
-    nodelist_type = params.get('type', '') # return only nodes of given type like dissertation/diss
-    parent_type = params.get('parent_type', '') # return only nodes that have only parents of  given type like folder or collection
-    exif_location_rect = params.get('exif_location_rect', '') #return only nodes that have an EXIF location that lies between the given lon,lat values
+    nodelist_type = params.get('type', '')  # return only nodes of given type like dissertation/diss
+    parent_type = params.get('parent_type', '')  # return only nodes that have only parents of  given type like folder or collection
+    send_versions = params.get('send_versions', '').lower()  # return also nodes that are older versions of other nodes
+    exif_location_rect = params.get('exif_location_rect', '')  #return only nodes that have an EXIF location that lies between the given lon,lat values
     mdt = params.get('mdt', '')
     attrreg = params.get('attrreg', '')
-    q = params.get('q', '') # node query
+    q = params.get('q', '')  # node query
     sortfield = params.get('sortfield', '')
-    sortformat = params.get('sortformat', '') # 'sissfi'
-    sfields = [] # sortfields
+    sortformat = params.get('sortformat', '')  # 'sissfi'
+    sfields = []  # sortfields
     
     if sortfield:
         sfields = [x.strip() for x in sortfield.split(',')]
@@ -717,6 +720,13 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
             timetable.append(['filter parent type %s (-> %d nodes)' % (stype, len(newly_filtered)), time.time()-atime]); atime = time.time()
         nodelist = tree.NodeList(list(set(typefiltered_nodelist)))
         timetable.append(['built set from type filter results (total: %d nodes)' % (len(nodelist)), time.time()-atime]); atime = time.time()
+
+    if send_versions in ["1"]:
+        pass
+    else:
+        # this is the default: remove older version nodes from the result list
+        nodelist = [n for n in nodelist if is_active_version(n)]
+        timetable.append(['filtered older (inactive) versions out -> (%d nodes)' % (len(nodelist)), time.time()-atime]); atime = time.time()
 
     if exif_location_rect:
         # filter all nodes that have an EXIF location inside the given rectangle 

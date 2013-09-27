@@ -289,9 +289,10 @@ def handleCommand(cmd, var, s, node, attrnode=None, field_value="", options=[], 
 
 def is_active_version(node):
     """
-    as of 2013-09-26 a node is NOT the older version if an other node if
+    as of 2013-09-26 a node is NOT the older version of an other node if
     the attribute "system.next_id" is empty or has the value "0"
-    "system.next_id" holds the node.id of the newer version node - if existant
+    "system.next_id" holds the node.id (unequal to "0") of the newer
+    version node - if existent
     """
     if node.get("system.next_id") in ['', '0']:
         return True

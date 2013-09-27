@@ -835,6 +835,8 @@ class Node:
     
     """ get a metadate """
     def get(self, name):
+        if name is None:
+            return self.name
         if name.startswith('node'):
             if name in ["nodename", "node.name"]:
                 return self.getName()        

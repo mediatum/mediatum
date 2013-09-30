@@ -35,6 +35,7 @@ from lxml import etree
 from ConfigParser import SafeConfigParser
 from math import ceil
 
+PING_GOOGLE = True
 PING_URL_ENCODED = 'http://www.google.com/webmasters/tools/ping?sitemap=http%3A%2F%2Fmediatum.ub.tum.de%2Fsitemap-index.xml'
 
 class ConfigFile:
@@ -108,7 +109,10 @@ class Sitemap:
                 for i in nodes:
                     url = etree.SubElement(root, 'url')
                     loc = etree.SubElement(url, 'loc')
-                    loc.text = ''.join(['http://', self.host, '/node?id=', i[0]])
+                    if 'system.aliascol' in tree.getNode(i[0]).attributes:
+                        loc.text = ''.join(['http://', self.host, '/', tree.getNode(i[0]).attributes['system.aliascol']])
+                    else:
+                        loc.text = ''.join(['http://', self.host, '/node?id=', i[0]])
                     lastmod = etree.SubElement(url, 'lastmod')
                     if i[1] == '+02:00':
                         lastmod.text = ''.join([datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), i[1]])
@@ -293,11 +297,12 @@ def main():
     elif sys.argv[1] == 'create':
         clean()
         create()
-        response = urllib2.urlopen(PING_URL_ENCODED)
-        if response.getcode() == 200:
-            logging.getLogger('everything').info('Successful ping of sitemap-index.xml to Google; Response Code: %i' % response.getcode())
-        else:
-            logging.getLogger('everything').info('Unsuccessful ping of sitemap-index.xml to Google; Response Code: %i' % response.getcode())
+        if PING_GOOGLE:
+            response = urllib2.urlopen(PING_URL_ENCODED)
+            if response.getcode() == 200:
+                logging.getLogger('everything').info('Successful ping of sitemap-index.xml to Google; Response Code: %i' % response.getcode())
+            else:
+                logging.getLogger('everything').info('Unsuccessful ping of sitemap-index.xml to Google; Response Code: %i' % response.getcode())
     elif sys.argv[1] == 'clean':
         clean()
 

@@ -2,3 +2,5 @@
 mediatum.cfg
 plugins/
 .settings/
+tmp/
+sitemap*xml

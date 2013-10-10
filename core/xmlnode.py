@@ -28,7 +28,7 @@ from utils.utils import esc, u, u2
 import core.users as users
 from core.acl import AccessData
 
-EXCLUDE_WORKFLOW_NEWNODES = False
+EXCLUDE_WORKFLOW_NEWNODES = True
 
 
 def getInformation():

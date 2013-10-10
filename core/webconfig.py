@@ -115,7 +115,7 @@ def initContexts():
     file.addHandler("send_attachment").addPattern("/attachment/.*")
     file.addHandler("send_attfile").addPattern("/attfile/.*")
     file.addHandler("get_archived").addPattern("/archive/.*")
-    file.addHandler("get_root").addPattern("/[a-z,0-9]*\.[a-z]*") # root directory added /web/root (only files with extensions)
+    file.addHandler("get_root").addPattern("/[a-z,0-9,-]*\.[a-z]*") # root directory added /web/root (only files with extensions)
     
     file = context.addFile("web/frontend/zoom.py")
     file.addHandler("send_imageproperties_xml").addPattern("/tile/[0-9]*/ImageProperties.xml")

@@ -11,7 +11,7 @@ oaibasename=mediatum repository
 [urn]
 institutionid=00
 pubtypes=epub  # multiple values separated with semicolon (;) are possible
-namespace=     # nbn:de:bvb | nbn:en:1111 | publicid | etc 
+namespace=     # nbn:de:bvb | nbn:en:1111 | publicid | etc
 
 [ftp]
 activate=false
@@ -30,6 +30,7 @@ type=sqlite # sqlite or mysql
 #user=mediatumadmin
 #passwd=
 #cache_size=100000
+searchdb=std # 'std' or 'split' split = split databases; std = all tables in one db
 
 [ldap]
 activate=false

@@ -977,4 +977,8 @@ def register():
     tree.registerNodeClass("workflowstep-addurn", WorkflowStep_Urn)
     registerStep("workflowstep-addformpage")
     addLabels(WorkflowStep_Urn(type="workflowstep-addurn").getLabels())
-
+    
+    from checkcontent import WorkflowStep_CheckContent
+    tree.registerNodeClass("workflowstep-checkcontent", WorkflowStep_CheckContent)
+    registerStep("workflowstep-checkcontent")
+    addLabels(WorkflowStep_CheckContent(type="workflowstep-checkcontent").getLabels())

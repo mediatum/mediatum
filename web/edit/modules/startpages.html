@@ -137,38 +137,45 @@
     </div>
 </metal:block>  
 
-
 <form metal:define-macro="edit_editor" method="post" action="/edit/edit_content" name="hidden_values">
+    <div id="startpage_error_label" i18n:translate="edit_startpages_file_missing" style="display:none">
+        <tal:block i18n:name="filename" tal:content="file_to_edit"/>
+    </div>
+     
+    <script type="text/javascript" tal:condition="python:currentmissing">
+        alert($('#startpage_error_label').text());
+    </script>
     <p>
         <tal:block i18n:translate="edit_editor_header"/>
         <strong tal:content="python: descriptiveLabel">TEXT</strong>
-    </p>
-    <script type="text/javascript" src="/ckeditor/ckeditor.js"> </script>
+    </p>    
+    <script type="text/javascript" src="/ckeditor/ckeditor.js">
+    </script>
     <script tal:content="python:'var currentnodeid = '+node.id+';\nvar language = \''+language+'\';\n'"> </script>
-    <textarea id="page_content" name="page_content" tal:content="python: fncFileContents(path)" style="height:300px;"> </textarea>
+   
+    <textarea id="page_content" name="page_content" tal:content="python: fncFileContents(path)"> </textarea>
     <script type="text/javascript">
-        var CKEDITOR_BASEPATH = '/ckeditor/';
-        CKEDITOR.replace('page_content', {customConfig: '/metatype/htmlmemo?type=configfile',
-        toolbar : 'Meta',
-        filebrowserBrowseUrl : '/edit/edit_content/'+currentnodeid+'/startpages/filebrowser',
-        filebrowserUploadUrl : '/edit/edit_content/'+currentnodeid+'/startpages/filebrowser',
-        filebrowserImageUploadUrl : '/edit/edit_content/'+currentnodeid+'/startpages/htmlupload',
-        filebrowserImageBrowserUrl : '/edit/edit_content/'+currentnodeid+'/startpages/filebrowser',
-        currentNodeId : currentnodeid,
-        height: '500px',
-        toolbar_Meta:
-                [
-                    ['Source','Preview'],
-                    ['Cut','Copy','Paste','PasteText','PasteFromWord','-', 'SpellChecker', 'Scayt'],
-                    ['Undo','Redo','RemoveFormat'],
-                    '/',
-                    ['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],
-                    ['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],
-                    ['Image','NumberedList','BulletedList','-','Outdent','Indent','Blockquote'],
-                    '/',
-                    ['Styles','Format','Font','FontSize','TextColor','BGColor','ShowBlocks']
-                ],
-        });
+        CKEDITOR.replace( 'page_content' , {
+                on :
+                    {
+                    instanceReady : function( ev )
+                        {
+                        var tags = ['p', 'li']; 
+                        for (var key in tags) {
+                            this.dataProcessor.writer.setRules( tags[key],
+                            {
+                                indent : false, breakBeforeOpen : true, breakAfterOpen : false, breakBeforeClose : false, breakAfterClose : true
+                            });
+                        }
+                        }
+                    },
+                language : language,
+                filebrowserBrowseUrl : '/edit/edit_content/'+currentnodeid+'/startpages/filebrowser',
+                filebrowserUploadUrl : '/edit/edit_content/'+currentnodeid+'/startpages/filebrowser',
+                filebrowserImageUploadUrl : '/edit/edit_content/'+currentnodeid+'/startpages/htmlupload',
+                filebrowserImageBrowserUrl : '/edit/edit_content/'+currentnodeid+'/startpages/filebrowser',
+                currentNodeId : currentnodeid,
+                skin: 'moono' });
     </script>
     
     <p align="center">
@@ -180,8 +187,6 @@
         <input i18n:attributes="value edit_publish_cancel" type="submit" name="cancel_page" value="cancel" style="margin-left:30px"/>
     </p>
 </form>
- 
-
 
 <p metal:define-macro="header">
     <span i18n:translate="edit_editor_header">TEXT</span> 

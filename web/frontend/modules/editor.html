@@ -15,25 +15,9 @@
             #closewindowdiv{ clear:left;}
         </style>
         <script type="text/javascript">
-
+            var nodeid = "";
             var selection_mod = "";
             var eSelected = "";
-            var eSelectedString = "";
-            
-            var CKEDITOR = window.parent.CKEDITOR;
-           
-            var editor = CKEDITOR.instances.editor1;
-            var mySelection = editor.getSelection();
-
-            if (CKEDITOR.env.ie) {
-                mySelection.unlock(true);
-                eSelected = mySelection.getNative().createRange().text;
-            } else {
-                eSelected = mySelection.getNative();
-            }
-
-            eSelectedString = eSelected + ''; 
-            LoadSelected() ;
             
             function loadModuleParameter(value){
                 ajaxObj = new sack();
@@ -44,43 +28,58 @@
                 };
                 ajaxObj.runAJAX();
             }
-            
+
+            var dialog = window.parent ;
+            var oEditor = dialog.InnerDialogLoaded() ;
+            var nodeId = "";
+
+            window.onload = function (){
+                dialog.SetOkButton(true);
+                LoadSelected() ;
+            }
+
             function LoadSelected(){
+                // Is there anything selected?
+                try{ //firefox
+                    eSelected = oEditor.FCK.EditorDocument.getSelection();
+                }catch(err){ //ie
+                    eSelected = oEditor.FCK.Selection.SelectionData.text ;
+                }                
                 if ( !eSelected )
                     return ;
-                eSelectedString = eSelected + '';    
-                parts = eSelectedString.split('/');
+                    
+                parts = eSelected.split('/');
                 if (parts.length>1){
                     selection_mod = parts[1];
                 }
+                
+                document.getElementById('modname').value = selection_mod;
                 loadModuleParameter(selection_mod);
             }
-            
-            window.onload = function (){
-                LoadSelected() ;
-            }
-            
-            function fillOk(){
+
+            function Ok(){
                 val = "" 
+
                 for(x=0;x<document.mod_params.elements.length;x++){
                     if (document.mod_params.elements[x].name=='mod_value'){
                         val += document.mod_params.elements[x].value + '/';
                     }
                 }
                 if(val.substr(0, 1)=="/"){
-                    val = CKEDITOR.instances.editor1.config.currentNodeId + val;
+                    val = oEditor.FCK.Config.NodeId+val;
                 }
-                
                 val = document.mod_params.mod_prefix.value + val;
-                return '{'+val.substr(0, val.length-1)+'}'
+                oEditor.FCK.InsertHtml('{'+val.substr(0, val.length-1)+'}');
+                return true;
             }
+
         </script>
     </head>
     <body>
         <form name="mod_params">
             <input type="hidden" id="selection" name="selection" style="width:300px"/>
             <p>
-                Plugin:<br/>
+                Modul:<br/>
                 <select id="modname" name="modname" onchange="loadModuleParameter(this.value)">
                     <option value=""/>
                     <tal:block tal:repeat="mod mods">
@@ -95,13 +94,6 @@
         </form>
     </body>
     <script type="text/javascript">
-        var CKEDITOR = window.parent.CKEDITOR;
-
-        var okListener = function(event){
-            this._.editor.insertHtml(fillOk());
-            CKEDITOR.dialog.getCurrent().removeListener("ok", okListener);
-        };
-        CKEDITOR.dialog.getCurrent().on("ok", okListener);
         
     </script>
 </html>

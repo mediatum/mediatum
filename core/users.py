@@ -146,7 +146,7 @@ def hasTableAccess(user, node):
 def loadUsersFromDB():
     """ load all users from db """
     users = tree.getRoot("users")
-    return users.getChildren().sort(field="name")
+    return users.getChildren().sort_by_name()
 
 
 def getDynamicUserAuthenticators():
@@ -177,24 +177,13 @@ def getExternalUser(name, type="intern"):
             return tree.getNode(name)
         except tree.NoSuchNodeError, e:
             try:
-                user = users.getChild(name)
-                if user:
-                    return user
-                # try identificator
-                for n in users.getChildren():
-                    if ('%s@'%(name)) in n.get('identificator') or name in n.get('identificator'):
-                        return n
-                
+                return users.getChild(name)
             except tree.NoSuchNodeError:
                 return None
     else:
         for n in getExternalUsers(type):
-            if n.getName()==name:
+            if n.getName() == name:
                 return n
-            # try identificator
-            elif ('%s@'%(name)) in n.get('identificator') or name in n.get('identificator'):
-                return n
-        
 
 
 def getUser(id):
@@ -203,7 +192,8 @@ def getUser(id):
 
     if id.isdigit():
         try:
-            return tree.getNode(id)
+            user = tree.getNode(id)
+            return user
         except tree.NoSuchNodeError, e:
             return None
     else:
@@ -478,7 +468,7 @@ def getHomeDir(user):
 
     # re-sort home dirs alphabetically
     i = 0
-    for child in tree.getRoot("home").getChildren().sort("name"):
+    for child in tree.getRoot("home").getChildren().sort_by_name():
         child.setOrderPos(i)
         i += 1
     return userdir

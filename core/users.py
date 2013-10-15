@@ -177,14 +177,23 @@ def getExternalUser(name, type="intern"):
             return tree.getNode(name)
         except tree.NoSuchNodeError, e:
             try:
-                return users.getChild(name)
+                user = users.getChild(name)
+                if user:
+                    return user
+                # try identificator
+                for n in users.getChildren():
+                    if ('%s@'%(name)) in n.get('identificator') or name in n.get('identificator'):
+                        return n
+
             except tree.NoSuchNodeError:
                 return None
     else:
         for n in getExternalUsers(type):
             if n.getName() == name:
                 return n
-
+            # try identificator
+            elif ('%s@'%(name)) in n.get('identificator') or name in n.get('identificator'):
+                return n
 
 def getUser(id):
     """ returns user object from db """

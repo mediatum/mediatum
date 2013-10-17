@@ -81,7 +81,7 @@ def escape_bibtexkey(s, default_char="_"):
             res = res + default_char
     return res
 
-token = re.compile(r'@\w+\s*{\s*|[a-zA-Z-]+\s*=\s*{?["\'{]|[a-zA-Z-]+\s*=\s+[0-9a-zA-Z_]')
+token = re.compile(r'@\w+\s*{\s*|[a-zA-Z-_]+\s*=\s*{?["\'{]|[a-zA-Z-]+\s*=\s+[0-9a-zA-Z_]')
 comment = re.compile(r'%[^\n]*\n')
 delim = re.compile(r'\W')
 delim2 = re.compile(r'^(?u)\s*[\w+_\-\:]*\s*\,')
@@ -127,7 +127,7 @@ def getentries(filename):
                 msg = "bibtex import: getentries(filename): error at second attempt: " + str(e)
                 logger.error(msg)    
 
-                raise MissingMapping("wrong encoding")                
+                raise MissingMapping("wrong encoding")
     try: 
         fi.close()
     except:
@@ -417,7 +417,9 @@ def importBibTeX(file, node=None, req=None):
             metatype = bibtextypes[mytype]
 
             # check for mask configuration
-            mask = getMetaType(metatype).getMask("bibtex")
+            mask = getMetaType(metatype).getMask("bibtex_import")
+            if not mask:
+                mask = getMetaType(metatype).getMask("bibtex")
             if mask:
                 for f in mask.getMaskFields():
                     try:

@@ -216,7 +216,7 @@ class Image(default.Default):
         files, sum_size = filebrowser(node, req)
 
         obj = {'deleted':False}
-        if node.get('deleted') == 'true':
+        if node.get('deleted')=='true':
             node = node.getActiveVersion()
             obj['deleted'] = True
         obj['path'] = req and req.params.get("path","") or ""
@@ -389,6 +389,7 @@ class Image(default.Default):
                 "creationtime":"Erstelldatum",
                 "updateuser":"Update Benutzer",
                 "updatetime":"Update Datum",
+                "updatesearchindex":"Update Suche",
                 "height":"H&ouml;he Thumbnail",
                 "width":"Breite Thumbnail",
                 "faulty":"Fehlerhaft",

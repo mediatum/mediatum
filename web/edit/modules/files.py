@@ -194,8 +194,6 @@ def getContent(req, ids):
                     for f in node.getFiles():
                         if f.getType() in node.getSysFiles():
                             node.removeFile(f)
-                            if os.path.exists(f.retrieveFile()): # delete file from disc
-                                os.remove(f.retrieveFile())
                     node.set("system.version.comment", '('+t(req, "edit_files_new_version_exchanging_comment")+')\n'+req.params.get('version_comment', ''))
 
                 if req.params.get("change_file")=="no" and not create_version_error:

@@ -41,9 +41,12 @@ msgstr "File"
 msgid "edit_upload_bibtex"
 msgstr "BibTeX file"
 
+<<<<<<< HEAD
 msgid "edit_upload_or_doi"
 msgstr "or DOI"
 
+=======
+>>>>>>> fixes
 msgid "edit_upload_upload_label"
 msgstr "Create / Upload"
 

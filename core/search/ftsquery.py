@@ -51,7 +51,7 @@ SYSTEMATTRS = ['updateuser', 'updatetime', 'edit.lastmask', 'creationtime', 'cre
     2: each word once with number of occurences
 """
 FULLTEXT_INDEX_MODE = 0
-DBTYPE = 'std' #'std|split'   split = split databases; std = all tables in one db
+DBTYPE = config.get('database.searchdb', 'std')
 
 class FtsSearcher:
     def __init__(self):

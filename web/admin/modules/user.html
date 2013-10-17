@@ -17,9 +17,9 @@
             <a href="#" onclick="return loadDetails('all')" i18n:translate="admin_user_showall">TEXT</a> |
             <a href="#" onclick="return loadDetails('intern')" i18n:translate="admin_user_internal_user">TEXT</a> |
             <tal:block tal:repeat="auttype python:list(auth)">
-                <a href="#" tal:attributes="onclick python:'return loadDetails(\''+auttype+'\')'" i18n:translate="" tal:content="python:auth[auttype].getName()"/> | 
+                <a href="#" tal:attributes="onclick python:'return loadDetails(\''+auttype+'\')'" i18n:translate="" tal:content="python:auth[auttype].getName()"/> |
             </tal:block>
-            
+
             <tal:block i18n:translate="admin_user_search"/> <input type="text" name="searchterm" id="searchterm" style="border:1px solid silver"/> <button type="button" onclick="searchUser($('#searchterm').val())" i18n:translate="admin_user_search_start">TEXT</button>
             <form action="#" tal:attributes="action page" style="border-width:0px">
                 <input i18n:attributes="title admin_user_create" type="image" src="/img/install.png" name="new"/>
@@ -27,12 +27,12 @@
                 <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
             </form>
         </h4>
-        
+
         <div id="details" tal:condition="python:details==0"> </div>
         <div id="details" tal:condition="python:details==1">
             <tal:block metal:use-macro="web/admin/modules/user.html/details"/>
         </div>
-        
+
     </fieldset>
     <script>
         function searchUser(name){
@@ -41,7 +41,7 @@
               $('#details').html(data);
             });
         }
-        
+
         function loadDetails(type){
             $('#details').html('<img src="/img/wait_small.gif"/>');
             $.get('/admin/user?style=popup&action=details&usertype='+type+'&jsoncallback=?', function(data) {
@@ -50,7 +50,7 @@
             });
             return false;
         }
-    
+
     </script>
 </metal:block>
 
@@ -59,7 +59,7 @@
 
     <!-- expose some variables/constants to javascript -->
     <script tal:content="python:'var confirm_msg_delete_user = \''+str(t(language, 'admin_user_confirm_msg_delete_user'))+'\';'">;</script>
-    <script tal:content="python:'var confirm_msg_logout_user = \''+str(t(language, 'admin_user_confirm_msg_logout_user'))+'\';'">;</script>    
+    <script tal:content="python:'var confirm_msg_logout_user = \''+str(t(language, 'admin_user_confirm_msg_logout_user'))+'\';'">;</script>
 
     <form name="useroverview" method="post" action="#" tal:attributes="action page">
         <table class="overview">
@@ -276,7 +276,7 @@
                     <input type="password" name="change_passwd" style="width:170px"/>
                     <input tal:attributes="name python:'reset_'+user.getName()" i18n:attributes="title admin_user_pwdchange_title" type="image" src="/img/reset_pwd.png" style="padding:3px 5px;border:1px solid silver;position:absolute;bottom:0px"/>
                     <small style="margin-left:50px">(<span i18n:translate="admin_user_msg1">TEXT</span>)</small>
-                    
+
                     </div>
                     <br/>
                 </td>
@@ -289,8 +289,8 @@
                         <tal:block tal:define="options useroption" tal:repeat="option options">
                             <input tal:condition="python:user.getOptionList()[option.getName()]"
                                 tal:attributes="name python:'option_'+option.getValue(); value python:'option_'+option.getValue()" type="checkbox" name="" value="" checked="checked">
-                                                
-                            <input tal:condition="python:not user.getOptionList()[option.getName()]" 
+
+                            <input tal:condition="python:not user.getOptionList()[option.getName()]"
                                 tal:attributes="name python:'option_'+option.getValue(); value python:'option_'+option.getValue()" type="checkbox" name="" value="">
 
                             <span tal:content="structure python:option.getName()" i18n:translate=""/>
@@ -343,7 +343,7 @@
     <form tal:attributes="action page" name="mailuser" method="post">
         <input type="hidden" name="sendmail_execute" value=".">
         <input type="hidden" name="userid" tal:attributes="value userid">
-        <table>       
+        <table>
             <tr>
                 <td colspan="2">
                     <h3 i18n:translate="admin_user_sendmail_title">TEXT</h3>

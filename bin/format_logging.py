@@ -53,7 +53,7 @@ if os.path.exists(outpath) and force==0:
     print "file for period", period, "existing", outpath
     sys.exit()
 
-for i in range(1, 11):
+for i in range(1, 21):
     path.append(core.config.get("logging.file.everything")+"."+str(i))
 
 d = []

@@ -1,9 +1,4 @@
-<metal:block metal:define-macro="view">
-    <!--[if lt IE 7]>
-            <script type="text/javascript">
-                window.attachEvent("onload", buttonfix);
-            </script>
-        <![endif]-->
+﻿<metal:block metal:define-macro="view">
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <form tal:attributes="action page" name="rules" method="post" action="#">
         <table class="overview">
@@ -83,7 +78,7 @@
             popup.focus();
         }
     </script>
-    <p><a i18n:translate="admin_overview" href="./acls">TEXT</a></p>	
+    <p><a i18n:translate="admin_overview" href="./acls">TEXT</a></p>
     <form tal:attributes="action page" name="editRule" method="post">
         <table>
             <tr>

@@ -451,33 +451,34 @@ button#reset-button{
 }
 
 #portal-column-content #object_main{
-    padding: 5px; margin-left: 0px;position:relative;
+    padding: 5px; 
+	margin-left: 0px;
+	position:relative;
 }
-
 #portal-column-content #object_image {
-     width: 320px;position:absolute; top:0px;left:0px;
+    width: 320px;
+	float:left;
+	padding-bottom:20px;
+	padding-left:20px;
 }
-
 #portal-column-content #object_meta{
     margin-left: 325px;
 }
-
 #portal-column-content #object_basket{
-    margin: 5px; 
+    margin: 5px;
 }
-
 #portal-column-content div.mask_row {
-    margin-bottom: 5px;clear:both;
+    margin-bottom: 5px;
+	position:relative;
 }
-
 #portal-column-content div.mask_label {
-    width: 200px;float:left;position:relative;
+    width: 200px; 
+	float:left; 
+	position:relative;
 }
-
 #portal-column-content  div.mask_value {
     margin-left: 202px;
 }
-
 
 #portal-column-content div#nodes div#page-nav{
     margin-left: 5px; margin-right: 10px;
@@ -531,6 +532,8 @@ span.required{
     color: #ff0000
 }
 
-p.error{background: #FFE7E7; color: #AF0101;  padding: 7px; border: 1px solid #AF0101; margin-left: 20px; margin-right: 20px ; text-align: center;}
+p.error{
+    background: #FFE7E7; color: #AF0101;  padding: 7px; border: 1px solid #AF0101; margin-left: 20px; margin-right: 20px ; text-align: center;
+}
 p.info{background: #FCF8E3; color: #C09853;  padding: 7px; border: 1px solid #FCEED5; margin-left: 20px; margin-right: 20px ; text-align: center;}
 p.info a{color: #C09853;}

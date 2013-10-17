@@ -32,7 +32,10 @@ class LogFile:
     def __init__(self, name, path):
         self.name = name
         self.path = path
-        self.size = format_filesize(get_filesize(path))
+        if path:
+            self.size = format_filesize(get_filesize(path))
+        else:
+            self.size = 0
 
     def getName(self):
         return self.name

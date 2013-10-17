@@ -74,4 +74,4 @@ msgid "admin_usergroup_allow_dynamic_checkbox_tooltip"
 msgstr "activate/deactivate dynamic users from text area at the right hand side"
 
 msgid "admin_usergroup_allow_dynamic_textarea_tooltip"
-msgstr "enter here the login names of the accepted dynamic users - separated by comma or newline"
+msgstr "enter here the login names (common name, cn) of the accepted dynamic users - separated by comma or newline"

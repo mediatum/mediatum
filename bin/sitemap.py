@@ -35,6 +35,7 @@ from lxml import etree
 from ConfigParser import SafeConfigParser
 from math import ceil
 
+USE_ALIASES = False
 PING_GOOGLE = True
 PING_URL_ENCODED = 'http://www.google.com/webmasters/tools/ping?sitemap=http%3A%2F%2Fmediatum.ub.tum.de%2Fsitemap-index.xml'
 
@@ -109,7 +110,7 @@ class Sitemap:
                 for i in nodes:
                     url = etree.SubElement(root, 'url')
                     loc = etree.SubElement(url, 'loc')
-                    if 'system.aliascol' in tree.getNode(i[0]).attributes:
+                    if 'system.aliascol' in tree.getNode(i[0]).attributes and USE_ALIASES:
                         loc.text = ''.join(['http://', self.host, '/', tree.getNode(i[0]).attributes['system.aliascol']])
                     else:
                         loc.text = ''.join(['http://', self.host, '/node?id=', i[0]])

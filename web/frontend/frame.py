@@ -322,7 +322,7 @@ class Collectionlet(Portlet):
         counter = 0
         while parents:
             counter += 1
-            if counter>15:
+            if counter>50:
                 raise RecursionException
             p = parents.pop()
             opened[p.id] = 1

@@ -207,7 +207,7 @@ def create():
     else:
         hostname = config.host
 
-    root = tree.getRoot()
+    root = tree.getRoot('collections')
     all_nodes = root.getAllChildren()
     user = users.getUser('Gast')
     access = acl.AccessData(user=user)

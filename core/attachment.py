@@ -23,7 +23,7 @@ import core.config as config
 from utils.utils import getMimeType, format_filesize
 from core.styles import theme
 
-fileicons = {'directory':'mmicon_dir.gif', 'application/pdf':'mmicon_pdf.gif', 'image/jpeg':'mmicon_jpg.gif', 'image/gif':'mmicon_gif.gif', 'image/png':'mmicon_png.gif', 'image/tiff':'mmicon_tiff.gif', 'image/x-ms-bmp':'mmicon_bmp.gif', 'application/postscript':'mmicon_ps.gif', 'application/zip':'mmicon_zip.gif', 'other':'mmicon_file.gif' , "back": "mmicon_back.gif", "application/mspowerpoint":"mmicon_ppt.gif", "application/msword":"mmicon_doc.gif", "video/x-msvideo":"mmicon_avi.gif", "audio/x-wav":"mmicon_avi.gif"}
+fileicons = {'directory':'mmicon_dir.gif', 'application/pdf':'mmicon_pdf.gif', 'image/jpeg':'mmicon_jpg.gif', 'image/gif':'mmicon_gif.gif', 'image/png':'mmicon_png.gif', 'image/tiff':'mmicon_tiff.gif', 'image/x-ms-bmp':'mmicon_bmp.gif', 'application/postscript':'mmicon_ps.gif', 'application/zip' : 'mmicon_zip.gif', 'other' : 'mmicon_file.gif', "back": "mmicon_back.gif", "application/mspowerpoint":"mmicon_ppt.gif", "application/msword":"mmicon_doc.gif", "video/x-msvideo":"mmicon_avi.gif", "video/x-flv":"mmicon_mpeg.gif", "audio/x-wav":"mmicon_avi.gif", "audio/x-wav":"mmicon_avi.gif", 'text/x-bibtex': 'mmicon_txt.gif'}
 
 
 def filebrowser(node, req):
@@ -56,7 +56,7 @@ def filebrowser(node, req):
                 file["size"] = format_filesize(size)
                 filesize += int(size)
                 files.append(file)
-       
+
         return files, filesize
     else:
         path = ""
@@ -75,8 +75,8 @@ def filebrowser(node, req):
                 filesize += f.getSize()
                 ret.append(file)
         return ret, filesize
-    
-        
+
+
 
     if not path.endswith("/") and not req.params.get("path", "").startswith("/"):
         path += "/"
@@ -91,9 +91,9 @@ def filebrowser(node, req):
         file["path"] = req.params.get("path", "")
         file["req_path"] = req.params.get("path", "")[:req.params.get("path", "").rfind("/")]
         ret.append(file)
-    
+
     for name in os.listdir(config.settings["paths.datadir"] + path+"/"):
-        
+
         if name.endswith(".thumb") or name.endswith(".thumb2"):
             continue
         file = {}
@@ -118,7 +118,7 @@ def filebrowser(node, req):
     return ret, format_filesize(filesize)
 
 """ format attachment browser """
-def getAttachmentBrowser(node, req):    
+def getAttachmentBrowser(node, req):
     f, s = filebrowser(node, req)
     req.writeTAL(theme.getTemplate("popups.html"), {"files":f, "sum_size":s, "id": req.params.get("id",""), "path":req.params.get("path", "")}, macro="attachmentbrowser")
 

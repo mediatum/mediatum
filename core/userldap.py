@@ -162,10 +162,10 @@ class LDAPUser(ExternalUser):
             
             for group in self._getAttribute(config.get("ldap.user_group"), data, ",").split(","):
                 if group!="" and not usergroups.existGroup(group):
-                    res = usergroups.create_group(group, description="LDAP Usergroup", option="")
-                    res.set("ldapusergroup.creationtime", date.format_date())
-                    logging.getLogger('usertracing').info("created ldap user group: " + group)
-                
+                    # res = usergroups.create_group(group, description="LDAP Usergroup", option="")
+                    # res.set("ldapusergroup.creationtime", date.format_date())
+                    logging.getLogger('usertracing').info("during ldap user update: skipped creation of ldap user group: " + group)
+                    continue
                 g = usergroups.getGroup(group)
                 if g and g not in user.getParents():
                     g.addChild(user)
@@ -228,6 +228,20 @@ class LDAPUser(ExternalUser):
             if not create_new_user:
                 res_dict['data'] = result_data[0][1]
                 return res_dict
+
+            # check if newly to be created ldap user would be added to groups in function createLDAPUser
+            add_to_groups = 0
+            for group in self._getAttribute(config.get("ldap.user_group"), result_data[0][1], ",").split(","):
+                if group!="" and not usergroups.existGroup(group):
+                    continue
+                g = usergroups.getGroup(group)
+                if g:
+                    add_to_groups += 1
+
+            # refuse login if user would not be added to groups (such a user would not have any benefit from been loged in)
+            if not add_to_groups:
+                return 0
+
             userfolder.addChild(createLDAPUser(result_data[0][1], username)) # add new user
             return 1
         

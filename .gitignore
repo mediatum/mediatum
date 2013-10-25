@@ -4,3 +4,4 @@ plugins/
 .settings/
 tmp/
 sitemap*xml
+web/root/robots.txt

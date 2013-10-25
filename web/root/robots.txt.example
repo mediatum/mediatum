@@ -1,0 +1,22 @@
+# disallow
+User-agent: *
+Disallow: /
+Disallow: /print/
+Disallow: /publish/
+Disallow: /mask/
+Disallow: /edit/
+Disallow: /admin/
+Disallow: /services/
+
+#allow
+User-agent: Googlebot
+Allow: /sitemap-*.xml$
+Allow: /
+Disallow: /print/
+Disallow: /publish/
+Disallow: /mask/
+Disallow: /edit/
+Disallow: /admin/
+Disallow: /services/
+Disallow: /mediatum/
+

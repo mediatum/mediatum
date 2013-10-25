@@ -1,7 +1,7 @@
-*.pyc
 mediatum.cfg
 plugins/
+*.pyc
 .settings/
-tmp/
 sitemap*xml
+tmp/
 web/root/robots.txt

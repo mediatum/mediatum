@@ -1,5 +1,5 @@
 # disallow
-User-agent: *
+-ser-agent: *
 Disallow: /
 Disallow: /print/
 Disallow: /publish/
@@ -14,9 +14,3 @@ Allow: /sitemap-*.xml$
 Allow: /
 Disallow: /print/
 Disallow: /publish/
-Disallow: /mask/
-Disallow: /edit/
-Disallow: /admin/
-Disallow: /services/
-Disallow: /mediatum/
-

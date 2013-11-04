@@ -107,6 +107,7 @@ external_tools_descrs = [
   ["pdftotext", "Xpdf: 'pdftotext' to extract pdf-text", ["pdftotext", "-v"], "FAIL"],
   ["convert", "ImageMagick: 'convert' to extract pdf-text", ["convert", "-version"], "FAIL"],
   ["ffmpeg", "ffmpeg: to extract video thumbnails (flv), required for video support", ["ffmpeg", "-version"], "RESTRICTION"],
+  ["graphviz", "graphviz: required for static workflow diagrams", ["dot", "-V"], "RESTRICTION"],
 ]
 
 # [["module name(s)",], "name of alternative module", "short description", "fail_comment"]
@@ -121,7 +122,8 @@ python_module_descrs = [
   [["pymarc"], "pymarc: marc formatter for python", check_python_module, "RESTRICTION"],
   [["Levenshtein"], "python-Levenshtein: computing string distances and similarities", check_python_module, "RESTRICTION"],
   [["pyPdf"], "pyPdf: PDF toolkit", check_python_module, "RESTRICTION"],
-  [["requests"], "HTTP request module, required for DOI import", check_python_module, "RESTRICTION"],
+  [["requests"], "requests: HTTP request module, required for DOI import", check_python_module, "RESTRICTION"],
+  [["pydot"], "pydot: python graphviz module, required for static workflow diagrams", check_python_module, "RESTRICTION"],
 ]
 
 

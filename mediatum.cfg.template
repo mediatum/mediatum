@@ -7,6 +7,7 @@ threads=8
 reindex_time=3600
 searcher=fts3  # fts3|magpy|<empty>
 oaibasename=mediatum repository
+workflowdiagram_type=graphviz # graphviz | internal | html5
 
 [urn]
 institutionid=00

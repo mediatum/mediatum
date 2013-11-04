@@ -156,8 +156,8 @@ def initContexts():
     file.addHandler("pwdforgotten").addPattern("/pwdforgotten")
     file.addHandler("pwdchange").addPattern("/pwdchange")
 
-    file = context.addFile("workflow/workflow.py")
-    file.addHandler("createWorkflowImage").addPattern("/workflowimage")
+    file = context.addFile("workflow/diagram/__init__.py")
+    file.addHandler("send_workflow_diagram").addPattern("/workflowimage")
 
     # === admin area ===
     context = athana.addContext("/admin", ".")

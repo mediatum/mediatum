@@ -233,6 +233,13 @@ def getContent(req, ids):
                         n = node.createNewVersion(user)
                         n.set("system.version.comment", '('+t(req, "document_new_version_comment")+')\n'+req.params.get('version_comment', ''))
                         
+                        # add all existing attributes to the new version node
+                        for attr, value in node.items():
+                            if n.get(attr)!="": # do not overwrite existing attributes
+                                pass
+                            else:
+                                n.set(attr, value)
+                                
                         _nodes.append(n)
                         _ids.append(n.id)
 

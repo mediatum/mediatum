@@ -67,6 +67,9 @@ msgstr "Die Anmeldung ist fehlgeschlagen! Benutzername oder Passwort falsch."
 msgid "login_submit"
 msgstr "Anmelden"
 
+msgid "document_versions_existing_title"
+msgstr "Weitere Versionen des Dokuments anzeigen"
+
 msgid "login_reset"
 msgstr "Abbrechen"
 
@@ -1274,6 +1277,9 @@ msgstr "<b>Andere Versionen des Dokuments:</b><br/>"
 
 msgid "document_view_by"
 msgstr "von"
+
+msgid "document_versions"
+msgstr "Versionen"
 
 msgid "document_new_version_comment"
 msgstr "Änderungen an den Metadaten"

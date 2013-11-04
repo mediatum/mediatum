@@ -1235,3 +1235,8 @@ msgstr "Image/text view"
 msgid "image_view_big"
 msgstr "Image view"
 
+msgid "document_versions"
+msgstr "Versions"
+
+msgid "document_versions_existing_title"
+msgstr "Show other versions of current document"

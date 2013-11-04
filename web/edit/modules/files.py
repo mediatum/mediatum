@@ -184,10 +184,17 @@ def getContent(req, ids):
                         current = node
                         node = node.createNewVersion(user)
                         
-                        for item in mask.getMaskFields():
-                            field = item.getField()
-                            if field and field.getContentType()=="metafield":
-                                node.set(field.getName(), current.get(field.getName()))
+                        #for item in mask.getMaskFields():
+                        #    field = item.getField()
+                        #    if field and field.getContentType()=="metafield":
+                        #        node.set(field.getName(), current.get(field.getName()))
+                                
+                        # duplicate attributes
+                        for attr, value in current.items():
+                            if node.get(attr)!="": # do not overwrite attributes
+                                pass
+                            else:
+                                node.set(attr, value)
                         ret += req.getTAL("web/edit/modules/metadata.html", {'url':'?id='+node.id+'&tab=files', 'pid':None}, macro="redirect")
 
                 if req.params.get("change_file")=="yes" and not create_version_error: # remove old files

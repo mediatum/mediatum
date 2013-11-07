@@ -612,7 +612,7 @@ class Metadatatype(tree.Node):
             if name.isdigit():
                 return tree.getNode(name)
             else:
-                return self.getChild(name)
+                return self.get_child_with_type(name, "mask")
         except tree.NoSuchNodeError:
             return None
 

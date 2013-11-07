@@ -716,6 +716,17 @@ class Node:
             raise NoSuchNodeError("child:"+str(name))
         return getNode(str(id))
 
+    def get_child_with_type(self, name, nodetype):
+        """Returns a child with specific name and nodetype."""
+        if name is None:
+            raise NoSuchNodeError("child:None")
+        if not self.id:
+            raise NoSuchNodeError("child of None")
+        nid = db.getNamedTypedNode(self.id, name, nodetype)
+        if not nid:
+            raise NoSuchNodeError("child:"+str(name))
+        return getNode(str(nid))
+
     def getContainerChildren(self):
         id = db.getContainerChildren(self.id)
         return NodeList(id)

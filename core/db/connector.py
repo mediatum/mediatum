@@ -187,6 +187,19 @@ class Connector:
         else:
             return t[0][0]
 
+    def getNamedTypedNode(self, parentid, name, nodetype):
+        query = ("select id from node,nodemapping"
+                          " where node.name={}"
+                          " and node.type={}"
+                          " and nodemapping.nid = {}"
+                          " and node.id = nodemapping.cid"
+                          .format(self.esc(name), self.esc(nodetype), parentid))
+        t = self.runQuery(query)
+        if len(t)==1:
+            return t[0][0]
+        else:
+            return None
+
     def deleteNode(self, id):
         self.runQuery("delete from node where id=" + id)
         self.runQuery("delete from nodemapping where cid=" + id)

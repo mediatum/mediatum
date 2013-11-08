@@ -29,9 +29,10 @@ else:
 
 from utils.utils import esc, u, u2
 from schema.schema import getMetaType
+from web.services.serviceutils import attribute_name_filter
 
 
-def buildNodeDescriptor(req, node, indent=None, written=None, children=True, children_access=None, parents=False,):
+def buildNodeDescriptor(req, node, indent=None, written=None, children=True, children_access=None, parents=False):
     nd = []
     d = {}
     if written is None:
@@ -129,14 +130,13 @@ def buildNodeDescriptor(req, node, indent=None, written=None, children=True, chi
             logging.getLogger("services").warning(msg)
 
     elif attrspec == 'all':
-        nodeattributes_dict = node.attributes.copy()
-        if nodeattributes_dict:
-            for k in nodeattributes_dict.keys():
-                nodeattributes_dict[k] = u2((nodeattributes_dict[k]))
-                nodedict['attributes'] = nodeattributes_dict
+        nodeattributes_dict_all_attributes = node.attributes.copy()
+        if nodeattributes_dict_all_attributes:
+            for k in filter(attribute_name_filter, nodeattributes_dict_all_attributes.keys()):
+                nodeattributes_dict[k] = u2((nodeattributes_dict_all_attributes[k]))
 
     if attrlist:
-        for attr in attrlist:
+        for attr in filter(attribute_name_filter, attrlist):
             nodeattributes_dict[attr] = u2(node.get(attr))
 
     if nodeattributes_dict:

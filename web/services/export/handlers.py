@@ -39,6 +39,7 @@ from utils.utils import u, u2, esc, intersection, getMimeType, float_from_gps_fo
 
 import web.services.jsonnode as jsonnode
 from web.services.rssnode import template_rss_channel, template_rss_item, feed_channel_dict, try_node_date
+from web.services.serviceutils import attribute_name_filter
 
 from export.exportutils import is_active_version
 
@@ -72,7 +73,8 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
         sformat = '''<attribute name="%s"><![CDATA[%s]]></attribute>'''
         r = ''
         for attr in attr_list:
-            r += (sformat % (attr[0], u(attr[1])))
+            if attribute_name_filter(attr[0]):
+                r += (sformat % (attr[0], u(attr[1])))
         return r
 
     atime = starttime = time.time()
@@ -93,9 +95,9 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
         if singlenode:
             n = d['nodelist'][0]
             if not send_children:
-                res += xmlnode.getSingleNodeXML(n, exclude_filetypes=exclude_filetypes)
+                res += xmlnode.getSingleNodeXML(n, exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
             else:
-                res += xmlnode.getNodeListXMLForUser(n, readuser='Gast', exclude_filetypes=exclude_filetypes)
+                res += xmlnode.getNodeListXMLForUser(n, readuser='Gast', exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
 
             # mask handling
             formated = n.show_node_text(labels=1, language=req.params.get('lang', ''), cachetype=maskcachetype)
@@ -113,7 +115,7 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
         else:
             res += '<nodelist start="%d" count="%d" countall="%d">\r\n' % (d['nodelist_start'], d['nodelist_limit'], d['nodelist_countall'])
             for n in d['nodelist']:
-                res += xmlnode.getSingleNodeXML(n, exclude_filetypes=exclude_filetypes)
+                res += xmlnode.getSingleNodeXML(n, exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
 
                 # mask handling
                 formated = n.show_node_text(labels=1, language=req.params.get('lang', ''), cachetype=maskcachetype)
@@ -265,6 +267,10 @@ def struct2csv(req, path, params, data, d, debug=False, sep=';', string_delimite
             if sfield in attr_header:
                 attr_header.remove(sfield)
         attr_header = d['sfields'] + attr_header
+
+    # filter attribute names
+    attr_header = filter(attribute_name_filter, attr_header)
+
     header = [u('count'), u('id'), u('type'), u('name')] + attr_header
     r = join_row(header)  + u('\r\n')
 

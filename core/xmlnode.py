@@ -35,7 +35,7 @@ def getInformation():
     return {"version": "1.1a", "system": 1}
 
 
-def writexml(node, fi, indent=None, written=None, children=True, children_access=None, exclude_filetypes=[], exclude_children_types=[]):
+def writexml(node, fi, indent=None, written=None, children=True, children_access=None, exclude_filetypes=[], exclude_children_types=[], attribute_name_filter=None):
     if written is None:
         written = {}
     if indent is None:
@@ -59,7 +59,10 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
     indent += 4
 
     for name, value in node.items():
-        fi.write('%s<attribute name="%s"><![CDATA[%s]]></attribute>\n' %((" " * indent), u(esc(name)), u2(value)))
+        u_esc_name = u(esc(name))
+        if attribute_name_filter and not attribute_name_filter(u_esc_name):
+            continue
+        fi.write('%s<attribute name="%s"><![CDATA[%s]]></attribute>\n' %((" " * indent), u_esc_name, u2(value)))
 
     for file in node.getFiles():
         if file.type == "metadata" or file.type in exclude_filetypes:
@@ -87,7 +90,8 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
                                        children=children,
                                        children_access=children_access,
                                        exclude_filetypes=exclude_filetypes,
-                                       exclude_children_types=exclude_children_types
+                                       exclude_children_types=exclude_children_types,
+                                       attribute_name_filter=attribute_name_filter
                                   )
 
     if node.type in ["mask"]:
@@ -102,7 +106,8 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
                                                children=children,
                                                children_access=children_access,
                                                exclude_filetypes=exclude_filetypes,
-                                               exclude_children_types=exclude_children_types
+                                               exclude_children_types=exclude_children_types,
+                                               attribute_name_filter=attribute_name_filter
                                           )
                 except:
                     msg = "ERROR: node xml export error node.id='%s', node.name='%s', node.type='%s', exportmapping:'%s'" % (str(node.id), node.name, node.type, str(exportmapping_id))
@@ -343,7 +348,7 @@ def getNodeXML(node):
     return wr.get()
 
 
-def getNodeListXMLForUser(node, readuser=None, exclude_filetypes=[]):
+def getNodeListXMLForUser(node, readuser=None, exclude_filetypes=[], attribute_name_filter=None):
     if readuser:
         # only write child data if children_access_user has read access
         children_access = AccessData(user=users.getUser(readuser))
@@ -351,12 +356,12 @@ def getNodeListXMLForUser(node, readuser=None, exclude_filetypes=[]):
         children_access = None
     wr = _StringWriter()
     wr.write('<nodelist exportversion="%s">\n' % getInformation()["version"])
-    node.writexml(wr, children_access=children_access, exclude_filetypes=exclude_filetypes)
+    node.writexml(wr, children_access=children_access, exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
     wr.write("</nodelist>\n")
     return wr.get()
 
 
-def getSingleNodeXML(node, exclude_filetypes=[]):
+def getSingleNodeXML(node, exclude_filetypes=[], attribute_name_filter=None):
     wr = _StringWriter()
-    writexml(node, wr, children=False, exclude_filetypes=exclude_filetypes)
+    writexml(node, wr, children=False, exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
     return wr.get()

@@ -913,17 +913,18 @@ def isNotEmpty(s):
 
 
 #
-# definition for exapmple function 'test_sendmail01'
+# definition for example function 'send_schedule_mail'
 # one mail with information on the nodelist shall be sent
 #
 
 
 # parameters of the function
 # format: [(type, name, label_msgid), ...]
-test_sendmail01_field_descriptors = [
- ("text", "attr_recipient", "test_sendmail01_attribute_attr_recipient", isProbEmails),
- ("text", "attr_subject", "test_sendmail01_attribute_attr_subject", None),
- ("memo", "attr_body", "test_sendmail01_attribute_attr_body", isNotEmpty),
+send_schedule_mail_field_descriptors = [
+ ("text", "attr_recipient", "send_schedule_mail_attribute_attr_recipient", isProbEmails),
+ ("text", "attr_subject", "send_schedule_mail_attribute_attr_subject", None),
+ ("memo", "attr_body", "send_schedule_mail_attribute_attr_body", isNotEmpty),
+ ("text", "attr_sender", "send_schedule_mail_attribute_attr_sender", isProbEmails)
 ]
 
 
@@ -932,11 +933,12 @@ def getTALstr(s, context={}, language='en'):
     return athana.getTALstr(s, context, language=language)
 
 
-def test_sendmail01(node, trigger=None, now_str=None, trigger_info=None, OUT=None, TT=None, thread_name=None, func=None):
+def send_schedule_mail(node, trigger=None, now_str=None, trigger_info=None, OUT=None, TT=None, thread_name=None, func=None):
 
     recipient = str(node.get('attr_recipient'))
     subject = str(node.get('attr_subject'))
     body = str(node.get('attr_body'))
+    sender = str(node.get('attr_sender'))
 
     def getAttribute(nid, attrname):
         try:
@@ -966,64 +968,65 @@ def test_sendmail01(node, trigger=None, now_str=None, trigger_info=None, OUT=Non
 
     body = getTALstr(body, context)
 
-    print "+++> this is 'test_sendmail01'"
+    print "+++> this is 'utils.scheduleutils.send_schedule_mail'"
     print "     attr_recipient='%s'" % str(node.get('attr_recipient'))
     print "     attr_subject  ='%s'" % str(node.get('attr_subject'))
     print "     attr_body     ='%s'" % str(node.get('attr_body'))
-    print "<+++ leaving 'test_sendmail01'"
+    print "     attr_sender   ='%s'" % str(node.get('attr_sender'))
+    print "<+++ leaving 'test_send_schedule_mail'"
 
-    import socket
-    from mail import sendmail
-
-    sendmail('scheduler_%s' % (socket.gethostname()), recipient, subject, body)
+    import mail
+    mail.sendmail(sender, recipient, subject, body)
 
     return
 
 
-c_test_sendmail01 = FormedFunction()
-c_test_sendmail01.function = test_sendmail01
-register_schedule_func("test_sendmail01", test_sendmail01)
-c_test_sendmail01.run_as = "thread"
-c_test_sendmail01.run_as_immediate = "thread"
+c_send_schedule_mail = FormedFunction()
+c_send_schedule_mail.function = send_schedule_mail
+register_schedule_func("send_schedule_mail", send_schedule_mail)
+c_send_schedule_mail.run_as = "thread"
+c_send_schedule_mail.run_as_immediate = "thread"
 
-test_sendmail01_explain_de =\
+send_schedule_mail_explain_de =\
 '''
 Eine erste Funktion zum Versenden von Mail. Es wird eine Mail an eine vorgegebene (;-separierte) Adressenliste mit einem vorgegebenen Betreff gesandt.
 Der Text der Mail kann ein TAL-Template sein. Im Kontext stehen die Liste 'nidlist' der ID's der Knotenauswahl und die Funktion
 'getItemDict', die die Object-ID's auf ein Dictionary mit den Attributen abbildet, zur Auswahl.
 '''
 
-test_sendmail01_explain_en =\
+send_schedule_mail_explain_en =\
 '''
 This function will send an email. The body may be a TAL template with the context variable 'nidlist' holding the id's of the objects selected in the editor
 and the function 'getItemDict' mapping the object id's to a dictionary holding the attributes of the respective objects node.
 '''
 
-label_test_sendmail01 = {
+label_send_schedule_mail = {
            "de":
             [
-                ("test_sendmail01_attribute_attr_recipient", 'Zieladresse der Mail'),
-                ("test_sendmail01_attribute_attr_subject", 'Betreff der Mail (kann leer sein)'),
-                ("test_sendmail01_attribute_attr_body", 'Inhalt der Mail - sollte nicht leer sein '),
-                ("test_sendmail01_longname", 'Testfunktion: eMail versenden'),
-                ("test_sendmail01_explanation", test_sendmail01_explain_de),
+                ("send_schedule_mail_attribute_attr_recipient", 'Zieladresse der Mail'),
+                ("send_schedule_mail_attribute_attr_subject", 'Betreff der Mail (kann leer sein)'),
+                ("send_schedule_mail_attribute_attr_body", 'Inhalt der Mail - sollte nicht leer sein '),
+                ("send_schedule_mail_attribute_attr_sender", 'Absender der Mail - nicht leer'),
+                ("send_schedule_mail_longname", 'Testfunktion: eMail versenden'),
+                ("send_schedule_mail_explanation", send_schedule_mail_explain_de),
 
             ],
            "en":
             [
-                ("test_sendmail01_attribute_attr_recipient", '(;-separated) recipient addresses of the mail'),
-                ("test_sendmail01_attribute_attr_subject", 'Subject of the mail'),
-                ("test_sendmail01_attribute_attr_body", 'Body of the mail - should not be empty'),
-                ("test_sendmail01_longname", 'Test Function send mail'),
-                ("test_sendmail01_explanation", test_sendmail01_explain_en),
+                ("send_schedule_mail_attribute_attr_recipient", '(;-separated) recipient addresses of the mail'),
+                ("send_schedule_mail_attribute_attr_subject", 'Subject of the mail'),
+                ("send_schedule_mail_attribute_attr_body", 'Body of the mail - should not be empty'),
+                ("send_schedule_mail_attribute_attr_sender", 'Sender of the mail'),
+                ("send_schedule_mail_longname", 'Test Function send mail - must not be empty'),
+                ("send_schedule_mail_explanation", send_schedule_mail_explain_en),
 
             ]
             }
 
 
-c_test_sendmail01.setLabels(label_test_sendmail01)
-c_test_sendmail01.setFieldDescriptors(test_sendmail01_field_descriptors)
-c_test_sendmail01.longname = "test_sendmail01_longname"
-c_test_sendmail01.explanation = "test_sendmail01_explanation"
+c_send_schedule_mail.setLabels(label_send_schedule_mail)
+c_send_schedule_mail.setFieldDescriptors(send_schedule_mail_field_descriptors)
+c_send_schedule_mail.longname = "send_schedule_mail_longname"
+c_send_schedule_mail.explanation = "send_schedule_mail_explanation"
 
-fc_dict['test_sendmail01'] = c_test_sendmail01
+fc_dict['send_schedule_mail'] = c_send_schedule_mail

@@ -163,7 +163,7 @@ class m_text(Metatype):
                                 
         return (field.getLabel(), value)
 
-    def format_request_value_for_db(self, field, params, item, language=None):
+    def format_request_value_for_db(self, field, value):
         try:
             return value.replace("; ",";")
         except:

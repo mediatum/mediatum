@@ -1,0 +1,71 @@
+{
+  "publisher": "Nature Publishing Group",
+  "DOI": "10.1038/nmat3712",
+  "type": "article-journal",
+  "title": "The effect of particle proximity on the oxygen reduction rate of size-selected platinum clusters",
+  "URL": "http://dx.doi.org/10.1038/nmat3712",
+  "issued": {
+    "date-parts": [
+      [
+        2013,
+        7,
+        21
+      ]
+    ]
+  },
+  "author": [
+    {
+      "given": "Markus",
+      "family": "Nesselberger"
+    },
+    {
+      "given": "Melanie",
+      "family": "Roefzaad"
+    },
+    {
+      "given": "R.",
+      "family": "Fay\u00e7al Hamou"
+    },
+    {
+      "given": "P.",
+      "family": "Ulrich Biedermann"
+    },
+    {
+      "given": "Florian F.",
+      "family": "Schweinberger"
+    },
+    {
+      "given": "Sebastian",
+      "family": "Kunz"
+    },
+    {
+      "given": "Katrin",
+      "family": "Schloegl"
+    },
+    {
+      "given": "Gustav K. H.",
+      "family": "Wiberg"
+    },
+    {
+      "given": "Sean",
+      "family": "Ashton"
+    },
+    {
+      "given": "Ueli",
+      "family": "Heiz"
+    },
+    {
+      "given": "Karl J. J.",
+      "family": "Mayrhofer"
+    },
+    {
+      "given": "Matthias",
+      "family": "Arenz"
+    }
+  ],
+  "volume": "12",
+  "editor": [],
+  "container-title": "Nature Materials",
+  "issue": "10",
+  "page": "919-924"
+}

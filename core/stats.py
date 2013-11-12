@@ -98,9 +98,6 @@ class LogItem:
         else:
             return "".join(self.ip.split(":")[:-1])
         
-    #def getCountry(self):
-    #    return self.country
-        
         
 class StatAccess:
     def __init__(self):
@@ -380,6 +377,8 @@ def buildStat(collection, period="", fname=None): # period format = yyyy-mm
     for item in items:
         ids.append(item.id)
     data = readLogFiles(fname)
+    
+    gi = GeoIP()
 
     for timestamp in data.keys():
         for id in data[timestamp].keys():
@@ -389,7 +388,6 @@ def buildStat(collection, period="", fname=None): # period format = yyyy-mm
                     if fin and len(data[timestamp][id][type])>0:
                         fin.write('\t<node id="%s">\n' % str(id))
                         for access in data[timestamp][id][type]:
-                            #fin.write('\t\t<access date="%s" time="%s" ip="%s" country="%s"/>\n' % (str(access.getDate()), str(access.getTime()), str(access.getIp()), str(access.getCountry())))
                             fin.write('\t\t<access date="%s" time="%s" ip="%s" country="%s"/>\n' % (str(access.getDate()), str(access.getTime()), str(access.getIp()), gi.country_code_by_name(access.getIp())))
                         fin.write("\t</node>\n")
                         fin.close()
@@ -400,8 +398,10 @@ def buildStat(collection, period="", fname=None): # period format = yyyy-mm
         f.close()
 
         statfile = importFile(file.split("/")[-1], file)
-        statfile.type = "statistic"
-        collection.addFile(statfile)
+        if statfile:
+            statfile.type = "statistic"
+            collection.addFile(statfile)
+        
         try:
             os.remove(file)
         except:

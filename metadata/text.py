@@ -88,12 +88,17 @@ class m_text(Metatype):
         else:
             defaultlang = "" 
             
+        try:
+            field_node_name = field.name
+        except:
+            field_node_name = None 
+            
         context = {
             "lock": lock,
             "values": values,
             "value": value,
             "width": width,
-            "name": field.getName(),
+            "name": field_node_name,
             "field": field,
             "ident": field.id if field.id else "",
             "languages": lang,

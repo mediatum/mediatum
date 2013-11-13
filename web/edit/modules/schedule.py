@@ -31,7 +31,7 @@ import core.tree as tree
 import core.acl as acl
 import utils.scheduleutils as su
 
-from core.translation import lang, t
+from core.translation import lang, t, getDefaultLanguage
 from utils.pathutils import isDescendantOf
 
 if sys.version[0:3] < '2.6':
@@ -330,7 +330,10 @@ def getContent(req, ids):
     else:
         for i, dfield in enumerate(fieldDicts):
             field_name = dfield['field_name']
-            field_value = req.params.get(field_name, '')
+            # m_* classes from metadata/ are not multilingual for schedules
+            # their getEditorHTML methods are used to display schedule node
+            # attributes
+            field_value = req.params.get(getDefaultLanguage() + '__' + field_name, '')
             dfield['value'] = field_value
             field_validator_func = dfield['field_validator_func']
             if field_validator_func and not field_validator_func(field_value):

@@ -1,0 +1,27 @@
+{
+  "publisher": "Springer-Verlag",
+  "DOI": "10.1007/978-3-540-69073-3_6",
+  "ISBN": "978-3-540-69069-6",
+  "title": "A Comparison of Standard Compliant Ways to Define Domain Specific Languages",
+  "URL": "http://dx.doi.org/10.1007/978-3-540-69073-3_6",
+  "issued": {
+    "date-parts": [
+      [
+        2008
+      ]
+    ]
+  },
+  "author": [
+    {
+      "given": "Ingo",
+      "family": "Weisem\u00f6ller"
+    },
+    {
+      "given": "Andy",
+      "family": "Sch\u00fcrr"
+    }
+  ],
+  "editor": [],
+  "type": "book",
+  "page": "47-58"
+}

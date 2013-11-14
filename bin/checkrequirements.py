@@ -62,9 +62,10 @@ print "Checking installation requirements for mediatum:"
 print " Python version is %s.%s.%s" % (sys.version_info[:3])
 print " Platform: %s (%s)\n %s" % (platform.system(), platform.architecture()[0], platform.platform())
 
-if sys.hexversion < 0x020505F0:  # python version < 2.5
-    print "\n---> Hint: it is recommended to use a newer version of python 2.x than 2.4.x"
-    failures["0"] = [('RECOMMENDATION', 'Update python version')]
+if not sys.version_info[0:2] == (2, 7):
+    fail_msg = "A recent Python version 2.7.x is needed"
+    print "\n---> !!! FAIL: " + fail_msg
+    failures["0"] = [('FAIL', fail_msg)]
 
 
 def check_python_module(names):

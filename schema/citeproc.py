@@ -27,7 +27,7 @@ import json
 import logging
 import re
 import random
-from pprint import pprint
+from pprint import pformat
 import requests
 
 from core import tree
@@ -293,7 +293,7 @@ def import_doi(doi, target=None, name=None):
     :raises: DOINotFound if DOI is unknown to the server
     """
     record = get_citeproc_json(doi)
-    logg.debug("got citeproc data from server: %s", pprint(record))
+    logg.debug("got citeproc data from server: %s", pformat(record))
     return import_csl(record, target, doi)
 
 

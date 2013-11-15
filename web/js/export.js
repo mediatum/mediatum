@@ -1,5 +1,5 @@
 var mediatum_config = {};
-var mediatum_config_default = {'fields':['<b>[att:pos]</b>','defaultexport'], 'divider':'<br/>', 'target':'internal', 'output':'default'};
+var mediatum_config_default = {'fields':['<b>[att:pos]</b>','defaultexport'], 'divider':'<br/>', 'target':'internal', 'output':'default', 'groupby':''};
 var module_count = 0;
 var baseurl = getLocation();
 var styledone = 0;
@@ -70,6 +70,7 @@ function mediatum_load(id, limit, sort, query, format, language, type, detailof)
             }
             var type = mediatum_config['type'+pos] ? mediatum_config['type'+pos] : ['','search', ''];
             var output = mediatum_config['output'] ? mediatum_config['output'] : mediatum_config_default.output;
+            var groupby = mediatum_config['groupby'] ? mediatum_config['groupby'] : mediatum_config_default.groupby;
             if (output!='default'){
                 fields = new Array('defaultexport');
             }
@@ -117,11 +118,29 @@ function mediatum_load(id, limit, sort, query, format, language, type, detailof)
                         target = '';
                     }
 
+                    _group = '';
+                    _groupfunc = '';
+                    if(groupby.match(/(\|.*)/g)){
+                        _groupfunc = groupby.replace(/(.*)\|/, '');
+                        groupby = groupby.replace(/(\|.*)/g,'');
+                    }
+
                     $.each(data.nodelist, function(i,item){
                         var x = "";
-                        var s="";
-                        s = '<a href="'+baseurl+'/?id='+item[0].id+'"'+target+' id="item_link"><div id="item">'
-                            $.each(fields, function(index, value){
+                        var s = "";
+
+                        if(groupby!=''){ // group by given attribute and build div
+                            if(item[0].attributes[groupby]!=_group){
+                                _v = formatData('[att:'+groupby+'|'+_groupfunc+']', item, 0 );
+                                if(_v!=''){
+                                    s += '<p id="groupby_header">'+_v+'</p>';
+                                    _group = item[0].attributes[groupby];
+                                }
+                            }
+                        }
+
+                        s += '<a href="'+baseurl+'/?id='+item[0].id+'"'+target+' id="item_link"><div id="item">'
+                        $.each(fields, function(index, value){
                             d = 0;
                                 try{
                                     d = formatData(value, item, i, data.nodelist.length);

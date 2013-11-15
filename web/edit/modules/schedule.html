@@ -363,11 +363,11 @@
             <br/>
             <div tal:condition="python: dfield['evaluation_error']" class="editorerror">
                 <tal:block tal:replace="structure python:dfield['field'].label"/> <br/>
-                <tal:block tal:replace="structure python:dfield['field'].getEditorHTML(dfield['field'], width=400, value=str(dfield['value']), name=str(dfield['field'].name))"/>
+                <tal:block tal:replace="structure python:dfield['field'].getEditorHTML(dfield['field'], width=400, value=str(dfield['value']))"/>
             </div>
             <div tal:condition="python: not dfield['evaluation_error']" class="editorrow">
                 <tal:block tal:replace="structure python:dfield['field'].label"/> <br/>
-                <tal:block tal:replace="structure python:dfield['field'].getEditorHTML(dfield['field'], width=400, value=str(dfield['value']), name=str(dfield['field'].name))"/>
+                <tal:block tal:replace="structure python:dfield['field'].getEditorHTML(dfield['field'], width=400, value=str(dfield['value']))"/>
             </div>
         </tal:block>
 

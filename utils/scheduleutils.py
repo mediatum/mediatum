@@ -816,7 +816,7 @@ class FormedFunction(object):
             field.set("type", field_type)
             field.__class__ = dict_type2class.get(field_type, m_text)
 
-            if field_type in ["memo", "htmlmemo", "meta", "url"] and not hasattr(field, "getValues"):
+            if field_type in ["memo", "htmlmemo", "meta", "url", "text"] and not hasattr(field, "getValues"):
                 field.getValues = lambda: ""
 
             field.label = self.t(lang, field_label_msgid)
@@ -837,7 +837,7 @@ class FormedFunction(object):
             field.set("type", field_type)
             field.__class__ = dict_type2class.get(field_type, m_text)
 
-            if field_type in ["memo", "htmlmemo", "meta", "url"] and not hasattr(field, "getValues"):
+            if field_type in ["memo", "htmlmemo", "meta", "url", "text"] and not hasattr(field, "getValues"):
                 field.getValues = lambda: ""
 
             field.label = self.t(lang, field_label_msgid)

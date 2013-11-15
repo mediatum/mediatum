@@ -135,16 +135,26 @@ class m_htmlmemo(Metatype):
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
 
-        enable_multilang = bool(field.get('multilang'))
+        # field may not be persisted as tree.Node and therefore may not have
+        # an attribute "get"
+        if hasattr(field, "get"):
+            enable_multilang = bool(field.get('multilang'))
+        else:    
+            enable_multilang = False   
         
         if not language:
             language = getDefaultLanguage()
+
+        try:
+            field_node_name = field.name
+        except:
+            field_node_name = None 
 
         context = {
                     "lock": lock, 
                     "value": value, 
                     "width": width, 
-                    "name": field.getName(), 
+                    "name": field_node_name, 
                     "field": field, 
                     "ident": str(field.id),
                     "current_lang": language,

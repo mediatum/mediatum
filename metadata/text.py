@@ -88,12 +88,17 @@ class m_text(Metatype):
         else:
             defaultlang = "" 
             
+        try:
+            field_node_name = field.name
+        except:
+            field_node_name = None 
+            
         context = {
             "lock": lock,
             "values": values,
             "value": value,
             "width": width,
-            "name": field.getName(),
+            "name": field_node_name,
             "field": field,
             "ident": field.id if field.id else "",
             "languages": lang,
@@ -164,6 +169,7 @@ class m_text(Metatype):
         return (field.getLabel(), value)
 
     def format_request_value_for_db(self, field, params, item, language=None):
+        value = params.get(item, '')
         try:
             return value.replace("; ",";")
         except:

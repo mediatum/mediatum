@@ -26,7 +26,8 @@ import datetime
 import json
 import logging
 import re
-from pprint import pprint
+import random
+from pprint import pformat
 import requests
 
 from core import tree
@@ -43,62 +44,83 @@ class CSLField(object):
         self.fieldtype = fieldtype
 
 
-# CSL support special field types "name", "date" or "number". 
+# CSL support special field types "name", "date" or "number".
 # Other fields are "standard"
 # Missing fields are assumed to be "standard"
 # see http://citationstyles.org/downloads/specification.html#appendix-iv-variables
 FIELDS = defaultdict(lambda: CSLField("standard"), {
         # name fields
-        "author": CSLField("name"), 
-        "collection-editor": CSLField("name"), 
-        "composer": CSLField("name"), 
-        "container-author": CSLField("name"), 
-        "director": CSLField("name"), 
-        "editor": CSLField("name"), 
-        "editorial-director": CSLField("name"), 
-        "illustrator": CSLField("name"), 
-        "interviewer": CSLField("name"), 
-        "original-author": CSLField("name"), 
-        "recipient": CSLField("name"), 
-        "reviewed-author": CSLField("name"), 
-        "translator": CSLField("name"), 
+        "author": CSLField("name"),
+        "collection-editor": CSLField("name"),
+        "composer": CSLField("name"),
+        "container-author": CSLField("name"),
+        "director": CSLField("name"),
+        "editor": CSLField("name"),
+        "editorial-director": CSLField("name"),
+        "illustrator": CSLField("name"),
+        "interviewer": CSLField("name"),
+        "original-author": CSLField("name"),
+        "recipient": CSLField("name"),
+        "reviewed-author": CSLField("name"),
+        "translator": CSLField("name"),
         # date fields
-        "accessed": CSLField("date"), 
-        "container": CSLField("date"), 
-        "event-date": CSLField("date"), 
-        "issued": CSLField("date"), 
-        "original-date": CSLField("date"), 
-        "submitted": CSLField("date"), 
+        "accessed": CSLField("date"),
+        "container": CSLField("date"),
+        "event-date": CSLField("date"),
+        "issued": CSLField("date"),
+        "original-date": CSLField("date"),
+        "submitted": CSLField("date"),
         # number fields
-        "chapter-number": CSLField("number"), 
-        "collection-number": CSLField("number"), 
-        "edition": CSLField("number"), 
-        "issue": CSLField("number"), 
-        "number": CSLField("number"), 
-        "number-of-pages": CSLField("number"), 
-        "number-of-volumes": CSLField("number"), 
-        "volume": CSLField("number"), 
+        "chapter-number": CSLField("number"),
+        "collection-number": CSLField("number"),
+        "edition": CSLField("number"),
+        "issue": CSLField("number"),
+        "number": CSLField("number"),
+        "number-of-pages": CSLField("number"),
+        "number-of-volumes": CSLField("number"),
+        "volume": CSLField("number"),
     }
 )
 
 # see http://citationstyles.org/downloads/specification.html#appendix-iii-types
-TYPES = ["article", 
-         "article-magazine",
-         "article-newspaper",
-         "article-journal",
-         "bill",
-         "book",
-         # ...
-         "dataset",
-         # ...
-         "paper-conference",
-         # ...
-         "report",
-         # ...
-         "thesis",
-         "treaty",
-         "webpage"
-]        
+TYPES =  [
+    'article',
+    'article-magazine',
+    'article-newspaper',
+    'article-journal',
+    'bill',
+    'book',
+    'broadcast',
+    'chapter',
+    'dataset',
+    'entry',
+    'entry-dictionary',
+    'entry-encyclopedia',
+    'figure',
+    'graphic',
+    'interview',
+    'legislation',
+    'legal_case',
+    'manuscript',
+    'map',
+    'motion_picture',
+    'musical_score',
+    'pamphlet',
+    'paper-conference',
+    'patent',
+    'post',
+    'post-weblog',
+    'personal_communication',
+    'report',
+    'review',
+    'review-book',
+    'song',
+    'speech',
+    'thesis',
+    'treaty',
+    'webpage'
+]
+
 
 class DOINotFound(Exception):
     pass
@@ -141,11 +163,27 @@ def convert_csl_names(names):
         res.append(formatted)
     return ";".join(res)
 
-    
+
+CSL_NUMBER_RE = re.compile(r"((\d+)\s*[-&]?\s*(\d+)$)|(\d+)(\s*,\s*(\d+))+$")
+
+def check_number(number):
+    """Checks if given arg is a 'number' as defined by the CSL specification.
+    Numbers can be
+    * 'real numbers': 23
+    * ranges: 23 - 42
+    * and: 23 & 42
+    * list: 23,42
+    """
+    if CSL_NUMBER_RE.match(number) is None:
+        return False
+    else:
+        return True
+
+
 def get_citeproc_json(doi):
     """Get record for a given DOI in citeproc JSON format.
     :raises: DOINotFound if DOI is unknown to the server
-    
+
     TODO: maybe there are other ways this can fail?
     """
     headers = {"Accept": "application/citeproc+json"}
@@ -171,36 +209,51 @@ def extract_and_check_doi(doi_or_uri):
         raise InvalidDOI
 
 
-def import_doi(doi, target=None):
-    """Get record for a given DOI in citeproc JSON format and create a node from its information.
-    :raises: DOINotFound if DOI is unknown to the server
+def import_csl(record, target=None, name=None):
+    """Import data from a CSL record into a new node
+    :param record: CSL record
+    :type record: dict
+    :param: target
+    :type target: tree.Node
+    :param name: name for the new node. If none, try to get a unique id
+        from the record (DOI) or generate an UUID.
+    :raises: NoMappingFound if no mapping defined for the given type
     """
-    record = get_citeproc_json(doi)
-    logg.debug("got citeproc data from server: %s", pprint(record))
     typ = record["type"]
     if typ not in TYPES:
         raise NoMappingFound("Not supported", typ)
     metatype_name = importbase.get_import_mapping("citeproc", typ)
-    if not metatype_name: 
+    if not metatype_name:
         raise NoMappingFound("No citeproc schema mapping could be found", typ)
     metatype = getMetaType(metatype_name)
     mask = metatype.getMask("citeproc")
     contenttype = "document"
-    node = tree.Node(doi, contenttype + "/" + metatype_name)
-    
+    if name is None:
+        name = record.get("DOI") or "".join(random.choice('0123456789abcdef') for _ in xrange(16))
+    node = tree.Node(name, contenttype + "/" + metatype_name)
+
     def get_converted_from_csl_record(key):
         value = record.get(key)
         if value is None:
             return None
-        if FIELDS[key].fieldtype == "date":
-            return convert_csl_date(value)
-        elif FIELDS[key].fieldtype == "name":
-            return convert_csl_names(value)
-        elif FIELDS[key].fieldtype == "number":
-            return int(value)
-        else:
+        try:
+            if FIELDS[key].fieldtype == "date":
+                return convert_csl_date(value)
+            elif FIELDS[key].fieldtype == "name":
+                return convert_csl_names(value)
+            elif FIELDS[key].fieldtype == "number":
+                if not check_number(value):
+                    logg.warn("field '%s' is of type number and contains an illegal value: '%s'!"
+                                     "See http://citationstyles.org/downloads/specification.html#number"
+                                     .key, value)
+            # for number and standard fields
             return value.encode("utf8")
-    
+        except:
+            # all malformed input will be ignored
+            # XXX: improve this when we know better what can happen...
+            logg.error("error while converting CSL field '%s' with value '%s', ignored", key, value, exc_info=1)
+            return ""
+
     for f in mask.getMaskFields():
         try:
             csl_name = "not defined"
@@ -210,21 +263,38 @@ def import_doi(doi, target=None):
             mfield = tree.getNode(f.get("attribute"))
             med_name = mfield.getName()
         except tree.NoSuchNodeError:
-            msg = "citeproc import doi='{}': field error for citeproc mask for type '{}' and " \
-            "csl-type '{}' csl_name='{}', mfield='{}', med_name='{}'".format(doi, metatype_name, typ, csl_name, mfield, med_name)
+            msg = "citeproc import name='{}': field error for citeproc mask for type '{}' and " \
+            "csl-type '{}' csl_name='{}', mfield='{}', med_name='{}'".format(name, metatype_name, typ, csl_name, mfield, med_name)
             logg.error(msg, exc_info=1)
             continue
 
         value = get_converted_from_csl_record(csl_name)
-        
+
         # fixes for special fields
         mfield_type = mfield.get("type")
         if  mfield_type == "url":
             value += ";Link"
-        
+
         if value is not None:
             node.set(med_name, value)
 
-    target.addChild(node)
+    if target:
+        target.addChild(node)
+
     node.setDirty()
     return node
+
+
+def import_doi(doi, target=None, name=None):
+    """Get record for a given DOI in citeproc JSON format and create a node from its information.
+    :param doi:
+    :param target:
+    :type target: tree.Node
+    :raises: DOINotFound if DOI is unknown to the server
+    """
+    record = get_citeproc_json(doi)
+    logg.debug("got citeproc data from server: %s", pformat(record))
+    return import_csl(record, target, doi)
+
+
+

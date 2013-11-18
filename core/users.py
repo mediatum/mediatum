@@ -40,6 +40,7 @@ useroption += [Option("user_option_1", "editpwd", "c", "img/changepwd_opt.png", 
                Option("user_option_3", "useroptions", "o", "img/editshopping_opt.png", "checkbox")]
 
 authenticators = {}
+authenticators_priority_dict = {}
 
 #Saves a hashtable for every user which holds if he has access on a specific node
 useraccesstable = {}
@@ -223,9 +224,11 @@ def getUser(id):
 
 def doExternalAuthentification(name, pwd, req=None):
     global authenticators
-    for a in authenticators:
-        if authenticators[a].authenticate_login(name, pwd, req=req):
-            return authenticators[a].getUser(name)
+    for priority_key in list(reversed(sorted(authenticators_priority_dict.keys()))):
+        for a in authenticators_priority_dict[priority_key]:
+            print "trying to authenticate %r over external authenticator %r" % (name, a)
+            if authenticators[a].authenticate_login(name, pwd, req=req):
+                return authenticators[a].getUser(name)
     return None
 
 
@@ -437,9 +440,13 @@ def makeRandomPassword():
     return char1 + char2 + char3 + nr1 + nr2 + char4
 
 
-def registerAuthenticator(auth, name):
-    global authenticators
+def registerAuthenticator(auth, name, priority=0):
+    """Write (external) authenticator class to dictionary with name as key.
+    Order of execution is according to priority integer: highest first.
+    """
+    global authenticators, authenticators_priority_dict
     authenticators[name] = auth
+    authenticators_priority_dict[priority] = authenticators_priority_dict.get(priority, []) + [name]
 
 
 def moveUserToIntern(id):

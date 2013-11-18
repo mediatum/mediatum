@@ -69,8 +69,6 @@ class LDAPUser(ExternalUser):
 
     def authenticate_login(self, username, password, create_new_user=1, req=None):
     
-        print "trying to authenticate", username, "over ldap"
-
         def tryAuth(filter):
             count = 5
             while 1:

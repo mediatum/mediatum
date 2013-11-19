@@ -52,7 +52,7 @@ def getContent(req, ids):
     if "resort" in req.params:
         # sort criteria
         i = 0
-        sort_dir = req.params.get("sortdirection","up")
+        sort_dir = "" if req.params.get("sortdirection","up") == "up" else "-"
         sort_attribute = sort_dir + req.params.get("sortattribute")
         sorted_children = node.getChildren().sort_by_fields(sort_attribute)
         for child in sorted_children:

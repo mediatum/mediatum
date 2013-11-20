@@ -235,7 +235,9 @@ def getContent(req, ids):
                         
                         # add all existing attributes to the new version node
                         for attr, value in node.items():
-                            if n.get(attr)!="": # do not overwrite existing attributes
+                            # do not overwrite existing attributes
+                            # do not copy system attributes
+                            if n.get(attr)!="" or attr.startswith("system."):
                                 pass
                             else:
                                 n.set(attr, value)

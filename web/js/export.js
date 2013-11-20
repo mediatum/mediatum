@@ -178,13 +178,16 @@ function startsearch(pos, baseid, language){
     $("#searchresult_"+pos).html('<img src="'+baseurl+'/img/wait_small.gif"/>');
     $(".part_"+pos).css("display", "none");
     $("#searchresult_"+pos).css("display", "block");
+    
+    detailof = 0;
 
     var fields = mediatum_config['fields'+pos] ? mediatum_config['fields'+pos] : mediatum_config_default.fields;
     var divider = mediatum_config['divider'+pos] ? mediatum_config['divider'+pos] : mediatum_config_default.divider;
     var target = mediatum_config['target'+pos] ? mediatum_config['target'+pos] : mediatum_config_default.target;
     
-    url = baseurl+"/services/export/node/"+baseid+"/allchildren?sortfield=-node.name&type=.*(document|diss|image|video).*&format=json&mask=default&q=full="+ $('#searchterm_'+pos).val();
+    url = baseurl+"/services/export/node/"+baseid+"/allchildren?sortfield=-node.name&type=.*(document|diss|image|video).*&format=json&q=full="+ $('#searchterm_'+pos).val();
     url += (mediatum_config['fields'+pos] || mediatum_config['fields'+detailof]) ? "&attrspec=all" : "";
+    url += mediatum_config['output']!="default" ? "&mask="+mediatum_config['output'] :"";
 
     $.getJSON(url+"&jsoncallback=?", function(data){
         $("#searchresult_"+pos).html('<p class="search">'+labels[language][2]+' \''+$('#searchterm_'+pos).val()+'\' ('+data.nodelist.length+' '+labels[language][3]+')</p>');

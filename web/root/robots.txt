@@ -19,3 +19,4 @@ Disallow: /edit/
 Disallow: /admin/
 Disallow: /services/
 Disallow: /mediatum/
+Disallow: /pwdforgotten

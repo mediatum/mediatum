@@ -206,7 +206,7 @@ def extract_and_check_doi(doi_or_uri):
     if match:
         return match.group(1)
     else:
-        raise InvalidDOI
+        raise InvalidDOI()
 
 
 def import_csl(record, target=None, name=None):

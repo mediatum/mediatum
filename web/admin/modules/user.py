@@ -104,7 +104,10 @@ def validate(req, op):
                 if isDynamic:             
                     deleteUser(isDynamic[0], isDynamic[1])
                 else:
-                    deleteUser(getUser(key[7:-2]), usertype=req.params.get("usertype", "intern"))
+                    usertype=req.params.get("usertype", "intern")
+                    if not usertype.strip():
+                        usertype = "intern"
+                    deleteUser(getUser(key[7:-2]), usertype=usertype)
                 break
             elif key.startswith("tointern_"):
                 moveUserToIntern(key[9:-2])

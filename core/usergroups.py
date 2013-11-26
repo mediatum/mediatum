@@ -28,6 +28,9 @@ import core.config as config
 from utils.utils import Option
 import core.tree as tree
 import acl
+import logging
+
+log = logging.getLogger("usertracing")
 
 groupoption = []
 groupoption += [Option("usergroup_option_1", "editor", "e", "img/edit_opt.png"),
@@ -47,12 +50,17 @@ def getGroup(id):
         return groups.getChild(id)
 
 """ create new group in db """
-def create_group(name,description="",option=""):
+def create_group(name,description="",option="",dynamic_users="",allow_dynamic=""):
     groups = tree.getRoot("usergroups")
     group = tree.Node(name=name, type="usergroup")
     group.set("description",description)
     group.set("opts",option)
+    if allow_dynamic:
+        group.set("allow_dynamic", allow_dynamic)
+    if dynamic_users:
+        group.set("dynamic_users", dynamic_users)    
     groups.addChild(group)
+    log.debug("created group %r (%r)" % (group.name, group.id))
     return group
 
 """ get number of users containing given group """
@@ -96,11 +104,21 @@ def saveGroupMetadata(group, metaList):
 def deleteGroup(grp):
     # remove users from group
     grp = getGroup(grp)
-    for user in grp.getChildren():
+    log.debug("going to remove group %r (%r)" % (grp.name, grp.id))
+    children = grp.getChildren()
+    log.debug("going to remove %r children from group %r (%r)" % (len(children), grp.name, grp.id))
+    for user in children:
         grp.removeChild(user)
+    child_ids = [c.id for c in children]    
+    log.debug("id's of %r children removed from group %r (%r): %r" % (len(children), grp.name, grp.id, child_ids))
+    if grp.get("allow_dynamic") == "1":
+        msg = "group %r (%r) allowed dynamic users. Attribute 'dynamic_users': %r" % (grp.name, grp.id, grp.get('dynamic_users'))
+        log.debug(msg)
     # remove group from groups
     groups = tree.getRoot("usergroups")
     groups.removeChild(grp)
+    log.debug("removed group %r (%r) from %r (%r)" % (grp.name, grp.id, groups.name, groups.id))
+
 
 def existGroup(grp):
     groups = tree.getRoot("usergroups")
@@ -117,6 +135,7 @@ def updateAclRule(oldname, newname):
 
     else:
        acl.addRule(newrule)
+
 
 def sortUserGroups():
     groups = tree.getRoot("usergroups").getChildren().sort_by_fields("name")

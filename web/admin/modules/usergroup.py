@@ -18,12 +18,14 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import sys, types
+import sys
+import types
 import traceback
 import core.tree as tree
 import core.athana as athana
 import logging
 import core.usergroups as usergroups
+import core.users as users
 import core.config as config
 import re
 import os
@@ -34,16 +36,19 @@ from core.usergroups import groupoption, loadGroupsFromDB, getGroup, existGroup,
 from core.translation import t, lang
 from utils.utils import splitpath, u
 
+
 def getInformation():
     return{"version":"1.0"}
 
+log = logging.getLogger("usertracing")
 ALLOW_DYNAMIC_USERS = False
 
-#
-# standard validator
-#
+
 def validate(req, op):
+    """standard validator"""
     global ALLOW_DYNAMIC_USERS
+
+    user = users.getUserFromRequest(req)
 
     try:
 
@@ -65,6 +70,7 @@ def validate(req, op):
 
             elif key.startswith("delete_"):
                 # delete group
+                log.debug("user %r going to delete group %r" % (user.getName(), key[7:-2]))
                 deleteGroup(key[7:-2])
                 break
 
@@ -81,9 +87,20 @@ def validate(req, op):
                 elif existGroup(req.params.get("groupname","")):
                     return editGroup_mask(req, "", 2) # group still existing
                 else:
+                    log.debug("user %r going to save new group %r" % (user.getName(), req.params.get("groupname","")))
                     if req.params.get("create_rule","")=="True":
                         updateAclRule(req.params.get("groupname",""), req.params.get("groupname",""))
-                    group = create_group(req.params.get("groupname",""), req.params.get("description",""), str(_option))
+                    if req.params.get("checkbox_allow_dynamic", "") in ["on", "1"]:
+                        allow_dynamic = "1"
+                    else:
+                        allow_dynamic = ""
+                    dynamic_users = req.params.get("dynamic_users", "")
+                    group = create_group(req.params.get("groupname",""), 
+                                         description=req.params.get("description",""), 
+                                         option=str(_option),
+                                         allow_dynamic = allow_dynamic,
+                                         dynamic_users = dynamic_users,
+                                        )
                     group.setHideEdit(req.params.get("leftmodule","").strip())
                     saveGroupMetadata(group.name, req.params.get("leftmodulemeta","").strip())
 
@@ -108,7 +125,10 @@ def validate(req, op):
                     else:
                         group.set("allow_dynamic", "")
                     group.set("dynamic_users", dynamic_users)
-
+                if groupname == oldgroupname:    
+                    log.debug("user %r edited group %r" % (user.getName(), groupname))
+                else:
+                    log.debug("user %r edited group %r, new groupname: %r" % (user.getName(), oldgroupname, groupname))
             sortUserGroups()
         return view(req)
 
@@ -166,10 +186,9 @@ def view(req):
     v["actfilter"] = actfilter
     return req.getTAL("/web/admin/modules/usergroup.html", v, macro="view")
 
-#
-# edit/create usergroup
-#
+
 def editGroup_mask(req, id, err=0):
+    """edit/create usergroup"""
     global groupoption, ALLOW_DYNAMIC_USERS
 
     newusergroup = 0

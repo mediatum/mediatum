@@ -7,6 +7,33 @@
             border:1px solid red;
         }
     </style>
+
+    <script tal:content="python:'var execute_search = \''+execute_search+'\';'">;</script>    
+
+    <script>
+        function searchUser(name){
+            $('#details').html('<img src="/img/wait_small.gif"/>');
+            $.get('/admin/user?style=popup&action=search&searchterm='+name+'&jsoncallback=?', function(data) {
+              $('#details').html(data);
+            });
+        }
+
+        function executeSearchUser(name){
+            searchUser(name);
+            $('#searchterm').val(name);
+        }        
+
+        function loadDetails(type){
+            $('#details').html('<img src="/img/wait_small.gif"/>');
+            $.get('/admin/user?style=popup&action=details&usertype='+type+'&jsoncallback=?', function(data) {
+              $('#details').html(data);
+              $('#searchterm').val("")
+            });
+            return false;
+        }
+
+    </script>
+    
     <p><a i18n:translate="admin_overview" href=".">TEXT</a></p>
     <h3>
         <span i18n:translate="admin_user_existing">TEXT</span>
@@ -32,26 +59,10 @@
         <div id="details" tal:condition="python:details==1">
             <tal:block metal:use-macro="web/admin/modules/user.html/details"/>
         </div>
-
+        <script tal:condition="python: execute_search" tal:content="python: 'executeSearchUser(execute_search);'">
+        </script>
     </fieldset>
-    <script>
-        function searchUser(name){
-            $('#details').html('<img src="/img/wait_small.gif"/>');
-            $.get('/admin/user?style=popup&action=search&searchterm='+name+'&jsoncallback=?', function(data) {
-              $('#details').html(data);
-            });
-        }
 
-        function loadDetails(type){
-            $('#details').html('<img src="/img/wait_small.gif"/>');
-            $.get('/admin/user?style=popup&action=details&usertype='+type+'&jsoncallback=?', function(data) {
-              $('#details').html(data);
-              $('#searchterm').val("")
-            });
-            return false;
-        }
-
-    </script>
 </metal:block>
 
 
@@ -100,7 +111,7 @@
                     <td colspan="12"><small i18n:translate="admin_user_nousers">TEXT</small></td>
                 </tr>
                 <tal:block tal:repeat="user python:users[pages.getStart():pages.getEnd()]">
-                    <tr tal:define="cssclass python:users.index(user)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
+                    <tr tal:define="cssclass python:users.index(user)%2 and 'norm' or 'silver'" tal:attributes="class cssclass; id python:'row_'+str(id_func(user))">
                         <td tal:content="python:str(users.index(user)+1)+'.'"/>
                         <td tal:condition="python:not user.isDynamicUser()" tal:content="python:user.getName()"/>
                         <td tal:condition="python:user.isDynamicUser()" tal:content="python:user.getName()" tal:attributes="title python:'login-time'+user.get('login_time_iso')+' (since '+str(now().replace(microsecond=0)-user.get('login_datetime').replace(microsecond=0))+')\nip: '+user.get('login_ip')+'\nuser agent: '+user.get('useragent')+'\ndirid: '+user.dirid+'\ndir_groups: '+str(user.DIRIDS)"/>
@@ -161,6 +172,7 @@
         <input type="hidden" name="actpage" tal:attributes="value actpage"/>
         <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
         <input type="hidden" name="usertype" tal:attributes="value usertype"/>
+        <input type="hidden" name="searchterm_was" tal:attributes="value searchterm_was"/>
     </form>
 </metal:block>
 

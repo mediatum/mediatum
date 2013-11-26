@@ -17,7 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import sys, types
+import sys
+import types
 import traceback
 import core.athana as athana
 import logging
@@ -28,50 +29,75 @@ import utils.mail as mail
 import core.users as users
 import re
 import datetime
+import time
 from utils.utils import getAllCollections, formatException
 
 from core.usergroups import loadGroupsFromDB
-from core.users import loadUsersFromDB, useroption, getUser, getExternalUser, update_user, existUser, create_user, makeRandomPassword, deleteUser, getExternalUsers, getExternalUser, moveUserToIntern, getExternalAuthentificators, getDynamicUserAuthenticators
+from core.users import loadUsersFromDB, useroption, getUser, getExternalUser, update_user, existUser, create_user, makeRandomPassword, deleteUser, getExternalUsers, getExternalUser, moveUserToIntern, getExternalAuthentificators, getDynamicUserAuthenticators, getDynamicUsers
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from core.translation import lang, t
 from core.user import User
 
+log = logging.getLogger("usertracing")
 users_cache = []
 
-def getInformation():
-    return{"version":"1.0"}
 
+def getInformation():
+    return {"version": "1.0"}
+
+
+def fill_users_cache(verbose=True):
+    global users_cache
+    atime = time.time()
+    internal_users = loadUsersFromDB()
+    if verbose:
+        log.info("%.3f sec. to load %r internal users" % (time.time() - atime, len(internal_users)))
+        atime = time.time()
+    res = internal_users
+    for usertype in list(getExternalUsers()):
+        # this loop will also loop the dynamic authenticators
+        ext_users = list(usertype.getChildren())
+        res += ext_users
+        if verbose:
+            log.info("%.3f sec. to load %r external users of type %r" % (time.time() - atime, len(ext_users), usertype.name))
+            atime = time.time()
+    users_cache = res
+
+
+def flush_users_cache(verbose=True):
+    global users_cache
+    if verbose:
+        log.debug("going to empty users_cache, which has %r entries" % (len(users_cache)))
+    users_cache = []
 
 
 def searchUser(value):
     global users_cache
-
+    atime = time.time()
     res = []
     value = value.lower().split("*")
 
-    if len(users_cache)<1:
-        users = loadUsersFromDB()
-        for usertype in list(getExternalUsers()):
-            users += list(usertype.getChildren())
+    if 1:  # always reload users_cache #len(users_cache)<1:
+        fill_users_cache(verbose=True)
+        users = users_cache
     else:
         users = users_cache
 
     for user in users:
         user_data = user.getName().lower() + ("").join([i[1].lower().strip() for i in user.items()])
-        
+
         n_found = 0
-        for v in value: # test each value
+        for v in value:  # test each value
             if v not in user_data:
                 n_found += 1
-        if n_found==0:
+        if n_found == 0:
             res.append(user)
+    log.debug("searchUser: %.3f sec. for value=%r, found %r users" % (time.time() - atime, value, len(res)))
     return res
-    
-    
-#
-# standard validator
-#
+
+
 def validate(req, op):
+    """standard validator"""
     global users_cache
     try:
 
@@ -83,17 +109,18 @@ def validate(req, op):
             if key.startswith("new"):
                 # create new user
                 return editUser_mask(req, "")
-                
+
             elif key.startswith("edit_"):
                 # edit user
-                return editUser_mask(req, str(key[key.index("_")+1:-2]))
+                return editUser_mask(req, str(key[key.index("_") + 1:-2]))
 
-            elif key.startswith("sendmail_") and req.params.get("form_op","")!="cancel":
+            elif key.startswith("sendmail_") and req.params.get("form_op", "") != "cancel":
                 # send email
-                return sendmailUser_mask(req, str(key[key.index("_")+1:-2]))
+                return sendmailUser_mask(req, str(key[key.index("_") + 1:-2]))
 
             elif key.startswith("delete_"):
                 # delete user
+                user_from_request = users.getUserFromRequest(req)
                 username_from_form = key[7:-2]
                 dyn_auths = getDynamicUserAuthenticators()
                 isDynamic = False
@@ -101,33 +128,53 @@ def validate(req, op):
                     if username_from_form.startswith(dyn_auth + "|"):
                         isDynamic = (username_from_form, dyn_auth)
                         break
-                if isDynamic:             
+                if isDynamic:
+                    log.info("%r is requesting logout of dynamic user %r (%r)" % (user_from_request.getName(), isDynamic[0], isDynamic[1]))
                     deleteUser(isDynamic[0], isDynamic[1])
                 else:
-                    usertype=req.params.get("usertype", "intern")
+                    usertype = req.params.get("usertype", "intern")
+                    usernode = getUser(key[7:-2])
                     if not usertype.strip():
-                        usertype = "intern"
-                    deleteUser(getUser(key[7:-2]), usertype=usertype)
+                        usertype = usernode.getUserType()
+                        if usertype == 'users':
+                            # function deleteUser expects usertype='intern'
+                            # for children if root->users, but getUserType()
+                            # returns 'users' for those
+                            usertype = 'intern'
+                    log.info("%r is requesting deletion of user %r (%r, %r)" % (user_from_request.getName(), usernode.name, usernode.id, usertype))
+                    deleteUser(usernode, usertype=usertype)
+                    del_index = users_cache.index(usernode)
+
+                    del users_cache[del_index]
+
+                searchterm_was = req.params.get("searchterm_was", "")
+                if searchterm_was:
+                    req.params['action'] = 'search'
+                    req.params['searchterm'] = searchterm_was
+                    req.params['use_macro'] = 'view'
+                    req.params['execute_search'] = searchterm_was
+
                 break
+
             elif key.startswith("tointern_"):
                 moveUserToIntern(key[9:-2])
                 break
-                
+
             elif key.startswith("reset_"):
                 # reset password
-                if req.params["change_passwd"]!="":
+                if req.params["change_passwd"] != "":
                     getUser(key[6:-2]).resetPassword(req.params["change_passwd"])
                 else:
                     getUser(key[6:-2]).resetPassword(config.settings["user.passwd"])
                 break
 
         if "form_op" in req.params.keys():
-            _option =""
+            _option = ""
             for key in req.params.keys():
                 if key.startswith("option_"):
                     _option += key[7]
-                        
-            if req.params.get("form_op")=="save_new":
+
+            if req.params.get("form_op") == "save_new":
                 # save user values
                 if req.params.get("username","")=="" or req.params.get("usergroups", "")=="" or req.params.get("email","")=="":
                     return editUser_mask(req, "", 1) # no username or group selected
@@ -142,7 +189,8 @@ def validate(req, op):
                     return editUser_mask(req, req.params.get("id"), 1) # no username, email or group selected
                 else:
                     update_user(req.params.get("id", 0), req.params.get("username",""),req.params.get("email",""), req.params.get("usergroups","").replace(";", ","), lastname=req.params.get("lastname"), firstname=req.params.get("firstname"), telephone=req.params.get("telephone"), comment=req.params.get("comment"), option=_option, organisation=req.params.get("organisation",""), identificator=req.params.get("identificator",""), type=req.params.get("usertype", "intern"))
-            users_cache = []
+
+            flush_users_cache()
         return view(req)
     except:
         print "Warning: couldn't load module for type",type
@@ -150,27 +198,26 @@ def validate(req, op):
         traceback.print_tb(sys.exc_info()[2])
 
 
-#
-# show all users
-#
 def view(req):
+    """show all users"""
     global useroption, users_cache
 
     users = []
     order = getSortCol(req)
     actfilter = getFilter(req)
     showdetails = 0
+    searchterm_was = ""
     macro = "view"
 
     usertype = req.params.get("usertype", "")
 
     if "action" in req.params:
         macro = "details"
-    
+
         if req.params.get("action")=="details": # load all users of given type
-        
+
             if 1:  #len(users_cache)<1: # load users in cache
-                # always load users anew: cache-update for dynamic users seems 
+                # always load users anew: cache-update for dynamic users seems
                 # uneconomic: loading users seems to run fast
                 users = list(loadUsersFromDB())
                 for _usertype in list(getExternalUsers()):
@@ -178,8 +225,8 @@ def view(req):
                 users_cache = users
             else:  # use users from cache
                 users = users_cache
-                
-                
+
+
             if req.params.get("usertype")=="intern":
                 users = filter(lambda x: x.getUserType()=='users', users)
             elif req.params.get("usertype")=="all":
@@ -187,11 +234,16 @@ def view(req):
             else:
                 users = filter(lambda x: x.getUserType()==req.params.get("usertype"), users)
 
-            
         elif req.params.get("action")=="search": # load all users with matching search
             req.params["page"] = "0"
-            users = searchUser(req.params.get('searchterm'))
-    
+            searchterm = req.params.get('searchterm')
+            users = searchUser(searchterm)
+            if searchterm:
+                searchterm_was = searchterm
+                if 'use_macro' in req.params:
+                    if "searchterm_was" in req.params and searchterm == req.params.get("searchterm_was"):
+                        macro = req.params.get('use_macro')
+
     elif "actpage" in req.params or "actfilter" in req.params or "filterbutton" in req.params:
         users = users_cache
         showdetails = 1
@@ -219,7 +271,7 @@ def view(req):
                 users = filter(lambda x: x.getName().lower().startswith(actfilter), users)
             else:
                 users = filter(lambda x: x.get("lastname").lower().startswith(actfilter), users)
-            
+
     # sorting
     if order != "":
         if int(order[0:1])==0:
@@ -227,15 +279,15 @@ def view(req):
         elif int(order[0:1])==1:
             users.sort(lambda x, y: cmp(x.getLastName().lower(),y.getLastName().lower()))
         elif int(order[0:1])==2:
-            users.sort(lambda x, y: cmp(x.getFirstName().lower(),y.getFirstName().lower()))        
+            users.sort(lambda x, y: cmp(x.getFirstName().lower(),y.getFirstName().lower()))
         elif int(order[0:1])==3:
             users.sort(lambda x, y: cmp(x.getEmail().lower(),y.getEmail().lower()))
         elif int(order[0:1])==4:
-            users.sort(lambda x, y: cmp(x.getOrganisation(),y.getOrganisation()))    
+            users.sort(lambda x, y: cmp(x.getOrganisation(),y.getOrganisation()))
         elif int(order[0:1])==5:
             users.sort(lambda x, y: cmp(x.getGroups(),y.getGroups()))
         elif int(order[0:1])==6:
-            users.sort(lambda x, y: cmp(x.stdPassword(),y.stdPassword()))            
+            users.sort(lambda x, y: cmp(x.stdPassword(),y.stdPassword()))
         if int(order[1:])==1:
             users.reverse()
     else:
@@ -248,7 +300,7 @@ def view(req):
             pass
         else:
             users = filter(lambda x: x.getUserType()==req.params.get("usertype"), users)
-        return users    
+        return users
 
     if usertype:
         users = getUsers(req, users)
@@ -257,7 +309,7 @@ def view(req):
     v["filterattrs"] = [("username","admin_user_filter_username"),("lastname","admin_user_filter_lastname")]
     v["filterarg"] = req.params.get("filtertype", "username")
     v["sortcol"] = pages.OrderColHeader([ t(lang(req),"admin_user_col_"+str(i)) for i in range(1,9)])
-    
+
     v["options"] = list(useroption)
     v["users"] = users
     v["pages"] = pages
@@ -269,6 +321,10 @@ def view(req):
     v["t"] = t
     v["now"] = datetime.datetime.now
     v["usertype"] = usertype
+    v["id_func"] = id  # make sure, this is the python built-in
+    v["searchterm_was"] = searchterm_was
+    v["execute_search"] = req.params.get("execute_search", "")
+
 
     return req.getTAL("web/admin/modules/user.html", v, macro=macro)
 
@@ -280,12 +336,12 @@ def editUser_mask(req, id, err=0):
     ugroups = []
     usertype = req.params.get("usertype", "intern")
     newuser = 0
-    
+
     if err==0 and id=="": # new user
         user = tree.Node("", type="user")
         user.setOption("c")
         newuser = 1
-        
+
     elif err==0 and id!="": #edit user
         if usertype=="intern":
             user = getUser(id)
@@ -300,7 +356,7 @@ def editUser_mask(req, id, err=0):
 
         for usergroup in req.params.get("usergroups","").split(";"):
             ugroups += [usergroup]
-        
+
         user = tree.Node("", type="user")
         user.setName(req.params.get("username",""))
         user.setEmail(req.params.get("email",""))
@@ -325,7 +381,7 @@ def editUser_mask(req, id, err=0):
     v["usertypes"] = getExternalAuthentificators()
     return req.getTAL("web/admin/modules/user.html", v, macro="modify")
 
-    
+
 def addACL(username, firstname, lastname, oldusername=None):
     userrule = "( user %s )" % username
     userruledesc = username
@@ -333,7 +389,7 @@ def addACL(username, firstname, lastname, oldusername=None):
     try:
         if (not (lastname=="" or firstname=="")):
             userruledesc = "%s, %s" % (lastname, firstname)
-          
+
         if (oldusername==None):
             oldusername = username
 
@@ -342,14 +398,14 @@ def addACL(username, firstname, lastname, oldusername=None):
         else:
             acl.addRule(AccessRule(username, userrule, userruledesc))
     except:
-        print formatException()    
-    
-    
+        print formatException()
+
+
 def sendmailUser_mask(req, id, err=0):
 
     v = getAdminStdVars(req)
     v["path"] = req.path[1:]
-    
+
     if id in["execute", "execu"]:
 
         userid = req.params.get("userid")
@@ -404,4 +460,3 @@ def sendmailUser_mask(req, id, err=0):
     v["email"] = user.getEmail()
     v["userid"] = user.getName()
     return req.getTAL("web/admin/modules/user.html", v, macro="sendmail")
-

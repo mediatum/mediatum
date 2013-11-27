@@ -103,6 +103,7 @@ TYPES =  [
     'legal_case',
     'manuscript',
     'map',
+    'misc',
     'motion_picture',
     'musical_score',
     'pamphlet',

@@ -84,7 +84,7 @@ def searchUser(value):
         users = users_cache
 
     for user in users:
-        user_data = user.getName().lower() + ("").join([i[1].lower().strip() for i in user.items()])
+        user_data = user.getName().lower() + ("").join([str(i[1]).lower().strip() for i in user.items()])
 
         n_found = 0
         for v in value:  # test each value

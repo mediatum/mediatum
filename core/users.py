@@ -245,11 +245,19 @@ def getUser(id):
 
 def doExternalAuthentification(name, pwd, req=None):
     global authenticators
+    dynamic_authenticators = getDynamicUserAuthenticators()
     for priority_key in list(reversed(sorted(authenticators_priority_dict.keys()))):
         for a in authenticators_priority_dict[priority_key]:
             print "trying to authenticate %r over external authenticator %r" % (name, a)
-            if authenticators[a].authenticate_login(name, pwd, req=req):
-                return authenticators[a].getUser(name)
+            res = authenticators[a].authenticate_login(name, pwd, req=req)
+            if res:
+                if a in dynamic_authenticators:
+                    # dynamic authenticators return the just logged in
+                    # user object if the authentication was successful
+                    # zero otherwise
+                    return res
+                else:        
+                    return authenticators[a].getUser(name)
     return None
 
 

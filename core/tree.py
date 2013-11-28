@@ -1104,7 +1104,7 @@ class Node:
     def getActiveVersion(self):
         node = self
         _node = node
-        while _node.next_nid and _node.next_nid!='0':
+        while _node.next_nid and _node.next_nid!='0' and _node.next_nid!=_node.id:
             _node = getNode(_node.next_nid)
             if _node.get("deleted")!="true":
                 node = _node

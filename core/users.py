@@ -523,6 +523,7 @@ def getHomeDir(user):
     userdir.setAccess("read", "{user " + username + "}")
     userdir.setAccess("write", "{user " + username + "}")
     userdir.setAccess("data", "{user " + username + "}")
+    log.debug("created new home directory %r (%r) for user %r" % (userdir.name, userdir.id, username))
 
     # re-sort home dirs alphabetically
     i = 0

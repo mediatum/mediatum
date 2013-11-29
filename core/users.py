@@ -30,6 +30,8 @@ import logging
 from utils.utils import Option
 from core.translation import getDefaultLanguage, translate
 
+log = logging.getLogger("usertracing")
+
 #OPTION_ENHANCED_READRIGHTS = Option("user_option_2", "editreadrights", "r", "img/changereadrights.png", "checkbox")
 #OPTION_MAX_IMAGESIZE = Option("user_option_3", "maximagesize", "0", "img/maximagesize.png", "text")
 
@@ -154,6 +156,24 @@ def getDynamicUserAuthenticators():
     return [a for a in authenticators if hasattr(authenticators[a], "isDYNUserAuthenticator") and authenticators[a].isDYNUserAuthenticator]
 
 
+def getDynamicUsers(atype=""):
+    """
+    get list of currently logged in dynamic users of given type (or all registered types)
+    """
+    if atype:
+        try:
+            res = authenticators[atype].LOGGED_IN_DYNUSERS.values()
+        except:
+            log.error("could not retrieve dynamic users of type %r, returning empty list" % atype)
+            log.error("%r - %r" % (sys.exc_info()[0], sys.exc_info()[1]))
+            res = []
+    else:
+        res = []
+        for a in getDynamicUserAuthenticators():
+            res = res + authenticators[a].LOGGED_IN_DYNUSERS.values()
+    return res
+
+
 def getExternalUsers(atype=""):
 
     dyn_auths = getDynamicUserAuthenticators()
@@ -196,6 +216,7 @@ def getExternalUser(name, type="intern"):
             elif ('%s@'%(name)) in n.get('identificator') or name in n.get('identificator'):
                 return n
 
+
 def getUser(id):
     """ returns user object from db """
     users = tree.getRoot("users")
@@ -224,11 +245,19 @@ def getUser(id):
 
 def doExternalAuthentification(name, pwd, req=None):
     global authenticators
+    dynamic_authenticators = getDynamicUserAuthenticators()
     for priority_key in list(reversed(sorted(authenticators_priority_dict.keys()))):
         for a in authenticators_priority_dict[priority_key]:
             print "trying to authenticate %r over external authenticator %r" % (name, a)
-            if authenticators[a].authenticate_login(name, pwd, req=req):
-                return authenticators[a].getUser(name)
+            res = authenticators[a].authenticate_login(name, pwd, req=req)
+            if res:
+                if a in dynamic_authenticators:
+                    # dynamic authenticators return the just logged in
+                    # user object if the authentication was successful
+                    # zero otherwise
+                    return res
+                else:        
+                    return authenticators[a].getUser(name)
     return None
 
 
@@ -398,27 +427,40 @@ def deleteUser(user, usertype="intern"):
         for u in a.LOGGED_IN_DYNUSERS.values():
             if user == u.id:
                 a.log_user_out(u.dirid, u.session_id)
+                # logging of this procedure in function log_user_out
                 return
         return
 
+    log.info("request to delete user %r (%r), usertype=%r, lastname=%r, firstname=%r" % (user.getName(), user.id, usertype, user.get('lastname'), user.get('firstname')))
     for group in tree.getRoot("usergroups").getChildren():
         for guser in group.getChildren():
             if guser.getName() == user.getName():
                 group.removeChild(guser)
+                log.info("removed user %r (%r) from group %r (%r)" % (guser.getName(), guser.id, group.getName(), group.id))
     if usertype != "intern":
         users = getExternalUserFolder(usertype)
     else:
         users = tree.getRoot("users")
 
-    users.removeChild(user)
+    if users.id in [p.id for p in user.getParents()]:
+        users.removeChild(user)
+        log.info("removed user %r (%r) from node %r (%r)" % (user.getName(), user.id, users.name, users.id))
+    else:
+        log.error("could not remove user %r (%r) from node %r (%r): no such parent for this node" % (user.getName(), user.id, users.name, users.id))
 
-    for c in tree.getRoot("home").getChildren():
+    home_root = tree.getRoot("home")
+    home_dir_found = False
+    for c in home_root.getChildren():
         try:
             if c and c.getAccess("read").find("{user " + user.getName() + "}") >= 0 and c.getAccess("write").find("{user " + user.getName() + "}") >= 0:
-                tree.getRoot("home").removeChild(c)
+                home_root.removeChild(c)
+                home_dir_found = True
+                log.info("removed home directory %r (%r) from %r (%r)" % (c.name, c.id, home_root.name, home_root.id))
                 break
         except:
             pass
+    if not home_dir_found:
+        log.info("no home directory found for user %r (%r)" % (user.getName(), user.id))
 
 
 def existUser(username):
@@ -469,6 +511,13 @@ def getHideMenusForUser(user):
     return hide.split(';')
 
 
+def buildHomeDirName(username):
+    """
+    make a string for naming the home directory in the browsing tree in the editor
+    """
+    return translate("user_directory", getDefaultLanguage()) + " (" + username + ")"
+
+
 def getHomeDir(user):
     username = user.getName()
     userdir = None
@@ -477,10 +526,11 @@ def getHomeDir(user):
             return c
 
     # create new userdir
-    userdir = tree.getRoot("home").addChild(tree.Node(name=translate("user_directory", getDefaultLanguage()) + " (" + username + ")", type="directory"))
+    userdir = tree.getRoot("home").addChild(tree.Node(name=buildHomeDirName(username), type="directory"))
     userdir.setAccess("read", "{user " + username + "}")
     userdir.setAccess("write", "{user " + username + "}")
     userdir.setAccess("data", "{user " + username + "}")
+    log.debug("created new home directory %r (%r) for user %r" % (userdir.name, userdir.id, username))
 
     # re-sort home dirs alphabetically
     i = 0

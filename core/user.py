@@ -178,6 +178,13 @@ class User(tree.Node):
         """user objects that are not persisted in the database are labeled 'dynamic'"""
         return False
 
+    def getUserID(self):
+        """
+        for compatibility with dynamic users that are not persisted as nodes:
+        those will return a unique identifier for their directory entry
+        nodes should return the node id
+        """
+        return self.id
   
 class ExternalUser:
 

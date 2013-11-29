@@ -57,6 +57,18 @@ class UserGroup(tree.Node):
         for user in self.getChildren().sort_by_orderpos():
             ret.append(user.getName())
         return ", ".join(ret)
+
+    def getDynamicUserNames(self, as_string=True):
+        """return list with names of dynamic users"""
+        ret = []
+        if self.get("allow_dynamic") == "1":
+            _s = self.get("dynamic_users")
+            _s = _s.replace(" ", ",").replace("\r", ",").replace("\l", ",").replace("\n", ",")
+            ret = ret + [_name.strip() for _name in _s.split(",") if _name.strip()]
+        if as_string:
+            return ", ".join(ret)
+        else:
+            return ret    
     
     def getSchemas(self):
         schemas = filter(lambda x: x.isActive(), loadTypesFromDB())

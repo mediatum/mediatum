@@ -101,7 +101,7 @@ def existsHomeDir(user):
 
 def renameHomeDir(user, newusername):
     if (existsHomeDir(user)):
-        getHomeDir(user).setName(translate("user_directory", getDefaultLanguage())+" ("+newusername+")")
+        getHomeDir(user).setName(users.buildHomeDirName(newusername))
 
 
 def showdir(req, node, publishwarn="auto", markunpublished=0):
@@ -111,6 +111,7 @@ def showdir(req, node, publishwarn="auto", markunpublished=0):
         homedirs = getAllSubDirs(homedir)
         publishwarn = node in homedirs
     return shownodelist(req,node.getChildren(), publishwarn=publishwarn, markunpublished=markunpublished, dir=node)
+
 
 def getAllSubDirs(node):
     dirs = []
@@ -179,6 +180,7 @@ def isUnFolded(unfoldedids, id):
         unfoldedids[id] = 0
         return 0
 
+
 def writenode(req, node, unfoldedids, f, indent, key, access, ret=""):
     if node.type not in ["directory", "collection", "root", "home", "collections","navigation"] and not node.type.startswith("directory"):
         return ret
@@ -213,6 +215,7 @@ def writenode(req, node, unfoldedids, f, indent, key, access, ret=""):
         for c in children:
             ret+= writenode(req, c, unfoldedids, f, indent+1, key, access)
     return ret
+
 
 def writetree(req, node, f, key="", openednodes=None, sessionkey="unfoldedids", omitroot=0):
     ret = ""

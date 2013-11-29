@@ -6506,6 +6506,7 @@ SESSION_PATTERN = re.compile("^;[a-z0-9]{6}-[a-z0-9]{6}-[a-z0-9]{6}$")
 SESSION_PATTERN2 = re.compile("[a-z0-9]{6}-[a-z0-9]{6}-[a-z0-9]{6}")
 
 use_cookies = 1
+SESSION_COOKIES_LIVE_SECS = 3600 * 2  # unused sessions may be valid for 2 hours 
 
 class AthanaHandler:
     def __init__(self):
@@ -6662,7 +6663,7 @@ class AthanaHandler:
         request._split_uri = None
 
         if use_cookies:
-            request.setCookie('PSESSION', sessionid, time.time()+3600*2)
+            request.setCookie('PSESSION', sessionid, time.time()+SESSION_COOKIES_LIVE_SECS)
 
         request.channel.current_request = None
 

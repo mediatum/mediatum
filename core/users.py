@@ -511,6 +511,13 @@ def getHideMenusForUser(user):
     return hide.split(';')
 
 
+def buildHomeDirName(username):
+    """
+    make a string for naming the home directory in the browsing tree in the editor
+    """
+    return translate("user_directory", getDefaultLanguage()) + " (" + username + ")"
+
+
 def getHomeDir(user):
     username = user.getName()
     userdir = None
@@ -519,7 +526,7 @@ def getHomeDir(user):
             return c
 
     # create new userdir
-    userdir = tree.getRoot("home").addChild(tree.Node(name=translate("user_directory", getDefaultLanguage()) + " (" + username + ")", type="directory"))
+    userdir = tree.getRoot("home").addChild(tree.Node(name=buildHomeDirName(username), type="directory"))
     userdir.setAccess("read", "{user " + username + "}")
     userdir.setAccess("write", "{user " + username + "}")
     userdir.setAccess("data", "{user " + username + "}")

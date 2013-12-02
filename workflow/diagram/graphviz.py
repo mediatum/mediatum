@@ -35,12 +35,12 @@ FILE_ENDINGS = {
 
 def true_edge(n_src, n_dest, **kwargs):
     """Returns an edge with default settings for a 'true' edge"""
-    return Edge(n_src, n_dest, color="blue", **kwargs)
+    return Edge(n_src, n_dest, color="darkgreen", **kwargs) # blue
 
 
 def false_edge(n_src, n_dest, **kwargs):
     """Returns an edge with default settings for a 'false' edge"""
-    return Edge(n_src, n_dest, color="darkorange", **kwargs)
+    return Edge(n_src, n_dest, color="red", **kwargs) # darkorange
 
 
 
@@ -124,7 +124,7 @@ class GraphvizWorkflowDiagram(object):
             if true_next_id:
                 true_next = workflow.getStep(true_next_id)
                 true_dot_next = add_node_rek(true_next)
-                true_label = node.getTrueLabel() or "t"
+                true_label = node.getTrueLabel() or " "
                 g.add_edge(true_edge(dot_node, true_dot_next, label=true_label))
                 logg.debug("created True edge: %s -> %s", name, true_next_id)
             try:
@@ -134,7 +134,7 @@ class GraphvizWorkflowDiagram(object):
             if false_next_id:
                 false_next = workflow.getStep(false_next_id)
                 false_dot_next = add_node_rek(false_next)
-                false_label = node.getFalseLabel() or "f"
+                false_label = node.getFalseLabel() or " "
                 g.add_edge(false_edge(dot_node, false_dot_next, label=false_label))
                 logg.debug("created False edge: %s -> %s", name, false_next_id)
 

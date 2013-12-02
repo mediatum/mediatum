@@ -26,12 +26,18 @@ try:
     import Levenshtein
 except:
     pass
-from workflow import WorkflowStep,getNodeWorkflow,getNodeWorkflowStep
-from core.translation import t,lang
-from schema.schema import getMetaType,getFieldsForMeta,VIEW_HIDE_EMPTY
+from workflow import WorkflowStep, getNodeWorkflow, getNodeWorkflowStep, registerStep
+from core.translation import t, lang
+from schema.schema import getMetaType, getFieldsForMeta, VIEW_HIDE_EMPTY
 
 RATIO_THRESHOLD = 0.85
 DEBUG = 0
+
+
+def register():
+    tree.registerNodeClass("workflowstep-checkdoublet", WorkflowStep_CheckDoublet)
+    registerStep("workflowstep-checkdoublet")
+    
 
 def getNodeAttributeName(field):
     metafields = [x for x in field.getChildren() if x.type == 'metafield']
@@ -67,9 +73,7 @@ def getLabelForAttributename(mdt_name, attr_name, maskname_list):
 
     try:
         mdt = tree.getRoot('metadatatypes').getChild(mdt_name)
-
         field = [x for x in getFieldsForMeta(mdt_name) if x.name==attr_name][0]
-        #field = fields[0]
 
         masks = []
         for maskname in maskname_list:
@@ -131,7 +135,7 @@ class WorkflowStep_CheckDoublet(WorkflowStep):
                             if n.id in wf_step_children_ids:
                                 if checked_to_remove:
                                     msg_tuple = (nid, chosen_id, wf_step.name, wf_step.id, current_workflow.name, current_workflow.id)
-                                    msg = "checkdoublet: going to remove node %s (doublette of node %s) from workflowstep '%s' (%s) of workflow '%s' (%s)" % msg_tuple                                
+                                    msg = "checkdoublet: going to remove node %s (doublette of node %s) from workflowstep '%s' (%s) of workflow '%s' (%s)" % msg_tuple
                                     logging.getLogger('workflows').info(msg)
                                     wf_step.removeChild(n)
                     except tree.NoSuchNodeError:

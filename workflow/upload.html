@@ -1,7 +1,5 @@
 <tal:block metal:define-macro="workflow_upload">
-    <div style="width:800px;text-align: left;margin-top:20px;margin-bottom:20px">
-        <tal:block tal:replace="raw prefix"/>
-    </div>
+    <div tal:condition="python:pretext!=''" tal:content="raw pretext" class="pretext">TEXT</div>
 
     <p tal:condition="python:len(error)>0" tal:content="structure error" class="error"/>
 
@@ -20,9 +18,8 @@
             <input i18n:attributes="value workflow_upload_button" type="submit" name="submit"/>
         </div>
         
-        <div style="width:800px;text-align: left;margin-top:20px;margin-bottom:20px">
-            <tal:block tal:replace="raw suffix"/>
-        </div>
+        
+        <div tal:condition="python:posttext!=''" tal:content="raw posttext" class="posttext">TEXT</div>
 
         <table>
             <tal:block tal:replace="raw python:buttons"/>

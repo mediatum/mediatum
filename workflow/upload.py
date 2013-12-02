@@ -19,12 +19,16 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.tree as tree
-from workflow import WorkflowStep
+from workflow import WorkflowStep, registerStep
 import utils.fileutils as fileutils
 from utils.utils import OperationException
 from showdata import mkfilelist, mkfilelistshort
 from core.translation import t,lang
 import os
+
+def register():
+    tree.registerNodeClass("workflowstep-upload", WorkflowStep_Upload)
+    registerStep("workflowstep-upload")
 
 class WorkflowStep_Upload(WorkflowStep):
 
@@ -74,15 +78,15 @@ class WorkflowStep_Upload(WorkflowStep):
         if "gofalse" in req.params:
             if hasattr(node,"event_files_changed"):
                 node.event_files_changed()
-            if len(node.getFiles())>0:
-                return self.forwardAndShow(node, False, req)
-            else:
-                error = t(req, "no_file_transferred") 
+            #if len(node.getFiles())>0:
+            return self.forwardAndShow(node, False, req)
+            #else:
+            #    error = t(req, "no_file_transferred") 
 
         filelist = mkfilelist(node, 1, request=req)
         filelistshort = mkfilelistshort(node, 1, request=req)
         
-        return req.getTAL("workflow/upload.html", {"obj": node.id, "id": self.id,"prefix": self.get("prefix"), "suffix": self.get("suffix"), "limit": self.get("limit"), "filelist": filelist, "filelistshort":filelistshort, "node": node, "buttons": self.tableRowButtons(node),"singlefile":self.get('singleobj'), "error":error}, macro="workflow_upload")
+        return req.getTAL("workflow/upload.html", {"obj": node.id, "id": self.id,"prefix": self.get("prefix"), "suffix": self.get("suffix"), "limit": self.get("limit"), "filelist": filelist, "filelistshort":filelistshort, "node": node, "buttons": self.tableRowButtons(node),"singlefile":self.get('singleobj'), "error":error, "pretext":self.getPreText(lang(req)), "posttext":self.getPostText(lang(req))}, macro="workflow_upload")
 
     def metaFields(self, lang=None):
         ret = list()

@@ -21,14 +21,21 @@
 
 import os.path
 import core.tree as tree
-from workflow import WorkflowStep
+from workflow import WorkflowStep, registerStep
 import core.athana as athana
-from core.translation import t,lang
+from core.translation import t, lang, addLabels
 from utils.utils import formatException
 import core.config as config
 import logging
 import utils.mail as mail
 log = logging.getLogger('backend')
+
+
+def register():
+    tree.registerNodeClass("workflowstep-send_email", WorkflowStep_SendEmail)
+    registerStep("workflowstep-send_email")
+    addLabels(WorkflowStep_SendEmail.getLabels())
+    
 
 class MailError(Exception):
     def __init__(self, value):
@@ -36,10 +43,13 @@ class MailError(Exception):
     def __str__(self):
         return repr(self.value)
 
+
 def getTALtext(text, context):
-    text = athana.getTALstr('<body xmlns:tal="http://xml.zope.org/namespaces/tal">'+text+'</body>', context)
-    text = text.replace("<body>","").replace("</body>","").replace("<body/>","")
-    return text.replace("\n","").strip()
+    #text = athana.getTALstr('<body xmlns:tal="http://xml.zope.org/namespaces/tal">%s</body>' %(text), context)
+    #text = text.replace("<body>","").replace("</body>","").replace("<body/>","")
+    #return text.replace("\n","").strip()
+    return athana.getTALstr(text, context).replace('\n', '').strip()
+
 
 class WorkflowStep_SendEmail(WorkflowStep):
     def sendOut(self, node):
@@ -66,19 +76,17 @@ class WorkflowStep_SendEmail(WorkflowStep):
                     raise MailError("No receiver address defined")
                 if not xfrom:
                     raise MailError("No from address defined")
-                attachments_paths_and_filenames = []    
+                attachments_paths_and_filenames = []
                 if attach_pdf_form:
-                    for f in node.getFiles():
-                        print f, f.getName(), f.getType(), f.retrieveFile()
-                    pdf_form_files = [f for f in node.getFiles() if f.getType() == 'pdf_form']
+                    pdf_form_files = [f for f in node.getFiles() if f.getType()=='pdf_form']
                     for i, f in enumerate(pdf_form_files):
                         if not os.path.isfile(f.retrieveFile()):
                             raise MailError("Attachment file not found: '%s'" % f.retrieveFile())
                         else:
-                            attachments_paths_and_filenames.append((f.retrieveFile(), 'contract_' + str(i) + '_' + str(node.id) + '.pdf'))
-                    pass        
-                    #attachments_paths_and_filenames = [(f.retrieveFile(), 'contract_' + str(node.id) + '.pdf') for f in pdf_form_files]
-                print '----> attachments_paths_and_filenames:', attachments_paths_and_filenames    
+                            #attachments_paths_and_filenames.append((f.retrieveFile(), 'contract_%s_%s.pdf' %(i, node.id)))
+                            attachments_paths_and_filenames.append((f.retrieveFile(), '%s' %(f.retrieveFile().split('_')[-1])))
+                    pass
+
                 mail.sendmail(xfrom, to, node.get("mailtmp.subject"), node.get("mailtmp.text"), attachments_paths_and_filenames=attachments_paths_and_filenames)
             except:
                 node.set("mailtmp.error", formatException())
@@ -152,9 +160,9 @@ class WorkflowStep_SendEmail(WorkflowStep):
         else:
             xfrom = node.get("mailtmp.from")
             to = node.get("mailtmp.to")
-            text = node.get("mailtmp.text")
-            subject = node.get("mailtmp.subject")
-            return req.getTAL("workflow/email.html", {"page":"node?id="+self.id+"&obj="+node.id, "from":xfrom, "to":to, "text":text, "subject":subject, "node":node, "sendcondition":self.get("sendcondition"), "wfnode":self}, macro="sendmail")
+            text = athana.getTALstr(node.get("mailtmp.text"),{}, language=node.get("system.wflanguage"))
+            subject = athana.getTALstr(node.get("mailtmp.subject"),{}, language=node.get("system.wflanguage"))
+            return req.getTAL("workflow/email.html", {"page":"node?id="+self.id+"&obj="+node.id, "from":xfrom, "to":to, "text":text, "subject":subject, "node":node, "sendcondition":self.get("sendcondition"), "wfnode":self, "pretext":self.getPreText(lang(req)), "posttext":self.getPostText(lang(req))}, macro="sendmail")
 
     def metaFields(self, lang=None):
         ret = list()
@@ -170,7 +178,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
         
         field = tree.Node("subject", "metafield")
         field.set("label", t(lang, "admin_wfstep_email_subject"))
-        field.set("type", "text")
+        field.set("type", "memo")
         ret.append(field)
 
         field = tree.Node("text", "metafield")
@@ -192,19 +200,34 @@ class WorkflowStep_SendEmail(WorkflowStep):
         field = tree.Node("attach_pdf_form", "metafield")
         field.set("label", t(lang, "workflowstep-email_label_attach_pdf_form"))
         field.set("type", "check")
-        ret.append(field)              
-        
+        ret.append(field)
         return ret
         
-    def getLabels(self):
+        
+    @staticmethod
+    def getLabels():
         return { "de":
             [
                 ("workflowstep-email_label_attach_pdf_form", "PDF-Form als Anhang senden"),
+                ("workflowstep-email_label_header", "Email versenden"),
+                ("workflowstep-email_label_sender", "Von"),
+                ("workflowstep-email_label_recipient", "An"),
+                ("workflowstep-email_label_subject", "Betreff"),
+                ("workflowstep-email_label_text", "Nachricht"),
+                ("workflowstep-email_label_send", "Absenden"),
+                ("workflowstep-email_label_reset", "Zur\xc3\xbccksetzen"),
                 
             ],
            "en":
             [
                 ("workflowstep-email_label_attach_pdf_form", "Send PDF from as attachment"),
+                ("workflowstep-email_label_header", "Send Email"),
+                ("workflowstep-email_label_sender", "From"),
+                ("workflowstep-email_label_recipient", "To"),
+                ("workflowstep-email_label_subject", "Subject"),
+                ("workflowstep-email_label_text", "Message"),
+                ("workflowstep-email_label_send", "Send"),
+                ("workflowstep-email_label_reset", "Reset"),
             ]
-            }        
+        }
 

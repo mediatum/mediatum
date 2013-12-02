@@ -30,8 +30,8 @@ import core.users as users
 import core.athana as athana
 import core.config as config
 
-from workflow import WorkflowStep, getNodeWorkflow, getNodeWorkflowStep
-from core.translation import t, lang
+from workflow import WorkflowStep, getNodeWorkflow, getNodeWorkflowStep, registerStep
+from core.translation import t, lang, addLabels
 from core.acl import AccessData
 from utils.utils import getMimeType
 from utils.fileutils import importFileToRealname
@@ -89,6 +89,12 @@ def copyDictValues(dsource, dtarget, keylist, skip_empty=True):
 KEEP_PARAMS = ['input_current_page']
 startpageno = 0  # page of the pdf that will be shown on page load
 ADD_NBSP = 1
+
+
+def register():
+    tree.registerNodeClass("workflowstep-addpic2pdf", WorkflowStep_AddPic2Pdf)
+    registerStep("workflowstep-addpic2pdf")
+    addLabels(WorkflowStep_AddPic2Pdf.getLabels())
 
 
 class WorkflowStep_AddPic2Pdf(WorkflowStep):
@@ -327,14 +333,10 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
         except Exception, e:
             msg = "workflow step addpic2pdf(%s): Error: %s" % (current_workflow_step.id, str(e))
             logging.getLogger("backend").error(msg)        
-            print "Error:", msg
-            pdf_dimensions = {}
-            pdf_dimensions['d_pages'] = 0
-            pdf_dimensions['d_pageno2size'] = (0,0)
-            pdf_dimensions['d_pageno2rotate'] = 0
+            pdf_dimensions = {'d_pages':0, 'd_pageno2size':(0,0), 'd_pageno2rotate':0}
             pdf_pagecount = 0
             FATAL_ERROR = True
-            FATAL_ERROR_STR = FATAL_ERROR_STR + " - " + str(e)
+            FATAL_ERROR_STR += " - %s" %(str(e))
 
         #wfs_files = [f for f in current_workflow_step.getFiles() if os.path.isfile(f.retrieveFile())]
         
@@ -353,14 +355,12 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                 _size = list(get_pic_size(f_path))
                 _dpi = get_pic_dpi(f_path)
             except Exception, e:
-                msg = "workflow step addpic2pdf(%s): Error: %s" % (current_workflow_step.id, str(e))
-                logging.getLogger("backend").error(msg)        
-                print "Error:", msg            
+                logging.getLogger("backend").error("workflow step addpic2pdf(%s): Error: %s" % (current_workflow_step.id, str(e)))
                 FATAL_ERROR = True
-                FATAL_ERROR_STR = FATAL_ERROR_STR + (" - ERROR loading logo '%s'" % str(f_path)) + str(e)
+                FATAL_ERROR_STR += (" - ERROR loading logo '%s'" % str(f_path)) + str(e)
                 continue
             
-            logo_filename = f.getName()                                 
+            logo_filename = f.getName()
             
             logo_url = ""
             for key in url_mapping:
@@ -369,16 +369,14 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                     break
             
             logo_info[logo_filename] = {'size': _size, 'dpi': _dpi, 'url': logo_url}
-            if _dpi == 'no-info':
+            if _dpi=='no-info':
                 _dpi = 72.0
             logo_info_list.append({'size': _size, 'dpi': _dpi, 'url': logo_url})
             
         if len(logo_info) == 0:
-            msg = "workflow step addpic2pdf(%s): Error: no logo images found" % (current_workflow_step.id)
-            logging.getLogger("backend").error(msg)        
-            print "Error:", msg            
+            logging.getLogger("backend").error("workflow step addpic2pdf(%s): Error: no logo images found" % (current_workflow_step.id))
             FATAL_ERROR = True
-            FATAL_ERROR_STR = FATAL_ERROR_STR + " - " + "Error: no logo images found" 
+            FATAL_ERROR_STR += " - Error: no logo images found" 
 
         keep_params = copyDictValues(req.params, {}, KEEP_PARAMS)
 
@@ -407,25 +405,21 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                    "buttons": self.tableRowButtons(node)}
                    
         if FATAL_ERROR:
-            context["error"] = context["error"] + " - " + FATAL_ERROR_STR
+            context["error"] += " - %s" %(FATAL_ERROR_STR)
 
         return req.getTAL("workflow/addpic2pdf.html", context, macro="workflow_addpic2pdf")
 
     def metaFields(self, lang=None):
 
         if not PYPDF_MODULE_PRESENT:
-
-            ret = list()
-
             field = tree.Node("infotext", "metafield")
             field.set("label", t(lang, "admin_wfstep_addpic2pdf_hint"))
             field.set("type", "label")
             field.set("value", t(lang, "admin_wfstep_addpic2pdf_no_pypdf"))
-            ret.append(field)
-
-            return ret
-
-        ret = list()
+            return [field]
+        
+        
+        ret = []
 
         field = tree.Node("prefix", "metafield")
         field.set("label", t(lang, "admin_wfstep_text_before_data"))
@@ -441,12 +435,11 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
         field.set("label", t(lang, "admin_wfstep_addpic2pdf_label_url_mapping"))
         field.set("type", "memo")
         ret.append(field)
-        
-        
-
         return ret
 
-    def getLabels(self):
+
+    @staticmethod
+    def getLabels():
         return {"de":
             [
                 ("workflowstep-addpic2pdf", 'AddPictureToPDF'),

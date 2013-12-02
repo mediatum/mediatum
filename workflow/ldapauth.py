@@ -24,8 +24,8 @@ import logging
 import core.tree as tree
 import core.users as users
 import core.config as config
-from workflow import WorkflowStep,getNodeWorkflow,getNodeWorkflowStep
-from core.translation import t,lang
+from workflow import WorkflowStep, getNodeWorkflow, getNodeWorkflowStep, registerStep
+from core.translation import t, lang, addLabels
 from utils.date import format_date
 
 LDAP_AVAILABLE = True
@@ -41,6 +41,12 @@ if LDAP_MODULE_PRESENT and config.get("ldap.activate", "").lower()=="true":
     from core.userldap import LDAPUser
 else:
     LDAP_AVAILABLE = False
+
+
+def register():
+    tree.registerNodeClass("workflowstep-ldapauth", WorkflowStep_LdapAuth)
+    registerStep("workflowstep-ldapauth")
+    addLabels(WorkflowStep_LdapAuth.getLabels())
 
 
 class WorkflowStep_LdapAuth(WorkflowStep):
@@ -127,7 +133,9 @@ class WorkflowStep_LdapAuth(WorkflowStep):
         ret.append(field)
         return ret
         
-    def getLabels(self):
+        
+    @staticmethod
+    def getLabels():
         return { "de":
             [
                 ("workflowstep-ldapauth", 'LdapAuth'),

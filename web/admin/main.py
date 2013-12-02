@@ -28,8 +28,10 @@ from version import mediatum_version
 from utils.utils import join_paths, Menu
 from web.admin.adminutils import findmodule, show_content, adminNavigation, getMenuItemID
 
-""" opens administration window with content """
+
 def show_node(req):
+    """ opens administration window with content """
+
     p = req.path[1:].split("/")
     style = req.params.get("style","")
     user = users.getUserFromRequest(req)
@@ -42,7 +44,7 @@ def show_node(req):
     v["navigation"] = adminNavigation()
     v["breadcrumbs"] = getMenuItemID(v["navigation"], req.path[1:])
     v["spc"] = list()
-    
+
     spc = list()
     v["spc"].append(Menu("sub_header_frontend", "/"))
     v["spc"].append(Menu("sub_header_edit", "/edit"))
@@ -50,7 +52,7 @@ def show_node(req):
         v["spc"].append(Menu("sub_header_workflow", "../publish"))
     v["spc"].append(Menu("sub_header_logout", "/logout"))
     v["hashelp"] = help.getHelpPath(['admin', 'modules', req.path.split('/')[1]])
-    
+
     if len(p)>0:
         if style == "":
             req.writeTAL("web/admin/frame.html", v, macro="frame")
@@ -58,12 +60,14 @@ def show_node(req):
             req.write(v["content"])
     return athana.HTTP_OK
 
-""" export definition: url contains /[type]/[id] """
+
 def export(req):
+    """ export definition: url contains /[type]/[id] """
+
     user = users.getUserFromRequest(req)
     if not user.isAdmin():
         return athana.HTTP_FORBIDDEN
-    
+
     path = req.path[1:].split("/")
     try:
         module = findmodule(path[1])
@@ -78,4 +82,3 @@ def export(req):
             os.unlink(tempfile) # unlinking files while still reading them only works on Unix/Linux
     except:
         print "module has no export method"
-

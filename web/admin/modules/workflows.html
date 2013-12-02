@@ -140,6 +140,14 @@
                 </td>
             </tr>
             <tr>
+                <td><tal:block i18n:translate="admin_wf_languages">TEXT</tal:block>:</td>
+                <td>
+                    <tal:block tal:repeat="language languages">
+                        <input type="checkbox" name="wf_language" tal:attributes="value language;checked python:{'True':'checked','False':None}[str(language in workflow.getLanguages())]"/> <tal:block tal:content="language" i18n:translate=""/><br/>
+                    </tal:block>
+                </td>
+            </tr>
+            <tr>
                 <td><tal:block i18n:translate="admin_wf_writerights">TEXT</tal:block>:</td>
                 <td>
                     <table border="0px" cellpadding="0px" cellspacing="0px">
@@ -369,12 +377,56 @@
                 </td>
             </tr>
             <tr>
+                <td><tal:block i18n:translate="admin_wfstep_sidebar">TEXT</tal:block>:</td>
+                <td>
+                    <textarea tal:condition="python:len(workflow.getLanguages())<2" tal:content="python:workflowstep.getSidebarText()" name="nsidebartext" style="width:400px"/>
+                    <tal:block tal:condition="python:len(workflow.getLanguages())>1">
+                        <div tal:repeat="language python:workflow.getLanguages()">
+                            <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
+                            <textarea tal:content="python:workflowstep.getSidebarText(language)" tal:attributes="name python:language+'.nsidebartext'" style="width:350px;margin-bottom:10px;"/><br/>
+                        </div>
+                    </tal:block>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_wfstep_pretext">TEXT</tal:block>:</td>
+                <td>
+                    <textarea tal:condition="python:len(workflow.getLanguages())<2" tal:content="python:workflowstep.getPreText()" name="npretext" style="width:400px"/>
+                    <tal:block tal:condition="python:len(workflow.getLanguages())>1">
+                        <div tal:repeat="language python:workflow.getLanguages()">
+                            <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
+                            <textarea tal:content="python:workflowstep.getPreText(language)" tal:attributes="name python:language+'.npretext'" style="width:350px;margin-bottom:10px;"/><br/>
+                        </div>
+                    </tal:block>
+                </td>
+            </tr>
+            <tr>
+                <td><tal:block i18n:translate="admin_wfstep_posttext">TEXT</tal:block>:</td>
+                <td>
+                    <textarea tal:condition="python:len(workflow.getLanguages())<2" tal:content="python:workflowstep.getPostText()" name="nposttext" style="width:400px"/>
+                    <tal:block tal:condition="python:len(workflow.getLanguages())>1">
+                        <div tal:repeat="language python:workflow.getLanguages()">
+                            <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
+                            <textarea tal:content="python:workflowstep.getPostText(language)" tal:attributes="name python:language+'.nposttext'" style="width:350px;margin-bottom:10px;"/><br/>
+                        </div>
+                    </tal:block>
+                </td>
+            </tr>
+            <tr>
                 <td><tal:block i18n:translate="admin_wfstep_comment">TEXT</tal:block>:</td>
                 <td><textarea tal:content="python:workflowstep.getComment()" name="ncomment" style="width:400px" rows="5"/></td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_truelabel">TEXT</tal:block>:</td>
-                <td><textarea tal:content="python:workflowstep.getTrueLabel()" name="ntruelabel" style="width:400px"/></td>
+                <td>
+                    <textarea tal:condition="python:len(workflow.getLanguages())<2" tal:content="python:workflowstep.getTrueLabel()" name="ntruelabel" style="width:400px"/>
+                    <tal:block tal:condition="python:len(workflow.getLanguages())>1">
+                        <div tal:repeat="language python:workflow.getLanguages()">
+                            <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
+                            <textarea tal:content="python:workflowstep.getTrueLabel(language)"  tal:attributes="name python:language+'.ntruelabel'" style="width:350px;margin-bottom:10px;"/><br/>
+                        </div>
+                    </tal:block>
+                </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_truenode">TEXT</tal:block>:</td>
@@ -390,7 +442,15 @@
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_falselabel">TEXT</tal:block>:</td>
-                <td><textarea tal:content="python:workflowstep.getFalseLabel()" name="nfalselabel" style="width:400px"/></td>
+                <td>
+                    <textarea tal:condition="python:len(workflow.getLanguages())<2" tal:content="python:workflowstep.getFalseLabel()" name="nfalselabel" style="width:400px"/>
+                    <tal:block tal:condition="python:len(workflow.getLanguages())>1">
+                        <div tal:repeat="language python:workflow.getLanguages()">
+                            <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
+                            <textarea tal:content="python:workflowstep.getFalseLabel(language)" tal:attributes="name python:language+'.nfalselabel'" style="width:350px;margin-bottom:10px;"/><br/>
+                        </div>
+                    </tal:block>
+                </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_wfstep_falsenode">TEXT</tal:block>:</td>

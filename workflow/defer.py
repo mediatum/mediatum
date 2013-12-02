@@ -22,8 +22,14 @@
 import core.tree as tree
 import utils.date as date
 import core.schedules as schedules
-from workflow import WorkflowStep
-from core.translation import t
+from workflow import WorkflowStep, registerStep
+from core.translation import t, addLabels
+
+def register():
+    tree.registerNodeClass("workflowstep-defer", WorkflowStep_Defer)
+    registerStep("workflowstep-defer")
+    addLabels(WorkflowStep_Defer.getLabels())
+
 
 class WorkflowStep_Defer(WorkflowStep):
     """
@@ -99,8 +105,8 @@ class WorkflowStep_Defer(WorkflowStep):
         
         return ret
     
-        
-    def getLabels(self):
+    @staticmethod
+    def getLabels():
         return { "de":
             [
                 ("workflowstep-defer", "Freischaltverz\xc3\xb6gerung"),

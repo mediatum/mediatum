@@ -240,3 +240,15 @@ msgstr "username or password empty"
 
 msgid "admin_wfstep_ldapauth_wrong_credentials"
 msgstr "wrong credentials: wrong password or username"
+
+msgid "admin_wfstep_sidebar"
+msgstr "Sidebar Content"
+
+msgid "admin_wfstep_pretext"
+msgstr "Header text"
+
+msgid "admin_wfstep_posttext"
+msgstr "Footer text"
+
+msgid "admin_wf_languages"
+msgstr "Languages"

@@ -1,17 +1,64 @@
-<tal:block metal:define-macro="workflow_start">
+<tal:block metal:define-macro="workflow_start" tal:define="multilang python:{'True':1, 'False':0}[str(len(languages)>1)]">
     <tal:block tal:content="raw js"/>
-    <tal:block tal:replace="raw starttext"/>
-    <form action="/mask" method="post">
-        <input type="hidden" name="id" tal:attributes="value python:id"/>
-        <input tal:condition="python:len(types)==1" tal:attributes="value python:types[0][1]" type="hidden" name="selected_schema"/>
+    <script tal:condition="python:redirect!=''" tal:content="raw python:'window.location.href=\''+redirect+'\''"/>
+    <div style="position:relative;overflow:hidden;">
+
+        <div tal:content="raw starttext">TEXT</div>
+
+        <div style="width:45%;float:left;">
+            <form action="/mask" method="post" style="text-align:center;">
+                <input type="hidden" name="id" tal:attributes="value python:id"/>
+                
+                <input tal:condition="python:len(types)==1" tal:attributes="value python:types[0][1]" type="hidden" name="selected_schema"/>
+
+                <span tal:condition="multilang" i18n:translate="workflow_start_type_m" style="font-weight:bold">TEXT</span>
+                <span tal:condition="not: multilang " i18n:translate="workflow_start_type" style="font-weight:bold">TEXT</span>
+                
+                <select tal:condition="python:len(types)>1" name="selected_schema">
+                    <option tal:repeat="schema types" tal:attributes="value python:schema[1]" tal:content="python:schema[0].getLongName()"/>
+                </select>
+                <br/>
+                <div style="font-weight:bold;margin-top:5px;" class="typename" tal:condition="python:len(types)==1" tal:content="python:types[0][0].getLongName()"/>
+                <br/>
+                <br/>
+                <div class="wf_start_languageselection" tal:condition="multilang">
+                    <h2 i18n:translate="workflow_start_chooselang">TEXT</h2>
+                    <br/>
+                        <tal:block tal:repeat="language languages">
+                            <input type="radio" name="workflow_language" tal:attributes="value language;checked python:{'True':'checked','False':None}[str(currentlang==language)]"/> <span i18n:translate="" tal:content="language"/><br/>
+                        </tal:block>
+                    <br/>
+                </div>
+                
+                <input tal:condition="python:len(languages)==1" type="hidden" name="workflow_language" tal:attributes="value python:languages[0]"/>
+                <br/>
+                <button type="submit" name="workflow_start" i18n:translate="workflow_start_create">TEXT</button>
+            </form>
+        </div>
         
-        <select tal:condition="python:len(types)>1" name="selected_schema">
-            <option tal:repeat="schema types" tal:attributes="value python:schema[1]" tal:content="python:schema[0].getLongName()"/>
-        </select>
-        
-        <p class="typename" tal:condition="python:len(types)==1" tal:content="python:types[0][0].getLongName()"/>
-        <br/><br/>
-        <input i18n:attributes="value workflow_start_submit" type="submit" name="Erstellen"/>
-    </form>
+        <div style="width:45%;float:left;padding-left:10px;border-left:1px solid silver;" tal:condition="python:allowcontinue=='1'">
+            <form action="/mask" method="post" style="text-align:center;">
+                <p tal:condition="python:message!=''" tal:content="message" i18n:translate="" class="error">TEXT</p>
+                <p style="font-weight:bold">
+                    <tal:block tal:condition="multilang" i18n:translate="workflow_start_continue_header_m">TEXT</tal:block>
+                    <tal:block tal:condition="not: multilang " i18n:translate="workflow_start_continue_header">TEXT</tal:block>
+                </p>
+                <br/>
+                <br/>
+                <p>
+                    <tal:block tal:condition="multilang" i18n:translate="workflow_start_identificator_m"/><tal:block tal:condition="not: multilang " i18n:translate="workflow_start_identificator"/>:<br/><input type="text" name="nodeid"/>
+                </p>
+                <p>
+                    <tal:block tal:condition="multilang" i18n:translate="workflow_start_key_m"/><tal:block tal:condition="not: multilang " i18n:translate="workflow_start_key"/>:<br/><input type="text" name="nodekey"/>
+                </p>
+                <br/>
+                <p>
+                    <button tal:condition="multilang" type="submit" name="workflow_start_auth" i18n:translate="workflow_start_continue_m">TEXT</button>
+                    <button tal:condition="not: multilang " type="submit" name="workflow_start_auth" i18n:translate="workflow_start_continue">TEXT</button>
+                </p>
+            </form>
+        </div>
+        <div style="clear:left"> </div>
+    </div>
     <p>&nbsp;</p>
 </tal:block>

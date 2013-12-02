@@ -49,7 +49,7 @@
 </div>
 
 <tal:block metal:define-macro="workflow_showdata">
-    <p tal:content="raw python:prefix"/>
+    <p tal:content="raw python:pretext"/>
     <table style="width:100%">
         <tr>
             <td tal:repeat="field fields" style="width:50%;padding-right:20px">
@@ -61,7 +61,7 @@
     <tal:block tal:replace="raw filelist"/>
     <tal:block tal:replace="raw filelistshort"/>
    
-    <p tal:content="raw python:suffix"/>
+    <p tal:content="raw python:posttext"/>
     
     <form action="/mask" method="post">
         <input tal:attributes="value key" type="hidden" name="key"/>

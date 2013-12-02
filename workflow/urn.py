@@ -21,13 +21,20 @@
 
 import re
 
-from workflow import WorkflowStep
+from workflow import WorkflowStep, registerStep
 import core.tree as tree
 import utils.urn as utilsurn
-from core.translation import t, lang
+from core.translation import t, lang, addLabels
 import core.config as config
 import utils.date as date
 
+
+def register():
+    tree.registerNodeClass("workflowstep-addurn", WorkflowStep_Urn)
+    registerStep("workflowstep-addurn")
+    addLabels(WorkflowStep_Urn.getLabels())
+    
+    
 class WorkflowStep_Urn(WorkflowStep):
        
     def show_workflow_node(self, node, req):
@@ -80,7 +87,9 @@ class WorkflowStep_Urn(WorkflowStep):
         ret.append(field)
         return ret
 
-    def getLabels(self):
+    
+    @staticmethod
+    def getLabels():
         return { "de":
             [
                 ("workflowstep-urn", "URN Knoten"),

@@ -1240,3 +1240,9 @@ msgstr "Versions"
 
 msgid "document_versions_existing_title"
 msgstr "Show other versions of current document"
+
+msgid "workflow_identificator"
+msgstr "Identificator"
+
+msgid "workflow_key"
+msgstr "Key"

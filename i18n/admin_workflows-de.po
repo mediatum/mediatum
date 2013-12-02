@@ -239,3 +239,15 @@ msgstr "Benutzername oder Passwort leer."
 
 msgid "admin_wfstep_ldapauth_wrong_credentials"
 msgstr "Authentifizierung fehlgeschlagen, falscher Benutzername oder Passwort."
+
+msgid "admin_wfstep_sidebar"
+msgstr "Sidebar-Inhalt"
+
+msgid "admin_wfstep_pretext"
+msgstr "Kopfzeile"
+
+msgid "admin_wfstep_posttext"
+msgstr "Fußzeile"
+
+msgid "admin_wf_languages"
+msgstr "Sprachunterstützung"

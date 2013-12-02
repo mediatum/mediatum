@@ -17,10 +17,17 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from workflow import WorkflowStep
+from workflow import WorkflowStep, registerStep
 import core.tree as tree
-from core.translation import t,lang
+from core.translation import t, lang, addLabels
 from schema.schema import getMetaType
+
+
+def register():
+    tree.registerNodeClass("workflowstep-edit", WorkflowStep_EditMetadata)
+    registerStep("workflowstep-edit")
+    addLabels(WorkflowStep_EditMetadata.getLabels())
+
 
 class WorkflowStep_EditMetadata(WorkflowStep):
     def show_workflow_node(self, node, req):
@@ -29,7 +36,12 @@ class WorkflowStep_EditMetadata(WorkflowStep):
         key = req.params.get("key", req.session.get("key",""))
 
         maskname = self.get("mask")
-        mask = getMetaType(node.type).getMask(maskname)
+        mask = None
+        if node.get('system.wflanguage')!='': # use correct language
+            mask = getMetaType(node.type).getMask("%s.%s" %(node.get('system.wflanguage'), maskname))
+
+        if not mask:
+            mask = getMetaType(node.type).getMask(maskname)
 
         if "metaDataEditor" in req.params:
             mask.updateNode([node], req)
@@ -38,16 +50,35 @@ class WorkflowStep_EditMetadata(WorkflowStep):
                 op = "gotrue" in req.params
                 return self.forwardAndShow(node, op, req)
             else:
-                error = '<p class="error">'+ t(lang(req),"workflow_error_msg")+'</p>'
+                error = '<p class="error">%s</p>' %(t(lang(req),"workflow_error_msg"))
                 req.params["errorlist"] = missing
-        
-        return req.getTAL("workflow/editmetadata.html", {"name":self.getName(), "error":error, "key":key, "mask":mask.getFormHTML([node],req), "buttons":self.tableRowButtons(node)}, macro="workflow_metadateneditor")
+                
+        if mask:
+            maskcontent = mask.getFormHTML([node],req)
+        else:
+            maskcontent = req.getTAL("workflow/editmetadata.html", {}, macro="maskerror")
+
+        return req.getTAL("workflow/editmetadata.html", {"name":self.getName(), "error":error, "key":key, "mask":maskcontent,"pretext":self.getPreText(lang(req)), "posttext":self.getPostText(lang(req)), "sidebartext":self.getSidebarText(lang(req)), "buttons":self.tableRowButtons(node)}, macro="workflow_metadateneditor")
+    
     
     def metaFields(self, lang=None):
-        ret = list()
         field = tree.Node("mask", "metafield")
         field.set("label", t(lang, "admin_wfstep_editor_mask"))
         field.set("type", "text")
-        ret.append(field)
-        return ret
+        return [field]
+        
+        
+    @staticmethod
+    def getLabels():
+        return { "de":
+            [
+                ("wf_nomaskfound", "Die angebene Maske wurde nicht gefunden."),
+            ],
+           "en":
+            [
+                ("wf_nomaskfound", "Configured Mask not found."),
+            ]
+        }
+
+     
     

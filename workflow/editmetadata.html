@@ -1,19 +1,27 @@
-<div metal:define-macro="workflow_metadateneditor" id="clean-container">
-    <form class="edit" action="/mask" method="post">
-        <h2 tal:content="name"/>
-        <span tal:replace="raw error"/>
-        <input tal:attributes="value key" type="hidden" name="key"/>
-        <input type="hidden" name="metaDataEditor" value="metaDataEditor"/>
-        <div style="position:relative">
-            <tal:block tal:replace="raw mask"/>
-            <table style="width:100%; position:relative" cellspacing="0" cellpadding="0">
-                <tr>
-                    <td style="text-align:left"><div class="label">&nbsp;</div><img src="/img/emtyDot1Pix.gif" style="width:16px"/>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info"/>)</td>
-                </tr>
-                <tr>
-                    <td tal:content="raw buttons"/>
-                </tr>
-            </table>
+<tal:block  metal:define-macro="workflow_metadateneditor"> 
+    <div class="sidebartext" tal:condition="python:sidebartext!=''" tal:content="raw sidebartext">TEXT</div>
+    
+    <form class="edit" action="/mask" method="post" style="position:relative!important;">
+        <div id="clean-container" style="overflow:hidden;position:relative;padding-right:10px;">
+            <span tal:replace="raw error"/>
+            <input tal:attributes="value key" type="hidden" name="key"/>
+            <input type="hidden" name="metaDataEditor" value="metaDataEditor"/>
+            <div style="position:relative">
+                <div tal:condition="python:pretext!=''" tal:content="raw pretext" class="pretext">TEXT</div>
+                
+                <div tal:content="raw mask">TEXT</div>
+                <div style="clear:left;"> </div>
+                
+                <div style="padding-bottom:20px;">
+                    <div class="label">&nbsp;</div><img src="/img/emtyDot1Pix.gif" style="width:16px"/>(<span class="required">*</span> <span i18n:translate="admin_mandatory_info"/>)
+                </div>
+            </div>
         </div>
+        <div tal:condition="python:posttext!=''" tal:content="raw posttext" class="posttext">TEXT</div>
+        <tal:block tal:replace="raw buttons"/>
     </form>
+</tal:block>
+
+<div metal:define-macro="maskerror">
+    <p class="error" i18n:translate="wf_nomaskfound">TEXT</p>
 </div>

@@ -17,7 +17,14 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from workflow import WorkflowStep
+from workflow import WorkflowStep, registerStep
+import core.tree as tree
+
+
+def register():
+    tree.registerNodeClass("workflowstep-publish", WorkflowStep_Publish)
+    registerStep("workflowstep-publish")
+
 
 class WorkflowStep_Publish(WorkflowStep):
     def runAction(self, node, op=""):

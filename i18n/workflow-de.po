@@ -210,3 +210,9 @@ msgstr "Metadateneditor (Workflow)"
 
 msgid "WorkflowStep_End"
 msgstr "Endknoten (Workflow)"
+
+msgid "workflow_identificator"
+msgstr "Identifikator"
+
+msgid "workflow_key"
+msgstr "Schlüssel"

@@ -23,8 +23,8 @@ import os.path
 import shutil
 import logging
 
-from workflow import WorkflowStep, getNodeWorkflow, getNodeWorkflowStep
-from core.translation import t
+from workflow import WorkflowStep, getNodeWorkflow, getNodeWorkflowStep, registerStep
+from core.translation import t, addLabels
 from metadata.upload import getFilelist
 from schema.schema import getMetaType
 from utils.fileutils import getImportDir
@@ -36,6 +36,11 @@ import core.tree as tree
 import core.config as config
 
 logger = logging.getLogger("backend")
+
+def register():
+    tree.registerNodeClass("workflowstep-addformpage", WorkflowStep_AddFormPage)
+    registerStep("workflowstep-addformpage")
+    addLabels(WorkflowStep_AddFormPage.getLabels())
 
 
 def get_pdftk_fields_dump(path_to_pdf):
@@ -124,6 +129,7 @@ class WorkflowStep_AddFormPage(WorkflowStep):
 
         pdf_fields_editable = current_workflow_step.get("pdf_fields_editable")
         pdf_form_separate = current_workflow_step.get("pdf_form_separate")
+        pdf_form_overwrite = current_workflow_step.get("pdf_form_overwrite")
         
         if pdf_fields_editable.lower() in ["1", "true"]:
             pdf_fields_editable = True
@@ -203,13 +209,25 @@ class WorkflowStep_AddFormPage(WorkflowStep):
             try:
                 new_form_path = join_paths(importdir, "%s_%s" %(node.id, f_name))
                 counter = 0
-                while os.path.isfile(new_form_path):
-                    counter += 1
-                    new_form_path = join_paths(importdir, "%s_%s_%s" %(node.id, counter, f_name))
+                if not pdf_form_overwrite: # build correct filename
+                    while os.path.isfile(new_form_path):
+                        counter += 1
+                        new_form_path = join_paths(importdir, "%s_%s_%s" %(node.id, counter, f_name))
                 shutil.copy(pages, new_form_path)
             except Exception, e:
                 logger.error("workflowstep %s (%s): could not copy pdf form to import directory - node: '%s' (%s), import directory: '%s'" % (current_workflow_step.name, str(current_workflow_step.id), node.name, node.id, importdir))
-            node.addFile(tree.FileNode(new_form_path, 'pdf_form', 'application/pdf'))                
+            found = 0
+            for fn in node.getFiles():
+                print '....>', fn.retrieveFile(), new_form_path
+                if fn.retrieveFile()==new_form_path:
+                    found = 1
+                    break
+            if found==0 or (found==1 and not pdf_form_overwrite):
+                print "add file entry"
+                node.addFile(tree.FileNode(new_form_path, 'pdf_form', 'application/pdf'))
+            else:
+                print "entry existing"
+                
             logger.info("workflow '%s' (%s), workflowstep '%s' (%s): added separate pdf form to node (node '%s' (%s)) fields: %s, path: '%s'" % (current_workflow.name, str(current_workflow.id), current_workflow_step.name, str(current_workflow_step.id), node.name, node.id, str(fields), new_form_path))
         else:
             logger.warning("workflowstep %s (%s): could not process pdf form - node: '%s' (%s)" % (current_workflow_step.name, str(current_workflow_step.id), node.name, node.id))
@@ -234,16 +252,24 @@ class WorkflowStep_AddFormPage(WorkflowStep):
         field = tree.Node("pdf_form_separate", "metafield")
         field.set("label", t(lang, "workflowstep-addformpage_label_pdf_form_separate"))
         field.set("type", "check")
-        ret.append(field)        
+        ret.append(field)
+        
+        field = tree.Node("pdf_form_overwrite", "metafield")
+        field.set("label", t(lang, "workflowstep-addformpage_label_pdf_overwrite"))
+        field.set("type", "check")
+        ret.append(field)
         return ret
 
-    def getLabels(self):
+    
+    @staticmethod
+    def getLabels():
         return { "de":
             [
                 ("workflowstep-addformpage", "PDF-Seiten hinzuf\xc3\xbcgen"),
                 ("workflowstep-addformpage_label_upload_pdfform", "Eine PDF-Form hier hochladen"),
                 ("workflowstep-addformpage_label_pdf_fields_editable", "PDF-Form-Felder editierbar"),
                 ("workflowstep-addformpage_label_pdf_form_separate", "PDF-Form separat an Knoten anh\xc3\xa4ngen"),
+                ("workflowstep-addformpage_label_pdf_overwrite", "PDF-Form \xc3\xbcberschreiben"),
             ],
            "en":
             [
@@ -251,5 +277,6 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                 ("workflowstep-addformpage_label_upload_pdfform", "Upload one PDF form here"),
                 ("workflowstep-addformpage_label_pdf_fields_editable", "PDF form fields editable"),
                 ("workflowstep-addformpage_label_pdf_form_separate", "append PDF form separately to node"),                
+                ("workflowstep-addformpage_label_pdf_overwrite", "Overwrite existing form"),
             ]
             }

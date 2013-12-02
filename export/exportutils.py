@@ -235,7 +235,11 @@ def runTALSnippet(s, context, mask=None):
     cutter = "----cut-TAL-result-here----\n"
     
     if mask:
-        header += mask.get('exportheader')
+        exportheader = mask.get('exportheader')
+        if exportheader.startswith("<?xml"):
+            header = exportheader
+        else:    
+            header += exportheader 
         footer += mask.get('exportfooter')
 
     to_be_processed = header + xmlns + cutter + s + cutter + footer

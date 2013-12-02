@@ -1,8 +1,7 @@
 """
  mediatum - a multimedia content repository
 
- Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
- Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
+ Copyright (C) 2013 Arne Seifert <arne.seifert@tum.de>
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -17,17 +16,24 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from workflow import WorkflowStep, registerStep
+
 import core.tree as tree
+from workflow import WorkflowStep, registerStep
+from utils.utils import mkKey
+from core.translation import addLabels
 
 def register():
-    tree.registerNodeClass("workflowstep-delete", WorkflowStep_Delete)
-    registerStep("workflowstep-delete")
+    tree.registerNodeClass("workflowstep-reauth", WorkflowStep_Reauth)
+    registerStep("workflowstep-reauth")
+    addLabels(WorkflowStep_Reauth.getLabels())
 
-class WorkflowStep_Delete(WorkflowStep):
+class WorkflowStep_Reauth(WorkflowStep):
     def runAction(self, node, op=""):
-        for p in node.getParents():
-            try:
-                p.removeChild(node)
-            except tree.NoSuchNodeError:
-                pass
+        node.set("key", node.get("system.key"))
+        self.forward(node, True)
+        
+        
+    @staticmethod
+    def getLabels():
+        return {"de":[("workflowstep-reauth", 'Re-Auth'),],
+                "en":[("workflowstep-reauth", 'Re-Auth'),]}

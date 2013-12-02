@@ -22,6 +22,7 @@ import sys, traceback
 import core.athana as athana
 import core.tree as tree
 import core.acl as acl
+import core.config as config
 import logging
 
 from core.acl import AccessRule, getRuleList
@@ -93,6 +94,10 @@ def validate(req, op):
 
                 wf = getWorkflow(req.params.get("name"))
                 if wf:
+                    if "wf_language" in req.params:
+                        wf.set('languages', req.params.get('wf_language'))
+                    else:
+                        wf.removeAttribute('languages')
                     wf.setAccess("read", "")
                     for key in req.params.keys():
                         if key.startswith("left_read"):
@@ -138,7 +143,27 @@ def validate(req, op):
 
                 elif req.params.get("form_op")=="save_editdetail":
                     # update workflowstep
-                    wnode = updateWorkflowStep(getWorkflow(req.params.get("parent")), oldname=req.params.get("orig_name",""), newname=req.params.get("nname",""), type=req.params.get("ntype",""), trueid=req.params.get("ntrueid",""), falseid=req.params.get("nfalseid",""), truelabel=req.params.get("ntruelabel",""), falselabel=req.params.get("nfalselabel",""), comment=req.params.get("ncomment",""), adminstep=req.params.get("adminstep",""))
+                    wf = getWorkflow(req.params.get("parent"))
+                    truelabel = ''
+                    falselabel = ''
+                    for language in wf.getLanguages():
+                        truelabel += '%s:%s\n' %(language, req.params.get('%s.ntruelabel' %language))
+                        falselabel += '%s:%s\n' %(language, req.params.get('%s.nfalselabel' %language))
+                    if truelabel=='': truelabel = req.params.get("ntruelabel","")
+                    if falselabel=='': falselabel = req.params.get("nfalselabel","")
+                    sidebartext = ''
+                    pretext = ''
+                    posttext = ''
+                    for language in wf.getLanguages():
+                        sidebartext += '%s:%s\n' %(language, req.params.get('%s.nsidebartext' %language).replace('\n', ''))
+                        pretext += '%s:%s\n' %(language, req.params.get('%s.npretext' %language).replace('\n', ''))
+                        posttext += '%s:%s\n' %(language, req.params.get('%s.nposttext' %language).replace('\n', ''))
+                        
+                    if sidebartext=='': sidebartext = req.params.get("nsidebartext","").replace('\n', '')
+                    if pretext=='': pretext = req.params.get("npretext","").replace('\n', '')
+                    if posttext=='': posttext = req.params.get("nposttext","").replace('\n', '')
+                    
+                    wnode = updateWorkflowStep(wf, oldname=req.params.get("orig_name",""), newname=req.params.get("nname",""), type=req.params.get("ntype",""), trueid=req.params.get("ntrueid",""), falseid=req.params.get("nfalseid",""), truelabel=truelabel, falselabel=falselabel, sidebartext=sidebartext, pretext=pretext, posttext=posttext, comment=req.params.get("ncomment",""), adminstep=req.params.get("adminstep",""))
 
                 try:
                     wfs = getWorkflow(req.params.get("parent")).getStep(req.params.get("orig_name",""))
@@ -238,6 +263,7 @@ def WorkflowDetail(req, id, err=0):
     v["acl_read"] =  makeList(req, "read", removeEmptyStrings(rule["read"]), {}, overload=0, type="read")  
     v["acl_write"] =  makeList(req, "write", removeEmptyStrings(rule["write"]), {}, overload=0, type="write") 
     v["workflow"] = workflow
+    v["languages"] = config.get("i18n.languages","en").split(",")
     v["error"] = err
     v["rules"] = getRuleList()
     v["actpage"] = req.params.get("actpage")

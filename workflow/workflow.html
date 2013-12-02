@@ -149,8 +149,14 @@
                 <td tal:attributes="class cssclass"><a tal:attributes="href python:nodelink+node['id']+'&type=editor'" i18n:translate="workflow_show_step">TEXT</a></td>
                 <td tal:attributes="class cssclass"><a target="editorwindow" tal:attributes="href python:'/edit/edit?id='+node['id']" i18n:translate="sub_header_edit">TEXT</a></td>
 
-                <td tal:attributes="class cssclass"><a tal:attributes="href python:nodelink+node['id']+'&forcefalse=1'" tal:content="raw python:falsestep or '&nbsp;'"/></td>
-                <td tal:attributes="class cssclass"><a tal:attributes="href python:nodelink+node['id']+'&forcetrue=1'" tal:content="raw python: truestep or '&nbsp;'"/></td>
+                <td tal:attributes="class cssclass">
+                    <a tal:condition="python:falsestep!=''" tal:attributes="href python:nodelink+node['id']+'&forcefalse=1'" tal:content="raw falsestep"/>
+                    <tal:block tal:condition="python:falsestep==''">-</tal:block>
+                </td>
+                <td tal:attributes="class cssclass">
+                    <a tal:condition="python:truestep!=''" tal:attributes="href python:nodelink+node['id']+'&forcetrue=1'" tal:content="raw truestep"/>
+                    <tal:block tal:condition="python:truestep==''">-</tal:block>
+                </td>
             </tal:block>
         </tr>
         <tr>
@@ -184,3 +190,24 @@
 
 </tal:block>
 
+
+<table id="workflowbuttons" metal:define-macro="workflow_buttons" style="margin-top:20px;">
+    <tr>
+        <td colspan="2" style="text-align:right;padding-bottom:20px;">
+            <em><tal:block i18n:translate="workflow_identificator"/>: <tal:block tal:replace="python:str(node.id)"/>, <tal:block i18n:translate="workflow_key"/>: <tal:block tal:replace="python:node.get('key')"/></em>
+        </td>
+    </tr>
+    <tr>
+        <td align="left">
+            <input type="hidden" name="id" tal:attributes="value python:str(wfstep.id)"/>
+            <input type="hidden" name="obj" tal:attributes="value python:str(node.id)"/>
+
+            <button tal:condition="python:wfstep.getFalseId()" type="submit" name="gofalse" tal:content="python:wfstep.getFalseLabel(lang)">TEXT</button>
+            &nbsp;
+        </td>
+        <td align="right">
+            <button tal:condition="python:wfstep.getTrueId()" type="submit" name="gotrue" tal:content="python:wfstep.getTrueLabel(lang)">TEXT</button>
+            &nbsp;
+        </td>
+    </tr>
+</table>

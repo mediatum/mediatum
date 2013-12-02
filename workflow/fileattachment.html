@@ -1,0 +1,22 @@
+<tal:block metal:define-macro="fileattachment_show_node">
+
+    <div tal:condition="python:pretext!=''" tal:content="raw pretext" style="margin-bottom:20px;">TEXT</div>
+    
+    <div style="width:45%;float:left;border:1px solid silver;padding:10px;">
+        <ul>
+            <tal:block tal:repeat="file files">
+            <li><a tal:attributes="href python:'/file/'+wfnode.id+'/'+file.getName()" tal:content="python:file.getName().split('_')[-1]" target="_blank"/></li>
+            </tal:block>
+        </ul>
+    </div>
+    
+    <div tal:condition="maskdata" tal:content="raw maskdata" style="border:1px solid silver;float:left;width:45%;margin-left:10px;padding:10px;"/>
+    <div style="clear:left"> </div>
+    
+    <div tal:condition="python:posttext!=''" tal:content="raw posttext" style="margin-top:20px;">TEXT</div>
+    
+    <form tal:condition="python:len(buttons)>0" action="/mask" method="post" style="padding:4px">
+        <table tal:content="raw python:buttons">TEXT</table>
+    </form>
+
+</tal:block>

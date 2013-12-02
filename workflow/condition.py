@@ -19,10 +19,17 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from workflow import WorkflowStep
+from workflow import WorkflowStep, registerStep
 import core.tree as tree
-from core.translation import t, lang
+from core.translation import t, lang, addLabels
 import core.config as config
+
+
+def register():
+    tree.registerNodeClass("workflowstep-condition", WorkflowStep_Condition)
+    registerStep("workflowstep-condition")
+    addLabels(WorkflowStep_Condition.getLabels())
+    
 
 class WorkflowStep_Condition(WorkflowStep):
        
@@ -66,7 +73,8 @@ class WorkflowStep_Condition(WorkflowStep):
         field.set("type", "text")
         return [field]
 
-    def getLabels(self):
+    @staticmethod
+    def getLabels():
         return { "de":
             [
                 ("workflowstep-condition", "Bedingungsfeld"),

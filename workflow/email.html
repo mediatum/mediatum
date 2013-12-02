@@ -1,33 +1,45 @@
 <tal:block metal:define-macro="sendmail">
     <div style="width:100%;position:relative">
-    <form tal:attributes="action page" name="mailuser" method="post">
-        <h2>Email versenden</h2>
-        <p>&nbsp;</p>
-        <table style="width:100%" border="1px" cellspacing="5px">
-            <tr>
-                <td>Von: <span class="required">*</span></td>
-                <td><input type="text" name="from" tal:attributes="value from" maxlength=50 size="50" /></td>
-            </tr>
-            <tr>
-                <td>An: <span class="required">*</span></td>
-                <td><input type="text" name="to" tal:attributes="value to" value="" maxlength=50 size="50" /></td>
-            </tr>
-            <tr>
-                <td>Subject: <span class="required">*</span></td>
-                <td><input type="text" name="subject" tal:attributes="value subject" maxlength=50 size="50" /></td>
-            </tr>
-            <tr>
-                <td style="vertical-align:top">Text: <span class="required">*</span></td>
-                <td><textarea name="text" tal:content="text" style="width:400px;height:300px;font-family:arial"> </textarea></td>
-            </tr>
-            <tr>
-                <td>&nbsp;</td>
-                <td>
-                    <button type="submit" name="sendout">Email absenden</button>
-                    <button tal:condition="python:wfnode.getFalseId()" type="submit" name="gofalse" tal:content="python:wfnode.getFalseLabel()" style="margin-left:300px"/>
-                </td>
-            </tr>
-        </table>
-    </form>
+        <form tal:attributes="action page" name="mailuser" method="post">
+            <!--<h2 i18n:translate="workflowstep-email_label_header">TEXT</h2>-->
+            <div tal:condition="python:pretext!=''" tal:content="raw pretext" class="pretext">TEXT</div>
+            <p>&nbsp;</p>
+            <table style="width:100%;" border="1px" cellspacing="5px">
+                <tr>
+                    <td><tal:block i18n:translate="workflowstep-email_label_sender"/>: <span class="required">*</span></td>
+                    <td><input type="text" name="from" tal:attributes="value from" maxlength=100 size="50" /></td>
+                </tr>
+                <tr>
+                    <td><tal:block i18n:translate="workflowstep-email_label_recipient"/>: <span class="required">*</span></td>
+                    <td><input type="text" name="to" tal:attributes="value to" value="" maxlength=50 size="50" /></td>
+                </tr>
+                <tr>
+                    <td><tal:block i18n:translate="workflowstep-email_label_subject"/>: <span class="required">*</span></td>
+                    <td><input type="text" name="subject" tal:attributes="value subject" maxlength=50 size="50" /></td>
+                </tr>
+                <tr>
+                    <td style="vertical-align:top"><tal:block i18n:translate="workflowstep-email_label_text"/>: <span class="required">*</span></td>
+                    <td>
+                        <textarea name="text" id="mailtext" tal:content="text" style="width:100%;height:300px;font-family:arial;margin-bottom:5px;"> </textarea><br/>
+                        
+                        <p style="text-align:right"><button type="button" onclick="resetText()" i18n:attributes="title workflowstep-email_label_reset"><img src="/img/mmicon_back.gif"/></button></p>
+                    </td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>
+                        <button type="submit" name="sendout" i18n:translate="workflowstep-email_label_send">TEXT</button>
+                        <button tal:condition="python:wfnode.getFalseId()" type="submit" name="gofalse" tal:content="python:wfnode.getFalseLabel()" style="margin-left:300px"/>
+                    </td>
+                </tr>
+            </table>
+        </form>
+        <div tal:condition="python:posttext!=''" tal:content="raw posttext" class="posttext">TEXT</div>
     </div>
+    <div id="origtext" style="display:none;" tal:content="text"/>
+    <script>
+        function resetText(){
+            $('#mailtext').html($('#origtext').html());
+        }
+    </script>
 </tal:block>

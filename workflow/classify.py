@@ -18,10 +18,17 @@
 """
 
 from upload import WorkflowStep
-from core.translation import t
+from workflow import registerStep
+from core.translation import t, addLabels
 from utils.utils import isNumeric
 import core.tree as tree
 
+
+def register():
+    tree.registerNodeClass("workflowstep-classify", WorkflowStep_Classify)
+    registerStep("workflowstep-classify")
+    addLabels(WorkflowStep_Classify.getLabels())
+    
 
 class WorkflowStep_Classify(WorkflowStep):
     """
@@ -87,7 +94,8 @@ class WorkflowStep_Classify(WorkflowStep):
         ret.append(field)
         return ret
         
-    def getLabels(self):
+    @staticmethod
+    def getLabels():
         return { "de":
             [
                 ("workflowstep-classify", "Klassifizieren"),

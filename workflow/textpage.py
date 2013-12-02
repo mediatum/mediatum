@@ -17,9 +17,17 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 import core.tree as tree
-from workflow import WorkflowStep
-from core.translation import t,lang
+from workflow import WorkflowStep, registerStep
+from core.translation import t, lang, addLabels
+
+
+def register():
+    tree.registerNodeClass("workflowstep-textpage", WorkflowStep_TextPage)
+    registerStep("workflowstep-textpage")
+    addLabels(WorkflowStep_TextPage.getLabels())
+
 
 class WorkflowStep_TextPage(WorkflowStep):
     """
@@ -41,7 +49,7 @@ class WorkflowStep_TextPage(WorkflowStep):
             self.forward(node, False)
             return self.forwardAndShow(node, False, req)
 
-        if self.getTrueLabel()=="" and self.getFalseLabel()=="":
+        if self.getTrueLabel(language=node.get("system.wflanguage"))=="" and self.getFalseLabel(language=node.get("system.wflanguage"))=="":
             buttons = []
             self.forward(node, True)
         else:
@@ -54,7 +62,9 @@ class WorkflowStep_TextPage(WorkflowStep):
         field.set("type", "htmlmemo")
         return [field]
     
-    def getLabels(self):
+    
+    @staticmethod
+    def getLabels():
         return { "de":
             [
                 ("workflowstep-textpage", "Textseite anzeigen"),
@@ -65,5 +75,6 @@ class WorkflowStep_TextPage(WorkflowStep):
                 ("workflowstep-textpage", "show textpage"),
                 ("admin_wfstep_textpage_text_to_display", "Page content"),
             ]
-            }
+        }
+
    

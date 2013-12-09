@@ -1246,3 +1246,10 @@ msgstr "Identificator"
 
 msgid "workflow_key"
 msgstr "Key"
+
+###### scholar
+msgid "show_all_years"
+msgstr "All"
+
+msgid "year"
+msgstr "Year:"

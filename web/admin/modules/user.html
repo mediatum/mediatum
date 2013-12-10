@@ -114,7 +114,7 @@
                     <tr tal:define="cssclass python:users.index(user)%2 and 'norm' or 'silver'" tal:attributes="class cssclass; id python:'row_'+str(id_func(user))">
                         <td tal:content="python:str(users.index(user)+1)+'.'"/>
                         <td tal:condition="python:not user.isDynamicUser()" tal:content="python:user.getName()" tal:attributes="title python:'id: %r' % user.getUserID()"/>
-                        <td tal:condition="python:user.isDynamicUser()" tal:content="python:user.getName()+ {False: ' (expired)'}.get(user.isSessionValid(), '') " tal:attributes="title python:'login-time: '+user.get('login_time_iso')+' (since '+str(now().replace(microsecond=0)-user.get('login_datetime').replace(microsecond=0))+')\nsession_lastused_before: '+user.getLastSessionUse(duration=True, as_string=True)+' sec.\nip: '+user.get('login_ip')+'\nuser agent: '+user.get('useragent')+'\ndirid: '+user.dirid+'\ndir_groups: '+str(user.DIRIDS)"/>
+                        <td tal:condition="python:user.isDynamicUser()" tal:content="python:user.getName()+ {False: ' (expired)', True: ' (%.1f sec.)' % user.getLastSessionUse(duration=True)}.get(user.isSessionValid(), '') " tal:attributes="title python:'login-time: '+user.get('login_time_iso')+' (since '+str(now().replace(microsecond=0)-user.get('login_datetime').replace(microsecond=0))+')\nsession_lastused_before: '+user.getLastSessionUse(duration=True, as_string=True)+' sec.\nip: '+user.get('login_ip')+'\nuser agent: '+user.get('useragent')+'\ndirid: '+user.dirid+'\ndir_groups: '+str(user.DIRIDS)"/>
                         <td tal:content="python:user.getLastName()"/>
                         <td tal:content="python:user.getFirstName()"/>
                         <td tal:content="python:user.getEmail()"/>
@@ -133,7 +133,9 @@
                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img i18n:attributes="title admin_user_nostdpwd_title" src="/img/archive.png"/>
                         </td>
                         <td>
-                            <tal:block i18n:translate="" tal:condition="python:user.getUserType()!='users'" tal:content="python:auth[user.getUserType()].getName()"/>
+                            <!-- <tal:block i18n:translate="" tal:condition="python:user.getUserType()!='users'" tal:content="python:auth[user.getUserType()].getName()"/> -->
+                            <tal:block i18n:translate="" tal:condition="python:user.getUserType()!='users'" tal:content="python: user.getUserType()"/>
+                            
                             &nbsp;
                         </td>
                         <td>

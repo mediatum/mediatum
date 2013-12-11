@@ -245,8 +245,13 @@ class AccessData:
         
         if not 'user' in _p and not 'sign' in _p:
             return False
+            
         try:
-            workingString = self.getUser().get("oauthkey")
+            dirid = self.getUser().getDirID()
+            workingString = ""
+            for n in [h for h in tree.getRoot('home').getChildren() if h.get('system.oauthuser')==dirid]:
+                workingString = n.get('system.oauthkey')
+                break
         except:
             return False
         

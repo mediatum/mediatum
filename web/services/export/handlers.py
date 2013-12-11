@@ -448,7 +448,25 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
     
     #verify signature if a user is given, otherwise use guest user
     if params.get('user'):
-        guestAccess = AccessData(user=users.getUser(params.get('user')))
+        _user = users.getUser(params.get('user'))
+        
+        if not _user: # user of dynamic 
+            
+            class dummyuser: # dummy user class
+                def getGroups(self): # return all groups with given dynamic user
+                    return [g.name for g in tree.getRoot('usergroups').getChildren() if g.get('allow_dynamic')=='1' and params.get('user') in g.get('dynamic_users')]
+                def getName(self):
+                    return params.get('user')
+                def getDirID(self): # unique identifier
+                    return params.get('user')
+                def isAdmin(self):
+                    return 0
+            
+            _user = dummyuser()
+
+        guestAccess = AccessData(user=_user)
+        
+        
         if guestAccess.user:
             valid = guestAccess.verify_request_signature(req.fullpath, params)
             if not valid:

@@ -267,6 +267,7 @@ def export_shoppingbag_bibtex(req):
             f.write(mask.getViewHTML([node], flags=8)) # flags =8 -> export type
         else:
             f.write("The selected document type doesn't have any bibtex export mask")
+        f.write("\n")
     f.close()
     
     if len(items)>0:

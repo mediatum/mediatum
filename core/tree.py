@@ -1110,6 +1110,9 @@ class Node:
                 node = _node
         return node
 
+    def isActiveVersion(self):
+        return self.get("system.next_id") in ['', '0']
+
     def getLastVersionID(self):
         last_version_id = 1
         node = self.getActiveVersion()

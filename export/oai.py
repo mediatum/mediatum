@@ -39,7 +39,6 @@ import core.xmlnode
 from utils.utils import esc, fixXMLString
 from schema.schema import getMetaType
 from utils.pathutils import isDescendantOf
-from exportutils import is_active_version
 
 if sys.version[0:3] < '2.6':
     import simplejson as json
@@ -475,7 +474,7 @@ def getNodes(req):
             nodes = retrieveNodes(req, access, setspec, date_from, date_to, metadataformat)
             nodes = [n for n in nodes if not parentIsMedia(n)]
             # filter out nodes that are inactive or older versions of other nodes
-            nodes = [n for n in nodes if is_active_version(n)] 
+            nodes = [n for n in nodes if n.isActiveVersion()] 
         except tree.NoSuchNodeError:
             # collection doesn't exist
             return None, "badArgument", None

@@ -63,8 +63,13 @@ def handle_json_request(req):
     return
 
 
-DISPLAY_PATH = re.compile("/(.+)$")
+DISPLAY_PATH = re.compile("/([-.~_/a-zA-Z0-9]+)$")
 known_node_aliases = {}
+
+
+def display_404(req):
+    return athana.HTTP_NOT_FOUND
+
 
 def display_alias(req):
     match = DISPLAY_PATH.match(req.path)
@@ -74,12 +79,10 @@ def display_alias(req):
         if node_id is not None:
             logg.debug("known node alias in cache '%s' -> '%s'", alias, node_id)
             req.params["id"] = node_id
-            display(req)
-#             Alternative: do redirect
-#             req.request["Location"] = "/node?id=" + node_id
-#             return athana.HTTP_MOVED_TEMPORARILY
         else:
-            res = db.execute("SELECT nid FROM nodeattribute WHERE name='system.aliascol' AND value='{}'".format(alias))
+            # alias string is checked above, so no SQL Injection can happen here :)
+            stmt = "SELECT nid FROM nodeattribute WHERE name='system.aliascol' AND value='{}'".format(alias)
+            res = db.execute(stmt)
             if res:
                 node_id = str(res[0][0])
                 known_node_aliases[alias] = node_id
@@ -87,11 +90,12 @@ def display_alias(req):
                 logg.debug("node alias from DB '%s' -> '%s'", alias, node_id)
             else:
                 logg.info("node alias not found: '%s'", alias)
-
-                # pass illegal id => niec error msg is displayed
+                # pass illegal id => nice error msg is displayed
                 req.params["id"] = "-1"
-            display(req)
-
+        # node is set now, redirect to regular display handler
+        display(req)
+    else:
+        raise Exception("illegal alias '{}', should not be passed to this handler!".format(alias))
 
 def display(req):
     if "jsonrequest" in req.params:

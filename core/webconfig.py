@@ -207,8 +207,11 @@ def initContexts():
 
     # === last: path aliasing for collections ===
     handler = main_file.addHandler("display_alias")
-    handler.addPattern("/.+$")
+    handler.addPattern("/[-.~_/a-zA-Z0-9]+$")
 
+    # 404
+    handler = main_file.addHandler("display_404")
+    handler.addPattern("/(.)+$")
 
     # === theme handling ===
     loadThemes()

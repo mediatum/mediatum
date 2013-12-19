@@ -33,7 +33,10 @@ def export(req):
         return
     
     if p[0].isdigit():
-        node = tree.getNode(p[0])
+        try:
+            node = tree.getNode(p[0])
+        except:
+            return req.error(404, "Object not found")
     else:
         return req.error(404, "Object not found")
         

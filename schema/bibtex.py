@@ -134,6 +134,11 @@ def getentries(filename):
         pass
             
     data = data.replace("\r", "\n")
+    # throw out BOM
+    try:
+        data = u2(data).replace('\xef\xbb\xbf', "")
+    except:
+        pass  
     data = comment.sub('\n', data)
     recordnr = 1
 
@@ -357,7 +362,7 @@ def detecttype(doctype, fields):
         return None
 
 
-def importBibTeX(file, node=None, req=None):
+def importBibTeX(infile, node=None, req=None):
 
     if req:
         try:
@@ -375,17 +380,18 @@ def importBibTeX(file, node=None, req=None):
     entries = []
     shortcut = {}
 
-    if type(file) == list:
-        entries = file
+    if type(infile) == list:
+        entries = infile
     else:
         if not node:
-            node = tree.Node(name=os.path.basename(file), type="directory")
+            node = tree.Node(name=os.path.basename(infile), type="directory")
         try:
-            entries = getentries(file)
+            entries = getentries(infile)
         except:
+            logger.error("getentries failed", exc_info=1)
             msg = "bibtex import: import stopped (encoding error)"
             logger.error(msg)        
-            raise ValueError("encoding_error")
+            raise ValueError("getentries failed")
 
     logger.info("bibtex import: %d entries" % len(entries))
             

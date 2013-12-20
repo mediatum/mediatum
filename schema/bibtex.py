@@ -100,7 +100,37 @@ class MissingMapping(Exception):
         return self.message
 
 
+def getNow():
+    import datetime, time
+    now = datetime.datetime.now().isoformat()
+    now = now.replace('T','_').replace(':','-')
+    now = now.split('.')[0]
+    return now
+
+
+def save_import_file(filename):
+    global logger
+    import core.config as config
+    temppath = config.get("paths.tempdir")
+    destname = os.path.join(temppath, filename + "_bibtex_import_saved_" + getNow())
+    msg = "bibtex import: going to copy/save import file %r -> %r" % (filename, destname)
+    logger.info(msg)
+    if os.sep=='/':
+        ret = os.system("cp %s %s" %(filename, destname))
+    else:
+        cmd = "copy %s %s" %(filename, destname)
+        ret = os.system(cmd.replace('/','\\'))
+
+    if ret&0xff00:
+        raise IOError("Couldn't copy %s to %s (error: %s)" % (filename, destname, str(ret)))
+
+    return
+
+
 def getentries(filename):
+
+    save_import_file(filename)
+
     fi = codecs.open(filename, "r", "utf-8")
 
     try:
@@ -108,10 +138,10 @@ def getentries(filename):
     except UnicodeDecodeError:
         fi.close()
         msg = "bibtex import: getentries(filename): encoding error when trying codec 'utf-8', filename was " + filename
-        logger.error(msg) 
+        logger.error(msg)
         msg = "bibtex import: getentries(filename): going to try without codec 'utf-8', filename was " + filename
-        logger.info(msg) 
-        
+        logger.info(msg)
+
         try:
             fi = codecs.open(filename, "r")
             try:
@@ -120,25 +150,25 @@ def getentries(filename):
             except Exception, e:
                 fi.close()
                 msg = "bibtex import: getentries(filename): error at second attempt: " + str(e)
-                logger.info(msg)    
-                    
-                raise MissingMapping("wrong encoding")
-        except Exception, e:        
-                msg = "bibtex import: getentries(filename): error at second attempt: " + str(e)
-                logger.error(msg)    
+                logger.info(msg)
 
                 raise MissingMapping("wrong encoding")
-    try: 
+        except Exception, e:
+            msg = "bibtex import: getentries(filename): error at second attempt: " + str(e)
+            logger.error(msg)
+
+            raise MissingMapping("wrong encoding")
+    try:
         fi.close()
     except:
         pass
-            
+
     data = data.replace("\r", "\n")
     # throw out BOM
     try:
         data = u2(data).replace('\xef\xbb\xbf', "")
     except:
-        pass  
+        pass
     data = comment.sub('\n', data)
     recordnr = 1
 
@@ -368,9 +398,9 @@ def importBibTeX(infile, node=None, req=None):
         try:
             user = users.getUserFromRequest(req)
             msg = "bibtex import: import started by user '%s'" % (user.name)
-        except:  
-            msg = "bibtex import: starting import (unable to identify user)"  
-    else:        
+        except:
+            msg = "bibtex import: starting import (unable to identify user)"
+    else:
         msg = "bibtex import: starting import (%s)" % str(sys.argv)
     logger.info(msg)
     print msg
@@ -389,12 +419,12 @@ def importBibTeX(infile, node=None, req=None):
             entries = getentries(infile)
         except:
             logger.error("getentries failed", exc_info=1)
-            msg = "bibtex import: import stopped (encoding error)"
-            logger.error(msg)        
+            msg = "bibtex import: getentries failed, import stopped (encoding error)"
+            logger.error(msg)
             raise ValueError("getentries failed")
 
     logger.info("bibtex import: %d entries" % len(entries))
-            
+
     counter = 0
     for doctype, docid, fields in entries:
         counter += 1

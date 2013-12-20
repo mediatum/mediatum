@@ -38,7 +38,15 @@ def _replace_vars(node, s):
             if val == "":
                 val = "____"
             s = s.replace("<" + var + ">", val)
-        
+            
+    for var in re.findall(r'\[(.+?)\]', s):
+        if var == "att:id":
+            s = s.replace("[" + var + "]", node.id)
+        elif var.startswith("att:"):
+            val = node.get(var[4:])
+            if val == "":
+                val = "____"
+            s = s.replace("[" + var + "]", val)
     return s
 
 

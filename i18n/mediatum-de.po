@@ -10,6 +10,9 @@ msgstr "Willkommen auf mediaTUM"
 msgid "username:"
 msgstr "Benutzername:"
 
+msgid "tum_username:"
+msgstr "Benutzername / TUM-Kennung:"
+
 msgid "password:"
 msgstr "Passwort:"
 
@@ -105,6 +108,12 @@ msgstr "Passwort vergessen?"
 
 msgid "pwdforgotten_explain_procedure"
 msgstr "Um ein neues Passwort zu erhalten, geben Sie bitte Ihren Benutzernamen ein. Ein neues Passwort und ein Link zur Aktivierung werden dann an Ihre E-Mail-Adresse gesandt."
+
+msgid "tum_pwdforgotten_explain_procedure"
+msgstr "Um ein neues Passwort zu erhalten, geben Sie bitte Ihren Benutzernamen ein. Ein neues Passwort und ein Link zur Aktivierung werden dann an Ihre E-Mail-Adresse gesandt. Dies gilt nur für mediaTUM-interne Benutzernamen. Bei Problemen mit Ihrer TUM-Kennung und dem zugehörigen Passwort wenden Sie sich bitte an TUMonline."
+
+msgid "pwdforgotten_username:"
+msgstr "Benutzername:"
 
 msgid "pwdforgotten_submit"
 msgstr "Absenden"

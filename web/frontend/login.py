@@ -46,7 +46,7 @@ def buildURL(req):
 
 
 def login(req):
-
+    
     if len(req.params) > 2 and "user" not in req.params:  # user changed to browsing
         return buildURL(req)
 
@@ -76,13 +76,25 @@ def login(req):
                 if x and x.stdPassword(user):
                     return pwdchange(req, 3)
 
-            if config.get("config.ssh", "") == "yes":
+            if req.session['return_after_login']:
+                req.request['Location'] = req.session['return_after_login']
+            elif config.get("config.ssh", "") == "yes":
                 req.request["Location"] = "https://" + config.get("host.name") + "/node?id=" + tree.getRoot("collections").id
             else:
                 req.request["Location"] = "/node?id=" + tree.getRoot("collections").id
             return athana.HTTP_MOVED_TEMPORARILY
         else:
             error = 1
+
+    if any(uri in req.header[6] for uri in ('/login', '/logout', '/pwdforgotten', '/pwdchange', '/pnode')) or 'Referer' not in req.header[6]:
+        req.session['return_after_login'] = False
+    else:
+        if '/edit' in req.header[6]:
+            #returns the user to /edit/ instead of /edit/edit_content?id=604993, which has no sidebar
+            req.session['return_after_login'] = req.header[6][9:-22]
+            print req.session['return_after_login']
+        else:
+            req.session['return_after_login'] = req.header[6][9:]
 
     # standard login form
     user = users.getUserFromRequest(req)

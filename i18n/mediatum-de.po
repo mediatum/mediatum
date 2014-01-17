@@ -1299,3 +1299,6 @@ msgstr "Alle"
 
 msgid "year"
 msgstr "Jahr:"
+
+msgid "last_update"
+msgstr "Letzte Aktualisierung:"

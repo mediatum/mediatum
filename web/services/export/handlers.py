@@ -65,6 +65,7 @@ resultcache = Cache(maxcount=25, verbose=True)
 
 SEND_TIMETABLE = False
 
+
 def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
 
     def attr_list_join(attr_list):
@@ -78,11 +79,11 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
     atime = starttime = time.time()
 
     # file types not to be included in listed node files
-    exclude_filetypes=['statistic']
+    exclude_filetypes = ['statistic']
 
     # sortfields
     sfields = d.setdefault('sfields', [])
-    
+
     #mask
     mask = req.params.get('mask', 'default').lower()
     maskcachetype = req.params.get('maskcache', 'deep')  # 'deep', 'shallow', 'none'
@@ -99,7 +100,7 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
 
             # mask handling
             formated = n.show_node_text(labels=1, language=req.params.get('lang', ''), cachetype=maskcachetype)
-            if mask not in ["", "none"]: # deliver every mask
+            if mask not in ["", "none"]:  # deliver every mask
                 try:
                     mask_obj = getMetaType(n.getSchema()).getMask(mask)
                 except:
@@ -108,7 +109,7 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
                     formated = mask_obj.getViewHTML([n], flags=8)
                 else:
                     mask = 'default'
-            res = '%s\n    <mask name="%s"><![CDATA[%s]]></mask>\n%s' %(res[:-9], mask, formated, res[-8:])
+            res = '%s\n    <mask name="%s"><![CDATA[%s]]></mask>\n%s' % (res[:-9], mask, formated, res[-8:])
 
         else:
             res += '<nodelist start="%d" count="%d" countall="%d">\r\n' % (d['nodelist_start'], d['nodelist_limit'], d['nodelist_countall'])
@@ -117,7 +118,7 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
 
                 # mask handling
                 formated = n.show_node_text(labels=1, language=req.params.get('lang', ''), cachetype=maskcachetype)
-                if mask not in ["", "none"]: # deliver every mask
+                if mask not in ["", "none"]:  # deliver every mask
                     try:
                         mask_obj = getMetaType(n.getSchema()).getMask(mask)
                     except:
@@ -126,14 +127,14 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
                         formated = mask_obj.getViewHTML([n], flags=8)
                     else:
                         mask = 'default'
-                res = '%s\n    <mask name="%s"><![CDATA[%s]]></mask>\n%s' %(res[:-9], mask, formated, res[-8:])
+                res = '%s\n    <mask name="%s"><![CDATA[%s]]></mask>\n%s' % (res[:-9], mask, formated, res[-8:])
 
             res += '</nodelist>\r\n'
-        
-        # append a shortlist with id, name and type of the nodes    
+
+        # append a shortlist with id, name and type of the nodes
         # from result_shortlist = [[i, x.id, x.name, x.type, attr_list(x, sfields)] for i, x in enumerate(nodelist)]
         res += '''<listinfo sortfield="%s" sortdirection="%s">\r\n''' % (d['sortfield'], d['sortdirection'])
-        for p in d['result_shortlist']: 
+        for p in d['result_shortlist']:
             if sfields:
                 res += '''  <item index="%d" id="%s" type="%s">%s</item>\r\n''' % (p[0], p[1], p[3], u(attr_list_join(p[4])))
             else:
@@ -141,7 +142,7 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
         res += '''</listinfo>\r\n'''
 
         xml_timetable = d['timetable'][:]
-        xml_timetable.append(['build result xml', time.time()-atime]); atime = time.time()
+        xml_timetable.append(['build result xml', time.time() - atime]); atime = time.time()
 
         if send_timetable == True:
             # append info on how long the steps took to get the result
@@ -152,18 +153,68 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
                 tt_sum += x[1]
             tt += '''  <allsteps durationsum="%.3f" unit="sec."/>\r\n''' % (tt_sum)
             tt += '</service_handler_process_info>\r\n'
-    
+
             res += tt
 
     else:
         res += '''<errormessage><![CDATA[%s]]></errormessage>\r\n''' % d['errormessage']
-    return res +'</response>\r\n'
+    return res + '</response>\r\n'
+
+
+def struct2template_test(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
+    atime = starttime = time.time()
+    nodelist = d['nodelist']
+
+    if not 'add_shortlist' in req.params:
+        d['result_shortlist'] = []
+
+    d['nodelist'] = [jsonnode.buildNodeDescriptor(req, n, children=send_children) for n in nodelist]
+    json_timetable = d['timetable'][:]
+
+    template = req.params.get("template", "record $$[_rcd]$$: id=$$[id]$$: no-template-given\n")
+    attrs1 = template.split("$$[")
+    attrs = []
+    for x in attrs1:
+        pos = x.find("]$$")
+        if pos >= 0:
+            attrs.append(x[0:pos])
+
+    res = ""
+    rc = 0  # record count
+    for nd in d['nodelist']:
+        rc += 1
+        x = template
+        for attr in attrs:
+            if attr == "defaultexport":
+                x = x.replace(("$$[%s]$$" % attr), nd[0].get(attr, ''))
+            elif attr.startswith("_rc"):
+                x = x.replace(("$$[%s]$$" % attr), attr.replace("_rc", "%") % rc)
+            elif attr in ["id", "nodename", "nodetype"]:
+                x = x.replace(("$$[%s]$$" % attr), nd[0].get(attr.replace("node", ""), ''))
+            else:
+                x = x.replace(("$$[%s]$$" % attr), nd[0]["attributes"].get(attr, ''))
+        res = res + x
+
+    d['timetable'] = []
+    if send_timetable:
+        d['timetable'] = json_timetable
+
+    d['timetable'] = json_timetable
+    d['dataready'] = ("%.3f" % (time.time() - d['build_response_start']))
+
+    res = res.replace("\\n", "\n").replace("\\l", "\l").replace("\\r", "\r").replace("\\t", "\t")
+
+    if 'bom' in params.keys():
+        import codecs
+        res = codecs.BOM_UTF8 + res
+
+    return res
 
 
 def struct2json(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
     atime = starttime = time.time()
     nodelist = d['nodelist']
-    
+
     if not 'add_shortlist' in req.params:
         d['result_shortlist'] = []
 
@@ -180,8 +231,9 @@ def struct2json(req, path, params, data, d, debug=False, singlenode=False, send_
         s = json.dumps(d, encoding='latin1')
 
     d['timetable'] = json_timetable
-    d['dataready'] = ( "%.3f" % (time.time()-d['build_response_start']) )
+    d['dataready'] = ("%.3f" % (time.time() - d['build_response_start']))
     return s
+
 
 def struct2csv(req, path, params, data, d, debug=False, sep=';', string_delimiter='"', singlenode=False, send_children=False):
 
@@ -189,15 +241,15 @@ def struct2csv(req, path, params, data, d, debug=False, sep=';', string_delimite
     # this dictionary decodes the characters that would disturb in the url
     trans = {
              'none': u(''),
-             'tab':  u('\t'),
-             'quote':  u("'"),
-             'dquote':  u('"'),
+             'tab': u('\t'),
+             'quote': u("'"),
+             'dquote': u('"'),
             }
 
     string_delimiter = u(params.get('delimiter', string_delimiter))
     if string_delimiter.lower() in trans.keys():
         string_delimiter = trans[string_delimiter.lower()]
-        
+
     sep = u(params.get('sep', sep))
     if sep.lower() in trans.keys():
         sep = trans[sep.lower()]
@@ -207,7 +259,7 @@ def struct2csv(req, path, params, data, d, debug=False, sep=';', string_delimite
 
         try:
             if string_delimiter:
-                res = string_delimiter + ( (string_delimiter+sep+string_delimiter).join([x.replace(string_delimiter, u("'")) for x in row]) )+ string_delimiter
+                res = string_delimiter + ((string_delimiter+sep+string_delimiter).join([x.replace(string_delimiter, u("'")) for x in row])) + string_delimiter
             else:
                 res = sep.join(row)
         except:
@@ -229,7 +281,7 @@ def struct2csv(req, path, params, data, d, debug=False, sep=';', string_delimite
                 res = res[0:-len(sep)]
         return u(res)
 
-    r = u('') # string to be returned
+    r = u('')  # string to be returned
 
     if d['status'].lower() == 'fail':
         header = ['status', 'html_response_code', 'errormessage', 'retrievaldate', 'dataready']
@@ -252,10 +304,10 @@ def struct2csv(req, path, params, data, d, debug=False, sep=';', string_delimite
         attrs = n.attributes
         rd[i]['attributes'] = attrs
         keys = keys.union(attrs.keys())
-        
+
     if csvattrs:
-        keys = set(csvattrs) 
-        
+        keys = set(csvattrs)
+
     sorted_tuples = sorted([(x.lower(), x) for x in list(keys)])
     attr_header = [u(x[1]) for x in sorted_tuples]
 
@@ -280,7 +332,7 @@ def struct2csv(req, path, params, data, d, debug=False, sep=';', string_delimite
                 continue
             elif attr in ['node.orderpos']:
                 row.append(tree.getNode(rd[i]['id']).get(attr))
-            else:       
+            else:
                 row.append(u(rd[i]['attributes'].setdefault(attr, '')))
         r += join_row(row)  + u('\r\n')
 
@@ -288,26 +340,26 @@ def struct2csv(req, path, params, data, d, debug=False, sep=';', string_delimite
         import codecs
         r = codecs.BOM_UTF8 + r
     return u(r)
-    
-    
+
+
 def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_children=False):
     atime = starttime = time.time()
     nodelist = d['nodelist']
     language = params.get('lang', 'en')
     items_list = []
     mdts = tree.getRoot("metadatatypes").getChildren()
-    
+
     for n in nodelist:
         nodename = n.name
         nodeid = n.id
-        nodetype = n.type 
+        nodetype = n.type
         updatetime = utime = try_node_date(n)
-        
+
         # categories to be included in all items - mask generated or not
         default_categories = ''
         if n.type.strip():
-            default_categories = '<category>node type: ' + n.type.strip() + '</category>\r\n'                 
-    
+            default_categories = '<category>node type: ' + n.type.strip() + '</category>\r\n'
+
         # check for export mask for this node
         try:
             schema = n.getSchema()
@@ -320,19 +372,19 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
                 mask = None
         except:
             mask = None
-            
+
         if mask:
             item_xml = '<item>\r\n' + mask.getViewHTML([n], flags=8) + default_categories + '\r\n</item>\r\n'
-            items_list = items_list + [ (updatetime, nodename, nodeid, item_xml ) ] 
+            items_list = items_list + [ (updatetime, nodename, nodeid, item_xml ) ]
             continue
-    
+
         # no rss export mask: build default item from nodesmall mask
         item_d = {}
 
         browsingPathList = getBrowsingPathList(n)
         browsingPathList = [x for x in browsingPathList if (guestAccess.hasAccess(x[-1], 'read') and (isDescendantOf(x[-1], collections)))]
-        browsingPathList_names = [map(lambda x: x.name, browsingPath) for browsingPath in browsingPathList] 
-        
+        browsingPathList_names = [map(lambda x: x.name, browsingPath) for browsingPath in browsingPathList]
+
         # assumption: longest path is most detailled and illustrative for being used in the title
         x = [[len(p), i, p] for i, p in enumerate(browsingPathList_names)]
         x.sort()
@@ -345,31 +397,31 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
         if nodename:
             item_d['title'] = esc( nodename + ' (' + nodeid + ', ' + nodetype + ') ' + ('/'.join(most_detailed_path)) )
         else:
-            item_d['title'] = esc( '-unnamed-node-' + ' (' + nodeid + ', ' + nodetype + ') ' + ('/'.join(most_detailed_path)) )   
+            item_d['title'] = esc( '-unnamed-node-' + ' (' + nodeid + ', ' + nodetype + ') ' + ('/'.join(most_detailed_path)) )
 
         item_d['item_pubDate'] = utime
         item_d['guid'] = host + '/node?id=%s' % str(nodeid)
         item_d['link'] = host + '/node?id=%s' % str(nodeid)
-        
+
         mtype = getMetaType(n.getSchema())
-        
+
         if mtype:
-            lang_masks = [m for m in mtype.getMasks() if m.getLanguage()==language and m.name.startswith('nodesmall')]            
+            lang_masks = [m for m in mtype.getMasks() if m.getLanguage()==language and m.name.startswith('nodesmall')]
             if lang_masks:
                 mask = lang_masks[0]
-            else:    
-                mask = mtype.getMask('nodesmall')                
+            else:
+                mask = mtype.getMask('nodesmall')
             attr_list = mask.getViewHTML([n], VIEW_DATA_ONLY, language)  #[[attr_name, value, label, type], ...]
         else:
             attr_list = [['', str(n.id), 'node id', ''], ['', n.name, 'node name', ''], ['', n.type, 'node type', ''], ]
-            
+
         description = ''
         for x in attr_list:
             description = description + ('''<b>%s: </b>%s<br/>\r\n''' % (u(x[2]), (x[1])))
-            
+
         item_d['description'] = description
         categories = default_categories
-        
+
         for x in browsingPathList_names:
             categories = categories + '<category>' + esc('/'.join(x)) + '</category>\r\n'
 
@@ -378,19 +430,19 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
             ddcs = ddcs.split(';')
             for ddc in ddcs:
                 categories = categories + '<category>' + esc(ddc) + '</category>\r\n'
-            
+
         subjects = n.get('subject').strip()
         if subjects:
             subjects = subjects.split(';')
             for subject in subjects:
-                categories = categories + '<category>' + esc(u2(subject)) + '</category>\r\n'            
+                categories = categories + '<category>' + esc(u2(subject)) + '</category>\r\n'
 
         item_d['categories'] = categories
-        
+
         for k, v in item_d.items():
             item_d[k] = u(v)
 
-        items_list = items_list + [ (updatetime, nodename, nodeid, (template_rss_item % item_d) ) ]  
+        items_list = items_list + [ (updatetime, nodename, nodeid, (template_rss_item % item_d) ) ]
 
     if items_list:
         items_list.sort()
@@ -403,7 +455,7 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
     pubDate = lastBuildDate = format_date(format='rfc822')
 
     d['dataready'] = ( "%.3f" % (time.time()-d['build_response_start']) )
-    
+
     fcd = feed_channel_dict.copy()
     fcd['lang'] = 'de'
     fcd['pubdate'] = pubDate
@@ -413,22 +465,23 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
     fcd['image_title'] = 'testlogo'
     fcd['image_link'] = host + '/img/testlogo.png'
     fcd['image_url'] = host + '/img/testlogo.png'
-    
+
     if 'feed_info' in params:
         for k, v in params['feed_info'].items():
             fcd[k] = v
     else:
-        fcd['title'] = host + req.fullpath + str(req.query)        
+        fcd['title'] = host + req.fullpath + str(req.query)
     fcd['items'] = items
     s = template_rss_channel % fcd # params['feed_info']
 
     return s
-    
-supported_formats = [ 
- [['xml', ''], struct2xml, 'text/xml'], 
- [['json'], struct2json, 'text/plain'], 
- [['csv'], struct2csv, 'text/plain'], 
- [['rss'], struct2rss, 'application/rss+xml'], 
+
+supported_formats = [
+ [['xml', ''], struct2xml, 'text/xml'],
+ [['json'], struct2json, 'text/plain'],
+ [['csv'], struct2csv, 'text/plain'],
+ [['template_test'], struct2template_test, 'text/plain'],
+ [['rss'], struct2rss, 'application/rss+xml'],
 ]
 
 
@@ -443,13 +496,13 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
     res['method'] = req.command
     res['path'] = req.path
     res['query'] = req.query
-    
+
     #verify signature if a user is given, otherwise use guest user
     if params.get('user'):
         _user = users.getUser(params.get('user'))
-        
-        if not _user: # user of dynamic 
-            
+
+        if not _user: # user of dynamic
+
             class dummyuser: # dummy user class
                 def getGroups(self): # return all groups with given dynamic user
                     return [g.name for g in tree.getRoot('usergroups').getChildren() if g.get('allow_dynamic')=='1' and params.get('user') in g.get('dynamic_users')]
@@ -459,12 +512,12 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
                     return params.get('user')
                 def isAdmin(self):
                     return 0
-            
+
             _user = dummyuser()
 
         guestAccess = AccessData(user=_user)
-        
-        
+
+
         if guestAccess.user:
             valid = guestAccess.verify_request_signature(req.fullpath, params)
             if not valid:
@@ -493,11 +546,11 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
     sortfield = params.get('sortfield', '')
     sortformat = params.get('sortformat', '')  # 'sissfi'
     sfields = []  # sortfields
-    
+
     if sortfield:
         sfields = [x.strip() for x in sortfield.split(',')]
-    num_sfields = len(sfields) 
-    
+    num_sfields = len(sfields)
+
     sortdirection = ''
     for i in range(num_sfields):
         if sfields[i] and sfields[i][0] == '-':
@@ -505,7 +558,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
             sortdirection += 'd'
         else:
             sortdirection += 'u'
-        
+
     psort = params.get('sort', 'orderpos')
     sortresult = ''
 
@@ -521,13 +574,13 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
         nodelist_limit = int(params.get('limit', default_nodelist_limit))
     except:
         nodelist_limit = default_nodelist_limit
-        
+
     if singlenode:
         nodelist_start = 0
-        nodelist_limit = 1  
-    
+        nodelist_limit = 1
+
     # accept results calculated and cached up to this amount of seconds
-    acceptcached = float(params.get('acceptcached', '0'))         
+    acceptcached = float(params.get('acceptcached', '0'))
 
     # check node existence
     try:
@@ -565,15 +618,15 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
             timetable.append(['retrieved filtered search result from cache: %d nodes, time_delta: %.3f lower acceptcached %.3f sec.' % (len(searchresult), time_delta, acceptcached), time.time()-atime]); atime = time.time()
         elif resultcode == 'refused':
             time_cached = searchcache.getTimestamp(cache_key)
-            time_delta = starttime - time_cached        
+            time_delta = starttime - time_cached
             timetable.append(['cached filtered search result exists, but not used: time_delta: %.3f sec. higher acceptcached %.3f sec.' % (time_delta, acceptcached), time.time()-atime]); atime = time.time()
-             
-        if resultcode != 'hit':        
-            searchresult = node.search(q)   
+
+        if resultcode != 'hit':
+            searchresult = node.search(q)
             timetable.append(['execute search q=%s on node (%s, %s, %s) resulting in %d nodes' % (q, node.id, node.type, node.name, len(searchresult)), time.time()-atime]); atime = time.time()
-            searchresult = guestAccess.filter(searchresult)   
+            searchresult = guestAccess.filter(searchresult)
             timetable.append(['filter access for search result resulting in %d nodes' % (len(searchresult)), time.time()-atime]); atime = time.time()
-            if acceptcached > 0: # only write to cache for these requests 
+            if acceptcached > 0: # only write to cache for these requests
                 searchcache.update(cache_key, searchresult)
                 timetable.append(['wrote filtered search result to cache (%d nodes), now in cache: %d entries: %s' % (len(searchresult), searchcache.getKeysCount(), "#".join(searchcache.getKeys())), time.time()-atime]); atime = time.time()
 
@@ -589,13 +642,13 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
             res['dataready'] = dataready
             return res
         from core.db import database
-        db = database.getConnection()     
-        typed_node_id_list = [x[0] for x in db.getNodeIDsForSchema(mdt)] 
+        db = database.getConnection()
+        typed_node_id_list = [x[0] for x in db.getNodeIDsForSchema(mdt)]
         db.close()
         if typed_node_id_list:
             typed_nodelist = tree.NodeList(typed_node_id_list)
-            timetable.append(['''generated typed node list -> (%d nodes)''' % (len(typed_nodelist)), time.time()-atime]); atime = time.time() 
-        
+            timetable.append(['''generated typed node list -> (%d nodes)''' % (len(typed_nodelist)), time.time()-atime]); atime = time.time()
+
     if singlenode:
         nodelist = [node]
     elif parents:
@@ -618,14 +671,14 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
             if node.id != tree.getRoot('collections').id:
                 nodelist = node.getAllChildren()
             else:
-                nodelist = []   
+                nodelist = []
                 res['status'] = 'fail'
                 res['html_response_code'] = '403' # forbidden (authorization will not help)
                 res['errormessage'] = 'no access'
                 res['build_response_end'] = time.time()
                 dataready = "%.3f" % (res['build_response_end'] - starttime)
                 res['dataready'] = dataready
-                return res                 
+                return res
             timetable.append(['''get all children for node %s, '%s', '%s' -> (%d nodes)''' % (str(node.id), node.name, node.type, len(nodelist)), time.time()-atime]); atime = time.time()
     else:
         nodelist = node.getChildren()
@@ -643,20 +696,20 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
     #    set_nodelist_ids = set(nodelist.getIDs())
     #else:
     #    set_nodelist_ids = set(nodelist)
-        
-    set_nodeid_localread = set(["%s_%s" % (str(n.id), str(n.localread)) for n in nodelist])  
-    
+
+    set_nodeid_localread = set(["%s_%s" % (str(n.id), str(n.localread)) for n in nodelist])
+
     timetable.append(['get set of ids of nodelist', time.time()-atime]); atime = time.time()
-    
+
     try:
         from core.acl import getDefaultGuestAccessRule
         default_guest_access_name = getDefaultGuestAccessRule().name
     except:
-        default_guest_access_name = None    
-        
+        default_guest_access_name = None
+
     if not default_guest_access_name:
-        logger.warning('No default guest access name set in config file: will use hasAccess method, which may cost web service performance')        
-    
+        logger.warning('No default guest access name set in config file: will use hasAccess method, which may cost web service performance')
+
     if not mdt and not q:
         resultcode, cachecontent = filtercache.retrieve(req_path)
         if resultcode == 'hit' and len(set_nodeid_localread.difference(cachecontent[-1][0]))==0:
@@ -673,10 +726,10 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
                     filtered_nodelist = [x for x in nodelist if (guestAccess.hasAccess(x, 'read') )]
                 else:
                     filtered_nodelist = [x for x in nodelist if (guestAccess.hasAccess(x, 'read') )]
-                timetable.append(['filter access with hasAccess (%d nodes -> %d nodes)' % (len(nodelist), len(filtered_nodelist)), time.time()-atime]); atime = time.time()    
+                timetable.append(['filter access with hasAccess (%d nodes -> %d nodes)' % (len(nodelist), len(filtered_nodelist)), time.time()-atime]); atime = time.time()
 
             nodelist = filtered_nodelist
-            
+
             if not singlenode and len(filtered_nodelist) > FILTERCACHE_NODECOUNT_THRESHOLD:
                 filtercache.update(req_path, [set_nodeid_localread, filtered_nodelist])
                 timetable.append(['added filtered nodelist to filtercache (%d nodes)' % (len(filtered_nodelist)), time.time()-atime]); atime = time.time()
@@ -685,7 +738,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
     if not singlenode and 'sort' in params.keys():
         # sort default with orderpos
         nodelist = tree.NodeList(nodelist)
-        nodelist = nodelist.sort(psort) 
+        nodelist = nodelist.sort(psort)
         timetable.append(["sort nodelist (%d nodes): sort='%s'" % (len(nodelist), psort), time.time()-atime]); atime = time.time()
 
     if nodelist_type:
@@ -702,13 +755,13 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
                 dataready = "%.3f" % (res['build_response_end'] - starttime)
                 res['dataready'] = dataready
                 return res
-                
+
             newly_filtered = [x for x in nodelist if regexp_stype.match(x.type)]
             typefiltered_nodelist += newly_filtered
             timetable.append(['filter node type %s (-> %d nodes)' % (stype, len(newly_filtered)), time.time()-atime]); atime = time.time()
         nodelist = tree.NodeList(list(set(typefiltered_nodelist)))
         timetable.append(['built set from type filter results (total: %d nodes)' % (len(nodelist)), time.time()-atime]); atime = time.time()
-        
+
     if parent_type:
         # filter all nodes with parents that are not of one of the specified types
         typefiltered_nodelist = []
@@ -723,9 +776,9 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
                 dataready = "%.3f" % (res['build_response_end'] - starttime)
                 res['dataready'] = dataready
                 return res
-                
+
             newly_filtered = [] #[x for x in nodelist if regexp_stype.match(x.type)]
-            
+
             for one_node in nodelist:
                 parents_comply = True
                 for one_parent in one_node.getParents():
@@ -734,10 +787,10 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
                     else:
                         parents_comply = False
                         break
-                
+
                 if parents_comply:
                     newly_filtered.append(one_node)
-            
+
             typefiltered_nodelist += newly_filtered
             timetable.append(['filter parent type %s (-> %d nodes)' % (stype, len(newly_filtered)), time.time()-atime]); atime = time.time()
         nodelist = tree.NodeList(list(set(typefiltered_nodelist)))
@@ -751,9 +804,9 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
         timetable.append(['filtered older (inactive) versions out -> (%d nodes)' % (len(nodelist)), time.time()-atime]); atime = time.time()
 
     if exif_location_rect:
-        # filter all nodes that have an EXIF location inside the given rectangle 
+        # filter all nodes that have an EXIF location inside the given rectangle
         components = exif_location_rect.split(',')
-        
+
         if len(components)!=4:
             res['status'] = 'fail'
             res['html_response_code'] = '403' # not found
@@ -762,27 +815,27 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
             dataready = "%.3f" % (res['build_response_end'] - starttime)
             res['dataready'] = dataready
             return res
-         
+
         typefiltered_nodelist = []
-        
+
         for one_node in nodelist:
             location = one_node.get_location()
             if "lon" in location and "lat" in location:
                 node_lon = location["lon"]
                 node_lat = location["lat"]
-                
+
                 test_lat_lower = float(components[0])
                 test_lon_lower = float(components[1])
                 test_lat_upper = float(components[2])
                 test_lon_upper = float(components[3])
-                
+
                 if node_lon>test_lon_lower and node_lon<test_lon_upper and node_lat>test_lat_lower and node_lat<test_lat_upper:
                     typefiltered_nodelist.append(one_node)
-            
+
         timetable.append(['filter exif location rect %s (-> %d nodes)' % (exif_location_rect, len(typefiltered_nodelist)), time.time()-atime]); atime = time.time()
         nodelist = tree.NodeList(list(set(typefiltered_nodelist)))
-        timetable.append(['built set from type filter results (total: %d nodes)' % (len(nodelist)), time.time()-atime]); atime = time.time()  
-        
+        timetable.append(['built set from type filter results (total: %d nodes)' % (len(nodelist)), time.time()-atime]); atime = time.time()
+
     if attrreg:
         attrreg_filtered_nodelist = []
         try:
@@ -795,12 +848,12 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
             res['build_response_end'] = time.time()
             dataready = "%.3f" % (res['build_response_end'] - starttime)
             res['dataready'] = dataready
-            return res            
-                
+            return res
+
         attrreg_filtered_nodelist += [x for x in nodelist if regexp_attrreg.match(x.get(akey))]
         timetable.append(['filter attrreg %s (-> %d nodes)' % (attrreg, len(attrreg_filtered_nodelist)), time.time()-atime]); atime = time.time()
         nodelist = tree.NodeList(list(set(attrreg_filtered_nodelist)))
-        
+
 
     if sortfield:
         def reformat(inputlist, i, f):
@@ -808,7 +861,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
             for t in inputlist:
                 t[i] = f(t[i])
             return inputlist
-            
+
         def nodeValueGetter(node, valuename):
             '''get node related values in uniform fashion: like 'node.id', 'node.name', 'node.type', 'orderpos', attributes'''
             if valuename.startswith('node.'):
@@ -821,15 +874,15 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
                 elif valuename=='node.orderpos':
                     return node.orderpos
             else:
-                return node.get(valuename)     
-                
+                return node.get(valuename)
+
         nodetuples = [map(lambda sfield: nodeValueGetter(x, sfield), sfields)+[ x.id, x] for x in nodelist]
-        
+
         data = nodetuples[:]
-        
+
         for i in range(num_sfields):
             pos = num_sfields-i-1
-            
+
             fReverse = False # default
             try:
                 field_sortdirection = sortdirection[pos]
@@ -842,23 +895,23 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
                     pass
             except:
                 pass
-                
+
             def int_getter(pos, x):
                 try:
                     return int(float(x[pos]))
                 except:
                     return 0
-                    
+
             def float_getter(pos, x):
                 try:
                     return float(x[pos])
                 except:
                     return 0.0
-        
+
             # map formats for sortfield (defaul: string)
             sortkey = lambda x: serviceutils.din5007v2(x[pos])
             try:
-                field_format = sortformat[pos] 
+                field_format = sortformat[pos]
                 if field_format=='i':
                     sortkey = lambda x: int_getter(pos, x)
                 elif fieldformat=='f':
@@ -866,8 +919,8 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
                 else:
                     pass
             except:
-                pass 
-                
+                pass
+
             data = sorted(data, key=sortkey, reverse=fReverse)
 
         nodetuples = data[:]
@@ -897,7 +950,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
         nodelist = nodelist[nodelist_start:nodelist_start + nodelist_limit]
     else:
         nodelist = nodelist[nodelist_start:]
-        
+
     res['nodelist'] = nodelist
     res['sfields'] = sfields
     res['sortfield'] = sortfield
@@ -916,10 +969,10 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
     return res
 
 def write_formatted_response(req, path, params, data, id, debug=True, allchildren=False, singlenode=False, parents=False, send_children=False):
-    
+
     atime = starttime = time.time()
     r_timetable = []
-    
+
     _p = params.copy()
     if "jsoncallback" in _p:
         del _p['jsoncallback']
@@ -928,9 +981,9 @@ def write_formatted_response(req, path, params, data, id, debug=True, allchildre
 
     cache_key = '|'.join(map(str, [path, _p, allchildren, singlenode, parents, send_children]))
     cache_key = cache_key.replace(' ', '_')
-    
+
     acceptcached = float(params.get('acceptcached', '0'))
-    
+
     result_from_cache = None
     if acceptcached > 0.0:
         resultcode, cachecontent = resultcache.retrieve(cache_key, acceptcached)
@@ -946,22 +999,22 @@ def write_formatted_response(req, path, params, data, id, debug=True, allchildre
             r_timetable.append(["retrieved filtered result from 'resultcache': (%d bytes), time_delta: %.3f lower acceptcached %.3f sec." % (len(result_from_cache), time_delta, acceptcached), time.time()-atime]); atime = time.time()
         elif resultcode == 'refused':
             time_cached = resultcache.getTimestamp(cache_key)
-            time_delta = starttime - time_cached        
+            time_delta = starttime - time_cached
             r_timetable.append(["cached result exists in 'resultcache', but not used: time_delta: %.3f sec. higher acceptcached %.3f sec." % (time_delta, acceptcached), time.time()-atime]); atime = time.time()
-         
+
     if not result_from_cache:
-        
+
         d = get_node_children_struct(req, path, params, data, id, debug=debug, allchildren=allchildren, singlenode=singlenode, send_children=send_children, parents=parents)
 
         if r_timetable:
-            d['timetable'] = r_timetable + d.setdefault('timetable', []) 
+            d['timetable'] = r_timetable + d.setdefault('timetable', [])
             r_timetable = []
-        
+
         res_format = (params.get('format', 'xml')).lower()
         formatIsSupported = False
-        
+
         mimetype = ''
-    
+
         for supported_format in supported_formats:
             if res_format in supported_format[0]:
                 atime = time.time()
@@ -971,50 +1024,56 @@ def write_formatted_response(req, path, params, data, id, debug=True, allchildre
                     s = params['jsoncallback'] + '(' + s + ')'
                 mimetype = params.get('mimetype', supported_format[2])
                 req.reply_headers['Content-Type'] = mimetype + "; charset=utf-8"
-                
                 d['timetable'].append(["formatted for '%s'" % res_format, time.time()-atime]); atime = time.time()
-                
+
+                disposition = req.params.get('disposition', '')
+                if disposition:
+                    # ex.: (direct to download) value: "attachment; filename=myfilename.txt"
+                    # ex.: (open in browser) value: "filename=myfilename.txt"
+                    req.reply_headers['Content-Disposition'] = disposition
+                    d['timetable'].append(["wrote disposition %r to reply header" % (disposition), time.time()-atime]); atime = time.time()
+
                 break
-   
+
         if formatIsSupported == False:
             d['status'] = 'fail'
             d['html_response_code'] = '404' # not found
             d['errormessage'] = 'unsupported format'
             d['build_response_end'] = time.time()
-    
+
             s = struct2xml(req, path, params, data, d, singlenode=True, send_children=False)
             req.reply_headers['Content-Type'] = "text/xml; charset=utf-8"
-            
-        if acceptcached > 0: # only write to cache for these requests 
+
+        if acceptcached > 0: # only write to cache for these requests
             resultcache.update(cache_key, [s, mimetype])
             d['timetable'].append(["wrote result to 'resultcache' (%d bytes), now in cache: %d entries" % (len(s), resultcache.getKeysCount()), time.time()-atime]); atime = time.time()
             #d['timetable'].append(["wrote result to 'resultcache' (%d bytes), now in cache: %d entries: \r\n%s" % (len(s), resultcache.getKeysCount(), resultcache.report()), time.time()-atime]); atime = time.time()
             #d['timetable'].append(["wrote result to 'resultcache' (%d bytes), now in cache: %d entries: %s" % (len(s), resultcache.getKeysCount(), "#".join(resultcache.getKeys())), time.time()-atime]); atime = time.time()
-            
+
     else:
-            d = {}
-            d['status'] = 'ok'
-            d['html_response_code'] = '200' # ok
-            d['build_response_end'] = time.time()
-            if r_timetable:
-                d['timetable'] = r_timetable[:]               
-            s = result_from_cache
-            d['timetable'].append(["serving %.3f sec. old response (%d bytes) from '%s', cache_key: %s" % (time.time()-timestamp_from_cache, len(s), cache_name, cache_key), time.time()-atime]); atime = time.time()
-            req.reply_headers['Content-Type'] = mimetype_from_cache+"; charset=utf-8" 
-            mimetype = mimetype_from_cache
+        d = {}
+        d['status'] = 'ok'
+        d['html_response_code'] = '200' # ok
+        d['build_response_end'] = time.time()
+        if r_timetable:
+            d['timetable'] = r_timetable[:]
+        s = result_from_cache
+        d['timetable'].append(["serving %.3f sec. old response (%d bytes) from '%s', cache_key: %s" % (time.time()-timestamp_from_cache, len(s), cache_name, cache_key), time.time()-atime]); atime = time.time()
+        req.reply_headers['Content-Type'] = mimetype_from_cache+"; charset=utf-8"
+        mimetype = mimetype_from_cache
 
     def compressForDeflate(s):
         import gzip
         return gzip.zlib.compress(s,9)
-        
+
     def compressForGzip(s):
         import cStringIO, gzip
         buffer = cStringIO.StringIO()
         gzfile = gzip.GzipFile(mode='wb', fileobj=buffer, compresslevel=9)
         gzfile.write(s)
         gzfile.close()
-        return buffer.getvalue()        
-            
+        return buffer.getvalue()
+
     if 'deflate' in req.params:
         size_uncompressed = len(s)
         compressed_s = compressForDeflate(s)
@@ -1039,19 +1098,19 @@ def write_formatted_response(req, path, params, data, id, debug=True, allchildre
         req.reply_headers['Content-Encoding'] = "gzip"
         d['timetable'].append(["'gzip' in request: executed compressForGzip(s), %d bytes -> %d bytes (compressed to: %.1f %%)" % (size_uncompressed, size_compressed, percentage), time.time()-atime]); atime = time.time()
 
-    
+
     req.reply_headers['Content-Length'] = len(s)
-    
+
     # (format) Expires: Mon, 28 Nov 2011 12:41:22 GMT
     # see core.athana.build_http_date
     #req.reply_headers['Expires'] = time.strftime ('%a, %d %b %Y %H:%M:%S GMT', time.gmtime(time.time()+60.0)) # 1 minute
-    
-    
+
+
     # remark: on 2011-12-01 switched response from req.write to req.sendAsBuffer for performance reasons
     # (before: ) req.write(s)
     req.sendAsBuffer(s, mimetype, force=1)
-    d['timetable'].append(["executed req.sendAsBuffer, %d bytes, mimetype='%s'" % (len(s), mimetype), time.time()-atime]); atime = time.time()          
-    return d['html_response_code'], len(s), d 
+    d['timetable'].append(["executed req.sendAsBuffer, %d bytes, mimetype='%s'" % (len(s), mimetype), time.time()-atime]); atime = time.time()
+    return d['html_response_code'], len(s), d
 
 def get_node_single(req, path, params, data, id):
 
@@ -1059,16 +1118,16 @@ def get_node_single(req, path, params, data, id):
     if res_children and res_children.lower() not in ['0', 'none', 'false']:
         send_children=True
     else:
-        send_children=False  
-        
+        send_children=False
+
     return write_formatted_response(req, path, params, data, id, debug=True, singlenode=True, send_children=send_children)
-    
+
 def get_node_children(req, path, params, data, id):
-    return write_formatted_response(req, path, params, data, id, debug=True, singlenode=False, allchildren=False)      
-    
+    return write_formatted_response(req, path, params, data, id, debug=True, singlenode=False, allchildren=False)
+
 def get_node_allchildren(req, path, params, data, id):
     return write_formatted_response(req, path, params, data, id, debug=True, singlenode=False, allchildren=True)
-    
+
 def get_node_parents(req, path, params, data, id):
     return write_formatted_response(req, path, params, data, id, debug=True, singlenode=False, parents=True)
 
@@ -1078,26 +1137,26 @@ def get_cachestatus(req, path, params, data):
     d = {}
     d['status'] = 'ok'
     d['html_response_code'] = '200'
-    d['timetable'] = timetable        
+    d['timetable'] = timetable
     req.reply_headers['Content-Type'] = "text/plain" + "; charset=utf-8"
-    
+
     s = 'searchcache content: %s\r\n' % cache_date2string(time.time(), '%04d-%02d-%02d-%02d-%02d-%02d')
     s += searchcache.report()
     d['timetable'].append(["retrieved report for searchcache", time.time()-atime]); atime = time.time()
-    
+
     s += '\r\n\r\nfiltercache content: %s\r\n' % cache_date2string(time.time(), '%04d-%02d-%02d-%02d-%02d-%02d')
     s += filtercache.report()
-    d['timetable'].append(["retrieved report for filtercache", time.time()-atime]); atime = time.time() 
-       
+    d['timetable'].append(["retrieved report for filtercache", time.time()-atime]); atime = time.time()
+
     s += '\r\n\r\nresultcache content: %s\r\n' % cache_date2string(time.time(), '%04d-%02d-%02d-%02d-%02d-%02d')
     s += resultcache.report()
-    d['timetable'].append(["retrieved report for resultcache", time.time()-atime]); atime = time.time() 
-    
+    d['timetable'].append(["retrieved report for resultcache", time.time()-atime]); atime = time.time()
+
     req.write(s)
-    
+
     d['timetable'].append(["writing cache reports to request", time.time()-atime]); atime = time.time()
     return d['html_response_code'], len(s), d
-    
+
 def get_maskcachestatus(req, path, params, data):
     atime = time.time()
     from contenttypes.default import get_maskcache_report, maskcache_accesscount #, nodemasks
@@ -1105,16 +1164,16 @@ def get_maskcachestatus(req, path, params, data):
     d = {}
     d['status'] = 'ok'
     d['html_response_code'] = '200'
-    d['timetable'] = timetable        
+    d['timetable'] = timetable
     req.reply_headers['Content-Type'] = "text/plain" + "; charset=utf-8"
-    
+
     s = 'mask cache content (lookup keys): %s\r\n\r\n' % cache_date2string(time.time(), '%04d-%02d-%02d-%02d-%02d-%02d')
-    
+
     s += get_maskcache_report()
-        
+
     req.write(s)
     d['timetable'].append(["writing masks cache access counts to request", time.time()-atime]); atime = time.time()
-    return d['html_response_code'], len(s), d    
+    return d['html_response_code'], len(s), d
 
 # alternative base dir for static html files
 #
@@ -1124,14 +1183,14 @@ def get_maskcachestatus(req, path, params, data):
 # absolute:
 # WEBROOT="/tmp/"
 
-#WEBROOT="./web/services/static01/files/" 
+#WEBROOT="./web/services/static01/files/"
 
 # no WEBROOT configured, default will be used
 WEBROOT = None
 
 def serve_file(req, path, params, data, filepath):
     atime = starttime = time.time()
-    
+
     d = {}
     d['timetable'] = []
 
@@ -1141,7 +1200,7 @@ def serve_file(req, path, params, data, filepath):
         mimetype = 'text/html'
     else:
         mimetype = getMimeType(filepath)
-            
+
     req.reply_headers['Content-Type'] = mimetype
 
     if WEBROOT:
@@ -1162,5 +1221,5 @@ def serve_file(req, path, params, data, filepath):
     else:
         d['status'] = 'fail'
         dataready = "%.3f" % (time.time() - starttime)
-        d['dataready'] = dataready        
+        d['dataready'] = dataready
         return 404, 0, d # not found

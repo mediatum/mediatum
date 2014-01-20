@@ -104,7 +104,7 @@ msgid "pwdforgotten_explain_procedure"
 msgstr "To obtain a new password, please enter your username. A new password and an activation link will be sent to your e-mail address."
 
 msgid "tum_pwdforgotten_explain_procedure"
-msgstr "To obtain a new password, please enter your username. A new password and an activation link will be sent to your e-mail address. This applies only to mediaTUM-internal usernames. In case of problems with your TUM-id you should contact TUMonline."
+msgstr "To obtain a new password, please enter your username. A new password and an activation link will be sent to your e-mail address. This applies only to mediaTUM-internal usernames. In case of problems with your TUM-id and the associated password you should contact TUMonline."
 
 msgid "pwdforgotten_username:"
 msgstr "username:"

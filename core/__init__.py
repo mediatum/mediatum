@@ -27,7 +27,10 @@ import core.config as config
 
 import core.athana as athana
 
-basedir = os.path.dirname(athana.__file__).rsplit(os.sep,1)[0]
+#basedir = os.path.dirname(athana.__file__).rsplit(os.sep,1)[0]
+# wn 2014-01-20: ensure absolute path even when importing startup file (eg: start.py)
+basedir = os.path.abspath(athana.__file__).rsplit(os.sep,2)[0]
+
 editmodulepaths = [('', 'web/edit/modules')]
 
 print "Base path is at", basedir

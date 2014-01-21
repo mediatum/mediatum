@@ -115,10 +115,13 @@ class WorkflowStep_SendEmail(WorkflowStep):
             elif "@" in node.get(self.get('from')):
                 node.set("mailtmp.from", getTALtext(node.get(self.get("from")), attrs))
 
-            if "@" in self.get('email'):
-                node.set("mailtmp.to", getTALtext(self.get("email"), attrs))
-            elif "@" in node.get(self.get("email")):
-                node.set("mailtmp.to", getTALtext(node.get(self.get("email")), attrs))
+            _mails = []
+            for m in self.get('email').split(";"):
+                if "@" in m:
+                    _mails.append(getTALtext(m, attrs))
+                elif "@" in node.get(m):
+                    _mails.append(getTALtext(node.get(m), attrs))
+            node.set("mailtmp.to", ";".join(_mails))
 
             node.set("mailtmp.subject", getTALtext(self.get("subject"), attrs))
             node.set("mailtmp.text", getTALtext(self.get("text"), attrs))

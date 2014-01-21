@@ -156,6 +156,9 @@ def initContexts():
     file.addHandler("pwdforgotten").addPattern("/pwdforgotten")
     file.addHandler("pwdchange").addPattern("/pwdchange")
 
+    file = context.addFile("web/frontend/userdata.py")
+    file.addHandler("show_user_data").addPattern("/user")
+
     file = context.addFile("workflow/diagram/__init__.py")
     file.addHandler("send_workflow_diagram").addPattern("/workflowimage")
 

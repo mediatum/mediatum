@@ -3,7 +3,7 @@
 
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
  Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
- Copyright (C) 2014 Werner F. Neudenberger Kramm <werner.neudenberger@tum.de>
+ Copyright (C) 2014 Werner F. Neudenberger <werner.neudenberger@tum.de>
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by

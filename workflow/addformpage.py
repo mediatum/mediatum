@@ -64,6 +64,10 @@ def parse_pdftk_fields_dump(s):
             d[vals[0].strip()] = ":".join(vals[1:]).strip()
     field_dicts.append(d)
     return field_dicts
+    
+TAG_RE = re.compile(r'<[^>]+>')
+def remove_tags(text):
+    return TAG_RE.sub('', text)
 
 
 def fillPDFForm(formPdf, fields, outputPdf="filled.pdf", input_is_fullpath=False, editable=False):
@@ -187,7 +191,7 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                                 value = value.replace('[att:%s]' %(m.group(0)), v)
                     else:
                         logger.warning("workflowstep %s (%s): could not find attribute for pdf form field '%s' - node: '%s' (%s)" % (current_workflow_step.name, str(current_workflow_step.id), fieldname, node.name, node.id))
-                    fields.append((fieldname, utils.utf82iso(value)))
+                    fields.append((fieldname, utils.utf82iso(remove_tags(value))))
 
 
         if not pdf_form_separate and fnode and f_retrieve_path and os.path.isfile(f_retrieve_path):

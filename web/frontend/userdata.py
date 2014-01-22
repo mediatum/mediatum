@@ -19,6 +19,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import sys
+
 import core.athana as athana
 import core.config as config
 import core.users as users
@@ -37,6 +39,8 @@ loggername = "userdata_debug"
 addLogger(loggername, additional_handlers=[], loglevel=logging.DEBUG)
 log = logging.getLogger(loggername)
 DEBUG = True
+
+USE_EXAMPLES = True
 
 
 def get_orderpos2name_list():
@@ -63,13 +67,11 @@ def register_aclass(name, inst, force=False):
 
 
 class HTMLSnippet:
-    def __init__(self, name="unnamed", atype=None, orderpos=None, template="",
-                       callback=None):
+    def __init__(self, name="unnamed", atype=None, orderpos=None, template=""):
         self.name = name
         self.atype = atype
         self.orderpos = orderpos if orderpos else get_default_orderpos()
         self.template = template
-        self.callback = callback
 
     def setUserDetails(self, user, detail_dict, req=None, **kwargs):
         targetnode = users.getHomeDir(user)
@@ -102,15 +104,26 @@ class HTMLSnippet:
     def allowUser(self, user, req=None, **kwargs):
         return False
 
+    def callback(self, req=None, **kwargs):
+        return ""        
+
 
 def show_user_data(req):
-
+    global aclasses
+    
     error = ""
+
+    if USE_EXAMPLES and 'examples' in req.params:
+        try:
+            import userdata_examples
+            reload(userdata_examples)
+        except Exception as e:
+            log.error("Error loading examples:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]), exc_info=True)
 
     if "jsonrequest" in req.params:
         python_callback_key = req.params.get("python_callback_key", "")
-        if python_callback_key and python_callback_key in userdata_dict.aclasses:
-            req.write(userdata_dict.aclasses[python_callback_key].callback(req=req))
+        if python_callback_key and python_callback_key in aclasses:
+            req.write(aclasses[python_callback_key].callback(req=req))
         return
 
     user = users.getUserFromRequest(req)

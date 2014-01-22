@@ -26,6 +26,7 @@ import locale
 import core.config as config
 
 import core.athana as athana
+import core.translation as translation
 
 #basedir = os.path.dirname(athana.__file__).rsplit(os.sep,1)[0]
 # wn 2014-01-20: ensure absolute path even when importing startup file (eg: start.py)

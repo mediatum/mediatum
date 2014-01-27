@@ -38,7 +38,7 @@ def _replace_vars(node, s):
             if val == "":
                 val = "____"
             s = s.replace("<" + var + ">", val)
-            
+
     for var in re.findall(r'\[(.+?)\]', s):
         if var == "att:id":
             s = s.replace("[" + var + "]", node.id)
@@ -68,8 +68,8 @@ class m_url(Metatype):
 
     def getAdminFieldsHTML(self, values={}):
         return athana.getTAL("metadata/url.html",{"valuelist":values["valuelist"], "icons":m_url.icons,"url_targets":m_url.targets}, macro="fieldeditor", language=values["language"])
-        
-        
+
+
     def getSearchHTML(self, context):
         return athana.getTAL("metadata/url.html",{"context":context}, macro="searchfield", language=context.language)
 
@@ -80,7 +80,7 @@ class m_url(Metatype):
         try:
             value = node.get(field.getName()).split(";")
             fielddef = field.getValues().split("\r\n")
-            
+
             while len(fielddef)<4:
                 fielddef.append("")
 
@@ -93,12 +93,12 @@ class m_url(Metatype):
                         l.append(fielddef[i])
                 except:
                     l.append(fielddef[i])
-            
+
             uri, linktext, icon, target = [_replace_vars(node, p) for p in l]
 
             # find unsatisfied variables
             if str(uri).find("____")>=0:
-                uri = ''               
+                uri = ''
             if str(linktext).find("____")>=0:
                 linktext = ''
 
@@ -106,21 +106,21 @@ class m_url(Metatype):
                 target = ""
             if uri!="" and linktext=="":
                 linktext = unquote(uri)
-                    
+
             if uri=='' and linktext=='':
                 value = icon = ""
             # XXX: ???
             elif uri=='' and linktext!='':
                 value = linktext
                 icon = ""
-            else:  #link and text given 
+            else:  #link and text given
                 if target in ["", "_blank"]:
-                    value = '<a href="{}" target="_blank" title="{}">{}</a>'.format(uri, t(language,'show in new window'), linktext) 
+                    value = '<a href="{}" target="_blank" title="{}">{}</a>'.format(uri, t(language,'show in new window'), linktext)
                 else:
                     value = '<a href="{}">{}</a>'.format(uri, linktext)
             if icon!="":
                 value += '<img src="{}"/>'.format(icon)
-            
+
             return (field.getLabel(), value)
         except:
             logg.error("error getting formatted value for URI", exc_info=1)
@@ -129,9 +129,9 @@ class m_url(Metatype):
     def format_request_value_for_db(self, field, params, item, language=None):
         uri = params.get(item)
         quoted_uri = quote_uri(uri)
-        linktext = params.get(item + "_text").replace(";", u"\u037e")
+        linktext = params.get(item + "_text").replace(";", "\xcd\xbe")
         return "{};{}".format(quoted_uri, linktext)
-    
+
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         try:
             value = field.getValues().split("\r\n")
@@ -143,14 +143,14 @@ class m_url(Metatype):
 
     def getName(self):
         return "fieldtype_url"
-        
+
     def getInformation(self):
         return {"moduleversion":"1.1", "softwareversion":"1.1"}
 
     # method for additional keys of type url
     def getLabels(self):
         return m_url.labels
-        
+
     labels = { "de":
             [
                 ("url_edit_link", "Link:"),
@@ -176,4 +176,3 @@ class m_url(Metatype):
 
             ]
          }
-  

@@ -43,7 +43,7 @@ def test_get_formated_value(m, node, field):
     expected = '<a href="http://dx.doi.org/10.1002/%28SICI%291522-2594%28199911%2942%3A5%3C952%3A%3AAID-MRM16%3E3.0.CO%3B2-S" target="_blank" title="?show in new window?">Name</a>'
     assert ret[1] == expected
     return ret
-    
+
 
 def test_format_request_value_for_db(m, field):
     assert isinstance(m, url.m_url)
@@ -55,7 +55,19 @@ def test_format_request_value_for_db(m, field):
     expected = u"http://dx.doi.org/10.1002/%28SICI%291522-2594%28199911%2942%3A5%3C952%3A%3AAID-MRM16%3E3.0.CO%3B2-S;Link with \u037e inside"
     assert ret == expected
     return ret
-    
+
+
+def test_format_request_value_for_db_umlaut(m, field):
+    assert isinstance(m, url.m_url)
+    params = {
+        "www-address": "http://dx.doi.org/10.1002/(SICI)1522-2594(199911)42:5<952::AID-MRM16>3.0.CO;2-S",
+        "www-address_text": "Irgendwäß mit Ümlauten."
+    }
+    ret = m.format_request_value_for_db(field, params, "www-address")
+    expected = u"http://dx.doi.org/10.1002/%28SICI%291522-2594%28199911%2942%3A5%3C952%3A%3AAID-MRM16%3E3.0.CO%3B2-S;Irgendwäß mit Ümlauten."
+    assert ret == expected
+    return ret
+
 
 if __name__ == "__main__":
     print "test_get_formated_value", test_get_formated_value(m(), node(), field())

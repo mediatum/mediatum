@@ -29,6 +29,8 @@ from core.metatype import Metatype, charmap
 from core.translation import t
 from export.exportutils import runTALSnippet
 
+system_languages = [lang.strip() for lang in config.get("i18n.languages").split(",") if lang.strip()]
+
 
 def getMaskitemForField(field, language=None, mask=None):
 
@@ -127,22 +129,26 @@ class m_text(Metatype):
 
         if value.find('\n') != -1:
             valuesList = value.split('\n')
-            index = 0
-            try:
-                index = valuesList.index(language)
-                value = valuesList[index+1]
-            except ValueError, e:
-                logException(e)
+            if any(lang in valuesList for lang in system_languages):  # treat as multilingual
+                index = 0
+                try:
+                    index = valuesList.index(language)
+                    value = valuesList[index+1]
+                except ValueError, e:
+                    logException(e)
 
-                log = logging.getLogger("errors")
-                msg = "Exception in getFormatedValue for textfield:\n"
-                msg += " valuesList=%r\n" % valuesList
-                msg += " node.name=%r, node.id=%r, node.type=%r\n" % (node.name, node.id, node.type)
-                msg += " field.name=%r, field.id=%r, field.type=%r\n" % (field.name, field.id, field.type)
-                msg += " language=%r, mask=%r" % (language, mask)
-                log.error(msg)
+                    log = logging.getLogger("errors")
+                    msg = "Exception in getFormatedValue for textfield:\n"
+                    msg += " valuesList=%r\n" % valuesList
+                    msg += " node.name=%r, node.id=%r, node.type=%r\n" % (node.name, node.id, node.type)
+                    msg += " field.name=%r, field.id=%r, field.type=%r\n" % (field.name, field.id, field.type)
+                    msg += " language=%r, mask=%r" % (language, mask)
+                    log.error(msg)
 
-                value = ""
+                    value = ""
+            else:
+                # treat as monolingual
+                pass
         unescaped_value = value
 
         if html:

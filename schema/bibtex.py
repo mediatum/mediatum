@@ -112,7 +112,10 @@ def save_import_file(filename):
     global logger
     import core.config as config
     temppath = config.get("paths.tempdir")
-    destname = os.path.join(temppath, "bibtex_import_saved_" + getNow() + "_" + filename)
+    _filename_only = filename.split(os.path.sep)[-1]
+    # leave following in for windows: "/" in path representation possible there
+    _filename_only = filename.split("/")[-1]
+    destname = os.path.join(temppath, "bibtex_import_saved_" + getNow() + "_" + _filename_only)
     msg = "bibtex import: going to copy/save import file %r -> %r" % (filename, destname)
     logger.info(msg)
     if os.sep=='/':

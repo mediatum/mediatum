@@ -125,7 +125,7 @@ class m_text(Metatype):
         value = node.get(field.getName()).replace(";","; ")
 
         # ignore trailing newlines for textfields
-        value = value.rstrip("\r\l\n")
+        value = value.rstrip("\r\n")
 
         if value.find('\n') != -1:
             valuesList = value.split('\n')

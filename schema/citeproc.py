@@ -146,11 +146,18 @@ def convert_csl_date(date_value):
     Day or day and month can be missing.
     '''
     # XXX: ranges?
-    d = date_value["date-parts"][0]
-    year = int(d[0])
-    month = int(d[1]) if len(d) > 1 else 1
-    day = int(d[2]) if len(d) > 2 else 1
-    return datetime.date(year, month, day)
+    if "date-parts" in date_value:
+        d = date_value["date-parts"][0]
+        year = int(d[0])
+        month = int(d[1]) if len(d) > 1 else 1
+        day = int(d[2]) if len(d) > 2 else 1
+        return datetime.date(year, month, day)
+    elif "raw" in date_value:
+        try:
+            year = int(date_value["raw"])
+            return datetime.date(year, 1, 1)
+        except:
+            return date_value["raw"]
 
 
 def convert_csl_names(names):
@@ -159,7 +166,7 @@ def convert_csl_names(names):
     '''
     res = []
     for n in names:
-        parts = (n.get("family"), n.get("given"), n.get("suffix"))
+        parts = (n.get("literal"), n.get("family"), n.get("given"), n.get("suffix"))
         formatted = ", ".join([p.encode("utf8") for p in parts if p])
         res.append(formatted)
     return ";".join(res)
@@ -210,7 +217,7 @@ def extract_and_check_doi(doi_or_uri):
         raise InvalidDOI()
 
 
-def import_csl(record, target=None, name=None):
+def import_csl(record, target=None, name=None, testing=False):
     """Import data from a CSL record into a new node
     :param record: CSL record
     :type record: dict
@@ -228,6 +235,8 @@ def import_csl(record, target=None, name=None):
         raise NoMappingFound("No citeproc schema mapping could be found", typ)
     metatype = getMetaType(metatype_name)
     mask = metatype.getMask("citeproc")
+    if not mask:
+        raise NoMappingFound("target schema does not have a citeproc mask", typ)
     contenttype = "document"
     if name is None:
         name = record.get("DOI") or "".join(random.choice('0123456789abcdef') for _ in xrange(16))
@@ -282,11 +291,12 @@ def import_csl(record, target=None, name=None):
     if target:
         target.addChild(node)
 
-    node.setDirty()
+    if not testing:
+        node.setDirty()
     return node
 
 
-def import_doi(doi, target=None, name=None):
+def import_doi(doi, target=None, name=None, testing=False):
     """Get record for a given DOI in citeproc JSON format and create a node from its information.
     :param doi:
     :param target:
@@ -295,7 +305,4 @@ def import_doi(doi, target=None, name=None):
     """
     record = get_citeproc_json(doi)
     logg.debug("got citeproc data from server: %s", pformat(record))
-    return import_csl(record, target, doi)
-
-
-
+    return import_csl(record, target, doi, testing=testing)

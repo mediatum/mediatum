@@ -12,12 +12,13 @@ import os.path
 import logging as logg
 logg.basicConfig()
 from pprint import pprint
-from pytest import raises, fixture
+from pytest import raises
 
 from core import tree
 from .. import citeproc
 from ..citeproc import get_citeproc_json, DOINotFound, FIELDS, CSLField
 from ..importbase import NoMappingFound
+
 
 BASEDIR = os.path.join(os.path.dirname(__file__), "test_data")
 DOI_ARTICLE = "10.1038/nmat3712"
@@ -26,16 +27,13 @@ DOI_ARTICLE3 = "10.1016/j.susc.2010.09.012"
 DOI_BOOK = "10.1007/3-540-44895-0_1"
 DOI_UTF8 = "10.1007/978-3-540-69073-3_6"
 DOI_MISC = "10.1594/PANGAEA.726855"
+DOI_LITERAL_AUTHOR_RAW_DATE = "10.5284/1021188"
+
 
 def load_csl_record_file(doi):
     fn = doi.replace("/", "_slash_") + ".json"
     fp = os.path.join(BASEDIR, fn)
     return json.load(open(fp))
-
-
-@fixture
-def target():
-    return tree.Node("test", "directory")
 
 
 def check_node(node, expected):
@@ -49,6 +47,16 @@ def check_node(node, expected):
         assert doi == expected["DOI"]
         publisher = node.get("publisher")
         assert publisher == expected["publisher"]
+
+
+def setup_module(module):
+    try:
+        from core import init
+    except:
+        return
+    init.register_node_classes()
+    init.register_node_functions()
+    tree.initialize()
 
 
 def _get_path(doi, typ):
@@ -76,24 +84,25 @@ def test_fields():
     assert date_field.fieldtype == "date"
 
 
-def test_import_csl(target):
+def test_import_csl():
     record = load_csl_record_file(DOI_ARTICLE)
-    node = citeproc.import_csl(record, target)
+    node = citeproc.import_csl(record, testing=True)
     check_node(node, record)
 
 
-def test_import_doi(target):
-    node = citeproc.import_doi(DOI_ARTICLE3, target)
+def test_import_doi():
+    node = citeproc.import_doi(DOI_ARTICLE3, testing=True)
     expected = load_csl_record_file(DOI_ARTICLE3)
     check_node(node, expected)
 
 
-def test_import_doi_utf8(target):
-    node = citeproc.import_doi(DOI_UTF8, target)
+def test_import_doi_utf8():
+    node = citeproc.import_doi(DOI_UTF8, testing=True)
     expected = load_csl_record_file(DOI_UTF8)
     check_node(node, expected)
 
 
-def test_get_citeproc_no_mapping():
-    with raises(NoMappingFound):
-        citeproc.import_doi(DOI_MISC, target=None)
+def test_literal_author_raw_date():
+    node = citeproc.import_doi(DOI_LITERAL_AUTHOR_RAW_DATE, testing=True)
+    assert node.get("author") == "Cambridge Archaeological Unit"
+    assert node.get("publicationdate") == "2012-01-01"

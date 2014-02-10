@@ -74,8 +74,24 @@ def upload_new_node(req, path, params, data):
     
     #get the user and verify the signature
     if params.get('user'):
-        user=users.getUser(params.get('user'))
-        userAccess = AccessData(user=user)
+        #user=users.getUser(params.get('user'))
+        #userAccess = AccessData(user=user)
+        _user = users.getUser(params.get('user'))
+        if not _user: # user of dynamic
+
+            class dummyuser: # dummy user class
+                def getGroups(self): # return all groups with given dynamic user
+                    return [g.name for g in tree.getRoot('usergroups').getChildren() if g.get('allow_dynamic')=='1' and params.get('user') in g.get('dynamic_users')]
+                def getName(self):
+                    return params.get('user')
+                def getDirID(self): # unique identifier
+                    return params.get('user')
+                def isAdmin(self):
+                    return 0
+
+            _user = dummyuser()
+        userAccess = AccessData(user=_user)
+
         
         if userAccess.user != None:
             valid = userAccess.verify_request_signature(req.fullpath,params)

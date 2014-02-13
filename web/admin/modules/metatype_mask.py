@@ -38,6 +38,15 @@ def showMaskList(req, id):
     masks = metadatatype.getMasks()
     order = getSortCol(req)
     actfilter = getFilter(req)
+
+    #resets filter to all if adding mask in /metatype view
+    # if req.params.get('acttype') == 'mask' or req.params.get('acttype') == 'schema':
+    #     if req.path == '/metatype' and 'filterbutton' not in req.params:
+    #         actfilter = '*'
+
+    #resets filter when going to a new view
+    if 'filterbutton' not in req.params:
+        actfilter = '*'
     
     # filter
     if actfilter!="":

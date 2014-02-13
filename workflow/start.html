@@ -32,7 +32,10 @@
                 
                 <input tal:condition="python:len(languages)==1" type="hidden" name="workflow_language" tal:attributes="value python:languages[0]"/>
                 <br/>
-                <button type="submit" name="workflow_start" i18n:translate="workflow_start_create">TEXT</button>
+                <button type="submit" name="workflow_start">
+                    <tal:block tal:condition="multilang" i18n:translate="workflow_start_create_m"/>
+                    <tal:block tal:condition="not: multilang " i18n:translate="workflow_start_create"/>
+                </button>
             </form>
         </div>
         

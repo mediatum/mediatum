@@ -17,7 +17,7 @@ msgid "edit_meta_reset"
 msgstr "Reset"
 
 msgid "edit_mask_required"
-msgstr "Required (not empty)"
+msgstr "Required, can't be empty"
 
 msgid "edit_meta_created"
 msgstr "created"

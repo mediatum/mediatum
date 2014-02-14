@@ -101,7 +101,7 @@ msgid "admin_duplicate_error"
 msgstr "Name already assigned."
 
 msgid "admin_mandatory_info"
-msgstr "Required (not empty)"
+msgstr "Required, can't be empty"
 
 msgid "admin_save_title"
 msgstr "save changes"

@@ -279,7 +279,7 @@ def clean():
     base_dir = os.path.abspath(os.curdir)
     web_root_dir = '/'.join([base_dir, 'web', 'root'])
 
-    sitemaps = [f for f in os.listdir(web_root_dir) if '.xml' in f]
+    sitemaps = [f for f in os.listdir(web_root_dir) if '.xml' in f and f.startswith('sitemap')]
 
     #If no .xml files exist
     if not sitemaps:

@@ -132,12 +132,14 @@ class InvalidDOI(Exception):
 
 
 def check_mappings():
-    s = importbase.get_all_import_mappings("citeproc")
+    types, ambiguous_types = importbase.get_all_import_mappings("citeproc")
     for typ in TYPES:
-        if typ not in s:
+        if typ not in types:
             print typ, "is not associated with any metatype"
         else:
-            print typ, "->", s[typ]
+            print typ, "->", types[typ]
+    for typ, schemas in ambiguous_types.iteritems():
+        print "warning: ambiguous mapping", typ, "->", schemas
 
 
 def convert_csl_date(date_value):

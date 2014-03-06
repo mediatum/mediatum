@@ -38,6 +38,7 @@ class NoMappingFound(ImportException):
 def get_all_import_mappings(mapping_type):
     mapping_name = mapping_type + "mapping"
     types = {}
+    ambiguous_types = {}
     # find all mappings
     for metatype in schema.loadTypesFromDB():
         for typ in metatype.get(mapping_name).split(";"):
@@ -50,8 +51,9 @@ def get_all_import_mappings(mapping_type):
             types[typ] = metatype_names[0]
         else:
             logg.error("ambiguous mapping for bibtex type '%s': %s - choosing last one" % (typ, metatype_names[-1]))
+            ambiguous_types[typ] = metatype_names
             types[typ] = metatype_names[-1]
-    return types
+    return types, ambiguous_types
 
 
 def get_import_mapping(mapping_type, mapped_type):

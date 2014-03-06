@@ -50,7 +50,7 @@ def get_all_import_mappings(mapping_type):
             types[typ] = metatype_names[0]
         else:
             logg.error("ambiguous mapping for bibtex type '%s': %s - choosing last one" % (typ, metatype_names[-1]))
-            types[type] = metatype_names[-1]
+            types[typ] = metatype_names[-1]
     return types
 
 

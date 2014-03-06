@@ -83,7 +83,7 @@ FIELDS = defaultdict(lambda: CSLField("standard"), {
 )
 
 # see http://citationstyles.org/downloads/specification.html#appendix-iii-types
-TYPES =  [
+CSL_TYPES =  [
     'article',
     'article-magazine',
     'article-newspaper',
@@ -93,6 +93,7 @@ TYPES =  [
     'broadcast',
     'chapter',
     'dataset',
+    '_default',
     'entry',
     'entry-dictionary',
     'entry-encyclopedia',
@@ -106,6 +107,7 @@ TYPES =  [
     'misc',
     'motion_picture',
     'musical_score',
+    '_null',
     'pamphlet',
     'paper-conference',
     'patent',
@@ -122,6 +124,12 @@ TYPES =  [
     'webpage'
 ]
 
+TYPES = set([
+    "_default", # fallback type if no mapping is defined
+    "_null", # fallback type if type not given
+    'journal-article' # type not in CSL 1.0.1, but returned by dx.doi.org server
+] + CSL_TYPES
+)
 
 class DOINotFound(Exception):
     pass
@@ -230,11 +238,20 @@ def import_csl(record, target=None, name=None, testing=False):
     :raises: NoMappingFound if no mapping defined for the given type
     """
     typ = record["type"]
+    if not typ:
+        logg.warn("no type given in CSL import, using _null")
+        typ = "_null"
     if typ not in TYPES:
-        raise NoMappingFound("Not supported", typ)
+        logg.warn("unknown type %s given in CSL import, using _default", typ)
+        typ = "_default"
     metatype_name = importbase.get_import_mapping("citeproc", typ)
     if not metatype_name:
-        raise NoMappingFound("No citeproc schema mapping could be found", typ)
+        # no mapping, found, try fallback mapping
+        metatype_name = importbase.get_import_mapping("citeproc", "_default")
+        if not metatype_name:
+            # no _default defined, fail
+            raise NoMappingFound("No citeproc schema mapping could be found", typ)
+        logg.warn("no mapping found for type %s, using _default fallback mapping", typ)
     metatype = getMetaType(metatype_name)
     mask = metatype.getMask("citeproc")
     if not mask:

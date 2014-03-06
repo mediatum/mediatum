@@ -30,7 +30,7 @@ class ImportException(Exception):
 class NoMappingFound(ImportException):
     def __init__(self, msg="Error", typ=""):
         if typ:
-            msg = "{} for type '{}'".format(msg, typ)
+            msg = "{} (type '{})'".format(msg, typ)
         ImportException.__init__(self, msg)
         self.typ = typ
 

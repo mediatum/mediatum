@@ -22,6 +22,7 @@ import re
 import os.path
 import shutil
 import logging
+import codecs
 
 from workflow import WorkflowStep, getNodeWorkflow, getNodeWorkflowStep, registerStep
 from core.translation import t, addLabels
@@ -70,20 +71,86 @@ def remove_tags(text):
     return TAG_RE.sub('', text)
 
 
+def smart_encode_str(s):
+    """Create a UTF-16 encoded PDF string literal for `s`."""
+    try:
+        utf16 = s.encode('utf_16_be')
+    except AttributeError:  # ints and floats
+        utf16 = str(s).encode('utf_16_be')
+    safe = utf16.replace(b'\x00)', b'\x00\\)').replace(b'\x00(', b'\x00\\(')
+    return b''.join((codecs.BOM_UTF16_BE, safe))
+
+
+def handle_hidden(key, fields_hidden):
+    if key in fields_hidden:
+        return b"/SetF 2"
+    else:
+        return b"/ClrF 2"
+
+
+def handle_readonly(key, fields_readonly):
+    if key in fields_readonly:
+        return b"/SetFf 1"
+    else:
+        return b"/ClrFf 1"
+
+
+def handle_data_strings(fdf_data_strings, fields_hidden, fields_readonly):
+    for (key, value) in fdf_data_strings:
+        if isinstance(value, bool) and value:
+            value = b'/Yes'
+        elif isinstance(value, bool) and not value:
+            value = b'/Off'
+        else:
+            value = b''.join([b' (', smart_encode_str(value), b')'])
+        yield b''.join([b'<<\n/V', value, b'\n/T (',
+                        smart_encode_str(key), b')\n',
+                        handle_hidden(key, fields_hidden), b'\n',
+                        handle_readonly(key, fields_readonly), b'\n>>\n'])
+
+
+def handle_data_names(fdf_data_names, fields_hidden, fields_readonly):
+    for (key, value) in fdf_data_names:
+        yield b''.join([b'<<\n/V /', smart_encode_str(value), b'\n/T (',
+                        smart_encode_str(key), b')\n',
+                        handle_hidden(key, fields_hidden), b'\n',
+                        handle_readonly(key, fields_readonly), b'\n>>\n'])
+
+
+def forge_fdf(pdf_form_url="", fdf_data_strings=[], fdf_data_names=[], fields_hidden=[], fields_readonly=[]):
+    fdf = [b'%FDF-1.2\n%\xe2\xe3\xcf\xd3\r\n']
+    fdf.append(b'1 0 obj\n<<\n/FDF\n')
+    fdf.append(b'<<\n/Fields [\n')
+    fdf.append(b''.join(handle_data_strings(fdf_data_strings, fields_hidden, fields_readonly)))
+    fdf.append(b''.join(handle_data_names(fdf_data_names, fields_hidden, fields_readonly)))
+    if pdf_form_url:
+        fdf.append(b''.join(b'/F (', smart_encode_str(pdf_form_url), b')\n'))
+    fdf.append(b']\n')
+    fdf.append(b'>>\n')
+    fdf.append(b'>>\nendobj\n')
+    fdf.append(b'trailer\n\n<<\n/Root 1 0 R\n>>\n')
+    fdf.append(b'%%EOF\n\x0a')
+    return b''.join(fdf)
+
+
 def fillPDFForm(formPdf, fields, outputPdf="filled.pdf", input_is_fullpath=False, editable=False):
     """
         fill given pdf file with form fields with given attributes and store result in pdf file
     """
     # build data file
     try:
-        res = '%FDF-1.2\n%\xe2\xe3\xcf\xd3\r\n1 0 obj\n<</FDF<</Fields['
-        for field in fields:
-            res += '<</T('+field[0]+')/V('+field[1]+')>>\n'
-        res += ']>>/Type/Catalog>>\nendobj\ntrailer\r\n<</Root 1 0 R>>\r\n%%EOF\r\n'
+        with open(config.get('paths.tempdir')+'infdata.fdf', 'wb') as fdf_file:
+            fdf_file.write(forge_fdf(fdf_data_strings=fields))
 
-        fout = open(config.get('paths.tempdir')+'infdata.fdf', 'wb')
-        fout.write(res)
-        fout.close()
+
+        #res = '%FDF-1.2\n%\xe2\xe3\xcf\xd3\r\n1 0 obj\n<</FDF<</Fields['
+        #for field in fields:
+        #    res += '<</T('+field[0]+')/V('+field[1]+')>>\n'
+        #res += ']>>/Type/Catalog>>\nendobj\ntrailer\r\n<</Root 1 0 R>>\r\n%%EOF\r\n'
+
+        #fout = open(config.get('paths.tempdir')+'infdata.fdf', 'wb')
+        #fout.write(res)
+        #fout.close()
 
         # fill data in form pdf and generate pdf
         if editable:
@@ -197,7 +264,7 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                                 value = value.replace('[att:%s]' %(m.group(0)), v)
                     else:
                         logger.warning("workflowstep %s (%s): could not find attribute for pdf form field '%s' - node: '%s' (%s)" % (current_workflow_step.name, str(current_workflow_step.id), fieldname, node.name, node.id))
-                    fields.append((fieldname, utils.utf82iso(remove_tags(value))))
+                    fields.append((fieldname, remove_tags(utils.desc(value)).decode("utf-8")))
 
 
         if not pdf_form_separate and fnode and f_retrieve_path and os.path.isfile(f_retrieve_path):
@@ -228,15 +295,11 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                 logger.error("workflowstep %s (%s): could not copy pdf form to import directory - node: '%s' (%s), import directory: '%s'" % (current_workflow_step.name, str(current_workflow_step.id), node.name, node.id, importdir))
             found = 0
             for fn in node.getFiles():
-                print '....>', fn.retrieveFile(), new_form_path
                 if fn.retrieveFile()==new_form_path:
                     found = 1
                     break
             if found==0 or (found==1 and not pdf_form_overwrite):
-                print "add file entry"
                 node.addFile(tree.FileNode(new_form_path, 'pdf_form', 'application/pdf'))
-            else:
-                print "entry existing"
                 
             logger.info("workflow '%s' (%s), workflowstep '%s' (%s): added separate pdf form to node (node '%s' (%s)) fields: %s, path: '%s'" % (current_workflow.name, str(current_workflow.id), current_workflow_step.name, str(current_workflow_step.id), node.name, node.id, str(fields), new_form_path))
         else:

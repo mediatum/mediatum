@@ -2591,17 +2591,17 @@ class Iterator:
 
     def __init__(self, name, seq, engine):
         self.name = name
-        self.seq = seq
+        self.seq = iter(seq)
         self.engine = engine
         self.nextIndex = 0
 
     def next(self):
         self.index = i = self.nextIndex
         try:
-            item = self.seq[i]
-        except IndexError:
+            item = next(self.seq)
+        except StopIteration:
             return 0
-        self.nextIndex = i+1
+        self.nextIndex += 1
         self.engine.setLocal(self.name, item)
         return 1
 

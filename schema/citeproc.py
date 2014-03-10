@@ -124,12 +124,13 @@ CSL_TYPES =  [
     'webpage'
 ]
 
-TYPES = set([
+TYPES = [
     "_default", # fallback type if no mapping is defined
     "_null", # fallback type if type not given
     'journal-article' # type not in CSL 1.0.1, but returned by dx.doi.org server
 ] + CSL_TYPES
-)
+
+TYPE_SET = set(TYPES)
 
 class DOINotFound(Exception):
     pass
@@ -241,7 +242,7 @@ def import_csl(record, target=None, name=None, testing=False):
     if not typ:
         logg.warn("no type given in CSL import, using _null")
         typ = "_null"
-    if typ not in TYPES:
+    if typ not in TYPE_SET:
         logg.warn("unknown type %s given in CSL import, using _default", typ)
         typ = "_default"
     metatype_name = importbase.get_import_mapping("citeproc", typ)

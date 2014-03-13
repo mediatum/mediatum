@@ -49,10 +49,15 @@ def getContent(req, ids):
         
         # set current node 'dirty' (reindex for search)
         if key.startswith("set_dirty"):
-            node.setDirty()
-            logging.getLogger('editor').info("set node "+str(node.id)+" dirty")
+            if node.isContainer():
+                for child_node in node.getChildren():
+                    child_node.setDirty()
+                    logging.getLogger('editor').info("set node "+str(node.id)+" dirty")
+            else:
+                node.setDirty()
+                logging.getLogger('editor').info("set node "+str(node.id)+" dirty")
             break
-        
+
         # delete node from cache (e.g. after changes in db)
         if key.startswith("del_cache"):
             for n in node.getAllChildren():

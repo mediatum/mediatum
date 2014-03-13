@@ -98,7 +98,11 @@ def main():
     no_longer_exist = [node for node in search_nodes_set if node not in mediatum_nodes]
 
     # see what nodes have empty attribute values
-    empty_attribute_nodes = [node for node in zip(*tree.db.runQuery('select cast(nid as char) from nodeattribute where value = "" or value is null'))[0]]
+    results = tree.db.runQuery('select cast(nid as char) from nodeattribute where value = ""')
+    if results:
+        empty_attribute_nodes = [node for node in zip(*results)[0]]
+    else:
+        empty_attribute_nodes = []
 
     # see what nodes are in nodeattribute/nodefile that arent in node
     nodeattribute_not_in_node = [node for node in zip(*tree.db.runQuery('select distinct cast(nid as char) from nodeattribute where nid not in (select id from node)'))[0]]

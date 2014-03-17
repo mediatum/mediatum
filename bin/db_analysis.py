@@ -43,7 +43,7 @@ def main():
         2. Searches the sqlite database for nodes that have since been removed from the working tree but are still indexed somewhere in the sqlite database
         3. Searches the mysql database for nodes which have empty attribute values
         4. Searches the mysql database for nodes which exist in the nodeattribute table but no longer exist in node
-        4. Searches the mysql database for nodes which exist in the nodefile table but no longer exist in node
+        5. Searches the mysql database for nodes which exist in the nodefile table but no longer exist in node
 
     The results are dumped into a .json in the configured tmp folder where the following dictionary keys correspond to the metrics above:
         sqlite_indexed : 1

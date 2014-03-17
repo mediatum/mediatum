@@ -46,7 +46,7 @@ def main():
         4. Searches the mysql database for nodes which exist in the nodefile table but no longer exist in node
 
     The results are dumped into a .json in the configured tmp folder where the following dictionary keys correspond to the metrics above:
-        sqlite_not_indexed : 1
+        sqlite_indexed : 1
             type: {'key': ['str, ...']}
         sqlite_deleted_nodes: 2
             type: ['str', ...]
@@ -108,7 +108,7 @@ def main():
     nodeattribute_not_in_node = [node for node in zip(*tree.db.runQuery('select distinct cast(nid as char) from nodeattribute where nid not in (select id from node)'))[0]]
     nodefile_not_in_node = [node for node in zip(*tree.db.runQuery('select distinct cast(nid as char) from nodefile where nid not in (select id from node)'))[0]]
 
-    json_dump = {'sqlite_not_indexed': in_num_dbs,
+    json_dump = {'sqlite_indexed': in_num_dbs,
                  'sqlite_deleted_nodes': no_longer_exist,
                  'mysql_empty_attribute': empty_attribute_nodes,
                  'mysql_nodeattribute_not_in_node': nodeattribute_not_in_node,

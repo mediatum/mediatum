@@ -153,8 +153,12 @@ class AccessData:
                 rule += getRule(n.getAccess("write")).getRuleStr() + " "
             except:
                 continue
-        for grp in self.user.getGroups():
-            if rule.find("NOT ( group "+grp+" )")>0:
+        if self.user.isAdmin():  # administrator
+            return 1
+        if rule.find("NOT ( true )") > 0:  # nobody rule found
+            return 0
+        for grp in self.user.getGroups():  # not rule found
+            if rule.find("NOT ( group %s )" % grp)>0:
                 return 0
   
         return self.hasAccess(node,"write",fnode)

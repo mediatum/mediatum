@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-import Image,ImageDraw
+from PIL import Image,ImageDraw
 import core.config as config
 import re
 
@@ -29,6 +29,7 @@ try:
     from reportlab.lib.units import cm
     from reportlab.rl_config import defaultPageSize
     from reportlab.pdfgen import canvas
+    from utils.utils import esc
     reportlab=1
 except:
     reportlab=0
@@ -212,7 +213,7 @@ class PrintPreview:
         self.data.append(PdfImage(path, width=wt, height=ht, kind="proportional"))
 
     def addPaths(self, pathlist):
-        if len(pathlist)>0:
+        if len(pathlist)> 0:
             self.addData(Paragraph(t(self.language, "print_preview_occurences")+":", self.bp))
             p = ' '
             for path in pathlist:
@@ -226,36 +227,39 @@ class PrintPreview:
                 p = ' '
             
     def addChildren(self, children):
-        self.addData(Paragraph(t(self.language, "print_view_children")+":", self.bp))
+        self.addData(Paragraph('%s:' % t(self.language, "print_view_children"), self.bp))
 
-        # count headers
-        _head = 0
+        _head = 0  # count headers
         for c in children:
-            if len(c)>0 and c[0][3]=="header":
+            if len(c) > 0 and c[0][3] == "header":
                 _head += 1
 
         items = []
         _c = 1
         for c in children:
-            if len(c)>0 and c[0][3]=="header":
+            if len(c) > 0 and c[0][3] == "header":
                 for item in items:
-                    self.addData(Paragraph("["+str(_c)+"/"+str(len(children)-_head)+"]: "+"; ".join(item), self.bv))
-                    _c+=1
+                    self.addData(Paragraph("[%s/%s]: %s" % (_c, len(children) - _head, "; ".join(item)), self.bv))
+                    _c += 1
                 self.addData(Paragraph(u(c[0][1]).replace('&', '&amp;'), self.bf))
                 items = []
                 continue
                 
             values = []
             for item in c:
-                if item[1].strip()!="":
-                    values.append(item[1]) 
+                if item[1].strip() != "":
+                    values.append(item[1])
             items.append(values)
 
         for item in items:
-            self.addData(Paragraph("["+str(_c)+"/"+str(len(children)-_head)+"]: "+", ".join(item), self.bv))
-            _c+=1    
-            
-def getPrintView(lang, imagepath, metadata, paths, style=1, children=[], collection=None): # style=1: object, style=3: liststyle
+            try:
+                self.addData(Paragraph("[%s/%s]: %s" % (_c, len(children) - _head, ", ".join(item)), self.bv))
+                _c += 1
+            except:
+                self.addData(Paragraph("[%s/%s]: %s" % (_c, len(children) - _head, esc(", ".join(item))), self.bv))
+
+
+def getPrintView(lang, imagepath, metadata, paths, style=1, children=[], collection=None):  # style=1: object, style=3: liststyle
     """ returns pdf content of given item """
     if not reportlab:
         return None

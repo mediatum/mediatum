@@ -68,6 +68,21 @@ msgstr "Editor"
 msgid "workflow_label_forward"
 msgstr "Weiterleiten"
 
+msgid "workflow_label_select_all"
+msgstr "alle markieren"
+
+msgid "workflow_label_deselect_all"
+msgstr "alle unmarkieren"
+
+msgid "workflow_label_select_delete"
+msgstr "Löschen"
+
+msgid "workflow_label_select_move"
+msgstr "Verschieben"
+
+msgid "workflow_label_button_submit"
+msgstr "Ausführen"
+
 msgid "workflow_show_step"
 msgstr "Schritt anzeigen"
 

@@ -129,6 +129,45 @@
 </tal:block>
 
 <div metal:define-macro="workflow_show" id="workflow">
+    <script tal:content="python:'var id='+step.id"/>
+    <script>
+        var allChecked = false;
+        function submit()
+        {
+            var selected = new Array();
+            $('.checkbox:checked').each(function()
+            {
+                selected.push($(this).attr('id'));
+            });
+
+            $.get('/mask?id='+id+'&action='+$('select').val(), {obj: selected.join()})
+                .done(function(data) 
+                {
+                    $('#main').html(data);
+                }); 
+        }
+
+        function toggleAll()
+        {
+            $('.toggled_text').toggle();
+            if (allChecked == true)
+            {
+                $('.checkbox').each(function()
+                {
+                    $(this).prop('checked', false);
+                });
+                allChecked = false;
+            }
+            else
+            {
+                $('.checkbox').each(function()
+                {
+                    $(this).prop('checked', true);
+                });
+                allChecked = true;
+            }
+        }
+    </script>
     <p>
     <span style="text-align:left"><a tal:attributes="href python:'/publish/'+workflow.getName()" i18n:translate="workflow_back">TEXT</a></span>
     </p>
@@ -140,7 +179,11 @@
             <th i18n:translate="workflow_label_name">TEXT</th>
             <th i18n:translate="workflow_label_step">TEXT</th>
             <th i18n:translate="workflow_label_editor">TEXT</th>
-            <th colspan="2" i18n:translate="workflow_label_forward">TEXT</th>
+            <th i18n:translate="workflow_label_forward">TEXT</th>
+            <th colspan="2" style="text-align: right;">
+                <a href="#" class="toggled_text" onclick="toggleAll()" i18n:translate="workflow_label_select_all">TEXT</a>
+                <a href="#" class="toggled_text" style="display: none" onclick="toggleAll()" i18n:translate="workflow_label_deselect_all">TEXT</a>
+            </th>
         </tr>
         <tr tal:repeat="i python:range(len(mylist))" tal:define="truestep python:step.getTrueLabel(); falsestep python:step.getFalseLabel()">
             <tal:block tal:define="cssclass python:i%2 and 'norm' or 'silver';node python:mylist[i]">
@@ -159,13 +202,22 @@
                     <a tal:condition="python:truestep!=''" tal:attributes="href python:nodelink+node['id']+'&forcetrue=1'" tal:content="raw truestep"/>
                     <tal:block tal:condition="python:truestep==''">-</tal:block>
                 </td>
+                <td style="vertical-align: middle; text-align: center;" tal:attributes="class cssclass">
+                    <input tal:attributes="id python:node['id']" class="checkbox" id="" type="checkbox"/>
+                </td>
             </tal:block>
         </tr>
         <tr>
-            <th colspan="7" align="right">
+            <th colspan="6" align="left">
                 <small i18n:translate="workflow_footer">
                     <tal:block tal:content="python:str(len(children))" i18n:name="number"/>
                 </small>
+            </th>
+            <th colspan="2" style="text-align: right;">
+                <select>
+                    <option value="delete" i18n:translate="workflow_label_select_delete">TEXT</option>
+                </select>
+                <button value="submit" type="submit" onclick="submit()" i18n:translate="workflow_label_button_submit">TEXT</button>
             </th>
         </tr>
     </table>

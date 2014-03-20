@@ -67,6 +67,21 @@ msgstr "Editor"
 msgid "workflow_label_forward"
 msgstr "Pass"
 
+msgid "workflow_label_select_all"
+msgstr "Select All"
+
+msgid "workflow_label_deselect_all"
+msgstr "Deselect All"
+
+msgid "workflow_label_select_delete"
+msgstr "Delete"
+
+msgid "workflow_label_select_move"
+msgstr "Move"
+
+msgid "workflow_label_button_submit"
+msgstr "Submit"
+
 msgid "workflow_show_step"
 msgstr "Show step"
 

@@ -361,19 +361,31 @@ class WorkflowStep(tree.Node):
 
         try:
             access = acl.AccessData(req)
+            key = req.params.get("key", req.session.get("key", ""))
+            req.session["key"] = key
+
             if "obj" in req.params:
-                node = tree.getNode(req.params["obj"])
-                key = req.params.get("key", req.session.get("key", ""))
-                req.session["key"] = key
+                nodes = [tree.getNode(id) for id in req.params['obj'].split(',')]
 
-                if not access.hasWriteAccess(self) and \
-                    (key != node.get("key")): # no permission
+                for node in nodes:
+                    if not access.hasWriteAccess(self) and \
+                        (key != node.get("key")): # no permission
 
-                    link = '('+self.name+')'
-                    try:
-                        return req.getTAL(template, {"node": node, "link":link, "email":config.get("email.workflow")}, macro=macro)
-                    except:
-                        return ""
+                        link = '('+self.name+')'
+                        try:
+                            return req.getTAL(template, {"node": node, "link":link, "email":config.get("email.workflow")}, macro=macro)
+                        except:
+                            return ""
+
+                if 'action' in req.params:
+                    if req.params['action'] == 'delete' and access.getUser().isAdmin():
+                        for node in nodes:
+                            for parent in node.getParents():
+                                parent.removeChild(node)
+                    return self.show_workflow_step(req)
+
+                else:
+                    node = nodes[0]
 
                 if self in node.getParents():
                     # set correct language for workflow for guest user only
@@ -413,7 +425,6 @@ class WorkflowStep(tree.Node):
 
 
     def show_workflow_node(self, node, req):
-
         if "gotrue" in req.params:
             return self.forwardAndShow(node, True, req)
         if "gofalse" in req.params:

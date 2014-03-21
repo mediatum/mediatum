@@ -134,6 +134,23 @@
     <script tal:content="python:'var id='+step.id"/>
     <script>
         var allChecked = false;
+        $(document).ready(function()
+        {
+            $(':button').attr('disabled', true);
+
+            $('.checkbox, .toggled_text').click(function()
+            {
+                if ($('.checkbox:checked').size() > 0)
+                {
+                    $(':button').attr('disabled', false);
+                }
+                else
+                {
+                    $(':button').attr('disabled', true);
+                }
+            });
+        });
+
         function submit()
         {
             if (confirm($('#confirm_delete').html()))
@@ -154,7 +171,6 @@
             {
                 //do nothing
             }
-            
         }
 
         function toggleAll()
@@ -176,7 +192,7 @@
                 });
                 allChecked = true;
             }
-        }
+        } 
     </script>
     <p>
     <span style="text-align:left"><a tal:attributes="href python:'/publish/'+workflow.getName()" i18n:translate="workflow_back">TEXT</a></span>

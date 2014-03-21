@@ -82,6 +82,9 @@ msgstr "Move"
 msgid "workflow_label_button_submit"
 msgstr "Submit"
 
+msgid "workflow_confirm_msg_delete"
+msgstr "Do you really want to delete these nodes?"
+
 msgid "workflow_show_step"
 msgstr "Show step"
 

@@ -129,22 +129,32 @@
 </tal:block>
 
 <div metal:define-macro="workflow_show" id="workflow">
+    
+    <div style="display:none" id="confirm_delete"  i18n:translate="workflow_confirm_msg_delete">TEXT</div>
     <script tal:content="python:'var id='+step.id"/>
     <script>
         var allChecked = false;
         function submit()
         {
-            var selected = new Array();
-            $('.checkbox:checked').each(function()
+            if (confirm($('#confirm_delete').html()))
             {
-                selected.push($(this).attr('id'));
-            });
-
-            $.get('/mask?id='+id+'&action='+$('select').val(), {obj: selected.join()})
-                .done(function(data) 
+                var selected = new Array();
+                $('.checkbox:checked').each(function()
                 {
-                    $('#main').html(data);
-                }); 
+                    selected.push($(this).attr('id'));
+                });
+
+                $.get('/mask?id='+id+'&action='+$('select').val(), {obj: selected.join()})
+                    .done(function(data) 
+                    {
+                        $('#main').html(data);
+                    }); 
+            }
+            else
+            {
+                //do nothing
+            }
+            
         }
 
         function toggleAll()

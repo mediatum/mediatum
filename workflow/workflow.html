@@ -162,9 +162,9 @@
                 });
 
                 $.get('/mask?id='+id+'&action='+$('select').val(), {obj: selected.join()})
-                    .done(function(data) 
+                    .done(function(data)
                     {
-                        $('#main').html(data);
+                        $('#workflow').html($(data).find('#workflow'));
                     }); 
             }
             else

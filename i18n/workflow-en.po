@@ -222,3 +222,7 @@ msgstr "metadata editor (workflow)"
 
 msgid "WorkflowStep_End"
 msgstr "end node (workflow)"
+
+msgid "workflowstep_file_not_uploaded"
+msgstr "no file uploaded"
+

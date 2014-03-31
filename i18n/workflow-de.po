@@ -234,3 +234,7 @@ msgstr "Identifikator"
 
 msgid "workflow_key"
 msgstr "Schlüssel"
+
+msgid "workflowstep_file_not_uploaded"
+msgstr "Keine Datei hochgeladen."
+

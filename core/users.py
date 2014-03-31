@@ -195,7 +195,11 @@ def getExternalUser(name, type="intern"):
     users = getExternalUserFolder()
     if name.isdigit():
         try:
-            return tree.getNode(name)
+            user = tree.getNode(name)
+            if user.type == "user":
+                return user
+            return None
+
         except tree.NoSuchNodeError, e:
             try:
                 user = users.getChild(name)
@@ -224,7 +228,9 @@ def getUser(id):
     if id.isdigit():
         try:
             user = tree.getNode(id)
-            return user
+            if user.type == "user":
+                return user
+            return None
         except tree.NoSuchNodeError, e:
             return None
     else:

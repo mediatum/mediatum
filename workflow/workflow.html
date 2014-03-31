@@ -136,7 +136,7 @@
         var allChecked = false;
         $(document).ready(function()
         {
-            $(':button').attr('disabled', true);
+            $('.checkbox').attr('checked', false);
 
             $('.checkbox, .toggled_text').click(function()
             {
@@ -162,9 +162,9 @@
                 });
 
                 $.get('/mask?id='+id+'&action='+$('select').val(), {obj: selected.join()})
-                    .done(function(data) 
+                    .done(function(data)
                     {
-                        $('#main').html(data);
+                        $('#workflow').replaceWith($(data).find('#workflow'));
                     }); 
             }
             else

@@ -178,10 +178,8 @@ def send_file(req, download=0):
         n = tree.getNode(id)
     except tree.NoSuchNodeError:
         return 404
-
     if not access.hasAccess(n, "data") and n.type not in ["directory", "collections", "collection"]:
         return 403
-
     file = None
 
     if filename==None and n:
@@ -200,7 +198,6 @@ def send_file(req, download=0):
             incUsage(n)
             file = f
             break
-
     # try only extension
     if not file and n.get("archive_type")=="":
         file_ext = os.path.splitext(filename)[1]
@@ -209,8 +206,8 @@ def send_file(req, download=0):
                 incUsage(n)
                 file = f
                 break
-
     # try file from archivemanager
+
     if not file and n.get("archive_type")!="":
         am = archivemanager.getManager(n.get("archive_type"))
         req.reply_headers["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)

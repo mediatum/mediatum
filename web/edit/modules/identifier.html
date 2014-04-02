@@ -1,9 +1,20 @@
 <tal:block metal:define-macro="set_identifier">
-    
     <p tal:content="msg"/>
-    
-    <form method="post">
-        <input type="radio" name="id_type" value="hash"/> HASH <br/>
+    <tal:block tal:condition="python:hash_val !=''">
+        <span>Hash: </span>
+        <span tal:content="hash_val" ></span><br/>
+    </tal:block>
+    <tal:block tal:condition="python:urn_val !=''">
+        <span>URN: </span>
+        <span tal:content="urn_val" ></span><br/>
+    </tal:block>
+    <tal:block tal:condition="python:doi_val !=''">
+        <span>DOI: </span>
+        <span tal:content="doi_val" ></span><br/>
+    </tal:block>
+
+    <form tal:condition="python:show_form" method="post">
+        <input type="radio" name="id_type" value="hash"/> HASH<br/>
         <input type="radio" name="id_type" value="urn"/> URN
             <select name="namespace">
                 <tal:block tal:repeat="namespace namespaces">
@@ -14,10 +25,45 @@
                 <tal:block tal:repeat="pubtype urn_pubtypes">
                     <option tal:content="pubtype"/>
                 </tal:block>
-            </select>
-        <br/>
+            </select><br/>
+        <tal:block tal:condition="python:user.isAdmin()">
+            <input type="radio" name="id_type" value="doi"/> DOI
+            <input type="text" name="doi_input">
+        </tal:block>
         <p style="padding-left: 30px">
             <input i18n:attributes="value edit_files_create_identifier" type="submit" name="submit"/>
         </p>
     </form>
+</tal:block>
+
+<tal:block metal:define-macro="generate_identifier_admin_mail">
+    <tal:block i18n:translate="edit_identifier_admin_mail_msg"/>
+
+    <tal:block i18n:translate="edit_identifier_mail_usr"/> <span tal:replace="python:user.getName()"/>
+
+    <tal:block i18n:translate="edit_identifier_mail_nodes"/> <span tal:replace="python:nodes"/>
+
+    <tal:block i18n:translate="edit_identifier_mail_type"/> <span tal:replace="python:type"/>
+    <tal:block tal:condition="python:type == 'urn'">
+    <tal:block i18n:translate="edit_identifier_mail_urn"/> <span tal:replace="python:urn_type"/>
+
+    <tal:block i18n:translate="edit_identifier_mail_namespace"/> <span tal:replace="python:namespace"/>
+    </tal:block>
+</tal:block>
+
+<tal:block metal:define-macro="generate_identifier_usr_mail">
+    <tal:block i18n:translate="edit_identifier_mail_address"/> <tal:block tal:replace="python:user.getLastName()"/>,
+
+    <tal:block i18n:translate="edit_identifier_usr_mail_msg"/>
+
+    <tal:block i18n:translate="edit_identifier_mail_type"/> <span tal:replace="python:type"/>
+    <tal:block tal:condition="python:type == 'urn'">
+    <tal:block i18n:translate="edit_identifier_mail_urn"/> <span tal:replace="python:urn_type"/>
+
+    <tal:block i18n:translate="edit_identifier_mail_namespace"/> <span tal:replace="python:namespace"/>
+    </tal:block>
+    <tal:block i18n:translate="edit_identifier_mail_nodes"/> <span tal:replace="python:nodes"/>
+
+    <tal:block i18n:translate="edit_identifier_mail_signoff"/>
+    mediaTUM Admin
 </tal:block>

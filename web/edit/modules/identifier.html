@@ -14,8 +14,11 @@
     </tal:block>
 
     <form tal:condition="python:show_form" method="post">
-        <input type="radio" name="id_type" value="hash"/> HASH<br/>
-        <input type="radio" name="id_type" value="urn"/> URN
+        <tal:block tal:condition="python:hash_val==''">
+            <input type="radio" name="id_type" value="hash"/> HASH<br/>
+        </tal:block>
+        <tal:block tal:condition="python:urn_val==''">
+            <input tal:condition="python:urn_val ==''"type="radio" name="id_type" value="urn"/> URN
             <select name="namespace">
                 <tal:block tal:repeat="namespace namespaces">
                     <option tal:content="namespace"/>
@@ -26,9 +29,9 @@
                     <option tal:content="pubtype"/>
                 </tal:block>
             </select><br/>
-        <tal:block tal:condition="python:user.isAdmin()">
-            <input type="radio" name="id_type" value="doi"/> DOI
-            <input type="text" name="doi_input">
+        </tal:block>
+        <tal:block tal:condition="python:doi_val==''">
+            <input tal:condition="python:doi_val ==''"type="radio" name="id_type" value="doi"/> DOI
         </tal:block>
         <p style="padding-left: 30px">
             <input i18n:attributes="value edit_files_create_identifier" type="submit" name="submit"/>

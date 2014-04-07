@@ -26,6 +26,7 @@ import utils.date as date
 import utils.urn as urn
 import utils.hash as hashid
 import utils.mail as mail
+import utils.doi as doi
 from core.translation import lang, t
 
 
@@ -66,7 +67,7 @@ def getContent(req, ids):
             if req.params.get('id_type') == 'urn':
                 createUrn(node, req.params.get('namespace'), req.params.get('urn_type'))
             if req.params.get('id_type') == 'doi':
-                createDOI(node, req.params.get('doi_input'))
+                createDOI(node)
 
             if any(identifier in node.attributes for identifier in ('hash', 'urn', 'doi')):
                 if not node.get('system.identifierdate'):
@@ -75,7 +76,9 @@ def getContent(req, ids):
                     node.set('system.identifierstate', '2')
                     #add nobody rule if not set
                     access_nobody = acl.getRule('nobody').getRuleStr()
-                    if access_nobody not in node.getAccess('write'):
+                    if node.getAccess('write') is None:
+                        node.setAccess('write', access_nobody)
+                    elif access_nobody not in node.getAccess('write'):
                         node.setAccess('write', ','.join([node.getAccess('write'), access_nobody]))
 
                 try:
@@ -120,6 +123,11 @@ def getContent(req, ids):
     v['urn_val'] = node.get('urn')
     v['doi_val'] = node.get('doi')
 
+    #hides form if all identifier types are already set
+    if all(idents != '' for idents in (v['hash_val'], v['urn_val'], v['doi_val'])):
+        v['show_form'] = False
+        v['msg'] = t(lang(req), 'edit_identifier_all_types_set')
+
     return req.getTAL('web/edit/modules/identifier.html', v, macro='set_identifier')
 
 
@@ -150,13 +158,18 @@ def createHash(node):
         node.set('hash', hashid.getChecksum(node.id))
 
 
-def createDOI(node, doi):
+def createDOI(node):
     """
     @param node for which the doi should be created
-    @param doi is the manually entered doi which should already have been created
-    TODO: method needs to eventually create the DOI by itself instead of just accepting an already generated value
     """
     if node.get('doi') and (node.get('doi').strip() != ''):
         pass
     else:
-        node.set('doi', doi)
+        node.set('doi', doi.generate_doi_live(node))
+        meta_file = doi.create_meta_file(node)
+        doi_file = doi.create_doi_file(node)
+        meta_response = doi.post_file('metadata', meta_file)
+        doi_response = doi.post_file('doi', doi_file)
+
+        if any(response != 201 for response in (meta_response, doi_response)):
+            raise Exception('doi was not successfully registered, meta: %s doi: %s' % (meta_response, doi_response))

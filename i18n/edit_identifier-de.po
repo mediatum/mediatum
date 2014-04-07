@@ -37,6 +37,9 @@ msgstr "Wählen Sie den Typ der Identifikator den Sie generieren wollen."
 msgid "edit_identifier_state_2_admin"
 msgstr "Dieser Knoten hat schon einen Identifikator. Wohl aber zusätzliche Identifikatoren können nach Wunsch generiert werden."
 
+msgid "edit_identifier_all_types_set"
+msgstr "Dieser Knoten besitzt schon alle möglichen Identifikator-Typen"
+
 msgid "edit_identifier_usr_mail_msg"
 msgstr "Ihre Identifikator wurde generiert."
 

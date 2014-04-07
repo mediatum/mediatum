@@ -37,6 +37,9 @@ msgstr "Select a type of identifier to generate."
 msgid "edit_identifier_state_2_admin"
 msgstr "An identifier already exists for this node. However, you can generate additional identifiers if you wish."
 
+msgid "edit_identifier_all_types_set"
+msgstr "This node already has all possible identifier types."
+
 msgid "edit_identifier_usr_mail_msg"
 msgstr "An identifier has been generated for "
 

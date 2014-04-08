@@ -27,6 +27,10 @@ import core.config as config
 from schema.schema import getMetaType
 
 def generate_doi_test(node):
+    """
+    @param node
+    Returns a DOI for the given node for testing purposes
+    """
     prefix = config.get('doi.prefix_test')
     node_id = node.get('node.id')
 
@@ -34,6 +38,9 @@ def generate_doi_test(node):
 
 
 def generate_doi_live(node):
+    """
+    Returns a doi for the given node
+    """
     prefix = config.get('doi.prefix_live')
     suffix = config.get('doi.suffix')
     params = {
@@ -76,28 +83,10 @@ def generate_doi_live(node):
                                suffix)
 
 
-def create_doi_file(node):
-    if 'doi' not in node.attributes:
-        raise Exception('doi not set')
-    else:
-        tmp = config.get('paths.tempdir')
-        host = config.get('host.name')
-        filename = 'doi_file_%s.txt' % node.get('node.id')
-        path = os.path.join(tmp, filename)
-
-        if os.path.exists(path):
-            pass
-        else:
-            try:
-                with open(path, 'w') as f:
-                    f.write('doi=%s\n' % node.get('doi'))
-                    f.write('url=%s%s%s%s' % ('http://', 'mediatum.ub.tum.de', '/?id=', node.get('node.id')))
-            except IOError:
-                        logging.getLogger('error').error('Error creating %s' % path)
-        return path
-
-
 def create_meta_file(node):
+    """
+    Creates and returns the path to the 'metadata file' needed to register the doi with datacite via api
+    """
     if 'doi' not in node.attributes:
         raise Exception('doi not set')
     else:
@@ -118,7 +107,36 @@ def create_meta_file(node):
         return path
 
 
+def create_doi_file(node):
+    """
+    Creates and returns the path to the 'doi file' needed to register the doi with datacite via api
+    """
+    if 'doi' not in node.attributes:
+        raise Exception('doi not set')
+    else:
+        tmp = config.get('paths.tempdir')
+        host = config.get('host.name')
+        filename = 'doi_file_%s.txt' % node.get('node.id')
+        path = os.path.join(tmp, filename)
+
+        if os.path.exists(path):
+            pass
+        else:
+            try:
+                with open(path, 'w') as f:
+                    f.write('doi=%s\n' % node.get('doi'))
+                    f.write('url=%s%s%s%s' % ('http://', 'mediatum.ub.tum.de', '/?id=', node.get('node.id')))
+            except IOError:
+                        logging.getLogger('error').error('Error creating %s' % path)
+        return path
+
+
 def post_file(file_type, file_location):
+    """
+    @param file_type is either 'doi' or 'metadata'
+    @param file_location is the path to the metadata or doi file
+    Posts the given file via datacite api to their servers and returns the response.
+    """
     if all(file_type != i for i in ('doi', 'metadata')):
         raise Exception('file_type needs to be either "doi" or "metadata"')
 

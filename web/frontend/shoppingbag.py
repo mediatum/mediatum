@@ -251,14 +251,14 @@ def export_shoppingbag_bibtex(req):
     import core.config as config
     import random
     import os
-    
+
     items = [] # list of nodes to be exported
     for key in req.params.keys():
         if key.startswith("select_"):
             items.append(key[7:])
-            
+
     dest = config.get("paths.tempdir")+ str(random.random())+".bib"
-    
+
     f = open(dest, "a")
     for item in items:
         node = tree.getNode(item)
@@ -269,7 +269,7 @@ def export_shoppingbag_bibtex(req):
             f.write("The selected document type doesn't have any bibtex export mask")
         f.write("\n")
     f.close()
-    
+
     if len(items)>0:
         sendBibFile(req, dest)
         for root, dirs, files in os.walk(dest, topdown=False):
@@ -280,27 +280,32 @@ def export_shoppingbag_bibtex(req):
         if os.path.isdir(dest):
             os.rmdir(dest)
 
-    
+
 def export_shoppingbag_zip(req):
     from web.frontend.streams import sendZipFile
     from utils.utils import join_paths
     import core.config as config
     import random
     import os
-    
+
+    access = AccessData(req)
+
     items = []
     for key in req.params.keys():
         if key.startswith("select_"):
-            items.append(key[7:])
-            
+            _nid = key[7:]
+            _n = tree.getNode(_nid)
+            if access.hasAccess(_n, 'read'):
+                items.append(_nid)
+
     dest = join_paths(config.get("paths.tempdir"), str(random.random())) + "/"
-    
+
     # images
     if req.params.get("type")=="image":
         if req.params.get("metadata") in ["no", "yes"]:
-        
+
             format_type = req.params.get("format_type")
-            
+
             processtype = ""
             processvalue = ""
             if format_type=="perc":
@@ -325,9 +330,11 @@ def export_shoppingbag_zip(req):
 
             for item in items:
                 node = tree.getNode(item)
+                if not access.hasAccess(node, 'data'):
+                    continue
                 if node.processImage(processtype, processvalue, dest)==0:
                     print "image not found"
-                    
+
     # documenttypes
     if req.params.get("type")=="document":
         if req.params.get("metadata") in ["no", "yes"]:
@@ -335,9 +342,12 @@ def export_shoppingbag_zip(req):
                 os.mkdir(dest)
 
             for item in items:
-                if tree.getNode(item).processDocument(dest)==0:
+                node = tree.getNode(item)
+                if not access.hasAccess(node, 'data'):
+                    continue                
+                if node.processDocument(dest)==0:
                     print "document not found"
-                    
+
     # documenttypes
     if req.params.get("type")=="media":
         if req.params.get("metadata") in ["no", "yes"]:
@@ -345,7 +355,10 @@ def export_shoppingbag_zip(req):
                 os.mkdir(dest)
 
             for item in items:
-                if tree.getNode(item).processMediaFile(dest)==0:
+                node = tree.getNode(item)
+                if not access.hasAccess(node, 'data'):
+                    continue              
+                if node.processMediaFile(dest)==0:
                     print "file not found"
 
     # metadata
@@ -355,9 +368,11 @@ def export_shoppingbag_zip(req):
     if req.params.get("metadata") in ["yes", "meta"]:
         for item in items:
             node = tree.getNode(item)
+            if not access.hasAccess(node, 'read'):
+                continue
             if not os.path.isdir(dest):
                 os.mkdir(dest)
-            
+
             content = {"header":[], "content":[]}
             for c in flatten(node.getFullView(lang(req)).getViewHTML([node], VIEW_DATA_ONLY)):
                 content["header"].append(c[0])
@@ -378,7 +393,7 @@ def export_shoppingbag_zip(req):
         if os.path.isdir(dest):
             os.rmdir(dest)
 
-    
+
 def calculate_dimensions(session):
     try:
         files = session["shoppingbag"]
@@ -393,4 +408,3 @@ def calculate_dimensions(session):
     width = r*WIDTH
     height = ((num+r-1) / r)*HEIGHT + HEADER_HEIGHT + FOOTER_HEIGHT
     return (width,height)
-

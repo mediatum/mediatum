@@ -164,6 +164,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
             xfrom = node.get("mailtmp.from")
             to = node.get("mailtmp.to")
             text = athana.getTALstr(node.get("mailtmp.text"),{}, language=node.get("system.wflanguage"))
+            text = text.replace('&key;=', '&key=')  # wn 2014-04-10 temporary quick fix bug #114
             subject = athana.getTALstr(node.get("mailtmp.subject"),{}, language=node.get("system.wflanguage"))
             return req.getTAL("workflow/email.html", {"page":"node?id="+self.id+"&obj="+node.id, "from":xfrom, "to":to, "text":text, "subject":subject, "node":node, "sendcondition":self.get("sendcondition"), "wfnode":self, "pretext":self.getPreText(lang(req)), "posttext":self.getPostText(lang(req))}, macro="sendmail")
 

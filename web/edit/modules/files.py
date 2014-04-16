@@ -151,12 +151,18 @@ def getContent(req, ids):
                                         except:
                                             pass
                                     os.removedirs(file.retrieveFile()+"/")
-                            # remove single file
-                            node.removeFile(file)
-                            try:
-                                os.remove(file.retrieveFile())
-                            except:
-                                pass
+                            if len([f for f in node.getFiles() if f.getName()==filename[1] and f.type==filename[0]]) > 1:
+                                # remove single file if there are duplicates
+                                from core.db import database
+                                db = database.getConnection()
+                                db.runQuery('delete from nodefile where nid=%r and filename=%r and type=%r limit 1' % (node.id, f._path, filename[0]))
+                            else:
+                                # remove single file
+                                node.removeFile(file)
+                                try:
+                                   os.remove(file.retrieveFile())
+                                except:
+                                   pass
                             break
                     break
                 elif key.startswith("delatt|"):

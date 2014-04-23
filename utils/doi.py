@@ -39,6 +39,7 @@ def generate_doi_test(node):
 
 def generate_doi_live(node):
     """
+    @param node
     Returns a doi for the given node
     """
     prefix = config.get('doi.prefix_live')
@@ -85,6 +86,7 @@ def generate_doi_live(node):
 
 def create_meta_file(node):
     """
+    @param node
     Creates and returns the path to the 'metadata file' needed to register the doi with datacite via api
     """
     if 'doi' not in node.attributes:
@@ -109,6 +111,7 @@ def create_meta_file(node):
 
 def create_doi_file(node):
     """
+    @param node
     Creates and returns the path to the 'doi file' needed to register the doi with datacite via api
     """
     if 'doi' not in node.attributes:
@@ -135,7 +138,7 @@ def post_file(file_type, file_location):
     """
     @param file_type is either 'doi' or 'metadata'
     @param file_location is the path to the metadata or doi file
-    Posts the given file via datacite api to their servers and returns the response.
+    Posts the given file via datacite api to their servers and returns the response and content.
     """
     if all(file_type != i for i in ('doi', 'metadata')):
         raise Exception('file_type needs to be either "doi" or "metadata"')
@@ -159,4 +162,4 @@ def post_file(file_type, file_location):
                                   body=msg.encode('utf-8'),
                                   headers={'Content-Type': 'text/plain;charset=UTF-8',
                                            'Authorization': 'Basic ' + auth})
-    return response.status
+    return response.status, content.encode('utf-8')

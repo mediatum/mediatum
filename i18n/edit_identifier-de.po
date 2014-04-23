@@ -1,35 +1,20 @@
-msgid "edit_identifier_mail_title"
-msgstr "Beantragung einer Identifikator"
+msgid "edit_identifier_mail_title_admin"
+msgstr "Antrag auf Vergabe eines Identifikators"
 
-msgid "edit_identifier_mail_title_complete"
-msgstr "Ihre Anforderung um einen Identifikator wurde durchgeführt"
+msgid "edit_identifier_mail_title_usr_1"
+msgstr "Antrag auf Vergabe eines Identifikators"
 
-msgid "edit_identifier_admin_mail_msg"
-msgstr "Bitte erfüllen Sie die Beantragung durch erzeugung die gewünschten art des Identifikators in dem Identifier Modul im Edit Bereich."
-
-msgid "edit_identifier_mail_usr"
-msgstr "Benutzer:"
-
-msgid "edit_identifier_mail_nodes"
-msgstr "Knoten:"
-
-msgid "edit_identifier_mail_type"
-msgstr "Typ des Identifiers:"
-
-msgid "edit_identifier_mail_urn"
-msgstr "Typ des Urn:"
-
-msgid "edit_identifier_mail_namespace"
-msgstr "Namesraum:"
+msgid "edit_identifier_state_published"
+msgstr "Bevor einen Identifikator beantragt kann, muss dieses Dokument zuerst Publiziert sein."
 
 msgid "edit_identifier_state_0_usr"
-msgstr "Nach der Abfrage eines Identifikators werden Ihnen die Schreibrechte zu diesem Knoten gezogen bis der Admin einen Identifikator generiert hat."
+msgstr "Bitte stellen Sie sicher, dass es sich um die endgültige Fassung des Dokuments/Datensatzes handelt. Mit der Vergabe des Identifikators verlieren Sie alle Rechte zur Bearbeitung, so dass keine weiteren Änderungen mehr vorgenommen werden können. Bitte überprüfen Sie ebenfalls, ob der Datensatz an der richtigen Stelle in der mediaTUM-Hierarchie eingeordnet wurde."
+
+msgid "edit_identifier_confirm_popup"
+msgstr "Sind Sie sicher, dass Sie fortfahren möchten? Alle ihre Schreibrechte werden entzogen, wenn Sie fortfahren."
 
 msgid "edit_identifier_state_1_usr"
-msgstr "Einer Identifikator wurde schon beantragt. Sie werden per E-Mail benachrichtigt sobald einem Admin einen Identifikator generiert hat."
-
-msgid "edit_identifier_state_2_usr"
-msgstr "Dieser Knoten hat schon einen Identifikator."
+msgstr "Danke für Ihre Anfrage nach einem Identifikator. Sie werden bald weitere Anweisungen per E-Mail bekommen. Sie haben nun keine weitere Schreibrechte zu diesem Dokument."
 
 msgid "edit_identifier_state_0_1_admin"
 msgstr "Wählen Sie den Typ der Identifikator den Sie generieren wollen."
@@ -45,9 +30,3 @@ msgstr "Ihre Identifikator wurde generiert."
 
 msgid "edit_identifier_mail_fail"
 msgstr "Die Mitteilung per E-Mail konnte nicht versandt werden. Bitte versuchen Sie es nochmal."
-
-msgid "edit_identifier_mail_address"
-msgstr "Sehr geehrte(r) Frau/Herr"
-
-msgid "edit_identifier_mail_signoff"
-msgstr "Mit freundlichen Grüssen,"

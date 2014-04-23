@@ -1,35 +1,20 @@
-msgid "edit_identifier_mail_title"
+msgid "edit_identifier_mail_title_admin"
 msgstr "Request for Identifier Generation"
 
-msgid "edit_identifier_mail_title_complete"
-msgstr "Your Request for an Identifier Has Been Completed"
+msgid "edit_identifier_mail_title_usr_1"
+msgstr "Request for Identifier Generation"
 
-msgid "edit_identifier_admin_mail_msg"
-msgstr "Please complete the request by generating the user's chosen identifier as listed below. "
-
-msgid "edit_identifier_mail_usr"
-msgstr "User:"
-
-msgid "edit_identifier_mail_nodes"
-msgstr "Nodes:"
-
-msgid "edit_identifier_mail_type"
-msgstr "Identifier Type:"
-
-msgid "edit_identifier_mail_urn"
-msgstr "Urn Type:"
-
-msgid "edit_identifier_mail_namespace"
-msgstr "Namespace:"
+msgid "edit_identifier_state_published"
+msgstr "You must first publish this document before an identifier can be requested."
 
 msgid "edit_identifier_state_0_usr"
-msgstr "After submitting the request to generate an identifier, you will lose write access to this node until an admin has generated an identifier."
+msgstr "Please ensure that this is the final version of your document/data-record. Once you request an identifier, your editing rights will be removed from this object so that no more changes can be made. Please also check to make sure that the data-record is in the proper spot in the mediaTUM hierarchy."
+
+msgid "edit_identifier_confirm_popup"
+msgstr "Are you sure you want to continue? You will lose all editing rights to this document if you proceed."
 
 msgid "edit_identifier_state_1_usr"
-msgstr "An identifier has been requested for this node and the request is currently being processed. You will be notified once an admin has generated an identifier."
-
-msgid "edit_identifier_state_2_usr"
-msgstr "An identifier already exists for this node."
+msgstr "Thank you for requesting an indentifier. You should receive an email shortly with further instructions. You no longer will have editing rights for this document."
 
 msgid "edit_identifier_state_0_1_admin"
 msgstr "Select a type of identifier to generate."
@@ -45,9 +30,3 @@ msgstr "An identifier has been generated for "
 
 msgid "edit_identifier_mail_fail"
 msgstr "Failure to send notification via email. Please try again."
-
-msgid "edit_identifier_mail_address"
-msgstr "Dear"
-
-msgid "edit_identifier_mail_signoff"
-msgstr "Regards,"

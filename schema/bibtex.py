@@ -85,7 +85,7 @@ token = re.compile(r'@\w+\s*{\s*|[a-zA-Z-_]+\s*=\s*{?["\'{]|[a-zA-Z-]+\s*=\s+[0-
 comment = re.compile(r'%[^\n]*\n')
 delim = re.compile(r'\W')
 delim2 = re.compile(r'^(?u)\s*[\w+_\-\:]*\s*\,')
-frontgarbage = re.compile(r'^\W*')
+frontgarbage = re.compile(r'^\W*', re.UNICODE)
 backgarbage = re.compile(r'[ \n\t}"\',]*$')
 xspace = re.compile(r'\s+')
 

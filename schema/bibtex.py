@@ -264,6 +264,8 @@ def getentries(filename):
             content = u(content)
             content = content.replace("\\\"u","\xc3\xbc").replace("\\\"a","\xc3\xa4").replace("\\\"o","\xc3\xb6") \
                              .replace("\\\"U","\xc3\x9c").replace("\\\"A","\xc3\x84").replace("\\\"O","\xc3\x96")
+            content = content.replace("\\\'a", "\xc3\xa0").replace("\\\'A","\xc3\x80").replace("\\vc","\xc4\x8d") \
+                             .replace("\\vC","\xc4\x8c")
             content = content.replace("\\","")
             content = content.replace("{\"u}","\xc3\xbc").replace("{\"a}","\xc3\xa4").replace("{\"o}","\xc3\xb6") \
                              .replace("{\"U}","\xc3\x9c").replace("{\"A}","\xc3\x84").replace("{\"O}","\xc3\x96")

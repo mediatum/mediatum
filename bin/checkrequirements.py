@@ -123,7 +123,7 @@ python_module_descrs = [
   [["pymarc"], "pymarc: marc formatter for python", check_python_module, "RESTRICTION"],
   [["Levenshtein"], "python-Levenshtein: computing string distances and similarities", check_python_module, "RESTRICTION"],
   [["pyPdf"], "pyPdf: PDF toolkit", check_python_module, "RESTRICTION"],
-  [["requests"], "requests: HTTP request module, required for DOI import", check_python_module, "RESTRICTION"],
+  [["requests"], "requests: HTTP request module, required for DOI import", check_python_module, "FAIL"],
   [["pydot"], "pydot: python graphviz module, required for static workflow diagrams", check_python_module, "RESTRICTION"],
 ]
 

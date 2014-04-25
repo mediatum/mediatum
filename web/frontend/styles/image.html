@@ -25,7 +25,7 @@ The document is displayed in the <a href="/" tal:attributes="href python:'?id='+
 <div id="object_image" tal:condition="python:canseeoriginal">
     <tal:block tal:condition="python:not zoom">
     <a>
-        <img tal:attributes="src python:'/thumb2/'+str(node.id); onClick python:'fullSizePopup('+str(node.id)+', ' + str(node.get('width')) +', ' + str(node.get('height')) +')'" style="cursor:pointer;border:1px double silver;" border="1px" />
+        <img tal:attributes="src python:'/thumb2/'+str(node.id); onClick python:'fullSizePopup('+str(node.id)+', ' + str(node.get('width')) +', ' + str(node.get('height')) +')'" style="width:300px;cursor:pointer;border:1px double silver;" border="1px" />
     </a>
     </tal:block>
 

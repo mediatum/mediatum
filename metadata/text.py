@@ -20,7 +20,7 @@
 """
 import logging
 from mediatumtal import tal
-from core.transition.athana_sep import athana_http as athana
+from core.transition import httpstatus
 import core.config as config
 import re
 from utils.utils import esc
@@ -210,7 +210,7 @@ class m_text(Metatype):
             req.writeTAL("metadata/text.html", {}, macro="javascript")
         else:
             req.writeTAL("metadata/text.html", {"charmap":charmap, "name":req.params.get("name"), "value":req.params.get("value")}, macro="popup")
-        return athana.HTTP_OK
+        return httpstatus.HTTP_OK
 
     # method for additional keys of type text
     def getLabels(self):

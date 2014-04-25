@@ -1,4 +1,3 @@
-
 """
  mediatum - a multimedia content repository
 

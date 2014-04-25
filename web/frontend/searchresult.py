@@ -18,7 +18,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.tree as tree
-import core.athana as athana
 import sys
 import utils.date as date
 import logging

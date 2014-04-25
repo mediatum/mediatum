@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from mediatumtal import tal
-from core.transition.athana_sep import athana_http as athana
+from core.transition import httpstatus
 from core.metatype import Metatype, charmap
 from core.translation import t, getDefaultLanguage
 
@@ -247,7 +247,7 @@ class m_memo(Metatype):
                 req.writeTAL("metadata/memo.html", {'lang': lang(req)}, macro="javascript")
         else:
             req.writeTAL("metadata/memo.html", {"charmap":charmap, "name":req.params.get("name"), "value":req.params.get("value")}, macro="popup")
-        return athana.HTTP_OK
+        return httpstatus.HTTP_OK
 
     # method for additional keys of type memo
     def getLabels(self):

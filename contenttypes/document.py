@@ -20,7 +20,6 @@
 import core.config as config
 import core.tree as tree
 import schema
-import core.athana as athana
 import core.acl as acl
 import os
 import default

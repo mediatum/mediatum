@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-import core.athana as athana
+from core.transition import httpstatus
 import core.config as config
 import random
 import core.users as users
@@ -58,7 +58,7 @@ def show_node(req):
             req.writeTAL("web/admin/frame.html", v, macro="frame")
         else:
             req.write(v["content"])
-    return athana.HTTP_OK
+    return httpstatus.HTTP_OK
 
 
 def export(req):
@@ -66,7 +66,7 @@ def export(req):
 
     user = users.getUserFromRequest(req)
     if not user.isAdmin():
-        return athana.HTTP_FORBIDDEN
+        return httpstatus.HTTP_FORBIDDEN
 
     path = req.path[1:].split("/")
     try:

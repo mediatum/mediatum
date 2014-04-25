@@ -19,7 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from mediatumtal import tal
-from core.transition.athana_sep import athana_http as athana
+from core.transition import httpstatus
 from core.metatype import Metatype, charmap
 
 from core.translation import t, getDefaultLanguage
@@ -222,7 +222,7 @@ class m_htmlmemo(Metatype):
                 req.writeTAL("metadata/htmlmemo.html", {'lang': lang(req)}, macro="ckconfig")
             elif req.params.get('type')=="javascript":
                 req.writeTAL("metadata/htmlmemo.html", {}, macro="javascript")
-        return athana.HTTP_OK
+        return httpstatus.HTTP_OK
         
     def getName(self):
         return "fieldtype_htmlmemo"

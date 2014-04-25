@@ -17,7 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.athana as athana
+from core.transition import httpstatus
 import core.tree as tree
 import os
 import logging
@@ -68,7 +68,7 @@ known_node_aliases = {}
 
 
 def display_404(req):
-    return athana.HTTP_NOT_FOUND
+    return httpstatus.HTTP_NOT_FOUND
 
 
 def display_alias(req):

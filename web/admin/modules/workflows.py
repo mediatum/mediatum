@@ -19,7 +19,6 @@
 """
 import re
 import sys, traceback
-import core.athana as athana
 import core.tree as tree
 import core.acl as acl
 import core.config as config

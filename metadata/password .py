@@ -18,8 +18,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from core.transition.athana_sep import athana_http as athana
 from mediatumtal import tal
+from core.transition import httpstatus
 import re
 from utils.utils import esc
 from core.metatype import Metatype,charmap
@@ -72,7 +72,7 @@ class m_password(Metatype):
     # method for popup methods of type password
     def getPopup(self, req):
         req.writeTAL("metadata/password.html", {"charmap":charmap, "name":req.params.get("name"), "value":req.params.get("value")}, macro="popup")
-        return athana.HTTP_OK
+        return httpstatus.HTTP_OK
     
     # method for additional keys of type password
     def getLabels(self):

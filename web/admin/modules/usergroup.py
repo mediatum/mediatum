@@ -22,7 +22,6 @@ import sys
 import types
 import traceback
 import core.tree as tree
-import core.athana as athana
 import logging
 import core.usergroups as usergroups
 import core.users as users

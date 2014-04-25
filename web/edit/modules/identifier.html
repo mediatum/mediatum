@@ -1,10 +1,37 @@
 <tal:block metal:define-macro="set_identifier">
-    
+    <div style="display:none" id="confirm_popup"  i18n:translate="edit_identifier_confirm_popup">TEXT</div>
+    <tal:block tal:condition="python:not user.isAdmin()">
+    <script>
+        $(document).ready(function()
+        {
+            $('input[type="submit"]').click(function()
+            {
+                var submit_form = confirm($('#confirm_popup').html())
+                return submit_form
+            });
+        });
+    </script>
+    </tal:block>
     <p tal:content="msg"/>
-    
-    <form method="post">
-        <input type="radio" name="id_type" value="hash"/> HASH <br/>
-        <input type="radio" name="id_type" value="urn"/> URN
+    <tal:block tal:condition="python:hash_val !=''">
+        <span>Hash: </span>
+        <span tal:content="hash_val" ></span><br/>
+    </tal:block>
+    <tal:block tal:condition="python:urn_val !=''">
+        <span>URN: </span>
+        <span tal:content="urn_val" ></span><br/>
+    </tal:block>
+    <tal:block tal:condition="python:doi_val !=''">
+        <span>DOI: </span>
+        <span tal:content="doi_val" ></span><br/>
+    </tal:block>
+
+    <form tal:condition="python:show_form" method="post">
+        <tal:block tal:condition="python:hash_val==''">
+            <input type="radio" name="id_type" value="hash"/> HASH<br/>
+        </tal:block>
+        <tal:block tal:condition="python:urn_val==''">
+            <input tal:condition="python:urn_val ==''"type="radio" name="id_type" value="urn"/> URN
             <select name="namespace">
                 <tal:block tal:repeat="namespace namespaces">
                     <option tal:content="namespace"/>
@@ -14,10 +41,136 @@
                 <tal:block tal:repeat="pubtype urn_pubtypes">
                     <option tal:content="pubtype"/>
                 </tal:block>
-            </select>
-        <br/>
+            </select><br/>
+        </tal:block>
+        <tal:block tal:condition="python:doi_val==''">
+            <input tal:condition="python:doi_val ==''"type="radio" name="id_type" value="doi"/> DOI
+        </tal:block>
         <p style="padding-left: 30px">
             <input i18n:attributes="value edit_files_create_identifier" type="submit" name="submit"/>
         </p>
     </form>
+</tal:block>
+
+<tal:block metal:define-macro="generate_identifier_admin_mail">
+Bitte erfüllen Sie die Beantragung durch erzeugung die gewünschten art des Identifikators in dem Identifier Modul im Edit Bereich.
+
+Benutzer: <span tal:replace="python:user.getName()"/>
+
+Benutzer E-mail: <span tal:replace="python:user.getEmail()"/>
+
+Knoten: <span tal:replace="python:nodes"/>
+
+Typ des Identifikators: <span tal:replace="python:type"/>
+<tal:block tal:condition="python:type == 'urn'">
+URN Typ: <span tal:replace="python:urn_type"/>
+
+Namensraum: <span tal:replace="python:namespace"/>
+</tal:block>
+</tal:block>
+
+<tal:block metal:define-macro="generate_identifier_usr_mail_1_de">
+Sehr geehrte(r) Frau/Herr <span tal:replace="python:user.getFirstName() + ' ' + user.getLastName()"/>,
+
+vielen Dank für Ihre Anfrage nach einem eindeutigen und dauerhafter digitalen Identifikator.
+
+Art des beantragten Identifikators: <span tal:replace="python:type"/>
+
+mediaTUM-Link zum Dokument/Datensatz, für welchen dieser Identifikator beantragt werden soll: <span tal:replace="python:'\n'.join(['http://' + host + '/?id=' + node for node in nodes.split(', ')])"/>
+
+Für die Vergabe eines eindeutigen Identifikators benötigen wird einen Autorenvertrag von Ihnen. Bitte füllen Sie den angehängten Autorenvertrag aus und schicken Sie ihn in *doppelter Ausführung* unterschrieben per Post an die im Vertrag angegebene Adresse oder per Haus-Post an:
+
+Universitätsbibliothek
+mediaTUM Anwendungsbetreuung
+Barer Straße 21
+
+Das Zusenden des Autorenvertrags per Fax ist leider nicht ausreichend.
+
+Bitte stellen Sie sicher, dass es sich um die endgültige Fassung des Dokuments/Datensatzes handelt. Mit der Vergabe des Identifikators verlieren Sie alle Rechte zur Bearbeitung, so dass keine weiteren Änderungen mehr vorgenommen werden können. Bitte überprüfen Sie ebenfalls, ob der Datensatz an der richtigen Stelle in der mediaTUM-Hierarchie eingeordnet wurde.
+
+Wenn der Autorenvertrag bei der Universitätsbibliothek eingegangen ist, prüfen wir den Datensatz. Anschließend vergeben wir den Identifikator und senden Ihnen per E-Mail eine Bestätigung zu.
+
+Bitte melden Sie sich jederzeit, wenn Sie Fragen zum digitalen Identifikator haben.
+
+Mit freundlichen Grüßen,
+
+
+Ihre Universitätsbibliothek
+
+mediaTUM Anwendungsbetreuung
+</tal:block>
+
+<tal:block metal:define-macro="generate_identifier_usr_mail_1_en">
+Dear Mr./Ms. <span tal:replace="python:user.getFirstName() + ' ' + user.getLastName()"/>,
+
+Thank you for requesting a unique and long-term digital identifier.
+
+Type of identifier requested: <span tal:replace="python:type"/>
+
+mediaTUM-Link to the document/data-record for which this identifier will be created: <span tal:replace="python:'\n'.join(['http://' + host + '/?id=' + node for node in nodes.split(', ')])"/>
+
+In order to complete your request for a unique identifier, we require an Autorenvertrag (Author Contract) from you. Please fill out the attached Autorenvertrag and send *two signed copies* per mail to the address listed in the contract or per internal mail to:
+
+Universitätsbibliothek
+mediaTUM Anwendungsbetreuung
+Barer Straße 21
+
+Unfortunately, sending the filled out form per fax can not be accepted.
+
+As soon as the University Library receives the Autorenvertrag, the data-record will be reviewed. Subsequently we will generate an identifier and send you a conformation per E-Mail.
+
+Please don't hesitate to contact us with any questions regarding the digital identifier.
+
+Sincerely,
+
+
+Your University Library
+
+mediaTUM Support Team
+</tal:block>
+
+<tal:block metal:define-macro="generate_identifier_usr_mail_2">
+Sehr geehrte(r) Frau/Herr <span tal:replace="python:creator.getFirstName() + ' ' + creator.getLastName()"/>,
+
+vielen Dank für das Zusenden des Autorenvertrags. In den nächsten Tagen erhalten Sie die von uns unterschriebene Zweitschrift des Vertrags per (Haus-)Post.
+
+In der Zwischenzeit wurde der beantragte eindeutige Identifikator vergeben. Die Bearbeitungsrechte wurden Ihnen mit der Vergabe entzogen, so dass eine Änderung des Dokuments/Datensatzes nun nicht mehr möglich ist.
+
+Art des beantragten Identifikators: <span tal:replace="python:type"/>
+
+mediaTUM-Link zum Dokument/Datensatz, für welchen dieser Identifikator beantragt wurde: <span tal:replace="python:'\n'.join(['http://' + host + '/?id=' + node for node in nodes.split(', ')])"/>
+
+Bitte beachten Sie, dass es auf Seiten der Vergabestellen zu einer zeitlichen Verzögerung kommen kann. Es kann somit einige Tage in Anspruch nehmen bis der Identifikator aktiviert wird und die Verlinkung tatsächlich funktioniert. Wir bitten um Ihr Verständnis.
+
+Bitte melden Sie sich jederzeit, wenn Sie Fragen oder Probleme haben.
+
+Mit freundlichen Grüßen,
+
+
+Ihre Universitätsbibliothek
+
+mediaTUM Anwendungsbetreuung
+
+----------------------------
+
+Dear Mr/Ms. <span tal:replace="python:creator.getFirstName() + ' ' + creator.getLastName()"/>,
+
+Thank you for sending us the Autorenvertrags (Author Contract). In the next days you should receive a signed copy of the contract per internal mail.
+
+In the meantime, a unique identifier has been generated for you and the editing rights to the document/data-record have been removed so it's not possible to make any more changes.
+
+Type of identifier requested: <span tal:replace="python:type"/>
+
+mediaTUM-Link to the document/data-record for which this identifier will be created: <span tal:replace="python:'\n'.join(['http://' + host + '/?id=' + node for node in nodes.split(', ')])"/>
+
+Please take note that it can take some time until our service partner generates your identifier. This means that it may take a few days until your identifier is activated and that the linking functions properly. We ask you for your understanding.
+
+You can contact us at any time with any problems or questions.
+
+Sincerely,
+
+
+Your University Library
+
+mediaTUM Support Team
 </tal:block>

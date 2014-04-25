@@ -1,0 +1,32 @@
+msgid "edit_identifier_mail_title_admin"
+msgstr "Request for Identifier Generation"
+
+msgid "edit_identifier_mail_title_usr_1"
+msgstr "Request for Identifier Generation"
+
+msgid "edit_identifier_state_published"
+msgstr "You must first publish this document before an identifier can be requested."
+
+msgid "edit_identifier_state_0_usr"
+msgstr "Please ensure that this is the final version of your document/data-record. Once you request an identifier, your editing rights will be removed from this object so that no more changes can be made. Please also check to make sure that the data-record is in the proper spot in the mediaTUM hierarchy."
+
+msgid "edit_identifier_confirm_popup"
+msgstr "Are you sure you want to continue? You will lose all editing rights to this document if you proceed."
+
+msgid "edit_identifier_state_1_usr"
+msgstr "Thank you for requesting an indentifier. You should receive an email shortly with further instructions. You no longer will have editing rights for this document."
+
+msgid "edit_identifier_state_0_1_admin"
+msgstr "Select a type of identifier to generate."
+
+msgid "edit_identifier_state_2_admin"
+msgstr "An identifier already exists for this node. However, you can generate additional identifiers if you wish."
+
+msgid "edit_identifier_all_types_set"
+msgstr "This node already has all possible identifier types."
+
+msgid "edit_identifier_usr_mail_msg"
+msgstr "An identifier has been generated for "
+
+msgid "edit_identifier_mail_fail"
+msgstr "Failure to send notification via email. Please try again."

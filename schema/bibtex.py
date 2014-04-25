@@ -85,7 +85,7 @@ token = re.compile(r'@\w+\s*{\s*|[a-zA-Z-_]+\s*=\s*{?["\'{]|[a-zA-Z-]+\s*=\s+[0-
 comment = re.compile(r'%[^\n]*\n')
 delim = re.compile(r'\W')
 delim2 = re.compile(r'^(?u)\s*[\w+_\-\:]*\s*\,')
-frontgarbage = re.compile(r'^\W*')
+frontgarbage = re.compile(r'^\W*', re.UNICODE)
 backgarbage = re.compile(r'[ \n\t}"\',]*$')
 xspace = re.compile(r'\s+')
 
@@ -264,6 +264,8 @@ def getentries(filename):
             content = u(content)
             content = content.replace("\\\"u","\xc3\xbc").replace("\\\"a","\xc3\xa4").replace("\\\"o","\xc3\xb6") \
                              .replace("\\\"U","\xc3\x9c").replace("\\\"A","\xc3\x84").replace("\\\"O","\xc3\x96")
+            content = content.replace("\\\'a", "\xc3\xa0").replace("\\\'A","\xc3\x80").replace("\\vc","\xc4\x8d") \
+                             .replace("\\vC","\xc4\x8c")
             content = content.replace("\\","")
             content = content.replace("{\"u}","\xc3\xbc").replace("{\"a}","\xc3\xa4").replace("{\"o}","\xc3\xb6") \
                              .replace("{\"U}","\xc3\x9c").replace("{\"A}","\xc3\x84").replace("{\"O}","\xc3\x96")

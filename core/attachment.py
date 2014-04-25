@@ -23,7 +23,25 @@ import core.config as config
 from utils.utils import getMimeType, format_filesize
 from core.styles import theme
 
-fileicons = {'directory':'mmicon_dir.gif', 'application/pdf':'mmicon_pdf.gif', 'image/jpeg':'mmicon_jpg.gif', 'image/gif':'mmicon_gif.gif', 'image/png':'mmicon_png.gif', 'image/tiff':'mmicon_tiff.gif', 'image/x-ms-bmp':'mmicon_bmp.gif', 'application/postscript':'mmicon_ps.gif', 'application/zip' : 'mmicon_zip.gif', 'other' : 'mmicon_file.gif', "back": "mmicon_back.gif", "application/mspowerpoint":"mmicon_ppt.gif", "application/msword":"mmicon_doc.gif", "video/x-msvideo":"mmicon_avi.gif", "video/x-flv":"mmicon_mpeg.gif", "audio/x-wav":"mmicon_avi.gif", "audio/x-wav":"mmicon_avi.gif", 'text/x-bibtex': 'mmicon_txt.gif'}
+fileicons = {'directory': 'mmicon_dir.gif',
+             'application/pdf': 'mmicon_pdf.gif',
+             'image/jpeg': 'mmicon_jpg.gif',
+             'image/gif': 'mmicon_gif.gif',
+             'image/png': 'mmicon_png.gif',
+             'image/tiff': 'mmicon_tiff.gif',
+             'image/x-ms-bmp': 'mmicon_bmp.gif',
+             'application/postscript': 'mmicon_ps.gif',
+             'application/zip': 'mmicon_zip.gif',
+             'other': 'mmicon_file.gif',
+             'back': 'mmicon_back.gif',
+             'application/mspowerpoint': 'mmicon_ppt.gif',
+             'application/msword': 'mmicon_doc.gif',
+             'video/x-msvideo': 'mmicon_avi.gif',
+             'video/x-flv': 'mmicon_mpeg.gif',
+             'audio/x-wav': 'mmicon_avi.gif',
+             'audio/x-wav': 'mmicon_avi.gif',
+             'audio/mpeg': 'mmicon_mpeg.gif',
+             'text/x-bibtex': 'mmicon_txt.gif'}
 
 
 def filebrowser(node, req):

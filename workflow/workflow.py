@@ -126,6 +126,7 @@ def runWorkflowStep(node, op):
 
 # set workflow for node
 def setNodeWorkflow(node,workflow):
+    """XXX: unused?"""
     start = workflow.getStartNode()
     start.addChild(node)
     start.runAction(node, True)
@@ -322,8 +323,10 @@ class Workflow(tree.Node):
                 followers[step.getTrueId()] = None
             if step.getFalseId():
                 followers[step.getFalseId()] = None
+        # Start nodes have no predecessor (= are not follower of any node)
+        # XXX: no check if multiple start nodes are present!
         for step in self.getChildren():
-            if step.id not in followers:
+            if step.name not in followers:
                 return step
         return None # circular workflow- shouldn't happen
 
@@ -507,9 +510,11 @@ class WorkflowStep(tree.Node):
             return '<script language="javascript">document.location.href = "%s";</script>' % newloc
 
     def getTrueId(self):
+        """XXX: misleading name: returns name, not node id!"""
         return self.get("truestep")
 
     def getFalseId(self):
+        """XXX: misleading name: returns name, not node id!"""
         return self.get("falsestep")
 
     def getTrueLabel(self, language=""):

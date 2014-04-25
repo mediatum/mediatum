@@ -78,7 +78,7 @@ msgid "workflow_label_select_delete"
 msgstr "Löschen"
 
 msgid "workflow_label_select_move"
-msgstr "Verschieben"
+msgstr "Verschieben nach..."
 
 msgid "workflow_label_button_submit"
 msgstr "Ausführen"

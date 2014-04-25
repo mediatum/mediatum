@@ -242,6 +242,9 @@
             <th colspan="2" style="text-align: right;">
                 <select>
                     <option value="delete" i18n:translate="workflow_label_select_delete">TEXT</option>
+                    <optgroup label="Move" i18n:attributes="label workflow_label_select_move" tal:define="steps python:[s for s in workflow.getSteps() if s.id != step.id]">
+                        <option tal:repeat="value steps" tal:content="python:value.getName()" tal:attributes="value python:value.id" />
+                    </optgroup>
                 </select>
                 <button value="submit" type="submit" onclick="submit()" i18n:translate="workflow_label_button_submit">TEXT</button>
             </th>

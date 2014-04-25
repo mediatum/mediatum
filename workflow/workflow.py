@@ -381,10 +381,17 @@ class WorkflowStep(tree.Node):
                             return ""
 
                 if 'action' in req.params:
-                    if req.params['action'] == 'delete' and access.getUser().isAdmin():
-                        for node in nodes:
-                            for parent in node.getParents():
-                                parent.removeChild(node)
+                    if access.getUser().isAdmin():
+                        if req.params['action'] == 'delete':
+                            for node in nodes:
+                                for parent in node.getParents():
+                                    parent.removeChild(node)
+                        else:
+                            step = tree.getNode(req.params['action'])
+                            for node in nodes:
+                                for parent in node.getParents():
+                                    parent.removeChild(node)
+                                step.addChild(node)
                     return self.show_workflow_step(req)
 
                 else:

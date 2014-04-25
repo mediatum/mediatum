@@ -17,7 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.athana as athana
+from mediatumtal import tal
+from core.transition.athana_sep import athana_http as athana
 from core.metatype import Metatype, charmap
 from core.translation import t, getDefaultLanguage
 
@@ -195,13 +196,13 @@ class m_memo(Metatype):
             else:
                 context["expand_multilang"] = False
         
-        return athana.getTAL("metadata/memo.html", context, macro="editorfield", language=language)
+        return tal.getTAL("metadata/memo.html", context, macro="editorfield", language=language)
 
 
 
 
     def getSearchHTML(self, context):
-        return athana.getTAL("metadata/memo.html",{"context":context}, macro="searchfield", language=context.language)
+        return tal.getTAL("metadata/memo.html",{"context":context}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None, html=1):
         value = node.get(field.getName()).replace(";","; ")
@@ -229,7 +230,7 @@ class m_memo(Metatype):
         
         context.update(attr_dict)
         
-        return athana.getTAL("metadata/memo.html", context, macro="maskeditor", language=language)
+        return tal.getTAL("metadata/memo.html", context, macro="maskeditor", language=language)
 
     def getName(self):
         return "fieldtype_memo"

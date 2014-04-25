@@ -30,7 +30,8 @@ if sys.version[0:3] < '2.6':
 else:
     import json
 
-import core.athana as athana
+from mediatumtal import tal
+from core.transition.athana_sep import athana_http as athana
 import core.tree as tree
 import core.users as users
 
@@ -55,7 +56,7 @@ def mkfilelist(targetnode, files, deletebutton=0, language=None, request=None, m
     if request:
         return request.getTAL("metadata/upload.html", {"files": files, "node": targetnode, "delbutton": deletebutton}, macro=macro)
     else:
-        return athana.getTAL("metadata/upload.html", {"files": files, "node": targetnode, "delbutton": deletebutton}, macro=macro, language=language)
+        return tal.getTAL("metadata/upload.html", {"files": files, "node": targetnode, "delbutton": deletebutton}, macro=macro, language=language)
 
 
 ALLOWED_CHARACTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' + '0123456789' + '+-_.'
@@ -143,7 +144,7 @@ class m_upload(Metatype):
         except:
             pass
 
-        s = athana.getTAL("metadata/upload.html", context, macro="editorfield", language=language)
+        s = tal.getTAL("metadata/upload.html", context, macro="editorfield", language=language)
         if field.getName():
             s = s.replace("____FIELDNAME____", "%s" % field.getName())
         elif fieldname:

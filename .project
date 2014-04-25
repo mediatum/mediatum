@@ -4,6 +4,7 @@
 	<comment></comment>
 	<projects>
 		<project>mediatum-playground</project>
+		<project>mediatum-tal</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -22,7 +22,7 @@
 import os.path
 import core.tree as tree
 from workflow import WorkflowStep, registerStep
-import core.athana as athana
+from mediatumtal import tal
 from core.translation import t, lang, addLabels
 from utils.utils import formatException
 import core.config as config
@@ -45,10 +45,10 @@ class MailError(Exception):
 
 
 def getTALtext(text, context):
-    #text = athana.getTALstr('<body xmlns:tal="http://xml.zope.org/namespaces/tal">%s</body>' %(text), context)
+    #text = tal.getTALstr('<body xmlns:tal="http://xml.zope.org/namespaces/tal">%s</body>' %(text), context)
     #text = text.replace("<body>","").replace("</body>","").replace("<body/>","")
     #return text.replace("\n","").strip()
-    return athana.getTALstr(text, context).replace('\n', '').strip()
+    return tal.getTALstr(text, context).replace('\n', '').strip()
 
 
 class WorkflowStep_SendEmail(WorkflowStep):
@@ -164,7 +164,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
             xfrom = node.get("mailtmp.from")
             to = node.get("mailtmp.to")
             text = node.get("mailtmp.text")
-            subject = athana.getTALstr(node.get("mailtmp.subject"),{}, language=node.get("system.wflanguage"))
+            subject = tal.getTALstr(node.get("mailtmp.subject"),{}, language=node.get("system.wflanguage"))
             return req.getTAL("workflow/email.html", {"page":"node?id="+self.id+"&obj="+node.id, "from":xfrom, "to":to, "text":text, "subject":subject, "node":node, "sendcondition":self.get("sendcondition"), "wfnode":self, "pretext":self.getPreText(lang(req)), "posttext":self.getPostText(lang(req))}, macro="sendmail")
 
     def metaFields(self, lang=None):

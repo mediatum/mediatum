@@ -17,7 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.athana as athana
+from mediatumtal import tal
 import core.tree as tree
 import core.config as config
 import os
@@ -207,7 +207,7 @@ class ContentList(Content):
         if not language:
             language=None
         if self.content:
-            headline = athana.getTAL(theme.getTemplate("content_nav.html"), {"nav": self}, macro="navheadline", language=lang(req))
+            headline = tal.getTAL(theme.getTemplate("content_nav.html"), {"nav": self}, macro="navheadline", language=lang(req))
             return headline + self.content.html(req)
 
         nav_list = list()
@@ -341,7 +341,7 @@ class ContentNode(Content):
 
         if not self.node.isContainer():
             plist = getPaths(self.node, AccessData(req))
-            paths = athana.getTAL(theme.getTemplate("content_nav.html"), {"paths": plist}, macro="paths", language=lang(req))
+            paths = tal.getTAL(theme.getTemplate("content_nav.html"), {"paths": plist}, macro="paths", language=lang(req))
         # render style of node for nodebig
         if len(stylebig)>1:
             #more than on style found
@@ -395,7 +395,7 @@ class ContentError(Content):
         self.error = error
 
     def html(self,req):
-        return athana.getTAL(theme.getTemplate("content_error.html"), {"error":self.error}, language=lang(req))
+        return tal.getTAL(theme.getTemplate("content_error.html"), {"error":self.error}, language=lang(req))
 
     def getContentStyles(self):
         return []

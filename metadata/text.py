@@ -19,7 +19,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
-import core.athana as athana
+from mediatumtal import tal
+from core.transition.athana_sep import athana_http as athana
 import core.config as config
 import re
 from utils.utils import esc
@@ -108,17 +109,17 @@ class m_text(Metatype):
             "defaultlang": defaultlang,
             "expand_multilang": True if value.find('\n') != -1 else False
         }
-        return athana.getTAL("metadata/text.html", context, macro="editorfield", language=language)
+        return tal.getTAL("metadata/text.html", context, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
-        return athana.getTAL("metadata/text.html",{"context":context}, macro="searchfield", language=context.language)
+        return tal.getTAL("metadata/text.html",{"context":context}, macro="searchfield", language=context.language)
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         try:
             multilingual = field.getValues()
         except:
             multilingual = ""
-        return athana.getTAL("metadata/text.html", {"multilingual":multilingual}, macro="maskeditor", language=language)
+        return tal.getTAL("metadata/text.html", {"multilingual":multilingual}, macro="maskeditor", language=language)
 
     def getFormatedValue(self, field, node, language=None, html=1, template_from_caller=None, mask=None):
 

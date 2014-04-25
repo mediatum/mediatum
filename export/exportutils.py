@@ -26,8 +26,8 @@ import inspect
 import codecs
 import logging
 
+from mediatumtal import tal
 import core.tree as tree
-import core.athana as athana
 import core.config as config
 import core.users as users
 
@@ -244,13 +244,13 @@ def runTALSnippet(s, context, mask=None):
 
     to_be_processed = header + xmlns + cutter + s + cutter + footer
     try: # normally only encoding errors
-        wr_result = athana.getTALstr(to_be_processed, context, mode='xml')
+        wr_result = tal.getTALstr(to_be_processed, context, mode='xml')
     except: # try with u2 method
         try:
-            wr_result = athana.getTALstr(u2(to_be_processed), context, mode='xml')
+            wr_result = tal.getTALstr(u2(to_be_processed), context, mode='xml')
         except:
-            wr_result = athana.getTALstr(u2(to_be_processed), context)
-        #wr_result = athana.getTALstr(u2(to_be_processed), context, mode='xml')
+            wr_result = tal.getTALstr(u2(to_be_processed), context)
+        #wr_result = tal.getTALstr(u2(to_be_processed), context, mode='xml')
         
     return wr_result[wr_result.find(cutter)+len(cutter):wr_result.rfind(cutter)]
  

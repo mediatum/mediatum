@@ -18,7 +18,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.athana as athana
+from mediatumtal import tal
+from core.transition.athana_sep import athana_http as athana
 #import core.search as search
 import core.tree as tree
 from utils.utils import esc
@@ -29,7 +30,7 @@ from core.acl import AccessData
 class m_ilist(Metatype):
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
-        return athana.getTAL("metadata/ilist.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
+        return tal.getTAL("metadata/ilist.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
 
 
     def getSearchHTML(self, context):
@@ -40,7 +41,7 @@ class m_ilist(Metatype):
         v = []
         for key in keys:
             v.append((key, valuelist[key]))
-        return athana.getTAL("metadata/ilist.html",{"context":context, "valuelist":v}, macro="searchfield", language=context.language)
+        return tal.getTAL("metadata/ilist.html",{"context":context, "valuelist":v}, macro="searchfield", language=context.language)
 
 
     def getFormatedValue(self, field, node, language=None, html=1):
@@ -127,4 +128,3 @@ class m_ilist(Metatype):
                 ("ilist_titlepopupbutton", "open editor mask")
             ]
         }
-        

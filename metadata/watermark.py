@@ -17,7 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.athana as athana
+from mediatumtal import tal
 from utils.utils import esc
 from core.metatype import Metatype, Context
 import re
@@ -36,11 +36,11 @@ FONTSIZE = 40
 class m_watermark(Metatype):
     """ This class implements the metatype watermark and everything that is needed to handle it """
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
-        return athana.getTAL("metadata/watermark.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
+        return tal.getTAL("metadata/watermark.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
 
 
     def getSearchHTML(self, context):
-        return athana.getTAL("metadata/watermark.html",{"context":context}, macro="searchfield", language=context.language)
+        return tal.getTAL("metadata/watermark.html",{"context":context}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None, html=1):
         value = node.get(field.getName()).replace(";","; ")

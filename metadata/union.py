@@ -17,14 +17,14 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.athana as athana
+from mediatumtal import tal
 from utils.utils import esc
 from core.metatype import Metatype
 
 class m_union(Metatype):
     
     def getSearchHTML(self, context):
-        return athana.getTAL("metadata/text.html",{"context":context}, macro="searchfield", language=context.language)
+        return tal.getTAL("metadata/text.html",{"context":context}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None, html=1):
         value = node.get(field.getName()).replace(";","; ")

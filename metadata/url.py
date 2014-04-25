@@ -17,7 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.athana as athana
+from mediatumtal import tal
 import logging
 import re
 from core.metatype import Metatype
@@ -64,14 +64,14 @@ class m_url(Metatype):
         if len(val)!=2:
             val = ("","")
 
-        return athana.getTAL("metadata/url.html", {"lock":lock, "value":val, "fielddef":fielddef, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
+        return tal.getTAL("metadata/url.html", {"lock":lock, "value":val, "fielddef":fielddef, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
 
     def getAdminFieldsHTML(self, values={}):
-        return athana.getTAL("metadata/url.html",{"valuelist":values["valuelist"], "icons":m_url.icons,"url_targets":m_url.targets}, macro="fieldeditor", language=values["language"])
+        return tal.getTAL("metadata/url.html",{"valuelist":values["valuelist"], "icons":m_url.icons,"url_targets":m_url.targets}, macro="fieldeditor", language=values["language"])
 
 
     def getSearchHTML(self, context):
-        return athana.getTAL("metadata/url.html",{"context":context}, macro="searchfield", language=context.language)
+        return tal.getTAL("metadata/url.html",{"context":context}, macro="searchfield", language=context.language)
 
     #
     # format node value depending on field definition
@@ -139,7 +139,7 @@ class m_url(Metatype):
             value = []
         while len(value)<4:
             value.append("")
-        return athana.getTAL("metadata/url.html", {"value":value, "icons":m_url.icons, "url_targets":m_url.targets}, macro="maskeditor", language=language)
+        return tal.getTAL("metadata/url.html", {"value":value, "icons":m_url.icons, "url_targets":m_url.targets}, macro="maskeditor", language=language)
 
     def getName(self):
         return "fieldtype_url"

@@ -17,7 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.athana as athana
+from mediatumtal import tal
 from core.metatype import Metatype
 
 class m_message(Metatype):
@@ -25,10 +25,10 @@ class m_message(Metatype):
         value = value.split(";")
         if len(value)<2:
             value = ["",0,"black",0]         
-        return athana.getTAL("metadata/message.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
+        return tal.getTAL("metadata/message.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
-        return athana.getTAL("metadata/message.html",{"context":context}, macro="searchfield", language=context.language)
+        return tal.getTAL("metadata/message.html",{"context":context}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None, html=1):
         value = node.get(field.getName()).replace(";","; ").split(";")

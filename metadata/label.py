@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.tree as tree
-import core.athana as athana
+from mediatumtal import tal
 from schema.schema import VIEW_DATA_ONLY, VIEW_DEFAULT
 from core.tree import Node, getNode
 from core.metatype import Metatype
@@ -87,10 +87,10 @@ class m_label(Metatype):
         return req.getTAL("metadata/label.html", v, macro="metaeditor")
 
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None):
-        return athana.getTAL("metadata/label.html", {"lock": lock, "value": value, "width": width, "name": field.getName(), "field": field}, macro="editorfield", language=language)
+        return tal.getTAL("metadata/label.html", {"lock": lock, "value": value, "width": width, "name": field.getName(), "field": field}, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
-        return athana.getTAL("metadata/label.html", {"context": context}, macro="searchfield", language=context.language)
+        return tal.getTAL("metadata/label.html", {"context": context}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None, html=1, template_from_caller=None, mask=None):
         value = node.get(field.getName())

@@ -19,7 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-import core.athana as athana
+from mediatumtal import tal
 import core.tree as tree
 
 from utils.utils import esc
@@ -107,11 +107,11 @@ class m_list(Metatype):
     
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
         context = Context(field, value=value, width=width, name=field.getName(), lock=lock, language=language)
-        return athana.getTAL("metadata/list.html", {"context":context, "valuelist":filter(lambda x:x!="", self.formatValues(context))}, macro="editorfield", language=language)
+        return tal.getTAL("metadata/list.html", {"context":context, "valuelist":filter(lambda x:x!="", self.formatValues(context))}, macro="editorfield", language=language)
         
         
     def getSearchHTML(self, context):
-        return athana.getTAL("metadata/list.html", {"context":context, "valuelist":filter(lambda x:x!="", self.formatValues(context))}, macro="searchfield", language=context.language)
+        return tal.getTAL("metadata/list.html", {"context":context, "valuelist":filter(lambda x:x!="", self.formatValues(context))}, macro="searchfield", language=context.language)
         
         
     def getFormatedValue(self, field, node, language=None, html=1):
@@ -140,7 +140,7 @@ class m_list(Metatype):
             value = ""
             filename = ""
             multiple_list = ""
-        return athana.getTAL("metadata/list.html", {"value":value, "filename":filename, "multiple_list":multiple_list}, macro="maskeditor", language=language)
+        return tal.getTAL("metadata/list.html", {"value":value, "filename":filename, "multiple_list":multiple_list}, macro="maskeditor", language=language)
         
         
     def getName(self):
@@ -177,4 +177,3 @@ class m_list(Metatype):
                 ("fieldtype_list_desc", "drop down valuelist")
             ]
           }
-          

@@ -17,7 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.athana as athana
+from mediatumtal import tal
 import utils.date as date
 from utils.date import format_date, parse_date, now, validateDate
 from schema.schema import dateoption
@@ -37,12 +37,12 @@ class m_date(Metatype):
         except:
             pass
 
-        return athana.getTAL("metadata/date.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
+        return tal.getTAL("metadata/date.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
 
 
     def getSearchHTML(self, context):
         context.value = context.value.split(";")
-        return athana.getTAL("metadata/date.html",{"context":context}, macro="searchfield", language=context.language)
+        return tal.getTAL("metadata/date.html",{"context":context}, macro="searchfield", language=context.language)
 
 
     def getFormatedValue(self, field, node, language=None, html=1):
@@ -81,7 +81,7 @@ class m_date(Metatype):
         #value = ""
         #if field:
         #    value = field.getValues()
-        return athana.getTAL("metadata/date.html", {"value":value, "dateoption":dateoption}, macro="maskeditor", language=language)
+        return tal.getTAL("metadata/date.html", {"value":value, "dateoption":dateoption}, macro="maskeditor", language=language)
 
     def getName(self):
         return "fieldtype_date"

@@ -20,8 +20,8 @@
 import re
 import os
 
+from mediatumtal import tal
 import core.tree as tree
-import core.athana as athana
 import core.config as config
 import default
 
@@ -179,7 +179,7 @@ class Directory(default.Default):
     
     """ format node image with standard template """
     def show_node_image(node,language=None):
-        return athana.getTAL("contenttypes/directory.html", {"node":node}, macro="thumbnail",language=language)
+        return tal.getTAL("contenttypes/directory.html", {"node":node}, macro="thumbnail",language=language)
      
     def isContainer(node):
         return 1

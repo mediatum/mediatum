@@ -30,6 +30,7 @@ from utils.utils import getMimeType
 from utils.fileutils import importFile, getImportDir, importFileIntoDir
 from contenttypes.image import makeThumbNail, makePresentationFormat
 from core.translation import lang, t
+import core.db.mysqlconnector as mysqlconnector
 
 def getContent(req, ids):
     ret = ""
@@ -152,15 +153,16 @@ def getContent(req, ids):
                                             pass
                                     os.removedirs(file.retrieveFile()+"/")
                             if len([f for f in node.getFiles() if f.getName()==filename[1] and f.type==filename[0]]) > 1:
-                                # remove single file if there are duplicates
-                                tree.db.runQuery('delete from nodefile where nid=%r and filename=%r and type=%r limit 1' % (node.id, f._path, filename[0]))
+                                # remove single file from database if there are duplicates
+                                c = mysqlconnector.MYSQLConnector()
+                                c.removeSingleFile(node.id, f._path)
                             else:
                                 # remove single file
                                 node.removeFile(file)
-                            try:
-                                os.remove(file.retrieveFile())
-                            except:
-                                pass
+                                try:
+                                    os.remove(file.retrieveFile())
+                                except:
+                                    pass
                             break
                     break
                 elif key.startswith("delatt|"):

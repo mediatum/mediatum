@@ -24,14 +24,15 @@ import sys
 import hashlib
 import locale
 import core.config as config
+from core.transition.athana_sep import athana_http as athana
 
-import core.athana as athana
+
 import core.translation as translation
 
 #basedir = os.path.dirname(athana.__file__).rsplit(os.sep,1)[0]
 # wn 2014-01-20: ensure absolute path even when importing startup file (eg: start.py)
 # this won't change anything when starting via "python start.py"
-basedir = os.path.abspath(athana.__file__).rsplit(os.sep,2)[0]
+basedir = os.path.abspath(config.__file__).rsplit(os.sep,2)[0]
 
 editmodulepaths = [('', 'web/edit/modules')]
 
@@ -44,8 +45,6 @@ else:
     config.initialize(basedir, "mediatum.cfg")
 
 athana.setTempDir(config.settings["paths.tempdir"])
-athana.setServiceUser(config.get("host.serviceuser",""))
-athana.setServicePwd(hashlib.md5(config.get("host.servicepwd", "")).hexdigest())
 
 # locale setting for sorting, default to system locale
 loc = locale.setlocale(locale.LC_COLLATE, '')

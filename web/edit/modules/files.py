@@ -154,8 +154,7 @@ def getContent(req, ids):
                                     os.removedirs(file.retrieveFile()+"/")
                             if len([f for f in node.getFiles() if f.getName()==filename[1] and f.type==filename[0]]) > 1:
                                 # remove single file from database if there are duplicates
-                                c = mysqlconnector.MYSQLConnector()
-                                c.removeSingleFile(node.id, f._path)
+                                node.removeFile(file, single=True)
                             else:
                                 # remove single file
                                 node.removeFile(file)

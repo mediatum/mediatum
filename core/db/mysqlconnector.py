@@ -325,7 +325,7 @@ class MYSQLConnector(Connector):
         self.runQuery("insert into nodefile (nid, filename, type, mimetype) values(" + nodeid + ", " + self.esc(path) + ", '" + type + "', '" + mimetype+ "')")
 
     def removeSingleFile(self, nodeid, path):
-        self.runQuery("delete from nodefile where nid = "+nodeid+" and filename="+self.esc(path)+"limit 1")
+        self.runQuery("delete from nodefile where nid = "+nodeid+" and filename="+self.esc(path)+" limit 1")
 
     def getStatus(self):
         ret = []

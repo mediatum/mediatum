@@ -17,16 +17,19 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 import time
 import socket
 import asyncore
 import random # FIXME: drop dependency!
 
-from athana import counter, async_chat, unresolving_logger
+from athana import counter, async_chat
 from core import tree, medmarc
 from schema import mapping
 
 from PyZ3950 import z3950, zdefs, asn1
+
+logg = logging.getLogger("athana")
 
 try:
     set
@@ -37,9 +40,6 @@ class FormatError(Exception):
     """Communication format not supported.
     """
 
-def dummy_log(*args):
-    pass
-
 class AsyncPyZ3950Server(z3950.Server):
     """Asynchronous Z3950 server implementation.
 
@@ -48,26 +48,10 @@ class AsyncPyZ3950Server(z3950.Server):
     This is copied and adapted from z3950.py in PyZ3950.  The lifetime
     of this object is one Z39.50 session.
     """
-    def __init__(self, conn, channel, logger):
+    def __init__(self, conn, channel):
         z3950.Server.__init__(self, conn)
         self.client_name = '[%s:%s]' % conn.getpeername()
         self._channel = channel
-        self.logger = logger
-
-    def _log(self, level, message, *args):
-        if self.logger is None:
-            return
-        message = '%s:%s' % (level, (args and message % args or message))
-        self.logger.log(self.client_name, message)
-
-    def _log_debug(self, message, *args):
-        self._log('debug', message, *args)
-
-    def _log_info(self, message, *args):
-        self._log('info', message, *args)
-
-    def _log_error(self, message, *args):
-        self._log('error', message, *args)
 
     def handle_incoming_data(self, b):
         # see classes "z3950.Server" and "z3950.Conn", methods run(), read_PDU(), readproc()
@@ -77,7 +61,7 @@ class AsyncPyZ3950Server(z3950.Server):
             raise self.ProtocolError ('ASN1 BER', str(val))
         if self.decode_ctx.val_count () > 0:
             typ, val = self.decode_ctx.get_first_decoded ()
-            self._log_debug("received Z3950 message '%s'", typ)
+            logg.debug("received Z3950 message '%s'", typ)
             fn = self.fn_dict.get(typ)
             if fn is None:
                 raise self.ProtocolError ("Bad typ", '%s %s' % (typ, val))
@@ -100,7 +84,7 @@ class AsyncPyZ3950Server(z3950.Server):
         # copied from "z3950.Server" to adapt options list
         self.v3_flag = (ireq.protocolVersion ['version_3'] and
                         z3950.Z3950_VERS == 3)
-        
+
         ir = z3950.InitializeResponse ()
         ir.protocolVersion = z3950.ProtocolVersion ()
         ir.protocolVersion ['version_1'] = 1
@@ -130,18 +114,18 @@ class AsyncPyZ3950Server(z3950.Server):
             if trace_charset:
                 print csreq, csresp
             zdefs.set_charset_negot (ir, csresp.pack_negot_resp (), self.v3_flag)
-            
+
         optionslist = ['search', 'present', 'negotiation', 'delSet'] # , 'scan']
         ir.options = z3950.Options ()
         for o in optionslist:
             ir.options[o] = 1
-            
+
         ir.preferredMessageSize = 0
-        
-        ir.exceptionalRecordSize = 0 
+
+        ir.exceptionalRecordSize = 0
         # z9350-2001 3.2.1.1.4, 0 means client should be prepared to accept
         # arbitrarily long messages.
-        
+
         ir.implementationId = "mediaTUM Z39.50 Server (no official ID)"
 
         ir.implementationName = 'mediaTUM'
@@ -158,15 +142,15 @@ class AsyncPyZ3950Server(z3950.Server):
         the matching node IDs.  Called by base class implementation of
         'search' request handler.
         """
-        self._log_info(query)
+        logg.debug("query: %s", query)
         try:
             parsed_query = parse_rpn_query(query)
-        except Exception, e:
-            self._log_error("error (%s) while unpacking Z3950 search query: %s", e, query)
+        except Exception:
+            logg.error("error while unpacking Z3950 search query '%s':", query, exc_info=1)
             raise
         self._log_debug('%r', parsed_query)
         node_ids = search_nodes(parsed_query, self._log)
-        self._log_debug('IDs returned for Z3950 query: %s', len(node_ids))
+        logg.debug('IDs returned for Z3950 query: %s', len(node_ids))
         return node_ids
 
     def format_records (self, start, count, res_set, prefsyn):
@@ -180,7 +164,7 @@ class AsyncPyZ3950Server(z3950.Server):
             try:
                 node = tree.getNode( res_set[i] )
             except tree.NoSuchNodeError:
-                self._log_debug("request for non-existant node %s", res_set[i])
+                logg.debug("request for non-existant node %s", res_set[i])
                 continue
             marc21_node = map_node(node)
             if marc21_node is None:
@@ -222,7 +206,7 @@ class AsyncPyZ3950Server(z3950.Server):
 
 # Query support
 
-def search_nodes(query, log=dummy_log, mapping_prefix='Z3950_search_'):
+def search_nodes(query, mapping_prefix='Z3950_search_'):
     """
     Search nodes that match the query.
 
@@ -243,18 +227,15 @@ def search_nodes(query, log=dummy_log, mapping_prefix='Z3950_search_'):
             node_id = name[len(mapping_prefix):]
             roots_and_mappings.append((tree.getNode(node_id), mapping_node))
         except tree.NoSuchNodeError:
-            log('error',
-                ("Configuration problem detected: Z39.50 search mapping '%s' found, "
-                 "but no matching root node with ID '%s'"),
-                name, node_id)
+            logg.error("Configuration problem detected: Z39.50 search mapping '%s' found, "
+                 "but no matching root node with ID '%s'", name, node_id)
 
     if not roots_and_mappings:
-        log('info', 'no mappings configured, skipping search')
+        logg.info('no mappings configured, skipping search')
         return []
 
-    log('debug', 'using mapping roots: %s' % (
-        [ (n1.id, n2.id) for (n1,n2) in roots_and_mappings ],))
-        
+    logg.debug('using mapping roots: %s', [ (n1.id, n2.id) for (n1,n2) in roots_and_mappings ])
+
     # run one search per root node
     node_ids = []
     for root_node, mapping_node in roots_and_mappings:
@@ -266,9 +247,9 @@ def search_nodes(query, log=dummy_log, mapping_prefix='Z3950_search_'):
         # just to parse it afterwards?
         query_string = query.build_query_string(field_mapping)
         if query_string is None:
-            log('info', 'unable to map query: [%r] using mapping %s' % (query, field_mapping))
+            logg.info('unable to map query: [%r] using mapping %s', query, field_mapping)
             continue
-        log('info', 'executing query: %s', query_string)
+        logg.info('executing query: %s', query_string)
         node_ids.append( root_node.search(query_string).getIDs() )
 
     # use a round-robin algorithm to merge the separate query results
@@ -402,7 +383,7 @@ class z3950_channel(async_chat):
     ac_in_buffer_size       = 4096
     ac_out_buffer_size      = 4096
 
-    def __init__(self, server, conn, addr, logger):
+    def __init__(self, server, conn, addr):
         self.server = server
         async_chat.__init__ (self, conn)
 
@@ -415,8 +396,8 @@ class z3950_channel(async_chat):
             def close(self):
                 server.closed_sessions.increment()
                 server.close_when_done()
-        
-        self.z3950_server = AsyncPyZ3950Server(conn, ChannelInterface(), logger)
+
+        self.z3950_server = AsyncPyZ3950Server(conn, ChannelInterface())
 
     def readable(self):
         return 1 # always
@@ -435,7 +416,7 @@ class z3950_channel(async_chat):
 class z3950_server(asyncore.dispatcher):
     z3950_channel_class = z3950_channel
 
-    def __init__ (self, ip='', port=2101, logger_object=None):
+    def __init__ (self, ip='', port=2101):
         self.ip = ip
         self.port = port
 
@@ -453,23 +434,13 @@ class z3950_server(asyncore.dispatcher):
         self.bind ((self.ip, self.port))
         self.listen (5)
 
-        if logger_object is None:
-            logger_object = sys.stdout
+        logg.info('Z3950 server started, Port: %d\n', self.port)
 
-        self.logger = unresolving_logger (logger_object)
-        
-        self.log_info = self.logger.log_func        
-
-        self.log_info('Z3950 server started at %s, Port: %d\n' % (
-                time.ctime(time.time()),
-                self.port)
-                )
-                
     def handle_accept(self):
         conn, addr = self.accept()
         self.total_sessions.increment()
-        self.log_info('Incoming connection from %s:%d' % (addr[0], addr[1]))
-        self.z3950_channel_class(self, conn, addr, self.logger)
+        logg.info('Incoming connection from %s:%d', addr[0], addr[1])
+        self.z3950_channel_class(self, conn, addr)
 
     def writable (self):
         return 0

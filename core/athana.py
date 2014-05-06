@@ -34,9 +34,12 @@ Parse HTML and compile to TALInterpreter intermediate code.
 
 RCS_ID =  '$Id: athana.py,v 1.48 2013/02/28 07:28:19 seiferta Exp $'
 
+import logging
 import sys
 
 from HTMLParser import HTMLParser, HTMLParseError
+
+logg = logging.getLogger("athana")
 
 BOOLEAN_HTML_ATTRS = [
     "compact", "nowrap", "ismap", "declare", "noshade", "checked",
@@ -2476,8 +2479,7 @@ class AthanaTALEngine:
             try:
                 return eval(expr, self.globals, self.locals)
             except:
-                lgerr.log("Error in python expression:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
-                traceback.print_tb(sys.exc_info()[2],None,lgerr)
+                logg.error("Error in python expression", exc_info=1)
                 raise TALESError("evaluation error in %s" % `expr`)
 
         if type == "position":
@@ -3416,19 +3418,6 @@ class escaping_producer:
         else:
             return buffer
 
-class tail_logger:
-    "Keep track of the last <size> log messages"
-    def __init__ (self, logger, size=500):
-        self.size = size
-        self.logger = logger
-        self.messages = []
-
-    def log (self, message):
-        self.messages.append (strip_eol (message))
-        if len (self.messages) > self.size:
-            del self.messages[0]
-        self.logger.log (message)
-
 
 def html_repr (object):
     so = escape (repr (object))
@@ -3488,64 +3477,6 @@ def english_time (n):
             '%d %s'
             )
 
-class file_logger:
-
-    # pass this either a path or a file object.
-    def __init__ (self, file, flush=1, mode='a'):
-        if type(file) == type(''):
-            if (file == '-'):
-                self.file = sys.stdout
-            else:
-                self.file = open (file, mode)
-        else:
-            self.file = file
-        self.do_flush = flush
-
-    def __repr__ (self):
-        return '<file logger: %s>' % self.file
-
-    def write (self, data):
-        self.file.write (data)
-        self.maybe_flush()
-
-    def writeline (self, line):
-        self.file.writeline (line)
-        self.maybe_flush()
-
-    def writelines (self, lines):
-        self.file.writelines (lines)
-        self.maybe_flush()
-
-    def maybe_flush (self):
-        if self.do_flush:
-            self.file.flush()
-
-    def flush (self):
-        self.file.flush()
-
-    def softspace (self, *args):
-        pass
-
-    def log (self, message):
-        if message[-1] not in ('\r', '\n'):
-            self.write (message + '\n')
-        else:
-            self.write (message)
-
-    def debug(self, message):
-        self.log(message)
-
-class unresolving_logger:
-    "Just in case you don't want to resolve"
-    def __init__ (self, logger):
-        self.logger = logger
-        if self.logger.__class__ == logging.Logger:
-            self.log_func = lambda msg: self.logger.log(logging.INFO, msg)
-        else:
-            self.log_func = logger.log
-
-    def log (self, ip, message):
-        self.log_func ('%s:%s' % (ip, message))
 
 def strip_eol (line):
     while line and line[-1] in '\r\n':
@@ -3672,19 +3603,13 @@ class http_request:
         if self.collector:
             self.collector.collect_incoming_data (data)
         else:
-            self.log_info(
-                    'Dropping %d bytes of incoming request data' % len(data),
-                    'warning'
-                    )
+            logg.warn('Dropping %d bytes of incoming request data', len(data))
 
     def found_terminator (self):
         if self.collector:
             self.collector.found_terminator()
         else:
-            self.log_info (
-                    'Unexpected end-of-record for incoming request',
-                    'warning'
-                    )
+            logg.warn('Unexpected end-of-record for incoming request')
 
     def push (self, thing):
         if type(thing) == type(''):
@@ -3793,19 +3718,9 @@ class http_request:
         if close_it:
             self.channel.close_when_done()
 
-    def log_date_string (self, when):
-        t = time.localtime(when)
-        return time.strftime ( '%d/%b/%Y:%H:%M:%S ', t)
+    def log(self):
+        logg.info('[%s:%s] "%s"', self.channel.addr[0], self.channel.addr[1], self.request)
 
-    def log (self):
-        self.channel.server.logger.log (
-                self.channel.addr[0],
-                '%d - - [%s] "%s"\n' % (
-                        self.channel.addr[1],
-                        self.log_date_string (time.time()),
-                        self.request,
-                        )
-                )
 
     def write(self,text):
         if type(text) == type(''):
@@ -4155,6 +4070,7 @@ class http_channel (async_chat):
             sys.exit ("Out of Memory!")
 
     def handle_error (self):
+        logg.error("uncaught exception in http_channel", exc_info=1)
         t, v = sys.exc_info()[:2]
         if t is SystemExit:
             raise t, v
@@ -4218,7 +4134,7 @@ class http_channel (async_chat):
             self.server.total_requests.increment()
 
             if command is None:
-                self.log_info ('Bad HTTP request: %s' % repr(request), 'error')
+                logg.error('Bad HTTP request: %s', repr(request))
                 r.error (400)
                 return
 
@@ -4235,9 +4151,7 @@ class http_channel (async_chat):
                     except:
                         self.server.exceptions.increment()
                         (file, fun, line), t, v, tbinfo = asyncore.compact_traceback()
-                        self.log_info(
-                                        'Server Error: %s, %s: file: %s line: %s' % (t,v,file,line),
-                                        'error')
+                        logg.error('Server Error: %s, %s: file: %s line: %s', t, v, file, line, exc_info=1)
                         try:
                             r.error (500)
                         except:
@@ -4257,16 +4171,13 @@ class http_server (asyncore.dispatcher):
 
     channel_class = http_channel
 
-    def __init__ (self, ip, port, resolver=None, logger_object=None):
+    def __init__ (self, ip, port, resolver=None):
         self.ip = ip
         self.port = port
         asyncore.dispatcher.__init__ (self)
         self.create_socket (socket.AF_INET, socket.SOCK_STREAM)
 
         self.handlers = []
-
-        if not logger_object:
-            logger_object = file_logger (sys.stdout)
 
         self.set_reuse_addr()
         self.bind ((ip, port))
@@ -4276,7 +4187,7 @@ class http_server (asyncore.dispatcher):
 
         host, port = self.socket.getsockname()
         if not ip:
-            self.log_info('Computing default hostname', 'warning')
+            logg.warn('Computing default hostname')
         try:
             ip = socket.gethostbyname (socket.gethostname())
         except:
@@ -4284,7 +4195,7 @@ class http_server (asyncore.dispatcher):
         try:
             self.server_name = socket.gethostbyaddr (ip)[0]
         except socket.error:
-            self.log_info('Cannot do reverse lookup', 'warning')
+            logg.warn('Cannot do reverse lookup')
             self.server_name = ip       # use the IP address as the "hostname"
 
         self.server_port = port
@@ -4294,23 +4205,37 @@ class http_server (asyncore.dispatcher):
         self.bytes_out = counter()
         self.bytes_in  = counter()
 
-        if not logger_object:
-            logger_object = file_logger (sys.stdout)
-
-        self.logger = unresolving_logger (logger_object)
-
-        self.log_info (
-                'Athana (%s) started at %s'
+        logg.info(
+                'Athana (%s) started'
                 '\n\n'
                 'The server is running! You can now direct your browser to:\n'
                 '\thttp://%s:%d/'
-                '\n' % (
+                '\n',
                         ATHANA_VERSION,
-                        time.ctime(time.time()),
                         self.server_name,
-                        port,
-                        )
-                )
+                        port)
+    ### overriding asyncore.dispatcher methods
+
+    # cheap inheritance, used to pass all other attribute
+    # references to the underlying socket object.
+    def __getattr__(self, attr):
+        try:
+            retattr = getattr(self.socket, attr)
+        except AttributeError:
+            logg.error("http_server instance has no attribute '%s'", attr)
+            raise
+        else:
+            msg = "%(me)s.%(attr)s is deprecated. Use %(me)s.socket.%(attr)s " \
+                  "instead." % {'me': self.__class__.__name__, 'attr':attr}
+            logg.warn(msg)
+            return retattr
+
+    def log(self, message):
+        logg.debug(message)
+
+    def log_info(self, message, type='info'):
+        logg.info(message)
+
 
     def writable (self):
         return 0
@@ -4333,14 +4258,14 @@ class http_server (asyncore.dispatcher):
             # accept.  socketmodule.c:makesockaddr complains that the
             # address family is unknown.  We don't want the whole server
             # to shut down because of this.
-            self.log_info ('warning: server accept() threw an exception', 'warning')
+            logg.error('warning: server accept() threw an exception', exc_info=1)
             return
         except TypeError:
             # unpack non-sequence.  this can happen when a read event
             # fires on a listening socket, but when we call accept()
             # we get EWOULDBLOCK, so dispatcher.accept() returns None.
             # Seen on FreeBSD3.
-            self.log_info ('warning: server accept() threw EWOULDBLOCK', 'warning')
+            logg.error('warning: server accept() threw EWOULDBLOCK', exc_info=1)
             return
 
         self.channel_class (self, conn, addr)
@@ -5390,7 +5315,7 @@ class ftp_channel (async_chat):
         else:
             file = line[1]
             if not self.filesystem.isfile (file):
-                self.log_info ('checking %s' % file)
+                logg.info('checking %s', file)
                 self.respond ('550 No such file')
             else:
                 try:
@@ -5515,7 +5440,6 @@ class ftp_channel (async_chat):
             self.respond ('230 %s' % message)
             self.filesystem = fs
             self.authorized = 1
-            #self.log_info('Successful login: Filesystem=%s' % repr(fs))
         else:
             self.respond ('530 %s' % message)
 
@@ -5609,7 +5533,6 @@ class ftp_server (asyncore.dispatcher):
             hostname        =None,
             ip              ='',
             port            =21,
-            logger_object=file_logger (sys.stdout)
             ):
         self.ip = ip
         self.port = port
@@ -5636,20 +5559,11 @@ class ftp_server (asyncore.dispatcher):
         self.bind ((self.ip, self.port))
         self.listen (5)
 
-        if not logger_object:
-            logger_object = sys.stdout
 
-        self.logger = unresolving_logger (logger_object)
-
-        if logger_object.__class__ in [logging.Logger, logging_logger]:
-            self.log_info = self.logger.log_func
-
-        self.log_info('FTP server started at %s, Port: %d\n\tAuthorizer: %s, Hostname: %s\n' % (
-                time.ctime(time.time()),
+        logg.info('FTP server started, Port: %d\n\tAuthorizer: %s, Hostname: %s\n',
                 self.port,
                 repr (self.authorizer),
-                self.hostname,
-                ))
+                self.hostname)
 
     def writable (self):
         return 0
@@ -5663,7 +5577,7 @@ class ftp_server (asyncore.dispatcher):
     def handle_accept (self):
         conn, addr = self.accept()
         self.total_sessions.increment()
-        self.log_info('Incoming connection from %s:%d' % (addr[0], addr[1]))
+        logg.debug('Incoming connection from %s:%d', addr[0], addr[1])
         self.ftp_channel_class (self, conn, addr)
 
     # return a producer describing the state of the server
@@ -5785,7 +5699,7 @@ class xmit_channel (async_chat):
 
     def handle_error (self):
         # usually this is to catch an unexpected disconnect.
-        self.log_info ('unexpected disconnect on data xmit channel', 'error')
+        logg.error('unexpected disconnect on data xmit channel')
         try:
             self.close()
         except:
@@ -5844,7 +5758,7 @@ class recv_channel (asyncore.dispatcher):
             try:
                 self.fd.write (block)
             except IOError:
-                self.log_info ('got exception writing block...', 'error')
+                logg.info('got exception writing block...', exc_info=1)
 
     def handle_close (self):
         s = self.channel.server
@@ -5866,7 +5780,6 @@ import thread
 import stat
 import urllib
 import traceback
-import logging
 import zipfile
 
 HTTP_CONTINUE                     = 100
@@ -5974,8 +5887,7 @@ def _make_inifiles(root, path):
         inifile = join_paths(path, "__init__.py")
         # create missing __init__.py
         if not os.path.isfile(inifile):
-            if lg:
-                lg.log("creating file "+inifile)
+            logg.info("creating file", inifile)
             open(inifile, "wb").close()
 
 def _load_module(filename):
@@ -6009,8 +5921,7 @@ def _load_module(filename):
         path = path + "."
 
     module2 = (path + module)
-    if lg:
-        lg.log("Loading module "+module2)
+    logg.info("Loading module %s", module2)
 
     m = __import__(module2)
     try:
@@ -6054,7 +5965,7 @@ class WebContext:
 
     def setStartupFile(self, startupfile):
         self.startupfile = startupfile
-        lg.log("  executing startupfile")
+        logg.info("  executing startupfile")
         self._load_module(self.startupfile)
 
     def getStartupFile(self):
@@ -6078,14 +5989,14 @@ class WebContext:
             if path == id:
                 function,desc = call
                 if verbose:
-                    lg.log("Request %s matches handler (%s)" % (path, desc))
+                    logg.debug("Request %s matches handler (%s)", path, desc)
                 return lambda req: call_and_close(function,req)
         # no matching handler, try patterns
         for pattern,call in self.pattern_to_function.items():
             if pattern.match(path):
                 function,desc = call
                 if verbose:
-                    lg.log("Request %s matches (%s)" % (path, desc))
+                    logg.debug("Request %s matches (%s)", path, desc)
                 return lambda req: call_and_close(function,req)
 
         return None
@@ -6141,8 +6052,7 @@ class WebFile:
                 raise
             ftphandlers += [c]
         except:
-            lgerr.log("Error in FTP Handler:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
-            traceback.print_tb(sys.exc_info()[2],None,lgerr)
+            logg.error("Error in FTP Handler:", exc_info=1)
             raise "No such function "+ftpclass+" in file "+self.filename
 
     def addMacroResolver(self, macroresolver):
@@ -6154,8 +6064,7 @@ class WebFile:
                 raise
             macroresolvers += [f]
         except:
-            lgerr.log("Error in Macro Resolver:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
-            traceback.print_tb(sys.exc_info()[2],None,lgerr)
+            logg.error("Error in Macro Resolver:", exc_info=1)
             raise "No such function "+macroresolver+" in file "+self.filename
 
     def addTranslator(self, handler):
@@ -6167,8 +6076,7 @@ class WebFile:
                 raise
             translators += [f]
         except:
-            lgerr.log("Error in Macro Resolver:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
-            traceback.print_tb(sys.exc_info()[2],None,lgerr)
+            logg.error("Error in Macro Resolver:", exc_info=1)
             raise "No such function "+translator+" in file "+self.filename
 
     def getFileName(self):
@@ -6184,8 +6092,7 @@ class WebHandler:
             if self.f is None:
                 raise
         except:
-            lgerr.log("Error in Handler:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
-            traceback.print_tb(sys.exc_info()[2],None,lgerr)
+            logg.error("Error in Handler:", exc_info=1)
             raise "No such function "+function+" in file "+self.file.filename
 
     def addPattern(self, pattern):
@@ -6298,7 +6205,7 @@ def headers_to_map(mylist):
             headers[key] = value
         else:
             if len(h.strip())>0:
-                lg.log("invalid header: "+str(h))
+                logg.error("invalid header: %s", h)
     return headers
 
 class AthanaFile:
@@ -6370,7 +6277,7 @@ class simple_input_collector:
                 parameters[key] = oldvalue + urllib.unquote_plus(value)
             else:
                 if len(e.strip())>0:
-                    lg.log("Unknown parameter: "+e)
+                    logg.error("Unknown parameter: %s", e)
         self.handler.continue_request(r,parameters)
 
 class upload_input_collector:
@@ -6516,7 +6423,6 @@ class AthanaHandler:
 
     def match(self, request):
         path, params, query, fragment = request.split_uri()
-        #lg.log("===== request:"+path+"=====")
         return 1
 
     def handle_request (self, request):
@@ -6622,7 +6528,7 @@ class AthanaHandler:
                 self.sessions[sessionid] = session
         else:
             sessionid = self.create_session_id()
-            print "Creating new session", sessionid
+            logg.debug("Creating new session %s", sessionid)
             session = Session(sessionid)
             self.sessions[sessionid] = session
 
@@ -6634,7 +6540,6 @@ class AthanaHandler:
         context = None
         global contexts
         for c in contexts:
-            #lg.debug("Compare context "+c.name+" with request "+path)
             if path.startswith(c.name) and len(c.name)>maxlen:
                 context = c
                 maxlen = len(context.name)
@@ -6642,7 +6547,6 @@ class AthanaHandler:
             request.error (404)
             return
 
-        #print "Request ",'"'+path+'"',"maps to context",context.name
         fullpath = path
         path = path[len(context.name):]
         if len(path)==0 or path[0] != '/':
@@ -6683,7 +6587,7 @@ class AthanaHandler:
                 self.queuelock.release()
             return
         else:
-            lg.log("Request %s matches no pattern (context: %s)" % (request.path,context.name))
+            logg.info("Request %s matches no pattern (context: %s)", request.path, context.name)
             return request.error(404, "File %s not found" % request.path)
 
     def callhandler(self, function, req):
@@ -6692,9 +6596,9 @@ class AthanaHandler:
         try:
             status = function(req)
         except:
-            lgerr.log("Error in page :" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
-            traceback.print_tb(sys.exc_info()[2],None,lgerr)
-            s = "<pre>"+exception_string()+"</pre>"
+            logg.error("Error in page: '%s %s', session '%s'",
+                   request.type, request.uri, request.session.id, exc_info=1)
+            s = "<pre>"+ traceback.format_exc() +"</pre>"
             return request.error(500,s)
 
 class fs:
@@ -6715,23 +6619,6 @@ class ftp_authorizer:
     def __repr__(self):
         return 'ftp_authorizer'
 
-class logging_logger:
-    def __init__(self,name="athana"):
-        self.logger = logging.getLogger(name)
-        self.log_info = self.log
-        self.log_debug = self.debug
-        self.log_error = self.error
-    def log (self, message):
-        self.logger.info(message.rstrip())
-    def debug (self, message):
-        self.logger.debug(message.rstrip())
-    def write (self, message):
-        self.logger.info(message.rstrip())
-    def error (self, message):
-        self.logger.error(message.rstrip())
-
-lg = logging_logger()
-lgerr = logging_logger("errors")
 
 class zip_filesystem:
     def __init__(self, filename):
@@ -7006,8 +6893,7 @@ class AthanaThread:
                 try:
                     server.callhandler(function,req)
                 except:
-                    lgerr.log("Error while processing request:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
-                    traceback.print_tb(sys.exc_info()[2],None,lgerr)
+                    logg.error("Error while processing request:", exc_info=1)
 
                 if profiling:
                     global profiles
@@ -7050,17 +6936,15 @@ def run(port=8081, z3950_port=None):
     global ATHANA_STARTED
     check_date()
     ph = AthanaHandler()
-    hs = http_server ('', port, logger_object = lg)
+    hs = http_server ('', port)
     hs.install_handler (ph)
 
     if len(ftphandlers)>0:
-        log_ftp = logging_logger("ftp")
-        ftp = ftp_server (ftp_authorizer(), port=ftphandlers[0].getPort(), logger_object=log_ftp)
+        ftp = ftp_server (ftp_authorizer(), port=ftphandlers[0].getPort())
 
     if z3950_port is not None:
         import athana_z3950
-        log_z3950 = logging_logger("z3950")
-        z3950_server = athana_z3950.z3950_server(port=z3950_port, logger_object=log_z3950)
+        z3950_server = athana_z3950.z3950_server(port=z3950_port)
 
     if multithreading_enabled:
         global threadlist
@@ -7087,69 +6971,3 @@ TODO:
 def setTempDir(path):
     global GLOBAL_TEMP_DIR
     GLOBAL_TEMP_DIR = path
-
-def mainfunction():
-    global verbose,port,init_file,log_file,temp_path,multithreading_enabled,number_of_threads,GLOBAL_TEMP_DIR,contexts,lg,lgerr
-    os.putenv('ATHANA_VERSION',ATHANA_VERSION)
-
-    from optparse import OptionParser
-
-    parser = OptionParser()
-
-    parser.add_option("-v", "--verbose", dest="verbose", help="Be more verbose", action="store_true")
-    parser.add_option("-q", "--quiet", dest="quiet", help="Be quiet", action="store_true")
-    parser.add_option("-d", "--debug", dest="debug", help="Turn on debugging", action="store_true")
-    parser.add_option("-p", "--port", dest="port", help="Set the port number", action="store",type="string")
-    parser.add_option("-i", "--init-file", dest="init", help="Set the init file to use",action="store",type="string")
-    parser.add_option("-l", "--log-file", dest="log", help="Set the logging file to use",action="store",type="string")
-    parser.add_option("-t", "--temp-path", dest="temp", help="Set the temporary directory (default: /tmp/)",action="store",type="string")
-    parser.add_option("-m", "--multithread", dest="multithreading_enabled", help="Enable multithreading",action="store_true")
-    parser.add_option("-n", "--number-of-threads", dest="threads", help="Number of threads",action="store",type="int")
-    parser.add_option("-T", "--talfile", dest="talfile", help="execute TAL File",action="store",type="string")
-    parser.add_option("-Z", "--z3950", dest="enable_z3950", help="enable Z3950 interface", action="store_true", default=False)
-
-    (options, args) = parser.parse_args()
-
-    verbose = 0
-    init_file="web.cfg"
-    log_file=None
-    temp_path="/tmp/"
-    port=8081
-
-    if options.verbose != None : verbose = 2
-    if options.quiet != None : verbose = 0
-    if options.debug != None : verbose = 3
-    if options.port != None : port = int(options.port)
-    if options.init != None : init_file = options.init
-    if options.log != None : log_file = options.log
-    if options.temp != None : GLOBAL_TEMP_DIR = options.temp
-    if options.multithreading_enabled : multithreading_enabled = 1
-    if options.threads != None : number_of_threads = options.threads
-
-    if options.talfile:
-        print getTAL(options.talfile, {"mynone":None})
-        sys.exit(0)
-
-    if init_file:
-        contexts += [read_ini_file(init_file)]
-
-    if log_file is not None:
-        fi = open(log_file, "wb")
-        lg = file_logger (fi)
-        lgerr = lg
-
-    print "-"*72
-    if multithreading_enabled:
-        print "Starting Athana (%d threads)..." % number_of_threads
-    else:
-        print "Starting Athana..."
-    print "Init-File:",init_file
-    print "Log-File:",log_file
-    print "Temp-Path:",GLOBAL_TEMP_DIR
-    print "-"*72
-
-    run(port, options.enable_z3950)
-
-if __name__ == '__main__':
-    import athana
-    athana.mainfunction()

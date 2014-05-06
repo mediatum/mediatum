@@ -38,10 +38,10 @@
     <br />
     <br />
     <div class="label" i18n:translate="list_list_values">TEXT</div>
-    <textarea name="list_value" rows="4" style="width:250px"><tal:block tal:replace="value"/></textarea>
+    <textarea name="list_value" rows="4" style="width:500px;margin-bottom:5px"><tal:block tal:replace="value"/></textarea>
     <br />
     <div class="label" i18n:translate="list_list_values_file">TEXT</div>
-    <input type="file" name="valuesfile" />
+    <input type="file" name="valuesfile" style="width:500px;"/>
     <br />
     <tal:block tal:condition="python:filename">
         <div class="label" i18n:translate="current_file">TEXT</div><br />

@@ -136,11 +136,9 @@ class m_list(Metatype):
                 if field.id and len(field.getFiles()) > 0:
                     filename = os.path.basename(field.getFiles()[0].retrieveFile())
                     multiple_list = field.get('multiple')
-        except:
-            value = ""
-            filename = ""
-            multiple_list = ""
-        return tal.getTAL("metadata/list.html", {"value":value, "filename":filename, "multiple_list":multiple_list}, macro="maskeditor", language=language)
+        except AttributeError:
+            value = field
+        return tal.getTAL("metadata/list.html", {"value": value, "filename": filename, "multiple_list": multiple_list}, macro="maskeditor", language=language)
         
         
     def getName(self):

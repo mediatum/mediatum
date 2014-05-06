@@ -6506,7 +6506,7 @@ SESSION_PATTERN = re.compile("^;[a-z0-9]{6}-[a-z0-9]{6}-[a-z0-9]{6}$")
 SESSION_PATTERN2 = re.compile("[a-z0-9]{6}-[a-z0-9]{6}-[a-z0-9]{6}")
 
 use_cookies = 1
-SESSION_COOKIES_LIVE_SECS = 3600 * 2  # unused sessions may be valid for 2 hours 
+SESSION_COOKIES_LIVE_SECS = 3600 * 2  # unused sessions may be valid for 2 hours
 
 class AthanaHandler:
     def __init__(self):

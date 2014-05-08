@@ -3253,8 +3253,8 @@ class WebContext:
         self.pattern_to_function = OrderedDict()
         self.catchall_handler = None
 
-    def addFile(self, filename):
-        file = WebFile(self, filename)
+    def addFile(self, filename, module=None):
+        file = WebFile(self, filename, module)
         self.files += [file]
         return file
 
@@ -3326,12 +3326,16 @@ class FileStore:
             self.handlers += [default_handler (os_filesystem (GLOBAL_ROOT_DIR + dir))]
 
 class WebFile:
-    def __init__(self, context, filename):
+    def __init__(self, context, filename, module=None):
         self.context = context
         if filename[0] == '/':
             filename = filename[1:]
         self.filename = filename
-        self.m = _load_module(join_paths(context.root,filename))
+        if module is None:
+            self.m = _load_module(join_paths(context.root,filename))
+        else:
+            self.m = module
+            global_modules[filename] = module
         self.handlers = []
 
     def addHandler(self, function):

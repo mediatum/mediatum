@@ -3179,16 +3179,6 @@ contexts = []
 
 global_modules={}
 
-def _make_inifiles(root, path):
-    dirs = path.split("/")
-    path = root
-    for dir in dirs:
-        path = join_paths(path, dir)
-        inifile = join_paths(path, "__init__.py")
-        # create missing __init__.py
-        if not os.path.isfile(inifile):
-            logg.info("creating file", inifile)
-            open(inifile, "wb").close()
 
 def _load_module(filename):
     global global_modules
@@ -3211,8 +3201,6 @@ def _load_module(filename):
 
     dir = os.path.dirname(filename)
     path = dir.replace("/",".")
-
-    _make_inifiles(GLOBAL_ROOT_DIR, dir)
 
     # strip tailing/leading dots
     while len(path) and path[0] == '.':

@@ -86,7 +86,7 @@ class Environment(BaseEnvironment):
 
 def make_template_functions(template_dirpath):
     """Creates a template rendering function which uses a fixed template path"""
-    jinja_env = Environment(current_app, loader=FileSystemLoader(template_dirpath))
+    jinja_env = Environment(current_app, loader=FileSystemLoader(template_dirpath), extensions=[PyJadeExtension])
 
     def render_template(template, **kwargs):
         template = jinja_env.get_template(template)

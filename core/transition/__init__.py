@@ -29,4 +29,4 @@ from jinja2 import Markup
 from core.transition.app import create_app
 from core.transition.blueprints import AthanaBlueprint
 from core.transition.globals import request, session, g
-from core.transition.templating import render_macro, render_template, render_template_string
+from core.transition.templating import render_macro, render_template, render_template_string, make_template_functions

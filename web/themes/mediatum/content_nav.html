@@ -53,7 +53,7 @@
         </form>
     </div>
     
-    <div id="pages">
+    <div id="pages" style="position:relative">
         <div tal:condition="python:len(list(nav_list))>1 or len(sortfieldslist)>0">
         &nbsp;
         </div>
@@ -66,10 +66,13 @@
             </tal:block>
             <span tal:condition="python:page=='...'" tal:replace="python:' ...'"/>
         </tal:block>
-        <span>&nbsp;&nbsp;<a href="?itemsperpage=-1" i18n:translate="show_all">alle anzeigen</a></span>
+        <span>&nbsp;&nbsp;<a href="?itemsperpage=-1" i18n:translate="show_all">TEXT</a></span>
         </div>
+        <span style="position:absolute;right:20px;top:0px">
+            <img i18n:attributes="title view_lists_add_shoppingbag" tal:attributes="onclick python:'shoppingBag(\''+ ids +'\')'" border="0" src="/img/favourite_add.png" style="cursor:pointer"/>
+        </span>
         <div tal:condition="python:len(list(nav_list))==1">
-            <span><a href="?page=0">seitenweise anzeigen</a></span>
+            <span><a href="?page=0" i18n:translate="show_pages">TEXT</a></span>
         </div>
         
     </div>

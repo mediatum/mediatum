@@ -3093,7 +3093,7 @@ import re, sys
 import asyncore
 import os
 import random
-import imp
+import importlib
 import time
 import thread
 import stat
@@ -3223,13 +3223,8 @@ def _load_module(filename):
     module2 = (path + module)
     logg.info("Loading module %s", module2)
 
-    m = __import__(module2)
-    try:
-        i = module2.index(".")
-        m = eval("m."+module2[i+1:])
-        global_modules[filename] = m
-    except:
-        pass
+    m = importlib.import_module(module2)
+    global_modules[filename] = m
     return m
 
 system_modules = sys.modules.copy()

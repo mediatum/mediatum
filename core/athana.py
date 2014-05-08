@@ -30,6 +30,7 @@
 #===============================================================
 RCS_ID =  '$Id: athana.py,v 1.48 2013/02/28 07:28:19 seiferta Exp $'
 
+from functools import partial
 from itertools import chain
 import logging
 from werkzeug.datastructures import ImmutableMultiDict
@@ -3250,7 +3251,7 @@ class WebContext:
         if root:
             self.root = qualify_path(root)
         self.pattern_to_function = OrderedDict()
-        self.id_to_function = {}
+        self.catchall_handler = None
 
     def addFile(self, filename):
         file = WebFile(self, filename)
@@ -3283,20 +3284,16 @@ class WebContext:
                     return req.error(status)
             return req.done()
 
-        # try handlers
-        for id,call in self.id_to_function.items():
-            if path == id:
-                function,desc = call
-                if verbose:
-                    logg.debug("Request %s matches handler (%s)", path, desc)
-                return lambda req: call_and_close(function,req)
-        # no matching handler, try patterns
         for pattern,call in self.pattern_to_function.items():
             if pattern.match(path):
                 function,desc = call
                 if verbose:
                     logg.debug("Request %s matches (%s)", path, desc)
                 return lambda req: call_and_close(function,req)
+
+        # no pattern matched, use catchall handler if present
+        if self.catchall_handler:
+            return partial(call_and_close, self.catchall_handler.f)
 
         return None
 
@@ -3342,6 +3339,11 @@ class WebFile:
         self.handlers += [handler]
         return handler
 
+    def addCatchallHandler(self, function):
+        handler = WebHandler(self, function)
+        self.context.catchall_handler = handler
+        return handler
+
     def addFTPHandler(self, ftpclass):
         global ftphandlers
         m = self.m
@@ -3375,7 +3377,6 @@ class WebHandler:
         desc = "pattern %s, file %s, function %s" % (pattern,self.file.filename,self.function)
         desc2 = "file %s, function %s" % (self.file.filename,self.function)
         self.file.context.pattern_to_function[p.getPattern()] = (self.f,desc)
-        self.file.context.id_to_function["/"+self.function] = (self.f,desc2)
         return p
 
 class WebPattern:
@@ -4293,3 +4294,4 @@ def request_finished(handler):
     """Decorator for functions which should be run after the view handler is called"""
     _request_finished_handlers.append(handler)
     return handler
+

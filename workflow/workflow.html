@@ -131,6 +131,7 @@
 <div metal:define-macro="workflow_show" id="workflow">
     
     <div style="display:none" id="confirm_delete"  i18n:translate="workflow_confirm_msg_delete">TEXT</div>
+    <div style="display:none" id="confirm_move"  i18n:translate="workflow_confirm_msg_move">TEXT</div>
     <script tal:content="python:'var id='+step.id"/>
     <script>
         var allChecked = false;
@@ -153,7 +154,26 @@
 
         function submit()
         {
-            if (confirm($('#confirm_delete').html()))
+            if ($('.checkbox:checked').size() > 0)
+            {
+                if ($("#selectid").val() == "delete")
+                {
+                    confirmf('#confirm_delete');
+                }
+                else
+                {
+                    confirmf('#confirm_move');
+                }
+            }
+            else
+            {
+                //do nothing
+            }
+        }
+
+        function confirmf(v)
+        {
+            if (confirm($(v).html()))
             {
                 var selected = new Array();
                 $('.checkbox:checked').each(function()
@@ -240,7 +260,7 @@
                 </small>
             </th>
             <th colspan="2" style="text-align: right;">
-                <select>
+                <select id="selectid">
                     <option value="delete" i18n:translate="workflow_label_select_delete">TEXT</option>
                     <optgroup label="Move" i18n:attributes="label workflow_label_select_move" tal:define="steps python:[s for s in workflow.getSteps() if s.id != step.id]">
                         <option tal:repeat="value steps" tal:content="python:value.getName()" tal:attributes="value python:'move_'+value.id" />

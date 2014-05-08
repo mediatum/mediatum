@@ -3695,6 +3695,29 @@ def make_param_dict_utf8_values(param_list):
     return ImmutableMultiDict([(k, unicode(v, encoding="utf8")) for k, v in param_list])
 # /COMPAT
 
+# COMPAT: before / after request handlers and request / app context handling
+_request_started_handlers = []
+_request_finished_handlers = []
+
+app = None
+
+def _call_handler_func(handler, handler_func, request):
+    for handler in _request_started_handlers:
+        handler()
+    res = handler.callhandler(handler_func, request)
+    for handler in _request_finished_handlers:
+        handler()
+    return res
+
+
+def call_handler_func(handler, handler_func, request):
+    if app:
+        with app.request_context(request, request.session):
+            _call_handler_func(self, handler_func, request)
+    else:
+        _call_handler_func(handler, handler_func, request)
+# /COMPAT
+
 class AthanaHandler:
     def __init__(self):
         self.sessions = {}
@@ -3874,7 +3897,7 @@ class AthanaHandler:
 
         if function is not None:
             if not multithreading_enabled:
-                self.callhandler(function, request)
+                call_handler_func(self, function, request)
             else:
                 self.queuelock.acquire()
                 self.queue += [(function,request)]
@@ -4176,7 +4199,7 @@ class AthanaThread:
                     self.prof.start()
                     timenow = time.time()
                 try:
-                    server.callhandler(function,req)
+                    call_handler_func(server, function, req)
                 except:
                     logg.error("Error while processing request:", exc_info=1)
 
@@ -4256,3 +4279,17 @@ TODO:
 def setTempDir(path):
     global GLOBAL_TEMP_DIR
     GLOBAL_TEMP_DIR = path
+
+
+# COMPAT: added functions
+
+def request_started(handler):
+    """Decorator for functions which should be run before the view handler is called"""
+    _request_started_handlers.append(handler)
+    return handler
+
+
+def request_finished(handler):
+    """Decorator for functions which should be run after the view handler is called"""
+    _request_finished_handlers.append(handler)
+    return handler

@@ -1236,6 +1236,7 @@ class http_request(object):
             413: "Request Entity Too Large",
             414: "Request-URI Too Large",
             415: "Unsupported Media Type",
+            418: "I'm a Teapot",
             500: "Internal Server Error",
             501: "Not Implemented",
             502: "Bad Gateway",
@@ -3137,6 +3138,7 @@ HTTP_REQUEST_URI_TOO_LARGE        = 414
 HTTP_UNSUPPORTED_MEDIA_TYPE       = 415
 HTTP_RANGE_NOT_SATISFIABLE        = 416
 HTTP_EXPECTATION_FAILED           = 417
+HTTP_IM_A_TEAPOT                  = 418
 HTTP_UNPROCESSABLE_ENTITY         = 422
 HTTP_LOCKED                       = 423
 HTTP_FAILED_DEPENDENCY            = 424

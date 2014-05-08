@@ -3709,7 +3709,7 @@ def _call_handler_func(handler, handler_func, request):
 def call_handler_func(handler, handler_func, request):
     if app:
         with app.request_context(request, request.session):
-            _call_handler_func(self, handler_func, request)
+            _call_handler_func(handler, handler_func, request)
     else:
         _call_handler_func(handler, handler_func, request)
 # /COMPAT

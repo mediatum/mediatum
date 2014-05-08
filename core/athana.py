@@ -3300,13 +3300,16 @@ class FileStore:
         return request.error(404, "File "+request.path+" not found")
 
     def addRoot(self, dir):
-        dir = qualify_path(dir)
-        while dir.startswith("./"):
-            dir = dir[2:]
-        if zipfile.is_zipfile(GLOBAL_ROOT_DIR + dir[:-1]) and dir.lower().endswith("zip/"):
-            self.handlers += [default_handler (zip_filesystem (GLOBAL_ROOT_DIR + dir[:-1]))]
+        if not os.path.isabs(dir):
+            dir = qualify_path(dir)
+            while dir.startswith("./"):
+                dir = dir[2:]
+            dir = os.path.join(GLOBAL_ROOT_DIR, dir)
+
+        if zipfile.is_zipfile(dir[:-1]) and dir.lower().endswith("zip/"):
+            self.handlers += [default_handler(zip_filesystem(dir[:-1]))]
         else:
-            self.handlers += [default_handler (os_filesystem (GLOBAL_ROOT_DIR + dir))]
+            self.handlers += [default_handler(os_filesystem(dir))]
 
 class WebFile:
     def __init__(self, context, filename, module=None):

@@ -3362,15 +3362,18 @@ class WebFile:
 class WebHandler:
     def __init__(self, file, function):
         self.file = file
-        self.function = function
-        m = file.m
-        try:
-            self.f = eval("m."+function)
-            if self.f is None:
-                raise
-        except:
-            logg.error("Error in Handler:", exc_info=1)
-            raise "No such function "+function+" in file "+self.file.filename
+        if isinstance(function, str):
+            self.function = function
+            m = file.m
+            try:
+                import os
+                self.f = getattr(m, function)
+            except:
+                logg.error("Error in Handler", exc_info=1)
+                raise Exception("No such function "+function+" in file "+self.file.filename)
+        else:
+            self.f = function
+            self.function = function.func_name
 
     def addPattern(self, pattern):
         p = WebPattern(self,pattern)

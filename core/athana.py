@@ -30,7 +30,9 @@
 #===============================================================
 RCS_ID =  '$Id: athana.py,v 1.48 2013/02/28 07:28:19 seiferta Exp $'
 
+from itertools import chain
 import logging
+from werkzeug.datastructures import ImmutableMultiDict
 from mediatumtal import tal
 
 
@@ -801,7 +803,7 @@ ATHANA_VERSION = "0.2.1"
 #                                                       Request Object
 # ===========================================================================
 
-class http_request:
+class http_request(object):
 
     # default reply code
     reply_code = 200
@@ -826,6 +828,7 @@ class http_request:
          self.command, self.uri, self.version,
          self.header) = args
 
+        self.method = self.command
         self.outgoing = []
         self.reply_headers = {
                 'Server'        : 'Athana/%s' % ATHANA_VERSION,
@@ -1190,6 +1193,15 @@ class http_request:
     def getTALstr(self,string,context,macro=None):
         return tal.processTAL(context,string=string, macro=macro, request=self)
 
+    # COMPAT: new param style like flask
+    def make_legacy_params_dict(self):
+        """convert new-style params to old style athana params dict"""
+        params = {}
+        for key, values in chain(self.form.iterlists(), self.args.iterlists()):
+            value = ";".join(values)
+            params[key] = value.encode("utf8")
+        params.update(self.files.iteritems())
+        self.params = params
 
     responses = {
             100: "Continue",
@@ -3468,9 +3480,9 @@ def headers_to_map(mylist):
     return headers
 
 class AthanaFile:
-    def __init__(self,fieldname, parammap,filename,content_type):
+    def __init__(self,fieldname, param_list,filename,content_type):
         self.fieldname = fieldname
-        self.parammap = parammap
+        self.param_list = param_list
         self.filename = filename
         self.content_type = content_type
         self.tempname = GLOBAL_TEMP_DIR+str(int(random.random()*999999))+os.path.splitext(filename)[1]
@@ -3483,28 +3495,24 @@ class AthanaFile:
         self.fi.close()
         # only append file to parameters if it contains some data
         if self.filename or self.filesize:
-            self.parammap[self.fieldname] = self
+            self.param_list.append((self.fieldname, self))
         del self.fieldname
-        del self.parammap
+        del self.param_list
         del self.fi
     def __str__(self):
         return "file %s (%s), %d bytes, content-type: %s" % (self.filename, self.tempname, self.filesize, self.content_type)
 
 class AthanaField:
-    def __init__(self,fieldname,parammap):
+    def __init__(self,fieldname,param_list):
         self.fieldname = fieldname
         self.data = ""
-        self.parammap = parammap
+        self.param_list = param_list
     def adddata(self,data):
         self.data += data
     def close(self):
-        try:
-            oldvalue = self.parammap[self.fieldname] + ";"
-        except KeyError:
-            oldvalue = ""
-        self.parammap[self.fieldname] = oldvalue + self.data
+        self.param_list.append((self.fieldname, self.data))
         del self.data
-        del self.parammap
+        del self.param_list
 
 class simple_input_collector:
     def __init__ (self, handler, request, length):
@@ -3522,22 +3530,19 @@ class simple_input_collector:
         self.request.collector = None
         d=self.data;del self.data
         r=self.request;del self.request
-        parameters={}
+        pairs = []
         data = d.split('&')
         for e in data:
             if '=' in e:
                 i = e.index('=')
                 key,value = e[:i],e[i+1:]
                 key = urllib.unquote_plus(key)
-                try:
-                    oldvalue = parameters[key]+";"
-                except KeyError:
-                    oldvalue = ""
-                parameters[key] = oldvalue + urllib.unquote_plus(value)
+                pairs.append((key, urllib.unquote_plus(value)))
             else:
                 if len(e.strip())>0:
-                    logg.error("Unknown parameter: %s", e)
-        self.handler.continue_request(r,parameters)
+                    logg.info("Unknown parameter: %s", e)
+        self.handler.continue_request(r, pairs)
+
 
 class upload_input_collector:
     def __init__ (self, handler, request, length, boundary):
@@ -3556,7 +3561,7 @@ class upload_input_collector:
         self.current_file = None
         self.boundary = boundary
         self.file = None
-        self.parameters = {}
+        self.form = []
         self.files = []
 
     def parse_semicolon_parameters(self,params):
@@ -3585,10 +3590,10 @@ class upload_input_collector:
                 filename = l["filename"]
         if "content-type" in headers:
             content_type = headers["content-type"]
-            self.file = AthanaFile(fieldname,self.parameters,filename,content_type)
+            self.file = AthanaFile(fieldname,self.form,filename,content_type)
             self.files += [self.file]
         else:
-            self.file = AthanaField(fieldname,self.parameters)
+            self.file = AthanaField(fieldname,self.form)
 
     def split_headers(self,string):
         return string.split("\r\n")
@@ -3647,7 +3652,7 @@ class upload_input_collector:
         d=self.data;del self.data
         r=self.request;del self.request
         r.tempfiles = [f.tempname for f in self.files]
-        self.handler.continue_request(r,self.parameters)
+        self.handler.continue_request(r,self.form)
 
 class Session(dict):
     def __init__(self, id):
@@ -3673,6 +3678,22 @@ SESSION_PATTERN2 = re.compile("[a-z0-9]{6}-[a-z0-9]{6}-[a-z0-9]{6}")
 
 use_cookies = 1
 SESSION_COOKIES_LIVE_SECS = 3600 * 2  # unused sessions may be valid for 2 hours
+
+
+# COMPAT: flask style
+def filter_out_files(param_list):
+    form = []
+    files = []
+    for kv in param_list:
+        if isinstance(kv[1], AthanaFile):
+            files.append(kv)
+        else:
+            form.append(kv)
+    return form, files
+
+def make_param_dict_utf8_values(param_list):
+    return ImmutableMultiDict([(k, unicode(v, encoding="utf8")) for k, v in param_list])
+# /COMPAT
 
 class AthanaHandler:
     def __init__(self):
@@ -3703,7 +3724,7 @@ class AthanaHandler:
                 request.collector = simple_input_collector(self,request,size)
         else:
             request.type = "GET"
-            self.continue_request(request, {})
+            self.continue_request(request, form=[])
 
     def create_session_id(self):
         pid = abs((str(random.random())).__hash__())
@@ -3724,7 +3745,26 @@ class AthanaHandler:
             rand = rand / 36
         return result
 
-    def continue_request(self, request, parameters):
+    # COMPAT: new param style like flask
+    @staticmethod
+    def parse_query(query):
+        if query[0] == '?':
+            query=query[1:]
+        query = query.split('&')
+        args = []
+        for e in query:
+            try:
+                i = e.index('=')
+                key,value = e[:i],e[i+1:]
+            except ValueError:
+                key = e
+                value = ""
+            key = urllib.unquote_plus(key)
+            args.append((key, urllib.unquote_plus(value)))
+        return args
+    # / COMPAT
+
+    def continue_request(self, request, form):
 
         path, params, query, fragment = request.split_uri()
 
@@ -3737,23 +3777,12 @@ class AthanaHandler:
 
         request.log()
 
+        # COMPAT: new param style like flask
         if query is not None:
-            if query[0] == '?':
-                query=query[1:]
-            query = query.split('&')
-            for e in query:
-                try:
-                    i = e.index('=')
-                    key,value = e[:i],e[i+1:]
-                except ValueError:
-                    key = e
-                    value = ""
-                key = urllib.unquote_plus(key)
-                try:
-                    oldvalue = parameters[key]+";"
-                except KeyError:
-                    oldvalue = ""
-                parameters[key] = oldvalue + urllib.unquote_plus(value) #_plus?
+            args = AthanaHandler.parse_query(query)
+        else:
+            args = []
+        # /COMPAT
 
         cookies = {}
         if "cookie" in request.request_headers:
@@ -3819,7 +3848,13 @@ class AthanaHandler:
         request.paramstring = params
         request.query = query
         request.fragment = fragment
-        request.params = parameters
+        # COMPAT: new param style like flask
+        form, files = filter_out_files(form)
+        request.args = make_param_dict_utf8_values(args)
+        request.form = make_param_dict_utf8_values(form)
+        request.files = ImmutableMultiDict(files)
+        request.make_legacy_params_dict()
+        # /COMPAT
         request.request = request
         request.ip = ip
         request.uri = request.uri.replace(context.name, "/")

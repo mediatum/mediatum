@@ -3,6 +3,7 @@
 	<name>mediatum</name>
 	<comment></comment>
 	<projects>
+		<project>mediatum-babel</project>
 		<project>mediatum-playground</project>
 		<project>mediatum-tal</project>
 	</projects>

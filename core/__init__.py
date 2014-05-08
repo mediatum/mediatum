@@ -46,6 +46,9 @@ else:
 
 athana.setTempDir(config.settings["paths.tempdir"])
 
+from core.transition.app import create_app
+app = create_app()
+
 # locale setting for sorting, default to system locale
 loc = locale.setlocale(locale.LC_COLLATE, '')
 print("using locale {} for sorting".format(loc))

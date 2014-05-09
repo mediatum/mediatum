@@ -32,6 +32,7 @@ from locale import setlocale, strxfrm, LC_COLLATE, getlocale
 import core.config as config
 import thread
 import traceback
+from utils.compat import iteritems
 
 nodeclasses = {}
 nodefunctions = {}
@@ -1234,6 +1235,33 @@ class Node(object):
             return value
         else:
             return self.get(key)
+
+    ### some helpers for interactive use
+    @property
+    def child_dict(self, type=None):
+        child_nodes = [getNode(i) for i in self.children]
+        child_dict = {c.name: c for c in child_nodes}
+        return child_dict
+
+    def child_dict_with_filter(self, nodefilter):
+        child_nodes = [getNode(i) for i in self.children]
+        child_dict = {c.name: c for c in child_nodes if nodefilter(c)}
+        return child_dict
+
+    def child_dict_with_type(self, type):
+        nodefilter = lambda n: n.type == type or n.__class__.__name__ == type
+        return self.child_dict_with_filter(nodefilter)
+
+    @property
+    def content_type(self):
+        return self.getContentType()
+
+    def attributes_filtered_by_key(self, attribute_key_filter):
+        return {k: v for k, v in iteritems(self.attributes) if attribute_key_filter(k)}
+
+    def attributes_filtered_by_value(self, attribute_value_filter):
+        return {k: v for k, v in iteritems(self.attributes) if attribute_value_filter(v)}
+
 
 def flush():
     global childids_cache,nodes_cache,parentids_cache,_root,db

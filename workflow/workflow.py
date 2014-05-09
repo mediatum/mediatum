@@ -296,11 +296,6 @@ class Workflow(tree.Node):
     def getLabel(node):
         return node.name
 
-    def getName(self):
-        return self.name
-    def setName(self, n):
-        self.setName(n)
-
     def getDescription(self):
         return self.get("description")
     def setDescription(self, d):
@@ -465,9 +460,6 @@ class WorkflowStep(tree.Node):
 
     def getId(self):
         return self.name
-
-    def getType(self):
-        return self.getType()
 
     def getLabel(node):
         return node.name

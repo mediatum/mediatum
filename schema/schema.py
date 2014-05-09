@@ -533,11 +533,6 @@ def importMetaSchema(filename):
 #
 class Metadatatype(tree.Node):
 
-    def getName(self):
-        return self.get("name")
-    def setName(self, value):
-        self.set("mame", value)
-
     def getDescription(self):
         return self.get("description")
     def setDescription(self, value):
@@ -647,11 +642,6 @@ class Metadatatype(tree.Node):
 
 """ fields for metadata """
 class Metadatafield(tree.Node):
-    def getName(self):
-        return self.get("name")
-    def setName(self, value):
-        self.set("name", value)
-
     def getLabel(self):
         return self.get("label")
     def setLabel(self, value):

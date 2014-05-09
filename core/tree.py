@@ -1195,6 +1195,46 @@ class Node(object):
             return format_date(parse_date(self.get('creationtime')), '%d.%m.%Y, %H:%M:%S')
         return ''
 
+    def __repr__(self):
+        return "Node<{}: '{}'> ({})".format(self.id, self.name, object.__repr__(self))
+
+    # some additional methods from dict
+
+    def __contains__(self, key):
+        return key in self.attributes\
+            or key in ('node', 'node.name', "nodename", "node.id", "node.type", "node.orderpos")
+
+    def __getitem__(self, key):
+        if key not in self:
+            raise KeyError(key)
+        return self.get(key)
+
+    def __iter__(self):
+        """iter() thinks that a Node is iterable because __getitem__ is implemented.
+        That behaviour is stupid (legacy...), so we have to state explicitly that this thing is not iterable!
+        """
+        raise TypeError("not iterable!")
+
+    def __len__(self):
+        """
+        :returns: number of attributes
+        """
+        return len(self.attributes)
+
+    def __setitem__(self, key, value):
+        self.set(key, value)
+
+    def __delitem__(self, key):
+        self.removeAttribute(key)
+
+    def setdefault(self, key, value):
+        """Same as dict.setdefault."""
+        if key not in self:
+            self.set(key, value)
+            return value
+        else:
+            return self.get(key)
+
 def flush():
     global childids_cache,nodes_cache,parentids_cache,_root,db
     tree_lock.acquire()

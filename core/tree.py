@@ -18,7 +18,6 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 from utils.utils import get_filesize, intersection, u, float_from_gps_format
 from utils.log import logException
 from core.db import database
@@ -369,7 +368,60 @@ class NodeList:
     def filter(self, access):
         return access.filter(self)
 
-class Node:
+
+class NodeMeta(type):
+    """print methods of node subclasses and warn if Node methods are overriden"""
+    def __init__(cls, name, bases, dct):
+        if name != "Node":
+            print("\ncls " + name)
+            print("=" * (len(name) + 4))
+            for k in dct.keys():
+                if k in ["__module__", "__doc__"]:
+                    continue
+                redefined = k in Node.__dict__
+                msg = "redefined!" if redefined else "ok"
+                out = sys.stderr if redefined else sys.stdout
+                r = "{}: {}".format(k, msg)
+                print >> out, r
+        super(NodeMeta, cls).__init__(name, bases, dct)
+
+class Node(object):
+#     __metaclass__ = NodeMeta
+    def __new__(cls, name="<noname>", type=None, dbid=None):
+        if dbid:
+            dbnode = db.getNode(dbid)
+            if not dbnode:
+                raise NoSuchNodeError(dbid)
+            id,name,type,read,write,data,orderpos,localread = dbnode
+        # find matching node class
+        try:
+            nodetype = type.split("/", 1)[0]
+        except:
+            logg.debug("no type given for instance of %s with name %s", cls, name)
+        else:
+            nodecls = nodeclasses.get(nodetype)
+            if nodecls:
+#                 logg.debug("found matching nodeclass: %s for type %s", nodecls, type)
+                cls = nodecls
+            else:
+                pass
+#                 logg.debug("no matching nodeclass for type %s", type)
+        obj = object.__new__(cls)
+        if dbid:
+            obj.id = id
+            obj.prev_nid = db.getAttributes(id).get('system.prev_id', '0')
+            obj.next_nid = db.getAttributes(id).get('system.next_id', '0')
+            obj.name = name
+            obj.type = type
+            obj.read_access = read
+            obj.write_access = write
+            obj.data_access = data
+            obj.orderpos = orderpos
+            obj.attributes = None
+            obj.localread = localread
+            obj.getLocalRead()
+        return obj
+
     def __init__(self, name="<unbenannt>", type=None, dbid=None):
         self.occurences = None
         self.lock = thread.allocate_lock() # for attrlist
@@ -389,25 +441,7 @@ class Node:
             self.localread = None
             if type == "root":
                 self._makePersistent()
-        else:
-            dbnode = db.getNode(dbid)
-            if not dbnode:
-                raise NoSuchNodeError(dbid)
-            id,name,type,read,write,data,orderpos,localread = dbnode
 
-            self.id = id
-            self.prev_nid = db.getAttributes(self.id).get('system.prev_id', '0')
-            self.next_nid = db.getAttributes(self.id).get('system.next_id', '0')
-            self.name = name
-            self.type = type
-            self.read_access = read
-            self.write_access = write
-            self.data_access = data
-            self.orderpos = orderpos
-            self.attributes = None
-            self.localread = localread
-
-            self.getLocalRead()
         self.occurences = {}
         self.occurences2node = {}
         self.ccount = -1

@@ -25,9 +25,11 @@ from time import *
 import logging
 import traceback
 import thread
+import msgpack
 from connector import Connector
 
 from core.db.database import initDatabaseValues, DatabaseException
+from utils.compat import string_types
 
 if __name__ == "__main__":
     sys.path += [".."]
@@ -128,14 +130,14 @@ class MYSQLConnector(Connector):
                     s = str(s)
                     return "'" + s.replace('\\','\\\\').replace('"','\\"').replace('\'','\\\'') + "'"
 
-    def execute(self,sql):
+    def execute(self,sql, params=tuple()):
         self.dblock.acquire()
         try:
             while 1:
                 try:
                     self._reconnect()
                     c = self.db.cursor()
-                    c.execute(sql)
+                    c.execute(sql, params)
                     result = c.fetchall()
                     c.close()
                     self.db.commit()
@@ -162,14 +164,19 @@ class MYSQLConnector(Connector):
             self.dblock.release()
 
 
-    def runQuery(self, sql):
-        global debug
+    def runQuery(self, sql, *args, **kwargs):
+        if args and kwargs:
+            raise Exception("only positional or named parameters allowed, not both!")
+        if args:
+            params = args
+        else:
+            params = kwargs
         self.dblock.acquire()
         try:
             if debug:
                 log.debug(sql)
                 c = self.db.cursor()
-                c.execute("explain "+sql)
+                c.execute("explain "+sql, params)
                 result = c.fetchall()
                 c.close()
                 type = result[0][1]
@@ -183,7 +190,7 @@ class MYSQLConnector(Connector):
         finally:
             self.dblock.release()
 
-        result = self.execute(sql)
+        result = self.execute(sql, params)
         return result
 
 
@@ -320,6 +327,18 @@ class MYSQLConnector(Connector):
                 self.runQuery("update nodeattribute set value=" + self.esc(attvalue) + " where nid=" + nodeid + " and name=" + self.esc(attname))
                 return
         self.runQuery("insert into nodeattribute (nid, name, value) values(" + nodeid + ", " + self.esc(attname) + ", " + self.esc(attvalue) + ")")
+
+
+    def set_attribute_complex(self, nodeid, attname, attvalue, check=1):
+        if attvalue is None:
+            raise TypeError("Attribute value is None")
+        value_complex = msgpack.dumps(attvalue)
+        if check:
+            t = self.runQuery("select count(*) as num from nodeattribute where nid=%s and name=%s", nodeid, attname)
+            if len(t)>0 and t[0][0]>0:
+                self.runQuery("update nodeattribute set value_complex=%s where nid=%s and name=%s", value_complex, nodeid, attname)
+                return
+        self.runQuery("insert into nodeattribute (nid, name, value_complex) values(%s, %s, %s)", nodeid, attname, value_complex)
 
     def addFile(self, nodeid, path, type, mimetype):
         self.runQuery("insert into nodefile (nid, filename, type, mimetype) values(" + nodeid + ", " + self.esc(path) + ", '" + type + "', '" + mimetype+ "')")

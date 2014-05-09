@@ -32,7 +32,8 @@ from locale import setlocale, strxfrm, LC_COLLATE, getlocale
 import core.config as config
 import thread
 import traceback
-from utils.compat import iteritems
+from utils.compat import iteritems, string_types
+import codecs
 
 nodeclasses = {}
 nodefunctions = {}
@@ -369,25 +370,75 @@ class NodeList:
     def filter(self, access):
         return access.filter(self)
 
+def _set_attribute_complex(node, name, value):
+    if isinstance(value, string_types):
+        db.setAttribute(node.id, name, codecs.encode(value, "utf8"), check=(not bulk))
+    else:
+        db.set_attribute_complex(node.id, name, value, check=(not bulk))
+
+
+        ### methods to patch in for Node which store complex attributes
+def _node_set_complex(self, name, value):
+    """Set an attribute, new version.
+    Passes unmodified values to the DB connector, converts unicode objects to utf8 strings.
+    """
+    if name == "nodename":
+        return self.setName(value)
+    self.attributes[name] = value
+    if self.id:
+        _set_attribute_complex(self, name, value)
+
+
+def _node_make_persistent_complex(self):
+    if self.id is None:
+        changed_metadata(self)
+        tree_lock.acquire()
+        try:
+            self.id = db.createNode(self.name,self.type)
+            if not nocache:
+                nodes_cache[long(self.id)] = self
+            for name, value in self.attributes.items():
+                _set_attribute_complex(self, name, value)
+            if self.read_access:
+                db.setNodeReadAccess(self.id,self.read_access)
+            if self.write_access:
+                db.setNodeWriteAccess(self.id,self.write_access)
+            if self.data_access:
+                db.setNodeDataAccess(self.id,self.data_access)
+        finally:
+            tree_lock.release()
+
+
+def _node_load_attributes_complex(nid):
+    return db.get_attributes_complex(nid)
+
 
 class NodeMeta(type):
     """print methods of node subclasses and warn if Node methods are overriden"""
     def __init__(cls, name, bases, dct):
-        if name != "Node":
-            print("\ncls " + name)
-            print("=" * (len(name) + 4))
-            for k in dct.keys():
-                if k in ["__module__", "__doc__"]:
-                    continue
-                redefined = k in Node.__dict__
-                msg = "redefined!" if redefined else "ok"
-                out = sys.stderr if redefined else sys.stdout
-                r = "{}: {}".format(k, msg)
-                print >> out, r
+        # patch methods for attribute handling to support complex values
+        if cls._store_complex_attributes:
+            cls._load_attributes = staticmethod(_node_load_attributes_complex)
+            cls.set = _node_set_complex
+            cls._makePersistent = _node_make_persistent_complex
+        #print methods of node subclasses and warn if Node methods are overriden
+#         if name != "Node":
+#             print("\ncls " + name)
+#             print("=" * (len(name) + 4))
+#             for k in dct.keys():
+#                 if k in ["__module__", "__doc__"]:
+#                     continue
+#                 redefined = k in Node.__dict__
+#                 msg = "redefined!" if redefined else "ok"
+#                 out = sys.stderr if redefined else sys.stdout
+#                 r = "{}: {}".format(k, msg)
+#                 print >> out, r
         super(NodeMeta, cls).__init__(name, bases, dct)
 
 class Node(object):
-#     __metaclass__ = NodeMeta
+    __metaclass__ = NodeMeta
+    # non string arguments will be saved in msgpack format if store_complex_attributes is True
+    _store_complex_attributes = False
     def __new__(cls, name="<noname>", type=None, dbid=None):
         if dbid:
             dbnode = db.getNode(dbid)
@@ -410,15 +461,16 @@ class Node(object):
         obj = object.__new__(cls)
         if dbid:
             obj.id = id
-            obj.prev_nid = db.getAttributes(id).get('system.prev_id', '0')
-            obj.next_nid = db.getAttributes(id).get('system.next_id', '0')
+            attrs = cls._load_attributes(id)
+            obj.attributes = attrs
             obj.name = name
             obj.type = type
+            obj.prev_nid = attrs.get('system.prev_id', '0')
+            obj.next_nid = attrs.get('system.next_id', '0')
             obj.read_access = read
             obj.write_access = write
             obj.data_access = data
             obj.orderpos = orderpos
-            obj.attributes = None
             obj.localread = localread
             obj.getLocalRead()
         return obj
@@ -448,6 +500,10 @@ class Node(object):
         self.ccount = -1
         if hasattr(self, 'overload'):
             self.overload()
+
+    @staticmethod
+    def _load_attributes(nid):
+        return db.getAttributes(nid)
 
     def _makePersistent(self):
         if self.id is None:
@@ -855,10 +911,6 @@ class Node(object):
                 return self.type
             elif name=='node.orderpos':
                 return self.orderpos
-        if self.attributes is None:
-            if not self.id:
-                raise "Internal Error"
-            self.attributes = db.getAttributes(self.id)
         return self.attributes.get(name, "")
 
     """ set a metadate """

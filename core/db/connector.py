@@ -26,6 +26,7 @@ import thread
 
 from core.db.database import initDatabaseValues
 from utils import *
+import msgpack
 
 debug = 0
 log = logging.getLogger('database')
@@ -84,6 +85,17 @@ class Connector:
         for name,value in t:
             if value:
                 attributes[name] = value
+        return attributes
+
+    def get_attributes_complex(self, nodeid):
+        t = self.runQuery("select name,value,value_complex from nodeattribute where nid=%s", nodeid)
+        attributes = {}
+        mloads = msgpack.loads
+        for name,value_string, value_complex in t:
+            if value_complex:
+                attributes[name] = mloads(value_complex, encoding="utf8")
+            else:
+                attributes[name] = unicode(value_string, encoding="utf8")
         return attributes
 
     def getMetaFields(self, name):

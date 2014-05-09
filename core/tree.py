@@ -875,9 +875,6 @@ class Node(object):
     def event_metadata_changed(self):
         global searcher
         searcher.node_changed(self)
-        f = self.getoverloadedfunction("event_metadata_changed")
-        if f:
-            f()
 
 
     """ get formated gps information """

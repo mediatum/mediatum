@@ -44,6 +44,18 @@ class Connector:
             idlist += [str(id[0])]
         return idlist
 
+    def get_children_with_type(self, parent_id, nodetype):
+        t = self.runQuery(
+            "select cid from node, nodemapping"
+            " where nid={} and id=cid and type='{}'"
+            " order by cid"
+            .format(parent_id, nodetype))
+        return [str(i[0]) for i in t]
+
+    def get_num_children(self, nodeid):
+        t = self.runQuery("select count(*) from nodemapping where nid=" + nodeid)
+        return t[0][0]
+
     def getContainerChildren(self, nodeid):
         t = self.runQuery("select cid from containermapping where nid="+nodeid+" order by cid")
         idlist = []

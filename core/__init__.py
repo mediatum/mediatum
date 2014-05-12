@@ -145,16 +145,6 @@ for n in tree.getRoot("collections").getChildren():
 if not tree.getRoot().hasChild("searchmasks"):
     tree.getRoot().addChild(tree.Node(name="searchmasks", type="searchmasks"))
 
-for k,v in config.getsubset("plugins").items():
-    print 'Initializing plugin "'+k+'"'
-    path,module = splitpath(v)
-    if path and path not in sys.path:
-        sys.path += [path]
-    m = __import__(module)
-
-    if hasattr(m, 'pofiles'): # add po file paths
-        if len(m.pofiles)>0:
-            print "  load translation files"
-            for fp in m.pofiles:
-                translation.addPoFilepath([fp])
+from core.plugins import init_plugins
+init_plugins()
 

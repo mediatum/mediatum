@@ -32,28 +32,28 @@ class DateTime:
         self.has_month = month>0
         self.has_day = day>0
         self.has_time = hour or minute or second
-        
+
     def split(self):
         return (self.year,self.month,self.day,self.hour,self.minute,self.second)
-        
+
     def int(self):
         # for sorting
         return self.second+60*(self.minute+60*(self.hour+24*(self.day+32*(self.month+366*self.year))))
-        
+
     def daynum(self):
         return self.year*32*12 + self.month*32 + self.day
-        
+
     def weekday(self): # 0=monday
         if self.year>1970:
             return calendar.weekday(self.year, self.month, self.day)
         return -1
-        
+
     def maxMonthDay(self):
         return calendar.monthrange(self.year, self.month)[1]
-        
+
     def __str__(self):
         return format_date(self)
-        
+
     def __lt__(self, other):
         """ Enamble the comparison 'less than (<)' """
         if self.year < other.year:
@@ -65,7 +65,7 @@ class DateTime:
                 if self.day < other.day:
                     return True
         return False
-    
+
     def add(self,seconds):
 
         def days2month(days, startday, startmonth): # calculate new day, month and year
@@ -80,7 +80,7 @@ class DateTime:
                     y += 1
                     m %= 12
             return d, m, y
-                
+
         d = DateTime(self.year,self.month,self.day,self.hour,self.minute,self.second)
 
         d.second += seconds
@@ -146,6 +146,9 @@ def format_date(t=None, format=None):
                 result += format[i]
                 i += 1
         return result
+
+def format_datetime_now():
+        return format_date(now(), '%Y%m%d%H%M%S')
 
 def split_date(t):
     return t.split()
@@ -236,28 +239,28 @@ def parse_date(string,format=None):
             while i < l and c==format[i]:
                 i += 1
                 nr = nr + 1
-            
+
             if not string[pos:pos+nr].isdigit():
                 nr -=1
 
             val = int(string[pos:pos+nr])
             pos = pos+nr
-            if   c == 'y': 
+            if   c == 'y':
                 year = val
                 hasyear = 1
-            elif c == 'm': 
+            elif c == 'm':
                 month = val
                 hasmonth = 1
-            elif c == 'd': 
+            elif c == 'd':
                 day = val
                 hasday = 1
-            elif c == 'H': 
+            elif c == 'H':
                 hour = val
                 hastime = 1
-            elif c == 'M': 
+            elif c == 'M':
                 minute = val
                 hastime = 1
-            elif c == 'S': 
+            elif c == 'S':
                 second = val
                 hastime = 1
         else:

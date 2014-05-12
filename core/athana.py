@@ -4290,3 +4290,6 @@ def request_finished(handler):
     _request_finished_handlers.append(handler)
     return handler
 
+def getBase():
+    return GLOBAL_ROOT_DIR
+

@@ -795,6 +795,9 @@ class Node(object):
     def getChildren(self):
         idlist = self._getChildIDs(0)
         return NodeList(idlist)
+    
+    def get_children_with_type(self, nodetype):
+        return NodeList(db.get_children_with_type(self.id, nodetype))
 
     """ get a child with a specific node name """
     def getChild(self, name):

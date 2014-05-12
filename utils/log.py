@@ -49,6 +49,7 @@ LOGTYPES = [
              cfg("database"),
              cfg("backend"),
              cfg("frontend"),
+             cfg("mediatumtal", ["screen"]),
              cfg("editor", ["screen"]),
              cfg("usertracing", ["screen"]),
              cfg("athana", ["screen", "everything"]),

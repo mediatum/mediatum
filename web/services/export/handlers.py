@@ -65,6 +65,9 @@ resultcache = Cache(maxcount=25, verbose=True)
 
 SEND_TIMETABLE = False
 
+def escape_illegal_xml_chars(val, replacement=''):
+    illegal_xml_chars_re = re.compile(u'[\x00-\x08\x0b\x0c\x0e-\x1F\uD800-\uDFFF\uFFFE\uFFFF]')
+    return illegal_xml_chars_re.sub(replacement, val)
 
 def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
 
@@ -158,7 +161,8 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
 
     else:
         res += '''<errormessage><![CDATA[%s]]></errormessage>\r\n''' % d['errormessage']
-    return res + '</response>\r\n'
+
+    return escape_illegal_xml_chars(res) + '</response>\r\n'
 
 
 def struct2template_test(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):

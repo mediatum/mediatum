@@ -332,13 +332,13 @@ class MYSQLConnector(Connector):
     def set_attribute_complex(self, nodeid, attname, attvalue, check=1):
         if attvalue is None:
             raise TypeError("Attribute value is None")
-        value_complex = msgpack.dumps(attvalue)
+        value_complex = "\x11PACK\x12" + msgpack.dumps(attvalue)
         if check:
             t = self.runQuery("select count(*) as num from nodeattribute where nid=%s and name=%s", nodeid, attname)
             if len(t)>0 and t[0][0]>0:
-                self.runQuery("update nodeattribute set value_complex=%s where nid=%s and name=%s", value_complex, nodeid, attname)
+                self.runQuery("update nodeattribute set value=%s where nid=%s and name=%s", value_complex, nodeid, attname)
                 return
-        self.runQuery("insert into nodeattribute (nid, name, value_complex) values(%s, %s, %s)", nodeid, attname, value_complex)
+        self.runQuery("insert into nodeattribute (nid, name, value) values(%s, %s, %s)", nodeid, attname, value_complex)
 
     def addFile(self, nodeid, path, type, mimetype):
         self.runQuery("insert into nodefile (nid, filename, type, mimetype) values(" + nodeid + ", " + self.esc(path) + ", '" + type + "', '" + mimetype+ "')")

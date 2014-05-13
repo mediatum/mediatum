@@ -4,7 +4,7 @@ import hashlib
 import random
 import schema
 
-class SearchMaskItem:
+class SearchMaskItem(tree.Node):
     def getFirstField(self):
         if self.getNumChildren():
             return self.getChildren()[0]

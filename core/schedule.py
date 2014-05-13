@@ -39,8 +39,8 @@ else:
 
 class Schedule(tree.Node):
 
-    def __init__(self, name="<unbenannt>", dbid=None):
-        tree.Node.__init__(self, name=name, type="schedule", dbid=None)
+    def __init__(self, name="<unbenannt>", dbid=None, type="schedule", **kwargs):
+        tree.Node.__init__(self, name=name, type=type, dbid=None, **kwargs)
 
     def getCategoryName(self):
         return "Schedule"

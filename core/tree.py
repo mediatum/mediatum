@@ -795,7 +795,7 @@ class Node(object):
     def getChildren(self):
         idlist = self._getChildIDs(0)
         return NodeList(idlist)
-    
+
     def get_children_with_type(self, nodetype):
         return NodeList(db.get_children_with_type(self.id, nodetype))
 
@@ -1273,6 +1273,14 @@ class Node(object):
         :returns: number of attributes
         """
         return len(self.attributes)
+
+    def __nonzero__(self):
+        """Some code in mediaTUM relies on the fact that Node objects are always true, like `if user:`
+        which is really a check if the user is not None.
+        This can fail now because __len__ == 0 means that the Node object is false.
+        Such code should be fixed (=> use `if user is None`). In the meantime, we just say that Node is always true.
+        """
+        return True
 
     def __setitem__(self, key, value):
         self.set(key, value)

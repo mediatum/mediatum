@@ -108,7 +108,7 @@ class Connector:
             return self.runQuery("select nid,value from nodeattribute where name="+self.esc(field))
 
     def getActiveACLs(self):
-        mylist = self.runQuery("select distinct readaccess from node where readaccess not like '{user %}'")
+        mylist = self.runQuery("select distinct readaccess from node where readaccess not like '{user %%}'")
         acls = []
         for acl in mylist:
             acls += acl[0].split(',')
@@ -185,7 +185,7 @@ class Connector:
 
     def getNodeIdByAttribute(self, attributename, attributevalue):
         if attributename.endswith("access"):
-            t = self.runQuery("select id from node where "+attributename+" like '%" + str(attributevalue)+"%'")
+            t = self.runQuery("select id from node where "+attributename+" like '%%" + str(attributevalue)+"%%'")
         else:
             if attributevalue=="*":
                 t = self.runQuery("select node.id from node, nodeattribute where node.id=nodeattribute.nid and nodeattribute.name='" + str(attributename)+"'")
@@ -243,7 +243,7 @@ class Connector:
         return orderpos
 
     def getNodeIDsForSchema(self, schema, datatype="*"):
-        return self.runQuery('select id from node where type like "%/'+schema+'" or type ="'+schema+'"')
+        return self.runQuery('select id from node where type like "%%/'+schema+'" or type ="'+schema+'"')
 
     def mkID(self):
         t = self.runQuery("select max(id) as maxid from node")

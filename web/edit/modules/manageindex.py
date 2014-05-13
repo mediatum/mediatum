@@ -37,7 +37,7 @@ def isParent__(basenode, node, access):
     
 def getAllAttributeValues(attribute, schema):
     values = {}
-    for f in tree.db.runQuery('select nodeattribute.nid, nodeattribute.value from nodeattribute, node where node.id=nodeattribute.nid and node.type like "%'+schema+'" and nodeattribute.name='+tree.db.esc(attribute)):
+    for f in tree.db.runQuery('select nodeattribute.nid, nodeattribute.value from nodeattribute, node where node.id=nodeattribute.nid and node.type like "%%'+schema+'" and nodeattribute.name='+tree.db.esc(attribute)):
         for s in f[1].split(";"):
             s = u(s.strip())
             if s not in values:
@@ -146,4 +146,3 @@ def getContent(req, ids):
 
     else:
         return req.getTAL("web/edit/modules/manageindex.html", v, macro="manageform")
-    

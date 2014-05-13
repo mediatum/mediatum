@@ -284,7 +284,7 @@ class MYSQLConnector(Connector):
     def getAllDBRuleNames(self):
         ret = {}
         for field in ["readaccess", "writeaccess", "dataaccess"]:
-            for names in self.runQuery('select distinct('+field+') from node where '+field+' not like "{%"'):
+            for names in self.runQuery('select distinct('+field+') from node where '+field+' not like "{%%"'):
                 rules = names[0].split(",")
                 for rule in rules:
                     if rule!="":

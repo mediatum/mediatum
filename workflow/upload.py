@@ -58,9 +58,11 @@ class WorkflowStep_Upload(WorkflowStep):
                 fileExtension = os.path.splitext(file.filename)[1][1:].strip().lower()
 
                 if fileExtension in self.get("limit").lower().split(";") or self.get("limit").strip() in ['*', '']:
+                    orig_filename = file.filename
                     if hasattr(file,"filename") and file.filename:
                         file = fileutils.importFile(file.filename,file.tempname)
                         node.addFile(file)
+                        node.setName(orig_filename)
                         if hasattr(node,"event_files_changed"):
                             try:
                                 node.event_files_changed()

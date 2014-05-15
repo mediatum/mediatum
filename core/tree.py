@@ -989,22 +989,24 @@ class Node(object):
     def __getattr__(self, name):
         cls = self.__class__
         if name in cls.__dict__:
+            logg.warn("DEPRECATED: class attribute accessed by (%s).__getattr__(%s)", self, name)
             return cls.__dict__[name]
         if name in self.__dict__:
+            logg.warn("DEPRECATED: instance attribute accessed by (%s).__getattr__(%s)", self, name)
             return self.__dict__[name]
-        f = self.getoverloadedfunction(name)
-        if f:
-            return f
         if name in self.attributes:
             return self.attributes[name]
 
-        if self.getContentType() in nodeclasses:
-            raise AttributeError("Node of type '"+self.type+"' has no attribute '"+name+"'")
-        else:
-            raise AttributeError("Node of type '"+self.type+"' has no attribute '"+name+"' (type not overloaded)")
+        f = self.getoverloadedfunction(name)
+        if f:
+            return f
+        # fall-through
+        raise AttributeError("Node %s of type has no attribute %s", self, name)
 
     def getoverloadedfunction(self, name):
         global nodefunctions,nodeclasses
+        if name in nodefunctions:
+            return lambda *x,**y: nodefunctions[name](self, *x,**y)
         if self.getContentType() in nodeclasses:
             cls = nodeclasses[self.getContentType()]
             def r(cls):
@@ -1019,9 +1021,8 @@ class Node(object):
                     return None
             ret = r(nodeclasses[self.getContentType()])
             if ret:
+                logg.warn("DEPRECATED: (%s).getoverloadedfunction(%s)", self, name)
                 return ret
-        if name in nodefunctions:
-            return lambda *x,**y: nodefunctions[name](self, *x,**y)
         return None
 
 

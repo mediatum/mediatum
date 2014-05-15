@@ -27,8 +27,6 @@ import calendar
 import logging
 import glob
 
-import pickle
-
 from utils.date import parse_date, format_date, now, make_date
 from utils.utils import splitpath
 from utils.fileutils import importFile
@@ -101,15 +99,13 @@ class LogItem:
         else:
             return "".join(self.ip.split(":")[:-1])
 
-    @property
     def is_google_bot(self):
         if self.ip.startswith('66.249'):
             return True
         else:
             return False
 
-    @property
-    def visitor_number(self):
+    def get_visitor_number(self):
         global ip_table
         global visitor_num
 
@@ -337,8 +333,6 @@ def readLogFiles(period, fname=None):
         files.append(fname)
         print "using given filename", fname
 
-    print files
-
     data = {}  # data [yyyy-mm][id][type]
     for file in files:
         print "reading logfile", file
@@ -427,8 +421,8 @@ def buildStat(collection, period="", fname=None): # period format = yyyy-mm
                                      (str(access.getDate()),
                                       str(access.getTime()),
                                       gi.country_code_by_name(access.getIp()),
-                                      str(access.visitor_number),
-                                      str(access.is_google_bot)))
+                                      str(access.get_visitor_number()),
+                                      str(access.is_google_bot())))
                         fin.write("\t</node>\n")
                         fin.close()
 
@@ -446,8 +440,6 @@ def buildStat(collection, period="", fname=None): # period format = yyyy-mm
             os.remove(file)
         except:
             pass
-    with open('iptable.txt', 'w') as f:
-        pickle.dump(ip_table, f)
 
 if __name__ == "__main__":
     readLogFiles()

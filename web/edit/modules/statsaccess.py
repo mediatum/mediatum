@@ -246,7 +246,7 @@ class StatsAccessPDF:
             for k in d:
                 if k==0:
                    continue
-                items.append(Frame(1*cm+(k-1)*17+9+x, 18.9*cm, 5, len(d[k]["ips"])*(6*cm)/max["max_u"]+16, leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # col 1
+                items.append(Frame(1*cm+(k-1)*17+9+x, 18.9*cm, 5, len(d[k]["visitors"])*(6*cm)/max["max_u"]+16, leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # col 1
                 items.append(Frame(1*cm+(k-1)*17+14+x, 18.9*cm, 5, len(d[k]["different"])*(6*cm)/max["max_p"]+16, leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # col 2
                 items.append(Frame(1*cm+(k-1)*17+19+x, 18.9*cm, 5, len(d[k]["items"])*(6*cm)/max["max"]+16, leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # col 3
 
@@ -260,7 +260,7 @@ class StatsAccessPDF:
             for k in d:
                 if k==0:
                    continue
-                items.append(PdfImage(config.basedir+"/web/img/stat_baruser_vert.png", width=5, height=((len(d[k]["ips"])*(6*cm)/max["max_u"]+1) or 1)))
+                items.append(PdfImage(config.basedir+"/web/img/stat_baruser_vert.png", width=5, height=((len(d[k]["visitors"])*(6*cm)/max["max_u"]+1) or 1)))
                 items.append(FrameBreak())
                 items.append(PdfImage(config.basedir+"/web/img/stat_barpage_vert.png", width=5, height=((len(d[k]["different"])*(6*cm)/max["max_p"]+1) or 1)))
                 items.append(FrameBreak())
@@ -292,7 +292,7 @@ class StatsAccessPDF:
                 if k>0: # first item holds max values
                     if self.stats.getWeekDay(k)>4:
                         weekend.append(('BACKGROUND',(0,k),(-1,k), colors.HexColor('#E6E6E6')))
-                    t_data.append(['%02d.%s %s' %(k, t(self.language, "monthname_"+str(int(self.period[-2:]))+"_short"), self.period[:4]), len(d[k]["ips"]), len(d[k]["different"]), len(d[k]["items"])])
+                    t_data.append(['%02d.%s %s' %(k, t(self.language, "monthname_"+str(int(self.period[-2:]))+"_short"), self.period[:4]), len(d[k]["visitors"]), len(d[k]["different"]), len(d[k]["items"])])
 
             tb = Table(t_data, 4*[100], [25]+(len(d)-1)*[12])
             tb.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
@@ -323,7 +323,7 @@ class StatsAccessPDF:
             for k in d:
                 if k==0:
                     continue
-                items.append(Frame(l+(k-1)*17, b, 16, len(d[k]["ips"])*h/max["max_u"]+16, leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # col 1
+                items.append(Frame(l+(k-1)*17, b, 16, len(d[k]["visitors"])*h/max["max_u"]+16, leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # col 1
                 items.append(Frame(l+(k-1)*17+5, b, 16, len(d[k]["different"])*h/max["max_p"]+16, leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # col 2
                 items.append(Frame(l+(k-1)*17+10, b, 16, len(d[k]["items"])*h/max["max"]+16, leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # col 3
             
@@ -336,7 +336,7 @@ class StatsAccessPDF:
             for k in d:
                 if k==0:
                     continue
-                items.append(PdfImage(config.basedir+"/web/img/stat_baruser_vert.png", width=5, height=len(d[k]["ips"])*h/max["max_u"]+1))
+                items.append(PdfImage(config.basedir+"/web/img/stat_baruser_vert.png", width=5, height=len(d[k]["visitors"])*h/max["max_u"]+1))
                 items.append(FrameBreak())
                 items.append(PdfImage(config.basedir+"/web/img/stat_barpage_vert.png", width=5, height=len(d[k]["different"])*h/max["max_p"]+1))
                 items.append(FrameBreak())
@@ -390,7 +390,7 @@ class StatsAccessPDF:
             for k in d:
                 if k==0:
                     continue
-                items.append(Frame(1.67*cm+(k-1)*21, 14.8*cm, 6, (len(d[k]["ips"])*h/max["max_u"])+16, leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # row 1
+                items.append(Frame(1.67*cm+(k-1)*21, 14.8*cm, 6, (len(d[k]["visitors"])*h/max["max_u"])+16, leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # row 1
                 items.append(Frame(1.67*cm+(k-1)*21+6, 14.8*cm, 6, (len(d[k]["different"])*h/max["max_p"])+16, leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # row 1
                 items.append(Frame(1.67*cm+(k-1)*21+12, 14.8*cm, 6, (len(d[k]["items"])*h/max["max"])+16, leftPadding=0, rightPadding=0, id='normal', showBoundary=0)) # row 1
             
@@ -403,7 +403,7 @@ class StatsAccessPDF:
             for k in d:
                 if k==0:
                     continue
-                items.append(PdfImage(config.basedir+"/web/img/stat_baruser_vert.png", width=6, height=len(d[k]["ips"])*h/max["max_u"]+1))
+                items.append(PdfImage(config.basedir+"/web/img/stat_baruser_vert.png", width=6, height=len(d[k]["visitors"])*h/max["max_u"]+1))
                 items.append(FrameBreak())
                 items.append(PdfImage(config.basedir+"/web/img/stat_barpage_vert.png", width=6, height=len(d[k]["different"])*h/max["max_p"]+1))
                 items.append(FrameBreak())

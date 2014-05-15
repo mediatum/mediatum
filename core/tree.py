@@ -498,8 +498,6 @@ class Node(object):
         self.occurences = {}
         self.occurences2node = {}
         self.ccount = -1
-        if hasattr(self, 'overload'):
-            self.overload()
 
     @staticmethod
     def _load_attributes(nid):
@@ -931,10 +929,6 @@ class Node(object):
 
     """ get all metadates (key/value) pairs """
     def items(self):
-        if self.attributes is None:
-            if not self.id:
-                raise "Internal Error"
-            self.attributes = db.getAttributes(self.id)
         return self.attributes.items()
 
 
@@ -1001,9 +995,6 @@ class Node(object):
         f = self.getoverloadedfunction(name)
         if f:
             return f
-
-        if self.attributes is None and self.id:
-            self.attributes = db.getAttributes(self.id)
         if name in self.attributes:
             return self.attributes[name]
 

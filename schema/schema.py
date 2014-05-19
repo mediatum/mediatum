@@ -18,12 +18,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import os
-import sys
-import utils.date
 import logging
-import xml
-import traceback
 import core.tree as tree
 import core.config as config
 import core.translation as translation
@@ -31,11 +26,9 @@ import core.translation as translation
 from utils.utils import *
 from utils.date import *
 from utils.log import logException
-from core.tree import nodeclasses, Node, FileNode
 from core.config import *
 from core.xmlnode import getNodeXML, readNodeXML
 from core.db.database import getConnection
-from core.metatype import Context
 
 
 log = logging.getLogger('backend')
@@ -1255,17 +1248,18 @@ def pluginModule(module):
         if name.startswith("m_") and type(obj) == type(Dummyclass):
             pluginClass(obj)
 
-def init(path):
-    global mytypes
-    ret = {}
-    for root, dirs, files in path:
-        for name in files:
-            if name.endswith(".py") and name!="__init__.py":
-                name = name[:-3]
-                if root.endswith('metadata'):
-                    pluginModule(__import__("metadata."+name).__dict__[name])
-                if root.endswith('mask'):
-                    pluginModule(__import__("schema.mask."+name).__dict__["mask"].__dict__[name])
+def init():
+    pkg_dirs = ["schema/mask", "metadata"]
+    for path in pkg_dirs:
+        abspath =  os.walk(os.path.join(config.basedir, path))
+        for root, dirs, files in abspath:
+            for name in files:
+                if name.endswith(".py") and name!="__init__.py":
+                    name = name[:-3]
+                    if root.endswith('metadata'):
+                        pluginModule(__import__("metadata."+name).__dict__[name])
+                    if root.endswith('mask'):
+                        pluginModule(__import__("schema.mask."+name).__dict__["mask"].__dict__[name])
 
 def getMetadataType(mtype):
     global mytypes
@@ -1366,7 +1360,3 @@ def node_getDescription(node):
             return mtype.getDescription()
         else:
             return ""
-
-
-init(os.walk(os.path.join(config.basedir, 'schema/mask')))
-init(os.walk(os.path.join(config.basedir, 'metadata')))

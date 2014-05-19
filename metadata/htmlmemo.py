@@ -20,9 +20,9 @@
 """
 from mediatumtal import tal
 from core.transition import httpstatus
-from core.metatype import Metatype, charmap
+from core.metatype import Metatype
 
-from core.translation import t, getDefaultLanguage
+from core.translation import getDefaultLanguage
 
 from utils.dicts import SortedDict
 from contenttypes.default import languages as config_languages

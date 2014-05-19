@@ -63,8 +63,6 @@ import core.acl as acl
 
 log.info("Initializing backend...")
 
-tree.initialize()
-
 from contenttypes.directory import Directory
 tree.registerNodeClass("directory", Directory)
 from contenttypes.project import Project
@@ -76,6 +74,11 @@ tree.registerNodeClass("collections", Directory)
 tree.registerNodeClass("root", Directory)
 tree.registerNodeClass("home", Directory)
 
+
+tree.initialize()
+
+from schema import schema
+schema.init()
 
 # register types in definition directory /contenttypes
 log.info("Loading Content types")

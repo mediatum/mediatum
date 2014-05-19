@@ -37,8 +37,6 @@ from utils.utils import esc, u, u2, esc2, utf82iso, iso2utf8
 from utils.date import parse_date, format_date
 from core.acl import AccessData
 
-import oaisets
-
 tagpattern = re.compile(r'<[^>]*?>')
 def no_html(s):
     return tagpattern.sub('', s)

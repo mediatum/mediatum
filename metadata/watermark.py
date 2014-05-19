@@ -21,7 +21,6 @@ from mediatumtal import tal
 from utils.utils import esc
 from core.metatype import Metatype, Context
 import re
-import contenttypes.image
 from core.tree import registerNodeClass, FileNode
 import Image, ImageFont, ImageDraw
 import sys

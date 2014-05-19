@@ -25,7 +25,6 @@ import core.tree as tree
 import core.config as config
 import default
 
-from core.acl import AccessData
 from core.translation import t, lang
 from utils.utils import CustomItem
 try:

@@ -26,9 +26,8 @@ from mediatumtal import tal
 import core.tree as tree
 import core.config as config
 import core.users as users
-from schema.schema import loadTypesFromDB, getMetaFieldTypeNames, getMetaFieldTypes, getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_EXPORT, dateoption
-from core.translation import lang
-from utils.utils import Menu, esc
+from schema.schema import getMetadataType, VIEW_DATA_ONLY
+from utils.utils import Menu
 from export.exportutils import runTALSnippet, default_context
 from web.services.cache import date2string as cache_date2string
 

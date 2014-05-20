@@ -39,6 +39,8 @@ from mediatumtal import tal
 
 logg = logging.getLogger("athana")
 
+class AthanaException(Exception):
+    pass
 
 import re
 _ent1_re = re.compile('&(?![A-Z#])', re.I)
@@ -103,10 +105,10 @@ class async_chat (asyncore.dispatcher):
         asyncore.dispatcher.__init__ (self, conn)
 
     def collect_incoming_data(self, data):
-        raise NotImplementedError, "must be implemented in subclass"
+        raise NotImplementedError("must be implemented in subclass")
 
     def found_terminator(self):
-        raise NotImplementedError, "must be implemented in subclass"
+        raise NotImplementedError("must be implemented in subclass")
 
     def set_terminator (self, term):
         "Set the input delimiter.  Can be a fixed string of any length, an integer, or None"
@@ -882,7 +884,7 @@ class http_request(object):
         if self._split_uri is None:
             m = self.path_regex.match (self.uri)
             if m.end() != len(self.uri):
-                raise ValueError, "Broken URI"
+                raise ValueError("Broken URI")
             else:
                 self._split_uri = m.groups()
         return self._split_uri
@@ -3190,10 +3192,10 @@ def _load_module(filename):
     # b.group(1) = /my/modules/
     # b.group(2) = test.py
     if b is None:
-        raise "Internal error with filename "+filename
+        raise ValueError("Internal error with filename "+filename)
     module = b.group(2)
     if module is None:
-        raise "Internal error with filename "+filename
+        raise ValueError("Internal error with filename "+filename)
 
     while filename.startswith("./"):
         filename = filename[2:]
@@ -3346,7 +3348,7 @@ class WebFile:
             ftphandlers += [c]
         except:
             logg.error("Error in FTP Handler:", exc_info=1)
-            raise "No such function "+ftpclass+" in file "+self.filename
+            raise AthanaException("No such function "+ftpclass+" in file "+self.filename)
 
     def getFileName(self):
         return self.context.root + self.filename
@@ -3362,7 +3364,7 @@ class WebHandler:
                 self.f = getattr(m, function)
             except:
                 logg.error("Error in Handler", exc_info=1)
-                raise Exception("No such function "+function+" in file "+self.file.filename)
+                raise AthanaException("No such function "+function+" in file "+self.file.filename)
         else:
             self.f = function
             self.function = function.func_name
@@ -3434,7 +3436,7 @@ def read_ini_file(filename):
             if context is not None:
                 context.setStartupFile(value)
             else:
-                raise "Error: startupfile must be below a context"
+                raise AthanaException("Error: startupfile must be below a context")
         elif key == "root":
             if value.startswith('/'):
                 value = value[1:]
@@ -3453,7 +3455,7 @@ def read_ini_file(filename):
         elif key == "pattern":
             handler.addPattern(value)
         else:
-            raise "Syntax error in line "+str(lineno)+" of file "+filename+":\n"+line
+            raise AthanaException("Syntax error in line "+str(lineno)+" of file "+filename+":\n"+line)
     fi.close()
     return context
 
@@ -3576,7 +3578,7 @@ class upload_input_collector:
         fieldname = None
         filename = None
         if self.file is not None:
-            raise "Illegal state"
+            raise AthanaException("Illegal state")
         if "content-disposition" in headers:
             cd = headers["content-disposition"]
             l = self.parse_semicolon_parameters(cd)
@@ -3638,7 +3640,7 @@ class upload_input_collector:
             if self.file is not None:
                 self.file.close()
                 self.file = None
-            raise "Unfinished/malformed multipart request"
+            raise AthanaException("Unfinished/malformed multipart request")
         if self.file is not None:
             self.file.close()
             self.file = None
@@ -3976,7 +3978,7 @@ class zip_filesystem:
         return 1
 
     def listdir (self, path, long=0):
-        raise "Not implemented"
+        raise NotImplementedError()
 
     # TODO: implement a cache w/timeout for stat()
     def stat (self, path):
@@ -3987,7 +3989,7 @@ class zip_filesystem:
         elif self.isdir(path):
             return (16895, 117481L, 10L, 20, 1000, 1000, 4096L, 0,0,0)
         else:
-            raise "No such file or directory "+path
+            raise IOError("No such file or directory "+path)
 
     def open (self, path, mode):
         class zFile:
@@ -4015,11 +4017,11 @@ class zip_filesystem:
         return zFile(data)
 
     def unlink (self, path):
-        raise "Not implemented"
+        raise NotImplementedError()
     def mkdir (self, path):
-        raise "Not implemented"
+        raise NotImplementedError()
     def rmdir (self, path):
-        raise "Not implemented"
+        raise NotImplementedError()
 
     def longify (self, (path, stat_info)):
         return unix_longify (path, stat_info)

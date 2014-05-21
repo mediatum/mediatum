@@ -132,7 +132,7 @@ class MYSQLConnector(Connector):
                     s = str(s)
                     return "'" + s.replace('\\','\\\\').replace('"','\\"').replace('\'','\\\'') + "'"
 
-    def execute(self,sql, params=tuple()):
+    def execute(self,sql, params=None):
         self.dblock.acquire()
         try:
             while 1:
@@ -175,10 +175,7 @@ class MYSQLConnector(Connector):
     def runQuery(self, sql, *args, **kwargs):
         if args and kwargs:
             raise Exception("only positional or named parameters allowed, not both!")
-        if args:
-            params = args
-        else:
-            params = kwargs
+        params = args or kwargs or None
         if debug:
             if not debug_ignore_statements_re or not debug_ignore_statements_re.match(sql):
                 print "SQL echo:", sql, ", params", params
@@ -276,7 +273,7 @@ class MYSQLConnector(Connector):
     def getAllDBRuleNames(self):
         ret = {}
         for field in ["readaccess", "writeaccess", "dataaccess"]:
-            for names in self.runQuery('select distinct('+field+') from node where '+field+' not like "{%%"'):
+            for names in self.runQuery('select distinct('+field+') from node where '+field+' not like "{%"'):
                 rules = names[0].split(",")
                 for rule in rules:
                     if rule!="":

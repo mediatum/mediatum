@@ -20,6 +20,7 @@
 """
 import MySQLdb
 import core
+import re
 import sys
 from time import *
 import logging
@@ -38,6 +39,7 @@ import core.config as config
 from utils.utils import *
 
 debug = 0
+debug_ignore_statements_re = None
 
 log = logging.getLogger('database')
 
@@ -142,24 +144,30 @@ class MYSQLConnector(Connector):
                     c.close()
                     self.db.commit()
                     return result
-                except MySQLdb.OperationalError as nr:
+                except MySQLdb.Error as nr:
+                    def log_sql_error(msg, exc_info=0):
+                        log.error(msg + " while executing SQL '%s', params %s", sql, params, exc_info=exc_info)
+
                     if nr[0] == 2002:
-                        log.error("can't connect to sql server while executing \""+sql+"\"")
+                        log_sql_error("can't connect to sql server")
                         self.db = None
                         sleep(5)
-                        continue
-                    if nr[0] == 2006:
-                        log.error("mysql server has gone away while executing \""+sql+"\"")
+                    elif nr[0] == 2006:
+                        log_sql_error("mysql server has gone away")
                         self.db = None
                         sleep(5)
-                        continue
                     elif nr[0] == 2013:
-                        log.error("lost connection to database while executing \""+sql+"\"")
+                        log_sql_error("lost connection to database")
                         self.db = None
                         sleep(5)
-                        continue
                     else:
+                        log_sql_error("", exc_info=1)
                         raise
+                except:
+                    log.error("non-MySQL error while executing SQL '%s', params %s", sql, params, exc_info=1)
+                    raise
+
+
         finally:
             self.dblock.release()
 
@@ -171,25 +179,9 @@ class MYSQLConnector(Connector):
             params = args
         else:
             params = kwargs
-        self.dblock.acquire()
-        try:
-            if debug:
-                log.debug(sql)
-                c = self.db.cursor()
-                c.execute("explain "+sql, params)
-                result = c.fetchall()
-                c.close()
-                type = result[0][1]
-                extra = result[0][7]
-                if type == 'ALL' or "temporary" in extra.lower() or "filesort" in extra.lower():
-                    print "========================================================================"
-                    print "Warning: Slow SQL Statement (type="+type+", extra="+extra+")"
-                    print sql
-                    print "========================================================================"
-
-        finally:
-            self.dblock.release()
-
+        if debug:
+            if not debug_ignore_statements_re or not debug_ignore_statements_re.match(sql):
+                print "SQL echo:", sql, ", params", params
         result = self.execute(sql, params)
         return result
 

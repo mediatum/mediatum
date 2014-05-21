@@ -287,7 +287,8 @@ def getUserFromRequest(req):
     except KeyError:
         user = getUser(config.get("user.guestuser"))
         if not user:
-            raise "User not found: \"" + config.get("user.guestuser") + "\""
+            log.error("Guest user not found in database. Creating new one...")
+            user = create_user(name="Gast", email="nobody@nowhere.none", groups="Gast")
     return user
 
 

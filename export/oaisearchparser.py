@@ -76,7 +76,7 @@ class OAISearchFieldCondition:
             return []
         if DEBUG:
             logging.getLogger('oai').info('OAISearchParser: ---> going to execute sql: %s with params %s', sql, params)
-        res = tree.db.runQuery(sql, params)
+        res = tree.db.runQuery(sql, *params)
         res = [x[0] for x in res]
         if DEBUG:
             logging.getLogger('oai').info('OAISearchParser: ---> sql returned %d results', len(res))

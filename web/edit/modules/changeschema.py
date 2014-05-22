@@ -34,27 +34,27 @@ def elemInList(list, name):
         if item.getName()==name:
             return True
     return False
-    
-    
+
+
 def getTypes(datatypes):
     res = []
-    for dtype in datatypes: 
-        if dtype.name not in ["root", "user", "usergroup", "home", "mapping", "collections", 'metadatatype', 'metafield', 'mask', 'searchmaskitem', 'mappingfield', 'shoppingbag', 'maskitem'] and not dtype.name.startswith("workflow"): 
+    for dtype in datatypes:
+        if dtype.name not in ["root", "user", "usergroup", "home", "mapping", "collections", 'metadatatype', 'metafield', 'mask', 'searchmaskitem', 'mappingfield', 'shoppingbag', 'maskitem'] and not dtype.name.startswith("workflow"):
             res.append(dtype)
     return res
 
-    
+
 def getContainers(datatypes):
     res = []
     datatypes = getTypes(datatypes)
-    for dtype in datatypes: 
-        n = tree.Node("", type=dtype.name) 
-        if hasattr(n, "isContainer"): 
+    for dtype in datatypes:
+        n = tree.Node("", type=dtype.name)
+        if hasattr(n, "isContainer"):
             if n.isContainer():
                 res.append(dtype)
     return res
-    
-                
+
+
 def getContent(req, ids):
     user = users.getUserFromRequest(req)
     node = tree.getNode(ids[0])
@@ -64,12 +64,12 @@ def getContent(req, ids):
 
     error = req.params.get("error")
     currentContentType = node.getContentType()
-    
+
     try:
         currentSchema = node.type.split('/')[1]  # string
     except:
-        currentSchema = '' 
-           
+        currentSchema = ''
+
     currentCategoryName = node.getCategoryName()
     currentTypeAlias = node.getTypeAlias()
 
@@ -79,11 +79,11 @@ def getContent(req, ids):
         if scheme.isActive():
             _schemes.append(scheme)
     schemes = _schemes
-    
+
     schemeNames2LongNames = {'':''}
     for s in schemes:
         schemeNames2LongNames[s.getName()]=s.getLongName()
-    
+
     currentSchemaLongName = schemeNames2LongNames[currentSchema]
 
     # find out which schema allows which datatype, and hence,
@@ -98,15 +98,15 @@ def getContent(req, ids):
                         dtypes.append(t)
 
     dtypes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
-    
+
     admissible_objtypes = getTypes(datatypes)
     admissible_datatypes = [n for n in admissible_objtypes if tree.Node('', n.name).getCategoryName() in ['document', 'image', 'video', 'audio'] ]
     admissible_containers = [n for n in admissible_objtypes if tree.Node('', n.name).getCategoryName() in ['container'] ]
-    
+
     admissible_objtypes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
     admissible_datatypes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
     admissible_containers.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
-    
+
     available_schemes = [s for s in schemes if currentContentType in s.getDatatypes()]
 
     # filter schemes for special datatypes
@@ -117,36 +117,39 @@ def getContent(req, ids):
                 _schemes.append(scheme)
         schemes = _schemes
         schemes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(),translate(y.getLongName(), request=req).lower()))
-        
+
         newObjectType = req.params.get("objtype")
         newSchema = req.params.get("schema")
         if not newSchema:
             newSchema = ''
-        
+
         newType = newObjectType
         if newSchema:
             newType += '/' + newSchema
-        
+
         oldType = currentContentType
         if currentSchema:
             oldType = oldType + '/' + currentSchema
-            
+
         if newType != oldType:
             node.setTypeName(newType)
             msg = "%s changed node schema for node %s '%s' from '%s' to '%s'" % (user.name, node.id, node.name, oldType, newType)
             node.setDirty()
-            logging.getLogger('usertracing').info(msg)   
-                        
+            # cache clean / reload because object type changed
+            tree.nodes_cache.remove(int(node.id))
+            node = tree.getNode(node.id)
+            logging.getLogger('usertracing').info(msg)
+
             currentContentType = node.getContentType()
             currentSchema = newSchema
             currentSchemaLongName = schemeNames2LongNames[currentSchema]
             currentCategoryName = node.getCategoryName()
-            currentTypeAlias = node.getTypeAlias() 
-            available_schemes = [s for s in schemes if newObjectType in s.getDatatypes()] 
-            
+            currentTypeAlias = node.getTypeAlias()
+            available_schemes = [s for s in schemes if newObjectType in s.getDatatypes()]
+
     isContainer = False
-    if hasattr(node, "isContainer"): 
-        isContainer = node.isContainer()                       
+    if hasattr(node, "isContainer"):
+        isContainer = node.isContainer()
 
     if "action" in req.params.keys():
         if req.params.get("action").startswith("get_schemes_for_"):
@@ -167,9 +170,9 @@ def getContent(req, ids):
     if currentContentType in [dtype.name for dtype in containers]:
         d['schemes'] = []
         d['datatypes'] = admissible_containers #containers
-    else:    
+    else:
         d['schemes'] = available_schemes
-        d['datatypes'] = admissible_datatypes #dtypes       
+        d['datatypes'] = admissible_datatypes #dtypes
 
     return req.getTAL("web/edit/modules/changeschema.html", d ,macro="changeschema_popup")
 

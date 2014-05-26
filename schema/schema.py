@@ -36,7 +36,7 @@ from core.config import *
 from core.xmlnode import getNodeXML, readNodeXML
 from core.db.database import getConnection
 from core.metatype import Context
-
+import datetime
 
 log = logging.getLogger('backend')
 
@@ -877,9 +877,15 @@ class Mask(tree.Node):
                         ret.append(node.id)
 
                 if field and field.getContentType()=="metafield" and field.getFieldtype()=="date":
-                    #if not validateDateString(node.get(field.getName())):
-                    if not node.get(field.getName())=="" and not validateDateString(node.get(field.getName())):
-                        ret.append(node.id)
+                    if not node.get(field.getName())=="":
+                        if field.name == "yearmonth":
+                            try:
+                                datetime.datetime.strptime(node.get(field.getName()), '%Y-%m')
+                            except:
+                                ret.append(node.id)
+                            continue
+                        if not validateDateString(node.get(field.getName())):
+                            ret.append(node.id)
         return ret
 
     ''' returns True if all mandatory fields of mappingdefinition are used -> valid format'''

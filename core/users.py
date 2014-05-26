@@ -318,7 +318,7 @@ def checkLogin(name, pwd, req=None):
     if user and user.getUserType() == "users":
         if digest1 == user.getPassword():
             return user
-        if config.get("user.masterpassword") != "" and name != "Administrator" and pwd == config.get("user.masterpassword"):  # test masterpassword
+        if config.get("user.masterpassword") != "" and name != config.get("user.adminuser") and pwd == config.get("user.masterpassword"):  # test masterpassword
             logging.getLogger('usertracing').info(user.name + " logged in with masterpassword")
             return user
 

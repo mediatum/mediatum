@@ -149,7 +149,7 @@ class AsyncPyZ3950Server(z3950.Server):
             logg.error("error while unpacking Z3950 search query '%s':", query, exc_info=1)
             raise
         logg.debug('%r', parsed_query)
-        node_ids = search_nodes(parsed_query, self._log)
+        node_ids = search_nodes(parsed_query)  #, self._log)
         logg.debug('IDs returned for Z3950 query: %s', len(node_ids))
         return node_ids
 

@@ -35,8 +35,8 @@ restarttime = config.get("config.restart_time", "00:00:00").split(":")
 if config.get("config.searcher", "").startswith("fts"):
     import core.search.ftsquery
     from core.search.router import router
-    for searcher in router.schemas.values():
-        core.search.ftsquery.startThread(searcher)
+    #for searcher in router.schemas.values():
+        #core.search.ftsquery.startThread(searcher)
 else:
     import core.search.query
     core.search.query.startThread()

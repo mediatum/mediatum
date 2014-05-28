@@ -136,6 +136,15 @@ class Connector:
         ids2 = [id[0] for id in ids]
         return ids2
 
+    def getDirtySchema(self, schema, limit=0):
+        dirty_nodes = self.getDirty()
+        schema_nodes = [id[0] for id in self.getNodeIDsForSchema(schema)]
+        dirty_schema_nodes = list(set(schema_nodes).intersection(dirty_nodes))
+        if limit:
+            return dirty_schema_nodes[:limit]
+        else:
+            return dirty_schema_nodes
+
     def setNodeName(self, id, name):
         self.runQuery("update node set name = "+self.esc(name)+" where id = "+id)
 

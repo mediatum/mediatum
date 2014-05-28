@@ -143,6 +143,8 @@ def getNodesByAttribute(attributename, attributevalue=""):
 def getDirtyNodes(num=0):
     return NodeList(db.getDirty(num))
 
+def getDirtyNodesBySchema(schema, num=0):
+    return NodeList(db.getDirtySchema(schema, num))
 
 class NoSuchNodeError:
     def __init__(self,id=None):
@@ -259,12 +261,14 @@ def getType(name):
 
 changed_metadata_nodes = {}
 last_changed_metadata_node = None
+
 def flush_changed_metadata():
 
-    global searcher
+    global router
 
     for nid in changed_metadata_nodes.keys():
-        searcher.node_changed(getNode(nid))
+        for searcher in router.schemas.keys():
+            searcher.node_changed(getNode(nid))
 
     changed_metadata_nodes.clear()
     last_changed_metadata_node = None
@@ -872,10 +876,10 @@ class Node(object):
     def getAllChildren(self):
         return NodeList(self._getAllChildIDs().keys())
 
-
     def event_metadata_changed(self):
-        global searcher
-        searcher.node_changed(self)
+        global router
+        for searcher in router.schemas.values():
+            searcher.node_changed(self)
 
 
     """ get formated gps information """
@@ -976,15 +980,15 @@ class Node(object):
 
     """ run a search query. returns a list of nodes """
     def search(self, q):
-        global searcher, subnodes
+        global router, subnodes
         log.info('search: %s for node %s %s' %(q, str(self.id), str(self.name)))
         self._makePersistent()
         if q.startswith('searchcontent='):
-            return searcher.query(q)
+            return router.route_query(q)
         items = subnodes(self)
         if type(items)!= list:
             items = items.getIDs()
-        return NodeList(intersection([items, searcher.query(q)]))
+        return NodeList(intersection([items, router.route_query(q)]))
 
     def __getattr__(self, name):
         cls = self.__class__
@@ -1344,7 +1348,7 @@ def registerFileHandler(handler):
 schema = None
 subnodes = None
 searchParser = None
-searcher = None
+router = None
 
 def initialize(load=1):
     global db,_root,nodes_cache,testmode
@@ -1354,47 +1358,50 @@ def initialize(load=1):
     db.applyPatches()
     if load:
         getRoot()
-    global schema, subnodes, searchParser, searcher
+    global schema, subnodes, searchParser, router
     import schema.schema as schema
     schema = schema
 
     if config.get("config.searcher","")=="fts3": # use fts3
 
-        from core.search.ftsquery import subnodes, ftsSearcher
+        from core.search.ftsquery import subnodes
+        from core.search.router import router
         from core.search.ftsparser import ftsSearchParser
 
         subnodes = subnodes
         searchParser = ftsSearchParser
-        searcher = ftsSearcher
+        router = router
 
-        def getTablenames(searcher):
-            res = searcher.execute("SELECT * FROM sqlite_master WHERE type='table'")
+        def getTablenames(searcher, db_type):
+            res = searcher.execute("SELECT * FROM sqlite_master WHERE type='table'", db_type)
             tablenames = [t[1] for t in res]
             return tablenames
 
         # check fts database for tables
-        msg = "looking for tables in sqlite database of the searcher ..."
-        log.info(msg)
-        try:
-            tablenames = getTablenames(searcher)
-            if tablenames:
-                msg = "found %d tables in sqlite database of the searcher: %r" % (len(tablenames), tablenames)
+        for key, searcher in router.schemas.items():
+            for table_type in searcher.tablenames.keys():
+                msg = "looking for %s table in sqlite database of the searcher %s" % (table_type, key)
                 log.info(msg)
-                print "fts3 searcher initialized"
-            else:
-                msg = "found no tables in sqlite database of the searcher ... trying to initialize database"
-                log.warning(msg)
-                searcher.initIndexer(option="init")
-                tablenames = getTablenames(searcher)
-                if tablenames:
-                    msg = "found %d tables in newly initialized sqlite database of the searcher: %r" % (len(tablenames), tablenames)
-                    log.info(msg)
-                    print "fts3 searcher initialized"
-                else:
-                    raise
-        except:
-            msg = "could not query tables from fts sqlite database ... searcher may not be functional"
-            log.error(msg)
+                try:
+                    tablenames = getTablenames(searcher, table_type)
+                    if tablenames:
+                        msg = "found %d tables in sqlite database of the searcher: %r" % (len(tablenames), tablenames)
+                        log.info(msg)
+                        print "fts3 searcher initialized"
+                    else:
+                        msg = "found no tables in sqlite database of the searcher ... trying to initialize database"
+                        log.warning(msg)
+                        searcher.initIndexer(option="init")
+                        tablenames = getTablenames(searcher, table_type)
+                        if tablenames:
+                            msg = "found %d tables in newly initialized sqlite database of the searcher: %r" % (len(tablenames), tablenames)
+                            log.info(msg)
+                            print "fts3 searcher initialized"
+                        else:
+                            raise
+                except:
+                    msg = "could not query tables from fts sqlite database ... searcher may not be functional"
+                    log.error(msg)
 
     else: # use magpy
         print "magpy searcher initialized"

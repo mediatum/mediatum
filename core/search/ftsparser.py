@@ -58,8 +58,7 @@ class FtsSearchFieldCondition:
         self.value = value
     def __str__(self):
         return self.field+" "+self.op+" "+self.value
-    def execute(self):
-        from core.tree import searcher
+    def execute(self, searcher):
         return searcher.run_search(self.field, self.op, self.value)
 
 

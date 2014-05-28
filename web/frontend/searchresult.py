@@ -24,7 +24,6 @@ import logging
 from core.acl import AccessData
 from core.translation import lang, translate
 from utils.utils import intersection,getAllCollections, u
-from core.tree import subnodes, searcher
 from core.styles import theme
 
 class SearchResult:

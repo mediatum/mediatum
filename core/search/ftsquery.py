@@ -54,23 +54,24 @@ FULLTEXT_INDEX_MODE = 0
 DBTYPE = config.get('database.searchdb', 'std')
 
 class FtsSearcher:
-    def __init__(self):
+    def __init__(self, schema):
         global DBTYPE
         self.connames = {'std':{'full':'std', 'ext':'std', 'text':'std', 'std':'std'},
                                 'split':{'full':'full', 'ext':'ext', 'text':'text'}}
         self.tablenames = {'full':"fullsearchmeta", 'ext':"searchmeta", 'text':"textsearchmeta"}
         self.db = {}
+        self.schema = schema
         
         if DBTYPE not in self.connames.keys():
             raise OperationException("error in search definition")
-        
+
         for conname in self.connames[DBTYPE]:
             if self.connames[DBTYPE][conname] not in self.db.keys():
-                self.db[self.connames[DBTYPE][conname]] = sqlite.SQLiteConnector("%s%s" %(config.get("paths.searchstore"), eval('DB_NAME_'+(self.connames[DBTYPE][conname]).upper())))
+                self.db[self.connames[DBTYPE][conname]] = sqlite.SQLiteConnector("%s%s_%s" %(config.get("paths.searchstore"), self.schema, eval('DB_NAME_'+(self.connames[DBTYPE][conname]).upper())))
         self.normalization_items = None
 
     def run_search(self, field, op, value):
-        
+
         def getSQL(type, value, spc ={}): # deliver sql for given type
             value = normalize_utf8(protect(u(value)))
             
@@ -156,7 +157,7 @@ class FtsSearcher:
     def query(self, q=""):
         from core.tree import searchParser
         p = searchParser.parse(q)
-        return p.execute()
+        return p.execute(self)
     
     def initIndexer(self, option=""):
         global MAX_SEARCH_FIELDS 
@@ -494,27 +495,26 @@ class FtsSearcher:
         import os
         return os.stat(config.settings["paths.searchstore"]+"searchindex.db")[6]
 
-     
-    
-ftsSearcher = FtsSearcher()
-ftsSearcher.initIndexer()
+
 
 def protect(s):
     return s.replace('\'','"')
-    
-    
+
+
 def subnodes(node):
     return node.getAllChildren().getIDs()
 
-def fts_indexer_thread():
+
+def fts_indexer_thread(ftssearcher):
     if not time:
         return
     while 1:
         time.sleep(3)
-        dirty = tree.getDirtyNodes(10)
+        dirty = tree.getDirtyNodesBySchema(ftssearcher.schema)
         if dirty:
-            ftsSearcher.updateNodesIndex(dirty)
+            ftssearcher.updateNodesIndex(dirty)
 
-def startThread():
-    thread_id = thread.start_new_thread(fts_indexer_thread, ())
+
+def startThread(ftssearcher):
+    thread_id = thread.start_new_thread(fts_indexer_thread, (ftssearcher,))
 

@@ -510,7 +510,7 @@ def fts_indexer_thread(ftssearcher):
         return
     while 1:
         time.sleep(3)
-        dirty = tree.getDirtyNodesBySchema(ftssearcher.schema)
+        dirty = tree.getDirtyNodesBySchema(ftssearcher.schema, 10)
         if dirty:
             ftssearcher.updateNodesIndex(dirty)
 

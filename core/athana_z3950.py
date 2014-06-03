@@ -24,7 +24,7 @@ import asyncore
 import random # FIXME: drop dependency!
 
 from athana import counter, async_chat
-from core import tree, medmarc
+from core import tree, medmarc, acl, users, config
 from schema import mapping
 
 from PyZ3950 import z3950, zdefs, asn1
@@ -238,6 +238,8 @@ def search_nodes(query, mapping_prefix='Z3950_search_'):
 
     # run one search per root node
     node_ids = []
+    guestaccess = acl.AccessData(user=users.getUser(config.get('user.guestuser')))
+
     for root_node, mapping_node in roots_and_mappings:
         # map query fields to node attributes
         field_mapping = {}
@@ -250,11 +252,16 @@ def search_nodes(query, mapping_prefix='Z3950_search_'):
             logg.info('unable to map query: [%r] using mapping %s', query, field_mapping)
             continue
         logg.info('executing query: %s', query_string)
-        node_ids.append( root_node.search(query_string).getIDs() )
+        for n in root_node.search(query_string):
+            if guestaccess.hasReadAccess(n):
+                node_ids.append(n.id)
+
+        #node_ids.append( root_node.search(query_string).getIDs() )
 
     # use a round-robin algorithm to merge the separate query results
     # in order to produce maximally diverse results in the first hits
-    return merge_ids_as_round_robin(node_ids)
+    #return merge_ids_as_round_robin(node_ids)
+    return node_ids
 
 def merge_ids_as_round_robin(id_sets):
     """
@@ -319,7 +326,7 @@ class QueryMatchNode(object):
             return None
         op, value = self.op, self.value
         return ' or '.join([ '%s %s %s' % (field_type, op, value)
-                             for field_type in field_mapping[self.name] ])
+                             for field_type in field_mapping[self.name] if self.name in field_mapping])
 
     def __repr__(self):
         return '%s = %s' % (self.name, self.value)

@@ -47,10 +47,12 @@ function pad(number, length) {
 }
 
 function mediatum_load(id, limit, sort, query, format, language, type, detailof){
+    var scripts = document.getElementsByTagName('script');
+    var lastScript = scripts[scripts.length-1];
     if(language==""){
-        document.write('<div class="mediatum" id="mediatum_'+module_count+'"><p class="loading"><img src="'+baseurl+'/img/wait_small.gif"/></p></div>');
+        lastScript.insertAdjacentHTML("beforebegin", '<div class="mediatum" id="mediatum_'+module_count+'"><p class="loading"><img src="'+baseurl+'/img/wait_small.gif"/></p></div>');
     }else{
-        document.write('<div class="mediatum" id="mediatum_'+module_count+'"><p class="loading">'+labels[language][0]+'</p></div>');
+        lastScript.insertAdjacentHTML("beforebegin", '<div class="mediatum" id="mediatum_'+module_count+'"><p class="loading">'+labels[language][0]+'</p></div>');
         language = language;
     }
 
@@ -86,7 +88,7 @@ function mediatum_load(id, limit, sort, query, format, language, type, detailof)
                 file = /!hasfile*/.test(mediatum_config['fields'+pos].join(""));
             }
             if (mediatum_config['fields'+detailof]){
-                file = /hasfile*/.test(mediatum_config['fields'+detailof].join("")); 
+                file = /hasfile*/.test(mediatum_config['fields'+detailof].join(""));
             }
             if (file){
                 url += "&files=all";
@@ -101,14 +103,14 @@ function mediatum_load(id, limit, sort, query, format, language, type, detailof)
             url += "&acceptcached=180&mask="+output;
             url += (mediatum_config['fields'+pos] || mediatum_config['fields'+detailof]) ? "&attrspec=all" : "";
             if ((mediatum_config['style'] ? mediatum_config['style']:1)==1 && styledone==0){
-                $('<style>\n.mediatum #item{padding:2px; margin:2px; border: 1px solid silver;}\n.mediatum #item_link{text-decoration:none; color:black;}\n</style>').appendTo('body');
+                $('body').append('<style type="text/css">\n .mediatum #item{padding:2px; margin:2px; border: 1px solid silver;}\n .mediatum #item_link{text-decoration:none; color:black;}\n</style>');
                 styledone = 1;
             }
 
             $.getJSON(url+"&jsoncallback=?",
                 function(data){
                     if (type[0]=='struct'){
-                        $('<div id="navigation_'+pos+'" class="navigation"> </div><div><div id="content_'+pos+'" class="content"><div id="searchresult_'+pos+'" class="searchresult"> </div></div>').appendTo("#mediatum_"+pos);
+                        $("#mediatum_"+pos).append('<div id="navigation_'+pos+'" class="navigation"> </div><div><div id="content_'+pos+'" class="content"><div id="searchresult_'+pos+'" class="searchresult"> </div></div>');
                         buildNavigation(id, limit, sort, query, format, language, type, pos);
                         return;
                     }
@@ -154,9 +156,9 @@ function mediatum_load(id, limit, sort, query, format, language, type, detailof)
                            });
                         s+= "</div></a>";
                         if($('#mediatum_'+detailof+'_'+id).length>0){
-                            $(s).appendTo('#mediatum_'+detailof+'_'+id);
+                            $('#mediatum_'+detailof+'_'+id).append(s);
                         }else{
-                            $(s).appendTo("#mediatum_"+pos);
+                            $("#mediatum_"+pos).append(s);
                         }
                     });
                     $("p").remove(".loading");
@@ -175,10 +177,13 @@ function show(pos, id){
 }
 
 function startsearch(pos, baseid, language){
+        if (language==""){
+        language = 'de';
+    }
     $("#searchresult_"+pos).html('<img src="'+baseurl+'/img/wait_small.gif"/>');
     $(".part_"+pos).css("display", "none");
     $("#searchresult_"+pos).css("display", "block");
-    
+
     detailof = 0;
 
     var fields = mediatum_config['fields'+pos] ? mediatum_config['fields'+pos] : mediatum_config_default.fields;
@@ -208,12 +213,15 @@ function startsearch(pos, baseid, language){
             });
             s += '</div></a>';
         });
-        $(s).appendTo("#searchresult_"+pos);
+        $("#searchresult_"+pos).append(s);
     });
 }
 
 
 function buildNavigation(id, limit, sort, query, format, language, type, pos){
+    if (language==""){
+        language = 'de';
+    }
     s = '';
     var first = -1;
     sortdir = type[2]=='asc' ? '' : '-';

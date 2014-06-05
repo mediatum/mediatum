@@ -28,6 +28,9 @@ from web.edit.edit_common import showdir
 from web.edit.edit import nodeIsChildOfNode
 from utils.utils import isDirectory
 from core.users import getHomeDir
+import logging
+
+log = logging.getLogger("editor")
 
 def getInformation():
     return {"version":"1.1", "system":1}
@@ -78,6 +81,16 @@ def getContent(req, ids):
                             
                         else:
                             actionerror.append(obj.id)
+                            log.error("Error in publishing of node %r: Destination node %r is child of node." % (obj_id, dest.id))
+
+                if not access.hasReadAccess(src):
+                    log.error("Error in publishing of node %r: source position %r has no read access." % (obj.id, src.id))
+                if not access.hasWriteAccess(dest):
+                    log.error("Error in publishing of node %r: destination %r has no write access." % (obj.id, dest.id))
+                if not access.hasWriteAccess(obj):
+                    log.error("Error in publishing of node %r: object has no write access." % obj.id)
+                if not isDirectory(dest):
+                    log.error("Error in publishing of node %r: destination %r is not a directory." % (obj.id, dest.id))
                             
         v = {}
         v["id"] = publishdir.id

@@ -875,6 +875,7 @@ class Mask(tree.Node):
                 if item.getRequired()==1:
                     if node.get(field.getName())=="":
                         ret.append(node.id)
+                        logging.getLogger('editor').error("Error in publishing of node %r: The required field %r is empty." % (node.id, field.name))
 
                 if field and field.getContentType()=="metafield" and field.getFieldtype()=="date":
                     if not node.get(field.getName())=="":
@@ -883,9 +884,11 @@ class Mask(tree.Node):
                                 datetime.datetime.strptime(node.get(field.getName()), '%Y-%m')
                             except:
                                 ret.append(node.id)
+                                logging.getLogger('editor').error("Error in publishing of node %r: The date field 'yearmonth' with content %r is not valid." % (node.id, node.get(field.getName())))
                             continue
                         if not validateDateString(node.get(field.getName())):
                             ret.append(node.id)
+                            logging.getLogger('editor').error("Error in publishing of node %r: The date field %r with content %r is not valid." % (node.id, field.name, node.get(field.getName())))
         return ret
 
     ''' returns True if all mandatory fields of mappingdefinition are used -> valid format'''

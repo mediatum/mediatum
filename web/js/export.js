@@ -3,6 +3,7 @@ var mediatum_config_default = {'fields':['<b>[att:pos]</b>','defaultexport'], 'd
 var module_count = 0;
 var baseurl = getLocation();
 var styledone = 0;
+var lan = 'de';
 
 var labels = {'de':['lade...', 'Suche', 'Suche nach:', 'Treffer'],
                 'en':['loading...', 'search', 'Search term:', 'matches']};
@@ -47,14 +48,11 @@ function pad(number, length) {
 }
 
 function mediatum_load(id, limit, sort, query, format, language, type, detailof){
+    language = language || lan;
     var scripts = document.getElementsByTagName('script');
     var lastScript = scripts[scripts.length-1];
-    if(language==""){
-        lastScript.insertAdjacentHTML("beforebegin", '<div class="mediatum" id="mediatum_'+module_count+'"><p class="loading"><img src="'+baseurl+'/img/wait_small.gif"/></p></div>');
-    }else{
-        lastScript.insertAdjacentHTML("beforebegin", '<div class="mediatum" id="mediatum_'+module_count+'"><p class="loading">'+labels[language][0]+'</p></div>');
-        language = language;
-    }
+
+    lastScript.insertAdjacentHTML("beforebegin", '<div class="mediatum" id="mediatum_'+module_count+'"><p class="loading">'+labels[language][0]+'</p></div>');
 
     load_script({ 
         src: 'http://mediatum.ub.tum.de/js/jquery.min.js',
@@ -177,9 +175,7 @@ function show(pos, id){
 }
 
 function startsearch(pos, baseid, language){
-        if (language==""){
-        language = 'de';
-    }
+    language = language || lan;
     $("#searchresult_"+pos).html('<img src="'+baseurl+'/img/wait_small.gif"/>');
     $(".part_"+pos).css("display", "none");
     $("#searchresult_"+pos).css("display", "block");
@@ -219,9 +215,7 @@ function startsearch(pos, baseid, language){
 
 
 function buildNavigation(id, limit, sort, query, format, language, type, pos){
-    if (language==""){
-        language = 'de';
-    }
+    language = language || lan;
     s = '';
     var first = -1;
     sortdir = type[2]=='asc' ? '' : '-';

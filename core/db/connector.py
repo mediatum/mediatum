@@ -136,9 +136,9 @@ class Connector:
         ids2 = [id[0] for id in ids]
         return ids2
 
-    def getDirtySchema(self, schema, limit=0):
+    def getDirtySchemas(self, limit=0):
         dirty_nodes = self.getDirty()
-        schema_nodes = [id[0] for id in self.getNodeIDsForSchema(schema)]
+        schema_nodes = [id[0] for id in self.getNodeIDsForSchemas()]
         dirty_schema_nodes = list(set(schema_nodes).intersection(dirty_nodes))
         if limit:
             return dirty_schema_nodes[:limit]
@@ -254,6 +254,8 @@ class Connector:
         orderpos = t[0][0] + 1
         return orderpos
 
+    def getNodeIDsForSchemas(self, datatype="*"):
+        return self.runQuery('select id from node where type like "%%/%%"')
     def getNodeIDsForSchema(self, schema, datatype="*"):
         return self.runQuery("select id from node where type like %s or type = %s", "%" + schema, schema)
 

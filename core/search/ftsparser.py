@@ -31,8 +31,10 @@ class FtsSearchAndCondition:
     def __init__(self, a,b):
         self.a = a
         self.b = b
+
     def __str__(self):
         return "(" + str(self.a) + ") AND (" + str(self.b) + ")"
+
     def execute(self):
         ids1 = self.a.execute()
         if not len(ids1):
@@ -40,25 +42,32 @@ class FtsSearchAndCondition:
         ids2 = self.b.execute()
         return intersection([ids1, ids2])
 
+
 class FtsSearchOrCondition:
     def __init__(self, a,b):
         self.a = a
         self.b = b
+
     def __str__(self):
         return "(" + str(self.a) + ") OR (" + str(self.b) + ")"
+
     def execute(self):
         ids1 = self.a.execute()
         ids2 = self.b.execute()
         return union([ids1,ids2])
+
 
 class FtsSearchFieldCondition:
     def __init__(self, field, op, value):
         self.field = field
         self.op = op
         self.value = value
+
     def __str__(self):
         return self.field+" "+self.op+" "+self.value
-    def execute(self, searcher):
+
+    def execute(self):
+        from core.tree import searcher
         return searcher.run_search(self.field, self.op, self.value)
 
 
@@ -78,6 +87,7 @@ class FtsSearchParser(BoolParser):
     
     def getAndClass(self):
         return FtsSearchAndCondition
+
     def getOrClass(self):
         return FtsSearchOrCondition
 

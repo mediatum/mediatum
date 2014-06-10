@@ -35,6 +35,7 @@ plugins = {}
 
 
 def import_plugin_module(name, location):
+    location = os.path.realpath(location)
     containing_dir_path = os.path.realpath(os.path.dirname(os.path.join(config.basedir, location)))
     if containing_dir_path not in sys.path:
         sys.path.append(containing_dir_path)

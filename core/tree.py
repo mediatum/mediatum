@@ -729,10 +729,13 @@ class Node(object):
 
 
     """ remove a FileNode from this node """
-    def removeFile(self, file):
+    def removeFile(self, file, single=False):
         changed_metadata(self)
         self._makePersistent()
-        db.removeFile(self.id,file._path)
+        if single:
+            db.removeSingleFile(self.id,file._path)
+        else:
+            db.removeFile(self.id,file._path)
         file._delete()
 
 

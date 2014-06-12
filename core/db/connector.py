@@ -118,6 +118,8 @@ class Connector:
         return self.runQuery("select filename,type,mimetype from nodefile where nid="+nodeid)
     def removeFile(self, nodeid, path):
         self.runQuery("delete from nodefile where nid = "+nodeid+" and filename="+self.esc(path))
+    def removeSingleFile(self, nodeid, path):
+        self.runQuery("delete from nodefile where nid = "+nodeid+" and filename="+self.esc(path))
     def removeAttribute(self, nodeid, attname):
         self.runQuery("delete from nodeattribute where nid=" + nodeid + " and name=" + self.esc(attname))
 

@@ -381,8 +381,8 @@ class WorkflowStep(tree.Node):
                             for node in nodes:
                                 for parent in node.getParents():
                                     parent.removeChild(node)
-                        else:
-                            step = tree.getNode(req.params['action'])
+                        elif req.params['action'].startswith('move_'):
+                            step = tree.getNode(req.params['action'].replace('move_', ''))
                             for node in nodes:
                                 for parent in node.getParents():
                                     parent.removeChild(node)

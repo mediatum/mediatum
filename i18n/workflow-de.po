@@ -86,6 +86,9 @@ msgstr "Ausführen"
 msgid "workflow_confirm_msg_delete"
 msgstr "Wollen Sie wirklich diese Knoten löschen?"
 
+msgid "workflow_confirm_msg_move"
+msgstr "Sollen die gewählten Knoten verschoben werden?"
+
 msgid "workflow_show_step"
 msgstr "Schritt anzeigen"
 

@@ -15,6 +15,7 @@ from core.transition.helpers import get_template_attribute
 
 
 class JinjaAutoescapeCompiler(JinjaCompiler):
+    autocloseCode = 'if,for,block,filter,autoescape,with,trans,spaceless,comment,cache,macro,localize,compress,call'.split(',')
     def visitCode(self,code):
         if code.buffer:
             val = code.val.lstrip()

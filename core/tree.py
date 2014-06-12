@@ -1362,6 +1362,7 @@ def initialize(load=1):
         getRoot()
     global schema, subnodes, searchParser, searcher
     import schema.schema as schema
+    from core.search.ftsquery import DBTYPE
     schema = schema
 
     if config.get("config.searcher","")=="fts3": # use fts3
@@ -1384,7 +1385,7 @@ def initialize(load=1):
         msg = "looking for tables in sqlite database of the searcher ..."
         log.info(msg)
         for schema in searcher.schemas:
-            for db_type in searcher.tablenames.keys():
+            for db_type in list(set(searcher.connames[DBTYPE].values())):
                 try:
                     tablenames = getTablenames(searcher, schema, db_type)
                     if tablenames:

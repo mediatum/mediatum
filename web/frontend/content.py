@@ -28,6 +28,8 @@ from core.acl import AccessData
 from core.translation import lang,t
 from web.frontend.searchresult import simple_search, extended_search
 from core.styles import getContentStyles, theme
+import logging
+log = logging.getLogger("frontend")
 
 class Content:
     def feedback(self,req):
@@ -485,7 +487,11 @@ class ContentArea(Content):
             if req.params.get("show_navbar")==0 or req.session.get("area")=="publish":
                 breadscrubs = []
             else:
-                breadscrubs = self.getPath()
+                try:
+                    breadscrubs = self.getPath()
+                except AttributeError:
+                    log.exception()
+                    return req.error(404, "Object cannot be shown")
 
             path = req.getTAL(theme.getTemplate("content_nav.html"), {"params": self.params, "path": breadscrubs, "styles":styles, "logo":self.collectionlogo, "searchmode":req.params.get("searchmode",""), "items":items, "id":id, "nodeprint":nodeprint, "printlink":printlink, "area":req.session.get("area","")}, macro="path")
         return path + '\n<!-- CONTENT START -->\n' +  self.content.html(req) + '\n<!-- CONTENT END -->\n'

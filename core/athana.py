@@ -1036,8 +1036,7 @@ class http_request(object):
             self.channel.close_when_done()
 
     def log(self):
-        logg.info('[%s:%s] "%s"', self.channel.addr[0], self.channel.addr[1], self.request)
-
+        logg.info('%s:%s - - %s "%s"', self.channel.addr[0], self.channel.addr[1], time.strftime('[%d/%b/%Y:%H:%M:%S ]', time.gmtime()), self.request)
 
     def write(self,text):
         if type(text) == type(''):

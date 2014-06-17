@@ -491,33 +491,80 @@ supported_formats = [
 
 def get_node_children_struct(req, path, params, data, id, debug=True, allchildren=False, singlenode=False, parents=False, send_children=False):
     global guestAccess
-    starttime = time.time()
+    atime = starttime = time.time()
     retrievaldate = format_date()
 
-    res = {} # holds the resulting data structure
+    res = {}  # holds the resulting data structure
     res['build_response_start'] = starttime
     res['retrievaldate'] = retrievaldate
     res['method'] = req.command
     res['path'] = req.path
     res['query'] = req.query
+    timetable = []
+    res['timetable'] = timetable
 
     #verify signature if a user is given, otherwise use guest user
     if params.get('user'):
-        _user = users.getUser(params.get('user'))
+        _username = params.get('user')
+        _user = users.getUser(_username)
 
-        if not _user: # user of dynamic
+        if not _user:  # user of dynamic type and not logged in with this request
 
-            class dummyuser: # dummy user class
-                def getGroups(self): # return all groups with given dynamic user
-                    return [g.name for g in tree.getRoot('usergroups').getChildren() if g.get('allow_dynamic')=='1' and params.get('user') in g.get('dynamic_users')]
+            dirid = _username
+
+            # build an object with attributes used by AccessData constructor
+            class dummyuser:  # dummy user class
+                def __init__(self, dirid):
+                    self.dirid = dirid
+
+                    # find home directory for dynamic user with given directory id
+                    self.homedir = None
+                    self.usertype = ''
+                    for hd in tree.getRoot("home").getChildren():
+                        if hd.get('system.oauthuser') == dirid:
+                            self.homedir = hd
+                            items = hd.items()
+                            for k, v in items:
+                                if k.startswith('system.dirid.') and v == dirid:
+                                    self.usertype = k.replace('system.dirid.', '')
+                                    break
+                            break
+
+                    self.dirgroups = []
+                    if self.homedir:
+                        self.dirgroups = self.homedir.get('system.dirgroups.' + self.usertype)
+                        if not self.dirgroups:
+                            self.dirgroups = ''
+                        self.dirgroups = self.dirgroups.split('|#|')
+                        self.name = self.homedir.get('system.name.' + self.usertype)
+                        self.last_authentication = self.homedir.get('system.last_authentication.' + self.usertype)
+                    else:
+                        self.name = self.dirid
+
+                    self.groups = [g.name for g in tree.getRoot('usergroups').getChildren() if (g.get('allow_dynamic') == '1' and params.get('user') in g.get('dynamic_users'))
+                                                                                                or
+                                                                                                g.name in self.dirgroups]
+
+                    self.is_admin = config.get("user.admingroup", "Administration") in self.groups
+
+                def getGroups(self):  # return all groups with given dynamic user
+                    return self.groups
+
                 def getName(self):
-                    return params.get('user')
-                def getDirID(self): # unique identifier
-                    return params.get('user')
-                def isAdmin(self):
-                    return 0
+                    return self.name
 
-            _user = dummyuser()
+                def getUserID(self):  # unique identifier
+                    return self.dirid
+
+                def getUserType(self):
+                    return 'dummy_' + self.usertype
+
+                def isAdmin(self):
+                    return self.is_admin
+
+            _user = dummyuser(dirid)
+            homedir = _user.homedir
+            timetable.append(['''oauth: built dummy dyn. user %r, homedir: %r %r -> (groups: %r)''' % (_username, homedir.name, homedir.id, _user.groups), time.time()-atime]); atime = time.time()
 
         guestAccess = AccessData(user=_user)
 
@@ -531,12 +578,9 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
     else:
         guestAccess = AccessData(user=users.getUser('Gast'))
 
-    timetable = []
     result_shortlist = []
 
     nodelist = []
-
-    res['timetable'] = timetable
     res['nodelist'] = nodelist
 
     # query parameters

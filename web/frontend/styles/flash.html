@@ -1,4 +1,4 @@
-<div style="width:100%;text-align:center;color:red;" tal:condition="python:node.next_nid!=None and node.next_nid!='0' and node.get('deleted')!='true'"
+<div style="width:100%;text-align:center;color:red;" tal:condition="python:node.next_nid!=None and node.next_nid!='0' and node.get('deleted')!='true' and node.next_nid != node.id"
     tal:define="v python:node.getActiveVersion()">
     <p class="info" i18n:translate="document_view_new_version_exist">
     <span i18n:name="a_open" tal:replace="structure python:'<a href=&quot;/''?id='+v.id+'&quot;>'"></span>

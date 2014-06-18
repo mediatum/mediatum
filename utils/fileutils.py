@@ -22,6 +22,8 @@ import logging
 import core.tree
 import time
 
+logg = logging.getLogger("backend")
+
 from utils import join_paths, getMimeType, formatException
 
 def getImportDir():
@@ -39,6 +41,9 @@ def importFile(realname,tempname, prefix=""):
         path,filename = os.path.split(tempname)
         uploaddir = getImportDir()
         destname = join_paths(uploaddir, prefix+filename)
+
+        if not os.path.exists(tempname):
+            raise IOError("temporary file " + tempname + "does not exist")
 
         if os.path.exists(destname): # rename if existing
             i = 0
@@ -61,12 +66,12 @@ def importFile(realname,tempname, prefix=""):
         r = realname.lower()
         mimetype = "application/x-download"
         type = "file"
-        
+
         mimetype, type = getMimeType(r)
 
         return core.tree.FileNode(name=destname,mimetype=mimetype, type=type)
     except:
-        print formatException()
+        logg.exception()
     return None
 
 
@@ -84,7 +89,7 @@ def importFileFromData(filename, data, prefix=""):
                 if not os.path.exists(destname):
                     prefix = p
                     break
-                
+
         file_handle = open(destname, 'wb')
         file_handle.write(data)
         file_handle.close()
@@ -140,7 +145,7 @@ def importFileIntoDir(destpath, tempname):
         path,filename = os.path.split(tempname)
         uploaddir = getImportDir()
         destname = destpath# join_paths(uploaddir, filename)
-        
+
         if os.sep=='/':
             ret = os.system("cp %s %s" %(tempname, destname))
         else:
@@ -153,14 +158,14 @@ def importFileIntoDir(destpath, tempname):
         r = destpath.lower()
         mimetype = "application/x-download"
         type = "file"
-        
+
         mimetype, type = getMimeType(r)
 
         return core.tree.FileNode(name=destname,mimetype=mimetype, type=type)
     except:
         print formatException()
     return None
-    
+
 
 def importFileRandom(tempname):
     #import core.config as config
@@ -181,10 +186,10 @@ def importFileRandom(tempname):
     else:
         cmd = "copy '%s' %s" %(tempname, (os.path.split(destname)[0]))
         ret = os.system(cmd.replace('/','\\'))
- 
+
     if ret:
         raise IOError("Couldn't copy %s to %s (error: %s)" %(tempname, destname, str(ret)))
- 
+
     r = tempname.lower()
     mimetype = "application/x-download"
     type = "file"

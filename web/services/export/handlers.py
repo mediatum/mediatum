@@ -848,7 +848,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
         pass
     else:
         # this is the default: remove older version nodes from the result list
-        nodelist = [n for n in nodelist if n.isActiveVersion()]
+        nodelist = [n for n in nodelist if (n.isActiveVersion() or n.id == n.next_nid) and n.type != 'directory']
         timetable.append(['filtered older (inactive) versions out -> (%d nodes)' % (len(nodelist)), time.time()-atime]); atime = time.time()
 
     if exif_location_rect:

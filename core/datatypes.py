@@ -53,3 +53,10 @@ def loadAllDatatypes():
         datalist += [Datatype(key, key, cls.__name__, cls.__module__+'.'+cls.__name__)]
     return datalist
 
+def loadNonSystemTypes():
+    dlist = []
+    for dt in loadAllDatatypes():
+        n = tree.Node("", type=dt.name)
+        if hasattr(n, "isSystemType") and n.isSystemType() == 0 and dt.classname not in ["Default", "Directory"]:
+            dlist.append(dt)
+    return dlist

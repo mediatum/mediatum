@@ -24,7 +24,7 @@ import core.tree as tree
 import core.config as config
 import os.path
 
-from core.datatypes import loadAllDatatypes
+from core.datatypes import loadAllDatatypes, loadNonSystemTypes
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 from core.tree import Node, getNode, searcher
 from web.common.acl_web import makeList
@@ -438,7 +438,7 @@ def MetatypeDetail(req, id, err=0):
 
         v["original_name"] = req.params["mname_orig"]
 
-    v["datatypes"] = loadAllDatatypes()
+    v["datatypes"] = loadNonSystemTypes()
     v["datatypes"].sort(lambda x,y: cmp(t(lang(req), x.getLongName()), t(lang(req), y.getLongName())))
     v["metadatatype"] = metadatatype
     v["error"] = err

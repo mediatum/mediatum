@@ -71,7 +71,7 @@ def importFile(realname,tempname, prefix=""):
 
         return core.tree.FileNode(name=destname,mimetype=mimetype, type=type)
     except:
-        logg.exception()
+        logg.exception("")
     return None
 
 

@@ -490,7 +490,7 @@ class ContentArea(Content):
                 try:
                     breadscrubs = self.getPath()
                 except AttributeError:
-                    log.exception()
+                    log.exception("")
                     return req.error(404, "Object cannot be shown")
 
             path = req.getTAL(theme.getTemplate("content_nav.html"), {"params": self.params, "path": breadscrubs, "styles":styles, "logo":self.collectionlogo, "searchmode":req.params.get("searchmode",""), "items":items, "id":id, "nodeprint":nodeprint, "printlink":printlink, "area":req.session.get("area","")}, macro="path")

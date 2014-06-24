@@ -91,8 +91,10 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
     mask = req.params.get('mask', 'default').lower()
     maskcachetype = req.params.get('maskcache', 'deep')  # 'deep', 'shallow', 'none'
 
+    user_info = 'oauthuser="%s" username="%s" userid="%s"' % (d.get('oauthuser', ''), d.get('username', ''), d.get('userid', ''))
+
     res = '<?xml version="1.0" encoding="utf-8"?>\r\n'
-    res += '<response status="%s" retrievaldate="%s" servicereactivity="%s sec.">\r\n' % (d['status'], d['retrievaldate'], d['dataready'])
+    res += '<response status="%s" retrievaldate="%s" servicereactivity="%s sec." %s>\r\n' % (d['status'], d['retrievaldate'], d['dataready'], user_info)
     if d['status'] == 'ok':
         if singlenode:
             n = d['nodelist'][0]
@@ -503,12 +505,19 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
     timetable = []
     res['timetable'] = timetable
 
+    res['oauthuser'] = ''  # username supplied for authentication (login name) in query parameter user
+    res['userid'] = ''  # unique id for authenticated user if applicable (node.id for internal, dirid for dynamic users)
+    res['username'] = ''  # name of the user, may be "guest" or personal name
+
     #verify signature if a user is given, otherwise use guest user
     if params.get('user'):
         _username = params.get('user')
+        res['oauthuser'] = _username
         _user = users.getUser(_username)
 
         if not _user:  # user of dynamic type and not logged in with this request
+
+            timetable.append(['''oauth: users.getUser(%r) returned %r: going to built dummy user with attributes of homedir with system.oauthuser=%r''' % (_username, _user, _username), time.time()-atime]); atime = time.time()
 
             dirid = _username
 
@@ -564,7 +573,14 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
 
             _user = dummyuser(dirid)
             homedir = _user.homedir
-            timetable.append(['''oauth: built dummy dyn. user %r, homedir: %r %r -> (groups: %r)''' % (_username, homedir.name, homedir.id, _user.groups), time.time()-atime]); atime = time.time()
+            if homedir:
+                timetable.append(['''oauth: built dummy dyn. user %r, homedir: %r %r -> groups: %r''' % (_username, homedir.name, homedir.id, _user.getGroups()), time.time()-atime]); atime = time.time()
+            else:
+                timetable.append(['''oauth: tried to built dummy dyn. user %r, no homedir found''' % (_username), time.time()-atime]); atime = time.time()
+
+        else:
+            # users.getUser(_username) returned user
+            timetable.append(['''oauth: users.getUser(%r) returned %r (%r, %r, %r) -> groups: %r''' % (_username, _user, _user.getName(), _user.getUserID(), _user.getUserType(), _user.getGroups()), time.time()-atime]); atime = time.time()
 
         guestAccess = AccessData(user=_user)
 
@@ -573,11 +589,17 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
             valid = guestAccess.verify_request_signature(req.fullpath, params)
             if not valid:
                 guestAccess = None
+            else:    
+                res['userid'] = _user.getUserID()
+            timetable.append(['''oauth: verify_request_signature returned %r for authname %r, userid: %r, groups: %r''' % (valid, _username, res['userid'], _user.getGroups()), time.time()-atime]); atime = time.time()
         else:
             guestAccess = None
     else:
         guestAccess = AccessData(user=users.getUser('Gast'))
 
+    if guestAccess:
+        res['username'] = guestAccess.getUser().getName()  # name,
+        res['userid'] = guestAccess.getUser().getUserID()  # id,
     result_shortlist = []
 
     nodelist = []
@@ -612,6 +634,8 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
 
     default_nodelist_start = 0
     default_nodelist_limit = 100
+
+    res['timetable'] = timetable
 
     try:
         nodelist_start = int(params.get('start', default_nodelist_start))
@@ -678,6 +702,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
                 searchcache.update(cache_key, searchresult)
                 timetable.append(['wrote filtered search result to cache (%d nodes), now in cache: %d entries: %s' % (len(searchresult), searchcache.getKeysCount(), "#".join(searchcache.getKeys())), time.time()-atime]); atime = time.time()
 
+    res['timetable'] = timetable
     typed_nodelist = []
     if  mdt:
         mdt_names = [x.name for x in tree.getRoot("metadatatypes").getChildren()]
@@ -726,6 +751,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
                 res['build_response_end'] = time.time()
                 dataready = "%.3f" % (res['build_response_end'] - starttime)
                 res['dataready'] = dataready
+                res['timetable'] = timetable
                 return res
             timetable.append(['''get all children for node %s, '%s', '%s' -> (%d nodes)''' % (str(node.id), node.name, node.type, len(nodelist)), time.time()-atime]); atime = time.time()
     else:
@@ -802,6 +828,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
                 res['build_response_end'] = time.time()
                 dataready = "%.3f" % (res['build_response_end'] - starttime)
                 res['dataready'] = dataready
+                res['timetable'] = timetable
                 return res
 
             newly_filtered = [x for x in nodelist if regexp_stype.match(x.type)]
@@ -823,6 +850,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
                 res['build_response_end'] = time.time()
                 dataready = "%.3f" % (res['build_response_end'] - starttime)
                 res['dataready'] = dataready
+                res['timetable'] = timetable
                 return res
 
             newly_filtered = [] #[x for x in nodelist if regexp_stype.match(x.type)]
@@ -862,6 +890,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
             res['build_response_end'] = time.time()
             dataready = "%.3f" % (res['build_response_end'] - starttime)
             res['dataready'] = dataready
+            res['timetable'] = timetable
             return res
 
         typefiltered_nodelist = []
@@ -896,6 +925,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
             res['build_response_end'] = time.time()
             dataready = "%.3f" % (res['build_response_end'] - starttime)
             res['dataready'] = dataready
+            res['timetable'] = timetable
             return res
 
         attrreg_filtered_nodelist += [x for x in nodelist if regexp_attrreg.match(x.get(akey))]
@@ -974,6 +1004,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
         nodetuples = data[:]
         nodelist = [x[len(sfields) + 1] for x in nodetuples] # sorted
         timetable.append(["sort nodelist (%d nodes): sortfield='%s', sortdirection='%s', sortformat='%s'" % (len(nodelist), sortfield, sortdirection, sortformat), time.time()-atime]); atime = time.time()
+        res['timetable'] = timetable
 
     nodelist_countall = len(nodelist)
 

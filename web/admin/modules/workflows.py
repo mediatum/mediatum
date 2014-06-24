@@ -153,10 +153,12 @@ def validate(req, op):
                     sidebartext = ''
                     pretext = ''
                     posttext = ''
-                    for language in wf.getLanguages():
-                        sidebartext += '%s:%s\n' %(language, req.params.get('%s.nsidebartext' %language).replace('\n', ''))
-                        pretext += '%s:%s\n' %(language, req.params.get('%s.npretext' %language).replace('\n', ''))
-                        posttext += '%s:%s\n' %(language, req.params.get('%s.nposttext' %language).replace('\n', ''))
+
+                    if len(wf.getLanguages()) > 1:
+                        for language in wf.getLanguages():
+                            sidebartext += '%s:%s\n' %(language, req.params.get('%s.nsidebartext' % language).replace('\n', ''))
+                            pretext += '%s:%s\n' % (language, req.params.get('%s.npretext' % language).replace('\n', ''))
+                            posttext += '%s:%s\n' % (language, req.params.get('%s.nposttext' % language).replace('\n', ''))
                         
                     if sidebartext=='': sidebartext = req.params.get("nsidebartext","").replace('\n', '')
                     if pretext=='': pretext = req.params.get("npretext","").replace('\n', '')

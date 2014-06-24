@@ -856,17 +856,17 @@ class Mask(tree.Node):
         for node in nodes:
             for item in self.getMaskFields():
                 field = item.getField()
-                if item.getRequired()==1:
-                    if node.get(field.getName())=="":
+                if item.getRequired() == 1:
+                    if node.get(field.getName()) == "":
                         ret.append(node.id)
                         logging.getLogger('editor').error("Error in publishing of node %r: The required field %r is empty." % (node.id, field.name))
 
-                if field and field.getContentType()=="metafield" and field.getFieldtype()=="date":
-                    if not node.get(field.getName())=="":
+                if field and field.getContentType() == "metafield" and field.getFieldtype() == "date":
+                    if not node.get(field.getName()) == "":
                         if field.name == "yearmonth":
                             try:
-                                datetime.datetime.strptime(node.get(field.getName()), '%Y-%m')
-                            except:
+                                datetime.datetime.strptime(node.get(field.getName())[:7], '%Y-%m')
+                            except ValueError:
                                 ret.append(node.id)
                                 logging.getLogger('editor').error("Error in publishing of node %r: The date field 'yearmonth' with content %r is not valid." % (node.id, node.get(field.getName())))
                             continue

@@ -204,7 +204,7 @@
                 <td><tal:block i18n:translate="admin_meta_datatype">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
                     <select name="mdatatypes" multiple="multiple" style="width:300px" size="5">
-                        <option tal:repeat="datatype datatypes" tal:attributes="value python:datatype.getName(); selected python:{'False':None,'True':'selected'}[str(datatype.getName() in metadatatype.getDatatypes())]" tal:content="python:datatype.getLongName()" i18n:translate=""/>
+                        <option tal:repeat="datatype datatypes" tal:attributes="value python:datatype.getName(); selected python:{'False':None,'True':'selected'}[str(datatype.getName() in metadatatype.getDatatypes())]" tal:content="python:datatype.getName()" i18n:translate=""/>
                     </select>
                 </td>
             </tr>

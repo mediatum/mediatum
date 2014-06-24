@@ -371,11 +371,13 @@ def buildStat(collection, period="", fname=None): # period format = yyyy-mm
                     if file.getName()=="stat_"+str(node.id)+"_"+timestamp+"_"+type+".xml":
                         if timestamp==str(format_date(now(), "yyyy-mm")) or timestamp==period: # update current month or given period
                             if os.path.exists(file.retrieveFile()):
+                                print 'removing %s' % file.retrieveFile()
                                 os.remove(file.retrieveFile())
                             node.removeFile(file) # remove old file and create new
                             f = None
                             break
                         else: # old month, do nothing
+                            print 'old file doing nothing'
                             return None
                 except:
                     return None
@@ -386,6 +388,7 @@ def buildStat(collection, period="", fname=None): # period format = yyyy-mm
                 f = open(f_name, "a")
             else:
                 # create new file and write header:
+                print 'creating writing headers %s' %f_name
                 f = open(f_name, "w")
                 f.write('<?xml version="1.0" encoding="utf-8" ?>\n')
                 f.write('<nodelist created="'+str(format_date(now(), "yyyy-mm-dd HH:MM:SS"))+'">\n')

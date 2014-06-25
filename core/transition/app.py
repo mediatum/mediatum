@@ -14,6 +14,8 @@ from core.transition.frontendincludes import JavascriptIncludes, CSSIncludes
 from core.transition.globals import request, session, g
 from core.transition.helpers import runswith
 from core.transition.helpers import get_root_path
+from utils.date import dt_fromiso
+import datetime
 
 logg = logging.getLogger("athanatransition")
 
@@ -166,6 +168,9 @@ class AthanaFlaskStyleApp(object):
         rv.filters['yaml_safe'] = yaml.safe_dump
         rv.filters['u'] = partial(unicode, encoding="utf8")
         rv.filters['ordereddict'] = OrderedDict
+        rv.filters["dt_fromiso"] = dt_fromiso
+        rv.filters["strptime"] = datetime.datetime.strptime
+        rv.filters["strftime"] = datetime.datetime.strftime
         #rv.trim_blocks = True
         return rv
 

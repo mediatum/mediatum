@@ -29,7 +29,7 @@ from schema import mapping
 
 from PyZ3950 import z3950, zdefs, asn1
 
-logg = logging.getLogger("athana")
+logg = logging.getLogger("z3950")
 
 try:
     set

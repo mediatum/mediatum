@@ -121,7 +121,10 @@ def request_handler(req):
         pass
 
     request_count += 1
-    s = "services %s '%s' (%s): %s for %s bytes for service request no. %r (%s, %s, %s) - (user-agent: %s)" % (req.ip, str(response_code), response_code_description, handle_duration, locale.format("%d", bytes_sent, 1), request_count, req.command, req.fullpath, req.params, useragent)
+    req_query = req.query
+    if not req_query:
+        req_query = ''
+    s = "services %s '%s' (%s): %s for %s bytes for service request no. %r (%s, %s, %s) - (user-agent: %s)" % (req.ip, str(response_code), response_code_description, handle_duration, locale.format("%d", bytes_sent, 1), request_count, req.command, req.fullpath + req_query, req.params, useragent)
 
     if DEBUG and matched and 'timetable' in d:
         timesum = 0

@@ -38,6 +38,7 @@ from mediatumtal import tal
 
 
 logg = logging.getLogger("athana")
+logftp = logging.getLogger("ftp")
 
 class AthanaException(Exception):
     pass
@@ -2880,8 +2881,7 @@ class ftp_server (asyncore.dispatcher):
         self.bind ((self.ip, self.port))
         self.listen (5)
 
-
-        logg.info('FTP server started, Port: %d\n\tAuthorizer: %s, Hostname: %s\n',
+        logftp.info('FTP server started, Port: %d\n\tAuthorizer: %s, Hostname: %s\n',
                 self.port,
                 repr (self.authorizer),
                 self.hostname)
@@ -2898,7 +2898,7 @@ class ftp_server (asyncore.dispatcher):
     def handle_accept (self):
         conn, addr = self.accept()
         self.total_sessions.increment()
-        logg.debug('Incoming connection from %s:%d', addr[0], addr[1])
+        logftp.debug('Incoming connection from %s:%d', addr[0], addr[1])
         self.ftp_channel_class (self, conn, addr)
 
     # return a producer describing the state of the server

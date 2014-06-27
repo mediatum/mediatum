@@ -73,11 +73,7 @@ class FtsSearcher:
         #fills in db with key {schema}_{dbtype}: sqliteconnector
         for schema in self.schemas:
             for conname in self.connames[DBTYPE]:
-                if '_'.join([schema, self.connames[DBTYPE][conname]]) not in self.db.keys():
-                    self.db['_'.join([schema, self.connames[DBTYPE][conname]])] = \
-                        sqlite.SQLiteConnector("%s%s_%s" % (config.get("paths.searchstore"),
-                                                            schema,
-                                                            eval('DB_NAME_'+(self.connames[DBTYPE][conname]).upper())))
+                self.addDB(schema, conname)
 
         self.normalization_items = None
 
@@ -181,8 +177,16 @@ class FtsSearcher:
         from core.tree import searchParser
         p = searchParser.parse(q)
         return p.execute()
-    
-    def initIndexer(self, option=""):
+
+    def addDB(self, schema, connection_name):
+        if '_'.join([schema, self.connames[DBTYPE][connection_name]]) not in self.db.keys():
+            self.db['_'.join([schema, self.connames[DBTYPE][connection_name]])] = \
+                sqlite.SQLiteConnector("%s%s_%s" % (config.get("paths.searchstore"),
+                                                    schema,
+                                                    eval('DB_NAME_'+(self.connames[DBTYPE][connection_name])
+                                                    .upper())))
+
+    def initIndexer(self, option="", new_schema=""):
         global MAX_SEARCH_FIELDS 
 
         def create(sql, schema, _type):
@@ -193,26 +197,39 @@ class FtsSearcher:
                 if "already exists" not in str(e):
                     raise
 
-        if option=="init":
+        def createDB(schema):
+            create('CREATE VIRTUAL TABLE fullsearchmeta USING fts3(id, type, schema, value)',
+                   schema,
+                   'full')
+
+            # extended search table
+            create('CREATE VIRTUAL TABLE searchmeta USING fts3(id, type, schema, updatetime, '+", ".join(['field'+str(i) for i in range(1, MAX_SEARCH_FIELDS)])+')',
+                   schema,
+                   'ext')
+            create('CREATE VIRTUAL TABLE searchmeta_def USING fts3(name, position, attrname)',
+                   schema,
+                   'ext')
+
+            # fulltext search table
+            create('CREATE VIRTUAL TABLE textsearchmeta USING fts3(id, type, schema, value)',
+                   schema,
+                   'text')
+
+        if option == 'init':
             for schema in self.schemas:
-                # simple search table
-                create('CREATE VIRTUAL TABLE fullsearchmeta USING fts3(id, type, schema, value)',
-                       schema,
-                       'full')
+                createDB(schema)
 
-                # extended search table
-                create('CREATE VIRTUAL TABLE searchmeta USING fts3(id, type, schema, updatetime, '+", ".join(['field'+str(i) for i in range(1, MAX_SEARCH_FIELDS)])+')',
-                       schema,
-                       'ext')
-                create('CREATE VIRTUAL TABLE searchmeta_def USING fts3(name, position, attrname)',
-                       schema,
-                       'ext')
+        if new_schema != '':
+            createDB(new_schema)
 
-                # fulltext search table
-                create('CREATE VIRTUAL TABLE textsearchmeta USING fts3(id, type, schema, value)',
-                       schema,
-                       'text')
-
+    def addSchema(self, schema):
+        if schema not in self.schemas:
+            self.schemas.append(schema)
+            for conname in self.connames[DBTYPE]:
+                self.addDB(schema, conname)
+            self.initIndexer(new_schema=schema)
+        else:
+            print 'search db already exists'
     
     def getAllTableNames(self):
         ret = {'full':[], 'ext':[], 'text':[]}
@@ -265,7 +282,7 @@ class FtsSearcher:
         try:
             return self.db['_'.join([schema, self.connames[DBTYPE][_type]])].execute(sql)
         except Exception:
-            print "error in search indexer operation", sql
+            print "error in search indexer operation", sql, schema
             
     def getNodeInformation(self):
         ret = {}
@@ -467,9 +484,12 @@ class FtsSearcher:
         #t1 = time.time()
         for node in nodelist:
             try:
-                if node.getSchema() not in schemas.keys():
-                    schemas[node.getSchema()] = node
-                err = self.updateNodeIndex(node, node.getSchema())
+                schema = node.getSchema()
+                if schema not in schemas.keys():
+                    schemas[schema] = node
+                if schema not in self.schemas:
+                    self.addSchema(schema)
+                err = self.updateNodeIndex(node, schema)
             except core.tree.NoSuchNodeError:
                 # we ignore this exception, and mark the node
                 # non-dirty anyway, to prevent it from blocking
@@ -478,11 +498,9 @@ class FtsSearcher:
                 print "error for id", node.id
             node.cleanDirty()
 
-        #t2 = time.time()
         for key in schemas:
-           self.nodeToSchemaDef(schemas[key], key)
-        #print "%f seconds for adding new index" % (t2-t1)
-        #print "%f seconds for updating schema definitions" % (time.time()-t2)
+            self.nodeToSchemaDef(schemas[key], key)
+
         return err
    
     

@@ -91,54 +91,6 @@ frontgarbage = re.compile(r'^\W*', re.UNICODE)
 backgarbage = re.compile(r'[ \n\t}"\',]*$')
 xspace = re.compile(r'\s+')
 
-subscript = re.compile(r'(?<=\$_)(.*?)(?=\$)')
-superscript = re.compile(r'(?<=\$\^)(.*?)(?=\$)')
-script_prefix = {'subscript': '$_',
-                 'superscript': '$^'}
-scripts_mapping = {'subscript': {'0': '\xe2\x82\x80',
-                                 '1': '\xe2\x82\x81',
-                                 '2': '\xe2\x82\x82',
-                                 '3': '\xe2\x82\x83',
-                                 '4': '\xe2\x82\x84',
-                                 '5': '\xe2\x82\x85',
-                                 '6': '\xe2\x82\x86',
-                                 '7': '\xe2\x82\x87',
-                                 '8': '\xe2\x82\x88',
-                                 '9': '\xe2\x82\x89',
-                                 '+': '\xe2\x82\x8a',
-                                 '-': '\xe2\x82\x8b',
-                                 '=': '\xe2\x82\x8c',
-                                 '(': '\xe2\x82\x8d',
-                                 ')': '\xe2\x82\x8e',
-                                 'a': '\xe2\x82\x90',
-                                 'e': '\xe2\x82\x91',
-                                 'o': '\xe2\x82\x92',
-                                 'x': '\xe2\x82\x93',
-                                 'h': '\xe2\x82\x95',
-                                 'k': '\xe2\x82\x96',
-                                 'l': '\xe2\x82\x97',
-                                 'm': '\xe2\x82\x98',
-                                 'n': '\xe2\x82\x99',
-                                 'p': '\xe2\x82\x9a',
-                                 's': '\xe2\x82\x9b',
-                                 't': '\xe2\x82\x9c'},
-                   'superscript': {'0': '\xe2\x81\xb0',
-                                   '1': '\xc2\xb9',
-                                   '2': '\xc2\xb2',
-                                   '3': '\xc2\xb3',
-                                   '4': '\xe2\x81\xb4',
-                                   '5': '\xe2\x81\xb5',
-                                   '6': '\xe2\x81\xb6',
-                                   '7': '\xe2\x81\xb7',
-                                   '8': '\xe2\x81\xb8',
-                                   '9': '\xe2\x81\xb9',
-                                   '+': '\xe2\x81\xba',
-                                   '-': '\xe2\x81\xbb',
-                                   '=': '\xe2\x81\xbc',
-                                   '(': '\xe2\x81\xbd',
-                                   ')': '\xe2\x81\xbe',
-                                   'i': '\xe2\x81\xb1',
-                                   'n': '\xe2\x81\xbf'}}
 
 counterpiece = {"{": "}", '"': '"', "'": "'"}
 
@@ -323,15 +275,6 @@ def getentries(filename):
             content = content.replace("{\"u}", "\xc3\xbc").replace("{\"a}", "\xc3\xa4").replace("{\"o}", "\xc3\xb6") \
                 .replace("{\"U}", "\xc3\x9c").replace("{\"A}", "\xc3\x84").replace("{\"O}", "\xc3\x96")
 
-            #substitute subscripts and superscripts
-            for script_type in scripts_mapping.keys():
-                for match in re.findall(eval(script_type), content):
-                    replacement = ''
-                    for character in match:
-                        replacement += scripts_mapping[script_type][character]
-                    content = content.replace('{0}{1}$'.format(script_prefix[script_type],
-                                                               match),
-                                              replacement, 1)
 
             #content = content.replace("\\\"u","Ã¼").replace("\\\"a","Ã¤").replace("\\\"o","Ã¶") \
             #                 .replace("\\\"U","Ãœ").replace("\\\"A","Ã„").replace("\\\"O","Ã–")

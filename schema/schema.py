@@ -29,10 +29,13 @@ from utils.log import logException
 from core.config import *
 from core.xmlnode import getNodeXML, readNodeXML
 from core.db.database import getConnection
-from core.metatype import Context
+from core.metatype import Context, Metatype
 import datetime
+import inspect
+import importlib
+import pkgutil
 
-log = logging.getLogger('backend')
+log = logg = logging.getLogger('backend')
 
 requiredoption = []
 requiredoption += [Option("Kein Pflichtfeld", "notmandatory", "0", "/img/req2_opt.png")]
@@ -1240,41 +1243,38 @@ class Maskitem(tree.Node):
     def setSeparator(self, value):
         self.set("separator", value)
 
+
 mytypes = {}
 
-def pluginClass(newclass):
-    global mytypes
-    name = newclass.__name__
-    if name.startswith("m_"):
-        name = name[2:]
-    mytypes[name] = newclass
-    if hasattr(newclass(), "getLabels"):
-        translation.addLabels(newclass().getLabels())
 
-def pluginModule(module):
-    class Dummyclass:
-        pass
-    for name,obj in module.__dict__.items():
-        if name.startswith("m_") and type(obj) == type(Dummyclass):
-            pluginClass(obj)
+def _metatype_class(name, cls):
+    name = name[2:] if name.startswith("m_") else name
+    logg.debug("loading metatype class %s", name)
+    mytypes[name] = cls
+    if hasattr(cls(), "getLabels"):
+        translation.addLabels(cls().getLabels())
+
+
+def load_metatype_module(prefix_path, pkg_dir):
+    logg.info("loading modules from '%s', prefix path %s", pkg_dir, prefix_path)
+    if prefix_path not in sys.path:
+        logg.info("%s added to pythonpath", prefix_path)
+        sys.path.append(prefix_path)
+    for _, name, _ in pkgutil.iter_modules([os.path.join(prefix_path, pkg_dir)]):
+        module = importlib.import_module(pkg_dir.replace("/", ".") + "." + name)
+        def is_metatype_class(obj):
+            return inspect.isclass(obj) and issubclass(obj, Metatype) and obj.__name__ != "Metatype"
+        for name, cls in inspect.getmembers(module, is_metatype_class):
+            _metatype_class(name, cls)
+
 
 def init():
     pkg_dirs = ["schema/mask", "metadata"]
-    for path in pkg_dirs:
-        abspath =  os.walk(os.path.join(config.basedir, path))
-        for root, dirs, files in abspath:
-            for name in files:
-                if name.endswith(".py") and name!="__init__.py":
-                    name = name[:-3]
-                    if root.endswith('metadata'):
-                        pluginModule(__import__("metadata."+name).__dict__[name])
-                    if root.endswith('mask'):
-                        pluginModule(__import__("schema.mask."+name).__dict__["mask"].__dict__[name])
+    for pkg_dir in pkg_dirs:
+        load_metatype_module(config.basedir, pkg_dir)
+
 
 def getMetadataType(mtype):
-    global mytypes
-    if len(mytypes)==0:
-        init(os.walk(os.path.join(config.basedir, 'schema/mask')))
     if mtype in mytypes:
         return mytypes[mtype]()
     else:
@@ -1282,9 +1282,6 @@ def getMetadataType(mtype):
 
 def getMetaFieldTypeNames():
     ret = {}
-    global mytypes
-    if len(mytypes)==0:
-        init(os.walk(os.path.join(config.basedir, 'metadata')))
     for key in mytypes.keys():
         if "meta" in str(mytypes[key]):
             ret[key] = "fieldtype_"+key

@@ -26,6 +26,7 @@ import re
 from utils.utils import esc
 from utils.log import logException
 from utils.pathutils import isDescendantOf
+from utils.utils import modify_tex
 from core.metatype import Metatype, charmap
 from core.translation import t
 from export.exportutils import runTALSnippet
@@ -156,6 +157,9 @@ class m_text(Metatype):
             value = esc(value)
 
         # replace variables
+        #substitute TeX sub/super-scripts with <sub>/<sup> html tags
+        value = modify_tex(value, option='html')
+
         for var in re.findall( r'&lt;(.+?)&gt;', value ):
             if var=="att:id":
                 value = value.replace("&lt;"+var+"&gt;", node.id)

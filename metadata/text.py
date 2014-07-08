@@ -158,7 +158,7 @@ class m_text(Metatype):
 
         # replace variables
         #substitute TeX sub/super-scripts with <sub>/<sup> html tags
-        value = modify_tex(value, option='html')
+        value = modify_tex(value, 'html')
 
         for var in re.findall( r'&lt;(.+?)&gt;', value ):
             if var=="att:id":

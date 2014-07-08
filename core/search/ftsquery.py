@@ -316,7 +316,7 @@ class FtsSearcher:
         val = val.replace(chr(0), "") + ' '
 
         #remove tex markup
-        val = modify_tex(val, option='strip')
+        val = modify_tex(val, 'strip')
   
         # files
         for file in node.getFiles():
@@ -357,7 +357,7 @@ class FtsSearcher:
                     value += node.get(item) + '|'
             else:
                 value = node.get(field.getName())
-            keyvalue += [(key, modify_tex(u(protect(value)), option='strip'))]
+            keyvalue += [(key, modify_tex(u(protect(value)), 'strip'))]
             
         sql0 = 'SELECT id FROM searchmeta where id=\''+node.id+'\''
         sql1 = 'UPDATE searchmeta SET '

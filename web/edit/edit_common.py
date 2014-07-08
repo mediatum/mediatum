@@ -171,7 +171,7 @@ def shownodelist(req, nodes, publishwarn=1, markunpublished=0, dir=None):
         unpublishedlink = "edit_content?tab=publish&id="""+uploaddir.id;
 
     return modify_tex(req.getTAL("web/edit/edit_common.html", {"notpublished": notpublished, "chkjavascript": chkjavascript, "unpublishedlink": unpublishedlink, "nodelist":nodelist, "script_array":script_array, "language":language}, macro="show_nodelist"),
-                      option='html')
+                      'html')
 
 
 def isUnFolded(unfoldedids, id):

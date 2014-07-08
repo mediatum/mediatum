@@ -85,7 +85,7 @@ replacements = {'sub': {'regex': re.compile(r'(?<=\$_)(.*?)(?=\$)'),
                         'tex': '$^%s$',
                         'html': '<sup>%s</sup>'}}
 
-def modify_tex(string, option=''):
+def modify_tex(string, option):
     """
     Swaps tex super and subscript markup ($^...$ and $_...$)
     for their html tag counterparts (<sub>...</sub> and <sup>...</sup>)

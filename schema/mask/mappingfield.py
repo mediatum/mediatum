@@ -24,7 +24,7 @@ import core.tree as tree
 
 from core.tree import Node
 from core.metatype import Metatype
-from utils.utils import esc, desc
+from utils.utils import esc, desc, modify_tex
 from utils.date import parse_date, format_date
 from schema.schema import getMetadataType
 import export.exportutils as exportutils
@@ -237,5 +237,7 @@ class m_mappingfield(Metatype):
 
         if mask.getMappingFooter()!="":
             ret += "\r\n" + mask.getMappingFooter()
+
+        ret = modify_tex(ret, 'strip')
             
         return self.replaceVars(ret, node, mask)

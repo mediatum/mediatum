@@ -79,9 +79,13 @@ def login(req):
             if req.session['return_after_login']:
                 req.request['Location'] = req.session['return_after_login']
             elif config.get("config.ssh", "") == "yes":
-                req.request["Location"] = "https://" + config.get("host.name") + "/node?id=" + tree.getRoot("collections").id
+                req.request["Location"] = ''.join(["https://",
+                                                   config.get("host.name"),
+                                                   "/node?id=",
+                                                   tree.getRoot("collections").id])
             else:
-                req.request["Location"] = "/node?id=" + tree.getRoot("collections").id
+                req.request["Location"] = ''.join(["/node?id=",
+                                                   tree.getRoot("collections").id])
             return httpstatus.HTTP_MOVED_TEMPORARILY
         else:
             error = 1
@@ -91,10 +95,11 @@ def login(req):
     else:
         if '/edit' in req.header[6]:
             #returns the user to /edit/ instead of /edit/edit_content?id=604993, which has no sidebar
-            req.session['return_after_login'] = req.header[6][9:-22]
-            print req.session['return_after_login']
+            req.session['return_after_login'] = '/'.join(req.header[6]
+                                                         .split(': ')[-1]
+                                                         .split('/')[:-1])
         else:
-            req.session['return_after_login'] = req.header[6][9:]
+            req.session['return_after_login'] = req.header[6].split(': ')[-1]
 
     # standard login form
     user = users.getUserFromRequest(req)

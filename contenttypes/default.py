@@ -447,21 +447,16 @@ class Default(tree.Node):
 
     def getFullView(self, language):
         masks = self.getMasks(type="fullview", language=language)
-        print "l1:", masks
         if len(masks) > 1:
             for m in masks:
                 if m.getLanguage() == language:
-                    print "ret2"
                     return m
             for m in masks:
                 if m.getLanguage() in ["", "no"]:
-                    print "ret3"
                     return m
         elif len(masks) == 0:
-            print "ret 4"
             return tree.Node("", type="mask")
         else:
-            print "ret 5"
             return masks[0]
 
     def getSysFiles(self):

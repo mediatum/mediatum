@@ -23,15 +23,18 @@ import logging
 import time
 
 from mediatumtal import tal
+import core.acl as acl
 import core.tree as tree
 import core.config as config
+from core.translation import lang
+from core.styles import getContentStyles
 import core.users as users
-from schema.schema import getMetadataType, VIEW_DATA_ONLY
-from utils.utils import Menu
+from schema.schema import getMetadataType, VIEW_DATA_ONLY, VIEW_HIDE_EMPTY
+from utils.utils import Menu, highlight, format_filesize
 from export.exportutils import runTALSnippet, default_context
 from web.services.cache import date2string as cache_date2string
 
-languages = [lang.strip() for lang in config.get("i18n.languages").split(",") if lang.strip()]
+languages = [l.strip() for l in config.get("i18n.languages").split(",") if l.strip()]
 
 # for TAL templates from mask cache
 context = default_context.copy()
@@ -88,68 +91,75 @@ def make_lookup_key(node, language=languages[0], labels=True):
 def get_maskcache_entry(lookup_key):
     try:
         res = maskcache[lookup_key]
-        maskcache_accesscount[lookup_key] = maskcache_accesscount[lookup_key] + 1
+        maskcache_accesscount[lookup_key] += 1
     except:
         res = None
     return res
 
 
 class Default(tree.Node):
-    def getTypeAlias(node):
+    def getTypeAlias(self):
         return "default"
 
-    def getOriginalTypeName(node):
+    def getOriginalTypeName(self):
         return "original"
 
-    def getCategoryName(node):
+    def getCategoryName(self):
         return "undefined"
 
-    def show_node_big(node, req, template="", macro=""):
-        return "Unknown datatype: "+node.type
+    def show_node_big(self, req, template="", macro=""):
+        mask = self.getFullView(lang(req))
+        access = acl.AccessData(req)
 
-    def show_node_image(node, language=None):
-        return tal.getTAL("contenttypes/default.html", {'children':node.getChildren().sort_by_orderpos(), 'node':node}, macro="show_node_image")
+        if template == "":
+            styles = getContentStyles("bigview", contenttype=self.getContentType())
+            if len(styles) >= 1:
+                template = styles[0].getTemplate()
+        return req.getTAL(template, {'node': self, 'metadata': mask.getViewHTML([self], VIEW_HIDE_EMPTY), 'format_size': format_filesize, 'access': access})  # hide empty elements}, macro)
 
-    def show_node_text(node, words=None, language=None, separator="", labels=0, cachetype=DEFAULT_MASKCACHE):
+    def show_node_image(self, language=None):
+        return tal.getTAL("contenttypes/default.html", {'children': self.getChildren().sort_by_orderpos(), 'node': self}, macro="show_node_image")
+
+    def show_node_text(self, words=None, language=None, separator="", labels=0, cachetype=DEFAULT_MASKCACHE):
         if cachetype not in ['shallow', 'deep']:
-            return node.show_node_text_orignal(words=words, language=language, separator=separator, labels=labels)
+            return self.show_node_text_orignal(words=words, language=language, separator=separator, labels=labels)
         elif cachetype == 'deep':
-            return node.show_node_text_deep(words=words, language=language, separator=separator, labels=labels)
+            return self.show_node_text_deep(words=words, language=language, separator=separator, labels=labels)
         else:
-            return node.show_node_text_shallow(words=words, language=language, separator=separator, labels=labels)
+            return self.show_node_text_shallow(words=words, language=language, separator=separator, labels=labels)
 
     """ format preview node text """
     # original
-    def show_node_text_orignal(node, words=None, language=None, separator="", labels=0):
+    def show_node_text_orignal(self, words=None, language=None, separator="", labels=0):
         if separator == "":
             separator = "<br/>"
         metatext = list()
-        mask = node.getMask("nodesmall")
-        for m in node.getMasks("shortview", language=language):
+        mask = self.getMask("nodesmall")
+        for m in self.getMasks("shortview", language=language):
             mask = m
 
         if mask:
             fields = mask.getMaskFields()
-            for field in mask.getViewHTML([node], VIEW_DATA_ONLY, language=language, mask=mask):
+            for field in mask.getViewHTML([self], VIEW_DATA_ONLY, language=language, mask=mask):
                 if len(field) >= 2:
                     value = field[1]
                 else:
                     value = ""
 
-                if words != None:
+                if words is not None:
                     value = highlight(value, words, '<font class="hilite">', "</font>")
 
                 if value:
                     if labels:
                         for f in fields:
                             if f.getField().getName() == field[0]:
-                                metatext.append("<b>" + f.getLabel() + ":</b> " + value)
+                                metatext.append("<b>%s:</b> %s" % (f.getLabel(), value))
                                 break
                     else:
                         if field[0].startswith("author"):
-                            value = '<span class="author">' + value + '</span>'
+                            value = '<span class="author">%s</span>' % value
                         if field[0].startswith("subject"):
-                            value = '<b>' + value + '</b>'
+                            value = '<b>%s</b>' % value
                         metatext.append(value)
         else:
             metatext.append('&lt;smallview mask not defined&gt;')
@@ -157,12 +167,12 @@ class Default(tree.Node):
         return separator.join(metatext)
 
     # deep caching
-    def show_node_text_deep(node, words=None, language=None, separator="", labels=0):
+    def show_node_text_deep(self, words=None, language=None, separator="", labels=0):
     
         def render_mask_template(node, mfs, words=None, separator="", skip_empty_fields=True):
-            '''
+            """
                mfs: [mask] + list_of_maskfields
-            '''
+            """
             res = []
             exception_count = {}
             mask = mfs[0]
@@ -243,17 +253,17 @@ class Default(tree.Node):
         if not separator:
             separator = "<br/>"
 
-        lookup_key = make_lookup_key(node, language, labels)
+        lookup_key = make_lookup_key(self, language, labels)
 
         if lookup_key in maskcache:
             mfs = maskcache[lookup_key]
-            res = render_mask_template(node, mfs, words=words, separator=separator)
-            maskcache_accesscount[lookup_key] = maskcache_accesscount[lookup_key] + 1
+            res = render_mask_template(self, mfs, words=words, separator=separator)
+            maskcache_accesscount[lookup_key] += 1
             return res
         else:
             metatext = list()
-            mask = node.getMask("nodesmall")
-            for m in node.getMasks("shortview", language=language):
+            mask = self.getMask("nodesmall")
+            for m in self.getMasks("shortview", language=language):
                 mask = m
 
             if mask:
@@ -310,19 +320,18 @@ class Default(tree.Node):
 
                 maskcache[lookup_key] = mfs
                 maskcache_accesscount[lookup_key] = 0
-                res = render_mask_template(node, mfs, words=words, separator=separator)
-                return res
+                return render_mask_template(self, mfs, words=words, separator=separator)
 
             else:
                 return '&lt;smallview mask not defined&gt;'
 
-            if words != None:
+            if words is not None:
                 value = highlight(value, words, '<font class="hilite">', "</font>")
 
             return separator.join(metatext)
 
     # shallow caching
-    def show_node_text_shallow(node, words=None, language=None, separator="", labels=0):
+    def show_node_text_shallow(self, words=None, language=None, separator="", labels=0):
         global maskcache_shallow
 
         def render_mask_template(node, mfs, words=None, separator=""):
@@ -335,21 +344,21 @@ class Default(tree.Node):
                 else:
                     value = ""
 
-                if words != None:
+                if words is not None:
                     value = highlight(value, words, '<font class="hilite">', "</font>")
 
                 if value:
                     if labels:
                         for f, f_name, f_label in labels_data:
                             if f_name == field[0]:
-                                metatext.append("<b>" + f_label + ":</b> " + value)
+                                metatext.append("<b>%s:</b> %s" % (f_label, value))
                                 break
                     else:
 
                         if field[0].startswith("author"):
-                            value = '<span class="author">' + value + '</span>'
+                            value = '<span class="author">%s</span>' % value
                         if field[0].startswith("subject"):
-                            value = '<b>' + value + '</b>'
+                            value = '<b>%s</b>' % value
                         metatext.append(value)
 
             return separator.join(metatext)
@@ -357,19 +366,18 @@ class Default(tree.Node):
         if not separator:
             separator = "<br/>"
 
-        lookup_key = make_lookup_key(node, language, labels)
+        lookup_key = make_lookup_key(self, language, labels)
 
         if lookup_key in maskcache_shallow:
             mfs = maskcache_shallow[lookup_key]
-            res = render_mask_template(node, mfs, words=words, separator=separator)
-            return res
+            return render_mask_template(self, mfs, words=words, separator=separator)
         else:
             # this list will be cached
             to_be_cached = []
 
             metatext = list()
-            mask = node.getMask("nodesmall")
-            for m in node.getMasks("shortview", language=language):
+            mask = self.getMask("nodesmall")
+            for m in self.getMasks("shortview", language=language):
                 mask = m
 
             if mask:
@@ -389,27 +397,27 @@ class Default(tree.Node):
                     pass
                     labels_data = []
 
-                for field in mask.getViewHTML([node], VIEW_DATA_ONLY, language=language, mask=mask):
+                for field in mask.getViewHTML([self], VIEW_DATA_ONLY, language=language, mask=mask):
                     if len(field) >= 2:
                         value = field[1]
                     else:
                         value = ""
 
-                    if words != None:
+                    if words is not None:
                         value = highlight(value, words, '<font class="hilite">', "</font>")
 
                     if value:
                         if labels:
                             for f, f_name, f_label in labels_data:
                                 if f_name == field[0]:
-                                    metatext.append("<b>" + f_label + ":</b> " + value)
+                                    metatext.append("<b>%s:</b> %s" % (f_label, value))
                                     break
                         else:
 
                             if field[0].startswith("author"):
-                                value = '<span class="author">' + value + '</span>'
+                                value = '<span class="author">%s</span>' % value
                             if field[0].startswith("subject"):
-                                value = '<b>' + value + '</b>'
+                                value = '<b>%s</b>' % value
                             metatext.append(value)
 
                 to_be_cached = [mask, fields, labels_data]
@@ -422,50 +430,60 @@ class Default(tree.Node):
     def isContainer(node):
         return 0
 
-    def getTreeIcon(node):
+    def getTreeIcon(self):
         return ""
 
-    def isSystemType(node):
+    def isSystemType(self):
         return 0
 
-    def get_name(node):
-        return node.name
+    def get_name(self):
+        return self.name
 
-    def getTechnAttributes(node):
+    def getTechnAttributes(self):
         return {}
 
-    def has_object(node):
+    def has_object(self):
         return True
 
-    def getFullView(node, language):
-        masks = node.getMasks(type="fullview", language=language)
+    def getFullView(self, language):
+        masks = self.getMasks(type="fullview", language=language)
+        print "l1:", masks
         if len(masks) > 1:
             for m in masks:
                 if m.getLanguage() == language:
+                    print "ret2"
                     return m
             for m in masks:
                 if m.getLanguage() in ["", "no"]:
+                    print "ret3"
                     return m
         elif len(masks) == 0:
+            print "ret 4"
             return tree.Node("", type="mask")
         else:
+            print "ret 5"
             return masks[0]
 
-    def getSysFiles(node):
+    def getSysFiles(self):
         return []
 
-    def buildLZAVersion(node):
+    def buildLZAVersion(self):
         print "no lza builder implemented"
 
-    def getEditMenuTabs(node):
+    def getEditMenuTabs(self):
         menu = list()
         try:
             submenu = Menu("menuglobals", "..")
             menu.append(submenu)
-
         except TypeError:
             pass
-        return  ";".join([m.getString() for m in menu])
+        return ";".join([m.getString() for m in menu])
 
-    def getDefaultEditTab(node):
+    def getDefaultEditTab(self):
         return "view"
+
+    def childcount(self):
+        return 0
+
+    def getLabel(self):
+        return self.getName()

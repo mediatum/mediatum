@@ -120,6 +120,13 @@ class Video(default.Default):
 
     """ format big view with standard template """
     def show_node_big(node, req, template="", macro=""):
+
+        #if the file format is not flash video (edit area)
+        if 'contentarea' not in req.session:
+            files = [f.retrieveFile() for f in node.getFiles()]
+            if len(files) == 1 and 'flv' != files[0].split('/')[-1].split('.')[-1]:
+                return req.error(415, "Video is not in Flash Video format")
+
         if template=="":
             styles = getContentStyles("bigview", contenttype=node.getContentType())
             if len(styles)>=1:

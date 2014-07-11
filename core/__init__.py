@@ -63,6 +63,8 @@ import core.acl as acl
 
 log.info("Initializing backend...")
 
+from contenttypes.default import Default
+tree.registerNodeClass("file", Default)
 from contenttypes.directory import Directory
 tree.registerNodeClass("directory", Directory)
 from contenttypes.project import Project

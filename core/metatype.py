@@ -36,7 +36,7 @@ class Context:
         self.lock = lock
 
         
-class Metatype:
+class Metatype(object):
 
     joiner = '\n'
 

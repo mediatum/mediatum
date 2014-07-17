@@ -84,7 +84,10 @@ def getContent(req, ids):
     for s in schemes:
         schemeNames2LongNames[s.getName()]=s.getLongName()
 
-    currentSchemaLongName = schemeNames2LongNames[currentSchema]
+    try:
+        currentSchemaLongName = schemeNames2LongNames[currentSchema]
+    except KeyError:
+        currentSchemaLongName = ''
 
     # find out which schema allows which datatype, and hence,
     # which overall data types we should display
@@ -174,5 +177,5 @@ def getContent(req, ids):
         d['schemes'] = available_schemes
         d['datatypes'] = admissible_datatypes #dtypes
 
-    return req.getTAL("web/edit/modules/changeschema.html", d ,macro="changeschema_popup")
+    return req.getTAL("web/edit/modules/changeschema.html", d, macro="changeschema_popup")
 

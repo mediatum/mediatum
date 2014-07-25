@@ -261,10 +261,22 @@ class Image(default.Default):
     def getSysFiles(node):
         return ["original","thumb","presentati","image","presentation", "zoom"]
 
+    """ make a copy of the svg file in png format """
+    def svg_to_png(node, filename, imgfile):
+        #convert svg to png (imagemagick + ghostview)
+        os.system("convert -alpha off -colorspace RGB %s -background white %s" % (filename, imgfile))
+
     """ postprocess method for object type 'image'. called after object creation """
     def event_files_changed(node):
         print "Postprocessing node",node.id
         if "image" in node.type:
+            for f in node.getFiles():
+                if f.getName().lower().endswith('svg'):
+                    node.svg_to_png(f.retrieveFile(), f.retrieveFile()[:-4]+".png")
+                    node.removeFile(f)
+                    node.addFile(FileNode(name=f.retrieveFile(), type="original", mimetype=f.mimetype))
+                    node.addFile(FileNode(name=f.retrieveFile()[:-4]+".png", type="image", mimetype="image/png"))
+                    break
             orig = 0
             thumb = 0
             for f in node.getFiles():

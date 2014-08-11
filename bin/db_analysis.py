@@ -18,15 +18,11 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from __future__ import division
 import sys
 import difflib
 import time
-import sqlite3
-import pickle
-import json
 from collections import namedtuple
-from pprint import pprint as pp
-
 sys.path += ['../..', '../', '.']
 
 import core.tree as tree
@@ -36,14 +32,17 @@ import utils.utils
 import utils.mail as mail
 import logging
 
+#Configurable, ;-separated
+MAIL_RECIPIENTS = 'andrew.darrohn@tum.de;ga39lit@mytum.de'
 
 SearchField = namedtuple('SearchField', 'position name')
 searcher = tree.searcher
 results = {}
+schema_summary = {}
 schema_db_contents = {}
 schema_field_mapping = {}
 zero_index_schema_field_mapping = {}
-omitted_db_fields = ('search-',)
+OMITTED_DB_FIELDS = ('search-',)
 utils.utils.normalization_items = {"chars": [("00e4", "ae"),
                                              ("00c4", "Ae"),
                                              ("00df", "ss"),
@@ -56,69 +55,14 @@ utils.utils.normalization_items = {"chars": [("00e4", "ae"),
                                    "words": []}
 
 
-def is_indexed(schema, db_type, id):
-    """
-    Checks to see if the node is indexed in the corresponding database
-
-    @param schema: str the name of the schema
-    @param db_type: str one of the following: 'full', 'ext', 'text'
-    @param id: str the node id
-    @return: bool True or False
-    """
-    if db_type == 'text':
-        return id in schema_db_contents[schema][db_type]
-    else:
-        return id in schema_db_contents[schema][db_type].keys()
-
-
-def calculate_percentage(summary_list):
-    """
-    Calculates an average from a given list whose contents are either 0,1 or True/False
-    @param summary_list: list of summary values
-    @return: float percentage as decimal
-    """
-    if len(summary_list) == 0:
-        return 0
-    else:
-        return float(sum(summary_list)) / len(summary_list)
-
-
-def get_content_full(schema, db_type, id):
-    """
-    Retrieves content from the
-    @param schema:
-    @param db_type:
-    @param id:
-    @return:
-    """
-    if not is_indexed(schema, db_type, id):
-        return {}
-    else:
-        return schema_db_contents[schema][db_type][id]
-
-
-def get_content_ext(schema, db_type, node):
-    """
-
-    @param schema:
-    @param db_type:
-    @param node:
-    @return:
-    """
-    if not is_indexed(schema, db_type, node.id):
-        return {}
-    else:
-        return compare_extended_fields(schema, node)
-
-
 def get_search_sql(_type):
     """
-
-    @param _type:
-    @return:
+    Returns the necessary SQl to search the respective databases
+    @param _type: String, type of search query
+    @return: String
     """
-    if _type == 'full_content':
-        return 'select id, value from fullsearchmeta'
+    if _type == 'full_indexed':
+        return 'select id from fullsearchmeta'
     if _type == 'ext_content':
         return 'select %s from searchmeta'
     if _type == 'ext_field_names':
@@ -129,9 +73,10 @@ def get_search_sql(_type):
 
 def get_schema_fields(schema):
     """
-
-    @param schema:
-    @return:
+    Fetches the schema fields from the search database and returns a list of SearchField NamedTuples
+    with attributes 'name' and 'position'.
+    @param schema: String, name of the schema
+    @return: List
     """
     if schema not in schema_field_mapping:
         #read as: keep all fields which do not contain 'search'- or 'fulltext' in their name and then sort
@@ -144,103 +89,71 @@ def get_schema_fields(schema):
                                                                             'ext'),
                                                            key=lambda x: int(x[0]))
                        if all(unwanted_field not in tup[1]
-                              for unwanted_field in omitted_db_fields)]
+                              for unwanted_field in OMITTED_DB_FIELDS)]
 
         schema_field_mapping[schema] = field_names
 
     return schema_field_mapping[schema]
 
+
 def get_zero_index_schema_fields(schema):
     """
-
-    @param schema:
-    @return:
+    Returns a zero indexed List of SearchField NamedTuples.
+    @param schema: String, name of the schema
+    @return: List
     """
     if schema not in zero_index_schema_field_mapping:
         zero_index_schema_field_mapping[schema] = [SearchField(position,
-                                                               tup.name) for position, tup in enumerate(get_schema_fields(schema))]
+                                                               tup.name) for position, tup in
+                                                   enumerate(get_schema_fields(schema))]
 
     return zero_index_schema_field_mapping[schema]
 
-def compare_extended_fields(schema, node):
-    """
-    @param schema:
-    @param node:
-    @return:
-    """
-    content = {}
 
+def get_extended_field_ratio(schema, node, db_content):
+    """
+    Compares the values in the ext search db and the values in the node instance and returns
+    a ratio of likeness between the two values.
+    @param schema: String, name of the schema
+    @param node: Node, an core.tree node instance
+    @return: Float
+    """
+    ratios = []
 
     field_names = get_zero_index_schema_fields(schema)
-
-    db_content = schema_db_contents[schema]['ext'][node.id]
 
     for field in field_names:
         node_value = normalize_utf8(modify_tex(u(protect(node.get(field.name))), 'strip'))
         db_value = str(db_content[field.position])
         equality_ratio = difflib.SequenceMatcher(None, db_value, node_value).ratio()
+        ratios.append(equality_ratio)
 
-        content[field.name] = {'search_value': db_value,
-                               'node_value': node_value,
-                               'ratio': equality_ratio}
-
-    return content
-
-
-def node_summary(id):
-    """
-
-    @param id:
-    @return:
-    """
-    node = results[str(id)]
-    avg_ratio = sum([node['ext']['content'][field]['ratio'] for field in node['ext']['content']]) / 24
-    print '{}{}{:^30}{}{}{}{:>18}{:>12}{}{:>18}{:>12}{}{:>18}{:>12}{}{:>18}{:>12}{}{:>18}{:>12}{}{:>18}{:>12.2%}'.format(
-        '*' * 30,
-        '\n',
-        'SUMMARY',
-        '\n',
-        '*' * 30,
-        '\n',
-        'Node',
-        str(id),
-        '\n',
-        'Schema',
-        node['schema'],
-        '\n',
-        'full',
-        node['full']['is_indexed'],
-        '\n',
-        'ext',
-        node['ext']['is_indexed'],
-        '\n',
-        'text',
-        node['text']['is_indexed'],
-        '\n',
-        'Ratio',
-        avg_ratio)
+    return sum(ratios) / len(ratios)
 
 
 def all_schemas_summary():
-    schema_summary = {}
-    for schema in searcher.schemas:
-        schema_summary[schema] = {'ext': {'percentage': [],
-                                          'ratio': []},
-                                  'full': [],
-                                  'text': []}
+    """
+    Formats the data in the schema_summary dict into a table, the content of which
+    are ratios regarding the completeness and correctness of the search databases
+    where each row corresponds to a particular schema.
+    Example Output
 
-    for node in results.keys():
-        if results[node]['ext']['is_indexed']:
-            schema_summary[tree.getNode(node).getSchema()]['ext']['ratio'].append(
-                sum([results[node]['ext']['content'][field]['ratio'] for field in results[node]['ext']['content']]) / len(
-                    results[node]['ext']['content'].keys()))
-        schema_summary[tree.getNode(node).getSchema()]['ext']['percentage'].append(
-            results[node]['ext']['is_indexed'])
-        schema_summary[tree.getNode(node).getSchema()]['full'].append(
-            results[node]['full']['is_indexed'])
-        schema_summary[tree.getNode(node).getSchema()]['text'].append(
-            results[node]['text']['is_indexed'])
+    ****************************************************************************************************
+                                               SCHEMA SUMMARY
+    ****************************************************************************************************
+    Schema                                        FULL           EXT            EXT_RATIO           TEXT
+    ----------------------------------------------------------------------------------------------------
+    schema_name                               100.00%        100.00%             100.00%         100.00%
 
+    Explained:
+    Schema: the name of the schema
+    Full: percentage of documents of the schema type which are in the full_search database
+    EXT: percentage of documents of the schema type which are in the ext_search database
+    EXT_RATIO: ratio of similarity between fields in the search database and the values fetched via tree.node.get()
+    TEXT: percentage of documents of the schema type which are in the text_search database
+
+    @return: String
+    """
     output = '{}{}{:^100}{}{}{}{:46}{:15}{:15}{:20}{:15}{}{}{}'.format('*' * 100,
                                                                        '\n',
                                                                        'SCHEMA SUMMARY',
@@ -257,14 +170,10 @@ def all_schemas_summary():
                                                                        '\n')
     for schema in schema_summary.keys():
         output += '{:35}{:>15.2%}{:>15.2%}{:>20.2%}{:>15.2%}{}'.format(schema,
-                                                                       calculate_percentage(
-                                                                           schema_summary[schema]['full']),
-                                                                       calculate_percentage(
-                                                                           schema_summary[schema]['ext']['percentage']),
-                                                                       calculate_percentage(
-                                                                           schema_summary[schema]['ext']['ratio']),
-                                                                       calculate_percentage(
-                                                                           schema_summary[schema]['text']),
+                                                                       schema_summary[schema]['full'],
+                                                                       schema_summary[schema]['ext']['ratio'],
+                                                                       schema_summary[schema]['ext']['field_ratio'],
+                                                                       schema_summary[schema]['text'],
                                                                        '\n')
 
     return output
@@ -272,62 +181,62 @@ def all_schemas_summary():
 
 def main():
     """
-
-    @return:
+    This script attempts to give an overview of the completeness and correctness of the
+    search databases. The report will be generated by the script and sent to the emails
+    which are set in the EMAIL_RECIPIENTS variable.
     """
     t = time.time()
-    published_nodes = (node for node in tree.getNode(604993).getAllChildren() if not node.isContainer())
+    published_nodes = set([int(node.id) for node in tree.getNode(604993).getAllChildren() if not node.isContainer()])
 
     for schema in searcher.schemas:
-        schema_db_contents[schema] = {'full': {},
-                                      'ext': {},
-                                      'text': {}}
+        published_schema = published_nodes.intersection(set([int(nid[0]) for nid in
+                                                             tree.db.runQuery(
+                                                                 """select distinct(id) from node where type like "%{}%" """.format(
+                                                                     schema))]))
+        if len(published_schema) == 0:
+            search_full_ratio = 0
+            search_text_ratio = 0
+            search_ext_ratio = 0
+            search_ext_field_ratio = 0
 
-        full = searcher.execute(get_search_sql('full_content'),
-                                schema,
-                                'full')
-
-        if not full:
-            full_processed = {}
         else:
-            full_processed = {node[0]: node[1:][0] for node in full}
+            search_full_ratio = len(published_schema.intersection(
+                set([int(nid[0]) for nid in searcher.execute(get_search_sql('full_indexed'),
+                                                             schema,
+                                                             'full')]))) / len(published_schema)
 
-        ext = searcher.execute(get_search_sql('ext_content') %
-                               (', '.join(['id'] + ['field' + db_field.position for
-                                                    db_field in
-                                                    get_schema_fields(schema)])),
-                               schema,
-                               'ext')
-        if not ext:
-            ext_processed = {}
-        else:
-            ext_processed = {node[0]: node[1:] for node in ext}
+            search_text_ratio = len(published_schema.intersection(
+                set([int(nid[0]) for nid in searcher.execute(get_search_sql('text_indexed'),
+                                                             schema,
+                                                             'text')]))) / len(published_schema)
 
-        schema_db_contents[schema] = {'full': full_processed,
-                                      'ext': ext_processed,
-                                      'text': [id[0] for id in searcher.execute(get_search_sql('text_indexed'),
-                                                                                schema,
-                                                                                'text')]}
+            ext_content = searcher.execute(get_search_sql('ext_content') %
+                                           (', '.join(['id'] + ['field' + db_field.position for
+                                                                db_field in
+                                                                get_schema_fields(schema)])),
+                                           schema,
+                                           'ext')
 
-    for node in published_nodes:
-        schema = node.getSchema()
+            if not ext_content:
+                ext_processed = {}
+            else:
+                ext_processed = {node[0]: node[1:] for node in ext_content if int(node[0]) in published_schema}
 
-        if schema not in searcher.schemas:
-            continue
-        else:
-            results[node.id] = {'schema': schema,
-                                'full': {'is_indexed': is_indexed(schema,
-                                                                  'full',
-                                                                  node.id),
-                                         'content': get_content_full(schema, 'full', node.id)},
+            search_ext_ratio = len(ext_processed) / len(published_schema)
 
-                                'ext': {'is_indexed': is_indexed(schema,
-                                                                 'ext',
-                                                                 node.id),
-                                        'content': get_content_ext(schema, 'ext', node)},
-                                'text': {'is_indexed': is_indexed(schema,
-                                                                  'text',
-                                                                  node.id)}}
+            ext_field_ratios = []
+            for nid in ext_processed:
+                ext_field_ratios.append(get_extended_field_ratio(schema, tree.getNode(nid), ext_processed[nid]))
+
+            if len(ext_field_ratios) == 0:
+                search_ext_field_ratio = 0
+            else:
+                search_ext_field_ratio = sum(ext_field_ratios) / len(ext_field_ratios)
+
+        schema_summary[schema] = {'ext': {'ratio': search_ext_ratio,
+                                          'field_ratio': search_ext_field_ratio},
+                                  'full': search_full_ratio,
+                                  'text': search_text_ratio}
 
     result = all_schemas_summary()
     print '%s sec to complete' % (time.time() - t)
@@ -335,8 +244,8 @@ def main():
 
     try:
         mailtext = result
-        mail.sendmail('andrew.darrohn@tum.de',
-                      'andrew.darrohn@tum.de',
+        mail.sendmail('mediatum@tum.de',
+                      MAIL_RECIPIENTS,
                       'Schema Analysis is Finished',
                       mailtext)
 
@@ -346,6 +255,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-

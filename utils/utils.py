@@ -455,6 +455,9 @@ def getMimeType(filename):
     elif filename.endswith(".tiff"):
         mimetype = "image/tiff"
         type = "image"
+    elif filename.endswith(".svg"):
+        mimetype = "image/svg+xml"
+        type = "image"
     elif filename.endswith(".pdf"):
         mimetype = "application/pdf"
         type = "document"

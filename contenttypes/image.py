@@ -172,12 +172,16 @@ def getJpegSection(image, section): # section character
 
 
 def dozoom(node):
+    b = 0
+    svg = 0
     for file in node.getFiles():
         if file.getType()=="zoom":
-            return 1
-    if node.get("width") and node.get("height") and (int(node.get("width"))>2000 or int(node.get("height"))>2000):
-        return 1
-    return 0
+            b = 1
+        if file.getName().lower().endswith('svg') and file.type == "original":
+            svg = 1
+    if node.get("width") and node.get("height") and (int(node.get("width"))>2000 or int(node.get("height"))>2000) and not svg:
+        b = 1
+    return b
 
     
 """ image class for internal image-type """
@@ -261,10 +265,23 @@ class Image(default.Default):
     def getSysFiles(node):
         return ["original","thumb","presentati","image","presentation", "zoom"]
 
+    """ make a copy of the svg file in png format """
+    def svg_to_png(node, filename, imgfile):
+        #convert svg to png (imagemagick + ghostview)
+        os.system("convert -alpha off -colorspace RGB %s -background white %s" % (filename, imgfile))
+
     """ postprocess method for object type 'image'. called after object creation """
     def event_files_changed(node):
         print "Postprocessing node",node.id
         if "image" in node.type:
+            for f in node.getFiles():
+                if f.getName().lower().endswith('svg'):
+                    node.svg_to_png(f.retrieveFile(), f.retrieveFile()[:-4]+".png")
+                    node.removeFile(f)
+                    node.addFile(FileNode(name=f.retrieveFile(), type="original", mimetype=f.mimetype))
+                    node.addFile(FileNode(name=f.retrieveFile(), type="image", mimetype=f.mimetype))
+                    node.addFile(FileNode(name=f.retrieveFile()[:-4]+".png", type="tmppng", mimetype="image/png"))
+                    break
             orig = 0
             thumb = 0
             for f in node.getFiles():
@@ -301,7 +318,7 @@ class Image(default.Default):
 
             # retrieve technical metadata.
             for f in node.getFiles():
-                if f.type=="image":
+                if (f.type=="image" and not f.getName().lower().endswith("svg")) or f.type=="tmppng":
                     width,height = getImageDimensions(f.retrieveFile())
                     node.set("origwidth", width)
                     node.set("origheight", height)
@@ -312,7 +329,7 @@ class Image(default.Default):
 
             if thumb==0:
                 for f in node.getFiles():
-                    if f.type=="image":
+                    if (f.type=="image" and not f.getName().lower().endswith("svg")) or f.type=="tmppng":
                         path,ext = splitfilename(f.retrieveFile())
                         basename = hashlib.md5(str(random.random())).hexdigest()[0:8]
                        
@@ -383,6 +400,11 @@ class Image(default.Default):
             except:
                 None
 
+            for f in node.getFiles():
+                if f.getName().lower().endswith("png") and f.type == "tmppng":
+                    node.removeFile(f)
+                    break
+
     """ list with technical attributes for type image """
     def getTechnAttributes(node):
         return {"Standard":{"creator":"Ersteller",
@@ -452,7 +474,8 @@ class Image(default.Default):
     """ fullsize popup-window for image node """
     def popup_fullsize(node, req):
         access = AccessData(req)
-
+        d = {}
+        svg = 0
         if (not access.hasAccess(node, "data") and not dozoom(node)) or not access.hasAccess(node,"read"):
             req.write(t(req, "permission_denied"))
             return
@@ -460,9 +483,12 @@ class Image(default.Default):
         for file in node.getFiles():
             if file.getType()=="zoom":
                 zoom_exists = 1
-                break
+            if file.getName().lower().endswith('svg') and file.type == "original":
+                svg = 1
 
-        d = {}
+        d["svg"] = svg
+        d["width"] = node.get("origwidth")
+        d["height"] = node.get("origheight")
         d["key"] = req.params.get("id", "")
         # we assume that width==origwidth, height==origheight
         d['flash'] = dozoom(node) and zoom_exists

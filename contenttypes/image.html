@@ -47,20 +47,8 @@
 
             function load_svg(wo, ho){
                 getSize();
-                if (wo > 2000 || ho > 2000) {
-                    wo = wo / 2;
-                    ho = ho / 2;
-                }
                 imageW = wo;
                 imageH = ho;
-
-                if (winW < imageW || winH < imageH){
-                    factor = winH / (imageH+20);
-
-                    if (factor > winW/ (imageW)){
-                        factor = winW / (imageW+20);
-                    }
-                }
                 zoom(0);
             }
 
@@ -108,7 +96,7 @@
         
     <body tal:condition="python:not flash and svg"
           tal:attributes="onload python:'load_svg(\''+width+'\', \''+height+'\')'" style="padding: 0px; border: 0px; margin: 0px;">
-        <div id="nav" align="right" name="nav" style="position:absolute; width: 300px; height:200px; margin:5px;">
+        <div id="nav" align="left" name="nav" style="position:absolute; width: 300px; height:200px; margin:5px;">
             <a href="#" onclick="zoom(1);" i18n:attributes="title popup_fullview_decrease"><img src="/img/pmud-minus.png" border="0"/></a>
             <span id="zoom_val" style="border:1px solid silver; background-color:white; width: 40px; text-align: right;">100%</span>
             <a href="#" onclick="zoom(-1);" i18n:attributes="title popup_fullview_increase"><img src="/img/pmud-plus.png" border="0"/></a>

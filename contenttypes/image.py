@@ -84,6 +84,7 @@ def makeThumbNail(image, thumb):
 
 """ make presentation format (png) """
 def makePresentationFormat(image, thumb):
+    #import pdb; pdb.set_trace()
     import Image,ImageDraw
     if isnewer(thumb,image):
         return
@@ -112,7 +113,12 @@ def makePresentationFormat(image, thumb):
             newheight = 320
             newwidth = width*newheight/height
         pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
-    pic.save(thumb, "jpeg")
+
+    try:
+        pic.save(thumb, "jpeg")
+    except IOError:
+        pic.convert('RGB').save(thumb, "jpeg")
+
     if os.path.exists(tmpjpg):
         os.unlink(tmpjpg)
 

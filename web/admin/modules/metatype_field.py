@@ -20,12 +20,11 @@
 
 import re
 import inspect
-import core.tree as tree
 
+import core.tree as tree
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
-from schema.schema import getMetaType, fieldoption, getMetaFieldTypeNames, getMetaField, getFieldsForMeta, dateoption, requiredoption, getMetaFieldTypes, getMetadataType
+from schema.schema import getMetaType, getMetaFieldTypeNames, getMetaField, getFieldsForMeta, getMetadataType
 from core.translation import lang, t
-from core.tree import Node
 
 
 """ list all fields of given metadatatype """
@@ -194,4 +193,3 @@ def FieldDetail(req, pid, id, err=0):
             v["adminfields"] .append(f.getMaskEditorHTML(v["field"], metadatatype=metadatatype, language=lang(req)))
      
     return req.getTAL("web/admin/modules/metatype_field.html", v, macro="modify_field")
-    

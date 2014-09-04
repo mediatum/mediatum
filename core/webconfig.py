@@ -245,12 +245,3 @@ def flush(req):
     initContexts()
     import core.__init__
     print "all caches cleared"
-
-def startWebServer():
-    initContexts()
-    athana.setThreads(int(config.get("host.threads","8")))
-    z3950port = None
-    if config.get('z3950.activate','').lower()=='true':
-        z3950port = int(config.get("z3950.port","2021"))
-    athana.run(int(config.get("host.port","8081")), z3950port)
-

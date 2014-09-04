@@ -18,21 +18,17 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from collections import OrderedDict
-import os
-import sys
-import traceback
 import time
 
 import core.tree as tree
 import core.users as users
 import core.config as config
-import core.search.query
 from utils.log import logException
 
 from schema.schema import getMetadataType
-from utils.utils import getCollection, getDirectory, Link, iso2utf8, isCollection, isDirectory, isParentOf
-from core.acl import AccessData,getRootAccess
-from core.translation import translate, lang, t
+from utils.utils import getCollection, getDirectory, Link, isCollection, isDirectory, isParentOf
+from core.acl import AccessData
+from core.translation import lang, t
 from core.metatype import Context
 from core.styles import theme
 

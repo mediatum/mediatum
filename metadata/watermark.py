@@ -17,20 +17,21 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import re
 from mediatumtal import tal
 from utils.utils import esc
-from core.metatype import Metatype, Context
-import re
-from core.tree import registerNodeClass, FileNode
+from core.metatype import Metatype
+from core.tree import FileNode
 from PIL import Image, ImageFont, ImageDraw, ImageEnhance
 import sys
-import time
 import traceback
 from utils.utils import splitfilename
 import core.config as config
 
+
 FONTPATH = "/utils/ArenaBlack.ttf"
 FONTSIZE = 40
+
 
 class m_watermark(Metatype):
     """ This class implements the metatype watermark and everything that is needed to handle it """
@@ -79,7 +80,7 @@ class m_watermark(Metatype):
         alpha = ImageEnhance.Brightness(alpha).enhance(opacity)
         im.putalpha(alpha)
         return im
-    
+
     def watermark(self, image, imagewm, text, opacity):
         """ Creates a watermark, defined by an arbitrary string and draws it on an image"""
         global FONTPATH, FONTSIZE
@@ -96,7 +97,7 @@ class m_watermark(Metatype):
                     print "Converting image to RGBA!"
                     im = im.convert('RGBA')
                 draw = ImageDraw.Draw(im)
-                
+
                 #Load a custom font
                 font = None
                 try:
@@ -105,39 +106,39 @@ class m_watermark(Metatype):
                     print "Loading of custom font failed: ", inst
                     print " --> using default!"
                     font = ImageFont.load_default()
-                
-                #Now measure size of text if it would be created with the new font and create a custom bitmap    
+
+                #Now measure size of text if it would be created with the new font and create a custom bitmap
                 text_size = draw.textsize(text, font=font)
                 mark = Image.new("RGBA", text_size, (0,0,0,0))
                 layer = Image.new("RGBA", im.size, (0,0,0,0))
-                
+
                 #Create drawing object and draw text on bitmap
                 drawwater = ImageDraw.Draw(mark)
                 drawwater.text((0, 0), text, font=font, fill = (0,0,0,255))
-    
+
                 pos_x = 0
                 pos_y = 0
                 width = mark.size[0]
                 height = mark.size[1]
-                
+
                 if mark.size[0] > im.size[0]:
                     width = im.size[0]
-                    
+
                 if mark.size[1] > im.size[1]:
                     height = im.size[1]
-                
+
                 mark = mark.resize((width, height))
-              
+
                 pos_x = im.size[0]/2-width/2
                 pos_y = im.size[1]/2-height/2
                 #Paste mark on layer
                 layer.paste(mark, (pos_x, pos_y))
                 layer = self.reduce_opacity(layer, opacity)
-                              
+
                 im = Image.composite(layer, im, layer)
                 im.save(imagewm, "JPEG")
                 print "Finished creating watermark..."
-                
+
             except Exception, inst:
                 print "Exception while creating the watermark: ", inst
                 traceback.print_exc(file=sys.stdout)

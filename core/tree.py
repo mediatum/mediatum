@@ -23,7 +23,6 @@ from utils.log import logException
 from core.db import database
 import logging
 import time
-import sys
 import os
 from utils.utils import get_hash
 from utils.date import format_date, parse_date, STANDARD_FORMAT, now
@@ -37,7 +36,6 @@ import codecs
 
 nodeclasses = {}
 nodefunctions = {}
-contentstyles = {}
 filehandlers = []
 
 _root = None

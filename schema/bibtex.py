@@ -104,7 +104,7 @@ class MissingMapping(Exception):
 
 
 def getNow():
-    import datetime, time
+    import datetime
 
     now = datetime.datetime.now().isoformat()
     now = now.replace('T', '_').replace(':', '-')
@@ -346,7 +346,6 @@ article_types = [
      ("author", "title", "school", "year"),
      ("address", "month", "note", "key"))]
 
-import core
 import core.tree as tree
 import schema as schema
 

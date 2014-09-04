@@ -17,9 +17,6 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.config as config
-import os
-
 from utils.utils import format_filesize, get_filesize
 from utils.log import dlogfiles
 from web.admin.adminutils import Overview,getAdminStdVars

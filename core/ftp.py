@@ -1,11 +1,9 @@
-import StringIO
 import time
 import athana
 import os
 import hashlib
 import utils.utils as utils
 import utils.fileutils as fileutils
-import xmlnode
 import core.tree as tree
 import core.users as users
 from utils.date import parse_date

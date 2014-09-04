@@ -17,24 +17,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
-
-import sys
+import json
 import logging
-import core
-import core.tree as tree
+from datetime import datetime
 
+import core.tree as tree
 try:
     import utils.scheduleutils as su
 except:
     pass
-
-from datetime import datetime
-
-if sys.version[0:3] < '2.6':
-    import simplejson as json
-else:
-    import json
 
 
 class Schedule(tree.Node):

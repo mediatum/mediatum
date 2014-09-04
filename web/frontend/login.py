@@ -17,20 +17,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from core.transition import httpstatus
-import core.users as users
-import web.admin.modules.user as usermodule
-
-import core.config as config
-import core.tree as tree
-
 import logging
-import random
 import hashlib
 
+from core.transition import httpstatus
+import core.users as users
+import core.config as config
+import core.tree as tree
 import utils.mail as mail
 import utils.date as date
-
 from web.frontend.frame import getNavigationFrame
 from core.translation import lang, t
 from utils.utils import mkKey

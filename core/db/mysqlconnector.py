@@ -19,18 +19,14 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import MySQLdb
-import core
-import re
 import sys
 from time import *
 import logging
-import traceback
 import thread
 import msgpack
 from connector import Connector
 
 from core.db.database import initDatabaseValues, DatabaseException
-from utils.compat import string_types
 
 if __name__ == "__main__":
     sys.path += [".."]
@@ -46,7 +42,6 @@ log = logging.getLogger('database')
 class MYSQLConnector(Connector):
 
     def __init__(self):
-        config.initialize()
         self.dbhost = config.get("database.dbhost", "localhost")
         self.dbport = int(config.get("database.dbport", "3306"))
         self.database = config.get("database.db", "mediatum")

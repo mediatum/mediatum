@@ -20,7 +20,9 @@
 """
 import sys
 sys.path += ["../", "."]
-import core
+
+from core.init import basic_init
+basic_init()
 import core.tree as tree
 from core.tree import searcher
 

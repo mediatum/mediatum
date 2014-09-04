@@ -22,7 +22,7 @@ from mediatumtal import tal
 #import core.search as search
 import core.tree as tree
 from utils.utils import esc
-from core.metatype import Metatype, Context
+from core.metatype import Metatype
 from core.acl import AccessData
 from core.transition import httpstatus
 

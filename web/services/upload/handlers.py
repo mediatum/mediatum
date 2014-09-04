@@ -18,43 +18,26 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
-import sys
 import os
-import re
+import json
 import time
 import logging
 import base64
 
 import core.tree as tree
 import core.users as users
-import core.xmlnode as xmlnode
-
 from core import config
 from core.acl import AccessData
-from schema.schema import getMetaType, VIEW_DATA_ONLY
-
 from utils.date import format_date
-from utils.pathutils import getBrowsingPathList, isDescendantOf
-from utils.utils import u, u2, esc, intersection, getMimeType, OperationException
+from utils.utils import u, getMimeType, OperationException
 from utils.fileutils import importFileFromData
+from web.services.cache import Cache
 
-import web.services.jsonnode as jsonnode
-from web.services.rssnode import template_rss_channel, template_rss_item, feed_channel_dict, try_node_date
-
-if sys.version[0:3] < '2.6':
-    import simplejson as json
-else:
-    import json
 
 logger = logging.getLogger('services')
 host = "http://" + config.get("host.name")
 
 collections = tree.getRoot('collections')
-
-from web.services.cache import Cache
-from web.services.cache import date2string as cache_date2string
-import web.services.serviceutils as serviceutils
 
 FILTERCACHE_NODECOUNT_THRESHOLD = 2000000
 
@@ -63,9 +46,6 @@ searchcache = Cache(maxcount=10, verbose=True)
 resultcache = Cache(maxcount=25, verbose=True)
 
 SEND_TIMETABLE = False
-
-
-
 
 
 def upload_new_node(req, path, params, data):

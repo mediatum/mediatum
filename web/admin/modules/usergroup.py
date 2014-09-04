@@ -19,19 +19,17 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
-import types
 import traceback
 import core.tree as tree
 import logging
-import core.usergroups as usergroups
 import core.users as users
 import core.config as config
 import re
 import os
-from schema.schema import getMetaType
 
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
-from core.usergroups import groupoption, loadGroupsFromDB, getGroup, existGroup, create_group, updateAclRule, deleteGroup, getNumUsers, getMetadata, saveGroupMetadata, sortUserGroups
+from core.usergroups import (loadGroupsFromDB, groupoption, getGroup, existGroup, create_group, updateAclRule,
+                             deleteGroup, getNumUsers, getMetadata, saveGroupMetadata, sortUserGroups)
 from core.translation import t, lang
 from utils.utils import splitpath, u
 
@@ -137,8 +135,6 @@ def validate(req, op):
         traceback.print_tb(sys.exc_info()[2])
 
 def view(req):
-
-    global groupoption
     groups = list(loadGroupsFromDB())
     order = getSortCol(req)
     actfilter = getFilter(req)
@@ -188,7 +184,7 @@ def view(req):
 
 def editGroup_mask(req, id, err=0):
     """edit/create usergroup"""
-    global groupoption, ALLOW_DYNAMIC_USERS
+    global ALLOW_DYNAMIC_USERS
 
     newusergroup = 0
     if err==0 and id=="":

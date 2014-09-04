@@ -22,7 +22,6 @@ import re
 import zipfile
 import core.athana as athana
 import core.config as config
-import core.tree as tree
 import core.translation as translation
 
 from core.styles import theme
@@ -31,9 +30,8 @@ from core.users import getUserFromRequest
 try:
     from reportlab.platypus import Paragraph, BaseDocTemplate, SimpleDocTemplate, FrameBreak, Frame, PageTemplate
     from reportlab.lib.units import cm
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.styles import getSampleStyleSheet
     from reportlab.rl_config import defaultPageSize
-    from reportlab.pdfgen import canvas
     reportlab = 1
 except:
     reportlab = 0

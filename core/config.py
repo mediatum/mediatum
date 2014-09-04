@@ -22,8 +22,15 @@
 import os
 import sys
 
-basedir = None # will be set by initialize()
+basedir = os.path.dirname(__file__).rsplit(os.sep,1)[0]
+print "Base path is at", basedir
+# append our own fallback lib directory
+sys.path.append(os.path.join(basedir, "external"))
+print("sys.path is now: {}".format(sys.path))
+
 settings = None
+# append our own fallback lib directory
+sys.path.append(os.path.join(basedir, "external"))
 
 def get(key,default=None):
     return settings.get(key,default)
@@ -51,7 +58,7 @@ def _read_ini_file(basedir, filename):
             line = line[0:hashpos]
         # remove whitespace
         line = line.strip()
-        
+
         if line == "":
             pass #skip empty line
         elif line[0] == '[':
@@ -76,7 +83,7 @@ def _read_ini_file(basedir, filename):
                 params[key] = value
             else:
                 pass # path is absolute, don't bother
-    
+
     return params
 
 def mkDir(dir):
@@ -86,21 +93,15 @@ def mkDir(dir):
     except:
         pass #already exists
 
-def initialize(athana_basedir=None, input=None):
-    global settings, basedir
-    if athana_basedir:
-        basedir = athana_basedir
-    if input is None:
-        if settings is not None:
-            # already initialized
-            return
-        input = "mediatum.cfg"
-
-    if type(input) == type(""):
-        settings = _read_ini_file(basedir, input)
+def initialize():
+    global settings
+    if settings:
+        raise Exception("calling config.initialize() multiple times is not allowed!")
+    if os.getenv("MEDIATUM_CONFIG"):
+        ini_filename = os.getenv("MEDIATUM_CONFIG")
     else:
-        settings = input
-
+        ini_filename = "mediatum.cfg"
+    settings = _read_ini_file(basedir, ini_filename)
     if not os.path.isdir(settings["paths.datadir"]):
         print "Couldn't find data directory",settings["paths.datadir"]
         sys.exit(1)
@@ -113,8 +114,6 @@ def initialize(athana_basedir=None, input=None):
     mkDir(os.path.join(settings["paths.datadir"],"search"))
     mkDir(os.path.join(settings["paths.datadir"],"html"))
     mkDir(os.path.join(settings["paths.datadir"],"log"))
-
-    #athana.setTempDir(settings["paths.tempdir"])
 
 #
 # resolve given filename to correct path/file
@@ -139,4 +138,4 @@ def resolve_filename(filename):
         elif filename.startswith("m_"):
             return pathlist[0] + "/metatypes/" + filename
     return filename
-            
+

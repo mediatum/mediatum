@@ -17,16 +17,13 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.config as config
-import core.tree as tree
 
-from core.tree import Node,FileNode
 import core.acl as acl
 from core.translation import t, lang
 from core.acl import AccessData
 import default 
 
-from schema.schema import loadTypesFromDB, VIEW_HIDE_EMPTY
+from schema.schema import VIEW_HIDE_EMPTY
 
 """ flash class """
 class Flash(default.Default):

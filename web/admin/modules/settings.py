@@ -25,8 +25,7 @@ import core
 import core.tree as tree
 
 from version import mediatum_version
-from core.config import basedir
-from utils.utils import format_filesize, parseMenuString
+from utils.utils import format_filesize
 
 
 def getInformation():

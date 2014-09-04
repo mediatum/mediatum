@@ -20,7 +20,6 @@
 """
 
 import os
-import sqlite3 as sqlite
 import sys
 import logging
 import thread
@@ -43,8 +42,8 @@ if not SQLITE_API:
             con.execute("create virtual table t using fts3(a, b)")
             SQLITE_API = "pysqlite2"
         except:
-            print 'Warning: no fts3 enabled for sqlite connector'    
-        
+            print 'Warning: no fts3 enabled for sqlite connector'
+
 if SQLITE_API == 'sqlite3':
     import sqlite3 as sqlite
     print 'using fts3 enabled module sqlite3'
@@ -71,7 +70,6 @@ sqlite_lock = thread.allocate_lock()
 class SQLiteConnector(Connector):
 
     def __init__(self,db=None):
-        config.initialize()
         if db==None:
             if not os.path.exists(config.get("paths.datadir")+"db/imagearch.db"):
                 try:

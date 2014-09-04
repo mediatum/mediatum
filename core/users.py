@@ -22,7 +22,6 @@ import core.config as config
 import usergroups
 import hashlib
 import core.tree as tree
-import core.translation
 import random
 import thread
 import logging

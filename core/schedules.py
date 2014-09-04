@@ -25,12 +25,11 @@ import time
 import thread
 import logging
 
-import core.config as config
 import core.tree as tree
 import core.athana as athana
 import core.schedule
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 def OUT(msg, logger='backend', print_stdout=False, level='info'):

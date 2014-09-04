@@ -16,15 +16,13 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import re
 
-from itertools import chain, groupby # requires Python 2.4
-from operator import itemgetter
+from itertools import chain
 from urlparse import urlparse
 
 import pymarc
 from utils.utils import Template
-from schema import schema, mapping
+from schema import mapping
 
 def _parse_protocol_indicator(field, subfields, _protocol_map={'http': '4', 'ftp': '1'}):
     """

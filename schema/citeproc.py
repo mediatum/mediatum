@@ -23,7 +23,6 @@ import citeproc metadata in CSL, JSON variant as served by dx.doi.org.
 
 from collections import defaultdict
 import datetime
-import json
 import logging
 import re
 import random

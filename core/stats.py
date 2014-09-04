@@ -23,7 +23,6 @@ import re
 import xml.parsers.expat
 import core.config as config
 import core.tree as tree
-import calendar
 import logging
 import glob
 

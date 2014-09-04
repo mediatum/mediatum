@@ -28,7 +28,6 @@ from utils.log import logException
 from utils.pathutils import isDescendantOf
 from utils.utils import modify_tex
 from core.metatype import Metatype, charmap
-from core.translation import t
 from export.exportutils import runTALSnippet
 
 system_languages = [lang.strip() for lang in config.get("i18n.languages").split(",") if lang.strip()]

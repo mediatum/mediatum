@@ -25,6 +25,8 @@ import os.path
 import sys
 import logging
 
+from core.init import basic_init
+
 sys.path = ['.'] + sys.path
 
 

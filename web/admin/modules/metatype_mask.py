@@ -17,18 +17,17 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 import re
+
 import core.tree as tree
 import core.config as config
-
-from core.tree import Node
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 from schema.schema import getMetaType, getMaskTypes
 from core.translation import lang, t
 from schema.mapping import getMappings
 from utils.utils import removeEmptyStrings 
 from web.common.acl_web import makeList
+
 
 """ mask overview """
 def showMaskList(req, id):
@@ -149,4 +148,3 @@ def MaskDetails(req, pid, id, err=0):
     return req.getTAL("web/admin/modules/metatype_mask.html", v, macro="modify_mask")
 
 
-    

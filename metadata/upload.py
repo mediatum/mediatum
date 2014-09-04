@@ -18,17 +18,11 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import sys
-import os
+import json
 import os.path
 import logging
 import re
 import datetime
-
-if sys.version[0:3] < '2.6':
-    import simplejson as json
-else:
-    import json
 
 from mediatumtal import tal
 from core.transition.athana_sep import athana_http as athana

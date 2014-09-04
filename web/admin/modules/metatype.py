@@ -19,21 +19,17 @@
 """
 import re
 import sys
-import traceback
 import core.tree as tree
-import core.config as config
-import os.path
 
 from core.datatypes import loadAllDatatypes, loadNonSystemTypes
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
-from core.tree import Node, getNode, searcher
+from core.tree import getNode, searcher
 from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings, esc
 from core.translation import lang, t
 from core.acl import AccessData
 from schema.schema import loadTypesFromDB, getMetaFieldTypeNames, getMetaType, updateMetaType, existMetaType, deleteMetaType, fieldoption, moveMetaField, getMetaField, deleteMetaField, getFieldsForMeta, dateoption, requiredoption, existMetaField, updateMetaField, generateMask, cloneMask, exportMetaScheme, importMetaSchema
-from schema.schema import VIEW_DEFAULT, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_ONLY, VIEW_DATA_EXPORT
-from schema.mapping import getMappings
+from schema.schema import VIEW_DEFAULT
 from schema.bibtex import getAllBibTeXTypes
 from schema import citeproc
 

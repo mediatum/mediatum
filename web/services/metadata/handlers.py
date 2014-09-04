@@ -19,31 +19,18 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import sys
 import os
-import re
 import time
 import logging
 
 import core.tree as tree
 import core.users as users
-import core.xmlnode as xmlnode
-
 from core import config
 from core.acl import AccessData
-from schema.schema import getMetaType, VIEW_DATA_ONLY, exportMetaScheme
+from schema.schema import exportMetaScheme
+from utils.utils import getMimeType
+from web.services.cache import Cache
 
-from utils.date import format_date
-from utils.pathutils import getBrowsingPathList, isDescendantOf
-from utils.utils import u, u2, esc, intersection, getMimeType, float_from_gps_format
-
-import web.services.jsonnode as jsonnode
-from web.services.rssnode import template_rss_channel, template_rss_item, feed_channel_dict, try_node_date
-
-if sys.version[0:3] < '2.6':
-    import simplejson as json
-else:
-    import json
 
 logger = logging.getLogger('services')
 host = "http://" + config.get("host.name")
@@ -51,9 +38,6 @@ host = "http://" + config.get("host.name")
 guestAccess = AccessData(user=users.getUser('Gast'))
 collections = tree.getRoot('collections')
 
-from web.services.cache import Cache
-from web.services.cache import date2string as cache_date2string
-import web.services.serviceutils as serviceutils
 
 FILTERCACHE_NODECOUNT_THRESHOLD = 2000000
 

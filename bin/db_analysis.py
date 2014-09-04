@@ -25,6 +25,9 @@ import time
 from collections import namedtuple
 sys.path += ['../..', '../', '.']
 
+from core.init import basic_init
+basic_init()
+
 import core.tree as tree
 from core.search.ftsquery import protect
 from utils.utils import u, modify_tex, normalize_utf8

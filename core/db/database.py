@@ -19,7 +19,6 @@
 """
 
 import core.config as config
-import os
 
 _db = None
 _dbconn = None

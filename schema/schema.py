@@ -29,8 +29,7 @@ from utils.log import logException
 from core.config import *
 from core.xmlnode import getNodeXML, readNodeXML
 from core.db.database import getConnection
-from core.metatype import Context, Metatype
-import datetime
+from core.metatype import Metatype
 import inspect
 import importlib
 import pkgutil

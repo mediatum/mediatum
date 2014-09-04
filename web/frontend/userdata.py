@@ -22,13 +22,11 @@
 import sys
 
 from core.transition import httpstatus
-import core.config as config
 import core.users as users
 
 from web.frontend.frame import getNavigationFrame
-from core.translation import lang, t
 
-from pprint import pprint as pp, pformat as pf
+from pprint import pformat as pf
 
 aclasses = {}
 
@@ -113,6 +111,7 @@ def show_user_data(req):
     
     error = ""
 
+    # XXX: dead code?
     if USE_EXAMPLES and 'examples' in req.params:
         try:
             import userdata_examples

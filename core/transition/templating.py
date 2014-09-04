@@ -9,7 +9,7 @@ from jinja2.exceptions import TemplateNotFound
 from pyjade.ext.jinja import Compiler as JinjaCompiler
 from pyjade.ext.jinja import PyJadeExtension as JinjaJadeExtension
 from pyjade.utils import process
-from utils.compat import itervalues, text_type
+from utils.compat import itervalues
 from core.transition.globals import current_app, _app_ctx_stack
 from core.transition.helpers import get_template_attribute
 

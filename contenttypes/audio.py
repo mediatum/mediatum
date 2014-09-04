@@ -18,8 +18,6 @@
 """
 
 import os
-import core
-import core.tree as tree
 from PIL import Image,ImageDraw
 import default
 import core.acl as acl
@@ -27,8 +25,8 @@ from lib.audio import File as AudioFile
 from utils.utils import splitfilename
 from core.tree import FileNode
 from utils.date import parse_date, format_date, make_date
-from schema.schema import loadTypesFromDB, VIEW_HIDE_EMPTY,VIEW_DATA_ONLY
-from core.translation import lang, t
+from schema.schema import VIEW_HIDE_EMPTY
+from core.translation import lang
 from core.styles import getContentStyles
 
 def makeAudioThumb(node, audiofile):
@@ -39,7 +37,7 @@ def makeAudioThumb(node, audiofile):
         ret = path+".mp3"
     node.addFile(FileNode(name=path+".mp3", type="mp3", mimetype="audio/mpeg"))
     return ret
-        
+
 # """ make thumbnail (jpeg 128x128) """
 def makeThumbNail(node, audiofile):
     path, ext = splitfilename(audiofile.filename)
@@ -50,11 +48,11 @@ def makeThumbNail(node, audiofile):
                 fout = open(path+".thumb", "wb")
                 fout.write(audiofile.tags[k].data)
                 fout.close()
-                
+
                 pic = Image.open(path+".thumb2")
                 width = pic.size[0]
                 height = pic.size[1]
-                
+
                 if width > height:
                     newwidth = 128
                     newheight = height*newwidth/width
@@ -65,36 +63,36 @@ def makeThumbNail(node, audiofile):
                 pic.save(path+".thumb", "jpeg")
                 pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
                 im = Image.new(pic.mode, (128, 128), (255, 255, 255))
-                
+
                 x = (128-newwidth)/2
                 y = (128-newheight)/2
                 im.paste( pic, (x,y,x+newwidth,y+newheight))
-                
+
                 draw = ImageDraw.ImageDraw(im)
                 draw.line([(0,0),(127,0),(127,127),(0,127),(0,0)], (128,128,128))
-                
+
                 im = im.convert("RGB")
                 im.save(path+".thumb", "jpeg")
 
                 node.addFile(FileNode(name=path+".thumb", type="thumb", mimetype=audiofile.tags[k].mime))
                 break
-            
 
-# """ make presentation format (jpeg 320x320) """    
+
+# """ make presentation format (jpeg 320x320) """
 def makePresentationFormat(node, audiofile):
     path, ext = splitfilename(audiofile.filename)
-    
+
     if audiofile.tags:
         for k in audiofile.tags:
             if k=="APIC:thumbnail":
                 fout = open(path+".thumb2", "wb")
                 fout.write(audiofile.tags[k].data)
                 fout.close()
-                
+
                 pic = Image.open(path+".thumb2")
                 width = pic.size[0]
                 height = pic.size[1]
-                
+
                 if width > height:
                     newwidth = 320
                     newheight = height*newwidth/width
@@ -106,10 +104,10 @@ def makePresentationFormat(node, audiofile):
                 node.addFile(FileNode(name=path+".thumb2", type="presentation", mimetype=audiofile.tags[k].mime))
                 break
 
-            
+
 def makeMetaData(node, audiofile):
     global audio_frames
-    
+
     node.set("mp3.version", audiofile.info.version)
     node.set("mp3.layer", audiofile.info.layer)
     node.set("mp3.bitrate", str(int(audiofile.info.bitrate)/1000)+" kBit/s")
@@ -118,15 +116,15 @@ def makeMetaData(node, audiofile):
     _s = int(audiofile.info.length % 60)
     _m = audiofile.info.length/60
     _h = int(audiofile.info.length) /3600
-    
+
     node.set("mp3.length", format_date(make_date(0,0,0,_h,_m,_s), '%Y-%m-%dT%H:%M:%S'))
-    
+
     if audiofile.tags:
         for key in audio_frames.keys():
             if key in audiofile.tags.keys():
                 node.set("mp3."+audio_frames[key], audiofile.tags[key])
 
-                
+
 """ audio class for internal audio-type """
 class Audio(default.Default):
     def getTypeAlias(node):
@@ -134,16 +132,16 @@ class Audio(default.Default):
 
     def getOriginalTypeName(node):
         return "original"
-        
+
     def getCategoryName(node):
         return "audio"
 
-        
+
     # prepare hash table with values for TAL-template
     def _prepareData(node, req):
-        access = acl.AccessData(req)     
+        access = acl.AccessData(req)
         mask = node.getFullView(lang(req))
-        
+
         obj = {'deleted': False, 'access': access}
         if node.get('deleted')=='true':
             node = node.getActiveVersion()
@@ -152,7 +150,7 @@ class Audio(default.Default):
             obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY, lang(req), mask=mask) # hide empty elements
         else:
             obj['metadata'] = []
-        obj['node'] = node  
+        obj['node'] = node
         obj['path'] = req and req.params.get("path","") or ""
         obj['audiothumb'] = '/thumb2/'+str(node.id)
         if node.has_object():
@@ -161,9 +159,9 @@ class Audio(default.Default):
             obj['audiodownload'] = '/download/'+str(node.id)+'/'+node.getName()
         else:
             obj['canseeoriginal']= False
-        
+
         return obj
-        
+
     """ format big view with standard template """
     def show_node_big(node, req, template="", macro=""):
         if template=="":
@@ -171,31 +169,31 @@ class Audio(default.Default):
             if len(styles)>=1:
                 template = styles[0].getTemplate()
         return req.getTAL(template, node._prepareData(req), macro)
-    
+
     def isContainer(node):
         return 0
 
     def getLabel(node):
         return node.name
-        
+
     def has_object(node):
         for f in node.getFiles():
             if f.type=="audio":
                 return True
         return False
-        
+
     def getSysFiles(node):
         return ["audio","thumb","presentation","mp3"]
 
     """ postprocess method for object type 'audio'. called after object creation """
     def event_files_changed(node):
         print "Postprocessing node",node.id
-        
+
         original = None
         audiothumb = None
         thumb = None
         thumb2 = None
-        
+
         for f in node.getFiles():
             if f.type=="audio":
                 original = f
@@ -223,21 +221,21 @@ class Audio(default.Default):
             makePresentationFormat(node, _original)
             makeThumbNail(node, _original)
             makeMetaData(node, _original)
-            
+
     """ list with technical attributes for type image """
     def getTechnAttributes(node):
         return {}
-    
+
     def getDuration(node):
         return format_date(parse_date(node.get("mp3.length")), '%H:%M:%S')
-    
+
     def getEditMenuTabs(node):
         return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
 
     def getDefaultEditTab(node):
         return "view"
-        
-        
+
+
     def processMediaFile(node, dest):
         for file in node.getFiles():
             if file.getType()=="audio":
@@ -249,9 +247,9 @@ class Audio(default.Default):
                     cmd = "copy %s %s%s.%s" %(filename, dest, node.id, ext)
                     ret = os.system(cmd.replace('/','\\'))
         return 1
-        
-        
-        
+
+
+
 audio_frames = {"AENC": "audio_encryption",\
 "APIC": "attached_picture",\
 "COMM": "comments",\

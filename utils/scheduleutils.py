@@ -19,12 +19,13 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from datetime import datetime, timedelta
+import json
 import sys
 import os
 import time
 import traceback
 import logging
-import re
 import random
 
 import threading
@@ -34,7 +35,7 @@ import core.config as config
 import core.acl as acl
 import core.schedules
 
-from core.translation import t, lang
+from core.translation import t
 
 from metadata.check import m_check
 from metadata.htmlmemo import m_htmlmemo
@@ -42,14 +43,6 @@ from metadata.memo import m_memo
 from metadata.text import m_text
 from metadata.treeselect import m_treeselect
 
-from datetime import datetime, timedelta
-from pprint import pprint as pp
-
-
-if sys.version[0:3] < '2.6':
-    import simplejson as json
-else:
-    import json
 
 
 logger = logging.getLogger("backend")

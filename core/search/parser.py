@@ -18,7 +18,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import re
-import sys
 from utils.boolparser import BoolParser
 from core.search.query import query,numquery
 from utils.date import parse_date

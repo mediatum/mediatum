@@ -18,17 +18,16 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-import re
-import core.config as config
 import math
-import core.users as users
 import sys
 import traceback
 
-from utils.utils import Link, Menu, splitpath, parseMenuString
+import core.users as users
+import core.config as config
+from utils.utils import Link, splitpath, parseMenuString
 from core.translation import t, lang
 from core.tree import getRoot
-from core.config import getsubset
+
 
 def getAdminStdVars(req):
     page = ""
@@ -164,7 +163,6 @@ def findmodule(type):
         print "Warning: couldn't load module for type",type
         print sys.exc_info()[0], sys.exc_info()[1]
         traceback.print_tb(sys.exc_info()[2])
-        import web.admin.modules.default
         m = __import__("web.admin.modules.default")
         m = eval("m.admin.modules.default")
     return m

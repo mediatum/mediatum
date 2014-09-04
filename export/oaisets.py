@@ -18,15 +18,9 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
-import os
-import sys
-import logging
 from collections import OrderedDict
 
-
 import core.tree as tree
-import core.config as config
 from utils.utils import esc
 from utils.pathutils import isDescendantOf
 from oaisetgroup import OAISetGroup as OAISetGroup
@@ -90,8 +84,6 @@ def get_set_groups():
     res += [build_container_group()]
     return res
 
-registerGroupGetterFunc('mediatum', get_set_groups)
-loadGroups()
 
 def getNodes(setspec, schemata):
     for g in GROUPS:
@@ -113,4 +105,9 @@ def getSetSpecsForNode(node):
 
 def getGroup(group_identifier):
     return DICT_GROUPS[group_identifier]
+
+
+def init():
+    registerGroupGetterFunc('mediatum', get_set_groups)
+    loadGroups()
 

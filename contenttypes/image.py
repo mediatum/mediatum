@@ -17,23 +17,20 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core
-import core.config as config
-from PIL import Image as PILImage, ImageDraw, ImageChops
-import core.tree as tree
-import core.users as users
+from core import config
+from PIL import Image as PILImage, ImageDraw
 import core.acl as acl
 import random
 import os
 import default
 import hashlib
 
-from schema.schema import loadTypesFromDB, VIEW_DATA_ONLY, VIEW_HIDE_EMPTY
+from schema.schema import VIEW_HIDE_EMPTY
 from core.acl import AccessData
 from core.attachment import filebrowser
 from utils.fileutils import getImportDir
-from utils.utils import splitfilename, isnewer, formatException, iso2utf8, OperationException
-from core.tree import Node,FileNode
+from utils.utils import splitfilename, isnewer, iso2utf8, OperationException
+from core.tree import FileNode
 from core.translation import lang,t
 from core.styles import getContentStyles
 from web.frontend import zoom

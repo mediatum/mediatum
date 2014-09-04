@@ -25,11 +25,9 @@ import re
 import os
 import core
 import core.config as config
-import core.tree as tree
 import core.db.sqliteconnector as sqlite
 from utils.utils import normalize_utf8
 from utils.date import format_date
-import core.tree as tree
 
 from utils.utils import iso2utf8, esc, u
 

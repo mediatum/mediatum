@@ -19,7 +19,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import time
 import logging
 import core.tree as tree
 
@@ -88,4 +87,3 @@ class OAISetGroup:
         if self.func_isSetEmpty:
             return self.func_isSetEmpty(self, node, schemata=[])  
         return False
-        

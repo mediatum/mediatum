@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from schema.schema import getMetadataType, getAllMetaFields, VIEW_DATA_ONLY
-from core.tree import Node, getNode
+from core.tree import getNode
 
 from core.translation import lang
 from core.metatype import Metatype

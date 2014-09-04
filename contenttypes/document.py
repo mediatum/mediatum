@@ -18,19 +18,18 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.config as config
-import core.tree as tree
-import schema
 import core.acl as acl
 import os
 import default
-from utils.utils import getMimeType, splitfilename, u, OperationException
-from core.tree import Node,FileNode
-from schema.schema import loadTypesFromDB, VIEW_HIDE_EMPTY,VIEW_DATA_ONLY
+from utils.utils import splitfilename, u, OperationException
+from core.tree import FileNode
+from schema.schema import VIEW_HIDE_EMPTY
 from core.translation import lang, t
 from core.acl import AccessData
 from core.styles import getContentStyles
 from lib.pdf import parsepdf
 from core.attachment import filebrowser
+
 """ document class """
 class Document(default.Default):
     def getTypeAlias(node):

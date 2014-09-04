@@ -30,6 +30,9 @@
 #===============================================================
 RCS_ID =  '$Id: athana.py,v 1.48 2013/02/28 07:28:19 seiferta Exp $'
 
+import re
+import string
+
 from functools import partial
 from itertools import chain
 import logging
@@ -43,13 +46,11 @@ logftp = logging.getLogger("ftp")
 class AthanaException(Exception):
     pass
 
-import re
 _ent1_re = re.compile('&(?![A-Z#])', re.I)
 _entch_re = re.compile('&([A-Z][A-Z0-9]*)(?![A-Z0-9;])', re.I)
 _entn1_re = re.compile('&#(?![0-9X])', re.I)
 _entnx_re = re.compile('&(#X[A-F0-9]*)(?![A-F0-9;])', re.I)
 _entnd_re = re.compile('&(#[0-9][0-9]*)(?![0-9;])')
-del re
 
 def attrEscape(s):
     """Replace special characters '&<>' by character entities,
@@ -69,16 +70,10 @@ def attrEscape(s):
 
 # python modules
 import os
-import re
-import select
-import socket
-import string
 import sys
 import time
 import stat
-import string
 import mimetypes
-import glob
 from cgi import escape
 from urllib import unquote, splitquery
 from collections import OrderedDict
@@ -3356,7 +3351,6 @@ class WebHandler:
             self.function = function
             m = file.m
             try:
-                import os
                 self.f = getattr(m, function)
             except:
                 logg.error("Error in Handler", exc_info=1)

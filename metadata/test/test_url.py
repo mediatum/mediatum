@@ -7,10 +7,11 @@ from __future__ import division, absolute_import
 import os.path
 import logging
 logging.basicConfig(level=logging.DEBUG)
-from mock import MagicMock, call
+from mock import MagicMock
 import pytest
 
-from core import tree
+from core.init import basic_init
+basic_init()
 from metadata import url
 
 BASEDIR = os.path.join(os.path.dirname(__file__), "test_data")

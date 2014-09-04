@@ -71,7 +71,6 @@ def getContent(req): # deliver content of act
 
 def getFrontendModules(modname=""):
     mods = {}
-    import web.frontend.modules
     for root, dirs, files in os.walk(config.basedir+"/web/frontend/modules/"):
         for name in dirs:
             if name.lower() in ['cvs']: # exclude sys dir

@@ -19,19 +19,14 @@
 """
 
 import sys
-import os
-import time
-import core
-import core.webconfig
-import core.config as config
-import subprocess
-import urllib2
-from utils.utils import formatException
 
-webserverprocess = None
-restarted = False
-restarttime = config.get("config.restart_time", "00:00:00").split(":")
+from core import config, webconfig, init
+from core import athana
 
+init.full_init()
+
+
+### full text search thread
 if config.get("config.searcher", "").startswith("fts"):
     import core.search.ftsquery
     core.search.ftsquery.startThread()
@@ -40,49 +35,20 @@ else:
     core.search.query.startThread()
 
 
-def startWebServer():
-    global webserverprocess
-    webserverprocess = subprocess.Popen("python startathana.py", shell=True)
-    time.sleep(5)
-    fileHandle = urllib2.urlopen("http://" + config.get("host.name", ""))
-    data = fileHandle.read()
-    fileHandle.close()
-
-if config.get("config.restart_time", "00:00:00")=="00:00:00":
-
-    import core.schedules
-    try:
-        core.schedules.startThread()
-    except:
-        msg = "Error starting scheduler thread: %s %s" % (str(sys.exc_info()[0]), str(sys.exc_info()[1]))
-        core.schedules.OUT(msg, logger='backend', print_stdout=True, level='error')
-
-    # no internal restart process
-    core.webconfig.startWebServer()
+### scheduler thread
+import core.schedules
+try:
+    core.schedules.startThread()
+except:
+    msg = "Error starting scheduler thread: %s %s" % (str(sys.exc_info()[0]), str(sys.exc_info()[1]))
+    core.schedules.OUT(msg, logger='backend', print_stdout=True, level='error')
 
 
+### start main web server, Z.39.50 and FTP, if configured
+webconfig.initContexts()
+if config.get('z3950.activate','').lower()=='true':
+    z3950port = int(config.get("z3950.port","2021"))
 else:
-    # use internal restart process
-    while (1):
-        time.sleep(1)
-        localtime = time.localtime()
-        if (localtime.tm_hour==int(restarttime[0]) and localtime.tm_min==int(restarttime[1])):
-            if (not restarted):
-                try:
-                    if webserverprocess:
-                        print "Killing server..."
-                        try:
-                            os.popen("kill -9 " + str(webserverprocess.pid))
-                        except:
-                            print "Killed server!"
-                            print formatException()
-                        time.sleep(2)
-                    print "Restarting webserver..."
-                    startWebServer()
-                    restarttime = [str(time.localtime().tm_hour), str(time.localtime().tm_min+1)]
-                    restarted = True
-                except:
-                    print "Could not restart webserver... Retrying!"
-                    print formatException()
-            else:
-                restarted = False
+    z3950port = None
+athana.setThreads(int(config.get("host.threads","8")))
+athana.run(int(config.get("host.port","8081")), z3950port)

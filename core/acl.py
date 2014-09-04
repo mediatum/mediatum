@@ -21,9 +21,7 @@ import core.users as users
 import logging
 import core.tree as tree
 import core.config as config
-import sys
 from utils.log import logException
-import re
 from core.db import database
 from utils.boolparser import BoolParser
 import thread

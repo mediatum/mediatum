@@ -19,7 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import sys
+import json
 import os
 import re
 import time
@@ -42,10 +42,6 @@ import web.services.jsonnode as jsonnode
 from web.services.rssnode import template_rss_channel, template_rss_item, feed_channel_dict, try_node_date
 from web.services.serviceutils import attribute_name_filter
 
-if sys.version[0:3] < '2.6':
-    import simplejson as json
-else:
-    import json
 
 logger = logging.getLogger('services')
 host = "http://" + config.get("host.name")
@@ -1241,7 +1237,7 @@ def get_cachestatus(req, path, params, data):
 
 def get_maskcachestatus(req, path, params, data):
     atime = time.time()
-    from contenttypes.default import get_maskcache_report, maskcache_accesscount #, nodemasks
+    from contenttypes.default import get_maskcache_report
     timetable = []
     d = {}
     d['status'] = 'ok'

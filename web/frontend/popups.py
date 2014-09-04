@@ -18,14 +18,11 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.tree as tree
-import core.config as config
 
 from core.tree import getNode
-from web.frontend import shoppingbag
 from web.edit.edit import printmethod
 from schema.schema import getMetaType, getMetadataType
 from lib.pdf import printview
-from utils.log import logException
 
 from schema.schema import VIEW_DATA_ONLY,VIEW_HIDE_EMPTY
 from web.frontend.content import getPaths

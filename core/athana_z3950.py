@@ -18,7 +18,6 @@
 """
 
 import logging
-import time
 import socket
 import asyncore
 import random # FIXME: drop dependency!

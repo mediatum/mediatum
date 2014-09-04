@@ -18,24 +18,24 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
-import types
 import traceback
 import logging
-import core.config as config
-import core.tree as tree
-import core.acl as acl
-import utils.mail as mail
-import core.users as users
 import re
 import datetime
 import time
-from utils.utils import getAllCollections, formatException
 
+import core.config as config
+import core.tree as tree
+import core.acl as acl
+import core.users as users
+from utils.utils import getAllCollections, formatException
+import utils.mail as mail
 from core.usergroups import loadGroupsFromDB
-from core.users import loadUsersFromDB, useroption, getUser, getExternalUser, update_user, existUser, create_user, makeRandomPassword, deleteUser, getExternalUsers, getExternalUser, moveUserToIntern, getExternalAuthentificators, getDynamicUserAuthenticators, getDynamicUsers
+from core.users import (loadUsersFromDB, useroption, getUser, update_user, existUser, create_user, makeRandomPassword, deleteUser,
+    getExternalUsers, getExternalUser, moveUserToIntern, getExternalAuthentificators, getDynamicUserAuthenticators)
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from core.translation import lang, t
-from core.user import User
+
 
 log = logging.getLogger("usertracing")
 users_cache = []
@@ -199,7 +199,7 @@ def validate(req, op):
 
 def view(req):
     """show all users"""
-    global useroption, users_cache
+    global users_cache
 
     users = []
     order = getSortCol(req)
@@ -331,7 +331,6 @@ def view(req):
 # edit/create user
 #
 def editUser_mask(req, id, err=0):
-    global useroption
     ugroups = []
     usertype = req.params.get("usertype", "intern")
     newuser = 0

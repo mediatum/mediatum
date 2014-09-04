@@ -14,10 +14,11 @@ logg.basicConfig()
 from pprint import pprint
 from pytest import raises
 
+from core.init import basic_init
+basic_init()
 from core import tree
 from .. import citeproc
 from ..citeproc import get_citeproc_json, DOINotFound, FIELDS, CSLField
-from ..importbase import NoMappingFound
 
 
 BASEDIR = os.path.join(os.path.dirname(__file__), "test_data")

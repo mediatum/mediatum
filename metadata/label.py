@@ -20,7 +20,6 @@
 import core.tree as tree
 from mediatumtal import tal
 from schema.schema import VIEW_DATA_ONLY, VIEW_DEFAULT
-from core.tree import Node, getNode
 from core.metatype import Metatype
 
 

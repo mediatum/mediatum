@@ -18,14 +18,11 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import sys
-import os
 import core.config as config
-import core
 import core.tree as tree
 
 from utils.utils import parseMenuString
-from web.admin.adminutils import adminNavigation, getAdminModuleInformation, getAdminModulesVisible, adminModules
+from web.admin.adminutils import adminNavigation, getAdminModuleInformation, adminModules
 from web.edit.edit import getEditModules, editModules, getEditMenuString
 from core.tree import getRoot
 from core.datatypes import loadAllDatatypes

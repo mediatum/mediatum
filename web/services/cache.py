@@ -184,7 +184,6 @@ if __name__=='__main__':
 
     c = Cache(maxcount=3,maxsize=10,verbose=True)
     from random import randint
-    from pprint import pprint as pp
     for i in range(5):
         c.update(randint(1000,1010), 'test-'+str(i+1))
 

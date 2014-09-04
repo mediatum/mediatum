@@ -23,6 +23,10 @@ __author__ = 'Andrew Darrohn andrew.darrohn@tum.de'
 import os
 import sys
 sys.path += ['../..', '../', '.']
+
+from core.init import basic_init
+basic_init()
+
 import core.users as users
 import core.acl as acl
 import core.tree as tree

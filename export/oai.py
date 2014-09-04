@@ -30,7 +30,6 @@ import logging
 from collections import OrderedDict
 
 import core.config as config
-import core.users as users
 
 from oaisearchparser import OAISearchParser as OAISearchParser
 import oaisets
@@ -42,10 +41,6 @@ from schema.schema import getMetaType
 from utils.pathutils import isDescendantOf
 from threading import Lock
 
-if sys.version[0:3] < '2.6':
-    import simplejson as json
-else:
-    import json
 
 DEBUG = False
 

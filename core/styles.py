@@ -18,13 +18,12 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import logging
 import os
-import sys
 import core.config as config
 
 from utils.utils import splitpath
-from core.tree import contentstyles
+
+contentstyles = {}
 
 class Theme:
     def __init__(self, name, path="web/themes/mediatum/", type="intern"):

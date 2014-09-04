@@ -19,11 +19,9 @@
 """
 from mediatumtal import tal
 import core.tree as tree
-import core.config as config
 import os
-import re
 
-from utils.utils import getCollection,Link,isCollection, getFormatedString
+from utils.utils import getCollection,Link, getFormatedString
 from core.acl import AccessData
 from core.translation import lang,t
 from web.frontend.searchresult import simple_search, extended_search

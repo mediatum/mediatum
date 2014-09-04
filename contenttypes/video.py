@@ -19,8 +19,8 @@
 """
 import core.config as config
 import core.acl as acl
-import sys
 import os
+import json
 import logging
 
 from utils.utils import splitfilename
@@ -35,11 +35,6 @@ from schema.schema import VIEW_HIDE_EMPTY
 from metadata.upload import getFilelist
 
 import default
-
-if sys.version[0:3] < '2.6':
-    import simplejson as json
-else:
-    import json
 
 
 logger = logging.getLogger("backend")

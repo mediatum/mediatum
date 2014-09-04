@@ -20,9 +20,8 @@
 import core.tree as tree
 from schema.schema import loadTypesFromDB
 from core.acl import AccessData
-
-from utils import *
 from core.usergroups import groupoption
+
 
 class UserGroup(tree.Node):
 
@@ -37,7 +36,6 @@ class UserGroup(tree.Node):
         return self.set("opts", o)
 
     def getOptionList(self):
-        global groupoption
         retList = {}
         myoption = self.getOption()
         for option in groupoption:
@@ -63,8 +61,8 @@ class UserGroup(tree.Node):
         if as_string:
             return ", ".join(ret)
         else:
-            return ret    
-    
+            return ret
+
     def getSchemas(self):
         schemas = filter(lambda x: x.isActive(), loadTypesFromDB())
         schemalist = {}
@@ -77,13 +75,13 @@ class UserGroup(tree.Node):
         schemalist = schemalist.keys()
         schemalist.sort()
         return schemalist
-        
+
     def getHideEdit(self):
         return self.get("hideedit")
-        
+
     def setHideEdit(self, value):
         self.set("hideedit",value)
-     
+
     def isSystemType(self):
         return 1
 

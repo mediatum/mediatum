@@ -44,6 +44,8 @@ DEFAULT_MASKCACHE = 'deep'  # 'deep' | 'shallow' | None
 # remark 2013-09-18 wn: only deep cache compatible with multilingual text/memo/htmlmemo fields
 
 
+def init_maskcache():
+    global maskcache, maskcache_shallow, maskcache_accesscount, maskcache_msg
 # for deep mask caching
 maskcache = {}
 maskcache_accesscount = {}

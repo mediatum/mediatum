@@ -18,25 +18,20 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import re
-import core.tree as tree
 import os
-import core.config as config
-import core.athana as athana
-from utils.utils import get_filesize, join_paths, clean_path, getMimeType, formatException
-from core.translation import t
-from core.styles import theme
+import glob
 import random
 import zipfile
 import time
 
-import glob
-import utils.utils
-
-import core.acl as acl
-from core import archivemanager
+import core.config as config
+import core.athana as athana
+import core.tree as tree
+from core.archive import archivemanager
 from core.acl import AccessData
 from core.tree import getNode
-from string import atoi
+import utils.utils
+from utils.utils import get_filesize, join_paths, clean_path, getMimeType
 
 
 IMGNAME = re.compile("/?(attachment|doc|images|thumbs|thumb2|file|download|archive)/([^/]*)(/(.*))?$")
@@ -64,7 +59,7 @@ def send_image(req):
         if f.getType()=="image":
             return req.sendFile(f.retrieveFile(), f.getMimeType())
     return 404
-    
+
 def send_image_watermark(req):
     try:
         result = splitpath(req.path)
@@ -89,7 +84,7 @@ def send_rawimage(req):
             incUsage(n)
             return req.sendFile(f.retrieveFile(), f.getMimeType())
     return 404
-    
+
 def send_rawfile(req, n=None):
     access = AccessData(req)
     if not n:
@@ -117,7 +112,7 @@ def send_thumbnail(req):
         if f.getType()=="thumb":
             if os.path.isfile(f.retrieveFile()):
                 return req.sendFile(f.retrieveFile(), f.getMimeType())
-    
+
 
     for p in athana.getFileStorePaths("/img/"):
         for test in ["default_thumb_%s_%s.*" % (n.getContentType(), n.getSchema()), "default_thumb_%s.*" % (n.getSchema()), "default_thumb_%s.*" % (n.getContentType())]:
@@ -141,7 +136,7 @@ def send_thumbnail2(req):
         if f.getType()=="image":
             if os.path.isfile(f.retrieveFile()):
                 return req.sendFile(f.retrieveFile(), f.getMimeType())
-                
+
     #fallback2
     for p in athana.getFileStorePaths("/img/"):
         for test in ["default_thumb_%s_%s.*" % (n.getContentType(), n.getSchema()), "default_thumb_%s.*" % (n.getSchema()), "default_thumb_%s.*" % (n.getContentType())]:
@@ -151,7 +146,7 @@ def send_thumbnail2(req):
                 thumb_mimetype, thumb_type = utils.utils.getMimeType(fps[0])
                 return req.sendFile(fps[0], thumb_mimetype, force=1)
     return 404
-    
+
 
 def send_doc(req):
     access = AccessData(req)
@@ -212,13 +207,13 @@ def send_file(req, download=0):
         am = archivemanager.getManager(n.get("archive_type"))
         req.reply_headers["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
         return req.sendFile(am.getArchivedFileStream(n.get("archive_path")), "application/x-download")
-    
+
     if not file:
         return 404
 
     req.reply_headers["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
     return req.sendFile(file.retrieveFile(), f.getMimeType())
-    
+
 def send_file_as_download(req):
     return send_file(req, download=1)
 
@@ -236,7 +231,7 @@ def send_attachment(req):
         if file.getType()=="attachment":
             sendZipFile(req, file.retrieveFile())
             break
-        
+
 def sendBibFile(req, path):
     req.reply_headers['Content-Disposition'] = "attachment; filename=export.bib"
     req.sendFile(path, getMimeType(path))
@@ -265,7 +260,7 @@ def sendZipFile(req, path):
     if os.sep=='/': # Unix?
         os.unlink(tempfile) # unlinking files while still reading them only works on Unix/Linux
 
-    
+
 #
 # send single attachment file to user
 #
@@ -289,7 +284,7 @@ def send_attfile(req):
 
     return req.sendFile(path, mime)
 
-        
+
 def get_archived(req):
     print "send archived"
     id, filename = splitpath(req.path)
@@ -304,7 +299,7 @@ def get_archived(req):
         if item.endswith(node.get("archive_type")):
             archiveclass = item + ".py"
             break
-    
+
     if archiveclass: # start process from archive
         os.chdir(config.basedir)
         os.system("python %s %s" %(archiveclass, node.id))
@@ -317,12 +312,12 @@ def get_archived(req):
         time.sleep(1)
         if st=="2":
             break
-    
+
     for n in node.getAllChildren():
         tree.remove_from_nodecaches(n)
     req.write('done')
-    
-    
+
+
 def get_root(req):
     filename = config.basedir+"/web/root"+req.path
     if os.path.isfile(filename):
@@ -337,7 +332,7 @@ def get_all_file_paths(basedir):
         for fn in filenames:
             res.append(os.path.join(dirpath, fn))
     return res
-    
+
 def build_transferzip(node):
     nid = node.id
     zipfilepath = join_paths(config.get("paths.tempdir"), nid+"_transfer.zip")
@@ -346,11 +341,11 @@ def build_transferzip(node):
 
     zip = zipfile.ZipFile(zipfilepath, "w", zipfile.ZIP_DEFLATED)
     files_written = 0
-    
-    for n in node.getAllChildren():    
+
+    for n in node.getAllChildren():
 
         for fn in n.getFiles():
-            if fn.getType() in ['doc', 'document', 'zip', 'attachment', 'other']:                
+            if fn.getType() in ['doc', 'document', 'zip', 'attachment', 'other']:
                 fullpath = fn.retrieveFile()
                 if os.path.isfile(fullpath) and os.path.exists(fullpath):
                     dirname, filename = os.path.split(fullpath)
@@ -371,13 +366,13 @@ def build_filelist(node):
     "build file list for generation of xmetadissplus xml"
     files_written = 0
     result_list = []
-    
+
     for n in node.getAllChildren():
 
         for fn in n.getFiles():
             if fn.getType() in ['doc', 'document', 'zip', 'attachment', 'other']:
                 fullpath = fn.retrieveFile()
-                if os.path.isfile(fullpath) and os.path.exists(fullpath):                
+                if os.path.isfile(fullpath) and os.path.exists(fullpath):
                     dirname, filename = os.path.split(fullpath)
                     result_list.append([filename, fn.getSize()])
                     files_written += 1
@@ -387,7 +382,7 @@ def build_filelist(node):
                         result_list.append([filename, utils.utils.get_filesize(f)])
                         files_written += 1
 
-    return result_list    
+    return result_list
 
 def get_transfer_url(n):
     "get transfer url for oai format xmetadissplus"

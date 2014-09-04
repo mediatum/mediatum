@@ -17,17 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from core.transition import httpstatus
-import core.tree as tree
-import os
+import json
 import logging
-import re
-import sys
-
-if sys.version[0:3] < '2.6':
-    import simplejson as json
-else:
-    import json
 
 import core.acl
 import core.config as config
@@ -41,6 +32,7 @@ from core.tree import db
 from web.frontend.frame import getNavigationFrame
 from web.frontend.content import getContentArea, ContentNode
 from schema.schema import getMetadataType, getMetaType
+from core.transition import httpstatus
 
 
 logg = logging.getLogger("frontend")

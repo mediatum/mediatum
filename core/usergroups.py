@@ -24,7 +24,6 @@
 #   - description text
 #
 
-import core.config as config
 from utils.utils import Option
 import core.tree as tree
 import acl

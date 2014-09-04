@@ -333,8 +333,9 @@ def isCollection(node):
         return 0
 
 def getCollection(node):
+    # local import due to import loop with core.tree
+    from core import tree
     def p(node):
-        import core.tree
         if node.type == "collection" or node.type == "collections":
             return node
         for pp in node.getParents():
@@ -344,19 +345,19 @@ def getCollection(node):
         return None
     collection = p(node)
     if collection is None:
-        import core.tree
-        collection = core.tree.getRoot("collections")
+        collection = tree.getRoot("collections")
     return collection
 
 def getAllCollections():
+    # local import due to import loop with core.tree
+    from core import tree
     l = []
     def f(l,node):
         for c in node.getChildren():
             if isCollection(c):
                 l += [c]
                 f(l, c)
-    import core.tree
-    f(l, core.tree.getRoot("collections"))
+    f(l, tree.getRoot("collections"))
     return l
 
 def isDirectory(node):
@@ -367,7 +368,6 @@ def isDirectory(node):
 
 def getDirectory(node):
     def p(node):
-        import core.tree
         if node.type.startswith("directory"):
             return node
         for pp in node.getParents():

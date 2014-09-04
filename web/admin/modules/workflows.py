@@ -20,20 +20,15 @@
 import re
 import sys, traceback
 import core.tree as tree
-import core.acl as acl
 import core.config as config
-import logging
 
-from core.acl import AccessRule, getRuleList
+from core.acl import getRuleList
 from workflow.workflow import getWorkflowList, getWorkflow, updateWorkflow, addWorkflow, deleteWorkflow, inheritWorkflowRights, getWorkflowTypes, updateWorkflowStep, createWorkflowStep, deleteWorkflowStep, exportWorkflow, importWorkflow
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from schema.schema import parseEditorData
-from core.tree import getType
-from schema.schema import Metadatafield
 from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings 
 from core.translation import t, lang
-#from core.metatype import Context
 
 def getInformation():
     return{"version":"1.0"}

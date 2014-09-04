@@ -20,13 +20,11 @@
 import core.tree as tree
 import core.config as config
 import os
-import core.db.database as database
 import core.acl as acl
 import time
 import sys
 import logging
 import thread
-import traceback
 import utils.date as date
 from utils.utils import ArrayToString,formatException, modify_tex
 

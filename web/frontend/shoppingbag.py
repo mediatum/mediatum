@@ -19,14 +19,13 @@
 """
 
 from core.transition import httpstatus
-import core
 import core.tree as tree
 import core.users as users
 from core.tree import db
 from core.translation import lang
 from core.acl import AccessData
 from core.styles import theme
-from schema.schema import VIEW_HIDE_EMPTY, VIEW_DATA_ONLY
+from schema.schema import VIEW_DATA_ONLY
 from utils.utils import format_filesize
 from utils.pathutils import isDescendantOf  
 
@@ -247,7 +246,6 @@ def export_shoppingbag_bibtex(req):
     """
     from web.frontend.streams import sendBibFile
     from schema.schema import getMetaType
-    from utils.utils import join_paths
     import core.config as config
     import random
     import os

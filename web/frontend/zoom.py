@@ -21,11 +21,9 @@ import re
 import core.tree as tree
 import os
 from PIL import Image
-import sys
 import zipfile
 import random
 import core.config as config
-from utils.fileutils import importFile, getImportDir
 from utils.lrucache import lru_cache
 IMGNAME = re.compile("/?tile/([^/]*)(/(.*))?$")
 
@@ -63,7 +61,7 @@ class ZoomImage:
         self.z_file = None
         self.filepath = None
         self.load()
-        
+
         if not self.levels:
             self.load()
         if store and preprocess:
@@ -122,7 +120,7 @@ class ZoomImage:
         tileid = "tile-%d-%d-%d" % (level,x,y)
 
         if not self.z_file:
-            for f in self.node.getFiles():  
+            for f in self.node.getFiles():
                 if f.type=="zoom" and os.path.exists(self.filepath+"/"+f.getName()):
                     self.z_file = zipfile.ZipFile(self.filepath+"/"+f.getName(), "r")
                     break

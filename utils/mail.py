@@ -22,7 +22,6 @@ import smtplib
 import mimetypes
 
 from email import encoders
-from email.message import Message
 from email.mime.audio import MIMEAudio
 from email.mime.base import MIMEBase
 from email.mime.image import MIMEImage
@@ -31,7 +30,6 @@ from email.mime.text import MIMEText
 
 import os
 import logging
-import core.users
 import core.config as config
 from utils import formatException
 

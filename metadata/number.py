@@ -19,7 +19,7 @@
 """
 from mediatumtal import tal
 from utils.utils import esc
-from core.metatype import Metatype, Context
+from core.metatype import Metatype
 
 class m_number(Metatype):
 

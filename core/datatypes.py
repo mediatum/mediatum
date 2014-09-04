@@ -18,7 +18,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 #from utils import *
-import core.tree as tree
 from core.tree import nodeclasses
 
 class Datatype:

@@ -18,16 +18,10 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
-import sys
+import json
 import logging
 
-if sys.version[0:3] < '2.6':
-    import simplejson as json
-else:
-    import json
-
-from utils.utils import esc, u, u2
+from utils.utils import esc, u2
 from schema.schema import getMetaType
 from web.services.serviceutils import attribute_name_filter
 

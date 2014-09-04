@@ -21,7 +21,6 @@
 
 import re
 import os
-import string
 import inspect
 import codecs
 import logging

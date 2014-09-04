@@ -19,7 +19,6 @@
 """
 from mediatumtal import tal
 import core.tree as tree
-from core.tree import Node
 from core.metatype import Metatype
 
 class m_meta(Metatype):

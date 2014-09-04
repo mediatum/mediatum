@@ -24,6 +24,9 @@ import sys
 sys.path += ['../..', '../', '.']
 import sqlite3
 
+from core.init import basic_init
+basic_init()
+
 import core.tree as tree
 import core.config as config
 

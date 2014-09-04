@@ -17,17 +17,14 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import urllib2
+import json
+
 from mediatumtal import tal
 import core.tree as tree
-
-import urllib2
-try:
-    import json
-except:
-    import simplejson as json
-
 from utils.utils import esc
-from core.metatype import Metatype, Context
+from core.metatype import Metatype
+
 
 class m_dlist(Metatype):
     def formatValues(self, context):
@@ -41,7 +38,7 @@ class m_dlist(Metatype):
             items = n.getAllAttributeValues(context.field.getName(), context.access)
         except tree.NoSuchNodeError:
             None
-            
+
         value = context.value.split(";")
 
         for val in context.field.getValueList():
@@ -58,7 +55,7 @@ class m_dlist(Metatype):
             if indent>0:
                 indent = indent-1
             indentstr = "&nbsp;"*(2*indent)
-            
+
             num =0
             if val in items.keys():
                 num = int(items[val])
@@ -72,7 +69,7 @@ class m_dlist(Metatype):
                     num = " ("+str(num)+")"
             except:
                 num = ""
-                
+
             val = esc(val)
 
             if not canbeselected:
@@ -132,10 +129,10 @@ class m_dlist(Metatype):
 
     def getName(self):
         return "fieldtype_dlist"
-        
+
     def getInformation(self):
         return {"moduleversion":"1.0", "softwareversion":"1.1"}
-        
+
     # method for additional keys of type list
     def getLabels(self):
         return m_dlist.labels

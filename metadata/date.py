@@ -19,8 +19,7 @@
 """
 from mediatumtal import tal
 import utils.date as date
-from utils.date import format_date, parse_date, now, validateDate
-from schema.schema import dateoption
+from utils.date import format_date, parse_date, validateDate
 from core.metatype import Metatype
 
 class m_date(Metatype):

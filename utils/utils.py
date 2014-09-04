@@ -473,6 +473,9 @@ def getMimeType(filename):
     elif filename.endswith(".flv"):
         mimetype = "video/x-flv"
         type = "video"
+    elif filename.endswith(".mov"):
+        mimetype = "video/quicktime"
+        type = "video"
     elif filename.endswith(".doc"):
         mimetype = "application/msword"
         type = "document"

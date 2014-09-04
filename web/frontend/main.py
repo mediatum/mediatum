@@ -80,11 +80,8 @@ def display_alias(req):
             logg.debug("known node alias in cache '%s' -> '%s'", alias, node_id)
             req.params["id"] = node_id
         else:
-            # alias string is checked above, so no SQL Injection can happen here :)
-            stmt = "SELECT nid FROM nodeattribute WHERE name='system.aliascol' AND value='{}'".format(alias)
-            res = db.execute(stmt)
-            if res:
-                node_id = str(res[0][0])
+            node_id = db.get_aliased_nid(alias)
+            if node_id:
                 known_node_aliases[alias] = node_id
                 req.params["id"] = node_id
                 logg.debug("node alias from DB '%s' -> '%s'", alias, node_id)

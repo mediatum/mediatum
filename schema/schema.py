@@ -630,11 +630,8 @@ class Metadatatype(tree.Node):
 
 
     def getAllItems(self):
-        ret = []
-        l = getConnection().getNodeIDsForSchema(self.getName())
-        for i in l:
-            ret.append(i[0])
-        return tree.NodeList(ret)
+        node_ids = tree.db.get_nids_by_type_suffix(self.getName())
+        return tree.NodeList(node_ids)
 
 
 """ fields for metadata """

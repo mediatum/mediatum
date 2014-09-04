@@ -1026,11 +1026,11 @@ class Node(object):
         values = {}
         try:
             if schema!="":
-                sql = 'select distinct(value) from node, nodeattribute where node.id=nodeattribute.nid and nodeattribute.name="'+attribute+'" and node.type like "%/'+schema+'"'
-                fields = db.runQuery(sql)
+                fields = db.get_all_attribute_values(attribute, schema, distinct=True)
             else:
                 fields = db.getMetaFields(attribute)
         except:
+            log.exception("")
             fields = db.getMetaFields(attribute)
 
         # REVERT BACK TO SIMPLE SQL QUERY BECAUSE BELOW CODE TOO *SLOW*

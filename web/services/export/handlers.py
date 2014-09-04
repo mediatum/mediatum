@@ -717,7 +717,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
             return res
         from core.db import database
         db = database.getConnection()
-        typed_node_id_list = [x[0] for x in db.getNodeIDsForSchema(mdt)]
+        typed_node_id_list = db.get_nids_by_type_suffix(mdt)
         db.close()
         if typed_node_id_list:
             typed_nodelist = tree.NodeList(typed_node_id_list)

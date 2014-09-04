@@ -46,11 +46,11 @@ class Connector:
         return idlist
 
     def get_children_with_type(self, parent_id, nodetype):
-        t = self.runQuery(
-            "select cid from node, nodemapping"
-            " where nid={} and id=cid and type='{}'"
-            " order by cid"
-            .format(parent_id, nodetype))
+        sql = ("select cid from node, nodemapping"
+               " where nid=%s and id=cid and type='%s'"
+               " order by cid")
+        t = self.runQuery(sql, parent_id, nodetype)
+
         return [str(i[0]) for i in t]
 
     def get_num_children(self, nodeid):
@@ -86,6 +86,14 @@ class Connector:
             if value:
                 attributes[name] = value
         return attributes
+
+    def get_all_attribute_values(self, attribute, schema, distinct=False):
+        value_sql = "distinct(value)" if distinct else "value"
+        sql = ("SELECT node.id, " + value_sql + " from node, nodeattribute"
+               " WHERE node.id=nodeattribute.nid"
+               " AND nodeattribute.name=%s"
+               " AND node.type LIKE %s")
+        return self.runQuery(sql, attribute, "%/" + schema)
 
     def get_attributes_complex(self, nodeid):
         t = self.runQuery("select name,value from nodeattribute where nid=%s", nodeid)
@@ -140,7 +148,8 @@ class Connector:
 
     def getDirtySchemas(self, limit=0):
         dirty_nodes = self.getDirty()
-        schema_nodes = [id[0] for id in self.getNodeIDsForSchemas()]
+        # get all nodes with type like %/%
+        schema_nodes = self.get_nids_by_type_suffix("/%")
         dirty_schema_nodes = list(set(schema_nodes).intersection(dirty_nodes))
         if limit:
             return dirty_schema_nodes[:limit]
@@ -238,6 +247,16 @@ class Connector:
         else:
             return None
 
+    def get_nids_by_type_suffix(self, type_suffix):
+        """Gets node ids with a type with suffix `type_suffix`
+        """
+        sql = ("SELECT id"
+               " FROM node"
+               " WHERE type LIKE %s")
+        res = self.runQuery(sql, "%" + type_suffix)
+        if res:
+            return [r[0] for r in res]
+
     def deleteNode(self, id):
         self.runQuery("delete from node where id=" + id)
         self.runQuery("delete from nodemapping where cid=" + id)
@@ -256,17 +275,23 @@ class Connector:
         orderpos = t[0][0] + 1
         return orderpos
 
-    def getNodeIDsForSchemas(self, datatype="*"):
-        return self.runQuery('select id from node where type like "%%/%%"')
-    def getNodeIDsForSchema(self, schema, datatype="*"):
-        return self.runQuery("select id from node where type like %s or type = %s", "%" + schema, schema)
-
     def mkID(self):
         t = self.runQuery("select max(id) as maxid from node")
         if len(t)==0 or t[0][0] is None:
             return "1"
         id = t[0][0] + 1
         return str(id)
+
+
+    def get_aliased_nid(self, alias):
+        """Get node id which belongs to the given alias path"""
+        sql = ("SELECT nid"
+               " FROM nodeattribute"
+               " WHERE name='system.aliascol'"
+               " AND value=%s")
+        res = self.runQuery(sql, alias)
+        if res:
+            return int(res[0][0])
 
     ### node sorting
 

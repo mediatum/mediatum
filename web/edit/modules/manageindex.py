@@ -37,12 +37,13 @@ def isParent__(basenode, node, access):
 
 def getAllAttributeValues(attribute, schema):
     values = {}
-    for f in tree.db.runQuery('select nodeattribute.nid, nodeattribute.value from nodeattribute, node where node.id=nodeattribute.nid and node.type like "%'+schema+'" and nodeattribute.name='+tree.db.esc(attribute)):
-        for s in f[1].split(";"):
+    nids_values = tree.db.get_all_attribute_values(attribute, schema)
+    for nid, value in nids_values:
+        for s in value.split(";"):
             s = u(s.strip())
             if s not in values:
                 values[s] = []
-            values[s].append(f[0])
+            values[s].append(nid)
     return values
 
 

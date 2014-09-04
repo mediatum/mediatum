@@ -25,8 +25,10 @@ import core.tree as tree
 from utils.utils import u, intersection, union
 from utils.boolparser import BoolParser
 
-DEBUG = False
 pattern_op = re.compile('^([\:a-zA-Z0-9._-]+)\s*(=|>=|<=|<|>|[Ll][Ii][Kk][Ee])\s*"?([^"]*)"?$')
+
+logg = logging.getLogger("oai")
+
 
 class OAISearchAndCondition:
     def __init__(self, a,b):
@@ -54,33 +56,32 @@ class OAISearchFieldCondition:
         self.field = field
         self.op = op
         self.value = value
+
     def __str__(self):
         return self.field+" "+self.op+" "+self.value
+
     def execute(self):
         fieldprefix = 'fts:'
         if self.field.startswith(fieldprefix):
-            if DEBUG:
-                logging.getLogger('oai').info('OAISearchParser: ---> calling fts:'+ self.field+" "+self.op+" "+self.value)
+            logg.debug('OAISearchParser: ---> calling fts:'+ self.field+" "+self.op+" "+self.value)
             from core.tree import searcher
             return searcher.run_search(self.field.replace(fieldprefix, ''), self.op, self.value)
 
         if self.field=='schema' and self.op=='=':
-            sql = "SELECT id FROM node WHERE type LIKE %s"
-            params = ("%" + self.value, )
+            logg.debug('OAISearchParser: ---> getting nodes with type %s', self.value)
+            node_ids = tree.db.get_nids_by_type_suffix(self.value)
+
         elif self.field and self.op and self.value:
-            sql = "SELECT id FROM node, nodeattribute WHERE id=nid and nodeattribute.name=%s and nodeattribute.value "+ self.op + " %s",
+            sql = "SELECT id FROM node, nodeattribute WHERE id=nid AND nodeattribute.name=%s AND nodeattribute.value "+ self.op + " %s"
             params = (self.field, self.value)
+            logg.debug('OAISearchParser: ---> going to execute sql: %s with params %s', sql, params)
+            res = tree.db.runQuery(sql, *params)
+            node_ids = [x[0] for x in res]
         else:
-            if DEBUG:
-                logging.getLogger('oai').error('OAISearchParser: ---> OAISearchParser: Error evaluating FieldCondition')
+            logg.debug('OAISearchParser: ---> OAISearchParser: Error evaluating FieldCondition')
             return []
-        if DEBUG:
-            logging.getLogger('oai').info('OAISearchParser: ---> going to execute sql: %s with params %s', sql, params)
-        res = tree.db.runQuery(sql, *params)
-        res = [x[0] for x in res]
-        if DEBUG:
-            logging.getLogger('oai').info('OAISearchParser: ---> sql returned %d results', len(res))
-        return list(set(res))
+        logg.debug('OAISearchParser: ---> sql returned %d results', len(node_ids))
+        return list(set(node_ids))
 
 
 class OAISearchParser(BoolParser):
@@ -89,7 +90,7 @@ class OAISearchParser(BoolParser):
         if m:
             return OAISearchFieldCondition(m.group(1), m.group(2), m.group(3))
         else:
-            print 'OAISearchParser: ---> Error: no field specified'
+            logg.debug('OAISearchParser: ---> Error: no field specified')
 
     def getAndClass(self):
         return OAISearchAndCondition

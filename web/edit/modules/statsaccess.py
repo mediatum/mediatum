@@ -18,7 +18,7 @@
 """
 
 import os
-import Image
+from PIL import Image
 import core.config as config
 import core.tree as tree
 import core.acl as acl

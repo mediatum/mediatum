@@ -23,8 +23,7 @@ if __name__ == "__main__":
 
 import logging
 import random
-import Image
-import ImageDraw
+from PIL import Image, ImageDraw
 import logging
 import sys
 import os

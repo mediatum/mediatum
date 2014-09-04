@@ -20,6 +20,7 @@
 import os
 import core
 import core.tree as tree
+from PIL import Image,ImageDraw
 import default
 import core.acl as acl
 from lib.audio import File as AudioFile
@@ -41,7 +42,6 @@ def makeAudioThumb(node, audiofile):
         
 # """ make thumbnail (jpeg 128x128) """
 def makeThumbNail(node, audiofile):
-    import Image,ImageDraw
     path, ext = splitfilename(audiofile.filename)
 
     if audiofile.tags:
@@ -82,7 +82,6 @@ def makeThumbNail(node, audiofile):
 
 # """ make presentation format (jpeg 320x320) """    
 def makePresentationFormat(node, audiofile):
-    import Image,ImageDraw
     path, ext = splitfilename(audiofile.filename)
     
     if audiofile.tags:

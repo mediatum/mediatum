@@ -18,7 +18,7 @@
 """
 
 import os
-import Image
+from PIL import Image
 import core.athana as athana
 import core.acl as acl
 import core.tree as tree

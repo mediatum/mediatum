@@ -21,7 +21,7 @@
 import math
 import os.path
 import StringIO
-import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont
 
 import core.config as config
 from ..workflow import getWorkflow

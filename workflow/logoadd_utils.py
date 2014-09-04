@@ -25,8 +25,7 @@ import random
 import string
 import StringIO
 
-import Image
-import ImageDraw
+from PIL import Image, ImageDraw
 
 from datetime import datetime
 

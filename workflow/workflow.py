@@ -19,7 +19,7 @@
 """
 
 import os
-import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont
 import StringIO
 import traceback, sys
 import random

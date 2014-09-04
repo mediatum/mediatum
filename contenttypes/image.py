@@ -19,7 +19,7 @@
 """
 import core
 import core.config as config
-import Image
+from PIL import Image as PILImage, ImageDraw, ImageChops
 import core.tree as tree
 import core.users as users
 import core.acl as acl
@@ -40,15 +40,14 @@ from web.frontend import zoom
 
 """ make thumbnail (jpeg 128x128) """
 def makeThumbNail(image, thumb):
-    import Image,ImageDraw, ImageChops
     if isnewer(thumb,image):
         return
-    pic = Image.open(image)
+    pic = PILImage.open(image)
     tmpjpg = config.get("paths.datadir")+"tmp/img"+str(random.random())+".jpg"
-    
+
     if pic.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
         os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" %(image, tmpjpg)) #always get a rgb image
-        pic = Image.open(tmpjpg)
+        pic = PILImage.open(tmpjpg)
 
     try:
         pic.load()
@@ -64,19 +63,19 @@ def makeThumbNail(image, thumb):
     else:
         newheight = 128
         newwidth = width*newheight/height
-    pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
+    pic = pic.resize((newwidth, newheight), PILImage.ANTIALIAS)
     try:
-        im = Image.new(pic.mode, (128, 128), (255, 255, 255))
+        im = PILImage.new(pic.mode, (128, 128), (255, 255, 255))
     except:
-        im = Image.new("RGB", (128,128), (255, 255, 255))
-    
+        im = PILImage.new("RGB", (128,128), (255, 255, 255))
+
     x = (128-newwidth)/2
     y = (128-newheight)/2
     im.paste( pic, (x,y,x+newwidth,y+newheight))
-    
+
     draw = ImageDraw.ImageDraw(im)
     draw.line([(0,0),(127,0),(127,127),(0,127),(0,0)], (128,128,128))
-    
+
     im = im.convert("RGB")
     im.save(thumb, "jpeg")
     if os.path.exists(tmpjpg):
@@ -84,22 +83,20 @@ def makeThumbNail(image, thumb):
 
 """ make presentation format (png) """
 def makePresentationFormat(image, thumb):
-    #import pdb; pdb.set_trace()
-    import Image,ImageDraw
     if isnewer(thumb,image):
         return
-    pic = Image.open(image)
+    pic = PILImage.open(image)
     tmpjpg = config.get("paths.datadir")+"tmp/img"+str(random.random())+".jpg"
     if pic.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
         os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" %(image, tmpjpg))
-        pic = Image.open(tmpjpg)
-        
+        pic = PILImage.open(tmpjpg)
+
     try:
         pic.load()
     except IOError, e:
         pic = None
         raise OperationException("error:"+str(e))
-        
+
     width = pic.size[0]
     height = pic.size[1]
 
@@ -112,7 +109,7 @@ def makePresentationFormat(image, thumb):
         else:
             newheight = 320
             newwidth = width*newheight/height
-        pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
+        pic = pic.resize((newwidth, newheight), PILImage.ANTIALIAS)
 
     try:
         pic.save(thumb, "jpeg")
@@ -124,34 +121,32 @@ def makePresentationFormat(image, thumb):
 
 """ make original (png real size) """
 def makeOriginalFormat(image, thumb):
-    import Image
-    
+
     tmpjpg = config.get("paths.datadir")+"tmp/img"+str(random.random())+".jpg"
-    pic = Image.open(image)
+    pic = PILImage.open(image)
     if pic.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
     #if image.endswith("jpg") or image.endswith("jpeg"):
         os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" %(image, tmpjpg))
-        pic = Image.open(tmpjpg)
-        
+        pic = PILImage.open(tmpjpg)
+
     try:
         pic.load()
     except IOError, e:
         pic = None
         raise OperationException("error:"+str(e))
-        
-    pic.save(thumb, "png")    
+
+    pic.save(thumb, "png")
     if os.path.exists(tmpjpg):
         os.unlink(tmpjpg)
 
-        
+
 """ evaluate image dimensions for given file """
 def getImageDimensions(image):
-    import Image
-    pic = Image.open(image)
+    pic = PILImage.open(image)
     width = pic.size[0]
     height = pic.size[1]
     return width,height
-    
+
 def getJpegSection(image, section): # section character
     data = ""
     try:
@@ -167,7 +162,7 @@ def getJpegSection(image, section): # section character
             if ord(c)==0xFF: # found tag start
                 if capture:
                     done = True
-                    
+
                 c = fin.read(1)
                 if ord(c)==section: # found tag
                     capture = True
@@ -189,7 +184,7 @@ def dozoom(node):
         b = 1
     return b
 
-    
+
 """ image class for internal image-type """
 class Image(default.Default):
     def getTypeAlias(node):
@@ -197,7 +192,7 @@ class Image(default.Default):
 
     def getOriginalTypeName(node):
         return "original"
-        
+
     def getCategoryName(node):
         return "image"
 
@@ -206,12 +201,12 @@ class Image(default.Default):
         mask = node.getFullView(lang(req))
 
         tif = ""
-        try: 
+        try:
             tifs = req.session["fullresolutionfiles"]
         except:
             tifs = []
 
-        access = acl.AccessData(req)       
+        access = acl.AccessData(req)
         if access.hasAccess(node,"data"):
             for f in node.getFiles():
                 if f.getType()=="original":
@@ -219,10 +214,10 @@ class Image(default.Default):
                         tif = node.getName()
                     else:
                         tif = f.getName()
-        
+
             if node.get("archive_path")!="":
                 tif = "file/"+str(node.id)+"/"+node.get("archive_path")
-                
+
         files, sum_size = filebrowser(node, req)
 
         obj = {'deleted': False, 'access': access}
@@ -240,8 +235,8 @@ class Image(default.Default):
         obj['canseeoriginal'] = access.hasAccess(node,"data")
         obj['originallink'] = "getArchivedItem('"+str(node.id)+"/"+tif+"')"
         obj['archive'] = node.get('archive_type')
-        
-        
+
+
         if "style" in req.params.keys():
             req.session["full_style"] = req.params.get("style", "full_standard")
         elif "full_style" not in req.session.keys():
@@ -250,18 +245,18 @@ class Image(default.Default):
                 req.session["full_style"] = col.get("style_full")
             else:
                 req.session["full_style"] = "full_standard"
-       
+
         obj['style'] = req.session["full_style"]
         return obj
-    
+
     """ format big view with standard template """
     def show_node_big(node, req, template="", macro=""):
         if template=="":
             styles = getContentStyles("bigview", contenttype=node.getContentType())
             if len(styles)>=1:
                 template = styles[0].getTemplate()
-        return req.getTAL(template, node._prepareData(req), macro)    
-    
+        return req.getTAL(template, node._prepareData(req), macro)
+
     def isContainer(node):
         return 0
 
@@ -306,11 +301,11 @@ class Image(default.Default):
                             pngname = path+".png"
                             if not os.path.isfile(pngname):
                                 makeOriginalFormat(f.retrieveFile(), pngname)
-                                
+
                                 width, height = getImageDimensions(pngname)
                                 node.set("width", width)
                                 node.set("height", height)
-                                
+
                             else:
                                 width, height = getImageDimensions(pngname)
                                 node.set("width", width)
@@ -329,7 +324,7 @@ class Image(default.Default):
                     node.set("origwidth", width)
                     node.set("origheight", height)
                     node.set("origsize", f.getSize())
-                    
+
                     if f.mimetype=="image/jpeg":
                         node.set("jpg_comment", iso2utf8(getJpegSection(f.retrieveFile(), 0xFE).strip()))
 
@@ -338,7 +333,7 @@ class Image(default.Default):
                     if (f.type=="image" and not f.getName().lower().endswith("svg")) or f.type=="tmppng":
                         path,ext = splitfilename(f.retrieveFile())
                         basename = hashlib.md5(str(random.random())).hexdigest()[0:8]
-                       
+
                         #path = os.path.join(getImportDir(),os.path.basename(path))
                         path = os.path.join(getImportDir(),basename)
 
@@ -362,7 +357,7 @@ class Image(default.Default):
 
             # Exif
             try:
-                from lib.Exif import EXIF           
+                from lib.Exif import EXIF
                 files = node.getFiles()
 
                 for file in files:
@@ -476,7 +471,7 @@ class Image(default.Default):
                 "exif_Thumbnail_Model": "Thumbnail Model",
                 "exif_JPEGThumbnail": "JPEGThumbnail",
                 "Thumbnail": "Thumbnail"}}
- 
+
     """ fullsize popup-window for image node """
     def popup_fullsize(node, req):
         access = AccessData(req)
@@ -500,16 +495,15 @@ class Image(default.Default):
         d['flash'] = dozoom(node) and zoom_exists
         d['tileurl'] = "/tile/"+node.id+"/"
         req.writeTAL("contenttypes/image.html", d, macro="imageviewer")
-        
-    
+
+
     def popup_thumbbig(node, req):
-        import Image
         access = AccessData(req)
 
         if (not access.hasAccess(node, "data") and not dozoom(node)) or not access.hasAccess(node,"read"):
             req.write(t(req, "permission_denied"))
             return
-        
+
         thumbbig = None
         for file in node.getFiles():
             if file.getType()=="thumb2":
@@ -518,11 +512,10 @@ class Image(default.Default):
         if not thumbbig:
             node.popup_fullsize(req)
         else:
-            im = Image.open(thumbbig.retrieveFile())
+            im = PILImage.open(thumbbig.retrieveFile())
             req.writeTAL("contenttypes/image.html", {"filename":'/file/'+str(node.id)+'/'+thumbbig.getName(), "width":im.size[0], "height":im.size[1]}, macro="thumbbig")
 
     def processImage(node, type="", value="", dest=""):
-        import Image
         import os
 
         img = None
@@ -530,15 +523,15 @@ class Image(default.Default):
             if file.type=="image":
                 img = file
                 break
-        
+
         if img:
-            pic = Image.open(img.retrieveFile())
+            pic = PILImage.open(img.retrieveFile())
             pic.load()
-            
+
             if type=="percentage":
                 w = pic.size[0]*int(value)/100
                 h = pic.size[1]*int(value)/100
-                
+
             if type=="pixels":
                 if pic.size[0]>pic.size[1]:
                     w = int(value)
@@ -546,7 +539,7 @@ class Image(default.Default):
                 else:
                     h = int(value)
                     w = pic.size[0]*int(value)/pic.size[1]
-            
+
             elif type=="standard":
                 w, h = value.split("x")
                 w = int(w)
@@ -565,22 +558,22 @@ class Image(default.Default):
                 else:
                     factor_w = w*1.0/pic.size[0]
                     factor_h = h*1.0/pic.size[1]
-                    
+
                     if pic.size[0]*factor_w<w and pic.size[1]*factor_w<h:
                         w = pic.size[0]*factor_h
                         h = pic.size[1]*factor_h
                     else:
                         w = pic.size[0]*factor_w
                         h = pic.size[1]*factor_w
-            
+
             else: # do nothing but copy image
                 w = pic.size[0]
                 h = pic.size[1]
 
-            pic = pic.resize((int(w),int(h)), Image.ANTIALIAS)
+            pic = pic.resize((int(w),int(h)), PILImage.ANTIALIAS)
             if not os.path.isdir(dest):
                 os.mkdir(dest)
-            pic.save(dest+node.id+".jpg", "jpeg")      
+            pic.save(dest+node.id+".jpg", "jpeg")
             return 1
         return 0
 
@@ -590,4 +583,4 @@ class Image(default.Default):
 
     def getDefaultEditTab(node):
         return "view"
-        
+

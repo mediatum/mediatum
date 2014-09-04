@@ -20,7 +20,7 @@
 import re
 import core.tree as tree
 import os
-import Image
+from PIL import Image
 import sys
 import zipfile
 import random

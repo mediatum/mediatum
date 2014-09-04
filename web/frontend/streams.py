@@ -35,7 +35,7 @@ import utils.utils
 import core.acl as acl
 from core import archivemanager
 from core.acl import AccessData
-from core.tree import getNode, nodes_cache, childids_cache, parentids_cache
+from core.tree import getNode
 from string import atoi
 
 
@@ -319,9 +319,7 @@ def get_archived(req):
             break
     
     for n in node.getAllChildren():
-        nodes_cache.remove(int(n.id))
-        childids_cache[int(n.id)] = None
-        parentids_cache[int(n.id)] = None
+        tree.remove_from_nodecaches(n)
     req.write('done')
     
     

@@ -22,11 +22,12 @@
 import os
 import sys
 import logging
+from collections import OrderedDict
+
 
 import core.tree as tree
 import core.config as config
 from utils.utils import esc
-from utils.dicts import SortedDict as SortedDict
 from utils.pathutils import isDescendantOf
 from oaisetgroup import OAISetGroup as OAISetGroup
 
@@ -72,7 +73,7 @@ def build_container_group():
     node_list = [node for node in node_list if node.get('oai.setname').strip()]
     node_list = [node for node in node_list if node.get('oai.formats').strip()]
 
-    d_names = SortedDict()
+    d_names = OrderedDict()
     for col_node in node_list:
         d_names[str(col_node.id)] = esc(col_node.get('oai.setname'))
 

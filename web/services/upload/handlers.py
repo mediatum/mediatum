@@ -39,8 +39,6 @@ from utils.pathutils import getBrowsingPathList, isDescendantOf
 from utils.utils import u, u2, esc, intersection, getMimeType, OperationException
 from utils.fileutils import importFileFromData
 
-from core.schedules import delete_node_from_cache
-
 import web.services.jsonnode as jsonnode
 from web.services.rssnode import template_rss_channel, template_rss_item, feed_channel_dict, try_node_date
 
@@ -67,11 +65,11 @@ resultcache = Cache(maxcount=25, verbose=True)
 SEND_TIMETABLE = False
 
 
-    
+
 
 
 def upload_new_node(req, path, params, data):
-    
+
     #get the user and verify the signature
     if params.get('user'):
         #user=users.getUser(params.get('user'))
@@ -92,7 +90,7 @@ def upload_new_node(req, path, params, data):
             _user = dummyuser()
         userAccess = AccessData(user=_user)
 
-        
+
         if userAccess.user != None:
             valid = userAccess.verify_request_signature(req.fullpath,params)
             if valid == False:
@@ -102,9 +100,9 @@ def upload_new_node(req, path, params, data):
     else:
         user=users.getUser('Gast')
         userAccess = AccessData(user=user)
-    
+
     parent = tree.getNode(params['parent'])
-    
+
     #check user access
     if userAccess != None and userAccess.hasAccess(parent, "write"):
         pass
@@ -115,20 +113,20 @@ def upload_new_node(req, path, params, data):
         d['status'] = 'fail'
         d['html_response_code'] = '403' # forbidden (authorization will not help)
         d['errormessage'] = 'no access'
-        return d['html_response_code'], len(s), d 
-    
-    
-    
+        return d['html_response_code'], len(s), d
+
+
+
     datatype = params.get('type')
     uploaddir = users.getUploadDir(user)
-    
+
     n = tree.Node(name=params.get('name'), type=datatype)
     data = base64.b64decode(params.get('data'))
     file = importFileFromData('uploadTest.jpg',data)
     n.addFile(file)
-    
+
     metadata = json.loads(params.get('metadata'))
-    
+
     #set provided metadata
     for key,value in metadata.iteritems():
         n.set(u(key),u(value))
@@ -136,9 +134,9 @@ def upload_new_node(req, path, params, data):
     # service flags
     n.set("creator", user.getName())
     n.set("creationtime", format_date())
-    
+
     parent.addChild(n)
-    
+
     #process the file, we've added to the new node
     if hasattr(n,"event_files_changed"):
         try:
@@ -149,35 +147,35 @@ def upload_new_node(req, path, params, data):
                 if os.path.exists(file.retrieveFile()):
                     os.remove(file.retrieveFile())
             raise OperationException(e.value)
-    
+
     #make sure the new node is visible immediately from the web service and the search index gets updated
     n.setDirty()
-    delete_node_from_cache(parent)
-    
+    tree.remove_from_nodecaches(parent)
+
     d = {}
     d['status'] = 'Created'
     d['html_response_code'] = '201' # ok
     d['build_response_end'] = time.time()
-                   
+
     s = "Created"
-     
+
     #provide the uploader with the new node ID
     req.reply_headers['NodeID'] = n.id
-    
+
     #we need to write in case of POST request, send as buffer wil not work
     req.write(s)
-    
-    
-    return d['html_response_code'], len(s), d 
+
+
+    return d['html_response_code'], len(s), d
 
 
 def update_node(req, path, params, data, id):
-    
+
     #get the user and verify the signature
     if params.get('user'):
         user=users.getUser(params.get('user'))
         userAccess = AccessData(user=user)
-        
+
         if userAccess.user != None:
             valid = userAccess.verify_request_signature(req.fullpath,params)
             if valid == False:
@@ -187,9 +185,9 @@ def update_node(req, path, params, data, id):
     else:
         user=users.getUser('Gast')
         userAccess = AccessData(user=user)
-    
+
     node = tree.getNode(id)
-    
+
     #check user access
     if userAccess != None and userAccess.hasAccess(node, "write"):
         pass
@@ -200,13 +198,13 @@ def update_node(req, path, params, data, id):
         d['status'] = 'fail'
         d['html_response_code'] = '403' # forbidden (authorization will not help)
         d['errormessage'] = 'no access'
-        return d['html_response_code'], len(s), d 
-    
-    
+        return d['html_response_code'], len(s), d
+
+
     node.name = params.get('name')
-    
+
     metadata = json.loads(params.get('metadata'))
-    
+
     #set provided metadata
     for key,value in metadata.iteritems():
         node.set(u(key),u(value))
@@ -215,20 +213,20 @@ def update_node(req, path, params, data, id):
     node.set("updateuser", user.getName())
     node.set("updatetime", format_date())
     node.setDirty()
-    
+
     d = {}
     d['status'] = 'OK'
     d['html_response_code'] = '200' # ok
     d['build_response_end'] = time.time()
-                   
+
     s = "OK"
-    
+
     #we need to write in case of POST request, send as buffer wil not work
     req.write(s)
-    
+
     req.reply_headers['updatetime'] = node.get('updatetime')
-    
-    return d['html_response_code'], len(s), d 
+
+    return d['html_response_code'], len(s), d
 
 
 
@@ -240,14 +238,14 @@ def update_node(req, path, params, data, id):
 # absolute:
 # WEBROOT="/tmp/"
 
-#WEBROOT="./web/services/static01/files/" 
+#WEBROOT="./web/services/static01/files/"
 
 # no WEBROOT configured, default will be used
 WEBROOT = None
 
 def serve_file(req, path, params, data, filepath):
     atime = starttime = time.time()
-    
+
     d = {}
     d['timetable'] = []
 
@@ -257,7 +255,7 @@ def serve_file(req, path, params, data, filepath):
         mimetype = 'text/html'
     else:
         mimetype = getMimeType(filepath)
-            
+
     req.reply_headers['Content-Type'] = mimetype
 
     if WEBROOT:
@@ -278,5 +276,5 @@ def serve_file(req, path, params, data, filepath):
     else:
         d['status'] = 'fail'
         dataready = "%.3f" % (time.time() - starttime)
-        d['dataready'] = dataready        
+        d['dataready'] = dataready
         return 404, 0, d # not found

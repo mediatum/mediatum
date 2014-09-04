@@ -38,7 +38,7 @@ from edit_common import *
 from core.translation import lang, t
 from edit_common import EditorNodeList
 from core.datatypes import loadAllDatatypes
-from core.tree import getRoot, nodes_cache, childids_cache, parentids_cache
+from core.tree import getRoot
 
 logger = logging.getLogger('editor')
 
@@ -322,9 +322,7 @@ def action(req):
 
     def clearFromCache(node):
         for n in node.getAllChildren():
-            nodes_cache.remove(int(n.id))
-            childids_cache[int(n.id)] = None
-            parentids_cache[int(n.id)] = None
+            tree.remove_from_nodecaches(n)
  
     if not access.user.isEditor():
         req.write("""permission denied""")

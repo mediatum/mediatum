@@ -25,9 +25,9 @@ import logging
 import time
 import sys
 import os
-from utils.dicts import MaxSizeDict
 from utils.utils import get_hash
 from utils.date import format_date, parse_date, STANDARD_FORMAT, now
+from utils.lrucache import lru_cache
 from locale import setlocale, strxfrm, LC_COLLATE, getlocale
 import core.config as config
 import thread
@@ -47,8 +47,6 @@ testmode = 0
 nocache = 0
 
 log = logg = logging.getLogger("backend")
-
-nodes_cache = None
 
 childids_cache = None
 parentids_cache = None
@@ -96,27 +94,21 @@ def getRoot(name=None):
     else:
         return _root.getChild(name)
 
+
+@lru_cache(maxsize=100000)
+def _get_node(id):
+    return Node(dbid=id)
+
+
 def getNode(id):
-    global nodes_cache,nocache
     try:
-        long(id)
+        lid = long(id)
     except ValueError:
         raise NoSuchNodeError(id)
     except TypeError:
         raise NoSuchNodeError(id)
+    return _get_node(lid)
 
-    if nocache:
-        return Node(dbid=id)
-    tree_lock.acquire()
-    try:
-        try:
-            return nodes_cache[long(id)]
-        except KeyError:
-            pass
-    finally:
-        tree_lock.release()
-    node = nodes_cache[long(id)] = Node(dbid=id)
-    return node
 
 def getAllContainerChildrenNum(node, count=0): # returns the number of children
     for n in node.getContainerChildren():
@@ -398,8 +390,6 @@ def _node_make_persistent_complex(self):
         tree_lock.acquire()
         try:
             self.id = db.createNode(self.name,self.type)
-            if not nocache:
-                nodes_cache[long(self.id)] = self
             for name, value in self.attributes.items():
                 _set_attribute_complex(self, name, value)
             if self.read_access:
@@ -475,7 +465,6 @@ class Node(object):
             obj.data_access = data
             obj.orderpos = orderpos
             obj.localread = localread
-            obj.getLocalRead()
         return obj
 
     def __init__(self, name="<unbenannt>", type=None, dbid=None):
@@ -512,8 +501,6 @@ class Node(object):
             tree_lock.acquire()
             try:
                 self.id = db.createNode(self.name,self.type)
-                if not nocache:
-                    nodes_cache[long(self.id)] = self
                 for name,value in self.attributes.items():
                     db.setAttribute(self.id, name, value, check=(not bulk))
                 if self.read_access:
@@ -522,6 +509,8 @@ class Node(object):
                     db.setNodeWriteAccess(self.id,self.write_access)
                 if self.data_access:
                     db.setNodeDataAccess(self.id,self.data_access)
+                # add node to cache to avoid "ghost nodes" (multiple objects for a single database row)
+                _get_node.cache_add(self, long(self.id))
             finally:
                 tree_lock.release()
 
@@ -1321,12 +1310,19 @@ class Node(object):
         return {k: v for k, v in iteritems(self.attributes) if attribute_value_filter(v)}
 
 
+def remove_from_nodecaches(node):
+    nid = long(node.id)
+    del childids_cache[nid]
+    del parentids_cache[nid]
+    _get_node.cache_remove(nid)
+
+
 def flush():
-    global childids_cache,nodes_cache,parentids_cache,_root,db
+    global childids_cache, parentids_cache, _root, db
     tree_lock.acquire()
     try:
         childids_cache = None
-        nodes_cache = MaxSizeDict(int(config.get("db.cache_size","100000")), keep_weakrefs=1)
+        _get_node.cache_clear()
         parentids_cache = None
         db = database.getConnection()
         _root = None
@@ -1353,8 +1349,7 @@ searchParser = None
 searcher = None
 
 def initialize(load=1):
-    global db,_root,nodes_cache,testmode
-    nodes_cache = MaxSizeDict(int(config.get("db.cache_size","100000")), keep_weakrefs=1)
+    global db, _root, testmode
     testmode = config.get("host.type", "") == "testing"
     db = database.getConnection()
     db.applyPatches()

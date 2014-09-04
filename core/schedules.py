@@ -62,12 +62,6 @@ def ensureSchedulesRoot():
         OUT(msg)
 
 
-def delete_node_from_cache(node):
-    for n in node.getAllChildren():
-        tree.nodes_cache.remove(int(n.id))
-        tree.childids_cache[int(n.id)] = None
-        tree.parentids_cache[int(n.id)] = None
-
 
 timeline = []
 

@@ -139,7 +139,7 @@ def getContent(req, ids):
             msg = "%s changed node schema for node %s '%s' from '%s' to '%s'" % (user.name, node.id, node.name, oldType, newType)
             node.setDirty()
             # cache clean / reload because object type changed
-            tree.nodes_cache.remove(int(node.id))
+            tree.remove_from_nodecaches(node)
             node = tree.getNode(node.id)
             logging.getLogger('usertracing').info(msg)
 

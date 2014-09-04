@@ -81,10 +81,7 @@ import mimetypes
 import glob
 from cgi import escape
 from urllib import unquote, splitquery
-try:
-    from collections import OrderedDict
-except:
-    from utils.dicts import SortedDict as OrderedDict
+from collections import OrderedDict
 
 # async modules
 import asyncore

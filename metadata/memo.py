@@ -17,12 +17,12 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from collections import OrderedDict
 from mediatumtal import tal
 from core.transition import httpstatus
 from core.metatype import Metatype, charmap
 from core.translation import t, getDefaultLanguage
 
-from utils.dicts import SortedDict
 from contenttypes.default import languages as config_languages
 import re
 
@@ -66,7 +66,7 @@ class m_memo(Metatype):
     def str2dict(self, s, key_joiner="__", join_stringlists=True, only_config_langs=True):
         
         if not self.has_language_cutter(s):
-            d = SortedDict()
+            d = OrderedDict()
             
             for lang in config_languages:
                 if lang == config_default_language:
@@ -78,7 +78,7 @@ class m_memo(Metatype):
         
         lines = s.splitlines(True)
 
-        d = SortedDict()
+        d = OrderedDict()
 
         key = config_default_language
         key = "untagged"

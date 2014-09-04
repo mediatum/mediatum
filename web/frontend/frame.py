@@ -17,19 +17,19 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.tree as tree
+from collections import OrderedDict
+import os
 import sys
 import traceback
+import time
+
+import core.tree as tree
 import core.users as users
 import core.config as config
-import time
-import os
 import core.search.query
 from utils.log import logException
 
-from utils.dicts import SortedDict
 from schema.schema import getMetadataType
-from utils.dicts import SortedDict
 from utils.utils import getCollection, getDirectory, Link, iso2utf8, isCollection, isDirectory, isParentOf
 from core.acl import AccessData,getRootAccess
 from core.translation import translate, lang, t
@@ -106,7 +106,7 @@ class Searchlet(Portlet):
         firsttype=None
 
         # get searchfields for collection
-        self.searchfields = SortedDict()
+        self.searchfields = OrderedDict()
 
         if self.searchmask:
             for field in self.searchmask.getChildren().sort_by_orderpos():

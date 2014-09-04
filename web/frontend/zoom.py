@@ -25,13 +25,11 @@ import sys
 import zipfile
 import random
 import core.config as config
-from utils.dicts import MaxSizeDict
 from utils.fileutils import importFile, getImportDir
+from utils.lrucache import lru_cache
 IMGNAME = re.compile("/?tile/([^/]*)(/(.*))?$")
 
 store = 1 # keep tiles?
-
-cache = MaxSizeDict(16) # keep at max 16 images in memory at once
 
 def splitpath(path):
     m = IMGNAME.match(path)
@@ -44,15 +42,16 @@ def splitpath(path):
 
 TILESIZE = 256
 
+@lru_cache(maxsize=16)
 def getImage(nid, preprocess=0):
-    global cache
-    if nid in cache:
-        return cache[nid]
-
     node = tree.getNode(nid)
     img = ZoomImage(node, preprocess)
-    cache[nid] = img
+    import os
+    if "MEDIATUM_EMBED_IPYTHON" in os.environ:
+        import IPython
+        IPython.embed()
     return img
+
 
 class ZoomImage:
     def __init__(self, node, preprocess=0):

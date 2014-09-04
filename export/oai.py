@@ -4,7 +4,7 @@
  Copyright (C) 2007 Arne Seifert <seiferta@in.tum.de>
  Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
  Copyright (C) 2011 Werner Neudenberger <neudenberger@ub.tum.de>
- 
+
 
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -27,11 +27,12 @@ import re
 import time
 import sys
 import logging
+from collections import OrderedDict
+
 import core.config as config
 import core.users as users
 
 from oaisearchparser import OAISearchParser as OAISearchParser
-from utils.dicts import MaxSizeDict
 import oaisets
 import utils.date as date
 import core.acl as acl
@@ -39,6 +40,7 @@ import core.xmlnode
 from utils.utils import esc, fixXMLString
 from schema.schema import getMetaType
 from utils.pathutils import isDescendantOf
+from threading import Lock
 
 if sys.version[0:3] < '2.6':
     import simplejson as json
@@ -52,15 +54,16 @@ EARLIEST_YEAR = int(config.get("oai.earliest_year", "1960"))
 CHUNKSIZE = int(config.get("oai.chunksize", "10"))
 IDPREFIX = config.get("oai.idprefix", "oai:mediatum.org:node/")
 SAMPLE_IDENTIFIER = config.get("oai.sample_identifier", "oai:mediatum.org:node/123")
-tokenpositions = MaxSizeDict(32)
+tokenpositions = OrderedDict()
+token_lock = Lock()
 
-SET_LIST = [] 
+SET_LIST = []
 FORMAT_FILTERS = {}
 
 def registerFormatFilter(key, filterFunc):
     global FORMAT_FILTERS
     FORMAT_FILTERS[key.lower()] = filterFunc
-    
+
 def filterFormat(node, oai_format):
     if oai_format.lower() in FORMAT_FILTERS.keys():
         return FORMAT_FILTERS[oai_format.lower()](node)
@@ -73,17 +76,17 @@ def OUT(msg, type="info"):
         logging.getLogger('oai').info(msg)
     elif type=="error":
         logging.getLogger('oai').error(msg)
-        
+
 def now():
     return time.clock()
-    
+
 def make_lookup_key(req):
     return "%s:%d" % (req.ip, req.channel.addr[1])
 
 def timetable_update(req, msg):
     if req:
         req._tt['tlist'].append((msg, now()))
-        
+
 def timetable_string(req):
     s = ''+('-'*80)
     s += "\n| timetable for request %s" % (req.uri)
@@ -93,8 +96,8 @@ def timetable_string(req):
         duration = t - atime
         atime = t
         count += 1
-        s += "\n|  %2d. step: %.3f sec.: %s" % (i, duration, msg) 
-    return s + '\n'+('-'*80) 
+        s += "\n|  %2d. step: %.3f sec.: %s" % (i, duration, msg)
+    return s + '\n'+('-'*80)
 
 errordesc = {
  "badArgument": "The request includes illegal arguments, is missing required arguments, includes a repeated argument, or values for arguments have an illegal syntax.",
@@ -138,21 +141,21 @@ def writeHead(req, attributes=""):
 def writeTail(req):
     req.write('</OAI-PMH>')
     if DEBUG:
-        timetable_update(req, "leaving writeTail")    
+        timetable_update(req, "leaving writeTail")
 
 def writeError(req, code, detail=""):
     if not "verb" in req.params:
         verb = ""
 
     if detail!="":
-        desc = errordesc[detail] 
+        desc = errordesc[detail]
     else:
-        desc = errordesc[code] 
+        desc = errordesc[code]
     req.write('<error code="%s">%s</error>' %(code, desc))
     msg = "%s:%d OAI (error code: %s) %s" % (req.ip, req.channel.addr[1], (code), (req.path + req.uri).replace('//','/'))
-    OUT(msg, 'error')    
+    OUT(msg, 'error')
 
-        
+
 def ISO8601(t=None):
     # MET summer time
     if not t:
@@ -179,7 +182,7 @@ def checkParams(req, list):
     if len(params)>0:
         return 0
     return 1
-    
+
 def getExportMasks(regexp):
     exportmasks = [tree.getNode(nid) for nid in tree.getNodesByAttribute('masktype', 'export')]
     exportmasks = [(n, n.name) for n in exportmasks if re.match(regexp, n.name) and n.type=='mask']
@@ -231,10 +234,10 @@ def ListMetadataFormats(req):
         except (TypeError, KeyError, tree.NoSuchNodeError):
             return writeError(req,"badArgument")
 
-        access = acl.AccessData(req)    
+        access = acl.AccessData(req)
         if not access.hasReadAccess(node):
-            return writeError(req, "noPermission")    
-            
+            return writeError(req, "noPermission")
+
         formats = [x for x in formats if nodeHasOAIExportMask(node, x.lower())]
         formats = [x for x in formats if filterFormat(node, x.lower())]
 
@@ -253,7 +256,7 @@ def ListMetadataFormats(req):
             OUT("%s: OAI error reading oai metadata format %s from config file" % (__file__, mdf), 'error')
     req.write('\n</ListMetadataFormats>')
     if DEBUG:
-        timetable_update(req, "leaving ListMetadataFormats")    
+        timetable_update(req, "leaving ListMetadataFormats")
 
 def checkMetaDataFormat(format):
     d = config.getsubset('oai')
@@ -289,7 +292,7 @@ def Identify(req):
           </description>
         </Identify>""" %(name, mklink(req), config.get("email.admin"), str(EARLIEST_YEAR-1), config.get("host.name", socket.gethostname()), SAMPLE_IDENTIFIER))
     if DEBUG:
-        timetable_update(req, "leaving Identify")   
+        timetable_update(req, "leaving Identify")
 
 def getSetSpecsForNode(node):
     setspecs = oaisets.getSetSpecsForNode(node)
@@ -309,9 +312,9 @@ def writeRecord(req, node, metadataformat):
         d = ISO8601(date.DateTime(EARLIEST_YEAR-1,12,31,23,59,59))
 
     set_specs = getSetSpecsForNode(node)
-    
-    if DEBUG: timetable_update(req, " in writeRecord: getSetSpecsForNode: node: '%s, %s', metadataformat='%s' set_specs:%s" % ( str(node.id), node.type, metadataformat, str(set_specs)))   
-    
+
+    if DEBUG: timetable_update(req, " in writeRecord: getSetSpecsForNode: node: '%s, %s', metadataformat='%s' set_specs:%s" % ( str(node.id), node.type, metadataformat, str(set_specs)))
+
     req.write("""
            <record>
                <header><identifier>%s</identifier>
@@ -319,26 +322,26 @@ def writeRecord(req, node, metadataformat):
                        %s
                </header>
                <metadata>""" %(mkIdentifier(node.id), d, set_specs))
-               
-    if DEBUG: timetable_update(req, " in writeRecord: writing header: node.id='%s', metadataformat='%s'" % ( str(node.id), metadataformat ) )            
+
+    if DEBUG: timetable_update(req, " in writeRecord: writing header: node.id='%s', metadataformat='%s'" % ( str(node.id), metadataformat ) )
 
     if metadataformat=="mediatum":
         req.write(core.xmlnode.getSingleNodeXML(node))
     elif nodeHasOAIExportMask(node, metadataformat.lower()): # in [masknode.name for masknode in getMetaType(node.getSchema()).getMasks() if masknode.get('masktype')=='exportmask']:
         mask = getMetaType(node.getSchema()).getMask("oai_"+metadataformat.lower())
-        if DEBUG: timetable_update(req, """ in writeRecord: mask = getMetaType(node.getSchema()).getMask("oai_"+metadataformat.lower()): node.id='%s', metadataformat='%s'""" % ( str(node.id), metadataformat ) ) 
+        if DEBUG: timetable_update(req, """ in writeRecord: mask = getMetaType(node.getSchema()).getMask("oai_"+metadataformat.lower()): node.id='%s', metadataformat='%s'""" % ( str(node.id), metadataformat ) )
         try:
             req.write(fixXMLString(mask.getViewHTML([node], flags=8))) # fix xml errors
         except:
             req.write(mask.getViewHTML([node], flags=8))
-        if DEBUG: timetable_update(req, " in writeRecord: req.write(mask.getViewHTML([node], flags=8)): node.id='%s', metadataformat='%s'" % ( str(node.id), metadataformat ) ) 
-        
+        if DEBUG: timetable_update(req, " in writeRecord: req.write(mask.getViewHTML([node], flags=8)): node.id='%s', metadataformat='%s'" % ( str(node.id), metadataformat ) )
+
     else:
         req.write('<recordHasNoXMLRepresentation/>')
 
     req.write('</metadata></record>')
-    
-    if DEBUG: timetable_update(req, "leaving writeRecord: node.id='%s', metadataformat='%s'" % ( str(node.id), metadataformat ) )     
+
+    if DEBUG: timetable_update(req, "leaving writeRecord: node.id='%s', metadataformat='%s'" % ( str(node.id), metadataformat ) )
 
 
 def mkIdentifier(id):
@@ -362,27 +365,27 @@ def concatNodeLists(nodelist1, nodelist2):
     try:
         return tree.NodeList(list(set(nodelist1.getIDs() + nodelist2.getIDs())))
     except:
-        return tree.NodeList(list(set(nodelist1.getIDs() + list(nodelist2))))    
+        return tree.NodeList(list(set(nodelist1.getIDs() + list(nodelist2))))
 
 def retrieveNodes(req, access, setspec, date_from=None, date_to=None, metadataformat=None):
     schemata = []
-    
+
     if metadataformat == 'mediatum':
         metadatatypes = tree.getRoot('metadatatypes').getChildren()
         schemata = [m.name for m in metadatatypes if m.type=='metadatatype' and not m.name in ['directory', 'collection']]
     elif metadataformat:
         mdt_masks_list = getExportMasks("oai_"+metadataformat.lower()+"$") # check exact name
         schemata = [x[0][1] for x in mdt_masks_list if x[1]]
-        
-    if DEBUG: timetable_update(req, "in retrieveNodes: find schemata with export mask for metadata type %s (%d found: '%s')" % (metadataformat.lower(), len(schemata), str([x for x in schemata])))        
+
+    if DEBUG: timetable_update(req, "in retrieveNodes: find schemata with export mask for metadata type %s (%d found: '%s')" % (metadataformat.lower(), len(schemata), str([x for x in schemata])))
 
     if setspec:
         res = oaisets.getNodes(setspec, schemata)
     else:
         osp = OAISearchParser()
         query = " or ".join(["schema=%s" % schema for schema in schemata])
-        res = osp.parse(query).execute()    
-    
+        res = osp.parse(query).execute()
+
     res = tree.NodeList(res)
     if DEBUG: timetable_update(req, "in retrieveNodes: after building NodeList for %d nodes" % (len(res)))
 
@@ -390,27 +393,40 @@ def retrieveNodes(req, access, setspec, date_from=None, date_to=None, metadatafo
         res = [n for n in res if n.get(DATEFIELD)>=str(date_from)]
         if DEBUG: timetable_update(req, "in retrieveNodes: after filtering date_from --> %d nodes" % (len(res)))
     if date_to:
-        res = [n for n in res if n.get(DATEFIELD)<=str(date_to)] 
-        if DEBUG: timetable_update(req, "in retrieveNodes: after filtering date_to --> %d nodes" % (len(res))) 
-        
+        res = [n for n in res if n.get(DATEFIELD)<=str(date_to)]
+        if DEBUG: timetable_update(req, "in retrieveNodes: after filtering date_to --> %d nodes" % (len(res)))
+
     if access:
         res = access.filter(res)
-        if DEBUG: timetable_update(req, "in retrieveNodes: after access filter --> %d nodes" % (len(res)))         
-        
-    collections = tree.getRoot('collections')    
+        if DEBUG: timetable_update(req, "in retrieveNodes: after access filter --> %d nodes" % (len(res)))
+
+    collections = tree.getRoot('collections')
     res = [n for n in res if isDescendantOf(n, collections)]
-    if DEBUG: timetable_update(req, "in retrieveNodes: after checking descendance from basenode --> %d nodes" % (len(res)))          
-    
+    if DEBUG: timetable_update(req, "in retrieveNodes: after checking descendance from basenode --> %d nodes" % (len(res)))
+
     if schemata:
         res = [n for n in res if n.getSchema() in schemata]
-        if DEBUG: timetable_update(req, "in retrieveNodes: after schemata (%s) filter --> %d nodes" % (str(schemata), len(res)))    
-        
+        if DEBUG: timetable_update(req, "in retrieveNodes: after schemata (%s) filter --> %d nodes" % (str(schemata), len(res)))
+
     if metadataformat and metadataformat.lower() in FORMAT_FILTERS.keys():
         format_string = metadataformat.lower()
         res = [n for n in res if filterFormat(n, format_string)]
-        if DEBUG: timetable_update(req, "in retrieveNodes: after format (%s) filter --> %d nodes" % (format_string, len(res)))          
-        
-    return res       
+        if DEBUG: timetable_update(req, "in retrieveNodes: after format (%s) filter --> %d nodes" % (format_string, len(res)))
+
+    return res
+
+
+def new_token(req):
+    token = str(random.random())
+    with token_lock:
+        # limit length to 32
+        if len(tokenpositions) >= 32:
+            tokenpositions.popitem(last=False)
+        tokenpositions[token] = 0
+
+    metadataformat = req.params.get("metadataPrefix", None)
+    return token, metadataformat
+
 
 def getNodes(req):
     global tokenpositions,CHUNKSIZE
@@ -427,15 +443,12 @@ def getNodes(req):
         if not checkParams(req, ["verb", "resumptionToken"]):
             OUT("OAI: getNodes: additional arguments (only verb and resumptionToken allowed)")
             return None, "badArgument", None
-
     else:
-        token = str(random.random())
-        tokenpositions[token] = pos = 0
-
-        metadataformat = req.params.get("metadataPrefix", None)
+        token, metadataformat = new_token(req)
         if not checkMetaDataFormat(metadataformat):
             OUT('OAI: ListRecords: metadataPrefix missing', 'error')
             return None, "badArgument", None
+        pos = 0
 
     if not nodes:
         string_from, string_to = None, None
@@ -448,7 +461,7 @@ def getNodes(req):
             if "from" in req.params:
                 return None, "badArgument", None
             date_from = None
-            
+
         try:
             date_to = parseDate(req.params["until"])
             string_to = req.params.get("until")
@@ -466,7 +479,7 @@ def getNodes(req):
         setspec = None
         if "set" in req.params:
             setspec = req.params.get("set")
-        
+
         if string_from and string_to and (string_from > string_to or len(string_from) != len(string_to)):
             return None, "badArgument", None
 
@@ -474,21 +487,23 @@ def getNodes(req):
             nodes = retrieveNodes(req, access, setspec, date_from, date_to, metadataformat)
             nodes = [n for n in nodes if not parentIsMedia(n)]
             # filter out nodes that are inactive or older versions of other nodes
-            nodes = [n for n in nodes if n.isActiveVersion()] 
+            nodes = [n for n in nodes if n.isActiveVersion()]
         except tree.NoSuchNodeError:
             # collection doesn't exist
             return None, "badArgument", None
 
-    tokenpositions[token] = pos + CHUNKSIZE, nodes, metadataformat
+    with token_lock:
+        tokenpositions[token] = pos + CHUNKSIZE, nodes, metadataformat
     tokenstring = '<resumptionToken expirationDate="'+ISO8601(date.now().add(3600*24))+'" '+ \
                    'completeListSize="'+str(len(nodes))+'" cursor="'+str(pos)+'">'+token+'</resumptionToken>'
     if pos + CHUNKSIZE>=len(nodes):
         tokenstring = None
-        del tokenpositions[token]
+        with token_lock:
+            del tokenpositions[token]
     OUT(req.params.get('verb')+": set="+str(req.params.get('set'))+", "+ str(len(nodes))+" objects, format="+metadataformat)
     res = tree.NodeList(nodes[pos:pos+CHUNKSIZE])
     if DEBUG: timetable_update(req, "leaving getNodes: returning %d nodes, tokenstring='%s', metadataformat='%s'" % (len(res), tokenstring, metadataformat) )
-         
+
     return res, tokenstring, metadataformat
 
 def ListIdentifiers(req):
@@ -514,7 +529,7 @@ def ListIdentifiers(req):
     if tokenstring:
         req.write(tokenstring)
     req.write('</ListIdentifiers>')
-    if DEBUG: timetable_update(req, "leaving ListIdentifiers")     
+    if DEBUG: timetable_update(req, "leaving ListIdentifiers")
 
 
 def ListRecords(req):
@@ -538,7 +553,7 @@ def ListRecords(req):
         req.write(tokenstring)
     req.write('</ListRecords>')
     if DEBUG:
-        timetable_update(req, "leaving ListRecords")     
+        timetable_update(req, "leaving ListRecords")
 
 
 def GetRecord(req):
@@ -556,10 +571,10 @@ def GetRecord(req):
         node = tree.getNode(id)
     except (TypeError, KeyError, tree.NoSuchNodeError):
         return writeError(req, "idDoesNotExist")
-        
+
     if metadataformat and (metadataformat.lower() in FORMAT_FILTERS.keys()) and not filterFormat(node, metadataformat.lower()):
         return writeError(req, "noPermission")
-        
+
     if parentIsMedia(node):
         return writeError(req, "noPermission")
 
@@ -569,41 +584,41 @@ def GetRecord(req):
     req.write('<GetRecord>')
     writeRecord(req, node, metadataformat)
     req.write('</GetRecord>')
-    if DEBUG: timetable_update(req, "leaving GetRecord")     
-    
+    if DEBUG: timetable_update(req, "leaving GetRecord")
+
 def ListSets(req):
     # new container sets may have been added
     initSetList(req)
     req.write('\n<ListSets>')
-    
+
     for setspec, setname in oaisets.getSets():
         req.write('\n <set><setSpec>%s</setSpec><setName>%s</setName></set>' %(setspec, setname))
-        
+
     req.write('\n</ListSets>')
-    if DEBUG: timetable_update(req, "leaving ListSets")     
-    
+    if DEBUG: timetable_update(req, "leaving ListSets")
+
 def initSetList(req=None):
     global SET_LIST
-    if req:    
+    if req:
         access = acl.AccessData(req)
     else:
         import core.users as users
-        access = acl.AccessData(user=users.getUser('Gast')) 
-        
-    oaisets.loadGroups() 
+        access = acl.AccessData(user=users.getUser('Gast'))
+
+    oaisets.loadGroups()
     SET_LIST = oaisets.GROUPS
-    
-    OUT('OAI: initSetList: found %s set groups: %s' %(len(SET_LIST), str(SET_LIST)))  
-     
-    if DEBUG: timetable_update(req, "leaving initSetList")     
-    
+
+    OUT('OAI: initSetList: found %s set groups: %s' %(len(SET_LIST), str(SET_LIST)))
+
+    if DEBUG: timetable_update(req, "leaving initSetList")
+
 def oaiRequest(req):
     import time
-    
+
     start_time = time.clock()
     req._tt = {'atime': now(), 'tlist':[]}
     req.request["Content-Type"] = "text/xml"
-    
+
     if "until" in req.params:
         try:
             date_to = parseDate(req.params.get("until"))
@@ -625,7 +640,7 @@ def oaiRequest(req):
     if "verb" not in req.params:
         writeHead(req, "noatt")
         writeError(req,"badVerb")
-        
+
     else:
         verb = req.params.get("verb")
         if verb=="Identify":
@@ -651,19 +666,19 @@ def oaiRequest(req):
             writeError(req,"badVerb")
 
     writeTail(req)
-    
+
     useragent = 'unknown'
     try:
         cutoff = 60
         useragent = req.request_headers['user-agent']
-        if len(useragent) > cutoff:    
+        if len(useragent) > cutoff:
             useragent = useragent[0:cutoff]+'...'
     except:
-        pass  
-        
-    exit_time = now() 
-    
+        pass
+
+    exit_time = now()
+
     OUT("%s:%d OAI (exit after %.3f sec.) %s - (user-agent: %s)" % (req.ip, req.channel.addr[1], (exit_time-start_time), (req.path + req.uri).replace('//','/'), useragent))
-    
+
     if DEBUG: OUT(timetable_string(req))
-    
+

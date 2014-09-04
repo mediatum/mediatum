@@ -23,7 +23,7 @@ import core.acl as acl
 import core.users as users
 import logging
 from utils.utils import formatTechAttrs
-from core.tree import nodes_cache, childids_cache, parentids_cache
+
 
 def getContent(req, ids):
     user = users.getUserFromRequest(req)
@@ -62,9 +62,7 @@ def getContent(req, ids):
         # delete node from cache (e.g. after changes in db)
         if key.startswith("del_cache"):
             for n in node.getAllChildren():
-                nodes_cache.remove(int(n.id))
-                childids_cache[int(n.id)] = None
-                parentids_cache[int(n.id)] = None
+                tree.remove_from_nodecaches(n)
             break
         
         # remove  attribute

@@ -1280,6 +1280,9 @@ msgstr "versions"
 msgid "document_new_version_comment"
 msgstr "Change of the metadata"
 
+msgid "details"
+msgstr "Details"
+
 ###### scholar
 msgid "show_all_years"
 msgstr "All"

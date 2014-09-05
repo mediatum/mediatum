@@ -1,0 +1,30 @@
+<div id="object_main" style="padding-top:30px">
+
+    <div id="object_image">
+        <img tal:attributes="src python:'/thumb2/'+str(node.id)" style="width:200px;border:1px double silver;"/>
+
+        <div id="object_versions">
+            <div><tal:block i18n:translate="document_view_current_version_from">Current version: <span i18n:name="version" tal:replace="python:'Version ' + str(node.get('system.version.id')=='' and 1 or node.get('system.version.id'))">Version</span> from</tal:block> <tal:block tal:condition="python:node.get('updatetime')" tal:replace="python:node.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:node.get('updateuser') and node.get('updateuser') or node.get('creator')" /></div>
+            <div i18n:translate="document_view_other_versions_of_the_document">Other versions of the document:</div>
+            <tal:block tal:define="versions python:node.getVersionList()">
+                <tal:block tal:repeat="v versions">
+                    <div>
+                        <a href="/" tal:attributes="href python:'?id='+v.id"><span tal:content="python:'Version ' + str(v.get('system.version.id')=='' and 1 or v.get('system.version.id'))">Version</span>
+                        <span tal:condition="python:v.get('updatetime')">(<tal:block i18n:translate="document_view_from">from</tal:block> <tal:block tal:replace="python:v.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:v.get('updateuser') and v.get('updateuser') or v.get('creator')" />)</span></a>
+                    </div>
+                </tal:block>
+            </tal:block>
+        </div>
+    </div>
+
+    <div tal:content="raw metadata" style="margin-left:330px;padding-bottom:40px"/>
+    <hr/>
+    <div style="margin-left:330px">
+        <tal:block tal:repeat="fl python:node.getFiles()">
+            <a tal:attributes="href python:'/file/'+str(node.id)+'/'+fl.getName()" tal:content="python:node.getName()">TEXT</a>
+            <span tal:content="python:format_size(fl.getSize())" style="padding-left: 20px"></span>
+        </tal:block>
+    </div>
+
+</div>
+<div style="clear:both"/>

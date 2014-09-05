@@ -22,41 +22,38 @@ import os
 import core.users as users
 import core.tree as tree
 import re
-import utils.date
-from utils.log import logException
 import core.config as config
-import zipfile, PIL.Image
+import zipfile
 import random 
 import logging
 from core.datatypes import loadAllDatatypes
 from web.edit.edit_common import showdir
 import utils.date as date
-from utils.utils import join_paths, OperationException, EncryptionException, formatException
+from utils.utils import join_paths, OperationException
 from utils.fileutils import importFile
 
-from core.tree import Node
 from core.acl import AccessData
 from schema.schema import loadTypesFromDB
 
-from core.translation import translate, lang, t
+from core.translation import translate
+
 
 def getInformation():
-    return {"version":"1.1", "system":0}
+    return {"version": "1.1", "system": 0}
     
     
 def elemInList(list, name):
     for item in list:
-        if item.getName()==name:
+        if item.getName() == name:
             return True
     return False
 
     
 def getContent(req, ids):
     error = req.params.get("error")
-     
+
     def getSchemes(req):
-        schemes = AccessData(req).filter(loadTypesFromDB())
-        return filter(lambda x: x.isActive(), schemes)
+        return filter(lambda x: x.isActive(), AccessData(req).filter(loadTypesFromDB()))
 
     def getDatatypes(req, schemes):
         dtypes = []
@@ -65,7 +62,7 @@ def getContent(req, ids):
             for dtype in scheme.getDatatypes():
                 if dtype not in dtypes:
                     for t in datatypes:
-                        if t.getName()==dtype and not elemInList(dtypes, t.getName()):
+                        if t.getName() == dtype and not elemInList(dtypes, t.getName()):
                             dtypes.append(t)
                      
         dtypes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
@@ -75,18 +72,18 @@ def getContent(req, ids):
     dtypes = getDatatypes(req, schemes)
     
     if "action" in req.params:
-        v = {"id":req.params.get("id")}
+        v = {"id": req.params.get("id")}
         
         # step 1
-        if req.params.get("action","").startswith("step1"):
+        if req.params.get("action", "").startswith("step1"):
             v['datatypes'] = dtypes
             req.writeTAL("web/edit/modules/upload.html", v, macro="step1")
             
         # step 2
-        if req.params.get("action","").startswith("step2|"):
+        if req.params.get("action", "").startswith("step2|"):
         
-            objtype = req.params.get("action","|").split("|")[1]
-            if objtype=="":
+            objtype = req.params.get("action", "|").split("|")[1]
+            if objtype == "":
                 req.write("")
                 return ""
             _schemes = []
@@ -94,10 +91,10 @@ def getContent(req, ids):
                 if objtype in scheme.getDatatypes():
                     _schemes.append(scheme)
             schemes = _schemes
-            schemes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(),translate(y.getLongName(), request=req).lower()))
+            schemes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
             
             for item in dtypes:
-                if item.getName()==objtype:
+                if item.getName() == objtype:
                     v['objtype'] = item
                     break
 
@@ -105,25 +102,27 @@ def getContent(req, ids):
             req.writeTAL("web/edit/modules/upload.html", v, macro="step2")
 
         # step 3
-        if req.params.get("action","").startswith("step3|"):
-            schema = req.params.get("action","|").split("|")[1]
-            if schema=="":
+        if req.params.get("action", "").startswith("step3|"):
+            schema = req.params.get("action", "|").split("|")[1]
+            if schema == "":
                 req.write("")
             else:
                 req.writeTAL("web/edit/modules/upload.html", v, macro="step3")
         return ""
     
-    elif "submit" in req.params: # create object
+    elif "submit" in req.params:  # create object
         try:
             upload_new(req)
         except OperationException, e:
             error = e.value
 
-    return req.getTAL("web/edit/modules/upload.html",{"id":req.params.get("id"), "datatypes":dtypes, "schemes":schemes, "error":error},macro="upload_form") + showdir(req, tree.getNode(ids[0]))
+    return req.getTAL("web/edit/modules/upload.html", {"id": req.params.get("id"), "datatypes": dtypes, "schemes": schemes, "error": error}, macro="upload_form") + showdir(req, tree.getNode(ids[0]))
 
     
 # differs from os.path.split in that it handles windows as well as unix filenames
-FNAMESPLIT=re.compile(r'(([^/\\]*[/\\])*)([^/\\]*)')
+FNAMESPLIT = re.compile(r'(([^/\\]*[/\\])*)([^/\\]*)')
+
+
 def mybasename(filename):
     g = FNAMESPLIT.match(filename)
     if g:
@@ -131,70 +130,71 @@ def mybasename(filename):
     else:
         return filename
 
-def importFileIntoNode(user,realname,tempname,datatype, workflow=0):
-    logging.getLogger('usertracing').info(user.name + " upload "+realname+" ("+tempname+")")
 
-    if realname.lower().endswith(".zip"):
+def importFileIntoNode(user, realname, tempname, datatype, workflow=0):
+    logging.getLogger('usertracing').info("%s upload %s (%s)" % (user.name, realname, tempname))
+
+    if not datatype.startswith("file") and realname.lower().endswith(".zip"):
         z = zipfile.ZipFile(tempname)
         for f in z.namelist():
             name = mybasename(f)
-            if name.startswith("._"):
-                # ignore Mac OS X junk
+            if name.startswith("._"):  # ignore Mac OS X junk
                 continue
             rnd = str(random.random())[2:]
             ext = os.path.splitext(name)[1]
-            newfilename = join_paths(config.get("paths.tempdir"), rnd+ext)
+            newfilename = join_paths(config.get("paths.tempdir"), rnd + ext)
             fi = open(newfilename, "wb")
             fi.write(z.read(f))
             fi.close()
             importFileIntoNode(user, name, newfilename, datatype)
             os.unlink(newfilename)
         return
-    if realname!="":
+    if realname != "":
         n = tree.Node(name=mybasename(realname), type=datatype)
-        file = importFile(realname,tempname)
+        file = importFile(realname, tempname)
         n.addFile(file)
-    else:
-        # no filename given
+    else:  # no filename given
         n = tree.Node(name="", type=datatype)
 
     # service flags
     n.set("creator", user.getName())
     n.set("creationtime", date.format_date())
-    if hasattr(n,"event_files_changed"):
+    if hasattr(n, "event_files_changed"):
         try:
             n.event_files_changed()
-            uploaddir = users.getUploadDir(user)
-            uploaddir.addChild(n)
-
         except OperationException, e:
             for file in n.getFiles():
                 if os.path.exists(file.retrieveFile()):
                     os.remove(file.retrieveFile())
             raise OperationException(e.value)
 
+    uploaddir = users.getUploadDir(user)
+    uploaddir.addChild(n)
+
+
 def upload_new(req):
     user = users.getUserFromRequest(req)
-    datatype = req.params.get("objtype") + "/" + req.params.get("scheme")
+
+    datatype = "%s/%s" % (req.params.get("objtype"), req.params.get("scheme"))
     uploaddir = users.getUploadDir(user)
 
-    workflow = "" #int(req.params["workflow"])
+    workflow = ""  # int(req.params["workflow"])
     
     if "file" in req.params.keys():
         file = req.params["file"]
         del req.params["file"]
 
-        if hasattr(file,"filesize") and file.filesize>0:
+        if hasattr(file, "filesize") and file.filesize > 0:
             try:
                 importFileIntoNode(user, file.filename, file.tempname, datatype, workflow)
-                req.request["Location"] = req.makeLink("content", {"id":uploaddir.id})
+                req.request["Location"] = req.makeLink("content", {"id": uploaddir.id})
             except OperationException, e:
                 raise OperationException(e.value)
             #except:
             #    raise OperationException("error:unkonwn")
-            return athana.HTTP_MOVED_TEMPORARILY;
+            return athana.HTTP_MOVED_TEMPORARILY
 
     # upload without file
     importFileIntoNode(user, "", "", datatype, workflow)
-    req.request["Location"] = req.makeLink("content", {"id":uploaddir.id})
-    return athana.HTTP_MOVED_TEMPORARILY;
+    req.request["Location"] = req.makeLink("content", {"id": uploaddir.id})
+    return athana.HTTP_MOVED_TEMPORARILY

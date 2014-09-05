@@ -35,7 +35,7 @@ from schema.schema import getMetaType, VIEW_DATA_ONLY
 
 from utils.date import format_date
 from utils.pathutils import getBrowsingPathList, isDescendantOf
-from utils.utils import u, u2, esc, intersection, getMimeType, float_from_gps_format
+from utils.utils import u, u2, esc, intersection, getMimeType, modify_tex
 
 import web.services.jsonnode as jsonnode
 from web.services.rssnode import template_rss_channel, template_rss_item, feed_channel_dict, try_node_date
@@ -1128,6 +1128,8 @@ def write_formatted_response(req, path, params, data, id, debug=True, allchildre
             d['timetable'].append(["wrote result to 'resultcache' (%d bytes), now in cache: %d entries" % (len(s), resultcache.getKeysCount()), time.time()-atime]); atime = time.time()
             #d['timetable'].append(["wrote result to 'resultcache' (%d bytes), now in cache: %d entries: \r\n%s" % (len(s), resultcache.getKeysCount(), resultcache.report()), time.time()-atime]); atime = time.time()
             #d['timetable'].append(["wrote result to 'resultcache' (%d bytes), now in cache: %d entries: %s" % (len(s), resultcache.getKeysCount(), "#".join(resultcache.getKeys())), time.time()-atime]); atime = time.time()
+
+        s = modify_tex(s, 'strip')
 
     else:
         d = {}

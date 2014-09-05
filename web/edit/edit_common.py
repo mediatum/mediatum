@@ -25,7 +25,7 @@ import logging
 from core.acl import AccessData
 from core.translation import translate, getDefaultLanguage, t, lang
 from utils.log import logException
-from utils.utils import isDirectory, isCollection, EncryptionException
+from utils.utils import isDirectory, isCollection, EncryptionException, modify_tex
 from utils.fileutils import importFile
 from core.users import getHomeDir, getUploadDir
 
@@ -170,7 +170,8 @@ def shownodelist(req, nodes, publishwarn=1, markunpublished=0, dir=None):
             uploaddir = getUploadDir(user)
         unpublishedlink = "edit_content?tab=publish&id="""+uploaddir.id;
 
-    return req.getTAL("web/edit/edit_common.html", {"notpublished": notpublished, "chkjavascript": chkjavascript, "unpublishedlink": unpublishedlink, "nodelist":nodelist, "script_array":script_array, "language":language}, macro="show_nodelist")
+    return modify_tex(req.getTAL("web/edit/edit_common.html", {"notpublished": notpublished, "chkjavascript": chkjavascript, "unpublishedlink": unpublishedlink, "nodelist":nodelist, "script_array":script_array, "language":language}, macro="show_nodelist"),
+                      'html')
 
 
 def isUnFolded(unfoldedids, id):

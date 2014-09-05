@@ -100,7 +100,7 @@ class Video(default.Default):
         access = acl.AccessData(req)
         mask = node.getFullView(lang(req))
         
-        obj = {'deleted':False}
+        obj = {'deleted': False, 'access': access}
         if node.get('deleted') == 'true':
             node = node.getActiveVersion()
             obj['deleted'] = True

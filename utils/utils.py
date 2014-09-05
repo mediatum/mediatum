@@ -77,6 +77,34 @@ def utf82iso(s):
     except:
         return s
 
+
+replacements = {'sub': {'regex': re.compile(r'(?<=\$_)(.*?)(?=\$)'),
+                        'tex': '$_%s$',
+                        'html': '<sub>%s</sub>'},
+                'sup': {'regex': re.compile(r'(?<=\$\^)(.*?)(?=\$)'),
+                        'tex': '$^%s$',
+                        'html': '<sup>%s</sup>'}}
+
+def modify_tex(string, option):
+    """
+    Swaps tex super and subscript markup ($^...$ and $_...$)
+    for their html tag counterparts (<sub>...</sub> and <sup>...</sup>)
+
+    @param string: string to be modified
+    @param option: 'html' swaps tex for html tags or 'strip' nto remove tex markup
+    """
+    for tag in replacements.keys():
+        matches = re.findall(replacements[tag]['regex'], string)
+        for match in matches:
+            if option == 'html':
+                string = string.replace(replacements[tag]['tex'] % match,
+                                        replacements[tag]['html'] % match)
+            if option == 'strip':
+                string = string.replace(replacements[tag]['tex'] % match,
+                                        match)
+    return string
+
+
 def splitpath(path):
     while path.endswith("/") or path.endswith("\\"):
         path = path[:-1]

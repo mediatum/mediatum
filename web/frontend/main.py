@@ -114,6 +114,7 @@ def display(req):
     navframe.feedback(req)
 
     contentHTML = content.html(req)
+    contentHTML = modify_tex(contentHTML, 'html')
     navframe.write(req, contentHTML)
 
 def display_noframe(req):

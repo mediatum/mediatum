@@ -28,7 +28,7 @@ import logging
 import thread
 import traceback
 import utils.date as date
-from utils.utils import ArrayToString,formatException
+from utils.utils import ArrayToString,formatException, modify_tex
 
 if config.get("config.searcher","")!="fts3":
     try:
@@ -416,6 +416,7 @@ def _makeCollectionIndices():
                             s = "0"
 
             s = UTF8ToLatin(s)
+            s = modify_tex(s, 'strip')
             fi.write(s.replace("\2"," ") + "\n")
             fi.write("\2")
 

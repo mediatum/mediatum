@@ -21,6 +21,7 @@ import core.config as config
 import core.tree as tree
 
 from core.tree import Node,FileNode
+import core.acl as acl
 from core.translation import t, lang
 from core.acl import AccessData
 import default 
@@ -36,8 +37,9 @@ class Flash(default.Default):
         return "video"
 
     def _prepareData(node, req, words=""):
+        access = acl.AccessData(req)
         mask = node.getFullView(lang(req))
-        obj = {'deleted':False}
+        obj = {'deleted': False, 'access': access}
         if node.get('deleted')=='true':
             node = node.getActiveVersion()
             obj['deleted'] = True

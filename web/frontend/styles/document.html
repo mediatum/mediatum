@@ -1,3 +1,8 @@
+<style>
+    div.childnode {position:relative;float:left; padding:2px;border:1px solid silver;margin:2px;text-align:center;width:128px;overflow:hidden;height:200px}
+    div.childnode div.morelink{position:absolute;bottom:2px;width:128px;text-align:center}
+</style>
+
 <div style="width:100%;text-align:center;color:red;" tal:condition="python:node.next_nid!=None and node.next_nid!='0' and node.get('deleted')!='true' and node.next_nid != node.id"
     tal:define="v python:node.getActiveVersion()">
     <p class="info" i18n:translate="document_view_new_version_exist">
@@ -70,15 +75,18 @@
     <div tal:condition="python: len(node.getFiles())>0" id="object_meta" tal:content="raw metadata"/>
 </div>
 
-<div tal:define="children python:[c for c in node.getChildren().sort_by_orderpos() if c.isActiveVersion()]" tal:condition="python:len(children)>0" style="width:100%">
-    <p>Details:</p>
-    <div tal:repeat="child children" style="float:left; padding:2px;border:1px solid silver;margin:2px;text-align:center">
-        <img tal:attributes="src python:'/thumbs/'+child.id"/>
-        <br/>
-        <small>
-            <tal:block tal:replace="python:child.getName()"/><br/>
-            <a tal:attributes="href python:'?id='+child.id">Details...</a>
-        </small>
-    </div>
+
+<div tal:define="children python:[c for c in node.getChildren().sort_by_orderpos() if c.isActiveVersion()]" tal:condition="python:len(children)>0" style="width:100%;padding:10px;">
+    <p><tal:block i18n:translate="details">TEXT</tal:block>:</p>
+    <tal:block tal:repeat="child children">
+        <div class="childnode" tal:condition="python:access.hasReadAccess(child)">
+            <a tal:attributes="href python:'?id='+child.id" i18n:attributes="title details"><img tal:attributes="src python:'/thumbs/'+child.id"/></a>
+            <br/>
+            <small>
+                <span tal:content="python:child.getName()" tal:attributes="title python:child.getName()">TEXT</span>
+            </small>
+            <div class="morelink"><a tal:attributes="href python:'?id='+child.id"><tal:block i18n:translate="details">TEXT</tal:block>...</a></div>
+        </div>
+    </tal:block>
 </div>
-<div style="clear:left"> </div>
+<div style="clear:both"/>

@@ -215,7 +215,7 @@ class Image(default.Default):
                 
         files, sum_size = filebrowser(node, req)
 
-        obj = {'deleted':False}
+        obj = {'deleted': False, 'access': access}
         if node.get('deleted')=='true':
             node = node.getActiveVersion()
             obj['deleted'] = True

@@ -30,7 +30,7 @@ import core.config as config
 import core.tree as tree
 import logging
 from utils.log import logException
-from utils.utils import u, union, formatException, normalize_utf8, OperationException
+from utils.utils import u, union, normalize_utf8, OperationException, modify_tex
 from utils.date import format_date
 from math import ceil
 
@@ -314,6 +314,9 @@ class FtsSearcher:
                 val += ' '+normalize_utf8(v)
                 
         val = val.replace(chr(0), "") + ' '
+
+        #remove tex markup
+        val = modify_tex(val, 'strip')
   
         # files
         for file in node.getFiles():
@@ -354,7 +357,7 @@ class FtsSearcher:
                     value += node.get(item) + '|'
             else:
                 value = node.get(field.getName())
-            keyvalue += [(key, u(protect(value)))]
+            keyvalue += [(key, modify_tex(u(protect(value)), 'strip'))]
             
         sql0 = 'SELECT id FROM searchmeta where id=\''+node.id+'\''
         sql1 = 'UPDATE searchmeta SET '

@@ -167,8 +167,8 @@
         <table class="progress" align="center">
             <tr>
                 <td tal:repeat="item python:list(items)[1:]" class="bar">
-                    <img tal:condition="python:len(items[item]['ips'])>0" src="/img/stat_baruser_vert.png" style="width:5px" tal:attributes="height python:str(len(items[item]['ips'])*150/int(max_u))+'px'"/>
-                    <img tal:condition="python:len(items[item]['ips'])==0" src="/img/stat_baruser_vert.png" style="width:5px"/>
+                    <img tal:condition="python:len(items[item]['visitors'])>0" src="/img/stat_baruser_vert.png" style="width:5px" tal:attributes="height python:str(len(items[item]['visitors'])*150/int(max_u))+'px'"/>
+                    <img tal:condition="python:len(items[item]['visitors'])==0" src="/img/stat_baruser_vert.png" style="width:5px"/>
                     <img tal:condition="python:len(items[item]['different'])>0" src="/img/stat_barpage_vert.png" style="width:5px" tal:attributes="height python:str(len(items[item]['different'])*150/int(max_p))+'px'"/>
                     <img tal:condition="python:len(items[item]['different'])==0" src="/img/stat_barpage_vert.png" style="width:5px"/>
                     <img tal:condition="python:len(items[item]['items'])>0" src="/img/stat_bar_vert.png" style="width:5px" tal:attributes="height python:str(len(items[item]['items'])*150/int(max))+'px'"/>
@@ -200,7 +200,7 @@
                     <tal:block i18n:translate="" tal:content="python:'monthname_'+str(current_file.getPeriodMonth())+'_short'"/>
                     <tal:block tal:replace="python:current_file.getPeriodYear()" />
                 </td>
-                <td tal:attributes="class cssclass" tal:content="python:len(items[item]['ips'])"/>
+                <td tal:attributes="class cssclass" tal:content="python:len(items[item]['visitors'])"/>
                 <td tal:attributes="class cssclass"  tal:content="python:len(items[item]['different'])"/>
                 <td tal:attributes="class cssclass"  tal:content="python:len(items[item]['items'])"/>
                 </tal:block>
@@ -232,8 +232,8 @@
         <table class="progressday" align="center">
             <tr>
                 <td tal:repeat="item python:list(items)[1:]" class="bar">
-                    <img tal:condition="python:len(items[item]['ips'])>0" src="/img/stat_baruser_vert.png" style="width:5px" tal:attributes="height python:str(len(items[item]['ips'])*150/int(max_u))+'px'"/>
-                    <img tal:condition="python:len(items[item]['ips'])==0" src="/img/stat_baruser_vert.png" style="width:5px"/>
+                    <img tal:condition="python:len(items[item]['visitors'])>0" src="/img/stat_baruser_vert.png" style="width:5px" tal:attributes="height python:str(len(items[item]['visitors'])*150/int(max_u))+'px'"/>
+                    <img tal:condition="python:len(items[item]['visitors'])==0" src="/img/stat_baruser_vert.png" style="width:5px"/>
                     <img tal:condition="python:len(items[item]['different'])>0" src="/img/stat_barpage_vert.png" style="width:5px" tal:attributes="height python:str(len(items[item]['different'])*150/int(max_p))+'px'"/>
                     <img tal:condition="python:len(items[item]['different'])==0" src="/img/stat_barpage_vert.png" style="width:5px"/>
                     <img tal:condition="python:len(items[item]['items'])>0" src="/img/stat_bar_vert.png" style="width:5px" tal:attributes="height python:str(len(items[item]['items'])*150/int(max))+'px'"/>
@@ -257,7 +257,7 @@
             <tr tal:repeat="item python:list(items)[1:]">
                 <tal:block tal:define="cssclass python:{'False':'week','True':'weekend'}[str(item-1>4)]">
                 <td tal:attributes="class cssclass" i18n:translate="" tal:content="python:'dayname_'+str(item-1)+'_long'"/>
-                <td tal:attributes="class cssclass" tal:content="python:len(items[item]['ips'])"/>
+                <td tal:attributes="class cssclass" tal:content="python:len(items[item]['visitors'])"/>
                 <td tal:attributes="class cssclass"  tal:content="python:len(items[item]['different'])"/>
                 <td tal:attributes="class cssclass"  tal:content="python:len(items[item]['items'])"/>
                 </tal:block>
@@ -283,8 +283,8 @@
         <table class="progresstime" align="center">
             <tr>
                 <td tal:repeat="item python:list(items)[1:]" class="bar">
-                    <img tal:condition="python:len(items[item]['ips'])>0" src="/img/stat_baruser_vert.png" style="width:5px" tal:attributes="height python:str(len(items[item]['ips'])*150/int(max_u))+'px'"/>
-                    <img tal:condition="python:len(items[item]['ips'])==0" src="/img/stat_baruser_vert.png" style="width:5px"/>
+                    <img tal:condition="python:len(items[item]['visitors'])>0" src="/img/stat_baruser_vert.png" style="width:5px" tal:attributes="height python:str(len(items[item]['visitors'])*150/int(max_u))+'px'"/>
+                    <img tal:condition="python:len(items[item]['visitors'])==0" src="/img/stat_baruser_vert.png" style="width:5px"/>
                     <img tal:condition="python:len(items[item]['different'])>0" src="/img/stat_barpage_vert.png" style="width:5px" tal:attributes="height python:str(len(items[item]['different'])*150/int(max_p))+'px'"/>
                     <img tal:condition="python:len(items[item]['different'])==0" src="/img/stat_barpage_vert.png" style="width:5px"/>
                     <img tal:condition="python:len(items[item]['items'])>0" src="/img/stat_bar_vert.png" style="width:5px" tal:attributes="height python:str(len(items[item]['items'])*150/int(max))+'px'"/>
@@ -309,7 +309,7 @@
             </tr>
             <tr tal:repeat="item python:list(items)[1:]">
                 <td tal:content="python:str(item-1)+':00 - '+str(item)+':00'" class="week"/>
-                <td tal:content="python:len(items[item]['ips'])" class="week"/>
+                <td tal:content="python:len(items[item]['visitors'])" class="week"/>
                 <td tal:content="python:len(items[item]['different'])" class="week"/>
                 <td tal:content="python:len(items[item]['items'])" class="week"/>
             </tr>

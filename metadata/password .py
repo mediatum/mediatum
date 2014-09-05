@@ -18,7 +18,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.athana as athana
+from mediatumtal import tal
+from core.transition import httpstatus
 import re
 from utils.utils import esc
 from core.metatype import Metatype,charmap
@@ -28,11 +29,11 @@ import hashlib
 class m_password(Metatype):
 
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None):
-        return athana.getTAL("metadata/password.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
+        return tal.getTAL("metadata/password.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
 
 
     def getSearchHTML(self, context):
-        return athana.getTAL("metadata/password.html",{"context":context}, macro="searchfield", language=context.language)
+        return tal.getTAL("metadata/password.html",{"context":context}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None, html=1):
         value = node.get(field.getName()).replace(";","; ")
@@ -71,7 +72,7 @@ class m_password(Metatype):
     # method for popup methods of type password
     def getPopup(self, req):
         req.writeTAL("metadata/password.html", {"charmap":charmap, "name":req.params.get("name"), "value":req.params.get("value")}, macro="popup")
-        return athana.HTTP_OK
+        return httpstatus.HTTP_OK
     
     # method for additional keys of type password
     def getLabels(self):

@@ -31,7 +31,7 @@ class FileWriter:
             self.node.addFile(f)
         except:
             pass
-        
+
 
 class collection_ftpserver:
     def __init__(self, basecontainer=None, port=21, debug="testing"):
@@ -56,10 +56,10 @@ class collection_ftpserver:
         if self.logging=="testing":
             return 1
         return 0
-        
+
     def getPort(self):
         return self.port
-        
+
     def setUser(self, username, password="", basecontainer=None):
         self.user = username
         self.passwd = password
@@ -118,7 +118,7 @@ class collection_ftpserver:
             if os.path.exists(f.retrieveFile()):
                 os.remove(f.retrieveFile())
             node.removeFile(f)
-    
+
     def mkdir(self, path):
         path,filename = utils.splitpath(path)
         olddir = self.dir
@@ -129,7 +129,7 @@ class collection_ftpserver:
         self.dir = olddir
         self.node = oldnode
         node.addChild(tree.Node(filename, type="directory"))
-    
+
     def rmdir(self, path):
         path,filename = utils.splitpath(path)
         olddir = self.dir
@@ -159,13 +159,13 @@ class collection_ftpserver:
     def open(self, path, mode):
         if "w" in mode:
             return self.open_for_write(path, mode)
-        
+
         node,f = self.isfile(path)
         if not f:
             raise IOError("No such file: "+path)
         file = f.retrieveFile()
         return open(file, "rb")
-    
+
     def current_directory (self):
         return "/" + ("/".join([d.getName() for d in self.dir[1:]]))
 
@@ -191,18 +191,18 @@ class collection_ftpserver:
             self.dir = [self.basecontainer]
             self.node = self.basecontainer
         return 1
-        
+
     def cdup(self):
         if len(self.dir)>1:
             self.dir = self.dir[:-1]
             self.cwd("..")
             return 1
         return 0
-        
+
     def rnfr(self, line):
         self.filefrom = line[1]
         return 1
-        
+
     def rnto(self, line):
         if self.filefrom:
             # check directory

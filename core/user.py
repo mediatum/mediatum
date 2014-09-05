@@ -28,11 +28,6 @@ from core.users import useroption
 
 class User(tree.Node):
 
-    def getName(self):
-        return self.get("name")
-    def setName(self, n):
-        return self.set("name", n)
-    
     def getGroups(self):
         groups = []
         for p in self.getParents():

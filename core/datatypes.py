@@ -53,3 +53,10 @@ def loadAllDatatypes():
         datalist += [Datatype(key, key, cls.__name__, cls.__module__+'.'+cls.__name__)]
     return datalist
 
+def loadNonSystemTypes():
+    dlist = []
+    for key, cls in nodeclasses.items():
+        n = cls(name='n', type=key)
+        if key not in ["default", "root", "home"] and hasattr(n, "isSystemType") and n.isSystemType() == 0:
+            dlist += [Datatype(key, key, cls.__name__, cls.__module__+'.'+cls.__name__)]
+    return dlist

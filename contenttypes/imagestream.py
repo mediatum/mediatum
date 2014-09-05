@@ -25,11 +25,7 @@ import glob
 
 class Imagestream(image.Image):
 
-    """ overrides getFiles in core.tree """
-    def overload(node):
-        node.getFiles = node._getFiles
-
-    def _getFiles(node):
+    def getFiles(node):
         files = []
         if node.get('system.imagestream') == '':
             return files

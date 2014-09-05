@@ -19,7 +19,6 @@
 """
 import core.config as config
 import core.tree as tree
-import core.athana as athana
 
 from core.tree import Node,FileNode
 from core.translation import t, lang

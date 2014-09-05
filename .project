@@ -3,7 +3,10 @@
 	<name>mediatum</name>
 	<comment></comment>
 	<projects>
+		<project>mediatum-babel</project>
+		<project>mediatum-fsm</project>
 		<project>mediatum-playground</project>
+		<project>mediatum-tal</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

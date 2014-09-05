@@ -1,4 +1,3 @@
-
 """
  mediatum - a multimedia content repository
 
@@ -29,7 +28,7 @@ from core.db import database
 from utils.boolparser import BoolParser
 import thread
 import time
-import md5
+import hashlib
 
 logb = logging.getLogger('backend')
 
@@ -249,16 +248,15 @@ class AccessData:
         
         if not 'user' in _p and not 'sign' in _p:
             return False
-            
+
         try:
-            dirid = self.getUser().getDirID()
             workingString = ""
-            for n in [h for h in tree.getRoot('home').getChildren() if h.get('system.oauthuser')==dirid]:
+            for n in [h for h in tree.getRoot('home').getChildren() if h.get('system.oauthuser')==params.get('user')]:
                 workingString = n.get('system.oauthkey')
                 break
         except:
             return False
-        
+
         workingString += req_path
 
         #remove signature form parameters before we calculate the test signature
@@ -267,7 +265,7 @@ class AccessData:
         
         keylist = _p.keys()
         keylist.sort()
-        
+
         isFirst = True
         
         for oneKey in keylist:
@@ -277,7 +275,7 @@ class AccessData:
             else:
                 isFirst = False
             workingString += oneKey + '=' + oneValue
-        testSignature = md5.new(workingString).hexdigest()
+        testSignature = hashlib.md5(workingString).hexdigest()
         return (testSignature==signature)
 
 

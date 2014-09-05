@@ -29,8 +29,9 @@ import StringIO
 from urlparse import parse_qsl, urlsplit, urlunsplit
 from urllib import quote, urlencode
 
-import xml.parsers.expat 
+import xml.parsers.expat
 from HTMLParser import HTMLParser
+from compat import iteritems
 
 def esc(s):
     return s.replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;").replace(">", "&gt;")
@@ -119,10 +120,10 @@ def float_from_gps_format(string): #e.g [48, 214/25, 0]
     if string[0]=='[' and string[-1]=='[':
         string = string[1:-1]
         components = string.split(",")
-        
+
         if len(components)!=3:
             return 0
-        
+
         result = 0
         result += float_from_fraction(components[0])
         result += float_from_fraction(components[1])/60
@@ -833,8 +834,8 @@ class Template(object):
                 except:
                     pass
         return ''.join(text_parts)
-        
-        
+
+
     def _substring(self, s, attrs):
         try:
             if len(attrs)==1:
@@ -843,7 +844,7 @@ class Template(object):
                 return s[int(attrs[0]):int(attrs[1])]
         except:
             return s
-            
+
     def _split(self, s, attrs):
         try:
             if len(attrs)==2:
@@ -851,31 +852,31 @@ class Template(object):
         except:
             return s
 
-            
+
 def fixXMLString(s, i=100):
     if i==0: # loop check
         return s
-    parser = xml.parsers.expat.ParserCreate() 
+    parser = xml.parsers.expat.ParserCreate()
     try:
         parser.Parse(s)
         return s
-    
+
     except xml.parsers.expat.ExpatError as err:
         # remove error char
         s2 = s.split('\n')
-        s2[err.lineno-1] = s2[err.lineno-1][:(err.offset)] + s2[err.lineno-1][(err.offset+2):] 
+        s2[err.lineno-1] = s2[err.lineno-1][:(err.offset)] + s2[err.lineno-1][(err.offset+2):]
         return fixXMLString("\n".join(s2), i-1)
     return s
-    
+
 def checkXMLString(s):
-    parser = xml.parsers.expat.ParserCreate() 
+    parser = xml.parsers.expat.ParserCreate()
     try:
         parser.Parse(s)
         return 1
     except xml.parsers.expat.ExpatError as err:
         return 0
-        
-        
+
+
 def quote_uri(uri):
     """Quote path parts and query parameters of a URI and return the resulting URI.
     """
@@ -885,7 +886,36 @@ def quote_uri(uri):
     quoted_uri = urlunsplit((parsed_uri.scheme, parsed_uri.netloc, path, query, parsed_uri.fragment))
     return quoted_uri
 
-        
+
+def make_repr(**args):
+    """Class decorator which uses init params to create a human readable instance repr.
+    Looks like: MyClass(arg1=value,arg2=value)
+    """
+    def _make_repr(cls):
+        """
+        :param cls: A class that defines an __init__ method.
+        """
+        init_args = cls.__init__.__func__.func_code.co_varnames[1:]
+        arg_placeholder = ",".join(arg + "={" + arg + "!r}" for arg in init_args)
+        tmpl = cls.__name__ + "(" + arg_placeholder + ")"
+        def repr(self):
+            return tmpl.format(**self.__dict__)
+
+        cls.__repr__ = repr
+        return cls
+    return _make_repr
+
+
+def utf8_encode_recursive(d):
+    if isinstance(d, dict):
+        return {k.encode("utf8"): utf8_encode_recursive(v) for k, v in iteritems(d)}
+    elif isinstance(d, list):
+        return [utf8_encode_recursive(v) for v in d]
+    elif isinstance(d, unicode):
+        return d.encode("utf8")
+    return d
+
+
 if __name__ == "__main__":
     def tt(s):
         t,f,l = splitname(s)

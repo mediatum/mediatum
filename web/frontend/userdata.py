@@ -21,7 +21,7 @@
 
 import sys
 
-import core.athana as athana
+from core.transition import httpstatus
 import core.config as config
 import core.users as users
 
@@ -148,4 +148,4 @@ def show_user_data(req):
 
     navframe.write(req, req.getTAL("web/frontend/userdata.html", ctx, macro="show_user_data"))
 
-    return athana.HTTP_OK
+    return httpstatus.HTTP_OK

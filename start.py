@@ -22,7 +22,6 @@ import sys
 import os
 import time
 import core
-import core.athana
 import core.webconfig
 import core.config as config
 import subprocess

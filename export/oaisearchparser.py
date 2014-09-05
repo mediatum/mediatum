@@ -4,7 +4,7 @@
  Copyright (C) 2008 Arne Seifert <seiferta@in.tum.de>
  Copyright (C) 2008 Matthias Kramm <kramm@in.tum.de>
  Copyright (C) 2011 Werner Neudenberger <neudenberger@ub.tum.de>
- 
+
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
@@ -63,21 +63,23 @@ class OAISearchFieldCondition:
                 logging.getLogger('oai').info('OAISearchParser: ---> calling fts:'+ self.field+" "+self.op+" "+self.value)
             from core.tree import searcher
             return searcher.run_search(self.field.replace(fieldprefix, ''), self.op, self.value)
-            
+
         if self.field=='schema' and self.op=='=':
-            sql = "SELECT id FROM node WHERE type LIKE '%%/%s'" % self.value
+            sql = "SELECT id FROM node WHERE type LIKE %s"
+            params = ("%" + self.value, )
         elif self.field and self.op and self.value:
-            sql = "SELECT id FROM node, nodeattribute WHERE nodeattribute.name='%s' and nodeattribute.value %s '%s' and id=nid" % (self.field, self.op, self.value)
+            sql = "SELECT id FROM node, nodeattribute WHERE id=nid and nodeattribute.name=%s and nodeattribute.value "+ self.op + " %s",
+            params = (self.field, self.value)
         else:
             if DEBUG:
                 logging.getLogger('oai').error('OAISearchParser: ---> OAISearchParser: Error evaluating FieldCondition')
-            return [] 
+            return []
         if DEBUG:
-            logging.getLogger('oai').info('OAISearchParser: ---> going to execute sql: %s' % sql)
-        res = tree.db.runQuery(sql)
+            logging.getLogger('oai').info('OAISearchParser: ---> going to execute sql: %s with params %s', sql, params)
+        res = tree.db.runQuery(sql, *params)
         res = [x[0] for x in res]
         if DEBUG:
-            logging.getLogger('oai').info('OAISearchParser: ---> sql returned %d results' % len(res))
+            logging.getLogger('oai').info('OAISearchParser: ---> sql returned %d results', len(res))
         return list(set(res))
 
 

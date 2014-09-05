@@ -18,12 +18,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import os
-import sys
-import utils.date
 import logging
-import xml
-import traceback
 import core.tree as tree
 import core.config as config
 import core.translation as translation
@@ -31,12 +26,11 @@ import core.translation as translation
 from utils.utils import *
 from utils.date import *
 from utils.log import logException
-from core.tree import nodeclasses, Node, FileNode
 from core.config import *
 from core.xmlnode import getNodeXML, readNodeXML
 from core.db.database import getConnection
 from core.metatype import Context
-
+import datetime
 
 log = logging.getLogger('backend')
 
@@ -533,11 +527,6 @@ def importMetaSchema(filename):
 #
 class Metadatatype(tree.Node):
 
-    def getName(self):
-        return self.get("name")
-    def setName(self, value):
-        self.set("mame", value)
-
     def getDescription(self):
         return self.get("description")
     def setDescription(self, value):
@@ -647,11 +636,6 @@ class Metadatatype(tree.Node):
 
 """ fields for metadata """
 class Metadatafield(tree.Node):
-    def getName(self):
-        return self.get("name")
-    def setName(self, value):
-        self.set("name", value)
-
     def getLabel(self):
         return self.get("label")
     def setLabel(self, value):
@@ -872,14 +856,23 @@ class Mask(tree.Node):
         for node in nodes:
             for item in self.getMaskFields():
                 field = item.getField()
-                if item.getRequired()==1:
-                    if node.get(field.getName())=="":
+                if item.getRequired() == 1:
+                    if node.get(field.getName()) == "":
                         ret.append(node.id)
+                        logging.getLogger('editor').error("Error in publishing of node %r: The required field %r is empty." % (node.id, field.name))
 
-                if field and field.getContentType()=="metafield" and field.getFieldtype()=="date":
-                    #if not validateDateString(node.get(field.getName())):
-                    if not node.get(field.getName())=="" and not validateDateString(node.get(field.getName())):
-                        ret.append(node.id)
+                if field and field.getContentType() == "metafield" and field.getFieldtype() == "date":
+                    if not node.get(field.getName()) == "":
+                        if field.name == "yearmonth":
+                            try:
+                                datetime.datetime.strptime(node.get(field.getName())[:7], '%Y-%m')
+                            except ValueError:
+                                ret.append(node.id)
+                                logging.getLogger('editor').error("Error in publishing of node %r: The date field 'yearmonth' with content %r is not valid." % (node.id, node.get(field.getName())))
+                            continue
+                        if not validateDateString(node.get(field.getName())):
+                            ret.append(node.id)
+                            logging.getLogger('editor').error("Error in publishing of node %r: The date field %r with content %r is not valid." % (node.id, field.name, node.get(field.getName())))
         return ret
 
     ''' returns True if all mandatory fields of mappingdefinition are used -> valid format'''
@@ -1265,17 +1258,18 @@ def pluginModule(module):
         if name.startswith("m_") and type(obj) == type(Dummyclass):
             pluginClass(obj)
 
-def init(path):
-    global mytypes
-    ret = {}
-    for root, dirs, files in path:
-        for name in files:
-            if name.endswith(".py") and name!="__init__.py":
-                name = name[:-3]
-                if root.endswith('metadata'):
-                    pluginModule(__import__("metadata."+name).__dict__[name])
-                if root.endswith('mask'):
-                    pluginModule(__import__("schema.mask."+name).__dict__["mask"].__dict__[name])
+def init():
+    pkg_dirs = ["schema/mask", "metadata"]
+    for path in pkg_dirs:
+        abspath =  os.walk(os.path.join(config.basedir, path))
+        for root, dirs, files in abspath:
+            for name in files:
+                if name.endswith(".py") and name!="__init__.py":
+                    name = name[:-3]
+                    if root.endswith('metadata'):
+                        pluginModule(__import__("metadata."+name).__dict__[name])
+                    if root.endswith('mask'):
+                        pluginModule(__import__("schema.mask."+name).__dict__["mask"].__dict__[name])
 
 def getMetadataType(mtype):
     global mytypes
@@ -1376,7 +1370,3 @@ def node_getDescription(node):
             return mtype.getDescription()
         else:
             return ""
-
-
-init(os.walk(os.path.join(config.basedir, 'schema/mask')))
-init(os.walk(os.path.join(config.basedir, 'metadata')))

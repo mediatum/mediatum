@@ -24,14 +24,15 @@ import sys
 import hashlib
 import locale
 import core.config as config
+from core.transition.athana_sep import athana_http as athana
 
-import core.athana as athana
+
 import core.translation as translation
 
 #basedir = os.path.dirname(athana.__file__).rsplit(os.sep,1)[0]
 # wn 2014-01-20: ensure absolute path even when importing startup file (eg: start.py)
 # this won't change anything when starting via "python start.py"
-basedir = os.path.abspath(athana.__file__).rsplit(os.sep,2)[0]
+basedir = os.path.abspath(config.__file__).rsplit(os.sep,2)[0]
 
 editmodulepaths = [('', 'web/edit/modules')]
 
@@ -44,8 +45,9 @@ else:
     config.initialize(basedir, "mediatum.cfg")
 
 athana.setTempDir(config.settings["paths.tempdir"])
-athana.setServiceUser(config.get("host.serviceuser",""))
-athana.setServicePwd(hashlib.md5(config.get("host.servicepwd", "")).hexdigest())
+
+from core.transition.app import create_app
+app = create_app()
 
 # locale setting for sorting, default to system locale
 loc = locale.setlocale(locale.LC_COLLATE, '')
@@ -61,8 +63,6 @@ import core.acl as acl
 
 log.info("Initializing backend...")
 
-tree.initialize()
-
 from contenttypes.directory import Directory
 tree.registerNodeClass("directory", Directory)
 from contenttypes.project import Project
@@ -74,6 +74,11 @@ tree.registerNodeClass("collections", Directory)
 tree.registerNodeClass("root", Directory)
 tree.registerNodeClass("home", Directory)
 
+
+tree.initialize()
+
+from schema import schema
+schema.init()
 
 # register types in definition directory /contenttypes
 log.info("Loading Content types")
@@ -143,16 +148,6 @@ for n in tree.getRoot("collections").getChildren():
 if not tree.getRoot().hasChild("searchmasks"):
     tree.getRoot().addChild(tree.Node(name="searchmasks", type="searchmasks"))
 
-for k,v in config.getsubset("plugins").items():
-    print 'Initializing plugin "'+k+'"'
-    path,module = splitpath(v)
-    if path and path not in sys.path:
-        sys.path += [path]
-    m = __import__(module)
-
-    if hasattr(m, 'pofiles'): # add po file paths
-        if len(m.pofiles)>0:
-            print "  load translation files"
-            for fp in m.pofiles:
-                translation.addPoFilepath([fp])
+from core.plugins import init_plugins
+init_plugins()
 

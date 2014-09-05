@@ -44,7 +44,9 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
     nodename_copy = node.name
     if nodename_copy == None:
         nodename_copy = ""
-    fi.write('%s<node name="%s" id="%s" ' % ((" " * indent), esc(nodename_copy), str(node.id)))
+    #fi.write('%s<node name="%s" id="%s" ' % ((" " * indent), esc(nodename_copy), str(node.id)))
+    # non-utf8 encoded umlauts etc. may cause invalid xml
+    fi.write('%s<node name="%s" id="%s" ' % ((" " * indent), u2(esc(nodename_copy)), str(node.id)))
     if node.type is None:
         node.type = "node"
     fi.write('type="%s" ' % node.type)

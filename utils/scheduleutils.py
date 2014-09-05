@@ -929,8 +929,8 @@ send_schedule_mail_field_descriptors = [
 
 
 def getTALstr(s, context={}, language='en'):
-    import core.athana as athana
-    return athana.getTALstr(s, context, language=language)
+    from mediatumtal import tal
+    return tal.getTALstr(s, context, language=language)
 
 
 def send_schedule_mail(node, trigger=None, now_str=None, trigger_info=None, OUT=None, TT=None, thread_name=None, func=None):

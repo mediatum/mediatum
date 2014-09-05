@@ -18,7 +18,6 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 from utils.utils import get_filesize, intersection, u, float_from_gps_format
 from utils.log import logException
 from core.db import database
@@ -33,6 +32,8 @@ from locale import setlocale, strxfrm, LC_COLLATE, getlocale
 import core.config as config
 import thread
 import traceback
+from utils.compat import iteritems, string_types
+import codecs
 
 nodeclasses = {}
 nodefunctions = {}
@@ -141,6 +142,9 @@ def getNodesByAttribute(attributename, attributevalue=""):
 
 def getDirtyNodes(num=0):
     return NodeList(db.getDirty(num))
+
+def getDirtySchemaNodes(num=0):
+    return NodeList(db.getDirtySchemas(num))
 
 
 class NoSuchNodeError:
@@ -369,7 +373,111 @@ class NodeList:
     def filter(self, access):
         return access.filter(self)
 
-class Node:
+def _set_attribute_complex(node, name, value):
+    if isinstance(value, string_types):
+        db.setAttribute(node.id, name, codecs.encode(value, "utf8"), check=(not bulk))
+    else:
+        db.set_attribute_complex(node.id, name, value, check=(not bulk))
+
+
+        ### methods to patch in for Node which store complex attributes
+def _node_set_complex(self, name, value):
+    """Set an attribute, new version.
+    Passes unmodified values to the DB connector, converts unicode objects to utf8 strings.
+    """
+    if name == "nodename":
+        return self.setName(value)
+    self.attributes[name] = value
+    if self.id:
+        _set_attribute_complex(self, name, value)
+
+
+def _node_make_persistent_complex(self):
+    if self.id is None:
+        changed_metadata(self)
+        tree_lock.acquire()
+        try:
+            self.id = db.createNode(self.name,self.type)
+            if not nocache:
+                nodes_cache[long(self.id)] = self
+            for name, value in self.attributes.items():
+                _set_attribute_complex(self, name, value)
+            if self.read_access:
+                db.setNodeReadAccess(self.id,self.read_access)
+            if self.write_access:
+                db.setNodeWriteAccess(self.id,self.write_access)
+            if self.data_access:
+                db.setNodeDataAccess(self.id,self.data_access)
+        finally:
+            tree_lock.release()
+
+
+def _node_load_attributes_complex(nid):
+    return db.get_attributes_complex(nid)
+
+
+class NodeMeta(type):
+    """print methods of node subclasses and warn if Node methods are overriden"""
+    def __init__(cls, name, bases, dct):
+        # patch methods for attribute handling to support complex values
+        if cls._store_complex_attributes:
+            cls._load_attributes = staticmethod(_node_load_attributes_complex)
+            cls.set = _node_set_complex
+            cls._makePersistent = _node_make_persistent_complex
+        #print methods of node subclasses and warn if Node methods are overriden
+#         if name != "Node":
+#             print("\ncls " + name)
+#             print("=" * (len(name) + 4))
+#             for k in dct.keys():
+#                 if k in ["__module__", "__doc__"]:
+#                     continue
+#                 redefined = k in Node.__dict__
+#                 msg = "redefined!" if redefined else "ok"
+#                 out = sys.stderr if redefined else sys.stdout
+#                 r = "{}: {}".format(k, msg)
+#                 print >> out, r
+        super(NodeMeta, cls).__init__(name, bases, dct)
+
+class Node(object):
+    __metaclass__ = NodeMeta
+    # non string arguments will be saved in msgpack format if store_complex_attributes is True
+    _store_complex_attributes = False
+    def __new__(cls, name="<noname>", type=None, dbid=None):
+        if dbid:
+            dbnode = db.getNode(dbid)
+            if not dbnode:
+                raise NoSuchNodeError(dbid)
+            id,name,type,read,write,data,orderpos,localread = dbnode
+        # find matching node class
+        try:
+            nodetype = type.split("/", 1)[0]
+        except:
+            logg.debug("no type given for instance of %s with name %s", cls, name)
+        else:
+            nodecls = nodeclasses.get(nodetype)
+            if nodecls:
+#                 logg.debug("found matching nodeclass: %s for type %s", nodecls, type)
+                cls = nodecls
+            else:
+                pass
+#                 logg.debug("no matching nodeclass for type %s", type)
+        obj = object.__new__(cls)
+        if dbid:
+            obj.id = id
+            attrs = cls._load_attributes(id)
+            obj.attributes = attrs
+            obj.name = name
+            obj.type = type
+            obj.prev_nid = attrs.get('system.prev_id', '0')
+            obj.next_nid = attrs.get('system.next_id', '0')
+            obj.read_access = read
+            obj.write_access = write
+            obj.data_access = data
+            obj.orderpos = orderpos
+            obj.localread = localread
+            obj.getLocalRead()
+        return obj
+
     def __init__(self, name="<unbenannt>", type=None, dbid=None):
         self.occurences = None
         self.lock = thread.allocate_lock() # for attrlist
@@ -389,30 +497,14 @@ class Node:
             self.localread = None
             if type == "root":
                 self._makePersistent()
-        else:
-            dbnode = db.getNode(dbid)
-            if not dbnode:
-                raise NoSuchNodeError(dbid)
-            id,name,type,read,write,data,orderpos,localread = dbnode
 
-            self.id = id
-            self.prev_nid = db.getAttributes(self.id).get('system.prev_id', '0')
-            self.next_nid = db.getAttributes(self.id).get('system.next_id', '0')
-            self.name = name
-            self.type = type
-            self.read_access = read
-            self.write_access = write
-            self.data_access = data
-            self.orderpos = orderpos
-            self.attributes = None
-            self.localread = localread
-
-            self.getLocalRead()
         self.occurences = {}
         self.occurences2node = {}
         self.ccount = -1
-        if hasattr(self, 'overload'):
-            self.overload()
+
+    @staticmethod
+    def _load_attributes(nid):
+        return db.getAttributes(nid)
 
     def _makePersistent(self):
         if self.id is None:
@@ -637,10 +729,13 @@ class Node:
 
 
     """ remove a FileNode from this node """
-    def removeFile(self, file):
+    def removeFile(self, file, single=False):
         changed_metadata(self)
         self._makePersistent()
-        db.removeFile(self.id,file._path)
+        if single:
+            db.removeSingleFile(self.id,file._path)
+        else:
+            db.removeFile(self.id,file._path)
         file._delete()
 
 
@@ -704,6 +799,9 @@ class Node:
     def getChildren(self):
         idlist = self._getChildIDs(0)
         return NodeList(idlist)
+
+    def get_children_with_type(self, nodetype):
+        return NodeList(db.get_children_with_type(self.id, nodetype))
 
     """ get a child with a specific node name """
     def getChild(self, name):
@@ -784,9 +882,6 @@ class Node:
     def event_metadata_changed(self):
         global searcher
         searcher.node_changed(self)
-        f = self.getoverloadedfunction("event_metadata_changed")
-        if f:
-            f()
 
 
     """ get formated gps information """
@@ -820,10 +915,6 @@ class Node:
                 return self.type
             elif name=='node.orderpos':
                 return self.orderpos
-        if self.attributes is None:
-            if not self.id:
-                raise "Internal Error"
-            self.attributes = db.getAttributes(self.id)
         return self.attributes.get(name, "")
 
     """ set a metadate """
@@ -844,10 +935,6 @@ class Node:
 
     """ get all metadates (key/value) pairs """
     def items(self):
-        if self.attributes is None:
-            if not self.id:
-                raise "Internal Error"
-            self.attributes = db.getAttributes(self.id)
         return self.attributes.items()
 
 
@@ -896,7 +983,7 @@ class Node:
     """ run a search query. returns a list of nodes """
     def search(self, q):
         global searcher, subnodes
-        log.info('search: %s for node %s %s' %(q, str(self.id), str(self.name)))
+        log.info('search: %s for node %s %s' % (q, str(self.id), str(self.name)))
         self._makePersistent()
         if q.startswith('searchcontent='):
             return searcher.query(q)
@@ -908,25 +995,24 @@ class Node:
     def __getattr__(self, name):
         cls = self.__class__
         if name in cls.__dict__:
+            logg.warn("DEPRECATED: class attribute accessed by (%s).__getattr__(%s)", self, name)
             return cls.__dict__[name]
         if name in self.__dict__:
+            logg.warn("DEPRECATED: instance attribute accessed by (%s).__getattr__(%s)", self, name)
             return self.__dict__[name]
-        f = self.getoverloadedfunction(name)
-        if f:
-            return f
-
-        if self.attributes is None and self.id:
-            self.attributes = db.getAttributes(self.id)
         if name in self.attributes:
             return self.attributes[name]
 
-        if self.getContentType() in nodeclasses:
-            raise AttributeError("Node of type '"+self.type+"' has no attribute '"+name+"'")
-        else:
-            raise AttributeError("Node of type '"+self.type+"' has no attribute '"+name+"' (type not overloaded)")
+        f = self.getoverloadedfunction(name)
+        if f:
+            return f
+        # fall-through
+        raise AttributeError("Node %s of type has no attribute %s", self, name)
 
     def getoverloadedfunction(self, name):
         global nodefunctions,nodeclasses
+        if name in nodefunctions:
+            return lambda *x,**y: nodefunctions[name](self, *x,**y)
         if self.getContentType() in nodeclasses:
             cls = nodeclasses[self.getContentType()]
             def r(cls):
@@ -941,9 +1027,8 @@ class Node:
                     return None
             ret = r(nodeclasses[self.getContentType()])
             if ret:
+                logg.warn("DEPRECATED: (%s).getoverloadedfunction(%s)", self, name)
                 return ret
-        if name in nodefunctions:
-            return lambda *x,**y: nodefunctions[name](self, *x,**y)
         return None
 
 
@@ -1161,6 +1246,81 @@ class Node:
             return format_date(parse_date(self.get('creationtime')), '%d.%m.%Y, %H:%M:%S')
         return ''
 
+    def __repr__(self):
+        return "Node<{}: '{}'> ({})".format(self.id, self.name, object.__repr__(self))
+
+    # some additional methods from dict
+
+    def __contains__(self, key):
+        return key in self.attributes\
+            or key in ('node', 'node.name', "nodename", "node.id", "node.type", "node.orderpos")
+
+    def __getitem__(self, key):
+        if key not in self:
+            raise KeyError(key)
+        return self.get(key)
+
+    def __iter__(self):
+        """iter() thinks that a Node is iterable because __getitem__ is implemented.
+        That behaviour is stupid (legacy...), so we have to state explicitly that this thing is not iterable!
+        """
+        raise TypeError("not iterable!")
+
+    def __len__(self):
+        """
+        :returns: number of attributes
+        """
+        return len(self.attributes)
+
+    def __nonzero__(self):
+        """Some code in mediaTUM relies on the fact that Node objects are always true, like `if user:`
+        which is really a check if the user is not None.
+        This can fail now because __len__ == 0 means that the Node object is false.
+        Such code should be fixed (=> use `if user is None`). In the meantime, we just say that Node is always true.
+        """
+        return True
+
+    def __setitem__(self, key, value):
+        self.set(key, value)
+
+    def __delitem__(self, key):
+        self.removeAttribute(key)
+
+    def setdefault(self, key, value):
+        """Same as dict.setdefault."""
+        if key not in self:
+            self.set(key, value)
+            return value
+        else:
+            return self.get(key)
+
+    ### some helpers for interactive use
+    @property
+    def child_dict(self, type=None):
+        child_nodes = [getNode(i) for i in self.children]
+        child_dict = {c.name: c for c in child_nodes}
+        return child_dict
+
+    def child_dict_with_filter(self, nodefilter):
+        child_nodes = [getNode(i) for i in self.children]
+        child_dict = {c.name: c for c in child_nodes if nodefilter(c)}
+        return child_dict
+
+    def child_dict_with_type(self, type):
+        nodefilter = lambda n: n.type == type or n.__class__.__name__ == type
+        return self.child_dict_with_filter(nodefilter)
+
+    @property
+    def content_type(self):
+        return self.getContentType()
+
+    def attributes_filtered_by_key(self, attribute_key_filter):
+        return {k: v for k, v in iteritems(self.attributes) if attribute_key_filter(k)}
+
+    def attributes_filtered_by_value(self, attribute_value_filter):
+        return {k: v for k, v in iteritems(self.attributes) if attribute_value_filter(v)}
+
+
 def flush():
     global childids_cache,nodes_cache,parentids_cache,_root,db
     tree_lock.acquire()
@@ -1202,6 +1362,7 @@ def initialize(load=1):
         getRoot()
     global schema, subnodes, searchParser, searcher
     import schema.schema as schema
+    from core.search.ftsquery import DBTYPE
     schema = schema
 
     if config.get("config.searcher","")=="fts3": # use fts3
@@ -1213,34 +1374,38 @@ def initialize(load=1):
         searchParser = ftsSearchParser
         searcher = ftsSearcher
 
-        def getTablenames(searcher):
-            res = searcher.execute("SELECT * FROM sqlite_master WHERE type='table'")
-            tablenames = [t[1] for t in res]
+        def getTablenames(searcher, schema, db_type):
+            tablenames = []
+            res = searcher.execute("SELECT * FROM sqlite_master WHERE type='table'", schema, db_type)
+            if res is not None:
+                tablenames += [t[1] for t in res]
             return tablenames
 
         # check fts database for tables
         msg = "looking for tables in sqlite database of the searcher ..."
         log.info(msg)
-        try:
-            tablenames = getTablenames(searcher)
-            if tablenames:
-                msg = "found %d tables in sqlite database of the searcher: %r" % (len(tablenames), tablenames)
-                log.info(msg)
-                print "fts3 searcher initialized"
-            else:
-                msg = "found no tables in sqlite database of the searcher ... trying to initialize database"
-                log.warning(msg)
-                searcher.initIndexer(option="init")
-                tablenames = getTablenames(searcher)
-                if tablenames:
-                    msg = "found %d tables in newly initialized sqlite database of the searcher: %r" % (len(tablenames), tablenames)
-                    log.info(msg)
-                    print "fts3 searcher initialized"
-                else:
-                    raise
-        except:
-            msg = "could not query tables from fts sqlite database ... searcher may not be functional"
-            log.error(msg)
+        for schema in searcher.schemas:
+            for db_type in list(set(searcher.connames[DBTYPE].values())):
+                try:
+                    tablenames = getTablenames(searcher, schema, db_type)
+                    if tablenames:
+                        msg = "found %d tables in sqlite database of the searcher: %r" % (len(tablenames), tablenames)
+                        log.info(msg)
+                        print "fts3 searcher initialized"
+                    else:
+                        msg = "found no tables in sqlite database of the searcher ... trying to initialize database"
+                        log.warning(msg)
+                        searcher.initIndexer(option="init")
+                        tablenames = getTablenames(searcher, schema, db_type)
+                        if tablenames:
+                            msg = "found %d tables in newly initialized sqlite database of the searcher: %r" % (len(tablenames), tablenames)
+                            log.info(msg)
+                            print "fts3 searcher initialized"
+                        else:
+                            raise
+                except:
+                    msg = "could not query tables from fts sqlite database ... searcher may not be functional"
+                    log.error(msg)
 
     else: # use magpy
         print "magpy searcher initialized"

@@ -20,14 +20,17 @@
 """
 import MySQLdb
 import core
+import re
 import sys
 from time import *
 import logging
 import traceback
 import thread
+import msgpack
 from connector import Connector
 
 from core.db.database import initDatabaseValues, DatabaseException
+from utils.compat import string_types
 
 if __name__ == "__main__":
     sys.path += [".."]
@@ -36,6 +39,7 @@ import core.config as config
 from utils.utils import *
 
 debug = 0
+debug_ignore_statements_re = None
 
 log = logging.getLogger('database')
 
@@ -128,62 +132,54 @@ class MYSQLConnector(Connector):
                     s = str(s)
                     return "'" + s.replace('\\','\\\\').replace('"','\\"').replace('\'','\\\'') + "'"
 
-    def execute(self,sql):
+    def execute(self,sql, params=None):
         self.dblock.acquire()
         try:
             while 1:
                 try:
                     self._reconnect()
                     c = self.db.cursor()
-                    c.execute(sql)
+                    c.execute(sql, params)
                     result = c.fetchall()
                     c.close()
                     self.db.commit()
                     return result
-                except MySQLdb.OperationalError as nr:
+                except MySQLdb.Error as nr:
+                    def log_sql_error(msg, exc_info=0):
+                        log.error(msg + " while executing SQL '%s', params %s", sql, params, exc_info=exc_info)
+
                     if nr[0] == 2002:
-                        log.error("can't connect to sql server while executing \""+sql+"\"")
+                        log_sql_error("can't connect to sql server")
                         self.db = None
                         sleep(5)
-                        continue
-                    if nr[0] == 2006:
-                        log.error("mysql server has gone away while executing \""+sql+"\"")
+                    elif nr[0] == 2006:
+                        log_sql_error("mysql server has gone away")
                         self.db = None
                         sleep(5)
-                        continue
                     elif nr[0] == 2013:
-                        log.error("lost connection to database while executing \""+sql+"\"")
+                        log_sql_error("lost connection to database")
                         self.db = None
                         sleep(5)
-                        continue
                     else:
+                        log_sql_error("", exc_info=1)
                         raise
+                except:
+                    log.error("non-MySQL error while executing SQL '%s', params %s", sql, params, exc_info=1)
+                    raise
+
+
         finally:
             self.dblock.release()
 
 
-    def runQuery(self, sql):
-        global debug
-        self.dblock.acquire()
-        try:
-            if debug:
-                log.debug(sql)
-                c = self.db.cursor()
-                c.execute("explain "+sql)
-                result = c.fetchall()
-                c.close()
-                type = result[0][1]
-                extra = result[0][7]
-                if type == 'ALL' or "temporary" in extra.lower() or "filesort" in extra.lower():
-                    print "========================================================================"
-                    print "Warning: Slow SQL Statement (type="+type+", extra="+extra+")"
-                    print sql
-                    print "========================================================================"
-
-        finally:
-            self.dblock.release()
-
-        result = self.execute(sql)
+    def runQuery(self, sql, *args, **kwargs):
+        if args and kwargs:
+            raise Exception("only positional or named parameters allowed, not both!")
+        params = args or kwargs or None
+        if debug:
+            if not debug_ignore_statements_re or not debug_ignore_statements_re.match(sql):
+                print "SQL echo:", sql, ", params", params
+        result = self.execute(sql, params)
         return result
 
 
@@ -321,8 +317,23 @@ class MYSQLConnector(Connector):
                 return
         self.runQuery("insert into nodeattribute (nid, name, value) values(" + nodeid + ", " + self.esc(attname) + ", " + self.esc(attvalue) + ")")
 
+
+    def set_attribute_complex(self, nodeid, attname, attvalue, check=1):
+        if attvalue is None:
+            raise TypeError("Attribute value is None")
+        value_complex = "\x11PACK\x12" + msgpack.dumps(attvalue)
+        if check:
+            t = self.runQuery("select count(*) as num from nodeattribute where nid=%s and name=%s", nodeid, attname)
+            if len(t)>0 and t[0][0]>0:
+                self.runQuery("update nodeattribute set value=%s where nid=%s and name=%s", value_complex, nodeid, attname)
+                return
+        self.runQuery("insert into nodeattribute (nid, name, value) values(%s, %s, %s)", nodeid, attname, value_complex)
+
     def addFile(self, nodeid, path, type, mimetype):
         self.runQuery("insert into nodefile (nid, filename, type, mimetype) values(" + nodeid + ", " + self.esc(path) + ", '" + type + "', '" + mimetype+ "')")
+
+    def removeSingleFile(self, nodeid, path):
+        self.runQuery("delete from nodefile where nid = "+nodeid+" and filename="+self.esc(path)+" limit 1")
 
     def getStatus(self):
         ret = []

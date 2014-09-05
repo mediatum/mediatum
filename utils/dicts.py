@@ -32,10 +32,10 @@ class SortedDict:
         else:
             return cmp(self._key2data, dict)
 
-    def __len__(self): 
+    def __len__(self):
         return len(self._keys)
 
-    def __getitem__(self, key): 
+    def __getitem__(self, key):
         return self._key2data[key]
 
     def __setitem__(self, key, item):
@@ -43,7 +43,7 @@ class SortedDict:
             self._keys += [key]
         self._key2data[key] = item
 
-    def __delitem__(self, key): 
+    def __delitem__(self, key):
         item = self._key2data[key]
         for i in xrange(len(self._keys)):
             if self._keys[i] == key:
@@ -52,7 +52,7 @@ class SortedDict:
                 return
         raise "Internal Error"
 
-    def clear(self): 
+    def clear(self):
         self._key2data.clear()
         self._keys = []
 
@@ -62,22 +62,22 @@ class SortedDict:
         s._key2data = self.key2data.copy()
         return s
 
-    def keys(self): 
+    def keys(self):
         return self._keys
 
-    def items(self): 
+    def items(self):
         l = []
         for k in self._keys:
             l += [(k,self._key2data[k])]
         return l
-    
-    def values(self): 
+
+    def values(self):
         l = []
         for k in self._keys:
             l += [self._key2data[k]]
         return l
 
-    def has_key(self, key): 
+    def has_key(self, key):
         return self._key2data.has_key(key)
 
     def update(self, dict):
@@ -93,18 +93,18 @@ class SortedDict:
 
     def __contains__(self, key):
         return key in self._key2data
-        
+
     def __str__(self):
         res = '{'
         for k in self._keys:
             res += '''\n '%s': "%s",''' % (k, (str(self[k])))
         res += '\n}'
         return res
-        
-    def __repr__(self):
-        return self.__str__()        
 
-        
+    def __repr__(self):
+        return self.__str__()
+
+
 """A dictionary which is ordered by the values for purposes of the extended search"""
 class SortedDictByValue:
     def __init__(self):
@@ -116,20 +116,20 @@ class SortedDictByValue:
         else:
             return cmp(self._key2data, dict)
 
-    def __len__(self): 
+    def __len__(self):
         return len(self._key2data)
 
-    def __getitem__(self, key): 
+    def __getitem__(self, key):
         return self._key2data[key]
 
-    def __setitem__(self, key, item): 
+    def __setitem__(self, key, item):
         self._key2data[key] = item
 
-    def __delitem__(self, key): 
+    def __delitem__(self, key):
         item = self._key2data[key]
         del self._key2data[key]
 
-    def clear(self): 
+    def clear(self):
         self._key2data.clear()
 
     def copy(self):
@@ -149,16 +149,16 @@ class SortedDictByValue:
                     s.insert(0, k)
         return s
 
-    def items(self): 
+    def items(self):
         return [(the_key, x[the_key]) for the_key in sorted(x, key=x.get)]
-    
-    def values(self): 
+
+    def values(self):
         l = []
         for k in self.keys():
             l += [self._key2data[k]]
         return l
 
-    def has_key(self, key): 
+    def has_key(self, key):
         return self._key2data.has_key(key)
 
     def update(self, dict):
@@ -235,11 +235,11 @@ class MaxSizeDict:
         else:
             return cmp(self._key2data, dict)
 
-    def __len__(self): 
+    def __len__(self):
         #return len(self._key2data)
         return self.queuelen
 
-    def __getitem__(self, key): 
+    def __getitem__(self, key):
         item = self._key2data[key]
         item.use()
         return item.data
@@ -263,7 +263,7 @@ class MaxSizeDict:
             else:
                 break
 
-    def __setitem__(self, key, data): 
+    def __setitem__(self, key, data):
         try:
             item = self._key2data[key]
             if item.inqueue:
@@ -273,7 +273,7 @@ class MaxSizeDict:
         self._key2data[key] = MaxSizeDictEntry(self,key,data)
 
     def remove(self, key):
-        try: 
+        try:
             item = self._key2data[key]
             if item.inqueue:
                 item.remove()
@@ -281,10 +281,10 @@ class MaxSizeDict:
             pass
         del self._key2data[key]
 
-    def __delitem__(self, key): 
+    def __delitem__(self, key):
         self.remove(key)
 
-    def clear(self): 
+    def clear(self):
         self._key2data.clear()
         self.queue_start = None
         self.queue_end = None
@@ -297,22 +297,22 @@ class MaxSizeDict:
         s.update(self)
         return s
 
-    def keys(self): 
+    def keys(self):
         return self._key2data.keys()
 
-    def items(self): 
+    def items(self):
         l = []
         for k in self._key2data.keys():
             l += [(k,self._key2data[k].data)]
         return l
-    
-    def values(self): 
+
+    def values(self):
         l = []
         for k in self._keys:
             l += [self._key2data[k].data]
         return l
 
-    def has_key(self, key): 
+    def has_key(self, key):
         try:
             item = self._key2data[key]
             item.use()
@@ -346,13 +346,13 @@ if __name__ == "__main__":
         d[a] = a
         if not d.keep_weakrefs:
             assert (a-10) not in d
-    
+
     for a in range(1010,1020):
         assert a in d
 
     for a in range(1010,1020):
         assert d[a] == a
-    
+
     for a in range(10):
         d[1000+19-a]
 
@@ -385,4 +385,19 @@ if __name__ == "__main__":
             obj = C(i)
         assert obj in myarray
 
+
+class Doct(dict):
+    """A dict which allows dot access to items
+    d["key"] = d.key
+    This behaviour can be switched off which d.allow_dotting(False).
+    """
+    def __init__(self, *args, **kwargs):
+        dict.__init__(self, *args, **kwargs)
+        self.__dict__ = self
+
+    def allow_dotting(self, state=True):
+        if state:
+            self.__dict__ = self
+        else:
+            self.__dict__ = dict()
 

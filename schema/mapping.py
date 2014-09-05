@@ -123,11 +123,6 @@ def importMapping(filename):
         
 class Mapping(tree.Node):
 
-    def getName(self):
-        return self.get("name")
-    def setName(self, n):
-        self.set("name", n)
-
     def getDescription(self):
         return self.get("description")
     def setDescription(self, description):
@@ -206,11 +201,6 @@ class Mapping(tree.Node):
         
 class MappingField(tree.Node):
     
-    def getName(self):
-        return self.get("name")
-    def setName(self, n):
-        self.set("name", n)
-        
     def getFullName(self):
         if self.getMandatory():
             return self.getName() + " *"

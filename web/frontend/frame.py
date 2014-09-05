@@ -23,7 +23,6 @@ import traceback
 import core.users as users
 import core.config as config
 import time
-import core.athana as athana
 import os
 import core.search.query
 from utils.log import logException

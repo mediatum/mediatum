@@ -18,10 +18,11 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.athana as athana
-from core.metatype import Metatype, charmap
+from mediatumtal import tal
+from core.transition import httpstatus
+from core.metatype import Metatype
 
-from core.translation import t, getDefaultLanguage
+from core.translation import getDefaultLanguage
 
 from utils.dicts import SortedDict
 from contenttypes.default import languages as config_languages
@@ -183,12 +184,12 @@ class m_htmlmemo(Metatype):
             else:
                 context["expand_multilang"] = False 
                 
-        s = athana.getTAL("metadata/htmlmemo.html", context, macro="editorfield", language=language) 
+        s = tal.getTAL("metadata/htmlmemo.html", context, macro="editorfield", language=language)
         return s.replace("REPLACE_WITH_IDENT", str(field.id))
 
 
     def getSearchHTML(self, context):
-        return athana.getTAL("metadata/htmlmemo.html",{"context":context}, macro="searchfield", language=context.language)
+        return tal.getTAL("metadata/htmlmemo.html",{"context":context}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None, html=1):
         value = node.get(field.getName()).replace(";","; ")
@@ -211,7 +212,7 @@ class m_htmlmemo(Metatype):
             context[attr_name] = ''
         
         context.update(attr_dict)
-        return athana.getTAL("metadata/htmlmemo.html", context, macro="maskeditor", language=language)    
+        return tal.getTAL("metadata/htmlmemo.html", context, macro="maskeditor", language=language)
     
     def getPopup(self, req):
         if "type" in req.params:
@@ -221,7 +222,7 @@ class m_htmlmemo(Metatype):
                 req.writeTAL("metadata/htmlmemo.html", {'lang': lang(req)}, macro="ckconfig")
             elif req.params.get('type')=="javascript":
                 req.writeTAL("metadata/htmlmemo.html", {}, macro="javascript")
-        return athana.HTTP_OK
+        return httpstatus.HTTP_OK
         
     def getName(self):
         return "fieldtype_htmlmemo"

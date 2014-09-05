@@ -17,7 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.athana as athana
+from mediatumtal import tal
 import core.tree as tree
 from core.tree import Node
 from core.metatype import Metatype
@@ -25,11 +25,11 @@ from core.metatype import Metatype
 class m_meta(Metatype):
     
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
-        return athana.getTAL("metadata/meta.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
+        return tal.getTAL("metadata/meta.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
 
 
     def getSearchHTML(self, context):
-        return athana.getTAL("metadata/meta.html",{"context":context}, macro="searchfield", language=context.language)
+        return tal.getTAL("metadata/meta.html",{"context":context}, macro="searchfield", language=context.language)
 
 
     def getFormatedValue(self, field, node, language=None, html=1):
@@ -47,7 +47,7 @@ class m_meta(Metatype):
                 node = tree.Node(type=t)
                 attr.update(node.getTechnAttributes())
 
-        return athana.getTAL("metadata/meta.html", {"value":value, "t_attrs":attr}, macro="maskeditor", language=language)
+        return tal.getTAL("metadata/meta.html", {"value":value, "t_attrs":attr}, macro="maskeditor", language=language)
 
     def getInformation(self):
         return {"moduleversion":"1.1", "softwareversion":"1.1", "files":"meta.py;meta.html"}

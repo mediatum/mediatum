@@ -28,7 +28,7 @@ import importlib
 
 import core.config as config
 import core.tree as tree
-import core.athana as athana
+from mediatumtal import tal
 import math
 import logging
 
@@ -296,11 +296,6 @@ class Workflow(tree.Node):
     def getLabel(node):
         return node.name
 
-    def getName(self):
-        return self.name
-    def setName(self, n):
-        self.setName(n)
-
     def getDescription(self):
         return self.get("description")
     def setDescription(self, d):
@@ -386,8 +381,8 @@ class WorkflowStep(tree.Node):
                             for node in nodes:
                                 for parent in node.getParents():
                                     parent.removeChild(node)
-                        else:
-                            step = tree.getNode(req.params['action'])
+                        elif req.params['action'].startswith('move_'):
+                            step = tree.getNode(req.params['action'].replace('move_', ''))
                             for node in nodes:
                                 for parent in node.getParents():
                                     parent.removeChild(node)
@@ -465,9 +460,6 @@ class WorkflowStep(tree.Node):
 
     def getId(self):
         return self.name
-
-    def getType(self):
-        return self.getType()
 
     def getLabel(node):
         return node.name
@@ -580,10 +572,10 @@ class WorkflowStep(tree.Node):
     def tableRowButtons(self, node):
         if node.get('system.key')==node.get('key'):
             # user has permission -> use users language
-            return athana.getTAL("workflow/workflow.html", {'node':node, 'wfstep':self, 'lang':node.get('system.wflanguage')}, macro="workflow_buttons", language=node.get('system.wflanguage'))
+            return tal.getTAL("workflow/workflow.html", {'node':node, 'wfstep':self, 'lang':node.get('system.wflanguage')}, macro="workflow_buttons", language=node.get('system.wflanguage'))
         else:
             # use standard language of request
-            return athana.getTAL("workflow/workflow.html", {'node':node, 'wfstep':self, 'lang':getDefaultLanguage()}, macro="workflow_buttons", language=getDefaultLanguage())
+            return tal.getTAL("workflow/workflow.html", {'node':node, 'wfstep':self, 'lang':getDefaultLanguage()}, macro="workflow_buttons", language=getDefaultLanguage())
 
 
     def getTypeName(self):

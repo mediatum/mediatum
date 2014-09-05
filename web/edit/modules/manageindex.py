@@ -25,8 +25,8 @@ from utils.utils import u
 
 def getInformation():
     return {"version":"1.0", "system":0}
-    
-    
+
+
 def isParent__(basenode, node, access):
     return 1
     for ls in getPaths(node, access):
@@ -34,7 +34,7 @@ def isParent__(basenode, node, access):
             return 1
     return 0
 
-    
+
 def getAllAttributeValues(attribute, schema):
     values = {}
     for f in tree.db.runQuery('select nodeattribute.nid, nodeattribute.value from nodeattribute, node where node.id=nodeattribute.nid and node.type like "%'+schema+'" and nodeattribute.name='+tree.db.esc(attribute)):
@@ -44,8 +44,8 @@ def getAllAttributeValues(attribute, schema):
                 values[s] = []
             values[s].append(f[0])
     return values
-    
-    
+
+
 def replaceValue(value, oldvalue, replacement):
     ret = []
     for val in value.split(";"):
@@ -55,7 +55,7 @@ def replaceValue(value, oldvalue, replacement):
             ret.append(val)
     return ";".join(ret)
 
-    
+
 def getContent(req, ids):
 
     def getSchemes(req):
@@ -64,19 +64,19 @@ def getContent(req, ids):
 
     ret = ""
     v = {"message":""}
-    
+
     if len(ids)>=0:
         ids = ids[0]
-        
+
     v["id"] = ids
-    
+
     if "do_action" in req.params.keys(): # process nodes
         fieldname = req.params.get("fields")
         old_values = u(req.params.get("old_values", "")).split(";")
         new_value = u(req.params.get("new_value"))
         basenode = tree.getNode(ids)
         entries = getAllAttributeValues(fieldname, req.params.get("schema"))
-        
+
         c = 0
         for old_val in old_values:
             for n in AccessData(req).filter(tree.NodeList(entries[old_val])):
@@ -87,13 +87,13 @@ def getContent(req, ids):
                 except:
                     pass
         v["message"] = req.getTAL("web/edit/modules/manageindex.html", {"number":c}, macro="operationinfo")
-    
+
     if "style" in req.params.keys(): # load schemes
         if req.params.get("action", "")=="schemes":
             v["schemes"] = getSchemes(req)
             req.writeTAL("web/edit/modules/manageindex.html", v, macro="schemes_dropdown")
             return ""
-        
+
         elif req.params.get("action", "").startswith("indexfields__"): # load index fields
             schema = getMetaType(req.params.get("action", "")[13:])
             fields = []
@@ -104,7 +104,7 @@ def getContent(req, ids):
             v["schemaname"] = schema.getName()
             req.writeTAL("web/edit/modules/manageindex.html", v, macro="fields_dropdown")
             return ""
-            
+
         elif req.params.get("action", "").startswith("indexvalues__"): # load values of selected indexfield
             node = tree.getNode(ids)
             fieldname = req.params.get("action").split("__")[-2]
@@ -116,19 +116,19 @@ def getContent(req, ids):
                 v["keys"].sort(lambda x, y: cmp(x.lower(), y.lower()))
             req.writeTAL("web/edit/modules/manageindex.html", v, macro="fieldvalues")
             return ""
-            
+
         elif req.params.get("action", "").startswith("children__"): # search for children of current collection
             scheme = req.params.get("action","").split("__")[1]
             fieldname = req.params.get("action","").split("__")[2]
             values = req.params.get("action","").split("__")[3].split(";")[:-1]
             all_values = getAllAttributeValues(fieldname, scheme)
-            
+
             def isChildOf(access, node, basenodeid):
                 for ls in getPaths(node, access):
                     if str(basenodeid) in tree.NodeList(ls).getIDs():
                         return 1
                 return 0
-            
+
             subitems = {}
             for value in values:
                 value = u(value)
@@ -137,7 +137,7 @@ def getContent(req, ids):
                     for l in all_values[value]:
                         if isChildOf(AccessData(req), tree.getNode(l), ids):
                             subitems[value].append(l)
-                
+
             v["items"] = subitems
             v["keys"] = subitems.keys()
             v["keys"].sort()
@@ -146,4 +146,3 @@ def getContent(req, ids):
 
     else:
         return req.getTAL("web/edit/modules/manageindex.html", v, macro="manageform")
-    

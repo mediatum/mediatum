@@ -26,6 +26,7 @@ import thread
 
 from core.db.database import initDatabaseValues
 from utils import *
+import msgpack
 
 debug = 0
 log = logging.getLogger('database')
@@ -43,6 +44,18 @@ class Connector:
         for id in t:
             idlist += [str(id[0])]
         return idlist
+
+    def get_children_with_type(self, parent_id, nodetype):
+        t = self.runQuery(
+            "select cid from node, nodemapping"
+            " where nid={} and id=cid and type='{}'"
+            " order by cid"
+            .format(parent_id, nodetype))
+        return [str(i[0]) for i in t]
+
+    def get_num_children(self, nodeid):
+        t = self.runQuery("select count(*) from nodemapping where nid=" + nodeid)
+        return t[0][0]
 
     def getContainerChildren(self, nodeid):
         t = self.runQuery("select cid from containermapping where nid="+nodeid+" order by cid")
@@ -74,6 +87,17 @@ class Connector:
                 attributes[name] = value
         return attributes
 
+    def get_attributes_complex(self, nodeid):
+        t = self.runQuery("select name,value from nodeattribute where nid=%s", nodeid)
+        attributes = {}
+        mloads = msgpack.loads
+        for name,value in t:
+            if value.startswith("\x11PACK\x12"):
+                attributes[name] = mloads(value[6:], encoding="utf8")
+            else:
+                attributes[name] = unicode(value, encoding="utf8")
+        return attributes
+
     def getMetaFields(self, name):
         return self.runQuery("select value from nodeattribute where name=" + self.esc(name))
 
@@ -94,6 +118,8 @@ class Connector:
         return self.runQuery("select filename,type,mimetype from nodefile where nid="+nodeid)
     def removeFile(self, nodeid, path):
         self.runQuery("delete from nodefile where nid = "+nodeid+" and filename="+self.esc(path))
+    def removeSingleFile(self, nodeid, path):
+        self.runQuery("delete from nodefile where nid = "+nodeid+" and filename="+self.esc(path))
     def removeAttribute(self, nodeid, attname):
         self.runQuery("delete from nodeattribute where nid=" + nodeid + " and name=" + self.esc(attname))
 
@@ -106,11 +132,20 @@ class Connector:
 
     def getDirty(self, limit=0):
         if limit:
-            ids = self.runQuery("select id from node where dirty=1 limit %d" % limit)
+            ids = self.runQuery("select id from node where dirty=1 limit %s", limit)
         else:
             ids = self.runQuery("select id from node where dirty=1")
         ids2 = [id[0] for id in ids]
         return ids2
+
+    def getDirtySchemas(self, limit=0):
+        dirty_nodes = self.getDirty()
+        schema_nodes = [id[0] for id in self.getNodeIDsForSchemas()]
+        dirty_schema_nodes = list(set(schema_nodes).intersection(dirty_nodes))
+        if limit:
+            return dirty_schema_nodes[:limit]
+        else:
+            return dirty_schema_nodes
 
     def setNodeName(self, id, name):
         self.runQuery("update node set name = "+self.esc(name)+" where id = "+id)
@@ -161,12 +196,15 @@ class Connector:
 
     def getNodeIdByAttribute(self, attributename, attributevalue):
         if attributename.endswith("access"):
-            t = self.runQuery("select id from node where "+attributename+" like '%" + str(attributevalue)+"%'")
+            t = self.runQuery("select id from node where "+attributename+" like %s", "%" + attributevalue + "%")
         else:
             if attributevalue=="*":
-                t = self.runQuery("select node.id from node, nodeattribute where node.id=nodeattribute.nid and nodeattribute.name='" + str(attributename)+"'")
+                t = self.runQuery("select node.id from node, nodeattribute where node.id=nodeattribute.nid and nodeattribute.name=%s",
+                                  attributename)
             else:
-                t = self.runQuery("select node.id from node, nodeattribute where node.id=nodeattribute.nid and nodeattribute.name='" + str(attributename)+"' and nodeattribute.value='"+str(attributevalue)+"'")
+                t = self.runQuery("select node.id from node, nodeattribute "
+                                  "where node.id=nodeattribute.nid and nodeattribute.name=%s and nodeattribute.value=%s",
+                                  attributename, attributevalue)
         if len(t)==0:
             return []
         else:
@@ -218,8 +256,10 @@ class Connector:
         orderpos = t[0][0] + 1
         return orderpos
 
+    def getNodeIDsForSchemas(self, datatype="*"):
+        return self.runQuery('select id from node where type like "%%/%%"')
     def getNodeIDsForSchema(self, schema, datatype="*"):
-        return self.runQuery('select id from node where type like "%/'+schema+'" or type ="'+schema+'"')
+        return self.runQuery("select id from node where type like %s or type = %s", "%" + schema, schema)
 
     def mkID(self):
         t = self.runQuery("select max(id) as maxid from node")

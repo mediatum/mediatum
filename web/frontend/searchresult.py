@@ -18,14 +18,12 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.tree as tree
-import core.athana as athana
 import sys
 import utils.date as date
 import logging
 from core.acl import AccessData
 from core.translation import lang, translate
 from utils.utils import intersection,getAllCollections, u
-from core.tree import subnodes, searcher
 from core.styles import theme
 
 class SearchResult:

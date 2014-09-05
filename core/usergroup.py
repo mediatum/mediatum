@@ -26,11 +26,6 @@ from core.usergroups import groupoption
 
 class UserGroup(tree.Node):
 
-    def getName(self):
-        return self.get("name")
-    def setName(self, n):
-        return self.set("name", n)
-
     def getDescription(self):
         return self.get("description")
     def setDescription(self,d):

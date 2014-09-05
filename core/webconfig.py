@@ -23,6 +23,7 @@ import core.config as config
 import core.tree as tree
 
 from core.styles import theme
+from mediatumtal import tal
 
 def loadThemes():
 
@@ -100,8 +101,9 @@ def initContexts():
     from core.config import resolve_filename
     from core.translation import translate
     from core.ftp import collection_ftpserver
-    athana.addMacroResolver(resolve_filename)
-    athana.addTranslator(translate)
+    tal.set_base(".")
+    tal.add_macro_resolver(resolve_filename)
+    tal.add_translator(translate)
 
     context = athana.addContext("/", ".")
     # === public area ===

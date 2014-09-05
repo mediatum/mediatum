@@ -20,7 +20,6 @@
 import sys
 import types
 import traceback
-import core.athana as athana
 import logging
 import core.config as config
 import core.tree as tree

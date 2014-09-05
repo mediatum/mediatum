@@ -19,7 +19,6 @@
 """
 import core.config as config
 import core.tree as tree
-import core.athana as athana
 import core.acl as acl
 import sys
 import os

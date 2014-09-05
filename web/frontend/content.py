@@ -17,7 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.athana as athana
+from mediatumtal import tal
 import core.tree as tree
 import core.config as config
 import os
@@ -28,6 +28,8 @@ from core.acl import AccessData
 from core.translation import lang,t
 from web.frontend.searchresult import simple_search, extended_search
 from core.styles import getContentStyles, theme
+import logging
+log = logging.getLogger("frontend")
 
 class Content:
     def feedback(self,req):
@@ -207,7 +209,7 @@ class ContentList(Content):
         if not language:
             language=None
         if self.content:
-            headline = athana.getTAL(theme.getTemplate("content_nav.html"), {"nav": self}, macro="navheadline", language=lang(req))
+            headline = tal.getTAL(theme.getTemplate("content_nav.html"), {"nav": self}, macro="navheadline", language=lang(req))
             return headline + self.content.html(req)
 
         nav_list = list()
@@ -341,7 +343,7 @@ class ContentNode(Content):
 
         if not self.node.isContainer():
             plist = getPaths(self.node, AccessData(req))
-            paths = athana.getTAL(theme.getTemplate("content_nav.html"), {"paths": plist}, macro="paths", language=lang(req))
+            paths = tal.getTAL(theme.getTemplate("content_nav.html"), {"paths": plist}, macro="paths", language=lang(req))
         # render style of node for nodebig
         if len(stylebig)>1:
             #more than on style found
@@ -395,7 +397,7 @@ class ContentError(Content):
         self.error = error
 
     def html(self,req):
-        return athana.getTAL(theme.getTemplate("content_error.html"), {"error":self.error}, language=lang(req))
+        return tal.getTAL(theme.getTemplate("content_error.html"), {"error":self.error}, language=lang(req))
 
     def getContentStyles(self):
         return []
@@ -485,7 +487,11 @@ class ContentArea(Content):
             if req.params.get("show_navbar")==0 or req.session.get("area")=="publish":
                 breadscrubs = []
             else:
-                breadscrubs = self.getPath()
+                try:
+                    breadscrubs = self.getPath()
+                except AttributeError:
+                    log.exception("")
+                    return req.error(404, "Object cannot be shown")
 
             path = req.getTAL(theme.getTemplate("content_nav.html"), {"params": self.params, "path": breadscrubs, "styles":styles, "logo":self.collectionlogo, "searchmode":req.params.get("searchmode",""), "items":items, "id":id, "nodeprint":nodeprint, "printlink":printlink, "area":req.session.get("area","")}, macro="path")
         return path + '\n<!-- CONTENT START -->\n' +  self.content.html(req) + '\n<!-- CONTENT END -->\n'

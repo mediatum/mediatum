@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import core.athana as athana
+from core.transition import httpstatus
 import core
 import core.tree as tree
 import core.users as users
@@ -161,7 +161,7 @@ def put_into_shoppingbag(req):
         req.writeTALstr('<tal:block i18n:translate="shoppingbag_object%s_added"/>' %(s),{})
     else:
         req.writeTALstr('<tal:block i18n:translate="shoppingbag_object%s_still_added"/>' %(s),{})
-    return athana.HTTP_OK
+    return httpstatus.HTTP_OK
 
     
 def show_shoppingbag(req, msg=""):
@@ -238,7 +238,7 @@ def show_shoppingbag(req, msg=""):
     v["msg"] = msg
 
     req.writeTAL(theme.getTemplate("shoppingbag.html"), v, macro="shoppingbag")
-    return athana.HTTP_OK
+    return httpstatus.HTTP_OK
 
 
 def export_shoppingbag_bibtex(req):

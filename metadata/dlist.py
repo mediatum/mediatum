@@ -17,7 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.athana as athana
+from mediatumtal import tal
 import core.tree as tree
 
 import urllib2
@@ -110,10 +110,10 @@ class m_dlist(Metatype):
                         _v = _t = item
                     valuelist.append({'select_text':_t.strip(), 'select_value':_v.strip()})
             f.close()
-        return athana.getTAL("metadata/dlist.html", {"lock":lock, "name":name, "width":width, "value":value, "valuelist":valuelist, "fielddef":fielddef}, macro="editorfield", language=language)
+        return tal.getTAL("metadata/dlist.html", {"lock":lock, "name":name, "width":width, "value":value, "valuelist":valuelist, "fielddef":fielddef}, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
-        return athana.getTAL("metadata/dlist.html", {"context":context, "valuelist":filter(lambda x:x!="", self.formatValues(context))}, macro="searchfield", language=context.language)
+        return tal.getTAL("metadata/dlist.html", {"context":context, "valuelist":filter(lambda x:x!="", self.formatValues(context))}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None, html=1):
         value = node.get(field.getName())
@@ -128,7 +128,7 @@ class m_dlist(Metatype):
             value = []
         while len(value)<5:
             value.append("") # url(source), name variable, value variable
-        return athana.getTAL("metadata/dlist.html", {"value":value, "types":['json', 'list']}, macro="maskeditor", language=language)
+        return tal.getTAL("metadata/dlist.html", {"value":value, "types":['json', 'list']}, macro="maskeditor", language=language)
 
     def getName(self):
         return "fieldtype_dlist"

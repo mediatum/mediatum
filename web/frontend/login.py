@@ -17,10 +17,10 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from core.transition import httpstatus
 import core.users as users
 import web.admin.modules.user as usermodule
 
-import core.athana as athana
 import core.config as config
 import core.tree as tree
 
@@ -42,7 +42,7 @@ def buildURL(req):
     for key in req.params:
         p += "&" + str(key) + "=" + req.params.get(key)
     req.request["Location"] = "http://" + config.get("host.name") + "/node?" + p[1:]
-    return athana.HTTP_MOVED_TEMPORARILY
+    return httpstatus.HTTP_MOVED_TEMPORARILY
 
 
 def login(req):
@@ -82,7 +82,7 @@ def login(req):
                 req.request["Location"] = "https://" + config.get("host.name") + "/node?id=" + tree.getRoot("collections").id
             else:
                 req.request["Location"] = "/node?id=" + tree.getRoot("collections").id
-            return athana.HTTP_MOVED_TEMPORARILY
+            return httpstatus.HTTP_MOVED_TEMPORARILY
         else:
             error = 1
 
@@ -101,7 +101,7 @@ def login(req):
     navframe = getNavigationFrame(req)
     navframe.feedback(req)
     navframe.write(req, req.getTAL(theme.getTemplate("login.html"), {"error": error, "user": user}, macro="login"))
-    return athana.HTTP_OK
+    return httpstatus.HTTP_OK
 
 
 def logout(req):
@@ -114,7 +114,7 @@ def logout(req):
     except:
         pass
     req.request["Location"] = req.makeLink("node", {"id": tree.getRoot("collections").id})
-    return athana.HTTP_MOVED_TEMPORARILY
+    return httpstatus.HTTP_MOVED_TEMPORARILY
 
 
 def pwdchange(req, error=0):
@@ -129,7 +129,7 @@ def pwdchange(req, error=0):
     elif "ChangeSubmit" in req.params:
         if user.getName() == config.get("user.guestuser"):
             req.request["Location"] = req.makeLink("node", {"id": tree.getRoot("collections").id})
-            return athana.HTTP_MOVED_TEMPORARILY
+            return httpstatus.HTTP_MOVED_TEMPORARILY
 
         else:
             if not users.checkLogin(user.getName(), req.params.get("password_old")):
@@ -141,13 +141,13 @@ def pwdchange(req, error=0):
             else:
                 user.setPassword(req.params.get("password_new2"))
                 req.request["Location"] = req.makeLink("node", {"id": tree.getRoot("collections").id})
-                return athana.HTTP_MOVED_TEMPORARILY
+                return httpstatus.HTTP_MOVED_TEMPORARILY
 
     navframe = getNavigationFrame(req)
     navframe.feedback(req)
     contentHTML = req.getTAL(theme.getTemplate("login.html"), {"error": error, "user": user}, macro="change_pwd")
     navframe.write(req, contentHTML)
-    return athana.HTTP_OK
+    return httpstatus.HTTP_OK
 
 
 def pwdforgotten(req):
@@ -172,12 +172,12 @@ def pwdforgotten(req):
                 logging.getLogger('usertracing').info("new password activated for user: %s - was requested: %s by %s" % (targetuser.getName(), targetuser.get("newpassword.time_requested"), targetuser.get("newpassword.request_ip")))
 
                 navframe.write(req, req.getTAL(theme.getTemplate("login.html"), {"username": targetuser.getName()}, macro="pwdforgotten_password_activated"))
-                return athana.HTTP_OK
+                return httpstatus.HTTP_OK
 
             else:
                 print "invalid key: wrong key or already used key"
                 navframe.write(req, req.getTAL(theme.getTemplate("login.html"), {"message": "pwdforgotten_password_invalid_key"}, macro="pwdforgotten_message"))
-                return athana.HTTP_OK
+                return httpstatus.HTTP_OK
 
     elif "user" in req.params:  # create email with activation information
         username = req.params.get("user", "")
@@ -218,7 +218,7 @@ def pwdforgotten(req):
                     mail.sendmail(config.get("email.admin"), targetuser.getEmail(), t(lang(req), "pwdforgotten_email_subject"), mailtext)
                     logging.getLogger('usertracing').info("new password requested for user: %s - activation email sent" % username)
                     navframe.write(req, req.getTAL(theme.getTemplate("login.html"), {"message": "pwdforgotten_butmailnowsent"}, macro="pwdforgotten_message"))
-                    return athana.HTTP_OK
+                    return httpstatus.HTTP_OK
 
                 except mail.SocketError:
                     print "Socket error while sending mail"
@@ -227,4 +227,4 @@ def pwdforgotten(req):
 
     # standard operation
     navframe.write(req, req.getTAL(theme.getTemplate("login.html"), {"error": req.params.get("error"), "user": users.getUserFromRequest(req)}, macro="pwdforgotten"))
-    return athana.HTTP_OK
+    return httpstatus.HTTP_OK

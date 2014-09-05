@@ -173,7 +173,7 @@ def findmodule(type):
 def show_content(req, op):
     user = users.getUserFromRequest(req)
 
-    if not user.inGroup("Administration"):
+    if not user.inGroup(config.get('user.admingroup')):
         return req.getTAL("web/admin/frame.html", {}, macro="errormessage")
     else:
         if op=="" or op not in getRoot().get("admin.menu"):

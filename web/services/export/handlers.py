@@ -65,6 +65,9 @@ resultcache = Cache(maxcount=25, verbose=True)
 
 SEND_TIMETABLE = False
 
+def escape_illegal_xml_chars(val, replacement=''):
+    illegal_xml_chars_re = re.compile(u'[\x00-\x08\x0b\x0c\x0e-\x1F\uD800-\uDFFF\uFFFE\uFFFF]')
+    return illegal_xml_chars_re.sub(replacement, val)
 
 def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
 
@@ -88,8 +91,10 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
     mask = req.params.get('mask', 'default').lower()
     maskcachetype = req.params.get('maskcache', 'deep')  # 'deep', 'shallow', 'none'
 
+    user_info = 'oauthuser="%s" username="%s" userid="%s"' % (d.get('oauthuser', ''), d.get('username', ''), d.get('userid', ''))
+
     res = '<?xml version="1.0" encoding="utf-8"?>\r\n'
-    res += '<response status="%s" retrievaldate="%s" servicereactivity="%s sec.">\r\n' % (d['status'], d['retrievaldate'], d['dataready'])
+    res += '<response status="%s" retrievaldate="%s" servicereactivity="%s sec." %s>\r\n' % (d['status'], d['retrievaldate'], d['dataready'], user_info)
     if d['status'] == 'ok':
         if singlenode:
             n = d['nodelist'][0]
@@ -158,7 +163,8 @@ def struct2xml(req, path, params, data, d, debug=False, singlenode=False, send_c
 
     else:
         res += '''<errormessage><![CDATA[%s]]></errormessage>\r\n''' % d['errormessage']
-    return res + '</response>\r\n'
+
+    return escape_illegal_xml_chars(res) + '</response>\r\n'
 
 
 def struct2template_test(req, path, params, data, d, debug=False, singlenode=False, send_children=False, send_timetable=SEND_TIMETABLE):
@@ -487,33 +493,94 @@ supported_formats = [
 
 def get_node_children_struct(req, path, params, data, id, debug=True, allchildren=False, singlenode=False, parents=False, send_children=False):
     global guestAccess
-    starttime = time.time()
+    atime = starttime = time.time()
     retrievaldate = format_date()
 
-    res = {} # holds the resulting data structure
+    res = {}  # holds the resulting data structure
     res['build_response_start'] = starttime
     res['retrievaldate'] = retrievaldate
     res['method'] = req.command
     res['path'] = req.path
     res['query'] = req.query
+    timetable = []
+    res['timetable'] = timetable
+
+    res['oauthuser'] = ''  # username supplied for authentication (login name) in query parameter user
+    res['userid'] = ''  # unique id for authenticated user if applicable (node.id for internal, dirid for dynamic users)
+    res['username'] = ''  # name of the user, may be "guest" or personal name
 
     #verify signature if a user is given, otherwise use guest user
     if params.get('user'):
-        _user = users.getUser(params.get('user'))
+        _username = params.get('user')
+        res['oauthuser'] = _username
+        _user = users.getUser(_username)
 
-        if not _user: # user of dynamic
+        if not _user:  # user of dynamic type and not logged in with this request
 
-            class dummyuser: # dummy user class
-                def getGroups(self): # return all groups with given dynamic user
-                    return [g.name for g in tree.getRoot('usergroups').getChildren() if g.get('allow_dynamic')=='1' and params.get('user') in g.get('dynamic_users')]
+            timetable.append(['''oauth: users.getUser(%r) returned %r: going to built dummy user with attributes of homedir with system.oauthuser=%r''' % (_username, _user, _username), time.time()-atime]); atime = time.time()
+
+            dirid = _username
+
+            # build an object with attributes used by AccessData constructor
+            class dummyuser:  # dummy user class
+                def __init__(self, dirid):
+                    self.dirid = dirid
+
+                    # find home directory for dynamic user with given directory id
+                    self.homedir = None
+                    self.usertype = ''
+                    for hd in tree.getRoot("home").getChildren():
+                        if hd.get('system.oauthuser') == dirid:
+                            self.homedir = hd
+                            items = hd.items()
+                            for k, v in items:
+                                if k.startswith('system.dirid.') and v == dirid:
+                                    self.usertype = k.replace('system.dirid.', '')
+                                    break
+                            break
+
+                    self.dirgroups = []
+                    if self.homedir:
+                        self.dirgroups = self.homedir.get('system.dirgroups.' + self.usertype)
+                        if not self.dirgroups:
+                            self.dirgroups = ''
+                        self.dirgroups = self.dirgroups.split('|#|')
+                        self.name = self.homedir.get('system.name.' + self.usertype)
+                        self.last_authentication = self.homedir.get('system.last_authentication.' + self.usertype)
+                    else:
+                        self.name = self.dirid
+
+                    self.groups = [g.name for g in tree.getRoot('usergroups').getChildren() if (g.get('allow_dynamic') == '1' and params.get('user') in g.get('dynamic_users'))
+                                                                                                or
+                                                                                                g.name in self.dirgroups]
+
+                    self.is_admin = config.get("user.admingroup", "Administration") in self.groups
+
+                def getGroups(self):  # return all groups with given dynamic user
+                    return self.groups
+
                 def getName(self):
-                    return params.get('user')
-                def getDirID(self): # unique identifier
-                    return params.get('user')
-                def isAdmin(self):
-                    return 0
+                    return self.name
 
-            _user = dummyuser()
+                def getUserID(self):  # unique identifier
+                    return self.dirid
+
+                def getUserType(self):
+                    return 'dummy_' + self.usertype
+
+                def isAdmin(self):
+                    return self.is_admin
+
+            _user = dummyuser(dirid)
+            homedir = _user.homedir
+            if homedir:
+                timetable.append(['''oauth: built dummy dyn. user %r, homedir: %r %r -> groups: %r''' % (_username, homedir.name, homedir.id, _user.getGroups()), time.time()-atime]); atime = time.time()
+            else:
+                timetable.append(['''oauth: tried to built dummy dyn. user %r, no homedir found''' % (_username), time.time()-atime]); atime = time.time()
+
+        else:
+            # users.getUser(_username) returned user
+            timetable.append(['''oauth: users.getUser(%r) returned %r (%r, %r, %r) -> groups: %r''' % (_username, _user, _user.getName(), _user.getUserID(), _user.getUserType(), _user.getGroups()), time.time()-atime]); atime = time.time()
 
         guestAccess = AccessData(user=_user)
 
@@ -522,17 +589,20 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
             valid = guestAccess.verify_request_signature(req.fullpath, params)
             if not valid:
                 guestAccess = None
+            else:    
+                res['userid'] = _user.getUserID()
+            timetable.append(['''oauth: verify_request_signature returned %r for authname %r, userid: %r, groups: %r''' % (valid, _username, res['userid'], _user.getGroups()), time.time()-atime]); atime = time.time()
         else:
             guestAccess = None
     else:
         guestAccess = AccessData(user=users.getUser('Gast'))
 
-    timetable = []
+    if guestAccess:
+        res['username'] = guestAccess.getUser().getName()  # name,
+        res['userid'] = guestAccess.getUser().getUserID()  # id,
     result_shortlist = []
 
     nodelist = []
-
-    res['timetable'] = timetable
     res['nodelist'] = nodelist
 
     # query parameters
@@ -564,6 +634,8 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
 
     default_nodelist_start = 0
     default_nodelist_limit = 100
+
+    res['timetable'] = timetable
 
     try:
         nodelist_start = int(params.get('start', default_nodelist_start))
@@ -630,6 +702,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
                 searchcache.update(cache_key, searchresult)
                 timetable.append(['wrote filtered search result to cache (%d nodes), now in cache: %d entries: %s' % (len(searchresult), searchcache.getKeysCount(), "#".join(searchcache.getKeys())), time.time()-atime]); atime = time.time()
 
+    res['timetable'] = timetable
     typed_nodelist = []
     if  mdt:
         mdt_names = [x.name for x in tree.getRoot("metadatatypes").getChildren()]
@@ -678,6 +751,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
                 res['build_response_end'] = time.time()
                 dataready = "%.3f" % (res['build_response_end'] - starttime)
                 res['dataready'] = dataready
+                res['timetable'] = timetable
                 return res
             timetable.append(['''get all children for node %s, '%s', '%s' -> (%d nodes)''' % (str(node.id), node.name, node.type, len(nodelist)), time.time()-atime]); atime = time.time()
     else:
@@ -754,6 +828,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
                 res['build_response_end'] = time.time()
                 dataready = "%.3f" % (res['build_response_end'] - starttime)
                 res['dataready'] = dataready
+                res['timetable'] = timetable
                 return res
 
             newly_filtered = [x for x in nodelist if regexp_stype.match(x.type)]
@@ -775,6 +850,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
                 res['build_response_end'] = time.time()
                 dataready = "%.3f" % (res['build_response_end'] - starttime)
                 res['dataready'] = dataready
+                res['timetable'] = timetable
                 return res
 
             newly_filtered = [] #[x for x in nodelist if regexp_stype.match(x.type)]
@@ -800,7 +876,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
         pass
     else:
         # this is the default: remove older version nodes from the result list
-        nodelist = [n for n in nodelist if n.isActiveVersion()]
+        nodelist = [n for n in nodelist if n.isActiveVersion() or n.id == n.next_nid]
         timetable.append(['filtered older (inactive) versions out -> (%d nodes)' % (len(nodelist)), time.time()-atime]); atime = time.time()
 
     if exif_location_rect:
@@ -814,6 +890,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
             res['build_response_end'] = time.time()
             dataready = "%.3f" % (res['build_response_end'] - starttime)
             res['dataready'] = dataready
+            res['timetable'] = timetable
             return res
 
         typefiltered_nodelist = []
@@ -848,6 +925,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
             res['build_response_end'] = time.time()
             dataready = "%.3f" % (res['build_response_end'] - starttime)
             res['dataready'] = dataready
+            res['timetable'] = timetable
             return res
 
         attrreg_filtered_nodelist += [x for x in nodelist if regexp_attrreg.match(x.get(akey))]
@@ -926,6 +1004,7 @@ def get_node_children_struct(req, path, params, data, id, debug=True, allchildre
         nodetuples = data[:]
         nodelist = [x[len(sfields) + 1] for x in nodetuples] # sorted
         timetable.append(["sort nodelist (%d nodes): sortfield='%s', sortdirection='%s', sortformat='%s'" % (len(nodelist), sortfield, sortdirection, sortformat), time.time()-atime]); atime = time.time()
+        res['timetable'] = timetable
 
     nodelist_countall = len(nodelist)
 

@@ -72,7 +72,10 @@ def getContent(req, ids):
             if req.params.get('id_type') == 'urn':
                 createUrn(node, req.params.get('namespace'), req.params.get('urn_type'))
             if req.params.get('id_type') == 'doi':
-                createDOI(node)
+                try:
+                    createDOI(node)
+                except:
+                    return req.error(500, "doi was not successfully registered")
 
             if any(identifier in node.attributes for identifier in ('hash', 'urn', 'doi')):
                 if not node.get('system.identifierdate'):

@@ -36,21 +36,27 @@
             <input type="hidden" name="currentContentType" tal:attributes="value python:currentContentType"/>
             <input type="hidden" name="currentSchema" tal:attributes="value python:currentSchema"/> 
             <input type="hidden" name="tab" value="changeschema"/>
-            
-            <table id="datatable" cellpadding="0px" cellspacing="0px">
-                <tr>
-                    <th i18n:translate="edit_changeschema_nodeid"/>
-                    <th i18n:translate="edit_changeschema_objtype"/>
-                    <th tal:condition="python:not isContainer" i18n:translate="edit_changeschema_schemename"/>
-                    <th tal:condition="python:not isContainer" i18n:translate="edit_changeschema_schemeid"/>
-                </tr>
-                <tr>
-                    <td tal:content="python:id"/>
-                    <td tal:content="python:currentContentType" i18n:translate=""/>
-                    <td tal:condition="python:not isContainer" tal:content="python:currentSchemaLongName"/>
-                    <td tal:condition="python:not isContainer" tal:content="python:currentSchema"/>
-                </tr>
-            </table>
+
+            <tal:block tal:condition="python:currentSchemaLongName != ''">
+                <table id="datatable" cellpadding="0px" cellspacing="0px">
+                    <tr>
+                        <th i18n:translate="edit_changeschema_nodeid"/>
+                        <th i18n:translate="edit_changeschema_objtype"/>
+                        <th tal:condition="python:not isContainer" i18n:translate="edit_changeschema_schemename"/>
+                        <th tal:condition="python:not isContainer" i18n:translate="edit_changeschema_schemeid"/>
+                    </tr>
+                    <tr>
+                        <td tal:content="python:id"/>
+                        <td tal:content="python:currentContentType" i18n:translate=""/>
+                        <td tal:condition="python:not isContainer" tal:content="python:currentSchemaLongName"/>
+                        <td tal:condition="python:not isContainer" tal:content="python:currentSchema"/>
+                    </tr>
+                </table>
+            </tal:block>
+
+            <tal:block tal:condition="python:currentSchemaLongName == ''">
+                <h4>Schema '<b tal:replace="python:currentSchema"></b>' not available. Choose new one.</h4>
+            </tal:block>
             
             <p i18n:translate="edit_changeschema_msg2"/>
             <p>

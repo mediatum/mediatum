@@ -18,116 +18,240 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
+from __future__ import division
 import sys
-sys.path += ['../..', '../', '.']
-import core.tree as tree
-import core.db.sqliteconnector as sqlite
-import core.config as config
-import json
-from collections import namedtuple
+import difflib
 import time
+from collections import namedtuple
+sys.path += ['../..', '../', '.']
 
-SEARCHSTORE = config.get('paths.searchstore')
-DATADIR = config.get('paths.tempdir')
-EXT_DB = SEARCHSTORE + 'searchindex_ext.db'
-FULL_SEARCH_DB = SEARCHSTORE + 'searchindex_full.db'
-TEXT_SEARCH_DB = SEARCHSTORE + 'searchindex_text.db'
-DBAndTable = namedtuple('DBAndTable', ['db', 'table'])
+import core.tree as tree
+from core.search.ftsquery import protect
+from utils.utils import u, modify_tex, normalize_utf8
+import utils.utils
+import utils.mail as mail
+import logging
+
+#Configurable, ;-separated
+MAIL_RECIPIENTS = 'andrew.darrohn@tum.de;ga39lit@mytum.de'
+
+SearchField = namedtuple('SearchField', 'position name')
+searcher = tree.searcher
+results = {}
+schema_summary = {}
+schema_db_contents = {}
+schema_field_mapping = {}
+zero_index_schema_field_mapping = {}
+OMITTED_DB_FIELDS = ('search-',)
+utils.utils.normalization_items = {"chars": [("00e4", "ae"),
+                                             ("00c4", "Ae"),
+                                             ("00df", "ss"),
+                                             ("00fc", "ue"),
+                                             ("00dc", "Ue"),
+                                             ("00f6", "oe"),
+                                             ("00d6", "Oe"),
+                                             ("00e8", "e"),
+                                             ("00e9", "e")],
+                                   "words": []}
+
+
+def get_search_sql(_type):
+    """
+    Returns the necessary SQl to search the respective databases
+    @param _type: String, type of search query
+    @return: String
+    """
+    if _type == 'full_indexed':
+        return 'select id from fullsearchmeta'
+    if _type == 'ext_content':
+        return 'select %s from searchmeta'
+    if _type == 'ext_field_names':
+        return 'select position, attrname from searchmeta_def'
+    if _type == 'text_indexed':
+        return 'select id from textsearchmeta'
+
+
+def get_schema_fields(schema):
+    """
+    Fetches the schema fields from the search database and returns a list of SearchField NamedTuples
+    with attributes 'name' and 'position'.
+    @param schema: String, name of the schema
+    @return: List
+    """
+    if schema not in schema_field_mapping:
+        #read as: keep all fields which do not contain 'search'- or 'fulltext' in their name and then sort
+        #them by their position number.
+        #
+        #we remove these fields due to the large overhead of querying and returning these large text values
+        #for each node (sql takes too long to execute)
+        field_names = [SearchField(*tup) for tup in sorted(searcher.execute(get_search_sql('ext_field_names'),
+                                                                            schema,
+                                                                            'ext'),
+                                                           key=lambda x: int(x[0]))
+                       if all(unwanted_field not in tup[1]
+                              for unwanted_field in OMITTED_DB_FIELDS)]
+
+        schema_field_mapping[schema] = field_names
+
+    return schema_field_mapping[schema]
+
+
+def get_zero_index_schema_fields(schema):
+    """
+    Returns a zero indexed List of SearchField NamedTuples.
+    @param schema: String, name of the schema
+    @return: List
+    """
+    if schema not in zero_index_schema_field_mapping:
+        zero_index_schema_field_mapping[schema] = [SearchField(position,
+                                                               tup.name) for position, tup in
+                                                   enumerate(get_schema_fields(schema))]
+
+    return zero_index_schema_field_mapping[schema]
+
+
+def get_extended_field_ratio(schema, node, db_content):
+    """
+    Compares the values in the ext search db and the values in the node instance and returns
+    a ratio of likeness between the two values.
+    @param schema: String, name of the schema
+    @param node: Node, an core.tree node instance
+    @return: Float
+    """
+    ratios = []
+
+    field_names = get_zero_index_schema_fields(schema)
+
+    for field in field_names:
+        node_value = normalize_utf8(modify_tex(u(protect(node.get(field.name))), 'strip'))
+        db_value = str(db_content[field.position])
+        equality_ratio = difflib.SequenceMatcher(None, db_value, node_value).ratio()
+        ratios.append(equality_ratio)
+
+    return sum(ratios) / len(ratios)
+
+
+def all_schemas_summary():
+    """
+    Formats the data in the schema_summary dict into a table, the content of which
+    are ratios regarding the completeness and correctness of the search databases
+    where each row corresponds to a particular schema.
+    Example Output
+
+    ****************************************************************************************************
+                                               SCHEMA SUMMARY
+    ****************************************************************************************************
+    Schema                                        FULL           EXT            EXT_RATIO           TEXT
+    ----------------------------------------------------------------------------------------------------
+    schema_name                               100.00%        100.00%             100.00%         100.00%
+
+    Explained:
+    Schema: the name of the schema
+    Full: percentage of documents of the schema type which are in the full_search database
+    EXT: percentage of documents of the schema type which are in the ext_search database
+    EXT_RATIO: ratio of similarity between fields in the search database and the values fetched via tree.node.get()
+    TEXT: percentage of documents of the schema type which are in the text_search database
+
+    @return: String
+    """
+    output = '{}{}{:^100}{}{}{}{:46}{:15}{:15}{:20}{:15}{}{}{}'.format('*' * 100,
+                                                                       '\n',
+                                                                       'SCHEMA SUMMARY',
+                                                                       '\n',
+                                                                       '*' * 100,
+                                                                       '\n',
+                                                                       'Schema',
+                                                                       'FULL',
+                                                                       'EXT',
+                                                                       'EXT_RATIO',
+                                                                       'TEXT',
+                                                                       '\n',
+                                                                       '-' * 100,
+                                                                       '\n')
+    for schema in schema_summary.keys():
+        output += '{:35}{:>15.2%}{:>15.2%}{:>20.2%}{:>15.2%}{}'.format(schema,
+                                                                       schema_summary[schema]['full'],
+                                                                       schema_summary[schema]['ext']['ratio'],
+                                                                       schema_summary[schema]['ext']['field_ratio'],
+                                                                       schema_summary[schema]['text'],
+                                                                       '\n')
+
+    return output
+
 
 def main():
-    '''
-    This script runs several metrics regarding the sqlite and mysql database in order to get a scope of the current status
-    The following metrics are run:
-        1. Searches the sqlite database for nodes that are in the working tree but are not yet indexed in either/any of the 3 tables
-        2. Searches the sqlite database for nodes that have since been removed from the working tree but are still indexed somewhere in the sqlite database
-        3. Searches the mysql database for nodes which have empty attribute values
-        4. Searches the mysql database for nodes which exist in the nodeattribute table but no longer exist in node
-        5. Searches the mysql database for nodes which exist in the nodefile table but no longer exist in node
+    """
+    This script attempts to give an overview of the completeness and correctness of the
+    search databases. The report will be generated by the script and sent to the emails
+    which are set in the EMAIL_RECIPIENTS variable.
+    """
+    t = time.time()
+    published_nodes = set([int(node.id) for node in tree.getNode(604993).getAllChildren() if not node.isContainer()])
 
-    The results are dumped into a .json in the configured tmp folder where the following dictionary keys correspond to the metrics above:
-        sqlite_indexed : 1
-            type: {'key': ['str, ...']}
-        sqlite_deleted_nodes: 2
-            type: ['str', ...]
-        mysql_empty_attribute: 3
-            type: ['str', ...]
-        mysql_nodeattribute_not_in_node: 4
-            type: ['str', ...]
-        mysql_nodefile_not_in_node: 5
-            type: ['str', ...]
+    for schema in searcher.schemas:
+        published_schema = published_nodes.intersection(set([int(nid[0]) for nid in
+                                                             tree.db.runQuery(
+                                                                 """select distinct(id) from node where type like "%{}%" """.format(
+                                                                     schema))]))
+        if len(published_schema) == 0:
+            search_full_ratio = 0
+            search_text_ratio = 0
+            search_ext_ratio = 0
+            search_ext_field_ratio = 0
 
-        where 'str' corresponds to a node id
-    '''
+        else:
+            search_full_ratio = len(published_schema.intersection(
+                set([int(nid[0]) for nid in searcher.execute(get_search_sql('full_indexed'),
+                                                             schema,
+                                                             'full')]))) / len(published_schema)
 
-    start = time.time()
-    # see what nodes are not in the search db
-    #dict that will be dumped to json; keys represent the number of search dbs the node is present in
-    in_num_dbs = {'0': [], '1': [], '2': [], '3': []}
+            search_text_ratio = len(published_schema.intersection(
+                set([int(nid[0]) for nid in searcher.execute(get_search_sql('text_indexed'),
+                                                             schema,
+                                                             'text')]))) / len(published_schema)
 
-    #make db connections
-    db_ext = DBAndTable(sqlite.SQLiteConnector(EXT_DB), 'searchmeta')
-    db_full = DBAndTable(sqlite.SQLiteConnector(FULL_SEARCH_DB), 'fullsearchmeta')
-    db_text = DBAndTable(sqlite.SQLiteConnector(TEXT_SEARCH_DB), 'textsearchmeta')
+            ext_content = searcher.execute(get_search_sql('ext_content') %
+                                           (', '.join(['id'] + ['field' + db_field.position for
+                                                                db_field in
+                                                                get_schema_fields(schema)])),
+                                           schema,
+                                           'ext')
 
-    #gets all nodes for each db table
-    ext_list = [node for node in zip(*db_ext.db.execute('select id from %s' % db_ext.table))[0]]
-    full_list = [node for node in zip(*db_full.db.execute('select id from %s' % db_full.table))[0]]
-    text_list = [node for node in zip(*db_text.db.execute('select id from %s' % db_text.table))[0]]
+            if not ext_content:
+                ext_processed = {}
+            else:
+                ext_processed = {node[0]: node[1:] for node in ext_content if int(node[0]) in published_schema}
 
-    #get all nodes that have parent and are not a container type
-    nodes_to_scan = (node for node in zip(*tree.db.runQuery('select cast(id as char) from node where type like "%/%" and id in (select cid from nodemapping)'))[0])
+            search_ext_ratio = len(ext_processed) / len(published_schema)
 
-    for node in nodes_to_scan:
-        node_in_db = {'ext': False, 'full': False, 'text': False}
-        if node in ext_list:
-            node_in_db['ext'] = True
-        if node in full_list:
-            node_in_db['full'] = True
-        if node in text_list:
-            node_in_db['text'] = True
-        #determines under which dict key the node should land
-        priority = sum(node_in_db.values())
-        #id is set last so we are able to use the sum command above
-        node_in_db['id'] = node
-        in_num_dbs[str(priority)].append(node_in_db)
+            ext_field_ratios = []
+            for nid in ext_processed:
+                ext_field_ratios.append(get_extended_field_ratio(schema, tree.getNode(nid), ext_processed[nid]))
 
-    # see what nodes are in the search db that no longer exist in mediatum
-    search_nodes_set = set(ext_list + full_list + text_list)
-    mediatum_nodes = [node for node in zip(*tree.db.runQuery('select cast(id as char) from node'))[0]]
-    no_longer_exist = [node for node in search_nodes_set if node not in mediatum_nodes]
+            if len(ext_field_ratios) == 0:
+                search_ext_field_ratio = 0
+            else:
+                search_ext_field_ratio = sum(ext_field_ratios) / len(ext_field_ratios)
 
-    # see what nodes have empty attribute values
-    results = tree.db.runQuery('select cast(nid as char) from nodeattribute where value = ""')
-    if results:
-        empty_attribute_nodes = [node for node in zip(*results)[0]]
-    else:
-        empty_attribute_nodes = []
+        schema_summary[schema] = {'ext': {'ratio': search_ext_ratio,
+                                          'field_ratio': search_ext_field_ratio},
+                                  'full': search_full_ratio,
+                                  'text': search_text_ratio}
 
-    # see what nodes are in nodeattribute/nodefile that arent in node
-    nodeattribute_not_in_node = [node for node in zip(*tree.db.runQuery('select distinct cast(nid as char) from nodeattribute where nid not in (select id from node)'))[0]]
-    nodefile_not_in_node = [node for node in zip(*tree.db.runQuery('select distinct cast(nid as char) from nodefile where nid not in (select id from node)'))[0]]
+    result = all_schemas_summary()
+    print '%s sec to complete' % (time.time() - t)
+    print result
 
-    json_dump = {'sqlite_indexed': in_num_dbs,
-                 'sqlite_deleted_nodes': no_longer_exist,
-                 'mysql_empty_attribute': empty_attribute_nodes,
-                 'mysql_nodeattribute_not_in_node': nodeattribute_not_in_node,
-                 'mysql_nodefile_not_in_node': nodefile_not_in_node
-    }
+    try:
+        mailtext = result
+        mail.sendmail('mediatum@tum.de',
+                      MAIL_RECIPIENTS,
+                      'Schema Analysis is Finished',
+                      mailtext)
 
-    with open(DATADIR + 'indexer_analysis.json', 'w') as f:
-        json.dump(json_dump, f, indent=4)
-    f.close()
+    except mail.SocketError:
+        logging.getLogger('backend').error('failed to send Schema Analysis Results')
 
-    print 'Time to complete: ' + str((time.time() - start) / 60.)
-    print 'Overview'
-    print 'Length of Lists'
-    for data in sorted(json_dump):
-            if isinstance(json_dump[data], list):
-                print data + ': ' + str(len(json_dump[data]))
-            if isinstance(json_dump[data], dict):
-                for key in sorted(json_dump[data]):
-                    print data + '[' + key + ']' + ': ' + str(len(json_dump[data][key]))
 
 if __name__ == '__main__':
     main()

@@ -511,16 +511,17 @@ class FtsSearcher:
         mode:
             0: no printout
     """
-    def removeNodeIndex(self, node, mode=0):
-        for type in self.tablenames:
-            for table in self.tablesnames[type]:
-                try:
-                    self.execute('DELETE FROM '+table+' WHERE id="'+node.id+'"', type)
-                except:
-                    pass
-        if mode!=0:
-            print "node", node.id, "removed from index"
-
+    def removeNodeIndex(self, node):
+        global DBTYPE
+        for _type in self.tablenames:
+            try:
+                self.execute('DELETE FROM %s WHERE id="%s"' % (self.tablenames[_type],
+                                                               node.id),
+                             node.getSchema(),
+                             _type)
+                print 'node %s removed from index %s %s' % (str(node.id), node.getSchema(), _type)
+            except Exception, e:
+                print e
 
     def reindex(self, nodelist):
         for node in nodelist:

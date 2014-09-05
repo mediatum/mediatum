@@ -28,6 +28,7 @@ import logging
 import core.tree as tree
 import core.users as users
 import core.xmlnode as xmlnode
+import copy
 
 from core import config
 from core.acl import AccessData
@@ -307,7 +308,7 @@ def struct2csv(req, path, params, data, d, debug=False, sep=';', string_delimite
         rd[i]['id'] = u(n.id)
         rd[i]['name'] = u(n.name)
         rd[i]['type'] = u(n.type)
-        attrs = n.attributes
+        attrs = copy.deepcopy(n.attributes)
         rd[i]['attributes'] = attrs
         keys = keys.union(attrs.keys())
 

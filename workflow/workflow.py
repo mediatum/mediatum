@@ -376,13 +376,13 @@ class WorkflowStep(tree.Node):
                             return ""
 
                 if 'action' in req.params:
-                    if access.getUser().isAdmin():
-                        if req.params['action'] == 'delete':
+                    if access.hasWriteAccess(self):
+                        if req.params.get('action') == 'delete':
                             for node in nodes:
                                 for parent in node.getParents():
                                     parent.removeChild(node)
-                        elif req.params['action'].startswith('move_'):
-                            step = tree.getNode(req.params['action'].replace('move_', ''))
+                        elif req.params.get('action').startswith('move_'):
+                            step = tree.getNode(req.params.get('action').replace('move_', ''))
                             for node in nodes:
                                 for parent in node.getParents():
                                     parent.removeChild(node)

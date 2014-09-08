@@ -102,7 +102,7 @@ def scheduler_thread():
                 TRIGGER_COUNT += 1
 
                 sched_root = tree.getRoot("schedules")
-                delete_node_from_cache(sched_root)
+                tree.remove_from_nodecaches(sched_root)
 
                 msg = "flushed schedules"
                 TT.append([msg, time.time() - atime]); atime = time.time()

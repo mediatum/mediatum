@@ -24,6 +24,7 @@ import core.acl
 import core.config as config
 import core.users as users
 import core.xmlnode as xmlnode
+import core.tree as tree
 from utils.utils import *
 from core.acl import AccessData
 from core.metatype import Context

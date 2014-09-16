@@ -24,6 +24,7 @@ import stat
 import time
 import thread
 
+
 class _POFile:
     filedates = {}
     
@@ -31,6 +32,7 @@ class _POFile:
         self.lock = thread.allocate_lock()
         self.filenames = filenames
         self.map = {}
+        self.lastchecktime = None
         for fil in self.filenames:
             self.loadFile(fil)
 
@@ -43,11 +45,11 @@ class _POFile:
         for line in fi.readlines():
             if line.startswith("msgid"):
                 id = line[5:].strip()
-                if id[0]=='"' and id[-1]=='"':
+                if id[0] == '"' and id[-1] == '"':
                     id = id[1:-1]
             elif line.startswith("msgstr"):
                 text = line[6:].strip()
-                if text[0]=='"' and text[-1]=='"':
+                if text[0] == '"' and text[-1] == '"':
                     text = text[1:-1]
                 self.map[id] = text
         fi.close()
@@ -58,7 +60,7 @@ class _POFile:
             if self.lastchecktime + 10 < time.time():
                 self.lastchecktime = time.time()
                 for fil in self.filenames:
-                    if os.stat(fil)[stat.ST_MTIME]!=self.filedates[fil]:
+                    if os.stat(fil)[stat.ST_MTIME] != self.filedates[fil]:
                         self.loadFile(fil)
         finally:
             self.lock.release()
@@ -77,18 +79,19 @@ lang2po = {}
 addlangitems = {}
 addlangfiles = []
 
+
 def translate(key, language=None, request=None):
     if request and not language:
         language = lang(request)
 
     if not language:
-        return "?"+key+"?"
+        return "?%s?" % key
    
     if language not in lang2po:
         plist = []
-        i18dir = os.path.join(config.basedir,"i18n")
-        for root, dirs, files in os.walk(i18dir, topdown=True ):
-            for n in [f for f in files if f.endswith(language+".po")]:
+        i18dir = os.path.join(config.basedir, "i18n")
+        for root, dirs, files in os.walk(i18dir, topdown=True):
+            for n in [f for f in files if f.endswith("%s.po" % language)]:
                 plist.append(os.path.join(i18dir, n))
         
         for f in addlangfiles:
@@ -109,7 +112,8 @@ def translate(key, language=None, request=None):
             return addlangitems[language][key]
         except KeyError:
             return key
-       
+
+
 def addLabels(labels={}):
     for key in labels:
         if not key in addlangitems.keys():
@@ -117,11 +121,13 @@ def addLabels(labels={}):
         
         for item in labels[key]:
             addlangitems[key][item[0]] = item[1]
-            
+
+
 def addPoFilepath(filepath=[]):
     for f in filepath:
         if f not in addlangfiles:
             addlangfiles.append(f)
+
 
 def lang(req):
     if "change_language" in req.params and req.params["change_language"]:
@@ -130,7 +136,7 @@ def lang(req):
     elif "language" in req.session and req.session["language"]:
         return req.session["language"]
 
-    allowed_languages = config.get("i18n.languages","en").split(",")
+    allowed_languages = config.get("i18n.languages", "en").split(",")
     if "Accept-Language" in req.request_headers:
         languages = req.request_headers["Accept-Language"]
         for language in languages.split(";"):
@@ -143,17 +149,22 @@ def lang(req):
     else:
         return "en"
 
+
 def switch_language(req, language):
-    allowed_languages = config.get("i18n.languages","en").split(",")
-    if language not in allowed_languages:
-        raise "Language "+language+" not configured"
+    allowed_languages = config.get("i18n.languages", "en").split(",")
+    if language is None and len(allowed_languages) > 0:
+        language = allowed_languages[0]
+    elif language not in allowed_languages:
+        raise "Language %s not configured" % language
     req.session["language"] = language
+
 
 def t(target, key):
     if type(target) == type(""):
-        return translate(key,language=target)
+        return translate(key, language=target)
     else:
-        return translate(key,request=target)
+        return translate(key, request=target)
+
 
 def getDefaultLanguage():
     return config.get("i18n.languages").split(",")[0].strip()

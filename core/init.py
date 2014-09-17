@@ -28,6 +28,7 @@ from pprint import pformat
 
 import core.config as config
 from core import tree, acl
+from core.node import Root, Metadatatypes
 
 
 logg = logging.getLogger(__name__)
@@ -64,7 +65,7 @@ def register_node_classes():
     tree.registerNodeClass("project", Project)
     tree.registerNodeClass("collection", Directory)
     tree.registerNodeClass("collections", Directory)
-    tree.registerNodeClass("root", Directory)
+    tree.registerNodeClass("root", Root)
     tree.registerNodeClass("home", Directory)
 
     # user
@@ -75,6 +76,7 @@ def register_node_classes():
 
     # meta
     from schema.schema import Metadatatype, Metadatafield, Mask, Maskitem
+    tree.registerNodeClass("metadatatypes", Metadatatypes)
     tree.registerNodeClass("metadatatype", Metadatatype)
     tree.registerNodeClass("metafield", Metadatafield)
     tree.registerNodeClass("mask", Mask)

@@ -19,9 +19,9 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
-import core.tree as tree
 import core.config as config
 import core.translation as translation
+from core.node import Node
 
 from utils.utils import *
 from utils.date import *
@@ -547,7 +547,7 @@ def importMetaSchema(filename):
 #
 # metadatatype
 #
-class Metadatatype(tree.Node):
+class Metadatatype(Node):
 
     def getDescription(self):
         return self.get("description")
@@ -660,7 +660,7 @@ class Metadatatype(tree.Node):
 """ fields for metadata """
 
 
-class Metadatafield(tree.Node):
+class Metadatafield(Node):
 
     def getLabel(self):
         return self.get("label")
@@ -809,7 +809,7 @@ def getMaskTypes(key="."):
             return MaskType()
 
 
-class Mask(tree.Node):
+class Mask(Node):
 
     def getFormHTML(self, nodes, req):
         if not self.getChildren():
@@ -1237,7 +1237,7 @@ class Mask(tree.Node):
 """ class for editor/view masks """
 
 
-class Maskitem(tree.Node):
+class Maskitem(Node):
 
     def getLabel(self):
         return self.getName()

@@ -11,7 +11,7 @@ from sqlalchemy import (create_engine, Column, Table, ForeignKey, Index, Sequenc
                         Integer, Unicode, Text, String)
 from sqlalchemy.orm import sessionmaker, relationship, backref, scoped_session, deferred
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.dialects.postgres import JSONB
+from sqlalchemy.dialects.postgresql import JSONB
 from core import config
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
 

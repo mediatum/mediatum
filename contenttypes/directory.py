@@ -24,7 +24,7 @@ import logging
 from mediatumtal import tal
 import core.tree as tree
 import core.config as config
-from . import default
+from .default import Default
 
 from core.translation import t, lang
 from utils.utils import CustomItem
@@ -102,7 +102,10 @@ def fileIsNotEmpty(file):
 """ directory class """
 
 
-class Directory(default.Default):
+class ContainerType(Default):
+
+    """(Abstract) Base class for Nodes which contain other ContainerType/ContentType nodes
+    """
 
     def getTypeAlias(self):
         return "directory"

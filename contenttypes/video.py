@@ -34,8 +34,7 @@ from core.translation import lang, t
 from core.styles import getContentStyles
 from schema.schema import VIEW_HIDE_EMPTY
 from metadata.upload import getFilelist
-
-from . import default
+from contenttypes.default import ContentType
 
 
 logg = logging.getLogger(__name__)
@@ -78,7 +77,7 @@ def getCaptionInfoDict(self):
     return d
 
 
-class Video(default.Default):
+class Video(ContentType):
 
     """ video class """
     def getTypeAlias(self):

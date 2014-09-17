@@ -23,7 +23,6 @@ import core.acl as acl
 import logging
 import random
 import os
-from . import default
 import hashlib
 
 from schema.schema import VIEW_HIDE_EMPTY
@@ -35,6 +34,7 @@ from core.tree import FileNode
 from core.translation import lang, t
 from core.styles import getContentStyles
 from web.frontend import zoom
+from contenttypes.default import ContentType
 
 """ make thumbnail (jpeg 128x128) """
 
@@ -200,7 +200,7 @@ def dozoom(self):
 """ image class for internal image-type """
 
 
-class Image(default.Default):
+class Image(ContentType):
 
     def getTypeAlias(self):
         return "image"

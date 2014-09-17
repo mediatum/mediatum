@@ -31,13 +31,13 @@ from core.acl import AccessData
 from core.styles import getContentStyles
 from lib.pdf import parsepdf
 from core.attachment import filebrowser
+from contenttypes.default import ContentType
 
 
 logg = logging.getLogger(__name__)
 
 
-""" document class """
-class Document(default.Default):
+class Document(ContentType):
 
     def getTypeAlias(self):
         return "document"

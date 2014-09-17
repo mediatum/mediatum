@@ -22,6 +22,7 @@ import os
 from PIL import Image, ImageDraw
 from . import default
 import core.acl as acl
+from contenttypes.default import ContentType
 from lib.audio import File as AudioFile
 from utils.utils import splitfilename
 from core.tree import FileNode
@@ -133,7 +134,7 @@ def makeMetaData(self, audiofile):
 """ audio class for internal audio-type """
 
 
-class Audio(default.Default):
+class Audio(ContentType):
 
     def getTypeAlias(self):
         return "audio"

@@ -22,13 +22,14 @@ import core.acl as acl
 from core.translation import t, lang
 from core.acl import AccessData
 from . import default
-
 from schema.schema import VIEW_HIDE_EMPTY
+from contenttypes.default import ContentType
+
 
 """ flash class """
 
 
-class Flash(default.Default):
+class Flash(ContentType):
 
     def getTypeAlias(self):
         return "flash"

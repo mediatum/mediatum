@@ -517,3 +517,10 @@ class Default(tree.Node):
 
     def getLabel(self):
         return self.getName()
+
+
+class ContentType(Default):
+
+    """(Abstract) base class for all content node types.
+    Does nothing.
+    """

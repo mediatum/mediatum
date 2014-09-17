@@ -22,8 +22,8 @@ import os
 import logging
 
 from mediatumtal import tal
-import core.tree as tree
 import core.config as config
+from core.node import Node
 from .default import Default
 
 from core.translation import t, lang
@@ -240,18 +240,18 @@ class ContainerType(Default):
     def metaFields(self, lang=None):
         ret = list()
 
-        field = tree.Node(u"nodename", u"metafield")
+        field = Node(u"nodename", u"metafield")
         field.set("label", t(lang, "node name"))
         field.set("type", u"text")
         ret.append(field)
 
-        field = tree.Node(u"style_full", u"metafield")
+        field = Node(u"style_full", u"metafield")
         field.set("label", t(lang, "full view style"))
         field.set("type", u"list")
         field.set("valuelist", u"full_standard;full_text")
         ret.append(field)
 
-        field = tree.Node(u"style", u"metafield")
+        field = Node(u"style", u"metafield")
         field.set("label", t(lang, "style"))
         field.set("type", u"list")
         field.set("valuelist", u"thumbnail;list;text")
@@ -259,7 +259,7 @@ class ContainerType(Default):
 
         if self.type.startswith("collection"):
             # special fields for collections
-            field = tree.Node(u"style_hide_empty", "metafield")
+            field = Node(u"style_hide_empty", "metafield")
             field.set("label", t(lang, "hide empty directories"))
             field.set("type", u"check")
             ret.append(field)

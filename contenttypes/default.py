@@ -24,7 +24,7 @@ import time
 
 from mediatumtal import tal
 import core.acl as acl
-import core.tree as tree
+from core.node import Node
 import core.config as config
 from core.translation import lang
 from core.styles import getContentStyles
@@ -102,7 +102,7 @@ def get_maskcache_entry(lookup_key):
     return res
 
 
-class Default(tree.Node):
+class Default(Node):
 
     def getTypeAlias(self):
         return "default"
@@ -490,7 +490,7 @@ class Default(tree.Node):
                 if m.getLanguage() in ["", "no"]:
                     return m
         elif len(masks) == 0:
-            return tree.Node(u"", type="mask")
+            return Node(u"", type="mask")
         else:
             return masks[0]
 

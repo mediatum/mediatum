@@ -17,15 +17,12 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 import logging
-import core.config as config
+from core.db import postgres
 
 _db = None
-_dbconn = None
 
-
-logg = logging.getLogger(__name__)
+logg = logging.getLogger("database")
 
 
 class DatabaseException:
@@ -38,59 +35,7 @@ class DatabaseException:
 
 
 def getConnection():
-    global _db, _dbconn
+    global _db
     if not _db:
-        type = config.get("database.type", "")
-        if type == "sqlite" or type == "sqllite":
-            logg.info("Initializing sqlite database")
-            from core.db import sqliteconnector
-            _db = sqliteconnector.SQLiteConnector
-            _dbconn = _db()
-            _db = lambda: _dbconn
-        else:
-            logg.info("Initializing mysql database")
-            from core.db import mysqlconnector
-            _db = mysqlconnector.MYSQLConnector
-    return _db()
-
-
-def initDatabaseValues(conn):
-    conn.runQuery("insert into node (id,name,type) values(1,'Gesamtbestand', 'root')")
-    conn.runQuery("insert into node (id,name,type) values(2,'users', 'users')")
-    conn.runQuery("insert into node (id,name,type) values(3,'metadatatypes', 'metadatatypes')")
-    conn.runQuery("insert into node (id,name,type) values(4,'workflows', 'workflows')")
-    conn.runQuery("insert into node (id,name,type) values(5,'usergroups', 'users')")
-    conn.runQuery("insert into node (id,name,type) values(10,'collections', 'collections')")
-    conn.runQuery("insert into nodeattribute (nid,name,value) values(10,'label','Gesamtbestand')")
-
-    conn.runQuery("insert into nodeattribute (nid,name,value) values(12,'label','Kollektionen')")
-    conn.runQuery("insert into node (id,name,type) values(11,'home', 'home')")
-    conn.runQuery("insert into node (id,name,type) values(12,'navigation', 'navigation')")
-    conn.runQuery("insert into nodemapping (nid,cid) values(1,2)")
-    conn.runQuery("insert into nodemapping (nid,cid) values(1,3)")
-    conn.runQuery("insert into nodemapping (nid,cid) values(1,4)")
-    conn.runQuery("insert into nodemapping (nid,cid) values(1,5)")
-    conn.runQuery("insert into nodemapping (nid,cid) values(1,10)")
-    conn.runQuery("insert into nodemapping (nid,cid) values(1,11)")
-    conn.runQuery("insert into nodemapping (nid,cid) values(1,12)")
-
-    adminuser = config.get("user.adminuser", "Administrator")
-    admingroup = config.get("user.admingroup", "Administration")
-    conn.runQuery("insert into node (id,name,type) values(6,'" + adminuser + "', 'user')")
-    conn.runQuery("insert into nodemapping (nid,cid) values(2,6)")
-    conn.runQuery("insert into nodeattribute (nid,name,value) values(6,'password'," +
-                  "'226fa8e6cbb1f4e25019e2645225fd47')")  # xadmin1
-    conn.runQuery("insert into nodeattribute (nid,name,value) values(6,'email','admin@mediatum')")
-    conn.runQuery("insert into nodeattribute (nid,name,value) values(6,'opts','c')")
-
-    conn.runQuery("insert into node (id,name,type) values(7,'" + config.get("user.guestuser", "Gast") + "', 'user')")
-    conn.runQuery("insert into nodeattribute (nid,name,value) values(7,'email','guest@mediatum')")
-    conn.runQuery("insert into nodemapping (nid,cid) values(2,7)")
-    conn.runQuery("insert into nodemapping (nid,cid) values(13,7)")
-    conn.runQuery("insert into node (id,name,type) values(8,'" + admingroup + "', 'usergroup')")
-    conn.runQuery("insert into nodeattribute (nid,name,value) values(8,'opts','ew')")
-    conn.runQuery("insert into nodemapping (nid,cid) values(5,8)")
-    conn.runQuery("insert into nodemapping (nid,cid) values(8,6)")
-
-    conn.runQuery("insert into node (id,name,type) values(13,'Gast', 'usergroup')")
-    conn.runQuery("insert into nodemapping (nid,cid) values(5,13)")
+        _db = postgres.PostgresSQLAConnector()
+    return _db

@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from core.node import Node
 import core.tree as tree
 import xml.parsers.expat as expat
 import StringIO
@@ -177,7 +178,7 @@ class _NodeLoader:
         try:
             mappings = tree.getRoot("mappings")
         except tree.NoSuchNodeError:
-            mappings = tree.getRoot().addChild(tree.Node(name="mappings", type="mappings"))
+            mappings = tree.getRoot().addChild(Node(name="mappings", type="mappings"))
             logg.info("no mappings root found: added mappings root")
 
         for node in self.nodes:
@@ -254,9 +255,9 @@ class _NodeLoader:
                 self.node_already_seen = True
                 return
             elif type in ["mapping"]:
-                node = tree.Node(name=(attrs["name"] + "_imported_" + old_id).encode("utf-8"), type=type)
+                node = Node(name=(attrs["name"] + "_imported_" + old_id).encode("utf-8"), type=type)
             else:
-                node = tree.Node(name=attrs["name"].encode("utf-8"), type=type)
+                node = Node(name=attrs["name"].encode("utf-8"), type=type)
 
             if "read" in attrs:
                 node.setAccess("read", attrs["read"].encode("utf-8"))

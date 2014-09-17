@@ -27,6 +27,7 @@ import locale
 from pprint import pformat
 
 import core.config as config
+from core.node import Node
 from core import tree, acl
 from core.node import Root, Metadatatypes
 
@@ -142,7 +143,7 @@ def init_db_compat():
                 n.setSchema(None)
 
         if not tree.getRoot().hasChild("searchmasks"):
-            tree.getRoot().addChild(tree.Node(name="searchmasks", type="searchmasks"))
+            tree.getRoot().addChild(Node(name="searchmasks", type="searchmasks"))
 
 
 def tal_setup():

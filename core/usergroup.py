@@ -17,13 +17,13 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.tree as tree
+from core.node import Node
 from schema.schema import loadTypesFromDB
 from core.acl import AccessData
 from core.usergroups import groupoption
 
 
-class UserGroup(tree.Node):
+class UserGroup(Node):
 
     def getDescription(self):
         return self.get("description")

@@ -21,21 +21,21 @@ import json
 import logging
 from datetime import datetime
 
+from core.node import Node
 import core.tree as tree
 try:
     import utils.scheduleutils as su
 except:
     pass
 
-
 logg = logging.getLogger(__name__)
 
 
-class Schedule(tree.Node):
-
+class Schedule(Node):
+    
     # removed #186
-    # def __init__(self, name="<unbenannt>", dbid=None, type="schedule", **kwargs):
-    #    tree.Node.__init__(self, name=name, type=type, dbid=None, **kwargs)
+    #def __init__(self, name="<unbenannt>", dbid=None, type="schedule", **kwargs):
+    #    Node.__init__(self, name=name, type=type, dbid=None, **kwargs)
 
     def getCategoryName(self):
         return "Schedule"
@@ -97,6 +97,3 @@ class Schedule(tree.Node):
             return _error, []
 
         return _error, res
-
-
-tree.registerNodeClass('schedule', Schedule)

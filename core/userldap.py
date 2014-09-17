@@ -23,7 +23,7 @@ import ldap
 import re
 
 import core.users as users
-import core.tree as tree
+from core.node import Node
 import core.config as config
 import core.usergroups as usergroups
 
@@ -111,7 +111,7 @@ class LDAPUser(ExternalUser):
                     return None, None
 
         def createLDAPUser(data, uname):
-            user = tree.Node(uname, "user")
+            user = Node(uname, "user")
             user.set("lastname", self._getAttribute(config.get("ldap.user_lastname"), data))
             user.set("firstname", self._getAttribute(config.get("ldap.user_firstname"), data))
             user.set("email", self._getAttribute(config.get("ldap.user_email"), data))

@@ -17,12 +17,12 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import core.tree as tree
+from core.node import Node
 
 from utils.utils import mkKey
 
 
-class ShoppingBag(tree.Node):
+class ShoppingBag(Node):
 
     def getItems(self):
         return self.get("items").split(";")

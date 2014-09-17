@@ -6,7 +6,7 @@ import os
 import hashlib
 import utils.utils as utils
 import utils.fileutils as fileutils
-import core.tree as tree
+from core.node import Node
 import core.users as users
 from utils.date import parse_date
 from utils.utils import utf8_decode_escape
@@ -122,7 +122,7 @@ class collection_ftpserver:
         node, f = self.getfile(path)
         if f == "metadata":
             raise IOError("Can't delete file")
-        elif isinstance(f, tree.Node):
+        elif isinstance(f, Node):
             parent = self.dir[0].getParents()[0]
             for subfolder in parent.getChildren():
                 if subfolder.getName() == 'Papierkorb':
@@ -143,8 +143,7 @@ class collection_ftpserver:
         node = self.node
         self.dir = olddir
         self.node = oldnode
-        node.addChild(tree.Node(utf8_decode_escape(filename),
-                                type="directory"))
+        node.addChild(Node(utf8_decode_escape(filename), type="directory"))
 
     def rmdir(self, path):
         path, filename = utils.splitpath(path)
@@ -179,7 +178,7 @@ class collection_ftpserver:
         node, f = self.isfile(path)
         if not f:
             raise IOError("No such file: " + path)
-        if isinstance(f, tree.Node):
+        if isinstance(f, Node):
             file = f.getFiles()[0].retrieveFile()
         else:
             file = f.retrieveFile()
@@ -347,7 +346,7 @@ def file_to_node(file_node, upload_dir):
     if not schema:
         schema = 'file'
 
-    new_node = tree.Node(utf8_decode_escape(new_name),
+    new_node = Node(utf8_decode_escape(new_name),
                          type='/'.join([file_node.getType(),
                                         schema]))
     upload_dir.removeFile(file_node)

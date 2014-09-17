@@ -25,6 +25,7 @@
 #
 
 from utils.utils import Option
+from core.node import Node
 import core.tree as tree
 import logging
 
@@ -56,9 +57,9 @@ def getGroup(id):
 
 def create_group(name, description="", option="", dynamic_users="", allow_dynamic=""):
     groups = tree.getRoot("usergroups")
-    group = tree.Node(name=name, type="usergroup")
-    group.set("description", description)
-    group.set("opts", option)
+    group = Node(name=name, type="usergroup")
+    group.set("description",description)
+    group.set("opts",option)
     if allow_dynamic:
         group.set("allow_dynamic", allow_dynamic)
     if dynamic_users:

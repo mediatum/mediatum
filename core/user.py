@@ -18,14 +18,14 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import hashlib
-import core.tree as tree
+from core.node import Node
 import core.usergroups as usergroups
 import core.config as config
 import core.translation as translation
 from core.users import useroption
 
 
-class User(tree.Node):
+class User(Node):
 
     def getGroups(self):
         groups = []
@@ -161,7 +161,7 @@ class User(tree.Node):
         return ret
 
     def addShoppingBag(self, name, items=[]):
-        sb = tree.Node(name, type="shoppingbag")
+        sb = Node(name, type="shoppingbag")
         sb.setItems(items)
         self.addChild(sb)
 

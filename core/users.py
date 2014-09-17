@@ -21,6 +21,7 @@
 import core.config as config
 from . import usergroups
 import hashlib
+from core.node import Node
 import core.tree as tree
 import random
 import thread
@@ -61,7 +62,7 @@ def create_user(name, email, groups, pwd="", lastname="", firstname="", telephon
     else:
         users = getExternalUserFolder(type)
 
-    user = tree.Node(name=name, type="user")
+    user = Node(name=name, type="user")
     user.set("email", email)
     user.set("password", hashlib.md5(pwd).hexdigest())
     user.set("opts", option)
@@ -305,14 +306,14 @@ def getExternalUserFolder(type=""):
     try:
         extusers = tree.getRoot("external_users")
     except tree.NoSuchNodeError:
-        extusers = tree.Node("external_users", "users")
+        extusers = Node("external_users", "users")
         tree.getRoot().addChild(extusers)
 
     if type != "":
         try:
             users = extusers.getChild(type)
         except tree.NoSuchNodeError:
-            users = tree.Node(type, "directory")
+            users = Node(type, "directory")
             extusers.addChild(users)
         return users
     else:
@@ -360,7 +361,7 @@ def checkLogin(name, pwd, req=None):
             user.set("password", hashlib.md5(pwd).hexdigest())
         else:
             extusers = getExternalUserFolder()
-            user = tree.Node(name=name, type="user")
+            user = Node(name=name, type="user")
             if '@' in name:
                 user.set("email", name)
             user.set("password", hashlib.md5(pwd).hexdigest())
@@ -546,7 +547,7 @@ def getHomeDir(user):
             return c
 
     # create new userdir
-    userdir = tree.getRoot("home").addChild(tree.Node(name=buildHomeDirName(username), type="directory"))
+    userdir = tree.getRoot("home").addChild(Node(name=buildHomeDirName(username), type="directory"))
     userdir.setAccess("read", "{user " + username + "}")
     userdir.setAccess("write", "{user " + username + "}")
     userdir.setAccess("data", "{user " + username + "}")
@@ -579,7 +580,7 @@ def getSpecialDir(user, type):
         if c.name == nodename:
             return c
     # create new directory
-    return userdir.addChild(tree.Node(name=nodename, type="directory"))
+    return userdir.addChild(Node(name=nodename, type="directory"))
 
 
 def getUploadDir(user):

@@ -6,10 +6,12 @@
 
 from __future__ import division, absolute_import, print_function
 import logging
+from warnings import warn
 
 from sqlalchemy import (create_engine, Column, Table, ForeignKey, Index, Sequence,
                         Integer, Unicode, Text, String)
 from sqlalchemy.orm import sessionmaker, relationship, backref, scoped_session, deferred
+from sqlalchemy.orm.dynamic import AppenderQuery
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects.postgresql import JSONB
 from core import config
@@ -34,6 +36,62 @@ DeclarativeBase.to_dict = to_dict
 logg = logging.getLogger("database")
 
 CONNECTSTR_TEMPLATE = "postgresql+psycopg2://{user}:{passwd}@{dbhost}:{dbport}/{database}"
+
+
+class NodeAppenderQuery(AppenderQuery):
+
+    """Custom AppenderQuery class with additional methods for node handling
+    """
+
+    def sort_by_orderpos(self, reverse=False):
+        if reverse:
+            return self.order_by(BaseNode.orderpos.desc())
+        else:
+            return self.order_by(BaseNode.orderpos)
+
+    def sort_by_name(self, direction="up"):
+        reverse = direction != "up"
+        if reverse:
+            return self.order_by(BaseNode.name.desc())
+        else:
+            return self.order_by(BaseNode.name)
+
+    def __len__(self):
+        warn("use query.count() instead", DeprecationWarning)
+        return self.count()
+
+    def getIDs(self):
+        warn("inefficient, rewrite your code using SQLA queries", DeprecationWarning)
+        return [n.id for n in self.all()]
+
+    def sort_by_fields(self, field):
+        if isinstance(field, str):
+            # handle some special cases
+            if field == "name" or field == "nodename":
+                warn("use query.order_by(Node.name) instead", DeprecationWarning)
+                return self.sort_by_name("up")
+            elif field == "-name" or field == "nodename":
+                warn("use query.order_by(Node.name.desc()) instead", DeprecationWarning)
+                return self.sort_by_name("down")
+            elif field in ("orderpos", "-orderpos"):
+                raise NotImplementedError("this method must not be used for orderpos sorting, use query.order_by(Node.orderpos)!")
+            else:
+                fields = [field]
+        else:
+            # remove empty sortfields
+            fields = [f for f in field if f]
+            if not fields:
+                # no fields left, all empty...
+                return self
+        query = self
+        for field in fields:
+            if field.startswith("-"):
+                expr = BaseNode.attrs[field].astext.desc()
+            else:
+                expr = BaseNode.attrs[field].astext
+            query = query.order_by(expr)
+
+        return query
 
 
 # definitions
@@ -94,7 +152,9 @@ class BaseNode(DeclarativeBase):
         secondary=t_nodemapping,
         lazy="dynamic",
         primaryjoin=id == t_nodemapping.c.nid,
-        secondaryjoin=id == t_nodemapping.c.cid)
+        secondaryjoin=id == t_nodemapping.c.cid,
+        query_class=NodeAppenderQuery
+        )
 
     children = rel("BaseNode", backref="parents", **child_kwargs)
     container_children = rel("ContainerType", **child_kwargs)

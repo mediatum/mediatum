@@ -173,14 +173,14 @@ class NodeFile(DeclarativeBase):
     """Represents an item on the filesystem
     """
     __tablename__ = "nodefile"
-    nid = C(Integer, FK("node.id"), primary_key=True, index=True)
+    nid = C(Integer, FK(BaseNode.id), primary_key=True, index=True)
     filename = C(Unicode(255), primary_key=True)
     type = C(Unicode(50), primary_key=True)
-    node = rel("BaseNode", backref=bref("files", cascade="delete"))
+    node = rel(BaseNode, backref=bref("files", lazy="dynamic"))
     mimetype = C(String(20))
 
     def __repr__(self):
-        return "File for BaseNode #{} ({}) at {}".format(
+        return "File for Node #{} ({}) at {}".format(
             self.nid, self.filename, hex(id(self)))
 
 

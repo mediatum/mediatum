@@ -27,7 +27,6 @@ from utils.utils import *
 from utils.date import *
 from core.config import *
 from core.xmlnode import getNodeXML, readNodeXML
-from core.db.database import getConnection
 from core.metatype import Metatype
 import inspect
 import importlib

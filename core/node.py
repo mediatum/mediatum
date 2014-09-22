@@ -4,10 +4,8 @@
     :license: GPL3, see COPYING for details
 """
 
-from core.db.postgres import BaseNode
-from core.db import database
+from core.database.postgres import BaseNode
 
-db = database.getConnection()
 
 
 class Node(BaseNode):

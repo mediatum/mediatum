@@ -31,7 +31,6 @@ import hashlib
 logg = logging.getLogger(__name__)
 
 rules = {}
-conn = database.getConnection()
 
 aclrule2privilege = {}
 aclrule2privilege_length = 0
@@ -678,10 +677,6 @@ def flush():
     aclrule2privilege_length = 0
     aclrule2privilege_count = 0
 
-
-def initialize():
-    global conn
-    conn = database.getConnection()
 
 if __name__ == "__main__":
     print ustr(p.parse("not true or not false"))

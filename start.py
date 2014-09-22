@@ -26,7 +26,6 @@ from core import athana
 
 init.full_init()
 
-
 logg = logging.getLogger(__name__)
 
 ### stackdump
@@ -78,15 +77,6 @@ try:
     core.schedules.startThread()
 except:
     logg.exception("Error starting scheduler thread")
-
-### full text search thread
-if config.get("config.searcher", "").startswith("fts"):
-    import core.search.ftsquery
-    core.search.ftsquery.startThread()
-else:
-    import core.search.query
-    core.search.query.startThread()
-
 
 ### start main web server, Z.39.50 and FTP, if configured
 if config.get('z3950.activate', '').lower() == 'true':

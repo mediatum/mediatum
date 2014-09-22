@@ -9,6 +9,5 @@ from core import config
 
 config.initialize()
 
-from core import tree
 from core import acl
 from core import users

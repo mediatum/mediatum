@@ -209,5 +209,9 @@ class PostgresSQLAConnector(object):
         self.engine = engine
 
     @property
+    def session(self):
+        return self.Session()
+
+    @property
     def query(self):
         return self.Session().query

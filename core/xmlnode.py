@@ -327,7 +327,9 @@ class _NodeLoader:
             else:
                 self.nodes[-1].set(self.attributename, val + data.encode("utf-8"))
 
-tree.registerNodeFunction("writexml", writexml)
+
+def init():
+    tree.registerNodeFunction("writexml", writexml)
 
 
 def parseNodeXML(s):

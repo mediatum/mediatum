@@ -103,8 +103,6 @@ def mkDir(dir):
 
 def initialize():
     global settings
-    if settings:
-        raise Exception("calling config.initialize() multiple times is not allowed!")
     if os.getenv("MEDIATUM_CONFIG"):
         ini_filename = os.getenv("MEDIATUM_CONFIG")
     else:

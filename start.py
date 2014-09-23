@@ -17,13 +17,10 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 import logging
 import sys
 
-from core import config, webconfig, init
-from core import athana
-
+from core import init
 init.full_init()
 
 logg = logging.getLogger(__name__)

@@ -40,6 +40,8 @@ logg = logging.getLogger(__name__)
 
 tagpattern = re.compile(r'<[^>]*?>')
 
+default_context = {} # filled by init()
+
 
 def no_html(s):
     return tagpattern.sub('', s)
@@ -254,25 +256,27 @@ def runTALSnippet(s, context, mask=None):
             wr_result = tal.getTALstr(u2(to_be_processed), context)
         #wr_result = tal.getTALstr(u2(to_be_processed), context, mode='xml')
 
-    return wr_result[wr_result.find(cutter) + len(cutter):wr_result.rfind(cutter)]
 
-default_context = {}
-default_context['tree'] = tree
-default_context['esc'] = esc  # may be needed for example in escaping rss item elements
-default_context['esc2'] = esc2  # may be needed for example in escaping rss item elements
-default_context['no_html'] = no_html
-default_context['u'] = u
-default_context['utf82iso'] = utf82iso
-default_context['iso2utf8'] = iso2utf8
-default_context['prss'] = prss  # protect rss
-default_context['parse_date'] = parse_date
-default_context['format_date'] = format_date
-default_context['cdata'] = cdata
-default_context['get_udate'] = get_udate
-default_context['getAccessRights'] = getAccessRights
-default_context['config_get'] = config.get
-default_context['normLanguage_iso_639_2_b'] = normLanguage_iso_639_2_b
-default_context['normLanguage_iso_639_2_t'] = normLanguage_iso_639_2_t
+    return wr_result[wr_result.find(cutter)+len(cutter):wr_result.rfind(cutter)]
+
+
+def init():
+    default_context['tree'] = tree
+    default_context['esc'] = esc  # may be needed for example in escaping rss item elements
+    default_context['esc2'] = esc2  # may be needed for example in escaping rss item elements
+    default_context['no_html'] = no_html
+    default_context['u'] = u
+    default_context['utf82iso'] = utf82iso
+    default_context['iso2utf8'] = iso2utf8
+    default_context['prss'] = prss # protect rss
+    default_context['parse_date'] = parse_date
+    default_context['format_date'] = format_date
+    default_context['cdata'] = cdata
+    default_context['get_udate'] = get_udate
+    default_context['getAccessRights'] = getAccessRights
+    default_context['config_get'] = config.get
+    default_context['normLanguage_iso_639_2_b'] = normLanguage_iso_639_2_b
+    default_context['normLanguage_iso_639_2_t'] = normLanguage_iso_639_2_t
 
 
 def registerDefaultContextEntry(key, entry):

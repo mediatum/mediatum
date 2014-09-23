@@ -132,20 +132,6 @@ def init_archivemanager():
         logg.error("error while initialization of archive manager", exc_info=1)
 
 
-def init_db_compat():
-    """only for compatibility with older databases"""
-    if config.get("database.compat_mode", "").lower() == "true":
-        from contenttypes.directory import Directory
-        # make all subnodes of collections collections
-        for n in tree.getRoot("collections").getChildren():
-            if "directory" in n.type:
-                n.setContentType("collection")
-                n.setSchema(None)
-
-        if not tree.getRoot().hasChild("searchmasks"):
-            tree.getRoot().addChild(Node(name="searchmasks", type="searchmasks"))
-
-
 def tal_setup():
     from mediatumtal import tal
     tal.set_base(config.basedir)
@@ -179,12 +165,13 @@ def check_imports():
         mod = importlib.import_module(modname)
         logg.info("import %s: version '%s'", mod, mod.__version__ if hasattr(mod, "__version__") else "unknown")
 
+def init_app():
+    from core.transition.app import create_app
+    import core
+    core.app, core.db = create_app()
 
 def init_modules():
     """init modules with own init function"""
-    from core.transition.app import create_app
-    import core
-    core.app = create_app()
     from contenttypes.default import init_maskcache
     init_maskcache()
     from export import oaisets
@@ -213,6 +200,8 @@ def add_ustr_builtin():
 
 def basic_init():
     add_ustr_builtin()
+    import core.config
+    core.config.initialize()
     import utils.log
     utils.log.initialize()
     log_basic_sys_info()
@@ -221,7 +210,6 @@ def basic_init():
     register_node_classes()
     register_node_functions()
     tree.initialize()
-    acl.initialize()
 
 
 def full_init():
@@ -231,6 +219,5 @@ def full_init():
     register_workflow()
     init_ldap()
     init_archivemanager()
-    init_db_compat()
     init_modules()
     tal_setup()

@@ -17,6 +17,7 @@ from core.transition.helpers import runswith
 from core.transition.helpers import get_root_path
 from utils.date import dt_fromiso
 import datetime
+from core.database.postgres import PostgresSQLAConnector
 
 logg = logging.getLogger(__name__)
 
@@ -201,5 +202,6 @@ def create_app(name="mediatum"):
     app.register_with_athana()
     from mediatumbabel import Babel
     babel = Babel(app)
+    db = PostgresSQLAConnector()
     babel.localeselector(lambda: translation.lang(request))
-    return app
+    return app, db

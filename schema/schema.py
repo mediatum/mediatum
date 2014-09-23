@@ -998,6 +998,14 @@ class Mask(tree.Node):
             if self.getMappingHeader()!="":
                 ret += '<div class="label" i18n:translate="mask_edit_header">TEXT</div><div class="row">%s</div>' %(esc(self.getMappingHeader()))
 
+        #check if all the orderpos attributes are the same which causes problems with sorting
+        z = [t for t in self.getChildren().sort_by_orderpos()]
+        if all(z[0].getOrderPos() == item.getOrderPos() for item in z):
+            k = 0
+            for elem in z:
+                elem.setOrderPos(elem.getOrderPos() + k)
+                k += 1
+
         i=0
         fieldlist = {} #!!!getAllMetaFields()
         for item in self.getChildren().sort_by_orderpos():

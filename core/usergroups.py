@@ -138,7 +138,7 @@ def existGroup(grp):
 
 
 def updateAclRule(oldname, newname):
-    from . import acl
+    from core import acl
     newrule = acl.AccessRule(newname, "( group " + newname + " )", newname)
     if (acl.existRule(oldname)):
         acl.updateRule(newrule, oldname, newname, oldname)

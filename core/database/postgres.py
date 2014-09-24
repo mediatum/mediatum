@@ -168,23 +168,23 @@ Index(u'node_type', BaseNode.__table__.c.type)
 Index(u'node_orderpos', BaseNode.__table__.c.orderpos)
 
 
-class NodeFile(DeclarativeBase):
+class BaseFile(DeclarativeBase):
 
     """Represents an item on the filesystem
     """
     __tablename__ = "nodefile"
     nid = C(Integer, FK(BaseNode.id), primary_key=True, index=True)
-    filename = C(Unicode(255), primary_key=True)
-    type = C(Unicode(50), primary_key=True)
+    path = C(Unicode(4096), primary_key=True)
+    filetype = C(Unicode(126), primary_key=True)
     node = rel(BaseNode, backref=bref("files", lazy="dynamic"))
-    mimetype = C(String(20))
+    mimetype = C(String(126))
 
     def __repr__(self):
-        return "File for Node #{} ({}) at {}".format(
-            self.nid, self.filename, hex(id(self)))
+        return "File for Node #{} ({}:{}|{}) at {}".format(
+            self.nid, self.path, self.filetype, self.mimetype, hex(id(self)))
 
 
-Index(u'nodefile_nid', NodeFile.__table__.c.nid)
+Index(u'nodefile_nid', BaseFile.__table__.c.nid)
 
 
 class PostgresSQLAConnector(object):

@@ -22,7 +22,6 @@ import urllib2
 import json
 
 from mediatumtal import tal
-import core.tree as tree
 from utils.utils import esc
 from core.metatype import Metatype
 

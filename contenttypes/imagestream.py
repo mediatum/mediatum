@@ -20,7 +20,6 @@
 from . import image
 import logging
 import os
-from core.tree import FileNode
 import core.config as config
 import glob
 

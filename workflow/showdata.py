@@ -17,7 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.tree as tree
+
 import logging
 from .workflow import WorkflowStep, registerStep
 from core.translation import t, lang

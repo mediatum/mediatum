@@ -19,7 +19,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
-import core.tree as tree
 from .workflow import WorkflowStep, registerStep
 import utils.fileutils as fileutils
 from utils.utils import OperationException

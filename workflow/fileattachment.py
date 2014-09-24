@@ -18,7 +18,6 @@
 """
 
 import logging
-import core.tree as tree
 from .workflow import WorkflowStep, registerStep
 from core.translation import t, lang, addLabels
 from schema.schema import getMetaType, VIEW_HIDE_EMPTY

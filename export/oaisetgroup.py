@@ -20,7 +20,6 @@
 """
 
 import logging
-import core.tree as tree
 
 
 logg = logging.getLogger(__name__)

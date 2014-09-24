@@ -20,7 +20,9 @@
 import logging
 import sys
 
-from core import init
+from core import config, webconfig, init
+from core import athana
+
 init.full_init()
 
 logg = logging.getLogger(__name__)

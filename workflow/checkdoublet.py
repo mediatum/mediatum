@@ -21,7 +21,7 @@
 
 import time
 import logging
-import core.tree as tree
+
 try:
     import Levenshtein
 except:

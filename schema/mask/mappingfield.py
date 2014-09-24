@@ -20,7 +20,6 @@
 """
 
 import re
-import core.tree as tree
 
 from core.metatype import Metatype
 from utils.utils import esc, desc, modify_tex

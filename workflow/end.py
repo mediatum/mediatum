@@ -19,8 +19,7 @@
 """
 import logging
 from .workflow import WorkflowStep, registerStep
-import core.tree as tree
-from core.translation import t, lang, addLabels
+from core.translation import t, addLabels
 import core.config as config
 from utils.date import now
 

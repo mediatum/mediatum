@@ -18,8 +18,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from utils.utils import formatLongText, u
-import core.tree as tree
-from core.tree import getNode
 
 from schema.schema import getMetaFieldTypeNames, getMetaFieldTypes, getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_EXPORT, dateoption
 from core.translation import lang, translate

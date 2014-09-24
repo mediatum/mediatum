@@ -25,7 +25,6 @@ import core.acl as acl
 from contenttypes.default import ContentType
 from lib.audio import File as AudioFile
 from utils.utils import splitfilename
-from core.tree import FileNode
 from utils.date import parse_date, format_date, make_date
 from schema.schema import VIEW_HIDE_EMPTY
 from core.translation import lang

@@ -26,7 +26,6 @@ import codecs
 import logging
 
 from mediatumtal import tal
-import core.tree as tree
 import core.config as config
 import core.users as users
 

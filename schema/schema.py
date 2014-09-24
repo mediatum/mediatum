@@ -19,6 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
+from core.node import Node
 import core.config as config
 import core.translation as translation
 from core.node import Node

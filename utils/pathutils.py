@@ -20,7 +20,6 @@
 
 import os
 import string
-import core.tree as tree
 
 
 def createPath(parent_node, sPath, sSeparator='/'):

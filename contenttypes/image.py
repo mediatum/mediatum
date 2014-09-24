@@ -30,7 +30,6 @@ from core.acl import AccessData
 from core.attachment import filebrowser
 from utils.fileutils import getImportDir
 from utils.utils import splitfilename, isnewer, iso2utf8, OperationException, utf8_decode_escape
-from core.tree import FileNode
 from core.translation import lang, t
 from core.styles import getContentStyles
 from web.frontend import zoom

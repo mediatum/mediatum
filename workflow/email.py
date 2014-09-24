@@ -22,7 +22,6 @@
 
 import logging
 import os.path
-import core.tree as tree
 from .workflow import WorkflowStep, registerStep
 from mediatumtal import tal
 from core.translation import t, lang, addLabels

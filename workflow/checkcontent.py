@@ -22,7 +22,7 @@ from .workflow import WorkflowStep, registerStep
 from utils.utils import checkXMLString
 from core.translation import t, lang, addLabels
 import utils.mail as mail
-import core.tree as tree
+
 
 
 def register():

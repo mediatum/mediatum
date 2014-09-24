@@ -34,7 +34,6 @@ from utils.utils import join_paths
 from utils.date import format_date, now
 
 import utils.utils as utils
-import core.tree as tree
 import core.config as config
 
 

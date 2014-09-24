@@ -26,7 +26,6 @@ import os
 import logging
 import random
 
-import core.tree as tree
 import core.users as users
 import core.athana as athana
 import core.config as config

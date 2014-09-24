@@ -28,13 +28,11 @@ import pkgutil
 import importlib
 
 import core.config as config
-import core.tree as tree
 from mediatumtal import tal
 import math
 import logging
 
 from utils.utils import *
-from core.tree import nodeclasses
 from core.xmlnode import getNodeXML, readNodeXML
 
 import utils.date as date

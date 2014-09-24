@@ -19,7 +19,6 @@
 """
 import os
 import logging
-import core.tree
 import time
 
 logg = logging.getLogger(__name__)

@@ -22,7 +22,7 @@ import core.config as config
 from . import usergroups
 import hashlib
 from core.node import Node
-import core.tree as tree
+from core import db
 import random
 import thread
 import logging

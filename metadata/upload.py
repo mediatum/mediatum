@@ -27,7 +27,6 @@ import datetime
 
 from mediatumtal import tal
 from core.transition.athana_sep import athana_http as athana
-import core.tree as tree
 import core.users as users
 
 from core.metatype import Metatype

@@ -27,7 +27,6 @@ import logging
 from utils.utils import splitfilename
 from utils.date import format_date, make_date
 from core.acl import AccessData
-from core.tree import FileNode
 from lib.flv.parse import FLVReader
 from contenttypes.image import makeThumbNail, makePresentationFormat
 from core.translation import lang, t

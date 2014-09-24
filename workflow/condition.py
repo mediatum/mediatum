@@ -20,9 +20,7 @@
 """
 
 from .workflow import WorkflowStep, registerStep
-import core.tree as tree
-from core.translation import t, lang, addLabels
-import core.config as config
+from core.translation import t, addLabels
 
 
 def register():

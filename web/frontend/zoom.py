@@ -19,7 +19,6 @@
 """
 import logging
 import re
-import core.tree as tree
 import os
 from PIL import Image
 import zipfile

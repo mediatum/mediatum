@@ -19,7 +19,7 @@
 """
 from .workflow import WorkflowStep, registerStep
 from utils.utils import mkKey
-import core.tree as tree
+
 
 
 def register():

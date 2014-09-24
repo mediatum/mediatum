@@ -21,7 +21,7 @@
 """
 
 import logging
-import core.tree as tree
+
 import core.users as users
 import core.config as config
 from .workflow import WorkflowStep, getNodeWorkflow, getNodeWorkflowStep, registerStep

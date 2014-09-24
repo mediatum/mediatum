@@ -22,9 +22,7 @@ import logging
 import core.config as config
 import core.acl as acl
 import os
-from . import default
 from utils.utils import splitfilename, u, OperationException, utf8_decode_escape
-from core.tree import FileNode
 from schema.schema import VIEW_HIDE_EMPTY
 from core.translation import lang, t
 from core.acl import AccessData

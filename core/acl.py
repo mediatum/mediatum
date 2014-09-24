@@ -19,7 +19,6 @@
 """
 import core.users as users
 import logging
-import core.tree as tree
 import core.config as config
 from core.db import database
 from utils.boolparser import BoolParser

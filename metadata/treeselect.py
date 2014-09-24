@@ -20,7 +20,6 @@
 import logging
 from mediatumtal import tal
 from core.transition import httpstatus
-import core.tree as tree
 from utils.utils import esc
 from core.metatype import Metatype
 

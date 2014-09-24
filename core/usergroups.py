@@ -26,7 +26,6 @@
 
 from utils.utils import Option
 from core.node import Node
-import core.tree as tree
 import logging
 
 logg = logging.getLogger(__name__)

@@ -20,7 +20,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
-import core.tree as tree
 import utils.date as date
 import core.schedules as schedules
 from .workflow import WorkflowStep, registerStep

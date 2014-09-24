@@ -23,7 +23,6 @@ import re
 from mediatumtal import tal
 from utils.utils import esc
 from core.metatype import Metatype
-from core.tree import FileNode
 from PIL import Image, ImageFont, ImageDraw, ImageEnhance
 import sys
 import traceback

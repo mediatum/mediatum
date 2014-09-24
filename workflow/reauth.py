@@ -17,9 +17,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import core.tree as tree
 from .workflow import WorkflowStep, registerStep
-from utils.utils import mkKey
 from core.translation import addLabels
 
 

@@ -20,7 +20,6 @@
 import logging
 import os.path
 from mediatumtal import tal
-import core.tree as tree
 from utils.utils import esc
 from core.metatype import Metatype, Context
 

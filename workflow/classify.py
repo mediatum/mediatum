@@ -21,7 +21,7 @@ from .upload import WorkflowStep
 from .workflow import registerStep
 from core.translation import t, addLabels
 from utils.utils import isNumeric
-import core.tree as tree
+
 
 
 def register():

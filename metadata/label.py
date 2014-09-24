@@ -17,7 +17,6 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.tree as tree
 from mediatumtal import tal
 from schema.schema import VIEW_DATA_ONLY, VIEW_DEFAULT
 from core.metatype import Metatype

@@ -19,7 +19,6 @@
 """
 import logging
 from mediatumtal import tal
-import core.tree as tree
 from core.metatype import Metatype
 
 

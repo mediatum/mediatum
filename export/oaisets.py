@@ -20,7 +20,6 @@
 """
 from collections import OrderedDict
 
-import core.tree as tree
 from utils.utils import esc
 from utils.pathutils import isDescendantOf
 from .oaisetgroup import OAISetGroup as OAISetGroup

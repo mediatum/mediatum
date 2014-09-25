@@ -22,8 +22,8 @@ import socket
 import asyncore
 import random  # FIXME: drop dependency!
 
-from athana import counter, async_chat
-from core import tree, medmarc, acl, users, config
+from .athana import counter, async_chat
+from core import medmarc, acl, users, config
 from schema import mapping
 
 from PyZ3950 import z3950, zdefs, asn1

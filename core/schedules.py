@@ -25,7 +25,7 @@ import time
 import thread
 import logging
 
-import core.tree as tree
+from core.node import Node
 import core.athana as athana
 import core.schedule
 

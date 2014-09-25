@@ -21,7 +21,6 @@ import logging
 import os
 import core.athana as athana
 import core.config as config
-import core.tree as tree
 
 from core.styles import theme
 from mediatumtal import tal

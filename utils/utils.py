@@ -381,9 +381,6 @@ def isCollection(node):
 
 
 def getCollection(node):
-    # local import due to import loop with core.tree
-    from core import tree
-
     def p(node):
         if node.type == "collection" or node.type == "collections":
             return node
@@ -399,8 +396,6 @@ def getCollection(node):
 
 
 def getAllCollections():
-    # local import due to import loop with core.tree
-    from core import tree
     l = []
 
     def f(l, node):
@@ -430,7 +425,6 @@ def getDirectory(node):
         return None
     directory = p(node)
     if directory is None:
-        import core.tree
         directory = core.tree.getRoot("collections")
     return directory
 

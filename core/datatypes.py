@@ -18,8 +18,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 #from utils import *
-from core.tree import nodeclasses
 
+### XXX: is this still needed? Rework or delete it
 
 class Datatype:
 

@@ -22,7 +22,6 @@ import logging
 from datetime import datetime
 
 from core.node import Node
-import core.tree as tree
 try:
     import utils.scheduleutils as su
 except:
@@ -97,3 +96,4 @@ class Schedule(Node):
             return _error, []
 
         return _error, res
+    

@@ -23,8 +23,6 @@ import thread
 import time
 import logging
 import core.config as config
-import core.tree as tree
-from core.tree import db
 from utils.utils import splitpath, intersection, union
 from utils.date import parse_date, now, format_date
 

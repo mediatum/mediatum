@@ -22,7 +22,6 @@ import os
 import re
 import xml.parsers.expat
 import core.config as config
-import core.tree as tree
 import logging
 import glob
 

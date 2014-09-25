@@ -29,7 +29,6 @@ import random
 from pprint import pformat
 import requests
 
-from core import tree
 from .schema import getMetaType
 from . import importbase
 from .importbase import NoMappingFound

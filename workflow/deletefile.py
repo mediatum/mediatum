@@ -22,7 +22,7 @@ from core.translation import t
 
 
 def register():
-    tree.registerNodeClass("workflowstep-deletefile", WorkflowStep_DeleteFile)
+    #tree.registerNodeClass("workflowstep-deletefile", WorkflowStep_DeleteFile)
     registerStep("workflowstep-deletefile")
     addLabels(getLabels())
 

@@ -23,7 +23,7 @@ from utils.utils import mkKey
 
 
 def register():
-    tree.registerNodeClass("workflowstep-protect", WorkflowStep_Protect)
+    #tree.registerNodeClass("workflowstep-protect", WorkflowStep_Protect)
     registerStep("workflowstep-protect")
 
 

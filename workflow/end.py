@@ -28,7 +28,7 @@ logg = logging.getLogger(__name__)
 
 
 def register():
-    tree.registerNodeClass("workflowstep-end", WorkflowStep_End)
+    #tree.registerNodeClass("workflowstep-end", WorkflowStep_End)
     registerStep("workflowstep-end")
     addLabels(WorkflowStep_End.getLabels())
 

@@ -23,7 +23,7 @@ from core.translation import t, addLabels
 
 
 def register():
-    tree.registerNodeClass("workflowstep-textpage", WorkflowStep_TextPage)
+    #tree.registerNodeClass("workflowstep-textpage", WorkflowStep_TextPage)
     registerStep("workflowstep-textpage")
     addLabels(WorkflowStep_TextPage.getLabels())
 

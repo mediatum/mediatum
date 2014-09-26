@@ -41,7 +41,7 @@ logg = logging.getLogger(__name__)
 
 
 def register():
-    tree.registerNodeClass("workflowstep-addformpage", WorkflowStep_AddFormPage)
+    #tree.registerNodeClass("workflowstep-addformpage", WorkflowStep_AddFormPage)
     registerStep("workflowstep-addformpage")
     addLabels(WorkflowStep_AddFormPage.getLabels())
 

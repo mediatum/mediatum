@@ -24,7 +24,7 @@ from core.translation import t, addLabels
 
 
 def register():
-    tree.registerNodeClass("workflowstep-condition", WorkflowStep_Condition)
+    #tree.registerNodeClass("workflowstep-condition", WorkflowStep_Condition)
     registerStep("workflowstep-condition")
     addLabels(WorkflowStep_Condition.getLabels())
 

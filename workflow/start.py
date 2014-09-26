@@ -31,7 +31,7 @@ logg = logging.getLogger(__name__)
 
 
 def register():
-    tree.registerNodeClass("workflowstep-start", WorkflowStep_Start)
+    #tree.registerNodeClass("workflowstep-start", WorkflowStep_Start)
     registerStep("workflowstep-start")
     addLabels(WorkflowStep_Start.getLabels())
 

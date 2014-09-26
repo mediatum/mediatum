@@ -34,7 +34,7 @@ logg = logging.getLogger(__name__)
 
 
 def register():
-    tree.registerNodeClass("workflowstep-send_email", WorkflowStep_SendEmail)
+    #tree.registerNodeClass("workflowstep-send_email", WorkflowStep_SendEmail)
     registerStep("workflowstep-send_email")
     addLabels(WorkflowStep_SendEmail.getLabels())
 

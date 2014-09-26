@@ -32,7 +32,7 @@ logg = logging.getLogger(__name__)
 
 
 def register():
-    tree.registerNodeClass("workflowstep-addurn", WorkflowStep_Urn)
+    #tree.registerNodeClass("workflowstep-addurn", WorkflowStep_Urn)
     registerStep("workflowstep-addurn")
     addLabels(WorkflowStep_Urn.getLabels())
 

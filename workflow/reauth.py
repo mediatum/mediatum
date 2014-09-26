@@ -22,7 +22,7 @@ from core.translation import addLabels
 
 
 def register():
-    tree.registerNodeClass("workflowstep-reauth", WorkflowStep_Reauth)
+    #tree.registerNodeClass("workflowstep-reauth", WorkflowStep_Reauth)
     registerStep("workflowstep-reauth")
     addLabels(WorkflowStep_Reauth.getLabels())
 

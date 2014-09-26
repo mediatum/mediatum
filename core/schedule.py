@@ -96,4 +96,6 @@ class Schedule(Node):
             return _error, []
 
         return _error, res
-    
+
+def init():
+    pass

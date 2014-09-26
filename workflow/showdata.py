@@ -38,8 +38,8 @@ def mkfilelistshort(node, deletebutton=0, language=None, request=None):
 
 
 def register():
-    tree.registerNodeClass("workflowstep-showdata", WorkflowStep_ShowData)
-    tree.registerNodeClass("workflowstep-wait", WorkflowStep_ShowData)
+    #tree.registerNodeClass("workflowstep-showdata", WorkflowStep_ShowData)
+    #tree.registerNodeClass("workflowstep-wait", WorkflowStep_ShowData)
     registerStep("workflowstep-showdata")
     registerStep("workflowstep-wait")
 

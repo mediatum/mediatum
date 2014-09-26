@@ -31,7 +31,7 @@ logg = logging.getLogger(__name__)
 
 
 def register():
-    tree.registerNodeClass("workflowstep-upload", WorkflowStep_Upload)
+    #tree.registerNodeClass("workflowstep-upload", WorkflowStep_Upload)
     registerStep("workflowstep-upload")
 
 

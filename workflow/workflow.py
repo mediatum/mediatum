@@ -637,9 +637,9 @@ class WorkflowStep(tree.Node):
 
 
 def register():
-    tree.registerNodeClass("workflows", Workflows)
-    tree.registerNodeClass("workflow", Workflow)
-    tree.registerNodeClass("workflowstep", WorkflowStep)
+#     tree.registerNodeClass("workflows", Workflows)
+#     tree.registerNodeClass("workflow", Workflow)
+#     tree.registerNodeClass("workflowstep", WorkflowStep)
 
     # run register method of step types
     path = os.path.dirname(__file__)

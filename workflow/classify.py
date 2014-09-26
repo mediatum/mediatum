@@ -25,7 +25,7 @@ from utils.utils import isNumeric
 
 
 def register():
-    tree.registerNodeClass("workflowstep-classify", WorkflowStep_Classify)
+    #tree.registerNodeClass("workflowstep-classify", WorkflowStep_Classify)
     registerStep("workflowstep-classify")
     addLabels(WorkflowStep_Classify.getLabels())
 

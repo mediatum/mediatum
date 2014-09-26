@@ -38,7 +38,7 @@ logg = logging.getLogger(__name__)
 
 
 def register():
-    tree.registerNodeClass("workflowstep-checkdoublet", WorkflowStep_CheckDoublet)
+    #tree.registerNodeClass("workflowstep-checkdoublet", WorkflowStep_CheckDoublet)
     registerStep("workflowstep-checkdoublet")
 
 

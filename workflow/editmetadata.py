@@ -23,7 +23,7 @@ from schema.schema import getMetaType
 
 
 def register():
-    tree.registerNodeClass("workflowstep-edit", WorkflowStep_EditMetadata)
+    #tree.registerNodeClass("workflowstep-edit", WorkflowStep_EditMetadata)
     registerStep("workflowstep-edit")
     addLabels(WorkflowStep_EditMetadata.getLabels())
 

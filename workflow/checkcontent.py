@@ -26,7 +26,7 @@ import utils.mail as mail
 
 
 def register():
-    tree.registerNodeClass("workflowstep-checkcontent", WorkflowStep_CheckContent)
+    #tree.registerNodeClass("workflowstep-checkcontent", WorkflowStep_CheckContent)
     registerStep("workflowstep-checkcontent")
     addLabels(WorkflowStep_CheckContent.getLabels())
 

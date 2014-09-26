@@ -47,7 +47,7 @@ logg = logging.getLogger(__name__)
 
 
 def register():
-    tree.registerNodeClass("workflowstep-ldapauth", WorkflowStep_LdapAuth)
+    #tree.registerNodeClass("workflowstep-ldapauth", WorkflowStep_LdapAuth)
     registerStep("workflowstep-ldapauth")
     addLabels(WorkflowStep_LdapAuth.getLabels())
 

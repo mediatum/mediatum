@@ -89,7 +89,7 @@ ADD_NBSP = 1
 
 
 def register():
-    tree.registerNodeClass("workflowstep-addpic2pdf", WorkflowStep_AddPic2Pdf)
+    #tree.registerNodeClass("workflowstep-addpic2pdf", WorkflowStep_AddPic2Pdf)
     registerStep("workflowstep-addpic2pdf")
     addLabels(WorkflowStep_AddPic2Pdf.getLabels())
 

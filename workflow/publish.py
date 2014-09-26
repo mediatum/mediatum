@@ -21,7 +21,7 @@ from .workflow import WorkflowStep, registerStep
 
 
 def register():
-    tree.registerNodeClass("workflowstep-publish", WorkflowStep_Publish)
+    #tree.registerNodeClass("workflowstep-publish", WorkflowStep_Publish)
     registerStep("workflowstep-publish")
 
 

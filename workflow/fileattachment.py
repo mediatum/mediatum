@@ -27,7 +27,7 @@ logg = logging.getLogger(__name__)
 
 
 def register():
-    tree.registerNodeClass("workflowstep-fileattachment", WorkflowStep_FileAttachment)
+    #tree.registerNodeClass("workflowstep-fileattachment", WorkflowStep_FileAttachment)
     registerStep("workflowstep-fileattachment")
     addLabels(WorkflowStep_FileAttachment.getLabels())
 

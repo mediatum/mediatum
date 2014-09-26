@@ -21,7 +21,7 @@ from .workflow import WorkflowStep, registerStep
 
 
 def register():
-    tree.registerNodeClass("workflowstep-delete", WorkflowStep_Delete)
+    #tree.registerNodeClass("workflowstep-delete", WorkflowStep_Delete)
     registerStep("workflowstep-delete")
 
 

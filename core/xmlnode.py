@@ -328,7 +328,8 @@ class _NodeLoader:
 
 
 def init():
-    tree.registerNodeFunction("writexml", writexml)
+    pass
+#     tree.registerNodeFunction("writexml", writexml)
 
 
 def parseNodeXML(s):

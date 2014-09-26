@@ -30,7 +30,7 @@ logg = logging.getLogger(__name__)
 
 
 def register():
-    tree.registerNodeClass("workflowstep-defer", WorkflowStep_Defer)
+    #tree.registerNodeClass("workflowstep-defer", WorkflowStep_Defer)
     registerStep("workflowstep-defer")
     addLabels(WorkflowStep_Defer.getLabels())
 

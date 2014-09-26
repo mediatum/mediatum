@@ -19,7 +19,6 @@
 """
 import logging
 from mediatumtal import tal
-import core.tree as tree
 import os
 
 from utils.utils import getCollection, Link, getFormatedString

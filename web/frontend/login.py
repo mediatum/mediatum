@@ -23,7 +23,6 @@ import hashlib
 from core.transition import httpstatus
 import core.users as users
 import core.config as config
-import core.tree as tree
 import utils.mail as mail
 import utils.date as date
 from web.frontend import frame

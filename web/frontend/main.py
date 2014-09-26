@@ -24,12 +24,10 @@ import core.acl
 import core.config as config
 import core.users as users
 import core.xmlnode as xmlnode
-import core.tree as tree
 from utils.utils import *
 from core.acl import AccessData
 from core.metatype import Context
 from core.translation import lang
-from core.tree import db
 from web.frontend.frame import getNavigationFrame
 from web.frontend.content import getContentArea, ContentNode
 from schema.schema import getMetadataType, getMetaType

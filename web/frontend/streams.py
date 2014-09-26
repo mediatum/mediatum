@@ -27,10 +27,8 @@ import time
 
 import core.config as config
 import core.athana as athana
-import core.tree as tree
 from core.archive import archivemanager
 from core.acl import AccessData
-from core.tree import getNode
 import utils.utils
 from utils.utils import get_filesize, join_paths, clean_path, getMimeType
 

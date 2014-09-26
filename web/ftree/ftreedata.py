@@ -18,7 +18,6 @@
 """
 import logging
 
-import core.tree as tree
 from core.acl import AccessData
 from web.frontend.content import getPaths
 from core.translation import translate

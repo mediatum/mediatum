@@ -21,7 +21,6 @@
 
 import re
 import logging
-import core.tree as tree
 from utils.utils import intersection, union
 from utils.boolparser import BoolParser
 

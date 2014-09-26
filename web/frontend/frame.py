@@ -21,7 +21,6 @@ import logging
 from collections import OrderedDict
 import time
 
-import core.tree as tree
 import core.users as users
 import core.config as config
 

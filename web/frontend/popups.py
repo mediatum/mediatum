@@ -18,10 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
-import core.tree as tree
 
-from core.tree import getNode
-from web.edit.edit import printmethod
 from schema.schema import getMetaType, getMetadataType
 from lib.pdf import printview
 
@@ -107,6 +104,7 @@ def getPrintChildren(req, node, ret):
 
 
 def show_printview(req):
+    from web.edit.edit import printmethod
     """ create a pdf preview of given node (id in path e.g. /print/[id]/[area])"""
     p = req.path[1:].split("/")
     try:

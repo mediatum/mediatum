@@ -19,9 +19,7 @@
 """
 import logging
 from core.transition import httpstatus
-import core.tree as tree
 import core.users as users
-from core.tree import db
 from core.translation import lang
 from core.acl import AccessData
 from core.styles import theme

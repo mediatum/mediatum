@@ -25,7 +25,6 @@ from utils.utils import parseMenuString
 from web.admin.adminutils import adminNavigation, getAdminModuleInformation, adminModules
 from web.edit.edit import getEditModules, editModules, getEditMenuString
 from core.tree import getRoot
-from core.datatypes import loadAllDatatypes
 
 
 def getInformation():

@@ -29,7 +29,6 @@ import core.tree as tree
 import core.config as config
 
 from core.tree import db
-from core.datatypes import loadAllDatatypes
 
 container = []
 content = []

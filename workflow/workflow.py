@@ -44,6 +44,7 @@ from core.users import getUserFromRequest, getUser
 import thread
 
 import utils.fileutils as fileutils
+from core.node import Node
 
 
 logg = logging.getLogger(__name__)
@@ -261,7 +262,7 @@ def importWorkflow(filename):
         workflows.addChild(w)
 
 
-class Workflows(tree.Node):
+class Workflows(Node):
 
     def show_node_big(node, req, template="workflow/workflow.html", macro="workflowlist"):
         access = acl.AccessData(req)
@@ -287,7 +288,7 @@ class Workflows(tree.Node):
         return node.name
 
 
-class Workflow(tree.Node):
+class Workflow(Node):
 
     def show_node_big(node, req, template="workflow/workflow.html", macro="object_list"):
         access = acl.AccessData(req)
@@ -379,7 +380,7 @@ class Workflow(tree.Node):
 workflow_lock = thread.allocate_lock()
 
 
-class WorkflowStep(tree.Node):
+class WorkflowStep(Node):
 
     def getId(self):
         return self.getName()

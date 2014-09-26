@@ -208,7 +208,7 @@ def basic_init():
 def full_init():
     basic_init()
 #     init_register_mapping_field()
-#     register_workflow()
+    register_workflow()
     init_ldap()
     init_archivemanager()
     init_modules()

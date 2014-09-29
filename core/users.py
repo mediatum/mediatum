@@ -25,6 +25,7 @@ import core.tree as tree
 import random
 import thread
 import logging
+import athana
 
 from utils.utils import Option
 from core.translation import getDefaultLanguage, translate
@@ -249,6 +250,14 @@ def getUser(id):
 
 
 def doExternalAuthentification(name, pwd, req=None):
+
+    #spoof a request for ftp
+    if req is None:
+        req = athana.http_request(None, None, None, '/', None, None)
+        req.ip = '0.0.0.0'
+        req.session = athana.Session('000000-000000-000000')
+        req.request_headers = ['User-Agent: ftp']
+
     global authenticators
     dynamic_authenticators = getDynamicUserAuthenticators()
     for priority_key in list(reversed(sorted(authenticators_priority_dict.keys()))):

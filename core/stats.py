@@ -31,12 +31,14 @@ from utils.utils import splitpath
 from utils.fileutils import importFile
 from lib.geoip.geoip import GeoIP, getFullCountyName
 
+import pickle
+
 class LogItem:
 
     def __init__(self, data):
         self.id = ""
         try:
-            m = re.split(' INFO | - - \[| \] \"GET | HTTP/1.1\"', data)
+            m = re.split(' INFO | - - \[| \] \"GET | HTTP/1.[01]\"', data)
             self.date, self.time = m[0][:-4].split(" ")
             self.ip = m[1]
             self.url = m[-2]
@@ -93,10 +95,16 @@ class LogItem:
         return self.type
 
     def getIp(self):
+        print self.date, self.time, self.ip
         if " " in self.ip:
-            return "".join(self.ip.split(":")[:-1]).split(" ")[-1]
+            ip = "".join(self.ip.split(":")[:-1]).split(" ")[-1]
         else:
-            return "".join(self.ip.split(":")[:-1])
+            ip = "".join(self.ip.split(":")[:-1])
+
+        if ip == 'unknown':
+            ip = '127.0.0.1'
+
+        return ip
 
     def is_google_bot(self):
         if self.ip.startswith('66.249'):
@@ -419,6 +427,7 @@ def buildStat(collection, period="", fname=None): # period format = yyyy-mm
                     if fin and len(data[timestamp][id][type])>0:
                         fin.write('\t<node id="%s">\n' % str(id))
                         for access in data[timestamp][id][type]:
+                            print access.getIp()
                             fin.write('\t\t<access date="%s" time="%s" country="%s" visitor_number="%s" bot="%s"/>\n' %
                                      (str(access.getDate()),
                                       str(access.getTime()),

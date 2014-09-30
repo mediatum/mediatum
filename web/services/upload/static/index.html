@@ -11,6 +11,45 @@
 <h2 class="underline">Upload artifacts to the system</h2>
 
 <h2 id="toc0">
+	Parameters
+</h2>
+<p>
+    <ul>
+        <li>
+            <b>parent:</b><br/>id of parent node where new artifact should be added.
+        </li>
+        <li>
+            <b>type:</b><br/>nodetype of new node. User full quantifier <em>objectype</em>/<em>schema</em>.
+        </li>
+        <li>
+            <b>name:</b><br/>name of node, will be stored in the node table, field name.
+        </li>
+        <li>
+            <b>file:</b><br/>choose local file to add to mediaTUM.
+        </li>
+        <li>
+            <b>metadata:</b><br/>add metadatafields to given file. Use the json format e.g. <em>{"nodename":"name", ...}</em>
+        </li>
+        <li>
+            <b>user:</b><br/>give the user name that should upload the file.
+        </li>
+        <li>
+            <b>userkey:</b><br/>add the public oauth-key for given user. This is needed to sign the request by oauth.
+        </li>
+    </ul>
+</p>
+<p>Create a request with given attributes and send them to <em>http://server.de/services/upload/new</em> and add all parameters in alphabetical order.</p>
+<p>e.g. <em>http://server.de/services/upload/new?metadata={"nodename":"name"}&name=abc&parent=123&type=image/test&user=guest</em></p>
+<p>If the destination folder is not accessable for the guest user you need to use oauth to sign the requesst and add artifacts.</p>
+
+<h2 id="toc1">
+	Sample Form
+</h2>
+<p>
+	Use the sample form <em><a href="/services/upload/upload.html">http://server.de/services/upload/upload.html</a></em>
+</p>
+
+<h2 id="toc2">
 	Authentication
 </h2>
 <p>
@@ -29,9 +68,9 @@
 	<br>
 	The request is signed by creating a MD5 sum of the concatenated string of the request URL, the parameters and the shared secret. This way the signature can only be computed if the shared secret is known and the signature is only valid for exactly this request. Hence the only thing an attacker can do is to execute the same requests again since the signature will be invalid if any parameter is changed.<br>
 </p>
-<h2 id="toc1">
+<h2 id="toc3">
 </h2>
-<h2 id="toc2">
+<h2 id="toc4">
 	<a name="x-Signing a Request"></a>Signing a Request
 </h2>
 <p>
@@ -58,7 +97,7 @@
 	http://server.de/service/export/?yxz=foo&amp;user=MyUsername&amp;abc=baz&amp;sign=1676a3873fc5dd035d362a3a01450dcc<br>
 	<br>
 </p>
-<h2 id="toc3">
+<h2 id="toc5">
 	<a name="x-Verifying a Request"></a>Verifying a Request
 </h2>
 <p>

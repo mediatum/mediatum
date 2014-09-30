@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+    <head>
+        <style>
+            label{width:100%}
+            input{width:100%}
+            button{padding:2px 40px}
+        </style>
+        <script type="text/javascript" language="javascript" src="/js/jquery.min.js"> </script>
+        <script>
+            function path(){
+                $('#path').html('/services/upload/new?metadata=' + $('#metadata').val() + '&name=' + $('#name').val()+'&parent='+$('#parent').val()+'&type='+$('#type').val()+'&user='+$('#user').val());
+
+            }
+            function calcsign(){
+                $.get( "/services/upload/calcsign", {key: $('#userkey').val(), url: $('#path').text()}, function( data ) {
+                    $('#sign').val(data);
+                });
+            }
+        </script>
+    </head>
+    <body>
+        <h1>Upload new file</h1>
+        <form method="post" action="/services/upload/new" enctype="multipart/form-data">
+            <p>
+                <label>parent node id:<br/>
+                    <input type="text" name="parent" id="parent" value="" onchange="path()"/>
+                </label>
+                <small>choose id of node where file should be uploaded.</small>
+            </p>
+            <p>
+                <label>node type:<br/>
+                    <input type="text" name="type" id="type" value="image/..." onchange="path()"/>
+                </label>
+                <small>give full type: objecttype/schema.</small>
+            </p>
+            <p>
+                <label>name:<br/>
+                    <input type="text" name="name" id="name" onchange="path()"/>
+                </label>
+                <small>give name of node.</small>
+            </p>
+            <p>
+                <label>file:<br/>
+                    <input type="file" name="data" id="data" onchange="path()"/>
+                </label>
+                <small>choose local file for uplodad.</small>
+            </p>
+            <p>
+                <label>metadata:<br/>
+                    <textarea name="metadata" id="metadata" style="width:100%;height:100px;" onchange="path()">{"nodename":"name"}</textarea>
+                </label>
+                <small>add metadata in json format.</small>
+            </p>
+            <p>
+                <label>user:<br/>
+                    <input type="text" name="user" id="user" value="..." onchange="path()"/>
+                </label>
+                <small>give username of upload user. User should have edit rights in given directory.</small>
+            </p>
+            <p>
+                <label>userkey:<br/>
+                    <input type="text" id="userkey" value="..."/><br/><br/>
+                    <button type="button" onclick="calcsign()">calc sign</button>
+                </label>
+                <small>give user's oauth key to sign request with oauth.</small>
+            </p>
+            <hr/>
+            <p>
+                path:<br/>
+                <span id="path">/services/upload/new?metadata=&name=xx&parent=1033882&type=image/test2&user=Administrator</span>
+            </p>
+            <p>
+                <label>sign:<br/>
+                    <input type="text" name="sign" id="sign"/>
+                </label>
+            </p>
+            <p style="text-align:center">
+                <button type="submit">upload</button>
+            </p>
+        </form>
+    </body>
+</html>

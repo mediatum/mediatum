@@ -19,15 +19,11 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
-import sys
 import re
 import time
 import locale
-
-import logging
-
 import BaseHTTPServer
+
 response_code_dict = BaseHTTPServer.BaseHTTPRequestHandler.responses
 
 LOCALES = ["en_US.UTF-8", "english", "german"]
@@ -47,14 +43,49 @@ from . import handlers
 SERVICES_URL_HAS_HANDLER = 1
 SERVICES_URL_SIMPLE_REWRITE = 2
 
-urls = [
-    ["GET", "/index.html$", handlers.serve_file, ("/static/index.html", {}, {'filepath': 'index.html'}), SERVICES_URL_SIMPLE_REWRITE, None],
-    ["GET", "/$", handlers.serve_file,
-            ("/static/index.html", {}, {'filepath': 'index.html'}), SERVICES_URL_SIMPLE_REWRITE, None],
-
-    ["POST", "/new$", handlers.upload_new_node, None, SERVICES_URL_HAS_HANDLER, None],
-    ["POST", "/update/(?P<id>\d+)/{0,1}$", handlers.update_node, None, SERVICES_URL_HAS_HANDLER, None],
-]
+urls = [["GET",
+         "/index.html$",
+         handlers.serve_file,
+         ("/static/index.html",
+          {},
+          {'filepath': 'index.html'}),
+         SERVICES_URL_SIMPLE_REWRITE,
+         None],
+        ["GET",
+         "/upload.html$",
+         handlers.serve_file,
+         ("/static/upload.html",
+          {},
+             {'filepath': 'upload.html'}),
+         SERVICES_URL_SIMPLE_REWRITE,
+         None],
+        ["GET",
+         "/calcsign$",
+         handlers.calcsign,
+         None,
+         SERVICES_URL_HAS_HANDLER,
+         None],
+        ["GET",
+         "/$",
+         handlers.serve_file,
+         ("/static/index.html",
+          {},
+             {'filepath': 'index.html'}),
+         SERVICES_URL_SIMPLE_REWRITE,
+         None],
+        ["POST",
+         "/new$",
+         handlers.upload_new_node,
+         None,
+         SERVICES_URL_HAS_HANDLER,
+         None],
+        ["POST",
+         "/update/(?P<id>\d+)/{0,1}$",
+         handlers.update_node,
+         None,
+         SERVICES_URL_HAS_HANDLER,
+         None],
+        ]
 
 DEBUG = True
 
@@ -62,6 +93,7 @@ DEBUG = True
 def request_handler(req):
 
     handle_starttime = time.time()
+    response_code = 403
     matched = False
     req_path = req.path
     for method, pattern, handler_func, rewrite_target, url_flags, data in urls:
@@ -74,7 +106,8 @@ def request_handler(req):
                 if url_flags == SERVICES_URL_HAS_HANDLER:
                     handle_path = req.path
                     handle_params = req.params
-                    response_code, bytes_sent, d = handler_func(req, handle_path, handle_params, data, **m.groupdict())
+                    response_code, bytes_sent, d = handler_func(
+                        req, handle_path, handle_params, data, **m.groupdict())
                     break
 
                 if url_flags == SERVICES_URL_SIMPLE_REWRITE:
@@ -88,7 +121,8 @@ def request_handler(req):
                     for key, value in rewrite_target[2].items():
                         argsdict[key] = value
 
-                    response_code, bytes_sent, d = handler_func(req, handle_path, handle_params, data, **argsdict)
+                    response_code, bytes_sent, d = handler_func(
+                        req, handle_path, handle_params, data, **argsdict)
                     break
 
     # try to call default handler, if no match
@@ -100,6 +134,6 @@ def request_handler(req):
             response_code, bytes_sent = '404', 0
 
     if not matched:
-        return req.error(404, "File " + req.path + " not found")
+        return req.error(404, "File %s not found" % req.path)
 
     return response_code

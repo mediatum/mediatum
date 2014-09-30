@@ -23,21 +23,28 @@ import json
 import time
 import logging
 import base64
+import types
+import re
+import hashlib
+from collections import OrderedDict
 
 import core.tree as tree
 import core.users as users
+
 from core import config
 from core.acl import AccessData
+
 from utils.date import format_date
 from utils.utils import u, getMimeType, OperationException
-from utils.fileutils import importFileFromData
-from web.services.cache import Cache
+from utils.fileutils import importFileFromData, importFile
 
 
 logger = logging.getLogger('services')
 host = "http://" + config.get("host.name")
 
 collections = tree.getRoot('collections')
+
+from web.services.cache import Cache
 
 FILTERCACHE_NODECOUNT_THRESHOLD = 2000000
 
@@ -50,6 +57,12 @@ SEND_TIMETABLE = False
 
 def upload_new_node(req, path, params, data):
 
+    try:
+        uploadfile = params['data']
+        del params['data']
+    except KeyError:
+        uploadfile = None
+
     # get the user and verify the signature
     if params.get('user'):
         # user=users.getUser(params.get('user'))
@@ -59,7 +72,8 @@ def upload_new_node(req, path, params, data):
 
             class dummyuser:  # dummy user class
 
-                def getGroups(self):  # return all groups with given dynamic user
+                # return all groups with given dynamic user
+                def getGroups(self):
                     return [g.name for g in tree.getRoot('usergroups').getChildren() if g.get(
                         'allow_dynamic') == '1' and params.get('user') in g.get('dynamic_users')]
 
@@ -75,39 +89,53 @@ def upload_new_node(req, path, params, data):
             _user = dummyuser()
         userAccess = AccessData(user=_user)
 
-        if userAccess.user is not None:
-            valid = userAccess.verify_request_signature(req.fullpath, params)
-            if not valid:
+        if userAccess.user:
+            user = userAccess.user
+            if not userAccess.verify_request_signature(
+                    req.fullpath +
+                    '?',
+                    params):
                 userAccess = None
         else:
             userAccess = None
     else:
-        user = users.getUser('Gast')
+        user = users.getUser(config.get('user.guestuser'))
         userAccess = AccessData(user=user)
 
-    parent = tree.getNode(params['parent'])
+    parent = tree.getNode(params.get('parent'))
 
     # check user access
-    if userAccess is not None and userAccess.hasAccess(parent, "write"):
+    if userAccess and userAccess.hasAccess(parent, "write"):
         pass
     else:
         s = "No Access"
         req.write(s)
-        d = {}
-        d['status'] = 'fail'
-        d['html_response_code'] = '403'  # forbidden (authorization will not help)
-        d['errormessage'] = 'no access'
+        d = {
+            'status': 'fail',
+            'html_response_code': '403',
+            'errormessage': 'no access'}
+        logger.error("user has no edit permission for node %s" % parent)
         return d['html_response_code'], len(s), d
 
     datatype = params.get('type')
     uploaddir = users.getUploadDir(user)
 
     n = tree.Node(name=params.get('name'), type=datatype)
-    data = base64.b64decode(params.get('data'))
-    file = importFileFromData('uploadTest.jpg', data)
-    n.addFile(file)
+    if isinstance(uploadfile, types.InstanceType):  # file object used
+        nfile = importFile(uploadfile.filename, uploadfile.tempname)
+    else:  # string used
+        nfile = importFileFromData(
+            'uploadTest.jpg',
+            base64.b64decode(uploadfile))
+    if nfile:
+        n.addFile(nfile)
+    else:
+        logger.error("error in file uploadservice")
 
-    metadata = json.loads(params.get('metadata'))
+    try:  # test metadata
+        metadata = json.loads(params.get('metadata'))
+    except ValueError:
+        metadata = dict()
 
     # set provided metadata
     for key, value in metadata.iteritems():
@@ -130,21 +158,21 @@ def upload_new_node(req, path, params, data):
                     os.remove(file.retrieveFile())
             raise OperationException(e.value)
 
-    # make sure the new node is visible immediately from the web service and the search index gets updated
+    # make sure the new node is visible immediately from the web service and
+    # the search index gets updated
     n.setDirty()
     tree.remove_from_nodecaches(parent)
 
-    d = {}
-    d['status'] = 'Created'
-    d['html_response_code'] = '201'  # ok
-    d['build_response_end'] = time.time()
-
+    d = {
+        'status': 'Created',
+        'html_response_code': '201',
+        'build_response_end': time.time()}
     s = "Created"
 
     # provide the uploader with the new node ID
     req.reply_headers['NodeID'] = n.id
 
-    # we need to write in case of POST request, send as buffer wil not work
+    # we need to write in case of POST request, send as buffer will not work
     req.write(s)
 
     return d['html_response_code'], len(s), d
@@ -157,7 +185,7 @@ def update_node(req, path, params, data, id):
         user = users.getUser(params.get('user'))
         userAccess = AccessData(user=user)
 
-        if userAccess.user is not None:
+        if userAccess.user:
             valid = userAccess.verify_request_signature(req.fullpath, params)
             if not valid:
                 userAccess = None
@@ -170,19 +198,18 @@ def update_node(req, path, params, data, id):
     node = tree.getNode(id)
 
     # check user access
-    if userAccess is not None and userAccess.hasAccess(node, "write"):
+    if userAccess and userAccess.hasAccess(node, "write"):
         pass
     else:
         s = "No Access"
         req.write(s)
-        d = {}
-        d['status'] = 'fail'
-        d['html_response_code'] = '403'  # forbidden (authorization will not help)
-        d['errormessage'] = 'no access'
+        d = {
+            'status': 'fail',
+            'html_response_code': '403',
+            'errormessage': 'no access'}
         return d['html_response_code'], len(s), d
 
     node.name = params.get('name')
-
     metadata = json.loads(params.get('metadata'))
 
     # set provided metadata
@@ -194,11 +221,10 @@ def update_node(req, path, params, data, id):
     node.set("updatetime", format_date())
     node.setDirty()
 
-    d = {}
-    d['status'] = 'OK'
-    d['html_response_code'] = '200'  # ok
-    d['build_response_end'] = time.time()
-
+    d = {
+        'status': 'OK',
+        'html_response_code': '200',
+        'build_response_end': time.time()}
     s = "OK"
 
     # we need to write in case of POST request, send as buffer wil not work
@@ -207,7 +233,6 @@ def update_node(req, path, params, data, id):
     req.reply_headers['updatetime'] = node.get('updatetime')
 
     return d['html_response_code'], len(s), d
-
 
 # alternative base dir for static html files
 #
@@ -226,9 +251,7 @@ WEBROOT = None
 def serve_file(req, path, params, data, filepath):
     atime = starttime = time.time()
 
-    d = {}
-    d['timetable'] = []
-
+    d = {'timetable': []}
     if 'mimetype' in req.params:
         mimetype = req.params['mimetype']
     elif filepath.lower().endswith('.html') or filepath.lower().endswith('.htm'):
@@ -243,19 +266,38 @@ def serve_file(req, path, params, data, filepath):
     else:
         basedir = os.path.dirname(os.path.abspath(__file__))
     abspath = os.path.join(basedir, 'static', filepath)
-    msg = "web service trying to serve: " + str(abspath)
-    logger.info(msg)
+    logger.info("web service trying to serve: %s" % abspath)
     if os.path.isfile(abspath):
         filesize = os.path.getsize(abspath)
         req.sendFile(abspath, mimetype, force=1)
-        d['timetable'].append(["reading file '%s'" % filepath, time.time() - atime])
-        atime = time.time()
+        d['timetable'].append(
+            ["reading file '%s'" % filepath, time.time() - atime])
         d['status'] = 'ok'
-        dataready = "%.3f" % (time.time() - starttime)
-        d['dataready'] = dataready
+        d['dataready'] = "%.3f" % (time.time() - starttime)
         return 200, filesize, d  # ok
     else:
         d['status'] = 'fail'
-        dataready = "%.3f" % (time.time() - starttime)
-        d['dataready'] = dataready
+        d['dataready'] = "%.3f" % (time.time() - starttime)
         return 404, 0, d  # not found
+
+
+def calcsign(req, path, params, data):
+    s = "OK"
+    url = OrderedDict()
+
+    for key in re.split('\?|\&', req.params.get('url')):
+        k = key.split('=')
+        if len(k) < 2:
+            k.append('')
+        url[k[0]] = k[1]
+
+    teststring = "/services/upload/new?"
+    for k in sorted(url.keys()[1:]):
+        teststring += '%s=%s&' % (k, url[k])
+    if 'key' in params:
+        teststring = "%s%s" % (params['key'], teststring)
+
+    h = hashlib.md5()
+    h.update(teststring[:-1])
+    req.write(h.hexdigest())
+    return 200, len(s), {}

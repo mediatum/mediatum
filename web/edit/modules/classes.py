@@ -21,8 +21,9 @@ import core.tree as tree
 import core.users as users
 from core.acl import AccessData
 
+
 def getInformation():
-    return {"version":"1.1", "system":0}
+    return {"version": "1.1", "system": 0}
 
 
 def getContent(req, ids):
@@ -34,14 +35,13 @@ def getContent(req, ids):
         if not access.hasWriteAccess(tree.getNode(id)):
             return req.getTAL("web/edit/edit.html", {}, macro="access_error")
         nodes += [tree.getNode(id)]
-    
+
     if "classes" in users.getHideMenusForUser(user):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
-        
-    v = {} 
+
+    v = {}
     v["basedirs"] = [tree.getRoot('home'), tree.getRoot('collections')]
-    id = req.params.get("id",tree.getRoot().id)
-    v["script"] = "var currentitem = '%s';\nvar currentfolder = '%s'" %(id, id)
+    id = req.params.get("id", tree.getRoot().id)
+    v["script"] = "var currentitem = '%s';\nvar currentfolder = '%s'" % (id, id)
     v["idstr"] = ",".join(ids)
     return req.getTAL("web/edit/modules/classes.html", v, macro="classtree")
-    

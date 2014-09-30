@@ -4,7 +4,7 @@
  Copyright (C) 2007 Arne Seifert <seiferta@ub.tum.tum.de>
  Copyright (C) 2007 Matthias Kramm <kramm@in.tum.de>
  Copyright (C) 2010 Werner Neudenberger <neudenberger@ub.tum.de>
- 
+
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
@@ -22,36 +22,37 @@ from mediatumtal import tal
 from core.transition import httpstatus
 import re
 from utils.utils import esc
-from core.metatype import Metatype,charmap
+from core.metatype import Metatype, charmap
 
 import hashlib
+
 
 class m_password(Metatype):
 
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None):
-        return tal.getTAL("metadata/password.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
-
+        return tal.getTAL("metadata/password.html", {"lock": lock, "value": value, "width": width,
+                                                     "name": field.getName(), "field": field}, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
-        return tal.getTAL("metadata/password.html",{"context":context}, macro="searchfield", language=context.language)
+        return tal.getTAL("metadata/password.html", {"context": context}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None, html=1):
-        value = node.get(field.getName()).replace(";","; ")
+        value = node.get(field.getName()).replace(";", "; ")
 
         if html:
             value = esc(value)
-            
+
         # replace variables
-        for var in re.findall( r'&lt;(.+?)&gt;', value ):
-            if var=="att:id":
-                value = value.replace("&lt;"+var+"&gt;", node.id)
+        for var in re.findall(r'&lt;(.+?)&gt;', value):
+            if var == "att:id":
+                value = value.replace("&lt;" + var + "&gt;", node.id)
             elif var.startswith("att:"):
                 val = node.get(var[4:])
-                if val=="":
+                if val == "":
                     val = "____"
 
-                value = value.replace("&lt;"+var+"&gt;", val)
-        value = value.replace("&lt;", "<").replace("&gt;",">")
+                value = value.replace("&lt;" + var + "&gt;", val)
+        value = value.replace("&lt;", "<").replace("&gt;", ">")
         return (field.getLabel(), value)
 
     def format_request_value_for_db(self, field, params, item, language=None):
@@ -60,42 +61,42 @@ class m_password(Metatype):
         if len(value) == 32:
             return value
         else:
-            return encrypted    
+            return encrypted
 
     def getName(self):
         return "fieldtype_password"
-        
+
     def getInformation(self):
-        return {"moduleversion":"1.0", "softwareversion":"1.1"}
-        
-    
+        return {"moduleversion": "1.0", "softwareversion": "1.1"}
+
     # method for popup methods of type password
     def getPopup(self, req):
-        req.writeTAL("metadata/password.html", {"charmap":charmap, "name":req.params.get("name"), "value":req.params.get("value")}, macro="popup")
+        req.writeTAL("metadata/password.html",
+                     {"charmap": charmap, "name": req.params.get("name"), "value": req.params.get("value")}, macro="popup")
         return httpstatus.HTTP_OK
-    
+
     # method for additional keys of type password
     def getLabels(self):
         return m_password.labels
 
-    labels = { "de":
-            [
-                ("password_popup_title", "Eingabemaske f\xc3\xbcr Passwort"),
-                ("fieldtype_password", "Passwortfeld"),
-                ("fieldtype_password_desc", "PasswordTexteingabefeld"),
-                ("password_titlepopupbutton", "Editiermaske \xc3\xb6ffnen"),
-                ("password_valuelabel", "Wert:"),
-                ("password_done", "\xC3\x9Cbernehmen"),
-                ("password_cancel", "Abbrechen"),
-            ],
-           "en":
-            [
-                ("password_popup_title", "Editor mask for password"),
-                ("fieldtype_password", "password field"),
-                ("fieldtype_password_desc", "password text input field"),
-                ("password_titlepopupbutton", "open editor mask"),
-                ("password_valuelabel", "Value:"),
-                ("password_done", "Done"),
-                ("password_cancel", "Cancel"),
-            ]
-         }
+    labels = {"de":
+              [
+                  ("password_popup_title", "Eingabemaske f\xc3\xbcr Passwort"),
+                  ("fieldtype_password", "Passwortfeld"),
+                  ("fieldtype_password_desc", "PasswordTexteingabefeld"),
+                  ("password_titlepopupbutton", "Editiermaske \xc3\xb6ffnen"),
+                  ("password_valuelabel", "Wert:"),
+                  ("password_done", "\xC3\x9Cbernehmen"),
+                  ("password_cancel", "Abbrechen"),
+              ],
+              "en":
+              [
+                  ("password_popup_title", "Editor mask for password"),
+                  ("fieldtype_password", "password field"),
+                  ("fieldtype_password_desc", "password text input field"),
+                  ("password_titlepopupbutton", "open editor mask"),
+                  ("password_valuelabel", "Value:"),
+                  ("password_done", "Done"),
+                  ("password_cancel", "Cancel"),
+              ]
+              }

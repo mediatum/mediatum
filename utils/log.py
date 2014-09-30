@@ -46,27 +46,28 @@ def cfg(logtype,
     return [logtype, d]
 
 LOGTYPES = [
-             cfg("database"),
-             cfg("backend"),
-             cfg("frontend"),
-             cfg("mediatumtal", ["screen"]),
-             cfg("editor", ["screen"]),
-             cfg("usertracing", ["screen"]),
-             cfg("athana", ["screen", "everything"]),
-             cfg("errors", ["screen", "everything"]),
-             cfg("services"),
-             cfg("searchindex"),
-             cfg("ftp", ["screen"]),
-             cfg("oai"),
-             cfg("z3950", ["screen"], logformat='%(asctime)s %(message)s'),
-             cfg("workflows"),
-           ]
+    cfg("database"),
+    cfg("backend"),
+    cfg("frontend"),
+    cfg("mediatumtal", ["screen"]),
+    cfg("editor", ["screen"]),
+    cfg("usertracing", ["screen"]),
+    cfg("athana", ["screen", "everything"]),
+    cfg("errors", ["screen", "everything"]),
+    cfg("services"),
+    cfg("searchindex"),
+    cfg("ftp", ["screen"]),
+    cfg("oai"),
+    cfg("z3950", ["screen"], logformat='%(asctime)s %(message)s'),
+    cfg("workflows"),
+]
 
 # path's will be required in web/admin/modules/logfile.py
 dlogfiles = {}
 
 
 class PatternFilter(logging.Filter):
+
     def __init__(self, pattern):
         self.pattern = pattern
 
@@ -104,7 +105,7 @@ def initialize():
         l.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
         log_everything.addHandler(l)
 
-    #log_everything.addHandler(log_screen)
+    # log_everything.addHandler(log_screen)
     log_everything.setLevel(logging.DEBUG)
 
     for name, cfgDict in LOGTYPES:
@@ -135,6 +136,7 @@ def logException(message=None):
     errlog = logging.getLogger('errors')
 
     class Errorprint:
+
         def write(self, message):
             errlog.error(message.rstrip())
     if(message):
@@ -158,8 +160,8 @@ def addLogger(loggername, additional_handlers=["screen"], loglevel=logging.DEBUG
     filepath = core.config.get('logging.path', None)
 
     _cfgDict = cfg(loggername,
-                  additional_handlers=additional_handlers,
-                  loglevel=loglevel)
+                   additional_handlers=additional_handlers,
+                   loglevel=loglevel)
 
     cfgDict = _cfgDict[1]
 

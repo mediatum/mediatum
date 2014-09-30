@@ -21,6 +21,7 @@
 from struct import unpack
 from datetime import datetime
 
+
 class FLVReader(dict):
     # Tag types
     AUDIO = 8
@@ -46,8 +47,7 @@ class FLVReader(dict):
         except:
             print "dirty file"
             dimension = getFLVSize(filename)
-            self.update({"width":dimension[0], "height":dimension[1]})
-            
+            self.update({"width": dimension[0], "height": dimension[1]})
 
     def readtag(self):
         unknown = self.readint()
@@ -68,20 +68,20 @@ class FLVReader(dict):
             print "Can't handle undefined tags yet"
 
     def readint(self):
-      data = self.file.read(4)
-      return unpack('>I', data)[0]
+        data = self.file.read(4)
+        return unpack('>I', data)[0]
 
     def readshort(self):
-      data = self.file.read(2)
-      return unpack('>H', data)[0]
+        data = self.file.read(2)
+        return unpack('>H', data)[0]
 
     def readbyte(self):
-      data = self.file.read(1)
-      return unpack('B', data)[0]
+        data = self.file.read(1)
+        return unpack('B', data)[0]
 
     def read24bit(self):
-      b1, b2, b3 = unpack('3B', self.file.read(3))
-      return (b1 << 16) + (b2 << 8) + b3
+        b1, b2, b3 = unpack('3B', self.file.read(3))
+        return (b1 << 16) + (b2 << 8) + b3
 
     def readAMFData(self, dataType=None):
         if dataType is None:
@@ -92,8 +92,8 @@ class FLVReader(dict):
             2: self.readAMFString,
             3: self.readAMFObject,
             8: self.readAMFMixedArray,
-           10: self.readAMFArray,
-           11: self.readAMFDate
+            10: self.readAMFArray,
+            11: self.readAMFDate
         }
         func = funcs[dataType]
         if callable(func):
@@ -136,40 +136,52 @@ class FLVReader(dict):
     def readAMFDate(self):
         return datetime.fromtimestamp(self.readAMFDouble())
 
+
 def readU32(fi):
     s = fi.read(4)
-    l = ord(s[0])<<24 | ord(s[1])<<16 | ord(s[2])<<8 | ord(s[3])<<0
+    l = ord(s[0]) << 24 | ord(s[1]) << 16 | ord(s[2]) << 8 | ord(s[3]) << 0
     return l
+
+
 def readU24(fi):
     s = fi.read(3)
-    l = ord(s[0])<<16 | ord(s[1])<<8 | ord(s[2])<<0
+    l = ord(s[0]) << 16 | ord(s[1]) << 8 | ord(s[2]) << 0
     return l
+
+
 def readU16(fi):
     s = fi.read(2)
-    l = ord(s[0])<<8 | ord(s[1])<<0
+    l = ord(s[0]) << 8 | ord(s[1]) << 0
     return l
+
+
 def readU8(fi):
     return ord(fi.read(1))
 
+
 class BitReader:
-    def __init__(self,file):
+
+    def __init__(self, file):
         self.file = file
         self.bitpos = 0
         self.byte = 0
+
     def getbit(self):
         if not self.bitpos:
             self.byte = readU8(self.file)
             self.bitpos = 8
-        self.bitpos = self.bitpos - 1 
-        return (self.byte >> self.bitpos)&1
-    def getbits(self, n): 
+        self.bitpos = self.bitpos - 1
+        return (self.byte >> self.bitpos) & 1
+
+    def getbits(self, n):
         x = 0
         for i in range(n):
-            x = (x<<1) | self.getbit()
+            x = (x << 1) | self.getbit()
         return x
 
 
-CODECS={2:"Sorenson H.263", 3:"Screen Video", 4:"On2 VP6", 5:"On2 VP6 w/ alpha channel", 6:"Screen Video V2"}
+CODECS = {2: "Sorenson H.263", 3: "Screen Video", 4: "On2 VP6", 5: "On2 VP6 w/ alpha channel", 6: "Screen Video V2"}
+
 
 def getFLVSize(filename):
     fi = open(filename, "rb")
@@ -187,18 +199,18 @@ def getFLVSize(filename):
             raise AttributeError("Error in FLV file")
         type = readU8(fi)
         size = readU24(fi)
-        prevsize = size+11
-        if type == 8: # audio data
-            fi.read(7+size)
-        elif type == 18: # script data
-            fi.read(7+size)
+        prevsize = size + 11
+        if type == 8:  # audio data
+            fi.read(7 + size)
+        elif type == 18:  # script data
+            fi.read(7 + size)
         elif type == 9:
             fi.read(7)
             flags = readU8(fi)
             codec = flags & 15
             keyframe = flags >> 4
-            
-            if codec == 2 or keyframe>=5: #h.263
+
+            if codec == 2 or keyframe >= 5:  # h.263
                 bitread = BitReader(fi)
                 l = bitread.getbits(17)
                 if l != 1:
@@ -209,51 +221,49 @@ def getFLVSize(filename):
                 if picsize == 0:
                     width = bitread.getbits(8)
                     height = bitread.getbits(8)
-                    return width,height
+                    return width, height
                 elif picsize == 1:
                     width = bitread.getbits(16)
                     height = bitread.getbits(16)
-                    return width,height
+                    return width, height
                 elif picsize == 2:
-                    return 352,288
+                    return 352, 288
                 elif picsize == 3:
-                    return 176,144
+                    return 176, 144
                 elif picsize == 4:
-                    return 128,96
+                    return 128, 96
                 elif picsize == 5:
-                    return 320,240
+                    return 320, 240
                 elif picsize == 6:
-                    return 160,120
+                    return 160, 120
                 else:
                     raise AttributeError("Invalid h.263 picture size")
-            elif codec == 3 or codec == 6: #screen video
-                width = readU16(fi)>>4
-                height = readU16(fi)>>4
-                return width,height
-            elif codec == 4 or codec == 5: #on2 vp6 video
+            elif codec == 3 or codec == 6:  # screen video
+                width = readU16(fi) >> 4
+                height = readU16(fi) >> 4
+                return width, height
+            elif codec == 4 or codec == 5:  # on2 vp6 video
                 keyframe = readU8(fi)
-                if keyframe&0x80:
+                if keyframe & 0x80:
                     #raise AttributeError("On2 VP6 Video doesn't start with a key frame")
                     pass
                 version = readU8(fi)
-                if keyframe&1:
+                if keyframe & 1:
                     fi.read(2)
                 rows_coded = readU8(fi)
                 cols_coded = readU8(fi)
                 rows_displayed = readU8(fi)
                 cols_displayed = readU8(fi)
                 print rows_displayed, cols_displayed
-                
-                return rows_displayed*16,cols_displayed*16
+
+                return rows_displayed * 16, cols_displayed * 16
             else:
-                raise AttributeError("Codec "+CODECS.get(codec,str(codec))+" not supported")
+                raise AttributeError("Codec " + CODECS.get(codec, str(codec)) + " not supported")
         else:
-            fi.read(7+size)
-            
+            fi.read(7 + size)
+
 
 if __name__ == "__main__":
-    #print getFLVSize("/home/data/videos/testvideo.flv")
-    #print getFLVSize("/home/data/videos/Abiotv-carForWomen895.flv")
+    # print getFLVSize("/home/data/videos/testvideo.flv")
+    # print getFLVSize("/home/data/videos/Abiotv-carForWomen895.flv")
     print getFLVSize("tzanou.flv")
-
-

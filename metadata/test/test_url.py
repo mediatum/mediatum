@@ -16,11 +16,13 @@ from metadata import url
 
 BASEDIR = os.path.join(os.path.dirname(__file__), "test_data")
 
+
 @pytest.fixture
 def m():
     return url.m_url()
 
 Field = MagicMock(name="field")
+
 
 @pytest.fixture
 def field():
@@ -30,6 +32,7 @@ def field():
     return field
 
 Node = MagicMock(name="node")
+
 
 @pytest.fixture
 def node():

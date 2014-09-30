@@ -57,6 +57,7 @@ def findNode(node, id):
 
 
 class Command:
+
     def __init__(self, f, args):
         self.f = f
         self.args = args
@@ -79,7 +80,7 @@ def show_node():
     print "        datatype: %s" % node.getContentType()
     print "    Metadata:"
     for k, v in node.items():
-        if type(v) == type("") and len(v) > 80:
+        if isinstance(v, type("")) and len(v) > 80:
             print "        %s=%s..." % (k, v[0:80])
         else:
             print "        %s=%s" % (k, v)
@@ -465,7 +466,7 @@ commands = {
     "searchindex": Command(searchindex, [])
 }
 print "\n\nmediaTUM CommandLineInterface\n('?' for commandlist)"
-while 1:
+while True:
     s = raw_input('>> ')
     if not s:
         continue

@@ -16,32 +16,35 @@ from core.transition.helpers import get_template_attribute
 
 class JinjaAutoescapeCompiler(JinjaCompiler):
     autocloseCode = 'if,for,block,filter,autoescape,with,trans,spaceless,comment,cache,macro,localize,compress,call'.split(',')
-    def visitCode(self,code):
+
+    def visitCode(self, code):
         if code.buffer:
             val = code.val.lstrip()
             val = self.var_processor(val)
             self.buf.append('%s%s%s' % (self.variable_start_string, val,
-                self.variable_end_string))
+                                        self.variable_end_string))
         else:
-            self.buf.append('{%% %s %%}'%code.val)
+            self.buf.append('{%% %s %%}' % code.val)
 
         if code.block:
             self.visit(code.block)
             if not code.buffer:
-                codeTag = code.val.strip().split(' ',1)[0]
+                codeTag = code.val.strip().split(' ', 1)[0]
                 if codeTag in self.autocloseCode:
-                    self.buf.append('{%% end%s %%}'%codeTag)
+                    self.buf.append('{%% end%s %%}' % codeTag)
 
 
 class PyJadeExtension(JinjaJadeExtension):
+
     def preprocess(self, source, name, filename=None):
         if (not name or
-           (name and not os.path.splitext(name)[1] in self.file_extensions)):
+                (name and not os.path.splitext(name)[1] in self.file_extensions)):
             return source
-        return process(source,filename=name,compiler=JinjaAutoescapeCompiler,**self.options)
+        return process(source, filename=name, compiler=JinjaAutoescapeCompiler, **self.options)
 
 
 class DispatchingJinjaLoader(BaseLoader):
+
     """A loader that looks for templates in the application and all
     the blueprint folders.
     """
@@ -74,10 +77,12 @@ class DispatchingJinjaLoader(BaseLoader):
 
 
 class Environment(BaseEnvironment):
+
     """Works like a regular Jinja2 environment but has some additional
     knowledge of how blueprint works so that it can prepend the
     name of the blueprint to referenced templates if necessary.
     """
+
     def __init__(self, app, **options):
         if 'loader' not in options:
             options['loader'] = DispatchingJinjaLoader(app)
@@ -94,7 +99,7 @@ def make_template_functions(template_dirpath):
         return template.render(**kwargs)
 
     def render_macro(template, macro_name, **kwargs):
-        macro =  getattr(jinja_env.get_template(template).module, macro_name)
+        macro = getattr(jinja_env.get_template(template).module, macro_name)
         return macro(**kwargs)
 
     return render_template, render_macro
@@ -118,6 +123,7 @@ def render_template_string(source, **context):
     """
     template = current_app.jinja_env.from_string(source)
     return template.render(context)
+
 
 def render_macro(template_name, macro_name, *args, **kwargs):
     macro = get_template_attribute(template_name, macro_name)

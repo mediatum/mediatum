@@ -32,6 +32,7 @@ import utils.doi as doi
 import utils.pathutils as pathutils
 from core.translation import lang, t
 
+
 def getContent(req, ids):
     """
     The standard method,  which has to be implemented by every module.
@@ -63,7 +64,7 @@ def getContent(req, ids):
          'urn_type': req.params.get('urn_type'),
          'host': config.get('host.name'),
          'creator': users.getUser(node.get('creator'))
-    }
+         }
 
     if user.isAdmin():
         if 'id_type' in req.params:
@@ -83,7 +84,7 @@ def getContent(req, ids):
                 if node.get('system.identifierstate') != '2':
                     node.set('system.identifierstate', '2')
 
-                    #add nobody rule if not set
+                    # add nobody rule if not set
                     if node.getAccess('write') is None:
                         node.setAccess('write', access_nobody)
                     else:
@@ -111,27 +112,30 @@ def getContent(req, ids):
             if not node.get('system.identifierstate'):
                 if 'id_type' in req.params:
                     try:
-                        #fetch autorenvertrag
+                        # fetch autorenvertrag
                         attachment = []
                         autorenvertrag_name = 'formular_autorenvertrag.pdf'
                         autorenvertrag_path = os.path.join(config.get('paths.tempdir'),
                                                            autorenvertrag_name)
 
                         if not os.path.isfile(autorenvertrag_path):
-                            logging.getLogger('backend').error("Unable to attach Autorenvergrag. Attachment file not found: '%s'" % autorenvertrag_path)
-                            raise IOError('Autorenvertrag was not located on disk at %s. Please send this error message to %s' % (autorenvertrag_path, config.get('email.admin')))
+                            logging.getLogger('backend').error(
+                                "Unable to attach Autorenvergrag. Attachment file not found: '%s'" % autorenvertrag_path)
+                            raise IOError('Autorenvertrag was not located on disk at %s. Please send this error message to %s' %
+                                          (autorenvertrag_path, config.get('email.admin')))
                         else:
                             attachment.append((autorenvertrag_path, 'Autorenvertrag.pdf'))
 
-                        #notify user
-                        mailtext_user = req.getTAL('web/edit/modules/identifier.html', v, macro='generate_identifier_usr_mail_1_' + lang(req))
+                        # notify user
+                        mailtext_user = req.getTAL(
+                            'web/edit/modules/identifier.html', v, macro='generate_identifier_usr_mail_1_' + lang(req))
                         mail.sendmail(config.get('email.admin'),
                                       user.get('email'),
                                       t(lang(req), 'edit_identifier_mail_title_usr_1'),
                                       mailtext_user,
                                       attachments_paths_and_filenames=attachment)
 
-                        #notify admin
+                        # notify admin
                         mailtext_admin = req.getTAL('web/edit/modules/identifier.html', v, macro='generate_identifier_admin_mail')
                         mail.sendmail(config.get('email.admin'),
                                       config.get('email.admin'),
@@ -140,7 +144,7 @@ def getContent(req, ids):
 
                         node.set('system.identifierstate', '1')
 
-                        #add nobody rule
+                        # add nobody rule
                         print node.getAccess('write')
                         if node.getAccess('write') is None:
                             node.setAccess('write', access_nobody)
@@ -165,7 +169,7 @@ def getContent(req, ids):
     v['urn_val'] = node.get('urn')
     v['doi_val'] = node.get('doi')
 
-    #hides form if all identifier types are already set
+    # hides form if all identifier types are already set
     if all(idents != '' for idents in (v['hash_val'], v['urn_val'], v['doi_val'])):
         v['show_form'] = False
         v['msg'] = t(lang(req), 'edit_identifier_all_types_set')
@@ -179,7 +183,7 @@ def createUrn(node, namespace, urn_type):
     @param namespace of the urn; list of the namespaces can be found here: http://www.iana.org/assignments/urn-namespaces/urn-namespaces.xml
     @param urn_type e.q. diss, epub, etc
     """
-    if node.get('urn') and (node.get('urn').strip() != ''): # keep the existing urn, if there is one
+    if node.get('urn') and (node.get('urn').strip() != ''):  # keep the existing urn, if there is one
         logging.getLogger('everything').info('urn already exists for node %s' % node.id)
     else:
         try:
@@ -194,7 +198,7 @@ def createHash(node):
     """
     @param node for which the hash-id should be created
     """
-    if node.get('hash') and (node.get('hash').strip() != ''): # if a hash-id already exists for this node, do nothing
+    if node.get('hash') and (node.get('hash').strip() != ''):  # if a hash-id already exists for this node, do nothing
         logging.getLogger('everything').info('hash already exists for node %s' % node.id)
     else:
         node.set('hash', hashid.getChecksum(node.id))
@@ -217,5 +221,7 @@ def createDOI(node):
             node.removeAttribute('doi')
             os.remove(meta_file)
             os.remove(doi_file)
-            logging.getLogger('backend').error('doi was not successfully registered, META: %s %s | DOI: %s %s' % (meta_response, meta_content, doi_response, doi_content))
-            raise Exception('doi was not successfully registered, META: %s %s | DOI: %s %s' % (meta_response, meta_content, doi_response, doi_content))
+            logging.getLogger('backend').error('doi was not successfully registered, META: %s %s | DOI: %s %s' %
+                                               (meta_response, meta_content, doi_response, doi_content))
+            raise Exception('doi was not successfully registered, META: %s %s | DOI: %s %s' %
+                            (meta_response, meta_content, doi_response, doi_content))

@@ -28,16 +28,27 @@ from lib.audio import FileType
 from _util import insert_bytes
 from id3 import BitPaddedInt
 
-class error(IOError): pass
-class FLACNoHeaderError(error): pass
-class FLACVorbisError(ValueError, error): pass
+
+class error(IOError):
+    pass
+
+
+class FLACNoHeaderError(error):
+    pass
+
+
+class FLACVorbisError(ValueError, error):
+    pass
+
 
 def to_int_be(string):
     """Convert an arbitrarily-long string to a long using big-endian
     byte order."""
     return reduce(lambda a, b: (a << 8) + ord(b), string, 0L)
 
+
 class MetadataBlock(object):
+
     """A generic block of FLAC metadata.
 
     This class is extended by specific used as an ancestor for more specific
@@ -51,14 +62,18 @@ class MetadataBlock(object):
         """Parse the given data string or file-like as a metadata block.
         The metadata header should not be included."""
         if data is not None:
-            if isinstance(data, str): data = StringIO(data)
+            if isinstance(data, str):
+                data = StringIO(data)
             elif not hasattr(data, 'read'):
                 raise TypeError(
                     "StreamInfo requires string data or a file-like")
             self.load(data)
 
-    def load(self, data): self.data = data.read()
-    def write(self): return self.data
+    def load(self, data):
+        self.data = data.read()
+
+    def write(self):
+        return self.data
 
     def writeblocks(blocks):
         """Render metadata block as a byte string."""
@@ -67,7 +82,7 @@ class MetadataBlock(object):
         codes[-1][0] |= 128
         for code, datum in codes:
             byte = chr(code)
-            if len(datum) > 2**24:
+            if len(datum) > 2 ** 24:
                 raise error("block is too long to write")
             length = struct.pack(">I", len(datum))[-3:]
             data.append(byte + length + datum)
@@ -89,7 +104,9 @@ class MetadataBlock(object):
         blocks.append(padding)
     group_padding = staticmethod(group_padding)
 
+
 class StreamInfo(MetadataBlock):
+
     """FLAC stream information.
 
     This contains information about the audio data in the FLAC file.
@@ -111,13 +128,15 @@ class StreamInfo(MetadataBlock):
     code = 0
 
     def __eq__(self, other):
-        try: return (self.min_blocksize == other.min_blocksize and
-                     self.max_blocksize == other.max_blocksize and
-                     self.sample_rate == other.sample_rate and
-                     self.channels == other.channels and
-                     self.bits_per_sample == other.bits_per_sample and
-                     self.total_samples == other.total_samples)
-        except: return False
+        try:
+            return (self.min_blocksize == other.min_blocksize and
+                    self.max_blocksize == other.max_blocksize and
+                    self.sample_rate == other.sample_rate and
+                    self.channels == other.channels and
+                    self.bits_per_sample == other.bits_per_sample and
+                    self.total_samples == other.total_samples)
+        except:
+            return False
 
     def load(self, data):
         self.min_blocksize = int(to_int_be(data.read(2)))
@@ -157,7 +176,7 @@ class StreamInfo(MetadataBlock):
         byte += ((self.bits_per_sample - 1) >> 4) & 1
         f.write(chr(byte))
         # 4 bits of bps, 4 of sample count
-        byte = ((self.bits_per_sample - 1) & 0xF)  << 4
+        byte = ((self.bits_per_sample - 1) & 0xF) << 4
         byte += (self.total_samples >> 32) & 0xF
         f.write(chr(byte))
         # last 32 of sample count
@@ -172,7 +191,9 @@ class StreamInfo(MetadataBlock):
     def pprint(self):
         return "FLAC, %.2f seconds, %d Hz" % (self.length, self.sample_rate)
 
+
 class SeekPoint(tuple):
+
     """A single seek point in a FLAC file.
 
     Placeholder seek points have first_sample of 0xFFFFFFFFFFFFFFFFL,
@@ -190,12 +211,14 @@ class SeekPoint(tuple):
 
     def __new__(cls, first_sample, byte_offset, num_samples):
         return super(cls, SeekPoint).__new__(cls, (first_sample,
-            byte_offset, num_samples))
+                                                   byte_offset, num_samples))
     first_sample = property(lambda self: self[0])
     byte_offset = property(lambda self: self[1])
     num_samples = property(lambda self: self[2])
 
+
 class SeekTable(MetadataBlock):
+
     """Read and write FLAC seek tables.
 
     Attributes:
@@ -212,8 +235,10 @@ class SeekTable(MetadataBlock):
         super(SeekTable, self).__init__(data)
 
     def __eq__(self, other):
-        try: return (self.seekpoints == other.seekpoints)
-        except (AttributeError, TypeError): return False
+        try:
+            return (self.seekpoints == other.seekpoints)
+        except (AttributeError, TypeError):
+            return False
 
     def load(self, data):
         self.seekpoints = []
@@ -227,15 +252,17 @@ class SeekTable(MetadataBlock):
         f = StringIO()
         for seekpoint in self.seekpoints:
             packed = struct.pack(self.__SEEKPOINT_FORMAT,
-                seekpoint.first_sample, seekpoint.byte_offset,
-                seekpoint.num_samples)
+                                 seekpoint.first_sample, seekpoint.byte_offset,
+                                 seekpoint.num_samples)
             f.write(packed)
         return f.getvalue()
 
     def __repr__(self):
         return "<%s seekpoints=%r>" % (type(self).__name__, self.seekpoints)
 
+
 class VCFLACDict(VCommentDict):
+
     """Read and write FLAC Vorbis comments.
 
     FLACs don't use the framing bit at the end of the comment block.
@@ -250,7 +277,9 @@ class VCFLACDict(VCommentDict):
     def write(self, framing=False):
         return super(VCFLACDict, self).write(framing=framing)
 
+
 class CueSheetTrackIndex(tuple):
+
     """Index for a track in a cuesheet.
 
     For CD-DA, an index_number of 0 corresponds to the track
@@ -263,14 +292,16 @@ class CueSheetTrackIndex(tuple):
     index_number -- index point number
     index_offset -- offset in samples from track start
     """
-    
+
     def __new__(cls, index_number, index_offset):
         return super(cls, CueSheetTrackIndex).__new__(cls,
-            (index_number, index_offset))
+                                                      (index_number, index_offset))
     index_number = property(lambda self: self[0])
     index_offset = property(lambda self: self[1])
 
+
 class CueSheetTrack(object):
+
     """A track in a cuesheet.
 
     For CD-DA, track_numbers must be 1-99, or 170 for the
@@ -297,13 +328,15 @@ class CueSheetTrack(object):
         self.indexes = []
 
     def __eq__(self, other):
-        try: return (self.track_number == other.track_number and
-                     self.start_offset == other.start_offset and
-                     self.isrc == other.isrc and
-                     self.type == other.type and
-                     self.pre_emphasis == other.pre_emphasis and
-                     self.indexes == other.indexes)
-        except (AttributeError, TypeError): return False
+        try:
+            return (self.track_number == other.track_number and
+                    self.start_offset == other.start_offset and
+                    self.isrc == other.isrc and
+                    self.type == other.type and
+                    self.pre_emphasis == other.pre_emphasis and
+                    self.indexes == other.indexes)
+        except (AttributeError, TypeError):
+            return False
 
     def __repr__(self):
         return ("<%s number=%r, offset=%d, isrc=%r, type=%r, "
@@ -311,7 +344,9 @@ class CueSheetTrack(object):
             type(self).__name__, self.track_number, self.start_offset,
             self.isrc, self.type, self.pre_emphasis, self.indexes)
 
+
 class CueSheet(MetadataBlock):
+
     """Read and write FLAC embedded cue sheets.
 
     Number of tracks should be from 1 to 100. There should always be
@@ -346,10 +381,11 @@ class CueSheet(MetadataBlock):
     def __eq__(self, other):
         try:
             return (self.media_catalog_number == other.media_catalog_number and
-                     self.lead_in_samples == other.lead_in_samples and
-                     self.compact_disc == other.compact_disc and
-                     self.tracks == other.tracks)
-        except (AttributeError, TypeError): return False
+                    self.lead_in_samples == other.lead_in_samples and
+                    self.compact_disc == other.compact_disc and
+                    self.tracks == other.tracks)
+        except (AttributeError, TypeError):
+            return False
 
     def load(self, data):
         header = data.read(self.__CUESHEET_SIZE)
@@ -359,7 +395,7 @@ class CueSheet(MetadataBlock):
         self.lead_in_samples = lead_in_samples
         self.compact_disc = bool(flags & 0x80)
         self.tracks = []
-        for i in range(num_tracks): 
+        for i in range(num_tracks):
             track = data.read(self.__CUESHEET_TRACK_SIZE)
             start_offset, track_number, isrc_padded, flags, num_indexes = \
                 struct.unpack(self.__CUESHEET_TRACK_FORMAT, track)
@@ -375,11 +411,12 @@ class CueSheet(MetadataBlock):
                 val.indexes.append(
                     CueSheetTrackIndex(index_number, index_offset))
             self.tracks.append(val)
-            
+
     def write(self):
         f = StringIO()
         flags = 0
-        if self.compact_disc: flags |= 0x80
+        if self.compact_disc:
+            flags |= 0x80
         packed = struct.pack(
             self.__CUESHEET_FORMAT, self.media_catalog_number,
             self.lead_in_samples, flags, len(self.tracks))
@@ -387,7 +424,8 @@ class CueSheet(MetadataBlock):
         for track in self.tracks:
             track_flags = 0
             track_flags |= (track.type & 1) << 7
-            if track.pre_emphasis: track_flags |= 0x40
+            if track.pre_emphasis:
+                track_flags |= 0x40
             track_packed = struct.pack(
                 self.__CUESHEET_TRACK_FORMAT, track.start_offset,
                 track.track_number, track.isrc, track_flags,
@@ -406,7 +444,9 @@ class CueSheet(MetadataBlock):
             type(self).__name__, self.media_catalog_number,
             self.lead_in_samples, self.compact_disc, self.tracks)
 
+
 class Picture(MetadataBlock):
+
     """Read and write FLAC embed pictures.
 
     Attributes:
@@ -435,15 +475,17 @@ class Picture(MetadataBlock):
         super(Picture, self).__init__(data)
 
     def __eq__(self, other):
-        try: return (self.type == other.type and
-                     self.mime == other.mime and
-                     self.desc == other.desc and
-                     self.width == other.width and
-                     self.height == other.height and
-                     self.depth == other.depth and
-                     self.colors == other.colors and
-                     self.data == other.data)
-        except (AttributeError, TypeError): return False
+        try:
+            return (self.type == other.type and
+                    self.mime == other.mime and
+                    self.desc == other.desc and
+                    self.width == other.width and
+                    self.height == other.height and
+                    self.depth == other.depth and
+                    self.colors == other.colors and
+                    self.data == other.data)
+        except (AttributeError, TypeError):
+            return False
 
     def load(self, data):
         self.type, length = struct.unpack('>2I', data.read(8))
@@ -471,7 +513,9 @@ class Picture(MetadataBlock):
         return "<%s '%s' (%d bytes)>" % (type(self).__name__, self.mime,
                                          len(self.data))
 
+
 class Padding(MetadataBlock):
+
     """Empty padding space for metadata blocks.
 
     To avoid rewriting the entire FLAC file when editing comments,
@@ -482,10 +526,15 @@ class Padding(MetadataBlock):
 
     code = 1
 
-    def __init__(self, data=""): super(Padding, self).__init__(data)
-    def load(self, data): self.length = len(data.read())
+    def __init__(self, data=""):
+        super(Padding, self).__init__(data)
+
+    def load(self, data):
+        self.length = len(data.read())
+
     def write(self):
-        try: return "\x00" * self.length
+        try:
+            return "\x00" * self.length
         # On some 64 bit platforms this won't generate a MemoryError
         # or OverflowError since you might have enough RAM, but it
         # still generates a ValueError. On other 64 bit platforms,
@@ -494,14 +543,18 @@ class Padding(MetadataBlock):
         # do, writeblocks will catch it.
         except (OverflowError, ValueError, MemoryError):
             raise error("cannot write %d bytes" % self.length)
+
     def __eq__(self, other):
         return isinstance(other, Padding) and self.length == other.length
+
     def __repr__(self):
         return "<%s (%d bytes)>" % (type(self).__name__, self.length)
 
+
 class FLAC(FileType):
+
     """A FLAC audio file.
-    
+
     Attributes:
     info -- stream information (length, bitrate, sample rate)
     tags -- metadata tags, if any
@@ -513,7 +566,7 @@ class FLAC(FileType):
     _mimes = ["audio/x-flac", "application/x-flac"]
 
     METADATA_BLOCKS = [StreamInfo, Padding, None, SeekTable, VCFLACDict,
-        CueSheet, Picture]
+                       CueSheet, Picture]
     """Known metadata block types, indexed by ID."""
 
     def score(filename, fileobj, header):
@@ -537,14 +590,20 @@ class FLAC(FileType):
         else:
             self.metadata_blocks.append(block)
             if block.code == VCFLACDict.code:
-                if self.tags is None: self.tags = block
-                else: raise FLACVorbisError("> 1 Vorbis comment block found")
+                if self.tags is None:
+                    self.tags = block
+                else:
+                    raise FLACVorbisError("> 1 Vorbis comment block found")
             elif block.code == CueSheet.code:
-                if self.cuesheet is None: self.cuesheet = block
-                else: raise error("> 1 CueSheet block found")
+                if self.cuesheet is None:
+                    self.cuesheet = block
+                else:
+                    raise error("> 1 CueSheet block found")
             elif block.code == SeekTable.code:
-                if self.seektable is None: self.seektable = block
-                else: raise error("> 1 SeekTable block found")
+                if self.seektable is None:
+                    self.seektable = block
+                else:
+                    raise error("> 1 SeekTable block found")
         return (byte >> 7) ^ 1
 
     def add_tags(self):
@@ -552,7 +611,8 @@ class FLAC(FileType):
         if self.tags is None:
             self.tags = VCFLACDict()
             self.metadata_blocks.append(self.tags)
-        else: raise FLACVorbisError("a Vorbis comment already exists")
+        else:
+            raise FLACVorbisError("a Vorbis comment already exists")
     add_vorbiscomment = add_tags
 
     def delete(self, filename=None):
@@ -560,7 +620,8 @@ class FLAC(FileType):
 
         If no filename is given, the one most recently loaded is used.
         """
-        if filename is None: filename = self.filename
+        if filename is None:
+            filename = self.filename
         for s in list(self.metadata_blocks):
             if isinstance(s, VCFLACDict):
                 self.metadata_blocks.remove(s)
@@ -614,7 +675,8 @@ class FLAC(FileType):
         If no filename is given, the one most recently loaded is used.
         """
 
-        if filename is None: filename = self.filename
+        if filename is None:
+            filename = self.filename
         f = open(filename, 'rb+')
 
         # Ensure we've got padding at the end, and only at the end.
@@ -623,7 +685,7 @@ class FLAC(FileType):
         MetadataBlock.group_padding(self.metadata_blocks)
 
         header = self.__check_header(f)
-        available = self.__find_audio_offset(f) - header # "fLaC" and maybe ID3
+        available = self.__find_audio_offset(f) - header  # "fLaC" and maybe ID3
         data = MetadataBlock.writeblocks(self.metadata_blocks)
 
         # Delete ID3v2
@@ -656,8 +718,10 @@ class FLAC(FileType):
 
         # Delete ID3v1
         if deleteid3:
-            try: f.seek(-128, 2)
-            except IOError: pass
+            try:
+                f.seek(-128, 2)
+            except IOError:
+                pass
             else:
                 if f.read(3) == "TAG":
                     f.seek(-128, 2)
@@ -679,13 +743,15 @@ class FLAC(FileType):
             if header[:3] == "ID3":
                 size = 14 + BitPaddedInt(fileobj.read(6)[2:])
                 fileobj.seek(size - 4)
-                if fileobj.read(4) != "fLaC": size = None
+                if fileobj.read(4) != "fLaC":
+                    size = None
         if size is None:
             raise FLACNoHeaderError(
                 "%r is not a valid FLAC file" % fileobj.name)
         return size
 
 Open = FLAC
+
 
 def delete(filename):
     """Remove tags from a file."""

@@ -31,14 +31,14 @@ def getContent(req, ids):
     user = users.getUserFromRequest(req)
     if "ftp" in users.getHideMenusForUser(user):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
-    
-    ids = ids[0] # use only first selected node
+
+    ids = ids[0]  # use only first selected node
     node = tree.getNode(ids)
     error = ""
-    
+
     def processFile(node, file, ftype):
         nname = file.retrieveFile().split("/")
-        nname = "/".join(nname[:-1])+"/"+nname[-1][4:]
+        nname = "/".join(nname[:-1]) + "/" + nname[-1][4:]
         try:
             os.rename(file.retrieveFile(), nname)
         except:
@@ -46,55 +46,55 @@ def getContent(req, ids):
         fnode = tree.Node(nname.split("/")[-1], ftype)
         node.removeFile(file)
         file._path = file._path.replace(config.get("paths.datadir"), "")
-        file._path = "/".join(file._path.split("/")[:-1]) + "/"+fnode.getName()
+        file._path = "/".join(file._path.split("/")[:-1]) + "/" + fnode.getName()
         fnode.addFile(file)
         fnode.event_files_changed()
         node.addChild(fnode)
         return fnode
-    
+
     for key in req.params.keys():
-        if key.startswith("process|"): # process selected file (single)
+        if key.startswith("process|"):  # process selected file (single)
             fname = key[:-2].split("|")[-1]
-            ftype = req.params.get("schema").replace(";","")
-            if ftype!="":
+            ftype = req.params.get("schema").replace(";", "")
+            if ftype != "":
                 for f in node.getFiles():
-                    if f.getName()==fname:
+                    if f.getName() == fname:
                         processFile(node, f, ftype)
                         break
                 break
             else:
                 error = "edit_ftp_error1"
-                
+
         elif key.startswith("del|"):
             for f in node.getFiles():
-                if f.getName()==key[4:-2]:
+                if f.getName() == key[4:-2]:
                     node.removeFile(f)
                     break
             break
-            
-        elif key.startswith("delall"): # delete all selected files
+
+        elif key.startswith("delall"):  # delete all selected files
             delfiles = [f.split("|")[-1] for f in req.params.get("selfiles").split(";")]
-            
+
             for f in node.getFiles():
                 if f.getName() in delfiles:
                     node.removeFile(f)
-            
+
             break
-            
-        elif key.startswith("processall"): # process all selected files
+
+        elif key.startswith("processall"):  # process all selected files
             for file in req.params.get("selfiles", "").split(";"):
                 if file:
                     ftype, fname = file.split("|")
-                    if "multschema|"+ftype in req.params and req.params.get("multschema|"+ftype)!="":
+                    if "multschema|" + ftype in req.params and req.params.get("multschema|" + ftype) != "":
                         for f in node.getFiles():
-                            if f.getName()==fname:
-                                processFile(node, f, ftype+"/"+req.params.get("multschema|"+ftype) )
+                            if f.getName() == fname:
+                                processFile(node, f, ftype + "/" + req.params.get("multschema|" + ftype))
                                 break
                     else:
                         error = "edit_ftp_error2"
                         break
             break
-            
+
     files = filter(lambda x: x.getName().startswith("ftp_"), node.getFiles())
     types = []
     for f in files:
@@ -109,22 +109,22 @@ def getContent(req, ids):
                 dtypes[dtype] = []
             if scheme not in dtypes[dtype]:
                 dtypes[dtype].append(scheme)
-    
+
     for t in dtypes:
         dtypes[t].sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
-    
+
     access = acl.AccessData(req)
     if not access.hasWriteAccess(node):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
-    
+
     v = {}
     v['error'] = error
     v['files'] = files
     v['node'] = node
-    v['schemes'] = dtypes # schemes
+    v['schemes'] = dtypes  # schemes
     v['usedtypes'] = types
     v['tab'] = req.params.get("tab", "")
     v['ids'] = ids
-    v["script"] = "<script> parent.reloadTree('"+req.params.get("id")+"');</script>"
-    
+    v["script"] = "<script> parent.reloadTree('" + req.params.get("id") + "');</script>"
+
     return req.getTAL("web/edit/modules/ftp.html", v, macro="edit_ftp")

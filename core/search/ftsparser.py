@@ -27,7 +27,8 @@ pattern_op = re.compile('^([a-zA-Z0-9._-]+)\s*(=|>=|<=|<|>)\s*"?([^"]*)"?$')
 
 
 class FtsSearchAndCondition:
-    def __init__(self, a,b):
+
+    def __init__(self, a, b):
         self.a = a
         self.b = b
 
@@ -43,7 +44,8 @@ class FtsSearchAndCondition:
 
 
 class FtsSearchOrCondition:
-    def __init__(self, a,b):
+
+    def __init__(self, a, b):
         self.a = a
         self.b = b
 
@@ -53,17 +55,18 @@ class FtsSearchOrCondition:
     def execute(self):
         ids1 = self.a.execute()
         ids2 = self.b.execute()
-        return union([ids1,ids2])
+        return union([ids1, ids2])
 
 
 class FtsSearchFieldCondition:
+
     def __init__(self, field, op, value):
         self.field = field
         self.op = op
         self.value = value
 
     def __str__(self):
-        return self.field+" "+self.op+" "+self.value
+        return self.field + " " + self.op + " " + self.value
 
     def execute(self):
         from core.tree import searcher
@@ -71,6 +74,7 @@ class FtsSearchFieldCondition:
 
 
 class FtsSearchParser(BoolParser):
+
     def parseSimpleCondition(self, s):
         m = pattern_op.match(s)
         if m:
@@ -83,12 +87,11 @@ class FtsSearchParser(BoolParser):
 
     def default(self):
         return FtsSearchFieldCondition("full", "=", "")
-    
+
     def getAndClass(self):
         return FtsSearchAndCondition
 
     def getOrClass(self):
         return FtsSearchOrCondition
 
-ftsSearchParser = FtsSearchParser()   
-
+ftsSearchParser = FtsSearchParser()

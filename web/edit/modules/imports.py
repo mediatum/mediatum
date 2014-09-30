@@ -32,40 +32,43 @@ logg = logging.getLogger("editor")
 
 
 def getInformation():
-    return {"version":"1.0", "system":1}
+    return {"version": "1.0", "system": 1}
+
 
 def getContent(req, ids):
-    if req.params.get("upload")=="uploadfile":
+    if req.params.get("upload") == "uploadfile":
         # try to import file
         return import_new(req)
-    return req.getTAL("web/edit/modules/imports.html",{"error":req.params.get("error")},macro="upload_form") + showdir(req, tree.getNode(ids[0]))
+    return req.getTAL("web/edit/modules/imports.html", {"error": req.params.get("error")},
+                      macro="upload_form") + showdir(req, tree.getNode(ids[0]))
+
 
 def import_new(req):
     reload(bibtex)
     user = users.getUserFromRequest(req)
-    importdir= users.getImportDir(user)
+    importdir = users.getImportDir(user)
     del req.params["upload"]
 
     if "file" in req.params and req.params["doi"]:
-        req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"doi_and_bibtex_given"})
+        req.request["Location"] = req.makeLink("content", {"id": importdir.id, "error": "doi_and_bibtex_given"})
         req.params["error"] = "doi_and_bibtex_given"
 
     elif "file" in req.params.keys():
         file = req.params["file"]
         del req.params["file"]
-        if hasattr(file,"filesize") and file.filesize>0:
+        if hasattr(file, "filesize") and file.filesize > 0:
             try:
                 bibtex.importBibTeX(file.tempname, importdir, req)
-                req.request["Location"] = req.makeLink("content", {"id":importdir.id})
-            except ValueError, e:
-                req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":str(e)})
+                req.request["Location"] = req.makeLink("content", {"id": importdir.id})
+            except ValueError as e:
+                req.request["Location"] = req.makeLink("content", {"id": importdir.id, "error": str(e)})
                 req.params["error"] = str(e)
-            except bibtex.MissingMapping,e:
-                req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":str(e)})
+            except bibtex.MissingMapping as e:
+                req.request["Location"] = req.makeLink("content", {"id": importdir.id, "error": str(e)})
                 req.params["error"] = str(e)
             except:
                 logException("error during upload")
-                req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"PostprocessingError"})
+                req.request["Location"] = req.makeLink("content", {"id": importdir.id, "error": "PostprocessingError"})
                 req.params["error"] = "file_processingerror"
             return getContent(req, [importdir.id])
 
@@ -77,18 +80,18 @@ def import_new(req):
             citeproc.import_doi(doi_extracted, importdir)
         except citeproc.InvalidDOI:
             logg.error("Invalid DOI: '%s'", doi)
-            req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"doi_invalid"})
+            req.request["Location"] = req.makeLink("content", {"id": importdir.id, "error": "doi_invalid"})
             req.params["error"] = "doi_invalid"
         except citeproc.DOINotFound:
             logg.error("DOI not found: '%s'", doi)
-            req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"doi_unknown"})
+            req.request["Location"] = req.makeLink("content", {"id": importdir.id, "error": "doi_unknown"})
             req.params["error"] = "doi_unknown"
         except importbase.NoMappingFound as e:
             logg.error("no mapping found for DOI: '%s', type '%s'", doi, e.typ)
-            req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"doi_type_not_mapped"})
+            req.request["Location"] = req.makeLink("content", {"id": importdir.id, "error": "doi_type_not_mapped"})
             req.params["error"] = "doi_type_not_mapped"
         else:
-            req.request["Location"] = req.makeLink("content", {"id":importdir.id})
+            req.request["Location"] = req.makeLink("content", {"id": importdir.id})
     else:
         # error while import, nothing given
         req.params["error"] = "edit_import_nothing"

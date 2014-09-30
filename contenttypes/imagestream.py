@@ -17,11 +17,12 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import image
+from . import image
 import os
 from core.tree import FileNode
 import core.config as config
 import glob
+
 
 class Imagestream(image.Image):
 

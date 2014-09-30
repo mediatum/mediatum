@@ -82,11 +82,11 @@ def get_schema_fields(schema):
     @return: List
     """
     if schema not in schema_field_mapping:
-        #read as: keep all fields which do not contain 'search'- or 'fulltext' in their name and then sort
-        #them by their position number.
+        # read as: keep all fields which do not contain 'search'- or 'fulltext' in their name and then sort
+        # them by their position number.
         #
-        #we remove these fields due to the large overhead of querying and returning these large text values
-        #for each node (sql takes too long to execute)
+        # we remove these fields due to the large overhead of querying and returning these large text values
+        # for each node (sql takes too long to execute)
         field_names = [SearchField(*tup) for tup in sorted(searcher.execute(get_search_sql('ext_field_names'),
                                                                             schema,
                                                                             'ext'),

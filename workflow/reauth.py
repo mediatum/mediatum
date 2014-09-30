@@ -18,22 +18,24 @@
 """
 
 import core.tree as tree
-from workflow import WorkflowStep, registerStep
+from .workflow import WorkflowStep, registerStep
 from utils.utils import mkKey
 from core.translation import addLabels
+
 
 def register():
     tree.registerNodeClass("workflowstep-reauth", WorkflowStep_Reauth)
     registerStep("workflowstep-reauth")
     addLabels(WorkflowStep_Reauth.getLabels())
 
+
 class WorkflowStep_Reauth(WorkflowStep):
+
     def runAction(self, node, op=""):
         node.set("key", node.get("system.key"))
         self.forward(node, True)
-        
-        
+
     @staticmethod
     def getLabels():
-        return {"de":[("workflowstep-reauth", 'Re-Auth'),],
-                "en":[("workflowstep-reauth", 'Re-Auth'),]}
+        return {"de": [("workflowstep-reauth", 'Re-Auth'), ],
+                "en": [("workflowstep-reauth", 'Re-Auth'), ]}

@@ -24,11 +24,15 @@ from apev2 import APEv2File, error, delete
 from id3 import BitPaddedInt
 from _util import cdata
 
-class MusepackHeaderError(error): pass
+
+class MusepackHeaderError(error):
+    pass
 
 RATES = [44100, 48000, 37800, 32000]
 
+
 class MusepackInfo(object):
+
     """Musepack stream information.
 
     Attributes:
@@ -81,10 +85,10 @@ class MusepackInfo(object):
         # SV4-SV6
         else:
             header_dword = cdata.uint_le(header[0:4])
-            self.version = (header_dword >> 11) & 0x03FF;
+            self.version = (header_dword >> 11) & 0x03FF
             if self.version < 4 or self.version > 6:
                 raise MusepackHeaderError("not a Musepack file")
-            self.bitrate = (header_dword >> 23) & 0x01FF;
+            self.bitrate = (header_dword >> 23) & 0x01FF
             self.sample_rate = 44100
             if self.version >= 5:
                 frames = cdata.uint_le(header[4:8])
@@ -100,12 +104,13 @@ class MusepackInfo(object):
 
     def pprint(self):
         if self.version >= 7:
-            rg_data = ", Gain: %+0.2f (title), %+0.2f (album)" %(
+            rg_data = ", Gain: %+0.2f (title), %+0.2f (album)" % (
                 self.title_gain, self.album_gain)
         else:
             rg_data = ""
         return "Musepack, %.2f seconds, %d Hz%s" % (
             self.length, self.sample_rate, rg_data)
+
 
 class Musepack(APEv2File):
     _Info = MusepackInfo

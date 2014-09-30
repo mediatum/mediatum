@@ -23,10 +23,17 @@ import struct
 from _vorbis import VCommentDict
 from ogg import OggPage, OggFileType, error as OggError
 
-class error(OggError): pass
-class OggTheoraHeaderError(error): pass
+
+class error(OggError):
+    pass
+
+
+class OggTheoraHeaderError(error):
+    pass
+
 
 class OggTheoraInfo(object):
+
     """Ogg Theora stream information.
 
     Attributes:
@@ -56,7 +63,9 @@ class OggTheoraInfo(object):
     def pprint(self):
         return "Ogg Theora, %.2f seconds, %d bps" % (self.length, self.bitrate)
 
+
 class OggTheoraCommentDict(VCommentDict):
+
     """Theora comments embedded in an Ogg bitstream."""
 
     def __init__(self, fileobj, info):
@@ -91,7 +100,9 @@ class OggTheoraCommentDict(VCommentDict):
         new_pages = OggPage.from_packets(packets, old_pages[0].sequence)
         OggPage.replace(fileobj, old_pages, new_pages)
 
+
 class OggTheora(OggFileType):
+
     """An Ogg Theora file."""
 
     _Info = OggTheoraInfo
@@ -105,6 +116,7 @@ class OggTheora(OggFileType):
     score = staticmethod(score)
 
 Open = OggTheora
+
 
 def delete(filename):
     """Remove tags from a file."""

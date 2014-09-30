@@ -19,17 +19,19 @@
 
 from web.admin.adminutils import adminNavigation, adminModules
 
+
 def getInformation(attribute=""):
-    attributes = {"icon":"",
-            "required":1,
-            "version":"1.0"}     
-    if attribute!="":
+    attributes = {"icon": "",
+                  "required": 1,
+                  "version": "1.0"}
+    if attribute != "":
         if attribute in attributes.keys():
             return attributes[attribute]
         else:
             return ""
     return attributes
-       
+
+
 def validate(req, op):
     v = {}
     items = []
@@ -38,8 +40,7 @@ def validate(req, op):
         itemdata["name"] = menu.getName()
         itemdata["icon"] = adminModules[menu.getName()].getInformation("icon")
         itemdata["submenu"] = menu.getItemList()
-        
+
         items.append(itemdata)
     v["navitems"] = items
     return req.getTAL("/web/admin/modules/menumain.html", v, macro="view")
-    

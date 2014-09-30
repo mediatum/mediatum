@@ -71,10 +71,12 @@ return hello('World')
 
 
 class Response(object):
+
     """
     Response hack which looks similar to the Werkzeug response
     """
-    def __init__(self,  response=None, status=None, headers=None,
+
+    def __init__(self, response=None, status=None, headers=None,
                  mimetype=None, content_type=None):
         self.response = response
         self.status = status or 200

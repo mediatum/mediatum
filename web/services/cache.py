@@ -22,6 +22,7 @@
 import time
 import rfc822
 
+
 def date2string(t, formatstring=None):
     '''t: float value as returned by time.time()'''
     if formatstring in [None, 'tuple']:
@@ -36,9 +37,11 @@ try:
 except ImportError:
     from dummy_threading import Lock
 
-DEFAULTMAXAGE = 3600 * 24 # one day
+DEFAULTMAXAGE = 3600 * 24  # one day
+
 
 class Cache:
+
     '''entry format: [timestamp, total_updatecount, updatecount_this_key,
                       hitcount, refusedcount, timestamp_string, data]'''
 
@@ -50,8 +53,8 @@ class Cache:
         self.updatecount = 0
         self.hitcount = 0
         self.misscount = 0
-        self.refusedcount = 0 # too old cache entries refused
-        self.verbose= verbose
+        self.refusedcount = 0  # too old cache entries refused
+        self.verbose = verbose
 
     def update(self, key, value):
         now = time.time()
@@ -67,7 +70,7 @@ class Cache:
                 print 'cache update: deleted oldest key:', oldest_key, 'age: %.3f sec.' % key_age, key_total_updatecount
         self.updatecount += 1
         oldvalue = self.entries.setdefault(key, [now, self.updatecount, 0, 0, 0, snow, value])
-        newvalue = [now, self.updatecount, oldvalue[2]+1, oldvalue[3], oldvalue[4], snow, value]
+        newvalue = [now, self.updatecount, oldvalue[2] + 1, oldvalue[3], oldvalue[4], snow, value]
         self.entries[key] = newvalue
         self.lock.release()
 
@@ -92,7 +95,7 @@ class Cache:
         else:
             result_code = 'missed'
             res = []
-            self.misscount +=1
+            self.misscount += 1
         self.lock.release()
         return result_code, res
 
@@ -105,14 +108,14 @@ class Cache:
         header = '|tupd,upd,hit,refused,date,key'.split(',')
         hformat = "%4s|%4s|%4s|%4s|%19s|%-s"
         res = hformat % tuple(header)
-        hline = '\r\n|' + '-'*len(res)
+        hline = '\r\n|' + '-' * len(res)
         res += hline
         rformat = "\r\n|%4d|%4d|%4d|%7d|%s|%-s"
 
         for key in keys:
-            res += rformat % tuple(self.entries[key][1:6]+[key])
-            
-        res += hline    
+            res += rformat % tuple(self.entries[key][1:6] + [key])
+
+        res += hline
 
         self.lock.release()
 
@@ -121,7 +124,7 @@ class Cache:
     def getOldestKey(self, lock=True):
         if lock:
             self.lock.acquire()
-        pairs = [[self.entries[k][0:2]]+[k] for k in self.entries.keys()]
+        pairs = [[self.entries[k][0:2]] + [k] for k in self.entries.keys()]
         if pairs:
             pairs.sort()
             res = pairs[0][-1]
@@ -167,7 +170,7 @@ class Cache:
             self.lock.release()
         return res
 
-    #def getData(self, key, lock=True):
+    # def getData(self, key, lock=True):
     #    if lock:
     #        self.lock.acquire()
     #    res = self.entries[key][-1]
@@ -175,17 +178,17 @@ class Cache:
     #        self.lock.release()
     #    return res
 
-if __name__=='__main__':
+if __name__ == '__main__':
 
     t = time.time()
-    t2 = t-24*3600
+    t2 = t - 24 * 3600
     print 'now:      ', date2string(t, 'rfc822'), date2string(t, '%04d-%02d-%02d-%02d-%02d-%02d')
     print 'yesterday:', date2string(t2, 'rfc822'), date2string(t2, '%04d-%02d-%02d-%02d-%02d-%02d')
 
-    c = Cache(maxcount=3,maxsize=10,verbose=True)
+    c = Cache(maxcount=3, maxsize=10, verbose=True)
     from random import randint
     for i in range(5):
-        c.update(randint(1000,1010), 'test-'+str(i+1))
+        c.update(randint(1000, 1010), 'test-' + str(i + 1))
 
     print c.retrieve(1007, 1000)
     print c.retrieve('test', 1000)

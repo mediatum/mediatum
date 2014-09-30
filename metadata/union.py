@@ -21,33 +21,33 @@ from mediatumtal import tal
 from utils.utils import esc
 from core.metatype import Metatype
 
+
 class m_union(Metatype):
-    
+
     def getSearchHTML(self, context):
-        return tal.getTAL("metadata/text.html",{"context":context}, macro="searchfield", language=context.language)
+        return tal.getTAL("metadata/text.html", {"context": context}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None, html=1):
-        value = node.get(field.getName()).replace(";","; ")
+        value = node.get(field.getName()).replace(";", "; ")
         if html:
             value = esc(value)
         return (field.getLabel(), value)
 
     def getName(self):
         return "fieldtype_union"
-        
+
     # method for additional keys of type union
     def getLabels(self):
         return m_union.labels
 
-    labels = { "de":
-            [
-                ("fieldtype_union", "Kombinationsfeld"),
-                ("fieldtype_union_desc", "kann aus beliebigen Metadatenfeldern bestehen")
-            ],
-           "en":
-            [
-                ("fieldtype_union", "combination field"),
-                ("fieldtype_union_desc", "combination of multiple metafata fields")
-            ]
-         }
-
+    labels = {"de":
+              [
+                  ("fieldtype_union", "Kombinationsfeld"),
+                  ("fieldtype_union_desc", "kann aus beliebigen Metadatenfeldern bestehen")
+              ],
+              "en":
+              [
+                  ("fieldtype_union", "combination field"),
+                  ("fieldtype_union_desc", "combination of multiple metafata fields")
+              ]
+              }

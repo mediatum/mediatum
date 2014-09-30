@@ -22,12 +22,13 @@ from core.tree import getNode
 from core.translation import lang
 from core.metatype import Metatype
 
+
 class m_vgroup(Metatype):
 
     def getFormHTML(self, field, nodes, req):
         ret = '<fieldset>'
-        if field.getLabel()!="":
-            ret += '<legend>'+field.getLabel()+'</legend>'
+        if field.getLabel() != "":
+            ret += '<legend>' + field.getLabel() + '</legend>'
 
         for item in field.getChildren().sort_by_orderpos():
             if item.get("type") in ("hgroup", "vgroup", "field", "label"):
@@ -39,6 +40,7 @@ class m_vgroup(Metatype):
         return ret
 
     """  """
+
     def getViewHTML(self, field, nodes, flags, language=None, template_from_caller=None, mask=None):
         if flags & VIEW_DATA_ONLY:
             ret = []
@@ -50,48 +52,54 @@ class m_vgroup(Metatype):
             # standard view
 
             ret = '<div class="mask_row"><fieldset>\n'
-            ret += '<legend>'+field.getLabel()+'</legend>'
+            ret += '<legend>' + field.getLabel() + '</legend>'
             for item in field.getChildren().sort_by_orderpos():
                 f = getMetadataType(item.get("type"))
                 ret += '<div class="mask_row">' + f.getViewHTML(item, nodes, flags) + '</div>\n'
             ret += '</fieldset></div>\n'
-        
+
         return ret
 
     """ """
+
     def getMetaHTML(self, parent, index, sub=False, language=None, fieldlist={}):
         item = parent.getChildren().sort_by_orderpos()[index]
         ret = ''
         i = 0
-        
+
         if not sub:
-            ret += '<div id="'+item.id+'" class="row" onmouseover="pick(this)" onmouseout="unpick(this)" onclick="select(this)">'
+            ret += '<div id="' + item.id + '" class="row" onmouseover="pick(this)" onmouseout="unpick(this)" onclick="select(this)">'
         ret += '<fieldset style="cursor:hand">'
-        
-        if item.getLabel()!="":
-            ret += '<legend>'+item.getLabel()+'</legend>'
-        
+
+        if item.getLabel() != "":
+            ret += '<legend>' + item.getLabel() + '</legend>'
+
         for field in item.getChildren().sort_by_orderpos():
             f = getMetadataType(field.get("type"))
             ret += f.getMetaHTML(item, i, True, language=language, fieldlist=fieldlist) + '<br/>'
             i += 1
-        
-        if len(item.getChildren())==0:
+
+        if len(item.getChildren()) == 0:
             ret += '<span i18n:translate="mask_editor_no_fields">- keine Felder definiert -</span>'
-        
+
         ret += '</fieldset>'
-        
+
         if not sub:
-            ret += '<div align="right" id="'+item.id+'_sub" style="display:none"><small style="color:silver">('+(item.get("type"))+')</small>'
-            if index>0:
-                ret += '<input type="image" src="/img/uparrow.png" name="up_'+str(item.id)+'" i18n:attributes="title mask_edit_up_title"/>'
+            ret += '<div align="right" id="' + item.id + \
+                '_sub" style="display:none"><small style="color:silver">(' + (item.get("type")) + ')</small>'
+            if index > 0:
+                ret += '<input type="image" src="/img/uparrow.png" name="up_' + \
+                    str(item.id) + '" i18n:attributes="title mask_edit_up_title"/>'
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
-            if index<len(parent.getChildren())-1:
-                ret += '<input type="image" src="/img/downarrow.png" name="down_'+str(item.id)+'" i18n:attributes="title mask_edit_down_title"/>'
+            if index < len(parent.getChildren()) - 1:
+                ret += '<input type="image" src="/img/downarrow.png" name="down_' + \
+                    str(item.id) + '" i18n:attributes="title mask_edit_down_title"/>'
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
-            ret += ' <input type="image" src="/img/edit.png" name="edit_'+str(item.id)+'" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/img/delete.png" name="delete_'+str(item.id)+'" i18n:attributes="title mask_edit_delete_row" onClick="return questionDel()"/></div>'
+            ret += ' <input type="image" src="/img/edit.png" name="edit_' + str(
+                item.id) + '" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/img/delete.png" name="delete_' + str(
+                item.id) + '" i18n:attributes="title mask_edit_delete_row" onClick="return questionDel()"/></div>'
             ret += '</div>'
 
         return ret
@@ -99,55 +107,56 @@ class m_vgroup(Metatype):
     def getMetaEditor(self, item, req):
         """ editor mask for vgroup-field definition """
         fieldlist = getAllMetaFields()
-        if len(item.getParents())==0:
-            pid = req.params.get("pid","")
+        if len(item.getParents()) == 0:
+            pid = req.params.get("pid", "")
         else:
             pid = item.getParents()[0].id
 
-        if str(req.params.get("edit"))==str("None"):
+        if str(req.params.get("edit")) == str("None"):
             item = Maskitem(name="", type="maskitem")
             item.set("type", "vgroup")
 
-        details =""
+        details = ""
         i = 0
         for field in item.getChildren().sort_by_orderpos():
             f = getMetadataType(field.get("type"))
             details += f.getMetaHTML(item, i, False, fieldlist=fieldlist, language=lang(req))
             i += 1
 
-        if req.params.get("sel_id", "")!="":
-            i=0
+        if req.params.get("sel_id", "") != "":
+            i = 0
             for id in req.params.get("sel_id")[:-1].split(";"):
                 f = getMetadataType(getNode(id).get("type"))
                 try:
-                    details += f.getMetaHTML(item, i, False,itemlist=req.params.get("sel_id")[:-1].split(";"), ptype="vgroup", fieldlist=fieldlist)
+                    details += f.getMetaHTML(item, i, False, itemlist=req.params.get("sel_id")
+                                             [:-1].split(";"), ptype="vgroup", fieldlist=fieldlist)
                 except TypeError:
                     pass
                 i += 1
         fields = []
         metadatatype = req.params.get("metadatatype")
-        
-        if req.params.get("op","")=="new":
+
+        if req.params.get("op", "") == "new":
             pidnode = getNode(req.params.get("pid"))
             if pidnode.get("type") in ("vgroup", "hgroup"):
                 for field in pidnode.getAllChildren():
-                    if field.getType().getName()=="maskitem" and field.id!=pidnode.id:
-                        fields.append(field)  
+                    if field.getType().getName() == "maskitem" and field.id != pidnode.id:
+                        fields.append(field)
             else:
                 for m in metadatatype.getMasks():
-                    if str(m.id)==str(req.params.get("pid")):
+                    if str(m.id) == str(req.params.get("pid")):
                         for field in m.getChildren():
                             fields.append(field)
-        fields.sort(lambda x, y: cmp(x.getOrderPos(),y.getOrderPos()))
+        fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
 
         v = {}
         v["pid"] = pid
         v["item"] = item
-        v["op"] = req.params.get("op","")
+        v["op"] = req.params.get("op", "")
         v["details"] = details
         v["fields"] = fields
         v["selid"] = req.params.get("sel_id", "")
-        return req.getTAL("schema/mask/vgroup.html",v,macro="metaeditor") 
+        return req.getTAL("schema/mask/vgroup.html", v, macro="metaeditor")
 
     def isContainer(self):
         return True

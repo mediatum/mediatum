@@ -26,7 +26,6 @@
 
 from utils.utils import Option
 import core.tree as tree
-import acl
 import logging
 
 log = logging.getLogger("usertracing")
@@ -36,11 +35,15 @@ groupoption += [Option("usergroup_option_1", "editor", "e", "img/edit_opt.png"),
                 Option("usergroup_option_2", "workfloweditor", "w", "img/edit_opt.png")]
 
 """ load all groups from db """
+
+
 def loadGroupsFromDB():
     groups = tree.getRoot("usergroups")
     return groups.getChildren().sort_by_name()
 
 """ get group from db """
+
+
 def getGroup(id):
     if id.isdigit():
         return tree.getNode(id)
@@ -49,26 +52,31 @@ def getGroup(id):
         return groups.getChild(id)
 
 """ create new group in db """
-def create_group(name,description="",option="",dynamic_users="",allow_dynamic=""):
+
+
+def create_group(name, description="", option="", dynamic_users="", allow_dynamic=""):
     groups = tree.getRoot("usergroups")
     group = tree.Node(name=name, type="usergroup")
-    group.set("description",description)
-    group.set("opts",option)
+    group.set("description", description)
+    group.set("opts", option)
     if allow_dynamic:
         group.set("allow_dynamic", allow_dynamic)
     if dynamic_users:
-        group.set("dynamic_users", dynamic_users)    
+        group.set("dynamic_users", dynamic_users)
     groups.addChild(group)
     log.debug("created group %r (%r)" % (group.name, group.id))
     return group
 
 """ get number of users containing given group """
+
+
 def getNumUsers(grp):
     return len(getGroup(grp).getChildren())
 
+
 def getMetadata(grp):
     results = []
-    if grp.name=="":
+    if grp.name == "":
         return results
     for mdt in tree.getRoot("metadatatypes").getChildren():
         acc = mdt.getAccess("read")
@@ -76,6 +84,7 @@ def getMetadata(grp):
             if grp.name in acc.split(","):
                 results.append(mdt.name)
     return results
+
 
 def saveGroupMetadata(group, metaList):
     for meta in tree.getRoot("metadatatypes").getChildren():
@@ -86,8 +95,8 @@ def saveGroupMetadata(group, metaList):
             accList = acc.split(",")
         if meta.name in metaList:
             if group not in accList:
-                if type(accList)==type([]):
-                    if group!="":
+                if isinstance(accList, type([])):
+                    if group != "":
                         accList.append(group)
                         accList = filter(None, accList)
                         meta.setAccess("read", ",".join(accList))
@@ -100,6 +109,8 @@ def saveGroupMetadata(group, metaList):
 
 
 """ delete given group """
+
+
 def deleteGroup(grp):
     # remove users from group
     grp = getGroup(grp)
@@ -108,7 +119,7 @@ def deleteGroup(grp):
     log.debug("going to remove %r children from group %r (%r)" % (len(children), grp.name, grp.id))
     for user in children:
         grp.removeChild(user)
-    child_ids = [c.id for c in children]    
+    child_ids = [c.id for c in children]
     log.debug("id's of %r children removed from group %r (%r): %r" % (len(children), grp.name, grp.id, child_ids))
     if grp.get("allow_dynamic") == "1":
         msg = "group %r (%r) allowed dynamic users. Attribute 'dynamic_users': %r" % (grp.name, grp.id, grp.get('dynamic_users'))
@@ -128,16 +139,16 @@ def existGroup(grp):
 
 
 def updateAclRule(oldname, newname):
-    newrule = acl.AccessRule(newname, "( group "+newname+" )", newname)
+    from . import acl
+    newrule = acl.AccessRule(newname, "( group " + newname + " )", newname)
     if (acl.existRule(oldname)):
-       acl.updateRule(newrule, oldname, newname, oldname)
+        acl.updateRule(newrule, oldname, newname, oldname)
 
     else:
-       acl.addRule(newrule)
+        acl.addRule(newrule)
 
 
 def sortUserGroups():
     groups = tree.getRoot("usergroups").getChildren().sort_by_fields("name")
     for g in groups:
         g.setOrderPos(groups.index(g))
-

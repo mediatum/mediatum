@@ -44,7 +44,6 @@ from metadata.text import m_text
 from metadata.treeselect import m_treeselect
 
 
-
 logger = logging.getLogger("backend")
 
 SLEEP_INTERVAL = 1
@@ -58,22 +57,23 @@ RUN_METHODS = ["function", "thread", "process"]
 DEFAULT_RUN_METHOD = RUN_METHODS[1]
 
 
-#dictionary for functions
+# dictionary for functions
 f_dict = {}
 
 # dictionary for classes
 fc_dict = {}
 
 dict_type2class = {
-  'check': m_check,
-  'htmlmemo': m_htmlmemo,
-  'memo': m_memo,
-  'text': m_text,
-  'treeselect': m_treeselect,
+    'check': m_check,
+    'htmlmemo': m_htmlmemo,
+    'memo': m_memo,
+    'text': m_text,
+    'treeselect': m_treeselect,
 }
 
 
 class LogWriter:
+
     def __init__(self, logger, level=logging.INFO):
         self.logger = logger
         self.level = level
@@ -144,17 +144,18 @@ def isIsoformat(str):
 
 
 def assert_is_cron_dict(d):
-    assert type(d) == dict, "not a dict"
+    assert isinstance(d, dict), "not a dict"
     for k in d:
         assert k in ['month', 'day', 'weekday', 'hour', 'minute', 'second'], "key '%s' not admissible" % k
         v = d[k]
-        assert type(v) == list, "value for key '%s' is not a list" % k
+        assert isinstance(v, list), "value for key '%s' is not a list" % k
         assert len(v) <= 61, "value list for key '%s' too long" % k
         for i in v:
-            assert type(i) == int, "value list for key '%s' contains non-integer '%s'" % (k, str(i))
+            assert isinstance(i, int), "value list for key '%s' contains non-integer '%s'" % (k, str(i))
 
 
 class WrappedThread(threading.Thread):
+
     def run(self):
         try:
             threading.Thread.run(self)
@@ -170,7 +171,7 @@ def traced(func_class_instance):
             core.schedules.action_dict[thread_name] = {}
         try:
             return func_class_instance.function(*__args, **__kw)
-        except Exception, e:
+        except Exception as e:
             error = e
             core.schedules.action_dict[thread_name]["status"] = "error"
             core.schedules.action_dict[thread_name]["error"] = "%s" % (datetime.now().isoformat())
@@ -203,31 +204,34 @@ def run_as_function(func_class_instance, s, trigger, now_str, trigger_info, OUT,
 
         dthreads = core.schedules.action_dict
         dthreads[thread_name] = {
-                               "type": "single_trigger",
-                               "trigger_info": trigger_info,
-                               "trigger": trigger,
-                               "started": now_str,
-                               "status": "started",
-                               "name": thread_name,
-                               "start_timestamp": time.time(),
-                               "start_datetime": datetime.now().isoformat(),
-                               "thread_obj": None,
-                              }
+            "type": "single_trigger",
+            "trigger_info": trigger_info,
+            "trigger": trigger,
+            "started": now_str,
+            "status": "started",
+            "name": thread_name,
+            "start_timestamp": time.time(),
+            "start_datetime": datetime.now().isoformat(),
+            "thread_obj": None,
+        }
 
         core.schedules.action_dict = dthreads.copy()
 
         res = func_class_instance.function(s, trigger=trigger, now_str=now_str, trigger_info=trigger_info, OUT=OUT, TT=TT)
 
         has_fired = True
-        msg = "%s %s: executed function '%s', node '%s' (%s)" % (trigger_info, trigger, func_class_instance.longname, str(s.name), str(s.id))
+        msg = "%s %s: executed function '%s', node '%s' (%s)" % (
+            trigger_info, trigger, func_class_instance.longname, str(s.name), str(s.id))
         s.set("single_trigger_status", "OK: %s: %s" % (now_str, msg))
-        TT.append([msg, time.time() - atime]); atime = time.time()
+        TT.append([msg, time.time() - atime])
+        atime = time.time()
     except:
 
         has_error = True
         msg = "Error while executing function '%s': %s %s" % (func_class_instance.longname, str(sys.exc_info()[0]), str(sys.exc_info()[1]))
         s.set("single_trigger_status", "FAIL: %s: %s" % (now_str, msg))
-        TT.append([msg, time.time() - atime]); atime = time.time()
+        TT.append([msg, time.time() - atime])
+        atime = time.time()
         OUT(msg, logger='backend', print_stdout=True, level='error')
 
     return has_fired, has_error, TT
@@ -242,31 +246,48 @@ def run_as_thread(func_class_instance, s, trigger, now_str, trigger_info, OUT, T
     try:
         func = traced(func_class_instance)
         thread_name = "thread_single_%s_%s" % (trigger, now_str)
-        wt = WrappedThread(name=thread_name, target=func, args=(s, ), kwargs={"trigger": trigger, "now_str": now_str, "trigger_info": trigger_info, "OUT": OUT, "TT": TT, "thread_name": thread_name, "func": func, })
+        wt = WrappedThread(
+            name=thread_name,
+            target=func,
+            args=(
+                s,
+            ),
+            kwargs={
+                "trigger": trigger,
+                "now_str": now_str,
+                "trigger_info": trigger_info,
+                "OUT": OUT,
+                "TT": TT,
+                "thread_name": thread_name,
+                "func": func,
+            })
         wt.start()
         dthreads = core.schedules.action_dict
         dthreads[thread_name] = {
-                               "type": "single_trigger",
-                               "trigger_info": trigger_info,
-                               "trigger": trigger,
-                               "started": now_str,
-                               "status": "started",
-                               "name": thread_name,
-                               "start_timestamp": time.time(),
-                               "start_datetime": datetime.now().isoformat(),
-                               "thread_obj": wt,
-                              }
+            "type": "single_trigger",
+            "trigger_info": trigger_info,
+            "trigger": trigger,
+            "started": now_str,
+            "status": "started",
+            "name": thread_name,
+            "start_timestamp": time.time(),
+            "start_datetime": datetime.now().isoformat(),
+            "thread_obj": wt,
+        }
         core.schedules.action_dict = dthreads.copy()
 
         has_fired = True
-        msg = "%s %s: executed function '%s', node '%s' (%s)" % (trigger_info, trigger, func_class_instance.longname, str(s.name), str(s.id))
+        msg = "%s %s: executed function '%s', node '%s' (%s)" % (
+            trigger_info, trigger, func_class_instance.longname, str(s.name), str(s.id))
         s.set("single_trigger_status", "OK: %s: %s" % (now_str, msg))
-        TT.append([msg, time.time() - atime]); atime = time.time()
+        TT.append([msg, time.time() - atime])
+        atime = time.time()
     except:
         has_error = True
         msg = "Error while executing function '%s': %s %s" % (func_class_instance.longname, str(sys.exc_info()[0]), str(sys.exc_info()[1]))
         s.set("single_trigger_status", "FAIL: %s: %s" % (now_str, msg))
-        TT.append([msg, time.time() - atime]); atime = time.time()
+        TT.append([msg, time.time() - atime])
+        atime = time.time()
         OUT(msg, logger='backend', print_stdout=True, level='error')
     return has_fired, has_error, TT
 
@@ -281,16 +302,16 @@ def run_as_process(func, s, trigger, now_str, trigger_info, OUT, TT):
 
     if not sid:
 
-        from utils import join_paths
+        from .utils import join_paths
         import pickle
 
         n_dict = {
-                  'node_id': '',
-                  'node_name': s.name,
-                  'node_type': s.type,
-                  'items': s.items(),
-                  'file': [(f.getName(), f.getType(), f.getMimeType(), f.retrieveFile()) for f in s.getFiles()]
-                 }
+            'node_id': '',
+            'node_name': s.name,
+            'node_type': s.type,
+            'items': s.items(),
+            'file': [(f.getName(), f.getType(), f.getMimeType(), f.retrieveFile()) for f in s.getFiles()]
+        }
 
         tempfile = join_paths(config.get("paths.tempdir"), 'temp_schedule_' + trigger.replace(":", "_") + '_RND_' + str(random.random()))
         f = open(tempfile, "w")
@@ -330,7 +351,7 @@ def handle_single_trigger(s, now_str, OUT):
             msg = "scheduler going to run schedule '%s' (%s) function '%s' as '%s'" % (str(s.name), sid, str(func_name), str(run_as))
             logger.info(msg)
 
-            if not run_as in RUN_METHODS:
+            if run_as not in RUN_METHODS:
                 run_as = DEFAULT_RUN_METHOD
 
             if run_as == "function":
@@ -349,14 +370,16 @@ def handle_single_trigger(s, now_str, OUT):
                 has_error = True
                 msg = "Error while executing function '%s': %s %s" % (func_name, str(sys.exc_info()[0]), str(sys.exc_info()[1]))
                 s.set("single_trigger_status", "FAIL: %s: %s" % (now_str, msg))
-                TT.append([msg, time.time() - atime]); atime = time.time()
+                TT.append([msg, time.time() - atime])
+                atime = time.time()
                 OUT(msg, logger='backend', print_stdout=True, level='error')
 
         else:
             has_error = True
             msg = "WARNING: function '%s' for node '%s' (%s) is not defined" % (func_name, str(s.name), str(s.id))
             s.set("single_trigger_status", "FAIL: %s: %s" % (now_str, msg))
-            TT.append([msg, time.time() - atime]); atime = time.time()
+            TT.append([msg, time.time() - atime])
+            atime = time.time()
 
     return has_fired, has_error, TT
 
@@ -373,7 +396,8 @@ def handle_cron_dict(s, now_obj, OUT):
 
     if error_msg:
         has_error = True
-        TT.append([error_msg, time.time() - atime]); atime = time.time()
+        TT.append([error_msg, time.time() - atime])
+        atime = time.time()
         return
 
     grace_seconds_str = s.get('grace_seconds').strip()
@@ -382,15 +406,18 @@ def handle_cron_dict(s, now_obj, OUT):
             grace_seconds = int(grace_seconds_str)
             grace = timedelta(seconds=grace_seconds)
             msg = "using %d grace seconds for node '%s' (%s)" % (grace_seconds, s_name, s_id)
-            TT.append([msg, time.time() - atime]); atime = time.time()
+            TT.append([msg, time.time() - atime])
+            atime = time.time()
         except:
             has_error = True
             msg = "ERROR: could not parse grace seconds '%s' for node '%s' (%s)" % (grace_seconds_str, s_name, s_id)
-            TT.append([msg, time.time() - atime]); atime = time.time()
+            TT.append([msg, time.time() - atime])
+            atime = time.time()
     else:
         grace = timedelta(seconds=GRACE_SECONDS)
         msg = "using default grace seconds '%s' for node '%s' (%s)" % (str(GRACE_SECONDS), s_name, s_id)
-        TT.append([msg, time.time() - atime]); atime = time.time()
+        TT.append([msg, time.time() - atime])
+        atime = time.time()
 
     for t in triggers:
 
@@ -416,7 +443,7 @@ def handle_cron_dict(s, now_obj, OUT):
             msg = "scheduler going to run schedule '%s' (%s) function '%s' as '%s'" % (str(s.name), sid, str(func_name), str(run_as))
             logger.info(msg)
 
-            if not run_as in RUN_METHODS:
+            if run_as not in RUN_METHODS:
                 run_as = DEFAULT_RUN_METHOD
             try:
 
@@ -426,11 +453,12 @@ def handle_cron_dict(s, now_obj, OUT):
 
                 try:
                     history = json.loads(history_str)
-                    assert type(history) == list
+                    assert isinstance(history, list)
                 except:
                     has_error = True
                     msg = "error decoding history string to json for node '%s' (%s): %s" % (s.name, s.id, history_str)
-                    TT.append([msg, time.time() - atime]); atime = time.time()
+                    TT.append([msg, time.time() - atime])
+                    atime = time.time()
                     logger.error(msg)
                     break
 
@@ -459,13 +487,15 @@ def handle_cron_dict(s, now_obj, OUT):
                         has_error = True
                         msg = "Error while executing function '%s': %s %s" % (func_name, str(sys.exc_info()[0]), str(sys.exc_info()[1]))
                         s.set("single_trigger_status", "FAIL: %s: %s" % (now_str, msg))
-                        TT.append([msg, time.time() - atime]); atime = time.time()
+                        TT.append([msg, time.time() - atime])
+                        atime = time.time()
                         OUT(msg, logger='backend', print_stdout=True, level='error')
 
                 except:
                     has_error = True
                     msg = "Error while executing function '%s': %s %s" % (func_name, str(sys.exc_info()[0]), str(sys.exc_info()[1]))
-                    TT.append([msg, time.time() - atime]); atime = time.time()
+                    TT.append([msg, time.time() - atime])
+                    atime = time.time()
                     logger.error(msg)
 
                 if len(history) > MAX_CRON_HISTORY:
@@ -483,22 +513,28 @@ def handle_cron_dict(s, now_obj, OUT):
                 history_count += 1
                 s.set("cron_history_count", str(history_count))
 
-                msg = "cron trigger %s: executed function '%s' for node '%s' (%s) - history: %d, %s" % (t_str, func_name, s_name, s_id, history_count, history_str)
-                TT.append([msg, time.time() - atime]); atime = time.time()
+                msg = "cron trigger %s: executed function '%s' for node '%s' (%s) - history: %d, %s" % (
+                    t_str, func_name, s_name, s_id, history_count, history_str)
+                TT.append([msg, time.time() - atime])
+                atime = time.time()
             except:
                 has_error = True
                 msg = "Error while preparing calling function '%s': %s %s" % (s, str(sys.exc_info()[0]), str(sys.exc_info()[1]))
-                TT.append([msg, time.time() - atime]); atime = time.time()
+                TT.append([msg, time.time() - atime])
+                atime = time.time()
                 OUT(msg, logger='backend', print_stdout=True, level='error')
                 traceback.print_tb(sys.exc_info()[2], None, sys.stdout)
 
-            msg = "     info cron trigger=%s, now=%s, time_overdue=%s, grace=%s" % (t_str, now_obj.isoformat(), str(time_overdue), str(grace))
-            TT.append([msg, time.time() - atime]); atime = time.time()
+            msg = "     info cron trigger=%s, now=%s, time_overdue=%s, grace=%s" % (
+                t_str, now_obj.isoformat(), str(time_overdue), str(grace))
+            TT.append([msg, time.time() - atime])
+            atime = time.time()
 
         else:
             has_error = True
             msg = "WARNING: function '%s' for node '%s' (%s) is not defined" % (func_name, s_name, s_id)
-            TT.append([msg, time.time() - atime]); atime = time.time()
+            TT.append([msg, time.time() - atime])
+            atime = time.time()
 
     return has_fired, has_error, TT
 
@@ -591,7 +627,7 @@ def getSchedulesForIds(nid_list, active_only=False, access=None, language=None):
 
         now_str = datetime.now().isoformat()
         is_active = bool(now_str < single_trigger and not single_trigger_status.strip())
-        if active_only and  is_active:
+        if active_only and is_active:
             continue
 
         nodelist_str = schedule.get("nodelist")
@@ -604,7 +640,8 @@ def getSchedulesForIds(nid_list, active_only=False, access=None, language=None):
                 status = t(language, is_active and 'edit_schedule_schedule_active' or 'edit_schedule_schedule_not_active')
             else:
                 status = t(language, is_active and 'active' or 'not_active')
-            schedule2nids[str(schedule.id)] = {'nids': intersection, 'schedule': schedule, 'nids_all': list(nodelist_set), 'is_active': is_active, 'status': status}
+            schedule2nids[str(schedule.id)] = {'nids': intersection, 'schedule': schedule, 'nids_all': list(
+                nodelist_set), 'is_active': is_active, 'status': status}
             for nid in intersection:
                 _nid2schedules[nid] = _nid2schedules.get(nid, []) + [schedule]
 
@@ -659,7 +696,7 @@ def deleteNodeIDsFromSchedule(node_id_list, schedule_id, access=None):
 
     new_nodelist = []
     for nid in nodelist:
-        if not nid in node_id_list:
+        if nid not in node_id_list:
             new_nodelist.append(nid)
 
     new_nodelist = ",".join(new_nodelist)
@@ -836,17 +873,17 @@ class FormedFunction(object):
             field.label = self.t(lang, field_label_msgid)
 
             d = {
-                 'field': field,
-                 'field_type': field_type,
-                 'field_name': field_name,
-                 'field_label_msgid': field_label_msgid,
-                 'field_explanation_msgid': field_label_msgid,
-                 'field_validator_func': field_validator_func,
-                 'lang': lang,
-                 'evaluation_error': False,
-                 'evaluation_error_msg': '',
-                 'value': '',
-                }
+                'field': field,
+                'field_type': field_type,
+                'field_name': field_name,
+                'field_label_msgid': field_label_msgid,
+                'field_explanation_msgid': field_label_msgid,
+                'field_validator_func': field_validator_func,
+                'lang': lang,
+                'evaluation_error': False,
+                'evaluation_error_msg': '',
+                'value': '',
+            }
 
             ret.append(d)
 
@@ -914,10 +951,10 @@ def isNotEmpty(s):
 # parameters of the function
 # format: [(type, name, label_msgid), ...]
 send_schedule_mail_field_descriptors = [
- ("text", "attr_recipient", "send_schedule_mail_attribute_attr_recipient", isProbEmails),
- ("text", "attr_subject", "send_schedule_mail_attribute_attr_subject", None),
- ("memo", "attr_body", "send_schedule_mail_attribute_attr_body", isNotEmpty),
- ("text", "attr_sender", "send_schedule_mail_attribute_attr_sender", isProbEmails)
+    ("text", "attr_recipient", "send_schedule_mail_attribute_attr_recipient", isProbEmails),
+    ("text", "attr_subject", "send_schedule_mail_attribute_attr_subject", None),
+    ("memo", "attr_body", "send_schedule_mail_attribute_attr_body", isNotEmpty),
+    ("text", "attr_sender", "send_schedule_mail_attribute_attr_sender", isProbEmails)
 ]
 
 
@@ -968,7 +1005,7 @@ def send_schedule_mail(node, trigger=None, now_str=None, trigger_info=None, OUT=
     print "     attr_sender   ='%s'" % str(node.get('attr_sender'))
     print "<+++ leaving 'test_send_schedule_mail'"
 
-    import mail
+    from . import mail
     mail.sendmail(sender, recipient, subject, body)
 
     return
@@ -981,40 +1018,40 @@ c_send_schedule_mail.run_as = "thread"
 c_send_schedule_mail.run_as_immediate = "thread"
 
 send_schedule_mail_explain_de =\
-'''
+    '''
 Eine erste Funktion zum Versenden von Mail. Es wird eine Mail an eine vorgegebene (;-separierte) Adressenliste mit einem vorgegebenen Betreff gesandt.
 Der Text der Mail kann ein TAL-Template sein. Im Kontext stehen die Liste 'nidlist' der ID's der Knotenauswahl und die Funktion
 'getItemDict', die die Object-ID's auf ein Dictionary mit den Attributen abbildet, zur Auswahl.
 '''
 
 send_schedule_mail_explain_en =\
-'''
+    '''
 This function will send an email. The body may be a TAL template with the context variable 'nidlist' holding the id's of the objects selected in the editor
 and the function 'getItemDict' mapping the object id's to a dictionary holding the attributes of the respective objects node.
 '''
 
 label_send_schedule_mail = {
-           "de":
-            [
-                ("send_schedule_mail_attribute_attr_recipient", 'Zieladresse der Mail'),
-                ("send_schedule_mail_attribute_attr_subject", 'Betreff der Mail (kann leer sein)'),
-                ("send_schedule_mail_attribute_attr_body", 'Inhalt der Mail - sollte nicht leer sein '),
-                ("send_schedule_mail_attribute_attr_sender", 'Absender der Mail - nicht leer'),
-                ("send_schedule_mail_longname", 'Testfunktion: eMail versenden'),
-                ("send_schedule_mail_explanation", send_schedule_mail_explain_de),
+    "de":
+    [
+        ("send_schedule_mail_attribute_attr_recipient", 'Zieladresse der Mail'),
+        ("send_schedule_mail_attribute_attr_subject", 'Betreff der Mail (kann leer sein)'),
+        ("send_schedule_mail_attribute_attr_body", 'Inhalt der Mail - sollte nicht leer sein '),
+        ("send_schedule_mail_attribute_attr_sender", 'Absender der Mail - nicht leer'),
+        ("send_schedule_mail_longname", 'Testfunktion: eMail versenden'),
+        ("send_schedule_mail_explanation", send_schedule_mail_explain_de),
 
-            ],
-           "en":
-            [
-                ("send_schedule_mail_attribute_attr_recipient", '(;-separated) recipient addresses of the mail'),
-                ("send_schedule_mail_attribute_attr_subject", 'Subject of the mail'),
-                ("send_schedule_mail_attribute_attr_body", 'Body of the mail - should not be empty'),
-                ("send_schedule_mail_attribute_attr_sender", 'Sender of the mail'),
-                ("send_schedule_mail_longname", 'Test Function send mail - must not be empty'),
-                ("send_schedule_mail_explanation", send_schedule_mail_explain_en),
+    ],
+    "en":
+    [
+        ("send_schedule_mail_attribute_attr_recipient", '(;-separated) recipient addresses of the mail'),
+        ("send_schedule_mail_attribute_attr_subject", 'Subject of the mail'),
+        ("send_schedule_mail_attribute_attr_body", 'Body of the mail - should not be empty'),
+        ("send_schedule_mail_attribute_attr_sender", 'Sender of the mail'),
+        ("send_schedule_mail_longname", 'Test Function send mail - must not be empty'),
+        ("send_schedule_mail_explanation", send_schedule_mail_explain_en),
 
-            ]
-            }
+    ]
+}
 
 
 c_send_schedule_mail.setLabels(label_send_schedule_mail)

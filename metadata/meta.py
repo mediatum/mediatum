@@ -21,19 +21,18 @@ from mediatumtal import tal
 import core.tree as tree
 from core.metatype import Metatype
 
-class m_meta(Metatype):
-    
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
-        return tal.getTAL("metadata/meta.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
 
+class m_meta(Metatype):
+
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
+        return tal.getTAL("metadata/meta.html", {"lock": lock, "value": value, "width": width,
+                                                 "name": field.getName(), "field": field}, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
-        return tal.getTAL("metadata/meta.html",{"context":context}, macro="searchfield", language=context.language)
-
+        return tal.getTAL("metadata/meta.html", {"context": context}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None, html=1):
         return (field.getLabel(), node.get(field.getValues()))
-
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         try:
@@ -46,11 +45,11 @@ class m_meta(Metatype):
                 node = tree.Node(type=t)
                 attr.update(node.getTechnAttributes())
 
-        return tal.getTAL("metadata/meta.html", {"value":value, "t_attrs":attr}, macro="maskeditor", language=language)
+        return tal.getTAL("metadata/meta.html", {"value": value, "t_attrs": attr}, macro="maskeditor", language=language)
 
     def getInformation(self):
-        return {"moduleversion":"1.1", "softwareversion":"1.1", "files":"meta.py;meta.html"}
-        
+        return {"moduleversion": "1.1", "softwareversion": "1.1", "files": "meta.py;meta.html"}
+
     def getName(self):
         return "fieldtype_meta"
 
@@ -58,17 +57,17 @@ class m_meta(Metatype):
     def getLabels(self):
         return m_meta.labels
 
-    labels = { "de":
-            [
-                ("metafield_tech_meta", "Technisches Metadatenfeld:"),
-                ("metafield_metadata_field","Metadatenfeld"),
-                ("fieldtype_meta", "Technisches Metadatum"),
-                ("fieldtype_meta_desc", "Technisches Metadatum (automatisch vom System erstellt)")
-            ],
-           "en":
-            [
-                ("metafield_tech_meta", "Technical metadata field:"),
-                ("fieldtype_meta", "technical metadata"),
-                ("fieldtype_meta_desc", "field for technical metadata (automatically filled in by mediatum)")
-            ]
-          }    
+    labels = {"de":
+              [
+                  ("metafield_tech_meta", "Technisches Metadatenfeld:"),
+                  ("metafield_metadata_field", "Metadatenfeld"),
+                  ("fieldtype_meta", "Technisches Metadatum"),
+                  ("fieldtype_meta_desc", "Technisches Metadatum (automatisch vom System erstellt)")
+              ],
+              "en":
+              [
+                  ("metafield_tech_meta", "Technical metadata field:"),
+                  ("fieldtype_meta", "technical metadata"),
+                  ("fieldtype_meta_desc", "field for technical metadata (automatically filled in by mediatum)")
+              ]
+              }

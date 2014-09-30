@@ -17,9 +17,10 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from workflow import WorkflowStep, registerStep
+from .workflow import WorkflowStep, registerStep
 from utils.utils import mkKey
 import core.tree as tree
+
 
 def register():
     tree.registerNodeClass("workflowstep-protect", WorkflowStep_Protect)
@@ -27,7 +28,7 @@ def register():
 
 
 class WorkflowStep_Protect(WorkflowStep):
+
     def runAction(self, node, op=""):
         node.set("key", mkKey())
         self.forward(node, True)
-

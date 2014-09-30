@@ -19,13 +19,13 @@
 """
 
 import core.config as config
-import usergroups
+from . import usergroups
 import hashlib
 import core.tree as tree
 import random
 import thread
 import logging
-import athana
+from . import athana
 
 from utils.utils import Option
 from core.translation import getDefaultLanguage, translate
@@ -37,21 +37,22 @@ log = logging.getLogger("usertracing")
 
 useroption = []
 #useroption += [OPTION_ENHANCED_READRIGHTS]
-useroption += [Option("user_option_1", "editpwd", "c", "img/changepwd_opt.png", "checkbox"),\
-               Option("user_option_2", "editshopping", "s", "img/editshopping_opt.png", "checkbox"),\
+useroption += [Option("user_option_1", "editpwd", "c", "img/changepwd_opt.png", "checkbox"),
+               Option("user_option_2", "editshopping", "s", "img/editshopping_opt.png", "checkbox"),
                Option("user_option_3", "useroptions", "o", "img/editshopping_opt.png", "checkbox")]
 
 authenticators = {}
 authenticators_priority_dict = {}
 
-#Saves a hashtable for every user which holds if he has access on a specific node
+# Saves a hashtable for every user which holds if he has access on a specific node
 useraccesstable = {}
 
-#Saves for each user which collection he prefers which search mode
+# Saves for each user which collection he prefers which search mode
 usercollectionsearchmode = {}
 
 
-def create_user(name, email, groups, pwd="", lastname="", firstname="", telephone="", comment="", option="", organisation="", identificator="", type="intern"):
+def create_user(name, email, groups, pwd="", lastname="", firstname="", telephone="",
+                comment="", option="", organisation="", identificator="", type="intern"):
     if not pwd:
         pwd = config.get("user.passwd")
     if (type == "intern"):
@@ -83,7 +84,7 @@ def create_user(name, email, groups, pwd="", lastname="", firstname="", telephon
 
 
 def getAccessTable(user):
-    if not useraccesstable.has_key(user.id):
+    if user.id not in useraccesstable:
         useraccesstable[user.id] = {}
     return useraccesstable[user.id]
 
@@ -105,14 +106,14 @@ def clearTableAccess(user):
 
 def getCollectionSearchMode(user, collectionid):
     """ Returns -1, is current user has no search mode specified for a collection"""
-    if (usercollectionsearchmode.has_key(user)):
-        if (usercollectionsearchmode[user].has_key(collectionid)):
+    if (user in usercollectionsearchmode):
+        if (collectionid in usercollectionsearchmode[user]):
             return usercollectionsearchmode[user][collectionid]
     return -1
 
 
 def setCollectionSearchMode(user, collectionid, searchmode):
-    if (not usercollectionsearchmode.has_key(user)):
+    if (user not in usercollectionsearchmode):
         usercollectionsearchmode[user] = {}
     usercollectionsearchmode[user][collectionid] = searchmode
 
@@ -135,14 +136,14 @@ def setTableAccessWithParents(user, node, access):
 def getTableAccess(user, node):
     """Retrieves the access rights of a node. Returns 0, if there are either no rights available or the node has no rights"""
     accesstable = getAccessTable(user)
-    if accesstable.has_key(node.id):
+    if node.id in accesstable:
         return accesstable[node.id]
     return 0
 
 
 def hasTableAccess(user, node):
     """Checks if the user has access on a specific node and if he is even allowed to use the hashtable """
-    return getAccessTable(user).has_key(node.id)
+    return node.id in getAccessTable(user)
 # End of methods for access hashtable manipulation
 
 
@@ -200,14 +201,14 @@ def getExternalUser(name, type="intern"):
                 return user
             return None
 
-        except tree.NoSuchNodeError, e:
+        except tree.NoSuchNodeError as e:
             try:
                 user = users.getChild(name)
                 if user:
                     return user
                 # try identificator
                 for n in users.getChildren():
-                    if ('%s@'%(name)) in n.get('identificator') or name in n.get('identificator'):
+                    if ('%s@' % (name)) in n.get('identificator') or name in n.get('identificator'):
                         return n
 
             except tree.NoSuchNodeError:
@@ -217,7 +218,7 @@ def getExternalUser(name, type="intern"):
             if n.getName() == name:
                 return n
             # try identificator
-            elif ('%s@'%(name)) in n.get('identificator') or name in n.get('identificator'):
+            elif ('%s@' % (name)) in n.get('identificator') or name in n.get('identificator'):
                 return n
 
 
@@ -231,17 +232,17 @@ def getUser(id):
             if user.type == "user":
                 return user
             return None
-        except tree.NoSuchNodeError, e:
+        except tree.NoSuchNodeError as e:
             return None
     else:
         try:
             user = users.getChild(id)
             return user
-        except tree.NoSuchNodeError, e:
+        except tree.NoSuchNodeError as e:
             for key in getExternalAuthentificators():
                 u = getExternalUser(id, type=key)
                 if u:
-                    #u.setUserType(key)
+                    # u.setUserType(key)
                     return u
             for u in tree.getRoot("users").getChildren():
                 if u.get('service.userkey') == id:
@@ -251,7 +252,7 @@ def getUser(id):
 
 def doExternalAuthentification(name, pwd, req=None):
 
-    #spoof a request for ftp
+    # spoof a request for ftp
     if req is None:
         req = athana.http_request(None, None, None, '/', None, None)
         req.ip = '0.0.0.0'
@@ -270,7 +271,7 @@ def doExternalAuthentification(name, pwd, req=None):
                     # user object if the authentication was successful
                     # zero otherwise
                     return res
-                else:        
+                else:
                     return authenticators[a].getUser(name)
     return None
 
@@ -327,23 +328,24 @@ def checkLogin(name, pwd, req=None):
     if user and user.getUserType() == "users":
         if digest1 == user.getPassword():
             return user
-        if config.get("user.masterpassword") != "" and name != config.get("user.adminuser") and pwd == config.get("user.masterpassword"):  # test masterpassword
+        # test masterpassword
+        if config.get("user.masterpassword") != "" and name != config.get("user.adminuser") and pwd == config.get("user.masterpassword"):
             logging.getLogger('usertracing').info(user.name + " logged in with masterpassword")
             return user
 
     auth = doExternalAuthentification(name, pwd, req=req)
-    #if doExternalAuthentification(name, pwd):
-        # if an external authenticator was able to log this
-        # user in, store the user name and hashed password
-        # in our database, so we recognize this person
-        # from now on (and can display him in the admin
-        # area).
-        # potential security problem: if a local user has
-        # the same name as some other external
-        # user, that external user can log in using his own
-        # password (and overwrite the internal password).
-        # This only happens if the names (user ids) are not
-        # the email addresses, however.
+    # if doExternalAuthentification(name, pwd):
+    # if an external authenticator was able to log this
+    # user in, store the user name and hashed password
+    # in our database, so we recognize this person
+    # from now on (and can display him in the admin
+    # area).
+    # potential security problem: if a local user has
+    # the same name as some other external
+    # user, that external user can log in using his own
+    # password (and overwrite the internal password).
+    # This only happens if the names (user ids) are not
+    # the email addresses, however.
 
     if auth:
         return auth
@@ -388,7 +390,8 @@ def addUser(user):
     conn.addUser(user)
 
 
-def update_user(id, name, email, groups, lastname="", firstname="", telephone="", comment="", option="", organisation="", identificator="", type="intern"):
+def update_user(id, name, email, groups, lastname="", firstname="", telephone="",
+                comment="", option="", organisation="", identificator="", type="intern"):
 
     try:  # internal user
         user = getUser(id)
@@ -446,7 +449,8 @@ def deleteUser(user, usertype="intern"):
                 return
         return
 
-    log.info("request to delete user %r (%r), usertype=%r, lastname=%r, firstname=%r" % (user.getName(), user.id, usertype, user.get('lastname'), user.get('firstname')))
+    log.info("request to delete user %r (%r), usertype=%r, lastname=%r, firstname=%r" %
+             (user.getName(), user.id, usertype, user.get('lastname'), user.get('firstname')))
     for group in tree.getRoot("usergroups").getChildren():
         for guser in group.getChildren():
             if guser.getName() == user.getName():
@@ -461,13 +465,15 @@ def deleteUser(user, usertype="intern"):
         users.removeChild(user)
         log.info("removed user %r (%r) from node %r (%r)" % (user.getName(), user.id, users.name, users.id))
     else:
-        log.error("could not remove user %r (%r) from node %r (%r): no such parent for this node" % (user.getName(), user.id, users.name, users.id))
+        log.error("could not remove user %r (%r) from node %r (%r): no such parent for this node" %
+                  (user.getName(), user.id, users.name, users.id))
 
     home_root = tree.getRoot("home")
     home_dir_found = False
     for c in home_root.getChildren():
         try:
-            if c and c.getAccess("read").find("{user " + user.getName() + "}") >= 0 and c.getAccess("write").find("{user " + user.getName() + "}") >= 0:
+            if c and c.getAccess("read").find(
+                    "{user " + user.getName() + "}") >= 0 and c.getAccess("write").find("{user " + user.getName() + "}") >= 0:
                 home_root.removeChild(c)
                 home_dir_found = True
                 log.info("removed home directory %r (%r) from %r (%r)" % (c.name, c.id, home_root.name, home_root.id))
@@ -480,7 +486,7 @@ def deleteUser(user, usertype="intern"):
 
 def existUser(username):
     """ check if user with given name still existing in db """
-    return getUser(username) != None
+    return getUser(username) is not None
 
 
 def makeRandomPassword():
@@ -537,7 +543,8 @@ def getHomeDir(user):
     username = user.getName()
     userdir = None
     for c in tree.getRoot("home").getChildren():
-        if (c.getAccess("read") or "").find("{user " + username + "}") >= 0 and (c.getAccess("write") or "").find("{user " + username + "}") >= 0:
+        if (c.getAccess("read") or "").find(
+                "{user " + username + "}") >= 0 and (c.getAccess("write") or "").find("{user " + username + "}") >= 0:
             return c
 
     # create new userdir

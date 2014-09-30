@@ -14,7 +14,9 @@ logg = logging.getLogger("athanatransition")
 
 
 class AthanaBlueprint(object):
+
     """Map Flask style blueprints to Athana contexts."""
+
     def __init__(self, name, import_name, template_folder=None):
         self.name = name
         self.root_path = get_root_path(import_name)
@@ -66,10 +68,8 @@ class AthanaBlueprint(object):
 
         return view_decorator_athana
 
-
     def _flask_route(self, route):
         raise NotImplemented("flask support not implemented!")
-
 
     def route(self, athana_route=None, flask_route=None):
         """decorator for views which work with Athana and Flask
@@ -84,6 +84,3 @@ class AthanaBlueprint(object):
     def jinja_loader(self):
         if self.template_folder is not None:
             return FileSystemLoader(path.join(self.root_path, self.template_folder))
-
-
-

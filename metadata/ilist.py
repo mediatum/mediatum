@@ -30,33 +30,30 @@ from core.transition import httpstatus
 class m_ilist(Metatype):
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
-        return tal.getTAL("metadata/ilist.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
-
+        return tal.getTAL("metadata/ilist.html", {"lock": lock, "value": value, "width": width,
+                                                  "name": field.getName(), "field": field}, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
         n = context.collection
         valuelist = n.getAllAttributeValues(context.field.getName(), context.access)
-        keys = valuelist.keys()
-        keys.sort()
+        keys = sorted(valuelist.keys())
         v = []
         for key in keys:
             v.append((key, valuelist[key]))
-        return tal.getTAL("metadata/ilist.html",{"context":context, "valuelist":v}, macro="searchfield", language=context.language)
-
+        return tal.getTAL("metadata/ilist.html", {"context": context, "valuelist": v}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None, html=1):
         value = node.get(field.getName())
         try:
-            if value[-1]==";":
+            if value[-1] == ";":
                 value = value[0:-1]
         except:
             pass
 
-        value = value.replace(";","; ")
+        value = value.replace(";", "; ")
         if html:
             value = esc(value)
         return (field.getLabel(), value)
-
 
     def format_request_value_for_db(self, field, params, item, language=None):
         value = params.get(item)
@@ -65,10 +62,10 @@ class m_ilist(Metatype):
 
     def getName(self):
         return "fieldtype_ilist"
-        
+
     def getInformation(self):
-        return {"moduleversion":"1.1", "softwareversion":"1.1"}
-        
+        return {"moduleversion": "1.1", "softwareversion": "1.1"}
+
     def getPopup(self, req):
         access = AccessData(req)
         try:
@@ -79,52 +76,52 @@ class m_ilist(Metatype):
             return httpstatus.HTTP_NOT_FOUND
 
         index = tree.getRoot("collections").getAllAttributeValues(name, access, req.params.get('schema')).keys()
-        index.sort(lambda x,y: cmp(x.lower(), y.lower()))
-        
-        if req.params.get("print","")!="":
+        index.sort(lambda x, y: cmp(x.lower(), y.lower()))
+
+        if req.params.get("print", "") != "":
             req.reply_headers["Content-Disposition"] = "attachment; filename=index.txt"
             for word in index:
-                if word.strip()!="":
-                    req.write(word.strip()+"\r\n")
+                if word.strip() != "":
+                    req.write(word.strip() + "\r\n")
             return
 
-        req.writeTAL("metadata/ilist.html", {"index":index, "fieldname":fieldname}, macro="popup")
+        req.writeTAL("metadata/ilist.html", {"index": index, "fieldname": fieldname}, macro="popup")
         return httpstatus.HTTP_OK
 
     # method for additional keys of type spctext
     def getLabels(self):
         return m_ilist.labels
-        
-    labels = { "de":
-            [
-                ("editor_index","Index"),
-                ("editor_index_title","Indexwerte anzeigen"),
-                ("popup_index_header","Vorhandene Indexwerte"),
-                ("popup_indexnumber","Wert(e) selektiert"),
-                ("popup_listvalue_title","Listenwerte als Popup anzeigen"),
-                ("popup_listvalue","Listenwerte anzeigen"),
-                ("popup_clearselection_title","Auswahlliste leeren"),
-                ("popup_clearselection","Auwahl aufheben"),
-                ("popup_ok","OK"),
-                ("popup_cancel","Abbrechen"),
-                ("fieldtype_ilist", "Werteliste mit Index"),
-                ("fieldtype_ilist_desc", "Eingabefeld mit Index als Popup"),
-                ("ilist_titlepopupbutton", "Editiermaske \xc3\xb6ffnen")
-            ],
-          "en":
-            [
-                ("editor_index","Index"),
-                ("editor_index_title","show index values"),
-                ("popup_index_header","Existing Index values"),
-                ("popup_ok","OK"),
-                ("popup_cancel","Cancel"),
-                ("popup_listvalue_title","Show list values as popup"),
-                ("popup_listvalue","show list values"),
-                ("popup_clearselection","clear selection"),
-                ("popup_clearselection_title","Unselect all values"),
-                ("popup_indexnumber","values selected"),
-                ("fieldtype_ilist", "indexlist"),
-                ("fieldtype_ilist_desc", "input field with index"),        
-                ("ilist_titlepopupbutton", "open editor mask")
-            ]
-        }
+
+    labels = {"de":
+              [
+                  ("editor_index", "Index"),
+                  ("editor_index_title", "Indexwerte anzeigen"),
+                  ("popup_index_header", "Vorhandene Indexwerte"),
+                  ("popup_indexnumber", "Wert(e) selektiert"),
+                  ("popup_listvalue_title", "Listenwerte als Popup anzeigen"),
+                  ("popup_listvalue", "Listenwerte anzeigen"),
+                  ("popup_clearselection_title", "Auswahlliste leeren"),
+                  ("popup_clearselection", "Auwahl aufheben"),
+                  ("popup_ok", "OK"),
+                  ("popup_cancel", "Abbrechen"),
+                  ("fieldtype_ilist", "Werteliste mit Index"),
+                  ("fieldtype_ilist_desc", "Eingabefeld mit Index als Popup"),
+                  ("ilist_titlepopupbutton", "Editiermaske \xc3\xb6ffnen")
+              ],
+              "en":
+              [
+                  ("editor_index", "Index"),
+                  ("editor_index_title", "show index values"),
+                  ("popup_index_header", "Existing Index values"),
+                  ("popup_ok", "OK"),
+                  ("popup_cancel", "Cancel"),
+                  ("popup_listvalue_title", "Show list values as popup"),
+                  ("popup_listvalue", "show list values"),
+                  ("popup_clearselection", "clear selection"),
+                  ("popup_clearselection_title", "Unselect all values"),
+                  ("popup_indexnumber", "values selected"),
+                  ("fieldtype_ilist", "indexlist"),
+                  ("fieldtype_ilist_desc", "input field with index"),
+                  ("ilist_titlepopupbutton", "open editor mask")
+              ]
+              }

@@ -26,6 +26,7 @@ import os
 import re
 import string
 
+
 def escape(text, replace=string.replace):
     """Converts the special characters '<', '>', and '&'.
 
@@ -33,7 +34,7 @@ def escape(text, replace=string.replace):
     in HTML as &lt; &gt; and &amp; respectively. In Python
     1.5 we use the new string.replace() function for speed.
     """
-    text = replace(text, '&', '&amp;') # must be done 1st
+    text = replace(text, '&', '&amp;')  # must be done 1st
     text = replace(text, '<', '&lt;')
     text = replace(text, '>', '&gt;')
     text = replace(text, '"', '&quot;')
@@ -41,14 +42,17 @@ def escape(text, replace=string.replace):
     return text
 
 # The FCKeditor class
+
+
 class FCKeditor(object):
+
     def __init__(self, instanceName):
         self.InstanceName = instanceName
         self.BasePath = 'FCKeditor/'
         self.Width = '100%'
         self.Height = '200'
         self.ToolbarSet = 'Default'
-        self.Value = '';
+        self.Value = ''
 
         self.Config = {}
 
@@ -58,14 +62,14 @@ class FCKeditor(object):
     def CreateHtml(self):
         HtmlValue = escape(self.Value)
         Html = ""
-        
+
         if (self.IsCompatible()):
             File = "fckeditor.html"
             Link = "%seditor/%s?InstanceName=%s" % (
-                    self.BasePath,
-                    File,
-                    self.InstanceName
-                    )
+                self.BasePath,
+                File,
+                self.InstanceName
+            )
             if (self.ToolbarSet is not None):
                 Link += "&amp;Toolbar=%s" % self.ToolbarSet
 
@@ -74,13 +78,13 @@ class FCKeditor(object):
                     self.InstanceName,
                     self.InstanceName,
                     HtmlValue
-                    )
+            )
 
             # Render the configurations hidden field
             Html += "<input type=\"hidden\" id=\"%s___Config\" value=\"%s\" style=\"display:none\" />" % (
                     self.InstanceName,
                     self.GetConfigFieldString()
-                    )
+            )
 
             # Render the editor iframe
             Html += "<iframe id=\"%s\__Frame\" src=\"%s\" width=\"%s\" height=\"%s\" frameborder=\"0\" scrolling=\"no\"></iframe>" % (
@@ -88,7 +92,7 @@ class FCKeditor(object):
                     Link,
                     self.Width,
                     self.Height
-                    )
+            )
         else:
             if (self.Width.find("%") < 0):
                 WidthCSS = "%spx" % self.Width
@@ -104,11 +108,10 @@ class FCKeditor(object):
                     WidthCSS,
                     HeightCSS,
                     HtmlValue
-                    )
-                    
+            )
+
         if "NodeId" in self.Config:
-            Html += "<input name=\"%s\" type=\"hidden\" name=\"nodeid\"/>" %(self.Config['NodeId'])
-            
+            Html += "<input name=\"%s\" type=\"hidden\" name=\"nodeid\"/>" % (self.Config['NodeId'])
 
         return Html
 
@@ -119,19 +122,19 @@ class FCKeditor(object):
             sAgent = ""
         if (sAgent.find("MSIE") >= 0) and (sAgent.find("mac") < 0) and (sAgent.find("Opera") < 0):
             i = sAgent.find("MSIE")
-            iVersion = float(sAgent[i+5:i+5+3])
+            iVersion = float(sAgent[i + 5:i + 5 + 3])
             if (iVersion >= 5.5):
                 return True
             return False
         elif (sAgent.find("Gecko/") >= 0):
             i = sAgent.find("Gecko/")
-            iVersion = int(sAgent[i+6:i+6+8])
+            iVersion = int(sAgent[i + 6:i + 6 + 8])
             if (iVersion >= 20030210):
                 return True
             return False
         elif (sAgent.find("Opera/") >= 0):
             i = sAgent.find("Opera/")
-            iVersion = float(sAgent[i+6:i+6+4])
+            iVersion = float(sAgent[i + 6:i + 6 + 4])
             if (iVersion >= 9.5):
                 return True
             return False

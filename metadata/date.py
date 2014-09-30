@@ -22,41 +22,40 @@ import utils.date as date
 from utils.date import format_date, parse_date, validateDate
 from core.metatype import Metatype
 
+
 class m_date(Metatype):
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
         global dateoption
 
         d = field.getSystemFormat(str(field.getValues()))
-            
-        if value=="?":
+
+        if value == "?":
             value = date.format_date(date.now(), d.getValue())
         try:
-            value = date.format_date(date.parse_date(value),  d.getValue())
+            value = date.format_date(date.parse_date(value), d.getValue())
         except:
             pass
 
-        return tal.getTAL("metadata/date.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
-
+        return tal.getTAL("metadata/date.html", {"lock": lock, "value": value, "width": width,
+                                                 "name": field.getName(), "field": field}, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
         context.value = context.value.split(";")
-        return tal.getTAL("metadata/date.html",{"context":context}, macro="searchfield", language=context.language)
-
+        return tal.getTAL("metadata/date.html", {"context": context}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None, html=1):
         value = node.get(field.getName())
-        
-        if not value or value=="0000-00-00T00:00:00": # dummy for unknown
-            return (field.getLabel(),"")
+
+        if not value or value == "0000-00-00T00:00:00":  # dummy for unknown
+            return (field.getLabel(), "")
         else:
             try:
                 d = parse_date(value)
             except ValueError:
-                return (field.getLabel(),value)
+                return (field.getLabel(), value)
             value = format_date(d, format=field.getValues())
         return (field.getLabel(), value)
-
 
     def format_request_value_for_db(self, field, params, item, language=None):
         value = params.get(item)
@@ -64,13 +63,12 @@ class m_date(Metatype):
         if not f:
             return ""
         try:
-            d = parse_date(str(value),f.getValue())
+            d = parse_date(str(value), f.getValue())
         except ValueError:
             return ""
         if not validateDate(d):
             return ""
         return format_date(d, format='%Y-%m-%dT%H:%M:%S')
-
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         try:
@@ -78,30 +76,30 @@ class m_date(Metatype):
         except:
             value = ""
         #value = ""
-        #if field:
+        # if field:
         #    value = field.getValues()
-        return tal.getTAL("metadata/date.html", {"value":value, "dateoption":dateoption}, macro="maskeditor", language=language)
+        return tal.getTAL("metadata/date.html", {"value": value, "dateoption": dateoption}, macro="maskeditor", language=language)
 
     def getName(self):
         return "fieldtype_date"
-    
+
     def getInformation(self):
-        return {"moduleversion":"1.1", "softwareversion":"1.1"}
-        
+        return {"moduleversion": "1.1", "softwareversion": "1.1"}
+
     # method for additional keys
     def getLabels(self):
         return m_date.labels
 
-    labels = { "de":
-            [
-                ("date_edit_date_format", "Datums-/Zeitformat:"),
-                ("fieldtype_date", "Datum"),
-                ("fieldtype_date_desc", "Datumsauswahl (Tag / Monat / Jahr)")
-            ],
-           "en":
-            [
-                ("date_edit_date_format", "Date-/Time-format:"),
-                ("fieldtype_date", "date"),
-                ("fieldtype_date_desc", "date field (day / month / year)")
-            ]
-          }
+    labels = {"de":
+              [
+                  ("date_edit_date_format", "Datums-/Zeitformat:"),
+                  ("fieldtype_date", "Datum"),
+                  ("fieldtype_date_desc", "Datumsauswahl (Tag / Monat / Jahr)")
+              ],
+              "en":
+              [
+                  ("date_edit_date_format", "Date-/Time-format:"),
+                  ("fieldtype_date", "date"),
+                  ("fieldtype_date_desc", "date field (day / month / year)")
+              ]
+              }

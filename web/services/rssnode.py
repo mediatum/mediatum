@@ -29,6 +29,7 @@ date_pattern_armus = re.compile(r'\d{2}/\d{2}/\d{4}')
 # list of node attributes checked for rss item date
 attr_list = ['updatetime', 'creationtime', 'evaluna-last-update', 'armus-datecreate', 'updatesearchindex']
 
+
 def try_node_date(node, attr_list=attr_list):
     for key in attr_list:
         timevalue = node.get(key)
@@ -40,15 +41,15 @@ def try_node_date(node, attr_list=attr_list):
             break
         else:
             rfc822_time = ''
-    return rfc822_time        
+    return rfc822_time
 
 feed_channel_dict = {
-'title': '',
-'link': '',
-'description': '',
-'lang': '',
-'pubdate': '',
-'lastbuild': '',
+    'title': '',
+    'link': '',
+    'description': '',
+    'lang': '',
+    'pubdate': '',
+    'lastbuild': '',
 }
 
 template_rss_channel = '''<?xml version="1.0" encoding="utf-8" standalone="yes"?>

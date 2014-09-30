@@ -19,15 +19,19 @@
 """
 import core.tree as tree
 import logging
-from workflow import WorkflowStep, registerStep
+from .workflow import WorkflowStep, registerStep
 from core.translation import t, lang
 from schema.schema import getMetaType, VIEW_HIDE_EMPTY
 
+
 def mkfilelist(node, deletebutton=0, language=None, request=None):
-    return request.getTAL("workflow/showdata.html", {"files":node.getFiles(), "node":node, "delbutton":deletebutton} , macro="workflow_filelist")
-    
+    return request.getTAL(
+        "workflow/showdata.html", {"files": node.getFiles(), "node": node, "delbutton": deletebutton}, macro="workflow_filelist")
+
+
 def mkfilelistshort(node, deletebutton=0, language=None, request=None):
-    return request.getTAL("workflow/showdata.html", {"files":node.getFiles(), "node":node, "delbutton":deletebutton} , macro="workflow_filelist_short")
+    return request.getTAL(
+        "workflow/showdata.html", {"files": node.getFiles(), "node": node, "delbutton": deletebutton}, macro="workflow_filelist_short")
 
 
 def register():
@@ -45,8 +49,8 @@ class WorkflowStep_ShowData(WorkflowStep):
             return self.forwardAndShow(node, True, req)
         if "gofalse" in req.params:
             return self.forwardAndShow(node, False, req)
-        
-        key = req.params.get("key", req.session.get("key",""))
+
+        key = req.params.get("key", req.session.get("key", ""))
         masks = self.get("masks")
         if not masks:
             masklist = ["editmask"]
@@ -58,31 +62,38 @@ class WorkflowStep_ShowData(WorkflowStep):
         for maskname in masklist:
             t = getMetaType(node.type)
             if t:
-                if node.get('system.wflanguage')!='': # use correct language
-                    mask = t.getMask("%s.%s" %(node.get('system.wflanguage'), maskname))
+                if node.get('system.wflanguage') != '':  # use correct language
+                    mask = t.getMask("%s.%s" % (node.get('system.wflanguage'), maskname))
                 if not mask:
                     mask = t.getMask(maskname)
 
                 try:
-                    fieldmap += [mask.getViewHTML([node],VIEW_HIDE_EMPTY,language=lang(req))]
+                    fieldmap += [mask.getViewHTML([node], VIEW_HIDE_EMPTY, language=lang(req))]
                 except:
                     print "error"
                     logging.getLogger("error").error("mask %s defined for workflow step not found." % mask)
                     return ""
-                    
+
         filelist = ""
         filelistshort = ""
-        
+
         if node.getFiles():
             filelist = mkfilelist(node, request=req)
             filelistshort = mkfilelistshort(node, request=req)
 
-        return req.getTAL("workflow/showdata.html", {"key":key, "filelist":filelist, "filelistshort":filelistshort, "fields":fieldmap, "pretext":self.getPreText(lang(req)), "posttext":self.getPostText(lang(req)), "sidebar":self.getSidebarText(lang(req)), "buttons":self.tableRowButtons(node)}, macro="workflow_showdata")
-
+        return req.getTAL("workflow/showdata.html",
+                          {"key": key,
+                           "filelist": filelist,
+                           "filelistshort": filelistshort,
+                           "fields": fieldmap,
+                           "pretext": self.getPreText(lang(req)),
+                           "posttext": self.getPostText(lang(req)),
+                           "sidebar": self.getSidebarText(lang(req)),
+                           "buttons": self.tableRowButtons(node)},
+                          macro="workflow_showdata")
 
     def metaFields(self, lang=None):
         field = tree.Node("masks", "metafield")
         field.set("label", t(lang, "admin_wfstep_masks_to_display"))
         field.set("type", "text")
         return [field]
-

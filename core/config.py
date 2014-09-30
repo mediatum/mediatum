@@ -22,7 +22,7 @@
 import os
 import sys
 
-basedir = os.path.dirname(__file__).rsplit(os.sep,1)[0]
+basedir = os.path.dirname(__file__).rsplit(os.sep, 1)[0]
 print "Base path is at", basedir
 # append our own fallback lib directory
 sys.path.append(os.path.join(basedir, "external"))
@@ -32,12 +32,14 @@ settings = None
 # append our own fallback lib directory
 sys.path.append(os.path.join(basedir, "external"))
 
-def get(key,default=None):
-    return settings.get(key,default)
+
+def get(key, default=None):
+    return settings.get(key, default)
+
 
 def getsubset(prefix):
     options = {}
-    for k,v in settings.items():
+    for k, v in settings.items():
         if k.startswith(prefix):
             k = k[len(prefix):]
             if k[0] == '.':
@@ -45,53 +47,56 @@ def getsubset(prefix):
             options[k] = v
     return options
 
+
 def _read_ini_file(basedir, filename):
     lineno = 0
     params = {}
-    fi = open(os.path.join(basedir,filename), "rb")
+    fi = open(os.path.join(basedir, filename), "rb")
     module = ""
     for line in fi.readlines():
-        lineno=lineno+1
+        lineno = lineno + 1
         # remove comments
         hashpos = line.find("#")
-        if hashpos>=0:
+        if hashpos >= 0:
             line = line[0:hashpos]
         # remove whitespace
         line = line.strip()
 
         if line == "":
-            pass #skip empty line
+            pass  # skip empty line
         elif line[0] == '[':
             if line[-1] != ']':
-                raise "Syntax error in line "+str(lineno)+" of file "+filename+":\n"+line
+                raise "Syntax error in line " + str(lineno) + " of file " + filename + ":\n" + line
             module = line[1:-1]
         else:
             equals = line.find("=")
-            if equals<0:
-                raise "Syntax error in line "+str(lineno)+" of file "+filename+":\n"+line
-            key = module+"."+line[0:equals].strip()
-            value = line[equals+1:].strip()
+            if equals < 0:
+                raise "Syntax error in line " + str(lineno) + " of file " + filename + ":\n" + line
+            key = module + "." + line[0:equals].strip()
+            value = line[equals + 1:].strip()
             if(len(value) and value[0] == '\'' and value[-1] == '\''):
                 value = value[1:-1]
             params[key] = value
     fi.close()
 
-    for key,value in params.items():
+    for key, value in params.items():
         if key.startswith("paths") or key.endswith("file"):
-            if not (value[0]=='/' or value[0]=='\\' or value[1]==':'):
+            if not (value[0] == '/' or value[0] == '\\' or value[1] == ':'):
                 value = os.path.join(basedir, value)
                 params[key] = value
             else:
-                pass # path is absolute, don't bother
+                pass  # path is absolute, don't bother
 
     return params
+
 
 def mkDir(dir):
     try:
         os.mkdir(dir)
-        print "Created directory",dir
+        print "Created directory", dir
     except:
-        pass #already exists
+        pass  # already exists
+
 
 def initialize():
     global settings
@@ -103,21 +108,23 @@ def initialize():
         ini_filename = "mediatum.cfg"
     settings = _read_ini_file(basedir, ini_filename)
     if not os.path.isdir(settings["paths.datadir"]):
-        print "Couldn't find data directory",settings["paths.datadir"]
+        print "Couldn't find data directory", settings["paths.datadir"]
         sys.exit(1)
 
     for var in ["paths.datadir", "paths.searchstore", "paths.tempdir"]:
         if var not in settings:
-            print "ERROR: config option",var,"not set"
+            print "ERROR: config option", var, "not set"
             sys.exit(1)
 
-    mkDir(os.path.join(settings["paths.datadir"],"search"))
-    mkDir(os.path.join(settings["paths.datadir"],"html"))
-    mkDir(os.path.join(settings["paths.datadir"],"log"))
+    mkDir(os.path.join(settings["paths.datadir"], "search"))
+    mkDir(os.path.join(settings["paths.datadir"], "html"))
+    mkDir(os.path.join(settings["paths.datadir"], "log"))
 
 #
 # resolve given filename to correct path/file
 #
+
+
 def resolve_filename(filename):
     templatepath = settings.get("template.path")
     templatename = settings.get("template.name", None)
@@ -133,9 +140,8 @@ def resolve_filename(filename):
     if os.path.exists(newname):
         return newname
     else:
-        if filename.find("admin_")>=0:
+        if filename.find("admin_") >= 0:
             return pathlist[0] + "/admin/template/" + filename
         elif filename.startswith("m_"):
             return pathlist[0] + "/metatypes/" + filename
     return filename
-

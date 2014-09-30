@@ -24,6 +24,7 @@ if runswith == "athana":
 
 
 class AthanaTestRequest(athana_http.http_request):
+
     def __init__(self, params=None, uri="/", headers=None):
         headers = headers or {}
         athana_http.http_request.__init__(self, None, None, None, uri, 0, headers)
@@ -36,6 +37,7 @@ class AthanaTestRequest(athana_http.http_request):
 
 
 class AthanaFlaskStyleApp(object):
+
     """Flask style app based on Athana HTTP"""
     #: Options that are passed directly to the Jinja2 environment.
     jinja_options = ImmutableDict(

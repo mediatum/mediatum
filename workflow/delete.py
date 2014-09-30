@@ -17,14 +17,17 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from workflow import WorkflowStep, registerStep
+from .workflow import WorkflowStep, registerStep
 import core.tree as tree
+
 
 def register():
     tree.registerNodeClass("workflowstep-delete", WorkflowStep_Delete)
     registerStep("workflowstep-delete")
 
+
 class WorkflowStep_Delete(WorkflowStep):
+
     def runAction(self, node, op=""):
         for p in node.getParents():
             try:

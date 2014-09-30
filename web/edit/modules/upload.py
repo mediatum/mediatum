@@ -24,7 +24,7 @@ import core.tree as tree
 import re
 import core.config as config
 import zipfile
-import random 
+import random
 import logging
 from core.datatypes import loadAllDatatypes
 from web.edit.edit_common import showdir
@@ -40,15 +40,15 @@ from core.translation import translate
 
 def getInformation():
     return {"version": "1.1", "system": 0}
-    
-    
+
+
 def elemInList(list, name):
     for item in list:
         if item.getName() == name:
             return True
     return False
 
-    
+
 def getContent(req, ids):
     error = req.params.get("error")
 
@@ -64,24 +64,24 @@ def getContent(req, ids):
                     for t in datatypes:
                         if t.getName() == dtype and not elemInList(dtypes, t.getName()):
                             dtypes.append(t)
-                     
+
         dtypes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
         return dtypes
-            
+
     schemes = getSchemes(req)
     dtypes = getDatatypes(req, schemes)
-    
+
     if "action" in req.params:
         v = {"id": req.params.get("id")}
-        
+
         # step 1
         if req.params.get("action", "").startswith("step1"):
             v['datatypes'] = dtypes
             req.writeTAL("web/edit/modules/upload.html", v, macro="step1")
-            
+
         # step 2
         if req.params.get("action", "").startswith("step2|"):
-        
+
             objtype = req.params.get("action", "|").split("|")[1]
             if objtype == "":
                 req.write("")
@@ -92,7 +92,7 @@ def getContent(req, ids):
                     _schemes.append(scheme)
             schemes = _schemes
             schemes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
-            
+
             for item in dtypes:
                 if item.getName() == objtype:
                     v['objtype'] = item
@@ -109,16 +109,22 @@ def getContent(req, ids):
             else:
                 req.writeTAL("web/edit/modules/upload.html", v, macro="step3")
         return ""
-    
+
     elif "submit" in req.params:  # create object
         try:
             upload_new(req)
-        except OperationException, e:
+        except OperationException as e:
             error = e.value
 
-    return req.getTAL("web/edit/modules/upload.html", {"id": req.params.get("id"), "datatypes": dtypes, "schemes": schemes, "error": error}, macro="upload_form") + showdir(req, tree.getNode(ids[0]))
+    return req.getTAL("web/edit/modules/upload.html",
+                      {"id": req.params.get("id"),
+                       "datatypes": dtypes,
+                       "schemes": schemes,
+                       "error": error},
+                      macro="upload_form") + showdir(req,
+                                                     tree.getNode(ids[0]))
 
-    
+
 # differs from os.path.split in that it handles windows as well as unix filenames
 FNAMESPLIT = re.compile(r'(([^/\\]*[/\\])*)([^/\\]*)')
 
@@ -162,7 +168,7 @@ def importFileIntoNode(user, realname, tempname, datatype, workflow=0):
     if hasattr(n, "event_files_changed"):
         try:
             n.event_files_changed()
-        except OperationException, e:
+        except OperationException as e:
             for file in n.getFiles():
                 if os.path.exists(file.retrieveFile()):
                     os.remove(file.retrieveFile())
@@ -179,7 +185,7 @@ def upload_new(req):
     uploaddir = users.getUploadDir(user)
 
     workflow = ""  # int(req.params["workflow"])
-    
+
     if "file" in req.params.keys():
         file = req.params["file"]
         del req.params["file"]
@@ -188,9 +194,9 @@ def upload_new(req):
             try:
                 importFileIntoNode(user, file.filename, file.tempname, datatype, workflow)
                 req.request["Location"] = req.makeLink("content", {"id": uploaddir.id})
-            except OperationException, e:
+            except OperationException as e:
                 raise OperationException(e.value)
-            #except:
+            # except:
             #    raise OperationException("error:unkonwn")
             return athana.HTTP_MOVED_TEMPORARILY
 

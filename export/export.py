@@ -24,14 +24,15 @@ from schema.schema import getMetaType
 from core.acl import AccessData
 from core.translation import t
 
+
 def export(req):
     p = req.path[1:].split("/")
     access = AccessData(req)
 
-    if len(p)!=2:
+    if len(p) != 2:
         req.error(404, "Object not found")
         return
-    
+
     if p[0].isdigit():
         try:
             node = tree.getNode(p[0])
@@ -39,16 +40,16 @@ def export(req):
             return req.error(404, "Object not found")
     else:
         return req.error(404, "Object not found")
-        
+
     if not access.hasAccess(node, "read"):
         req.write(t(req, "permission_denied"))
         return
-        
+
     mask = getMetaType(node.getSchema()).getMask(p[1])
     if mask:
         try:
             req.reply_headers['Content-Type'] = "text/plain; charset=utf-8"
-            req.write(mask.getViewHTML([node], flags=8)) # flags =8 -> export type
+            req.write(mask.getViewHTML([node], flags=8))  # flags =8 -> export type
         except tree.NoSuchNodeError:
             return req.error(404, "Object not found")
     else:

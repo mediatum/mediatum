@@ -19,12 +19,15 @@
 """
 from utils.utils import format_filesize, get_filesize
 from utils.log import dlogfiles
-from web.admin.adminutils import Overview,getAdminStdVars
+from web.admin.adminutils import Overview, getAdminStdVars
+
 
 def getInformation():
-    return{"version":"1.0"}
+    return{"version": "1.0"}
+
 
 class LogFile:
+
     def __init__(self, name, path):
         self.name = name
         self.path = path
@@ -35,23 +38,27 @@ class LogFile:
 
     def getName(self):
         return self.name
+
     def getPath(self):
         return self.path
+
     def getSize(self):
         return self.size
 
+
 def getLogFiles():
     f = []
-    logtypes = dlogfiles.keys()
-    logtypes.sort()
+    logtypes = sorted(dlogfiles.keys())
     for name in logtypes:
-        f += [LogFile("admin_log_"+name, dlogfiles[name]['filename'])]
+        f += [LogFile("admin_log_" + name, dlogfiles[name]['filename'])]
     return f
 
 filelist = getLogFiles()
 
+
 def validate(req, op):
     return view(req, op)
+
 
 def view(req, op):
     global filelist
@@ -66,7 +73,7 @@ def view(req, op):
 
     # refresh part
     if "name" in req.params.keys():
-        name = req.params.get("name","")
+        name = req.params.get("name", "")
 
     # load file part
     for key in req.params.keys():
@@ -74,13 +81,15 @@ def view(req, op):
             name = key[5:-2]
 
     for file in filelist:
-        if file.getName()==name:
+        if file.getName() == name:
             logfile = file
 
     # return form with file-content
-    if logfile!=None:
-        text += req.getTAL("web/admin/modules/logfile.html", {"logfile":logfile, "content":getFileContent(logfile.getPath())}, macro="detail")
+    if logfile is not None:
+        text += req.getTAL("web/admin/modules/logfile.html",
+                           {"logfile": logfile, "content": getFileContent(logfile.getPath())}, macro="detail")
     return text
+
 
 def getFileContent(path):
     try:

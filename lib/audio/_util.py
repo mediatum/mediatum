@@ -16,7 +16,9 @@ import struct
 
 from fnmatch import fnmatchcase
 
+
 class DictMixin(object):
+
     """Implement the dict API using keys() and __*item__ methods.
 
     Similar to UserDict.DictMixin, this takes a class that defines
@@ -35,9 +37,12 @@ class DictMixin(object):
         return iter(self.keys())
 
     def has_key(self, key):
-        try: self[key]
-        except KeyError: return False
-        else: return True
+        try:
+            self[key]
+        except KeyError:
+            return False
+        else:
+            return True
     __contains__ = has_key
 
     iterkeys = lambda self: iter(self.keys())
@@ -56,10 +61,13 @@ class DictMixin(object):
     def pop(self, key, *args):
         if len(args) > 1:
             raise TypeError("pop takes at most two arguments")
-        try: value = self[key]
+        try:
+            value = self[key]
         except KeyError:
-            if args: return args[0]
-            else: raise
+            if args:
+                return args[0]
+            else:
+                raise
         del(self[key])
         return value
 
@@ -67,39 +75,48 @@ class DictMixin(object):
         try:
             key = self.keys()[0]
             return key, self.pop(key)
-        except IndexError: raise KeyError("dictionary is empty")
+        except IndexError:
+            raise KeyError("dictionary is empty")
 
     def update(self, other=None, **kwargs):
         if other is None:
             self.update(kwargs)
             other = {}
 
-        try: map(self.__setitem__, other.keys(), other.values())
+        try:
+            map(self.__setitem__, other.keys(), other.values())
         except AttributeError:
             for key, value in other:
                 self[key] = value
 
     def setdefault(self, key, default=None):
-        try: return self[key]
+        try:
+            return self[key]
         except KeyError:
             self[key] = default
             return default
 
     def get(self, key, default=None):
-        try: return self[key]
-        except KeyError: return default
+        try:
+            return self[key]
+        except KeyError:
+            return default
 
     def __repr__(self):
         return repr(dict(self.items()))
 
     def __cmp__(self, other):
-        if other is None: return 1
-        else: return cmp(dict(self.items()), other)
+        if other is None:
+            return 1
+        else:
+            return cmp(dict(self.items()), other)
 
     def __len__(self):
         return len(self.keys())
 
+
 class DictProxy(DictMixin):
+
     def __init__(self, *args, **kwargs):
         self.__dict = {}
         super(DictProxy, self).__init__(*args, **kwargs)
@@ -116,7 +133,9 @@ class DictProxy(DictMixin):
     def keys(self):
         return self.__dict.keys()
 
+
 class cdata(object):
+
     """C character buffer to Python numeric type conversions."""
 
     from struct import error
@@ -157,12 +176,13 @@ class cdata(object):
     to_longlong_be = staticmethod(lambda data: struct.pack('>q', data))
     to_ulonglong_be = staticmethod(lambda data: struct.pack('>Q', data))
 
-    bitswap = ''.join([chr(sum([((val >> i) & 1) << (7-i) for i in range(8)]))
+    bitswap = ''.join([chr(sum([((val >> i) & 1) << (7 - i) for i in range(8)]))
                        for val in range(256)])
     del(i)
     del(val)
 
     test_bit = staticmethod(lambda value, n: bool((value >> n) & 1))
+
 
 def lock(fileobj):
     """Lock a file object 'safely'.
@@ -175,11 +195,13 @@ def lock(fileobj):
     raises an exception in more extreme circumstances (full
     lock table, invalid file).
     """
-    try: import fcntl
+    try:
+        import fcntl
     except ImportError:
         return False
     else:
-        try: fcntl.lockf(fileobj, fcntl.LOCK_EX)
+        try:
+            fcntl.lockf(fileobj, fcntl.LOCK_EX)
         except IOError:
             # FIXME: There's possibly a lot of complicated
             # logic that needs to go here in case the IOError
@@ -187,6 +209,7 @@ def lock(fileobj):
             return False
         else:
             return True
+
 
 def unlock(fileobj):
     """Unlock a file object.
@@ -199,7 +222,8 @@ def unlock(fileobj):
     import fcntl
     fcntl.lockf(fileobj, fcntl.LOCK_UN)
 
-def insert_bytes(fobj, size, offset, BUFFER_SIZE=2**16):
+
+def insert_bytes(fobj, size, offset, BUFFER_SIZE=2 ** 16):
     """Insert size bytes of empty space starting at offset.
 
     fobj must be an open file object, open rb+ or
@@ -218,8 +242,10 @@ def insert_bytes(fobj, size, offset, BUFFER_SIZE=2**16):
         try:
             import mmap
             map = mmap.mmap(fobj.fileno(), filesize + size)
-            try: map.move(offset + size, offset, movesize)
-            finally: map.close()
+            try:
+                map.move(offset + size, offset, movesize)
+            finally:
+                map.close()
         except (ValueError, EnvironmentError, ImportError):
             # handle broken mmap scenarios
             locked = lock(fobj)
@@ -257,7 +283,8 @@ def insert_bytes(fobj, size, offset, BUFFER_SIZE=2**16):
         if locked:
             unlock(fobj)
 
-def delete_bytes(fobj, size, offset, BUFFER_SIZE=2**16):
+
+def delete_bytes(fobj, size, offset, BUFFER_SIZE=2 ** 16):
     """Delete size bytes of empty space starting at offset.
 
     fobj must be an open file object, open rb+ or
@@ -277,8 +304,10 @@ def delete_bytes(fobj, size, offset, BUFFER_SIZE=2**16):
             try:
                 import mmap
                 map = mmap.mmap(fobj.fileno(), filesize)
-                try: map.move(offset, offset + size, movesize)
-                finally: map.close()
+                try:
+                    map.move(offset, offset + size, movesize)
+                finally:
+                    map.close()
             except (ValueError, EnvironmentError, ImportError):
                 # handle broken mmap scenarios
                 locked = lock(fobj)
@@ -296,13 +325,16 @@ def delete_bytes(fobj, size, offset, BUFFER_SIZE=2**16):
         if locked:
             unlock(fobj)
 
+
 def utf8(data):
     """Convert a basestring to a valid UTF-8 str."""
     if isinstance(data, str):
         return data.decode("utf-8", "replace").encode("utf-8")
     elif isinstance(data, unicode):
         return data.encode("utf-8")
-    else: raise TypeError("only unicode/str types can be converted to UTF-8")
+    else:
+        raise TypeError("only unicode/str types can be converted to UTF-8")
+
 
 def dict_match(d, key, default=None):
     try:

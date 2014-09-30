@@ -29,23 +29,23 @@ from core.db import database
 
 db = database.getConnection()
 
-write = 1 # parameter: 0=simulate operation, 1=write operation
+write = 1  # parameter: 0=simulate operation, 1=write operation
 
 rootid = None
-used_ids={}
-nodemap={}
+used_ids = {}
+nodemap = {}
 
 # ------- NODES -------
 
-print "Checking",db.runQuery("select count(*) from node")[0][0],"nodes"
+print "Checking", db.runQuery("select count(*) from node")[0][0], "nodes"
 
 res = db.runQuery("select id,name,type from node")
-for id,name,type in res:
+for id, name, type in res:
     used_ids[id] = None
     nodemap[id] = []
     if type == "root":
         if rootid:
-            print "More than one root id: ",rootid,id
+            print "More than one root id: ", rootid, id
             sys.exit(1)
         rootid = id
 
@@ -57,44 +57,45 @@ if not rootid:
 
 invalid_mappings = []
 
-print "Checking",db.runQuery("select count(*) from nodemapping")[0][0],"nodemappings"
+print "Checking", db.runQuery("select count(*) from nodemapping")[0][0], "nodemappings"
 
 res = db.runQuery("select nid,cid from nodemapping")
-for nid,cid in res:
+for nid, cid in res:
     if nid not in used_ids or cid not in used_ids:
-        invalid_mappings += [(nid,cid)]
+        invalid_mappings += [(nid, cid)]
     if nid in nodemap:
         nodemap[nid] += [cid]
 
 if len(invalid_mappings):
-    print "* Clearing",len(invalid_mappings),"invalid nodemappings"
+    print "* Clearing", len(invalid_mappings), "invalid nodemappings"
     if write:
-        for nid,cid in invalid_mappings:
-            db.runQuery("delete from nodemapping where nid="+str(nid)+" and cid="+str(cid))
+        for nid, cid in invalid_mappings:
+            db.runQuery("delete from nodemapping where nid=" + str(nid) + " and cid=" + str(cid))
 
-def mark(id,level=0):
-    if(level==512):
+
+def mark(id, level=0):
+    if(level == 512):
         print "Recursion depth exceeded: Loop?"
         sys.exit(1)
     used_ids[id] = 1
     for cid in nodemap[id]:
-        mark(cid,level+1)
+        mark(cid, level + 1)
 mark(rootid)
 
 unused = 0
-for id,used in used_ids.items():
+for id, used in used_ids.items():
     if not used:
         unused = unused + 1
 
 if unused:
-    print "* Clearing",unused,"unused nodes"
+    print "* Clearing", unused, "unused nodes"
     if write:
-        for id,used in used_ids.items():
+        for id, used in used_ids.items():
             if not used:
-                db.runQuery("delete from node where id="+str(id))
-                db.runQuery("delete from nodemapping where nid="+str(id))
+                db.runQuery("delete from node where id=" + str(id))
+                db.runQuery("delete from nodemapping where nid=" + str(id))
     else:
-        for id,used in used_ids.items():
+        for id, used in used_ids.items():
             if not used:
                 print id
 del invalid_mappings
@@ -102,31 +103,31 @@ del nodemap
 
 # ------- NODEATTRIBUTES -------
 
-print "Checking",db.runQuery("select count(*) from nodeattribute")[0][0],"nodeattributes"
+print "Checking", db.runQuery("select count(*) from nodeattribute")[0][0], "nodeattributes"
 
-unused_attributes={}
+unused_attributes = {}
 res = db.runQuery("select nid,name,value from nodeattribute")
 num_attribs = 0
-for nid,name,value in res:
+for nid, name, value in res:
     if nid not in used_ids or not used_ids[nid]:
         unused_attributes[nid] = None
         num_attribs = num_attribs + 1
 if num_attribs:
-    print "* Clearing",num_attribs,"unused attributes"
+    print "* Clearing", num_attribs, "unused attributes"
     if write:
         for id in unused_attributes.keys():
-            db.runQuery("delete from nodeattribute where nid="+str(id))
+            db.runQuery("delete from nodeattribute where nid=" + str(id))
 del unused_attributes
 
 # ------- NODEFILES -------
 
-print "Checking",db.runQuery("select count(*) from nodefile")[0][0],"nodefiles"
+print "Checking", db.runQuery("select count(*) from nodefile")[0][0], "nodefiles"
 
-unused_files={}
-used_files={}
+unused_files = {}
+used_files = {}
 res = db.runQuery("select nid,filename from nodefile")
 num_files = 0
-for nid,filename in res:
+for nid, filename in res:
     if nid not in used_ids or not used_ids[nid]:
         unused_files[nid] = None
         num_files = num_files + 1
@@ -135,40 +136,41 @@ for nid,filename in res:
     else:
         used_files[filename] = 1
 if num_files:
-    print "* Clearing",num_files,"unused files"
+    print "* Clearing", num_files, "unused files"
     if write:
         for id in unused_files.keys():
-            db.runQuery("delete from nodefile where nid="+str(id))
-files_to_delete=0
-for filename,used in used_files.items():
+            db.runQuery("delete from nodefile where nid=" + str(id))
+files_to_delete = 0
+for filename, used in used_files.items():
     if not used:
-        files_to_delete=files_to_delete+1
+        files_to_delete = files_to_delete + 1
 if files_to_delete:
-    print "* Deleting",files_to_delete,"unused files from disc"
+    print "* Deleting", files_to_delete, "unused files from disc"
     if write:
-        for filename,used in used_files.items():
+        for filename, used in used_files.items():
             if not used:
                 print filename
                 # TODO
 
 prefix = config.get("paths.datadir")
 orphan_files = {}
+
+
 def recursedir(path):
-    for file in os.listdir(os.path.join(prefix,path)):
-        f = os.path.join(path,file)
-        if os.path.isdir(os.path.join(prefix,f)):
+    for file in os.listdir(os.path.join(prefix, path)):
+        f = os.path.join(path, file)
+        if os.path.isdir(os.path.join(prefix, f)):
             recursedir(f)
         else:
             if f in used_files and used_files[f]:
                 pass
             else:
                 orphan_files[f] = None
-                #print f,len(used_files)
-                #break
+                # print f,len(used_files)
+                # break
                 #os.system("ls -l "+os.path.join(prefix,f))
 
 recursedir("incoming")
 
 del unused_files
 del used_files
-

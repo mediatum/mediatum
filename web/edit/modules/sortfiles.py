@@ -30,32 +30,33 @@ log = logging.getLogger('edit')
 utrace = logging.getLogger('usertracing')
 
 
-def getContent(req,ids):
+def getContent(req, ids):
     user = users.getUserFromRequest(req)
     access = AccessData(req)
     node = tree.getNode(ids[0])
-    
+
     if "sortfiles" in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     c = getCollection(node)
-    
+
     if "globalsort" in req.params:
         c.set("sortfield", req.params["globalsort"])
     collection_sortfield = c.get("sortfield")
 
     class SortChoice:
+
         def __init__(self, label, value):
             self.label = label
             self.value = value
 
-    sortfields = [SortChoice(t(req,"off"),"")]
-    for ntype,num in c.getAllOccurences(AccessData(req)).items():
+    sortfields = [SortChoice(t(req, "off"), "")]
+    for ntype, num in c.getAllOccurences(AccessData(req)).items():
         if ntype.getSortFields():
             for sortfield in ntype.getSortFields():
                 sortfields += [SortChoice(sortfield.getLabel(), sortfield.getName())]
-                sortfields += [SortChoice(sortfield.getLabel()+t(req,"descending"), "-"+sortfield.getName())]
+                sortfields += [SortChoice(sortfield.getLabel() + t(req, "descending"), "-" + sortfield.getName())]
             break
 
-    return req.getTAL("web/edit/modules/sortfiles.html", {"node":node, "collection_sortfield":collection_sortfield,
-                                         "sortchoices":sortfields, "name":c.getName()}, macro="edit_sortfiles")
+    return req.getTAL("web/edit/modules/sortfiles.html", {"node": node, "collection_sortfield": collection_sortfield,
+                                                          "sortchoices": sortfields, "name": c.getName()}, macro="edit_sortfiles")

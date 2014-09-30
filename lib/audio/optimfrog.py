@@ -25,9 +25,13 @@ __all__ = ["OptimFROG", "Open", "delete"]
 import struct
 from apev2 import APEv2File, error, delete
 
-class OptimFROGHeaderError(error): pass
+
+class OptimFROGHeaderError(error):
+    pass
+
 
 class OptimFROGInfo(object):
+
     """OptimFROG stream information.
 
     Attributes:
@@ -39,14 +43,14 @@ class OptimFROGInfo(object):
     def __init__(self, fileobj):
         header = fileobj.read(76)
         if (len(header) != 76 or not header.startswith("OFR ") or
-            struct.unpack("<I", header[4:8])[0] not in [12, 15]):
+                struct.unpack("<I", header[4:8])[0] not in [12, 15]):
             raise OptimFROGHeaderError("not an OptimFROG file")
         (total_samples, total_samples_high, sample_type, self.channels,
          self.sample_rate) = struct.unpack("<IHBBI", header[8:20])
         total_samples += total_samples_high << 32
         self.channels += 1
         if self.sample_rate:
-            self.length = float(total_samples) / (self.channels * 
+            self.length = float(total_samples) / (self.channels *
                                                   self.sample_rate)
         else:
             self.length = 0.0
@@ -54,6 +58,7 @@ class OptimFROGInfo(object):
     def pprint(self):
         return "OptimFROG, %.2f seconds, %d Hz" % (self.length,
                                                    self.sample_rate)
+
 
 class OptimFROG(APEv2File):
     _Info = OptimFROGInfo

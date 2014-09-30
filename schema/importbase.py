@@ -23,11 +23,13 @@ from . import schema
 
 logg = logging.getLogger("backend")
 
+
 class ImportException(Exception):
     pass
 
 
 class NoMappingFound(ImportException):
+
     def __init__(self, msg="Error", typ=""):
         if typ:
             msg = "{} (type '{})'".format(msg, typ)

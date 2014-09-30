@@ -31,7 +31,7 @@ from core.translation import translate, lang, t
 
 def elemInList(list, name):
     for item in list:
-        if item.getName()==name:
+        if item.getName() == name:
             return True
     return False
 
@@ -39,7 +39,20 @@ def elemInList(list, name):
 def getTypes(datatypes):
     res = []
     for dtype in datatypes:
-        if dtype.name not in ["root", "user", "usergroup", "home", "mapping", "collections", 'metadatatype', 'metafield', 'mask', 'searchmaskitem', 'mappingfield', 'shoppingbag', 'maskitem'] and not dtype.name.startswith("workflow"):
+        if dtype.name not in [
+                "root",
+                "user",
+                "usergroup",
+                "home",
+                "mapping",
+                "collections",
+                'metadatatype',
+                'metafield',
+                'mask',
+                'searchmaskitem',
+                'mappingfield',
+                'shoppingbag',
+                'maskitem'] and not dtype.name.startswith("workflow"):
             res.append(dtype)
     return res
 
@@ -80,9 +93,9 @@ def getContent(req, ids):
             _schemes.append(scheme)
     schemes = _schemes
 
-    schemeNames2LongNames = {'':''}
+    schemeNames2LongNames = {'': ''}
     for s in schemes:
-        schemeNames2LongNames[s.getName()]=s.getLongName()
+        schemeNames2LongNames[s.getName()] = s.getLongName()
 
     try:
         currentSchemaLongName = schemeNames2LongNames[currentSchema]
@@ -97,29 +110,33 @@ def getContent(req, ids):
         for dtype in scheme.getDatatypes():
             if dtype not in dtypes:
                 for t in datatypes:
-                    if t.getName()==dtype and not elemInList(dtypes, t.getName()):
+                    if t.getName() == dtype and not elemInList(dtypes, t.getName()):
                         dtypes.append(t)
 
     dtypes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
 
     admissible_objtypes = getTypes(datatypes)
-    admissible_datatypes = [n for n in admissible_objtypes if tree.Node('', n.name).getCategoryName() in ['document', 'image', 'video', 'audio'] ]
-    admissible_containers = [n for n in admissible_objtypes if tree.Node('', n.name).getCategoryName() in ['container'] ]
+    admissible_datatypes = [n for n in admissible_objtypes if tree.Node(
+        '', n.name).getCategoryName() in ['document', 'image', 'video', 'audio']]
+    admissible_containers = [n for n in admissible_objtypes if tree.Node('', n.name).getCategoryName() in ['container']]
 
-    admissible_objtypes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
-    admissible_datatypes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
-    admissible_containers.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
+    admissible_objtypes.sort(
+        lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
+    admissible_datatypes.sort(
+        lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
+    admissible_containers.sort(
+        lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
 
     available_schemes = [s for s in schemes if currentContentType in s.getDatatypes()]
 
     # filter schemes for special datatypes
-    if req.params.get("objtype","")!="":
+    if req.params.get("objtype", "") != "":
         _schemes = []
         for scheme in schemes:
-            if req.params.get("objtype","") in scheme.getDatatypes():
+            if req.params.get("objtype", "") in scheme.getDatatypes():
                 _schemes.append(scheme)
         schemes = _schemes
-        schemes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(),translate(y.getLongName(), request=req).lower()))
+        schemes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
 
         newObjectType = req.params.get("objtype")
         newSchema = req.params.get("schema")
@@ -158,12 +175,13 @@ def getContent(req, ids):
         if req.params.get("action").startswith("get_schemes_for_"):
             newObjectType = req.params.get("action").replace("get_schemes_for_", "")
             available_schemes = [s for s in schemes if newObjectType in s.getDatatypes()]
-            req.writeTAL("web/edit/modules/changeschema.html", {'schemes':available_schemes, 'currentSchema':currentSchema}, macro="changeschema_selectscheme")
+            req.writeTAL("web/edit/modules/changeschema.html",
+                         {'schemes': available_schemes, 'currentSchema': currentSchema}, macro="changeschema_selectscheme")
         return ""
 
     containers = getContainers(datatypes)
 
-    d = {"id":req.params.get("id"), "error":error, "node": node}
+    d = {"id": req.params.get("id"), "error": error, "node": node}
     d['currentContentType'] = currentContentType
     d['currentSchema'] = currentSchema
     d['currentSchemaLongName'] = currentSchemaLongName
@@ -172,10 +190,9 @@ def getContent(req, ids):
     d['isContainer'] = isContainer
     if currentContentType in [dtype.name for dtype in containers]:
         d['schemes'] = []
-        d['datatypes'] = admissible_containers #containers
+        d['datatypes'] = admissible_containers  # containers
     else:
         d['schemes'] = available_schemes
-        d['datatypes'] = admissible_datatypes #dtypes
+        d['datatypes'] = admissible_datatypes  # dtypes
 
     return req.getTAL("web/edit/modules/changeschema.html", d, macro="changeschema_popup")
-

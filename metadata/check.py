@@ -21,34 +21,35 @@
 from mediatumtal import tal
 from core.metatype import Metatype
 
+
 class m_check(Metatype):
-    
+
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
-        return tal.getTAL("metadata/check.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
+        return tal.getTAL("metadata/check.html", {"lock": lock, "value": value, "width": width,
+                                                  "name": field.getName(), "field": field}, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
-        return tal.getTAL("metadata/check.html",{"context":context}, macro="searchfield", language=context.language)
+        return tal.getTAL("metadata/check.html", {"context": context}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None, html=1):
-        value = node.get(field.getName()).replace(";","; ")
+        value = node.get(field.getName()).replace(";", "; ")
         return (field.getLabel(), value)
 
     def getName(self):
         return "fieldtype_check"
-        
+
     # method for additional keys of type check
     def getLabels(self):
         return m_check.labels
 
-    labels = { "de":
-            [
-                ("fieldtype_check", "Checkbox"),
-                ("fieldtype_check_desc", "Checkbox Auswahl (f\xc3\xbcr Ja/Nein-Werte)")
-            ],
-           "en":
-            [
-                ("fieldtype_check", "checkbox"),
-                ("fieldtype_check_desc", "checkbox field (true/false)")
-            ]
-         }
-
+    labels = {"de":
+              [
+                  ("fieldtype_check", "Checkbox"),
+                  ("fieldtype_check_desc", "Checkbox Auswahl (f\xc3\xbcr Ja/Nein-Werte)")
+              ],
+              "en":
+              [
+                  ("fieldtype_check", "checkbox"),
+                  ("fieldtype_check_desc", "checkbox field (true/false)")
+              ]
+              }

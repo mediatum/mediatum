@@ -65,8 +65,8 @@ class m_text(Metatype):
         # copied from self.getEditorHTML
         lang2value = dict()
         i = 0
-        while i+1 < len(valueList):
-            lang2value[valueList[i]] = valueList[i+1]
+        while i + 1 < len(valueList):
+            lang2value[valueList[i]] = valueList[i + 1]
             i = i + 2
 
         return lang2value.get(language, '')
@@ -74,15 +74,15 @@ class m_text(Metatype):
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None):
         lang = None
         languages = config.get("i18n.languages")
-        if language==None:
+        if language is None:
             language = languages.split(",")[0].strip()
         if field.getValues() and "multilingual" in field.getValues():
             lang = [l.strip() for l in languages.split(',') if (l != language)]
         valueList = value.split("\n")
         values = dict()
         i = 0
-        while i+1 < len(valueList):
-            values[valueList[i]+"__"+field.getName()] = valueList[i+1]
+        while i + 1 < len(valueList):
+            values[valueList[i] + "__" + field.getName()] = valueList[i + 1]
             i = i + 2
 
         if language:
@@ -112,18 +112,18 @@ class m_text(Metatype):
         return tal.getTAL("metadata/text.html", context, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
-        return tal.getTAL("metadata/text.html",{"context":context}, macro="searchfield", language=context.language)
+        return tal.getTAL("metadata/text.html", {"context": context}, macro="searchfield", language=context.language)
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         try:
             multilingual = field.getValues()
         except:
             multilingual = ""
-        return tal.getTAL("metadata/text.html", {"multilingual":multilingual}, macro="maskeditor", language=language)
+        return tal.getTAL("metadata/text.html", {"multilingual": multilingual}, macro="maskeditor", language=language)
 
     def getFormatedValue(self, field, node, language=None, html=1, template_from_caller=None, mask=None):
 
-        value = node.get(field.getName()).replace(";","; ")
+        value = node.get(field.getName()).replace(";", "; ")
 
         # ignore trailing newlines for textfields
         value = value.rstrip("\r\n")
@@ -134,8 +134,8 @@ class m_text(Metatype):
                 index = 0
                 try:
                     index = valuesList.index(language)
-                    value = valuesList[index+1]
-                except ValueError, e:
+                    value = valuesList[index + 1]
+                except ValueError as e:
                     logException(e)
 
                     log = logging.getLogger("errors")
@@ -156,32 +156,32 @@ class m_text(Metatype):
             value = esc(value)
 
         # replace variables
-        #substitute TeX sub/super-scripts with <sub>/<sup> html tags
+        # substitute TeX sub/super-scripts with <sub>/<sup> html tags
         value = modify_tex(value, 'html')
 
-        for var in re.findall( r'&lt;(.+?)&gt;', value ):
-            if var=="att:id":
-                value = value.replace("&lt;"+var+"&gt;", node.id)
+        for var in re.findall(r'&lt;(.+?)&gt;', value):
+            if var == "att:id":
+                value = value.replace("&lt;" + var + "&gt;", node.id)
             elif var.startswith("att:"):
                 val = node.get(var[4:])
-                if val=="":
+                if val == "":
                     val = "____"
 
-                value = value.replace("&lt;"+var+"&gt;", val)
-        value = value.replace("&lt;", "<").replace("&gt;",">")
+                value = value.replace("&lt;" + var + "&gt;", val)
+        value = value.replace("&lt;", "<").replace("&gt;", ">")
 
         maskitem = getMaskitemForField(field, language=language, mask=mask)
         if not maskitem:
             return (field.getLabel(), value)
 
         # use default value from mask if value is empty
-        if value=='':
+        if value == '':
             value = maskitem.getDefault()
 
-        if template_from_caller and template_from_caller[0] and maskitem and str(maskitem.id)==template_from_caller[3]:
+        if template_from_caller and template_from_caller[0] and maskitem and str(maskitem.id) == template_from_caller[3]:
             value = template_from_caller[0]
 
-        context = {'node':node, 'host':"http://" + config.get("host.name")}
+        context = {'node': node, 'host': "http://" + config.get("host.name")}
 
         if (template_from_caller and template_from_caller[0]) and (not node.get(field.getName())):
             value = runTALSnippet(value, context)
@@ -196,7 +196,7 @@ class m_text(Metatype):
     def format_request_value_for_db(self, field, params, item, language=None):
         value = params.get(item, '')
         try:
-            return value.replace("; ",";")
+            return value.replace("; ", ";")
         except:
             return value
 
@@ -204,57 +204,57 @@ class m_text(Metatype):
         return "fieldtype_text"
 
     def getInformation(self):
-        return {"moduleversion":"1.0", "softwareversion":"1.1"}
-
+        return {"moduleversion": "1.0", "softwareversion": "1.1"}
 
     # method for popup methods of type text
     def getPopup(self, req):
         if "type" in req.params:
             req.writeTAL("metadata/text.html", {}, macro="javascript")
         else:
-            req.writeTAL("metadata/text.html", {"charmap":charmap, "name":req.params.get("name"), "value":req.params.get("value")}, macro="popup")
+            req.writeTAL(
+                "metadata/text.html", {"charmap": charmap, "name": req.params.get("name"), "value": req.params.get("value")}, macro="popup")
         return httpstatus.HTTP_OK
 
     # method for additional keys of type text
     def getLabels(self):
         return m_text.labels
 
-    labels = { "de":
-            [
-                ("text_popup_title", "Eingabemaske f\xc3\xbcr Sonderzeichen"),
-                ("fieldtype_text", "Textfeld"),
-                ("fieldtype_text_desc", "Normales Texteingabefeld"),
-                ("text_titlepopupbutton", "Editiermaske \xc3\xb6ffnen"),
-                ("text_valuelabel", "Wert:"),
-                ("text_formatedvalue", "Formatierter Wert:"),
-                ("text_done", "\xC3\x9Cbernehmen"),
-                ("text_cancel", "Abbrechen"),
-                ("text_spcchar", "Sonderzeichen:"),
-                ("text_bold_title", "Markierten Text 'Fett' setzen"),
-                ("text_italic_title", "Markierten Text 'Kursiv' setzen"),
-                ("text_sub_title", "Markierten Text 'tiefstellen'"),
-                ("text_sup_title", "Markierten Text 'hochstellen'"),
-                ("text_show_multilang", "umschalten zu mehrsprachig"),
-                ("text_hide_multilang", "umschalten zu einsprachig"),
-                ("text_multilingual", "Mehrsprachigkeit aktivieren")
-            ],
-           "en":
-            [
-                ("text_popup_title", "Editor mask for specialchars"),
-                ("fieldtype_text", "text field"),
-                ("fieldtype_text_desc", "normal text input field"),
-                ("text_titlepopupbutton", "open editor mask"),
-                ("text_valuelabel", "Value:"),
-                ("text_formatedvalue", "Formated Value:"),
-                ("text_done", "Done"),
-                ("text_cancel", "Cancel"),
-                ("text_spcchar", "Special chars:"),
-                ("text_bold_title", "set marked text 'bold'"),
-                ("text_italic_title", "set marked text 'italic'"),
-                ("text_sub_title", "set marked text 'subscript'"),
-                ("text_sup_title", "set marked text 'superscript'"),
-                ("text_show_multilang", "switch to multilingual"),
-                ("text_hide_multilang", "switch to monolingual"),
-                ("text_multilingual", "Activate multilingual mode")
-            ]
-         }
+    labels = {"de":
+              [
+                  ("text_popup_title", "Eingabemaske f\xc3\xbcr Sonderzeichen"),
+                  ("fieldtype_text", "Textfeld"),
+                  ("fieldtype_text_desc", "Normales Texteingabefeld"),
+                  ("text_titlepopupbutton", "Editiermaske \xc3\xb6ffnen"),
+                  ("text_valuelabel", "Wert:"),
+                  ("text_formatedvalue", "Formatierter Wert:"),
+                  ("text_done", "\xC3\x9Cbernehmen"),
+                  ("text_cancel", "Abbrechen"),
+                  ("text_spcchar", "Sonderzeichen:"),
+                  ("text_bold_title", "Markierten Text 'Fett' setzen"),
+                  ("text_italic_title", "Markierten Text 'Kursiv' setzen"),
+                  ("text_sub_title", "Markierten Text 'tiefstellen'"),
+                  ("text_sup_title", "Markierten Text 'hochstellen'"),
+                  ("text_show_multilang", "umschalten zu mehrsprachig"),
+                  ("text_hide_multilang", "umschalten zu einsprachig"),
+                  ("text_multilingual", "Mehrsprachigkeit aktivieren")
+              ],
+              "en":
+              [
+                  ("text_popup_title", "Editor mask for specialchars"),
+                  ("fieldtype_text", "text field"),
+                  ("fieldtype_text_desc", "normal text input field"),
+                  ("text_titlepopupbutton", "open editor mask"),
+                  ("text_valuelabel", "Value:"),
+                  ("text_formatedvalue", "Formated Value:"),
+                  ("text_done", "Done"),
+                  ("text_cancel", "Cancel"),
+                  ("text_spcchar", "Special chars:"),
+                  ("text_bold_title", "set marked text 'bold'"),
+                  ("text_italic_title", "set marked text 'italic'"),
+                  ("text_sub_title", "set marked text 'subscript'"),
+                  ("text_sup_title", "set marked text 'superscript'"),
+                  ("text_show_multilang", "switch to multilingual"),
+                  ("text_hide_multilang", "switch to monolingual"),
+                  ("text_multilingual", "Activate multilingual mode")
+              ]
+              }

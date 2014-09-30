@@ -23,16 +23,20 @@ import core.config as config
 _db = None
 _dbconn = None
 
+
 class DatabaseException:
+
     def __init__(self, msg):
         self.msg = msg
+
     def __str__(self):
-        return "db exception: "+self.msg+"\n"
+        return "db exception: " + self.msg + "\n"
+
 
 def getConnection():
     global _db, _dbconn
     if not _db:
-        type = config.get("database.type","") 
+        type = config.get("database.type", "")
         if type == "sqlite" or type == "sqllite":
             print "Initializing sqlite database"
             from core.db import sqliteconnector
@@ -44,7 +48,6 @@ def getConnection():
             from core.db import mysqlconnector
             _db = mysqlconnector.MYSQLConnector
     return _db()
-
 
 
 def initDatabaseValues(conn):
@@ -66,25 +69,24 @@ def initDatabaseValues(conn):
     conn.runQuery("insert into nodemapping (nid,cid) values(1,10)")
     conn.runQuery("insert into nodemapping (nid,cid) values(1,11)")
     conn.runQuery("insert into nodemapping (nid,cid) values(1,12)")
-   
+
     adminuser = config.get("user.adminuser", "Administrator")
     admingroup = config.get("user.admingroup", "Administration")
-    conn.runQuery("insert into node (id,name,type) values(6,'"+adminuser+"', 'user')")
+    conn.runQuery("insert into node (id,name,type) values(6,'" + adminuser + "', 'user')")
     conn.runQuery("insert into nodemapping (nid,cid) values(2,6)")
-    conn.runQuery("insert into nodeattribute (nid,name,value) values(6,'password',"+ \
-                  "'226fa8e6cbb1f4e25019e2645225fd47')") #xadmin1
+    conn.runQuery("insert into nodeattribute (nid,name,value) values(6,'password'," +
+                  "'226fa8e6cbb1f4e25019e2645225fd47')")  # xadmin1
     conn.runQuery("insert into nodeattribute (nid,name,value) values(6,'email','admin@mediatum')")
     conn.runQuery("insert into nodeattribute (nid,name,value) values(6,'opts','c')")
 
-    conn.runQuery("insert into node (id,name,type) values(7,'"+config.get("user.guestuser","Gast")+"', 'user')")
+    conn.runQuery("insert into node (id,name,type) values(7,'" + config.get("user.guestuser", "Gast") + "', 'user')")
     conn.runQuery("insert into nodeattribute (nid,name,value) values(7,'email','guest@mediatum')")
     conn.runQuery("insert into nodemapping (nid,cid) values(2,7)")
     conn.runQuery("insert into nodemapping (nid,cid) values(13,7)")
-    conn.runQuery("insert into node (id,name,type) values(8,'"+admingroup+"', 'usergroup')")
+    conn.runQuery("insert into node (id,name,type) values(8,'" + admingroup + "', 'usergroup')")
     conn.runQuery("insert into nodeattribute (nid,name,value) values(8,'opts','ew')")
     conn.runQuery("insert into nodemapping (nid,cid) values(5,8)")
     conn.runQuery("insert into nodemapping (nid,cid) values(8,6)")
 
     conn.runQuery("insert into node (id,name,type) values(13,'Gast', 'usergroup')")
     conn.runQuery("insert into nodemapping (nid,cid) values(5,13)")
-	

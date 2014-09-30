@@ -18,26 +18,28 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-from PIL import Image,ImageDraw
+from PIL import Image, ImageDraw
 import core.config as config
 import re
 
 try:
-    from reportlab.platypus import Paragraph, BaseDocTemplate, SimpleDocTemplate, FrameBreak, Table, TableStyle, Image as PdfImage,Frame,PageBreak,PageTemplate
+    from reportlab.platypus import Paragraph, BaseDocTemplate, SimpleDocTemplate, FrameBreak, Table, TableStyle, Image as PdfImage, Frame, PageBreak, PageTemplate
     from reportlab.lib import colors
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.units import cm
     from reportlab.rl_config import defaultPageSize
     from reportlab.pdfgen import canvas
     from utils.utils import esc
-    reportlab=1
+    reportlab = 1
 except:
-    reportlab=0
+    reportlab = 0
 
 from utils.utils import u, esc
 from core.translation import t
 
+
 class PrintPreview:
+
     def __init__(self, language, host=""):
         self.header = ""
         self.language = language
@@ -49,41 +51,40 @@ class PrintPreview:
         self.styleSheet = getSampleStyleSheet()
 
         self.styleSheet.add(ParagraphStyle(name='paths',
-                                  fontName='Helvetica-Bold',
-                                  fontSize=10,
-                                  spaceBefore=20,
-                                  bulletFontName="Symbol",
-                                  bulletFontSize=16))
-                                  
+                                           fontName='Helvetica-Bold',
+                                           fontSize=10,
+                                           spaceBefore=20,
+                                           bulletFontName="Symbol",
+                                           bulletFontSize=16))
+
         self.styleSheet.add(ParagraphStyle(name='fac_header',
-                                  fontName='Helvetica-Bold',
-                                  fontSize=10,
-                                  leftIndent = 10,
-                                  spaceBefore=10,
-                                  spaceAfter=10))
-        
+                                           fontName='Helvetica-Bold',
+                                           fontSize=10,
+                                           leftIndent=10,
+                                           spaceBefore=10,
+                                           spaceAfter=10))
+
         self.bl = self.styleSheet['Normal']
         self.bl.fontName = 'Helvetica-Bold'
-        self.bl.spaceBefore=6
+        self.bl.spaceBefore = 6
 
         self.bv = self.styleSheet['BodyText']
         self.bv.fontName = 'Helvetica'
         self.bv.spaceBefore = 0
         self.bv.spaceAfter = 5
-        
+
         self.bf = self.styleSheet['fac_header']
-        
+
         self.bp = self.styleSheet['paths']
 
-        self.image_w = 9.5*cm
-        self.image_h = 4.5*cm
+        self.image_w = 9.5 * cm
+        self.image_h = 4.5 * cm
 
     def myPages(self, canvas, doc):
         canvas.saveState()
-        canvas.setFont('Helvetica',8)
-        canvas.drawString(10*cm, 1.9*cm, "- %s %d -" % (t(self.language, "print_view_page"), doc.page))
+        canvas.setFont('Helvetica', 8)
+        canvas.drawString(10 * cm, 1.9 * cm, "- %s %d -" % (t(self.language, "print_view_page"), doc.page))
         canvas.restoreState()
-
 
     def setHeader(self, collection):
         h1 = self.styleSheet['Heading1']
@@ -102,52 +103,58 @@ class PrintPreview:
                 for f in collection.getFiles():
                     fn = f.getName()
                     if fn.endswith(collection.get("system.logo")):
-                        self.addImage(f.retrieveFile(),1)
+                        self.addImage(f.retrieveFile(), 1)
 
     def getStyle(self, page, config):
-        frameHeader = Frame(1*cm, 25.5*cm, 11.5*cm, 3*cm,leftPadding=0, rightPadding=0, id='normal')
-        frameHeader_hide = Frame(1*cm, 25.5*cm, 19*cm, 3*cm,leftPadding=0, rightPadding=0, id='normal')
-        frameFollow = Frame(1*cm, 2.5*cm, 19*cm, 26*cm,leftPadding=0, rightPadding=0, id='normal')
+        frameHeader = Frame(1 * cm, 25.5 * cm, 11.5 * cm, 3 * cm, leftPadding=0, rightPadding=0, id='normal')
+        frameHeader_hide = Frame(1 * cm, 25.5 * cm, 19 * cm, 3 * cm, leftPadding=0, rightPadding=0, id='normal')
+        frameFollow = Frame(1 * cm, 2.5 * cm, 19 * cm, 26 * cm, leftPadding=0, rightPadding=0, id='normal')
 
-        if config==1:
-            frameImage = Frame(1*cm, 2.5*cm, 9.5*cm, 23*cm,leftPadding=0, topPadding=12,rightPadding=0, id='normal')
-            frameMeta = Frame(10.5*cm, 2.5*cm, 9.5*cm, 23*cm,leftPadding=10, rightPadding=0, id='normal')
-            if page==1:
+        if config == 1:
+            frameImage = Frame(1 * cm, 2.5 * cm, 9.5 * cm, 23 * cm, leftPadding=0, topPadding=12, rightPadding=0, id='normal')
+            frameMeta = Frame(10.5 * cm, 2.5 * cm, 9.5 * cm, 23 * cm, leftPadding=10, rightPadding=0, id='normal')
+            if page == 1:
                 return [frameHeader, frameImage, frameMeta]
             else:
                 return [frameFollow]
-        elif config==3:
+        elif config == 3:
             # liststyle for e.g. searchresults
-            frameMeta = Frame(1*cm, 2.5*cm, 19*cm, 23*cm,leftPadding=10, rightPadding=0, id='normal')
-            if page==1:
+            frameMeta = Frame(1 * cm, 2.5 * cm, 19 * cm, 23 * cm, leftPadding=10, rightPadding=0, id='normal')
+            if page == 1:
                 return [frameHeader, frameMeta]
             else:
                 return [frameFollow]
         else:
-            if page == 1 and self.image2==1 and self.headerWidth > 9*cm and self.headerWidth < 14*cm: #otherwise image appears too small
-                corrWidth = self.headerWidth - 9*cm 
+            # otherwise image appears too small
+            if page == 1 and self.image2 == 1 and self.headerWidth > 9 * cm and self.headerWidth < 14 * cm:
+                corrWidth = self.headerWidth - 9 * cm
             else:
                 corrWidth = 0
 
-            frameHeader = Frame(1*cm, 25.5*cm, 11.5*cm+corrWidth, 3*cm,leftPadding=0, rightPadding=0, id='normal')
-            frameImage = Frame(10.5*cm, 25.5*cm-self.image_h-1*cm, 9.5*cm, self.image_h+1*cm, leftPadding=0, rightPadding=0, id='normal')
-            frameImage_hide = Frame(20.0*cm, 25.5*cm-self.image_h, 0.01*cm, self.image_h+1*cm, leftPadding=0, rightPadding=0, id='normal')
+            frameHeader = Frame(1 * cm, 25.5 * cm, 11.5 * cm + corrWidth, 3 * cm, leftPadding=0, rightPadding=0, id='normal')
+            frameImage = Frame(10.5 * cm, 25.5 * cm - self.image_h - 1 * cm, 9.5 * cm,
+                               self.image_h + 1 * cm, leftPadding=0, rightPadding=0, id='normal')
+            frameImage_hide = Frame(20.0 * cm, 25.5 * cm - self.image_h, 0.01 * cm,
+                                    self.image_h + 1 * cm, leftPadding=0, rightPadding=0, id='normal')
 
-            frameHeaderImage = Frame(12.5*cm+corrWidth, 25.5*cm, 7*cm-corrWidth, 3*cm, leftPadding=0, rightPadding=0, id='normal')
-            frameHeaderImage_hide = Frame(20.0*cm, 25.5*cm, 0.01*cm, 3*cm, leftPadding=0, rightPadding=0, id='normal')
-            
-            frameMeta = Frame(1*cm, 25.5*cm-self.image_h-1*cm, 9.5*cm, self.image_h+1*cm, leftPadding=10, topPadding=12, rightPadding=0, id='normal')
-            frameMeta_hide = Frame(1*cm, 25.5*cm-self.image_h-1*cm, 19.0*cm, self.image_h+1*cm, leftPadding=10, topPadding=12, rightPadding=0, id='normal')
-            frameMeta2 = Frame(1*cm, 2.5*cm, 19*cm, 23*cm-self.image_h-1*cm, leftPadding=10, rightPadding=0, id='normal')
+            frameHeaderImage = Frame(
+                12.5 * cm + corrWidth, 25.5 * cm, 7 * cm - corrWidth, 3 * cm, leftPadding=0, rightPadding=0, id='normal')
+            frameHeaderImage_hide = Frame(20.0 * cm, 25.5 * cm, 0.01 * cm, 3 * cm, leftPadding=0, rightPadding=0, id='normal')
 
-            if page==1:
-                if self.image==1:
-                    if self.image2==1:
+            frameMeta = Frame(1 * cm, 25.5 * cm - self.image_h - 1 * cm, 9.5 * cm, self.image_h + 1 * cm,
+                              leftPadding=10, topPadding=12, rightPadding=0, id='normal')
+            frameMeta_hide = Frame(1 * cm, 25.5 * cm - self.image_h - 1 * cm, 19.0 * cm, self.image_h + 1 * cm,
+                                   leftPadding=10, topPadding=12, rightPadding=0, id='normal')
+            frameMeta2 = Frame(1 * cm, 2.5 * cm, 19 * cm, 23 * cm - self.image_h - 1 * cm, leftPadding=10, rightPadding=0, id='normal')
+
+            if page == 1:
+                if self.image == 1:
+                    if self.image2 == 1:
                         return [frameHeader, frameHeaderImage, frameImage, frameMeta, frameMeta2]
                     else:
                         return [frameHeader, frameHeaderImage_hide, frameImage, frameMeta, frameMeta2]
                 else:
-                    if self.image2==1:
+                    if self.image2 == 1:
                         return [frameHeader, frameHeaderImage,  frameMeta, frameMeta2]
                     else:
                         return [frameHeader, frameImage_hide, frameMeta, frameMeta2]
@@ -155,10 +162,10 @@ class PrintPreview:
                 return [frameFollow]
 
     def build(self, style=1):
-        template = SimpleDocTemplate(config.get("paths.tempdir","") +"print.pdf",showBoundary=0)
+        template = SimpleDocTemplate(config.get("paths.tempdir", "") + "print.pdf", showBoundary=0)
         tFirst = PageTemplate(id='First', frames=self.getStyle(1, style), onPage=self.myPages, pagesize=defaultPageSize)
         tNext = PageTemplate(id='Later', frames=self.getStyle(2, style), onPage=self.myPages, pagesize=defaultPageSize)
-        
+
         template.addPageTemplates([tFirst, tNext])
         template.allowSplitting = 1
         BaseDocTemplate.build(template, self.data)
@@ -170,18 +177,18 @@ class PrintPreview:
     def addMetaData(self, metadata):
         """ format given metadatalist for pdf output """
         max_width = 0
-        
+
         for item in metadata:
-            l = Paragraph(item[2]+":", self.bl)
-            
-            if max_width<l.minWidth():
+            l = Paragraph(item[2] + ":", self.bl)
+
+            if max_width < l.minWidth():
                 max_width = l.minWidth()
 
-        self.bv.leftIndent = max_width+10
-        self.bv.bulletIndent = max_width+10
+        self.bv.leftIndent = max_width + 10
+        self.bv.bulletIndent = max_width + 10
 
         for item in metadata:
-            l = Paragraph(esc(item[2]+":"), self.bl)
+            l = Paragraph(esc(item[2] + ":"), self.bl)
             v = Paragraph(re.sub(r'<[^>]*>', '', item[1]), self.bv)
             self.addData(l)
             self.addData(v)
@@ -190,42 +197,43 @@ class PrintPreview:
         if not path:
             return
         if not os.path.isfile(path):
-            path = config.basedir+"/web/img/questionmark.png"
+            path = config.basedir + "/web/img/questionmark.png"
         im = Image.open(path)
         im.load()
         width, height = im.size
-        wt, ht = 0,0
+        wt, ht = 0, 0
         if headerFlag:
-            if height > 2*cm:
-                wt = width * 2*cm / height
-                ht = 2*cm
-            if width > 7*cm:
-                ht = height * 7*cm / width
-                wt = 7*cm
+            if height > 2 * cm:
+                wt = width * 2 * cm / height
+                ht = 2 * cm
+            if width > 7 * cm:
+                ht = height * 7 * cm / width
+                wt = 7 * cm
             self.image2 = 1
 
         else:
-            self.image_w = 9.5*cm
-            self.image_h = self.image_w/im.size[0]*im.size[1]
+            self.image_w = 9.5 * cm
+            self.image_h = self.image_w / im.size[0] * im.size[1]
             self.image = 1
             wt, ht = self.image_w, self.image_h
 
         self.data.append(PdfImage(path, width=wt, height=ht, kind="proportional"))
 
     def addPaths(self, pathlist):
-        if len(pathlist)> 0:
-            self.addData(Paragraph(t(self.language, "print_preview_occurences")+":", self.bp))
+        if len(pathlist) > 0:
+            self.addData(Paragraph(t(self.language, "print_preview_occurences") + ":", self.bp))
             p = ' '
             for path in pathlist:
 
                 for item in path:
-                    p += '<link href="http://'+self.host+'/node?id='+item.id+'&amp;dir='+item.id+'\">'+item.getName()+ '</link>'
+                    p += '<link href="http://' + self.host + '/node?id=' + item.id + \
+                        '&amp;dir=' + item.id + '\">' + item.getName() + '</link>'
 
-                    if path.index(item)<len(path)-1:
+                    if path.index(item) < len(path) - 1:
                         p += ' > '
                 self.addData(Paragraph(p.replace('&', '&amp;'), self.bv, bulletText=u'\267'.encode("utf-8")))
                 p = ' '
-            
+
     def addChildren(self, children):
         self.addData(Paragraph('%s:' % t(self.language, "print_view_children"), self.bp))
 
@@ -244,7 +252,7 @@ class PrintPreview:
                 self.addData(Paragraph(u(c[0][1]).replace('&', '&amp;'), self.bf))
                 items = []
                 continue
-                
+
             values = []
             for item in c:
                 if item[1].strip() != "":
@@ -265,21 +273,21 @@ def getPrintView(lang, imagepath, metadata, paths, style=1, children=[], collect
         return None
     pv = PrintPreview(lang, config.get("host.name"))
     pv.setHeader(collection)
-    
-    if style==1 or style==2:
+
+    if style == 1 or style == 2:
         # single object (with children)
         pv.addImage(imagepath)
         pv.addData(FrameBreak())
         pv.addMetaData(metadata)
 
         pv.addPaths(paths)
-        if len(children)>0:
+        if len(children) > 0:
             pv.addData(FrameBreak())
-        
+
         pv.addChildren(children)
-    elif style==3:
+    elif style == 3:
         # objectlist
         pv.addData(Paragraph(t(pv.language, "print_view_list"), pv.bp))
         pv.addChildren(children)
-            
+
     return pv.build(style)

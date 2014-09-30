@@ -23,8 +23,9 @@ from schema.schema import loadTypesFromDB, getMetaType
 from web.frontend.content import getPaths
 from utils.utils import u
 
+
 def getInformation():
-    return {"version":"1.0", "system":0}
+    return {"version": "1.0", "system": 0}
 
 
 def isParent__(basenode, node, access):
@@ -50,7 +51,7 @@ def getAllAttributeValues(attribute, schema):
 def replaceValue(value, oldvalue, replacement):
     ret = []
     for val in value.split(";"):
-        if val.strip()==oldvalue.strip():
+        if val.strip() == oldvalue.strip():
             ret.append(replacement)
         else:
             ret.append(val)
@@ -64,14 +65,14 @@ def getContent(req, ids):
         return filter(lambda x: x.isActive(), schemes)
 
     ret = ""
-    v = {"message":""}
+    v = {"message": ""}
 
-    if len(ids)>=0:
+    if len(ids) >= 0:
         ids = ids[0]
 
     v["id"] = ids
 
-    if "do_action" in req.params.keys(): # process nodes
+    if "do_action" in req.params.keys():  # process nodes
         fieldname = req.params.get("fields")
         old_values = u(req.params.get("old_values", "")).split(";")
         new_value = u(req.params.get("new_value"))
@@ -84,29 +85,29 @@ def getContent(req, ids):
                 try:
                     n.set(fieldname, replaceValue(n.get(fieldname), u(old_val), u(new_value)))
                     n.setDirty()
-                    c+=1
+                    c += 1
                 except:
                     pass
-        v["message"] = req.getTAL("web/edit/modules/manageindex.html", {"number":c}, macro="operationinfo")
+        v["message"] = req.getTAL("web/edit/modules/manageindex.html", {"number": c}, macro="operationinfo")
 
-    if "style" in req.params.keys(): # load schemes
-        if req.params.get("action", "")=="schemes":
+    if "style" in req.params.keys():  # load schemes
+        if req.params.get("action", "") == "schemes":
             v["schemes"] = getSchemes(req)
             req.writeTAL("web/edit/modules/manageindex.html", v, macro="schemes_dropdown")
             return ""
 
-        elif req.params.get("action", "").startswith("indexfields__"): # load index fields
+        elif req.params.get("action", "").startswith("indexfields__"):  # load index fields
             schema = getMetaType(req.params.get("action", "")[13:])
             fields = []
             for field in schema.getMetaFields():
-                if field.getFieldtype()=="ilist":
+                if field.getFieldtype() == "ilist":
                     fields.append(field)
             v["fields"] = fields
             v["schemaname"] = schema.getName()
             req.writeTAL("web/edit/modules/manageindex.html", v, macro="fields_dropdown")
             return ""
 
-        elif req.params.get("action", "").startswith("indexvalues__"): # load values of selected indexfield
+        elif req.params.get("action", "").startswith("indexvalues__"):  # load values of selected indexfield
             node = tree.getNode(ids)
             fieldname = req.params.get("action").split("__")[-2]
             schema = req.params.get("action").split("__")[-1]
@@ -118,10 +119,10 @@ def getContent(req, ids):
             req.writeTAL("web/edit/modules/manageindex.html", v, macro="fieldvalues")
             return ""
 
-        elif req.params.get("action", "").startswith("children__"): # search for children of current collection
-            scheme = req.params.get("action","").split("__")[1]
-            fieldname = req.params.get("action","").split("__")[2]
-            values = req.params.get("action","").split("__")[3].split(";")[:-1]
+        elif req.params.get("action", "").startswith("children__"):  # search for children of current collection
+            scheme = req.params.get("action", "").split("__")[1]
+            fieldname = req.params.get("action", "").split("__")[2]
+            values = req.params.get("action", "").split("__")[3].split(";")[:-1]
             all_values = getAllAttributeValues(fieldname, scheme)
 
             def isChildOf(access, node, basenodeid):

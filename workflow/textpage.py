@@ -19,7 +19,7 @@
 """
 
 import core.tree as tree
-from workflow import WorkflowStep, registerStep
+from .workflow import WorkflowStep, registerStep
 from core.translation import t, lang, addLabels
 
 
@@ -30,6 +30,7 @@ def register():
 
 
 class WorkflowStep_TextPage(WorkflowStep):
+
     """
         workflowstep that shows a textpage.
         attention:
@@ -37,7 +38,7 @@ class WorkflowStep_TextPage(WorkflowStep):
             click buttons to get to next workflow step
             otherwise forward will be performed automatically by system
     """
-    
+
     def runAction(self, node, op=""):
         pass
 
@@ -49,32 +50,30 @@ class WorkflowStep_TextPage(WorkflowStep):
             self.forward(node, False)
             return self.forwardAndShow(node, False, req)
 
-        if self.getTrueLabel(language=node.get("system.wflanguage"))=="" and self.getFalseLabel(language=node.get("system.wflanguage"))=="":
+        if self.getTrueLabel(language=node.get("system.wflanguage")) == "" and self.getFalseLabel(
+                language=node.get("system.wflanguage")) == "":
             buttons = []
             self.forward(node, True)
         else:
             buttons = self.tableRowButtons(node)
-        return req.getTAL("workflow/textpage.html", {"text":self.get("text"), "buttons": buttons}, macro="textpage_show_node")
-    
+        return req.getTAL("workflow/textpage.html", {"text": self.get("text"), "buttons": buttons}, macro="textpage_show_node")
+
     def metaFields(self, lang=None):
         field = tree.Node("text", "metafield")
         field.set("label", t(lang, "admin_wfstep_textpage_text_to_display"))
         field.set("type", "htmlmemo")
         return [field]
-    
-    
+
     @staticmethod
     def getLabels():
-        return { "de":
-            [
-                ("workflowstep-textpage", "Textseite anzeigen"),
-                ("admin_wfstep_textpage_text_to_display", "Seiteninhalt"),
-            ],
-           "en":
-            [
-                ("workflowstep-textpage", "show textpage"),
-                ("admin_wfstep_textpage_text_to_display", "Page content"),
-            ]
-        }
-
-   
+        return {"de":
+                [
+                    ("workflowstep-textpage", "Textseite anzeigen"),
+                    ("admin_wfstep_textpage_text_to_display", "Seiteninhalt"),
+                ],
+                "en":
+                [
+                    ("workflowstep-textpage", "show textpage"),
+                    ("admin_wfstep_textpage_text_to_display", "Page content"),
+                ]
+                }

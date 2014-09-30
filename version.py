@@ -1,1 +1,1 @@
-mediatum_version="0.5.9"
+mediatum_version = "0.5.9"

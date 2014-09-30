@@ -22,13 +22,21 @@ import core.tree as tree
 from utils.utils import esc
 from core.metatype import Metatype
 
+
 class m_treeselect(Metatype):
 
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None):
-        return tal.getTAL("metadata/treeselect.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
+        return tal.getTAL("metadata/treeselect.html",
+                          {"lock": lock,
+                           "value": value,
+                           "width": width,
+                           "name": field.getName(),
+                           "field": field},
+                          macro="editorfield",
+                          language=language)
 
     def getSearchHTML(self, context):
-        return tal.getTAL("metadata/treeselect.html",{"context":context}, macro="searchfield", language=context.language)
+        return tal.getTAL("metadata/treeselect.html", {"context": context}, macro="searchfield", language=context.language)
 
     def getFormatedValue_(self, field, node, language=None, html=1, template_from_caller=None, mask=None):
         value = node.get(field.getName())
@@ -39,40 +47,40 @@ class m_treeselect(Metatype):
     def format_request_value_for_db(self, field, params, item, language=None):
         value = params.get(item)
         try:
-            return value.replace("; ",";")
+            return value.replace("; ", ";")
         except:
             return value
 
     def getName(self):
         return "fieldtype_treeselect"
-        
+
     def getInformation(self):
-        return {"moduleversion":"1.0", "softwareversion":"1.1"}
-        
-    
+        return {"moduleversion": "1.0", "softwareversion": "1.1"}
+
     # method for popup methods of type treeselect
     def getPopup(self, req):
-        req.writeTAL("metadata/treeselect.html", {"basedir":tree.getRoot('collections'), "name":req.params.get("name", ''), "value":req.params.get("value")}, macro="popup")
+        req.writeTAL("metadata/treeselect.html", {"basedir": tree.getRoot('collections'),
+                                                  "name": req.params.get("name", ''), "value": req.params.get("value")}, macro="popup")
         return httpstatus.HTTP_OK
-    
+
     # method for additional keys of type treeselect
     def getLabels(self):
         return m_treeselect.labels
 
-    labels = { "de":
-            [
-                ("treeselect_popup_title", "Knotenauswahl"),
-                ("fieldtype_treeselect", "Knotenauswahlfeld"),
-                ("fieldtype_text_desc", "Feld zur Knotenauswahl"),
-                ("treeselect_titlepopupbutton", "Knotenauswahl \xc3\xb6ffnen"),
-                ("treeselect_done", "\xC3\x9Cbernehmen"),
-            ],
-           "en":
-            [
-                ("treeselect_popup_title", "Node selection"),
-                ("fieldtype_treeselect", "node selection field"),
-                ("fieldtype_text_desc", "field for node selection"),
-                ("treeselect_titlepopupbutton", "open node selection"),
-                ("treeselect_done", "Done"),
-            ]
-         }
+    labels = {"de":
+              [
+                  ("treeselect_popup_title", "Knotenauswahl"),
+                  ("fieldtype_treeselect", "Knotenauswahlfeld"),
+                  ("fieldtype_text_desc", "Feld zur Knotenauswahl"),
+                  ("treeselect_titlepopupbutton", "Knotenauswahl \xc3\xb6ffnen"),
+                  ("treeselect_done", "\xC3\x9Cbernehmen"),
+              ],
+              "en":
+              [
+                  ("treeselect_popup_title", "Node selection"),
+                  ("fieldtype_treeselect", "node selection field"),
+                  ("fieldtype_text_desc", "field for node selection"),
+                  ("treeselect_titlepopupbutton", "open node selection"),
+                  ("treeselect_done", "Done"),
+              ]
+              }

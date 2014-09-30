@@ -20,10 +20,11 @@ You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/lgpl.txt>.
 """
 
+
 def ip2long(ip):
     """
     Convert a IPv4 address into a 32-bit integer.
-    
+
     @param ip: quad-dotted IPv4 address
     @type ip: str
     @return: network byte order 32-bit integer
@@ -31,5 +32,4 @@ def ip2long(ip):
     """
     ip_array = ip.split('.')
     ip_long = int(ip_array[0]) * 16777216 + int(ip_array[1]) * 65536 + int(ip_array[2]) * 256 + int(ip_array[3])
-    return ip_long  
-
+    return ip_long

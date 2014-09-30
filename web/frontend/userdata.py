@@ -65,6 +65,7 @@ def register_aclass(name, inst, force=False):
 
 
 class HTMLSnippet:
+
     def __init__(self, name="unnamed", atype=None, orderpos=None, template=""):
         self.name = name
         self.atype = atype
@@ -103,12 +104,12 @@ class HTMLSnippet:
         return False
 
     def callback(self, req=None, **kwargs):
-        return ""        
+        return ""
 
 
 def show_user_data(req):
     global aclasses
-    
+
     error = ""
 
     # XXX: dead code?
@@ -137,13 +138,13 @@ def show_user_data(req):
     udclasses = [t[1] for t in udclasses]
 
     ctx = {
-            "error": error,
-            "user": user,
-            "user_homedir": user_homedir,
-            "pf": pf,
-            "udclasses": udclasses,
-            "req": req,
-          }
+        "error": error,
+        "user": user,
+        "user_homedir": user_homedir,
+        "pf": pf,
+        "udclasses": udclasses,
+        "req": req,
+    }
 
     navframe.write(req, req.getTAL("web/frontend/userdata.html", ctx, macro="show_user_data"))
 

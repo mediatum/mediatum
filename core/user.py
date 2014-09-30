@@ -32,36 +32,42 @@ class User(tree.Node):
             if p.type == "usergroup":
                 groups += [p.getName()]
         return groups
-        
+
     def getLastName(self):
         return self.get("lastname")
+
     def setLastName(self, value):
         self.set("lastname", value)
- 
+
     def getFirstName(self):
         return self.get("firstname")
+
     def setFirstName(self, value):
         self.set("firstname", value)
-        
+
     def getTelephone(self):
         return self.get("telephone")
+
     def setTelephone(self, value):
         self.set("telephone", value)
-        
+
     def getComment(self):
         return self.get("comment")
+
     def setComment(self, value):
         self.set("comment", value)
- 
+
     def getEmail(self):
         return self.get("email")
+
     def setEmail(self, m):
         return self.set("email", m)
 
     def getPassword(self):
         return self.get("password")
+
     def setPassword(self, p):
-        self.set("password", hashlib.md5(p).hexdigest());
+        self.set("password", hashlib.md5(p).hexdigest())
 
     def inGroup(self, id):
         for group in self.getGroups():
@@ -71,15 +77,16 @@ class User(tree.Node):
 
     def getOption(self):
         return self.get("opts")
+
     def setOption(self, o):
-        return self.set("opts", o)        
+        return self.set("opts", o)
 
     def getOptionList(self):
         global useroption
         retList = {}
         myoptions = self.getOption()
         for option in useroption:
-            if option.value in myoptions and option.value!="":
+            if option.value in myoptions and option.value != "":
                 retList[option.getName()] = True
             else:
                 retList[option.getName()] = False
@@ -107,29 +114,30 @@ class User(tree.Node):
         return self.get("password") == hashlib.md5(config.get("user.passwd")).hexdigest()
 
     def resetPassword(self, newPwd):
-        self.set("password", hashlib.md5(newPwd).hexdigest());
+        self.set("password", hashlib.md5(newPwd).hexdigest())
 
-    def translate(self,key):
-        return translation.translate(key=key,user=self)
-        
+    def translate(self, key):
+        return translation.translate(key=key, user=self)
+
     def isSystemType(self):
         return 1
-        
+
     def setUserType(self, value):
         self.usertype = value
+
     def getUserType(self):
         for p in self.getParents():
-            if p.type=="usergroup":
+            if p.type == "usergroup":
                 continue
             return p.getName()
-        
-        #try:
+
+        # try:
         #    print "else", self.usertype
         #    return self.usertype
-        #except AttributeError:
+        # except AttributeError:
         #    print " ->", self.getName()
         #    for p in self.getParents():
-        #        
+        #
         #        print "   p:", p.getName(), p.id, p.type
         #        if p.type=="usergroup":
         #            continue
@@ -137,31 +145,32 @@ class User(tree.Node):
 
     def setOrganisation(self, value):
         self.set("organisation", value)
+
     def getOrganisation(self):
         return self.get("organisation")
-            
+
     def allowAdd(self):
         return 1
-        
+
     def canChangePWD(self):
         if self.isAdmin():
             return 0
-        if self.getUserType()=="users":
+        if self.getUserType() == "users":
             return "c" in self.getOption()
         else:
             from core.users import authenticators
             return authenticators[self.getUserType()].canChangePWD()
-            
+
     def getShoppingBag(self, name=""):
         ret = []
         for c in self.getChildren():
-            if c.getContentType()=="shoppingbag":
-                if str(c.id)==str(name) or c.getName()==name:
+            if c.getContentType() == "shoppingbag":
+                if str(c.id) == str(name) or c.getName() == name:
                     return [c]
                 else:
                     ret.append(c)
         return ret
-        
+
     def addShoppingBag(self, name, items=[]):
         sb = tree.Node(name, type="shoppingbag")
         sb.setItems(items)
@@ -178,27 +187,28 @@ class User(tree.Node):
         nodes should return the node id
         """
         return self.id
-  
+
+
 class ExternalUser:
 
     def getUserType(self):
         return self.usertype
-        
+
     def getUser(self):
         raise "not implemented"
 
     def authenticate_login(self, username, password):
         raise "notImplemented"
-        
+
     def getName(self):
         return ""
-        
+
     def allowAdd(self):
         return 0
-        
+
     def canChangePWD(self):
         raise "not implemented"
-        
+
     def getAdminOperation(self, req, params={}):
         raise "not implemented"
 

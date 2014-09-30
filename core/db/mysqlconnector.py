@@ -24,7 +24,7 @@ from time import *
 import logging
 import thread
 import msgpack
-from connector import Connector
+from .connector import Connector
 
 from core.db.database import initDatabaseValues, DatabaseException
 
@@ -39,6 +39,7 @@ debug_ignore_statements_re = None
 
 log = logging.getLogger('database')
 
+
 class MYSQLConnector(Connector):
 
     def __init__(self):
@@ -48,12 +49,12 @@ class MYSQLConnector(Connector):
         self.user = config.get("database.user", "mediatumadmin")
         self.passwd = config.get("database.passwd", "")
 
-        self.db=MySQLdb.connect(host = self.dbhost, port = self.dbport, user = self.user, passwd = self.passwd, db = self.database)
-        self.dblock=thread.allocate_lock()
+        self.db = MySQLdb.connect(host=self.dbhost, port=self.dbport, user=self.user, passwd=self.passwd, db=self.database)
+        self.dblock = thread.allocate_lock()
         self.nodes = {}
 
-        function = str(traceback.extract_stack()[-2][0])+":"+str(traceback.extract_stack()[-2][2])
-        log.info("Connecting to ["+self.user+"@"+self.database+"] "+function)
+        function = str(traceback.extract_stack()[-2][0]) + ":" + str(traceback.extract_stack()[-2][2])
+        log.info("Connecting to [" + self.user + "@" + self.database + "] " + function)
 
         # test base table
         try:
@@ -70,14 +71,15 @@ class MYSQLConnector(Connector):
             r = self.runQuery("select nid from containermapping limit 1")
             r[0]
         except MySQLdb.ProgrammingError:
-            self.runQueryNoError("CREATE OR REPLACE VIEW `containermapping` AS select `nodemapping`.`nid` AS `nid`,`nodemapping`.`cid` AS `cid`,`node`.`type` AS `type` from (`nodemapping` join `node` on((`nodemapping`.`cid` = `node`.`id`))) where (locate('/',`node`.`type`) = 0)")
-            self.runQueryNoError("CREATE OR REPLACE VIEW `contentmapping` AS select `nodemapping`.`nid` AS `nid`,`nodemapping`.`cid` AS `cid`,`node`.`type` AS `type` from (`nodemapping` join `node` on((`nodemapping`.`cid` = `node`.`id`))) where (locate('/',`node`.`type`) > 0)")
-
+            self.runQueryNoError(
+                "CREATE OR REPLACE VIEW `containermapping` AS select `nodemapping`.`nid` AS `nid`,`nodemapping`.`cid` AS `cid`,`node`.`type` AS `type` from (`nodemapping` join `node` on((`nodemapping`.`cid` = `node`.`id`))) where (locate('/',`node`.`type`) = 0)")
+            self.runQueryNoError(
+                "CREATE OR REPLACE VIEW `contentmapping` AS select `nodemapping`.`nid` AS `nid`,`nodemapping`.`cid` AS `cid`,`node`.`type` AS `type` from (`nodemapping` join `node` on((`nodemapping`.`cid` = `node`.`id`))) where (locate('/',`node`.`type`) > 0)")
 
         try:
-            r = self.runQuery("select * from node where dirty=1 limit 1");
+            r = self.runQuery("select * from node where dirty=1 limit 1")
         except MySQLdb.OperationalError:
-            self.runQuery("alter table node add column dirty bool");
+            self.runQuery("alter table node add column dirty bool")
 
     def applyPatches(self):
         self.runQueryNoError("alter table node add column (localread TEXT NULL)")
@@ -96,21 +98,21 @@ class MYSQLConnector(Connector):
         ok = 0
         try:
             if self.db:
-                #self.db.ping()
+                # self.db.ping()
                 ok = 1
         except MySQLdb.OperationalError as nr:
             ok = 0
-            log.warning("Pinging failed ("+str(nr)+")... reconnecting to ["+self.user+"@"+self.database+"]")
+            log.warning("Pinging failed (" + str(nr) + ")... reconnecting to [" + self.user + "@" + self.database + "]")
             self.db = None
 
         if not ok:
-            self.db=MySQLdb.connect(host = self.dbhost, user = self.user, passwd = self.passwd, db = self.database)
+            self.db = MySQLdb.connect(host=self.dbhost, user=self.user, passwd=self.passwd, db=self.database)
         return self.db
 
-    def esc(self,s):
-        if type(s)==unicode:
+    def esc(self, s):
+        if isinstance(s, unicode):
             try:
-                return "'"+self.db.escape(s)+"'"
+                return "'" + self.db.escape(s) + "'"
             except:
                 raise ValueError("file %s: Error escaping unicode string %s for db" % (__file__, s))
         else:
@@ -118,19 +120,19 @@ class MYSQLConnector(Connector):
                 return self.db.escape(s)
             except:
                 try:
-                    return MySQLdb.escape(s,self.db.converter)
+                    return MySQLdb.escape(s, self.db.converter)
                 except:
-                    #TODO: this should not be necessary.
-                    #maybe switch to
+                    # TODO: this should not be necessary.
+                    # maybe switch to
                     #       cursor.execute("select whatever from whomever where something = %s", my_parameter)
                     #?
                     s = str(s)
-                    return "'" + s.replace('\\','\\\\').replace('"','\\"').replace('\'','\\\'') + "'"
+                    return "'" + s.replace('\\', '\\\\').replace('"', '\\"').replace('\'', '\\\'') + "'"
 
-    def execute(self,sql, params=None):
+    def execute(self, sql, params=None):
         self.dblock.acquire()
         try:
-            while 1:
+            while True:
                 try:
                     self._reconnect()
                     c = self.db.cursor()
@@ -162,10 +164,8 @@ class MYSQLConnector(Connector):
                     log.error("non-MySQL error while executing SQL '%s', params %s", sql, params, exc_info=1)
                     raise
 
-
         finally:
             self.dblock.release()
-
 
     def runQuery(self, sql, *args, **kwargs):
         if args and kwargs:
@@ -177,7 +177,6 @@ class MYSQLConnector(Connector):
         result = self.execute(sql, params)
         return result
 
-
     def runQueryNoError(self, sql):
         global debug
         if debug:
@@ -186,10 +185,10 @@ class MYSQLConnector(Connector):
             return self.execute(sql)
         except MySQLdb.OperationalError as nr:
             if nr[0] == 1050:
-                log.info("table already exists: "+sql)
+                log.info("table already exists: " + sql)
                 return None
             elif nr[0] == 1051:
-                log.info("table doesn't exists: "+sql)
+                log.info("table doesn't exists: " + sql)
                 return None
             elif nr[0] == 1060:
                 #log.info("column already exists: "+sql)
@@ -197,10 +196,11 @@ class MYSQLConnector(Connector):
             else:
                 raise nr
 
-
     def createTables(self):
-        self.runQueryNoError("create table node (id integer not null, name varbinary(255), type varbinary(32) not null, readaccess text, writeaccess text, dataaccess text, orderpos int default '1', dirty bool, primary key (id), localread text)")
-        self.runQueryNoError("create table nodefile (nid integer not null, filename text not null , type varbinary(16) not null, mimetype varbinary(20))")
+        self.runQueryNoError(
+            "create table node (id integer not null, name varbinary(255), type varbinary(32) not null, readaccess text, writeaccess text, dataaccess text, orderpos int default '1', dirty bool, primary key (id), localread text)")
+        self.runQueryNoError(
+            "create table nodefile (nid integer not null, filename text not null , type varbinary(16) not null, mimetype varbinary(20))")
         self.runQueryNoError("create table nodeattribute (nid integer not null, name varbinary(50) not null, value text ) ")
         self.runQueryNoError("create table nodemapping (nid integer not null, cid integer not null)")
         self.runQueryNoError("create table access (name varchar(64) not null, description text , rule text , primary key (name))")
@@ -231,29 +231,28 @@ class MYSQLConnector(Connector):
 
     def getRule(self, name):
         rule = self.runQuery("select name, description, rule from access where name=" + self.esc(name))
-        if len(rule)==1:
+        if len(rule) == 1:
             return rule[0][2], rule[0][1]
-        elif len(rule)>1:
+        elif len(rule) > 1:
             raise DatabaseException("duplicate rule")
         else:
             raise DatabaseException("rule not found")
 
-
     def getRuleList(self):
         return self.runQuery("select name, description, rule from access order by name")
 
-
     def updateRule(self, newrule, oldname):
         try:
-            self.runQuery("update access set name=" + self.esc(newrule.getName()) + ", rule=" + self.esc(newrule.getRuleStr()) + ", description=" + self.esc(newrule.getDescription()) + " where name=" + self.esc(oldname))
+            self.runQuery("update access set name=" + self.esc(newrule.getName()) + ", rule=" + self.esc(newrule.getRuleStr()) +
+                          ", description=" + self.esc(newrule.getDescription()) + " where name=" + self.esc(oldname))
             return True
         except:
             return False
 
-
     def addRule(self, rule):
         try:
-            self.runQuery("insert into access set name=" + self.esc(rule.getName()) + ", rule=" + self.esc(rule.getRuleStr()) + ", description=" + self.esc(rule.getDescription()))
+            self.runQuery("insert into access set name=" + self.esc(rule.getName()) + ", rule=" +
+                          self.esc(rule.getRuleStr()) + ", description=" + self.esc(rule.getDescription()))
             return True
         except:
             return False
@@ -268,36 +267,38 @@ class MYSQLConnector(Connector):
     def getAllDBRuleNames(self):
         ret = {}
         for field in ["readaccess", "writeaccess", "dataaccess"]:
-            for names in self.runQuery('select distinct('+field+') from node where '+field+' not like "{%"'):
+            for names in self.runQuery('select distinct(' + field + ') from node where ' + field + ' not like "{%"'):
                 rules = names[0].split(",")
                 for rule in rules:
-                    if rule!="":
-                        ret[rule]=""
+                    if rule != "":
+                        ret[rule] = ""
         return ret.keys()
 
     def ruleUsage(self, rulename):
-        result = self.runQuery('select count(*) from node where readaccess="'+rulename+'" or writeaccess="'+rulename+'" or dataaccess="'+rulename+'"')
+        result = self.runQuery('select count(*) from node where readaccess="' + rulename +
+                               '" or writeaccess="' + rulename + '" or dataaccess="' + rulename + '"')
         return int(result[0][0])
 
     def resetNodeRule(self, rulename, newrule=""):
         for field in ["readaccess", "writeaccess", "dataaccess"]:
-            self.runQuery('update node set '+field+'="'+newrule+'" where '+field+'="'+rulename+'"')
+            self.runQuery('update node set ' + field + '="' + newrule + '" where ' + field + '="' + rulename + '"')
 
     def createNode(self, name, type):
-        if type=="root": # do not create a second root node
+        if type == "root":  # do not create a second root node
             return 0
         id = self.mkID()
         orderpos = self.mkOrderPos()
-        self.runQuery("insert into node (id, name, type, orderpos) values(" + id + ", " + self.esc(name) + ", '" + type + "',"+str(orderpos)+")")
+        self.runQuery(
+            "insert into node (id, name, type, orderpos) values(" + id + ", " + self.esc(name) + ", '" + type + "'," + str(orderpos) + ")")
         return str(id)
 
     def addChild(self, nodeid, childid, check=1):
         if check:
             if childid == nodeid:
-                raise ValueError("Tried to add node "+nodeid+" to itself as child")
+                raise ValueError("Tried to add node " + nodeid + " to itself as child")
             # does this child already exist?
             t = self.runQuery("select count(*) as num from nodemapping where nid=" + nodeid + " and cid=" + childid + "")
-            if t[0][0]>0:
+            if t[0][0] > 0:
                 return
         self.setNodeOrderPos(childid, self.mkOrderPos())
         self.runQuery("insert into nodemapping (nid, cid) values(" + nodeid + ", " + childid + ")")
@@ -307,11 +308,12 @@ class MYSQLConnector(Connector):
             raise TypeError("Attribute value is None")
         if check:
             t = self.runQuery("select count(*) as num from nodeattribute where nid=" + nodeid + " and name=" + self.esc(attname))
-            if len(t)>0 and t[0][0]>0:
-                self.runQuery("update nodeattribute set value=" + self.esc(attvalue) + " where nid=" + nodeid + " and name=" + self.esc(attname))
+            if len(t) > 0 and t[0][0] > 0:
+                self.runQuery("update nodeattribute set value=" + self.esc(attvalue) +
+                              " where nid=" + nodeid + " and name=" + self.esc(attname))
                 return
-        self.runQuery("insert into nodeattribute (nid, name, value) values(" + nodeid + ", " + self.esc(attname) + ", " + self.esc(attvalue) + ")")
-
+        self.runQuery(
+            "insert into nodeattribute (nid, name, value) values(" + nodeid + ", " + self.esc(attname) + ", " + self.esc(attvalue) + ")")
 
     def set_attribute_complex(self, nodeid, attname, attvalue, check=1):
         if attvalue is None:
@@ -319,26 +321,44 @@ class MYSQLConnector(Connector):
         value_complex = "\x11PACK\x12" + msgpack.dumps(attvalue)
         if check:
             t = self.runQuery("select count(*) as num from nodeattribute where nid=%s and name=%s", nodeid, attname)
-            if len(t)>0 and t[0][0]>0:
+            if len(t) > 0 and t[0][0] > 0:
                 self.runQuery("update nodeattribute set value=%s where nid=%s and name=%s", value_complex, nodeid, attname)
                 return
         self.runQuery("insert into nodeattribute (nid, name, value) values(%s, %s, %s)", nodeid, attname, value_complex)
 
     def addFile(self, nodeid, path, type, mimetype):
-        self.runQuery("insert into nodefile (nid, filename, type, mimetype) values(" + nodeid + ", " + self.esc(path) + ", '" + type + "', '" + mimetype+ "')")
+        self.runQuery("insert into nodefile (nid, filename, type, mimetype) values(" +
+                      nodeid + ", " + self.esc(path) + ", '" + type + "', '" + mimetype + "')")
 
     def removeSingleFile(self, nodeid, path):
-        self.runQuery("delete from nodefile where nid = "+nodeid+" and filename="+self.esc(path)+" limit 1")
+        self.runQuery("delete from nodefile where nid = " + nodeid + " and filename=" + self.esc(path) + " limit 1")
 
     def getStatus(self):
         ret = []
-        key = ["mysql_name", "mysql_engine", "mysql_version", "mysql_row_format", "mysql_rows", "mysql_avg_row_length", "mysql_data_length", "mysql_max_data_length", "mysql_index_length", "mysql_data_free", "mysql_auto_increment",
-            "mysql_create_time", "mysql_update_time", "mysql_check_time", "mysql_collation", "mysql_checksum", "mysql_create_options", "mysql_comment"]
+        key = [
+            "mysql_name",
+            "mysql_engine",
+            "mysql_version",
+            "mysql_row_format",
+            "mysql_rows",
+            "mysql_avg_row_length",
+            "mysql_data_length",
+            "mysql_max_data_length",
+            "mysql_index_length",
+            "mysql_data_free",
+            "mysql_auto_increment",
+            "mysql_create_time",
+            "mysql_update_time",
+            "mysql_check_time",
+            "mysql_collation",
+            "mysql_checksum",
+            "mysql_create_options",
+            "mysql_comment"]
         for table in self.runQueryNoError("SHOW TABLE STATUS"):
-            i=0
+            i = 0
             t = []
             for item in table:
-                t.append((key[i],item))
+                t.append((key[i], item))
                 i += 1
             ret.append(t)
         return ret
@@ -347,9 +367,9 @@ class MYSQLConnector(Connector):
         l = 0
         for table in self.runQuery("SHOW TABLE STATUS"):
             if table[6]:
-                l+= int(table[6])
+                l += int(table[6])
             if table[8]:
-                l+= int(table[8])
+                l += int(table[8])
 
         return int(l)
 

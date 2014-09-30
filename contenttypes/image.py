@@ -22,7 +22,7 @@ from PIL import Image as PILImage, ImageDraw
 import core.acl as acl
 import random
 import os
-import default
+from . import default
 import hashlib
 
 from schema.schema import VIEW_HIDE_EMPTY
@@ -31,47 +31,49 @@ from core.attachment import filebrowser
 from utils.fileutils import getImportDir
 from utils.utils import splitfilename, isnewer, iso2utf8, OperationException
 from core.tree import FileNode
-from core.translation import lang,t
+from core.translation import lang, t
 from core.styles import getContentStyles
 from web.frontend import zoom
 
 """ make thumbnail (jpeg 128x128) """
+
+
 def makeThumbNail(image, thumb):
-    if isnewer(thumb,image):
+    if isnewer(thumb, image):
         return
     pic = PILImage.open(image)
-    tmpjpg = config.get("paths.datadir")+"tmp/img"+str(random.random())+".jpg"
+    tmpjpg = config.get("paths.datadir") + "tmp/img" + str(random.random()) + ".jpg"
 
-    if pic.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
-        os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" %(image, tmpjpg)) #always get a rgb image
+    if pic.mode == "CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
+        os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" % (image, tmpjpg))  # always get a rgb image
         pic = PILImage.open(tmpjpg)
 
     try:
         pic.load()
-    except IOError, e:
+    except IOError as e:
         pic = None
-        raise OperationException("error:"+str(e))
+        raise OperationException("error:" + str(e))
 
     width = pic.size[0]
     height = pic.size[1]
     if width > height:
         newwidth = 128
-        newheight = height*newwidth/width
+        newheight = height * newwidth / width
     else:
         newheight = 128
-        newwidth = width*newheight/height
+        newwidth = width * newheight / height
     pic = pic.resize((newwidth, newheight), PILImage.ANTIALIAS)
     try:
         im = PILImage.new(pic.mode, (128, 128), (255, 255, 255))
     except:
-        im = PILImage.new("RGB", (128,128), (255, 255, 255))
+        im = PILImage.new("RGB", (128, 128), (255, 255, 255))
 
-    x = (128-newwidth)/2
-    y = (128-newheight)/2
-    im.paste( pic, (x,y,x+newwidth,y+newheight))
+    x = (128 - newwidth) / 2
+    y = (128 - newheight) / 2
+    im.paste(pic, (x, y, x + newwidth, y + newheight))
 
     draw = ImageDraw.ImageDraw(im)
-    draw.line([(0,0),(127,0),(127,127),(0,127),(0,0)], (128,128,128))
+    draw.line([(0, 0), (127, 0), (127, 127), (0, 127), (0, 0)], (128, 128, 128))
 
     im = im.convert("RGB")
     im.save(thumb, "jpeg")
@@ -79,20 +81,22 @@ def makeThumbNail(image, thumb):
         os.unlink(tmpjpg)
 
 """ make presentation format (png) """
+
+
 def makePresentationFormat(image, thumb):
-    if isnewer(thumb,image):
+    if isnewer(thumb, image):
         return
     pic = PILImage.open(image)
-    tmpjpg = config.get("paths.datadir")+"tmp/img"+str(random.random())+".jpg"
-    if pic.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
-        os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" %(image, tmpjpg))
+    tmpjpg = config.get("paths.datadir") + "tmp/img" + str(random.random()) + ".jpg"
+    if pic.mode == "CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
+        os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" % (image, tmpjpg))
         pic = PILImage.open(tmpjpg)
 
     try:
         pic.load()
-    except IOError, e:
+    except IOError as e:
         pic = None
-        raise OperationException("error:"+str(e))
+        raise OperationException("error:" + str(e))
 
     width = pic.size[0]
     height = pic.size[1]
@@ -102,10 +106,10 @@ def makePresentationFormat(image, thumb):
         # resize images only if they are actually too big
         if width > height:
             newwidth = 320
-            newheight = height*newwidth/width
+            newheight = height * newwidth / width
         else:
             newheight = 320
-            newwidth = width*newheight/height
+            newwidth = width * newheight / height
         pic = pic.resize((newwidth, newheight), PILImage.ANTIALIAS)
 
     try:
@@ -117,20 +121,22 @@ def makePresentationFormat(image, thumb):
         os.unlink(tmpjpg)
 
 """ make original (png real size) """
+
+
 def makeOriginalFormat(image, thumb):
 
-    tmpjpg = config.get("paths.datadir")+"tmp/img"+str(random.random())+".jpg"
+    tmpjpg = config.get("paths.datadir") + "tmp/img" + str(random.random()) + ".jpg"
     pic = PILImage.open(image)
-    if pic.mode=="CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
-    #if image.endswith("jpg") or image.endswith("jpeg"):
-        os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" %(image, tmpjpg))
+    if pic.mode == "CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
+        # if image.endswith("jpg") or image.endswith("jpeg"):
+        os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" % (image, tmpjpg))
         pic = PILImage.open(tmpjpg)
 
     try:
         pic.load()
-    except IOError, e:
+    except IOError as e:
         pic = None
-        raise OperationException("error:"+str(e))
+        raise OperationException("error:" + str(e))
 
     pic.save(thumb, "png")
     if os.path.exists(tmpjpg):
@@ -138,13 +144,16 @@ def makeOriginalFormat(image, thumb):
 
 
 """ evaluate image dimensions for given file """
+
+
 def getImageDimensions(image):
     pic = PILImage.open(image)
     width = pic.size[0]
     height = pic.size[1]
-    return width,height
+    return width, height
 
-def getJpegSection(image, section): # section character
+
+def getJpegSection(image, section):  # section character
     data = ""
     try:
         fin = open(image, "rb")
@@ -153,15 +162,15 @@ def getJpegSection(image, section): # section character
 
         while not done:
             c = fin.read(1)
-            if capture and ord(c)!=0xFF and ord(c)!=section:
+            if capture and ord(c) != 0xFF and ord(c) != section:
                 data += c
 
-            if ord(c)==0xFF: # found tag start
+            if ord(c) == 0xFF:  # found tag start
                 if capture:
                     done = True
 
                 c = fin.read(1)
-                if ord(c)==section: # found tag
+                if ord(c) == section:  # found tag
                     capture = True
         fin.close()
     except:
@@ -173,17 +182,20 @@ def dozoom(node):
     b = 0
     svg = 0
     for file in node.getFiles():
-        if file.getType()=="zoom":
+        if file.getType() == "zoom":
             b = 1
         if file.getName().lower().endswith('svg') and file.type == "original":
             svg = 1
-    if node.get("width") and node.get("height") and (int(node.get("width"))>2000 or int(node.get("height"))>2000) and not svg:
+    if node.get("width") and node.get("height") and (int(node.get("width")) > 2000 or int(node.get("height")) > 2000) and not svg:
         b = 1
     return b
 
 
 """ image class for internal image-type """
+
+
 class Image(default.Default):
+
     def getTypeAlias(node):
         return "image"
 
@@ -204,35 +216,34 @@ class Image(default.Default):
             tifs = []
 
         access = acl.AccessData(req)
-        if access.hasAccess(node,"data"):
+        if access.hasAccess(node, "data"):
             for f in node.getFiles():
-                if f.getType()=="original":
-                    if node.get('system.origname')=="1":
+                if f.getType() == "original":
+                    if node.get('system.origname') == "1":
                         tif = node.getName()
                     else:
                         tif = f.getName()
 
-            if node.get("archive_path")!="":
-                tif = "file/"+str(node.id)+"/"+node.get("archive_path")
+            if node.get("archive_path") != "":
+                tif = "file/" + str(node.id) + "/" + node.get("archive_path")
 
         files, sum_size = filebrowser(node, req)
 
         obj = {'deleted': False, 'access': access}
-        if node.get('deleted')=='true':
+        if node.get('deleted') == 'true':
             node = node.getActiveVersion()
             obj['deleted'] = True
-        obj['path'] = req and req.params.get("path","") or ""
+        obj['path'] = req and req.params.get("path", "") or ""
         obj['attachment'] = files
         obj['sum_size'] = sum_size
-        obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY) # hide empty elements
+        obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY)  # hide empty elements
         obj['node'] = node
         obj['tif'] = tif
         obj['zoom'] = dozoom(node)
-        obj['tileurl'] = "/tile/"+node.id+"/"
-        obj['canseeoriginal'] = access.hasAccess(node,"data")
-        obj['originallink'] = "getArchivedItem('"+str(node.id)+"/"+tif+"')"
+        obj['tileurl'] = "/tile/" + node.id + "/"
+        obj['canseeoriginal'] = access.hasAccess(node, "data")
+        obj['originallink'] = "getArchivedItem('" + str(node.id) + "/" + tif + "')"
         obj['archive'] = node.get('archive_type')
-
 
         if "style" in req.params.keys():
             req.session["full_style"] = req.params.get("style", "full_standard")
@@ -248,9 +259,9 @@ class Image(default.Default):
 
     """ format big view with standard template """
     def show_node_big(node, req, template="", macro=""):
-        if template=="":
+        if template == "":
             styles = getContentStyles("bigview", contenttype=node.getContentType())
-            if len(styles)>=1:
+            if len(styles) >= 1:
                 template = styles[0].getTemplate()
         return req.getTAL(template, node._prepareData(req), macro)
 
@@ -261,24 +272,24 @@ class Image(default.Default):
         return node.name
 
     def getSysFiles(node):
-        return ["original","thumb","presentati","image","presentation", "zoom"]
+        return ["original", "thumb", "presentati", "image", "presentation", "zoom"]
 
     """ make a copy of the svg file in png format """
     def svg_to_png(node, filename, imgfile):
-        #convert svg to png (imagemagick + ghostview)
+        # convert svg to png (imagemagick + ghostview)
         os.system("convert -alpha off -colorspace RGB %s -background white %s" % (filename, imgfile))
 
     """ postprocess method for object type 'image'. called after object creation """
     def event_files_changed(node):
-        print "Postprocessing node",node.id
+        print "Postprocessing node", node.id
         if "image" in node.type:
             for f in node.getFiles():
                 if f.getName().lower().endswith('svg'):
-                    node.svg_to_png(f.retrieveFile(), f.retrieveFile()[:-4]+".png")
+                    node.svg_to_png(f.retrieveFile(), f.retrieveFile()[:-4] + ".png")
                     node.removeFile(f)
                     node.addFile(FileNode(name=f.retrieveFile(), type="original", mimetype=f.mimetype))
                     node.addFile(FileNode(name=f.retrieveFile(), type="image", mimetype=f.mimetype))
-                    node.addFile(FileNode(name=f.retrieveFile()[:-4]+".png", type="tmppng", mimetype="image/png"))
+                    node.addFile(FileNode(name=f.retrieveFile()[:-4] + ".png", type="tmppng", mimetype="image/png"))
                     break
             orig = 0
             thumb = 0
@@ -290,12 +301,13 @@ class Image(default.Default):
             if orig == 0:
                 for f in node.getFiles():
                     if f.type == "image":
-                        if f.mimetype=="image/tiff" or ((f.mimetype is None or f.mimetype == "application/x-download") and (f.getName().lower().endswith("tif") or f.getName().lower().endswith("tiff"))):
+                        if f.mimetype == "image/tiff" or ((f.mimetype is None or f.mimetype == "application/x-download")
+                                                          and (f.getName().lower().endswith("tif") or f.getName().lower().endswith("tiff"))):
                             # move old file to "original", create a new png to be used as "image"
                             node.removeFile(f)
 
-                            path,ext = splitfilename(f.retrieveFile())
-                            pngname = path+".png"
+                            path, ext = splitfilename(f.retrieveFile())
+                            pngname = path + ".png"
                             if not os.path.isfile(pngname):
                                 makeOriginalFormat(f.retrieveFile(), pngname)
 
@@ -316,30 +328,30 @@ class Image(default.Default):
 
             # retrieve technical metadata.
             for f in node.getFiles():
-                if (f.type=="image" and not f.getName().lower().endswith("svg")) or f.type=="tmppng":
-                    width,height = getImageDimensions(f.retrieveFile())
+                if (f.type == "image" and not f.getName().lower().endswith("svg")) or f.type == "tmppng":
+                    width, height = getImageDimensions(f.retrieveFile())
                     node.set("origwidth", width)
                     node.set("origheight", height)
                     node.set("origsize", f.getSize())
 
-                    if f.mimetype=="image/jpeg":
+                    if f.mimetype == "image/jpeg":
                         node.set("jpg_comment", iso2utf8(getJpegSection(f.retrieveFile(), 0xFE).strip()))
 
-            if thumb==0:
+            if thumb == 0:
                 for f in node.getFiles():
-                    if (f.type=="image" and not f.getName().lower().endswith("svg")) or f.type=="tmppng":
-                        path,ext = splitfilename(f.retrieveFile())
+                    if (f.type == "image" and not f.getName().lower().endswith("svg")) or f.type == "tmppng":
+                        path, ext = splitfilename(f.retrieveFile())
                         basename = hashlib.md5(str(random.random())).hexdigest()[0:8]
 
                         #path = os.path.join(getImportDir(),os.path.basename(path))
-                        path = os.path.join(getImportDir(),basename)
+                        path = os.path.join(getImportDir(), basename)
 
-                        thumbname = path+".thumb"
-                        thumbname2 = path+".thumb2"
+                        thumbname = path + ".thumb"
+                        thumbname2 = path + ".thumb2"
 
                         assert not os.path.isfile(thumbname)
                         assert not os.path.isfile(thumbname2)
-                        width,height = getImageDimensions(f.retrieveFile())
+                        width, height = getImageDimensions(f.retrieveFile())
                         makeThumbNail(f.retrieveFile(), thumbname)
                         makePresentationFormat(f.retrieveFile(), thumbname2)
                         if f.mimetype is None:
@@ -358,16 +370,16 @@ class Image(default.Default):
                 files = node.getFiles()
 
                 for file in files:
-                    if file.type=="original":
+                    if file.type == "original":
                         f = open(file.retrieveFile(), 'rb')
-                        tags=EXIF.process_file(f)
+                        tags = EXIF.process_file(f)
 
                         tags.keys().sort()
                         for k in tags.keys():
-                            if tags[k]!="" and k!="JPEGThumbnail":
-                                node.set("exif_"+k.replace(" ","_"), tags[k])
-                            elif k=="JPEGThumbnail":
-                                if tags[k]!="":
+                            if tags[k] != "" and k != "JPEGThumbnail":
+                                node.set("exif_" + k.replace(" ", "_"), tags[k])
+                            elif k == "JPEGThumbnail":
+                                if tags[k] != "":
                                     node.set("Thumbnail", "True")
                                 else:
                                     node.set("Thumbnail", "False")
@@ -375,7 +387,7 @@ class Image(default.Default):
             except:
                 None
 
-            if dozoom(node)==1:
+            if dozoom(node) == 1:
                 tileok = 0
                 for f in node.getFiles():
                     if f.type.startswith("tile"):
@@ -389,12 +401,12 @@ class Image(default.Default):
                 files = node.getFiles()
 
                 for file in files:
-                    if file.type=="original":
-                        tags=IPTC.getIPTCValues(file.retrieveFile())
+                    if file.type == "original":
+                        tags = IPTC.getIPTCValues(file.retrieveFile())
                         tags.keys().sort()
                         for k in tags.keys():
-                            if tags[k]!="":
-                                node.set("iptc_"+k.replace(" ","_"), tags[k])
+                            if tags[k] != "":
+                                node.set("iptc_" + k.replace(" ", "_"), tags[k])
             except:
                 None
 
@@ -405,81 +417,81 @@ class Image(default.Default):
 
     """ list with technical attributes for type image """
     def getTechnAttributes(node):
-        return {"Standard":{"creator":"Ersteller",
-                "creationtime":"Erstelldatum",
-                "updateuser":"Update Benutzer",
-                "updatetime":"Update Datum",
-                "updatesearchindex":"Update Suche",
-                "height":"H&ouml;he Thumbnail",
-                "width":"Breite Thumbnail",
-                "faulty":"Fehlerhaft",
-                "workflow":"Workflownummer",
-                "workflownode":"Workflow Knoten",
-                "origwidth":"Originalbreite",
-                "origheight":"Originalh&ouml;he",
-                "origsize":"Dateigr&ouml;&szlig;e",
-                "R-Index":"rindex",
-                "M-Index":"mindex",
-                "L-Index":"lindex"},
+        return {"Standard": {"creator": "Ersteller",
+                             "creationtime": "Erstelldatum",
+                             "updateuser": "Update Benutzer",
+                             "updatetime": "Update Datum",
+                             "updatesearchindex": "Update Suche",
+                             "height": "H&ouml;he Thumbnail",
+                             "width": "Breite Thumbnail",
+                             "faulty": "Fehlerhaft",
+                             "workflow": "Workflownummer",
+                             "workflownode": "Workflow Knoten",
+                             "origwidth": "Originalbreite",
+                             "origheight": "Originalh&ouml;he",
+                             "origsize": "Dateigr&ouml;&szlig;e",
+                             "R-Index": "rindex",
+                             "M-Index": "mindex",
+                             "L-Index": "lindex"},
 
-                "Exif":{"exif_EXIF_ComponentsConfiguration": "EXIF ComponentsConfiguration",
-                "exif_EXIF_LightSource": "EXIF LightSource",
-                "exif_EXIF_FlashPixVersion": "EXIF FlashPixVersion",
-                "exif_EXIF_ColorSpace": "EXIF ColorSpace",
-                "exif_EXIF_MeteringMode": "EXIF MeteringMode",
-                "exif_EXIF_ExifVersion": "EXIF ExifVersion",
-                "exif_EXIF_Flash": "EXIF Flash",
-                "exif_EXIF_DateTimeOriginal": "EXIF DateTimeOriginal",
-                "exif_EXIF_InteroperabilityOffset": "EXIF InteroperabilityOffset",
-                "exif_EXIF_FNumber": "EXIF FNumber",
-                "exif_EXIF_FileSource": "EXIF FileSource",
-                "exif_EXIF_ExifImageLength": "EXIF ExifImageLength",
-                "exif_EXIF_SceneType": "EXIF SceneType",
-                "exif_EXIF_CompressedBitsPerPixel": "EXIF CompressedBitsPerPixel",
-                "exif_EXIF_ExposureBiasValue": "EXIF ExposureBiasValue",
-                "exif_EXIF_ExposureProgram": "EXIF ExposureProgram",
-                "exif_EXIF_ExifImageWidth": "EXIF ExifImageWidth",
-                "exif_EXIF_DateTimeDigitized": "EXIF DateTimeDigitized",
-                "exif_EXIF_FocalLength": "EXIF FocalLength",
-                "exif_EXIF_ExposureTime": "EXIF ExposureTime",
-                "exif_EXIF_ISOSpeedRatings": "EXIF ISOSpeedRatings",
-                "exif_EXIF_MaxApertureValue": "EXIF MaxApertureValue",
+                "Exif": {"exif_EXIF_ComponentsConfiguration": "EXIF ComponentsConfiguration",
+                         "exif_EXIF_LightSource": "EXIF LightSource",
+                         "exif_EXIF_FlashPixVersion": "EXIF FlashPixVersion",
+                         "exif_EXIF_ColorSpace": "EXIF ColorSpace",
+                         "exif_EXIF_MeteringMode": "EXIF MeteringMode",
+                         "exif_EXIF_ExifVersion": "EXIF ExifVersion",
+                         "exif_EXIF_Flash": "EXIF Flash",
+                         "exif_EXIF_DateTimeOriginal": "EXIF DateTimeOriginal",
+                         "exif_EXIF_InteroperabilityOffset": "EXIF InteroperabilityOffset",
+                         "exif_EXIF_FNumber": "EXIF FNumber",
+                         "exif_EXIF_FileSource": "EXIF FileSource",
+                         "exif_EXIF_ExifImageLength": "EXIF ExifImageLength",
+                         "exif_EXIF_SceneType": "EXIF SceneType",
+                         "exif_EXIF_CompressedBitsPerPixel": "EXIF CompressedBitsPerPixel",
+                         "exif_EXIF_ExposureBiasValue": "EXIF ExposureBiasValue",
+                         "exif_EXIF_ExposureProgram": "EXIF ExposureProgram",
+                         "exif_EXIF_ExifImageWidth": "EXIF ExifImageWidth",
+                         "exif_EXIF_DateTimeDigitized": "EXIF DateTimeDigitized",
+                         "exif_EXIF_FocalLength": "EXIF FocalLength",
+                         "exif_EXIF_ExposureTime": "EXIF ExposureTime",
+                         "exif_EXIF_ISOSpeedRatings": "EXIF ISOSpeedRatings",
+                         "exif_EXIF_MaxApertureValue": "EXIF MaxApertureValue",
 
-                "exif_Image_Model": "Image Model",
-                "exif_Image_Orientation": "Image Orientation",
-                "exif_Image_DateTime": "Image DateTime",
-                "exif_Image_YCbCrPositioning": "Image YCbCrPositioning",
-                "exif_Image_ImageDescription": "Image ImageDescription",
-                "exif_Image_ResolutionUnit": "Image ResolutionUnit",
-                "exif_Image_XResolution": "Image XResolution",
-                "exif_Image_Make": "Image Make",
-                "exif_Image_YResolution": "Image YResolution",
-                "exif_Image_ExifOffset": "Image ExifOffset",
+                         "exif_Image_Model": "Image Model",
+                         "exif_Image_Orientation": "Image Orientation",
+                         "exif_Image_DateTime": "Image DateTime",
+                         "exif_Image_YCbCrPositioning": "Image YCbCrPositioning",
+                         "exif_Image_ImageDescription": "Image ImageDescription",
+                         "exif_Image_ResolutionUnit": "Image ResolutionUnit",
+                         "exif_Image_XResolution": "Image XResolution",
+                         "exif_Image_Make": "Image Make",
+                         "exif_Image_YResolution": "Image YResolution",
+                         "exif_Image_ExifOffset": "Image ExifOffset",
 
-                "exif_Thumbnail_ResolutionUnit": "Thumbnail ResolutionUnit",
-                "exif_Thumbnail_DateTime": "Thumbnail DateTime",
-                "exif_Thumbnail_JPEGInterchangeFormat": "Thumbnail JPEGInterchangeFormat",
-                "exif_Thumbnail_JPEGInterchangeFormatLength": "Thumbnail JPEGInterchangeFormatLength",
-                "exif_Thumbnail_YResolution": "Thumbnail YResolution",
-                "exif_Thumbnail_Compression": "Thumbnail Compression",
-                "exif_Thumbnail_Make": "Thumbnail Make",
-                "exif_Thumbnail_XResolution": "Thumbnail XResolution",
-                "exif_Thumbnail_Orientation": "Thumbnail Orientation",
-                "exif_Thumbnail_Model": "Thumbnail Model",
-                "exif_JPEGThumbnail": "JPEGThumbnail",
-                "Thumbnail": "Thumbnail"}}
+                         "exif_Thumbnail_ResolutionUnit": "Thumbnail ResolutionUnit",
+                         "exif_Thumbnail_DateTime": "Thumbnail DateTime",
+                         "exif_Thumbnail_JPEGInterchangeFormat": "Thumbnail JPEGInterchangeFormat",
+                         "exif_Thumbnail_JPEGInterchangeFormatLength": "Thumbnail JPEGInterchangeFormatLength",
+                         "exif_Thumbnail_YResolution": "Thumbnail YResolution",
+                         "exif_Thumbnail_Compression": "Thumbnail Compression",
+                         "exif_Thumbnail_Make": "Thumbnail Make",
+                         "exif_Thumbnail_XResolution": "Thumbnail XResolution",
+                         "exif_Thumbnail_Orientation": "Thumbnail Orientation",
+                         "exif_Thumbnail_Model": "Thumbnail Model",
+                         "exif_JPEGThumbnail": "JPEGThumbnail",
+                         "Thumbnail": "Thumbnail"}}
 
     """ fullsize popup-window for image node """
     def popup_fullsize(node, req):
         access = AccessData(req)
         d = {}
         svg = 0
-        if (not access.hasAccess(node, "data") and not dozoom(node)) or not access.hasAccess(node,"read"):
+        if (not access.hasAccess(node, "data") and not dozoom(node)) or not access.hasAccess(node, "read"):
             req.write(t(req, "permission_denied"))
             return
         zoom_exists = 0
         for file in node.getFiles():
-            if file.getType()=="zoom":
+            if file.getType() == "zoom":
                 zoom_exists = 1
             if file.getName().lower().endswith('svg') and file.type == "original":
                 svg = 1
@@ -490,34 +502,34 @@ class Image(default.Default):
         d["key"] = req.params.get("id", "")
         # we assume that width==origwidth, height==origheight
         d['flash'] = dozoom(node) and zoom_exists
-        d['tileurl'] = "/tile/"+node.id+"/"
+        d['tileurl'] = "/tile/" + node.id + "/"
         req.writeTAL("contenttypes/image.html", d, macro="imageviewer")
-
 
     def popup_thumbbig(node, req):
         access = AccessData(req)
 
-        if (not access.hasAccess(node, "data") and not dozoom(node)) or not access.hasAccess(node,"read"):
+        if (not access.hasAccess(node, "data") and not dozoom(node)) or not access.hasAccess(node, "read"):
             req.write(t(req, "permission_denied"))
             return
 
         thumbbig = None
         for file in node.getFiles():
-            if file.getType()=="thumb2":
+            if file.getType() == "thumb2":
                 thumbbig = file
                 break
         if not thumbbig:
             node.popup_fullsize(req)
         else:
             im = PILImage.open(thumbbig.retrieveFile())
-            req.writeTAL("contenttypes/image.html", {"filename":'/file/'+str(node.id)+'/'+thumbbig.getName(), "width":im.size[0], "height":im.size[1]}, macro="thumbbig")
+            req.writeTAL("contenttypes/image.html", {"filename": '/file/' + str(node.id) + '/' +
+                                                     thumbbig.getName(), "width": im.size[0], "height": im.size[1]}, macro="thumbbig")
 
     def processImage(node, type="", value="", dest=""):
         import os
 
         img = None
         for file in node.getFiles():
-            if file.type=="image":
+            if file.type == "image":
                 img = file
                 break
 
@@ -525,59 +537,57 @@ class Image(default.Default):
             pic = PILImage.open(img.retrieveFile())
             pic.load()
 
-            if type=="percentage":
-                w = pic.size[0]*int(value)/100
-                h = pic.size[1]*int(value)/100
+            if type == "percentage":
+                w = pic.size[0] * int(value) / 100
+                h = pic.size[1] * int(value) / 100
 
-            if type=="pixels":
-                if pic.size[0]>pic.size[1]:
+            if type == "pixels":
+                if pic.size[0] > pic.size[1]:
                     w = int(value)
-                    h = pic.size[1]*int(value)/pic.size[0]
+                    h = pic.size[1] * int(value) / pic.size[0]
                 else:
                     h = int(value)
-                    w = pic.size[0]*int(value)/pic.size[1]
+                    w = pic.size[0] * int(value) / pic.size[1]
 
-            elif type=="standard":
+            elif type == "standard":
                 w, h = value.split("x")
                 w = int(w)
                 h = int(h)
 
-                if pic.size[0]<pic.size[1]:
-                    factor_w = w*1.0/pic.size[0]
-                    factor_h = h*1.0/pic.size[1]
+                if pic.size[0] < pic.size[1]:
+                    factor_w = w * 1.0 / pic.size[0]
+                    factor_h = h * 1.0 / pic.size[1]
 
-                    if pic.size[0]*factor_w<w and pic.size[1]*factor_w<h:
-                        w = pic.size[0]*factor_w
-                        h = pic.size[1]*factor_w
+                    if pic.size[0] * factor_w < w and pic.size[1] * factor_w < h:
+                        w = pic.size[0] * factor_w
+                        h = pic.size[1] * factor_w
                     else:
-                        w = pic.size[0]*factor_h
-                        h = pic.size[1]*factor_h
+                        w = pic.size[0] * factor_h
+                        h = pic.size[1] * factor_h
                 else:
-                    factor_w = w*1.0/pic.size[0]
-                    factor_h = h*1.0/pic.size[1]
+                    factor_w = w * 1.0 / pic.size[0]
+                    factor_h = h * 1.0 / pic.size[1]
 
-                    if pic.size[0]*factor_w<w and pic.size[1]*factor_w<h:
-                        w = pic.size[0]*factor_h
-                        h = pic.size[1]*factor_h
+                    if pic.size[0] * factor_w < w and pic.size[1] * factor_w < h:
+                        w = pic.size[0] * factor_h
+                        h = pic.size[1] * factor_h
                     else:
-                        w = pic.size[0]*factor_w
-                        h = pic.size[1]*factor_w
+                        w = pic.size[0] * factor_w
+                        h = pic.size[1] * factor_w
 
-            else: # do nothing but copy image
+            else:  # do nothing but copy image
                 w = pic.size[0]
                 h = pic.size[1]
 
-            pic = pic.resize((int(w),int(h)), PILImage.ANTIALIAS)
+            pic = pic.resize((int(w), int(h)), PILImage.ANTIALIAS)
             if not os.path.isdir(dest):
                 os.mkdir(dest)
-            pic.save(dest+node.id+".jpg", "jpeg")
+            pic.save(dest + node.id + ".jpg", "jpeg")
             return 1
         return 0
-
 
     def getEditMenuTabs(node):
         return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
 
     def getDefaultEditTab(node):
         return "view"
-

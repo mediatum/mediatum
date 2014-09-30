@@ -25,19 +25,22 @@ import core.config as config
 from core.translation import addLabels
 
 # prototype of module to be used in frontend
+
+
 class FrontendModule:
+
     def __init__(self):
         addLabels(self.addModLabels())
-        
+
     def getName(self):
         return "prototype module"
-        
+
     def getId(self):
         return ""
-        
+
     def getContent(self, req, path="", no=0):
         pass
-        
+
     def hasParams(self):
         return 0
 
@@ -47,22 +50,23 @@ class FrontendModule:
     def addModLabels(self):
         return {}
 
-def getContent(req): # deliver content of act
+
+def getContent(req):  # deliver content of act
     path = req.path.split("/")
     modname = path[1]
-    if modname=="init": # maintenance of frontend modules
-        if path[2]=="editor":
+    if modname == "init":  # maintenance of frontend modules
+        if path[2] == "editor":
             getMaintenancePopup(req)
             return
-        if path[2]=="moduleform":
-            if len(path)==4 and path[3]!="":
+        if path[2] == "moduleform":
+            if len(path) == 4 and path[3] != "":
                 mod = getFrontendModules(path[3].split(".")[-1])
                 try:
                     req.write(mod().getModuleForm(req))
                 except:
                     pass
                 return
-            getDefaultModuleForm(req) # default content of form
+            getDefaultModuleForm(req)  # default content of form
             return
     mod = getFrontendModules(modname)
     if mod:
@@ -71,9 +75,9 @@ def getContent(req): # deliver content of act
 
 def getFrontendModules(modname=""):
     mods = {}
-    for root, dirs, files in os.walk(config.basedir+"/web/frontend/modules/"):
+    for root, dirs, files in os.walk(config.basedir + "/web/frontend/modules/"):
         for name in dirs:
-            if name.lower() in ['cvs']: # exclude sys dir
+            if name.lower() in ['cvs']:  # exclude sys dir
                 continue
             try:
                 m = __import__("web.frontend.modules." + name)
@@ -82,15 +86,15 @@ def getFrontendModules(modname=""):
                 print "Warning: couldn't load frontend module", name
                 print sys.exc_info()[0], sys.exc_info()[1]
                 traceback.print_tb(sys.exc_info()[2])
-            if modname==name:
+            if modname == name:
                 return getattr(m, name)
             mods[name] = getattr(m, name)
-    if modname=="":
+    if modname == "":
         return mods
     else:
         return None
-        
-        
+
+
 def getEditorModules():
     ret = []
     mods = getFrontendModules()
@@ -102,12 +106,10 @@ def getEditorModules():
             pass
     return ret
 
-        
+
 def getMaintenancePopup(req):
     req.writeTAL("web/frontend/modules/editor.html", {'mods': getEditorModules()}, macro="editor_popup")
 
-    
+
 def getDefaultModuleForm(req):
     req.writeTAL("web/frontend/modules/editor.html", {}, macro="editor_default")
-        
-

@@ -20,7 +20,7 @@
 """
 
 import sys
-sys.path += ["../","."]
+sys.path += ["../", "."]
 import re
 import os
 import thread
@@ -38,10 +38,10 @@ import core.db.sqliteconnector as sqlite
 
 log = logging.getLogger("backend")
 
-DB_NAME_STD = 'searchindex.db' # only 1 database
-DB_NAME_FULL = 'searchindex_full.db' # database for simple search
-DB_NAME_EXT = 'searchindex_ext.db' # database for extended search
-DB_NAME_TEXT = 'searchindex_text.db' # database for fulltext search
+DB_NAME_STD = 'searchindex.db'  # only 1 database
+DB_NAME_FULL = 'searchindex_full.db'  # database for simple search
+DB_NAME_EXT = 'searchindex_ext.db'  # database for extended search
+DB_NAME_TEXT = 'searchindex_text.db'  # database for fulltext search
 MAX_SEARCH_FIELDS = 32
 SYSTEMATTRS = ['updateuser', 'updatetime', 'edit.lastmask', 'creationtime', 'creator']
 
@@ -53,15 +53,17 @@ SYSTEMATTRS = ['updateuser', 'updatetime', 'edit.lastmask', 'creationtime', 'cre
 FULLTEXT_INDEX_MODE = 0
 DBTYPE = config.get('database.searchdb', 'std')
 
+
 class FtsSearcher:
+
     def __init__(self):
         global DBTYPE
-        self.connames = {'std':{'full':'std', 'ext':'std', 'text':'std', 'std':'std'},
-                                'split':{'full':'full', 'ext':'ext', 'text':'text'}}
-        self.tablenames = {'full':"fullsearchmeta", 'ext':"searchmeta", 'text':"textsearchmeta"}
+        self.connames = {'std': {'full': 'std', 'ext': 'std', 'text': 'std', 'std': 'std'},
+                         'split': {'full': 'full', 'ext': 'ext', 'text': 'text'}}
+        self.tablenames = {'full': "fullsearchmeta", 'ext': "searchmeta", 'text': "textsearchmeta"}
         self.schemas = list(set([schema[0].split('/')[1]
-                        for schema in
-                        tree.db.runQuery('''select distinct type
+                                 for schema in
+                                 tree.db.runQuery('''select distinct type
                                             from node
                                             where type
                                             like "%%/%%"''')]))
@@ -70,7 +72,7 @@ class FtsSearcher:
         if DBTYPE not in self.connames.keys():
             raise OperationException("error in search definition")
 
-        #fills in db with key {schema}_{dbtype}: sqliteconnector
+        # fills in db with key {schema}_{dbtype}: sqliteconnector
         for schema in self.schemas:
             for conname in self.connames[DBTYPE]:
                 self.addDB(schema, conname)
@@ -79,97 +81,98 @@ class FtsSearcher:
 
     def run_search(self, field, op, value):
 
-        def getSQL(type, value, spc ={}): # deliver sql for given type
+        def getSQL(type, value, spc={}):  # deliver sql for given type
             value = normalize_utf8(protect(u(value)))
-            
-            if type=="full": # all metadata
-                return 'select distinct(id) from fullsearchmeta where fullsearchmeta match \'value:'+value+'\' and type <>\'directory\''
-            elif type=="fulltext": # fulltext
-                return 'select distinct(id) from textsearchmeta where textsearchmeta match \'value:'+value+'\' and type<>\'directory\''
-            elif type=="schema": # schemadef
-                return 'select distinct(id) from fullsearchmeta where schema="'+value.replace("'","")+'"'
-            elif type=="objtype": # object type
-                return 'select distinct(id) from fullsearchmeta where type="'+value.replace("'","")+'"'
-            elif type=="updatetime": # update time with operator <|>|=
-                if len(value)==10:
-                    value +="T00:00:00"
-                return 'select distinct(id) from searchmeta where updatetime '+spc['op']+' "'+value.replace("t", "T")+'"'
-            elif type=="field":
-                return 'select position, name from searchmeta_def where attrname=\''+value+'\''
-            elif type=="spcompare":
-                return 'select distinct(id) from searchmeta where schema="'+str(spc['pos'][1])+'" and field'+str(spc['pos'][0])+' '+spc['op']+' "'+value+'"'
-            elif type=="spfield":
-                return 'select distinct(id) from searchmeta where field'+str(spc['pos'][0])+'=""'
-            elif type=="spmatch":
-                return 'select distinct(id) from searchmeta where schema=\''+str(spc['pos'][1])+'\' and field'+str(spc['pos'][0])+' match \''+value+'\''
-            elif type=="content_full":
-                return 'select * from fullsearchmeta where id=\''+value+'\''
-            elif type=="content_text":
-                return 'select * from textsearchmeta where id=\''+value+'\''
-            elif type=="content_ext":
-                return 'select * from searchmeta where id=\''+value+'\''
-            
+
+            if type == "full":  # all metadata
+                return 'select distinct(id) from fullsearchmeta where fullsearchmeta match \'value:' + value + '\' and type <>\'directory\''
+            elif type == "fulltext":  # fulltext
+                return 'select distinct(id) from textsearchmeta where textsearchmeta match \'value:' + value + '\' and type<>\'directory\''
+            elif type == "schema":  # schemadef
+                return 'select distinct(id) from fullsearchmeta where schema="' + value.replace("'", "") + '"'
+            elif type == "objtype":  # object type
+                return 'select distinct(id) from fullsearchmeta where type="' + value.replace("'", "") + '"'
+            elif type == "updatetime":  # update time with operator <|>|=
+                if len(value) == 10:
+                    value += "T00:00:00"
+                return 'select distinct(id) from searchmeta where updatetime ' + spc['op'] + ' "' + value.replace("t", "T") + '"'
+            elif type == "field":
+                return 'select position, name from searchmeta_def where attrname=\'' + value + '\''
+            elif type == "spcompare":
+                return 'select distinct(id) from searchmeta where schema="' + \
+                    str(spc['pos'][1]) + '" and field' + str(spc['pos'][0]) + ' ' + spc['op'] + ' "' + value + '"'
+            elif type == "spfield":
+                return 'select distinct(id) from searchmeta where field' + str(spc['pos'][0]) + '=""'
+            elif type == "spmatch":
+                return 'select distinct(id) from searchmeta where schema=\'' + \
+                    str(spc['pos'][1]) + '\' and field' + str(spc['pos'][0]) + ' match \'' + value + '\''
+            elif type == "content_full":
+                return 'select * from fullsearchmeta where id=\'' + value + '\''
+            elif type == "content_text":
+                return 'select * from textsearchmeta where id=\'' + value + '\''
+            elif type == "content_ext":
+                return 'select * from searchmeta where id=\'' + value + '\''
+
         ret = []
-        if value=="" or field=="" or op=="":
+        if value == "" or field == "" or op == "":
             return []
 
         for schema in self.schemas:
-            if field=="full": # all metadata incl. fulltext
-                res1 = self.execute(getSQL("full", value), schema, 'full') # all metadata
-                res2 = self.execute(getSQL("fulltext", value),  schema, 'text') # fulltext
+            if field == "full":  # all metadata incl. fulltext
+                res1 = self.execute(getSQL("full", value), schema, 'full')  # all metadata
+                res2 = self.execute(getSQL("fulltext", value), schema, 'text')  # fulltext
                 ret += union([[str(s[0]) for s in res1], [str(s[0]) for s in res2]])
 
-            elif field=="fulltext": # fulltext
+            elif field == "fulltext":  # fulltext
                 ret += [str(s[0]) for s in self.execute(getSQL("fulltext", value),
                                                         schema,
                                                         'text')]
 
-            elif field=="allmetadata": # all metadata
+            elif field == "allmetadata":  # all metadata
                 ret += [str(s[0]) for s in self.execute(getSQL("full", value),
                                                         schema,
                                                         'full')]
 
-
-            elif field=="schema":
+            elif field == "schema":
                 ret += [str(s[0]) for s in self.execute(getSQL("schema", value),
                                                         schema,
                                                         'full')]
 
-            elif field=="objtype":
+            elif field == "objtype":
                 ret += [str(s[0]) for s in self.execute(getSQL("objtype", value),
                                                         schema,
                                                         'full')]
 
-            elif field=="updatetime":
-                ret += [str(s[0]) for s in self.execute(getSQL("updatetime", value, spc={'op':op}),
+            elif field == "updatetime":
+                ret += [str(s[0]) for s in self.execute(getSQL("updatetime", value, spc={'op': op}),
                                                         schema,
                                                         'full')]
 
-            elif field=="searchcontent":
-                ret = [[],[],[]]
-                for item in self.execute(getSQL("content_full", value), schema, 'full'): # value = id
-                    ret[0]+=[i for i in item if i]
+            elif field == "searchcontent":
+                ret = [[], [], []]
+                for item in self.execute(getSQL("content_full", value), schema, 'full'):  # value = id
+                    ret[0] += [i for i in item if i]
                 for item in self.execute(getSQL("content_ext", value), schema, 'ext'):
-                    ret[1]+=[i for i in item if i]
-                for item in self.execute(getSQL("content_text", value), schema,'text'): # value = id
-                    ret[2]+=[i for i in item if i]
+                    ret[1] += [i for i in item if i]
+                for item in self.execute(getSQL("content_text", value), schema, 'text'):  # value = id
+                    ret[2] += [i for i in item if i]
                 ret += ret
 
-            else: # special search
+            else:  # special search
                 for pos in self.execute(getSQL("field", field), schema, self.connames[DBTYPE]['ext']):
-                    if op in [">=","<="]:
-                        res = self.execute(getSQL("spcompare", value, spc={'op':op, 'pos':pos}), schema, 'ext')
+                    if op in [">=", "<="]:
+                        res = self.execute(getSQL("spcompare", value, spc={'op': op, 'pos': pos}), schema, 'ext')
                     else:
-                        if value=="''":
-                            res = self.execute(getSQL("spfield", '', spc={'pos':pos}), schema, 'ext')
+                        if value == "''":
+                            res = self.execute(getSQL("spfield", '', spc={'pos': pos}), schema, 'ext')
                         else:
-                            res = self.execute(getSQL("spmatch", value, spc={'pos':pos}), schema, 'ext')
+                            res = self.execute(getSQL("spmatch", value, spc={'pos': pos}), schema, 'ext')
 
                     res = [str(s[0]) for s in res]
-                    if len(ret)==0:
+                    if len(ret) == 0:
                         ret += res
 
-                    if len(res)>0:
+                    if len(res) > 0:
                         ret += union([ret, res])
         return ret
 
@@ -183,11 +186,11 @@ class FtsSearcher:
             self.db['_'.join([schema, self.connames[DBTYPE][connection_name]])] = \
                 sqlite.SQLiteConnector("%s%s_%s" % (config.get("paths.searchstore"),
                                                     schema,
-                                                    eval('DB_NAME_'+(self.connames[DBTYPE][connection_name])
-                                                    .upper())))
+                                                    eval('DB_NAME_' + (self.connames[DBTYPE][connection_name])
+                                                         .upper())))
 
     def initIndexer(self, option="", new_schema=""):
-        global MAX_SEARCH_FIELDS 
+        global MAX_SEARCH_FIELDS
 
         def create(sql, schema, _type):
             try:
@@ -203,9 +206,8 @@ class FtsSearcher:
                    'full')
 
             # extended search table
-            create('CREATE VIRTUAL TABLE searchmeta USING fts3(id, type, schema, updatetime, '+", ".join(['field'+str(i) for i in range(1, MAX_SEARCH_FIELDS)])+')',
-                   schema,
-                   'ext')
+            create('CREATE VIRTUAL TABLE searchmeta USING fts3(id, type, schema, updatetime, ' +
+                   ", ".join(['field' + str(i) for i in range(1, MAX_SEARCH_FIELDS)]) + ')', schema, 'ext')
             create('CREATE VIRTUAL TABLE searchmeta_def USING fts3(name, position, attrname)',
                    schema,
                    'ext')
@@ -230,23 +232,22 @@ class FtsSearcher:
             self.initIndexer(new_schema=schema)
         else:
             print 'search db already exists'
-    
+
     def getAllTableNames(self):
-        ret = {'full':[], 'ext':[], 'text':[]}
+        ret = {'full': [], 'ext': [], 'text': []}
         for type in self.tablenames:
             ret.append(self.tablenames[type])
             for table_add in ['content', 'segdir', 'segments']:
-                ret.append(self.tablenames[type]+'_'+table_add)
+                ret.append(self.tablenames[type] + '_' + table_add)
         return ret
-    
-    
+
     def clearIndex(self):
         print "\nclearing index tables..."
         all_tables = self.getAllTableNames()
         for type in all_tables:
             for table in all_tables[type]:
                 try:
-                    self.execute('DELETE FROM '+table, type)
+                    self.execute('DELETE FROM ' + table, type)
                 except:
                     pass
         try:
@@ -254,15 +255,14 @@ class FtsSearcher:
         except:
             pass
         print "...cleared"
-        
-        
+
     def dropIndex(self):
         print "\ndropping index tables..."
         all_tables = self.getAllTableNames()
         for type in all_tables:
             for table in all_tables[type]:
                 try:
-                    self.execute('DROP TABLE '+table, type)
+                    self.execute('DROP TABLE ' + table, type)
                 except:
                     pass
         try:
@@ -270,10 +270,11 @@ class FtsSearcher:
         except:
             pass
         print "...dropped"
-        
+
     def getDefForSchema(self, schema):
         ret = {}
-        for id, attr in self.execute('SELECT position, attrname FROM searchmeta_def WHERE name="'+str(schema)+'" ORDER BY position', 'ext'):
+        for id, attr in self.execute(
+                'SELECT position, attrname FROM searchmeta_def WHERE name="' + str(schema) + '" ORDER BY position', 'ext'):
             ret[id] = attr
         return ret
 
@@ -283,7 +284,7 @@ class FtsSearcher:
             return self.db['_'.join([schema, self.connames[DBTYPE][_type]])].execute(sql)
         except Exception:
             print "error in search indexer operation", sql, schema
-            
+
     def getNodeInformation(self):
         ret = {}
         res = self.execute('SELECT distinct(id) FROM fullsearchmeta ORDER BY id', 'full')
@@ -297,99 +298,98 @@ class FtsSearcher:
 
         return ret
 
-       
-    def nodeToSimpleSearch(self, node, schema, type=""): # build simple search index from node
+    def nodeToSimpleSearch(self, node, schema, type=""):  # build simple search index from node
 
-        sql_upd = 'UPDATE fullsearchmeta SET type = \''+node.getContentType()+'\', schema=\''+node.getSchema()+'\', value=\''+ str(node.name) + '| '
-        sql_ins = 'INSERT INTO fullsearchmeta (id, type, schema, value) VALUES(\''+ str(node.id)+'\', \''+node.getContentType()+'\', \''+node.getSchema()+'\', \''+ str(node.name) + '| '
-        
+        sql_upd = 'UPDATE fullsearchmeta SET type = \'' + \
+            node.getContentType() + '\', schema=\'' + node.getSchema() + '\', value=\'' + str(node.name) + '| '
+        sql_ins = 'INSERT INTO fullsearchmeta (id, type, schema, value) VALUES(\'' + str(node.id) + \
+            '\', \'' + node.getContentType() + '\', \'' + node.getSchema() + '\', \'' + str(node.name) + '| '
+
         # attributes
         val = ''
-        for key,value in node.items():
-            if key not in SYSTEMATTRS: # ignore system attributes
-                val += protect(u(value))+'| '
+        for key, value in node.items():
+            if key not in SYSTEMATTRS:  # ignore system attributes
+                val += protect(u(value)) + '| '
         for v in val.split(" "):
             v = u(v)
-            if normalize_utf8(v)!=v.lower():
-                val += ' '+normalize_utf8(v)
-                
+            if normalize_utf8(v) != v.lower():
+                val += ' ' + normalize_utf8(v)
+
         val = val.replace(chr(0), "") + ' '
 
-        #remove tex markup
+        # remove tex markup
         val = modify_tex(val, 'strip')
-  
+
         # files
         for file in node.getFiles():
-            val += protect(u(file.getName()+ '| '+file.getType()+'| '+file.getMimeType())+'| ')
+            val += protect(u(file.getName() + '| ' + file.getType() + '| ' + file.getMimeType()) + '| ')
 
-        sql_upd += val +'\' WHERE id=\''+node.id+'\''
-        sql_ins += val +'\')'
+        sql_upd += val + '\' WHERE id=\'' + node.id + '\''
+        sql_ins += val + '\')'
 
         sql = ""
         try:
-            sql = 'SELECT id from fullsearchmeta WHERE id=\''+node.id+'\''
-            if self.execute(sql, schema, 'full'): # check existance
-                sql = sql_upd # do update
+            sql = 'SELECT id from fullsearchmeta WHERE id=\'' + node.id + '\''
+            if self.execute(sql, schema, 'full'):  # check existance
+                sql = sql_upd  # do update
             else:
-                sql = sql_ins # do insert
+                sql = sql_ins  # do insert
             self.execute(sql, schema, 'full')
             return True
         except:
-            logException('error in sqlite insert/update: '+sql)
+            logException('error in sqlite insert/update: ' + sql)
             return False
 
-            
-    def nodeToExtSearch(self, node, schema): # build extended search index from node
-        
-        if len(node.getSearchFields())==0: # stop if schema has no searchfields
+    def nodeToExtSearch(self, node, schema):  # build extended search index from node
+
+        if len(node.getSearchFields()) == 0:  # stop if schema has no searchfields
             return True
 
-        self.nodeToSchemaDef(node, schema) # save definition
- 
+        self.nodeToSchemaDef(node, schema)  # save definition
+
         keyvalue = []
         i = 1
         for field in node.getSearchFields():
             key = "field%d" % i
             i += 1
             value = ""
-            if field.getFieldtype()=="union":
+            if field.getFieldtype() == "union":
                 for item in field.get("valuelist").split(";"):
                     value += node.get(item) + '|'
             else:
                 value = node.get(field.getName())
             keyvalue += [(key, modify_tex(u(protect(value)), 'strip'))]
-            
-        sql0 = 'SELECT id FROM searchmeta where id=\''+node.id+'\''
+
+        sql0 = 'SELECT id FROM searchmeta where id=\'' + node.id + '\''
         sql1 = 'UPDATE searchmeta SET '
         sql2 = 'INSERT INTO searchmeta (id, type, schema, updatetime'
-        for key,value in keyvalue:
-            sql1 += key + "='"+normalize_utf8(value)+"', "
+        for key, value in keyvalue:
+            sql1 += key + "='" + normalize_utf8(value) + "', "
             sql2 += ", "
             sql2 += key
-        sql1 += "type='"+node.getContentType()+"', schema='"+schema+"', updatetime='"+node.get("updatetime")+"'"
+        sql1 += "type='" + node.getContentType() + "', schema='" + schema + "', updatetime='" + node.get("updatetime") + "'"
         sql2 += ") VALUES("
-        sql2 += "'"+str(node.id)+"', \""+node.getContentType()+'", "'+schema+'", "'+node.get("updatetime")+'"'
-        for key,value in keyvalue:
+        sql2 += "'" + str(node.id) + "', \"" + node.getContentType() + '", "' + schema + '", "' + node.get("updatetime") + '"'
+        for key, value in keyvalue:
             sql2 += ", '" + normalize_utf8(value) + "'"
-        sql1 += " WHERE id='"+node.id+"'"
+        sql1 += " WHERE id='" + node.id + "'"
         sql2 += ")"
 
         sql = ""
         try:
             sql = sql0
-            if self.execute(sql0, schema, 'ext'): #select
+            if self.execute(sql0, schema, 'ext'):  # select
                 sql = sql1
-                self.execute(sql1, schema, 'ext') # do update
+                self.execute(sql1, schema, 'ext')  # do update
             else:
                 sql = sql2
-                self.execute(sql2, schema, 'ext') # do insert
+                self.execute(sql2, schema, 'ext')  # do insert
             return True
         except:
-            logException('error in sqlite insert/update: '+sql)
+            logException('error in sqlite insert/update: ' + sql)
             return False
-      
-      
-    def nodeToSchemaDef(self, node, schema): # update schema definition
+
+    def nodeToSchemaDef(self, node, schema):  # update schema definition
         fieldnames = {}
         i = 1
         for field in node.getSearchFields():
@@ -399,17 +399,24 @@ class FtsSearcher:
                      schema,
                      'ext')
         for id in fieldnames.keys():
-            self.execute('INSERT INTO searchmeta_def (name, position, attrname) VALUES("' + schema + '", "'+id+'", "'+fieldnames[id]+'")',
-                         schema,
-                         'ext')
+            self.execute(
+                'INSERT INTO searchmeta_def (name, position, attrname) VALUES("' +
+                schema +
+                '", "' +
+                id +
+                '", "' +
+                fieldnames[id] +
+                '")',
+                schema,
+                'ext')
 
-    def nodeToFulltextSearch(self, node, schema): # build fulltext index from node
-        
-        if not hasattr(node, "getCategoryName") or not node.getCategoryName()=="document": # only build fulltext of document nodes
+    def nodeToFulltextSearch(self, node, schema):  # build fulltext index from node
+
+        if not hasattr(node, "getCategoryName") or not node.getCategoryName() == "document":  # only build fulltext of document nodes
             return True
         r = re.compile("[a-zA-Z0-9]+")
-       
-        if self.execute('SELECT id from textsearchmeta where id=\''+node.id+'\'', schema, 'text'):
+
+        if self.execute('SELECT id from textsearchmeta where id=\'' + node.id + '\'', schema, 'text'):
             # FIXME: we should not delete the old textdata from this node, and insert
             # the new files. Only problem is, DELETE from a FTS3 table is prohibitively
             # slow.
@@ -417,13 +424,13 @@ class FtsSearcher:
 
         for file in node.getFiles():
             w = ''
-            if file.getType()=="fulltext" and os.path.exists(file.retrieveFile()):
+            if file.getType() == "fulltext" and os.path.exists(file.retrieveFile()):
                 data = {}
                 content = ''
                 f = open(file.retrieveFile())
                 try:
                     for line in f:
-                        if FULLTEXT_INDEX_MODE==0:
+                        if FULLTEXT_INDEX_MODE == 0:
                             content += u(line)
                         else:
                             for w in re.findall(r, line):
@@ -436,30 +443,30 @@ class FtsSearcher:
                 finally:
                     f.close()
 
-                if FULLTEXT_INDEX_MODE==1:
+                if FULLTEXT_INDEX_MODE == 1:
                     for key in data.keys():
                         content += key + " "
-                elif FULLTEXT_INDEX_MODE==2:
+                elif FULLTEXT_INDEX_MODE == 2:
                     for key in data.keys():
-                        content += key + " ["+ str(data[key])+"] "
-                        
-                content = u(content.replace("'","").replace('"',""))
-                if len(content)>0:
+                        content += key + " [" + str(data[key]) + "] "
+
+                content = u(content.replace("'", "").replace('"', ""))
+                if len(content) > 0:
                     content_len = len(content)
                     p = 0
-                    
-                    while p in range(0, int(ceil(content_len/500000.0))):
-                        sql = 'INSERT INTO textsearchmeta (id, type, schema, value) VALUES("'+str(node.id)+'", "'+str(node.getContentType())+'", "'+str(schema)+'", "'+normalize_utf8((content[p*500000:(p+1)*500000-1]))+'")'
+
+                    while p in range(0, int(ceil(content_len / 500000.0))):
+                        sql = 'INSERT INTO textsearchmeta (id, type, schema, value) VALUES("' + str(node.id) + '", "' + str(
+                            node.getContentType()) + '", "' + str(schema) + '", "' + normalize_utf8((content[p * 500000:(p + 1) * 500000 - 1])) + '")'
                         try:
                             self.execute(sql, schema, 'text')
                         except:
-                            print "\nerror in fulltext of node",node.id
+                            print "\nerror in fulltext of node", node.id
                             return False
                         p += 1
                 return True
         return True
-    
-    
+
     def updateNodeIndex(self, node, schema):
         err = {}
         err['simple'] = []
@@ -473,13 +480,12 @@ class FtsSearcher:
             err['ext'].append(node.id)
         if not self.nodeToFulltextSearch(node, schema):
             err['text'].append(node.id)
-                      
+
         node.set("updatesearchindex", str(format_date()))
         return err
 
-
     def updateNodesIndex(self, nodelist):
-        print "updating node index for",len(nodelist),"nodes..."
+        print "updating node index for", len(nodelist), "nodes..."
 
         err = {}
         schemas = {}
@@ -497,7 +503,7 @@ class FtsSearcher:
                 # we ignore this exception, and mark the node
                 # non-dirty anyway, to prevent it from blocking
                 # updates of other nodes
-                logException('error during updating '+str(node.id))
+                logException('error during updating ' + str(node.id))
                 print "error for id", node.id
             node.cleanDirty()
 
@@ -505,12 +511,12 @@ class FtsSearcher:
             self.nodeToSchemaDef(schemas[key], key)
 
         return err
-   
-    
+
     """
         mode:
             0: no printout
     """
+
     def removeNodeIndex(self, node):
         global DBTYPE
         for _type in self.tablenames:
@@ -520,17 +526,17 @@ class FtsSearcher:
                              node.getSchema(),
                              _type)
                 print 'node %s removed from index %s %s' % (str(node.id), node.getSchema(), _type)
-            except Exception, e:
+            except Exception as e:
                 print e
 
     def reindex(self, nodelist):
         for node in nodelist:
             node.setDirty()
-        
+
     def node_changed(self, node):
-        print "node_change fts3",node.id
+        print "node_change fts3", node.id
         node.setDirty()
-        
+
     def getSearchInfo(self):
         global DBTYPE
         ret = []
@@ -540,38 +546,40 @@ class FtsSearcher:
                 i = 0
                 t = []
                 for item in table:
-                    t.append((key[i],item))
+                    t.append((key[i], item))
                     i += 1
-                if t[0][1]=="table":
-                    items = self.execute("SELECT count(*) FROM "+t[2][1], type)
+                if t[0][1] == "table":
+                    items = self.execute("SELECT count(*) FROM " + t[2][1], type)
                     for item in items:
-                        t.append(("sqplite_items_count",str(item[0])))
+                        t.append(("sqplite_items_count", str(item[0])))
                 ret.append(t)
         return ret
-        
+
     def getSearchSize(self):
         import os
-        return os.stat(config.settings["paths.searchstore"]+"searchindex.db")[6]
+        return os.stat(config.settings["paths.searchstore"] + "searchindex.db")[6]
 
 ftsSearcher = FtsSearcher()
 ftsSearcher.initIndexer()
 
+
 def protect(s):
-    return s.replace('\'','"')
-    
-    
+    return s.replace('\'', '"')
+
+
 def subnodes(node):
     return node.getAllChildren().getIDs()
+
 
 def fts_indexer_thread():
     if not time:
         return
-    while 1:
+    while True:
         time.sleep(3)
         dirty = tree.getDirtySchemaNodes(10)
         if dirty:
             ftsSearcher.updateNodesIndex(dirty)
 
+
 def startThread():
     thread_id = thread.start_new_thread(fts_indexer_thread, ())
-

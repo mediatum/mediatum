@@ -21,34 +21,37 @@
 
 
 chkmap = {
-"0":  "1", "1":  "2", "2":  "3", "3":  "4", "4":  "5", "5":  "6", "6":  "7", "7":  "8",
-"8":  "9", "9": "41", "a": "18", "b": "14", "c": "19", "d": "15", "e": "16", "f": "21",
-"g": "22", "h": "23", "i": "24", "j": "25", "k": "42", "l": "26", "m": "27", "n": "13",
-"o": "28", "p": "29", "q": "31", "r": "12", "s": "32", "t": "33", "u": "11", "v": "34",
-"w": "35", "x": "36", "y": "37", "z": "38", "-": "39", ":": "17"}
+    "0": "1", "1": "2", "2": "3", "3": "4", "4": "5", "5": "6", "6": "7", "7": "8",
+    "8": "9", "9": "41", "a": "18", "b": "14", "c": "19", "d": "15", "e": "16", "f": "21",
+    "g": "22", "h": "23", "i": "24", "j": "25", "k": "42", "l": "26", "m": "27", "n": "13",
+    "o": "28", "p": "29", "q": "31", "r": "12", "s": "32", "t": "33", "u": "11", "v": "34",
+    "w": "35", "x": "36", "y": "37", "z": "38", "-": "39", ":": "17"}
+
 
 def buildChecksum(urn):
     i = 1
     digit = "0"
     sum = 0
-    for char in urn: 
-        for digit in chkmap.get(char,""):
-            sum += int(digit)*i
+    for char in urn:
+        for digit in chkmap.get(char, ""):
+            sum += int(digit) * i
             i = i + 1
     return str(sum / int(digit))[-1:]
 
-def buildNBN(snid1,snid2,niss):
+
+def buildNBN(snid1, snid2, niss):
     """
     ----- urn structure -----
     urn:<NID>:<NID-specific Part>
-    
+
     NID - Namespace IDentifier
     The complete list of Univorm Resource Names Namespaces
     can be referenced here:
     http://www.iana.org/assignments/urn-namespaces/urn-namespaces.xml
     """
-    urn = "urn:"+str(snid1)+":"+str(snid2)+"-"+niss+"-"
-    return urn+buildChecksum(urn)
+    urn = "urn:" + str(snid1) + ":" + str(snid2) + "-" + niss + "-"
+    return urn + buildChecksum(urn)
+
 
 def increaseURN(urn):
     checksum = 0
@@ -61,24 +64,25 @@ def increaseURN(urn):
         dashes += 1
         urn = urn[:-1]
     # increate the urn, starting with the last number
-    i = len(urn)-1
+    i = len(urn) - 1
     add1 = 1
     while add1:
         add1 = 0
-        if i>=0 and ord('0')<=ord(urn[i])<=ord('9'):
-            newnr = ord(urn[i])+1
+        if i >= 0 and ord('0') <= ord(urn[i]) <= ord('9'):
+            newnr = ord(urn[i]) + 1
             if newnr > ord('9'):
                 add1 = 1
                 newnr = ord('0')
-            urn = urn[0:i]+chr(newnr)+urn[i+1:]
+            urn = urn[0:i] + chr(newnr) + urn[i + 1:]
         else:
-            urn = urn[0:i+1]+'0'+urn[i+1:]
+            urn = urn[0:i + 1] + '0' + urn[i + 1:]
         i = i - 1
-    urn += "-"*dashes
+    urn += "-" * dashes
     if checksum:
         # re-add checksum digit
         urn += buildChecksum(urn)
     return urn
+
 
 def checkURN(urn):
     if not urn.startswith("urn"):
@@ -86,6 +90,5 @@ def checkURN(urn):
     if urn.lower() != urn:
         return "is not all lowercase"
     if buildChecksum(urn[:-1]) != urn[-1:]:
-        return "check sum of '"+urn[:-1]+"' is '"+urn[-1:]+"' but should be '"+buildChecksum(urn[:-1])+"'"
-    return # ok
-
+        return "check sum of '" + urn[:-1] + "' is '" + urn[-1:] + "' but should be '" + buildChecksum(urn[:-1]) + "'"
+    return  # ok

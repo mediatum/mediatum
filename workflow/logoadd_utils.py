@@ -212,22 +212,22 @@ def place_pic(fn_in, fn_pic, fn_out, x0, y0, scale=1.0, mask=None, pages=[], fol
     pdf.stream.close()
 
     return
-    
-    
+
+
 def build_logo_overlay_pdf(fn_matrix_pdf,
                            fn_pic, fn_out,
                            x0,
                            y0,
                            scale=1.0,
                            mask=None,
-                           pages='auto',  #[],
+                           pages='auto',  # [],
                            follow_rotate=False,
                            url=''):
 
     str_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f")
     #str_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    
-    fn_logo_temp = fn_matrix_pdf.replace(".pdf",  "__logo_temp__" + str_datetime + ".pdf")
+
+    fn_logo_temp = fn_matrix_pdf.replace(".pdf", "__logo_temp__" + str_datetime + ".pdf")
 
     pdf_dim = get_pdf_dimensions(fn_matrix_pdf)
     pagecount = pdf_dim['numPages']
@@ -280,15 +280,15 @@ def build_logo_overlay_pdf(fn_matrix_pdf,
 
             if url:
                 pass
-                
+
                 #r1 = (x1, y1, x1 + width, y1 + height)
                 #
-                #c.linkURL(url,
+                # c.linkURL(url,
                 #          r1,
                 #          thickness=1,
                 #          color=colors.green)
 
-                c.drawString(x1 + int(pic_width * scale + 0.5), y1 + int(pic_height * scale + 0.5)/2, url)
+                c.drawString(x1 + int(pic_width * scale + 0.5), y1 + int(pic_height * scale + 0.5) / 2, url)
 
         else:
             c.drawString(0, 0, '')
@@ -297,10 +297,9 @@ def build_logo_overlay_pdf(fn_matrix_pdf,
 
         watermark = PdfFileReader(s_out)
 
-        p  = watermark.getPage(0)
+        p = watermark.getPage(0)
 
         output.addPage(p)
-
 
     output.write(outputStream)
 

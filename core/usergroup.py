@@ -27,11 +27,13 @@ class UserGroup(tree.Node):
 
     def getDescription(self):
         return self.get("description")
-    def setDescription(self,d):
+
+    def setDescription(self, d):
         return self.set("description", d)
 
     def getOption(self):
         return self.get("opts")
+
     def setOption(self, o):
         return self.set("opts", o)
 
@@ -69,18 +71,17 @@ class UserGroup(tree.Node):
         for user in self.getChildren():
             try:
                 for schema in AccessData(user=user).filter(schemas):
-                    schemalist[schema.getName()]="."
+                    schemalist[schema.getName()] = "."
             except:
                 pass
-        schemalist = schemalist.keys()
-        schemalist.sort()
+        schemalist = sorted(schemalist.keys())
         return schemalist
 
     def getHideEdit(self):
         return self.get("hideedit")
 
     def setHideEdit(self, value):
-        self.set("hideedit",value)
+        self.set("hideedit", value)
 
     def isSystemType(self):
         return 1

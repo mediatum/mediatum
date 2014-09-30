@@ -23,9 +23,13 @@ import struct
 from apev2 import APEv2File, error, delete
 from _util import cdata
 
-class MonkeysAudioHeaderError(error): pass
+
+class MonkeysAudioHeaderError(error):
+    pass
+
 
 class MonkeysAudioInfo(object):
+
     """Monkey's Audio stream information.
 
     Attributes:
@@ -68,6 +72,7 @@ class MonkeysAudioInfo(object):
     def pprint(self):
         return "Monkey's Audio %.2f, %.2f seconds, %d Hz" % (
             self.version, self.length, self.sample_rate)
+
 
 class MonkeysAudio(APEv2File):
     _Info = MonkeysAudioInfo

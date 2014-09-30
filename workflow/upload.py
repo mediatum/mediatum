@@ -19,16 +19,18 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.tree as tree
-from workflow import WorkflowStep, registerStep
+from .workflow import WorkflowStep, registerStep
 import utils.fileutils as fileutils
 from utils.utils import OperationException
-from showdata import mkfilelist, mkfilelistshort
-from core.translation import t,lang
+from .showdata import mkfilelist, mkfilelistshort
+from core.translation import t, lang
 import os
+
 
 def register():
     tree.registerNodeClass("workflowstep-upload", WorkflowStep_Upload)
     registerStep("workflowstep-upload")
+
 
 class WorkflowStep_Upload(WorkflowStep):
 
@@ -40,12 +42,12 @@ class WorkflowStep_Upload(WorkflowStep):
                 filename = key[7:-2]
                 all = 0
                 for file in node.getFiles():
-                    if file.getName()==filename:
-                        if file.type in ['document', 'image']: # original -> delete all
+                    if file.getName() == filename:
+                        if file.type in ['document', 'image']:  # original -> delete all
                             all = 1
                         node.removeFile(file)
 
-                if all==1: # delete all files
+                if all == 1:  # delete all files
                     for file in node.getFiles():
                         node.removeFile(file)
 
@@ -59,39 +61,52 @@ class WorkflowStep_Upload(WorkflowStep):
 
                 if fileExtension in self.get("limit").lower().split(";") or self.get("limit").strip() in ['*', '']:
                     orig_filename = file.filename
-                    if hasattr(file,"filename") and file.filename:
-                        file = fileutils.importFile(file.filename,file.tempname)
+                    if hasattr(file, "filename") and file.filename:
+                        file = fileutils.importFile(file.filename, file.tempname)
                         node.addFile(file)
                         node.setName(orig_filename)
-                        if hasattr(node,"event_files_changed"):
+                        if hasattr(node, "event_files_changed"):
                             try:
                                 node.event_files_changed()
-                            except OperationException, ex:
+                            except OperationException as ex:
                                 error = ex.value
                 else:
                     error = t(req, "WorkflowStep_InvalidFileType")
 
-
         if "gotrue" in req.params:
-            if hasattr(node,"event_files_changed"):
+            if hasattr(node, "event_files_changed"):
                 node.event_files_changed()
-            if len(node.getFiles())>0:
+            if len(node.getFiles()) > 0:
                 return self.forwardAndShow(node, True, req)
             elif not error:
                 error = t(req, "no_file_transferred")
 
         if "gofalse" in req.params:
-            if hasattr(node,"event_files_changed"):
+            if hasattr(node, "event_files_changed"):
                 node.event_files_changed()
-            #if len(node.getFiles())>0:
+            # if len(node.getFiles())>0:
             return self.forwardAndShow(node, False, req)
-            #else:
+            # else:
             #    error = t(req, "no_file_transferred")
 
         filelist = mkfilelist(node, 1, request=req)
         filelistshort = mkfilelistshort(node, 1, request=req)
 
-        return req.getTAL("workflow/upload.html", {"obj": node.id, "id": self.id,"prefix": self.get("prefix"), "suffix": self.get("suffix"), "limit": self.get("limit"), "filelist": filelist, "filelistshort":filelistshort, "node": node, "buttons": self.tableRowButtons(node),"singlefile":self.get('singleobj'), "error":error, "pretext":self.getPreText(lang(req)), "posttext":self.getPostText(lang(req))}, macro="workflow_upload")
+        return req.getTAL("workflow/upload.html",
+                          {"obj": node.id,
+                           "id": self.id,
+                           "prefix": self.get("prefix"),
+                              "suffix": self.get("suffix"),
+                              "limit": self.get("limit"),
+                              "filelist": filelist,
+                              "filelistshort": filelistshort,
+                              "node": node,
+                              "buttons": self.tableRowButtons(node),
+                              "singlefile": self.get('singleobj'),
+                              "error": error,
+                              "pretext": self.getPreText(lang(req)),
+                              "posttext": self.getPostText(lang(req))},
+                          macro="workflow_upload")
 
     def metaFields(self, lang=None):
         ret = list()
@@ -116,4 +131,3 @@ class WorkflowStep_Upload(WorkflowStep):
         ret.append(field)
 
         return ret
-

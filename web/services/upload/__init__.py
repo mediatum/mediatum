@@ -33,29 +33,31 @@ response_code_dict = BaseHTTPServer.BaseHTTPRequestHandler.responses
 LOCALES = ["en_US.UTF-8", "english", "german"]
 
 try:
-    locale.setlocale(locale.LC_ALL, LOCALES[0]) # for thousands separator
+    locale.setlocale(locale.LC_ALL, LOCALES[0])  # for thousands separator
 except:
     pass
 
 try:
-    locale.setlocale(locale.LC_ALL, LOCALES[1]) # for thousands separator
-except: 
+    locale.setlocale(locale.LC_ALL, LOCALES[1])  # for thousands separator
+except:
     pass
 
-import handlers
+from . import handlers
 
 SERVICES_URL_HAS_HANDLER = 1
 SERVICES_URL_SIMPLE_REWRITE = 2
 
 urls = [
-        ["GET", "/index.html$", handlers.serve_file, ("/static/index.html", {}, {'filepath': 'index.html'}), SERVICES_URL_SIMPLE_REWRITE, None], 
-        ["GET", "/$",           handlers.serve_file, ("/static/index.html", {}, {'filepath': 'index.html'}), SERVICES_URL_SIMPLE_REWRITE, None], 
-        
-        ["POST", "/new$", handlers.upload_new_node, None, SERVICES_URL_HAS_HANDLER, None], 
-        ["POST", "/update/(?P<id>\d+)/{0,1}$", handlers.update_node, None, SERVICES_URL_HAS_HANDLER, None],  
-       ]
+    ["GET", "/index.html$", handlers.serve_file, ("/static/index.html", {}, {'filepath': 'index.html'}), SERVICES_URL_SIMPLE_REWRITE, None],
+    ["GET", "/$", handlers.serve_file,
+            ("/static/index.html", {}, {'filepath': 'index.html'}), SERVICES_URL_SIMPLE_REWRITE, None],
+
+    ["POST", "/new$", handlers.upload_new_node, None, SERVICES_URL_HAS_HANDLER, None],
+    ["POST", "/update/(?P<id>\d+)/{0,1}$", handlers.update_node, None, SERVICES_URL_HAS_HANDLER, None],
+]
 
 DEBUG = True
+
 
 def request_handler(req):
 
@@ -66,7 +68,7 @@ def request_handler(req):
         if method and method == req.command:
             m = re.match(pattern, req_path)
             if m:
-            
+
                 matched = True
 
                 if url_flags == SERVICES_URL_HAS_HANDLER:
@@ -74,21 +76,21 @@ def request_handler(req):
                     handle_params = req.params
                     response_code, bytes_sent, d = handler_func(req, handle_path, handle_params, data, **m.groupdict())
                     break
-                    
+
                 if url_flags == SERVICES_URL_SIMPLE_REWRITE:
                     handle_path = rewrite_target[0]
 
                     handle_params = req.params.copy()
-                    for key, value in rewrite_target[1].items(): 
-                        handle_params[key] = value    
-                        
+                    for key, value in rewrite_target[1].items():
+                        handle_params[key] = value
+
                     argsdict = m.groupdict().copy()
-                    for key, value in rewrite_target[2].items(): 
-                        argsdict[key] = value                    
-                                        
+                    for key, value in rewrite_target[2].items():
+                        argsdict[key] = value
+
                     response_code, bytes_sent, d = handler_func(req, handle_path, handle_params, data, **argsdict)
                     break
-       
+
     # try to call default handler, if no match
     if not matched:
         try:
@@ -96,10 +98,8 @@ def request_handler(req):
                 response_code, bytes_sent = handlers.default_handler(req)
         except:
             response_code, bytes_sent = '404', 0
-                
-    
+
     if not matched:
-        return req.error(404, "File "+req.path+" not found")
-    
-    return response_code 
-    
+        return req.error(404, "File " + req.path + " not found")
+
+    return response_code

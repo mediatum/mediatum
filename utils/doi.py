@@ -26,6 +26,7 @@ import os
 import core.config as config
 from schema.schema import getMetaType
 
+
 def generate_doi_test(node):
     """
     @param node
@@ -105,7 +106,8 @@ def create_meta_file(node):
                     xml = mask.getViewHTML([node], flags=8)
                     f.write(xml)
             except AttributeError:
-                logging.getLogger('backend').error('Doi was not successfully registered: Doi-mask for Schema %s is missing and should be created' % node.getSchema())
+                logging.getLogger('backend').error(
+                    'Doi was not successfully registered: Doi-mask for Schema %s is missing and should be created' % node.getSchema())
                 node.removeAttribute('doi')
             except IOError:
                 logging.getLogger('errors').error('Error creating %s' % path)
@@ -134,7 +136,7 @@ def create_doi_file(node):
                     f.write('doi=%s\n' % node.get('doi'))
                     f.write('url=%s%s%s%s' % ('http://', 'mediatum.ub.tum.de', '/?id=', node.get('node.id')))
             except IOError:
-                        logging.getLogger('error').error('Error creating %s' % path)
+                logging.getLogger('error').error('Error creating %s' % path)
         return path
 
 

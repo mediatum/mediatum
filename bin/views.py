@@ -20,7 +20,7 @@
 # create all needed views for content and container types (mediatum version > 0.5.1
 
 import sys
-sys.path+=["."]
+sys.path += ["."]
 
 from core.init import basic_init
 basic_init()
@@ -38,41 +38,43 @@ viewnames = ["containermapping", "contentmapping"]
 
 
 def createView(dbname, viewname, viewsql):
-    if str(dbname) in ["", "None"]: #sqlite
+    if str(dbname) in ["", "None"]:  # sqlite
         try:
-            db.runQuery("DROP VIEW %s;" %viewname)
+            db.runQuery("DROP VIEW %s;" % viewname)
         except:
             pass
-        sql = 'CREATE VIEW `%s` AS %s' %(viewname, viewsql)
+        sql = 'CREATE VIEW `%s` AS %s' % (viewname, viewsql)
     else:
-        sql = 'CREATE OR REPLACE VIEW `%s`.`%s` AS %s' %(dbname, viewname, viewsql)
+        sql = 'CREATE OR REPLACE VIEW `%s`.`%s` AS %s' % (dbname, viewname, viewsql)
     db.runQuery(sql)
-    
-    print "view '%s' created"  % viewname
 
-    
+    print "view '%s' created" % viewname
+
+
 for dtype in loadAllDatatypes():
     if dtype.getName() not in ["root", "navitem", "home"]:
         n = tree.Node("", type=dtype.name)
-        
-        if hasattr(n, "isSystemType") and n.isSystemType()==0:
-            if hasattr(n, "isContainer") and n.isContainer()==1 :
+
+        if hasattr(n, "isSystemType") and n.isSystemType() == 0:
+            if hasattr(n, "isContainer") and n.isContainer() == 1:
                 container.append(dtype.name)
             else:
                 content.append(dtype.name)
-                
-types = ["'"+"', '".join(container)+"'", "'"+"', '".join(content)+"'"]
+
+types = ["'" + "', '".join(container) + "'", "'" + "', '".join(content) + "'"]
 t = ""
 for x in content:
-    t += "node.type like '"+x+"%' or "
+    t += "node.type like '" + x + "%' or "
 
-for i in range(0,2):
-    if i==0:
-        viewsql = "select nodemapping.nid AS nid,nodemapping.cid AS cid, node.type AS type from (nodemapping join node on((nodemapping.cid=node.id))) where (node.type in ("+types[i]+"))"    
+for i in range(0, 2):
+    if i == 0:
+        viewsql = "select nodemapping.nid AS nid,nodemapping.cid AS cid, node.type AS type from (nodemapping join node on((nodemapping.cid=node.id))) where (node.type in (" + types[
+            i] + "))"
     else:
-        if str(dbname) in ["", "None"]: #sqlite
-            viewsql = "select nodemapping.nid AS nid,nodemapping.cid AS cid, node.type AS type from (nodemapping join node on((nodemapping.cid=node.id))) where (("+t[:-4]+"))"       
+        if str(dbname) in ["", "None"]:  # sqlite
+            viewsql = "select nodemapping.nid AS nid,nodemapping.cid AS cid, node.type AS type from (nodemapping join node on((nodemapping.cid=node.id))) where ((" + t[
+                :-4] + "))"
         else:
-            viewsql = "select nodemapping.nid AS nid,nodemapping.cid AS cid, node.type AS type from (nodemapping join node on((nodemapping.cid=node.id))) where ((substring_index(`node`.`type`,'/',1) ("+types[i]+")))"    
+            viewsql = "select nodemapping.nid AS nid,nodemapping.cid AS cid, node.type AS type from (nodemapping join node on((nodemapping.cid=node.id))) where ((substring_index(`node`.`type`,'/',1) (" + types[
+                i] + ")))"
     createView(dbname, viewnames[i], viewsql)
-    

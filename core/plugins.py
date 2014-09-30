@@ -62,8 +62,8 @@ def init_plugins():
         else:
             plugins[name] = m
 
-        if hasattr(m, 'pofiles'): # add po file paths
-            if len(m.pofiles)>0:
+        if hasattr(m, 'pofiles'):  # add po file paths
+            if len(m.pofiles) > 0:
                 print "  load translation files"
                 for fp in m.pofiles:
                     translation.addPoFilepath([fp])

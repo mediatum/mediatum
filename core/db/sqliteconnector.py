@@ -25,7 +25,7 @@ import logging
 import thread
 import core.config as config
 
-from connector import Connector
+from .connector import Connector
 
 SQLITE_API = None
 
@@ -67,20 +67,20 @@ log = logg = logging.getLogger('database')
 
 sqlite_lock = thread.allocate_lock()
 
+
 class SQLiteConnector(Connector):
 
-    def __init__(self,db=None):
-        if db==None:
-            if not os.path.exists(config.get("paths.datadir")+"db/imagearch.db"):
+    def __init__(self, db=None):
+        if db is None:
+            if not os.path.exists(config.get("paths.datadir") + "db/imagearch.db"):
                 try:
-                    os.makedirs(os.path.dirname(config.get("paths.datadir")+"db/"))
+                    os.makedirs(os.path.dirname(config.get("paths.datadir") + "db/"))
                 except OSError:
                     pass
-            self.db = config.get("paths.datadir")+"db/imagearch.db"
+            self.db = config.get("paths.datadir") + "db/imagearch.db"
             self.isInitialized()
         else:
             self.db = db
-
 
     def applyPatches(self):
         self.runQueryNoError("alter table node add column ([localread] TEXT NULL)")
@@ -98,19 +98,19 @@ class SQLiteConnector(Connector):
         return False
 
     def esc(self, text):
-        return "'"+text.replace("'","\\'")+"'"
+        return "'" + text.replace("'", "\\'") + "'"
 
     def close(self):
         pass
 
-    def execute(self,sql, obj=None):
+    def execute(self, sql, obj=None):
         global sqlite_lock
         sqlite_lock.acquire()
         try:
             if not os.path.exists(config.get("paths.tempdir")):
                 os.makedirs(os.path.dirname(config.get("paths.tempdir")))
-            fi = open(config.get("paths.tempdir")+"sqlite.log", "ab+")
-            fi.write(sql+"\n")
+            fi = open(config.get("paths.tempdir") + "sqlite.log", "ab+")
+            fi.write(sql + "\n")
             fi.close()
 
             con = sqlite.connect(self.db, check_same_thread=True)
@@ -134,7 +134,7 @@ class SQLiteConnector(Connector):
     def runQuery(self, sql, obj=None):
         if debug:
             log.debug(sql)
-        return self.execute(sql,obj)
+        return self.execute(sql, obj)
 
     def runQueryNoError(self, sql, obj=None):
         global debug
@@ -144,13 +144,19 @@ class SQLiteConnector(Connector):
             log.debug(sql)
 
     def createTables(self):
-        self.runQueryNoError("CREATE TABLE [nodeaccess] ([name] VARCHAR(64)  NOT NULL PRIMARY KEY, [description] TEXT  NULL,[rule] TEXT  NULL)")
-        self.runQueryNoError("CREATE TABLE [node] ([id] INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT, [name] VARCHAR(255)  NULL, [type] VARCHAR(32)  NULL, [readaccess] TEXT  NULL, [writeaccess] TEXT  NULL, [dataaccess] TEXT  NULL, [lastchange] DATE DEFAULT CURRENT_DATE NULL, [orderpos] INTEGER DEFAULT '1' NULL, [dirty] INTEGER DEFAULT '0', [localread] TEXT NULL)")
-        self.runQueryNoError("CREATE TABLE [nodeattribute] ([nid] INTEGER DEFAULT '0' NOT NULL, [name] VARCHAR(50)  NOT NULL, [value] TEXT  NULL)")
-        self.runQueryNoError("CREATE TABLE [nodefile] ([nid] INTEGER DEFAULT '0' NOT NULL, [filename] TEXT  NOT NULL, [type] VARCHAR(32)  NOT NULL, [mimetype] VARCHAR(32)  NULL)")
+        self.runQueryNoError(
+            "CREATE TABLE [nodeaccess] ([name] VARCHAR(64)  NOT NULL PRIMARY KEY, [description] TEXT  NULL,[rule] TEXT  NULL)")
+        self.runQueryNoError(
+            "CREATE TABLE [node] ([id] INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT, [name] VARCHAR(255)  NULL, [type] VARCHAR(32)  NULL, [readaccess] TEXT  NULL, [writeaccess] TEXT  NULL, [dataaccess] TEXT  NULL, [lastchange] DATE DEFAULT CURRENT_DATE NULL, [orderpos] INTEGER DEFAULT '1' NULL, [dirty] INTEGER DEFAULT '0', [localread] TEXT NULL)")
+        self.runQueryNoError(
+            "CREATE TABLE [nodeattribute] ([nid] INTEGER DEFAULT '0' NOT NULL, [name] VARCHAR(50)  NOT NULL, [value] TEXT  NULL)")
+        self.runQueryNoError(
+            "CREATE TABLE [nodefile] ([nid] INTEGER DEFAULT '0' NOT NULL, [filename] TEXT  NOT NULL, [type] VARCHAR(32)  NOT NULL, [mimetype] VARCHAR(32)  NULL)")
         self.runQueryNoError("CREATE TABLE [nodemapping] ([nid] INTEGER DEFAULT '0' NOT NULL, [cid] INTEGER DEFAULT '0' NOT NULL)")
-        self.runQueryNoError("CREATE OR REPLACE VIEW contaermapping AS select nodemapping.nid AS nid`,`nodemapping`.`cid` AS `cid`,`node`.`type` AS `type` from (`nodemapping` join `node` on((`nodemapping`.`cid` = `node`.`id`))) where (locate('/',`node`.`type`) = 0)")
-        self.runQueryNoError("CREATE OR REPLACE VIEW contentmapping AS select nodemapping.nid AS `id`,`nodemapping`.`cid` AS `cid`,`node`.`type` AS `type` from (`nodemapping` join `node` on((`nodemapping`.`cid` = `node`.`id`))) where (locate('/',`node`.`type`) > 0)")
+        self.runQueryNoError(
+            "CREATE OR REPLACE VIEW contaermapping AS select nodemapping.nid AS nid`,`nodemapping`.`cid` AS `cid`,`node`.`type` AS `type` from (`nodemapping` join `node` on((`nodemapping`.`cid` = `node`.`id`))) where (locate('/',`node`.`type`) = 0)")
+        self.runQueryNoError(
+            "CREATE OR REPLACE VIEW contentmapping AS select nodemapping.nid AS `id`,`nodemapping`.`cid` AS `cid`,`node`.`type` AS `type` from (`nodemapping` join `node` on((`nodemapping`.`cid` = `node`.`id`))) where (locate('/',`node`.`type`) > 0)")
 
         self.runQueryNoError("CREATE VIEW containermapping AS select nodemapping.nid AS nid, nodemapping.cid AS cid,node.type AS type\
         FROM (nodemapping join node on((nodemapping.cid = node.id))) where (instr(node.type, '/') = 0);")
@@ -168,7 +174,7 @@ class SQLiteConnector(Connector):
         self.runQueryNoError("CREATE INDEX [IDX_NODEMAPPING_NID] ON [nodemapping]([nid]  ASC)")
         self.runQueryNoError("CREATE INDEX [IDX_NODEMAPPING_CID] ON [nodemapping]([cid]  ASC)")
         self.runQueryNoError("CREATE INDEX [IDX_NODEMAPPING_NIDCID] ON [nodemapping]([nid]  ASC,[cid]  ASC)")
-        #self.commit()
+        # self.commit()
 
     def dropTables(self):
         self.runQueryNoError("drop table nodeaccess")
@@ -177,7 +183,7 @@ class SQLiteConnector(Connector):
         self.runQueryNoError("drop table nodefile")
         self.runQueryNoError("drop table nodeattribute")
         self.runQueryNoError("drop table nodemapping")
-        #self.commit()
+        # self.commit()
         log.info("tables deleted")
 
     def clearTables(self):
@@ -187,14 +193,14 @@ class SQLiteConnector(Connector):
         self.runQueryNoError("delete from nodefile")
         self.runQueryNoError("delete from nodeattribute")
         self.runQueryNoError("delete from nodemapping")
-        #self.commit()
+        # self.commit()
         log.info("tables cleared")
 
     def getRule(self, name):
         rule = self.runQuery("select name, description, rule from nodeaccess where name=" + self.esc(name))
-        if len(rule)==1:
+        if len(rule) == 1:
             return rule[0][2], rule[0][1]
-        elif len(rule)>1:
+        elif len(rule) > 1:
             raise Exception("DuplicateRuleError")
         else:
             raise Exception("RuleNotFoundError")
@@ -203,23 +209,25 @@ class SQLiteConnector(Connector):
         return self.runQuery("select name, description, rule from nodeaccess order by name")
 
     def updateRule(self, rule, oldname):
-        #try:
-        sql = "update nodeaccess set rule='"+rule.getRuleStr()+"', description='"+rule.getDescription()+"' where name='" + oldname+"'"
+        # try:
+        sql = "update nodeaccess set rule='" + \
+            rule.getRuleStr() + "', description='" + rule.getDescription() + "' where name='" + oldname + "'"
         self.runQuery(sql)
         return True
-        #except:
+        # except:
         #    return False
 
     def addRule(self, rule):
         try:
-            self.runQuery("insert into nodeaccess (name, rule, description) values('"+rule.getName()+"', '"+rule.getRuleStr()+"', '"+rule.getDescription()+"')")
+            self.runQuery("insert into nodeaccess (name, rule, description) values('" + rule.getName() +
+                          "', '" + rule.getRuleStr() + "', '" + rule.getDescription() + "')")
             return True
         except:
             return False
 
     def deleteRule(self, name):
         try:
-            self.runQuery("delete from nodeaccess where name='" + name+"'")
+            self.runQuery("delete from nodeaccess where name='" + name + "'")
             return True
         except:
             return False
@@ -227,83 +235,80 @@ class SQLiteConnector(Connector):
     def getAllDBRuleNames(self):
         ret = {}
         for field in ["readaccess", "writeaccess", "dataaccess"]:
-            for names in self.runQuery('select distinct('+field+') from node where '+field+' not like "{%"'):
+            for names in self.runQuery('select distinct(' + field + ') from node where ' + field + ' not like "{%"'):
                 rules = names[0].split(",")
                 for rule in rules:
-                    if rule!="":
-                        ret[rule]=""
+                    if rule != "":
+                        ret[rule] = ""
         return ret.keys()
 
     def ruleUsage(self, rulename):
-        result = self.runQuery('select count(*) from node where readaccess="'+rulename+'" or writeaccess="'+rulename+'" or dataaccess="'+rulename+'"')
+        result = self.runQuery('select count(*) from node where readaccess="' + rulename +
+                               '" or writeaccess="' + rulename + '" or dataaccess="' + rulename + '"')
         return int(result[0][0])
 
     def resetNodeRule(self, rulename):
         for field in ["readaccess", "writeaccess", "dataaccess"]:
-            self.runQuery('update node set '+field+'="" where '+field+'="'+rulename+'"')
-
+            self.runQuery('update node set ' + field + '="" where ' + field + '="' + rulename + '"')
 
     """ node section """
+
     def createNode(self, name, type):
         orderpos = self.mkOrderPos()
         id = self.mkID()
-        self.runQuery("insert into node (id,name,type,orderpos) values(?,?,?,?)",(id,name,type,orderpos))
+        self.runQuery("insert into node (id,name,type,orderpos) values(?,?,?,?)", (id, name, type, orderpos))
         res = self.runQuery("select max(id) from node")
         return str(res[0][0])
 
     def addChild(self, nodeid, childid, check=1):
         if check:
             if childid == nodeid:
-                raise ValueError("Tried to add node "+nodeid+" to itself as child")
+                raise ValueError("Tried to add node " + nodeid + " to itself as child")
             # does this child already exist?
-            t = self.runQuery("select count(*) as num from nodemapping where nid="+nodeid+" and cid="+childid)
-            if t[0][0]>0:
+            t = self.runQuery("select count(*) as num from nodemapping where nid=" + nodeid + " and cid=" + childid)
+            if t[0][0] > 0:
                 return
         self.setNodeOrderPos(childid, self.mkOrderPos())
-        self.runQuery("insert into nodemapping (nid, cid) values(?,?)",(nodeid,childid))
-
+        self.runQuery("insert into nodemapping (nid, cid) values(?,?)", (nodeid, childid))
 
     def setAttribute(self, nodeid, attname, attvalue, check=1):
         if attvalue is None:
             raise TypeError("Attribute value is None")
         if check:
-            t = self.runQuery("select count(*) as num from nodeattribute where nid="+nodeid+" and name='"+attname+"'")
-            if len(t)>0 and t[0][0]>0:
-                self.runQuery("update nodeattribute set value='"+str(attvalue)+"' where nid="+nodeid+" and name='"+attname+"'")
+            t = self.runQuery("select count(*) as num from nodeattribute where nid=" + nodeid + " and name='" + attname + "'")
+            if len(t) > 0 and t[0][0] > 0:
+                self.runQuery("update nodeattribute set value='" + str(attvalue) + "' where nid=" + nodeid + " and name='" + attname + "'")
                 return
-        self.runQuery("insert into nodeattribute (nid, name, value) values(?,?,?)", (nodeid,attname,str(attvalue)))
-
+        self.runQuery("insert into nodeattribute (nid, name, value) values(?,?,?)", (nodeid, attname, str(attvalue)))
 
     def addFile(self, nodeid, path, type, mimetype):
-        self.runQuery("insert into nodefile (nid, filename, type, mimetype) values(?,?,?,?)", (nodeid,path,type,mimetype))
-
+        self.runQuery("insert into nodefile (nid, filename, type, mimetype) values(?,?,?,?)", (nodeid, path, type, mimetype))
 
     def getStatus(self):
         ret = []
         key = ["sqlite_type", "sqlite_name", "sqlite_tbl_name", "sqlite_rootpage", "sqlite_sql"]
         for table in self.runQuery("select * from sqlite_master"):
-            i=0
+            i = 0
             t = []
             for item in table:
-                t.append((key[i],item))
+                t.append((key[i], item))
                 i += 1
 
             items = []
             try:
-                items = self.runQuery("select * from sqlite_stat1 where tbl='"+t[2][1]+"'")
+                items = self.runQuery("select * from sqlite_stat1 where tbl='" + t[2][1] + "'")
             except:
                 pass
-            if len(items)>0:
+            if len(items) > 0:
                 t.append(("sqplite_items_count", str(items[0][2]).split(" ")[0]))
 
             ret.append(t)
 
         return ret
 
-
     def getDBSize(self):
         import os
-        return os.stat(config.get("paths.datadir")+"db/imagearch.db")[6]
+        return os.stat(config.get("paths.datadir") + "db/imagearch.db")[6]
 
     def sort_nodes_by_fields(self, nids, fields):
         """Sorts nodes by field (attribute) values.

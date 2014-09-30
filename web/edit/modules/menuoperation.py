@@ -17,10 +17,11 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+
 def getInformation():
-    return {"icon":"/img/icons/datatypes.gif",
-            "version":"1.0"}
+    return {"icon": "/img/icons/datatypes.gif",
+            "version": "1.0"}
+
 
 def validate(req, op):
     return "menuoperation"
-

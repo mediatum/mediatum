@@ -48,71 +48,75 @@ resultcache = Cache(maxcount=25, verbose=True)
 SEND_TIMETABLE = False
 
 
-
 def get_sheme(req, path, params, data, name):
-    
+
     atime = starttime = time.time()
     r_timetable = []
     userAccess = None
-    
-    #get the user and verify the signature
+
+    # get the user and verify the signature
     if params.get('user'):
-        #user=users.getUser(params.get('user'))
+        # user=users.getUser(params.get('user'))
         #userAccess = AccessData(user=user)
         _user = users.getUser(params.get('user'))
-        if not _user: # user of dynamic
+        if not _user:  # user of dynamic
 
-            class dummyuser: # dummy user class
-                def getGroups(self): # return all groups with given dynamic user
-                    return [g.name for g in tree.getRoot('usergroups').getChildren() if g.get('allow_dynamic')=='1' and params.get('user') in g.get('dynamic_users')]
+            class dummyuser:  # dummy user class
+
+                def getGroups(self):  # return all groups with given dynamic user
+                    return [g.name for g in tree.getRoot('usergroups').getChildren() if g.get(
+                        'allow_dynamic') == '1' and params.get('user') in g.get('dynamic_users')]
+
                 def getName(self):
                     return params.get('user')
-                def getDirID(self): # unique identifier
+
+                def getDirID(self):  # unique identifier
                     return params.get('user')
+
                 def isAdmin(self):
                     return 0
 
             _user = dummyuser()
         userAccess = AccessData(user=_user)
 
-        if userAccess.user != None:
-            valid = userAccess.verify_request_signature(req.fullpath,params)
-            if valid == False:
+        if userAccess.user is not None:
+            valid = userAccess.verify_request_signature(req.fullpath, params)
+            if not valid:
                 userAccess = None
         else:
             userAccess = None
-    
-    if userAccess == None:
+
+    if userAccess is None:
         d = {}
         d['status'] = 'fail'
-        d['html_response_code'] = '403' # denied
+        d['html_response_code'] = '403'  # denied
         return d['html_response_code'], 0, d
-    
+
     d = {}
     d['timetable'] = []
     d['status'] = 'ok'
-    d['html_response_code'] = '200' # ok
+    d['html_response_code'] = '200'  # ok
     d['build_response_end'] = time.time()
     if r_timetable:
         d['timetable'] = r_timetable[:]
-        
+
     if name.endswith('/'):
         name = name[:-1]
     s = exportMetaScheme(name)
-    
 
     def compressForDeflate(s):
         import gzip
-        return gzip.zlib.compress(s,9)
-        
+        return gzip.zlib.compress(s, 9)
+
     def compressForGzip(s):
-        import cStringIO, gzip
+        import cStringIO
+        import gzip
         buffer = cStringIO.StringIO()
         gzfile = gzip.GzipFile(mode='wb', fileobj=buffer, compresslevel=9)
         gzfile.write(s)
         gzfile.close()
-        return buffer.getvalue()        
-            
+        return buffer.getvalue()
+
     if 'deflate' in req.params:
         size_uncompressed = len(s)
         compressed_s = compressForDeflate(s)
@@ -123,7 +127,9 @@ def get_sheme(req, path, params, data, name):
         except:
             percentage = 100.0
         req.reply_headers['Content-Encoding'] = "deflate"
-        d['timetable'].append(["'deflate' in request: executed compressForDeflate(s), %d bytes -> %d bytes (compressed to: %.1f %%)" % (size_uncompressed, size_compressed, percentage), time.time()-atime]); atime = time.time()
+        d['timetable'].append(["'deflate' in request: executed compressForDeflate(s), %d bytes -> %d bytes (compressed to: %.1f %%)" %
+                               (size_uncompressed, size_compressed, percentage), time.time() - atime])
+        atime = time.time()
 
     elif 'gzip' in req.params:
         size_uncompressed = len(s)
@@ -135,31 +141,31 @@ def get_sheme(req, path, params, data, name):
         except:
             percentage = 100.0
         req.reply_headers['Content-Encoding'] = "gzip"
-        d['timetable'].append(["'gzip' in request: executed compressForGzip(s), %d bytes -> %d bytes (compressed to: %.1f %%)" % (size_uncompressed, size_compressed, percentage), time.time()-atime]); atime = time.time()
-    
-     
+        d['timetable'].append(["'gzip' in request: executed compressForGzip(s), %d bytes -> %d bytes (compressed to: %.1f %%)" %
+                               (size_uncompressed, size_compressed, percentage), time.time() - atime])
+        atime = time.time()
+
     mimetype = 'text/html'
-    
-    req.reply_headers['Content-Type'] = "text/xml; charset=utf-8"    
+
+    req.reply_headers['Content-Type'] = "text/xml; charset=utf-8"
     req.reply_headers['Content-Length'] = len(s)
 
     req.sendAsBuffer(s, mimetype, force=1)
-    d['timetable'].append(["executed req.sendAsBuffer, %d bytes, mimetype='%s'" % (len(s), mimetype), time.time()-atime]); atime = time.time()          
+    d['timetable'].append(["executed req.sendAsBuffer, %d bytes, mimetype='%s'" % (len(s), mimetype), time.time() - atime])
+    atime = time.time()
     return d['html_response_code'], len(s), d
 
 
 def get_app_definitions(req, path, params, data, name):
-    return serve_file(req,path,params,data,name+".xml")
-
-
-
+    return serve_file(req, path, params, data, name + ".xml")
 
 
 WEBROOT = None
 
+
 def serve_file(req, path, params, data, filepath):
     atime = starttime = time.time()
-    
+
     d = {}
     d['timetable'] = []
 
@@ -169,26 +175,27 @@ def serve_file(req, path, params, data, filepath):
         mimetype = 'text/html'
     else:
         mimetype = getMimeType(filepath)
-            
+
     req.reply_headers['Content-Type'] = mimetype
 
     if WEBROOT:
         basedir = WEBROOT
     else:
-        basedir = os.path.dirname(os.path.abspath( __file__ ))
+        basedir = os.path.dirname(os.path.abspath(__file__))
     abspath = os.path.join(basedir, 'static', filepath)
     msg = "web service trying to serve: " + str(abspath)
     logger.info(msg)
     if os.path.isfile(abspath):
         filesize = os.path.getsize(abspath)
         req.sendFile(abspath, mimetype, force=1)
-        d['timetable'].append(["reading file '%s'" % filepath, time.time()-atime]); atime = time.time()
+        d['timetable'].append(["reading file '%s'" % filepath, time.time() - atime])
+        atime = time.time()
         d['status'] = 'ok'
         dataready = "%.3f" % (time.time() - starttime)
         d['dataready'] = dataready
-        return 200, filesize, d # ok
+        return 200, filesize, d  # ok
     else:
         d['status'] = 'fail'
         dataready = "%.3f" % (time.time() - starttime)
-        d['dataready'] = dataready        
-        return 404, 0, d # not found
+        d['dataready'] = dataready
+        return 404, 0, d  # not found

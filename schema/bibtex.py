@@ -1,4 +1,4 @@
-### coding=utf8
+# coding=utf8
 """
  mediatum - a multimedia content repository
 
@@ -36,7 +36,7 @@ import logging
 
 import core.users as users
 
-from schema import getMetaType
+from .schema import getMetaType
 from utils.utils import u, u2
 from utils.date import parse_date
 
@@ -54,15 +54,15 @@ def normchar(char_descriptor):
 
 
 din5007_variant2_translation = [
-    [normchar('LATIN CAPITAL LETTER A WITH DIAERESIS'), 'ae'], # Auml
-    [normchar('LATIN CAPITAL LETTER O WITH DIAERESIS'), 'oe'], # Ouml
-    [normchar('LATIN CAPITAL LETTER U WITH DIAERESIS'), 'ue'], # Uuml
-    [normchar('LATIN SMALL LETTER A WITH DIAERESIS'), 'ae'], # auml
-    [normchar('LATIN SMALL LETTER O WITH DIAERESIS'), 'oe'], # ouml
-    [normchar('LATIN SMALL LETTER U WITH DIAERESIS'), 'ue'], # uuml
-    [normchar('LATIN SMALL LETTER SHARP S'), 'ss'], # szlig
-    [normchar('LATIN SMALL LETTER E WITH GRAVE'), 'e'], # egrave
-    [normchar('LATIN SMALL LETTER E WITH ACUTE'), 'e'], # eacute
+    [normchar('LATIN CAPITAL LETTER A WITH DIAERESIS'), 'ae'],  # Auml
+    [normchar('LATIN CAPITAL LETTER O WITH DIAERESIS'), 'oe'],  # Ouml
+    [normchar('LATIN CAPITAL LETTER U WITH DIAERESIS'), 'ue'],  # Uuml
+    [normchar('LATIN SMALL LETTER A WITH DIAERESIS'), 'ae'],  # auml
+    [normchar('LATIN SMALL LETTER O WITH DIAERESIS'), 'oe'],  # ouml
+    [normchar('LATIN SMALL LETTER U WITH DIAERESIS'), 'ue'],  # uuml
+    [normchar('LATIN SMALL LETTER SHARP S'), 'ss'],  # szlig
+    [normchar('LATIN SMALL LETTER E WITH GRAVE'), 'e'],  # egrave
+    [normchar('LATIN SMALL LETTER E WITH ACUTE'), 'e'],  # eacute
 ]
 
 d_escape = dict(din5007_variant2_translation)
@@ -96,6 +96,7 @@ counterpiece = {"{": "}", '"': '"', "'": "'"}
 
 
 class MissingMapping(Exception):
+
     def __init__(self, message=""):
         self.message = message
 
@@ -154,13 +155,13 @@ def getentries(filename):
             try:
                 data = fi.read()
                 data = u2(data)
-            except Exception, e:
+            except Exception as e:
                 fi.close()
                 msg = "bibtex import: getentries(filename): error at second attempt: " + str(e)
                 logger.info(msg)
 
                 raise MissingMapping("wrong encoding")
-        except Exception, e:
+        except Exception as e:
             msg = "bibtex import: getentries(filename): error at second attempt: " + str(e)
             logger.error(msg)
 
@@ -185,7 +186,7 @@ def getentries(filename):
     fields = {}
     doctype = None
     placeholder = {}
-    while 1:
+    while True:
         m = token.search(data, pos)
         if not m:
             break
@@ -229,12 +230,12 @@ def getentries(filename):
                     try:
                         msg = "bibtex import: placeholder: key='%s', value='%s'" % (key.strip(), value.strip()[1:-1])
                         logger.info(msg)
-                    except Exception, e:
+                    except Exception as e:
                         try:
                             msg = "bibtex import: placeholder: key='%s', value='%s'" % (
                                 key.strip(), value.strip()[1:-1].encode("utf8", "replace"))
                             logger.info(msg)
-                        except Exception, e:
+                        except Exception as e:
                             msg = "bibtex import: placeholder: 'not printable key-value pair'"
                             logger.info(msg)
 
@@ -274,7 +275,6 @@ def getentries(filename):
             content = content.replace("\\", "")
             content = content.replace("{\"u}", "\xc3\xbc").replace("{\"a}", "\xc3\xa4").replace("{\"o}", "\xc3\xb6") \
                 .replace("{\"U}", "\xc3\x9c").replace("{\"A}", "\xc3\x84").replace("{\"O}", "\xc3\x96")
-
 
             #content = content.replace("\\\"u","Ã¼").replace("\\\"a","Ã¤").replace("\\\"o","Ã¶") \
             #                 .replace("\\\"U","Ãœ").replace("\\\"A","Ã„").replace("\\\"O","Ã–")
@@ -347,7 +347,7 @@ article_types = [
      ("address", "month", "note", "key"))]
 
 import core.tree as tree
-import schema as schema
+from . import schema as schema
 
 
 def getAllBibTeXTypes():
@@ -422,7 +422,7 @@ def importBibTeX(infile, node=None, req=None):
     entries = []
     shortcut = {}
 
-    if type(infile) == list:
+    if isinstance(infile, list):
         entries = infile
     else:
         if not node:
@@ -479,7 +479,7 @@ def importBibTeX(infile, node=None, req=None):
                         if _mfield.get("type") == "date":
                             datefields[_med_name] = _mfield.get("valuelist")
 
-                    except tree.NoSuchNodeError, e:
+                    except tree.NoSuchNodeError as e:
                         msg = "bibtex import docid='%s': field error for bibtex mask for type %s and bibtex-type '%s': %s: " % (
                             docid_utf8, metatype, mytype, str(e))
                         msg = msg + "_bib_name='%s', _mfield='%s', _med_name='%s'" % (
@@ -498,7 +498,7 @@ def importBibTeX(infile, node=None, req=None):
                     v = parse_date(v, datefields[k])
                 try:
                     doc.set(k, v)
-                except Exception, e:
+                except Exception as e:
                     doc.set(k, u(v))
 
             child_id = None
@@ -508,7 +508,7 @@ def importBibTeX(infile, node=None, req=None):
                 doc.setDirty()
                 child_id = doc.id
                 child_type = doc.type
-            except Exception, e:
+            except Exception as e:
                 logger.error("bibtex import: %s" % (str(e)))
                 raise ValueError()
 
@@ -516,11 +516,11 @@ def importBibTeX(infile, node=None, req=None):
                 try:
                     logger.info("bibtex import: done  processing %s: %s, %s --> type=%s, id=%s" % (
                         str(counter), doctype, docid, str(child_type), str(child_id)))
-                except Exception, e:
+                except Exception as e:
                     try:
                         logger.info("bibtex import: done  processing %s: %s, %s --> type=%s, id=%s" % (
                             str(counter), doctype, docid.decode("utf8", "replace"), str(child_type), str(child_id)))
-                    except Exception, e:
+                    except Exception as e:
                         logger.info("bibtex import: done  processing %s: %s, %s --> type=%s, id=%s" % (
                             str(counter), doctype, "'not printable bibtex key'", str(child_type), str(child_id)))
     msg = "bibtex import: finished import"
@@ -540,7 +540,7 @@ def test():
     b = tree.Node("bibs", type="directory")
     tree.getRoot().addChild(b)
     #import glob
-    #for file in glob.glob("/home/mis/tmp/bib/*"):
+    # for file in glob.glob("/home/mis/tmp/bib/*"):
     #    c = tree.Node(os.path.basename(file),type="directory")
     #    b.addChild(c)
     #    importBibTeX(file,c)

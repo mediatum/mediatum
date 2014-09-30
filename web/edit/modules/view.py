@@ -20,18 +20,22 @@
 import core.tree as tree
 from utils.utils import getFormatedString
 
+
 def getContent(req, ids):
     ret = ""
-    
-    if len(ids)>=0:
+
+    if len(ids) >= 0:
         ids = ids[0]
 
     node = tree.getNode(ids)
 
     if hasattr(node, "show_node_big"):
-        ret += req.getTALstr('<span i18n:translate="edit_tabarea_msg1"/><br><b i18n:translate="hint"></b><span i18n:translate="edit_tabarea_msg2"/><br/><hr/>',{})
-        ret += getFormatedString(node.show_node_big(req))  
+        ret += req.getTALstr(
+            '<span i18n:translate="edit_tabarea_msg1"/><br><b i18n:translate="hint"></b><span i18n:translate="edit_tabarea_msg2"/><br/><hr/>',
+            {})
+        ret += getFormatedString(node.show_node_big(req))
     else:
-        ret += req.getTALstr('<p class="error" style="text-align:center" i18n:translate="" tal:content="edit_object_not_viewable">TEXT</p>',{})
-    
+        ret += req.getTALstr(
+            '<p class="error" style="text-align:center" i18n:translate="" tal:content="edit_object_not_viewable">TEXT</p>', {})
+
     return ret

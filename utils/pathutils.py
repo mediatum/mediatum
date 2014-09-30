@@ -22,54 +22,61 @@ import os
 import string
 import core.tree as tree
 
+
 def createPath(parent_node, sPath, sSeparator='/'):
-    dirs=string.split(sPath, sSeparator)
+    dirs = string.split(sPath, sSeparator)
     for dirName in dirs:
-        if len(dirName)>0:
-            dir_node=tree.Node(name=dirName, type='directory')
+        if len(dirName) > 0:
+            dir_node = tree.Node(name=dirName, type='directory')
             parent_node.addChild(dir_node)
-            parent_node=dir_node
+            parent_node = dir_node
     return parent_node
+
 
 def createPathPreserve(parent_node, sPath, sSeparator='/'):
-    dirs=string.split(sPath, sSeparator)
+    dirs = string.split(sPath, sSeparator)
     for dirName in dirs:
-        if len(dirName)>0:
+        if len(dirName) > 0:
             try:
-                node=parent_node.getChild(dirName)
-                parent_node=node
-            except tree.NoSuchNodeError,e:
-                dir_node=tree.Node(name=dirName, type='directory')
+                node = parent_node.getChild(dirName)
+                parent_node = node
+            except tree.NoSuchNodeError as e:
+                dir_node = tree.Node(name=dirName, type='directory')
                 parent_node.addChild(dir_node)
-                parent_node=dir_node
+                parent_node = dir_node
     return parent_node
+
 
 def createPathPreserve2(parent_node, sPath, sType='directory', sSeparator='/'):
-    dirs=string.split(sPath, sSeparator)
+    dirs = string.split(sPath, sSeparator)
     for dirName in dirs:
-        if len(dirName)>0:
+        if len(dirName) > 0:
             try:
-                node=parent_node.getChild(dirName)
-                parent_node=node
-            except tree.NoSuchNodeError,e:
-                dir_node=tree.Node(name=dirName, type=sType)
+                node = parent_node.getChild(dirName)
+                parent_node = node
+            except tree.NoSuchNodeError as e:
+                dir_node = tree.Node(name=dirName, type=sType)
                 parent_node.addChild(dir_node)
-                parent_node=dir_node
+                parent_node = dir_node
     return parent_node
 
+
 def checkPath(parent_node, sPath, sSeparator='/'):
-    dirs=string.split(sPath, sSeparator)
+    dirs = string.split(sPath, sSeparator)
     for dirName in dirs:
-        if len(dirName)>0:
+        if len(dirName) > 0:
             try:
-                parent_node=parent_node.getChild(dirName)
-            except tree.NoSuchNodeError,e:
+                parent_node = parent_node.getChild(dirName)
+            except tree.NoSuchNodeError as e:
                 return None
     return parent_node
 
 # scaled down version of web.frontend.contend.getPaths() to get all paths
+
+
 def getBrowsingPathList(node):
     list = []
+
     def r(node, path):
         if node is tree.getRoot():
             return
@@ -89,18 +96,19 @@ def getBrowsingPathList(node):
             if True:
                 if node.type in ("directory", "home", "collection"):
                     paths.append(node)
-                if node is tree.getRoot("collections") or node.type=="root":
+                if node is tree.getRoot("collections") or node.type == "root":
                     paths.reverse()
-                    if len(paths)>1 and not omit:
+                    if len(paths) > 1 and not omit:
                         list.append(paths)
                     omit = 0
-                    paths =[]
+                    paths = []
             else:
                 omit = 1
-    if len(list)>0:
+    if len(list) > 0:
         return list
     else:
         return []
+
 
 def isDescendantOf(node, parent):
     if node.id == parent.id:
@@ -110,11 +118,12 @@ def isDescendantOf(node, parent):
             return 1
     return 0
 
+
 def getSubdirsContaining(path, filelist=[]):
     '''returns those (direct) sub folders of path containing all files from filelist'''
-    if not os.path.exists(path): # path not found
+    if not os.path.exists(path):  # path not found
         return []
-        
+
     result = [p for p in os.listdir(path) if os.path.isdir(os.path.join(path, p))]
     if filelist:
         result = [d for d in result if set(filelist).issubset(os.listdir(os.path.join(path, d)))]

@@ -35,6 +35,7 @@ __all__ = ["APEv2", "APEv2File", "Open", "delete"]
 import struct
 from cStringIO import StringIO
 
+
 def is_valid_apev2_key(key):
     return (2 <= len(key) <= 255 and min(key) >= ' ' and max(key) <= '~' and
             key not in ["OggS", "TAG", "ID3", "MP+"])
@@ -48,15 +49,27 @@ TEXT, BINARY, EXTERNAL = range(3)
 
 HAS_HEADER = 1L << 31
 HAS_NO_FOOTER = 1L << 30
-IS_HEADER  = 1L << 29
+IS_HEADER = 1L << 29
 
-class error(IOError): pass
-class APENoHeaderError(error, ValueError): pass
-class APEUnsupportedVersionError(error, ValueError): pass
-class APEBadItemError(error, ValueError): pass
+
+class error(IOError):
+    pass
+
+
+class APENoHeaderError(error, ValueError):
+    pass
+
+
+class APEUnsupportedVersionError(error, ValueError):
+    pass
+
+
+class APEBadItemError(error, ValueError):
+    pass
 
 from lib.audio import Metadata, FileType
 from _util import DictMixin, cdata, utf8, delete_bytes
+
 
 class _APEv2Data(object):
     # Store offsets of the important parts of the file.
@@ -79,7 +92,8 @@ class _APEv2Data(object):
     def __init__(self, fileobj):
         self.__find_metadata(fileobj)
         self.metadata = max(self.header, self.footer)
-        if self.metadata is None: return
+        if self.metadata is None:
+            return
         self.__fill_missing(fileobj)
         self.__fix_brokenness(fileobj)
         if self.data is not None:
@@ -90,7 +104,8 @@ class _APEv2Data(object):
         # Try to find a header or footer.
 
         # Check for a simple footer.
-        try: fileobj.seek(-32, 2)
+        try:
+            fileobj.seek(-32, 2)
         except IOError:
             fileobj.seek(0, 2)
             return
@@ -104,7 +119,7 @@ class _APEv2Data(object):
             fileobj.seek(-128, 2)
             if fileobj.read(3) == "TAG":
 
-                fileobj.seek(-35, 1) # "TAG" + header length
+                fileobj.seek(-35, 1)  # "TAG" + header length
                 if fileobj.read(8) == "APETAGEX":
                     fileobj.seek(-8, 1)
                     self.footer = fileobj.tell()
@@ -115,8 +130,9 @@ class _APEv2Data(object):
                 # (header length - "APETAGEX") - "LYRICS200"
                 fileobj.seek(15, 1)
                 if fileobj.read(9) == 'LYRICS200':
-                    fileobj.seek(-15, 1) # "LYRICS200" + size tag
-                    try: offset = int(fileobj.read(6))
+                    fileobj.seek(-15, 1)  # "LYRICS200" + size tag
+                    try:
+                        offset = int(fileobj.read(6))
                     except ValueError:
                         raise IOError
 
@@ -157,28 +173,35 @@ class _APEv2Data(object):
                 self.header = self.data - 32
             else:
                 self.header = self.data
-        else: raise APENoHeaderError("No APE tag found")
+        else:
+            raise APENoHeaderError("No APE tag found")
 
     def __fix_brokenness(self, fileobj):
         # Fix broken tags written with PyMusepack.
-        if self.header is not None: start = self.header
-        else: start = self.data
+        if self.header is not None:
+            start = self.header
+        else:
+            start = self.data
         fileobj.seek(start)
 
         while start > 0:
             # Clean up broken writing from pre-Mutagen PyMusepack.
             # It didn't remove the first 24 bytes of header.
-            try: fileobj.seek(-24, 1)
+            try:
+                fileobj.seek(-24, 1)
             except IOError:
                 break
             else:
                 if fileobj.read(8) == "APETAGEX":
                     fileobj.seek(-8, 1)
                     start = fileobj.tell()
-                else: break
+                else:
+                    break
         self.start = start
 
+
 class APEv2(DictMixin, Metadata):
+
     """A file with an APEv2 tag.
 
     ID3v1 tags are silently ignored and overwritten.
@@ -278,7 +301,8 @@ class APEv2(DictMixin, Metadata):
                 # list? text.
                 value = APEValue("\0".join(map(utf8, value)), TEXT)
             else:
-                try: dummy = value.decode("utf-8")
+                try:
+                    dummy = value.decode("utf-8")
                 except UnicodeError:
                     # invalid UTF8 text, probably binary
                     value = APEValue(value, BINARY)
@@ -323,7 +347,7 @@ class APEv2(DictMixin, Metadata):
         num_tags = len(tags)
         tags = "".join(tags)
 
-        header = "APETAGEX%s%s" %(
+        header = "APETAGEX%s%s" % (
             # version, tag size, item count, flags
             struct.pack("<4I", 2000, len(tags) + 32, num_tags,
                         HAS_HEADER | IS_HEADER),
@@ -332,7 +356,7 @@ class APEv2(DictMixin, Metadata):
 
         fileobj.write(tags)
 
-        footer = "APETAGEX%s%s" %(
+        footer = "APETAGEX%s%s" % (
             # version, tag size, item count, flags
             struct.pack("<4I", 2000, len(tags) + 32, num_tags,
                         HAS_HEADER),
@@ -354,10 +378,14 @@ class APEv2(DictMixin, Metadata):
 
 Open = APEv2
 
+
 def delete(filename):
     """Remove tags from a file."""
-    try: APEv2(filename).delete()
-    except APENoHeaderError: pass
+    try:
+        APEv2(filename).delete()
+    except APENoHeaderError:
+        pass
+
 
 def APEValue(value, kind):
     """APEv2 tag value factory.
@@ -365,18 +393,25 @@ def APEValue(value, kind):
     Use this if you need to specify the value's type manually.  Binary
     and text data are automatically detected by APEv2.__setitem__.
     """
-    if kind == TEXT: return APETextValue(value, kind)
-    elif kind == BINARY: return APEBinaryValue(value, kind)
-    elif kind == EXTERNAL: return APEExtValue(value, kind)
-    else: raise ValueError("kind must be TEXT, BINARY, or EXTERNAL")
+    if kind == TEXT:
+        return APETextValue(value, kind)
+    elif kind == BINARY:
+        return APEBinaryValue(value, kind)
+    elif kind == EXTERNAL:
+        return APEExtValue(value, kind)
+    else:
+        raise ValueError("kind must be TEXT, BINARY, or EXTERNAL")
+
 
 class _APEValue(object):
+
     def __init__(self, value, kind):
         self.kind = kind
         self.value = value
 
     def __len__(self):
         return len(self.value)
+
     def __str__(self):
         return self.value
 
@@ -387,14 +422,16 @@ class _APEValue(object):
     # 1B: Null
     # Key value
     def _internal(self, key):
-        return "%s%s\0%s" %(
+        return "%s%s\0%s" % (
             struct.pack("<2I", len(self.value), self.kind << 1),
             key, self.value)
 
     def __repr__(self):
         return "%s(%r, %d)" % (type(self).__name__, self.value, self.kind)
 
+
 class APETextValue(_APEValue):
+
     """An APEv2 text value.
 
     Text values are Unicode/UTF-8 strings. They can be accessed like
@@ -424,30 +461,43 @@ class APETextValue(_APEValue):
     def pprint(self):
         return " / ".join(self)
 
+
 class APEBinaryValue(_APEValue):
+
     """An APEv2 binary value."""
 
-    def pprint(self): return "[%d bytes]" % len(self)
+    def pprint(self):
+        return "[%d bytes]" % len(self)
+
 
 class APEExtValue(_APEValue):
+
     """An APEv2 external value.
 
     External values are usually URI or IRI strings.
     """
-    def pprint(self): return "[External] %s" % unicode(self)
+
+    def pprint(self):
+        return "[External] %s" % unicode(self)
+
 
 class APEv2File(FileType):
+
     class _Info(object):
         length = 0
         bitrate = 0
-        def __init__(self, fileobj): pass
+
+        def __init__(self, fileobj):
+            pass
         pprint = staticmethod(lambda: "Unknown format with APEv2 tag.")
 
     def load(self, filename):
         self.filename = filename
         self.info = self._Info(file(filename, "rb"))
-        try: self.tags = APEv2(filename)
-        except error: self.tags = None
+        try:
+            self.tags = APEv2(filename)
+        except error:
+            self.tags = None
 
     def add_tags(self):
         if self.tags is None:
@@ -456,7 +506,8 @@ class APEv2File(FileType):
             raise ValueError("%r already has tags: %r" % (self, self.tags))
 
     def score(filename, fileobj, header):
-        try: fileobj.seek(-160, 2)
+        try:
+            fileobj.seek(-160, 2)
         except IOError:
             fileobj.seek(0)
         footer = fileobj.read()

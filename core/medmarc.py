@@ -24,6 +24,7 @@ import pymarc
 from utils.utils import Template
 from schema import mapping
 
+
 def _parse_protocol_indicator(field, subfields, _protocol_map={'http': '4', 'ftp': '1'}):
     """
     Parse MARC 856 protocol indicator from URL.
@@ -40,49 +41,50 @@ def _parse_protocol_indicator(field, subfields, _protocol_map={'http': '4', 'ftp
 
 # MARC21 indicators by MARC field
 _indicators = {
-    '245' : [ # Title Statement
-        '0', # Title added entry (0 - No added entry, 1 - Added entry)
-        '0', # Nonfiling characters (0 - No nonfiling characters, 1-9 - Number of nonfiling characters)
-        ],
-    '100' : [ # Main Entry-Personal Name
-        '1', # Type of personal name entry element (0 - Forename, 1 - Surname, 3 - Family name)
-        '#', # Undefined
-        ],
-    '653' : [ # Index Term-Uncontrolled
-        '1', # Level of index term (# - No information provided, 0 - No level specified, 1 - Primary, 2 - Secondary)
-        '0', # Type of term or name (# - No information provided, 0 - Topical term, 1 - Personal name,
-             #                       2 - Corporate name, 3 - Meeting name, 4 - Chronological term,
-             #                       5 - Geographic name, 6 - Genre/form term)
-        ],
-    '110' : [ # Main Entry-Corporate Name
-        '1', # Type of corporate name entry element (0 - Inverted name, 1 - Jurisdiction name, 2 - Name in direct order)
-        '#', # Undefined
-        ],
-    '260' : [ # Publication, Distribution, etc. (Imprint)
-        '2', # Sequence of publishing statements (# - Not applicable/No information provided/Earliest available publisher,
-             #                                    2 - Intervening publisher, 3 - Current/latest publisher
-        '#', # Undefined
-        ],
-    '270' : [ # Address
-        '1', # Level (# - No level specified, 1 - Primary, 2 - Secondary)
-        '#', # Type of address (# - No type specified, 0 - Mailing, 7 - Type specified in subfield 'i')
-        ],
-    '020' : [ # International Standard Book Number (ISBN)
-        '#', # Undefined
-        '#', # Undefined
-        ],
-    '490' : [ # Series Statement
-        '1', # Series tracing policy, 0 - Series not traced, 1 - Series traced
-        '#', # Undefined
-        ],
-    '856' : [ # Electronic Location and Access
+    '245': [  # Title Statement
+        '0',  # Title added entry (0 - No added entry, 1 - Added entry)
+        '0',  # Nonfiling characters (0 - No nonfiling characters, 1-9 - Number of nonfiling characters)
+    ],
+    '100': [  # Main Entry-Personal Name
+        '1',  # Type of personal name entry element (0 - Forename, 1 - Surname, 3 - Family name)
+        '#',  # Undefined
+    ],
+    '653': [  # Index Term-Uncontrolled
+        '1',  # Level of index term (# - No information provided, 0 - No level specified, 1 - Primary, 2 - Secondary)
+        '0',  # Type of term or name (# - No information provided, 0 - Topical term, 1 - Personal name,
+        #                       2 - Corporate name, 3 - Meeting name, 4 - Chronological term,
+        #                       5 - Geographic name, 6 - Genre/form term)
+    ],
+    '110': [  # Main Entry-Corporate Name
+        '1',  # Type of corporate name entry element (0 - Inverted name, 1 - Jurisdiction name, 2 - Name in direct order)
+        '#',  # Undefined
+    ],
+    '260': [  # Publication, Distribution, etc. (Imprint)
+        '2',  # Sequence of publishing statements (# - Not applicable/No information provided/Earliest available publisher,
+        #                                    2 - Intervening publisher, 3 - Current/latest publisher
+        '#',  # Undefined
+    ],
+    '270': [  # Address
+        '1',  # Level (# - No level specified, 1 - Primary, 2 - Secondary)
+        '#',  # Type of address (# - No type specified, 0 - Mailing, 7 - Type specified in subfield 'i')
+    ],
+    '020': [  # International Standard Book Number (ISBN)
+        '#',  # Undefined
+        '#',  # Undefined
+    ],
+    '490': [  # Series Statement
+        '1',  # Series tracing policy, 0 - Series not traced, 1 - Series traced
+        '#',  # Undefined
+    ],
+    '856': [  # Electronic Location and Access
         _parse_protocol_indicator,
         # Access method (# - No information provided, 0 - Email, 1 - FTP, 2 - Remote login (Telnet), 3 - Dial-up,
         #                4 - HTTP, 7 - Method specified in subfield '2')
-        '0', # Relationship  (# - No information provided, 0 - Resource, 1 - Version of resource,
-             #                2 - Related resource, 8 - No display constant generated)
-        ],
-    }
+        '0',  # Relationship  (# - No information provided, 0 - Resource, 1 - Version of resource,
+        #                2 - Related resource, 8 - No display constant generated)
+    ],
+}
+
 
 def find_marc_mapping(schema_name):
     """
@@ -102,20 +104,23 @@ def find_marc_mapping(schema_name):
     [ ((field, subfield), field_template), ... ]
     """
     marc_mapping = mapping.getMapping('marc21_' + schema_name)
-    if marc_mapping is None: # FIXME: or not marc_mapping.isActive():
+    if marc_mapping is None:  # FIXME: or not marc_mapping.isActive():
         return None
 
-    mapping_fields = [ (tuple(mask_item.getName().split('$', 1)),
-                        Template(mask_item.getDescription()))
-                       for mask_item in marc_mapping.getFields()
-                       if '$' in mask_item.getName() ]
+    mapping_fields = [(tuple(mask_item.getName().split('$', 1)),
+                       Template(mask_item.getDescription()))
+                      for mask_item in marc_mapping.getFields()
+                      if '$' in mask_item.getName()]
     return mapping_fields
 
+
 class MarcMapper(object):
+
     """
     MARC21 mapper that caches the parsed field mappings over its own
     lifetime.  More efficient than looking them up on each conversion.
     """
+
     def __init__(self):
         self.mappings_by_schema = {}
 
@@ -125,13 +130,14 @@ class MarcMapper(object):
             mapping_fields = self.mappings_by_schema[schema_name]
         except KeyError:
             mapping_fields = self.mappings_by_schema[schema_name] = \
-                             find_marc_mapping(schema_name)
+                find_marc_mapping(schema_name)
         if mapping_fields is None:
             return None
         return map_node(node, mapping_fields)
 
     def __repr__(self):
         return 'MarcMapper(%s)' % ', '.join(self.mappings_by_schema)
+
 
 def map_node(node, mapping_fields=None):
     """
@@ -171,7 +177,7 @@ def map_node(node, mapping_fields=None):
                 ind2 = ind2(field, subfields)
 
         record.add_field(pymarc.Field(
-            field, indicators=[ind1, ind2], subfields = list(chain(* subfields))))
+            field, indicators=[ind1, ind2], subfields=list(chain(* subfields))))
 
     # serialise
     return record.as_marc()

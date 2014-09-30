@@ -25,11 +25,15 @@ from cStringIO import StringIO
 from lib.audio import FileType
 from _util import cdata, insert_bytes, delete_bytes
 
+
 class error(IOError):
+
     """Ogg stream parsing errors."""
     pass
 
+
 class OggPage(object):
+
     """A single Ogg page (not necessarily a single encoded packet).
 
     A page is a header of 26 bytes, followed by the length of the
@@ -132,7 +136,7 @@ class OggPage(object):
         data = [
             struct.pack("<4sBBqIIi", "OggS", self.version, self.__type_flags,
                         self.position, self.serial, self.sequence, 0)
-            ]
+        ]
 
         lacing_data = []
         for datum in self.packets:
@@ -155,7 +159,7 @@ class OggPage(object):
         return data
 
     def __size(self):
-        size = 27 # Initial header size
+        size = 27  # Initial header size
         for datum in self.packets:
             quot, rem = divmod(len(datum), 255)
             size += quot + 1
@@ -170,8 +174,10 @@ class OggPage(object):
 
     def __set_flag(self, bit, val):
         mask = 1 << bit
-        if val: self.__type_flags |= mask
-        else: self.__type_flags &= ~mask
+        if val:
+            self.__type_flags |= mask
+        else:
+            self.__type_flags &= ~mask
 
     continued = property(
         lambda self: cdata.test_bit(self.__type_flags, 0),
@@ -210,7 +216,8 @@ class OggPage(object):
 
         number = start
         while True:
-            try: page = OggPage(fileobj)
+            try:
+                page = OggPage(fileobj)
             except EOFError:
                 break
             else:
@@ -250,10 +257,13 @@ class OggPage(object):
                 raise ValueError("invalid serial number in %r" % page)
             elif sequence != page.sequence:
                 raise ValueError("bad sequence number in %r" % page)
-            else: sequence += 1
+            else:
+                sequence += 1
 
-            if page.continued: packets[-1] += page.packets[0]
-            else: packets.append(page.packets[0])
+            if page.continued:
+                packets[-1] += page.packets[0]
+            else:
+                packets.append(page.packets[0])
             packets.extend(page.packets[1:])
 
         return packets
@@ -387,12 +397,14 @@ class OggPage(object):
         """
 
         # For non-muxed streams, look at the last page.
-        try: fileobj.seek(-256*256, 2)
+        try:
+            fileobj.seek(-256 * 256, 2)
         except IOError:
             # The file is less than 64k in length.
             fileobj.seek(0)
         data = fileobj.read()
-        try: index = data.rindex("OggS")
+        try:
+            index = data.rindex("OggS")
         except ValueError:
             raise error("unable to find final Ogg header")
         stringobj = StringIO(data[index:])
@@ -403,9 +415,12 @@ class OggPage(object):
             pass
         else:
             if page.serial == serial:
-                if page.last: return page
-                else: best_page = page
-            else: best_page = None
+                if page.last:
+                    return page
+                else:
+                    best_page = page
+            else:
+                best_page = None
 
         # The stream is muxed, so use the slow way.
         fileobj.seek(0)
@@ -423,7 +438,9 @@ class OggPage(object):
             return best_page
     find_last = classmethod(find_last)
 
+
 class OggFileType(FileType):
+
     """An generic Ogg file."""
 
     _Info = None
@@ -472,7 +489,8 @@ class OggFileType(FileType):
         self.tags.clear()
         fileobj = file(filename, "rb+")
         try:
-            try: self.tags._inject(fileobj)
+            try:
+                self.tags._inject(fileobj)
             except error, e:
                 raise self._Error, e, sys.exc_info()[2]
             except EOFError:
@@ -489,7 +507,8 @@ class OggFileType(FileType):
             filename = self.filename
         fileobj = file(filename, "rb+")
         try:
-            try: self.tags._inject(fileobj)
+            try:
+                self.tags._inject(fileobj)
             except error, e:
                 raise self._Error, e, sys.exc_info()[2]
             except EOFError:

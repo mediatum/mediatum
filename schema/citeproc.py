@@ -30,7 +30,7 @@ from pprint import pformat
 import requests
 
 from core import tree
-from schema import getMetaType
+from .schema import getMetaType
 from . import importbase
 from .importbase import NoMappingFound
 
@@ -39,6 +39,7 @@ logg = logging.getLogger("frontend")
 
 
 class CSLField(object):
+
     def __init__(self, fieldtype):
         self.fieldtype = fieldtype
 
@@ -48,41 +49,41 @@ class CSLField(object):
 # Missing fields are assumed to be "standard"
 # see http://citationstyles.org/downloads/specification.html#appendix-iv-variables
 FIELDS = defaultdict(lambda: CSLField("standard"), {
-        # name fields
-        "author": CSLField("name"),
-        "collection-editor": CSLField("name"),
-        "composer": CSLField("name"),
-        "container-author": CSLField("name"),
-        "director": CSLField("name"),
-        "editor": CSLField("name"),
-        "editorial-director": CSLField("name"),
-        "illustrator": CSLField("name"),
-        "interviewer": CSLField("name"),
-        "original-author": CSLField("name"),
-        "recipient": CSLField("name"),
-        "reviewed-author": CSLField("name"),
-        "translator": CSLField("name"),
-        # date fields
-        "accessed": CSLField("date"),
-        "container": CSLField("date"),
-        "event-date": CSLField("date"),
-        "issued": CSLField("date"),
-        "original-date": CSLField("date"),
-        "submitted": CSLField("date"),
-        # number fields
-        "chapter-number": CSLField("number"),
-        "collection-number": CSLField("number"),
-        "edition": CSLField("number"),
-        "issue": CSLField("number"),
-        "number": CSLField("number"),
-        "number-of-pages": CSLField("number"),
-        "number-of-volumes": CSLField("number"),
-        "volume": CSLField("number"),
-    }
+    # name fields
+    "author": CSLField("name"),
+    "collection-editor": CSLField("name"),
+    "composer": CSLField("name"),
+    "container-author": CSLField("name"),
+    "director": CSLField("name"),
+    "editor": CSLField("name"),
+    "editorial-director": CSLField("name"),
+    "illustrator": CSLField("name"),
+    "interviewer": CSLField("name"),
+    "original-author": CSLField("name"),
+    "recipient": CSLField("name"),
+    "reviewed-author": CSLField("name"),
+    "translator": CSLField("name"),
+    # date fields
+    "accessed": CSLField("date"),
+    "container": CSLField("date"),
+    "event-date": CSLField("date"),
+    "issued": CSLField("date"),
+    "original-date": CSLField("date"),
+    "submitted": CSLField("date"),
+    # number fields
+    "chapter-number": CSLField("number"),
+    "collection-number": CSLField("number"),
+    "edition": CSLField("number"),
+    "issue": CSLField("number"),
+    "number": CSLField("number"),
+    "number-of-pages": CSLField("number"),
+    "number-of-volumes": CSLField("number"),
+    "volume": CSLField("number"),
+}
 )
 
 # see http://citationstyles.org/downloads/specification.html#appendix-iii-types
-CSL_TYPES =  [
+CSL_TYPES = [
     'article',
     'article-magazine',
     'article-newspaper',
@@ -124,12 +125,13 @@ CSL_TYPES =  [
 ]
 
 TYPES = [
-    "_default", # fallback type if no mapping is defined
-    "_null", # fallback type if type not given
-    'journal-article' # type not in CSL 1.0.1, but returned by dx.doi.org server
+    "_default",  # fallback type if no mapping is defined
+    "_null",  # fallback type if type not given
+    'journal-article'  # type not in CSL 1.0.1, but returned by dx.doi.org server
 ] + CSL_TYPES
 
 TYPE_SET = set(TYPES)
+
 
 class DOINotFound(Exception):
     pass
@@ -184,6 +186,7 @@ def convert_csl_names(names):
 
 CSL_NUMBER_RE = re.compile(r"((\d+)\s*[-&]?\s*(\d+)$)|(\d+)(\s*,\s*(\d+))+$")
 
+
 def check_number(number):
     """Checks if given arg is a 'number' as defined by the CSL specification.
     Numbers can be
@@ -213,6 +216,7 @@ def get_citeproc_json(doi):
 
 
 DOI_RE = re.compile("(10[.].+/.+)", re.U)
+
 
 def extract_and_check_doi(doi_or_uri):
     """Extract DOI if URL like http://dx.doi.org/10.01/test is given"""
@@ -273,8 +277,8 @@ def import_csl(record, target=None, name=None, testing=False):
             elif FIELDS[key].fieldtype == "number":
                 if not check_number(value):
                     logg.warn("field '%s' is of type number and contains an illegal value: '%s'!"
-                                     "See http://citationstyles.org/downloads/specification.html#number"
-                                     .key, value)
+                              "See http://citationstyles.org/downloads/specification.html#number"
+                              .key, value)
             # for number and standard fields
             return value.encode("utf8")
         except:
@@ -293,7 +297,7 @@ def import_csl(record, target=None, name=None, testing=False):
             med_name = mfield.getName()
         except tree.NoSuchNodeError:
             msg = "citeproc import name='{}': field error for citeproc mask for type '{}' and " \
-            "csl-type '{}' csl_name='{}', mfield='{}', med_name='{}'".format(name, metatype_name, typ, csl_name, mfield, med_name)
+                "csl-type '{}' csl_name='{}', mfield='{}', med_name='{}'".format(name, metatype_name, typ, csl_name, mfield, med_name)
             logg.error(msg, exc_info=1)
             continue
 
@@ -301,7 +305,7 @@ def import_csl(record, target=None, name=None, testing=False):
 
         # fixes for special fields
         mfield_type = mfield.get("type")
-        if  mfield_type == "url":
+        if mfield_type == "url":
             value += ";Link"
 
         if value is not None:

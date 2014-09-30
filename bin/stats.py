@@ -37,10 +37,10 @@ args = sys.argv
 period = time.strftime("%Y-%m")
 fname = None
 
-if len(args)==2:  #period given
+if len(args) == 2:  # period given
     period = args[1]
-    
-if len(args)==3: # period and filename given
+
+if len(args) == 3:  # period and filename given
     period = args[1]
     fname = args[2]
 

@@ -21,26 +21,28 @@ import core.tree as tree
 import core.webconfig as webconfig
 from web.admin.adminutils import getAdminStdVars
 
+
 def getInformation():
-    return{"version":"1.0"}
+    return{"version": "1.0"}
+
 
 def validate(req, op):
 
     if "op" in req.params.keys():
-        if req.params.get("op")=="flushall":
+        if req.params.get("op") == "flushall":
             webconfig.flush(req)
             req.writeTAL("web/admin/modules/flush.html", {}, macro="flushed")
             return ""
     else:
         for key in req.params.keys():
-        
+
             if key.startswith("flush_db"):
                 print "flush db"
                 tree.flush()
                 op = "db"
                 return view(req, op)
-                
-            #if key.startswith("flush_all"):
+
+            # if key.startswith("flush_all"):
             #    print "flush all"
             #    op = "all"
             #    return view(req, op)
@@ -49,12 +51,11 @@ def validate(req, op):
 
 def view(req, op):
     v = getAdminStdVars(req)
-    
+
     v["msg"] = ""
     v["op"] = op
     if op == "db":
-        v["msg"] = "admin_flush_data_cleared" 
-    #elif op == "all":
-    #    v["msg"] = "admin_flush_all_cleared" 
+        v["msg"] = "admin_flush_data_cleared"
+    # elif op == "all":
+    #    v["msg"] = "admin_flush_all_cleared"
     return req.getTAL("web/admin/modules/flush.html", v, macro="view")
-    

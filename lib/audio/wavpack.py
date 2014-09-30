@@ -19,12 +19,16 @@ __all__ = ["WavPack", "Open", "delete"]
 from apev2 import APEv2File, error, delete
 from _util import cdata
 
-class WavPackHeaderError(error): pass
+
+class WavPackHeaderError(error):
+    pass
 
 RATES = [6000, 8000, 9600, 11025, 12000, 16000, 22050, 24000, 32000, 44100,
          48000, 64000, 88200, 96000, 192000]
 
+
 class WavPackInfo(object):
+
     """WavPack stream information.
 
     Attributes:
@@ -47,6 +51,7 @@ class WavPackInfo(object):
 
     def pprint(self):
         return "WavPack, %.2f seconds, %d Hz" % (self.length, self.sample_rate)
+
 
 class WavPack(APEv2File):
     _Info = WavPackInfo

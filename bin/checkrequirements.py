@@ -29,6 +29,7 @@ import platform
 import getopt
 import textwrap
 from subprocess import Popen, PIPE
+from functools import reduce
 
 res_dict = {}
 failures = {}
@@ -46,7 +47,7 @@ def out(msg, appendix='', blockwidth=98, borderchar='+', title=''):
 
 try:
     opts, args = getopt.getopt(sys.argv[1:], "c:d")
-except getopt.GetoptError, e:
+except getopt.GetoptError as e:
     fn = __file__.replace('\\', '/').split('/')[-1]
     print '\nError:', e
     print 'Usage: python bin/' + fn + ' [-c path_to_mediatum_cfg (default is ./mediatum.cfg) -d for details]'
@@ -103,28 +104,29 @@ def check_fts3_enabled_sqlite(names):
 
 # ["name", "short description", ["command", "args"], "fail_comment"]
 external_tools_descrs = [
-  ["mysql-server", "mysql-server: relational database server present on current host", ["mysql", "-V"], "RESTRICTION"],
-  ["pdfinfo", "Xpdf: 'pdfinfo' to extract meta information of pdf files", ["pdfinfo", "-v"], "FAIL"],
-  ["pdftotext", "Xpdf: 'pdftotext' to extract pdf-text", ["pdftotext", "-v"], "FAIL"],
-  ["convert", "ImageMagick: 'convert' to extract pdf-text", ["convert", "-version"], "FAIL"],
-  ["ffmpeg", "ffmpeg: to extract video thumbnails (flv), required for video support", ["ffmpeg", "-version"], "RESTRICTION"],
-  ["graphviz", "graphviz: required for static workflow diagrams", ["dot", "-V"], "RESTRICTION"],
+    ["mysql-server", "mysql-server: relational database server present on current host", ["mysql", "-V"], "RESTRICTION"],
+    ["pdfinfo", "Xpdf: 'pdfinfo' to extract meta information of pdf files", ["pdfinfo", "-v"], "FAIL"],
+    ["pdftotext", "Xpdf: 'pdftotext' to extract pdf-text", ["pdftotext", "-v"], "FAIL"],
+    ["convert", "ImageMagick: 'convert' to extract pdf-text", ["convert", "-version"], "FAIL"],
+    ["ffmpeg", "ffmpeg: to extract video thumbnails (flv), required for video support", ["ffmpeg", "-version"], "RESTRICTION"],
+    ["graphviz", "graphviz: required for static workflow diagrams", ["dot", "-V"], "RESTRICTION"],
 ]
 
 # [["module name(s)",], "name of alternative module", "short description", "fail_comment"]
 python_module_descrs = [
-  [["MySQLdb"], "MySQLdb: mysql connector (required for mysql usage)", check_python_module, "RESTRICTION"],
-  [["sqlite3", "pysqlite2", "fts3"], "sqlite3/pysqlite2: sqlite3 connector with fts3 (required for searchmodule)", check_fts3_enabled_sqlite, "FAIL"],
-  [["Image"], "PIL: python imaging library (pil)", check_python_module, "FAIL"],
-  [["reportlab"], "reportlab: pdf reporting library (module 'reportlab')", check_python_module, "FAIL"],
-  [["simplejson", "json"], "json/simplejson: json encoder and decoder ", check_python_module, "FAIL"],
-  [["ldap"], "ldap: LDAP client API (required for LDAP authentication)", check_python_module, "RESTRICTION"],
-  [["PyZ3950"], "PyZ3950: Z39.50 server for python", check_python_module, "RESTRICTION"],
-  [["pymarc"], "pymarc: marc formatter for python", check_python_module, "RESTRICTION"],
-  [["Levenshtein"], "python-Levenshtein: computing string distances and similarities", check_python_module, "RESTRICTION"],
-  [["pyPdf"], "pyPdf: PDF toolkit", check_python_module, "RESTRICTION"],
-  [["requests"], "requests: HTTP request module, required for DOI import", check_python_module, "FAIL"],
-  [["pydot"], "pydot: python graphviz module, required for static workflow diagrams", check_python_module, "RESTRICTION"],
+    [["MySQLdb"], "MySQLdb: mysql connector (required for mysql usage)", check_python_module, "RESTRICTION"],
+    [["sqlite3", "pysqlite2", "fts3"],
+     "sqlite3/pysqlite2: sqlite3 connector with fts3 (required for searchmodule)", check_fts3_enabled_sqlite, "FAIL"],
+    [["Image"], "PIL: python imaging library (pil)", check_python_module, "FAIL"],
+    [["reportlab"], "reportlab: pdf reporting library (module 'reportlab')", check_python_module, "FAIL"],
+    [["simplejson", "json"], "json/simplejson: json encoder and decoder ", check_python_module, "FAIL"],
+    [["ldap"], "ldap: LDAP client API (required for LDAP authentication)", check_python_module, "RESTRICTION"],
+    [["PyZ3950"], "PyZ3950: Z39.50 server for python", check_python_module, "RESTRICTION"],
+    [["pymarc"], "pymarc: marc formatter for python", check_python_module, "RESTRICTION"],
+    [["Levenshtein"], "python-Levenshtein: computing string distances and similarities", check_python_module, "RESTRICTION"],
+    [["pyPdf"], "pyPdf: PDF toolkit", check_python_module, "RESTRICTION"],
+    [["requests"], "requests: HTTP request module, required for DOI import", check_python_module, "FAIL"],
+    [["pydot"], "pydot: python graphviz module, required for static workflow diagrams", check_python_module, "RESTRICTION"],
 ]
 
 
@@ -179,7 +181,7 @@ def step3():
 
     try:
         config.settings = config._read_ini_file(os.getcwd(), CFG_FILE)
-    except IOError, e:
+    except IOError as e:
         msg = "Fatal error reading configuration file '%s': %s\n"
         msg += 'The default name of the configuration file is \'mediatum.cfg\'. '
         msg += "You can override this using the -c <path_to_config_file> option for this script."
@@ -207,7 +209,7 @@ def step3():
         for pn in ['datadir', 'searchstore', 'tempdir']:
             access_descr = ""
             p = config.get('paths.' + pn)
-            if p == None:
+            if p is None:
                 p = str("")
             if not p:
                 msg = "- path.%s: path value has not been set" % (pn)
@@ -277,7 +279,7 @@ def step3():
                 dbport = int(dbport)
                 if dbport < 0:
                     raise ValueError()
-            except ValueError, e:
+            except ValueError as e:
                 out("Fatal Error: database.port=%s is not a positive integer" % (str(dbport)), borderchar='*')
                 sys.exit(1)
 
@@ -286,7 +288,7 @@ def step3():
                 db = MySQLdb.connect(host=dbhost, port=dbport)
                 print msg + " " * (98 - len(msg)) + "OK"
 
-            except _mysql_exceptions.OperationalError, e:
+            except _mysql_exceptions.OperationalError as e:
                 error_number, error_msg = e[0], e[-1]
                 if error_number == 1045:  # server responds, but denies access
                     print msg + " " * (98 - len(msg)) + "OK"
@@ -301,7 +303,7 @@ def step3():
                 db = MySQLdb.connect(host=dbhost, port=dbport, user=user, passwd=passwd, db=database)
                 print msg + " " * (98 - len(msg)) + "OK"
 
-            except _mysql_exceptions.OperationalError, e:
+            except _mysql_exceptions.OperationalError as e:
                 print msg + " " * (96 - len(msg)) + "FAIL"
                 failures["3b"].append(('FAIL', "wrong mysql credential settings." + str(e)))
 
@@ -344,12 +346,12 @@ def result():
             out('Some FAIL in installation (see above)\nSystem won\'t be functional.', title=' Summary ', borderchar='*')
 
         elif 'RESTRICTION' in l:
-            out('Some RESTRICTION in installation (see above)\nSystem will run, but some features will not be available.', title=' Summary: ', borderchar='*')
+            out('Some RESTRICTION in installation (see above)\nSystem will run, but some features will not be available.',
+                title=' Summary: ', borderchar='*')
 
         if DETAILS == 1:
             print "\nRequirement check result protocol:\n"
-            steps = failures.keys()
-            steps.sort()
+            steps = sorted(failures.keys())
 
             for step in steps:
                 if len(failures[step]) > 0:

@@ -27,79 +27,79 @@ from core.acl import AccessData
 from core.styles import theme
 from schema.schema import VIEW_DATA_ONLY
 from utils.utils import format_filesize
-from utils.pathutils import isDescendantOf  
+from utils.pathutils import isDescendantOf
 
 
-WIDTH=102
-HEIGHT=102
-HEADER_HEIGHT=100
-FOOTER_HEIGHT=0
+WIDTH = 102
+HEIGHT = 102
+HEADER_HEIGHT = 100
+FOOTER_HEIGHT = 0
 
 
 def shoppingbag_action(req):
 
     if "clearall" in req.params.keys():
         req.session["shoppingbag"] = []
-        
+
     if "action" in req.params:
-        if req.params.get("action")=="add": # add item in shoppingbag
+        if req.params.get("action") == "add":  # add item in shoppingbag
             put_into_shoppingbag(req)
             return
-            
-        if req.params.get("action")=="delmsg":
-            req.writeTALstr('<tal:block i18n:translate="popup_shoppingbag_object_delete"/>',{})
+
+        if req.params.get("action") == "delmsg":
+            req.writeTALstr('<tal:block i18n:translate="popup_shoppingbag_object_delete"/>', {})
             return
-            
-        elif req.params.get("action")=="items":
+
+        elif req.params.get("action") == "items":
             for key in req.params.keys():
-                if key.startswith("del_"): # delete item from list
+                if key.startswith("del_"):  # delete item from list
                     for item in req.session["shoppingbag"]:
-                        if item==key[4:-2]:
+                        if item == key[4:-2]:
                             req.session["shoppingbag"].remove(key[4:-2])
                             show_shoppingbag(req)
                             return
-                            
-                if key.startswith("do_export_zip"): # export selected items in a zip-file
+
+                if key.startswith("do_export_zip"):  # export selected items in a zip-file
                     export_shoppingbag_zip(req)
                     show_shoppingbag(req)
                     return
-                
-                if key.startswith("do_export_bibtex"): # export selected items in a bibtex-file
+
+                if key.startswith("do_export_bibtex"):  # export selected items in a bibtex-file
                     export_shoppingbag_bibtex(req)
                     show_shoppingbag(req)
                     return
-                    
-        elif req.params.get("action")=="bags":
+
+        elif req.params.get("action") == "bags":
             user = users.getUserFromRequest(req)
-            if req.params.get("operation")=="save_bag":
+            if req.params.get("operation") == "save_bag":
                 user.addShoppingBag(req.params.get("bagname"), req.params.get("bagitems").split(","))
                 show_shoppingbag(req)
                 return
-                
-            if req.params.get("operation")=="load_bag":
+
+            if req.params.get("operation") == "load_bag":
                 msg = ""
-                if load_shoppingbagByKey(req)==0:
+                if load_shoppingbagByKey(req) == 0:
                     msg = "error, bag not found."
                 show_shoppingbag(req, msg)
                 return
- 
+
             for key in req.params.keys():
-                
+
                 if key.startswith("load_"):
                     sb = user.getShoppingBag(key[5:])
-                    if len(sb)==1:
+                    if len(sb) == 1:
                         req.session["shoppingbag"] = sb[0].getItems()
                         break
-                    
+
                 if key.startswith("delete_"):
                     sb = user.getShoppingBag(key[7:])
-                    if len(sb)==1:
+                    if len(sb) == 1:
                         user.removeChild(sb[0])
                         break
-                        
+
                 if key.startswith("share_"):
                     sb = user.getShoppingBag(key[6:])
-                    if len(sb)==1:
+                    if len(sb) == 1:
                         print sb[0].id, sb[0].isShared()
                         if sb[0].isShared():
                             sb[0].stopShare()
@@ -112,6 +112,7 @@ def shoppingbag_action(req):
 
     # open shoppingbag
     show_shoppingbag(req)
+
 
 def load_shoppingbagByKey(req):
     bagkey = req.params.get("bagkey", "")
@@ -149,20 +150,20 @@ def put_into_shoppingbag(req):
         if item not in f:
             f.append(item)
         else:
-            err_count+=1
+            err_count += 1
 
     req.session["shoppingbag"] = f
 
     s = ""
-    if len(files)>1:
+    if len(files) > 1:
         s = "s"
-    if err_count==0:
-        req.writeTALstr('<tal:block i18n:translate="shoppingbag_object%s_added"/>' %(s),{})
+    if err_count == 0:
+        req.writeTALstr('<tal:block i18n:translate="shoppingbag_object%s_added"/>' % (s), {})
     else:
-        req.writeTALstr('<tal:block i18n:translate="shoppingbag_object%s_still_added"/>' %(s),{})
+        req.writeTALstr('<tal:block i18n:translate="shoppingbag_object%s_still_added"/>' % (s), {})
     return httpstatus.HTTP_OK
 
-    
+
 def show_shoppingbag(req, msg=""):
     """open shoppingbag and show content"""
     img = False
@@ -170,9 +171,9 @@ def show_shoppingbag(req, msg=""):
     media = False
 
     (width, height) = calculate_dimensions(req)
-    v = {"width":width, "height":height}
+    v = {"width": width, "height": height}
     f = []
-    
+
     # deliver image dimensions of original
     def calc_dim(file):
         ret = ""
@@ -181,25 +182,25 @@ def show_shoppingbag(req, msg=""):
             h = int(file.get("height"))
         except:
             return "padding:0px 0px;width:90px;height:90px;"
-        
-        if w>h:
-            factor = 90.0/w
-            h = h*90.0/w
+
+        if w > h:
+            factor = 90.0 / w
+            h = h * 90.0 / w
             w = 90
-            ret += 'padding:%spx 0px;' % str(int((90-h)/2))
+            ret += 'padding:%spx 0px;' % str(int((90 - h) / 2))
         else:
-            w = w*90.0/h
+            w = w * 90.0 / h
             h = 90
-            ret += 'padding:0px %spx;' % str(int((90-w)/2))
-        return ret +'width:%spx;height:%spx;' %(str(int(w)), str(int(h)))
+            ret += 'padding:0px %spx;' % str(int((90 - w) / 2))
+        return ret + 'width:%spx;height:%spx;' % (str(int(w)), str(int(h)))
 
     # deliver document file size
     def calc_size(file):
         for f in file.getFiles():
-            if f.getType()=="document":
+            if f.getType() == "document":
                 return format_filesize(f.getSize())
         return ""
-        
+
     def calc_length(file):
         try:
             return file.getDuration()
@@ -208,25 +209,25 @@ def show_shoppingbag(req, msg=""):
 
     access = AccessData(req)
 
-    sb = req.session.get("shoppingbag",[])
+    sb = req.session.get("shoppingbag", [])
     sb = [nid for nid in sb if nid.strip()]
     for node in access.filter(tree.NodeList(sb)):
-        if node.getCategoryName()=="image":
+        if node.getCategoryName() == "image":
             img = True
-        if node.getCategoryName()=="document":
+        if node.getCategoryName() == "document":
             doc = True
         if node.getCategoryName() in ["audio", "video"]:
             media = True
         f.append(node)
-        
-    if len(f)!=len(req.session.get("shoppingbag",[])) and msg=="":
+
+    if len(f) != len(req.session.get("shoppingbag", [])) and msg == "":
         msg = "popup_shoppingbag_items_filtered"
 
     v["files"] = f
     v["image"] = img
     v["document"] = doc
     v["media"] = media
-    v["img_perc_range"] = range(1,11)
+    v["img_perc_range"] = range(1, 11)
     v["img_pix_sizes"] = ["1600x1200", "1280x960", "1024x768", "800x600"]
     v["calc_dim"] = calc_dim
     v["calc_size"] = calc_size
@@ -250,25 +251,25 @@ def export_shoppingbag_bibtex(req):
     import random
     import os
 
-    items = [] # list of nodes to be exported
+    items = []  # list of nodes to be exported
     for key in req.params.keys():
         if key.startswith("select_"):
             items.append(key[7:])
 
-    dest = config.get("paths.tempdir")+ str(random.random())+".bib"
+    dest = config.get("paths.tempdir") + str(random.random()) + ".bib"
 
     f = open(dest, "a")
     for item in items:
         node = tree.getNode(item)
         mask = getMetaType(node.getSchema()).getMask("bibtex")
         if mask is not None:
-            f.write(mask.getViewHTML([node], flags=8)) # flags =8 -> export type
+            f.write(mask.getViewHTML([node], flags=8))  # flags =8 -> export type
         else:
             f.write("The selected document type doesn't have any bibtex export mask")
         f.write("\n")
     f.close()
 
-    if len(items)>0:
+    if len(items) > 0:
         sendBibFile(req, dest)
         for root, dirs, files in os.walk(dest, topdown=False):
             for name in files:
@@ -299,30 +300,30 @@ def export_shoppingbag_zip(req):
     dest = join_paths(config.get("paths.tempdir"), str(random.random())) + "/"
 
     # images
-    if req.params.get("type")=="image":
+    if req.params.get("type") == "image":
         if req.params.get("metadata") in ["no", "yes"]:
 
             format_type = req.params.get("format_type")
 
             processtype = ""
             processvalue = ""
-            if format_type=="perc":
+            if format_type == "perc":
                 processtype = "percentage"
                 _perc = req.params.get("img_perc", ";").split(";")
-                if _perc[0]!="":
+                if _perc[0] != "":
                     processvalue = _perc[0]
                 else:
                     processvalue = int(_perc[1])
 
-            elif format_type=="pix":
+            elif format_type == "pix":
                 processtype = "pixels"
                 _pix = req.params.get("img_pix", ";;").split(";")
-                if _pix[0]!="":
+                if _pix[0] != "":
                     processvalue = _pix[0]
                 else:
                     processvalue = int(_pix[1])
 
-            elif format_type=="std":
+            elif format_type == "std":
                 processtype = "standard"
                 processvalue = req.params.get("img_pix", ";;").split(";")[2]
 
@@ -330,11 +331,11 @@ def export_shoppingbag_zip(req):
                 node = tree.getNode(item)
                 if not access.hasAccess(node, 'data'):
                     continue
-                if node.processImage(processtype, processvalue, dest)==0:
+                if node.processImage(processtype, processvalue, dest) == 0:
                     print "image not found"
 
     # documenttypes
-    if req.params.get("type")=="document":
+    if req.params.get("type") == "document":
         if req.params.get("metadata") in ["no", "yes"]:
             if not os.path.isdir(dest):
                 os.mkdir(dest)
@@ -342,12 +343,12 @@ def export_shoppingbag_zip(req):
             for item in items:
                 node = tree.getNode(item)
                 if not access.hasAccess(node, 'data'):
-                    continue                
-                if node.processDocument(dest)==0:
+                    continue
+                if node.processDocument(dest) == 0:
                     print "document not found"
 
     # documenttypes
-    if req.params.get("type")=="media":
+    if req.params.get("type") == "media":
         if req.params.get("metadata") in ["no", "yes"]:
             if not os.path.isdir(dest):
                 os.mkdir(dest)
@@ -355,14 +356,15 @@ def export_shoppingbag_zip(req):
             for item in items:
                 node = tree.getNode(item)
                 if not access.hasAccess(node, 'data'):
-                    continue              
-                if node.processMediaFile(dest)==0:
+                    continue
+                if node.processMediaFile(dest) == 0:
                     print "file not found"
 
     # metadata
     def flatten(arr):
-        return sum(map(lambda a: flatten(a) if (a and isinstance(a[0], list) and a!="") else [a], [a for a in arr if a not in['', []]]),[])
-    
+        return sum(
+            map(lambda a: flatten(a) if (a and isinstance(a[0], list) and a != "") else [a], [a for a in arr if a not in['', []]]), [])
+
     if req.params.get("metadata") in ["yes", "meta"]:
         for item in items:
             node = tree.getNode(item)
@@ -371,17 +373,17 @@ def export_shoppingbag_zip(req):
             if not os.path.isdir(dest):
                 os.mkdir(dest)
 
-            content = {"header":[], "content":[]}
+            content = {"header": [], "content": []}
             for c in flatten(node.getFullView(lang(req)).getViewHTML([node], VIEW_DATA_ONLY)):
                 content["header"].append(c[0])
                 content["content"].append(c[1])
 
-            f = open(dest+item+".txt", "w")
-            f.write("\t".join(content["header"])+"\n")
-            f.write("\t".join(content["content"])+"\n")
+            f = open(dest + item + ".txt", "w")
+            f.write("\t".join(content["header"]) + "\n")
+            f.write("\t".join(content["content"]) + "\n")
             f.close()
 
-    if len(items)>0:
+    if len(items) > 0:
         sendZipFile(req, dest)
         for root, dirs, files in os.walk(dest, topdown=False):
             for name in files:
@@ -398,11 +400,11 @@ def calculate_dimensions(session):
     except:
         files = []
     num = len(files)
-    if num==0:
-        return 180,160
-    r = (num+7)/8
+    if num == 0:
+        return 180, 160
+    r = (num + 7) / 8
     if r < 2:
         r = 2
-    width = r*WIDTH
-    height = ((num+r-1) / r)*HEIGHT + HEADER_HEIGHT + FOOTER_HEIGHT
-    return (width,height)
+    width = r * WIDTH
+    height = ((num + r - 1) / r) * HEIGHT + HEADER_HEIGHT + FOOTER_HEIGHT
+    return (width, height)

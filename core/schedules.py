@@ -44,7 +44,8 @@ action_dict = {}
 
 
 def timetable_update(msg):
-    TT.append([msg, time.time() - atime]); atime = time.time()
+    TT.append([msg, time.time() - atime])
+    atime = time.time()
 
 
 def ensureSchedulesRoot():
@@ -53,13 +54,12 @@ def ensureSchedulesRoot():
         msg = "scheduler: root node 'schedules' (id=%s) found" % str(schedules.id)
         OUT(msg)
 
-    except tree.NoSuchNodeError, e:
+    except tree.NoSuchNodeError as e:
         schedules = tree.Node(name='schedules', type='schedules')
         root = tree.getRoot()
         root.addChild(schedules)
         msg = "scheduler: created root node 'schedules' (id=%s)" % str(schedules.id)
         OUT(msg)
-
 
 
 timeline = []
@@ -86,7 +86,7 @@ def scheduler_thread():
     ensureSchedulesRoot()
     TRIGGER_COUNT = 0
 
-    while 1:
+    while True:
 
         count += 1
         TT = []
@@ -105,22 +105,26 @@ def scheduler_thread():
                 tree.remove_from_nodecaches(sched_root)
 
                 msg = "flushed schedules"
-                TT.append([msg, time.time() - atime]); atime = time.time()
+                TT.append([msg, time.time() - atime])
+                atime = time.time()
 
                 sched_list = [c for c in sched_root.getChildren() if c.type == 'schedule']
                 # to do: sort?
 
                 msg = "%d schedule(s) found" % len(sched_list)
-                TT.append([msg, time.time() - atime]); atime = time.time()
+                TT.append([msg, time.time() - atime])
+                atime = time.time()
                 SCHEDULES_IMPORT_ERROR = False
 
                 try:
                     reload(scheduleutils)
                     msg = "reloaded module utils.scheduleutils"
-                    TT.append([msg, time.time() - atime]); atime = time.time()
+                    TT.append([msg, time.time() - atime])
+                    atime = time.time()
                 except:
                     msg = "Error reloading module 'scheduleutils': %s %s" % (str(sys.exc_info()[0]), str(sys.exc_info()[1]))
-                    TT.append([msg, time.time() - atime]); atime = time.time()
+                    TT.append([msg, time.time() - atime])
+                    atime = time.time()
                     OUT(msg, logger='backend', print_stdout=True, level='error')
                     SCHEDULES_IMPORT_ERROR = True
 
@@ -133,7 +137,8 @@ def scheduler_thread():
                     for s in sched_list:
 
                         has_fired, has_error, tt = scheduleutils.handle_single_trigger(s, now_str, OUT)
-                        TT = TT + tt; atime = time.time()
+                        TT = TT + tt
+                        atime = time.time()
                         if has_fired:
                             HAS_FIRED = True
                         if has_error:
@@ -142,7 +147,8 @@ def scheduler_thread():
                             has_fired, has_error, tt = scheduleutils.handle_cron_dict(s, now_obj, OUT)
                         except:
                             has_fired, has_error, tt = False, True, []
-                        TT = TT + tt; atime = time.time()
+                        TT = TT + tt
+                        atime = time.time()
                         if has_fired:
                             HAS_FIRED = True
                         if has_error:
@@ -204,7 +210,7 @@ def getSchedule(id):
                 return node
             else:
                 return None
-        except tree.NoSuchNodeError, e:
+        except tree.NoSuchNodeError as e:
             return None
     else:
         schedules = tree.getRoot("schedules")
@@ -212,7 +218,7 @@ def getSchedule(id):
             schedule = schedules.getChild(id)
             schedule.__class__ = core.schedule.Schedule
             return schedule
-        except tree.NoSuchNodeError, e:
+        except tree.NoSuchNodeError as e:
             return None
 
 
@@ -233,7 +239,7 @@ def create_schedule(name, attr_dict={}):
 
 def update_schedule(id, name=None, attr_dict={}):
     schedule = getSchedule(id)
-    if not name == None:
+    if not name is None:
         schedule.setName(name)
     for k, v in attr_dict.items():
         schedule.set(k, v)

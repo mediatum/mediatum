@@ -24,10 +24,17 @@ import struct
 from _vorbis import VCommentDict
 from ogg import OggPage, OggFileType, error as OggError
 
-class error(OggError): pass
-class OggVorbisHeaderError(error): pass
+
+class error(OggError):
+    pass
+
+
+class OggVorbisHeaderError(error):
+    pass
+
 
 class OggVorbisInfo(object):
+
     """Ogg Vorbis stream information.
 
     Attributes:
@@ -66,12 +73,13 @@ class OggVorbisInfo(object):
         if self.bitrate == 0 and self.length > 0:
             fileobj.seek(0, 2)
             self.bitrate = int((fileobj.tell() * 8) / self.length)
-                
 
     def pprint(self):
         return "Ogg Vorbis, %.2f seconds, %d bps" % (self.length, self.bitrate)
 
+
 class OggVCommentDict(VCommentDict):
+
     """Vorbis comments embedded in an Ogg bitstream."""
 
     def __init__(self, fileobj, info):
@@ -82,7 +90,7 @@ class OggVCommentDict(VCommentDict):
             if page.serial == info.serial:
                 pages.append(page)
                 complete = page.complete or (len(page.packets) > 1)
-        data = OggPage.to_packets(pages)[0][7:] # Strip off "\x03vorbis".
+        data = OggPage.to_packets(pages)[0][7:]  # Strip off "\x03vorbis".
         super(OggVCommentDict, self).__init__(data)
 
     def _inject(self, fileobj):
@@ -109,7 +117,9 @@ class OggVCommentDict(VCommentDict):
         new_pages = OggPage.from_packets(packets, old_pages[0].sequence)
         OggPage.replace(fileobj, old_pages, new_pages)
 
+
 class OggVorbis(OggFileType):
+
     """An Ogg Vorbis file."""
 
     _Info = OggVorbisInfo
@@ -122,6 +132,7 @@ class OggVorbis(OggFileType):
     score = staticmethod(score)
 
 Open = OggVorbis
+
 
 def delete(filename):
     """Remove tags from a file."""

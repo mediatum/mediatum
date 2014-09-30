@@ -52,11 +52,11 @@ def buildNodeDescriptor(req, node, indent=None, written=None, children=True, chi
     if mask == 'default':
         maskcachetype = req.params.get('maskcache', 'deep')  # 'deep', 'shallow', 'none'
         nodedict['defaultexport'] = node.show_node_text(labels=1, language=req.params.get('lang', ''), cachetype=maskcachetype)
-        #except:
+        # except:
         #    logging.getLogger('services').error('Error: web.services.jsonnode: could not get default mask content')
         #    nodedict['defaultexport'] = []
 
-    elif mask not in ["", "none"]: # deliver every mask
+    elif mask not in ["", "none"]:  # deliver every mask
         try:
             mask_obj = getMetaType(node.getSchema()).getMask(mask)
             if mask_obj:
@@ -88,11 +88,11 @@ def buildNodeDescriptor(req, node, indent=None, written=None, children=True, chi
                     childnodedict = buildNodeDescriptor(req, c, indent, children_access=children_access)
                     nd.append(childnodedict)
 
-    #if node.read_access:
+    # if node.read_access:
     #    nodedict['read'] = esc(node.read_access)
-    #if node.write_access:
+    # if node.write_access:
     #    nodedict['write'] = esc(node.write_access)
-    #if node.data_access:
+    # if node.data_access:
     #    nodedict['data'] = esc(node.data_access)
 
     nodeattributes_dict = {}
@@ -104,7 +104,7 @@ def buildNodeDescriptor(req, node, indent=None, written=None, children=True, chi
         from contenttypes.default import make_lookup_key, get_maskcache_entry, maskcache
         language = req.params.get('lang', '')
         lookup_key = make_lookup_key(node, language=language, labels=False)
-        if not lookup_key in maskcache:
+        if lookup_key not in maskcache:
             # fill cache
             node.show_node_text(labels=False, language=language, cachetype='deep')
 

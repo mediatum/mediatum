@@ -25,4 +25,4 @@ import mgindexer
 if "verbose" in dir(mgindexer):
     mgindexer.verbose(0)
 
-getattr(mgindexer, sys.argv[1])(sys.argv[2], sys.argv[3], sys.argv[4]) 
+getattr(mgindexer, sys.argv[1])(sys.argv[2], sys.argv[3], sys.argv[4])

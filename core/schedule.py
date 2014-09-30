@@ -31,7 +31,7 @@ except:
 class Schedule(tree.Node):
 
     # removed #186
-    #def __init__(self, name="<unbenannt>", dbid=None, type="schedule", **kwargs):
+    # def __init__(self, name="<unbenannt>", dbid=None, type="schedule", **kwargs):
     #    tree.Node.__init__(self, name=name, type=type, dbid=None, **kwargs)
 
     def getCategoryName(self):
@@ -47,9 +47,9 @@ class Schedule(tree.Node):
         return json.loads(self.get("cron_dict"))
 
     def set_cron_dict(self, s):
-        if type(s) == dict:
+        if isinstance(s, dict):
             self.set("cron_dict", json.dumps(s))
-        elif type(s) == type(""):
+        elif isinstance(s, type("")):
             self.set("cron_dict", s)
         else:
             raise TypeError("Schedule.set_cron_dict: inadmissible type:" + str(type(s)))
@@ -58,9 +58,10 @@ class Schedule(tree.Node):
         g = su.iter_date(start_datetime_obj, json.loads(self.get('cron_dict')), granularity, lookahead, lookback)
         return g
 
-    def get_cron_triggers(self, start_datetime_obj, granularity=['hours', 'minutes', 'seconds'][1], lookahead=24 * 60, lookback=60, tostring=True):
+    def get_cron_triggers(self, start_datetime_obj, granularity=['hours', 'minutes', 'seconds'][
+                          1], lookahead=24 * 60, lookback=60, tostring=True):
         _error = None
-        if type(start_datetime_obj) == type(""):
+        if isinstance(start_datetime_obj, type("")):
             start_datetime_obj = datetime.strptime(start_datetime_obj, "%Y-%m-%dT%H:%M:%S")
 
         cron_dict_str = self.get('cron_dict')

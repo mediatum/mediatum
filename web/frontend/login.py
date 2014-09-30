@@ -41,7 +41,7 @@ def buildURL(req):
 
 
 def login(req):
-    
+
     if len(req.params) > 2 and "user" not in req.params:  # user changed to browsing
         return buildURL(req)
 
@@ -85,11 +85,12 @@ def login(req):
         else:
             error = 1
 
-    if any(uri in req.header[6] for uri in ('/login', '/logout', '/pwdforgotten', '/pwdchange', '/pnode')) or 'Referer' not in req.header[6]:
+    if any(uri in req.header[6]
+           for uri in ('/login', '/logout', '/pwdforgotten', '/pwdchange', '/pnode')) or 'Referer' not in req.header[6]:
         req.session['return_after_login'] = False
     else:
         if '/edit' in req.header[6]:
-            #returns the user to /edit/ instead of /edit/edit_content?id=604993, which has no sidebar
+            # returns the user to /edit/ instead of /edit/edit_content?id=604993, which has no sidebar
             req.session['return_after_login'] = '/'.join(req.header[6]
                                                          .split(': ')[-1]
                                                          .split('/')[:-1])
@@ -169,14 +170,24 @@ def pwdforgotten(req):
                 print "password reset for user '%s' (id=%s) reset" % (targetuser.getName(), targetuser.id)
                 targetuser.removeAttribute("newpassword.password")
                 targetuser.set("newpassword.time_activated", date.format_date())
-                logging.getLogger('usertracing').info("new password activated for user: %s - was requested: %s by %s" % (targetuser.getName(), targetuser.get("newpassword.time_requested"), targetuser.get("newpassword.request_ip")))
+                logging.getLogger('usertracing').info(
+                    "new password activated for user: %s - was requested: %s by %s" %
+                    (targetuser.getName(),
+                     targetuser.get("newpassword.time_requested"),
+                        targetuser.get("newpassword.request_ip")))
 
-                navframe.write(req, req.getTAL(theme.getTemplate("login.html"), {"username": targetuser.getName()}, macro="pwdforgotten_password_activated"))
+                navframe.write(
+                    req, req.getTAL(
+                        theme.getTemplate("login.html"), {
+                            "username": targetuser.getName()}, macro="pwdforgotten_password_activated"))
                 return httpstatus.HTTP_OK
 
             else:
                 print "invalid key: wrong key or already used key"
-                navframe.write(req, req.getTAL(theme.getTemplate("login.html"), {"message": "pwdforgotten_password_invalid_key"}, macro="pwdforgotten_message"))
+                navframe.write(
+                    req, req.getTAL(
+                        theme.getTemplate("login.html"), {
+                            "message": "pwdforgotten_password_invalid_key"}, macro="pwdforgotten_message"))
                 return httpstatus.HTTP_OK
 
     elif "user" in req.params:  # create email with activation information
@@ -217,14 +228,20 @@ def pwdforgotten(req):
 
                     mail.sendmail(config.get("email.admin"), targetuser.getEmail(), t(lang(req), "pwdforgotten_email_subject"), mailtext)
                     logging.getLogger('usertracing').info("new password requested for user: %s - activation email sent" % username)
-                    navframe.write(req, req.getTAL(theme.getTemplate("login.html"), {"message": "pwdforgotten_butmailnowsent"}, macro="pwdforgotten_message"))
+                    navframe.write(
+                        req, req.getTAL(
+                            theme.getTemplate("login.html"), {
+                                "message": "pwdforgotten_butmailnowsent"}, macro="pwdforgotten_message"))
                     return httpstatus.HTTP_OK
 
                 except mail.SocketError:
                     print "Socket error while sending mail"
-                    logging.getLogger('usertracing').info("new password requested for user: %s - failed to send activation email" % username)
-                    return req.getTAL(theme.getTemplate("login.html"), {"message": "pwdforgotten_emailsenderror"}, macro="pwdforgotten_message")
+                    logging.getLogger('usertracing').info(
+                        "new password requested for user: %s - failed to send activation email" % username)
+                    return req.getTAL(
+                        theme.getTemplate("login.html"), {"message": "pwdforgotten_emailsenderror"}, macro="pwdforgotten_message")
 
     # standard operation
-    navframe.write(req, req.getTAL(theme.getTemplate("login.html"), {"error": req.params.get("error"), "user": users.getUserFromRequest(req)}, macro="pwdforgotten"))
+    navframe.write(req, req.getTAL(theme.getTemplate("login.html"), {
+                   "error": req.params.get("error"), "user": users.getUserFromRequest(req)}, macro="pwdforgotten"))
     return httpstatus.HTTP_OK

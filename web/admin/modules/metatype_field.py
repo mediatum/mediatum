@@ -28,68 +28,72 @@ from core.translation import lang, t
 
 
 """ list all fields of given metadatatype """
+
+
 def showDetailList(req, id):
     global fieldoption
     metadatatype = getMetaType(id)
     metafields = metadatatype.getMetaFields()
-    
+
     order = getSortCol(req)
     actfilter = getFilter(req)
 
-    #resets filter to all if adding mask in /metatype view
+    # resets filter to all if adding mask in /metatype view
     # if req.params.get('acttype') == 'mask' or req.params.get('acttype') == 'schema':
     #     if req.path == '/metatype' and 'filterbutton' not in req.params:
     #         actfilter = '*'
 
-    #resets filter when going to a new view
+    # resets filter when going to a new view
     if 'filterbutton' not in req.params:
         actfilter = '*'
 
     # filter
-    if actfilter!="":
-        if actfilter in ("all", "*", t(lang(req),"admin_filter_all")):
-            None # all users
-        elif actfilter=="0-9":
+    if actfilter != "":
+        if actfilter in ("all", "*", t(lang(req), "admin_filter_all")):
+            None  # all users
+        elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
-            if req.params.get("filtertype","")=="name":
+            if req.params.get("filtertype", "") == "name":
                 metafields = filter(lambda x: num.match(x.getName()), metafields)
             else:
                 metafields = filter(lambda x: num.match(x.getLabel()), metafields)
-            
-        elif actfilter=="else" or actfilter==t(lang(req),"admin_filter_else"):
+
+        elif actfilter == "else" or actfilter == t(lang(req), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9]|\.)')
-            if req.params.get("filtertype","")=="name":
+            if req.params.get("filtertype", "") == "name":
                 metafields = filter(lambda x: not all.match(x.getName()), metafields)
             else:
                 metafields = filter(lambda x: not all.match(x.getLabel()), metafields)
         else:
-            if req.params.get("filtertype","")=="name":
+            if req.params.get("filtertype", "") == "name":
                 metafields = filter(lambda x: x.getName().lower().startswith(actfilter), metafields)
             else:
                 metafields = filter(lambda x: x.getLabel().lower().startswith(actfilter), metafields)
-            
+
     pages = Overview(req, metafields)
-    
+
     # sorting
     if order != "":
-        if int(order[0:1])==0:
-            metafields.sort(lambda x, y: cmp(x.getOrderPos(),y.getOrderPos()))
-        elif int(order[0:1])==1:
-            metafields.sort(lambda x, y: cmp(x.getName().lower(),y.getName().lower()))    
-        elif int(order[0:1])==2:
-            metafields.sort(lambda x, y: cmp(x.getLabel().lower(),y.getLabel().lower()))
-        elif int(order[0:1])==3:
-            metafields.sort(lambda x, y: cmp(getMetaFieldTypeNames()[str(x.getFieldtype())],getMetaFieldTypeNames()[str(y.getFieldtype())]))
-        if int(order[1:])==1:
+        if int(order[0:1]) == 0:
+            metafields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
+        elif int(order[0:1]) == 1:
+            metafields.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))
+        elif int(order[0:1]) == 2:
+            metafields.sort(lambda x, y: cmp(x.getLabel().lower(), y.getLabel().lower()))
+        elif int(order[0:1]) == 3:
+            metafields.sort(
+                lambda x, y: cmp(getMetaFieldTypeNames()[str(x.getFieldtype())], getMetaFieldTypeNames()[str(y.getFieldtype())]))
+        if int(order[1:]) == 1:
             metafields.reverse()
     else:
-        metafields.sort(lambda x, y: cmp(x.getOrderPos(),y.getOrderPos()))
+        metafields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
 
     v = getAdminStdVars(req)
-    v["filterattrs"] = [("name","admin_metafield_filter_name"),("label","admin_metafield_filter_label")]
+    v["filterattrs"] = [("name", "admin_metafield_filter_name"), ("label", "admin_metafield_filter_label")]
     v["filterarg"] = req.params.get("filtertype", "name")
-    
-    v["sortcol"] = pages.OrderColHeader(["", t(lang(req),"admin_metafield_col_1"),t(lang(req),"admin_metafield_col_2"),t(lang(req),"admin_metafield_col_3")])
+
+    v["sortcol"] = pages.OrderColHeader(
+        ["", t(lang(req), "admin_metafield_col_1"), t(lang(req), "admin_metafield_col_2"), t(lang(req), "admin_metafield_col_3")])
     v["metadatatype"] = metadatatype
     v["metafields"] = metafields
     v["fieldoptions"] = fieldoption
@@ -97,43 +101,43 @@ def showDetailList(req, id):
     v["pages"] = pages
     v["order"] = order
     v["actfilter"] = actfilter
-    
+
     v["actpage"] = req.params.get("actpage")
-    if str(req.params.get("page","")).isdigit():
+    if str(req.params.get("page", "")).isdigit():
         v["actpage"] = req.params.get("page")
-    
-        
+
     return req.getTAL("web/admin/modules/metatype_field.html", v, macro="view_field")
-    
-    
-    
+
+
 """ form for field of given metadatatype (edit/new) """
+
+
 def FieldDetail(req, pid, id, err=0):
     global dateoption, requiredoption, fieldoption
 
-    _option =""
+    _option = ""
     for key in req.params.keys():
         if key.startswith("option_"):
             _option += key[7]
 
-    if err==0 and id=="":
+    if err == 0 and id == "":
         # new field
         field = tree.Node("", type="metafield")
 
-    elif id!="":
+    elif id != "":
         # edit field
         field = getMetaField(pid, id)
-         
+
     else:
         # error filling values
         _fieldvalue = ""
-        if req.params.get('mtype','') + "_value" in req.params.keys():
-            _fieldvalue = str(req.params[req.params.get('mtype','') + "_value"])
-        
-        if (req.params.get("mname")==""):
+        if req.params.get('mtype', '') + "_value" in req.params.keys():
+            _fieldvalue = str(req.params[req.params.get('mtype', '') + "_value"])
+
+        if (req.params.get("mname") == ""):
             field = tree.Node(req.params.get("orig_name"), type="metafield")
         else:
-             field = tree.Node(req.params.get("mname"), type="metafield")
+            field = tree.Node(req.params.get("mname"), type="metafield")
         field.setLabel(req.params.get("mlabel"))
         field.setOrderPos(req.params.get("orderpos"))
         field.setFieldtype(req.params.get("mtype"))
@@ -152,7 +156,7 @@ def FieldDetail(req, pid, id, err=0):
 
     metafields = {}
     for fields in getFieldsForMeta(pid):
-        if fields.getType()!="union":
+        if fields.getType() != "union":
             metafields[fields.getName()] = fields
 
     v = getAdminStdVars(req)
@@ -165,15 +169,15 @@ def FieldDetail(req, pid, id, err=0):
     v["requiredoptions"] = requiredoption
     v["fieldoptions"] = fieldoption
     v["metafields"] = metafields
-    v["filtertype"] = req.params.get("filtertype","")
+    v["filtertype"] = req.params.get("filtertype", "")
     v["actpage"] = req.params.get("actpage")
 
-    v["icons"] = {"externer Link":"/img/extlink.png", "Email":"/img/email.png"}
-    v["url_targets"] = {"selbes Fenster":"same", "neues Fenster":"_blank"}
+    v["icons"] = {"externer Link": "/img/extlink.png", "Email": "/img/email.png"}
+    v["url_targets"] = {"selbes Fenster": "same", "neues Fenster": "_blank"}
     v["valuelist"] = ("", "", "", "")
-    if field.getFieldtype()=="url":
+    if field.getFieldtype() == "url":
         v["valuelist"] = field.getValueList()
-        while len(v["valuelist"])!=4:
+        while len(v["valuelist"]) != 4:
             v["valuelist"].append("")
     else:
         v["valuelist"] = field.getValueList()
@@ -185,11 +189,11 @@ def FieldDetail(req, pid, id, err=0):
     v["adminfields"] = []
     for t in getMetaFieldTypeNames():
         f = getMetadataType(t)
-        
+
         if 'attr_dict' in inspect.getargspec(f.getMaskEditorHTML).args:
             attr_dict = dict(field.items())
             v["adminfields"] .append(f.getMaskEditorHTML(v["field"], metadatatype=metadatatype, language=lang(req), attr_dict=attr_dict))
-        else:    
+        else:
             v["adminfields"] .append(f.getMaskEditorHTML(v["field"], metadatatype=metadatatype, language=lang(req)))
-     
+
     return req.getTAL("web/admin/modules/metatype_field.html", v, macro="modify_field")

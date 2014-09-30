@@ -5,13 +5,16 @@ from __future__ import division, absolute_import, print_function
 import importlib
 from jinja2 import Markup
 
+
 class CSSIncludes(object):
+
     def __init__(self, debug=True):
         includes = "utils.css_includes_debug" if debug else "utils.css_includes"
         self.includes = importlib.import_module(includes)
 
 
 class JavascriptIncludes(object):
+
     def __init__(self, debug=True):
         includes = "utils.js_includes_debug" if debug else "utils.js_includes"
         self.includes = importlib.import_module(includes)

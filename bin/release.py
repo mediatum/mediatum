@@ -22,6 +22,7 @@
 from version import mediatum_version
 from os import system
 
+
 def build_package():
     global files
     name = "mediatum-%s" % mediatum_version
@@ -34,14 +35,14 @@ def build_package():
 
     command = "tar -chf %(name)s.tar " % locals()
     for file in files:
-        command += name+file+" "
+        command += name + file + " "
     system(command)
     system("gzip -9 %(name)s.tar" % locals())
     system("rm -f %(name)s" % locals())
 
 files = [
-"/COPYING",
-"/version.py"
+    "/COPYING",
+    "/version.py"
 ]
 
 build_package()

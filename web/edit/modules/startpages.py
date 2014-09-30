@@ -41,15 +41,15 @@ from web.edit.edit_common import send_nodefile_tal, upload_for_html
 def edit_editor(req, node, filenode):
     user = users.getUserFromRequest(req)
     access = AccessData(req)
-    
+
     if not access.hasWriteAccess(node) or "editor" in users.getHideMenusForUser(user):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
-    
+
     basedir = config.get("paths.datadir")
     file_to_edit = req.params.setdefault('file_to_edit', '')
-    descriptiveName = node.get("startpagedescr."+file_to_edit)
+    descriptiveName = node.get("startpagedescr." + file_to_edit)
     descriptiveLabel = ""
-    
+
     if descriptiveName:
         descriptiveLabel = "%s" % descriptiveName
     elif file_to_edit:
@@ -62,11 +62,11 @@ def edit_editor(req, node, filenode):
 
         filelist = []
         for f in node.getFiles():
-            if f.mimetype=='text/html':
+            if f.mimetype == 'text/html':
                 filelist.append(f)
-                
+
         shortpaths = [f.retrieveFile().replace(basedir, "") for f in filelist]
-                
+
         def getStartpageID(f):
             path = f.retrieveFile()
             id = None
@@ -85,20 +85,21 @@ def edit_editor(req, node, filenode):
             i += 1
             shortpath_to_check = "html/%s_%d.html" % (node.id, i)
 
-        shortpath = "html/" + (node.id+"_%d" % i) + ".html"
+        shortpath = "html/" + (node.id + "_%d" % i) + ".html"
         path = basedir + shortpath
         filenode = FileNode(path, "content", "text/html")
         descriptiveLabel = "%s - %s" % (t(lang(req), "edit_editor_new_file"), shortpath)
         node.addFile(filenode)
-        logging.getLogger('usertracing').info(user.name + " - startpages - added FileNode for node %s (%s): %s, %s, %s " % (node.id, node.name, filenode.getName(), filenode.type, filenode.mimetype))
-    
+        logging.getLogger('usertracing').info(user.name + " - startpages - added FileNode for node %s (%s): %s, %s, %s " %
+                                              (node.id, node.name, filenode.getName(), filenode.type, filenode.mimetype))
+
     if not filenode:
         filenode = node.getStartpageFileNode(lang(req))
-        
+
     if not filenode:
-        path = os.path.join(config.settings["paths.datadir"], "html/"+req.params['id']+".html")
+        path = os.path.join(config.settings["paths.datadir"], "html/" + req.params['id'] + ".html")
         for f in node.getFiles():
-            if f.retrieveFile()==path:
+            if f.retrieveFile() == path:
                 filenode = f
 
     if access.hasWriteAccess(node):
@@ -108,27 +109,27 @@ def edit_editor(req, node, filenode):
             os.environ['HTTP_USER_AGENT'] = req.request.request_headers['HTTP_USER_AGENT']
         except:
             os.environ['HTTP_USER_AGENT'] = req.request.request_headers['user-agent']
-        
+
         v = {
-             "id": req.params.get('id'),
-             "tab": req.params.get('tab'),
-             "file_to_edit": req.params.get("file_to_edit"),
-             "path": path,
-             "node": node,
-             "filenode": filenode,
-             "files": node.getFiles(),
-             "logoname": node.get("system.logo"),
-             "delbutton": False,
-             "descriptiveLabel": descriptiveLabel,
-             "fncFileContents": fncFileContents,
-             "language": lang(req),
-             "currentmissing": (not "add_page.x" in req.params and not os.path.isfile(path))
-            }
+            "id": req.params.get('id'),
+            "tab": req.params.get('tab'),
+            "file_to_edit": req.params.get("file_to_edit"),
+            "path": path,
+            "node": node,
+            "filenode": filenode,
+            "files": node.getFiles(),
+            "logoname": node.get("system.logo"),
+            "delbutton": False,
+            "descriptiveLabel": descriptiveLabel,
+            "fncFileContents": fncFileContents,
+            "language": lang(req),
+            "currentmissing": (not "add_page.x" in req.params and not os.path.isfile(path))
+        }
         return desc(req.getTAL("web/edit/modules/startpages.html", v, macro="edit_editor"))
     else:
         return req.getTAL("web/edit/modules/startpages.html", {}, macro="header") + getFileTemplate(req, node, path, {})
 
-        
+
 def getFileTemplate(req, node, file, substitute):
     ret = ""
     SRC_PATTERN = re.compile('src="([^":/]*)"')
@@ -136,12 +137,12 @@ def getFileTemplate(req, node, file, substitute):
         fi = open(file, "rb")
         s = str(fi.read())
 
-        for string,replacement in substitute.items():
+        for string, replacement in substitute.items():
             s = s.replace(string, replacement)
-       
+
         lastend = 0
         scanner = SRC_PATTERN.scanner(s)
-        while 1:
+        while True:
             match = scanner.search()
             if match is None:
                 ret += s[lastend:]
@@ -149,22 +150,22 @@ def getFileTemplate(req, node, file, substitute):
             else:
                 ret += s[lastend:match.start()]
                 imgname = match.group(1)
-                ret += 'src="/file/'+node.id+'/'+imgname+'"'
+                ret += 'src="/file/' + node.id + '/' + imgname + '"'
                 lastend = match.end()
         fi.close()
         return ret
     else:
         return ""
-        
+
 
 def getContent(req, ids):
     if "option" in req.params:
-        if req.params.get("option")=="filebrowser":
+        if req.params.get("option") == "filebrowser":
             # open filebrowser
             req.write(send_nodefile_tal(req))
             return ""
-            
-        if req.params.get("option")=="htmlupload":
+
+        if req.params.get("option") == "htmlupload":
             # use fileupload
             req.write(upload_for_html(req))
             return ""
@@ -174,7 +175,6 @@ def getContent(req, ids):
             send_fckfile(req)
             return ""
 
-            
     user = users.getUserFromRequest(req)
     access = AccessData(req)
     node = tree.getNode(ids[0])
@@ -183,7 +183,7 @@ def getContent(req, ids):
         if key.startswith("add_page"):
             del req.params[key]
             req.params["add_page"] = ""
-            return  edit_editor(req, node, None)
+            return edit_editor(req, node, None)
 
     if "file_to_edit" in req.params and not "save_page" in req.params and not "cancel_page" in req.params:
         # edit page
@@ -193,30 +193,38 @@ def getContent(req, ids):
             if d and lang(req) in d:
                 file_to_edit = d[lang(req)]
 
-        for f in [file for file in node.getFiles() if file.mimetype=="text/html"]:
+        for f in [file for file in node.getFiles() if file.mimetype == "text/html"]:
             filepath = f.retrieveFile().replace(config.get("paths.datadir"), '')
-            if file_to_edit==filepath:
+            if file_to_edit == filepath:
                 return edit_editor(req, node, f)
         return edit_editor(req, node, None)
 
     if access.hasWriteAccess(node):
-    
+
         for key in req.params.keys():
-            if key.startswith("delete_"): # delete page
+            if key.startswith("delete_"):  # delete page
                 page = key[7:-2]
                 try:
                     file_shortpath = page.replace(config.get("paths.datadir"), "")
                     if os.path.exists(page):
                         os.remove(page)
                     filenode = FileNode(page, "", "text/html")
-                    
-                    node.removeAttribute("startpagedescr."+file_shortpath)
+
+                    node.removeAttribute("startpagedescr." + file_shortpath)
                     node.set("startpage.selector", node.get("startpage.selector").replace(file_shortpath, ""))
                     node.removeFile(filenode)
-                    logging.getLogger('usertracing').info(user.name + " - startpages - deleted FileNode and file for node %s (%s): %s, %s, %s, %s" % (node.id, node.name, page, filenode.getName(), filenode.type, filenode.mimetype))
+                    logging.getLogger('usertracing').info(
+                        user.name +
+                        " - startpages - deleted FileNode and file for node %s (%s): %s, %s, %s, %s" %
+                        (node.id,
+                         node.name,
+                         page,
+                         filenode.getName(),
+                            filenode.type,
+                            filenode.mimetype))
                 except:
                     logging.getLogger('usertracing').error(user.name + " - startpages - error while delete FileNode and file for " + page)
-                    logging.getLogger('usertracing').error("%s - %s" % ( sys.exc_info()[0], sys.exc_info()[1]))
+                    logging.getLogger('usertracing').error("%s - %s" % (sys.exc_info()[0], sys.exc_info()[1]))
                 break
 
         # save page
@@ -226,16 +234,16 @@ def getContent(req, ids):
                 if key.startswith("page_content"):
                     content = req.params.get(key, "")
                     break
-                    
+
             fi = open(req.params.get('file_path'), "w")
             fi.writelines(content)
             fi.close()
-            
+
             del req.params['save_page']
             del req.params['file_to_edit']
             req.params['tab'] = 'startpages'
             return getContent(req, [node.id])
-        
+
         if "cancel_page" in req.params:
             del req.params['file_to_edit']
             del req.params['cancel_page']
@@ -243,93 +251,94 @@ def getContent(req, ids):
 
     if not access.hasWriteAccess(node) or "editor" in users.getHideMenusForUser(user):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
-    
+
     filelist = []
     for f in node.getFiles():
-        if f.mimetype=='text/html' and f.getType() in ['content']:
+        if f.mimetype == 'text/html' and f.getType() in ['content']:
             filelist.append(f)
-            
+
     languages = [language.strip() for language in config.get("i18n.languages").split(",")]
-    
+
     if "startpages_save" in req.params.keys():
         sidebar = ""
-        for k in [k for k in req.params if k.startswith('sidebar_') ]:
-            sidebar += k[8:]+":"+req.params[k]+";"
+        for k in [k for k in req.params if k.startswith('sidebar_')]:
+            sidebar += k[8:] + ":" + req.params[k] + ";"
         node.set('system.sidebar', sidebar)
-        
-        for k in [k for k in req.params if k.startswith('descr.') ]:
-            node.set('startpage'+k, req.params[k])
-            
+
+        for k in [k for k in req.params if k.startswith('descr.')]:
+            node.set('startpage' + k, req.params[k])
+
         # build startpage_selector
         startpage_selector = ""
         for language in languages:
-            startpage_selector += "%s:%s;" % (language, req.params.get('radio_'+language))
+            startpage_selector += "%s:%s;" % (language, req.params.get('radio_' + language))
         node.set('startpage.selector', startpage_selector[0:-1])
-        
+
     named_filelist = []
 
     for f in filelist:
         long_path = f.retrieveFile()
         short_path = long_path.replace(config.get("paths.datadir"), '')
-        
+
         file_exists = os.path.isfile(long_path)
         file_size = "-"
         if file_exists:
             file_size = os.path.getsize(long_path)
-            
+
         langlist = []
         sidebar = []
         for language in languages:
             spn = node.getStartpageFileNode(language)
-            if spn and spn.retrieveFile()==long_path:
+            if spn and spn.retrieveFile() == long_path:
                 langlist.append(language)
-            if node.get('system.sidebar').find(language+":"+ short_path)>=0:
+            if node.get('system.sidebar').find(language + ":" + short_path) >= 0:
                 sidebar.append(language)
 
-        named_filelist.append( (short_path,
-                                node.get('startpagedescr.'+short_path),
-                                f.type,
-                                f,
-                                file_exists,
-                                format_filesize(file_size),
-                                long_path,
-                                langlist,
-                                "/file/%s/%s" % (req.params.get("id","0"), short_path.split('/')[-1]),
-                                sidebar
-                              ) )
+        named_filelist.append((short_path,
+                               node.get('startpagedescr.' + short_path),
+                               f.type,
+                               f,
+                               file_exists,
+                               format_filesize(file_size),
+                               long_path,
+                               langlist,
+                               "/file/%s/%s" % (req.params.get("id", "0"), short_path.split('/')[-1]),
+                               sidebar
+                               ))
     lang2file = node.getStartpageDict()
-    
+
     # compatibility: there may be old startpages in the database that
     # are not described by node attributes
     #initial = False
-    #if filelist and not lang2file:
+    # if filelist and not lang2file:
     #    initial = True
     initial = filelist and not lang2file
-       
+
     # node may not have startpage set for some language
     # compatibilty: node may not have attribute startpage.selector
     # build startpage_selector and wriote back to node
     startpage_selector = ""
-    for language in languages: 
+    for language in languages:
         if initial:
             lang2file[language] = named_filelist[0][0]
         else:
             lang2file[language] = lang2file.setdefault(language, '')
         startpage_selector += "%s:%s;" % (language, lang2file[language])
-    
+
     node.set('startpage.selector', startpage_selector[0:-1])
 
     v = {}
-    v["id"] =  req.params.get("id","0")
+    v["id"] = req.params.get("id", "0")
     v["tab"] = req.params.get("tab", "")
     v["node"] = node
     v["named_filelist"] = named_filelist
     v["languages"] = languages
     v["lang2file"] = lang2file
     v["types"] = ['content']
-    v["d"] =  lang2file and True
-   
+    v["d"] = lang2file and True
+
     return req.getTAL("web/edit/modules/startpages.html", v, macro="edit_startpages")
+
 
 def fncFileContents(absFileName):
     text = ""

@@ -28,7 +28,9 @@ import warnings
 
 import _util
 
+
 class Metadata(object):
+
     """An abstract dict-like object.
 
     Metadata is the base class for many of the tag objects in Mutagen.
@@ -47,7 +49,9 @@ class Metadata(object):
     def delete(self, filename=None):
         raise NotImplementedError
 
+
 class FileType(_util.DictMixin):
+
     """An abstract object wrapping tags and audio stream information.
 
     Attributes:
@@ -82,8 +86,10 @@ class FileType(_util.DictMixin):
 
         If the file has no tags at all, a KeyError is raised.
         """
-        if self.tags is None: raise KeyError, key
-        else: return self.tags[key]
+        if self.tags is None:
+            raise KeyError(key)
+        else:
+            return self.tags[key]
 
     def __setitem__(self, key, value):
         """Set a metadata tag.
@@ -100,16 +106,20 @@ class FileType(_util.DictMixin):
 
         If the file has no tags at all, a KeyError is raised.
         """
-        if self.tags is None: raise KeyError, key
-        else: del(self.tags[key])
+        if self.tags is None:
+            raise KeyError(key)
+        else:
+            del(self.tags[key])
 
     def keys(self):
         """Return a list of keys in the metadata tag.
 
         If the file has no tags at all, an empty list is returned.
         """
-        if self.tags is None: return []
-        else: return self.tags.keys()
+        if self.tags is None:
+            return []
+        else:
+            return self.tags.keys()
 
     def delete(self, filename=None):
         """Remove tags from a file."""
@@ -132,15 +142,18 @@ class FileType(_util.DictMixin):
                 DeprecationWarning)
         if self.tags is not None:
             return self.tags.save(filename, **kwargs)
-        else: raise ValueError("no tags in file")
+        else:
+            raise ValueError("no tags in file")
 
     def pprint(self):
         """Print stream information and comment key=value pairs."""
         stream = "%s (%s)" % (self.info.pprint(), self.mime[0])
-        try: tags = self.tags.pprint()
+        try:
+            tags = self.tags.pprint()
         except AttributeError:
             return stream
-        else: return stream + ((tags and "\n" + tags) or "")
+        else:
+            return stream + ((tags and "\n" + tags) or "")
 
     def add_tags(self):
         raise NotImplementedError
@@ -154,6 +167,7 @@ class FileType(_util.DictMixin):
         return mimes
 
     mime = property(__get_mime)
+
 
 def File(filename, options=None, easy=False):
     """Guess the type of the file and try to open it.
@@ -213,5 +227,7 @@ def File(filename, options=None, easy=False):
     results = zip(results, options)
     results.sort()
     (score, name), Kind = results[-1]
-    if score > 0: return Kind(filename)
-    else: return None
+    if score > 0:
+        return Kind(filename)
+    else:
+        return None

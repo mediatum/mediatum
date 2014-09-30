@@ -22,23 +22,25 @@ import core.tree as tree
 import core.users as users
 from core.acl import AccessData
 
+
 def getContent(req, ids):
-    if req.params.get("style","")=="popup":
+    if req.params.get("style", "") == "popup":
         req.write(objlist(req))
         return ""
-    
+
     user = users.getUserFromRequest(req)
     if "license" in users.getHideMenusForUser(user):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
-        
+
     node = tree.getNode(ids[0])
-    return req.getTAL("web/edit/modules/license.html", {"node":node}, macro="edit_license_info")
+    return req.getTAL("web/edit/modules/license.html", {"node": node}, macro="edit_license_info")
+
 
 def objlist(req):
     node = tree.getNode(req.params["id"])
     access = AccessData(req)
-    
-    if node.id==tree.getRoot().id or not access.hasWriteAccess(node):
+
+    if node.id == tree.getRoot().id or not access.hasWriteAccess(node):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
-    return req.getTAL("web/edit/modules/license.html", {"node":node}, macro="edit_license")
+    return req.getTAL("web/edit/modules/license.html", {"node": node}, macro="edit_license")

@@ -6,10 +6,13 @@ from mp4 import MP4, MP4Tags, error, delete
 
 __all__ = ["EasyMP4Tags", "EasyMP4", "delete", "error"]
 
+
 class EasyMP4KeyError(error, KeyError, ValueError):
     pass
 
+
 class EasyMP4Tags(DictMixin, Metadata):
+
     """A file with MPEG-4 iTunes metadata.
 
     Like Vorbis comments, EasyMP4Tags keys are case-insensitive ASCII
@@ -81,7 +84,7 @@ class EasyMP4Tags(DictMixin, Metadata):
         cls.RegisterKey(key, getter, setter, deleter)
     RegisterTextKey = classmethod(RegisterTextKey)
 
-    def RegisterIntKey(cls, key, atomid, min_value=0, max_value=2**16-1):
+    def RegisterIntKey(cls, key, atomid, min_value=0, max_value=2 ** 16 - 1):
         """Register a scalar integer key.
         """
 
@@ -98,7 +101,7 @@ class EasyMP4Tags(DictMixin, Metadata):
         cls.RegisterKey(key, getter, setter, deleter)
     RegisterIntKey = classmethod(RegisterIntKey)
 
-    def RegisterIntPairKey(cls, key, atomid, min_value=0, max_value=2**16-1):
+    def RegisterIntPairKey(cls, key, atomid, min_value=0, max_value=2 ** 16 - 1):
         def getter(tags, key):
             ret = []
             for (track, total) in tags[atomid]:
@@ -211,7 +214,7 @@ for atomid, key in {
     'soar': 'artistsort',
     'sonm': 'titlesort',
     'soco': 'composersort',
-    }.items():
+}.items():
     EasyMP4Tags.RegisterTextKey(key, atomid)
 
 for name, key in {
@@ -223,21 +226,23 @@ for name, key in {
     'MusicBrainz Album Status': 'musicbrainz_albumstatus',
     'MusicBrainz Album Type': 'musicbrainz_albumtype',
     'MusicBrainz Release Country': 'releasecountry',
-    }.items():
+}.items():
     EasyMP4Tags.RegisterFreeformKey(key, name)
 
 for name, key in {
     "tmpo": "bpm",
-    }.items():
+}.items():
     EasyMP4Tags.RegisterIntKey(key, name)
 
 for name, key in {
     "trkn": "tracknumber",
     "disk": "discnumber",
-    }.items():
+}.items():
     EasyMP4Tags.RegisterIntPairKey(key, name)
 
+
 class EasyMP4(MP4):
+
     """Like MP4, but uses EasyMP4Tags for tags."""
     MP4Tags = EasyMP4Tags
 

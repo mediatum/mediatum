@@ -43,10 +43,13 @@ USE_ALIASES = False
 PING_GOOGLE = True
 PING_URL_ENCODED = 'http://www.google.com/webmasters/tools/ping?sitemap=http%3A%2F%2Fmediatum.ub.tum.de%2Fsitemap-index.xml'
 
+
 class ConfigFile:
+
     """
     A configuration file object
     """
+
     def __init__(self, path, name):
         self.name = name
         self.path = '/'.join([path, self.name])
@@ -68,9 +71,11 @@ class ConfigFile:
 
 
 class Sitemap:
+
     """
     A sitemap object which holds data relevant to the sitemap and creation of sitemap.xml's
     """
+
     def __init__(self, path, name, host):
         self.name = name
         self.path = '/'.join([path, 'web', 'root', name])
@@ -89,7 +94,7 @@ class Sitemap:
             slashpattern = re.compile(r'\d{2}/\d{2}/\d{4}')
             datetimepattern = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}')
 
-            #check if date is already in the proper format
+            # check if date is already in the proper format
             matched = re.search(datetimepattern, date)
             if matched is not None:
                 return date
@@ -107,7 +112,7 @@ class Sitemap:
             logging.getLogger('everything').info('Sitemap already exists at %s' % self.path)
         else:
             root = etree.Element('urlset', xmlns="http://www.sitemaps.org/schemas/sitemap/0.9")
-            #Doesn't create a sitemap if no nodes to place in it
+            # Doesn't create a sitemap if no nodes to place in it
             if not nodes:
                 pass
             else:
@@ -146,12 +151,12 @@ class Sitemap:
                 logging.getLogger('error').error('Error removing %s' % self.path)
 
 
-
-
 class SitemapIndex:
+
     """
     A sitemap index object. It is responsible for serving as a reference for all sitemaps
     """
+
     def __init__(self, path, name, host):
         self.name = name
         self.path = '/'.join([path, 'web', 'root', name])
@@ -217,17 +222,17 @@ def create():
     access = acl.AccessData(user=user)
 
     node_dict = {'collections': [],
-                'directories': [],
-                'documents': [],
-                'dissertations': [],
-                'images': [],
-                'videos': [],
-                'audio': [],
-                }
+                 'directories': [],
+                 'documents': [],
+                 'dissertations': [],
+                 'images': [],
+                 'videos': [],
+                 'audio': [],
+                 }
     sitemaps = []
 
     for i in all_nodes:
-        #Arkitekt had a guest field that is actually not visible
+        # Arkitekt had a guest field that is actually not visible
         if access.hasAccess(i, 'read'):
             if 'collection' in tree.getNode(i.id).type:
                 node_dict['collections'].append((i.id, '+'.join([tree.getNode(i.id).get('updatetime'), '02:00'])))
@@ -262,7 +267,7 @@ def create():
             for j in range(partitions):
                 sitemap = Sitemap(base_dir, ''.join(['sitemap-', str(i), str(j), '.xml']), hostname)
                 sitemaps.append(sitemap.name)
-                sitemap.create_sitemap(node_dict[i][j*50000:(j+1)*50000], priority_level)
+                sitemap.create_sitemap(node_dict[i][j * 50000:(j + 1) * 50000], priority_level)
         else:
             sitemap = Sitemap(base_dir, ''.join(['sitemap-', i, '.xml']), hostname)
             sitemaps.append(sitemap.name)
@@ -273,6 +278,7 @@ def create():
     siteindex.create_sitemap_index(sitemaps, now)
 
     logging.getLogger('everything').info('Generation of Sitemaps and SitemapIndex Complete')
+
 
 def clean():
     """
@@ -285,7 +291,7 @@ def clean():
 
     sitemaps = [f for f in os.listdir(web_root_dir) if '.xml' in f and f.startswith('sitemap')]
 
-    #If no .xml files exist
+    # If no .xml files exist
     if not sitemaps:
         logging.getLogger('everything').info('Nothing to remove...')
     else:
@@ -305,9 +311,11 @@ def main():
         if PING_GOOGLE:
             response = urllib2.urlopen(PING_URL_ENCODED)
             if response.getcode() == 200:
-                logging.getLogger('everything').info('Successful ping of sitemap-index.xml to Google; Response Code: %i' % response.getcode())
+                logging.getLogger('everything').info(
+                    'Successful ping of sitemap-index.xml to Google; Response Code: %i' % response.getcode())
             else:
-                logging.getLogger('everything').info('Unsuccessful ping of sitemap-index.xml to Google; Response Code: %i' % response.getcode())
+                logging.getLogger('everything').info(
+                    'Unsuccessful ping of sitemap-index.xml to Google; Response Code: %i' % response.getcode())
     elif sys.argv[1] == 'clean':
         clean()
 

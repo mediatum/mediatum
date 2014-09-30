@@ -46,16 +46,21 @@ class m_label(Metatype):
         ret += '<b>' + str(item.getLabel()) + '</b>'
 
         if not sub:
-            ret += '<div align="right" id="' + item.id + '_sub" style="display:none"><small style="color:silver">(' + (item.get("type")) + ')</small>'
+            ret += '<div align="right" id="' + item.id + \
+                '_sub" style="display:none"><small style="color:silver">(' + (item.get("type")) + ')</small>'
             if index > 0:
-                ret += '<input type="image" src="/img/uparrow.png" name="up_' + str(item.id) + '" i18n:attributes="title mask_edit_up_title"/>'
+                ret += '<input type="image" src="/img/uparrow.png" name="up_' + \
+                    str(item.id) + '" i18n:attributes="title mask_edit_up_title"/>'
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
             if index < len(parent.getChildren()) - 1:
-                ret += '<input type="image" src="/img/downarrow.png" name="down_' + str(item.id) + '" i18n:attributes="title mask_edit_down_title"/>'
+                ret += '<input type="image" src="/img/downarrow.png" name="down_' + \
+                    str(item.id) + '" i18n:attributes="title mask_edit_down_title"/>'
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
-            ret += ' <input type="image" src="/img/edit.png" name="edit_' + str(item.id) + '" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/img/delete.png" name="delete_' + str(item.id) + '" i18n:attributes="title mask_edit_delete_row" onClick="return questionDel()"/></div>'
+            ret += ' <input type="image" src="/img/edit.png" name="edit_' + str(
+                item.id) + '" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/img/delete.png" name="delete_' + str(
+                item.id) + '" i18n:attributes="title mask_edit_delete_row" onClick="return questionDel()"/></div>'
             ret += '</div>'
 
         return ret
@@ -86,7 +91,8 @@ class m_label(Metatype):
         return req.getTAL("metadata/label.html", v, macro="metaeditor")
 
     def getEditorHTML(self, field, value="", width=40, lock=0, language=None):
-        return tal.getTAL("metadata/label.html", {"lock": lock, "value": value, "width": width, "name": field.getName(), "field": field}, macro="editorfield", language=language)
+        return tal.getTAL("metadata/label.html", {"lock": lock, "value": value, "width": width,
+                                                  "name": field.getName(), "field": field}, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/label.html", {"context": context}, macro="searchfield", language=context.language)
@@ -111,13 +117,13 @@ class m_label(Metatype):
         return m_label.labels
 
     labels = {"de":
-            [
-                ("fieldtype_label", "Label"),
-                ("fieldtype_label_desc", "Text als String"),
-            ],
-           "en":
-            [
-                ("fieldtype_label", "label field"),
-                ("fieldtype_label_desc", "text without input field"),
-            ]
-         }
+              [
+                  ("fieldtype_label", "Label"),
+                  ("fieldtype_label_desc", "Text als String"),
+              ],
+              "en":
+              [
+                  ("fieldtype_label", "label field"),
+                  ("fieldtype_label_desc", "text without input field"),
+              ]
+              }

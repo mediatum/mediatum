@@ -31,10 +31,11 @@ from email.mime.text import MIMEText
 import os
 import logging
 import core.config as config
-from utils import formatException
+from .utils import formatException
 
 SocketError = "socketerror"
 logger = logging.getLogger("backend")
+
 
 def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]):
     testing = config.get("host.type") == "testing"
@@ -60,8 +61,8 @@ def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]
             try:
                 text = unicode(text, "utf-8").encode("latin1")
             except:
-                print formatException() 
-            msg = """From: %s\nTo: %s\nSubject: %s\n\n%s""" % (fromaddr, toaddrs_string, subject, text)           
+                print formatException()
+            msg = """From: %s\nTo: %s\nSubject: %s\n\n%s""" % (fromaddr, toaddrs_string, subject, text)
             try:
                 server = smtplib.SMTP(config.get("server.mail"))
                 server.set_debuglevel(1)
@@ -75,18 +76,18 @@ def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]
                 mime_multipart['Subject'] = subject
                 mime_multipart['To'] = toaddrs_string
                 mime_multipart['From'] = fromaddr
-                
+
                 text = text.replace("\r", "\r\n")
-                
+
                 msg = MIMEText(text, _subtype="plain", _charset="utf-8")
-                    
+
                 mime_multipart.attach(msg)
                 # from exapmle in python docu
                 for path, filename in attachments_paths_and_filenames:
                     if not os.path.isfile(path):
-                        logger.error("error sending mail to '%s' ('%s'): attachment: no such file: '%s', skipping file" % (str(toaddrs_string),
-                                                                                                                           str(subject),
-                                                                                                                           path))
+                        logger.error(
+                            "error sending mail to '%s' ('%s'): attachment: no such file: '%s', skipping file" %
+                            (str(toaddrs_string), str(subject), path))
                         continue
                     ctype, encoding = mimetypes.guess_type(path)
                     if ctype is None or encoding is not None:
@@ -110,14 +111,14 @@ def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]
                         fp.close()
                     msg.add_header('Content-Disposition', 'attachment', filename=filename)
                     mime_multipart.attach(msg)
-                
+
                 composed = mime_multipart.as_string()
-                
+
                 server = smtplib.SMTP(config.get("server.mail"))
                 server.sendmail(fromaddr, toaddrs, composed)
                 server.quit()
-                logger.info("sent email to '%s' ('%s'): attachments: '%s'" % (str(toaddrs_string), str(subject), str(attachments_paths_and_filenames)))
-            except Exception, e:
+                logger.info("sent email to '%s' ('%s'): attachments: '%s'" %
+                            (str(toaddrs_string), str(subject), str(attachments_paths_and_filenames)))
+            except Exception as e:
                 logger.error("error sending mail: " + str(e))
                 raise e
-

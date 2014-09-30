@@ -19,25 +19,26 @@
 
 import core.tree as tree
 
-from ftreedata import getData, getPathTo, getLabel
+from .ftreedata import getData, getPathTo, getLabel
+
 
 def ftree(req):
     if "parentId" in req.params:
         return getData(req)
-        
+
     if "pathTo" in req.params:
         return getPathTo(req)
-        
+
     if "getLabel" in req.params:
         return getLabel(req)
-    
+
     if "changeCheck" in req.params:
         try:
             for id in req.params.get("currentitem").split(","):
                 node = tree.getNode(id)
                 parent = tree.getNode(req.params.get("changeCheck"))
                 if node in parent.getChildren():
-                    if len(node.getParents())>1:
+                    if len(node.getParents()) > 1:
                         parent.removeChild(node)
                     else:
                         req.writeTALstr('<tal:block i18n:translate="edit_classes_noparent"/>', {})

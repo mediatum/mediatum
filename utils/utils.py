@@ -31,19 +31,24 @@ from urllib import quote, urlencode
 
 import xml.parsers.expat
 from HTMLParser import HTMLParser
-from compat import iteritems
+from .compat import iteritems
+
 
 def esc(s):
     return s.replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;").replace(">", "&gt;")
 
+
 def esc2(s):
     return s.replace("&", "&amp;").replace("\"", "'").replace("<", "&lt;").replace(">", "&gt;")
+
 
 def lightesc(s):
     return s.replace("<", "&lt;").replace(">", "&gt;")
 
+
 def desc(s):
-    return s.replace("&amp;", "&").replace("&quot;", "\"").replace("&lt;","<").replace("&gt;",">")
+    return s.replace("&amp;", "&").replace("&quot;", "\"").replace("&lt;", "<").replace("&gt;", ">")
+
 
 def u(s):
     try:
@@ -54,6 +59,7 @@ def u(s):
             return s.decode("latin-1").encode("utf-8")
         except:
             return s
+
 
 def u2(s):
     try:
@@ -68,12 +74,14 @@ def u2(s):
             except:
                 return s
 
+
 def iso2utf8(s):
-    return unicode(s,"latin-1").encode("utf-8")
+    return unicode(s, "latin-1").encode("utf-8")
+
 
 def utf82iso(s):
     try:
-        return unicode(s,"utf-8").encode("latin-1")
+        return unicode(s, "utf-8").encode("latin-1")
     except:
         return s
 
@@ -84,6 +92,7 @@ replacements = {'sub': {'regex': re.compile(r'(?<=\$_)(.*?)(?=\$)'),
                 'sup': {'regex': re.compile(r'(?<=\$\^)(.*?)(?=\$)'),
                         'tex': '$^%s$',
                         'html': '<sup>%s</sup>'}}
+
 
 def modify_tex(string, option):
     """
@@ -108,18 +117,19 @@ def modify_tex(string, option):
 def splitpath(path):
     while path.endswith("/") or path.endswith("\\"):
         path = path[:-1]
-    i = max(path.rfind("/"),path.rfind("\\"))
-    if i>=0:
-        return path[0:i],path[i+1:]
+    i = max(path.rfind("/"), path.rfind("\\"))
+    if i >= 0:
+        return path[0:i], path[i + 1:]
     else:
-        return "",path
+        return "", path
+
 
 def splitfilename(path):
     try:
         i = path.rindex(".")
-        return path[0:i],path[i+1:]
+        return path[0:i], path[i + 1:]
     except:
-        return path,""
+        return path, ""
 
 
 def findLast(string, char):
@@ -136,6 +146,7 @@ def isnewer(path1, path2):
     except:
         return 0
 
+
 def isNumeric(s):
     try:
         i = float(s)
@@ -144,30 +155,34 @@ def isNumeric(s):
     else:
         return 1
 
-def float_from_gps_format(string): #e.g [48, 214/25, 0]
-    if string[0]=='[' and string[-1]=='[':
+
+def float_from_gps_format(string):  # e.g [48, 214/25, 0]
+    if string[0] == '[' and string[-1] == '[':
         string = string[1:-1]
         components = string.split(",")
 
-        if len(components)!=3:
+        if len(components) != 3:
             return 0
 
         result = 0
         result += float_from_fraction(components[0])
-        result += float_from_fraction(components[1])/60
-        result += float_from_fraction(components[2])/3600
+        result += float_from_fraction(components[1]) / 60
+        result += float_from_fraction(components[2]) / 3600
         return result
     return 0
 
+
 def float_from_fraction(string):
     components = string.split("/")
-    if len(components)==1:
+    if len(components) == 1:
         return float(components[0])
-    elif len(components)==2:
-        return float(components[0])/float(components[1])
+    elif len(components) == 2:
+        return float(components[0]) / float(components[1])
     return 0
 
+
 class Link:
+
     def __init__(self, link, title, label, target="_self", icon="/img/blank.gif"):
         self.link = link
         self.title = title
@@ -178,7 +193,9 @@ class Link:
     def getTitle(self):
         return self.title
 
+
 class CustomItem:
+
     def __init__(self, name, filename, type="intern", icon=""):
         self.name = name
         self.filename = filename
@@ -189,11 +206,11 @@ class CustomItem:
         return self.name
 
     def getLink(self):
-        if self.type=="intern":
-            return "/?item="+self.filename
-        elif self.type=="node":
-            return "/?id="+self.filename
-        elif self.type=="text":
+        if self.type == "intern":
+            return "/?item=" + self.filename
+        elif self.type == "node":
+            return "/?id=" + self.filename
+        elif self.type == "text":
             return ""
         return self.filename
 
@@ -204,7 +221,7 @@ class CustomItem:
         return self.icon
 
     def __str__(self):
-        return "%s|%s|%s|%s" %(self.name, self.filename, self.type, self.icon)
+        return "%s|%s|%s|%s" % (self.name, self.filename, self.type, self.icon)
 
 
 def format_filesize(size):
@@ -212,23 +229,25 @@ def format_filesize(size):
         size = int(size)
     except:
         return size
-    if size<1024:
+    if size < 1024:
         return "%d Byte" % size
-    elif size<1048576:
-        return "%d KByte" % (size/1024)
-    elif size<1073741824:
-        return "%d MByte" % (size/1048576)
+    elif size < 1048576:
+        return "%d KByte" % (size / 1024)
+    elif size < 1073741824:
+        return "%d MByte" % (size / 1048576)
     else:
-        return "%d GByte" % (size/1073741824)
+        return "%d GByte" % (size / 1073741824)
+
 
 def get_hash(filename):
     try:
-        fi = open(filename,"rb")
+        fi = open(filename, "rb")
         s = fi.read()
         fi.close()
         return hashlib.md5(s).hexdigest()
     except IOError:
         return hashlib.md5("").hexdigest()
+
 
 def get_filesize(filename):
     try:
@@ -236,26 +255,26 @@ def get_filesize(filename):
             stat = os.stat(filename)
             return stat[6]
         import core.config as config
-        if os.path.exists(config.settings["paths.datadir"]+"/"+filename):
-            stat = os.stat(config.settings["paths.datadir"]+"/"+filename)
+        if os.path.exists(config.settings["paths.datadir"] + "/" + filename):
+            stat = os.stat(config.settings["paths.datadir"] + "/" + filename)
             return stat[6]
         else:
-            print "Warning: File",filename,"not found"
+            print "Warning: File", filename, "not found"
             return 0
     except:
         return 0
 
 
-normalization_items = {"chars":[("00e4", "ae"),\
-                        ("00c4", "Ae"),\
-                        ("00df", "ss"),\
-                        ("00fc", "ue"),\
-                        ("00dc", "Ue"),\
-                        ("00f6", "oe"),\
-                        ("00d6", "Oe"),\
-                        ("00e8", "e"),\
-                        ("00e9", "e")],\
-                     "words":[]}
+normalization_items = {"chars": [("00e4", "ae"),
+                                 ("00c4", "Ae"),
+                                 ("00df", "ss"),
+                                 ("00fc", "ue"),
+                                 ("00dc", "Ue"),
+                                 ("00f6", "oe"),
+                                 ("00d6", "Oe"),
+                                 ("00e8", "e"),
+                                 ("00e9", "e")],
+                       "words": []}
 
 
 def normalize_utf8(s):
@@ -263,10 +282,11 @@ def normalize_utf8(s):
 
     s = s.lower()
     # Process special characters for search
-    for key,value in normalization_items["chars"]:
+    for key, value in normalization_items["chars"]:
         repl = unichr(int(key, 16)).encode("utf-8")
         s = s.replace(repl, value)
     return s
+
 
 def replace_words(s):
     global normalization_items
@@ -277,7 +297,9 @@ def replace_words(s):
     return s
 
 import locale
-def compare_utf8(s1,s2):
+
+
+def compare_utf8(s1, s2):
     if not s1:
         s1 = ""
     if not s2:
@@ -285,12 +307,14 @@ def compare_utf8(s1,s2):
     return locale.strcoll(normalize_utf8(s1), normalize_utf8(s2))
 
 
-def compare_digit(s1,s2):
-    if int(s1)<int(s2):
+def compare_digit(s1, s2):
+    if int(s1) < int(s2):
         return -1
     return 1
 
+
 class Option:
+
     def __init__(self, name="", shortname="", value="", imgsource="", optiontype=""):
         self.name = name
         self.shortname = shortname
@@ -300,26 +324,31 @@ class Option:
 
     def getName(self):
         return self.name
+
     def setName(self, value):
         self.name = value
 
     def getShortName(self):
         return self.shortname
+
     def setShortName(self, value):
         self.shortname = value
 
     def getValue(self):
         return self.value
+
     def setValue(self, value):
         self.value = value
 
     def getImagesource(self):
         return self.imgsource
+
     def setImagesource(self, value):
         self.imagesource = value
 
     def getOptionType(self):
         return self.optiontype
+
     def setOptionType(self, value):
         self.optiontype = value
 
@@ -332,9 +361,11 @@ def isCollection(node):
     except:
         return 0
 
+
 def getCollection(node):
     # local import due to import loop with core.tree
     from core import tree
+
     def p(node):
         if node.type == "collection" or node.type == "collections":
             return node
@@ -348,11 +379,13 @@ def getCollection(node):
         collection = tree.getRoot("collections")
     return collection
 
+
 def getAllCollections():
     # local import due to import loop with core.tree
     from core import tree
     l = []
-    def f(l,node):
+
+    def f(l, node):
         for c in node.getChildren():
             if isCollection(c):
                 l += [c]
@@ -360,11 +393,13 @@ def getAllCollections():
     f(l, tree.getRoot("collections"))
     return l
 
+
 def isDirectory(node):
-    if node.getContentType()=="directory" or node.isContainer():
+    if node.getContentType() == "directory" or node.isContainer():
         return 1
     else:
         return 0
+
 
 def getDirectory(node):
     def p(node):
@@ -381,21 +416,24 @@ def getDirectory(node):
         directory = core.tree.getRoot("collections")
     return directory
 
+
 def ArrayToString(pieces, glue=""):
-    return string.join(pieces,glue)
+    return string.join(pieces, glue)
+
 
 def formatException():
-    s = "Exception "+str(sys.exc_info()[0])
+    s = "Exception " + str(sys.exc_info()[0])
     info = sys.exc_info()[1]
     if info:
-        s += " "+str(info)
+        s += " " + str(info)
     s += "\n"
     for l in traceback.extract_tb(sys.exc_info()[2]):
-        s += "  File \"%s\", line %d, in %s\n" % (l[0],l[1],l[2])
+        s += "  File \"%s\", line %d, in %s\n" % (l[0], l[1], l[2])
         s += "    %s\n" % l[3]
     return s
 
-def join_paths(p1,p2):
+
+def join_paths(p1, p2):
     if p1.endswith("/"):
         if p2.startswith("/"):
             return p1[:-1] + p2
@@ -407,8 +445,9 @@ def join_paths(p1,p2):
         else:
             return p1 + "/" + p2
 
+
 def highlight(string, words, left, right):
-    string = string.replace("\n"," ") .replace("\r"," ") .replace("\t"," ")
+    string = string.replace("\n", " ") .replace("\r", " ") .replace("\t", " ")
     stringl = string.lower()
     pos = 0
     while pos < len(string):
@@ -416,7 +455,7 @@ def highlight(string, words, left, right):
         firstword = None
         for word in words:
             i = stringl.find(word, pos)
-            if i>=0 and firstindex > i:
+            if i >= 0 and firstindex > i:
                 firstword = word
                 firstindex = i
         if firstindex == 1048576:
@@ -515,27 +554,27 @@ def formatTechAttrs(attrs):
     ret = {}
     for sects in attrs.keys():
         for item in attrs[sects].keys():
-            ret[item]=attrs[sects][item]
+            ret[item] = attrs[sects][item]
     return ret
 
 
 def splitname(fullname):
     fullname = fullname.strip()
 
-    firstname=lastname=title=""
+    firstname = lastname = title = ""
 
     if fullname[-1] == ')':
-        pos = len(fullname)-1
+        pos = len(fullname) - 1
         brackets = 1
-        while pos>0:
+        while pos > 0:
             pos = pos - 1
-            if fullname[pos]=='(':
+            if fullname[pos] == '(':
                 brackets = brackets - 1
-            if fullname[pos]==')':
+            if fullname[pos] == ')':
                 brackets = brackets + 1
             if brackets < 1:
                 break
-        title = fullname[pos+1:-1]
+        title = fullname[pos + 1:-1]
         fullname = fullname[:pos]
 
     fullname = fullname.strip()
@@ -548,7 +587,7 @@ def splitname(fullname):
         lastname = parts.pop().strip()
         firstname = " ".join(parts).strip()
 
-    return title,firstname,lastname
+    return title, firstname, lastname
 
 
 #
@@ -571,9 +610,9 @@ class HTMLTextCutter(HTMLParser):
         HTMLParser.__init__(self)
 
     def handle_starttag(self, tag, attrs):
-        if tag.strip().lower()=='style':
+        if tag.strip().lower() == 'style':
             self.in_style += 1
-        if tag.strip().lower()=='script':
+        if tag.strip().lower() == 'script':
             self.in_script += 1
         if tag.strip().lower() in ['tr', 'td'] and self.is_cutted:
             self.has_cutted_tr = True
@@ -581,9 +620,9 @@ class HTMLTextCutter(HTMLParser):
         self.output.write("<%s%s>" % (tag, ''.join([' %s="%s"' % (k, v) for k, v in attrs])))
 
     def handle_endtag(self, tag):
-        if tag.strip().lower()=='style':
+        if tag.strip().lower() == 'style':
             self.in_style -= 1
-        if tag.strip().lower()=='script':
+        if tag.strip().lower() == 'script':
             self.in_script -= 1
         if tag.strip().lower() in ['tr', 'td'] and self.has_cutted_tr:
             return
@@ -596,32 +635,32 @@ class HTMLTextCutter(HTMLParser):
             self.output.write("<%s%s/>" % (tag, ''.join([' %s="%s"' % (k, v) for k, v in attrs])))
 
     def handle_data(self, data):
-        if self.in_script+self.in_style>0:
+        if self.in_script + self.in_style > 0:
             res = data
-        elif self.count>=self.cutoff:
+        elif self.count >= self.cutoff:
             res = ""
-            if len(data)>len(res):
+            if len(data) > len(res):
                 self.is_cutted = True
         else:
             res = data[0:self.cutoff - self.count]
             self.count += len(res)
-            if len(data)>len(res):
+            if len(data) > len(res):
                 self.is_cutted = True
         self.output.write(res)
 
     def handle_charref(self, name):
-        if self.in_script+self.in_style>0:
+        if self.in_script + self.in_style > 0:
             self.output.write("&#%s;" % str(name))
-        elif self.count>=self.cutoff:
+        elif self.count >= self.cutoff:
             self.is_cutted = True
         else:
             self.count += 1
             self.output.write("&#%s;" % str(name))
 
     def handle_entityref(self, name):
-        if self.in_script+self.in_style>0:
+        if self.in_script + self.in_style > 0:
             self.output.write("&%s;" % str(name))
-        elif self.count>=self.cutoff:
+        elif self.count >= self.cutoff:
             self.is_cutted = True
         else:
             self.count += 1
@@ -654,7 +693,9 @@ def formatLongText(value, field, cutoff=500):
         if p.is_cutted:
             val = p.output.getvalue()
             val = val.rstrip('\xc3').rstrip()
-            return '<div id="'+field.getName()+'_full" style="display:none">'+value+'&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="Text reduzieren" onclick="expandLongMetatext(\''+field.getName()+'\');return false">&laquo;</a></div><div id="'+field.getName()+'_more">'+val+'...&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="gesamten Text zeigen" onclick="expandLongMetatext(\''+field.getName()+'\');return false">&raquo;</a></div>'
+            return '<div id="' + field.getName() + '_full" style="display:none">' + value + '&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="Text reduzieren" onclick="expandLongMetatext(\'' + field.getName() + '\');return false">&laquo;</a></div><div id="' + \
+                field.getName() + '_more">' + val + '...&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="gesamten Text zeigen" onclick="expandLongMetatext(\'' + \
+                field.getName() + '\');return false">&raquo;</a></div>'
         else:
             return value
     except:
@@ -664,7 +705,7 @@ def formatLongText(value, field, cutoff=500):
 def checkString(string):
     """ Checks a string, if it only contains alphanumeric chars as well as "-" """
     result = re.match("([\w\-]+)", string)
-    if result and result.group(0)==string:
+    if result and result.group(0) == string:
         return True
     return False
 
@@ -675,6 +716,7 @@ def removeEmptyStrings(list):
         if r:
             list2 += [r]
     return list2
+
 
 def clean_path(path):
     newpath = ""
@@ -691,20 +733,21 @@ def clean_path(path):
     return newpath
 
 
-def union(definition): # or
+def union(definition):  # or
     if not definition:
         return []
     result1 = definition[0]
     result2 = definition[1]
-    if type(result1)!=dict:
-        result1 = dict(zip(result1,result1))
-    if type(result2)!=dict:
-        result2 = dict(zip(result2,result2))
+    if not isinstance(result1, dict):
+        result1 = dict(zip(result1, result1))
+    if not isinstance(result2, dict):
+        result2 = dict(zip(result2, result2))
     result1.update(result2)
-    if type(definition[0])==dict:
+    if isinstance(definition[0], dict):
         return result1
     else:
         return result1.keys()
+
 
 def isParentOf(node, parent):
     parents = node.getParents()
@@ -718,37 +761,42 @@ def isParentOf(node, parent):
     return 0
 
 
-def intersection(definition): # and
+def intersection(definition):  # and
     if not definition:
         return []
-    if type(definition[0])!=dict:
+    if not isinstance(definition[0], dict):
         result1 = definition[0]
     else:
         result1 = definition[0].keys()
 
-    if type(definition[1])!=dict:
-        result2 = dict(zip(definition[1],definition[1]))
+    if not isinstance(definition[1], dict):
+        result2 = dict(zip(definition[1], definition[1]))
     else:
         result2 = definition[1]
     result = {}
     for a in result1:
         if a in result2:
-            result[a]=a
-    if type(definition[0])!=dict:
+            result[a] = a
+    if not isinstance(definition[0], dict):
         return result.keys()
     else:
         return result
 
+
 class EncryptionException(Exception):
+
     def __init__(self, value=""):
         self.value = value
 
     def __str__(self):
         return repr(self.value)
 
+
 class OperationException(Exception):
+
     def __init__(self, value=""):
         self.value = value
+
     def __str__(self):
         return repr(self.value)
 
@@ -756,7 +804,9 @@ class OperationException(Exception):
 class FileException:
     pass
 
+
 class Menu:
+
     def __init__(self, name, link="", target="_self"):
         self.name = name
         self.link = link
@@ -765,7 +815,7 @@ class Menu:
         self.default = ""
 
     def getLink(self):
-        if self.link=="":
+        if self.link == "":
             return "."
         return self.link
 
@@ -774,6 +824,7 @@ class Menu:
 
     def getName(self):
         return self.name
+
     def getId(self):
         return self.name.split("_")[-1]
 
@@ -789,40 +840,44 @@ class Menu:
     def getDefault(self):
         return self.default
 
+
 def parseMenuString(menustring):
     menu = []
     submenu = None
     if menustring.endswith(")"):
         menustring = menustring[:-1]
-    menus = re.split("\);",menustring)
+    menus = re.split("\);", menustring)
     for m in menus:
         items = re.split("\(|;", m)
         for item in items:
 
-            if items.index(item)==0 and item.startswith("menu"):
+            if items.index(item) == 0 and item.startswith("menu"):
                 # menu
-                submenu = Menu(item) # do not optimize, submenu obj needed
+                submenu = Menu(item)  # do not optimize, submenu obj needed
                 menu.append(submenu)
             else:
                 # submenu
-                if (item!=""):
+                if (item != ""):
                     submenu.addItem(item)
     return menu
 
 
 def getFormatedString(s):
     for i in ["b", "sub", "sup", "em"]:
-        s = s.replace("&lt;"+i+"&gt;", "<"+i+">").replace("&lt;/"+i+"&gt;", "</"+i+">")
+        s = s.replace("&lt;" + i + "&gt;", "<" + i + ">").replace("&lt;/" + i + "&gt;", "</" + i + ">")
     return s
+
 
 def mkKey():
     alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     s = ""
-    for i in range(0,16):
-        s += alphabet[random.randrange(0,len(alphabet)-1)]
+    for i in range(0, 16):
+        s += alphabet[random.randrange(0, len(alphabet) - 1)]
     return s
 
+
 class Template(object):
+
     """
     Simple and fast templating system for '[att:xyz]' references.
 
@@ -861,34 +916,33 @@ class Template(object):
             if attribute_name:
                 text_parts[i] = lookup(attribute_name) or ''
                 try:
-                    if func[0]=="substring":
+                    if func[0] == "substring":
                         text_parts[i] = self._substring(text_parts[i], func[1:])
-                    if func[0]=="split":
+                    if func[0] == "split":
                         text_parts[i] = self._split(text_parts[i], func[1:])
                 except:
                     pass
         return ''.join(text_parts)
 
-
     def _substring(self, s, attrs):
         try:
-            if len(attrs)==1:
+            if len(attrs) == 1:
                 return s[int(attrs[0]):]
-            elif len(attrs)==2:
+            elif len(attrs) == 2:
                 return s[int(attrs[0]):int(attrs[1])]
         except:
             return s
 
     def _split(self, s, attrs):
         try:
-            if len(attrs)==2:
+            if len(attrs) == 2:
                 return s.split(attrs[0])[int(attrs[1])]
         except:
             return s
 
 
 def fixXMLString(s, i=100):
-    if i==0: # loop check
+    if i == 0:  # loop check
         return s
     parser = xml.parsers.expat.ParserCreate()
     try:
@@ -898,9 +952,10 @@ def fixXMLString(s, i=100):
     except xml.parsers.expat.ExpatError as err:
         # remove error char
         s2 = s.split('\n')
-        s2[err.lineno-1] = s2[err.lineno-1][:(err.offset)] + s2[err.lineno-1][(err.offset+2):]
-        return fixXMLString("\n".join(s2), i-1)
+        s2[err.lineno - 1] = s2[err.lineno - 1][:(err.offset)] + s2[err.lineno - 1][(err.offset + 2):]
+        return fixXMLString("\n".join(s2), i - 1)
     return s
+
 
 def checkXMLString(s):
     parser = xml.parsers.expat.ParserCreate()
@@ -932,6 +987,7 @@ def make_repr(**args):
         init_args = cls.__init__.__func__.func_code.co_varnames[1:]
         arg_placeholder = ",".join(arg + "={" + arg + "!r}" for arg in init_args)
         tmpl = cls.__name__ + "(" + arg_placeholder + ")"
+
         def repr(self):
             return tmpl.format(**self.__dict__)
 
@@ -952,8 +1008,8 @@ def utf8_encode_recursive(d):
 
 if __name__ == "__main__":
     def tt(s):
-        t,f,l = splitname(s)
-        print "Title:",t,"| Vorname:",f,"| Nachname:",l
+        t, f, l = splitname(s)
+        print "Title:", t, "| Vorname:", f, "| Nachname:", l
     tt("Hans Maier (Prof. Dr.)")
     tt("Hans Peter-Juergen Maier (Prof. Dr.)")
     tt("Hans Peter-Juergen Maier (Prof. Dr. (univ))")
@@ -966,7 +1022,7 @@ if __name__ == "__main__":
     print clean_path("//etc/passwd")
     print clean_path("test^^.txt")
 
-    print union([[1,2,3],[3,4,5]])
-    print intersection([[1,2,3],[3,4,5]])
-    print union([{1:1,2:2,3:3},{3:3,4:4,5:5}])
-    print intersection([{1:1,2:2,3:3},{3:3,4:4,5:5}])
+    print union([[1, 2, 3], [3, 4, 5]])
+    print intersection([[1, 2, 3], [3, 4, 5]])
+    print union([{1: 1, 2: 2, 3: 3}, {3: 3, 4: 4, 5: 5}])
+    print intersection([{1: 1, 2: 2, 3: 3}, {3: 3, 4: 4, 5: 5}])

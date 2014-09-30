@@ -25,10 +25,17 @@ from _vorbis import VCommentDict
 from ogg import OggPage, OggFileType, error as OggError
 from _util import cdata
 
-class error(OggError): pass
-class OggSpeexHeaderError(error): pass
+
+class error(OggError):
+    pass
+
+
+class OggSpeexHeaderError(error):
+    pass
+
 
 class OggSpeexInfo(object):
+
     """Ogg Speex stream information.
 
     Attributes:
@@ -57,7 +64,9 @@ class OggSpeexInfo(object):
     def pprint(self):
         return "Ogg Speex, %.2f seconds" % self.length
 
+
 class OggSpeexVComment(VCommentDict):
+
     """Speex comments embedded in an Ogg bitstream."""
 
     def __init__(self, fileobj, info):
@@ -104,7 +113,9 @@ class OggSpeexVComment(VCommentDict):
         new_pages = OggPage.from_packets(packets, old_pages[0].sequence)
         OggPage.replace(fileobj, old_pages, new_pages)
 
+
 class OggSpeex(OggFileType):
+
     """An Ogg Speex file."""
 
     _Info = OggSpeexInfo
@@ -117,6 +128,7 @@ class OggSpeex(OggFileType):
     score = staticmethod(score)
 
 Open = OggSpeex
+
 
 def delete(filename):
     """Remove tags from a file."""

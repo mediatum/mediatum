@@ -18,7 +18,7 @@
 """
 
 import core.tree as tree
-from workflow import WorkflowStep, registerStep, addLabels
+from .workflow import WorkflowStep, registerStep, addLabels
 from core.translation import t, lang
 
 
@@ -27,37 +27,37 @@ def register():
     registerStep("workflowstep-deletefile")
     addLabels(getLabels())
 
+
 class WorkflowStep_DeleteFile(WorkflowStep):
 
     def runAction(self, node, op=""):
-        if self.get('filetype')=='*': # delete all files
+        if self.get('filetype') == '*':  # delete all files
             for f in node.getFiles():
                 node.removeFile(f)
-                
-        elif self.get('filetype')!='':
+
+        elif self.get('filetype') != '':
             types = self.get('filetype').split(';')
             for f in node.getFiles():
                 if f.getType() in types:
                     node.removeFile(f)
         self.forward(node, True)
-    
-        
+
     def metaFields(self, lang=None):
         field = tree.Node("filetype", "metafield")
         field.set("label", t(lang, "admin_wfstep_deletefiletype"))
         field.set("type", "text")
         return [field]
-    
-    
+
+
 def getLabels(key=None, lang=None):
-    return { "de":
-        [
-            ("workflowstep-deletefile", "Datei entfernen"),
-            ("admin_wfstep_deletefiletype", "Dateityp"),
-        ],
-       "en":
-        [
-            ("workflowstep-deletefile", "Remove file"),
-            ("admin_wfstep_deletefiletype", "File type"),
-        ]
-        }
+    return {"de":
+            [
+                ("workflowstep-deletefile", "Datei entfernen"),
+                ("admin_wfstep_deletefiletype", "Dateityp"),
+            ],
+            "en":
+            [
+                ("workflowstep-deletefile", "Remove file"),
+                ("admin_wfstep_deletefiletype", "File type"),
+            ]
+            }

@@ -31,48 +31,57 @@ logg = logging.getLogger("oai")
 
 
 class OAISearchAndCondition:
-    def __init__(self, a,b):
+
+    def __init__(self, a, b):
         self.a = a
         self.b = b
+
     def __str__(self):
         return "(" + str(self.a) + ") AND (" + str(self.b) + ")"
+
     def execute(self):
         ids = self.a.execute()
         if not len(ids):
             return ids
         return intersection([ids, self.b.execute()])
 
+
 class OAISearchOrCondition:
-    def __init__(self, a,b):
+
+    def __init__(self, a, b):
         self.a = a
         self.b = b
+
     def __str__(self):
         return "(" + str(self.a) + ") OR (" + str(self.b) + ")"
+
     def execute(self):
         return union([self.a.execute(), self.b.execute()])
 
+
 class OAISearchFieldCondition:
+
     def __init__(self, field, op, value):
         self.field = field
         self.op = op
         self.value = value
 
     def __str__(self):
-        return self.field+" "+self.op+" "+self.value
+        return self.field + " " + self.op + " " + self.value
 
     def execute(self):
         fieldprefix = 'fts:'
         if self.field.startswith(fieldprefix):
-            logg.debug('OAISearchParser: ---> calling fts:'+ self.field+" "+self.op+" "+self.value)
+            logg.debug('OAISearchParser: ---> calling fts:' + self.field + " " + self.op + " " + self.value)
             from core.tree import searcher
             return searcher.run_search(self.field.replace(fieldprefix, ''), self.op, self.value)
 
-        if self.field=='schema' and self.op=='=':
+        if self.field == 'schema' and self.op == '=':
             logg.debug('OAISearchParser: ---> getting nodes with type %s', self.value)
             node_ids = tree.db.get_nids_by_type_suffix(self.value)
 
         elif self.field and self.op and self.value:
-            sql = "SELECT id FROM node, nodeattribute WHERE id=nid AND nodeattribute.name=%s AND nodeattribute.value "+ self.op + " %s"
+            sql = "SELECT id FROM node, nodeattribute WHERE id=nid AND nodeattribute.name=%s AND nodeattribute.value " + self.op + " %s"
             params = (self.field, self.value)
             logg.debug('OAISearchParser: ---> going to execute sql: %s with params %s', sql, params)
             res = tree.db.runQuery(sql, *params)
@@ -85,6 +94,7 @@ class OAISearchFieldCondition:
 
 
 class OAISearchParser(BoolParser):
+
     def parseSimpleCondition(self, s):
         m = pattern_op.match(s)
         if m:
@@ -94,5 +104,6 @@ class OAISearchParser(BoolParser):
 
     def getAndClass(self):
         return OAISearchAndCondition
+
     def getOrClass(self):
         return OAISearchOrCondition

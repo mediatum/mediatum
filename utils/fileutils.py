@@ -24,44 +24,49 @@ import time
 
 logg = logging.getLogger("backend")
 
-from utils import join_paths, getMimeType, formatException
+from .utils import join_paths, getMimeType, formatException
+
 
 def getImportDir():
-    uploaddir = join_paths(core.config.get("paths.datadir"),"incoming")
-    try: os.mkdir(uploaddir)
-    except: pass
+    uploaddir = join_paths(core.config.get("paths.datadir"), "incoming")
+    try:
+        os.mkdir(uploaddir)
+    except:
+        pass
     uploaddir = join_paths(uploaddir, time.strftime("%Y-%b"))
-    try: os.mkdir(uploaddir)
-    except: pass
+    try:
+        os.mkdir(uploaddir)
+    except:
+        pass
     return uploaddir
 
 
-def importFile(realname,tempname, prefix=""):
+def importFile(realname, tempname, prefix=""):
     try:
-        path,filename = os.path.split(tempname)
+        path, filename = os.path.split(tempname)
         uploaddir = getImportDir()
-        destname = join_paths(uploaddir, prefix+filename)
+        destname = join_paths(uploaddir, prefix + filename)
 
         if not os.path.exists(tempname):
             raise IOError("temporary file " + tempname + "does not exist")
 
-        if os.path.exists(destname): # rename if existing
+        if os.path.exists(destname):  # rename if existing
             i = 0
             while os.path.exists(destname):
-                i+=1
-                p = prefix + str(i)+"_"
-                destname = join_paths(uploaddir, p+filename)
+                i += 1
+                p = prefix + str(i) + "_"
+                destname = join_paths(uploaddir, p + filename)
                 if not os.path.exists(destname):
                     prefix = p
                     break
 
-        if os.sep=='/':
-            ret = os.system('cp "%s" "%s"' %(tempname, destname))
+        if os.sep == '/':
+            ret = os.system('cp "%s" "%s"' % (tempname, destname))
         else:
-            ret = os.system(('copy "%s" "%s"' %(tempname, destname)).replace('/','\\'))
+            ret = os.system(('copy "%s" "%s"' % (tempname, destname)).replace('/', '\\'))
 
-        if ret&0xff00:
-            raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, prefix+destname, str(ret)))
+        if ret & 0xff00:
+            raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, prefix + destname, str(ret)))
 
         r = realname.lower()
         mimetype = "application/x-download"
@@ -69,7 +74,7 @@ def importFile(realname,tempname, prefix=""):
 
         mimetype, type = getMimeType(r)
 
-        return core.tree.FileNode(name=destname,mimetype=mimetype, type=type)
+        return core.tree.FileNode(name=destname, mimetype=mimetype, type=type)
     except:
         logg.exception("")
     return None
@@ -78,14 +83,14 @@ def importFile(realname,tempname, prefix=""):
 def importFileFromData(filename, data, prefix=""):
     try:
         uploaddir = getImportDir()
-        destname = join_paths(uploaddir, prefix+filename)
+        destname = join_paths(uploaddir, prefix + filename)
 
-        if os.path.exists(destname): # rename if existing
+        if os.path.exists(destname):  # rename if existing
             i = 0
             while os.path.exists(destname):
-                i+=1
-                p = prefix + str(i)+"_"
-                destname = join_paths(uploaddir, p+filename)
+                i += 1
+                p = prefix + str(i) + "_"
+                destname = join_paths(uploaddir, p + filename)
                 if not os.path.exists(destname):
                     prefix = p
                     break
@@ -98,7 +103,7 @@ def importFileFromData(filename, data, prefix=""):
         type = "file"
         mimetype, type = getMimeType(filename.lower())
 
-        return core.tree.FileNode(name=destname,mimetype=mimetype, type=type)
+        return core.tree.FileNode(name=destname, mimetype=mimetype, type=type)
     except:
         print formatException()
     return None
@@ -142,17 +147,17 @@ def importFileToRealname(realname, tempname, prefix="", typeprefix=""):
 
 def importFileIntoDir(destpath, tempname):
     try:
-        path,filename = os.path.split(tempname)
+        path, filename = os.path.split(tempname)
         uploaddir = getImportDir()
-        destname = destpath# join_paths(uploaddir, filename)
+        destname = destpath  # join_paths(uploaddir, filename)
 
-        if os.sep=='/':
-            ret = os.system("cp %s %s" %(tempname, destname))
+        if os.sep == '/':
+            ret = os.system("cp %s %s" % (tempname, destname))
         else:
-            cmd = "copy %s %s" %(tempname, destname)
-            ret = os.system(cmd.replace('/','\\'))
+            cmd = "copy %s %s" % (tempname, destname)
+            ret = os.system(cmd.replace('/', '\\'))
 
-        if ret&0xff00:
+        if ret & 0xff00:
             raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, destname, str(ret)))
 
         r = destpath.lower()
@@ -161,7 +166,7 @@ def importFileIntoDir(destpath, tempname):
 
         mimetype, type = getMimeType(r)
 
-        return core.tree.FileNode(name=destname,mimetype=mimetype, type=type)
+        return core.tree.FileNode(name=destname, mimetype=mimetype, type=type)
     except:
         print formatException()
     return None
@@ -171,24 +176,28 @@ def importFileRandom(tempname):
     #import core.config as config
     import random
     #import core.tree as tree
-    path,filename = os.path.split(tempname)
-    uploaddir = join_paths(core.config.get("paths.datadir"),"incoming")
-    try:os.mkdir(uploaddir)
-    except: pass
+    path, filename = os.path.split(tempname)
+    uploaddir = join_paths(core.config.get("paths.datadir"), "incoming")
+    try:
+        os.mkdir(uploaddir)
+    except:
+        pass
     uploaddir = join_paths(uploaddir, time.strftime("%Y-%b"))
-    try:os.mkdir(uploaddir)
-    except: pass
+    try:
+        os.mkdir(uploaddir)
+    except:
+        pass
 
-    destfile = str(random.random())[2:]+os.path.splitext(filename)[1]
+    destfile = str(random.random())[2:] + os.path.splitext(filename)[1]
     destname = join_paths(uploaddir, destfile)
     if os.sep == '/':
-        ret = os.system("cp '%s' %s" %(tempname, destname))
+        ret = os.system("cp '%s' %s" % (tempname, destname))
     else:
-        cmd = "copy '%s' %s" %(tempname, (os.path.split(destname)[0]))
-        ret = os.system(cmd.replace('/','\\'))
+        cmd = "copy '%s' %s" % (tempname, (os.path.split(destname)[0]))
+        ret = os.system(cmd.replace('/', '\\'))
 
     if ret:
-        raise IOError("Couldn't copy %s to %s (error: %s)" %(tempname, destname, str(ret)))
+        raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, destname, str(ret)))
 
     r = tempname.lower()
     mimetype = "application/x-download"

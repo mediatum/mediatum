@@ -41,17 +41,17 @@ logg = logging.getLogger("frontend")
 
 def handle_json_request(req):
     s = []
-    if req.params.get("cmd")=="get_list_smi":
+    if req.params.get("cmd") == "get_list_smi":
         searchmaskitem_id = req.params.get("searchmaskitem_id")
         f = None
         g = None
-        if searchmaskitem_id and searchmaskitem_id!="full":
+        if searchmaskitem_id and searchmaskitem_id != "full":
             f = tree.getNode(searchmaskitem_id).getFirstField()
-        if not f: # All Metadata
+        if not f:  # All Metadata
             f = g = getMetadataType("text")
-        s = [f.getSearchHTML(Context(g, value=req.params.get("query_field_value"), width=174, name="query"+str(req.params.get("fieldno")),
-                               language=lang(req), collection=tree.getNode(req.params.get("collection_id")),
-                               user=users.getUserFromRequest(req), ip=req.ip))]
+        s = [f.getSearchHTML(Context(g, value=req.params.get("query_field_value"), width=174, name="query" + str(req.params.get("fieldno")),
+                                     language=lang(req), collection=tree.getNode(req.params.get("collection_id")),
+                                     user=users.getUserFromRequest(req), ip=req.ip))]
     req.write(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
     return
 
@@ -87,6 +87,7 @@ def display_alias(req):
     else:
         raise Exception("illegal alias '{}', should not be passed to this handler!".format(alias))
 
+
 def display(req):
     if "jsonrequest" in req.params:
         handle_json_request(req)
@@ -95,7 +96,7 @@ def display(req):
     req.session["area"] = ""
     content = getContentArea(req)
     content.feedback(req)
-    try: # add export mask data of current node to request object
+    try:  # add export mask data of current node to request object
         mask = getMetaType(content.actNode().getSchema()).getMask('head_meta')
         req.params['head_meta'] = mask.getViewHTML([content.actNode()], flags=8)
     except:
@@ -106,6 +107,7 @@ def display(req):
     contentHTML = content.html(req)
     contentHTML = modify_tex(contentHTML, 'html')
     navframe.write(req, contentHTML)
+
 
 def display_noframe(req):
     content = getContentArea(req)
@@ -125,6 +127,8 @@ def display_noframe(req):
 # needed for workflows:
 
 PUBPATH = re.compile("/?(publish|pub)/(.*)$")
+
+
 def publish(req):
     m = PUBPATH.match(req.path)
 
@@ -144,6 +148,7 @@ def publish(req):
     req.session["area"] = "publish"
 
     return display_noframe(req)
+
 
 def show_parent_node(req):
     parent = None
@@ -166,15 +171,17 @@ def show_parent_node(req):
 
     return display_noframe(req)
 
+
 def esc(v):
-    return v.replace("\\","\\\\").replace("'","\\'")
+    return v.replace("\\", "\\\\").replace("'", "\\'")
+
 
 def exportsearch(req, xml=0):  # format 0=pre-formated, 1=xml, 2=plain
     access = AccessData(req)
     access = core.acl.getRootAccess()
 
     id = req.params.get("id")
-    q = req.params.get("q","")
+    q = req.params.get("q", "")
     lang = req.params.get("language", "")
     collections = tree.getRoot("collections")
 
@@ -193,7 +200,7 @@ def exportsearch(req, xml=0):  # format 0=pre-formated, 1=xml, 2=plain
         else:
             req.write("var error='invalid id';")
         return
-    if not isParentOf(node,collections):
+    if not isParentOf(node, collections):
         if xml:
             req.write("<error>Invalid ID</error>")
         else:
@@ -201,10 +208,10 @@ def exportsearch(req, xml=0):  # format 0=pre-formated, 1=xml, 2=plain
         return
 
     if not q:
-        nodes = access.filter(node.search("objtype=document"));
+        nodes = access.filter(node.search("objtype=document"))
     else:
         #nodes = access.filter(node.search("objtype=document and "+q));
-        nodes = access.filter(node.search(q));
+        nodes = access.filter(node.search(q))
 
     limit = int(req.params.get("limit", 99999))
     sortfield = req.params.get("sort", None)
@@ -215,39 +222,41 @@ def exportsearch(req, xml=0):  # format 0=pre-formated, 1=xml, 2=plain
     if limit < len(nodes):
         nodes = nodes[0:limit]
 
-    if xml: # xml
+    if xml:  # xml
         req.write("<nodelist>")
         i = 0
         for node in nodes:
             s = xmlnode.getSingleNodeXML(node)
             req.write(s)
-            i = i+1
+            i = i + 1
         req.write("</nodelist>")
 
     elif req.params.get("data", None):
         req.write('a=new Array(%d);' % len(nodes))
         i = 0
         for node in nodes:
-            req.write('a[%d] = new Object();\n' % i);
-            req.write("  a[%d]['nodename'] = '%s';\n" % (i,node.name))
-            for k,v in node.items():
-                req.write("    a[%d]['%s'] = '%s';\n" % (i,esc(k),esc(v)))
+            req.write('a[%d] = new Object();\n' % i)
+            req.write("  a[%d]['nodename'] = '%s';\n" % (i, node.name))
+            for k, v in node.items():
+                req.write("    a[%d]['%s'] = '%s';\n" % (i, esc(k), esc(v)))
             i = i + 1
         req.write('add_data(a);\n')
     else:
         req.write('a=new Array(%d);' % len(nodes))
         i = 0
-        labels = int(req.params.get("labels",1))
+        labels = int(req.params.get("labels", 1))
         for node in nodes:
-            req.write('a[%d] = new Object();\n' % i);
-            req.write("a[%d]['text'] = '%s';\n" % (i,esc(node.show_node_text(labels=labels, language=lang))));
-            req.write("a[%d]['link'] = 'http://%s?id=%s';\n" % (i, config.get('host.name'),node.id));
+            req.write('a[%d] = new Object();\n' % i)
+            req.write("a[%d]['text'] = '%s';\n" % (i, esc(node.show_node_text(labels=labels, language=lang))))
+            req.write("a[%d]['link'] = 'http://%s?id=%s';\n" % (i, config.get('host.name'), node.id))
             i = i + 1
         req.write('add_data(a);\n')
     print "%d node entries xml=%d" % (i, xml)
 
+
 def xmlsearch(req):
     return exportsearch(req, xml=1)
+
 
 def jssearch(req):
     return exportsearch(req, xml=0)

@@ -17,17 +17,17 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+
 def getInformation(attribute=""):
-    attributes = {"icon":"/img/icons/usergroups.gif",
-            "version":"1.0"}     
-    if attribute!="":
+    attributes = {"icon": "/img/icons/usergroups.gif",
+                  "version": "1.0"}
+    if attribute != "":
         if attribute in attributes.keys():
             return attributes[attribute]
         else:
             return ""
     return attributes
-       
+
 
 def validate(req, op):
     return "dummymenu"
-    

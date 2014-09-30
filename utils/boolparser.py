@@ -30,48 +30,68 @@ pattern_marker = re.compile("@c<([0-9]*)>c@")
 pattern_stringmarker = re.compile("@s<([0-9]*)>s@")
 pattern_space = re.compile("[ \t\n\r]")
 
+
 class ParseException:
-    def __init__(self,msg):
+
+    def __init__(self, msg):
         self.msg = msg
+
     def __str__(self):
-        return "parse exception: "+self.msg+"\n"
+        return "parse exception: " + self.msg + "\n"
+
 
 class AndCondition:
-    def __init__(self, a,b):
+
+    def __init__(self, a, b):
         self.a = a
         self.b = b
+
     def __str__(self):
         return "(" + str(self.a) + ") AND (" + str(self.b) + ")"
 
+
 class OrCondition:
-    def __init__(self, a,b):
+
+    def __init__(self, a, b):
         self.a = a
         self.b = b
+
     def __str__(self):
         return "(" + str(self.a) + ") OR (" + str(self.b) + ")"
 
+
 class NotCondition:
+
     def __init__(self, a):
         self.a = a
+
     def __str__(self):
         return "NOT (" + str(self.a) + ")"
 
+
 class TrueCondition:
+
     def __init__(self):
         pass
+
     def __str__(self):
         return "TRUE"
 
+
 class FalseCondition:
+
     def __init__(self):
         pass
+
     def __str__(self):
         return "FALSE"
 
+
 class BoolParser:
-    def extendClauses(self,s,l):
+
+    def extendClauses(self, s, l):
         scanner = pattern_marker.scanner(s)
-        while 1:
+        while True:
             match = scanner.search()
             if not match:
                 break
@@ -79,10 +99,10 @@ class BoolParser:
             clause = l[int(match.group(1))]
             s = s.replace(c, clause)
         return s
-    
-    def extendStrings(self,s,l):
+
+    def extendStrings(self, s, l):
         scanner = pattern_stringmarker.scanner(s)
-        while 1:
+        while True:
             match = scanner.search()
             if not match:
                 break
@@ -91,99 +111,101 @@ class BoolParser:
             s = s.replace(c, string)
         return s
 
-    def replaceStrings(self,s):
+    def replaceStrings(self, s):
         l = []
-        while 1:
-            m = pattern_string.search(s);
+        while True:
+            m = pattern_string.search(s)
             if m:
                 clause = m.group(1)
-                s = s[0:m.start()] + "@s<" + str(len(l)) + ">s@" + s[m.end():];
+                s = s[0:m.start()] + "@s<" + str(len(l)) + ">s@" + s[m.end():]
                 l += [clause]
             else:
                 break
-        return s,l
+        return s, l
 
-    def parse2(self,s,l=None,stringlist=None,onlybrackets=0):
+    def parse2(self, s, l=None, stringlist=None, onlybrackets=0):
         if l is None:
             l = []
         if stringlist is None:
-            s,stringlist = self.replaceStrings(s)
+            s, stringlist = self.replaceStrings(s)
 
-        s = s.strip();
+        s = s.strip()
 
-        while 1:
+        while True:
             # remove outer brackets ()
             while s[0] == '(' and s[-1] == ')' and ('(' not in s[1:-1]) and (')' not in s[1:-1]):
                 s = s[1:-1].strip()
 
-            m = pattern_bracket.search(s);
+            m = pattern_bracket.search(s)
             if m:
-                clause = m.group();
-                s = s[0:m.start()] + "@c<" + str(len(l)) + ">c@" + s[m.end():];
+                clause = m.group()
+                s = s[0:m.start()] + "@c<" + str(len(l)) + ">c@" + s[m.end():]
                 l += [self.extendClauses(clause, l)]
             else:
                 break
 
-        # handle OR 
-        m = pattern_or.search(s);
+        # handle OR
+        m = pattern_or.search(s)
         if m:
             if m.start() <= 0:
-                raise ParseException("left side of OR missing while parsing \"" + s + "\"");
+                raise ParseException("left side of OR missing while parsing \"" + s + "\"")
             if m.end() >= len(s) - 1:
-                raise ParseException("right side of OR missing while parsing \"" + s + "\"");
+                raise ParseException("right side of OR missing while parsing \"" + s + "\"")
 
-            left = self.parse2(self.extendClauses(s[0:m.start()], l), l, stringlist);
-            right = self.parse2(self.extendClauses(s[m.end():], l), l, stringlist);
-            return self.getOrClass()(left, right);
+            left = self.parse2(self.extendClauses(s[0:m.start()], l), l, stringlist)
+            right = self.parse2(self.extendClauses(s[m.end():], l), l, stringlist)
+            return self.getOrClass()(left, right)
 
         # handle AND
-        m = pattern_and.search(s);
+        m = pattern_and.search(s)
 
         if m:
             if m.start() <= 0:
-                raise ParseException("left side of AND missing while parsing \"" + s + "\"");
+                raise ParseException("left side of AND missing while parsing \"" + s + "\"")
 
             if m.end() >= len(s) - 1:
-                raise ParseException("right side of AND missing while parsing \"" + s + "\"");
+                raise ParseException("right side of AND missing while parsing \"" + s + "\"")
 
-            left = self.parse2(self.extendClauses(s[0:m.start()], l), l, stringlist);
-            right = self.parse2(self.extendClauses(s[m.end():], l), l, stringlist);
+            left = self.parse2(self.extendClauses(s[0:m.start()], l), l, stringlist)
+            right = self.parse2(self.extendClauses(s[m.end():], l), l, stringlist)
 
-            return self.getAndClass()(left, right);
+            return self.getAndClass()(left, right)
 
-        s = s.strip();
+        s = s.strip()
 
         if s.lower().startswith("not "):
-            inverse = self.parse2(self.extendClauses(s[4:], l), l, stringlist);
-            return self.getNotClass()(inverse);
+            inverse = self.parse2(self.extendClauses(s[4:], l), l, stringlist)
+            return self.getNotClass()(inverse)
 
-        term = self.extendClauses(s,l).strip()
+        term = self.extendClauses(s, l).strip()
         if '(' in term and not onlybrackets:
-            return self.parse2(term,l,stringlist,1)
+            return self.parse2(term, l, stringlist, 1)
         else:
-            return self.parseSimpleCondition(self.extendStrings(term,stringlist))
+            return self.parseSimpleCondition(self.extendStrings(term, stringlist))
 
-    def parse(self,s):
+    def parse(self, s):
         s = pattern_space.sub(" ", s).strip()
-        if len(s)==0:
+        if len(s) == 0:
             return self.default()
         return self.parse2(s)
 
-    def parseSimpleCondition(self,s):
+    def parseSimpleCondition(self, s):
         s2 = s.lower()
         if s2 == "false":
             return FalseCondition()
         if s2 == "true":
             return TrueCondition()
-        raise ParseException("syntax error: " + s);
+        raise ParseException("syntax error: " + s)
 
     def default(self):
         return TrueCondition()
 
     def getAndClass(self):
         return AndCondition
+
     def getOrClass(self):
         return OrCondition
+
     def getNotClass(self):
         return NotCondition
 
@@ -198,13 +220,16 @@ if __name__ == "__main__":
     print str(b.parse("((true and false and ((false))))"))
 
     class StringCondition:
-        def __init__(self,s):
+
+        def __init__(self, s):
             self.s = s
+
         def __str__(self):
-            return "'"+self.s+"'"
+            return "'" + self.s + "'"
 
     class StringParser(BoolParser):
-        def parseSimpleCondition(self,s):
+
+        def parseSimpleCondition(self, s):
             s2 = s.lower()
             if s2 == "false":
                 return FalseCondition()

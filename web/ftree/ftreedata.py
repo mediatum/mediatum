@@ -36,21 +36,21 @@ def getData(req):
             if c.isContainer():
                 cnum = len(c.getContainerChildren())
                 inum = len(c.getContentChildren())
-                
+
                 label = c.getLabel()
-                title = c.getLabel()+" ("+str(c.id)+")"
-                
+                title = c.getLabel() + " (" + str(c.id) + ")"
+
                 cls = "folder"
-                
+
                 itemcls = ""
                 if not access.hasWriteAccess(c):
                     itemcls = "read"
 
-                if c.type=="collection": #or "collection" in c.type:
+                if c.type == "collection":  # or "collection" in c.type:
                     cls = "collection"
                 if hasattr(c, 'treeiconclass'):
-                    cls = c.treeiconclass();
-                    
+                    cls = c.treeiconclass()
+
                 if c.getName().startswith(translate('user_trash', request=req)):
                     cls = "trashicon"
                 elif c.getName().startswith(translate('user_upload', request=req)):
@@ -61,43 +61,45 @@ def getData(req):
                     cls = "faultyicon"
                 elif c.getName().startswith(translate('user_directory', request=req)):
                     cls = "homeicon"
-                
-                if style=="edittree": # standard tree for edit area
-                    if inum>0:
-                        label += " <small>("+str(inum)+")</small>"
-                        
-                    ret.append('<li class="'+cls+'.gif" id="Node'+c.id+'">')
-                    ret.append('<a href="#" title="'+title+'" id="'+c.id+'" class="'+itemcls+'">'+label+'</a>')
-                    
-                    if cnum>0:
-                        ret.append('<ul><li parentId="'+c.id+'" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>')
+
+                if style == "edittree":  # standard tree for edit area
+                    if inum > 0:
+                        label += " <small>(" + str(inum) + ")</small>"
+
+                    ret.append('<li class="' + cls + '.gif" id="Node' + c.id + '">')
+                    ret.append('<a href="#" title="' + title + '" id="' + c.id + '" class="' + itemcls + '">' + label + '</a>')
+
+                    if cnum > 0:
+                        ret.append('<ul><li parentId="' + c.id + '" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>')
                     ret.append('</li>')
-                
-                elif style=="classification": # style for classification
-                    ret.append('<li class="'+cls+'.gif" id="Node'+c.id+'">')
-                    ret.append('<a href="#" title="'+title+'" id="'+c.id+'" class="'+itemcls+'">'+label+' <input type="image" src="/img/ftree/uncheck.gif"/></a>')
-                    
-                    if cnum>0:
-                        ret.append('<ul><li parentId="'+c.id+'" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>')
-                    
+
+                elif style == "classification":  # style for classification
+                    ret.append('<li class="' + cls + '.gif" id="Node' + c.id + '">')
+                    ret.append('<a href="#" title="' + title + '" id="' + c.id + '" class="' + itemcls +
+                               '">' + label + ' <input type="image" src="/img/ftree/uncheck.gif"/></a>')
+
+                    if cnum > 0:
+                        ret.append('<ul><li parentId="' + c.id + '" class="spinner.gif"><a href="#">&nbsp;</a></li></ul>')
+
                     ret.append('</li>')
         except:
             pass
 
     req.write("\n".join(ret))
     return
-    
+
+
 def getLabel(req):
     node = tree.getNode(req.params.get("getLabel"))
     style = req.params.get("style", "edittree")
-    
+
     inum = len(node.getContentChildren())
     label = node.getLabel()
-    if inum>0:
-        label += " <small>("+str(inum)+")</small>"
+    if inum > 0:
+        label += " <small>(" + str(inum) + ")</small>"
     req.write(label)
     return
-    
+
 
 def getPathTo(req):
     # returns path(s) to selected node, 'x' separated, with selected nodes in ()
@@ -106,34 +108,34 @@ def getPathTo(req):
     collectionsid = tree.getRoot('collections').id
     id = req.params.get("pathTo", collectionsid).split(",")[0]
     node = tree.getNode(id)
-    
+
     items = []
     checked = []
-    
+
     for path in getPaths(node, access):
-        if node.id not in path and node.isContainer(): # add node if container
+        if node.id not in path and node.isContainer():  # add node if container
             path.append(node)
-            
-        checked.append(path[-1].id) # last item of path is checked
-        
-        if path[0].getParents()[0].id==collectionsid and collectionsid not in items:
+
+        checked.append(path[-1].id)  # last item of path is checked
+
+        if path[0].getParents()[0].id == collectionsid and collectionsid not in items:
             items.append(collectionsid)
-        
+
         for item in path:
             if item.id not in items:
                 items.append(item.id)
-        
-        items.append("x") # set devider for next path
-        if req.params.get("multiselect","false")=="false": # if not multiselect use only first path
+
+        items.append("x")  # set devider for next path
+        if req.params.get("multiselect", "false") == "false":  # if not multiselect use only first path
             break
-            
-    if len(items)==0 or collectionsid in tree.getNode(items[0]).getParents()[0].id:
+
+    if len(items) == 0 or collectionsid in tree.getNode(items[0]).getParents()[0].id:
         items = [collectionsid] + items
 
     items = (",").join(items)
-    
-    for check in checked: # set marked items
-        items = items.replace(check, "(%s)" %(check))
+
+    for check in checked:  # set marked items
+        items = items.replace(check, "(%s)" % (check))
 
     req.write(items)
     return

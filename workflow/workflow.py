@@ -21,7 +21,8 @@
 import os
 from PIL import Image, ImageDraw, ImageFont
 import StringIO
-import traceback, sys
+import traceback
+import sys
 import random
 import pkgutil
 import importlib
@@ -38,7 +39,7 @@ from core.xmlnode import getNodeXML, readNodeXML
 
 import utils.date as date
 import core.acl as acl
-from schema.schema import showEditor,parseEditorData,getMetaType,VIEW_HIDE_EMPTY
+from schema.schema import showEditor, parseEditorData, getMetaType, VIEW_HIDE_EMPTY
 from core.translation import t, lang, addLabels, getDefaultLanguage, switch_language
 from core.users import getUserFromRequest, getUser
 
@@ -52,18 +53,21 @@ log = logging.getLogger('backend')
 def getWorkflowList():
     return tree.getRoot("workflows").getChildren()
 
+
 def getWorkflow(name):
     if name.isdigit():
         return tree.getNode(name)
     else:
         return tree.getRoot("workflows").getChild(name)
 
-def addWorkflow(name,description):
-    node = tree.getRoot("workflows").addChild(tree.Node(name=name, type="workflow"))
-    node.set("description",description)
 
-def updateWorkflow(name,description,origname="", writeaccess=""):
-    if origname=="":
+def addWorkflow(name, description):
+    node = tree.getRoot("workflows").addChild(tree.Node(name=name, type="workflow"))
+    node.set("description", description)
+
+
+def updateWorkflow(name, description, origname="", writeaccess=""):
+    if origname == "":
         node = tree.getRoot("workflows")
         if not node.hasChild(name):
             addWorkflow(name, description)
@@ -74,10 +78,12 @@ def updateWorkflow(name,description,origname="", writeaccess=""):
     w.set("description", description)
     w.setAccess("write", writeaccess)
 
+
 def deleteWorkflow(id):
     workflows = tree.getRoot("workflows")
     w = workflows.getChild(id)
     workflows.removeChild(w)
+
 
 def inheritWorkflowRights(name, type):
     w = getWorkflow(name)
@@ -93,6 +99,7 @@ def getNodeWorkflow(node):
                 return p2
     return None
 
+
 def getNodeWorkflowStep(node):
     workflow = getNodeWorkflow(node)
     if workflow is None:
@@ -104,6 +111,8 @@ def getNodeWorkflowStep(node):
     return None
 
 # execute step operation and set node step
+
+
 def runWorkflowStep(node, op):
     workflow = getNodeWorkflow(node)
     workflowstep = getNodeWorkflowStep(node)
@@ -121,16 +130,19 @@ def runWorkflowStep(node, op):
     newstep.addChild(node)
     newstep.runAction(node, op)
     #logging.getLogger('usertracing').info("workflow run action \""+newstep.getName()+"\" (op="+str(op)+") for node "+node.id)
-    log.info('workflow run action "%s" (op="%s") for node %s' %(newstep.getName(), op, node.id))
+    log.info('workflow run action "%s" (op="%s") for node %s' % (newstep.getName(), op, node.id))
     return getNodeWorkflowStep(node)
 
 # set workflow for node
-def setNodeWorkflow(node,workflow):
+
+
+def setNodeWorkflow(node, workflow):
     """XXX: unused?"""
     start = workflow.getStartNode()
     start.addChild(node)
     start.runAction(node, True)
     return getNodeWorkflowStep(node)
+
 
 def createWorkflowStep(name="", type="workflowstep", trueid="", falseid="", truelabel="", falselabel="", comment=str(""), adminstep=""):
     n = tree.Node(name=name, type=type)
@@ -142,7 +154,9 @@ def createWorkflowStep(name="", type="workflowstep", trueid="", falseid="", true
     n.set("adminstep", adminstep)
     return n
 
-def updateWorkflowStep(workflow, oldname="", newname="", type="workflowstep", trueid="", falseid="", truelabel="", falselabel="", sidebartext='', pretext="", posttext="", comment='', adminstep=""):
+
+def updateWorkflowStep(workflow, oldname="", newname="", type="workflowstep", trueid="", falseid="", truelabel="",
+                       falselabel="", sidebartext='', pretext="", posttext="", comment='', adminstep=""):
     n = workflow.getStep(oldname)
     n.setName(newname)
     n.setTypeName(type)
@@ -162,6 +176,7 @@ def updateWorkflowStep(workflow, oldname="", newname="", type="workflowstep", tr
             node.set("falsestep", newname)
     return n
 
+
 def deleteWorkflowStep(workflowid, stepid):
     workflows = tree.getRoot("workflows")
     wf = workflows.getChild(workflowid)
@@ -170,21 +185,21 @@ def deleteWorkflowStep(workflowid, stepid):
 
 workflowtypes = {}
 
+
 def registerStep(nodename):
     name = nodename
     if "-" in nodename:
-        name = nodename[nodename.index("-")+1:]
+        name = nodename[nodename.index("-") + 1:]
     workflowtypes[nodename] = name
+
 
 def registerWorkflowStep(nodename, cls):
     name = nodename
     if "-" in nodename:
-        name = nodename[nodename.index("-")+1:]
+        name = nodename[nodename.index("-") + 1:]
     workflowtypes[nodename] = name
 
     addLabels(cls.getLabels())
-
-
 
 
 def getWorkflowTypes():
@@ -193,47 +208,52 @@ def getWorkflowTypes():
 
 def workflowSearch(nodes, text, access=None):
     text = text.strip()
-    if text=="":
+    if text == "":
         return []
 
     ret = []
-    for node in filter(lambda x: x.getContentType()=='workflow', nodes):
+    for node in filter(lambda x: x.getContentType() == 'workflow', nodes):
         for n in node.getSteps(access, "write"):
             for c in n.getChildren():
-                if text=="*":
+                if text == "*":
                     ret += [c]
                 elif isNumeric(text):
-                    if c.id==text:
-                        ret +=[c]
+                    if c.id == text:
+                        ret += [c]
                 else:
-                    if "|".join([f[1].lower() for f in c.items()]).find(text.lower())>=0:
+                    if "|".join([f[1].lower() for f in c.items()]).find(text.lower()) >= 0:
                         ret += [c]
 
     return ret
 
+
 def formatItemDate(d):
     try:
-        return date.format_date(date.parse_date(d),'dd.mm.yyyy HH:MM:SS')
+        return date.format_date(date.parse_date(d), 'dd.mm.yyyy HH:MM:SS')
     except:
         return ""
 
 
 """ export workflow definition """
+
+
 def exportWorkflow(name):
-    if name=="all":
+    if name == "all":
         return getNodeXML(tree.getRoot("workflows"))
     else:
         return getNodeXML(getWorkflow(name))
 
 
 """ import workflow from file """
+
+
 def importWorkflow(filename):
     n = readNodeXML(filename)
     importlist = list()
 
     if n.getContentType() == "workflow":
         importlist.append(n)
-    elif n.getContentType()=="workflows":
+    elif n.getContentType() == "workflows":
         for ch in n.getChildren():
             importlist.append(ch)
     workflows = tree.getRoot("workflows")
@@ -241,7 +261,9 @@ def importWorkflow(filename):
         w.setName("import-" + w.getName())
         workflows.addChild(w)
 
+
 class Workflows(tree.Node):
+
     def show_node_big(node, req, template="workflow/workflow.html", macro="workflowlist"):
         access = acl.AccessData(req)
 
@@ -249,7 +271,12 @@ class Workflows(tree.Node):
         for workflow in getWorkflowList():
             if access.hasWriteAccess(workflow):
                 list += [workflow]
-        return req.getTAL(template, {"list":list, "search":req.params.get("workflow_search", ""), "items":workflowSearch(list, req.params.get("workflow_search", ""), access),"getStep": getNodeWorkflowStep,"format_date": formatItemDate}, macro=macro)
+        return req.getTAL(
+            template, {
+                "list": list, "search": req.params.get(
+                    "workflow_search", ""), "items": workflowSearch(
+                    list, req.params.get(
+                        "workflow_search", ""), access), "getStep": getNodeWorkflowStep, "format_date": formatItemDate}, macro=macro)
 
     def isContainer(node):
         return 1
@@ -262,19 +289,26 @@ class Workflows(tree.Node):
 
 
 class Workflow(tree.Node):
+
     def show_node_big(node, req, template="workflow/workflow.html", macro="object_list"):
         access = acl.AccessData(req)
         if not access.hasWriteAccess(node):
-            return '<i>' + t(lang(req),"permission_denied") + '</i>'
-        return req.getTAL(template, {"workflow": node, "access":access, "search":req.params.get("workflow_search", ""), "items":workflowSearch([node], req.params.get("workflow_search", ""), access),"getStep": getNodeWorkflowStep,"format_date": formatItemDate}, macro=macro)
+            return '<i>' + t(lang(req), "permission_denied") + '</i>'
+        return req.getTAL(
+            template, {
+                "workflow": node, "access": access, "search": req.params.get(
+                    "workflow_search", ""), "items": workflowSearch(
+                    [node], req.params.get(
+                        "workflow_search", ""), access), "getStep": getNodeWorkflowStep, "format_date": formatItemDate}, macro=macro)
 
     def getId(self):
         return self.getName()
+
     def setId(self, i):
         self.setName(i)
 
     def getLink(self):
-        return '?id='+self.id
+        return '?id=' + self.id
 
     def show_node_image(node):
         return '<img border="0" src="/img/directory.png">'
@@ -289,7 +323,7 @@ class Workflow(tree.Node):
         return 1
 
     def getLanguages(node):
-        if node.get('languages')!='':
+        if node.get('languages') != '':
             return node.get('languages').split(';')
         return []
 
@@ -298,6 +332,7 @@ class Workflow(tree.Node):
 
     def getDescription(self):
         return self.get("description")
+
     def setDescription(self, d):
         self.set("description", d)
 
@@ -323,7 +358,7 @@ class Workflow(tree.Node):
         for step in self.getChildren():
             if step.name not in followers:
                 return step
-        return None # circular workflow- shouldn't happen
+        return None  # circular workflow- shouldn't happen
 
     def getStep(self, name):
         if name.isdigit():
@@ -337,12 +372,13 @@ class Workflow(tree.Node):
             list += step.getChildren()
         return list
 
-    def addStep(self,step):
+    def addStep(self, step):
         self.addChild(step)
         return step
 
 
 workflow_lock = thread.allocate_lock()
+
 
 class WorkflowStep(tree.Node):
 
@@ -367,11 +403,11 @@ class WorkflowStep(tree.Node):
 
                 for node in nodes:
                     if not access.hasWriteAccess(self) and \
-                        (key != node.get("key")): # no permission
+                            (key != node.get("key")):  # no permission
 
-                        link = '('+self.name+')'
+                        link = '(' + self.name + ')'
                         try:
-                            return req.getTAL(template, {"node": node, "link":link, "email":config.get("email.workflow")}, macro=macro)
+                            return req.getTAL(template, {"node": node, "link": link, "email": config.get("email.workflow")}, macro=macro)
                         except:
                             return ""
 
@@ -394,10 +430,10 @@ class WorkflowStep(tree.Node):
 
                 if self in node.getParents():
                     # set correct language for workflow for guest user only
-                    if node.get('key')==node.get('system.key') and getUserFromRequest(req)==getUser(config.get('user.guestuser')):
+                    if node.get('key') == node.get('system.key') and getUserFromRequest(req) == getUser(config.get('user.guestuser')):
                         switch_language(req, node.get('system.wflanguage'))
 
-                    link = req.makeLink("/mask", {"id":self.id})
+                    link = req.makeLink("/mask", {"id": self.id})
                     if "forcetrue" in req.params:
                         return self.forwardAndShow(node, True, req, link=link)
                     if "forcefalse" in req.params:
@@ -423,11 +459,10 @@ class WorkflowStep(tree.Node):
         step = getNodeWorkflowStep(node)
         link = ""
         if step:
-            link = '/mask?id=%s&obj=%s' % (step.id,node.id)
+            link = '/mask?id=%s&obj=%s' % (step.id, node.id)
             return '<script language="javascript">document.location.href = "%s";</script> <a href="%s">%s</a>' % (link, link, step.name)
         else:
-            return '<i>%s</i>' %(t(lang(req), "permission_denied"))
-
+            return '<i>%s</i>' % (t(lang(req), "permission_denied"))
 
     def show_workflow_node(self, node, req):
         if "gotrue" in req.params:
@@ -436,18 +471,19 @@ class WorkflowStep(tree.Node):
             return self.forwardAndShow(node, False, req)
 
         # to be overloaded
-        return req.getTAL("workflow/workflow.html", {"node": node, "name":self.name}, macro="workflow_node")
-
+        return req.getTAL("workflow/workflow.html", {"node": node, "name": self.name}, macro="workflow_node")
 
     def show_workflow_step(self, req):
         access = acl.AccessData(req)
         if not access.hasWriteAccess(self):
-            return '<i>'+t(lang(req),"permission_denied")+'</i>'
+            return '<i>' + t(lang(req), "permission_denied") + '</i>'
         c = []
         for item in self.getChildren():
-            c.append({"id":str(item.id), "creationtime":date.format_date(date.parse_date(item.get('creationtime')),'dd.mm.yyyy HH:MM:SS'), "name": item.getName()})
+            c.append({"id": str(item.id), "creationtime": date.format_date(
+                date.parse_date(item.get('creationtime')), 'dd.mm.yyyy HH:MM:SS'), "name": item.getName()})
         c.sort(lambda x, y: cmp(x['name'], y['name']))
-        return req.getTAL("workflow/workflow.html", {"children":c, "workflow":self.getParents()[0], "step": self, "nodelink": "/mask?id="+self.id+"&obj=", 'currentlang':lang(req)}, macro="workflow_show")
+        return req.getTAL("workflow/workflow.html", {"children": c, "workflow": self.getParents()[
+                          0], "step": self, "nodelink": "/mask?id=" + self.id + "&obj=", 'currentlang': lang(req)}, macro="workflow_show")
 
     def show_node_image(node):
         return '<img border="0" src="/img/directory.png">'
@@ -456,7 +492,7 @@ class WorkflowStep(tree.Node):
         return ""
 
     def getLink(self):
-        return "/mask?id="+self.id
+        return "/mask?id=" + self.id
 
     def getId(self):
         return self.name
@@ -465,18 +501,18 @@ class WorkflowStep(tree.Node):
         return node.name
 
     def isAdminStep(self):
-        if self.get("adminstep")=="1":
+        if self.get("adminstep") == "1":
             return 1
         return 0
 
     def runAction(self, node, op=""):
-        if self.getTrueId()=='': # no next step defined
-            log.error("No Workflow action defined for workflowstep "+self.getId()+" (op="+str(op)+")")
+        if self.getTrueId() == '':  # no next step defined
+            log.error("No Workflow action defined for workflowstep " + self.getId() + " (op=" + str(op) + ")")
 
     def forward(self, node, op):
-        if op==True:
+        if op:
             op = "true"
-        elif op==False:
+        elif op == False:
             op = "false"
         return runWorkflowStep(node, op)
 
@@ -484,28 +520,29 @@ class WorkflowStep(tree.Node):
         newnode = self.forward(node, op)
 
         if newnode is None:
-            return req.getTAL("workflow/workflow.html", {"node":node}, macro="workflow_forward")
+            return req.getTAL("workflow/workflow.html", {"node": node}, macro="workflow_forward")
 
         if link is None:
-            context = {"id":newnode.id, "obj":node.id}
-            if data and type(data)==type({}):
-               for k in data:
-                   if not k in context:
-                       context[k] = data[k]
-                   else:
-                       msg_t = (getNodeWorkflow(node).name, getNodeWorkflowStep(node).name, node.id, k, data[k])
-                       log.warning("workflow '%s', step '%s', node %s: ignored data key '%s' (value='%s')" % msg_t)
+            context = {"id": newnode.id, "obj": node.id}
+            if data and isinstance(data, type({})):
+                for k in data:
+                    if k not in context:
+                        context[k] = data[k]
+                    else:
+                        msg_t = (getNodeWorkflow(node).name, getNodeWorkflowStep(node).name, node.id, k, data[k])
+                        log.warning("workflow '%s', step '%s', node %s: ignored data key '%s' (value='%s')" % msg_t)
 
             newloc = req.makeLink("/mask", context)
         else:
             newloc = link
         redirect = 1
-        if redirect==0:
-            return req.getTAL("workflow/workflow.html", {"newnodename":newnode.name, "email":config.get("email.workflow")}, macro="workflow_forward2")
+        if redirect == 0:
+            return req.getTAL(
+                "workflow/workflow.html", {"newnodename": newnode.name, "email": config.get("email.workflow")}, macro="workflow_forward2")
         else:
-            if config.get("config.ssh", "")=="yes":
+            if config.get("config.ssh", "") == "yes":
                 if not newloc.lower().startswith("https:"):
-                    newloc = "https://"+config.get("host.name") + newloc.replace("http://"+config.get("host.name"), "")
+                    newloc = "https://" + config.get("host.name") + newloc.replace("http://" + config.get("host.name"), "")
             return '<script language="javascript">document.location.href = "%s";</script>' % newloc
 
     def getTrueId(self):
@@ -519,21 +556,21 @@ class WorkflowStep(tree.Node):
     def getTrueLabel(self, language=""):
         value = self.get("truelabel")
         for line in value.split('\n'):
-            if line.startswith(language+':'):
-                return line.replace(language+':', '')
-        value = value.split('\n')[0] # use first language
+            if line.startswith(language + ':'):
+                return line.replace(language + ':', '')
+        value = value.split('\n')[0]  # use first language
         for lang in config.get('i18n.languages').split(','):
-            value = value.replace('%s:' %(lang), '')
+            value = value.replace('%s:' % (lang), '')
         return value.strip()
 
     def getFalseLabel(self, language=""):
         value = self.get("falselabel")
         for line in value.split('\n'):
-            if line.startswith(language+':'):
-                return line.replace(language+':', '')
-        value = value.split('\n')[0] # use first language
+            if line.startswith(language + ':'):
+                return line.replace(language + ':', '')
+        value = value.split('\n')[0]  # use first language
         for lang in config.get('i18n.languages').split(','):
-            value = value.replace('%s:' %(lang), '')
+            value = value.replace('%s:' % (lang), '')
         return value.strip()
 
     def getTrueFunction(self):
@@ -545,22 +582,22 @@ class WorkflowStep(tree.Node):
     def getSidebarText(self, language=""):
         value = self.get("sidebartext")
         for line in value.split('\n'):
-            if line.startswith(language+':'):
-                return line.replace(language+':', '')
+            if line.startswith(language + ':'):
+                return line.replace(language + ':', '')
         return value
 
     def getPreText(self, language=""):
         value = self.get("pretext")
         for line in value.split('\n'):
-            if line.startswith(language+':'):
-                return line.replace(language+':', '')
+            if line.startswith(language + ':'):
+                return line.replace(language + ':', '')
         return value
 
     def getPostText(self, language=""):
         value = self.get("posttext")
         for line in value.split('\n'):
-            if line.startswith(language+':'):
-                return line.replace(language+':', '')
+            if line.startswith(language + ':'):
+                return line.replace(language + ':', '')
         return value
 
     def getComment(self):
@@ -570,29 +607,34 @@ class WorkflowStep(tree.Node):
         return list()
 
     def tableRowButtons(self, node):
-        if node.get('system.key')==node.get('key'):
+        if node.get('system.key') == node.get('key'):
             # user has permission -> use users language
-            return tal.getTAL("workflow/workflow.html", {'node':node, 'wfstep':self, 'lang':node.get('system.wflanguage')}, macro="workflow_buttons", language=node.get('system.wflanguage'))
+            return tal.getTAL("workflow/workflow.html",
+                              {'node': node,
+                               'wfstep': self,
+                               'lang': node.get('system.wflanguage')},
+                              macro="workflow_buttons",
+                              language=node.get('system.wflanguage'))
         else:
             # use standard language of request
-            return tal.getTAL("workflow/workflow.html", {'node':node, 'wfstep':self, 'lang':getDefaultLanguage()}, macro="workflow_buttons", language=getDefaultLanguage())
-
+            return tal.getTAL("workflow/workflow.html", {'node': node, 'wfstep': self, 'lang':
+                                                         getDefaultLanguage()}, macro="workflow_buttons", language=getDefaultLanguage())
 
     def getTypeName(self):
         return self.getName()
 
     def getShortName(self, req):
         l = lang(req)
-        if self.get('shortstepname_'+l)!="":
-            return self.get('shortstepname_'+l)
-        elif self.get('shortstepname')!="":
+        if self.get('shortstepname_' + l) != "":
+            return self.get('shortstepname_' + l)
+        elif self.get('shortstepname') != "":
             return self.get('shortstepname')
         else:
             return ""
 
     def setShortName(self, value, lang=""):
-        if lang!="":
-            self.set('shortstepname_'+lang, value.strip())
+        if lang != "":
+            self.set('shortstepname_' + lang, value.strip())
         else:
             self.set('shortstepname', value.strip())
 

@@ -23,7 +23,6 @@ from web.edit.edit_common import showdir
 
 def getContent(req, ids):
     node = tree.getNode(ids[0])
-    if node.type=="directory" or node.type.startswith("collection") or node.type.startswith("directory"):
+    if node.type == "directory" or node.type.startswith("collection") or node.type.startswith("directory"):
         return showdir(req, node)
     return ""
-    

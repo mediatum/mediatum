@@ -49,14 +49,18 @@ log = logg = logging.getLogger("backend")
 childids_cache = None
 parentids_cache = None
 
+
 class WatchLock:
+
     def __init__(self, mode=0):
         self.mode = mode
         self.nr = 0
         self.lock = thread.allocate_lock()
+
     def release(self):
         self.nr = self.nr - 1
         self.lock.release()
+
     def acquire(self):
         if self.mode and self.nr >= 1:
             try:
@@ -71,9 +75,11 @@ class WatchLock:
 
 tree_lock = WatchLock(testmode)
 
+
 def getRootID():
     id = db.getRootID()
     return id
+
 
 def getGlobalRoot():
     global _root
@@ -84,6 +90,7 @@ def getGlobalRoot():
         return None
     _root = getNode(id)
     return _root
+
 
 def getRoot(name=None):
     _root = getGlobalRoot()
@@ -108,50 +115,58 @@ def getNode(id):
     return _get_node(lid)
 
 
-def getAllContainerChildrenNum(node, count=0): # returns the number of children
+def getAllContainerChildrenNum(node, count=0):  # returns the number of children
     for n in node.getContainerChildren():
         count = getAllContainerChildrenNum(n, count)
     count += len(node.getContentChildren())
     return count
 
 
-def getAllContainerChildrenAbs(node, count=[]): # returns a list with children, each child once
+def getAllContainerChildrenAbs(node, count=[]):  # returns a list with children, each child once
     for n in node.getContainerChildren():
         count = getAllContainerChildrenAbs(n, count)
     count.extend(node.getContentChildren().ids)
     return count
 
+
 def getAllContainerChildren(node):
-    return len(list(set(getAllContainerChildrenAbs(node, [])))) # get number of children
-    #return getAllContainerChildrenNum(node, 0) # get number of children (faster)
-    #return 0 # suppress number (fastest)
+    return len(list(set(getAllContainerChildrenAbs(node, []))))  # get number of children
+    # return getAllContainerChildrenNum(node, 0) # get number of children (faster)
+    # return 0 # suppress number (fastest)
 
 
 def getNodesByAttribute(attributename, attributevalue=""):
     return db.getNodeIdByAttribute(attributename, attributevalue)
 
+
 def getDirtyNodes(num=0):
     return NodeList(db.getDirty(num))
+
 
 def getDirtySchemaNodes(num=0):
     return NodeList(db.getDirtySchemas(num))
 
 
 class NoSuchNodeError:
-    def __init__(self,id=None):
+
+    def __init__(self, id=None):
         self.id = id
+
     def __str__(self):
-        return "NoSuchNodeError("+str(self.id)+")"
+        return "NoSuchNodeError(" + str(self.id) + ")"
+
 
 class InvalidOperationError:
     pass
 
+
 class FileNode:
+
     def __init__(self, name, type, mimetype, node=None):
         if name.startswith(config.settings["paths.datadir"]):
             name = name[len(config.settings["paths.datadir"]):]
         self._path = name
-        #self.path = name # workaround, until CVS is updated everywhere
+        # self.path = name # workaround, until CVS is updated everywhere
         self.type = type
         self.mimetype = mimetype
         self.node = node
@@ -167,22 +182,24 @@ class FileNode:
 
     def getType(self):
         return self.type
+
     def _add(self):
         for f in filehandlers:
             if hasattr(f, "add"):
-              try:
-                  if f.add(self):
-                      return
-              except:
-                  logException("file handler add() failed")
+                try:
+                    if f.add(self):
+                        return
+                except:
+                    logException("file handler add() failed")
+
     def _delete(self):
         for f in filehandlers:
             if hasattr(f, "delete"):
-              try:
-                  if f.delete(self):
-                      return
-              except:
-                  logException("file handler delete() failed")
+                try:
+                    if f.delete(self):
+                        return
+                except:
+                    logException("file handler delete() failed")
 
     def retrieveFile(self):
         for f in filehandlers:
@@ -197,15 +214,15 @@ class FileNode:
         if os.path.exists(self._path):
             return self._path
 
-        if os.path.exists(config.basedir+"/" + self._path):
-            return config.basedir+"/" + self._path
+        if os.path.exists(config.basedir + "/" + self._path):
+            return config.basedir + "/" + self._path
 
         if not os.path.exists(config.settings["paths.datadir"] + self._path):
             for f in self.node.getFiles():
                 if f.getType().startswith("presentati"):
                     try:
                         #_n = os.path.dirname(f.retrieveFile())+"/"+self._path
-                        _n = os.path.dirname(f._path)+"/"+self._path
+                        _n = os.path.dirname(f._path) + "/" + self._path
                         if os.path.exists(_n):
                             return _n
                     except:
@@ -214,6 +231,7 @@ class FileNode:
 
     def getMimeType(self):
         return self.mimetype
+
     def getSize(self):
         for f in filehandlers:
             if hasattr(f, "getSize"):
@@ -227,6 +245,7 @@ class FileNode:
                     logException("file handler getSize() failed")
                     return -1
         return get_filesize(self.retrieveFile())
+
     def getHash(self):
         for f in filehandlers:
             if hasattr(f, "getHash"):
@@ -237,12 +256,15 @@ class FileNode:
                 except:
                     logException("file handler getHash() failed")
         return get_hash(self.retrieveFile())
+
     def getName(self):
         return os.path.basename(self._path)
 
 nodetypes = {}
 
 ' TODO update for current tree implementation'
+
+
 def getType(name):
     if name in nodetypes:
         return nodetypes[name]
@@ -252,6 +274,8 @@ def getType(name):
 
 changed_metadata_nodes = {}
 last_changed_metadata_node = None
+
+
 def flush_changed_metadata():
 
     global searcher
@@ -262,6 +286,7 @@ def flush_changed_metadata():
     changed_metadata_nodes.clear()
     last_changed_metadata_node = None
 
+
 def changed_metadata(node):
     if node.id:
         changed_metadata_nodes[node.id] = None
@@ -269,27 +294,30 @@ def changed_metadata(node):
 
 
 class NodeList:
+
     def __init__(self, ids, description=""):
         if isinstance(ids, NodeList):
             ids = ids.ids
         elif len(ids) and isinstance(ids[0], Node):
             nodes = ids
-            ids = [None]*len(nodes)
-            for i,n in enumerate(nodes):
-                ids[i]=n.id
+            ids = [None] * len(nodes)
+            for i, n in enumerate(nodes):
+                ids[i] = n.id
         self.ids = [str(i) for i in ids]
         self.len = len(ids)
         self.description = description
+
     def __len__(self):
         return self.len
+
     def __getitem__(self, i):
-        if type(i) == slice:
+        if isinstance(i, slice):
             nodes = []
             for id in self.ids[i]:
                 nodes += [getNode(id)]
             return nodes
         elif i >= self.len:
-            raise IndexError(str(i)+" >= "+str(self.len))
+            raise IndexError(str(i) + " >= " + str(self.len))
         return getNode(self.ids[i])
 
     def getIDs(self):
@@ -319,7 +347,7 @@ class NodeList:
                 # no fields left, all empty...
                 return self
         t1 = time.time()
-        nids = ",".join("'" + i +  "'" for i in self.ids)
+        nids = ",".join("'" + i + "'" for i in self.ids)
         sorted_nids = db.sort_nodes_by_fields(nids, fields)
         missing_nids = set(self.ids) - set(sorted_nids)
         if missing_nids:
@@ -334,7 +362,7 @@ class NodeList:
             sorted_nids = [i for i in sorted_nids if i not in extra_nids]
         self.ids = sorted_nids
         if log.isEnabledFor(logging.DEBUG):
-            msg = "sorting for {} with {} ids took {} seconds".format(fields, len(self.ids), time.time()-t1)
+            msg = "sorting for {} with {} ids took {} seconds".format(fields, len(self.ids), time.time() - t1)
             log.debug(msg)
         return self
 
@@ -363,14 +391,16 @@ class NodeList:
     def filter(self, access):
         return access.filter(self)
 
+
 def _set_attribute_complex(node, name, value):
     if isinstance(value, string_types):
         db.setAttribute(node.id, name, codecs.encode(value, "utf8"), check=(not bulk))
     else:
         db.set_attribute_complex(node.id, name, value, check=(not bulk))
 
+        # methods to patch in for Node which store complex attributes
 
-        ### methods to patch in for Node which store complex attributes
+
 def _node_set_complex(self, name, value):
     """Set an attribute, new version.
     Passes unmodified values to the DB connector, converts unicode objects to utf8 strings.
@@ -387,15 +417,15 @@ def _node_make_persistent_complex(self):
         changed_metadata(self)
         tree_lock.acquire()
         try:
-            self.id = db.createNode(self.name,self.type)
+            self.id = db.createNode(self.name, self.type)
             for name, value in self.attributes.items():
                 _set_attribute_complex(self, name, value)
             if self.read_access:
-                db.setNodeReadAccess(self.id,self.read_access)
+                db.setNodeReadAccess(self.id, self.read_access)
             if self.write_access:
-                db.setNodeWriteAccess(self.id,self.write_access)
+                db.setNodeWriteAccess(self.id, self.write_access)
             if self.data_access:
-                db.setNodeDataAccess(self.id,self.data_access)
+                db.setNodeDataAccess(self.id, self.data_access)
         finally:
             tree_lock.release()
 
@@ -405,6 +435,7 @@ def _node_load_attributes_complex(nid):
 
 
 class NodeMeta(type):
+
     """print methods of node subclasses and warn if Node methods are overriden"""
     def __init__(cls, name, bases, dct):
         # patch methods for attribute handling to support complex values
@@ -412,7 +443,7 @@ class NodeMeta(type):
             cls._load_attributes = staticmethod(_node_load_attributes_complex)
             cls.set = _node_set_complex
             cls._makePersistent = _node_make_persistent_complex
-        #print methods of node subclasses and warn if Node methods are overriden
+        # print methods of node subclasses and warn if Node methods are overriden
 #         if name != "Node":
 #             print("\ncls " + name)
 #             print("=" * (len(name) + 4))
@@ -426,16 +457,18 @@ class NodeMeta(type):
 #                 print >> out, r
         super(NodeMeta, cls).__init__(name, bases, dct)
 
+
 class Node(object):
     __metaclass__ = NodeMeta
     # non string arguments will be saved in msgpack format if store_complex_attributes is True
     _store_complex_attributes = False
+
     def __new__(cls, name="<noname>", type=None, dbid=None):
         if dbid:
             dbnode = db.getNode(dbid)
             if not dbnode:
                 raise NoSuchNodeError(dbid)
-            id,name,type,read,write,data,orderpos,localread = dbnode
+            id, name, type, read, write, data, orderpos, localread = dbnode
         # find matching node class
         try:
             nodetype = type.split("/", 1)[0]
@@ -444,7 +477,7 @@ class Node(object):
         else:
             nodecls = nodeclasses.get(nodetype)
             if nodecls:
-#                 logg.debug("found matching nodeclass: %s for type %s", nodecls, type)
+                #                 logg.debug("found matching nodeclass: %s for type %s", nodecls, type)
                 cls = nodecls
             else:
                 pass
@@ -467,9 +500,9 @@ class Node(object):
 
     def __init__(self, name="<unbenannt>", type=None, dbid=None):
         self.occurences = None
-        self.lock = thread.allocate_lock() # for attrlist
+        self.lock = thread.allocate_lock()  # for attrlist
         if dbid is None:
-            if type == None:
+            if type is None:
                 raise "Node must have a type"
             self.id = None
             self.prev_nid = '0'
@@ -498,15 +531,15 @@ class Node(object):
             changed_metadata(self)
             tree_lock.acquire()
             try:
-                self.id = db.createNode(self.name,self.type)
-                for name,value in self.attributes.items():
+                self.id = db.createNode(self.name, self.type)
+                for name, value in self.attributes.items():
                     db.setAttribute(self.id, name, value, check=(not bulk))
                 if self.read_access:
-                    db.setNodeReadAccess(self.id,self.read_access)
+                    db.setNodeReadAccess(self.id, self.read_access)
                 if self.write_access:
-                    db.setNodeWriteAccess(self.id,self.write_access)
+                    db.setNodeWriteAccess(self.id, self.write_access)
                 if self.data_access:
-                    db.setNodeDataAccess(self.id,self.data_access)
+                    db.setNodeDataAccess(self.id, self.data_access)
                 # add node to cache to avoid "ghost nodes" (multiple objects for a single database row)
                 _get_node.cache_add(self, long(self.id))
             finally:
@@ -533,31 +566,36 @@ class Node(object):
         db.cleanDirty(self.id)
 
     """ get the node name """
+
     def getName(self):
         return self.name
 
-
     """ set the node name """
-    def setName(self,name):
+
+    def setName(self, name):
         self.name = name
         if self.id:
-            db.setNodeName(self.id,name)
+            db.setNodeName(self.id, name)
 
     """ get the position of this node """
+
     def getOrderPos(self):
         return self.orderpos
 
     """ set the position that this node appears in nodelists """
-    def setOrderPos(self,orderpos):
+
+    def setOrderPos(self, orderpos):
         self._makePersistent()
         self.orderpos = orderpos
-        db.setNodeOrderPos(self.id,orderpos)
+        db.setNodeOrderPos(self.id, orderpos)
 
     """ get the node type """
+
     def getType(self):
         return self
 
     """ get the node object/document type """
+
     def getContentType(self):
         if '/' in self.type:
             return self.type[0:self.type.find('/')]
@@ -565,9 +603,10 @@ class Node(object):
             return self.type
 
     """ get the node schema """
+
     def getSchema(self):
         if '/' in self.type:
-            return self.type[self.type.find('/')+1:]
+            return self.type[self.type.find('/') + 1:]
         else:
             return self.type
 
@@ -583,16 +622,16 @@ class Node(object):
             if self.id is None:
                 return self.read_access
 
-            def p(node,rights):
+            def p(node, rights):
                 r = node.read_access
                 if r:
                     for rule in r.split(","):
-                        rights[rule]=None
+                        rights[rule] = None
                 else:
                     for c in node.getParents():
-                        p(c,rights)
+                        p(c, rights)
             rights = {}
-            p(self,rights)
+            p(self, rights)
             self.localread = ",".join(rights.keys())
             db.setNodeLocalRead(self.id, self.localread)
         return self.localread
@@ -602,28 +641,30 @@ class Node(object):
         db.setNodeLocalRead(self.id, self.localread)
 
     """ set the node type (as string) """
-    def setTypeName(self,type):
+
+    def setTypeName(self, type):
         changed_metadata(self)
         self.type = type
         if self.id:
-            db.setNodeType(self.id,type)
+            db.setNodeType(self.id, type)
             self._flushOccurences()
 
-    def setSchema(self,schema):
+    def setSchema(self, schema):
         doctype = self.getContentType()
         if schema:
-            self.setTypeName(doctype+"/"+schema)
+            self.setTypeName(doctype + "/" + schema)
         else:
             self.setTypeName(doctype)
 
-    def setContentType(self,doctype):
+    def setContentType(self, doctype):
         if "/" in self.type:
             schema = self.getSchema()
-            self.setTypeName(doctype+"/"+schema)
+            self.setTypeName(doctype + "/" + schema)
         else:
             self.setTypeName(doctype)
 
     """ get a named access right (e.g. read, write, etc.)"""
+
     def getAccess(self, type):
         if type == "read":
             return self.read_access
@@ -633,29 +674,29 @@ class Node(object):
             return self.data_access
 
     """ set a named access right (e.g. read, write, etc.)"""
+
     def setAccess(self, type, access):
         tree_lock.acquire()
         try:
             if type == "read":
                 self.read_access = access
                 if self.id:
-                    db.setNodeReadAccess(self.id,access)
+                    db.setNodeReadAccess(self.id, access)
             elif type == "write":
                 self.write_access = access
                 if self.id:
-                    db.setNodeWriteAccess(self.id,access)
+                    db.setNodeWriteAccess(self.id, access)
             elif type == "data":
                 self.data_access = access
                 if self.id:
-                    db.setNodeDataAccess(self.id,access)
+                    db.setNodeDataAccess(self.id, access)
         finally:
             tree_lock.release()
-        if self.id and type=="read":
+        if self.id and type == "read":
             self.invalidateLocalRead()
 
-
     def _flush(self):
-        global childids_cache,parentids_cache
+        global childids_cache, parentids_cache
         childs = self._getChildIDs()
         parents = self._getChildIDs(1)
         self.ccount = -1
@@ -668,7 +709,8 @@ class Node(object):
             tree_lock.release()
 
     """ add a child node """
-    def addChild(self,child):
+
+    def addChild(self, child):
         self._makePersistent()
         child._makePersistent()
         self._flush()
@@ -677,60 +719,59 @@ class Node(object):
         if self.id == child.id or self.id in child._getAllChildIDs():
             raise InvalidOperationError()
 
-        db.addChild(self.id,child.id,check=(not bulk))
+        db.addChild(self.id, child.id, check=(not bulk))
         self._flushOccurences()
         child.resetLocalRead()
         for c in child.getAllChildren():
             c.resetLocalRead()
         return child
 
-
     """ remove (unlink) a given child node """
+
     def removeChild(self, child):
         self._makePersistent()
         child._makePersistent()
         self._flush()
         child._flush()
-        db.removeChild(self.id,child.id)
+        db.removeChild(self.id, child.id)
         child.resetLocalRead()
         self._flushOccurences()
 
-
     """ get all FileNode subnodes of this node """
+
     def getFiles(self):
         self._makePersistent()
         dbfiles = db.getFiles(self.id)
         files = []
-        for filename,type,mimetype in dbfiles:
-            files += [FileNode(filename,type,mimetype,self)]
+        for filename, type, mimetype in dbfiles:
+            files += [FileNode(filename, type, mimetype, self)]
         return files
 
-
     """ add a FileNode to this node """
+
     def addFile(self, file):
         changed_metadata(self)
         self._makePersistent()
-        db.addFile(self.id,file._path,file.type,file.mimetype)
+        db.addFile(self.id, file._path, file.type, file.mimetype)
         file.node = self
         file._add()
 
-
     """ remove a FileNode from this node """
+
     def removeFile(self, file, single=False):
         changed_metadata(self)
         self._makePersistent()
         if single:
-            db.removeSingleFile(self.id,file._path)
+            db.removeSingleFile(self.id, file._path)
         else:
-            db.removeFile(self.id,file._path)
+            db.removeFile(self.id, file._path)
         file._delete()
-
 
     def _mkCache(self, source):
         cache = {}
         lastid = None
         list = []
-        for id,childid in source:
+        for id, childid in source:
             if id != lastid:
                 if lastid is not None:
                     cache[long(lastid)] = list
@@ -749,7 +790,7 @@ class Node(object):
             return 0
 
     def _getChildIDs(self, parents=0):
-        global childids_cache,parentids_cache
+        global childids_cache, parentids_cache
         tree_lock.acquire()
         try:
             if nocache:
@@ -783,6 +824,7 @@ class Node(object):
             tree_lock.release()
 
     """ get all direct children of this node """
+
     def getChildren(self):
         idlist = self._getChildIDs(0)
         return NodeList(idlist)
@@ -791,14 +833,15 @@ class Node(object):
         return NodeList(db.get_children_with_type(self.id, nodetype))
 
     """ get a child with a specific node name """
+
     def getChild(self, name):
         if name is None:
             raise NoSuchNodeError("child:None")
         if not self.id:
             raise NoSuchNodeError("child of None")
-        id = db.getNamedNode(self.id,name)
+        id = db.getNamedNode(self.id, name)
         if not id:
-            raise NoSuchNodeError("child:"+str(name))
+            raise NoSuchNodeError("child:" + str(name))
         return getNode(str(id))
 
     def get_child_with_type(self, name, nodetype):
@@ -809,7 +852,7 @@ class Node(object):
             raise NoSuchNodeError("child of None")
         nid = db.getNamedTypedNode(self.id, name, nodetype)
         if not nid:
-            raise NoSuchNodeError("child:"+str(name))
+            raise NoSuchNodeError("child:" + str(name))
         return getNode(str(nid))
 
     def getContainerChildren(self):
@@ -820,20 +863,20 @@ class Node(object):
         id = db.getContentChildren(self.id)
         return NodeList(id)
 
-
     """ get all parents of this node """
+
     def getParents(self):
         idlist = self._getChildIDs(1)
         return NodeList(idlist)
 
     """ get the number of direct children of this node """
+
     def getNumChildren(self):
         idlist = self._getChildIDs()
         return len(idlist)
 
-
     def _getAllChildIDs(self, id=None, map=None, locked=0):
-        global childids_cache,parentids_cache
+        global childids_cache, parentids_cache
         if not locked:
             tree_lock.acquire()
         try:
@@ -855,56 +898,57 @@ class Node(object):
             if idlist is None:
                 idlist = childids_cache[long(id)] = db.getChildren(id)
             for id in idlist:
-                self._getAllChildIDs(str(id),map,1)
+                self._getAllChildIDs(str(id), map, 1)
             return map
         finally:
             if not locked:
                 tree_lock.release()
 
     """ get all decendants of this node """
+
     def getAllChildren(self):
         return NodeList(self._getAllChildIDs().keys())
-
 
     def event_metadata_changed(self):
         global searcher
         searcher.node_changed(self)
 
-
     """ get formated gps information """
+
     def get_location(self):
         exif_lon = self.get("exif_GPS_GPSLongitude")
         exif_lon_ref = self.get("exif_GPS_GPSLongitudeRef")
         exif_lat = self.get("exif_GPS_GPSLatitude")
         exif_lat_ref = self.get("exif_GPS_GPSLatitudeRef")
 
-        if exif_lon=="" or exif_lon_ref=="" or exif_lat=="" or exif_lat_ref=="":
+        if exif_lon == "" or exif_lon_ref == "" or exif_lat == "" or exif_lat_ref == "":
             return {}
 
         lon = float_from_gps_format(exif_lon)
-        if exif_lon_ref=="W":
-            lon *= -1;
+        if exif_lon_ref == "W":
+            lon *= -1
 
         lat = float_from_gps_format(exif_lat)
-        if exif_lat_ref=="S":
-            lat *= -1;
-        return {"lon":lon, "lat":lat}
-
+        if exif_lat_ref == "S":
+            lat *= -1
+        return {"lon": lon, "lat": lat}
 
     """ get a metadate """
+
     def get(self, name):
         if name.startswith('node'):
             if name in ["nodename", "node.name"]:
                 return self.getName()
-            elif name=='node.id':
+            elif name == 'node.id':
                 return self.id
-            elif name=='node.type':
+            elif name == 'node.type':
                 return self.type
-            elif name=='node.orderpos':
+            elif name == 'node.orderpos':
                 return self.orderpos
         return self.attributes.get(name, "")
 
     """ set a metadate """
+
     def set(self, name, value):
         if name == "nodename":
             return self.setName(value)
@@ -918,22 +962,25 @@ class Node(object):
                 self.attributes[name] = str(value)
 
         if self.id:
-            db.setAttribute(self.id, name, value,check=(not bulk))
+            db.setAttribute(self.id, name, value, check=(not bulk))
 
     """ get all metadates (key/value) pairs """
+
     def items(self):
         return self.attributes.items()
 
-
     def setAttribute(self, name, value):
-        self.set(name,value)
+        self.set(name, value)
+
     def getAttribute(self, name):
         return self.get(name)
 
     def removeAttribute(self, name):
         if self.attributes:
-            try: del self.attributes[name]
-            except KeyError: pass
+            try:
+                del self.attributes[name]
+            except KeyError:
+                pass
         if self.id:
             db.removeAttribute(self.id, name)
 
@@ -950,7 +997,7 @@ class Node(object):
             self.occurences[level] = {}
             self.occurences2node[level] = {}
             nodelist = self.getAllChildren()
-            if level>0:
+            if level > 0:
                 nodelist = access.filter(nodelist)
             for node in nodelist:
                 schema = node.getSchema()
@@ -960,14 +1007,15 @@ class Node(object):
                 else:
                     self.occurences[level][schema] += 1
         ret = {}
-        for s,v in self.occurences[level].items():
+        for s, v in self.occurences[level].items():
             if level in self.occurences2node and s in self.occurences2node[level]:
-                ret[self.occurences2node[level][s]]=v
+                ret[self.occurences2node[level][s]] = v
             else:
                 print "not found", s
         return ret
 
     """ run a search query. returns a list of nodes """
+
     def search(self, q):
         global searcher, subnodes
         log.info('search: %s for node %s %s' % (q, str(self.id), str(self.name)))
@@ -975,7 +1023,7 @@ class Node(object):
         if q.startswith('searchcontent='):
             return searcher.query(q)
         items = subnodes(self)
-        if type(items)!= list:
+        if not isinstance(items, list):
             items = items.getIDs()
         return NodeList(intersection([items, searcher.query(q)]))
 
@@ -997,17 +1045,18 @@ class Node(object):
         raise AttributeError("Node %s of type has no attribute %s", self, name)
 
     def getoverloadedfunction(self, name):
-        global nodefunctions,nodeclasses
+        global nodefunctions, nodeclasses
         if name in nodefunctions:
-            return lambda *x,**y: nodefunctions[name](self, *x,**y)
+            return lambda *x, **y: nodefunctions[name](self, *x, **y)
         if self.getContentType() in nodeclasses:
             cls = nodeclasses[self.getContentType()]
+
             def r(cls):
                 if name in cls.__dict__:
-                    return lambda *x,**y: cls.__dict__[name](self, *x,**y)
+                    return lambda *x, **y: cls.__dict__[name](self, *x, **y)
                 else:
                     for base in cls.__bases__:
-                        if base.__name__!=self.__class__.__name__:
+                        if base.__name__ != self.__class__.__name__:
                             ret = r(base)
                             if ret:
                                 return ret
@@ -1018,12 +1067,11 @@ class Node(object):
                 return ret
         return None
 
-
     # fill hashmap with idlists of listvalues
     def getAllAttributeValues(self, attribute, access, schema=""):
         values = {}
         try:
-            if schema!="":
+            if schema != "":
                 fields = db.get_all_attribute_values(attribute, schema, distinct=True)
             else:
                 fields = db.getMetaFields(attribute)
@@ -1037,12 +1085,12 @@ class Node(object):
         for f in fields:
             for s in f[0].split(";"):
                 s = u(s.strip())
-                values[s] = values.get(s,0)+1
+                values[s] = values.get(s, 0) + 1
         return values
 
         ALL = -1
 
-        self.lock.acquire() #FIXME: this lock is aquired way too long
+        self.lock.acquire()  # FIXME: this lock is aquired way too long
         try:
             if not hasattr(self, 'attrlist') or attribute not in self.attrlist.keys():
                 self.attrlist = {}
@@ -1057,7 +1105,7 @@ class Node(object):
                     for node in self.getAllChildren():
                         v = node.get(attribute)
                         if v not in ret.keys():
-                            ret[v] =[]
+                            ret[v] = []
                         ret[v].append(node.id)
 
                     for key in ret.keys():
@@ -1069,16 +1117,15 @@ class Node(object):
         if not level in self.attrlist[attribute].keys():
             self.attrlist[attribute][level] = {}
             for item in self.attrlist[attribute][ALL].keys():
-                if level==0:
+                if level == 0:
                     l = self.attrlist[attribute][ALL][item]
                 else:
                     l = self.attrlist[attribute][ALL][item].filter(access)
                 self.attrlist[attribute][level][item] = len(l)
         return self.attrlist[attribute][level]
 
-    #def getTechnAttributes(self):
+    # def getTechnAttributes(self):
     #    return {}
-
 
     def overwriteAccess(self, newrule, oldrule):
         """ Replaces the old access with new accessname"""
@@ -1101,17 +1148,16 @@ class Node(object):
                 self.write_access = self.overwriteRule(self.write_access, oldrule.getName(), newrule.getName(), oldrulestr, newrulestr)
                 if self.id:
                     pass
-                    db.setNodeWriteAccess(self.id,self.write_access)
+                    db.setNodeWriteAccess(self.id, self.write_access)
 
             if self.data_access:
                 self.data_access = self.overwriteRule(self.data_access, oldrule.getName(), newrule.getName(), oldrulestr, newrulestr)
                 if self.id:
                     pass
-                    db.setNodeDataAccess(self.id,self.data_access)
+                    db.setNodeDataAccess(self.id, self.data_access)
         finally:
             tree_lock.release()
             self.invalidateLocalRead()
-
 
     def overwriteRule(self, rulestring, oldname, newname, oldrulestr, newrulestr):
         """ rulestring is the access string, holding all access rules of this node
@@ -1123,24 +1169,25 @@ class Node(object):
         result = []
 
         for r in rules:
-            if r==oldname and not oldname=="":
-                #Either its exactly the rulename
+            if r == oldname and not oldname == "":
+                # Either its exactly the rulename
                 r = newname
 
-            elif oldrulestr in r and not oldrulestr=="":
-                #Or its the rule string. There it first tests, if it is within the current rule. If it is there, it is tested, if it is exactly the rule.
+            elif oldrulestr in r and not oldrulestr == "":
+                # Or its the rule string. There it first tests, if it is within the
+                # current rule. If it is there, it is tested, if it is exactly the rule.
                 temp = r
                 if temp.startswith("{"):
-                    temp = temp[1:len(r)-1]
+                    temp = temp[1:len(r) - 1]
                     if temp.startswith("("):
-                        temp = temp[1:len(r)-1]
-                if temp==oldrulestr:
+                        temp = temp[1:len(r) - 1]
+                if temp == oldrulestr:
                     r = r.replace(oldrulestr, newrulestr)
             result.append(r)
         return ",".join(result)
 
     def createNewVersion(self, user):
-        if self.get('system.version.id')=='':
+        if self.get('system.version.id') == '':
             self.set('system.version.id', '1')
 
         n = Node(name=self.name, type=self.type)
@@ -1149,7 +1196,7 @@ class Node(object):
         n.set("updateuser", user.getName())
         n.set("edit.lastmask", self.get('edit.lastmask'))
 
-        if self.get('updatetime')<str(now()):
+        if self.get('updatetime') < str(now()):
             n.set("updatetime", str(format_date()))
         else:
             n.set("updatetime", str(self.get('updatetime')))
@@ -1164,9 +1211,9 @@ class Node(object):
             parentNode.removeChild(activeNode)
 
         for cid in db.getChildren(activeNode.id):
-            if cid!=activeNode.prev_nid:
+            if cid != activeNode.prev_nid:
                 n.addChild(getNode(cid))
-        n.set("system.version.id", self.getLastVersionID()+1)
+        n.set("system.version.id", self.getLastVersionID() + 1)
 
         n.setPrevID(activeNode.id)
         activeNode.setNextID(n.id)
@@ -1176,9 +1223,9 @@ class Node(object):
     def getActiveVersion(self):
         node = self
         _node = node
-        while _node.next_nid and _node.next_nid!='0' and _node.next_nid!=_node.id:
+        while _node.next_nid and _node.next_nid != '0' and _node.next_nid != _node.id:
             _node = getNode(_node.next_nid)
-            if _node.get("deleted")!="true":
+            if _node.get("deleted") != "true":
                 node = _node
         return node
 
@@ -1189,35 +1236,36 @@ class Node(object):
         last_version_id = 1
         node = self.getActiveVersion()
         version_id = node.get("system.version.id")
-        if version_id!="": last_version_id = int(version_id)
+        if version_id != "":
+            last_version_id = int(version_id)
 
-        while node.prev_nid and node.prev_nid!='0':
+        while node.prev_nid and node.prev_nid != '0':
             node = getNode(node.prev_nid)
             version_id = node.get("system.version.id")
-            if version_id!="":
-                if int(version_id)>last_version_id:
+            if version_id != "":
+                if int(version_id) > last_version_id:
                     last_version_id = int(version_id)
         return last_version_id
 
     def getVersionList(self):
         node_versions = []
         node = self.getActiveVersion()
-        if node.get("deleted")!="true":
+        if node.get("deleted") != "true":
             node_versions.append(node)
-        while node.prev_nid and node.prev_nid!='0':
+        while node.prev_nid and node.prev_nid != '0':
             node = getNode(node.prev_nid)
-            if node.get("deleted")!="true":
+            if node.get("deleted") != "true":
                 node_versions.append(node)
 
-        for i in range(len(node_versions)-1):
+        for i in range(len(node_versions) - 1):
             nodei = node_versions[i]
             last_version_id = nodei.get("system.version.id")
-            last_version_id = last_version_id!="" and int(last_version_id) or 1
-            for j in range(i+1, len(node_versions)):
+            last_version_id = last_version_id != "" and int(last_version_id) or 1
+            for j in range(i + 1, len(node_versions)):
                 node = node_versions[j]
                 version_id = node.get("system.version.id")
-                version_id = version_id!="" and int(version_id) or 1
-                if version_id>last_version_id:
+                version_id = version_id != "" and int(version_id) or 1
+                if version_id > last_version_id:
                     last_version_id = version_id
                     node_versions[i] = node
                     node_versions[j] = nodei
@@ -1225,7 +1273,7 @@ class Node(object):
         return node_versions
 
     def getUpdatedDate(self, format=None):
-        if format==None:
+        if format is None:
             format = STANDARD_FORMAT
         if self.get('updatetime'):
             return format_date(parse_date(self.get('updatetime')), '%d.%m.%Y, %H:%M:%S')
@@ -1281,7 +1329,7 @@ class Node(object):
         else:
             return self.get(key)
 
-    ### some helpers for interactive use
+    # some helpers for interactive use
     @property
     def child_dict(self, type=None):
         child_nodes = [getNode(i) for i in self.children]
@@ -1327,15 +1375,18 @@ def flush():
     finally:
         tree_lock.release()
 
+
 def registerNodeClass(type, nodeclass):
     global nodeclasses
     nodeclasses[type] = nodeclass
-    #if hasattr(nodeclass,'getLabels'):
+    # if hasattr(nodeclass,'getLabels'):
     #    nodeclass.getLabels()
+
 
 def registerNodeFunction(name, nodefunction):
     global nodefunctions
     nodefunctions[name] = nodefunction
+
 
 def registerFileHandler(handler):
     global filehandlers
@@ -1345,6 +1396,7 @@ schema = None
 subnodes = None
 searchParser = None
 searcher = None
+
 
 def initialize(load=1):
     global db, _root, testmode
@@ -1358,7 +1410,7 @@ def initialize(load=1):
     from core.search.ftsquery import DBTYPE
     schema = schema
 
-    if config.get("config.searcher","")=="fts3": # use fts3
+    if config.get("config.searcher", "") == "fts3":  # use fts3
 
         from core.search.ftsquery import subnodes, ftsSearcher
         from core.search.ftsparser import ftsSearchParser
@@ -1400,7 +1452,7 @@ def initialize(load=1):
                     msg = "could not query tables from fts sqlite database ... searcher may not be functional"
                     log.error(msg)
 
-    else: # use magpy
+    else:  # use magpy
         print "magpy searcher initialized"
         from core.search.query import subnodes, mgSearcher
         from core.search.parser import searchParser
@@ -1409,12 +1461,11 @@ def initialize(load=1):
         searchParser = searchParser
         searcher = mgSearcher
 
-
     # load char replacement table
 
     file = None
     sections = ["chars", "words"]
-    data = {"chars":[], "words":[]}
+    data = {"chars": [], "words": []}
     for f in getRoot().getFiles():
         if f.retrieveFile().endswith("searchconfig.txt"):
             file = f

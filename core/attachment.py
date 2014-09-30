@@ -2,7 +2,7 @@
  mediatum - a multimedia content repository
 
  Copyright (C) 2010 Arne Seifert <seiferta@in.tum.de>
- 
+
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
@@ -51,25 +51,25 @@ def filebrowser(node, req):
     ret = list()
     paths = []
     for f in node.getFiles():
-        if f.getType()=="attachment":
+        if f.getType() == "attachment":
             paths.append(f._path)
-            #break
+            # break
 
-    if len(paths)==1 and os.path.isdir(config.get("paths.datadir")+paths[0]):
+    if len(paths) == 1 and os.path.isdir(config.get("paths.datadir") + paths[0]):
         # single file with no path
         path = paths[0]
-    elif len(paths)>0:
+    elif len(paths) > 0:
         # some single files
         files = []
         for path in paths:
             file = {}
-            if not os.path.isdir(config.get("paths.datadir")+path): #file
-                file["mimetype"], file["type"] = getMimeType(config.get("paths.datadir")+path)
+            if not os.path.isdir(config.get("paths.datadir") + path):  # file
+                file["mimetype"], file["type"] = getMimeType(config.get("paths.datadir") + path)
                 file["icon"] = fileicons[file["mimetype"]]
                 file["path"] = path
                 file["name"] = f.getName()
-                if os.path.exists(config.get("paths.datadir")+path):
-                    size = os.path.getsize(config.get("paths.datadir")+path)
+                if os.path.exists(config.get("paths.datadir") + path):
+                    size = os.path.getsize(config.get("paths.datadir") + path)
                 else:
                     size = 0
                 file["size"] = format_filesize(size)
@@ -80,7 +80,7 @@ def filebrowser(node, req):
     else:
         path = ""
 
-    if path=="":
+    if path == "":
         # no attachment directory -> test for single file
         file = {}
         for f in node.getFiles():
@@ -95,13 +95,11 @@ def filebrowser(node, req):
                 ret.append(file)
         return ret, filesize
 
-
-
     if not path.endswith("/") and not req.params.get("path", "").startswith("/"):
         path += "/"
     path += req.params.get("path", "")
 
-    if req.params.get("path","")!="":
+    if req.params.get("path", "") != "":
         file = {}
         file["type"] = "back"
         file["mimetype"] = "back"
@@ -111,13 +109,13 @@ def filebrowser(node, req):
         file["req_path"] = req.params.get("path", "")[:req.params.get("path", "").rfind("/")]
         ret.append(file)
 
-    for name in os.listdir(config.settings["paths.datadir"] + path+"/"):
+    for name in os.listdir(config.settings["paths.datadir"] + path + "/"):
 
         if name.endswith(".thumb") or name.endswith(".thumb2"):
             continue
         file = {}
 
-        file_path = os.path.join(config.settings["paths.datadir"] +path, name)
+        file_path = os.path.join(config.settings["paths.datadir"] + path, name)
         if os.path.isdir(file_path):
             # directory
             file["type"] = "dir"
@@ -137,8 +135,9 @@ def filebrowser(node, req):
     return ret, format_filesize(filesize)
 
 """ format attachment browser """
+
+
 def getAttachmentBrowser(node, req):
     f, s = filebrowser(node, req)
-    req.writeTAL(theme.getTemplate("popups.html"), {"files":f, "sum_size":s, "id": req.params.get("id",""), "path":req.params.get("path", "")}, macro="attachmentbrowser")
-
-   
+    req.writeTAL(theme.getTemplate("popups.html"), {"files": f, "sum_size": s, "id": req.params.get(
+        "id", ""), "path": req.params.get("path", "")}, macro="attachmentbrowser")

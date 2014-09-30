@@ -17,8 +17,8 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from upload import WorkflowStep
-from workflow import registerStep
+from .upload import WorkflowStep
+from .workflow import registerStep
 from core.translation import t, addLabels
 from utils.utils import isNumeric
 import core.tree as tree
@@ -28,9 +28,10 @@ def register():
     tree.registerNodeClass("workflowstep-classify", WorkflowStep_Classify)
     registerStep("workflowstep-classify")
     addLabels(WorkflowStep_Classify.getLabels())
-    
+
 
 class WorkflowStep_Classify(WorkflowStep):
+
     """
         workflowstep that adds item to selectable nodes.
         attributes:
@@ -40,20 +41,20 @@ class WorkflowStep_Classify(WorkflowStep):
                 e.g. 'year|substring:0,4' only year part of date
             - [only_sub]: 0|1 node will only be stored in the subnode
     """
-    
+
     def show_workflow_node(self, node, req):
         return self.forwardAndShow(node, True, req)
-        
+
     def runAction(self, node, op=""):
         name = ""
         func = start = end = None
         attr = self.get('destination_attr')
-        if attr!="" and "|" in attr:
+        if attr != "" and "|" in attr:
             attr, func = attr.split("|")
-            
-        if attr!="": # name of subnode
+
+        if attr != "":  # name of subnode
             name = node.get(attr)
-        if func and func.startswith('substring'): # check for function
+        if func and func.startswith('substring'):  # check for function
             start, end = func[10:].split(",")
         if end and isNumeric(end):
             name = name[:int(end)]
@@ -64,16 +65,16 @@ class WorkflowStep_Classify(WorkflowStep):
             try:
                 pnode = tree.getNode(nid)
                 cnode = None
-                if name!="":
+                if name != "":
                     try:
                         cnode = pnode.getChild(name)
                     except tree.NoSuchNodeError:
                         cnode = tree.Node(name, type="directory")
                         pnode.addChild(cnode)
-               
-                if cnode: # add node to child given by attributename
+
+                if cnode:  # add node to child given by attributename
                     cnode.addChild(node)
-                if self.get('only_sub')!='1': # add to node (no hierarchy)
+                if self.get('only_sub') != '1':  # add to node (no hierarchy)
                     pnode.addChild(node)
             except tree.NoSuchNodeError:
                 pass
@@ -93,22 +94,21 @@ class WorkflowStep_Classify(WorkflowStep):
         field.set("type", "check")
         ret.append(field)
         return ret
-        
+
     @staticmethod
     def getLabels():
-        return { "de":
-            [
-                ("workflowstep-classify", "Klassifizieren"),
-                ("admin_wfstep_classify_destination", "Zielknoten-ID"),
-                ("admin_wfstep_classify_destination_attr", "Unterknoten Attribut"),
-                ("admin_wfstep_classify_only_sub", "Nur Unterknoten"),
-            ],
-           "en":
-            [
-                ("workflowstep-classify", "classify"),
-                ("admin_wfstep_classify_destination", "ID of destination node"),
-                ("admin_wfstep_classify_destination_attr", "attribute name"),
-                ("admin_wfstep_classify_only_sub", "only subnode"),
-            ]
-            }
-        
+        return {"de":
+                [
+                    ("workflowstep-classify", "Klassifizieren"),
+                    ("admin_wfstep_classify_destination", "Zielknoten-ID"),
+                    ("admin_wfstep_classify_destination_attr", "Unterknoten Attribut"),
+                    ("admin_wfstep_classify_only_sub", "Nur Unterknoten"),
+                ],
+                "en":
+                [
+                    ("workflowstep-classify", "classify"),
+                    ("admin_wfstep_classify_destination", "ID of destination node"),
+                    ("admin_wfstep_classify_destination_attr", "attribute name"),
+                    ("admin_wfstep_classify_only_sub", "only subnode"),
+                ]
+                }

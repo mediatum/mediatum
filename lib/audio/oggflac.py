@@ -26,10 +26,17 @@ from cStringIO import StringIO
 from flac import StreamInfo, VCFLACDict
 from ogg import OggPage, OggFileType, error as OggError
 
-class error(OggError): pass
-class OggFLACHeaderError(error): pass
+
+class error(OggError):
+    pass
+
+
+class OggFLACHeaderError(error):
+    pass
+
 
 class OggFLACStreamInfo(StreamInfo):
+
     """Ogg FLAC general header and stream info.
 
     This encompasses the Ogg wrapper for the FLAC STREAMINFO metadata
@@ -63,7 +70,9 @@ class OggFLACStreamInfo(StreamInfo):
     def pprint(self):
         return "Ogg " + super(OggFLACStreamInfo, self).pprint()
 
+
 class OggFLACVComment(VCFLACDict):
+
     def load(self, data, info, errors='replace'):
         # data should be pointing at the start of an Ogg page, after
         # the first FLAC page.
@@ -107,7 +116,9 @@ class OggFLACVComment(VCFLACDict):
         new_pages = OggPage.from_packets(packets, old_pages[0].sequence)
         OggPage.replace(fileobj, old_pages, new_pages)
 
+
 class OggFLAC(OggFileType):
+
     """An Ogg FLAC file."""
 
     _Info = OggFLACStreamInfo
@@ -121,6 +132,7 @@ class OggFLAC(OggFileType):
     score = staticmethod(score)
 
 Open = OggFLAC
+
 
 def delete(filename):
     """Remove tags from a file."""

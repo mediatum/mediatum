@@ -1,5 +1,5 @@
 import time
-import athana
+from . import athana
 import os
 import hashlib
 import utils.utils as utils
@@ -11,8 +11,9 @@ import core.config as config
 
 
 class FileWriter:
+
     def __init__(self, node, filename):
-        f,ext = os.path.splitext(filename)
+        f, ext = os.path.splitext(filename)
         self.realname = filename
         self.filename = filename
         self.file = open(self.filename, "wb")
@@ -32,8 +33,9 @@ class FileWriter:
 
 
 class collection_ftpserver:
+
     def __init__(self, basecontainer=None, port=21, debug="testing"):
-        #set initial values
+        # set initial values
         self.user = ""
         self.passwd = ""
         self.basecontainer = ""
@@ -42,7 +44,7 @@ class collection_ftpserver:
         self.port = port
         self.logging = "ftp"
         print "base:", basecontainer
-        if basecontainer: # use special container for collections
+        if basecontainer:  # use special container for collections
             self.user = basecontainer.get("ftp.user")
             self.passwd = basecontainer.get("ftp.passwd")
             self.basecontainer = basecontainer
@@ -50,7 +52,7 @@ class collection_ftpserver:
             self.node = basecontainer
 
     def debug(self):
-        if self.logging=="testing":
+        if self.logging == "testing":
             return 1
         return 0
 
@@ -62,10 +64,10 @@ class collection_ftpserver:
         self.passwd = password
         self.basecontainer = basecontainer
         self.dir = [basecontainer]
-        self.node = basecontainer # homedirectory of user
+        self.node = basecontainer  # homedirectory of user
 
     def has_user(self, username, password):
-        if username==self.user and (hashlib.md5(password).hexdigest()==self.passwd or password==self.passwd):
+        if username == self.user and (hashlib.md5(password).hexdigest() == self.passwd or password == self.passwd):
             return collection_ftpserver(self.basecontainer, port=self.port, debug="athana")
         else:
             user = users.checkLogin(username, password)
@@ -83,7 +85,7 @@ class collection_ftpserver:
         return result
 
     def isfile(self, path):
-        path,filename = utils.splitpath(path)
+        path, filename = utils.splitpath(path)
         olddir = self.dir
         oldnode = self.node
         result = self.cwd(path)
@@ -101,17 +103,17 @@ class collection_ftpserver:
 
     def getfile(self, path):
         ff = self.isfile(path)
-        if not ff or not len(ff)==2:
-            raise IOError("no such directory/file "+path)
+        if not ff or not len(ff) == 2:
+            raise IOError("no such directory/file " + path)
         return ff
 
     def stat(self, path):
-        node,f = self.getfile(path)
+        node, f = self.getfile(path)
         time = 1209465429
-        return (0, 0, 2052L, 1, 1000, 100, f.getSize(), time, time, time)
+        return (0, 0, 2052, 1, 1000, 100, f.getSize(), time, time, time)
 
     def unlink(self, path):
-        node,f = self.getfile(path)
+        node, f = self.getfile(path)
         if f == "metadata":
             raise IOError("Can't delete file")
         elif isinstance(f, tree.Node):
@@ -127,22 +129,22 @@ class collection_ftpserver:
             node.removeFile(f)
 
     def mkdir(self, path):
-        path,filename = utils.splitpath(path)
+        path, filename = utils.splitpath(path)
         olddir = self.dir
         oldnode = self.node
         if not self.cwd(path):
-            raise IOError("no such directory: "+path)
+            raise IOError("no such directory: " + path)
         node = self.node
         self.dir = olddir
         self.node = oldnode
         node.addChild(tree.Node(filename, type="directory"))
 
     def rmdir(self, path):
-        path,filename = utils.splitpath(path)
+        path, filename = utils.splitpath(path)
         olddir = self.dir
         oldnode = self.node
         if not self.cwd(path):
-            raise IOError("no such directory: "+path)
+            raise IOError("no such directory: " + path)
         try:
             for subdir in self.node.getChildren():
                 if subdir.getName() == filename:
@@ -152,11 +154,11 @@ class collection_ftpserver:
             self.node = oldnode
 
     def open_for_write(self, path, mode):
-        path,filename = utils.splitpath(path)
+        path, filename = utils.splitpath(path)
         olddir = self.dir
         oldnode = self.node
         if not self.cwd(path):
-            raise IOError("no such directory: "+path)
+            raise IOError("no such directory: " + path)
         filename = config.get("paths.tempdir") + filename
         r = FileWriter(self.node, filename)
         self.dir = olddir
@@ -167,16 +169,16 @@ class collection_ftpserver:
         if "w" in mode:
             return self.open_for_write(path, mode)
 
-        node,f = self.isfile(path)
+        node, f = self.isfile(path)
         if not f:
-            raise IOError("No such file: "+path)
+            raise IOError("No such file: " + path)
         if isinstance(f, tree.Node):
             file = f.getFiles()[0].retrieveFile()
         else:
             file = f.retrieveFile()
         return open(file, "rb")
 
-    def current_directory (self):
+    def current_directory(self):
         return "/" + ("/".join([d.getName() for d in self.dir[1:]]))
 
     def cwd(self, dir):
@@ -185,7 +187,7 @@ class collection_ftpserver:
             d = [self.basecontainer]
             dir = dir[1:]
         for c in dir.split("/"):
-            if not c or c==".":
+            if not c or c == ".":
                 pass
             elif c == '..' and len(d):
                 d = d[0:-1]
@@ -203,7 +205,7 @@ class collection_ftpserver:
         return 1
 
     def cdup(self):
-        if len(self.dir)>1:
+        if len(self.dir) > 1:
             self.dir = self.dir[:-1]
             self.cwd("..")
             return 1
@@ -216,7 +218,7 @@ class collection_ftpserver:
     def rnto(self, line):
         print 'in rnto'
         if self.filefrom:
-            #check if trying to move file into another folder
+            # check if trying to move file into another folder
             if len(line[1].split('/')) > 1:
                 stack = line[1].split('/')
                 filename = stack.pop()
@@ -228,13 +230,13 @@ class collection_ftpserver:
                     destination_dir = stack.pop()
 
                 if not new_parent:
-                    #find destination folder
+                    # find destination folder
                     for node in self.dir[0].getAllChildren():
                         if node.getName() == destination_dir:
                             new_parent = node
                             break
 
-                #find node object
+                # find node object
                 for node in self.node.getChildren():
                     if node.getName() == filename.replace('(%s) ' % node.id, ''):
                         new_parent.addChild(node)
@@ -243,28 +245,28 @@ class collection_ftpserver:
 
             # check directory
             for c in self.node.getChildren():
-                #sets the name of the node
+                # sets the name of the node
                 if c.getName() == self.filefrom.replace('(%s) ' % c.id, ''):
                     c.set("nodename", line[1].replace('(%s) ' % c.id, ''))
                     del self.filefrom
                     return 1
 
-            #check files
+            # check files
             for f in self.node.getFiles():
-                if f.retrieveFile().split("/")[-1]==self.filefrom:
+                if f.retrieveFile().split("/")[-1] == self.filefrom:
                     if not line[1].startswith("ftp_"):
                         line[1] = "ftp_" + line[1]
-                    nname = ("/".join(f.retrieveFile().split("/")[:-1]) + "/"+ line[1]).replace(" ", "_")
+                    nname = ("/".join(f.retrieveFile().split("/")[:-1]) + "/" + line[1]).replace(" ", "_")
                     if not os.path.exists(nname):
                         os.rename(f.retrieveFile(), nname)
                         self.node.removeFile(f)
-                        f._path = ("/".join(f._path.split("/")[:-1]) + "/"+ line[1]).replace(" ", "_")
+                        f._path = ("/".join(f._path.split("/")[:-1]) + "/" + line[1]).replace(" ", "_")
                         self.node.addFile(f)
                         del self.filefrom
                         return 1
         return 0
 
-    def listdir (self, path, long=0):
+    def listdir(self, path, long=0):
         olddir = self.dir
         oldnode = self.node
         upload_dir = self.dir[0]
@@ -274,14 +276,14 @@ class collection_ftpserver:
 
         l = []
 
-        #convert nodefiles to nodes
+        # convert nodefiles to nodes
         for nodefile in self.dir[-1].getFiles():
             if not nodefile.getType().startswith('tile') and "ftp_" in nodefile.retrieveFile() and os.path.exists(nodefile.retrieveFile()):
                 file_to_node(nodefile, upload_dir)
 
-        #display folders and nodes
+        # display folders and nodes
         for node in self.dir[-1].getChildren():
-            if node.getName().strip()!="" and node.isContainer():
+            if node.getName().strip() != "" and node.isContainer():
                 nodedate = node.get("creationtime")
                 if nodedate:
                     t = parse_date(nodedate)
@@ -297,11 +299,12 @@ class collection_ftpserver:
                                                                                     2000,
                                                                                     node.id,
                                                                                     node.getName())]
-        #display any unconverted files
+        # display any unconverted files
         for nodefile in self.dir[-1].getFiles():
             if not nodefile.getType().startswith('tile') and "ftp_" in nodefile.retrieveFile() and os.path.exists(nodefile.retrieveFile()):
-                t = os.stat(nodefile.retrieveFile())[8] # last modification date
-                l += ["-rw-rw-rw-    1 1001     100      %8d %d %d  %d %s" % (nodefile.getSize(), time.localtime(t)[1], time.localtime(t)[2], time.localtime(t)[0], nodefile.getName())]
+                t = os.stat(nodefile.retrieveFile())[8]  # last modification date
+                l += ["-rw-rw-rw-    1 1001     100      %8d %d %d  %d %s" %
+                      (nodefile.getSize(), time.localtime(t)[1], time.localtime(t)[2], time.localtime(t)[0], nodefile.getName())]
 
         self.dir = olddir
         self.node = oldnode

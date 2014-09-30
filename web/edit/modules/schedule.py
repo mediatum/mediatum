@@ -81,13 +81,13 @@ def getContent(req, ids):
                 field_errors.append(False)
 
             d = {
-                 'fields': fields,
-                 'fieldDicts': fieldDicts,
-                 'currentField': fields[0],
-                 'field_errors': field_errors,
-                 'currentFunction': schedule_func,
-                 'explain_func': su.fc_dict[schedule_func].getExplanation(language)
-                }
+                'fields': fields,
+                'fieldDicts': fieldDicts,
+                'currentField': fields[0],
+                'field_errors': field_errors,
+                'currentFunction': schedule_func,
+                'explain_func': su.fc_dict[schedule_func].getExplanation(language)
+            }
 
             req.writeTAL("web/edit/modules/schedule.html", d, macro="schedule_func_show_fields_and_explanation")
             return ""
@@ -133,12 +133,12 @@ def getContent(req, ids):
                 error = "\n<br/>\n".join([error, t(language, 'edit_schedule_field_validation_error')])
 
             d = {
-                 'fields': fields,
-                 'fieldDicts': fieldDicts,
-                 'currentField': fields[0],
-                 'field_errors': field_errors,
-                 'currentFunction': schedule_func,
-                }
+                'fields': fields,
+                'fieldDicts': fieldDicts,
+                'currentField': fields[0],
+                'field_errors': field_errors,
+                'currentFunction': schedule_func,
+            }
 
             req.writeTAL("web/edit/modules/schedule.html", d, macro="schedule_func_show_fields_and_explanation")
             return ""
@@ -168,7 +168,8 @@ def getContent(req, ids):
                 logging.getLogger("backend").info(msg)
             else:
                 error_msg = ", ".join([t(language, e) for e in delete_errors])
-                msg = "user '%s' tried to remove node %s from schedule '%s' (%s): %s" % (username, node_id, schedule.name, schedule_id, error_msg)
+                msg = "user '%s' tried to remove node %s from schedule '%s' (%s): %s" % (
+                    username, node_id, schedule.name, schedule_id, error_msg)
                 logging.getLogger("backend").error(msg)
 
             errors += delete_errors
@@ -296,13 +297,14 @@ def getContent(req, ids):
             field_errors = []
         else:
             # should not happen
-            msg = "-> unexpected error: 'non-existant schedule function' requested in module %s: :s" % (str(__file__), str(inspect.currentframe().f_lineno))
+            msg = "-> unexpected error: 'non-existant schedule function' requested in module %s: :s" % (
+                str(__file__), str(inspect.currentframe().f_lineno))
             print msg
             logging.getLogger("backend").error(msg)
 
     d = {
-          "id": req.params.get("id")
-        }
+        "id": req.params.get("id")
+    }
 
     if current_function in su.fc_dict:
         fields = su.fc_dict[current_function].getMetafields(lang(req))
@@ -360,7 +362,7 @@ def getContent(req, ids):
             n = None
             try:
                 n = tree.getNode(nid)
-            except tree.NoSuchNodeError, e:
+            except tree.NoSuchNodeError as e:
                 has_evaluation_errors = True
                 additional_nodes_error = True
                 if nid not in additional_nodes_bad_ids:
@@ -438,13 +440,15 @@ def getContent(req, ids):
             schedules = tree.getRoot("schedules")
             schedules.addChild(new_schedule)
 
-            msg = "user '%s' created new schedule '%s' (%s), trigger='%s', function='%s', nodelist='%s'" % (username, new_schedule.name, str(new_schedule.id), datetime_str, d['currentFunction'], new_schedule.get('nodelist'))
+            msg = "user '%s' created new schedule '%s' (%s), trigger='%s', function='%s', nodelist='%s'" % (
+                username, new_schedule.name, str(new_schedule.id), datetime_str, d['currentFunction'], new_schedule.get('nodelist'))
             logging.getLogger("backend").info(msg)
 
             d['result'] = t(language, 'edit_schedule_result_new_schedule_created')
             d['created_new_schedule'] = True
         else:
-            msg = "user '%s' created temporary schedule '%s' (%s), trigger='%s', function='%s', nodelist='%s'" % (username, new_schedule.name, str(new_schedule.id), datetime_str, d['currentFunction'], new_schedule.get('nodelist'))
+            msg = "user '%s' created temporary schedule '%s' (%s), trigger='%s', function='%s', nodelist='%s'" % (
+                username, new_schedule.name, str(new_schedule.id), datetime_str, d['currentFunction'], new_schedule.get('nodelist'))
             logging.getLogger("backend").info(msg)
 
             d['result'] = t(language, 'edit_schedule_result_temporary_schedule_created')
@@ -452,7 +456,8 @@ def getContent(req, ids):
 
     elif (schedule) and ("submit" in req.params):
         new_schedule = schedule
-        msg = "user '%s' is editing schedule '%s' (%s), trigger='%s', function='%s', nodelist='%s'" % (username, new_schedule.name, str(new_schedule.id), datetime_str, d['currentFunction'], new_schedule.get('nodelist'))
+        msg = "user '%s' is editing schedule '%s' (%s), trigger='%s', function='%s', nodelist='%s'" % (
+            username, new_schedule.name, str(new_schedule.id), datetime_str, d['currentFunction'], new_schedule.get('nodelist'))
         logging.getLogger("backend").info(msg)
         new_schedule.set("system.edited", datetime.now().isoformat())
 
@@ -466,7 +471,7 @@ def getContent(req, ids):
 
         ids_plus_additional_nodes = ids
         for nid in additional_nodes_id_list:
-            if not nid in ids_plus_additional_nodes:
+            if nid not in ids_plus_additional_nodes:
                 ids_plus_additional_nodes.append(nid)
 
         new_schedule.set('function', d['currentFunction'])

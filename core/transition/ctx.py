@@ -8,7 +8,9 @@ from core.transition.helpers import runswith
 
 logg = logging.getLogger("athanatransition")
 
+
 class _AppCtxGlobals(object):
+
     """A plain object."""
 
     def get(self, name, default=None):
@@ -28,6 +30,7 @@ class _AppCtxGlobals(object):
 
 
 class AthanaRequestAdapter(object):
+
     def __init__(self, athana_request):
         self._athana_request = athana_request
 
@@ -39,6 +42,7 @@ class AthanaRequestAdapter(object):
 
 
 class RequestContext(object):
+
     def __init__(self, app, request, session):
         self.request = request
         self.session = session
@@ -90,6 +94,7 @@ class RequestContext(object):
 
 
 class AppContext():
+
     def __init__(self, app):
         self.app = app
         # Like request context, app contexts can be pushed multiple times

@@ -21,37 +21,37 @@ from mediatumtal import tal
 from utils.utils import esc
 from core.metatype import Metatype
 
+
 class m_number(Metatype):
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
-        return tal.getTAL("metadata/number.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
-
+        return tal.getTAL("metadata/number.html", {"lock": lock, "value": value, "width": width,
+                                                   "name": field.getName(), "field": field}, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
-        return tal.getTAL("metadata/number.html",{"context":context}, macro="searchfield", language=context.language)
+        return tal.getTAL("metadata/number.html", {"context": context}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None, html=1):
-        value = node.get(field.getName()).replace(";","; ")
+        value = node.get(field.getName()).replace(";", "; ")
         if html:
             value = esc(value)
         return (field.getLabel(), value)
 
     def getName(self):
         return "fieldtype_number"
-        
+
     # method for additional keys of type number
     def getLabels(self):
         return m_number.labels
 
-    labels = { "de":
-            [
-                ("fieldtype_number", "Zahl"),
-                ("fieldtype_number_desc", "Feld zur Eingabe eines Zahlenwertes")
-            ],
-           "en":
-            [
-                ("fieldtype_number", "number"),
-                ("fieldtype_number_desc", "field for digit input")   
-            ]
-         }
-
+    labels = {"de":
+              [
+                  ("fieldtype_number", "Zahl"),
+                  ("fieldtype_number_desc", "Feld zur Eingabe eines Zahlenwertes")
+              ],
+              "en":
+              [
+                  ("fieldtype_number", "number"),
+                  ("fieldtype_number_desc", "field for digit input")
+              ]
+              }

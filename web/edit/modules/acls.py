@@ -31,8 +31,10 @@ from utils.utils import removeEmptyStrings
 log = logging.getLogger('edit')
 acl_types = ["read", "write", "data"]
 
+
 def getInformation():
-    return {"version":"1.1", "system":0}
+    return {"version": "1.1", "system": 0}
+
 
 def getContent(req, ids):
     ret = ""
@@ -44,16 +46,15 @@ def getContent(req, ids):
 
     idstr = ",".join(ids)
 
-
     if "save" in req.params:
-        #save acl level
-        
+        # save acl level
+
         userdir = users.getHomeDir(user)
-        logging.getLogger('usertracing').info(access.user.name + " change access "+idstr)
-        
-        if req.params.get("type")=="acl":
+        logging.getLogger('usertracing').info(access.user.name + " change access " + idstr)
+
+        if req.params.get("type") == "acl":
             for type in acl_types:
-                rights = req.params.get("left"+type, "").replace(";",",")
+                rights = req.params.get("left" + type, "").replace(";", ",")
                 for id in ids:
                     node = tree.getNode(id)
                     error = 0
@@ -63,9 +64,9 @@ def getContent(req, ids):
                         error = 1
                     if error:
                         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
-                        
-        #save userlevel
-        elif req.params.get("type")=="user":
+
+        # save userlevel
+        elif req.params.get("type") == "user":
 
             for type in acl_types:
                 for id in ids:
@@ -74,24 +75,24 @@ def getContent(req, ids):
                     if access.hasWriteAccess(node) and userdir.id != node.id:
                         r = []
                         r_acls = []
-                        if req.params.get("leftuser"+type,"")!="":
-                            for right in req.params.get("leftuser"+type, "").split(";"):
-                                if len(right.split(": "))==2:
-                                    r.append("(user " + right.split(": ")[1]+ ")")
+                        if req.params.get("leftuser" + type, "") != "":
+                            for right in req.params.get("leftuser" + type, "").split(";"):
+                                if len(right.split(": ")) == 2:
+                                    r.append("(user " + right.split(": ")[1] + ")")
                                 else:
                                     r_acls.append(right)
-                                    
-                                if len(r)>0:
-                                    rstr = "{"+" OR ".join(r)+"}"
-                                else:
-                                    rstr = req.params.get("leftuser"+type,"")
 
-                                if len(rstr)>0:
-                                    rstr += "," 
-                                    
+                                if len(r) > 0:
+                                    rstr = "{" + " OR ".join(r) + "}"
+                                else:
+                                    rstr = req.params.get("leftuser" + type, "")
+
+                                if len(rstr) > 0:
+                                    rstr += ","
+
                                 for x in r_acls:
-                                    rstr += x+","
-                                    
+                                    rstr += x + ","
+
                                 rstr = rstr[:-1]
                         else:
                             rstr = ""
@@ -101,7 +102,7 @@ def getContent(req, ids):
                     if error:
                         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
-    runsubmit = "\nfunction runsubmit(){\n"  
+    runsubmit = "\nfunction runsubmit(){\n"
     retacl = ""
     rights = {}
     parent_rights = {}
@@ -110,11 +111,11 @@ def getContent(req, ids):
         s = None
         parent_rights[type] = {}
         overload[type] = 0
-        
-        runsubmit +="\tmark(document.myform.left"+type+");\n"
-        runsubmit +="\tmark(document.myform.leftuser"+type+");\n"
-        
-        if type in ("read","data"):
+
+        runsubmit += "\tmark(document.myform.left" + type + ");\n"
+        runsubmit += "\tmark(document.myform.leftuser" + type + ");\n"
+
+        if type in ("read", "data"):
             overload[type] = 1
 
         for id in ids:
@@ -122,11 +123,12 @@ def getContent(req, ids):
             r = node.getAccess(type)
             if r is None:
                 r = ""
-            log.debug(node.name+" "+type+" "+r)
-            if not s or r==s:
+            log.debug(node.name + " " + type + " " + r)
+            if not s or r == s:
                 s = r
             else:
                 s = ""
+
             def addNode(node):
                 for p in node.getParents():
                     aclright = p.getAccess(type)
@@ -138,19 +140,32 @@ def getContent(req, ids):
                         addNode(p)
             addNode(node)
         rights[type] = removeEmptyStrings(s.split(","))
-        
-    for type in acl_types:
-        retacl += req.getTAL("web/edit/modules/acls.html", makeList(req, type, rights[type], parent_rights[type].keys(), overload[type], type=type), macro="edit_acls_selectbox")
 
-    if "action" in req.params.keys(): # load additional rights by ajax
+    for type in acl_types:
+        retacl += req.getTAL("web/edit/modules/acls.html",
+                             makeList(req,
+                                      type,
+                                      rights[type],
+                                      parent_rights[type].keys(),
+                                      overload[type],
+                                      type=type),
+                             macro="edit_acls_selectbox")
+
+    if "action" in req.params.keys():  # load additional rights by ajax
         retuser = ""
         for type in acl_types:
-            retuser += req.getTAL("web/edit/modules/acls.html", makeUserList(req, type, rights[type], parent_rights[type].keys(), overload[type], type=type), macro="edit_acls_userselectbox")
+            retuser += req.getTAL("web/edit/modules/acls.html",
+                                  makeUserList(req,
+                                               type,
+                                               rights[type],
+                                               parent_rights[type].keys(),
+                                               overload[type],
+                                               type=type),
+                                  macro="edit_acls_userselectbox")
         req.write(retuser)
         return ""
 
-    runsubmit +="\tdocument.myform.submit();\n}\n"
+    runsubmit += "\tdocument.myform.submit();\n}\n"
 
-    return req.getTAL("web/edit/modules/acls.html", {"runsubmit":runsubmit, "idstr":idstr, "contentacl":retacl, "adminuser":access.getUser().isAdmin()}, macro="edit_acls")
-
-    
+    return req.getTAL("web/edit/modules/acls.html", {"runsubmit": runsubmit, "idstr": idstr,
+                                                     "contentacl": retacl, "adminuser": access.getUser().isAdmin()}, macro="edit_acls")

@@ -27,34 +27,35 @@ import core.users as users
 from utils.utils import getMimeType, splitpath
 from utils.fileutils import importFile
 
+
 def getContent(req, ids):
     user = users.getUserFromRequest(req)
     node = tree.getNode(ids[0])
     access = acl.AccessData(req)
-    
-    if "logo" in users.getHideMenusForUser(user) or  not access.hasWriteAccess(node):
+
+    if "logo" in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     # save logo
     if "logo_save" in req.params.keys():
         # save url
-        if req.params.get("logo_link","")=="":
+        if req.params.get("logo_link", "") == "":
             node.removeAttribute("url")
         else:
             node.set('url', req.params.get("logo_link"))
- 
-        # save filename
-        if req.params.get("logo")=="nologo":
-            # remove logo from current node
-            node.set("system.logo","")
 
-        elif req.params.get("logo")!="":
+        # save filename
+        if req.params.get("logo") == "nologo":
+            # remove logo from current node
+            node.set("system.logo", "")
+
+        elif req.params.get("logo") != "":
             node.set("system.logo", req.params.get("logo"))
 
     # add logo file
     elif "addfile" in req.params.keys():
         file = req.params.get("updatefile")
-        if file:      
+        if file:
             mimetype = "application/x-download"
             type = "file"
             mimetype, type = getMimeType(file.filename.lower())
@@ -64,11 +65,12 @@ def getContent(req, ids):
                 return req.getTAL("web/edit/modules/logo.html", {}, macro="filetype_error")
 
             else:
-                file = importFile(file.filename,file.tempname)
+                file = importFile(file.filename, file.tempname)
                 node.addFile(file)
     logofiles = []
     for f in node.getFiles():
-        if f.getType()=="image":
+        if f.getType() == "image":
             logofiles.append(splitpath(f.retrieveFile()))
 
-    return req.getTAL("web/edit/modules/logo.html", {"id":req.params.get("id","0"), "tab":req.params.get("tab", ""), "node":node, "logofiles":logofiles, "logo":node.getLogoPath()}, macro="edit_logo")
+    return req.getTAL("web/edit/modules/logo.html", {"id": req.params.get("id", "0"), "tab": req.params.get(
+        "tab", ""), "node": node, "logofiles": logofiles, "logo": node.getLogoPath()}, macro="edit_logo")

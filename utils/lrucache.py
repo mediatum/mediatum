@@ -185,12 +185,12 @@ def lru_cache(maxsize=100, typed=False):
 
         def make_graph(filename):
             import objgraph
+
             def extra_info(o):
                 if isinstance(o, dict):
                     return o.keys()
-                else: # list
+                else:  # list
                     return "id={} val={}\nprev={} next={}".format(hex(id(o)), o[RESULT], o[PREV][RESULT], o[NEXT][RESULT])
-
 
             objgraph.show_refs([cache, nonlocal_root[0]], filename=filename,
                                refcounts=True,
@@ -210,7 +210,6 @@ def lru_cache(maxsize=100, typed=False):
         return update_wrapper(wrapper, user_function)
 
     return decorating_function
-
 
 
 if __name__ == "__main__":

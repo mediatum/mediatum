@@ -33,31 +33,31 @@ from core.db import database
 period = time.strftime("%Y-%m")
 force = 0
 
-if len(sys.argv)==3 and sys.argv[1]=="--period":
+if len(sys.argv) == 3 and sys.argv[1] == "--period":
     period = sys.argv[2]
 else:
     p = period.split("-")
-    if int(p[1])-1==0:
-        p[0] = str(int(p[0])-1)
+    if int(p[1]) - 1 == 0:
+        p[0] = str(int(p[0]) - 1)
         p[1] = "12"
     else:
         p[1] = str("%2.2i" % (int(p[1]) - 1))
-        
+
     period = "-".join(p)
 
-if len(sys.argv)==2 and sys.argv[1]=="--force":
+if len(sys.argv) == 2 and sys.argv[1] == "--force":
     print "force reprocess of log data"
     force = 1
 
 path = [core.config.get("logging.file.everything")]
-outpath = "%s%s.log" %(core.config.get("logging.save", os.path.dirname(core.config.get("logging.file.everything"))+'/'), period)
+outpath = "%s%s.log" % (core.config.get("logging.save", os.path.dirname(core.config.get("logging.file.everything")) + '/'), period)
 
-if os.path.exists(outpath) and force==0:
+if os.path.exists(outpath) and force == 0:
     print "file for period", period, "existing", outpath
     sys.exit()
 
 for i in range(1, 21):
-    path.append(core.config.get("logging.file.everything")+"."+str(i))
+    path.append(core.config.get("logging.file.everything") + "." + str(i))
 
 d = []
 for filename in path:
@@ -75,9 +75,8 @@ fout.close()
 print "done for period", period, ", found", len(d), "lines."
 
 
-if force==1: # force rebuildin stats
+if force == 1:  # force rebuildin stats
     print "rebuild stats for period", period
     db = database.getConnection()
     for id in db.runQuery("select id from node where type='collections' or type='collection'"):
         buildStat(tree.getNode(id[0]), period)
-

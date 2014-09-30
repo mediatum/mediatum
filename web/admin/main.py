@@ -33,7 +33,7 @@ def show_node(req):
     """ opens administration window with content """
 
     p = req.path[1:].split("/")
-    style = req.params.get("style","")
+    style = req.params.get("style", "")
     user = users.getUserFromRequest(req)
 
     v = {}
@@ -53,7 +53,7 @@ def show_node(req):
     v["spc"].append(Menu("sub_header_logout", "/logout"))
     v["hashelp"] = help.getHelpPath(['admin', 'modules', req.path.split('/')[1]])
 
-    if len(p)>0:
+    if len(p) > 0:
         if style == "":
             req.writeTAL("web/admin/frame.html", v, macro="frame")
         else:
@@ -78,7 +78,7 @@ def export(req):
         file.close()
 
         req.sendFile(tempfile, "application/xml")
-        if os.sep == '/': # Unix?
-            os.unlink(tempfile) # unlinking files while still reading them only works on Unix/Linux
+        if os.sep == '/':  # Unix?
+            os.unlink(tempfile)  # unlinking files while still reading them only works on Unix/Linux
     except:
         print "module has no export method"

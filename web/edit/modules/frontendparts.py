@@ -28,38 +28,39 @@ from web.edit.edit_common import writetree
 
 
 def getInformation():
-    return {"version":"1.0", "system":1}
-    
-    
+    return {"version": "1.0", "system": 1}
+
+
 def getContent(req, ids):
-    if len(ids)>0:
+    if len(ids) > 0:
         ids = ids[0]
-    
+
     node = tree.getNode(ids)
     access = acl.AccessData(req)
-    
-    if not node or node.getContentType()!="collections" or not access.hasWriteAccess(node):
+
+    if not node or node.getContentType() != "collections" or not access.hasWriteAccess(node):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
-    
+
     if "action" in req.params:
-        if req.params.get("action")=="translate":
-            #translation
-            req.writeTALstr('<tal:block tal:content="key" i18n:translate=""/>',{"key": req.params.get("key")})
-        
-        if req.params.get("action")=="nodeselection":
+        if req.params.get("action") == "translate":
+            # translation
+            req.writeTALstr('<tal:block tal:content="key" i18n:translate=""/>', {"key": req.params.get("key")})
+
+        if req.params.get("action") == "nodeselection":
             # tree popup for node selection
             def f(req, node, objnum, link, indent, type):
                 access = acl.AccessData(req)
                 indent *= 10
                 nodename = node.name
-                try: nodename = node.getLabel()
-                except: 
+                try:
+                    nodename = node.getLabel()
+                except:
                     log.logException()
-                
-                if type==1:
-                    link = req.makeSelfLink({"tree_unfold":"", "tree_fold":node.id})+"#node"+node.id
-                elif type==2:
-                    link = req.makeSelfLink({"tree_unfold":node.id, "tree_fold":""})+"#node"+node.id
+
+                if type == 1:
+                    link = req.makeSelfLink({"tree_unfold": "", "tree_fold": node.id}) + "#node" + node.id
+                elif type == 2:
+                    link = req.makeSelfLink({"tree_unfold": node.id, "tree_fold": ""}) + "#node" + node.id
 
                 v = {}
                 v["id"] = str(node.id)
@@ -71,9 +72,9 @@ def getContent(req, ids):
                 return req.getTAL("web/edit/modules/frontendparts.html", v, macro="edit_frontendparts_nodeselection")
 
             content = writetree(req, tree.getRoot("collections"), f, "", openednodes=[], sessionkey="nodetree", omitroot=0)
-            req.writeTAL("web/edit/modules/frontendparts.html", {"content":content}, macro="edit_frontendparts_nodepopup") 
-            
-        if req.params.get("action")=="iconselection":
+            req.writeTAL("web/edit/modules/frontendparts.html", {"content": content}, macro="edit_frontendparts_nodepopup")
+
+        if req.params.get("action") == "iconselection":
             # image popup for image selection
             icons = []
             for p in athana.getFileStorePaths("/img/"):
@@ -81,41 +82,48 @@ def getContent(req, ids):
                     for name in [f for f in files if (f.endswith(".gif") or f.endswith(".png") or f.endswith(".jpg"))]:
                         if "CVS" not in root and not "web/admin/img" in root and not "web/edit/img" in root:
                             try:
-                                pic = Image.open(root+name)
-                                dimension = "%sx%spx" %(pic.size)
+                                pic = Image.open(root + name)
+                                dimension = "%sx%spx" % (pic.size)
                                 icons.append((name, dimension))
                             except:
-                                pass                           
-            
-            req.writeTAL("web/edit/modules/frontendparts.html", {"icons":icons}, macro="edit_frontendparts_iconpopup")
+                                pass
+
+            req.writeTAL("web/edit/modules/frontendparts.html", {"icons": icons}, macro="edit_frontendparts_iconpopup")
         return ""
 
     if "do_action" in req.params:
         c = do_action(req, node)
-        if c!="":
+        if c != "":
             return c
-        
+
     v = {}
     v["id"] = node.id
-    v["header_content"] = req.getTAL("web/edit/modules/frontendparts.html", {"items":node.getCustomItems("header"), "type":"header"}, macro="frontendparts_section") 
-    v["footer_left_content"] = req.getTAL("web/edit/modules/frontendparts.html", {"items":node.getCustomItems("footer_left"), "type":"footer_left"}, macro="frontendparts_section") 
-    v["footer_right_content"] = req.getTAL("web/edit/modules/frontendparts.html", {"items":node.getCustomItems("footer_right"), "type":"footer_right"}, macro="frontendparts_section") 
+    v["header_content"] = req.getTAL(
+        "web/edit/modules/frontendparts.html", {"items": node.getCustomItems("header"), "type": "header"}, macro="frontendparts_section")
+    v["footer_left_content"] = req.getTAL("web/edit/modules/frontendparts.html",
+                                          {"items": node.getCustomItems("footer_left"),
+                                           "type": "footer_left"},
+                                          macro="frontendparts_section")
+    v["footer_right_content"] = req.getTAL("web/edit/modules/frontendparts.html",
+                                           {"items": node.getCustomItems("footer_right"),
+                                            "type": "footer_right"},
+                                           macro="frontendparts_section")
 
     return req.getTAL("web/edit/modules/frontendparts.html", v, macro="edit_frontendparts")
-    
-    
+
+
 def modifyItem(req, node, type, id):
-    if id==-1:
-        item = CustomItem("","")
+    if id == -1:
+        item = CustomItem("", "")
     else:
         item = node.getCustomItems(type)[id]
     v = {}
     files = []
     for file in node.getFiles():
-        if file.getType()=="content":
-            files.append((file, node.get("startpagedescr.html/"+file.getName())))
+        if file.getType() == "content":
+            files.append((file, node.get("startpagedescr.html/" + file.getName())))
 
-    v["item"] = item#[id]
+    v["item"] = item  # [id]
     v["files"] = files
     v["id"] = id
     v["type"] = type
@@ -123,47 +131,49 @@ def modifyItem(req, node, type, id):
     v["item_types"] = ["intern", "text", "link", "node"]
     return req.getTAL("web/edit/modules/frontendparts.html", v, macro="edit_modify_item")
 
+
 def do_action(req, node):
     actiontype = req.params.get("do_action")
-    
+
     if actiontype in ["header", "footer_left", "footer_right"]:
-        
+
         for key in req.params.keys():
-            if key.startswith(actiontype+"_add"):
+            if key.startswith(actiontype + "_add"):
                 return modifyItem(req, node, actiontype, -1)
-                
-            if key.startswith(actiontype+"_down"):
-                items = node.get("system."+actiontype).split(";")
-                p = int(key[len(actiontype)+6:-2])
+
+            if key.startswith(actiontype + "_down"):
+                items = node.get("system." + actiontype).split(";")
+                p = int(key[len(actiontype) + 6:-2])
                 p_0 = items[p]
-                items[p] = items[p+1]
-                items[p+1] = p_0
-                node.set("system."+actiontype, ";".join(items))
+                items[p] = items[p + 1]
+                items[p + 1] = p_0
+                node.set("system." + actiontype, ";".join(items))
                 break
-                
-            if key.startswith(actiontype+"_up"):
-                items = node.get("system."+actiontype).split(";")
-                p = int(key[len(actiontype)+4:-2])
+
+            if key.startswith(actiontype + "_up"):
+                items = node.get("system." + actiontype).split(";")
+                p = int(key[len(actiontype) + 4:-2])
                 p_0 = items[p]
-                items[p] = items[p-1]
-                items[p-1] = p_0
-                node.set("system."+actiontype, ";".join(items))
+                items[p] = items[p - 1]
+                items[p - 1] = p_0
+                node.set("system." + actiontype, ";".join(items))
                 break
-                
-            if key.startswith(actiontype+"_delete"):
+
+            if key.startswith(actiontype + "_delete"):
                 items = node.getCustomItems(actiontype)
-                del items[int(key[len(actiontype)+8:-2])]
+                del items[int(key[len(actiontype) + 8:-2])]
                 node.setCustomItems(actiontype, items)
                 break
-                
-            if key.startswith(actiontype+"_edit"):
-                return modifyItem(req, node, actiontype, int(key[len(actiontype)+6:-2]))
-                
-            if key.startswith(actiontype+"_save"):
+
+            if key.startswith(actiontype + "_edit"):
+                return modifyItem(req, node, actiontype, int(key[len(actiontype) + 6:-2]))
+
+            if key.startswith(actiontype + "_save"):
                 item_type = req.params.get("input_type")
                 items = node.getCustomItems(actiontype)
-                ci = CustomItem(req.params.get("item_name"), req.params.get("item_"+item_type+'_value'), item_type, req.params.get("item_icon"))
-                if req.params.get("item_id")=="-1":
+                ci = CustomItem(req.params.get("item_name"), req.params.get(
+                    "item_" + item_type + '_value'), item_type, req.params.get("item_icon"))
+                if req.params.get("item_id") == "-1":
                     # add
                     items.append(ci)
                 else:

@@ -76,7 +76,7 @@ def register_node_classes():
     from schema.searchmask import SearchMaskItem
     tree.registerNodeClass("searchmaskitem", SearchMaskItem)
 
-    #shoppingbag
+    # shoppingbag
     from core.shoppingbag import ShoppingBag
     tree.registerNodeClass("shoppingbag", ShoppingBag)
 
@@ -104,8 +104,8 @@ def register_workflow():
 
 
 def init_ldap():
-    #LDAP activated
-    if config.get("ldap.activate", "").lower()=="true":
+    # LDAP activated
+    if config.get("ldap.activate", "").lower() == "true":
         print "activate LDAP login"
         from core.userldap import LDAPUser
         import core.users as users
@@ -145,20 +145,20 @@ def tal_setup():
 def check_imports():
     logg.info("testing external imports:")
     external_modules = [
-                        "PIL",
-                        "requests",
-                        "lxml",
-                        "werkzeug",
-                        "jinja2",
-                        "pyjade",
-                        "coffeescript",
-                        "yaml",
-                        "pyaml",
-                        "babel",
-                        "mediatumfsm",
-                        "mediatumtal",
-                        "mediatumbabel"
-                        ]
+        "PIL",
+        "requests",
+        "lxml",
+        "werkzeug",
+        "jinja2",
+        "pyjade",
+        "coffeescript",
+        "yaml",
+        "pyaml",
+        "babel",
+        "mediatumfsm",
+        "mediatumtal",
+        "mediatumbabel"
+    ]
 
     for modname in external_modules:
         mod = importlib.import_module(modname)
@@ -202,4 +202,3 @@ def full_init():
     init_db_compat()
     init_modules()
     tal_setup()
-

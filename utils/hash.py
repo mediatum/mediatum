@@ -22,10 +22,11 @@ import os
 import core.tree as tree
 import hashlib
 
+
 def calcChecksum(filename, method):
     if os.path.exists(filename):
         f = open(filename)
-        if method=="SHA-1":
+        if method == "SHA-1":
             h = hashlib.sha1()
         else:
             h = hashlib.new('ripemd160')
@@ -34,38 +35,40 @@ def calcChecksum(filename, method):
         return h.hexdigest()
     else:
         return ""
-    
+
+
 def calcChecksumFromMetadata(node):
     h = hashlib.sha1()
     h.update(node.id)
     h.update(node.getName())
-    
+
     def attributesToString(node):
         string = ""
         for item in node.items():
             string += item[0] + item[1]
         return string
-    
+
     h.update(attributesToString(node))
-    
+
     return h.hexdigest()
+
 
 def getChecksum(nodeId, method="SHA-1", filepath=""):
     if method not in ["SHA-1", "RIPEMD-160"]:
-        raise AttributeError("This method is not supported for checksum calculation: "+method)
+        raise AttributeError("This method is not supported for checksum calculation: " + method)
     try:
-        if filepath!="" and os.path.exists(filepath):
+        if filepath != "" and os.path.exists(filepath):
             return calcChecksum(filepath, method)
         else:
             node = tree.getNode(nodeId)
             for f in node.getFiles():
-                if f.getType()==node.getOriginalTypeName():
+                if f.getType() == node.getOriginalTypeName():
                     return calcChecksum(f.retrieveFile(), method)
             return calcChecksumFromMetadata(node)
-            
-    except tree.NoSuchNodeError, e:
-        print "Node not present in mediaTUM:",e
-    except IOError, e:
+
+    except tree.NoSuchNodeError as e:
+        print "Node not present in mediaTUM:", e
+    except IOError as e:
         print "File doesn't exist on filesystem", e
     except Exception:
         print "Error occured in hash.getChecksum"

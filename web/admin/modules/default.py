@@ -19,9 +19,9 @@
 """
 from web.admin.adminutils import adminNavigation
 
+
 def validate(req, op):
 
     v = {}
     v["navigation"] = adminNavigation()
     return req.getTAL("/web/admin/modules/default.html", v, macro="view")
-

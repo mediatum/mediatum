@@ -19,7 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from workflow import WorkflowStep, registerStep
+from .workflow import WorkflowStep, registerStep
 import core.tree as tree
 from core.translation import t, lang, addLabels
 import core.config as config
@@ -29,18 +29,18 @@ def register():
     tree.registerNodeClass("workflowstep-condition", WorkflowStep_Condition)
     registerStep("workflowstep-condition")
     addLabels(WorkflowStep_Condition.getLabels())
-    
+
 
 class WorkflowStep_Condition(WorkflowStep):
-       
+
     def show_workflow_node(self, node, req):
         condition = self.get("condition")
         gotoFalse = 1
         if condition.startswith("attr:"):
             hlp = condition[5:].split("=")
-            if node.get(hlp[0])==hlp[1]:
+            if node.get(hlp[0]) == hlp[1]:
                 gotoFalse = 0
-        elif condition.startswith("schema="): 
+        elif condition.startswith("schema="):
             if node.getSchema() in condition[7:].split(";"):
                 gotoFalse = 0
         elif condition.startswith("type="):
@@ -49,24 +49,23 @@ class WorkflowStep_Condition(WorkflowStep):
         elif condition.startswith("hasfile:"):
             hlp = condition[8:].split(".")
             for f in node.getFiles():
-                if len(hlp)==1: #only file type
-                    if f.getType()==hlp[0]:
+                if len(hlp) == 1:  # only file type
+                    if f.getType() == hlp[0]:
                         gotoFalse = 0
                         break
-                if len(hlp)==2: #file itself
-                    if f.getName()==condition[8:]:
+                if len(hlp) == 2:  # file itself
+                    if f.getName() == condition[8:]:
                         gotoFalse = 0
                         break
-        elif condition=="hasfile": #just test if there is file at all
-            if len(node.getFiles())==0:
+        elif condition == "hasfile":  # just test if there is file at all
+            if len(node.getFiles()) == 0:
                 gotoFalse = 0
 
         if gotoFalse:
             return self.forwardAndShow(node, False, req)
-        else:    
+        else:
             return self.forwardAndShow(node, True, req)
-        
-            
+
     def metaFields(self, lang=None):
         field = tree.Node("condition", "metafield")
         field.set("label", t(lang, "admin_wfstep_condition"))
@@ -75,15 +74,15 @@ class WorkflowStep_Condition(WorkflowStep):
 
     @staticmethod
     def getLabels():
-        return { "de":
-            [
-                ("workflowstep-condition", "Bedingungsfeld"),
-                ("admin_wfstep_condition", "Bedingung"),
-            ],
-           "en":
-            [
-                ("workflowstep-condition", "Condition field"),
-                ("admin_wfstep_condition", "Condition"),
+        return {"de":
+                [
+                    ("workflowstep-condition", "Bedingungsfeld"),
+                    ("admin_wfstep_condition", "Bedingung"),
+                ],
+                "en":
+                [
+                    ("workflowstep-condition", "Condition field"),
+                    ("admin_wfstep_condition", "Condition"),
 
-            ]
-        }
+                ]
+                }

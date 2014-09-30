@@ -100,6 +100,7 @@ def get_maskcache_entry(lookup_key):
 
 
 class Default(tree.Node):
+
     def getTypeAlias(self):
         return "default"
 
@@ -117,10 +118,13 @@ class Default(tree.Node):
             styles = getContentStyles("bigview", contenttype=self.getContentType())
             if len(styles) >= 1:
                 template = styles[0].getTemplate()
-        return req.getTAL(template, {'node': self, 'metadata': mask.getViewHTML([self], VIEW_HIDE_EMPTY), 'format_size': format_filesize, 'access': access})  # hide empty elements}, macro)
+        # hide empty elements}, macro)
+        return req.getTAL(template, {'node': self, 'metadata': mask.getViewHTML(
+            [self], VIEW_HIDE_EMPTY), 'format_size': format_filesize, 'access': access})
 
     def show_node_image(self, language=None):
-        return tal.getTAL("contenttypes/default.html", {'children': self.getChildren().sort_by_orderpos(), 'node': self}, macro="show_node_image")
+        return tal.getTAL(
+            "contenttypes/default.html", {'children': self.getChildren().sort_by_orderpos(), 'node': self}, macro="show_node_image")
 
     def show_node_text(self, words=None, language=None, separator="", labels=0, cachetype=DEFAULT_MASKCACHE):
         if cachetype not in ['shallow', 'deep']:
@@ -132,6 +136,7 @@ class Default(tree.Node):
 
     """ format preview node text """
     # original
+
     def show_node_text_orignal(self, words=None, language=None, separator="", labels=0):
         if separator == "":
             separator = "<br/>"
@@ -170,7 +175,7 @@ class Default(tree.Node):
 
     # deep caching
     def show_node_text_deep(self, words=None, language=None, separator="", labels=0):
-    
+
         def render_mask_template(node, mfs, words=None, separator="", skip_empty_fields=True):
             """
                mfs: [mask] + list_of_maskfields
@@ -272,8 +277,7 @@ class Default(tree.Node):
                 mfs = [mask]  # mask fields
                 values = []
                 fields = mask.getMaskFields()
-                ordered_fields = [(f.orderpos, f) for f in fields]
-                ordered_fields.sort()
+                ordered_fields = sorted([(f.orderpos, f) for f in fields])
                 for orderpos, field in ordered_fields:
                     fd = {}  # field descriptor
 

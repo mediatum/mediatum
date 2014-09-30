@@ -19,10 +19,17 @@ __all__ = ["TrueAudio", "Open", "delete", "EasyTrueAudio"]
 from id3 import ID3FileType, delete
 from _util import cdata
 
-class error(RuntimeError): pass
-class TrueAudioHeaderError(error, IOError): pass
+
+class error(RuntimeError):
+    pass
+
+
+class TrueAudioHeaderError(error, IOError):
+    pass
+
 
 class TrueAudioInfo(object):
+
     """True Audio stream information.
 
     Attributes:
@@ -43,7 +50,9 @@ class TrueAudioInfo(object):
         return "True Audio, %.2f seconds, %d Hz." % (
             self.length, self.sample_rate)
 
+
 class TrueAudio(ID3FileType):
+
     """A True Audio file."""
 
     _Info = TrueAudioInfo
@@ -56,7 +65,8 @@ class TrueAudio(ID3FileType):
 
 Open = TrueAudio
 
+
 class EasyTrueAudio(TrueAudio):
+
     """Like MP3, but uses EasyID3 for tags."""
     from easyid3 import EasyID3 as ID3
-

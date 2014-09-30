@@ -20,11 +20,11 @@
 
 from contenttypes.directory import Directory
 
+
 class Project(Directory):
 
     def treeiconclass(node):
         return "project"
-        
+
     def getDefaultEditTab(node):
         return "metadata"
-    

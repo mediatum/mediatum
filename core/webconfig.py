@@ -25,22 +25,23 @@ import core.tree as tree
 from core.styles import theme
 from mediatumtal import tal
 
+
 def loadThemes():
 
     def manageThemes(themepath, type):
         name = config.get("config.theme", "")
-        if os.path.exists(config.basedir+"/"+themepath+"themes/"+name+"/"):
-            athana.addFileStore("/theme/", themepath+"themes/"+name+"/")
-            athana.addFileStorePath("/css/", themepath+"themes/"+name+"/css/")
-            athana.addFileStorePath("/img/", themepath+"themes/"+name+"/img/")
-            athana.addFileStorePath("/js/", themepath+"themes/"+name+"/js/")
-            theme.update(name, themepath+"themes/"+name+"/", type)
-            print "Loading theme '%s' (%s)" %(name, type)
+        if os.path.exists(config.basedir + "/" + themepath + "themes/" + name + "/"):
+            athana.addFileStore("/theme/", themepath + "themes/" + name + "/")
+            athana.addFileStorePath("/css/", themepath + "themes/" + name + "/css/")
+            athana.addFileStorePath("/img/", themepath + "themes/" + name + "/img/")
+            athana.addFileStorePath("/js/", themepath + "themes/" + name + "/js/")
+            theme.update(name, themepath + "themes/" + name + "/", type)
+            print "Loading theme '%s' (%s)" % (name, type)
 
-    if config.get("config.theme", "")!="":
-        manageThemes("web/", "intern") # internal theme
+    if config.get("config.theme", "") != "":
+        manageThemes("web/", "intern")  # internal theme
 
-        for k,v in config.getsubset("plugins").items(): # themes from plugins
+        for k, v in config.getsubset("plugins").items():  # themes from plugins
             manageThemes(v, "extern")
     else:
         print "Loading default theme"
@@ -58,17 +59,17 @@ def loadServices():
         if not os.path.exists(servicedir + "services/" + servicename + "/__init__.py"):
             return
 
-        if config.get('services.'+servicename +'.activate', "").lower()=="false":
+        if config.get('services.' + servicename + '.activate', "").lower() == "false":
             return
         if servicename + '.basecontext' in config.getsubset("services").keys():
             basecontext = config.getsubset("services")[servicename + '.basecontext']
         else:
-            basecontext = config.get("services.contextprefix", "services")+'/'+servicename
+            basecontext = config.get("services.contextprefix", "services") + '/' + servicename
         basecontext = ('/' + basecontext).replace('//', '/').replace('//', '/')
         context = athana.addContext(basecontext, ".")
         file = context.addFile(servicedir + "services/" + servicename)
 
-        if  hasattr(file.m, "request_handler"):
+        if hasattr(file.m, "request_handler"):
             file.addHandler("request_handler").addPattern("/.*")
 
             if not os.path.exists(servicedata):
@@ -78,14 +79,14 @@ def loadServices():
                 except OSError:
                     return
 
-    if config.get("services.activate", "").lower()=="true":
+    if config.get("services.activate", "").lower() == "true":
         # try loading services from mediatum web/services/ folder
-        p = config.basedir+"/web/services/"
+        p = config.basedir + "/web/services/"
         for servicedir in [f for f in os.listdir(p) if os.path.isdir(os.path.join(p, f))]:
             manageService(servicedir, "web/", os.path.join(datapath, servicedir))
 
         # try loading services from all plugins services/ folder
-        for k,v in config.getsubset("plugins").items():
+        for k, v in config.getsubset("plugins").items():
             p = os.path.join(config.basedir, v, 'services')
             if os.path.exists(p):
                 for servicedir in [f for f in os.listdir(p) if os.path.isdir(os.path.join(p, f))]:
@@ -117,19 +118,19 @@ def initContexts():
     file.addHandler("send_attachment").addPattern("/attachment/.*")
     file.addHandler("send_attfile").addPattern("/attfile/.*")
     file.addHandler("get_archived").addPattern("/archive/.*")
-    file.addHandler("get_root").addPattern("/[a-z,0-9,-]*\.[a-z]*") # root directory added /web/root (only files with extensions)
+    file.addHandler("get_root").addPattern("/[a-z,0-9,-]*\.[a-z]*")  # root directory added /web/root (only files with extensions)
 
     file = context.addFile("web/frontend/zoom.py")
     file.addHandler("send_imageproperties_xml").addPattern("/tile/[0-9]*/ImageProperties.xml")
     file.addHandler("send_tile").addPattern("/tile/[0-9]*/[^I].*")
 
     #file = context.addFile("web/frontend/flippage.py")
-    #file.addHandler("send_bookconfig_xml").addPattern("/[0-9]*/bookconfig.xml")
-    #file.addHandler("send_page").addPattern("/[0-9]*/page/[0-9]*\.jpg")
+    # file.addHandler("send_bookconfig_xml").addPattern("/[0-9]*/bookconfig.xml")
+    # file.addHandler("send_page").addPattern("/[0-9]*/page/[0-9]*\.jpg")
 
     # === workflow ===
     #file = context.addFile("web/publish/main.py")
-    #file.addHandler("publish").addPattern("/publish/.*")
+    # file.addHandler("publish").addPattern("/publish/.*")
 
     main_file = file = context.addFile("web/frontend/main.py")
     handler = file.addHandler("display")
@@ -144,7 +145,7 @@ def initContexts():
     file.addHandler("popup_metatype").addPattern("/metatype/.*")
     file.addHandler("popup_fullsize").addPattern("/fullsize")
     file.addHandler("popup_thumbbig").addPattern("/thumbbig")
-    #file.addHandler("show_index").addPattern("/popup_index")
+    # file.addHandler("show_index").addPattern("/popup_index")
     file.addHandler("show_help").addPattern("/popup_help")
     file.addHandler("show_attachmentbrowser").addPattern("/attachmentbrowser")
     file.addHandler("show_printview").addPattern("/print/.*")
@@ -209,7 +210,6 @@ def initContexts():
     athana.addFileStore("/img/", ["web/img/", "web/admin/img/", "web/edit/img/"])
     athana.addFileStore("/js/", ["web/js/", "js", "lib/CKeditor/js/"])
 
-
     # === last: path aliasing for collections ===
     handler = main_file.addHandler("display_alias")
     handler.addPattern("/[-.~_/a-zA-Z0-9]+$")
@@ -232,12 +232,15 @@ def initContexts():
     #athana.addContext("/flush", ".").addFile("core/webconfig.py").addHandler("flush").addPattern("/py")
 
     # === check for ftp usage ===
-    if config.get("ftp.activate","")=="true":
-        athana.addFTPHandler(collection_ftpserver(None, port=int(config.get("ftp.port", 21)), debug=config.get("host.type", "testing"))) # dummy handler for users
+    if config.get("ftp.activate", "") == "true":
+        # dummy handler for users
+        athana.addFTPHandler(collection_ftpserver(None, port=int(config.get("ftp.port", 21)), debug=config.get("host.type", "testing")))
 
         for collection in tree.getRoot("collections").getChildren():
             if collection.get("ftp.user") and collection.get("ftp.passwd"):
-                athana.addFTPHandler(collection_ftpserver(collection, port=int(config.get("ftp.port", 21)), debug=config.get("host.type", "testing")))
+                athana.addFTPHandler(collection_ftpserver(
+                    collection, port=int(config.get("ftp.port", 21)), debug=config.get("host.type", "testing")))
+
 
 def flush(req):
     athana.flush()

@@ -18,7 +18,7 @@
 """
 
 from utils import il16, il32, ib16, ib32, ol16, ol32, reverse, readInfo
-from lza import LZAFile, LZAMetadata    
+from lza import LZAFile, LZAMetadata
 
 
 MARKER = {
@@ -96,65 +96,63 @@ class JPEGImage(LZAFile):
         self.com = 0
         self.src = open(filename, "rb")
 
-        self.src.seek(0,2)
+        self.src.seek(0, 2)
         self.src_length = self.src.tell()
         self.src.seek(0)
 
         s = " "
         while 1:
 
-            if s and ord(s)==255:
+            if s and ord(s) == 255:
                 s = s + self.src.read(1)
                 x = ib16(s)
 
                 if MARKER.has_key(x):
-                    self.items.append((self.src.tell()-2, MARKER[x][0]))
+                    self.items.append((self.src.tell() - 2, MARKER[x][0]))
 
-
-            s = self.src.read(1)  
+            s = self.src.read(1)
             if self.src.tell() == self.src_length:
                 break
         self.src.close()
-        
+
     # extract mediatum metainformation
     def getMetaData(self):
         ret = ""
-        
+
         index = -1
         for item in self.items:
-            if item[1]=="SOF0":
+            if item[1] == "SOF0":
                 index = self.items.index(item)
-            
-        if index<0:
+
+        if index < 0:
             return LZAMetadata("")
-            
+
         if self.src.closed:
             self.src = open(self.filename, "rb")
-                       
-        if self.items[index-1][1]=="COM":
-            self.src.seek(self.items[index-1][0]+4) # marker + length
-            return LZAMetadata(self.src.read(self.items[index][0]-self.src.tell()))
 
-            
+        if self.items[index - 1][1] == "COM":
+            self.src.seek(self.items[index - 1][0] + 4)  # marker + length
+            return LZAMetadata(self.src.read(self.items[index][0] - self.src.tell()))
+
     def writeMetaData(self, data, outputfile):
         index = -1
 
         for item in self.items:
-            if item[1]=="SOF0":
+            if item[1] == "SOF0":
                 index = self.items.index(item)
-        if index<0:
+        if index < 0:
             raise SyntaxError("wrong filetype")
-        
-        if self.items[index-1][1]=="COM":
+
+        if self.items[index - 1][1] == "COM":
             # update value
-            _end = self.items[index-1][0]
+            _end = self.items[index - 1][0]
             print "update comment"
             input = open(self.filename, "rb")
-            input.seek(self.items[index-1][0] + 4)
+            input.seek(self.items[index - 1][0] + 4)
             data = LZAMetadata(data)
-            data.addOriginal(input.read(self.items[index][0]-self.items[index-1][0] - 4))
+            data.addOriginal(input.read(self.items[index][0] - self.items[index - 1][0] - 4))
             input.close()
-            
+
         else:
             # insert value
             _end = self.items[index][0]
@@ -169,42 +167,39 @@ class JPEGImage(LZAFile):
         output.write(str(data))
         input.seek(self.items[index][0])
 
-        output.write(input.read(self.src_length-input.tell()))
+        output.write(input.read(self.src_length - input.tell()))
         input.close()
         output.close()
 
     def getOriginal(self, outputfile=""):
-        
+
         orig = self.getMetaData().GetOriginal()
         input = open(self.filename, "rb")
         input.seek(0, 2)
         input_length = input.tell()
         input.seek(0)
         print input.tell()
-        
+
         com_start = input_length
         output = open(outputfile, "wb")
 
         for item in self.items:
-            if item[1]=="COM":
+            if item[1] == "COM":
                 com_start = item[0]
                 index = self.items.index(item)
-                com_end = self.items[index+1][0]
+                com_end = self.items[index + 1][0]
                 input.seek(0)
                 break
 
         # write until old comment
         output.write(input.read(com_start))
-        if len(orig)>0:
+        if len(orig) > 0:
             output.write("\xFF\xFE")
             output.write(reverse(ol16(len(orig))))
             output.write(orig)
         input.seek(com_end)
         # write file footer
-        while input.tell()<input_length:
+        while input.tell() < input_length:
             output.write(input.read(1))
         output.close()
         input.close()
-
-    
-    

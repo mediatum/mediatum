@@ -34,7 +34,7 @@ from core.styles import getContentStyles
 from schema.schema import VIEW_HIDE_EMPTY
 from metadata.upload import getFilelist
 
-import default
+from . import default
 
 
 logger = logging.getLogger("backend")
@@ -78,6 +78,7 @@ def getCaptionInfoDict(node):
 
 
 class Video(default.Default):
+
     """ video class """
     def getTypeAlias(node):
         return "video"
@@ -114,7 +115,7 @@ class Video(default.Default):
     """ format big view with standard template """
     def show_node_big(node, req, template="", macro=""):
 
-        #if the file format is not flash video (edit area)
+        # if the file format is not flash video (edit area)
         if 'contentarea' not in req.session:
             files = [f.retrieveFile() for f in node.getFiles()]
             if len(files) == 1 and 'flv' != files[0].split('/')[-1].split('.')[-1]:
@@ -174,7 +175,8 @@ class Video(default.Default):
 
                     try:
                         if node.get("system.thumbframe") != "":
-                            cmd = "ffmpeg -loglevel quiet  -ss %s -i %s -vframes 1 -pix_fmt rgb24 %s" % (node.get("system.thumbframe"), f.retrieveFile(), tempname)
+                            cmd = "ffmpeg -loglevel quiet  -ss %s -i %s -vframes 1 -pix_fmt rgb24 %s" % (
+                                node.get("system.thumbframe"), f.retrieveFile(), tempname)
                         else:
                             cmd = "ffmpeg -loglevel quiet -i %s -vframes 1 -pix_fmt rgb24 %s" % (f.retrieveFile(), tempname)
                         ret = os.system(cmd)

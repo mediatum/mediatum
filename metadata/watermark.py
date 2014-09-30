@@ -34,35 +34,43 @@ FONTSIZE = 40
 
 
 class m_watermark(Metatype):
-    """ This class implements the metatype watermark and everything that is needed to handle it """
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
-        return tal.getTAL("metadata/watermark.html", {"lock":lock, "value":value, "width":width, "name":field.getName(), "field":field}, macro="editorfield", language=language)
 
+    """ This class implements the metatype watermark and everything that is needed to handle it """
+
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
+        return tal.getTAL("metadata/watermark.html",
+                          {"lock": lock,
+                           "value": value,
+                           "width": width,
+                           "name": field.getName(),
+                           "field": field},
+                          macro="editorfield",
+                          language=language)
 
     def getSearchHTML(self, context):
-        return tal.getTAL("metadata/watermark.html",{"context":context}, macro="searchfield", language=context.language)
+        return tal.getTAL("metadata/watermark.html", {"context": context}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None, html=1):
-        value = node.get(field.getName()).replace(";","; ")
+        value = node.get(field.getName()).replace(";", "; ")
         if html:
             value = esc(value)
         # replace variables
-        for var in re.findall( r'&lt;(.+?)&gt;', value ):
-            if var=="att:id":
-                value = value.replace("&lt;"+var+"&gt;", node.id)
+        for var in re.findall(r'&lt;(.+?)&gt;', value):
+            if var == "att:id":
+                value = value.replace("&lt;" + var + "&gt;", node.id)
             elif var.startswith("att:"):
                 val = node.get(var[4:])
-                if val=="":
+                if val == "":
                     val = "____"
 
-                value = value.replace("&lt;"+var+"&gt;", val)
+                value = value.replace("&lt;" + var + "&gt;", val)
 
         return (field.getLabel(), value)
 
     def format_request_value_for_db(self, field, params, item, language=None):
         value = params.get(item)
         try:
-            return value.replace("; ",";")
+            return value.replace("; ", ";")
         except:
             return value
 
@@ -70,6 +78,7 @@ class m_watermark(Metatype):
         return "fieldtype_watermark"
 
     ''' generate watermark '''
+
     def reduce_opacity(self, im, opacity):
         """Reduces the opacity of an image. Opacity must be between 0 and 1"""
         if im.mode != 'RGBA':
@@ -98,23 +107,23 @@ class m_watermark(Metatype):
                     im = im.convert('RGBA')
                 draw = ImageDraw.Draw(im)
 
-                #Load a custom font
+                # Load a custom font
                 font = None
                 try:
-                    font = ImageFont.truetype(config.basedir+FONTPATH, FONTSIZE)
-                except Exception, inst:
+                    font = ImageFont.truetype(config.basedir + FONTPATH, FONTSIZE)
+                except Exception as inst:
                     print "Loading of custom font failed: ", inst
                     print " --> using default!"
                     font = ImageFont.load_default()
 
-                #Now measure size of text if it would be created with the new font and create a custom bitmap
+                # Now measure size of text if it would be created with the new font and create a custom bitmap
                 text_size = draw.textsize(text, font=font)
-                mark = Image.new("RGBA", text_size, (0,0,0,0))
-                layer = Image.new("RGBA", im.size, (0,0,0,0))
+                mark = Image.new("RGBA", text_size, (0, 0, 0, 0))
+                layer = Image.new("RGBA", im.size, (0, 0, 0, 0))
 
-                #Create drawing object and draw text on bitmap
+                # Create drawing object and draw text on bitmap
                 drawwater = ImageDraw.Draw(mark)
-                drawwater.text((0, 0), text, font=font, fill = (0,0,0,255))
+                drawwater.text((0, 0), text, font=font, fill=(0, 0, 0, 255))
 
                 pos_x = 0
                 pos_y = 0
@@ -129,9 +138,9 @@ class m_watermark(Metatype):
 
                 mark = mark.resize((width, height))
 
-                pos_x = im.size[0]/2-width/2
-                pos_y = im.size[1]/2-height/2
-                #Paste mark on layer
+                pos_x = im.size[0] / 2 - width / 2
+                pos_y = im.size[1] / 2 - height / 2
+                # Paste mark on layer
                 layer.paste(mark, (pos_x, pos_y))
                 layer = self.reduce_opacity(layer, opacity)
 
@@ -139,10 +148,10 @@ class m_watermark(Metatype):
                 im.save(imagewm, "JPEG")
                 print "Finished creating watermark..."
 
-            except Exception, inst:
+            except Exception as inst:
                 print "Exception while creating the watermark: ", inst
                 traceback.print_exc(file=sys.stdout)
-                im = image;
+                im = image
         finally:
             print "Cleaning up after watermark creation"
             del draw
@@ -152,14 +161,15 @@ class m_watermark(Metatype):
         return im
 
     ''' events '''
+
     def event_metafield_changed(self, node, field):
         if "image" in node.type:
             items = node.items()
-            #check if there is an original file and modify it in case
+            # check if there is an original file and modify it in case
             for f in node.getFiles():
                 if f.type == "original":
-                    path,ext = splitfilename(f.retrieveFile())
-                    pngname = path+"_wm.jpg"
+                    path, ext = splitfilename(f.retrieveFile())
+                    pngname = path + "_wm.jpg"
 
                     for file in node.getFiles():
                         if file.getType() == "original_wm":
@@ -173,16 +183,14 @@ class m_watermark(Metatype):
     def getLabels(self):
         return m_watermark.labels
 
-    labels = { "de":
-            [
-                ("fieldtype_watermark", "Wasserzeichen"),
-                ("fieldtye_watermark_desc", "Wasserzeichen f\xc3\xbcr Bilder")
-            ],
-           "en":
-            [
-                ("fieldtype_watermark", "watermark"),
-                ("fieldtype_watermark_desc", "watermark for images")
-            ]
-         }
-
-
+    labels = {"de":
+              [
+                  ("fieldtype_watermark", "Wasserzeichen"),
+                  ("fieldtye_watermark_desc", "Wasserzeichen f\xc3\xbcr Bilder")
+              ],
+              "en":
+              [
+                  ("fieldtype_watermark", "watermark"),
+                  ("fieldtype_watermark_desc", "watermark for images")
+              ]
+              }

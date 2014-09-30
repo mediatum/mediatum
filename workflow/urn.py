@@ -21,7 +21,7 @@
 
 import re
 
-from workflow import WorkflowStep, registerStep
+from .workflow import WorkflowStep, registerStep
 import core.tree as tree
 import utils.urn as utilsurn
 from core.translation import t, lang, addLabels
@@ -33,37 +33,36 @@ def register():
     tree.registerNodeClass("workflowstep-addurn", WorkflowStep_Urn)
     registerStep("workflowstep-addurn")
     addLabels(WorkflowStep_Urn.getLabels())
-    
-    
+
+
 class WorkflowStep_Urn(WorkflowStep):
-       
+
     def show_workflow_node(self, node, req):
         attrname = self.get("attrname")
         niss = self.get("niss")
-        
-        if attrname=="":
+
+        if attrname == "":
             attrname = "urn"
-        
+
         # create urn only for nodes with files
-        if len(node.getFiles())>0:
+        if len(node.getFiles()) > 0:
             urn = node.get(attrname)
             if urn:
                 node.set(attrname, utilsurn.increaseURN(node.get(attrname)))
             else:
-                for var in re.findall( r'\[(.+?)\]', niss):
-                    if var=="att:id":
-                        niss = niss.replace("["+var+"]", node.id)
+                for var in re.findall(r'\[(.+?)\]', niss):
+                    if var == "att:id":
+                        niss = niss.replace("[" + var + "]", node.id)
                     elif var.startswith("att:"):
                         val = node.get(var[4:])
                         try:
                             val = date.format_date(date.parse_date(val), '%Y%m%d')
                         except:
                             pass
-                        niss = niss.replace("["+var+"]", val)
+                        niss = niss.replace("[" + var + "]", val)
                 node.set(attrname, utilsurn.buildNBN(self.get("snid1"), self.get("snid2"), niss))
         return self.forwardAndShow(node, True, req)
-        
-        
+
     def metaFields(self, lang=None):
         ret = list()
         field = tree.Node("attrname", "metafield")
@@ -87,27 +86,26 @@ class WorkflowStep_Urn(WorkflowStep):
         ret.append(field)
         return ret
 
-    
     @staticmethod
     def getLabels():
-        return { "de":
-            [
-                ("workflowstep-urn", "URN Knoten"),
-                ("admin_wfstep_urn", "URN"),
-                ("admin_wfstep_urn_snid1","URN SNID 1"),
-                ("admin_wfstep_urn_snid2", "URN SNID 2"),
-                ("admin_wfstep_urn_niss","URN NISS"),
-                ("admin_wfstep_urn_attrname","URN Attributname"),
-                
-            ],
-           "en":
-            [
-                ("workflowstep-condition", "URN node"),
-                ("admin_wfstep_condition", "URN"),
-                ("admin_wfstep_urn_snid1","URN SNID 1"),
-                ("admin_wfstep_urn_snid2", "URN SNID 2"),
-                ("admin_wfstep_urn_niss","URN NISS"),
-                ("admin_wfstep_urn_attrname","URN attribute name"),
+        return {"de":
+                [
+                    ("workflowstep-urn", "URN Knoten"),
+                    ("admin_wfstep_urn", "URN"),
+                    ("admin_wfstep_urn_snid1", "URN SNID 1"),
+                    ("admin_wfstep_urn_snid2", "URN SNID 2"),
+                    ("admin_wfstep_urn_niss", "URN NISS"),
+                    ("admin_wfstep_urn_attrname", "URN Attributname"),
 
-            ]
-        }
+                ],
+                "en":
+                [
+                    ("workflowstep-condition", "URN node"),
+                    ("admin_wfstep_condition", "URN"),
+                    ("admin_wfstep_urn_snid1", "URN SNID 1"),
+                    ("admin_wfstep_urn_snid2", "URN SNID 2"),
+                    ("admin_wfstep_urn_niss", "URN NISS"),
+                    ("admin_wfstep_urn_attrname", "URN attribute name"),
+
+                ]
+                }

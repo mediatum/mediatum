@@ -20,7 +20,7 @@
 import logging
 import socket
 import asyncore
-import random # FIXME: drop dependency!
+import random  # FIXME: drop dependency!
 
 from athana import counter, async_chat
 from core import tree, medmarc, acl, users, config
@@ -35,11 +35,15 @@ try:
 except NameError:
     from sets import Set as set
 
+
 class FormatError(Exception):
+
     """Communication format not supported.
     """
 
+
 class AsyncPyZ3950Server(z3950.Server):
+
     """Asynchronous Z3950 server implementation.
 
     Overrides PDU reading from socket to enable asynchronous reading.
@@ -47,6 +51,7 @@ class AsyncPyZ3950Server(z3950.Server):
     This is copied and adapted from z3950.py in PyZ3950.  The lifetime
     of this object is one Z39.50 session.
     """
+
     def __init__(self, conn, channel):
         z3950.Server.__init__(self, conn)
         self.client_name = '[%s:%s]' % conn.getpeername()
@@ -55,67 +60,68 @@ class AsyncPyZ3950Server(z3950.Server):
     def handle_incoming_data(self, b):
         # see classes "z3950.Server" and "z3950.Conn", methods run(), read_PDU(), readproc()
         try:
-            self.decode_ctx.feed (map (ord, b))
+            self.decode_ctx.feed(map(ord, b))
         except asn1.BERError, val:
-            raise self.ProtocolError ('ASN1 BER', str(val))
-        if self.decode_ctx.val_count () > 0:
-            typ, val = self.decode_ctx.get_first_decoded ()
+            raise self.ProtocolError('ASN1 BER', str(val))
+        if self.decode_ctx.val_count() > 0:
+            typ, val = self.decode_ctx.get_first_decoded()
             logg.debug("received Z3950 message '%s'", typ)
             fn = self.fn_dict.get(typ)
             if fn is None:
-                raise self.ProtocolError ("Bad typ", '%s %s' % (typ, val))
+                raise self.ProtocolError("Bad typ", '%s %s' % (typ, val))
             if typ != 'initRequest' and self.expecting_init:
-                raise self.ProtocolError ("Init expected", typ)
-            fn (self, val)
+                raise self.ProtocolError("Init expected", typ)
+            fn(self, val)
 
     def send(self, val):
-        b = self.encode_ctx.encode (z3950.APDU, val)
+        b = self.encode_ctx.encode(z3950.APDU, val)
         self._channel.write(b.tostring())
         if self.done:
             self._channel.close()
 
     # protocol functionality
 
-    def init (self, ireq):
+    def init(self, ireq):
         """
         Handle 'init' request after opening a connection.
         """
         # copied from "z3950.Server" to adapt options list
-        self.v3_flag = (ireq.protocolVersion ['version_3'] and
+        self.v3_flag = (ireq.protocolVersion['version_3'] and
                         z3950.Z3950_VERS == 3)
 
-        ir = z3950.InitializeResponse ()
-        ir.protocolVersion = z3950.ProtocolVersion ()
-        ir.protocolVersion ['version_1'] = 1
-        ir.protocolVersion ['version_2'] = 1
-        ir.protocolVersion ['version_3'] = self.v3_flag
-        val = zdefs.get_charset_negot (ireq)
+        ir = z3950.InitializeResponse()
+        ir.protocolVersion = z3950.ProtocolVersion()
+        ir.protocolVersion['version_1'] = 1
+        ir.protocolVersion['version_2'] = 1
+        ir.protocolVersion['version_3'] = self.v3_flag
+        val = zdefs.get_charset_negot(ireq)
         charset_name = None
         records_in_charsets = 0
         if val != None:
-            csreq = zdefs.CharsetNegotReq ()
-            csreq.unpack_proposal (val)
-            def rand_choose (list_or_none):
-                if list_or_none == None or len (list_or_none) == 0:
+            csreq = zdefs.CharsetNegotReq()
+            csreq.unpack_proposal(val)
+
+            def rand_choose(list_or_none):
+                if list_or_none == None or len(list_or_none) == 0:
                     return None
-                return random.choice (list_or_none)
-            charset_name = rand_choose (csreq.charset_list)
+                return random.choice(list_or_none)
+            charset_name = rand_choose(csreq.charset_list)
             if charset_name != None:
                 try:
-                    codecs.lookup (charset_name)
+                    codecs.lookup(charset_name)
                 except LookupError, l:
                     charset_name = None
-            csresp = CharsetNegotResp (
+            csresp = CharsetNegotResp(
                 charset_name,
-                rand_choose (csreq.lang_list),
+                rand_choose(csreq.lang_list),
                 csreq.records_in_charsets)
             records_in_charsets = csresp.records_in_charsets
             if trace_charset:
                 print csreq, csresp
-            zdefs.set_charset_negot (ir, csresp.pack_negot_resp (), self.v3_flag)
+            zdefs.set_charset_negot(ir, csresp.pack_negot_resp(), self.v3_flag)
 
-        optionslist = ['search', 'present', 'negotiation', 'delSet'] # , 'scan']
-        ir.options = z3950.Options ()
+        optionslist = ['search', 'present', 'negotiation', 'delSet']  # , 'scan']
+        ir.options = z3950.Options()
         for o in optionslist:
             ir.options[o] = 1
 
@@ -132,8 +138,8 @@ class AsyncPyZ3950Server(z3950.Server):
         ir.result = 1
 
         self.expecting_init = 0
-        self.send (('initResponse', ir))
-        self.set_codec (charset_name, records_in_charsets)
+        self.send(('initResponse', ir))
+        self.set_codec(charset_name, records_in_charsets)
 
     def search_child(self, query):
         """
@@ -148,20 +154,20 @@ class AsyncPyZ3950Server(z3950.Server):
             logg.error("error while unpacking Z3950 search query '%s':", query, exc_info=1)
             raise
         logg.debug('%r', parsed_query)
-        node_ids = search_nodes(parsed_query)  #, self._log)
+        node_ids = search_nodes(parsed_query)  # , self._log)
         logg.debug('IDs returned for Z3950 query: %s', len(node_ids))
         return node_ids
 
-    def format_records (self, start, count, res_set, prefsyn):
+    def format_records(self, start, count, res_set, prefsyn):
         """
         Format a 'present' response for the requested query result subset.
         """
         #encode_charset = self.charset_name
         map_node = medmarc.MarcMapper()
         l = []
-        for i in xrange(start-1, min(len(res_set), start+count-1)):
+        for i in xrange(start - 1, min(len(res_set), start + count - 1)):
             try:
-                node = tree.getNode( res_set[i] )
+                node = tree.getNode(res_set[i])
             except tree.NoSuchNodeError:
                 logg.debug("request for non-existant node %s", res_set[i])
                 continue
@@ -178,7 +184,7 @@ class AsyncPyZ3950Server(z3950.Server):
             l.append(n)
         return l
 
-    def delete (self, dreq):
+    def delete(self, dreq):
         """
         Handle a 'delete' request to explicitly drop an item from the
         list of recent query results.
@@ -191,19 +197,20 @@ class AsyncPyZ3950Server(z3950.Server):
                 failures += 1
         dresp = z3950.DeleteResultSetResponse()
         dresp.deleteOperationStatus = 0
-        self.send (('deleteResultSetResponse', dresp))
+        self.send(('deleteResultSetResponse', dresp))
 
     fn_dict = {
         'searchRequest': z3950.Server.search,
         'presentRequest': z3950.Server.present,
-        'initRequest' : init,
-        'close' : z3950.Server.close,
+        'initRequest': init,
+        'close': z3950.Server.close,
         #'sortRequest' : sort,
-        'deleteResultSetRequest' : delete,
+        'deleteResultSetRequest': delete,
         #'extendedServicesRequest': esrequest
-        }
+    }
 
 # Query support
+
 
 def search_nodes(query, mapping_prefix='Z3950_search_'):
     """
@@ -227,13 +234,13 @@ def search_nodes(query, mapping_prefix='Z3950_search_'):
             roots_and_mappings.append((tree.getNode(node_id), mapping_node))
         except tree.NoSuchNodeError:
             logg.error("Configuration problem detected: Z39.50 search mapping '%s' found, "
-                 "but no matching root node with ID '%s'", name, node_id)
+                       "but no matching root node with ID '%s'", name, node_id)
 
     if not roots_and_mappings:
         logg.info('no mappings configured, skipping search')
         return []
 
-    logg.debug('using mapping roots: %s', [ (n1.id, n2.id) for (n1,n2) in roots_and_mappings ])
+    logg.debug('using mapping roots: %s', [(n1.id, n2.id) for (n1, n2) in roots_and_mappings])
 
     # run one search per root node
     node_ids = []
@@ -259,8 +266,9 @@ def search_nodes(query, mapping_prefix='Z3950_search_'):
 
     # use a round-robin algorithm to merge the separate query results
     # in order to produce maximally diverse results in the first hits
-    #return merge_ids_as_round_robin(node_ids)
+    # return merge_ids_as_round_robin(node_ids)
     return node_ids
+
 
 def merge_ids_as_round_robin(id_sets):
     """
@@ -271,7 +279,7 @@ def merge_ids_as_round_robin(id_sets):
         >>> merge_ids_as_round_robin([('1','2'), ('3','4','5'), (), ('6',)])
         ['1', '3', '6', '2', '4', '5']
     """
-    nexts = [ iter(id_set).next for id_set in id_sets if id_set ]
+    nexts = [iter(id_set).next for id_set in id_sets if id_set]
     seen = set()
     ids = []
     to_drop = []
@@ -299,13 +307,16 @@ def protect(s):
     """
     return '"%s"' % s.replace('"', '')
 
+
 class QueryBoolNode(object):
+
     "and/or node"
+
     def __init__(self, op, left, right):
         self.op, self.left, self.right = op, left, right
 
     def build_query_string(self, field_mapping):
-        left  = self.left.build_query_string(field_mapping)
+        left = self.left.build_query_string(field_mapping)
         right = self.right.build_query_string(field_mapping)
         if left and right:
             return '(%s) %s (%s)' % (left, self.op, right)
@@ -315,8 +326,11 @@ class QueryBoolNode(object):
     def __repr__(self):
         return '(%r) %s (%r)' % (self.left, self.op, self.right)
 
+
 class QueryMatchNode(object):
+
     "equality match"
+
     def __init__(self, op, name, value):
         self.op, self.name, self.value = op, name, protect(value)
 
@@ -324,11 +338,12 @@ class QueryMatchNode(object):
         if self.name not in field_mapping:
             return None
         op, value = self.op, self.value
-        return ' or '.join([ '%s %s %s' % (field_type, op, value)
-                             for field_type in field_mapping[self.name] if self.name in field_mapping])
+        return ' or '.join(['%s %s %s' % (field_type, op, value)
+                            for field_type in field_mapping[self.name] if self.name in field_mapping])
 
     def __repr__(self):
         return '%s = %s' % (self.name, self.value)
+
 
 def find_query_attribute(attrs):
     """
@@ -343,17 +358,18 @@ def find_query_attribute(attrs):
     cmp_value = None
     op = '='
     for attr in attrs:
-        if attr.attributeType == 1: # 'use' attribute
+        if attr.attributeType == 1:  # 'use' attribute
             attr_type, value = attr.attributeValue
             if attr_type == 'numeric':
                 cmp_value = str(value)
-        elif attr.attributeType == 2: # 'relation' attribute
+        elif attr.attributeType == 2:  # 'relation' attribute
             attr_type, value = attr.attributeValue
             if attr_type == 'numeric' and 1 <= value <= 6:
-                op = ('<', '<=', '=', '>=', '>', '!=')[value-1]
+                op = ('<', '<=', '=', '>=', '>', '!=')[value - 1]
     if cmp_value and op:
         return cmp_value, op
     raise ValueError("no 'use' or 'relation' attribute found in query term")
+
 
 def parse_rpn_query(query):
     """Parse RPN query into a tree of QueryBoolNode and QueryMatchNode objects.
@@ -377,7 +393,8 @@ def parse_rpn_query(query):
             r_op = val.op[0]
             if val.op[1] is not None:
                 raise ValueError("and/or term has unexpected format")
-            if r_op == 'and_not': r_op = 'and not'
+            if r_op == 'and_not':
+                r_op = 'and not'
             return QueryBoolNode(r_op, a1, a2)
 
     return recursive_parse(rpn_query.rpn)
@@ -386,19 +403,21 @@ def parse_rpn_query(query):
 # Athana support
 
 class z3950_channel(async_chat):
-    ac_in_buffer_size       = 4096
-    ac_out_buffer_size      = 4096
+    ac_in_buffer_size = 4096
+    ac_out_buffer_size = 4096
 
     def __init__(self, server, conn, addr):
         self.server = server
-        async_chat.__init__ (self, conn)
+        async_chat.__init__(self, conn)
 
         push = self.push
 
         class ChannelInterface(object):
+
             def write(self, data):
                 server.total_bytes_out.increment(len(data))
                 push(data)
+
             def close(self):
                 server.closed_sessions.increment()
                 server.close_when_done()
@@ -406,7 +425,7 @@ class z3950_channel(async_chat):
         self.z3950_server = AsyncPyZ3950Server(conn, ChannelInterface())
 
     def readable(self):
-        return 1 # always
+        return 1  # always
 
     def handle_read(self):
         try:
@@ -422,7 +441,7 @@ class z3950_channel(async_chat):
 class z3950_server(asyncore.dispatcher):
     z3950_channel_class = z3950_channel
 
-    def __init__ (self, ip='', port=2101):
+    def __init__(self, ip='', port=2101):
         self.ip = ip
         self.port = port
 
@@ -433,12 +452,12 @@ class z3950_server(asyncore.dispatcher):
         self.total_bytes_in = counter()
         self.total_exceptions = counter()
         #
-        asyncore.dispatcher.__init__ (self)
-        self.create_socket (socket.AF_INET, socket.SOCK_STREAM)
+        asyncore.dispatcher.__init__(self)
+        self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
 
         self.set_reuse_addr()
-        self.bind ((self.ip, self.port))
-        self.listen (5)
+        self.bind((self.ip, self.port))
+        self.listen(5)
 
         logg.info('Z3950 server started, Port: %d\n', self.port)
 
@@ -448,11 +467,11 @@ class z3950_server(asyncore.dispatcher):
         logg.info('Incoming connection from %s:%d', addr[0], addr[1])
         self.z3950_channel_class(self, conn, addr)
 
-    def writable (self):
+    def writable(self):
         return 0
 
-    def handle_read (self):
+    def handle_read(self):
         pass
 
-    def readable (self):
+    def readable(self):
         return self.accepting

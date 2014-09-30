@@ -24,16 +24,17 @@ import random
 import core.users as users
 from core.acl import AccessData
 
+
 def getContent(req, ids):
     user = users.getUserFromRequest(req)
     node = tree.getNode(ids[0])
     access = AccessData(req)
-    
+
     if not access.hasWriteAccess(node) or "searchmask" in users.getHideMenusForUser(user):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     p2 = {}
-    for k,v in req.params.items():
+    for k, v in req.params.items():
         if k.endswith(".x") or k.endswith(".y"):
             p2[k[:-2]] = v
         else:
@@ -43,7 +44,7 @@ def getContent(req, ids):
     openfield = None
     delfield = None
     delsubfield = None
-    for k,v in req.params.items():
+    for k, v in req.params.items():
         if k.startswith("open_"):
             openfield = k[5:]
         if k.startswith("del_"):
@@ -52,7 +53,7 @@ def getContent(req, ids):
             delsubfield = k[7:]
 
     try:
-        root = tree.getRoot("searchmasks") 
+        root = tree.getRoot("searchmasks")
     except tree.NoSuchNodeError:
         root = tree.Node("searchmasks", type="searchmasks")
         tree.getRoot().addChild(root)
@@ -79,22 +80,22 @@ def getContent(req, ids):
     except tree.NoSuchNodeError:
         schemafield = None
     if myschema and schemafield and schemafield not in myschema.getChildren():
-        print schemafield.name,"not in", myschema.name,": resetting"
+        print schemafield.name, "not in", myschema.name, ": resetting"
         schemafield = None
     if schemafield and schemafield.type != "metafield":
         schemafield = None
-   
+
     fields = None
     selectedfield = None
 
     if searchtype == "own":
         maskname = node.get("searchmaskname")
 
-        if not maskname or root.hasChild(maskname)==0:
+        if not maskname or root.hasChild(maskname) == 0:
             mask = searchmask.generateMask(node)
         else:
             mask = root.getChild(maskname)
-        
+
         selectedfieldid = req.params.get("selectedfield", None)
         if selectedfieldid:
             # edit
@@ -109,7 +110,7 @@ def getContent(req, ids):
         if req.params.get("isnewfield", "") == "yes":
             # create a new field
             l = mask.getNumChildren()
-            mask.addChild(tree.Node("Suchfeld "+str(l), type="searchmaskitem"))
+            mask.addChild(tree.Node("Suchfeld " + str(l), type="searchmaskitem"))
         elif delfield:
             # del a field
             delfield = tree.getNode(delfield)
@@ -144,7 +145,7 @@ def getContent(req, ids):
     data["searchfields"] = fields
     data["selectedfield"] = selectedfield
     data["newfieldlink"] = "edit_content?id=%s&tab=tab_searchmask" % node.id
-   
+
     if myschema:
         data["defaultschemaid"] = myschema.id
     else:
@@ -157,12 +158,12 @@ def getContent(req, ids):
 
     data["schema"] = myschema
 
-    def display(schemafield): 
+    def display(schemafield):
         if not schemafield or schemafield.type != 'metafield':
             return 0
         if not schemafield.Searchfield():
             return 0
-        if schemafield.get('type')=='union':
+        if schemafield.get('type') == 'union':
             return 0
         return 1
     data["display"] = display

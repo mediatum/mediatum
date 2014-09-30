@@ -50,7 +50,8 @@ def mkfilelist(targetnode, files, deletebutton=0, language=None, request=None, m
     if request:
         return request.getTAL("metadata/upload.html", {"files": files, "node": targetnode, "delbutton": deletebutton}, macro=macro)
     else:
-        return tal.getTAL("metadata/upload.html", {"files": files, "node": targetnode, "delbutton": deletebutton}, macro=macro, language=language)
+        return tal.getTAL(
+            "metadata/upload.html", {"files": files, "node": targetnode, "delbutton": deletebutton}, macro=macro, language=language)
 
 
 ALLOWED_CHARACTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' + '0123456789' + '+-_.'
@@ -73,7 +74,7 @@ def getFilelist(node, fieldname=''):
         # get files for this fieldname only
         pattern = r'm_upload_%s_' % fieldname
     else:
-        # get files for all m_upload fields 
+        # get files for all m_upload fields
         pattern = r'm_upload_'
 
     filelist = []
@@ -119,15 +120,15 @@ class m_upload(Metatype):
             warning = [t[1] for t in self.labels[getDefaultLanguage()] if t[0] == 'upload_notarget_warning'][0]
 
         context = {
-                   "lock": lock,
-                   "value": value,
-                   "width": width,
-                   "name": field.getName(),
-                   "field": field,
-                   "language": language,
-                   "warning": warning,
-                   "system_lock": 0,
-                  }
+            "lock": lock,
+            "value": value,
+            "width": width,
+            "name": field.getName(),
+            "field": field,
+            "language": language,
+            "warning": warning,
+            "system_lock": 0,
+        }
 
         if lock:
             context['system_lock'] = 1
@@ -162,7 +163,8 @@ class m_upload(Metatype):
             if masktype in ['shortview', 'export']:
                 pass
             else:
-                html_filelist = mkfilelist(node, filelist2, deletebutton=0, language=language, request=None, macro="m_upload_filelist_nodebig")
+                html_filelist = mkfilelist(
+                    node, filelist2, deletebutton=0, language=language, request=None, macro="m_upload_filelist_nodebig")
                 html_filelist = html_filelist.replace("____FIELDNAME____", "%s" % fieldname)
                 value = html_filelist
         else:
@@ -183,36 +185,36 @@ class m_upload(Metatype):
 
     labels = {"de":
 
-            [
-                ("upload_popup_title", "MDT-m_upload"),
-                ("fieldtype_upload", "MDT-m_upload Feld"),
-                ("fieldtype_text_desc", "Feld MDT-m_upload"),
-                ("upload_titlepopupbutton", "MDT-m_upload \xc3\xb6ffnen"),
-                ("upload_done", "\xC3\x9Cbernehmen"),
-                ("upload_filelist_loc", "Link"),
-                ("upload_filelist_size", "Gr\xc3\xb6sse"),
-                ("upload_filelist_type", "Typ"),
-                ("upload_filelist_mimetype", "Mimetype"),
-                ("upload_filelist_delete_title", "Datei l\xc3\xb6schen und zur\xc3\xbcck zum Upload"),
-                ("upload_filelist_open_title", "Datei \xc3\xb6ffnen"),
-                ("upload_notarget_warning", "WARNUNG: Upload ist erst mit Zielknoten aktiv."),
-            ],
-           "en":
-            [
-                ("upload_popup_title", "MDT-m_upload"),
-                ("fieldtype_upload", "MDT-m_upload field"),
-                ("fieldtype_text_desc", "field for MDT-m_upload"),
-                ("upload_titlepopupbutton", "open MDT-m_upload"),
-                ("upload_done", "Done"),
-                ("upload_filelist_loc", "Link"),
-                ("upload_filelist_size", "Size"),
-                ("upload_filelist_type", "Type"),
-                ("upload_filelist_mimetype", "Mimetype"),
-                ("upload_filelist_delete_title", "Delete File and back to Upload"),
-                ("upload_filelist_open_title", "Open File"),
-                ("upload_notarget_warning", "WARNING: upload will only be active with a targetnode"),
-            ]
-         }
+              [
+                  ("upload_popup_title", "MDT-m_upload"),
+                  ("fieldtype_upload", "MDT-m_upload Feld"),
+                  ("fieldtype_text_desc", "Feld MDT-m_upload"),
+                  ("upload_titlepopupbutton", "MDT-m_upload \xc3\xb6ffnen"),
+                  ("upload_done", "\xC3\x9Cbernehmen"),
+                  ("upload_filelist_loc", "Link"),
+                  ("upload_filelist_size", "Gr\xc3\xb6sse"),
+                  ("upload_filelist_type", "Typ"),
+                  ("upload_filelist_mimetype", "Mimetype"),
+                  ("upload_filelist_delete_title", "Datei l\xc3\xb6schen und zur\xc3\xbcck zum Upload"),
+                  ("upload_filelist_open_title", "Datei \xc3\xb6ffnen"),
+                  ("upload_notarget_warning", "WARNUNG: Upload ist erst mit Zielknoten aktiv."),
+              ],
+              "en":
+              [
+                  ("upload_popup_title", "MDT-m_upload"),
+                  ("fieldtype_upload", "MDT-m_upload field"),
+                  ("fieldtype_text_desc", "field for MDT-m_upload"),
+                  ("upload_titlepopupbutton", "open MDT-m_upload"),
+                  ("upload_done", "Done"),
+                  ("upload_filelist_loc", "Link"),
+                  ("upload_filelist_size", "Size"),
+                  ("upload_filelist_type", "Type"),
+                  ("upload_filelist_mimetype", "Mimetype"),
+                  ("upload_filelist_delete_title", "Delete File and back to Upload"),
+                  ("upload_filelist_open_title", "Open File"),
+                  ("upload_notarget_warning", "WARNING: upload will only be active with a targetnode"),
+              ]
+              }
 
 
 def handle_request(req):
@@ -261,7 +263,8 @@ def handle_request(req):
             fs = n.getFiles()
 
             if not access.hasAccess(n, 'data'):
-                msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (user.name, str(n.id), n.name, n.type, str(req.ip))
+                msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (
+                    user.name, str(n.id), n.name, n.type, str(req.ip))
                 logging.getLogger("backend").info(msg)
                 errors.append(msg)
 
@@ -271,7 +274,8 @@ def handle_request(req):
 
             for f in fs:
                 if f.getName() == f_name:
-                    msg = "metadata m_upload: going to remove file '%s' from node '%s' (%s) for request from user '%s' (%s)" % (f_name, n.name, str(n.id), user.name, str(req.ip))
+                    msg = "metadata m_upload: going to remove file '%s' from node '%s' (%s) for request from user '%s' (%s)" % (
+                        f_name, n.name, str(n.id), user.name, str(req.ip))
                     logging.getLogger("backend").info(msg)
                     n.removeFile(f)
                     try:
@@ -315,7 +319,8 @@ def handle_request(req):
             logging.getLogger("backend").error(msg)
 
         if not access.hasAccess(targetnode, 'data'):
-            msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (user.name, str(targetnode.id), targetnode.name, targetnode.type, str(req.ip))
+            msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (
+                user.name, str(targetnode.id), targetnode.name, targetnode.type, str(req.ip))
             logging.getLogger("backend").info(msg)
             errors.append(msg)
 
@@ -371,8 +376,8 @@ def handle_request(req):
         logging.getLogger("backend").error(msg)
 
     s = {
-     'errors': errors,
-     'copy_report': copy_report,
+        'errors': errors,
+        'copy_report': copy_report,
     }
 
     req.write("%s" % json.dumps(s, indent=4))

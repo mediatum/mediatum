@@ -2,17 +2,20 @@ import core.tree as tree
 import core.acl as acl
 import hashlib
 import random
-import schema
+from . import schema
+
 
 class SearchMaskItem(tree.Node):
+
     def getFirstField(self):
         if self.getNumChildren():
             return self.getChildren()[0]
         return None
 
+
 def newMask(node):
-    root = tree.getRoot("searchmasks") 
-    while 1:
+    root = tree.getRoot("searchmasks")
+    while True:
         maskname = hashlib.md5(str(random.random())).hexdigest()[0:8]
         if root.hasChild(maskname):
             continue
@@ -23,22 +26,25 @@ def newMask(node):
     node.set("searchmaskname", maskname)
     return mask
 
+
 def getMask(node):
-    root = tree.getRoot("searchmasks") 
+    root = tree.getRoot("searchmasks")
     maskname = node.get("searchmaskname")
     if not maskname or not root.hasChild(maskname):
         return newMask(node)
     else:
         return root.getChild(maskname)
 
+
 def getMainContentType(node):
-    occurences = [(k,v) for k,v in node.getAllOccurences(acl.getRootAccess()).items()]
-    occurences.sort(lambda x,y: cmp(y[1],x[1]))
+    occurences = [(k, v) for k, v in node.getAllOccurences(acl.getRootAccess()).items()]
+    occurences.sort(lambda x, y: cmp(y[1], x[1]))
     maintype = None
-    for nodetype,num in occurences:
+    for nodetype, num in occurences:
         if hasattr(nodetype, "isContainer") and not nodetype.isContainer():
             return nodetype
     return None
+
 
 def generateMask(node):
     mask = getMask(node)
@@ -54,7 +60,7 @@ def generateMask(node):
     allfields = schema.getMetaType(maintype.getSchema())
 
     for metafield in maintype.getMetaFields("s"):
-        
+
         d = metafield.get("label")
         if not d:
             d = metafield.getName()
@@ -67,5 +73,3 @@ def generateMask(node):
             item.addChild(metafield)
 
     return mask
-
-

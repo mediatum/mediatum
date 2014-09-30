@@ -28,52 +28,57 @@ from utils.date import parse_date, format_date
 from schema.schema import getMetadataType
 import export.exportutils as exportutils
 
+
 class MappingReplacement():
+
     def __init__(self):
         self.description = ""
-        
+
     """
         s:        input string to be replaced
         var:      variable values
         node:     node holding values
         attrnode: node with attributes to be passed
     """
-    def func(self, s, var, node, attrnode): 
+
+    def func(self, s, var, node, attrnode):
         raise None
 
 # define standard replacements
-class MappingExtStdAttr(MappingReplacement): # replace all 'att:X' types
+
+
+class MappingExtStdAttr(MappingReplacement):  # replace all 'att:X' types
+
     def func(self, s, var, node, attrnode):
         if var.startswith("att:"):
-            if var=="att:field":
+            if var == "att:field":
                 s = s.replace("[" + var + "]", attrnode.getName())
-            elif var=="att:id":
+            elif var == "att:id":
                 s = s.replace("[" + var + "]", str(node.id))
-            elif var=="att:nodename":
+            elif var == "att:nodename":
                 s = s.replace("[" + var + "]", str(node.getName()))
-            elif var=="att:filename":
+            elif var == "att:filename":
                 s = s.replace("[" + var + "]", str(node.getName()))
             else:
                 s = s.replace("[" + var + "]", str(node.get(var.split(":")[-1])))
         return s
-        
-        
- 
+
+
 class m_mappingfield(Metatype):
 
     def __init__(self):
         self.extensions = [MappingExtStdAttr()]
-        
+
     def addMappingExt(self, ext):
         self.extensions.append(ext)
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
 
         ns = ""
-        if field.get("fieldtype")=="mapping":
+        if field.get("fieldtype") == "mapping":
             field = tree.getNode(field.get("mappingfield"))
             ns = field.getMapping().getNamespace()
-            if ns!="":
+            if ns != "":
                 ns += ":"
             format = field.getExportFormat()
             field_value = ns + field.getName()
@@ -81,14 +86,14 @@ class m_mappingfield(Metatype):
             format = field.get("mappingfield")
             field_value = field.getName()
         format = esc(format)
-        for var in re.findall( r'\[(.+?)\]', format ):
+        for var in re.findall(r'\[(.+?)\]', format):
             if var.startswith("att:"):
                 format = format.replace("[" + var + "]", '<i>{attribute:' + var[4:] + '}</i>')
-            elif var=="field":
+            elif var == "field":
                 format = format.replace("[field]", field_value)
-            elif var=="value":
+            elif var == "value":
                 format = format.replace("[value]", '<i>{' + value + '}</i>')
-            elif var=="ns":
+            elif var == "ns":
                 format = format.replace("[value]", '<i>{namspaces}</i>')
         format = format.replace("\\t", "")
         return format
@@ -105,7 +110,7 @@ class m_mappingfield(Metatype):
     def isFieldType(self):
         return False
 
-    def subStr (self, oriString, argString):
+    def subStr(self, oriString, argString):
         grp = argString.split(",")
         try:
             ret = int(grp[0])
@@ -116,28 +121,28 @@ class m_mappingfield(Metatype):
         except ValueError:
             ret2 = None
         return oriString[ret:ret2]
-        
-    def replaceStr (self, oriString, argString):
+
+    def replaceStr(self, oriString, argString):
         m = re.match(r"[ \t]*\'([^\']*)\'[ \t]*,[ \t]*\'([^\']*)\'[ \t]*$", argString)
-        if not m or len(m.groups())!=2:
+        if not m or len(m.groups()) != 2:
             return oriString    # syntax error; don't do anything
         return oriString.replace(m.groups()[0], m.groups()[1])
-        
+
     def replaceVars(self, s, node, attrnode=None, field_value="", options=[], mask=None, raw=0, default=""):
-        #if attrnode and node:
-        for var in re.findall( r'\[(.+?)\]', s ):
+        # if attrnode and node:
+        for var in re.findall(r'\[(.+?)\]', s):
             if var.startswith("att:field|replacestring"):
                 s2 = self.replaceStr(attrnode.getName(), var[24:])
-                s = s.replace("[" + var + "]", s2)  
+                s = s.replace("[" + var + "]", s2)
 
             elif var.startswith("att:field|substring"):
                 s2 = self.subStr(attrnode.getName(), var[20:])
                 s = s.replace("[" + var + "]", s2)
 
-            elif var=="field":
+            elif var == "field":
                 s = s.replace("[field]", field_value)
 
-            elif var==("cmd:getTAL"):
+            elif var == ("cmd:getTAL"):
                 s = exportutils.handleCommand('cmd:getTAL', var, s, node, attrnode, field_value, options, mask)
 
             elif var.startswith("value|formatdate"):
@@ -146,52 +151,52 @@ class m_mappingfield(Metatype):
 
             elif var.startswith("value|replacestring"):
                 s2 = self.replaceStr(node.get(attrnode.getName()), var[20:])
-                s = s.replace("["+var+"]", s2)
+                s = s.replace("[" + var + "]", s2)
 
             elif var.startswith("value|substring"):
                 s2 = self.subStr(node.get(attrnode.getName()), var[16:])
-                s = s.replace("["+var+"]", s2)
+                s = s.replace("[" + var + "]", s2)
 
             elif var.startswith("value|nodename"):
                 try:
                     s2 = tree.getNode(node.get(attrnode.getName())).getName()
                 except:
                     s2 = node.getName()
-                s = s.replace("["+var+"]", s2)
-                
-            elif var=="value":
+                s = s.replace("[" + var + "]", s2)
+
+            elif var == "value":
                 v = getMetadataType(attrnode.getFieldtype()).getFormatedValue(attrnode, node)[1]
-                if v=="":
+                if v == "":
                     v = node.get(attrnode.getName())
-                if v=="" and default!="":
+                if v == "" and default != "":
                     v = default
                 if "t" in options and not v.isdigit():
                     v = '"' + v + '"'
                 s = s.replace("[value]", v)
 
-            elif var=="ns":
+            elif var == "ns":
                 ns = ""
                 for mapping in attrnode.get("exportmapping").split(";"):
                     n = tree.getNode(mapping)
-                    if n.getNamespace()!="" and n.getNamespaceUrl()!="":
+                    if n.getNamespace() != "" and n.getNamespaceUrl() != "":
                         ns += 'xmlns:' + n.getNamespace() + '="' + n.getNamespaceUrl() + '" '
                 s = s.replace("[" + var + "]", ns)
 
             for ext in self.extensions:
                 s = ext.func(s, var, node, attrnode)
-        if raw==1:
+        if raw == 1:
             return s
-            
+
         ret = ""
         for i in range(0, len(s)):
-            if s[i-1]=='\\':
-                if s[i]=='r':
+            if s[i - 1] == '\\':
+                if s[i] == 'r':
                     ret += "\r"
-                elif s[i]=='n':
+                elif s[i] == 'n':
                     ret += "\n"
-                elif s[i]=='t':
+                elif s[i] == 't':
                     ret += "\t"
-            elif s[i]=='\\':
+            elif s[i] == '\\':
                 pass
             else:
                 ret += s[i]
@@ -204,7 +209,7 @@ class m_mappingfield(Metatype):
         mask = fields[0].getParents()[0]
         separator = ""
 
-        if mask.getMappingHeader()!="":
+        if mask.getMappingHeader() != "":
             ret += mask.getMappingHeader() + "\r\n"
 
         for field in fields:
@@ -213,30 +218,30 @@ class m_mappingfield(Metatype):
             except:
                 continue
 
-            if field.get("fieldtype")=="mapping": # mapping to mapping definition
+            if field.get("fieldtype") == "mapping":  # mapping to mapping definition
                 mapping = tree.getNode(mask.get("exportmapping").split(";")[0])
                 separator = mapping.get("separator")
 
                 ns = mapping.getNamespace()
-                if ns!="":
+                if ns != "":
                     ns += ":"
                 fld = tree.getNode(field.get("mappingfield"))
                 format = fld.getExportFormat()
                 field_value = ns + fld.getName()
                 default = fld.getDefault().strip()
-            else: # attributes of node
+            else:  # attributes of node
                 format = field.get("mappingfield")
                 field_value = ""
                 default = ""
 
             ret += self.replaceVars(format, node, attrnode, field_value, options=mask.getExportOptions(), mask=mask, default=default)
 
-            if not mask.hasExportOption("l") and list(fields).index(field)<len(fields)-1:
+            if not mask.hasExportOption("l") and list(fields).index(field) < len(fields) - 1:
                 ret += separator
 
-        if mask.getMappingFooter()!="":
+        if mask.getMappingFooter() != "":
             ret += "\r\n" + mask.getMappingFooter()
 
         ret = modify_tex(ret, 'strip')
-            
+
         return self.replaceVars(ret, node, mask)

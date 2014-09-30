@@ -35,14 +35,15 @@ def getInformation():
     return {"version": "1.1a", "system": 1}
 
 
-def writexml(node, fi, indent=None, written=None, children=True, children_access=None, exclude_filetypes=[], exclude_children_types=[], attribute_name_filter=None):
+def writexml(node, fi, indent=None, written=None, children=True, children_access=None,
+             exclude_filetypes=[], exclude_children_types=[], attribute_name_filter=None):
     if written is None:
         written = {}
     if indent is None:
         indent = 0
     # there are a lot of nodes without name ...
     nodename_copy = node.name
-    if nodename_copy == None:
+    if nodename_copy is None:
         nodename_copy = ""
     #fi.write('%s<node name="%s" id="%s" ' % ((" " * indent), esc(nodename_copy), str(node.id)))
     # non-utf8 encoded umlauts etc. may cause invalid xml
@@ -64,7 +65,7 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
         u_esc_name = u(esc(name))
         if attribute_name_filter and not attribute_name_filter(u_esc_name):
             continue
-        fi.write('%s<attribute name="%s"><![CDATA[%s]]></attribute>\n' %((" " * indent), u_esc_name, u2(value)))
+        fi.write('%s<attribute name="%s"><![CDATA[%s]]></attribute>\n' % ((" " * indent), u_esc_name, u2(value)))
 
     for file in node.getFiles():
         if file.type == "metadata" or file.type in exclude_filetypes:
@@ -72,7 +73,8 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
         mimetype = file.mimetype
         if mimetype is None:
             mimetype = "application/x-download"
-        fi.write('%s<file filename="%s" mime-type="%s" type="%s"/>\n' %((" " * indent), esc(file.getName()), mimetype, (file.type is not None and file.type or "image")))
+        fi.write('%s<file filename="%s" mime-type="%s" type="%s"/>\n' %
+                 ((" " * indent), esc(file.getName()), mimetype, (file.type is not None and file.type or "image")))
     if children:
         for c in node.getChildren().sort_by_orderpos():
             if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
@@ -80,7 +82,7 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
                     fi.write('%s<child id="%s" type="%s"/>\n' % ((" " * indent), str(c.id), c.type))
 
     indent -= 4
-    fi.write("%s</node>\n" %(" " * indent))
+    fi.write("%s</node>\n" % (" " * indent))
     if(children):
         for c in node.getChildren().sort_by_orderpos():
             if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
@@ -88,13 +90,13 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
                     if c.id not in written:
                         written[c.id] = None
                         c.writexml(fi, indent=indent,
-                                       written=written,
-                                       children=children,
-                                       children_access=children_access,
-                                       exclude_filetypes=exclude_filetypes,
-                                       exclude_children_types=exclude_children_types,
-                                       attribute_name_filter=attribute_name_filter
-                                  )
+                                   written=written,
+                                   children=children,
+                                   children_access=children_access,
+                                   exclude_filetypes=exclude_filetypes,
+                                   exclude_children_types=exclude_children_types,
+                                   attribute_name_filter=attribute_name_filter
+                                   )
 
     if node.type in ["mask"]:
         try:
@@ -104,24 +106,27 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
                     exportmapping = tree.getNode(exportmapping_id)
                     written[exportmapping_id] = None
                     exportmapping.writexml(fi, indent=indent,
-                                               written=written,
-                                               children=children,
-                                               children_access=children_access,
-                                               exclude_filetypes=exclude_filetypes,
-                                               exclude_children_types=exclude_children_types,
-                                               attribute_name_filter=attribute_name_filter
-                                          )
+                                           written=written,
+                                           children=children,
+                                           children_access=children_access,
+                                           exclude_filetypes=exclude_filetypes,
+                                           exclude_children_types=exclude_children_types,
+                                           attribute_name_filter=attribute_name_filter
+                                           )
                 except:
-                    msg = "ERROR: node xml export error node.id='%s', node.name='%s', node.type='%s', exportmapping:'%s'" % (str(node.id), node.name, node.type, str(exportmapping_id))
+                    msg = "ERROR: node xml export error node.id='%s', node.name='%s', node.type='%s', exportmapping:'%s'" % (
+                        str(node.id), node.name, node.type, str(exportmapping_id))
                     logging.getLogger("backend").error(msg)
             else:
                 pass
         except:
-            msg = "ERROR: node xml export error node.id='%s', node.name='%s', node.type='%s', exportmapping:'%s'" % (str(node.id), node.name, node.type, str(exportmapping_id))
+            msg = "ERROR: node xml export error node.id='%s', node.name='%s', node.type='%s', exportmapping:'%s'" % (
+                str(node.id), node.name, node.type, str(exportmapping_id))
             logging.getLogger("backend").error(msg)
 
 
 class _StringWriter:
+
     def __init__(self):
         self.buffer = []
 
@@ -134,7 +139,8 @@ class _StringWriter:
 
 def _writeNodeXML(node, fi):
     fi.write('<?xml version="1.0" encoding="utf-8"?>' + "\n")
-    fi.write('<nodelist exportversion="%s" rootname="%s" roottype="%s" original_nodeid="%s">\n' % (getInformation()["version"], node.name, node.type, str(node.id)))
+    fi.write('<nodelist exportversion="%s" rootname="%s" roottype="%s" original_nodeid="%s">\n' %
+             (getInformation()["version"], node.name, node.type, str(node.id)))
     exclude_children_types = []
     if EXCLUDE_WORKFLOW_NEWNODES and node.type == 'workflow':
         for c in node.getChildren():
@@ -162,7 +168,7 @@ class _NodeLoader:
         try:
             p.ParseFile(fi)
         except expat.ExpatError as e:
-            print "\tfile not well-formed in line %s, %s" %(e.lineno, e.offset)
+            print "\tfile not well-formed in line %s, %s" % (e.lineno, e.offset)
             return
         finally:
             fi.close()
@@ -172,7 +178,7 @@ class _NodeLoader:
         except tree.NoSuchNodeError:
             mappings = tree.getRoot().addChild(tree.Node(name="mappings", type="mappings"))
             logging.getLogger("backend").info("no mappings root found: added mappings root")
- 
+
         for node in self.nodes:
             if node.type == "mapping":
                 if node.name not in [n.name for n in mappings.getChildren() if n.type == "mapping"]:
@@ -192,7 +198,8 @@ class _NodeLoader:
                 d[child.id] = child
             if self.verbose and node.tmpchilds:
                 added = [(cid, d[cid].type, d[cid].name) for cid in d.keys()]
-                msg = "added %d children to node id='%s', type='%s', name='%s': %s" % (len(node.tmpchilds), str(node.id), node.type, node.name, str(added))
+                msg = "added %d children to node id='%s', type='%s', name='%s': %s" % (
+                    len(node.tmpchilds), str(node.id), node.type, node.name, str(added))
                 logging.getLogger("backend").info(msg)
 
         for node in self.nodes:
@@ -202,14 +209,16 @@ class _NodeLoader:
                     attr_new = self.id2node[attr].id
                     node.set("attribute", attr_new)
                     if self.verbose:
-                        msg = "adjusting node attribute for maskitem '%s', name='attribute', value: old='%s' -> new='%s'" % (str(node.id), attr, attr_new)
+                        msg = "adjusting node attribute for maskitem '%s', name='attribute', value: old='%s' -> new='%s'" % (
+                            str(node.id), attr, attr_new)
                         logging.getLogger("backend").info(msg)
                 mappingfield = node.get("mappingfield")
                 if mappingfield and mappingfield in self.id2node:
                     mappingfield_new = self.id2node[mappingfield].id
                     node.set("mappingfield", str(mappingfield_new))
                     if self.verbose:
-                        msg = "adjusting node attribute for maskitem '%s', name='mappingfield', value old='%s' -> new='%s'" % (str(node.id), mappingfield, mappingfield_new)
+                        msg = "adjusting node attribute for maskitem '%s', name='mappingfield', value old='%s' -> new='%s'" % (
+                            str(node.id), mappingfield, mappingfield_new)
                         logging.getLogger("backend").info(msg)
             elif node.type == "mask":
                 exportmapping = node.get("exportmapping")
@@ -217,11 +226,11 @@ class _NodeLoader:
                     exportmapping_new = self.id2node[exportmapping].id
                     node.set("exportmapping", str(exportmapping_new))
                     if self.verbose:
-                        msg = "adjusting node attribute for mask '%s',  name='exportmapping':, value old='%s' -> new='%s'" % (str(node.id), exportmapping, exportmapping_new)
+                        msg = "adjusting node attribute for mask '%s',  name='exportmapping':, value old='%s' -> new='%s'" % (
+                            str(node.id), exportmapping, exportmapping_new)
                         logging.getLogger("backend").info(msg)
 
         logging.getLogger("backend").info("xml import done")
-
 
     def xml_start_element(self, name, attrs):
         try:
@@ -319,7 +328,8 @@ class _NodeLoader:
             except:
                 val = ""
             if self.attributename in ["valuelist"]:
-                self.nodes[-1].set(self.attributename, (val + data.encode("utf-8")).replace("\n\n", "\n").replace("\n", ";").replace(";;", ";"))
+                self.nodes[-1].set(self.attributename,
+                                   (val + data.encode("utf-8")).replace("\n\n", "\n").replace("\n", ";").replace(";;", ";"))
             else:
                 self.nodes[-1].set(self.attributename, val + data.encode("utf-8"))
 
@@ -335,7 +345,6 @@ def readNodeXML(filename):
         return _NodeLoader(open(filename, "rb")).root
     except IOError:
         return None
-
 
 
 def writeNodeXML(node, filename):

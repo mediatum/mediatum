@@ -20,18 +20,19 @@
 import core.acl as acl
 from core.translation import translate, lang
 
+
 def makeList(req, name, rights, readonlyrights, overload=0, type=""):
     rightsmap = {}
     rorightsmap = {}
     for r in rights:
         rightsmap[r] = None
-    
+
     rulelist = acl.getRuleList()
 
     val_left = ""
     val_right = ""
 
-    if not (len(rightsmap)>0 and overload):
+    if not (len(rightsmap) > 0 and overload):
         # inherited standard rules
         for rule in rulelist:
             if rule.getName() in readonlyrights:
@@ -48,23 +49,22 @@ def makeList(req, name, rights, readonlyrights, overload=0, type=""):
                     val_left += """<optgroup label="%s"></optgroup>""" % (translate("edit_acl_special_rule", lang(req)))
                 else:
                     val_left += """<optgroup label="%s"></optgroup>""" % (rule)
-    
+
     # node-level standard rules
     for rule in rulelist:
         if rule.getName() in rightsmap:
-            val_left += """<option value="%s">%s</option>""" % (rule.getName(),rule.getDescription())
+            val_left += """<option value="%s">%s</option>""" % (rule.getName(), rule.getDescription())
             rightsmap[rule.getName()] = 1
 
     # node-level implicit rules
     for r in rightsmap.keys():
         if not rightsmap[r] and r not in rorightsmap:
-            if r.startswith("{"): # special rights not changeable in normal ACL area
-                val_left += """<option value="%s">%s</option>""" % (r,translate("edit_acl_special_rule", lang(req)))
+            if r.startswith("{"):  # special rights not changeable in normal ACL area
+                val_left += """<option value="%s">%s</option>""" % (r, translate("edit_acl_special_rule", lang(req)))
             else:
-                val_left += """<option value="%s">%s</option>""" % (r,r)
+                val_left += """<option value="%s">%s</option>""" % (r, r)
 
-    
     for rule in rulelist:
         if rule.getName() not in rightsmap and rule.getName() not in rorightsmap:
-            val_right += """<option value="%s">%s</option>""" % (rule.getName(),rule.getDescription())
-    return {"name":name, "val_left":val_left, "val_right":val_right, "type":type}
+            val_right += """<option value="%s">%s</option>""" % (rule.getName(), rule.getDescription())
+    return {"name": name, "val_left": val_left, "val_right": val_right, "type": type}

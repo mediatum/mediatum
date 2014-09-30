@@ -42,24 +42,25 @@ try:
 except:
     pass
 
-import handlers
+from . import handlers
 
 SERVICES_URL_HAS_HANDLER = 1
 SERVICES_URL_SIMPLE_REWRITE = 2
 
 urls = [
-        ["GET", "/index.html$", handlers.serve_file, ("/static/index.html", {}, {'filepath': 'index.html'}), SERVICES_URL_SIMPLE_REWRITE, None],
-        ["GET", "/$",           handlers.serve_file, ("/static/index.html", {}, {'filepath': 'index.html'}), SERVICES_URL_SIMPLE_REWRITE, None],
+    ["GET", "/index.html$", handlers.serve_file, ("/static/index.html", {}, {'filepath': 'index.html'}), SERVICES_URL_SIMPLE_REWRITE, None],
+    ["GET", "/$", handlers.serve_file,
+            ("/static/index.html", {}, {'filepath': 'index.html'}), SERVICES_URL_SIMPLE_REWRITE, None],
 
-        ["GET", "/node/(?P<id>\d+)/{0,1}$", handlers.get_node_single, None, SERVICES_URL_HAS_HANDLER, None],
-        ["GET", "/node/(?P<id>\d+)/children/{0,1}$", handlers.get_node_children, None, SERVICES_URL_HAS_HANDLER, None],
-        ["GET", "/node/(?P<id>\d+)/allchildren/{0,1}$", handlers.get_node_allchildren, None, SERVICES_URL_HAS_HANDLER, None],
-        ["GET", "/node/(?P<id>\d+)/parents/{0,1}$", handlers.get_node_parents, None, SERVICES_URL_HAS_HANDLER, None],
+    ["GET", "/node/(?P<id>\d+)/{0,1}$", handlers.get_node_single, None, SERVICES_URL_HAS_HANDLER, None],
+    ["GET", "/node/(?P<id>\d+)/children/{0,1}$", handlers.get_node_children, None, SERVICES_URL_HAS_HANDLER, None],
+    ["GET", "/node/(?P<id>\d+)/allchildren/{0,1}$", handlers.get_node_allchildren, None, SERVICES_URL_HAS_HANDLER, None],
+    ["GET", "/node/(?P<id>\d+)/parents/{0,1}$", handlers.get_node_parents, None, SERVICES_URL_HAS_HANDLER, None],
 
-        ["GET", "/static/(?P<filepath>.*)$", handlers.serve_file, None, SERVICES_URL_HAS_HANDLER, None],
-        ["GET", "/cachestatus/{0,1}$", handlers.get_cachestatus, None, SERVICES_URL_HAS_HANDLER, None],
-        ["GET", "/maskcachestatus/{0,1}$", handlers.get_maskcachestatus, None, SERVICES_URL_HAS_HANDLER, None],
-       ]
+    ["GET", "/static/(?P<filepath>.*)$", handlers.serve_file, None, SERVICES_URL_HAS_HANDLER, None],
+    ["GET", "/cachestatus/{0,1}$", handlers.get_cachestatus, None, SERVICES_URL_HAS_HANDLER, None],
+    ["GET", "/maskcachestatus/{0,1}$", handlers.get_maskcachestatus, None, SERVICES_URL_HAS_HANDLER, None],
+]
 
 DEBUG = True
 request_count = 0
@@ -124,7 +125,19 @@ def request_handler(req):
     req_query = req.query
     if not req_query:
         req_query = ''
-    s = "services %s '%s' (%s): %s for %s bytes for service request no. %r (%s, %s, %s) - (user-agent: %s)" % (req.ip, str(response_code), response_code_description, handle_duration, locale.format("%d", bytes_sent, 1), request_count, req.command, req.fullpath + req_query, req.params, useragent)
+    s = "services %s '%s' (%s): %s for %s bytes for service request no. %r (%s, %s, %s) - (user-agent: %s)" % (req.ip,
+                                                                                                               str(response_code),
+                                                                                                               response_code_description,
+                                                                                                               handle_duration,
+                                                                                                               locale.format(
+                                                                                                                   "%d",
+                                                                                                                   bytes_sent,
+                                                                                                                   1),
+                                                                                                               request_count,
+                                                                                                               req.command,
+                                                                                                               req.fullpath + req_query,
+                                                                                                               req.params,
+                                                                                                               useragent)
 
     if DEBUG and matched and 'timetable' in d:
         timesum = 0

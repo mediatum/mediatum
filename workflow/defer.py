@@ -22,8 +22,9 @@
 import core.tree as tree
 import utils.date as date
 import core.schedules as schedules
-from workflow import WorkflowStep, registerStep
+from .workflow import WorkflowStep, registerStep
 from core.translation import t, addLabels
+
 
 def register():
     tree.registerNodeClass("workflowstep-defer", WorkflowStep_Defer)
@@ -32,20 +33,20 @@ def register():
 
 
 class WorkflowStep_Defer(WorkflowStep):
+
     """
-    Defer the publication of the object passed by this step til the specified 
+    Defer the publication of the object passed by this step til the specified
     date.
-    
-    The name of object attributes specifying defer date and actions to be 
-    suppressed shall be given. They will be saved in nodes attrname and 
+
+    The name of object attributes specifying defer date and actions to be
+    suppressed shall be given. They will be saved in nodes attrname and
     accesstype respectively.
     """
-    
 
     def runAction(self, node, op=""):
         """
         The actual proccessing of the node object takes place here.
-        
+
         Read out the values of attrname and accesstype if any. Generate the
         ACL-rule, and save it.
         """
@@ -58,41 +59,39 @@ class WorkflowStep_Defer(WorkflowStep):
                     for item in self.get('accesstype').split(';'):
                         node.setAccess(item, "{date >= %s}" % formated_date)
                     node.getLocalRead()
-                    
-                    if self.get('recipient'): # if the recipient-email was entered, create a scheduler
+
+                    if self.get('recipient'):  # if the recipient-email was entered, create a scheduler
                         attr_dict = {'single_trigger': l_date, 'function': "test_sendmail01",
-                                     'nodelist': list(node.id),'attr_recipient': self.get('recipient'),
+                                     'nodelist': list(node.id), 'attr_recipient': self.get('recipient'),
                                      'attr_subject': self.get('subject') + " ID: " + str(node.id),
                                      'attr_body': self.get('body')}
-                        
+
                         schedules.create_schedule("WorkflowStep_Defer", attr_dict)
-                    
-                except ValueError, e:
+
+                except ValueError as e:
                     print "Error: %s" % e
-                    
 
     def show_workflow_node(self, node, req):
         return self.forwardAndShow(node, True, req)
-        
-        
+
     def metaFields(self, lang=None):
         ret = list()
         field = tree.Node("attrname", "metafield")
         field.set("label", t(lang, "attributname"))
         field.set("type", "text")
         ret.append(field)
-        
+
         field = tree.Node("accesstype", "metafield")
         field.set("label", t(lang, "accesstype"))
         field.set("type", "mlist")
         field.set("valuelist", ";read;write;data")
         ret.append(field)
-        
+
         field = tree.Node("recipient", "metafield")
         field.set("label", t(lang, "admin_wfstep_email_recipient"))
         field.set("type", "text")
         ret.append(field)
-        
+
         field = tree.Node("subject", "metafield")
         field.set("label", t(lang, "admin_wfstep_email_subject"))
         field.set("type", "text")
@@ -102,21 +101,21 @@ class WorkflowStep_Defer(WorkflowStep):
         field.set("label", t(lang, "admin_wfstep_email_text"))
         field.set("type", "memo")
         ret.append(field)
-        
+
         return ret
-    
+
     @staticmethod
     def getLabels():
-        return { "de":
-            [
-                ("workflowstep-defer", "Freischaltverz\xc3\xb6gerung"),
-                ("attributname", "Attributname"),
-                ("accesstype", "Zugriffsattribut"),
-            ],
-           "en":
-            [
-                ("workflowstep-defer", "Defer-Field"),
-                ("attributname", "Attributename"),
-                ("accesstype", "Access attribute"),
-            ]
-            }
+        return {"de":
+                [
+                    ("workflowstep-defer", "Freischaltverz\xc3\xb6gerung"),
+                    ("attributname", "Attributname"),
+                    ("accesstype", "Zugriffsattribut"),
+                ],
+                "en":
+                [
+                    ("workflowstep-defer", "Defer-Field"),
+                    ("attributname", "Attributename"),
+                    ("accesstype", "Access attribute"),
+                ]
+                }

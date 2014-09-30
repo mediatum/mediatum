@@ -37,30 +37,36 @@ from utils.date import parse_date, format_date
 from core.acl import AccessData
 
 tagpattern = re.compile(r'<[^>]*?>')
+
+
 def no_html(s):
     return tagpattern.sub('', s)
-    
+
+
 def prss(s):
     '''protect rss item elements'''
-    return esc(no_html(esc(no_html(esc(no_html(esc(u(s))))))))    
-    
+    return esc(no_html(esc(no_html(esc(no_html(esc(u(s))))))))
+
+
 def cdata(s):
-    return '<![CDATA[%s]]>' % s  
-    
+    return '<![CDATA[%s]]>' % s
+
+
 def get_udate(node):
     try:
-        return format_date(parse_date (node.get("updatetime")), "%Y-%m-%d")
+        return format_date(parse_date(node.get("updatetime")), "%Y-%m-%d")
     except:
         return format_date(date.now(), "%Y-%m-%d")
-    
+
+
 def getAccessRights(node):
     """ Get acccess rights for the public.
-    The values returned descend from 
+    The values returned descend from
     http://wiki.surffoundation.nl/display/standards/info-eu-repo/#info-eu-repo-AccessRights.
     This values are used by OpenAIRE portal.
 
     """
-    try: # if node.get('updatetime') is empty, the method parse_date would raise an exception
+    try:  # if node.get('updatetime') is empty, the method parse_date would raise an exception
         l_date = parse_date(node.get('updatetime'))
     except:
         l_date = date.now()
@@ -74,7 +80,7 @@ def getAccessRights(node):
             return "restrictedAccess"
     else:
         return "closedAccess"
-        
+
 
 def load_iso_639_2_b_names():
     filename = "ISO-639-2_utf-8.txt"
@@ -87,24 +93,24 @@ def load_iso_639_2_b_names():
         lines = text.splitlines()
         msg = "exportutils read file 'ISO-639-2_utf-8.txt': %d lines" % len(lines)
         logging.getLogger("backend").info(msg)
-    except:    
+    except:
         lines = []
         logging.getLogger("backend").warning("exportutils could not load file 'ISO-639-2_utf-8.txt'")
     return lines
-    
-    
+
+
 iso_639_2_list = load_iso_639_2_b_names()
 
-        
+
 def normLanguage_iso_639_2_b(s, emptyval=''):
     """
     source: http://www.loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt
     retrieved: 2013-05-02
-    
+
     for oai_dc language tags
     using iso 639.2
     deciding for (b)ibliographic in case of b/t-ambiguity (t=terminology)
-    
+
     http://en.wikipedia.org/wiki/Languages_used_on_the_Internet
     1 	English 	54.9%
     2 	Russian 	6.1%
@@ -116,18 +122,18 @@ def normLanguage_iso_639_2_b(s, emptyval=''):
     8 	Portuguese 	2.3%
     9 	Polish 	1.8%
     10 	Italian 	1.5%
-    
-    (set of these languages corresponed on 2013-05-02 with most used languages 
+
+    (set of these languages corresponed on 2013-05-02 with most used languages
      on wikipedia encyclopedia)
-    
+
     """
     s1 = s.strip().lower()
-    
+
     if not s1:
         return emptyval
-        
+
     s1 = s1[0:3]
-        
+
     if s1 == 'en' or s1.startswith('en'):
         return 'eng'
     elif s1 == 'de' or s1.startswith('de') or s1.startswith('ger'):
@@ -161,11 +167,11 @@ def normLanguage_iso_639_2_t(s, emptyval=''):
     """
     source: http://www.loc.gov/standards/iso639-2/ISO-639-2_utf-8.txt
     retrieved: 2013-05-02
-    
+
     for oai_dc language tags
     using iso 639.2
     deciding for (t)erminology in case of b/t-ambiguity
-    
+
     http://en.wikipedia.org/wiki/Languages_used_on_the_Internet
     1 	English 	54.9%
     2 	Russian 	6.1%
@@ -177,18 +183,18 @@ def normLanguage_iso_639_2_t(s, emptyval=''):
     8 	Portuguese 	2.3%
     9 	Polish 	1.8%
     10 	Italian 	1.5%
-    
-    (set of these languages corresponed on 2013-05-02 with most used languages 
+
+    (set of these languages corresponed on 2013-05-02 with most used languages
      on wikipedia encyclopedia)
-    
+
     """
     s1 = s.strip().lower()
-    
+
     if not s1:
         return emptyval
-        
-    s1 = s1[0:3]    
-        
+
+    s1 = s1[0:3]
+
     if s1 == 'en' or s1.startswith('en'):
         return 'eng'
     elif s1 == 'de' or s1.startswith('de') or s1.startswith('ger'):
@@ -214,14 +220,14 @@ def normLanguage_iso_639_2_t(s, emptyval=''):
                 if _t:
                     return _t
                 else:
-                    return _b    
+                    return _b
             elif line.find(s3) > 0:
                 return line.split("|")[0]
         msg = 'normLanguage_iso_639_2_t(...) -> language was not matched, returning emtyval="%s" s="%s", s1="%s"' % (emptyval, s, s1)
         logging.getLogger("backend").error(msg)
-        return emptyval  
+        return emptyval
 
-    
+
 def runTALSnippet(s, context, mask=None):
     if s.find('tal:') < 0:
         return s
@@ -230,37 +236,37 @@ def runTALSnippet(s, context, mask=None):
     xmlns = '''<talnamespaces xmlns:tal="http://xml.zope.org/namespaces/tal" xmlns:metal="http://xml.zope.org/namespaces/metal">'''
     footer = '''</talnamespaces>'''
     cutter = "----cut-TAL-result-here----\n"
-    
+
     if mask:
         exportheader = mask.get('exportheader')
         if exportheader.startswith("<?xml"):
             header = exportheader
-        else:    
-            header += exportheader 
+        else:
+            header += exportheader
         footer += mask.get('exportfooter')
 
     to_be_processed = header + xmlns + cutter + s + cutter + footer
-    try: # normally only encoding errors
+    try:  # normally only encoding errors
         wr_result = tal.getTALstr(to_be_processed, context, mode='xml')
-    except: # try with u2 method
+    except:  # try with u2 method
         try:
             wr_result = tal.getTALstr(u2(to_be_processed), context, mode='xml')
         except:
             wr_result = tal.getTALstr(u2(to_be_processed), context)
         #wr_result = tal.getTALstr(u2(to_be_processed), context, mode='xml')
-        
-    return wr_result[wr_result.find(cutter)+len(cutter):wr_result.rfind(cutter)]
- 
-default_context = {} 
+
+    return wr_result[wr_result.find(cutter) + len(cutter):wr_result.rfind(cutter)]
+
+default_context = {}
 default_context['tree'] = tree
 default_context['esc'] = esc  # may be needed for example in escaping rss item elements
 default_context['esc2'] = esc2  # may be needed for example in escaping rss item elements
-default_context['no_html'] = no_html 
-default_context['u'] = u 
+default_context['no_html'] = no_html
+default_context['u'] = u
 default_context['utf82iso'] = utf82iso
 default_context['iso2utf8'] = iso2utf8
-default_context['prss'] = prss # protect rss
-default_context['parse_date'] = parse_date 
+default_context['prss'] = prss  # protect rss
+default_context['parse_date'] = parse_date
 default_context['format_date'] = format_date
 default_context['cdata'] = cdata
 default_context['get_udate'] = get_udate
@@ -274,15 +280,16 @@ def registerDefaultContextEntry(key, entry):
     global default_context
     default_context[key] = entry
 
+
 def handleCommand(cmd, var, s, node, attrnode=None, field_value="", options=[], mask=None):
     from web.frontend.streams import build_filelist, get_transfer_url
     global default_context
-    
-    if cmd=='cmd:getTAL':
+
+    if cmd == 'cmd:getTAL':
         context = default_context.copy()
         context['node'] = node
         context['build_filelist'] = build_filelist
-        context['get_transfer_url'] = get_transfer_url        
+        context['get_transfer_url'] = get_transfer_url
         result = runTALSnippet(s, context, mask)
 
         return result.replace("[" + var + "]", "")

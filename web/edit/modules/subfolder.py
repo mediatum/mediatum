@@ -30,6 +30,7 @@ from schema.schema import getMetaType
 log = logging.getLogger('edit')
 utrace = logging.getLogger('usertracing')
 
+
 def getContent(req, ids):
     user = users.getUserFromRequest(req)
     access = AccessData(req)
@@ -52,7 +53,7 @@ def getContent(req, ids):
     if "resort" in req.params:
         # sort criteria
         i = 0
-        sort_dir = "" if req.params.get("sortdirection","up") == "up" else "-"
+        sort_dir = "" if req.params.get("sortdirection", "up") == "up" else "-"
         sort_attribute = sort_dir + req.params.get("sortattribute")
         sorted_children = node.getChildren().sort_by_fields(sort_attribute)
         for child in sorted_children:
@@ -60,19 +61,18 @@ def getContent(req, ids):
             i += 1
         runscript = True
 
-
-    if up>=0 or down>=0:
+    if up >= 0 or down >= 0:
         i = 0
         for child in node.getChildren().sort_by_orderpos():
             try:
                 if child.isContainer():
-                    if i==up:
+                    if i == up:
                         pos = i - 1
-                    elif i==up-1:
+                    elif i == up - 1:
                         pos = up
-                    elif i==down:
+                    elif i == down:
                         pos = i + 1
-                    elif i==down+1:
+                    elif i == down + 1:
                         pos = down
                     else:
                         pos = i
@@ -90,7 +90,7 @@ def getContent(req, ids):
     for child in list(node.getChildren().sort_by_orderpos()):
         try:
             if child.isContainer():
-                i += 1 # count container children
+                i += 1  # count container children
                 nodelist.append(child)
                 for field in getMetaType(child.getSchema()).getMetaFields():
                     if not field in fields.keys():
@@ -100,8 +100,9 @@ def getContent(req, ids):
             pass
 
     for field in fields:
-        if i==fields[field]:
+        if i == fields[field]:
             attributes.append(field)
-    attributes.sort(lambda x, y: cmp(x.getLabel().lower(),y.getLabel().lower()))
+    attributes.sort(lambda x, y: cmp(x.getLabel().lower(), y.getLabel().lower()))
 
-    return req.getTAL("web/edit/modules/subfolder.html", {"node":node, "nodelist":nodelist, "sortattributes":attributes, "runscript":runscript}, macro="edit_subfolder")
+    return req.getTAL("web/edit/modules/subfolder.html",
+                      {"node": node, "nodelist": nodelist, "sortattributes": attributes, "runscript": runscript}, macro="edit_subfolder")

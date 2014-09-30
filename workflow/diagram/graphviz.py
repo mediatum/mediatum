@@ -33,22 +33,24 @@ FILE_ENDINGS = {
     "pdf": ".pdf",
 }
 
+
 def true_edge(n_src, n_dest, **kwargs):
     """Returns an edge with default settings for a 'true' edge"""
-    return Edge(n_src, n_dest, color="darkgreen", **kwargs) # blue
+    return Edge(n_src, n_dest, color="darkgreen", **kwargs)  # blue
 
 
 def false_edge(n_src, n_dest, **kwargs):
     """Returns an edge with default settings for a 'false' edge"""
-    return Edge(n_src, n_dest, color="red", **kwargs) # darkorange
-
+    return Edge(n_src, n_dest, color="red", **kwargs)  # darkorange
 
 
 class GraphvizWorkflowDiagram(object):
+
     """Workflow diagram based on Graphviz.
     Can generate png and svg images, pdf documents and raw dot code.
     TODO: more media types
     """
+
     def __init__(self, workflow, output_dir=None):
         """
         Create 'Dot' visualization graph from workflow node.
@@ -171,7 +173,7 @@ def send_workflow_diagram(req, media_type="png"):
 
 def create_example_graph():
     g = Dot(graph_name="workflow: example",
-                labelloc="t", label="workflow: example", fontsize=18, fontcolor="blue")
+            labelloc="t", label="workflow: example", fontsize=18, fontcolor="blue")
     g.set_node_defaults(shape="box", fontsize=12)
     g.set_edge_defaults(fontsize=13, labeldistance=3)
     n1 = Node(name="Start")
@@ -195,5 +197,3 @@ def create_example_graph():
     e4 = true_edge(n4, n5)
     g.add_edge(e4)
     return g
-
-

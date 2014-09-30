@@ -20,7 +20,7 @@
 """
 
 import sys
-sys.path += ["../","."]
+sys.path += ["../", "."]
 import re
 import os
 import core
@@ -37,10 +37,13 @@ FULLTEXT_INDEX_MODE = 0
 
 SYSTEMATTRS = ['updateuser', 'updatetime', 'edit.lastmask', 'creationtime', 'creator']
 
+
 def protect(s):
-    return s.replace('"','')
+    return s.replace('"', '')
+
 
 class SearchIndexer:
+
     def __init__(self, option=""):
         try:
             self.init(option)
@@ -51,13 +54,13 @@ class SearchIndexer:
         global MAX_SEARCH_FIELDS
         global DB_NAME
         global FULLTEXT_INDEX_MODE
-        
+
         self.tablenames = ["fullsearchmeta", "searchmeta", "textsearchmeta"]
         self.db = sqlite.SQLiteConnector(config.get("paths.searchstore") + DB_NAME)
-        
+
         self.schemafields = {}
 
-        if option=="init":
+        if option == "init":
             try:
                 r = self.execute("select id from node where type='foobar'")
             except sqlite.OperationalError:
@@ -68,68 +71,68 @@ class SearchIndexer:
     def createTables(self):
         s = ''
         for i in range(1, MAX_SEARCH_FIELDS):
-            s += 'field'+ str(i)+", "
+            s += 'field' + str(i) + ", "
         s = s[:-2]
 
         # simple search table
         self.db.execute('CREATE VIRTUAL TABLE fullsearchmeta USING fts3(id, type, schema, value)')
         # extended search table
-        self.db.execute('CREATE VIRTUAL TABLE searchmeta USING fts3(id, type, schema, %s)' %(s))
+        self.db.execute('CREATE VIRTUAL TABLE searchmeta USING fts3(id, type, schema, %s)' % (s))
         self.db.execute('CREATE VIRTUAL TABLE searchmeta_def USING fts3(name, position, attrname)')
         # fulltext search table
         self.db.execute('CREATE VIRTUAL TABLE textsearchmeta USING fts3(id, type, schema, value)')
-        
+
     def getAllTableNames(self):
         ret = []
         for table in self.tablenames:
             ret.append(table)
             for table_add in ['content', 'segdir', 'segments']:
-                ret.append(table+'_'+table_add)
+                ret.append(table + '_' + table_add)
         return ret
-    
-    
+
     def clearIndex(self):
         print "\nclearing index tables..."
         for table in self.getAllTableNames():
             try:
-                self.db.execute("delete from "+ table)
+                self.db.execute("delete from " + table)
             except:
                 print " - table", table, "not found"
         self.db.execute("DELETE FROM searchmeta_def")
         print "...cleared"
-        
+
     def dropIndex(self):
         print "\ndropping index tables..."
         for table in self.getAllTableNames():
             try:
-                self.db.execute("drop table "+table)
+                self.db.execute("drop table " + table)
             except sqlite.OperationalError:
                 print " - table", table, "not found"
         print "...dropped"
-        
+
     def getDefForSchema(self, schema):
         ret = {}
-        res = self.db.execute('SELECT position, attrname FROM searchmeta_def WHERE name="'+str(schema)+'" ORDER BY position')
-        
+        res = self.db.execute('SELECT position, attrname FROM searchmeta_def WHERE name="' + str(schema) + '" ORDER BY position')
+
         for id, attr in res:
             ret[id] = attr
         return ret
-        
+
     def nodeToSimpleSearch(self, node):
         # build simple search index from node
         try:
-            sql = 'INSERT INTO fullsearchmeta (id, type, schema, value) VALUES(\''+ str(node.id)+'\', \''+node.getContentType()+'\', \''+node.getSchema()+'\', \''+ str(node.name) + '| '
+            sql = 'INSERT INTO fullsearchmeta (id, type, schema, value) VALUES(\'' + str(node.id) + \
+                '\', \'' + node.getContentType() + '\', \'' + node.getSchema() + '\', \'' + str(node.name) + '| '
 
             # attributes
             a = ''
-            for key,value in node.items():
+            for key, value in node.items():
                 if key not in SYSTEMATTRS:
-                    a += protect(u(value))+'| '
+                    a += protect(u(value)) + '| '
             a = normalize_utf8(a)
             sql += a
             # files
             for file in node.getFiles():
-                sql += protect(u(file.getName()+ '| '+file.getType()+'| '+file.getMimeType())+'| ')
+                sql += protect(u(file.getName() + '| ' + file.getType() + '| ' + file.getMimeType()) + '| ')
 
             sql += '\')'
             self.db.execute(sql)
@@ -137,72 +140,72 @@ class SearchIndexer:
         except:
             return False
 
-            
     def nodeToExtSearch(self, node):
         # build extended search index from node
-        if len(node.getSearchFields())==0:
+        if len(node.getSearchFields()) == 0:
             # stop if schema has no searchfields
             return True
-            
+
         v_list = {}
         i = 1
         for field in node.getSearchFields():
             v_list[str(i)] = node.get(field.getName())
-            i+=1
+            i += 1
         # save definition
         self.nodeToSchemaDef(node)
-  
+
         sql = 'INSERT INTO searchmeta (id, type, schema, '
         values = ''
         try:
             if len(v_list) > 0:
                 for key in v_list:
-                    sql += 'field'+str(key)+', '
+                    sql += 'field' + str(key) + ', '
                     #values += '"'+u(v_list[key])+ '", '
-                    values += '"'+normalize_utf8(u(v_list[key]))+ '", '
+                    values += '"' + normalize_utf8(u(v_list[key])) + '", '
                 sql = sql[:-2]
                 values = values[:-2]
-                sql = sql+') VALUES("'+ str(node.id)+'", "'+node.getContentType()+'", "'+node.getSchema()+'", ' + values + ')'
+                sql = sql + ') VALUES("' + str(node.id) + '", "' + node.getContentType() + '", "' + node.getSchema() + '", ' + values + ')'
             else:
                 sql = sql[:-2]
-                sql = sql+') VALUES("'+ str(node.id)+'", "'+node.getContentType()+'", "'+node.getSchema()+'")'
+                sql = sql + ') VALUES("' + str(node.id) + '", "' + node.getContentType() + '", "' + node.getSchema() + '")'
             self.db.execute(sql)
             return True
         except:
             return False
-      
-      
+
     def nodeToSchemaDef(self, node):
         fieldnames = {}
         i = 1
         for field in node.getSearchFields():
             fieldnames[str(i)] = field.getName()
-            i+=1
+            i += 1
 
         try:
-            sql = 'DELETE FROM searchmeta_def WHERE name="' + node.getSchema()+'"'
+            sql = 'DELETE FROM searchmeta_def WHERE name="' + node.getSchema() + '"'
             self.db.execute(sql)
         except:
             None
         for id in fieldnames.keys():
-            sql = 'INSERT INTO searchmeta_def (name, position, attrname) VALUES("'+node.getSchema()+'", "'+id+'", "'+fieldnames[id]+'")'
+            sql = 'INSERT INTO searchmeta_def (name, position, attrname) VALUES("' + node.getSchema() + \
+                '", "' + id + '", "' + fieldnames[id] + '")'
             self.db.execute(sql)
-            
+
     """
         FULLTEXT_INDEX_MODE values:
             0: index fulltext without changes
             1: optimize fulltext (each word once)
             2: each word once with number of occurences
     """
+
     def nodeToFulltextSearch(self, node):
         # build fulltext index from node
-        
+
         if not node.getContentType() in ("document", "dissertation"):
             # only build fulltext of document nodes
-            #print "object is no document"
+            # print "object is no document"
             return True
         r = re.compile("[a-zA-Z0-9]+")
-        
+
         for file in node.getFiles():
             w = ''
             if file.getType() == "fulltext" and os.path.exists(file.retrieveFile()):
@@ -211,7 +214,7 @@ class SearchIndexer:
                 f = open(file.retrieveFile())
                 try:
                     for line in f:
-                        if FULLTEXT_INDEX_MODE==0:
+                        if FULLTEXT_INDEX_MODE == 0:
                             content += u(line)
                         else:
                             for w in re.findall(r, line):
@@ -224,24 +227,25 @@ class SearchIndexer:
                 finally:
                     f.close()
 
-                if FULLTEXT_INDEX_MODE==1:
+                if FULLTEXT_INDEX_MODE == 1:
                     for key in data.keys():
                         content += key + " "
-                elif FULLTEXT_INDEX_MODE==2:
+                elif FULLTEXT_INDEX_MODE == 2:
                     for key in data.keys():
-                        content += key + " ["+ str(data[key])+"] "
+                        content += key + " [" + str(data[key]) + "] "
                 sql = ""
-                if len(content)>0:
+                if len(content) > 0:
                     try:
-                        sql = 'INSERT INTO textsearchmeta (id, type, schema, value) VALUES("'+str(node.id)+'", "'+str(node.getContentType())+'", "'+str(node.getSchema())+'", "'+iso2utf8(esc(content))+'")'
+                        sql = 'INSERT INTO textsearchmeta (id, type, schema, value) VALUES("' + str(node.id) + '", "' + \
+                            str(node.getContentType()) + '", "' + str(node.getSchema()) + '", "' + iso2utf8(esc(content)) + '")'
                         self.db.execute(sql)
                     except:
-                        print "error", node.id,"\n"
+                        print "error", node.id, "\n"
                         return False
                 else:
                     print "no Content"
         return True
-    
+
     def updateNode(self, node):
         self.removeNode(node)
         err = {}
@@ -274,32 +278,34 @@ class SearchIndexer:
             self.nodeToSchemaDef(schemas[key])
         print "...finished"
         return err
-    
+
     """
         mode:
             0: no printout
     """
+
     def removeNode(self, node, mode=0):
         for table in self.tablenames:
             try:
-                self.db.execute('DELETE FROM '+table+' WHERE id="'+str(node.id)+'"')
+                self.db.execute('DELETE FROM ' + table + ' WHERE id="' + str(node.id) + '"')
             except:
                 print "table", table, "does not exist"
-        if mode!=0:
+        if mode != 0:
             print "node", node.id, "removed from index"
 
     def runIndexer(self, option=""):
         err = []
         root = tree.getRoot()
-        if option!="":
+        if option != "":
             self.init(option)
         err = self.updateNodes(root.getAllChildren())
         print err
 
-    def node_changed(self,node):
+    def node_changed(self, node):
         self.updateNode(node)
-    
+
 searchIndexer = SearchIndexer()
+
 
 def getIndexer():
     global searchIndexer
@@ -307,7 +313,6 @@ def getIndexer():
 
 if __name__ == "__main__":
     import time
-    print "\nStart:",time.localtime(),"\n"
+    print "\nStart:", time.localtime(), "\n"
     searchIndexer.runIndexer(option="init")
-    print "\nFinish:",time.localtime(), "\n"
-
+    print "\nFinish:", time.localtime(), "\n"

@@ -27,6 +27,7 @@ from core.metatype import Metatype
 
 
 class m_dlist(Metatype):
+
     def formatValues(self, context):
         valuelist = []
 
@@ -52,28 +53,28 @@ class m_dlist(Metatype):
             val = val.strip()
             if not indent:
                 canbeselected = 1
-            if indent>0:
-                indent = indent-1
-            indentstr = "&nbsp;"*(2*indent)
+            if indent > 0:
+                indent = indent - 1
+            indentstr = "&nbsp;" * (2 * indent)
 
-            num =0
+            num = 0
             if val in items.keys():
                 num = int(items[val])
 
             try:
-                if int(num)<0:
+                if int(num) < 0:
                     raise ""
-                elif int(num)==0:
+                elif int(num) == 0:
                     num = ""
                 else:
-                    num = " ("+str(num)+")"
+                    num = " (" + str(num) + ")"
             except:
                 num = ""
 
             val = esc(val)
 
             if not canbeselected:
-                valuelist.append(("optgroup", "<optgroup label=\""+indentstr+val+"\">","", ""))
+                valuelist.append(("optgroup", "<optgroup label=\"" + indentstr + val + "\">", "", ""))
             elif (val in value):
                 valuelist.append(("optionselected", indentstr, val, num))
             else:
@@ -81,22 +82,23 @@ class m_dlist(Metatype):
         return valuelist
 
     def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
-        fielddef = field.getValues().split("\r\n") # url(source), type, name variable, value variable
-        if name=="":
+        fielddef = field.getValues().split("\r\n")  # url(source), type, name variable, value variable
+        if name == "":
             name = field.getName()
-        while len(fielddef)<5:
+        while len(fielddef) < 5:
             fielddef.append("")
 
         valuelist = []
-        if fielddef[1]=='json':
+        if fielddef[1] == 'json':
             opener = urllib2.build_opener()
             f = opener.open(urllib2.Request(fielddef[0], None, {}))
             data = json.load(f)
             data.sort(lambda x, y: cmp(x[fielddef[2]], y[fielddef[2]]))
             for item in data:
-                valuelist.append({'select_text':fielddef[4].replace(fielddef[2], item[fielddef[2]]).replace(fielddef[3], item[fielddef[3]]), 'select_value':item[fielddef[3]]})
+                valuelist.append({'select_text': fielddef[4].replace(fielddef[2], item[fielddef[2]]).replace(
+                    fielddef[3], item[fielddef[3]]), 'select_value': item[fielddef[3]]})
             f.close()
-        elif fielddef[1]=='list':
+        elif fielddef[1] == 'list':
             opener = urllib2.build_opener()
             f = opener.open(urllib2.Request(fielddef[0], None, {}))
             for item in f.read().split("\n"):
@@ -105,12 +107,25 @@ class m_dlist(Metatype):
                         _v, _t = item.split(";")
                     else:
                         _v = _t = item
-                    valuelist.append({'select_text':_t.strip(), 'select_value':_v.strip()})
+                    valuelist.append({'select_text': _t.strip(), 'select_value': _v.strip()})
             f.close()
-        return tal.getTAL("metadata/dlist.html", {"lock":lock, "name":name, "width":width, "value":value, "valuelist":valuelist, "fielddef":fielddef}, macro="editorfield", language=language)
+        return tal.getTAL("metadata/dlist.html",
+                          {"lock": lock,
+                           "name": name,
+                           "width": width,
+                           "value": value,
+                           "valuelist": valuelist,
+                           "fielddef": fielddef},
+                          macro="editorfield",
+                          language=language)
 
     def getSearchHTML(self, context):
-        return tal.getTAL("metadata/dlist.html", {"context":context, "valuelist":filter(lambda x:x!="", self.formatValues(context))}, macro="searchfield", language=context.language)
+        return tal.getTAL("metadata/dlist.html",
+                          {"context": context,
+                           "valuelist": filter(lambda x: x != "",
+                                               self.formatValues(context))},
+                          macro="searchfield",
+                          language=context.language)
 
     def getFormatedValue(self, field, node, language=None, html=1):
         value = node.get(field.getName())
@@ -123,44 +138,44 @@ class m_dlist(Metatype):
             value = field.getValues().split("\r\n")
         except:
             value = []
-        while len(value)<5:
-            value.append("") # url(source), name variable, value variable
-        return tal.getTAL("metadata/dlist.html", {"value":value, "types":['json', 'list']}, macro="maskeditor", language=language)
+        while len(value) < 5:
+            value.append("")  # url(source), name variable, value variable
+        return tal.getTAL("metadata/dlist.html", {"value": value, "types": ['json', 'list']}, macro="maskeditor", language=language)
 
     def getName(self):
         return "fieldtype_dlist"
 
     def getInformation(self):
-        return {"moduleversion":"1.0", "softwareversion":"1.1"}
+        return {"moduleversion": "1.0", "softwareversion": "1.1"}
 
     # method for additional keys of type list
     def getLabels(self):
         return m_dlist.labels
 
-    labels = { "de":
-            [
-                ("dlist_list_values", "Dynamische Listenwerte:"),
-                ("fieldtype_dlist", "Dynamische Werteliste"),
-                ("fieldtype_dlist_desc", "Werte-Auswahlfeld als Drop-Down Liste"),
-                ("dlist_edit_source", "Adresse der Daten:"),
-                ("dlist_edit_type", "Typ der Daten:"),
-                ("dlist_edit_attr", "Attribut-Variable:"),
-                ("dlist_edit_valattr", "Werte-Variable:"),
-                ("dlist_type_json", "Json:"),
-                ("dlist_type_list", "Liste:"),
-                ("dlist_edit_format", "Anzeigeformat:")
-            ],
-           "en":
-            [
-                ("dlist_list_values", "Dynamic List values:"),
-                ("fieldtype_dlist", "dynamic valuelist"),
-                ("fieldtype_dlist_desc", "drop down valuelist"),
-                ("dlist_edit_source", "address of data:"),
-                ("dlist_edit_type", "type of data:"),
-                ("dlist_edit_attr", "attribute variable:"),
-                ("dlist_edit_valattr", "value variable:"),
-                ("dlist_type_json", "Json:"),
-                ("dlist_type_list", "List:"),
-                ("dlist_edit_format", "format in selection:")
-            ]
-          }
+    labels = {"de":
+              [
+                  ("dlist_list_values", "Dynamische Listenwerte:"),
+                  ("fieldtype_dlist", "Dynamische Werteliste"),
+                  ("fieldtype_dlist_desc", "Werte-Auswahlfeld als Drop-Down Liste"),
+                  ("dlist_edit_source", "Adresse der Daten:"),
+                  ("dlist_edit_type", "Typ der Daten:"),
+                  ("dlist_edit_attr", "Attribut-Variable:"),
+                  ("dlist_edit_valattr", "Werte-Variable:"),
+                  ("dlist_type_json", "Json:"),
+                  ("dlist_type_list", "Liste:"),
+                  ("dlist_edit_format", "Anzeigeformat:")
+              ],
+              "en":
+              [
+                  ("dlist_list_values", "Dynamic List values:"),
+                  ("fieldtype_dlist", "dynamic valuelist"),
+                  ("fieldtype_dlist_desc", "drop down valuelist"),
+                  ("dlist_edit_source", "address of data:"),
+                  ("dlist_edit_type", "type of data:"),
+                  ("dlist_edit_attr", "attribute variable:"),
+                  ("dlist_edit_valattr", "value variable:"),
+                  ("dlist_type_json", "Json:"),
+                  ("dlist_type_list", "List:"),
+                  ("dlist_edit_format", "format in selection:")
+              ]
+              }

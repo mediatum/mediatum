@@ -27,4 +27,3 @@ import core.tree as tree
 from core.tree import searcher
 
 searcher.reindex(tree.getRoot().getAllChildren())
-

@@ -18,7 +18,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import config
+from . import config
 import os
 import stat
 import time
@@ -27,7 +27,7 @@ import thread
 
 class _POFile:
     filedates = {}
-    
+
     def __init__(self, filenames):
         self.lock = thread.allocate_lock()
         self.filenames = filenames
@@ -39,7 +39,7 @@ class _POFile:
     def loadFile(self, filename):
         self.filedates[filename] = os.stat(filename)[stat.ST_MTIME]
         self.lastchecktime = time.time()
-        
+
         fi = open(filename, "rb")
         id = None
         for line in fi.readlines():
@@ -65,12 +65,12 @@ class _POFile:
         finally:
             self.lock.release()
         return self.map[key]
-        
+
     def addKeys(self, items):
         for item in items:
             if item[0] not in self.map.keys():
                 self.map[item[0]] = item[1]
-                
+
     def addFilename(self, filepath):
         if filepath not in self.filenames:
             self.filenames.append(filepath)
@@ -86,18 +86,18 @@ def translate(key, language=None, request=None):
 
     if not language:
         return "?%s?" % key
-   
+
     if language not in lang2po:
         plist = []
         i18dir = os.path.join(config.basedir, "i18n")
         for root, dirs, files in os.walk(i18dir, topdown=True):
             for n in [f for f in files if f.endswith("%s.po" % language)]:
                 plist.append(os.path.join(i18dir, n))
-        
+
         for f in addlangfiles:
             if os.path.exists(f):
                 plist.append(f)
-                
+
         if not plist:
             return key
 
@@ -118,7 +118,7 @@ def addLabels(labels={}):
     for key in labels:
         if not key in addlangitems.keys():
             addlangitems[key] = {}
-        
+
         for item in labels[key]:
             addlangitems[key][item[0]] = item[1]
 
@@ -160,7 +160,7 @@ def switch_language(req, language):
 
 
 def t(target, key):
-    if type(target) == type(""):
+    if isinstance(target, type("")):
         return translate(key, language=target)
     else:
         return translate(key, request=target)

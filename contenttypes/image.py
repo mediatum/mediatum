@@ -178,15 +178,15 @@ def getJpegSection(image, section):  # section character
     return data
 
 
-def dozoom(node):
+def dozoom(self):
     b = 0
     svg = 0
-    for file in node.getFiles():
+    for file in self.getFiles():
         if file.getType() == "zoom":
             b = 1
         if file.getName().lower().endswith('svg') and file.type == "original":
             svg = 1
-    if node.get("width") and node.get("height") and (int(node.get("width")) > 2000 or int(node.get("height")) > 2000) and not svg:
+    if self.get("width") and self.get("height") and (int(self.get("width")) > 2000 or int(self.get("height")) > 2000) and not svg:
         b = 1
     return b
 
@@ -196,18 +196,18 @@ def dozoom(node):
 
 class Image(default.Default):
 
-    def getTypeAlias(node):
+    def getTypeAlias(self):
         return "image"
 
-    def getOriginalTypeName(node):
+    def getOriginalTypeName(self):
         return "original"
 
-    def getCategoryName(node):
+    def getCategoryName(self):
         return "image"
 
     # prepare hash table with values for TAL-template
-    def _prepareData(node, req):
-        mask = node.getFullView(lang(req))
+    def _prepareData(self, req):
+        mask = self.getFullView(lang(req))
 
         tif = ""
         try:
@@ -216,22 +216,22 @@ class Image(default.Default):
             tifs = []
 
         access = acl.AccessData(req)
-        if access.hasAccess(node, "data"):
-            for f in node.getFiles():
+        if access.hasAccess(self, "data"):
+            for f in self.getFiles():
                 if f.getType() == "original":
-                    if node.get('system.origname') == "1":
-                        tif = node.getName()
+                    if self.get('system.origname') == "1":
+                        tif = self.getName()
                     else:
                         tif = f.getName()
 
-            if node.get("archive_path") != "":
-                tif = "file/" + str(node.id) + "/" + node.get("archive_path")
+            if self.get("archive_path") != "":
+                tif = "file/" + str(self.id) + "/" + self.get("archive_path")
 
-        files, sum_size = filebrowser(node, req)
+        files, sum_size = filebrowser(self, req)
 
         obj = {'deleted': False, 'access': access}
-        if node.get('deleted') == 'true':
-            node = node.getActiveVersion()
+        if self.get('deleted') == 'true':
+            node = self.getActiveVersion()
             obj['deleted'] = True
         obj['path'] = req and req.params.get("path", "") or ""
         obj['attachment'] = files
@@ -258,53 +258,53 @@ class Image(default.Default):
         return obj
 
     """ format big view with standard template """
-    def show_node_big(node, req, template="", macro=""):
+    def show_node_big(self, req, template="", macro=""):
         if template == "":
-            styles = getContentStyles("bigview", contenttype=node.getContentType())
+            styles = getContentStyles("bigview", contenttype=self.getContentType())
             if len(styles) >= 1:
                 template = styles[0].getTemplate()
-        return req.getTAL(template, node._prepareData(req), macro)
+        return req.getTAL(template, self._prepareData(req), macro)
 
-    def isContainer(node):
+    def isContainer(self):
         return 0
 
-    def getLabel(node):
-        return node.name
+    def getLabel(self):
+        return self.name
 
-    def getSysFiles(node):
+    def getSysFiles(self):
         return ["original", "thumb", "presentati", "image", "presentation", "zoom"]
 
     """ make a copy of the svg file in png format """
-    def svg_to_png(node, filename, imgfile):
+    def svg_to_png(self, filename, imgfile):
         # convert svg to png (imagemagick + ghostview)
         os.system("convert -alpha off -colorspace RGB %s -background white %s" % (filename, imgfile))
 
     """ postprocess method for object type 'image'. called after object creation """
-    def event_files_changed(node):
-        print "Postprocessing node", node.id
-        if "image" in node.type:
-            for f in node.getFiles():
+    def event_files_changed(self):
+        print "Postprocessing node", self.id
+        if "image" in self.type:
+            for f in self.getFiles():
                 if f.getName().lower().endswith('svg'):
-                    node.svg_to_png(f.retrieveFile(), f.retrieveFile()[:-4] + ".png")
-                    node.removeFile(f)
-                    node.addFile(FileNode(name=f.retrieveFile(), type="original", mimetype=f.mimetype))
-                    node.addFile(FileNode(name=f.retrieveFile(), type="image", mimetype=f.mimetype))
-                    node.addFile(FileNode(name=f.retrieveFile()[:-4] + ".png", type="tmppng", mimetype="image/png"))
+                    self.svg_to_png(f.retrieveFile(), f.retrieveFile()[:-4] + ".png")
+                    self.removeFile(f)
+                    self.addFile(FileNode(name=f.retrieveFile(), type="original", mimetype=f.mimetype))
+                    self.addFile(FileNode(name=f.retrieveFile(), type="image", mimetype=f.mimetype))
+                    self.addFile(FileNode(name=f.retrieveFile()[:-4] + ".png", type="tmppng", mimetype="image/png"))
                     break
             orig = 0
             thumb = 0
-            for f in node.getFiles():
+            for f in self.getFiles():
                 if f.type == "original":
                     orig = 1
                 if f.type == "thumb":
                     thumb = 1
             if orig == 0:
-                for f in node.getFiles():
+                for f in self.getFiles():
                     if f.type == "image":
                         if f.mimetype == "image/tiff" or ((f.mimetype is None or f.mimetype == "application/x-download")
                                                           and (f.getName().lower().endswith("tif") or f.getName().lower().endswith("tiff"))):
                             # move old file to "original", create a new png to be used as "image"
-                            node.removeFile(f)
+                            self.removeFile(f)
 
                             path, ext = splitfilename(f.retrieveFile())
                             pngname = path + ".png"
@@ -312,33 +312,33 @@ class Image(default.Default):
                                 makeOriginalFormat(f.retrieveFile(), pngname)
 
                                 width, height = getImageDimensions(pngname)
-                                node.set("width", width)
-                                node.set("height", height)
+                                self.set("width", width)
+                                self.set("height", height)
 
                             else:
                                 width, height = getImageDimensions(pngname)
-                                node.set("width", width)
-                                node.set("height", height)
+                                self.set("width", width)
+                                self.set("height", height)
 
-                            node.addFile(FileNode(name=pngname, type="image", mimetype="image/png"))
-                            node.addFile(FileNode(name=f.retrieveFile(), type="original", mimetype="image/tiff"))
+                            self.addFile(FileNode(name=pngname, type="image", mimetype="image/png"))
+                            self.addFile(FileNode(name=f.retrieveFile(), type="original", mimetype="image/tiff"))
                             break
                         else:
-                            node.addFile(FileNode(name=f.retrieveFile(), type="original", mimetype=f.mimetype))
+                            self.addFile(FileNode(name=f.retrieveFile(), type="original", mimetype=f.mimetype))
 
             # retrieve technical metadata.
-            for f in node.getFiles():
+            for f in self.getFiles():
                 if (f.type == "image" and not f.getName().lower().endswith("svg")) or f.type == "tmppng":
                     width, height = getImageDimensions(f.retrieveFile())
-                    node.set("origwidth", width)
-                    node.set("origheight", height)
-                    node.set("origsize", f.getSize())
+                    self.set("origwidth", width)
+                    self.set("origheight", height)
+                    self.set("origsize", f.getSize())
 
                     if f.mimetype == "image/jpeg":
-                        node.set("jpg_comment", iso2utf8(getJpegSection(f.retrieveFile(), 0xFE).strip()))
+                        self.set("jpg_comment", iso2utf8(getJpegSection(f.retrieveFile(), 0xFE).strip()))
 
             if thumb == 0:
-                for f in node.getFiles():
+                for f in self.getFiles():
                     if (f.type == "image" and not f.getName().lower().endswith("svg")) or f.type == "tmppng":
                         path, ext = splitfilename(f.retrieveFile())
                         basename = hashlib.md5(str(random.random())).hexdigest()[0:8]
@@ -359,15 +359,15 @@ class Image(default.Default):
                                 f.mimetype = "image/jpeg"
                             else:
                                 f.mimetype = "image/tiff"
-                        node.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
-                        node.addFile(FileNode(name=thumbname2, type="presentation", mimetype="image/jpeg"))
-                        node.set("width", width)
-                        node.set("height", height)
+                        self.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
+                        self.addFile(FileNode(name=thumbname2, type="presentation", mimetype="image/jpeg"))
+                        self.set("width", width)
+                        self.set("height", height)
 
             # Exif
             try:
                 from lib.Exif import EXIF
-                files = node.getFiles()
+                files = self.getFiles()
 
                 for file in files:
                     if file.type == "original":
@@ -377,28 +377,28 @@ class Image(default.Default):
                         tags.keys().sort()
                         for k in tags.keys():
                             if tags[k] != "" and k != "JPEGThumbnail":
-                                node.set("exif_" + k.replace(" ", "_"), tags[k])
+                                self.set("exif_" + k.replace(" ", "_"), tags[k])
                             elif k == "JPEGThumbnail":
                                 if tags[k] != "":
-                                    node.set("Thumbnail", "True")
+                                    self.set("Thumbnail", "True")
                                 else:
-                                    node.set("Thumbnail", "False")
+                                    self.set("Thumbnail", "False")
 
             except:
                 None
 
-            if dozoom(node) == 1:
+            if dozoom(self) == 1:
                 tileok = 0
-                for f in node.getFiles():
+                for f in self.getFiles():
                     if f.type.startswith("tile"):
                         tileok = 1
-                if not tileok and node.get("width") and node.get("height"):
-                    zoom.getImage(node.id, 1)
+                if not tileok and self.get("width") and self.get("height"):
+                    zoom.getImage(self.id, 1)
 
             # iptc
             try:
                 from lib.iptc import IPTC
-                files = node.getFiles()
+                files = self.getFiles()
 
                 for file in files:
                     if file.type == "original":
@@ -406,17 +406,17 @@ class Image(default.Default):
                         tags.keys().sort()
                         for k in tags.keys():
                             if tags[k] != "":
-                                node.set("iptc_" + k.replace(" ", "_"), tags[k])
+                                self.set("iptc_" + k.replace(" ", "_"), tags[k])
             except:
                 None
 
-            for f in node.getFiles():
+            for f in self.getFiles():
                 if f.getName().lower().endswith("png") and f.type == "tmppng":
-                    node.removeFile(f)
+                    self.removeFile(f)
                     break
 
     """ list with technical attributes for type image """
-    def getTechnAttributes(node):
+    def getTechnAttributes(self):
         return {"Standard": {"creator": "Ersteller",
                              "creationtime": "Erstelldatum",
                              "updateuser": "Update Benutzer",
@@ -482,53 +482,53 @@ class Image(default.Default):
                          "Thumbnail": "Thumbnail"}}
 
     """ fullsize popup-window for image node """
-    def popup_fullsize(node, req):
+    def popup_fullsize(self, req):
         access = AccessData(req)
         d = {}
         svg = 0
-        if (not access.hasAccess(node, "data") and not dozoom(node)) or not access.hasAccess(node, "read"):
+        if (not access.hasAccess(self, "data") and not dozoom(self)) or not access.hasAccess(self, "read"):
             req.write(t(req, "permission_denied"))
             return
         zoom_exists = 0
-        for file in node.getFiles():
+        for file in self.getFiles():
             if file.getType() == "zoom":
                 zoom_exists = 1
             if file.getName().lower().endswith('svg') and file.type == "original":
                 svg = 1
 
         d["svg"] = svg
-        d["width"] = node.get("origwidth")
-        d["height"] = node.get("origheight")
+        d["width"] = self.get("origwidth")
+        d["height"] = self.get("origheight")
         d["key"] = req.params.get("id", "")
         # we assume that width==origwidth, height==origheight
-        d['flash'] = dozoom(node) and zoom_exists
-        d['tileurl'] = "/tile/" + node.id + "/"
+        d['flash'] = dozoom(self) and zoom_exists
+        d['tileurl'] = "/tile/" + self.id + "/"
         req.writeTAL("contenttypes/image.html", d, macro="imageviewer")
 
-    def popup_thumbbig(node, req):
+    def popup_thumbbig(self, req):
         access = AccessData(req)
 
-        if (not access.hasAccess(node, "data") and not dozoom(node)) or not access.hasAccess(node, "read"):
+        if (not access.hasAccess(self, "data") and not dozoom(self)) or not access.hasAccess(self, "read"):
             req.write(t(req, "permission_denied"))
             return
 
         thumbbig = None
-        for file in node.getFiles():
+        for file in self.getFiles():
             if file.getType() == "thumb2":
                 thumbbig = file
                 break
         if not thumbbig:
-            node.popup_fullsize(req)
+            self.popup_fullsize(req)
         else:
             im = PILImage.open(thumbbig.retrieveFile())
-            req.writeTAL("contenttypes/image.html", {"filename": '/file/' + str(node.id) + '/' +
+            req.writeTAL("contenttypes/image.html", {"filename": '/file/' + str(self.id) + '/' +
                                                      thumbbig.getName(), "width": im.size[0], "height": im.size[1]}, macro="thumbbig")
 
-    def processImage(node, type="", value="", dest=""):
+    def processImage(self, type="", value="", dest=""):
         import os
 
         img = None
-        for file in node.getFiles():
+        for file in self.getFiles():
             if file.type == "image":
                 img = file
                 break
@@ -582,12 +582,12 @@ class Image(default.Default):
             pic = pic.resize((int(w), int(h)), PILImage.ANTIALIAS)
             if not os.path.isdir(dest):
                 os.mkdir(dest)
-            pic.save(dest + node.id + ".jpg", "jpeg")
+            pic.save(dest + self.id + ".jpg", "jpeg")
             return 1
         return 0
 
-    def getEditMenuTabs(node):
+    def getEditMenuTabs(self):
         return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
 
-    def getDefaultEditTab(node):
+    def getDefaultEditTab(self):
         return "view"

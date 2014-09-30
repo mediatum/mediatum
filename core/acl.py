@@ -537,7 +537,7 @@ class ACLParser(BoolParser):
                 return pclass(s2)
         raise ACLParseException("syntax error: " + s)
 
-    def default():
+    def default(self):
         return ACLTrueCondition()
 
     def getAndClass(self):

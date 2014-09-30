@@ -30,18 +30,18 @@ from schema.schema import VIEW_HIDE_EMPTY
 
 class Flash(default.Default):
 
-    def getTypeAlias(node):
+    def getTypeAlias(self):
         return "flash"
 
-    def getCategoryName(node):
+    def getCategoryName(self):
         return "video"
 
-    def _prepareData(node, req, words=""):
+    def _prepareData(self, req, words=""):
         access = acl.AccessData(req)
-        mask = node.getFullView(lang(req))
+        mask = self.getFullView(lang(req))
         obj = {'deleted': False, 'access': access}
-        if node.get('deleted') == 'true':
-            node = node.getActiveVersion()
+        if self.get('deleted') == 'true':
+            node = self.getActiveVersion()
             obj['deleted'] = True
         if mask:
             obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY, lang(req), mask=mask)  # hide empty elements
@@ -52,46 +52,46 @@ class Flash(default.Default):
         return obj
 
     """ format big view with standard template """
-    def show_node_big(node, req, template="contenttypes/flash.html", macro="showbig"):
-        return req.getTAL(template, node._prepareData(req), macro)
+    def show_node_big(self, req, template="contenttypes/flash.html", macro="showbig"):
+        return req.getTAL(template, self._prepareData(req), macro)
 
     """ returns preview image """
-    def show_node_image(node):
-        return '<img src="/thumbs/' + node.id + '" class="thumbnail" border="0"/>'
+    def show_node_image(self):
+        return '<img src="/thumbs/' + self.id + '" class="thumbnail" border="0"/>'
 
-    def isContainer(node):
+    def isContainer(self):
         return 0
 
-    def getSysFiles(node):
+    def getSysFiles(self):
         return []
 
-    def getLabel(node):
-        return node.name
+    def getLabel(self):
+        return self.name
 
     """ list with technical attributes for type flash """
-    def getTechnAttributes(node):
+    def getTechnAttributes(self):
         return {"Standard": {"creationtime": "Erstelldatum",
                              "creator": "Ersteller"}}
 
     """ popup window for actual nodetype """
-    def popup_fullsize(node, req):
+    def popup_fullsize(self, req):
         access = AccessData(req)
-        if not access.hasAccess(node, "data") or not access.hasAccess(node, "read"):
+        if not access.hasAccess(self, "data") or not access.hasAccess(self, "read"):
             req.write(t(req, "permission_denied"))
             return
 
         f = ""
-        for filenode in node.getFiles():
+        for filenode in self.getFiles():
             if filenode.getType() in ("original", "video"):
-                f = "/file/" + str(node.id) + "/" + filenode.getName()
+                f = "/file/" + str(self.id) + "/" + filenode.getName()
                 break
         req.writeTAL("contenttypes/flash.html", {"path": f}, macro="fullsize")
 
-    def popup_thumbbig(node, req):
-        node.popup_fullsize(req)
+    def popup_thumbbig(self, req):
+        self.popup_fullsize(req)
 
-    def getEditMenuTabs(node):
+    def getEditMenuTabs(self):
         return "menulayout(view);menumetadata(metadata;files;lza);menuclasses(classes);menusecurity(acls)"
 
-    def getDefaultEditTab(node):
+    def getDefaultEditTab(self):
         return "view"

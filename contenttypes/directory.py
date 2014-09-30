@@ -40,7 +40,7 @@ SRC_PATTERN = re.compile('src="([^":/]*)"')
     is replaced are images and links to ${next} """
 
 
-def includetemplate(node, file, substitute):
+def includetemplate(self, file, substitute):
     ret = ""
     if os.path.isfile(file):
 
@@ -60,13 +60,13 @@ def includetemplate(node, file, substitute):
             else:
                 ret += s[lastend:match.start()]
                 imgname = match.group(1)
-                ret += 'src="/file/' + node.id + '/' + imgname + '"'
+                ret += 'src="/file/' + self.id + '/' + imgname + '"'
                 lastend = match.end()
         fi.close()
     return ret
 
 
-def replaceModules(node, req, input):
+def replaceModules(self, req, input):
     global frontend_modules
     if frontend_modules:
         frontend_mods = frontendmods.getFrontendModules()
@@ -101,18 +101,18 @@ def fileIsNotEmpty(file):
 
 class Directory(default.Default):
 
-    def getTypeAlias(node):
+    def getTypeAlias(self):
         return "directory"
 
-    def getOriginalTypeName(node):
+    def getOriginalTypeName(self):
         return "directory"
 
-    def getCategoryName(node):
+    def getCategoryName(self):
         return "container"
 
-    def getStartpageDict(node):
+    def getStartpageDict(self):
         d = {}
-        descriptor = node.get('startpage.selector')
+        descriptor = self.get('startpage.selector')
         for x in descriptor.split(';'):
             if x:
                 key, value = x.split(':')
@@ -120,40 +120,40 @@ class Directory(default.Default):
 
         return d
 
-    def getStartpageFileNode(node, language, verbose=False):
+    def getStartpageFileNode(self, language, verbose=False):
         res = None
         basedir = config.get("paths.datadir")
-        d = node.getStartpageDict()
+        d = self.getStartpageDict()
 
         if d and (language in d.keys()):
             shortpath_dict = d[language]
             if shortpath_dict:
-                for f in node.getFiles():
+                for f in self.getFiles():
                     shortpath_file = f.retrieveFile().replace(basedir, "")
                     if shortpath_dict == shortpath_file:
                         res = f
         if not d:
-            for f in node.getFiles():
+            for f in self.getFiles():
                 shortpath_file = f.retrieveFile().replace(basedir, "")
                 if f.getType() == 'content' and f.mimetype == 'text/html':
                     res = f
         return res
 
     """ format big view with standard template """
-    def show_node_big(node, req, template="", macro=""):
+    def show_node_big(self, req, template="", macro=""):
         content = ""
-        link = "node?id=" + node.id + "&amp;files=1"
+        link = "node?id=" + self.id + "&amp;files=1"
         sidebar = ""
-        pages = node.getStartpageDict()
-        if node.get("system.sidebar") != "":
-            for sb in node.get("system.sidebar").split(";"):
+        pages = self.getStartpageDict()
+        if self.get("system.sidebar") != "":
+            for sb in self.get("system.sidebar").split(";"):
                 if sb != "":
                     l, fn = sb.split(":")
                     if l == lang(req):
-                        for f in node.getFiles():
+                        for f in self.getFiles():
                             if fn.endswith(f.getName()):
-                                sidebar = includetemplate(node, f.retrieveFile(), {})
-                                sidebar = replaceModules(node, req, sidebar).strip()
+                                sidebar = includetemplate(self, f.retrieveFile(), {})
+                                sidebar = replaceModules(self, req, sidebar).strip()
         if sidebar != "":
             sidebar = req.getTAL("contenttypes/directory.html", {"content": sidebar}, macro="addcolumn")
         else:
@@ -169,12 +169,12 @@ class Directory(default.Default):
                     return '<div id="portal-column-one">' + content + '</div>' + sidebar
                 return content
 
-        spn = node.getStartpageFileNode(lang(req))
+        spn = self.getStartpageFileNode(lang(req))
         if spn:
             long_path = spn.retrieveFile()
             if os.path.isfile(long_path) and fileIsNotEmpty(long_path):
-                content = includetemplate(node, long_path, {'${next}': link})
-                content = replaceModules(node, req, content)
+                content = includetemplate(self, long_path, {'${next}': link})
+                content = replaceModules(self, req, content)
             if content:
                 if sidebar != "":
                     return '<div id="portal-column-one">' + content + '</div>' + sidebar
@@ -183,16 +183,16 @@ class Directory(default.Default):
         return content + sidebar
 
     """ format node image with standard template """
-    def show_node_image(node, language=None):
-        return tal.getTAL("contenttypes/directory.html", {"node": node}, macro="thumbnail", language=language)
+    def show_node_image(self, language=None):
+        return tal.getTAL("contenttypes/directory.html", {"node": self}, macro="thumbnail", language=language)
 
-    def isContainer(node):
+    def isContainer(self):
         return 1
 
-    def getSysFiles(node):
+    def getSysFiles(self):
         return ["statistic", "image"]
 
-    def getPossibleChildContainers():
+    def getPossibleChildContainers(self):
         if self.type.startswith("directory"):
             return ["directory"]
         elif self.type in ["collection", "collections"]:
@@ -200,34 +200,34 @@ class Directory(default.Default):
         else:
             return []
 
-    def getLabel(node, lang=None):
-        if lang and node.get(str(lang) + '.name') != "":
-            return node.get(str(lang) + '.name')
-        label = node.get("label")
+    def getLabel(self, lang=None):
+        if lang and self.get(str(lang) + '.name') != "":
+            return self.get(str(lang) + '.name')
+        label = self.get("label")
         if not label:
-            label = node.getName()
+            label = self.getName()
         return label
 
     """ list with technical attributes for type directory """
-    def getTechnAttributes(node):
+    def getTechnAttributes(self):
         return {}
 
-    def getLogoPath(node):
+    def getLogoPath(self):
         items = []
-        for file in node.getFiles():
+        for file in self.getFiles():
             if file.getType() == 'image':
                 items.append(file.getName())
 
-        if "system.logo" not in node.attributes.keys() and len(items) == 1:
+        if "system.logo" not in self.attributes.keys() and len(items) == 1:
             return items[0]
         else:
-            logoname = node.get("system.logo")
+            logoname = self.get("system.logo")
             for item in items:
                 if item == logoname:
                     return item
         return ""
 
-    def metaFields(node, lang=None):
+    def metaFields(self, lang=None):
         ret = list()
 
         field = tree.Node("nodename", "metafield")
@@ -247,36 +247,36 @@ class Directory(default.Default):
         field.set("valuelist", "thumbnail;list;text")
         ret.append(field)
 
-        if node.type.startswith("collection"):
+        if self.type.startswith("collection"):
             # special fields for collections
             field = tree.Node("style_hide_empty", "metafield")
             field.set("label", t(lang, "hide empty directories"))
             field.set("type", "check")
             ret.append(field)
 
-        elif node.type.startswith("directory"):
+        elif self.type.startswith("directory"):
             # special fields for directories
             pass
 
         return ret
 
-    def getEditMenuTabs(node):
-        if node.getContentType() in ["collection", "collections"]:
+    def getEditMenuTabs(self):
+        if self.getContentType() in ["collection", "collections"]:
             return "menulayout(content;startpages;view);menumetadata(metadata;logo;files;admin;searchmask;sortfiles);menusecurity(acls);menuoperation(search;subfolder;license)"
 
-        elif node.getContentType() == "directory":
+        elif self.getContentType() == "directory":
             return "menulayout(content;startpages;view);menumetadata(metadata;files;admin);menusecurity(acls);menuoperation(search;subfolder;license)"
 
         else:
             return "menulayout(content;startpages;view);menusecurity(acls);menuoperation(search;subfolder;license)"
 
-    def getDefaultEditTab(node):
+    def getDefaultEditTab(self):
         return "content"
 
-    def getCustomItems(node, type=""):
+    def getCustomItems(self, type=""):
         ret = []
         items = {}
-        items[type] = node.get("system." + type).split(";")
+        items[type] = self.get("system." + type).split(";")
 
         for item in items[type]:
             if item != "":
@@ -286,8 +286,8 @@ class Directory(default.Default):
                 ret.append(ci)
         return ret
 
-    def setCustomItems(node, type, items):
-        node.set("system." + type, ";".join(str(i) for i in items))
+    def setCustomItems(self, type, items):
+        self.set("system." + type, ";".join(str(i) for i in items))
 
-    def event_files_changed(node):
-        print "Postprocessing node", node.id
+    def event_files_changed(self):
+        print "Postprocessing node", self.id

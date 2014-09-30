@@ -40,7 +40,7 @@ from . import default
 logger = logging.getLogger("backend")
 
 
-def getCaptionInfoDict(node):
+def getCaptionInfoDict(self):
     d = {}
 
     file_url_list = []
@@ -49,7 +49,7 @@ def getCaptionInfoDict(node):
 
     counter = 0
 
-    filelist, filelist2 = getFilelist(node, fieldname='.*captions.*')
+    filelist, filelist2 = getFilelist(self, fieldname='.*captions.*')
 
     for filenode in filelist2:
         if filenode.getType() in ["u_other", "u_xml"]:
@@ -57,7 +57,7 @@ def getCaptionInfoDict(node):
             file_ext = filename.split('.')[-1]
             if file_ext in ['srt', 'xml']:
                 counter += 1
-                file_url = "/file/%s/%s" % (node.id, filename)
+                file_url = "/file/%s/%s" % (self.id, filename)
                 file_url_list.append(file_url)
 
                 x = filename[0:-len(file_ext) + 1].split('-')
@@ -80,23 +80,23 @@ def getCaptionInfoDict(node):
 class Video(default.Default):
 
     """ video class """
-    def getTypeAlias(node):
+    def getTypeAlias(self):
         return "video"
 
-    def getOriginalTypeName(node):
+    def getOriginalTypeName(self):
         return "original"
 
-    def getCategoryName(node):
+    def getCategoryName(self):
         return "video"
 
-    def _prepareData(node, req, words=""):
+    def _prepareData(self, req, words=""):
 
         access = acl.AccessData(req)
-        mask = node.getFullView(lang(req))
+        mask = self.getFullView(lang(req))
 
         obj = {'deleted': False, 'access': access}
-        if node.get('deleted') == 'true':
-            node = node.getActiveVersion()
+        if self.get('deleted') == 'true':
+            node = self.getActiveVersion()
             obj['deleted'] = True
         for filenode in node.getFiles():
             if filenode.getType() in ["original", "video"]:
@@ -113,59 +113,59 @@ class Video(default.Default):
         return obj
 
     """ format big view with standard template """
-    def show_node_big(node, req, template="", macro=""):
+    def show_node_big(self, req, template="", macro=""):
 
         # if the file format is not flash video (edit area)
         if 'contentarea' not in req.session:
-            files = [f.retrieveFile() for f in node.getFiles()]
+            files = [f.retrieveFile() for f in self.getFiles()]
             if len(files) == 1 and 'flv' != files[0].split('/')[-1].split('.')[-1]:
                 return req.error(415, "Video is not in Flash Video format")
 
         if template == "":
-            styles = getContentStyles("bigview", contenttype=node.getContentType())
+            styles = getContentStyles("bigview", contenttype=self.getContentType())
             if len(styles) >= 1:
                 template = styles[0].getTemplate()
 
-        captions_info = getCaptionInfoDict(node)
+        captions_info = getCaptionInfoDict(self)
 
         if captions_info:
-            logger.info("video: '%s' (%s): captions: dictionary 'captions_info': %s" % (node.name, str(node.id), str(captions_info)))
+            logger.info("video: '%s' (%s): captions: dictionary 'captions_info': %s" % (self.name, str(self.id), str(captions_info)))
 
-        context = node._prepareData(req)
+        context = self._prepareData(req)
         context["captions_info"] = json.dumps(captions_info)
 
         return req.getTAL(template, context, macro)
 
     """ returns preview image """
-    def show_node_image(node):
-        return '<img src="/thumbs/%s" class="thumbnail" border="0"/>' % node.id
+    def show_node_image(self):
+        return '<img src="/thumbs/%s" class="thumbnail" border="0"/>' % self.id
 
-    def event_files_changed(node):
-        for f in node.getFiles():
+    def event_files_changed(self):
+        for f in self.getFiles():
             if f.type in ["thumb", "presentation"]:
-                node.removeFile(f)
+                self.removeFile(f)
 
-        nodefiles = node.getFiles()
+        nodefiles = self.getFiles()
         if len(nodefiles) == 1 and nodefiles[0].mimetype == "video/quicktime":
             if nodefiles[0].retrieveFile().endswith('.mov'):  # handle mov -> flv
                 flvname = "%sflv" % nodefiles[0].retrieveFile()[:-3]
                 ret = os.system("ffmpeg -loglevel quiet -i %s -ar 44100 -ab 128 -f flv %s" % (nodefiles[0].retrieveFile(), flvname))
                 if ret & 0xff00:
                     return
-                node.addFile(FileNode(name=flvname, type="video", mimetype="video/x-flv"))
+                self.addFile(FileNode(name=flvname, type="video", mimetype="video/x-flv"))
 
-        for f in node.getFiles():
+        for f in self.getFiles():
             if f.type in["original", "video"]:
                 if f.mimetype == "video/x-flv":
                     meta = FLVReader(f.retrieveFile())
                     for key in meta:
                         try:
-                            node.set(key, int(meta[key]))
+                            self.set(key, int(meta[key]))
                         except:
-                            node.set(key, meta[key])
+                            self.set(key, meta[key])
 
-                    node.set("vid-width", node.get("width"))
-                    node.set("vid-height", node.get("height"))
+                    self.set("vid-width", self.get("width"))
+                    self.set("vid-height", self.get("height"))
 
                     tempname = os.path.join(config.get("paths.tempdir"), "tmp.gif")
                     try:
@@ -174,9 +174,9 @@ class Video(default.Default):
                         pass
 
                     try:
-                        if node.get("system.thumbframe") != "":
+                        if self.get("system.thumbframe") != "":
                             cmd = "ffmpeg -loglevel quiet  -ss %s -i %s -vframes 1 -pix_fmt rgb24 %s" % (
-                                node.get("system.thumbframe"), f.retrieveFile(), tempname)
+                                self.get("system.thumbframe"), f.retrieveFile(), tempname)
                         else:
                             cmd = "ffmpeg -loglevel quiet -i %s -vframes 1 -pix_fmt rgb24 %s" % (f.retrieveFile(), tempname)
                         ret = os.system(cmd)
@@ -189,20 +189,20 @@ class Video(default.Default):
                     thumbname2 = path + ".thumb2"
                     makeThumbNail(tempname, thumbname)
                     makePresentationFormat(tempname, thumbname2)
-                    node.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
-                    node.addFile(FileNode(name=thumbname2, type="presentation", mimetype="image/jpeg"))
+                    self.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
+                    self.addFile(FileNode(name=thumbname2, type="presentation", mimetype="image/jpeg"))
 
-    def isContainer(node):
+    def isContainer(self):
         return 0
 
-    def getSysFiles(node):
+    def getSysFiles(self):
         return ["presentation", "thumb", "video"]
 
-    def getLabel(node):
-        return node.name
+    def getLabel(self):
+        return self.name
 
-    def getDuration(node):
-        duration = node.get("duration")
+    def getDuration(self):
+        duration = self.get("duration")
         try:
             duration = float(duration)
         except ValueError:
@@ -211,7 +211,7 @@ class Video(default.Default):
             return format_date(make_date(0, 0, 0, int(duration) / 3600, duration / 60, int(duration % 60)), '%H:%M:%S')
 
     """ list with technical attributes for type video """
-    def getTechnAttributes(node):
+    def getTechnAttributes(self):
         return {"Standard": {"creationtime": "Erstelldatum",
                              "creator": "Ersteller"},
                 "FLV": {"audiodatarate": "Audio Datenrate",
@@ -227,23 +227,23 @@ class Video(default.Default):
                 }
 
     """ popup window for actual nodetype """
-    def popup_fullsize(node, req):
+    def popup_fullsize(self, req):
 
         def videowidth():
-            return int(node.get('vid-width') or 0) + 64
+            return int(self.get('vid-width') or 0) + 64
 
         def videoheight():
-            int(node.get('vid-height') or 0) + 53
+            int(self.get('vid-height') or 0) + 53
 
         access = AccessData(req)
-        if not access.hasAccess(node, "data") or not access.hasAccess(node, "read"):
+        if not access.hasAccess(self, "data") or not access.hasAccess(self, "read"):
             req.write(t(req, "permission_denied"))
             return
 
         f = None
-        for filenode in node.getFiles():
+        for filenode in self.getFiles():
             if filenode.getType() in ["original", "video"] and filenode.retrieveFile().endswith('flv'):
-                f = "/file/%s/%s" % (node.id, filenode.getName())
+                f = "/file/%s/%s" % (self.id, filenode.getName())
                 break
 
         script = ""
@@ -251,14 +251,14 @@ class Video(default.Default):
             script = '<p href="%s" style="display:block;width:%spx;height:%spx;" id="player"/p>' % (f, videowidth(), videoheight())
 
         # use jw player
-        captions_info = getCaptionInfoDict(node)
+        captions_info = getCaptionInfoDict(self)
         if captions_info:
-            logger.info("video: '%s' (%s): captions: dictionary 'captions_info': %s" % (node.name, node.id, captions_info))
+            logger.info("video: '%s' (%s): captions: dictionary 'captions_info': %s" % (self.name, self.id, captions_info))
 
         context = {
             "file": f,
             "script": script,
-            "node": node,
+            "node": self,
             "width": videowidth(),
             "height": videoheight(),
             "captions_info": json.dumps(captions_info),
@@ -266,23 +266,23 @@ class Video(default.Default):
 
         req.writeTAL("contenttypes/video.html", context, macro="fullsize_flv_jwplayer")
 
-    def popup_thumbbig(node, req):
-        node.popup_fullsize(req)
+    def popup_thumbbig(self, req):
+        self.popup_fullsize(req)
 
-    def getEditMenuTabs(node):
+    def getEditMenuTabs(self):
         return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
 
-    def getDefaultEditTab(node):
+    def getDefaultEditTab(self):
         return "view"
 
-    def processMediaFile(node, dest):
-        for nfile in node.getFiles():
+    def processMediaFile(self, dest):
+        for nfile in self.getFiles():
             if nfile.getType() == "video":
                 filename = nfile.retrieveFile()
                 path, ext = splitfilename(filename)
                 if os.sep == '/':
                     os.system("cp %s %s" % (filename, dest))
                 else:
-                    cmd = "copy %s %s%s.%s" % (filename, dest, node.id, ext)
+                    cmd = "copy %s %s%s.%s" % (filename, dest, self.id, ext)
                     os.system(cmd.replace('/', '\\'))
         return 1

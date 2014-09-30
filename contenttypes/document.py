@@ -35,21 +35,21 @@ from core.attachment import filebrowser
 
 class Document(default.Default):
 
-    def getTypeAlias(node):
+    def getTypeAlias(self):
         return "document"
 
-    def getOriginalTypeName(node):
+    def getOriginalTypeName(self):
         return "document"
 
-    def getCategoryName(node):
+    def getCategoryName(self):
         return "document"
 
-    def _prepareData(node, req, words=""):
+    def _prepareData(self, req, words=""):
         access = acl.AccessData(req)
-        mask = node.getFullView(lang(req))
+        mask = self.getFullView(lang(req))
         obj = {'deleted': False, 'access': access}
-        if node.get('deleted') == 'true':
-            node = node.getActiveVersion()
+        if self.get('deleted') == 'true':
+            node = self.getActiveVersion()
             obj['deleted'] = True
         if mask:
             obj['metadata'] = mask.getViewHTML([node], VIEW_HIDE_EMPTY, lang(req), mask=mask)  # hide empty elements
@@ -96,38 +96,38 @@ class Document(default.Default):
         return obj
 
     """ format big view with standard template """
-    def show_node_big(node, req, template="", macro=""):
+    def show_node_big(self, req, template="", macro=""):
         if template == "":
-            styles = getContentStyles("bigview", contenttype=node.getContentType())
+            styles = getContentStyles("bigview", contenttype=self.getContentType())
             if len(styles) >= 1:
                 template = styles[0].getTemplate()
-        return req.getTAL(template, node._prepareData(req), macro)
+        return req.getTAL(template, self._prepareData(req), macro)
 
-    def isContainer(node):
+    def isContainer(self):
         return 0
 
-    def has_object(node):
-        for f in node.getFiles():
+    def has_object(self):
+        for f in self.getFiles():
             if f.type == "doc" or f.type == "document":
                 return True
         return False
 
-    def getLabel(node):
-        return node.name
+    def getLabel(self):
+        return self.name
 
-    def getSysFiles(node):
+    def getSysFiles(self):
         return ["doc", "document", "thumb", "thumb2", "presentati", "presentation", "fulltext", "fileinfo"]
 
     """ postprocess method for object type 'document'. called after object creation """
-    def event_files_changed(node):
-        print "Postprocessing node", node.id
+    def event_files_changed(self):
+        print "Postprocessing node", self.id
 
         thumb = 0
         fulltext = 0
         doc = None
         present = 0
         fileinfo = 0
-        for f in node.getFiles():
+        for f in self.getFiles():
             if f.type == "thumb":
                 thumb = 1
             elif f.type.startswith("present"):
@@ -141,15 +141,15 @@ class Document(default.Default):
             elif f.type == "document":
                 doc = f
         if not doc:
-            for f in node.getFiles():
+            for f in self.getFiles():
                 if f.type == "thumb":
-                    node.removeFile(f)
+                    self.removeFile(f)
                 elif f.type.startswith("present"):
-                    node.removeFile(f)
+                    self.removeFile(f)
                 elif f.type == "fileinfo":
-                    node.removeFile(f)
+                    self.removeFile(f)
                 elif f.type == "fulltext":
-                    node.removeFile(f)
+                    self.removeFile(f)
 
         if doc:
             path, ext = splitfilename(doc.retrieveFile())
@@ -169,15 +169,15 @@ class Document(default.Default):
                 for line in fi.readlines():
                     i = line.find(':')
                     if i > 0:
-                        node.set("pdf_" + line[0:i].strip().lower(), u(line[i + 1:].strip()))
+                        self.set("pdf_" + line[0:i].strip().lower(), u(line[i + 1:].strip()))
                 fi.close()
-                node.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
-                node.addFile(FileNode(name=thumb2name, type="presentation", mimetype="image/jpeg"))
-                node.addFile(FileNode(name=fulltextname, type="fulltext", mimetype="text/plain"))
-                node.addFile(FileNode(name=infoname, type="fileinfo", mimetype="text/plain"))
+                self.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
+                self.addFile(FileNode(name=thumb2name, type="presentation", mimetype="image/jpeg"))
+                self.addFile(FileNode(name=fulltextname, type="fulltext", mimetype="text/plain"))
+                self.addFile(FileNode(name=infoname, type="fileinfo", mimetype="text/plain"))
 
     """ list with technical attributes for type document """
-    def getTechnAttributes(node):
+    def getTechnAttributes(self):
         return {"PDF": {"pdf_moddate": "Datum",
                         "pdf_file size": "Dateigr&ouml;&szlig;e",
                         "pdf_title": "Titel",
@@ -200,34 +200,34 @@ class Document(default.Default):
                 "Standard": {"creationtime": "Erstelldatum",
                              "creator": "Ersteller"}}
     """ popup window for actual nodetype """
-    def popup_fullsize(node, req):
+    def popup_fullsize(self, req):
         access = AccessData(req)
-        if not access.hasAccess(node, "data") or not access.hasAccess(node, "read"):
+        if not access.hasAccess(self, "data") or not access.hasAccess(self, "read"):
             req.write(t(req, "permission_denied"))
             return
 
-        for f in node.getFiles():
+        for f in self.getFiles():
             if f.getType() == "doc" or f.getType() == "document":
                 req.sendFile(f.retrieveFile(), f.getMimeType())
                 return
 
-    def popup_thumbbig(node, req):
-        node.popup_fullsize(req)
+    def popup_thumbbig(self, req):
+        self.popup_fullsize(req)
 
-    def getEditMenuTabs(node):
+    def getEditMenuTabs(self):
         return "menulayout(view);menumetadata(metadata;files;admin;lza);menuclasses(classes);menusecurity(acls)"
 
-    def getDefaultEditTab(node):
+    def getDefaultEditTab(self):
         return "view"
 
-    def processDocument(node, dest):
-        for file in node.getFiles():
+    def processDocument(self, dest):
+        for file in self.getFiles():
             if file.getType() == "document":
                 filename = file.retrieveFile()
                 if os.sep == '/':
                     cmd = "cp %s %s" % (filename, dest)
                     ret = os.system(cmd)
                 else:
-                    cmd = "copy %s %s" % (filename, dest + node.id + ".pdf")
+                    cmd = "copy %s %s" % (filename, dest + self.id + ".pdf")
                     ret = os.system(cmd.replace('/', '\\'))
         return 1

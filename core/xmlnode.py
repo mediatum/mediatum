@@ -78,7 +78,7 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
     if children:
         for c in node.getChildren().sort_by_orderpos():
             if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
-                if not c.type in exclude_children_types:
+                if c.type not in exclude_children_types:
                     fi.write('%s<child id="%s" type="%s"/>\n' % ((" " * indent), str(c.id), c.type))
 
     indent -= 4
@@ -86,7 +86,7 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
     if(children):
         for c in node.getChildren().sort_by_orderpos():
             if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
-                if not c.type in exclude_children_types:
+                if c.type not in exclude_children_types:
                     if c.id not in written:
                         written[c.id] = None
                         c.writexml(fi, indent=indent,

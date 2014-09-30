@@ -218,7 +218,7 @@ class SearchIndexer:
                             content += u(line)
                         else:
                             for w in re.findall(r, line):
-                                if not w in data.keys():
+                                if w not in data.keys():
                                     data[w] = 1
                             try:
                                 data[w] += 1

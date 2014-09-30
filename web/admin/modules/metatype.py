@@ -161,7 +161,7 @@ def validate(req, op):
                 return showMaskList(req, str(key[6:-2]))
 
             # reindex search index for current schema
-            elif key.startswith("indexupdate_") and not "cancel" in req.params.keys():
+            elif key.startswith("indexupdate_") and "cancel" not in req.params.keys():
                 schema = tree.getNode(key[12:])
                 searcher.reindex(schema.getAllItems())
                 break
@@ -173,7 +173,7 @@ def validate(req, op):
 
             if req.params.get("mname", "") == "" or req.params.get("mlongname", "") == "" or req.params.get("mdatatypes", "") == "":
                 return MetatypeDetail(req, req.params.get("mname_orig", ""), 1)  # no name was given
-            elif checkString(req.params.get("mname", "")) == False:
+            elif not checkString(req.params.get("mname", "")):
                 return MetatypeDetail(req, req.params.get("mname_orig", ""), 4)  # if the name contains wrong characters
             elif req.params.get("mname_orig", "") != req.params.get("mname", "") and existMetaType(req.params.get("mname")):
                 return MetatypeDetail(req, req.params.get("mname_orig", ""), 2)  # metadata still existing
@@ -230,7 +230,7 @@ def validate(req, op):
                 return FieldDetail(req, req.params.get("parent"), req.params.get("orig_name", ""), 3)  # field still existing
             elif req.params.get("mname", "") == "" or req.params.get("mlabel", "") == "":
                 return FieldDetail(req, req.params.get("parent"), req.params.get("orig_name", ""), 1)
-            elif checkString(req.params.get("mname", "")) == False:
+            elif not checkString(req.params.get("mname", "")):
                 # if the name contains wrong characters
                 return FieldDetail(req, req.params.get("parent"), req.params.get("orig_name", ""), 4)
 
@@ -307,7 +307,7 @@ def validate(req, op):
 
             if req.params.get("mname", "") == "":
                 return MaskDetails(req, req.params.get("parent", ""), req.params.get("morig_name", ""), err=1)
-            elif checkString(req.params.get("mname", "")) == False:
+            elif not checkString(req.params.get("mname", "")):
                 # if the name contains wrong characters
                 return MaskDetails(req, req.params.get("parent", ""), req.params.get("morig_name", ""), err=4)
 

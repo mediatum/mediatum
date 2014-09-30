@@ -1097,7 +1097,7 @@ class Node(object):
                 self.attrlist[attribute] = {}
 
                 # current attribute not listed -> create id list
-                if not ALL in self.attrlist[attribute].keys():
+                if ALL not in self.attrlist[attribute].keys():
                     self.attrlist[attribute][ALL] = {}
                     ret = {}
 
@@ -1114,7 +1114,7 @@ class Node(object):
             self.lock.release()
 
         level = access.getPrivilegeLevel()
-        if not level in self.attrlist[attribute].keys():
+        if level not in self.attrlist[attribute].keys():
             self.attrlist[attribute][level] = {}
             for item in self.attrlist[attribute][ALL].keys():
                 if level == 0:

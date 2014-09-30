@@ -510,11 +510,8 @@ class WorkflowStep(tree.Node):
             log.error("No Workflow action defined for workflowstep " + self.getId() + " (op=" + str(op) + ")")
 
     def forward(self, node, op):
-        if op:
-            op = "true"
-        elif op == False:
-            op = "false"
-        return runWorkflowStep(node, op)
+        op_str = "true" if op else "false"
+        return runWorkflowStep(node, op_str)
 
     def forwardAndShow(self, node, op, req, link=None, data=None):
         newnode = self.forward(node, op)

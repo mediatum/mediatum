@@ -233,7 +233,7 @@ def adminModuleActions(req):
             break
 
         elif key.startswith("down|"):
-           # move module or module item down
+            # move module or module item down
             m = key[:-2].split("|")[-1]
             items = getAdminModuleHierarchy()
             for k in items:
@@ -339,7 +339,7 @@ def editModuleActions(req):
             break
 
         elif key.startswith("down|"):
-           # move module or module item down
+            # move module or module item down
             m = key[:-2].split("|")[-1]
             type = req.params.get("datatype")
             items = getEditModuleHierarchy(type)
@@ -389,7 +389,7 @@ def view(req):
 
     elif page == "editmodules":
 
-        if not "subitem" in v or v["subitem"] == "":
+        if "subitem" not in v or v["subitem"] == "":
             v["subitem"] = req.params.get("subitem", "")
         v['mods'] = getEditModuleHierarchy(req.params.get("subitem", ""))
         v['datatypes'] = []

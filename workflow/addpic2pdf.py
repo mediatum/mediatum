@@ -621,7 +621,7 @@ def handle_request(req):
         if not current_workflow_step:
             return 404  # not found
         current_workflow_step_children_ids = [n.id for n in current_workflow_step.getChildren()]
-        if not node.id in current_workflow_step_children_ids:
+        if node.id not in current_workflow_step_children_ids:
             return 403  # forbidden
 
         if False:  # and not access.hasAccess(node, "read"):

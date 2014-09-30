@@ -116,7 +116,7 @@ def translate(key, language=None, request=None):
 
 def addLabels(labels={}):
     for key in labels:
-        if not key in addlangitems.keys():
+        if key not in addlangitems.keys():
             addlangitems[key] = {}
 
         for item in labels[key]:

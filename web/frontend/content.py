@@ -233,7 +233,7 @@ class ContentList(Content):
         nav_list = list()
         nav_page = list()
 
-        if not "itemsperpage" in req.params:
+        if "itemsperpage" not in req.params:
             files_per_page = 9
         else:
             if req.params.get("itemsperpage") == "-1":
@@ -457,7 +457,7 @@ class ContentArea(Content):
         return path
 
     def feedback(self, req):
-        if ("id" in req.params or "item" in req.params) and not "searchmode" in req.params and not (
+        if ("id" in req.params or "item" in req.params) and "searchmode" not in req.params and not (
                 hasattr(self.content, "in_list") and self.content.in_list(req.params.get("id"))):
             self.content = mkContentNode(req)
         elif req.params.get("searchmode") == "simple" and req.params.get("submittype") != "change":

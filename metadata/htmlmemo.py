@@ -101,7 +101,7 @@ class m_htmlmemo(Metatype):
 
         # handle unused config_languages
         for lang in config_languages:
-            if not lang in d.keys():
+            if lang not in d.keys():
                 d[lang] = []
 
         # ignore keys not in config_languages

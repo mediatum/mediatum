@@ -244,7 +244,7 @@ class AccessData:
         # as described in the upload api documentation
         _p = params.copy()
 
-        if not 'user' in _p and not 'sign' in _p:
+        if 'user' not in _p and 'sign' not in _p:
             return False
 
         try:

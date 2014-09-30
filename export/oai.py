@@ -149,7 +149,7 @@ def writeTail(req):
 
 
 def writeError(req, code, detail=""):
-    if not "verb" in req.params:
+    if "verb" not in req.params:
         verb = ""
 
     if detail != "":
@@ -263,7 +263,7 @@ def ListMetadataFormats(req):
                <schema>%s</schema>
                <metadataNamespace>%s</metadataNamespace>
              </metadataFormat>
-             """ % (mdf, d["schema.%s" % mdf], d["namespace.%s" % mdf]) )
+             """ % (mdf, d["schema.%s" % mdf], d["namespace.%s" % mdf]))
         except:
             OUT("%s: OAI error reading oai metadata format %s from config file" % (__file__, mdf), 'error')
     req.write('\n</ListMetadataFormats>')
@@ -410,7 +410,7 @@ def retrieveNodes(req, access, setspec, date_from=None, date_to=None, metadatafo
 
     if metadataformat == 'mediatum':
         metadatatypes = tree.getRoot('metadatatypes').getChildren()
-        schemata = [m.name for m in metadatatypes if m.type == 'metadatatype' and not m.name in ['directory', 'collection']]
+        schemata = [m.name for m in metadatatypes if m.type == 'metadatatype' and m.name not in ['directory', 'collection']]
     elif metadataformat:
         mdt_masks_list = getExportMasks("oai_" + metadataformat.lower() + "$")  # check exact name
         schemata = [x[0][1] for x in mdt_masks_list if x[1]]

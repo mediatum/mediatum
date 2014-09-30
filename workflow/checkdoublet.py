@@ -189,7 +189,7 @@ class WorkflowStep_CheckDoublet(WorkflowStep):
         else:
             additional_attributes = [x.strip() for x in additional_attributes_string.split(';') if x.strip()]
 
-        additional_attributes = [x for x in additional_attributes if not x in attribute_names]
+        additional_attributes = [x for x in additional_attributes if x not in attribute_names]
 
         masklist_for_labels = self.get("masklist_for_labels").strip().split(';')
         masklist_for_labels = [x.strip() for x in masklist_for_labels if x.strip()]

@@ -99,7 +99,7 @@ def register_schedule_func(name, func, force=False):
 
 
 def update_schedule_func(name, func, force=False):
-    if not name in f_dict and not force:
+    if name not in f_dict and not force:
         raise ValueError("function name '%s' does not exist" % name)
         return
     f_dict[name] = func
@@ -167,7 +167,7 @@ def traced(func_class_instance):
     def wrapper(*__args, **__kw):
         error = None
         thread_name = __kw['thread_name']
-        if not thread_name in core.schedules.action_dict.keys():
+        if thread_name not in core.schedules.action_dict.keys():
             core.schedules.action_dict[thread_name] = {}
         try:
             return func_class_instance.function(*__args, **__kw)
@@ -565,7 +565,7 @@ def get_schedules_report(access=None):
         res.append("")
         res.append("  attributes:")
         for k, v in s.items():
-            if not k in ["function", "single_trigger", "single_trigger_status", "cron_dict", "cron_history", "cron_history_count"]:
+            if k not in ["function", "single_trigger", "single_trigger_status", "cron_dict", "cron_history", "cron_history_count"]:
                 res.append("    %s = '%s'" % (k, v))
         res.append("")
         func = s.get("function")
@@ -782,7 +782,7 @@ class FormedFunction(object):
 
     def addLabel(self, lang_str, msgid, msgstr):
 
-        if not lang_str in self.labels.keys():
+        if lang_str not in self.labels.keys():
             self.labels[lang_str] = []
         msgid_list = [x[0] for x in self.labels[lang_str]]
 

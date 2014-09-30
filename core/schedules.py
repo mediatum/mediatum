@@ -239,7 +239,7 @@ def create_schedule(name, attr_dict={}):
 
 def update_schedule(id, name=None, attr_dict={}):
     schedule = getSchedule(id)
-    if not name is None:
+    if name is not None:
         schedule.setName(name)
     for k, v in attr_dict.items():
         schedule.set(k, v)

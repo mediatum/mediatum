@@ -218,7 +218,7 @@ class Directory(default.Default):
             if file.getType() == 'image':
                 items.append(file.getName())
 
-        if not "system.logo" in node.attributes.keys() and len(items) == 1:
+        if "system.logo" not in node.attributes.keys() and len(items) == 1:
             return items[0]
         else:
             logoname = node.get("system.logo")

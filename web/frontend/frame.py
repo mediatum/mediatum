@@ -382,7 +382,7 @@ class Collectionlet(Portlet):
         def f(col_data, node, indent):
             if indent > 15:
                 raise RecursionException
-            if not node.id in m:
+            if node.id not in m:
                 return
 
             data = m[node.id]

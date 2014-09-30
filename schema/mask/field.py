@@ -262,7 +262,7 @@ class m_field(Metatype):
         fields = []
         pidnode = None
 
-        if not "pid" in req.params.keys():
+        if "pid" not in req.params.keys():
             for p in item.getParents():
                 try:
                     if p.getMasktype() == "export":

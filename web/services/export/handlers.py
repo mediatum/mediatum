@@ -173,7 +173,7 @@ def struct2template_test(req, path, params, data, d, debug=False, singlenode=Fal
     atime = starttime = time.time()
     nodelist = d['nodelist']
 
-    if not 'add_shortlist' in req.params:
+    if 'add_shortlist' not in req.params:
         d['result_shortlist'] = []
 
     d['nodelist'] = [jsonnode.buildNodeDescriptor(req, n, children=send_children) for n in nodelist]
@@ -223,7 +223,7 @@ def struct2json(req, path, params, data, d, debug=False, singlenode=False, send_
     atime = starttime = time.time()
     nodelist = d['nodelist']
 
-    if not 'add_shortlist' in req.params:
+    if 'add_shortlist' not in req.params:
         d['result_shortlist'] = []
 
     d['nodelist'] = [jsonnode.buildNodeDescriptor(req, n, children=send_children) for n in nodelist]
@@ -1052,7 +1052,8 @@ def get_node_children_struct(
                 field_format = sortformat[pos]
                 if field_format == 'i':
                     sortkey = lambda x: int_getter(pos, x)
-                elif fieldformat == 'f':
+                # XXX: this was 'fieldformat' before, recheck!
+                elif field_format == 'f':
                     sortkey = lambda x: float_getter(pos, x)
                 else:
                     pass

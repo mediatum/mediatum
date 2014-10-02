@@ -40,6 +40,7 @@ class Flash(default.Default):
         access = acl.AccessData(req)
         mask = self.getFullView(lang(req))
         obj = {'deleted': False, 'access': access}
+        node = self
         if self.get('deleted') == 'true':
             node = self.getActiveVersion()
             obj['deleted'] = True

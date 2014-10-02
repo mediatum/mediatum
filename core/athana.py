@@ -72,6 +72,7 @@ def attrEscape(s):
 
 # python modules
 import os
+import select
 import sys
 import time
 import stat

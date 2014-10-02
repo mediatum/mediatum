@@ -49,7 +49,6 @@ def view(req):
     if gotopage == "searchconfig":
         searchconfig_action(req)
 
-    global basedir
     page = req.params.get("page", "")
     gotopage = req.params.get("gotopage", "")
 
@@ -74,7 +73,7 @@ def view(req):
 
     elif page == "mediatum":
         # mediatum information
-        fi = open(os.path.join(basedir, 'mediatum.cfg'), "rb")
+        fi = open(os.path.join(config.basedir, 'mediatum.cfg'), "rb")
         v['mediatum_cfg'] = fi.readlines()
         v["mediatum_version"] = mediatum_version
 

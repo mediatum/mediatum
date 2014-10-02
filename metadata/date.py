@@ -21,13 +21,12 @@ from mediatumtal import tal
 import utils.date as date
 from utils.date import format_date, parse_date, validateDate
 from core.metatype import Metatype
+from schema.schema import dateoption
 
 
 class m_date(Metatype):
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
-        global dateoption
-
         d = field.getSystemFormat(str(field.getValues()))
 
         if value == "?":

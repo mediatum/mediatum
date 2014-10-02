@@ -23,7 +23,8 @@ import inspect
 
 import core.tree as tree
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
-from schema.schema import getMetaType, getMetaFieldTypeNames, getMetaField, getFieldsForMeta, getMetadataType
+from schema.schema import getMetaType, getMetaFieldTypeNames, getMetaField, getFieldsForMeta, getMetadataType, dateoption, requiredoption,\
+    fieldoption
 from core.translation import lang, t
 
 
@@ -31,7 +32,6 @@ from core.translation import lang, t
 
 
 def showDetailList(req, id):
-    global fieldoption
     metadatatype = getMetaType(id)
     metafields = metadatatype.getMetaFields()
 
@@ -113,8 +113,6 @@ def showDetailList(req, id):
 
 
 def FieldDetail(req, pid, id, err=0):
-    global dateoption, requiredoption, fieldoption
-
     _option = ""
     for key in req.params.keys():
         if key.startswith("option_"):

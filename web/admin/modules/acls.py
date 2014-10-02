@@ -85,7 +85,6 @@ def validate(req, op):
 # show all defindes acl-rules
 #
 def view(req):
-    global useroption
     rules = acl.getRuleList()
 
     actfilter = getFilter(req)

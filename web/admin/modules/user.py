@@ -434,6 +434,7 @@ def editUser_mask(req, id, err=0):
 
 
 def addACL(username, firstname, lastname, oldusername=None):
+    """unused function addACL?"""
     userrule = "( user %s )" % username
     userruledesc = username
 

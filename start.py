@@ -25,8 +25,18 @@ from core import athana
 
 init.full_init()
 
+### init all web components
+webconfig.initContexts()
 
-# full text search thread
+### scheduler thread
+import core.schedules
+try:
+    core.schedules.startThread()
+except:
+    msg = "Error starting scheduler thread: %s %s" % (str(sys.exc_info()[0]), str(sys.exc_info()[1]))
+    core.schedules.OUT(msg, logger='backend', print_stdout=True, level='error')
+
+### full text search thread
 if config.get("config.searcher", "").startswith("fts"):
     import core.search.ftsquery
     core.search.ftsquery.startThread()
@@ -35,17 +45,7 @@ else:
     core.search.query.startThread()
 
 
-# scheduler thread
-import core.schedules
-try:
-    core.schedules.startThread()
-except:
-    msg = "Error starting scheduler thread: %s %s" % (str(sys.exc_info()[0]), str(sys.exc_info()[1]))
-    core.schedules.OUT(msg, logger='backend', print_stdout=True, level='error')
-
-
-# start main web server, Z.39.50 and FTP, if configured
-webconfig.initContexts()
+### start main web server, Z.39.50 and FTP, if configured
 if config.get('z3950.activate', '').lower() == 'true':
     z3950port = int(config.get("z3950.port", "2021"))
 else:

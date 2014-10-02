@@ -57,7 +57,6 @@ DBTYPE = config.get('database.searchdb', 'std')
 class FtsSearcher:
 
     def __init__(self):
-        global DBTYPE
         self.connames = {'std': {'full': 'std', 'ext': 'std', 'text': 'std', 'std': 'std'},
                          'split': {'full': 'full', 'ext': 'ext', 'text': 'text'}}
         self.tablenames = {'full': "fullsearchmeta", 'ext': "searchmeta", 'text': "textsearchmeta"}
@@ -190,8 +189,6 @@ class FtsSearcher:
                                                          .upper())))
 
     def initIndexer(self, option="", new_schema=""):
-        global MAX_SEARCH_FIELDS
-
         def create(sql, schema, _type):
             try:
                 self.execute(sql, schema, _type)
@@ -279,7 +276,6 @@ class FtsSearcher:
         return ret
 
     def execute(self, sql, schema, _type='std'):
-        global DBTYPE
         try:
             return self.db['_'.join([schema, self.connames[DBTYPE][_type]])].execute(sql)
         except Exception:
@@ -518,7 +514,6 @@ class FtsSearcher:
     """
 
     def removeNodeIndex(self, node):
-        global DBTYPE
         for _type in self.tablenames:
             try:
                 self.execute('DELETE FROM %s WHERE id="%s"' % (self.tablenames[_type],
@@ -538,7 +533,6 @@ class FtsSearcher:
         node.setDirty()
 
     def getSearchInfo(self):
-        global DBTYPE
         ret = []
         key = ["sqlite_type", "sqlite_name", "sqlite_tbl_name", "sqlite_rootpage", "sqlite_sql"]
         for type in self.connames[DBTYPE]:

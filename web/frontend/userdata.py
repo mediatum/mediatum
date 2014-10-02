@@ -53,7 +53,6 @@ def get_default_orderpos():
 
 
 def register_aclass(name, inst, force=False):
-    global aclasses
     if name in aclasses and not force:
         raise ValueError("name '%s' exists already" % name)
         return
@@ -108,8 +107,6 @@ class HTMLSnippet:
 
 
 def show_user_data(req):
-    global aclasses
-
     error = ""
 
     # XXX: dead code?

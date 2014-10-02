@@ -259,7 +259,6 @@ def doExternalAuthentification(name, pwd, req=None):
         req.session = athana.Session('000000-000000-000000')
         req.request_headers = ['User-Agent: ftp']
 
-    global authenticators
     dynamic_authenticators = getDynamicUserAuthenticators()
     for priority_key in list(reversed(sorted(authenticators_priority_dict.keys()))):
         for a in authenticators_priority_dict[priority_key]:
@@ -277,14 +276,12 @@ def doExternalAuthentification(name, pwd, req=None):
 
 
 def getExternalAuthentificator(name):
-    global authenticators
     if name in authenticators.keys():
         return authenticators[name]
     return None
 
 
 def getExternalAuthentificators():
-    global authenticators
     return authenticators
 
 
@@ -382,7 +379,6 @@ def changePWD(name, pwd):
 
 def addUser(user):
     """ add new user in db """
-    global conn
     tmp = ""
     for grp in user.getGroups():
         tmp += grp + ","
@@ -507,7 +503,6 @@ def registerAuthenticator(auth, name, priority=0):
     """Write (external) authenticator class to dictionary with name as key.
     Order of execution is according to priority integer: highest first.
     """
-    global authenticators, authenticators_priority_dict
     authenticators[name] = auth
     authenticators_priority_dict[priority] = authenticators_priority_dict.get(priority, []) + [name]
 

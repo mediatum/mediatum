@@ -32,19 +32,19 @@ GROUP_GETTERS = {}  # may be used to reload groups from plugins
 
 
 def registerGroup(g):
-    global DICT_GROUPS, GROUPS
+    global GROUPS
     DICT_GROUPS[g.group_identifier] = g
     GROUPS = sorted(DICT_GROUPS.values(), key=lambda x: x.sortorder)
 
 
 def registerGroupGetterFunc(key, gg_func):
-    global GROUP_GETTERS
+    global GROUPS
     GROUP_GETTERS[key] = gg_func
     GROUPS = sorted(DICT_GROUPS.values(), key=lambda x: x.sortorder)
 
 
 def loadGroups():
-    global DICT_GROUPS, GROUPS, GROUP_GETTERS
+    global GROUPS
     for get_groups in GROUP_GETTERS.values():
         for g in get_groups():
             registerGroup(g)

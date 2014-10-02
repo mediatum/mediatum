@@ -277,14 +277,11 @@ default_context['normLanguage_iso_639_2_t'] = normLanguage_iso_639_2_t
 
 
 def registerDefaultContextEntry(key, entry):
-    global default_context
     default_context[key] = entry
 
 
 def handleCommand(cmd, var, s, node, attrnode=None, field_value="", options=[], mask=None):
     from web.frontend.streams import build_filelist, get_transfer_url
-    global default_context
-
     if cmd == 'cmd:getTAL':
         context = default_context.copy()
         context['node'] = node

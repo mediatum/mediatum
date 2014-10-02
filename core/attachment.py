@@ -46,7 +46,6 @@ fileicons = {'directory': 'mmicon_dir.gif',
 
 
 def filebrowser(node, req):
-    global fileicons
     filesize = 0
     ret = list()
     paths = []

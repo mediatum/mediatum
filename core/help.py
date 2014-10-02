@@ -46,7 +46,6 @@ menustructure = []
 
 
 def getHelpPath(path):
-    global all_paths
     if ".".join(filter(None, path)) in all_paths:
         return '/help/' + '/'.join(filter(None, path))
     else:

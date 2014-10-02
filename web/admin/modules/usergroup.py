@@ -43,8 +43,6 @@ ALLOW_DYNAMIC_USERS = False
 
 def validate(req, op):
     """standard validator"""
-    global ALLOW_DYNAMIC_USERS
-
     user = users.getUserFromRequest(req)
 
     try:
@@ -186,8 +184,6 @@ def view(req):
 
 def editGroup_mask(req, id, err=0):
     """edit/create usergroup"""
-    global ALLOW_DYNAMIC_USERS
-
     newusergroup = 0
     if err == 0 and id == "":
         # new usergroup

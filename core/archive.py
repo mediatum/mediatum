@@ -108,7 +108,6 @@ class ArchiveManager:
         return None
 
     def archive_thread(self):
-        global db
         if not time:
             return
         while True:
@@ -142,7 +141,6 @@ class ArchiveManager:
 
 
 def initialize():
-    global init
     archive_manager = []
     if config.get("archive.activate", "").lower() == "true":
         print "Initializing archive manager:", config.get("archive.activate")

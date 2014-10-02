@@ -114,7 +114,6 @@ def getNow():
 
 
 def save_import_file(filename):
-    global logger
     import core.config as config
 
     temppath = config.get("paths.tempdir")

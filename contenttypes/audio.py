@@ -109,8 +109,6 @@ def makePresentationFormat(self, audiofile):
 
 
 def makeMetaData(self, audiofile):
-    global audio_frames
-
     self.set("mp3.version", audiofile.info.version)
     self.set("mp3.layer", audiofile.info.layer)
     self.set("mp3.bitrate", str(int(audiofile.info.bitrate) / 1000) + " kBit/s")

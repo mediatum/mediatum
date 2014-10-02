@@ -481,7 +481,6 @@ def showInfo(req):
 
 
 def showFieldOverview(req):
-    global fieldoption
     path = req.path[1:].split("/")
     fields = getFieldsForMeta(path[1])
     fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))

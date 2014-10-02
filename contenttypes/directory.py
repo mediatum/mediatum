@@ -67,7 +67,6 @@ def includetemplate(self, file, substitute):
 
 
 def replaceModules(self, req, input):
-    global frontend_modules
     if frontend_modules:
         frontend_mods = frontendmods.getFrontendModules()
 

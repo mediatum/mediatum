@@ -178,7 +178,6 @@ class MYSQLConnector(Connector):
         return result
 
     def runQueryNoError(self, sql):
-        global debug
         if debug:
             log.debug(sql)
         try:

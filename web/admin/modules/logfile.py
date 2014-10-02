@@ -61,7 +61,6 @@ def validate(req, op):
 
 
 def view(req, op):
-    global filelist
     logfile = None
     name = ""
 

@@ -278,8 +278,6 @@ normalization_items = {"chars": [("00e4", "ae"),
 
 
 def normalize_utf8(s):
-    global normalization_items
-
     s = s.lower()
     # Process special characters for search
     for key, value in normalization_items["chars"]:
@@ -289,7 +287,6 @@ def normalize_utf8(s):
 
 
 def replace_words(s):
-    global normalization_items
     s = s.lower()
     # Processing word trees for search
     for key, value in normalization_items["words"]:

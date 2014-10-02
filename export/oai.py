@@ -57,7 +57,6 @@ FORMAT_FILTERS = {}
 
 
 def registerFormatFilter(key, filterFunc):
-    global FORMAT_FILTERS
     FORMAT_FILTERS[key.lower()] = filterFunc
 
 
@@ -317,7 +316,6 @@ def getSetSpecsForNode(node):
 
 
 def writeRecord(req, node, metadataformat):
-    global SET_LIST
     if not SET_LIST:
         initSetList(req)
 
@@ -557,8 +555,6 @@ def getNodes(req):
 
 
 def ListIdentifiers(req):
-
-    global SET_LIST
     if not SET_LIST:
         initSetList(req)
 

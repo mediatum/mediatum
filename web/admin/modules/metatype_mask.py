@@ -33,8 +33,6 @@ from web.common.acl_web import makeList
 
 
 def showMaskList(req, id):
-    global fieldoption
-
     metadatatype = getMetaType(id)
     masks = metadatatype.getMasks()
     order = getSortCol(req)

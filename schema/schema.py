@@ -688,7 +688,6 @@ class Metadatafield(tree.Node):
         self.set("opts", value)
 
     def getFieldOptionList(self):
-        global fieldoption
         retList = []
         for option in fieldoption:
             if option.value in self.getOption() and option.value != "":
@@ -1373,7 +1372,6 @@ def getMetaFieldTypeNames():
 
 
 def getMetaFieldTypes():
-    global mytypes
     ret = {}
     for t in mytypes:
         if getMetadataType(t).isFieldType():

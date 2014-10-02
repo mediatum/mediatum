@@ -165,7 +165,6 @@ def getSortCol(req):
 
 
 def findmodule(type):
-    global adminModules
     if type in adminModules:
         return adminModules[type]
 
@@ -259,7 +258,6 @@ def getAdminModulesVisible():
 
 
 def getAdminModuleInformation(mod, key=""):
-    global adminModules
     if mod in adminModules.keys():
         m = adminModules[mod]
         if hasattr(m, "getInformation"):

@@ -58,7 +58,7 @@ class AccessData:
 
         acllock.acquire()
         try:
-            global aclrule2privilege, aclrule2privilege_length, aclrule2privilege_count, userip2level
+            global aclrule2privilege_length, aclrule2privilege_count
             key = self.getUserName() + "#" + self.ip
             if key in userip2level:
                 return userip2level[key]
@@ -345,7 +345,6 @@ class AccessRule:
         return self.parsedRule
 
     def ruleUsage(self):
-        global conn
         return conn.ruleUsage(self.name)
 
 
@@ -557,7 +556,6 @@ def parse(r):
 
 
 def getRule(name):
-    global conn, rules
     try:
         return rules[name]
     except KeyError:
@@ -587,7 +585,6 @@ def getRule(name):
 
 
 def getRuleList():
-    global conn
     rlist = []
     dbrules = conn.getRuleList()
 
@@ -597,7 +594,6 @@ def getRuleList():
 
 
 def updateRule_old(rule, oldrule="", newname="", oldname=""):
-    global conn, rules
     conn.updateRule(rule)
     rules[rule.getName()] = rule
     flush()
@@ -606,8 +602,6 @@ def updateRule_old(rule, oldrule="", newname="", oldname=""):
 def updateRule(rule, oldrule="", newname="", oldname=""):
     """ rule is the new rule
         oldrule is the name of the old and previous rule"""
-    global conn, rules
-
     if oldrule == "":
         oldrule = rule
     else:
@@ -633,13 +627,11 @@ def updateRule(rule, oldrule="", newname="", oldname=""):
 
 
 def addRule(rule):
-    global conn
     conn.addRule(rule)
     flush()
 
 
 def existRule(rulename):
-    global conn
     try:
         description, text = conn.getRule(str(rulename))
         if text != "":
@@ -649,7 +641,6 @@ def existRule(rulename):
 
 
 def deleteRule(rulename):
-    global conn, rules
     conn.resetNodeRule(rulename)
     conn.deleteRule(rulename)
     try:
@@ -661,7 +652,6 @@ def deleteRule(rulename):
 
 # returns a list of all not defined rulenames used in nodes
 def getMissingRuleNames():
-    global conn
     ret = []
     for rule in conn.getAllDBRuleNames():  # saved rulenames in nodes
         if not existRule(rule) and not rule.startswith("{"):
@@ -670,7 +660,6 @@ def getMissingRuleNames():
 
 
 def resetNodeRule(rulename):
-    global conn
     conn.resetNodeRule(rulename)
 
 
@@ -682,7 +671,7 @@ def getDefaultGuestAccessRule():
 
 
 def flush():
-    global rules, aclrule2privilege, aclrule2privilege_length, aclrule2privilege_count, userip2level
+    global aclrule2privilege_length, aclrule2privilege_count
     rules.clear()
     aclrule2privilege.clear()
     userip2level.clear()

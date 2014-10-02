@@ -92,7 +92,6 @@ class m_watermark(Metatype):
 
     def watermark(self, image, imagewm, text, opacity):
         """ Creates a watermark, defined by an arbitrary string and draws it on an image"""
-        global FONTPATH, FONTSIZE
         im = None
         draw = None
         mark = None

@@ -104,7 +104,6 @@ class SQLiteConnector(Connector):
         pass
 
     def execute(self, sql, obj=None):
-        global sqlite_lock
         sqlite_lock.acquire()
         try:
             if not os.path.exists(config.get("paths.tempdir")):
@@ -137,7 +136,6 @@ class SQLiteConnector(Connector):
         return self.execute(sql, obj)
 
     def runQueryNoError(self, sql, obj=None):
-        global debug
         try:
             return self.execute(sql, obj)
         except:

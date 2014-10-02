@@ -114,7 +114,6 @@ class LogItem:
             return False
 
     def get_visitor_number(self):
-        global ip_table
         global visitor_num
 
         if self.ip.startswith('66.249'):

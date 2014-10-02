@@ -71,7 +71,6 @@ def flush_users_cache(verbose=True):
 
 
 def searchUser(value):
-    global users_cache
     atime = time.time()
     res = []
     value = value.lower().split("*")
@@ -97,7 +96,6 @@ def searchUser(value):
 
 def validate(req, op):
     """standard validator"""
-    global users_cache
     try:
 
         if "style" in req.params:

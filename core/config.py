@@ -101,9 +101,11 @@ def mkDir(dir):
         pass  # already exists
 
 
-def initialize():
+def initialize(filepath=None):
     global settings
-    if os.getenv("MEDIATUM_CONFIG"):
+    if filepath:
+        ini_filename = filepath
+    elif os.getenv("MEDIATUM_CONFIG"):
         ini_filename = os.getenv("MEDIATUM_CONFIG")
     else:
         ini_filename = "mediatum.cfg"

@@ -1,4 +1,5 @@
 mediatum.cfg
+test_mediatum.cfg
 plugins/
 *.pyc
 .settings/

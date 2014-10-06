@@ -64,5 +64,4 @@ def init_database_values(s):
     usergroups.children.extend([admingroup, guestgroup])
 
     s.add(root)
-    s.commit()
     logg.info("loaded initial values")

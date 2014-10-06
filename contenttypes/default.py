@@ -433,7 +433,7 @@ class Default(tree.Node):
                 metatext.append('&lt;smallview mask not defined&gt;')
             return separator.join(metatext)
 
-    def isContainer(node):
+    def isContainer(self):
         return 0
 
     def getTreeIcon(self):

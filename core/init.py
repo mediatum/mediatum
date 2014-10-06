@@ -27,7 +27,6 @@ import locale
 from pprint import pformat
 
 import core.config as config
-from core.node import Root, Metadatatypes
 
 
 logg = logging.getLogger(__name__)
@@ -37,6 +36,12 @@ def set_locale():
     # locale setting for sorting, default to system locale
     loc = locale.setlocale(locale.LC_COLLATE, '')
     logg.info("using locale %s for sorting", loc)
+
+def load_system_types():
+    from core.systemtypes import *
+    from core.file import File
+    from core.usergroup import UserGroup
+    from core.user import User
 
 
 def load_content_types():
@@ -202,6 +207,7 @@ def basic_init():
     init_app()
 #     register_node_classes()
 #     register_node_functions()
+    load_system_types()
     load_content_types()
 
 

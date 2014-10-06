@@ -145,29 +145,3 @@ class Node(BaseNode):
             return value
         else:
             return self.get(key)
-
-
-### additional node classes (root and its children)
-
-class Root(Node):
-    pass
-
-
-class Users(Node):
-    pass
-
-
-class Mappings(Node):
-    pass
-
-
-class Metadatatypes(Node):
-    pass
-
-
-class Navigation(Node):
-    pass
-
-
-class UserGroups(Node):
-    pass

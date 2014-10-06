@@ -135,9 +135,13 @@ class ContainerType(Default):
             shortpath_dict = d[language]
             if shortpath_dict:
                 for f in self.getFiles():
-                    shortpath_file = f.retrieveFile().replace(basedir, "")
-                    if shortpath_dict == shortpath_file:
-                        res = f
+                    try:
+                        shortpath_file = f.retrieveFile().replace(basedir, "")
+                    except IOError:
+                        pass
+                    else:
+                        if shortpath_dict == shortpath_file:
+                            res = f
         if not d:
             for f in self.getFiles():
                 shortpath_file = f.retrieveFile().replace(basedir, "")
@@ -307,3 +311,22 @@ class ContainerType(Default):
             return "collection"
         else:
             return "directory"
+        
+        
+# concrete ContainerTypes
+
+
+class Directory(ContainerType):
+    pass
+
+
+class Collection(ContainerType):
+    pass
+
+
+class Collections(ContainerType):
+    pass
+
+
+class Home(ContainerType):
+    pass

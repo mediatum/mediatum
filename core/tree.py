@@ -1358,8 +1358,8 @@ class Node(object):
 
 def remove_from_nodecaches(node):
     nid = long(node.id)
-    del childids_cache[nid]
-    del parentids_cache[nid]
+    childids_cache[nid] = None
+    parentids_cache[nid] = None
     _get_node.cache_remove(nid)
 
 

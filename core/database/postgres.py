@@ -3,8 +3,6 @@
     :copyright: (c) 2014 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
-
-from __future__ import division, absolute_import, print_function
 import logging
 from warnings import warn
 
@@ -14,8 +12,9 @@ from sqlalchemy.orm import sessionmaker, relationship, backref, scoped_session, 
 from sqlalchemy.orm.dynamic import AppenderQuery
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects.postgresql import JSONB
-from core import config
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
+
+from core import config
 
 C = Column
 FK = ForeignKey
@@ -38,27 +37,34 @@ logg = logging.getLogger("database")
 CONNECTSTR_TEMPLATE = "postgresql+psycopg2://{user}:{passwd}@{dbhost}:{dbport}/{database}"
 
 
-class NodeAppenderQuery(AppenderQuery):
+class LenMixin(object):
+
+    def __len__(self):
+        warn("use query.count() instead", DeprecationWarning)
+        return self.count()
+
+
+class NodeAppenderQuery(AppenderQuery, LenMixin):
 
     """Custom AppenderQuery class with additional methods for node handling
     """
 
     def sort_by_orderpos(self, reverse=False):
         if reverse:
+            warn("use .order_by(Node.orderpos.desc()) instead", DeprecationWarning)
             return self.order_by(BaseNode.orderpos.desc())
         else:
+            warn("use .order_by(Node.orderpos) instead", DeprecationWarning)
             return self.order_by(BaseNode.orderpos)
 
     def sort_by_name(self, direction="up"):
         reverse = direction != "up"
         if reverse:
+            warn("use .order_by(Node.name.desc()) instead", DeprecationWarning)
             return self.order_by(BaseNode.name.desc())
         else:
+            warn("use .order_by(Node.name) instead", DeprecationWarning)
             return self.order_by(BaseNode.name)
-
-    def __len__(self):
-        warn("use query.count() instead", DeprecationWarning)
-        return self.count()
 
     def getIDs(self):
         warn("inefficient, rewrite your code using SQLA queries", DeprecationWarning)
@@ -76,6 +82,7 @@ class NodeAppenderQuery(AppenderQuery):
             elif field in ("orderpos", "-orderpos"):
                 raise NotImplementedError("this method must not be used for orderpos sorting, use query.order_by(Node.orderpos)!")
             else:
+                warn("use query.order_by(Node.attrs[field]).order_by ... instead", DeprecationWarning)
                 fields = [field]
         else:
             # remove empty sortfields
@@ -86,7 +93,7 @@ class NodeAppenderQuery(AppenderQuery):
         query = self
         for field in fields:
             if field.startswith("-"):
-                expr = BaseNode.attrs[field].astext.desc()
+                expr = BaseNode.attrs[field[1:]].astext.desc()
             else:
                 expr = BaseNode.attrs[field].astext
             query = query.order_by(expr)
@@ -147,8 +154,7 @@ class BaseNode(DeclarativeBase):
     data_access = C(Text)
     fulltext = deferred(C(Text))
     localread = C(Text)
-
-    child_kwargs = dict(
+    child_rel_options = dict(
         secondary=t_nodemapping,
         lazy="dynamic",
         primaryjoin=id == t_nodemapping.c.nid,
@@ -156,12 +162,16 @@ class BaseNode(DeclarativeBase):
         query_class=NodeAppenderQuery
         )
 
-    children = rel("BaseNode", backref="parents", **child_kwargs)
-    container_children = rel("ContainerType", **child_kwargs)
-    content_children = rel("ContentType", **child_kwargs)
+    children = rel("Node", backref=bref("parents", lazy="dynamic", query_class=NodeAppenderQuery), **child_rel_options)
+    container_children = rel("ContainerType", **child_rel_options)
+    content_children = rel("ContentType", **child_rel_options)
 
     attrs = C(JSONB)
 
+    __mapper_args__ = {
+        'polymorphic_identity': 'basenode',
+        'polymorphic_on': type
+    }
 
 Index(u'node_name', BaseNode.__table__.c.name)
 Index(u'node_type', BaseNode.__table__.c.type)
@@ -176,7 +186,6 @@ class BaseFile(DeclarativeBase):
     nid = C(Integer, FK(BaseNode.id), primary_key=True, index=True)
     path = C(Unicode(4096), primary_key=True)
     filetype = C(Unicode(126), primary_key=True)
-    node = rel(BaseNode, backref=bref("files", lazy="dynamic"))
     mimetype = C(String(126))
 
     def __repr__(self):
@@ -207,6 +216,7 @@ class PostgresSQLAConnector(object):
         self.Session = scoped_session(session_factory)
         self.conn = engine.connect()
         self.engine = engine
+        self.metadata = metadata
 
     @property
     def session(self):

@@ -5,20 +5,16 @@
 """
 import logging
 
+from pytest import raises, fixture
+
 # setup
-from core.test.setup import setup_test_db
-import warnings
+from core.test.setup import setup_with_db
+setup_with_db()
+
 from core.node import Node
-from pytest import fixture
-from _pytest.python import raises
-setup_test_db()
-
-from core.test.factories import NodeFactory
-
-from core.test.asserts import assert_deprecation_warning
+from core.test.asserts import assert_deprecation_warning, assert_sorted, assert_deprecation_warning_allow_multiple
 from core.test.fixtures import *
 
-warnings.simplefilter("always")
 
 legacy_methods = [
     Node.getChild,
@@ -82,7 +78,7 @@ def test_getParents(some_node):
 
 def test_getFiles(some_node):
     assert some_node.getFiles().count() == 1
-    assert some_node.files[0].path == "testfile"
+    assert some_node.files[0].path == "testfilename"
 
 
 def test_get(some_node):
@@ -100,6 +96,7 @@ def test_set_overwrite(some_node):
     some_node.set("testattr", "newvalue")
     assert some_node.attrs["testattr"] == "newvalue"
     assert len(some_node.attrs) == num_attrs
+
 
 def test_set_new(some_node):
     num_attrs = len(some_node.attrs)
@@ -158,7 +155,7 @@ def test_setOrderPos(some_node):
 
 
 def test_getChildren(some_node):
-    children = some_node.getChildren()
+    children = list(some_node.getChildren())
     assert len(children) == 2
     assert children[0] is not children[1]
 
@@ -183,10 +180,6 @@ def test_getContentType_container(container_node):
     assert container_node.getContentType() == "directory"
 
 
-def test_legacy_getter_deprecation(some_node, legacy_getter):
-    assert_deprecation_warning(legacy_getter, some_node)
-
-
 def test_iter_raises_exception(some_node):
     with raises(TypeError):
         iter(some_node)
@@ -204,3 +197,53 @@ def test_setdefault_exists(some_node):
 def test_setdefault_new(some_node):
     ret = some_node.setdefault("newattr", "default_value")
     assert ret == "default_value"
+
+
+def test_legacy_getter_deprecation(some_node, legacy_getter):
+    assert_deprecation_warning(legacy_getter, some_node)
+
+
+# test NodeAppenderQuery (parents / children / container_children / content_children)
+
+# asc tests for all child queries, desc tests only for `children`
+
+def test_children_sort_by_orderpos(child_query_for_some_node):
+    should_be_sorted = assert_deprecation_warning(child_query_for_some_node.sort_by_orderpos)
+    assert_sorted(list(should_be_sorted), key=lambda n: n.orderpos)
+
+
+def test_children_sort_by_orderpos_desc(some_node_with_sort_children):
+    should_be_sorted = assert_deprecation_warning(some_node_with_sort_children.children.sort_by_orderpos, reverse=True)
+    assert_sorted(list(should_be_sorted), key=lambda n: n.orderpos, reverse=True)
+
+
+def test_children_sort_by_name(child_query_for_some_node):
+    should_be_sorted = assert_deprecation_warning(child_query_for_some_node.sort_by_name)
+    assert_sorted(list(should_be_sorted), key=lambda n: n.name)
+
+
+def test_children_sort_by_name_desc(some_node_with_sort_children):
+    should_be_sorted = assert_deprecation_warning(some_node_with_sort_children.children.sort_by_name, direction="down")
+    assert_sorted(list(should_be_sorted), key=lambda n: n.name, reverse=True)
+
+
+def test_children_sort_by_fields(child_query_for_some_node):
+    should_be_sorted = assert_deprecation_warning(child_query_for_some_node.sort_by_fields, "sortattr")
+    assert_sorted(list(should_be_sorted), key=lambda n: n.attrs["sortattr"])
+
+
+def test_children_sort_by_fields_desc(some_node_with_sort_children):
+    should_be_sorted = assert_deprecation_warning(some_node_with_sort_children.children.sort_by_fields, "-sortattr")
+    assert_sorted(list(should_be_sorted), key=lambda n: n.attrs["sortattr"], reverse=True)
+
+
+# just test sort_by_name for parents, rest should work too, if all other tests pass ;)
+def test_parents_sort_by_name(some_node_with_two_parents):
+    should_be_sorted = assert_deprecation_warning(some_node_with_two_parents.parents.sort_by_name)
+    assert_sorted(list(should_be_sorted), key=lambda n: n.name)
+
+
+def test_children_getIDs(some_node):
+    child_ids = assert_deprecation_warning_allow_multiple(some_node.content_children.getIDs, 2)
+    assert len(child_ids) == 1
+    assert isinstance(child_ids[0], int)

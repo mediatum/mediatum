@@ -5,13 +5,12 @@
 """
 import logging
 
-from core.test.setup import setup_test_db
+# setup
+from core.test.setup import setup_with_db
+setup_with_db()
 
-### setup
-setup_module = setup_test_db
-
-from core.test.fixtures import session_empty, session_default_data
 from core.test.asserts import assert_node
+from core.test.fixtures import session_empty, session_default_data
 
 
 logging.basicConfig(level=logging.DEBUG)

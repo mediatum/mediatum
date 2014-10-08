@@ -3,6 +3,7 @@
     :copyright: (c) 2014 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from warnings import warn
 
 from core.database.postgres import BaseNode
 
@@ -14,86 +15,110 @@ class Node(BaseNode):
     Contains legacy methods (camelCase) needed for old code which will be removed when they become unused.
     """
 
-    __mapper_args__ = {
-        'polymorphic_identity': 'node',
-        'polymorphic_on': BaseNode.type
-    }
-
-    def __init__(self, name="", type="node", id=None):
+    def __init__(self, name="", type="node", id=None, schema=None, attrs=None, orderpos=None):
         self.name = name
         self.type = type
         if id:
             self.id = id
-        self.attributes = {}
+        if schema:
+            self.schema = schema
+        if attrs:
+            self.attrs = attrs
+        if orderpos:
+            self.orderpos = orderpos
 
     # legacy methods
 
+    @property
+    def attributes(self):
+        warn("deprecated, use Node.attrs instead", DeprecationWarning)
+        return self.attrs
+
     def getChild(self, name):
+        warn("deprecated, use Node.children.filter_by(name=name).one() instead", DeprecationWarning)
         return self.children.filter_by(name=name).one()
 
     def addChild(self, child):
+        warn("deprecated, use Node.children.append() instead", DeprecationWarning)
         self.children.append(child)
         return child
 
     def getParents(self):
+        warn("deprecated, use Node.parents instead", DeprecationWarning)
         return self.parents
 
     def getFiles(self):
+        warn("deprecated, use Node.files instead", DeprecationWarning)
         return self.files
 
     def get(self, key, default=""):
-        value = self.attributes.get(key)
+        value = self.attrs.get(key)
         if value:
             return value
         return default
 
     def set(self, key, value):
-        self.attributes[key] = value
+        # warn("deprecated, use Node.attrs = "value" instead", DeprecationWarning)
+        self.attrs[key] = value
 
     def getName(self):
+        warn("deprecated, use Node.name instead", DeprecationWarning)
         return self.name
 
     def removeAttribute(self, key):
-        del self.attributes[key]
+        warn("deprecated, use del Node.attrs[attrname] instead", DeprecationWarning)
+        del self.attrs[key]
 
     def getAccess(self, type):
         """ get a named access right (e.g. read, write, etc.)"""
         if type == "read":
+            warn("deprecated, use Node.read_access instead", DeprecationWarning)
             return self.read_access
         elif type == "write":
+            warn("deprecated, use Node.write_access instead", DeprecationWarning)
             return self.write_access
         elif type == "data":
+            warn("deprecated, use Node.data_access instead", DeprecationWarning)
             return self.data_access
 
-    """ set a named access right (e.g. read, write, etc.)"""
-
     def setAccess(self, type, access):
+        """set a named access right (e.g. read, write, etc.)"""
         if type == "read":
+            warn("deprecated, use Node.read_access = new_read_access instead", DeprecationWarning)
             self.read_access = access
         elif type == "write":
+            warn("deprecated, use Node.write_access = new_write_access instead", DeprecationWarning)
             self.write_access = access
         elif type == "data":
+            warn("deprecated, use Node.data_access = new_data_access instead", DeprecationWarning)
             self.data_access = access
 
     def getOrderPos(self):
+        warn("deprecated, use Node.orderpos instead", DeprecationWarning)
         return self.orderpos
 
     def setOrderPos(self, orderpos):
+        warn("deprecated, use Node.orderpos = orderpos instead", DeprecationWarning)
         self.orderpos = orderpos
 
     def getType(self):
-        return "/".join([self.type, self.schema])
+        warn("getType() is Node.type + '/' + Node.schema now", DeprecationWarning)
+        return "/".join([self.type, self.schema or ""])
 
     def getChildren(self):
-        return self.children.all()
+        warn("deprecated, use Node.children instead", DeprecationWarning)
+        return self.children
 
     def getContainerChildren(self):
-        return self.container_children.all()
+        warn("deprecated, use Node.container_children instead", DeprecationWarning)
+        return self.container_children
 
     def getContentChildren(self):
-        return self.content_children.all()
+        warn("deprecated, use Node.content_children instead", DeprecationWarning)
+        return self.content_children
 
     def getContentType(self):
+        warn("better use self.schema and / or self.type", DeprecationWarning)
         if self.schema:
             return self.schema
         return self.type
@@ -104,7 +129,7 @@ class Node(BaseNode):
     # some additional methods from dict
 
     def __contains__(self, key):
-        return key in self.attributes\
+        return key in self.attrs\
             or key in ('node', 'node.name', "nodename", "node.id", "node.type", "node.orderpos")
 
     def __getitem__(self, key):
@@ -120,9 +145,9 @@ class Node(BaseNode):
 
     def __len__(self):
         """
-        :returns: number of attributes
+        :returns: number of attrs
         """
-        return len(self.attributes)
+        return len(self.attrs)
 
     def __nonzero__(self):
         """Some code in mediaTUM relies on the fact that Node objects are always true, like `if user:`

@@ -39,28 +39,28 @@ def init_database_values(s):
     users = Users("users", "users", 2)
     metadatatypes = Metadatatypes("metadatatypes", "metadatatypes", 3)
     workflows = Workflows("workflows", "workflows", 4)
-    usergroups = UserGroups("usergroups", "users", 5)
+    usergroups = UserGroups("usergroups", "usergroups", 5)
     mappings = Mappings("mappings", "mappings", 9)
     collections = Collections("collections", "collections", 10)
-    collections.attributes["label"] = "Gesamtbestand"
+    collections.attrs["label"] = "Gesamtbestand"
     home = Home("home", "home", 11)
     navigation = Navigation("navigation", "navigation", 12)
-    navigation.attributes["label"] = "Kollektionen"
+    navigation.attrs["label"] = "Kollektionen"
     external_users = Users("external_users", "users", 14)
     root.children.extend([users, metadatatypes, workflows, usergroups, mappings, collections, home, navigation, external_users])
 
     adminuser = User(config.get("user.adminuser", "Administrator"), "user", 6)
-    adminuser.attributes = {
+    adminuser.attrs = {
         "password": "226fa8e6cbb1f4e25019e2645225fd47",
         "email": "admin@mediatum",
         "opts": "c"
     }
     guestuser = User(config.get("user.guestuser", "Gast"), "user", 7)
-    guestuser.attributes["email"] = "guest@mediatum"
+    guestuser.attrs["email"] = "guest@mediatum"
     users.children.extend([adminuser, guestuser])
 
     admingroup = UserGroup(config.get("user.admingroup", "Administration"), "usergroup", 8)
-    admingroup.attributes["opts"] = "ew"
+    admingroup.attrs["opts"] = "ew"
     admingroup.children.append(adminuser)
     guestgroup = UserGroup("Gast", "usergroup", 13)
     guestgroup.children.append(guestuser)

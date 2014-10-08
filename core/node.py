@@ -6,6 +6,7 @@
 from warnings import warn
 
 from core.database.postgres import BaseNode
+from sqlalchemy.ext.mutable import MutableDict
 
 
 
@@ -18,12 +19,13 @@ class Node(BaseNode):
     def __init__(self, name="", type="node", id=None, schema=None, attrs=None, orderpos=None):
         self.name = name
         self.type = type
+        self.attrs = MutableDict()
         if id:
             self.id = id
         if schema:
             self.schema = schema
         if attrs:
-            self.attrs = attrs
+            self.attrs.update(attrs)
         if orderpos:
             self.orderpos = orderpos
 

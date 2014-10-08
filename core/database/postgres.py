@@ -15,6 +15,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
 
 from core import config
+from sqlalchemy.ext.mutable import MutableDict
 
 C = Column
 FK = ForeignKey
@@ -166,7 +167,7 @@ class BaseNode(DeclarativeBase):
     container_children = rel("ContainerType", **child_rel_options)
     content_children = rel("ContentType", **child_rel_options)
 
-    attrs = C(JSONB)
+    attrs = C(MutableDict.as_mutable(JSONB))
 
     __mapper_args__ = {
         'polymorphic_identity': 'basenode',

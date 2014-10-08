@@ -247,3 +247,24 @@ def test_children_getIDs(some_node):
     child_ids = assert_deprecation_warning_allow_multiple(some_node.content_children.getIDs, 2)
     assert len(child_ids) == 1
     assert isinstance(child_ids[0], int)
+
+
+### attribute mutation on persistent nodes
+
+def test_attribute_overwrite_all(session_empty, some_node):
+    s = session_empty
+    s.commit()
+    attrs = some_node.attrs.copy()
+    attrs["testattr"] = "newvalue"
+    some_node.attrs = attrs
+    s.commit()
+    assert some_node.attrs["testattr"] == "newvalue"
+
+
+def test_attribute_mutation(session_empty, some_node):
+    """some_node.attrs must be a `MutableDict` from SQLA"""
+    s = session_empty
+    s.commit()
+    some_node.attrs["testattr"] = "newvalue"
+    s.commit()
+    assert some_node.attrs["testattr"] == "newvalue"

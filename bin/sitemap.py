@@ -24,8 +24,8 @@ import os
 import sys
 sys.path += ['../..', '../', '.']
 
-from core.init import basic_init
-basic_init()
+from core.init import full_init
+full_init()
 
 import core.users as users
 import core.acl as acl

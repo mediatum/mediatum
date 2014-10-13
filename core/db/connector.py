@@ -44,7 +44,7 @@ class Connector:
 
     def get_children_with_type(self, parent_id, nodetype):
         sql = ("select cid from node, nodemapping"
-               " where nid=%s and id=cid and type='%s'"
+               " where nid=%s and id=cid and type=%s"
                " order by cid")
         t = self.runQuery(sql, parent_id, nodetype)
 

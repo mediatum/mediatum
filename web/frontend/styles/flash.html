@@ -23,13 +23,13 @@ The document is displayed in the <a href="/" tal:attributes="href python:'?id='+
 </div>
 
 <div style="width: 100%; text-align:right">
-    <a tal:attributes="href python:'javascript:shoppingBag(\''+str(node.id)+'\')'">
+    <a tal:attributes="href python:'javascript:shoppingBag(\'{}\')'.format(node.id)">
         <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png" title="Objekt zur Merkliste hinzuf&uuml;gen"/></a>
-    <a tal:attributes="href python:'/print/'+str(node.id)" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
+    <a tal:attributes="href python:'/print/{}'.format(node.id)" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
 </div>
 <div id="object_main">
     <div id="object_image">
-        <img tal:attributes="src python:'/thumb2/'+str(node.id); onClick python:'fullSizePopup('+str(node.id)+', 320, 240)'" style="cursor:pointer" border="0" width="300" src="/thumb2/_"/>
+        <img tal:attributes="src python:'/thumb2/{}'.format(node.id); onClick python:'fullSizePopup({}, 320, 240)'.format(node.id)" style="cursor:pointer" border="0" width="300" src="/thumb2/_"/>
         <br/>
         <p><small i18n:translate="video_plugin_info">TEXT</small></p>
         <div id="object_versions" tal:define="versions python:node.getVersionList()" tal:condition="python:len(versions)>1">

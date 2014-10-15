@@ -8,7 +8,7 @@
         <script type="text/javascript" src="/js/jwplayer.min.js"> </script>
         
         <script tal:content="python:'var file_url = \''+str(file)+'\';'">;</script>
-        <script tal:content="python:'var thumbnail_url = \'/thumb2/'+node.id+'\';'">;</script>
+        <script tal:content="python:'var thumbnail_url = \'/thumb2/{}\';'.format(node.id)">;</script>
         <script tal:content="python:'var captions_info = '+str(captions_info)+';'">;</script>
         
         <style>

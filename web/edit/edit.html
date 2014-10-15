@@ -192,7 +192,7 @@
             <tal:block tal:content="raw tabs"/>
             <tal:block tal:content="raw paging"/>
             <p style="text-align:right">
-                <a tal:attributes="href python:'/print/'+str(node.id)" target="_blank"><img src="/img/print_icon.gif"/></a>
+                <a tal:attributes="href python:'/print/{}'.format(node.id)" target="_blank"><img src="/img/print_icon.gif"/></a>
                 &nbsp;&nbsp;
             </p>
             <div style="margin:5px;border:1px solid silver;padding: 4px">

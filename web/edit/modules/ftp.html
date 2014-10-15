@@ -81,7 +81,7 @@
                 <td tal:content="python:file.getSize()"/>
                 <td tal:content="python:file.mimetype"/>
                 <td>
-                    <a tal:attributes="href python:'/file/'+str(node.id)+'/'+file.getName()" tal:content="python:file.getName()" i18n:attributes="title edit_ftp_open_title" target="filewindow"/>
+                    <a tal:attributes="href python:'/file/{}/{}'.format(node.id, file.getName())" tal:content="python:file.getName()" i18n:attributes="title edit_ftp_open_title" target="filewindow"/>
                 </td>
                 <td tal:condition="python: file.type in schemes">
                     <select name="schema" style="width:200px">

@@ -5,7 +5,7 @@
     <div style="width:45%;float:left;border:1px solid silver;padding:10px;">
         <ul>
             <tal:block tal:repeat="file files">
-            <li><a tal:attributes="href python:'/file/'+wfnode.id+'/'+file.getName()" tal:content="python:file.getName().split('_')[-1]" target="_blank"/></li>
+            <li><a tal:attributes="href python:'/file/{}/{}'.format(wfnode.id, file.getName())" tal:content="python:file.getName().split('_')[-1]" target="_blank"/></li>
             </tal:block>
         </ul>
     </div>

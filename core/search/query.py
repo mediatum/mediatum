@@ -334,7 +334,7 @@ def _makeCollectionIndices():
     fi = open(tmpdir + "s2n.txt", "wb")
     fi.write("--START--\n")
     for node in nodelist:
-        fi.write(node.id + "\n")
+        fi.write("{}\n".format(node.id))
     fi.close()
 
     def mkIndex(name, field, type, data=None):

@@ -23,30 +23,30 @@ The document is displayed in the <a href="/" tal:attributes="href python:'?id='+
 </div>
 
 <div style="width: 100%; text-align:right">
-    <a tal:attributes="href python:'javascript:shoppingBag(\''+str(node.id)+'\')'">
+    <a tal:attributes="href python:'javascript:shoppingBag(\'{}\')'.format(node.id)">
         <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png"/></a>
-    <a tal:attributes="href python:'/print/'+str(node.id)" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
+    <a tal:attributes="href python:'/print/{}'.format(node.id)" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
 </div>
 <div id="object_image" tal:condition="python:canseeoriginal">
     <tal:block tal:condition="python:not zoom">
     <a>
-        <img tal:attributes="src python:'/thumb2/'+str(node.id); onClick python:'fullSizePopup('+str(node.id)+', ' + str(node.get('width')) +', ' + str(node.get('height')) +')'" style="width:300px;cursor:pointer;border:1px double silver;" border="1px" />
+        <img tal:attributes="src python:'/thumb2/{}'.format(node.id); onClick python:'fullSizePopup({}, {}, {})'.format(node.id, node.get('width'), node.get('height'))" style="width:300px;cursor:pointer;border:1px double silver;" border="1px" />
     </a>
     </tal:block>
 
     <tal:block tal:condition="python:zoom">
     <a>
-        <img tal:attributes="src python:'/thumb2/'+str(node.id); onClick python:'fullSizePopup('+str(node.id)+', 700, 700)'" style="width:300px;cursor:pointer;border:1px double silver;" border="1px" />
+        <img tal:attributes="src python:'/thumb2/{}'.format(node.id); onClick python:'fullSizePopup({}, 700, 700)'.format(node.id)" style="width:300px;cursor:pointer;border:1px double silver;" border="1px" />
     </a>
     </tal:block>
 
     <div tal:condition="python:tif!=''" id="object_highresolution" style="padding-top:10px">
-        <a tal:attributes="href python:'/file/'+node.id+'/'+str(tif)" i18n:translate="image_high_res_title">TEXT</a>
+        <a tal:attributes="href python:'/file/{}/{}'.format(node.id, str(tif))" i18n:translate="image_high_res_title">TEXT</a>
         <img id="object_highresolution_remark" style="display:none;" src="/img/wait_small.gif"/>
     </div>
 
     <div tal:condition="python:len(attachment)>0" id="object_attachment" style="padding:10px 0px">
-        <a tal:attributes="onclick python:'javascript:openPopup(\'/attachmentbrowser?id='+str(node.id)+'&path='+path+'\', \'Attachment\', 400, 400)'" i18n:translate="doc_att_browser" href="#" >TEXT</a>
+        <a tal:attributes="onclick python:'javascript:openPopup(\'/attachmentbrowser?id={}&path={}\', \'Attachment\', 400, 400)'.format(node.id, path)" i18n:translate="doc_att_browser" href="#" >TEXT</a>
     </div>
 
     <div id="object_versions" tal:define="versions python:node.getVersionList()" tal:condition="python:len(versions)>1">
@@ -65,9 +65,9 @@ The document is displayed in the <a href="/" tal:attributes="href python:'?id='+
 
 <div id="object_image" tal:condition="python:not canseeoriginal">
     <a tal:condition="python:zoom">
-        <img tal:attributes="src python:'/thumb2/'+str(node.id); onClick python:'fullSizePopup('+str(node.id)+', 700, 700)'" style="width:300px;cursor:pointer;border:1px double silver;" border="1px" />
+        <img tal:attributes="src python:'/thumb2/{}'.format(node.id); onClick python:'fullSizePopup({}, 700, 700)'.format(node.id)" style="width:300px;cursor:pointer;border:1px double silver;" border="1px" />
     </a>
-    <img tal:condition="python:not zoom" tal:attributes="src python:'/thumb2/'+str(node.id)" style="width: 300px;border:1px double silver;" border="1px"/>
+    <img tal:condition="python:not zoom" tal:attributes="src python:'/thumb2/{}'.format(node.id)" style="width: 300px;border:1px double silver;" border="1px"/>
     <div id="object_versions">
         <div><tal:block i18n:translate="document_view_current_version_from">Current version: <span i18n:name="version" tal:replace="python:'Version ' + str(node.get('system.version.id')=='' and 1 or node.get('system.version.id'))">Version</span> from</tal:block> <tal:block tal:condition="python:node.get('updatetime')" tal:replace="python:node.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:node.get('updateuser') and node.get('updateuser') or node.get('creator')" /></div>
         <div i18n:translate="document_view_other_versions_of_the_document">Other versions of the document:</div>

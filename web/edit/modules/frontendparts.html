@@ -143,7 +143,7 @@
             <div class="label" i18n:translate="edit_frontendparts_node">TEXT</div>
             <div id="editor_content">
                 <input tal:attributes="value python:item.filename" type="text" name="item_node_value" id="item_node_value" style="width:280px" readonly="readonly"/>
-                <img src="/img/rightarrow.png" i18n:attributes="title edit_frontendparts_selectnode_title" tal:attributes="onclick python:'openPopup(\'/edit/edit_content?style=popup&tab=frontendparts&action=nodeselection&id='+str(node.id)+'\', \'\', 400, 600, 1)'" style="cursor:pointer"/>
+                <img src="/img/rightarrow.png" i18n:attributes="title edit_frontendparts_selectnode_title" tal:attributes="onclick python:'openPopup(\'/edit/edit_content?style=popup&tab=frontendparts&action=nodeselection&id={}\', \'\', 400, 600, 1)'.format(node.id)" style="cursor:pointer"/>
             </div>
         </div>
         
@@ -151,7 +151,7 @@
             <div class="label" i18n:translate="edit_frontendparts_icon">TEXT</div>
             <div id="editor_content">
                 <input tal:attributes="value python:item.getIcon()" type="text" name="item_icon" id="item_icon"/>
-                <img src="/img/rightarrow.png" i18n:attributes="title edit_frontendparts_selecticon_title" tal:attributes="onclick python:'openPopup(\'/edit/edit_content?style=popup&tab=frontendparts&action=iconselection&id='+str(node.id)+'&img='+item.getIcon()+'\', \'\', 400, 600, 1)'" style="cursor:pointer"/>
+                <img src="/img/rightarrow.png" i18n:attributes="title edit_frontendparts_selecticon_title" tal:attributes="onclick python:'openPopup(\'/edit/edit_content?style=popup&tab=frontendparts&action=iconselection&id={}&img={}\', \'\', 400, 600, 1)'.format(node.id, item.getIcon())" style="cursor:pointer"/>
                 <img src="/img/delete.png" i18n:attributes="title edit_frontendparts_deleteicon_title" onclick="javascript:deleteIcon()" style="cursor:pointer"/>
             </div>
         </div>

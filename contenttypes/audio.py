@@ -156,11 +156,11 @@ class Audio(default.Default):
             obj['metadata'] = []
         obj['node'] = node
         obj['path'] = req and req.params.get("path", "") or ""
-        obj['audiothumb'] = '/thumb2/' + str(node.id)
+        obj['audiothumb'] = '/thumb2/{}'.format(node.id)
         if node.has_object():
             obj['canseeoriginal'] = access.hasAccess(node, "data")
-            obj['audiolink'] = '/file/' + str(node.id) + '/' + node.getName()
-            obj['audiodownload'] = '/download/' + str(node.id) + '/' + node.getName()
+            obj['audiolink'] = '/file/{}/{}'.format(node.id, node.getName())
+            obj['audiodownload'] = '/download/{}/{}'.format(node.id, node.getName())
         else:
             obj['canseeoriginal'] = False
 

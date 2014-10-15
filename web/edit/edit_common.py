@@ -215,9 +215,9 @@ def writenode(req, node, unfoldedids, f, indent, key, access, ret=""):
 
     if num:
         if isunfolded:
-            ret += f(req, node, objnum, "edit_tree?tree_fold=" + node.id, indent, type=1)
+            ret += f(req, node, objnum, "edit_tree?tree_fold={}".format(node.id), indent, type=1)
         else:
-            ret += f(req, node, objnum, "edit_tree?tree_unfold=" + node.id, indent, type=2)
+            ret += f(req, node, objnum, "edit_tree?tree_unfold={}".format(node.id), indent, type=2)
     else:
         ret += f(req, node, objnum, "", indent, type=3)
 

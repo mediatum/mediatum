@@ -1,19 +1,19 @@
 <div id="object_main_" style="position:relative">
     <div style="width:100%; text-align:right">
-        <a tal:attributes="href python:'javascript:shoppingBag(\''+str(node.id)+'\')'">
+        <a tal:attributes="href python:'javascript:shoppingBag(\'{}\')'.format(node.id)">
             <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png"/></a>
-        <a tal:attributes="href python:'/print/'+str(node.id)" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
+        <a tal:attributes="href python:'/print/{}'.format(node.id)" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
     </div>
 </div>
 
         <script type="text/javascript" src="/js/jwplayer.min.js"> </script>
         
         <script tal:content="python:'var file_url = \''+str(file)+'\';'">;</script>
-        <script tal:content="python:'var thumbnail_url = \'/thumb2/'+node.id+'\';'">;</script>
+        <script tal:content="python:'var thumbnail_url = \'/thumb2/{}\';'.format(node.id)">;</script>
         <script tal:content="python:'var captions_info = '+str(captions_info)+';'">;</script>
 
 <div tal:condition="python:not canseeoriginal" style="border:1px solid silver">
-    <img tal:attributes="src python:'/thumb2/'+str(node.id)"/>
+    <img tal:attributes="src python:'/thumb2/{}'.format(node.id)"/>
 </div>
 <div tal:condition="python:canseeoriginal" tal:attributes="width python:node.get('vid-width')+'px';height python:node.get('vid-height')+'px'" style="border:1px solid silver; height:400px;text-align:center">
 <a tal:attributes="href file" style="display:block;" id="player"> </a>

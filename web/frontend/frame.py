@@ -241,15 +241,18 @@ class NavTreeEntry:
         return self.node.type == 'collections'
 
     def getFoldLink(self):
-        return "/?cfold=" + self.node.id + "&dir=" + self.node.id + "&id=" + self.node.id
+        return "/?cfold={}&dir={}&id={}".format(self.node.id,
+                                              self.node.id,
+                                              self.node.id)
 
     def getUnfoldLink(self):
-        return "/?cunfold=" + self.node.id + "&dir=" + self.node.id + "&id=" + self.node.id
-
+        return "/?cunfold={}&dir={}&id={}".format(self.node.id,
+                                                self.node.id,
+                                                self.node.id)
     def getLink(self):
         if self.folded:
-            return "/?cfold=" + self.node.id + "&dir=" + self.node.id + "&id=" + self.node.id
-        return "/?cunfold=" + self.node.id + "&dir=" + self.node.id + "&id=" + self.node.id
+            return self.getUnfoldLink()
+        return self.getFoldLink()
 
     def isFolded(self):
         return self.folded

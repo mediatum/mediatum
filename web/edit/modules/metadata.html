@@ -128,8 +128,8 @@
                     <tal:block tal:repeat="v versions">
                     <tr tal:attributes="class python:(v.next_nid=='0' or v.next_nid==None) and 'row active' or 'row' ">
                         <td><a href="/" tal:attributes="href python:'?id='+v.id+'&amp;tab=metadata'" tal:content="python:'V' + str(v.get('system.version.id')=='' and 1 or v.get('system.version.id'))">Version</a></td>
-                        <td><a href="/" tal:attributes="href python:'?id='+node.id+'&amp;tab=metadata&amp;action=delete&amp;vid='+v.id; onclick python:'if(!confirm(deleteConfirm'+v.id+'))return false;;'"><tal:block i18n:translate="edit_meta_delete"/></a></td>
-                        <td><a href="/" tal:attributes="href python:'?id='+node.id+'&amp;tab=metadata&amp;action=restore&amp;vid='+v.id; onclick python:'if(!confirm(restoreConfirm'+v.id+'))return false;;'"><tal:block i18n:translate="edit_meta_restore"/></a></td>
+                        <td><a href="/" tal:attributes="href python:'?id={}&amp;tab=metadata&amp;action=delete&amp;vid={}'.format(node.id, v.id); onclick python:'if(!confirm(deleteConfirm{}))return false;;'.format(v.id)"><tal:block i18n:translate="edit_meta_delete"/></a></td>
+                        <td><a href="/" tal:attributes="href python:'?id={}&amp;tab=metadata&amp;action=restore&amp;vid={}'.format(node.id, v.id); onclick python:'if(!confirm(restoreConfirm{}))return false;;'.format(v.id)"><tal:block i18n:translate="edit_meta_restore"/></a></td>
                         <td>
                         <div tal:content="python:v.getUpdatedDate()"></div>
                         <div tal:content="python:v.get('system.version.comment')"></div>

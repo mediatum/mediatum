@@ -33,18 +33,19 @@ def getContent(req, ids):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     if req.params.get('action') == 'getsearchdata':
-        req.writeTAL("web/edit/modules/admin.html", {'searchdata': node.search('searchcontent=' + node.id)}, macro="searchdata")
+        req.writeTAL("web/edit/modules/admin.html", {'searchdata': node.search('searchcontent={}'.format(node.id))}, macro="searchdata")
         return ''
 
     if req.params.get("type", "") == "addattr" and req.params.get("new_name", "") != "" and req.params.get("new_value", "") != "":
         node.set(req.params.get("new_name", ""), req.params.get("new_value", ""))
-        logging.getLogger('editor').info("new attribute " + str(req.params.get("new_name", "")) + " for node " + str(node.id) + " added")
+        logging.getLogger('editor').info("new attribute {} for node {} added".format(req.params.get("new_name", ""),
+                                                                                     node.id))
 
     for key in req.params.keys():
         # update localread value of current node
         if key.startswith("del_localread"):
             node.resetLocalRead()
-            logging.getLogger('editor').info("localread attribute of node " + str(node.id) + " updated")
+            logging.getLogger('editor').info("localread attribute of node {} updated".format(node.id))
             break
 
         # set current node 'dirty' (reindex for search)
@@ -56,7 +57,7 @@ def getContent(req, ids):
                         logging.getLogger('editor').info("set node " + str(child_node.id) + " dirty")
             else:
                 node.setDirty()
-                logging.getLogger('editor').info("set node " + str(node.id) + " dirty")
+                logging.getLogger('editor').info("set node {} dirty".format(node.id))
             break
 
         # delete node from cache (e.g. after changes in db)
@@ -68,7 +69,8 @@ def getContent(req, ids):
         # remove  attribute
         if key.startswith("attr_"):
             node.removeAttribute(key[5:-2])
-            logging.getLogger('editor').info("attribute " + key[5:-2] + " of node " + str(node.id) + " removed")
+            logging.getLogger('editor').info("attribute {} of node {} removed".format(key[5:-2],
+                                                                                      node.id))
             break
 
     fields = node.getType().getMetaFields()
@@ -102,7 +104,7 @@ def getContent(req, ids):
         for key in technfields:
             node.removeAttribute(key)
         technfields = {}
-        logging.getLogger('editor').info("technical attributes of node " + str(node.id) + " removed")
+        logging.getLogger('editor').info("technical attributes of node {} removed".format(node.id))
 
     return req.getTAL("web/edit/modules/admin.html",
                       {"id": req.params.get("id",

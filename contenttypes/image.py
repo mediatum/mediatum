@@ -241,9 +241,9 @@ class Image(default.Default):
         obj['node'] = node
         obj['tif'] = tif
         obj['zoom'] = dozoom(node)
-        obj['tileurl'] = "/tile/" + node.id + "/"
+        obj['tileurl'] = "/tile/{}/".format(node.id)
         obj['canseeoriginal'] = access.hasAccess(node, "data")
-        obj['originallink'] = "getArchivedItem('" + str(node.id) + "/" + tif + "')"
+        obj['originallink'] = "getArchivedItem('{}/{}')".format(node.id, tif)
         obj['archive'] = node.get('archive_type')
 
         if "style" in req.params.keys():

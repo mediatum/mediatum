@@ -85,7 +85,7 @@ def edit_editor(req, node, filenode):
             i += 1
             shortpath_to_check = "html/%s_%d.html" % (node.id, i)
 
-        shortpath = "html/" + (node.id + "_%d" % i) + ".html"
+        shortpath = "html/{}".format(node.id) + ("_%d" % i) + ".html"
         path = basedir + shortpath
         filenode = FileNode(path, "content", "text/html")
         descriptiveLabel = "%s - %s" % (t(lang(req), "edit_editor_new_file"), shortpath)
@@ -150,7 +150,7 @@ def getFileTemplate(req, node, file, substitute):
             else:
                 ret += s[lastend:match.start()]
                 imgname = match.group(1)
-                ret += 'src="/file/' + node.id + '/' + imgname + '"'
+                ret += 'src="/file/{}/{}"'.format(node.id, imgname)
                 lastend = match.end()
         fi.close()
         return ret

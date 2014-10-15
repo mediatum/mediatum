@@ -1,7 +1,7 @@
 
 <tal:block>
     <div tal:repeat="file python:files" class="preview" style="width:260px; height:260px" onmouseover="this.style.backgroundColor='#cccccc'" onmouseout="this.style.backgroundColor='white'">
-        <div tal:attributes="onclick python:'shoppingBag(\''+str(file.node.id)+'\')'" style="position:absolute; right:0px; top:0px; width:20px; height:20px; overflow:hidden; cursor: pointer;z-index:111">
+        <div tal:attributes="onclick python:'shoppingBag(\'{}\')'.format(file.node.id)" style="position:absolute; right:0px; top:0px; width:20px; height:20px; overflow:hidden; cursor: pointer;z-index:111">
             <img i18n:attributes="title view_list_add_shoppingbag" src="/img/favourite_add.png"/>
         </div>
         <div tal:condition="python:file.attachment" style="position:absolute; right:25px; top:3px; overflow:hidden">
@@ -13,8 +13,8 @@
         </div>
         <a tal:attributes="href python:file.getLink()" target="_parent">
             <div style="text-align:center;width:253px;height:240px;margin:3px;padding-top:12px;margin-bottom:2px;overflow:hidden">
-                <img tal:condition="python:int(file.node.get('width') or 0)>int(file.node.get('height') or 0)" tal:attributes="src python:'/thumb2/'+file.node.id+''" class="thumbnail" style="width:250px;margin-top:10px" border="0"/>
-                <img tal:condition="python:int(file.node.get('width') or 0)<int(file.node.get('height') or 0)" tal:attributes="src python:'/thumb2/'+file.node.id+''" class="thumbnail" style="height:240px" border="0"/>
+                <img tal:condition="python:int(file.node.get('width') or 0)>int(file.node.get('height') or 0)" tal:attributes="src python:'/thumb2/{}'.format(file.node.id)" class="thumbnail" style="width:250px;margin-top:10px" border="0"/>
+                <img tal:condition="python:int(file.node.get('width') or 0)<int(file.node.get('height') or 0)" tal:attributes="src python:'/thumb2/{}'.format(file.node.id)" class="thumbnail" style="height:240px" border="0"/>
                 
                 <p tal:condition="python:file.node.get('width')==file.node.get('height')" tal:content="raw python:file.node.show_node_text(None, language)" style="text-align:left;margin-top:30px;margin-left:50px">
                     TEXT

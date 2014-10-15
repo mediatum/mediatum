@@ -111,7 +111,7 @@
     <h2 i18n:translate="wf_step_ready">TEXT</h2>
     <p i18n:translate="wf_step_msg1">
         TEXT
-        <br/><span tal:content="python:node.id +' '+node.name" i18n:name="name"/> 
+        <br/><span tal:content="python:'{} {}'.format(node.id, node.name)" i18n:name="name"/>
         TEXT 
         <span tal:replace="link" i18n:name="link"/>.
     </p>
@@ -123,7 +123,7 @@
 
 <tal:block metal:define-macro="workflow_node">
     <p>
-        <b i18n:translate="wf_node_msg1">TEXT <span tal:content="python:node.id+' '+node.name" i18n:name="name"/></b>
+        <b i18n:translate="wf_node_msg1">TEXT <span tal:content="python:'{} {}'.format(node.id, node.name)" i18n:name="name"/></b>
     </p>
     <p i18n:translate="wf_node_msg2">TEXT<span tal:content="name" i18n:name="name"/></p>
 </tal:block>

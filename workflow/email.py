@@ -170,7 +170,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
             text = node.get("mailtmp.text")
             subject = tal.getTALstr(node.get("mailtmp.subject"), {}, language=node.get("system.wflanguage"))
             return req.getTAL("workflow/email.html",
-                              {"page": "node?id=" + self.id + "&obj=" + node.id,
+                              {"page": "node?id={}&obj={}".format(self.id, node.id),
                                "from": xfrom,
                                "to": to,
                                "text": text,

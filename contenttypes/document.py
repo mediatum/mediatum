@@ -70,16 +70,16 @@ class Document(default.Default):
         if node.has_object():
             obj['canseeoriginal'] = access.hasAccess(node, "data")
             if node.get('system.origname') == "1":
-                obj['documentlink'] = '/doc/' + str(node.id) + '/' + node.getName()
-                obj['documentdownload'] = '/download/' + str(node.id) + '/' + node.getName()
+                obj['documentlink'] = '/doc/{}/{}'.format(node.id, node.getName())
+                obj['documentdownload'] = '/download/{}/{}'.format(node.id, node.getName())
             else:
-                obj['documentlink'] = '/doc/' + str(node.id) + '/' + str(node.id) + '.pdf'
-                obj['documentdownload'] = '/download/' + str(node.id) + '/' + str(node.id) + '.pdf'
+                obj['documentlink'] = '/doc/{}/{}.pdf'.format(node.id, node.id)
+                obj['documentdownload'] = '/download/{}/{}.pdf'.format(node.id, node.id)
         else:
             obj['canseeoriginal'] = False
-        obj['documentthumb'] = '/thumb2/' + str(node.id)
+        obj['documentthumb'] = '/thumb2/{}'.format(node.id)
         if "oogle" not in (req.get_header("user-agent") or ""):
-            obj['print_url'] = '/print/' + str(node.id)
+            obj['print_url'] = '/print/{}'.format(node.id)
         else:
             # don't confuse search engines with the PDF link
             obj['print_url'] = None

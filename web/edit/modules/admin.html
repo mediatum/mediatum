@@ -110,7 +110,7 @@
         <div id="searchdata" />
         <input type="hidden" name="type" id="type" value=""/>
     </form>
-    <script tal:content="python:'var id='+node.id" />
+    <script tal:content="python:'var id={}'.format(node.id)" />
     <script>
         /*$(document).ready(function() {
             $.get('/edit/edit_content?id='+id+'&tab=admin&action=getsearchdata&style=popup', function(data) {

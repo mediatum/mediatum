@@ -41,8 +41,12 @@ class WorkflowStep_End(WorkflowStep):
         node.setDirty()
 
         if self.get("endtext") != "":
-            link = "http://" + config.get("host.name") + "/pnode?id=" + node.id + "&key=" + node.get("key")
-            link2 = "http://" + config.get("host.name") + "/node?id=" + node.id
+            link = "http://{}/pnode?id={}&key={}".format(config.get("host.name"),
+                                                         node.id,
+                                                         node.get("key"))
+            link2 = "http://{}/node?id={}".format(config.get("host.name"),
+                                                  node.id)
+
             return req.getTALstr(self.get("endtext"), {"node": node, "link": link, "link2": link2})
         return req.getTALstr(
             '<p><a href="/publish" i18n:translate="workflow_back">TEXT</a></p><h2 i18n:translate="wf_step_ready">Fertig</h2><p>&nbsp;</p><p i18n:translate="workflow_step_ready_msg">Das Objekt <span tal:content="node" i18n:name="name"/> ist am Ende des Workflows angekommen.</p>',

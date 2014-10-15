@@ -59,15 +59,15 @@
     <tal:block tal:repeat="node nodelist">
         <div tal:attributes="class python:{'True':'showcontent', 'False':'showcontent_error'}[str(str('')==str(node.getAttribute('faulty')))]">
             <div style="position:absolute; left:0px; top:0px; width:296px; height:20px">
-                <input tal:attributes="name python:node.id; id python:'check'+node.id" onChange="checkObject(this)" type="checkbox"/> <span i18n:translate="edit_common_mark">TEXT</span>
+                <input tal:attributes="name python:node.id; id python:'check{}'.format(node.id)" onChange="checkObject(this)" type="checkbox"/> <span i18n:translate="edit_common_mark">TEXT</span>
             </div>
             <div style="position:absolute; left:3px; top:25px; width:148px; height:148px;">
-                <a tal:attributes="href python:'edit_content?id='+str(node.id)+'&tab=view'" i18n:attributes="title edit_common_bigview_title">
+                <a tal:attributes="href python:'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title">
                     <tal:block tal:condition="python:hasattr(node, 'show_node_image')" tal:replace="raw python:node.show_node_image()"/>
                     <img tal:condition="python:not hasattr(node, 'show_node_image')" src="/img/questionmark.png"/>
                 </a>
             </div>
-            <div tal:attributes="onClick python:'document.location.href=\'edit_content?id='+str(node.id)+'&tab=metadata\''" style="position:absolute; left:148px; top:20px; width:148px; height:148px; overflow: hidden; cursor: pointer" i18n:attributes="title edit_common_edit_meta">
+            <div tal:attributes="onClick python:'document.location.href=\'edit_content?id={}&tab=metadata\''.format(node.id)" style="position:absolute; left:148px; top:20px; width:148px; height:148px; overflow: hidden; cursor: pointer" i18n:attributes="title edit_common_edit_meta">
                 <p class="descbox">
                     <tal:block tal:condition="python:hasattr(node, 'show_node_text')" tal:replace="raw python:node.show_node_text(None,language=language)"/>
                     <tal:block tal:condition="python:not hasattr(node, 'show_node_text')" tal:replace="raw python:node.getName()"/>

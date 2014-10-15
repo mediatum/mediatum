@@ -58,9 +58,9 @@ def getContent(req, ids):
                     log.logException()
 
                 if type == 1:
-                    link = req.makeSelfLink({"tree_unfold": "", "tree_fold": node.id}) + "#node" + node.id
+                    link = req.makeSelfLink({"tree_unfold": "", "tree_fold": node.id}) + "#node{}".format(node.id)
                 elif type == 2:
-                    link = req.makeSelfLink({"tree_unfold": node.id, "tree_fold": ""}) + "#node" + node.id
+                    link = req.makeSelfLink({"tree_unfold": node.id, "tree_fold": ""}) + "#node{}".format(node.id)
 
                 v = {}
                 v["id"] = str(node.id)

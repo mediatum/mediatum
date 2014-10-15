@@ -107,14 +107,14 @@ class ZoomImage:
                     names.append(self.getTile(level, x, y, 1))
 
         # open the zip file for writing, and write stuff to it
-        file = zipfile.ZipFile(self.filepath + "/zoom" + str(self.node.id) + ".zip", "w")
+        file = zipfile.ZipFile(self.filepath + "/zoom{}.zip".format(self.node.id), "w")
         for name in names:
             file.write(name, os.path.basename(name), zipfile.ZIP_DEFLATED)
             os.unlink(name)
         file.close()
         l = config.get("paths.datadir")
         self.node.addFile(
-            tree.FileNode(name=self.filepath[len(l):] + "/zoom" + str(self.node.id) + ".zip", mimetype="application/zip", type="zoom"))
+            tree.FileNode(name=self.filepath[len(l):] + "/zoom{}.zip".format(self.node.id), mimetype="application/zip", type="zoom"))
 
     def getTile(self, level, x, y, generate=0):
         if level > self.levels:

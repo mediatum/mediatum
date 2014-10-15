@@ -120,8 +120,10 @@ class SearchIndexer:
     def nodeToSimpleSearch(self, node):
         # build simple search index from node
         try:
-            sql = 'INSERT INTO fullsearchmeta (id, type, schema, value) VALUES(\'' + str(node.id) + \
-                '\', \'' + node.getContentType() + '\', \'' + node.getSchema() + '\', \'' + str(node.name) + '| '
+            sql = 'INSERT INTO fullsearchmeta (id, type, schema, value) VALUES(\'{}\', \'{}\', \'{}\', \'{}| '.format(node.id,
+                                                                                                                      node.getContentType(),
+                                                                                                                      node.getSchema(),
+                                                                                                                      node.name)
 
             # attributes
             a = ''
@@ -164,10 +166,17 @@ class SearchIndexer:
                     values += '"' + normalize_utf8(u(v_list[key])) + '", '
                 sql = sql[:-2]
                 values = values[:-2]
-                sql = sql + ') VALUES("' + str(node.id) + '", "' + node.getContentType() + '", "' + node.getSchema() + '", ' + values + ')'
+                sql = '{}) VALUES("{}", "{}", "{}", {})'.format(sql,
+                                                                node.id,
+                                                                node.getContentType(),
+                                                                node.getSchema(),
+                                                                values)
             else:
                 sql = sql[:-2]
-                sql = sql + ') VALUES("' + str(node.id) + '", "' + node.getContentType() + '", "' + node.getSchema() + '")'
+                sql = '{}) VALUES("{}", "{}", "{}")'.format(sql,
+                                                            node.id,
+                                                            node.getContentType(),
+                                                            node.getSchema())
             self.db.execute(sql)
             return True
         except:
@@ -236,8 +245,10 @@ class SearchIndexer:
                 sql = ""
                 if len(content) > 0:
                     try:
-                        sql = 'INSERT INTO textsearchmeta (id, type, schema, value) VALUES("' + str(node.id) + '", "' + \
-                            str(node.getContentType()) + '", "' + str(node.getSchema()) + '", "' + iso2utf8(esc(content)) + '")'
+                        sql = 'INSERT INTO textsearchmeta (id, type, schema, value) VALUES("{}", "{}", "{}", "{}")'.format(node.id,
+                                                                                                                           node.getContentType(),
+                                                                                                                           node.getSchema(),
+                                                                                                                           iso2utf8(esc(content)))
                         self.db.execute(sql)
                     except:
                         print "error", node.id, "\n"
@@ -287,7 +298,8 @@ class SearchIndexer:
     def removeNode(self, node, mode=0):
         for table in self.tablenames:
             try:
-                self.db.execute('DELETE FROM ' + table + ' WHERE id="' + str(node.id) + '"')
+                self.db.execute('DELETE FROM {} WHERE id="{}"'.format(table,
+                                                                      node.id))
             except:
                 print "table", table, "does not exist"
         if mode != 0:

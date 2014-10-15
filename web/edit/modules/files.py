@@ -207,7 +207,7 @@ def getContent(req, ids):
                             else:
                                 node.set(attr, value)
                         ret += req.getTAL("web/edit/modules/metadata.html",
-                                          {'url': '?id=' + node.id + '&tab=files', 'pid': None}, macro="redirect")
+                                          {'url': '?id={}&tab=files'.format(node.id), 'pid': None}, macro="redirect")
 
                 if req.params.get("change_file") == "yes" and not create_version_error:  # remove old files
                     for f in node.getFiles():
@@ -224,7 +224,10 @@ def getContent(req, ids):
                     file = importFile(uploadfile.filename, uploadfile.tempname)  # add new file
                     node.addFile(file)
                     logging.getLogger('usertracing').info(
-                        user.name + " changed file of node " + node.id + " to " + uploadfile.filename + " (" + uploadfile.tempname + ")")
+                        "{} changed file of node {} to {} ({})".format(user.name,
+                                                                       node.id,
+                                                                       uploadfile.filename,
+                                                                       uploadfile.tempname))
 
                 attpath = ""
                 for f in node.getFiles():
@@ -281,13 +284,15 @@ def getContent(req, ids):
 
                 node.addFile(tree.FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
                 node.addFile(tree.FileNode(name=thumbname + "2", type="presentation", mimetype="image/jpeg"))
-                logging.getLogger('usertracing').info(user.name + " changed thumbnail of node " + node.id)
+                logging.getLogger('usertracing').info("{} changed thumbnail of node {}".format(user.name,
+                                                                                               node.id))
 
         elif op == "postprocess":
             if hasattr(node, "event_files_changed"):
                 try:
                     node.event_files_changed()
-                    logging.getLogger('usertracing').info(user.name + " postprocesses node " + node.id)
+                    logging.getLogger('usertracing').info("{} postprocesses node {}".format(user.name,
+                                                                                            node.id))
                 except "PostprocessingError":
                     update_error = True
 

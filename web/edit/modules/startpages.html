@@ -151,7 +151,7 @@
     </p>    
     <script type="text/javascript" src="/ckeditor/ckeditor.js">
     </script>
-    <script tal:content="python:'var currentnodeid = '+node.id+';\nvar language = \''+language+'\';\n'"> </script>
+    <script tal:content="python:'var currentnodeid = {};\nvar language = \'{}\';\n'.format(node.id, language)"> </script>
    
     <textarea id="page_content" name="page_content" tal:content="python: fncFileContents(path)"> </textarea>
     <script type="text/javascript">
@@ -243,7 +243,7 @@
                                                 <tr>
                                                 <td><img height="32" width="32" src="/module/editor/filemanager/browser/default/images/FolderOpened32.gif" alt=""/></td>
                                                 <td>&nbsp;</td>
-                                                <td nowrap="" width="100%" class="ActualFolder" id="tdName" tal:content="python:'/ node.id='+node.id+' ('+node.name+')'">TEXT</td>
+                                                <td nowrap="" width="100%" class="ActualFolder" id="tdName" tal:content="python:'/ node.id={} ({})'.format(node.id, node.id)">TEXT</td>
                                                 <td>&nbsp;</td>
                                                 <td><img height="8" width="12" alt="" src="/module/editor/filemanager/browser/default/images/ButtonArrow.gif"/></td>
                                                 <td>&nbsp;</td>
@@ -269,10 +269,10 @@
 
             <div>
                 <div class="imagecontainer" tal:repeat="file files" tal:attributes="id python:file.getName()">
-                    <div class="innerimagecontainer"  tal:attributes="onclick python:'return SelectFile(\'/file/'+node.id+'/'+file.getName()+'\', '+node.id+')'">
-                        <img class="image" i18n:attributes="title edit_fckeditor_cfm_clicktochoose" tal:attributes="width python:fit(file.retrieveFile(), (140,100))[0]; height python:fit(file.retrieveFile(), (140,100))[1]; src python:'/file/'+node.id+'/'+file.getName();"/>
+                    <div class="innerimagecontainer"  tal:attributes="onclick python:'return SelectFile(\'/file/{}/{}\', {})'.format(node.id, file.getName(), node.id)">
+                        <img class="image" i18n:attributes="title edit_fckeditor_cfm_clicktochoose" tal:attributes="width python:fit(file.retrieveFile(), (140,100))[0]; height python:fit(file.retrieveFile(), (140,100))[1]; src python:'/file/{}/{}'.format(node.id, file.getName());"/>
                     </div>
-                    <div i18n:attributes="title edit_fckeditor_cfm_nameonserver;" tal:attributes="onclick python:'return SelectFile(\'/file/'+node.id+'/'+file.getName()+'\', '+node.id+')'" tal:content="python:'/file/'+node.id+'/'+file.getName()">TEXT</div>   
+                    <div i18n:attributes="title edit_fckeditor_cfm_nameonserver;" tal:attributes="onclick python:'return SelectFile(\'/file/{}/{}\', {})'.format(node.id, file.getName(), node.id)" tal:content="python:'/file/{}/{}'.format(node.id, file.getName())">TEXT</div>
                 
                     <span style="color:#dd0000;" width="50px" tal:condition="python:(file.getName())==(logoname)" i18n:translate="edit_fckeditor_cfm_imageislogo">TEXT</span>        
                     <span width="50px" tal:condition="python:(file.getName())!=(logoname)">&nbsp;</span>    
@@ -297,7 +297,7 @@
                             }
                          </script>        
                         <div width="75px" style="text-align:center;" tal:condition="python:delbutton">
-                            <img i18n:attributes="title edit_fckeditor_cfm_delete" tal:attributes="name python:'delete_'+file.getName(); onclick python:'return delete_nodefile(\'/edit/edit_content/'+node.id+'/startpages/'+file.getName()+'\', '+node.id+', \''+file.getName()+'\')'; " type="image" src="/img/delete.png"/>
+                            <img i18n:attributes="title edit_fckeditor_cfm_delete" tal:attributes="name python:'delete_'+file.getName(); onclick python:'return delete_nodefile(\'/edit/edit_content/{}/startpages/{}\', {}, \'{}\')'.format(node.id, file.getName(), node.id, file.getName()); " type="image" src="/img/delete.png"/>
                         </div>
                     </span>
 

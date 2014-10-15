@@ -375,7 +375,7 @@ def buildStat(collection, period="", fname=None):  # period format = yyyy-mm
         for file in node.getFiles():
             if file.getType() == "statistic":
                 try:
-                    if file.getName() == "stat_" + str(node.id) + "_" + timestamp + "_" + type + ".xml":
+                    if file.getName() == "stat_{}_{}_{}.xml".format(node.id, timestamp, type):
                         if timestamp == str(format_date(now(), "yyyy-mm")) or timestamp == period:  # update current month or given period
                             if os.path.exists(file.retrieveFile()):
                                 print 'removing %s' % file.retrieveFile()
@@ -390,7 +390,7 @@ def buildStat(collection, period="", fname=None):  # period format = yyyy-mm
                     return None
         if not f:
             # create new file
-            f_name = config.get("paths.tempdir") + "stat_" + str(node.id) + "_" + timestamp + "_" + type + ".xml"
+            f_name = config.get("paths.tempdir") + "stat_{}_{}_{}.xml".format(node.id, timestamp, type)
             if os.path.exists(f_name):
                 f = open(f_name, "a")
             else:

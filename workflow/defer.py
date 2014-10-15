@@ -63,7 +63,8 @@ class WorkflowStep_Defer(WorkflowStep):
                     if self.get('recipient'):  # if the recipient-email was entered, create a scheduler
                         attr_dict = {'single_trigger': l_date, 'function': "test_sendmail01",
                                      'nodelist': list(node.id), 'attr_recipient': self.get('recipient'),
-                                     'attr_subject': self.get('subject') + " ID: " + str(node.id),
+                                     'attr_subject': "{} ID: {}".format(self.get('subject'),
+                                                                        node.id),
                                      'attr_body': self.get('body')}
 
                         schedules.create_schedule("WorkflowStep_Defer", attr_dict)

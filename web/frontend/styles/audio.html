@@ -23,9 +23,9 @@ The document is displayed in the <a href="/" tal:attributes="href python:'?id='+
 </div>
 
 <div style="width: 100%; text-align:right">
-    <a tal:attributes="href python:'javascript:shoppingBag(\''+str(node.id)+'\')'">
+    <a tal:attributes="href python:'javascript:shoppingBag(\'{}\')'.format(node.id)">
         <img i18n:attributes="title view_list_add_shoppingbag" border="0" src="/img/favourite_add.png"/></a>
-    <a tal:attributes="href python:'/print/'+str(node.id)" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
+    <a tal:attributes="href python:'/print/{}'.format(node.id)" i18n:attributes="title printview" target="_blank"><img src="/img/print_icon.gif"/></a>
 </div>
 
 <div id="object_main">
@@ -36,7 +36,7 @@ The document is displayed in the <a href="/" tal:attributes="href python:'?id='+
         <br/>
         <object type="application/x-shockwave-flash" data="/img/audio.swf" width="100" height="20">
             <param name="movie" value="/img/audio.swf" />
-            <param name="FlashVars" tal:attributes="value python:'src=/file/'+node.id+'/audio.mp3'" />
+            <param name="FlashVars" tal:attributes="value python:'src=/file/{}/audio.mp3'.format(node.id)" />
             <param name="bgcolor" value="#FFFFFF" />
         </object>
 

@@ -487,7 +487,7 @@ class Node(object):
             obj.id = id
             attrs = cls._load_attributes(id)
             obj.attributes = attrs
-            obj.name = name
+            obj._name = name.encode("utf8") if isinstance(name, unicode) else name
             obj.type = type
             obj.prev_nid = attrs.get('system.prev_id', '0')
             obj.next_nid = attrs.get('system.next_id', '0')
@@ -507,7 +507,7 @@ class Node(object):
             self.id = None
             self.prev_nid = '0'
             self.next_nid = '0'
-            self.name = name
+            self._name = name.encode("utf8") if isinstance(name, unicode) else name
             self.type = type
             self.read_access = None
             self.write_access = None
@@ -525,6 +525,10 @@ class Node(object):
     @staticmethod
     def _load_attributes(nid):
         return db.getAttributes(nid)
+
+    @property
+    def unicode_name(self):
+        return self._name.decode(encoding="utf8")
 
     def _makePersistent(self):
         if self.id is None:
@@ -573,9 +577,19 @@ class Node(object):
     """ set the node name """
 
     def setName(self, name):
-        self.name = name
+        if isinstance(name, unicode):
+            name = name.encode("utf8")
+        self._name = name
         if self.id:
             db.setNodeName(self.id, name)
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, name):
+        self.setName(name)
 
     """ get the position of this node """
 
@@ -1282,7 +1296,7 @@ class Node(object):
         return ''
 
     def __repr__(self):
-        return "Node<{}: '{}'> ({})".format(self.id, self.name, object.__repr__(self))
+        return u"Node<{}: '{}'> ({})".format(self.id, self.unicode_name, object.__repr__(self)).encode("utf8")
 
     # some additional methods from dict
 

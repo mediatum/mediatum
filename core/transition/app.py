@@ -7,6 +7,7 @@ import logging
 from os import path
 from jinja2.loaders import FileSystemLoader
 from werkzeug.datastructures import ImmutableDict
+import pyaml
 import yaml
 from core.transition.templating import PyJadeExtension, Environment
 from core.transition.ctx import _AppCtxGlobals, AppContext, RequestContext
@@ -168,6 +169,7 @@ class AthanaFlaskStyleApp(object):
         )
         rv.filters['yaml'] = yaml.dump
         rv.filters['yaml_safe'] = yaml.safe_dump
+        rv.filters['yaml_pretty'] = pyaml.dump
         rv.filters['u'] = partial(unicode, encoding="utf8")
         rv.filters['ordereddict'] = OrderedDict
         rv.filters["dt_fromiso"] = dt_fromiso

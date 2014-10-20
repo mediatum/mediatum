@@ -3786,7 +3786,7 @@ def filter_out_files(param_list):
 
 
 def make_param_dict_utf8_values(param_list):
-    return ImmutableMultiDict([(k, unicode(v, encoding="utf8")) for k, v in param_list])
+    return ImmutableMultiDict([(unicode(k, encoding="utf8"), unicode(v, encoding="utf8")) for k, v in param_list])
 # /COMPAT
 
 # COMPAT: before / after request handlers and request / app context handling

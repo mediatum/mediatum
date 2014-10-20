@@ -426,6 +426,8 @@ def _node_make_persistent_complex(self):
                 db.setNodeWriteAccess(self.id, self.write_access)
             if self.data_access:
                 db.setNodeDataAccess(self.id, self.data_access)
+            # add node to cache to avoid "ghost nodes" (multiple objects for a single database row)
+            _get_node.cache_add(self, long(self.id))
         finally:
             tree_lock.release()
 

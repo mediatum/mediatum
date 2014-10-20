@@ -47,6 +47,9 @@ def load_content_types():
         cls = getattr(m, cap_name)
         tree.registerNodeClass(name, cls)
 
+    from contenttypes.default import Default
+    tree.registerNodeClass("file", Default)
+
 
 def register_node_classes():
     from contenttypes.default import Default

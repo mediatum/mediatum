@@ -29,6 +29,46 @@ init.full_init()
 
 logg = logging.getLogger(__name__)
 
+### stackdump
+import os
+import threading
+import traceback
+try:
+    import IPython.core.ultratb as ultratb
+except:
+    ultratb = None
+
+if ultratb is not None:
+    def dumpstacks(signal, frame):
+        filepath = os.path.join(config.get("paths.tempdir", "/tmp"), "mediatum_threadstatus")
+        id2name = dict([(th.ident, th.name) for th in threading.enumerate()])
+        full = ["-" * 80]
+        tb_formatter = ultratb.ListTB(color_scheme="Linux")
+        for thread_id, stack in sys._current_frames().items():
+            thread_name = id2name.get(thread_id, "")
+            if not "Main" in thread_name:
+                stacktrace = traceback.extract_stack(stack)
+                stb = tb_formatter.structured_traceback(Exception, Exception(), stacktrace)[8:-1]
+                if stb:
+                    formatted_trace = tb_formatter.stb2text(stb).strip()
+                    with open(filepath + "." + str(thread_id), "w") as wf:
+                        wf.write("\n" + formatted_trace)
+                    if len(stb) > 4:
+                        short_stb = stb[:2] + ["..."] + stb[-2:]
+                    else:
+                        short_stb = stb
+                    formatted_trace_short = tb_formatter.stb2text(short_stb).strip()
+                    full.append("# Thread: %s(%d)" % (thread_name, thread_id))
+                    full.append(formatted_trace_short)
+                    full.append("-" * 80)
+
+
+        with open(filepath, "wf") as wf:
+            wf.write("\n".join(full))
+
+    import signal
+    signal.signal(signal.SIGQUIT, dumpstacks)
+
 ### init all web components
 webconfig.initContexts()
 

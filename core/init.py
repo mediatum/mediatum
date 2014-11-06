@@ -27,8 +27,6 @@ import locale
 from pprint import pformat
 
 import core.config as config
-from core.node import Node
-from core import tree, acl
 from core.node import Root, Metadatatypes
 
 
@@ -42,18 +40,7 @@ def set_locale():
 
 
 def load_content_types():
-    """register types in definition directory /contenttypes"""
-    contenttype_dir = os.path.join(config.basedir, 'contenttypes')
-    logg.debug("loading content types from dir %s", contenttype_dir)
-    for _, name, _ in pkgutil.iter_modules([contenttype_dir]):
-        cap_name = name.capitalize()
-        logg.debug("loading content type '%s'", cap_name)
-        m = importlib.import_module("contenttypes." + name)
-        cls = getattr(m, cap_name)
-        tree.registerNodeClass(name, cls)
-
-    from contenttypes.default import Default
-    tree.registerNodeClass("file", Default)
+    from contenttypes import *
 
 
 def register_node_classes():
@@ -110,6 +97,7 @@ def init_register_mapping_field():
 def register_workflow():
     from workflow import workflow
     workflow.register()
+#     workflow.register_nodeclasses()
 
 
 def init_ldap():
@@ -165,19 +153,23 @@ def check_imports():
         mod = importlib.import_module(modname)
         logg.info("import %s: version '%s'", mod, mod.__version__ if hasattr(mod, "__version__") else "unknown")
 
+
 def init_app():
     from core.transition.app import create_app
     import core
     core.app, core.db = create_app()
+
 
 def init_modules():
     """init modules with own init function"""
     from contenttypes.default import init_maskcache
     init_maskcache()
     from export import oaisets
-    oaisets.init()
+#     oaisets.init()
     from schema import schema
     schema.init()
+    from core import xmlnode
+#     xmlnode.init()
     from core.plugins import init_plugins
     init_plugins()
 
@@ -207,16 +199,16 @@ def basic_init():
     log_basic_sys_info()
     check_imports()
     set_locale()
-    register_node_classes()
-    register_node_functions()
-    tree.initialize()
+    init_app()
+#     register_node_classes()
+#     register_node_functions()
+    load_content_types()
 
 
 def full_init():
     basic_init()
-    load_content_types()
-    init_register_mapping_field()
-    register_workflow()
+#     init_register_mapping_field()
+#     register_workflow()
     init_ldap()
     init_archivemanager()
     init_modules()

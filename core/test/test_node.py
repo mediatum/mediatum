@@ -185,6 +185,13 @@ def test_legacy_getter_deprecation(some_node, legacy_getter):
     assert_deprecation_warning(legacy_getter, some_node)
 
 
+def test_all_children_by_query(session_empty, parent_node):
+    q = session_empty.query
+    res = parent_node.all_children_by_query(q(Node).filter(Node.orderpos > 1)).all()
+    for c in res:
+        assert c.orderpos > 1
+
+
 # test NodeAppenderQuery (parents / children / container_children / content_children)
 
 # asc tests for all child queries, desc tests only for `children`
@@ -250,3 +257,19 @@ def test_attribute_mutation(session_empty, some_node):
     some_node.attrs["testattr"] = "newvalue"
     s.commit()
     assert some_node.attrs["testattr"] == "newvalue"
+
+
+def test_all_content_children(parent_node):
+    all_content_children = parent_node.all_content_children.all()
+    assert len(all_content_children) == 2
+    some_node = parent_node.children[0]
+    assert some_node.content_children[0] in all_content_children
+    assert some_node.container_children[0].content_children[0] in all_content_children
+
+
+def test_all_content_children_subquery(session_empty, some_node):
+    q = session_empty.query
+    sub = some_node.all_content_children.subquery()
+    qy = q(sub).select_from(sub).order_by(sub.c.name).limit(10)
+    print(qy)
+    assert qy

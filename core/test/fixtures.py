@@ -100,6 +100,13 @@ def some_node_with_sort_children(some_node, other_container_node, other_content_
     return some_node
 
 
+@fixture
+def parent_node(some_node, other_content_node, other_container_node):
+    some_node.children.append(other_content_node)
+    some_node.container_children[0].children.extend([other_content_node, other_container_node])
+    return some_node.parents[0]
+
+
 @fixture(params=[u"children", u"container_children", u"content_children"])
 def child_query_for_some_node(request, some_node_with_sort_children):
     return getattr(some_node_with_sort_children, request.param)

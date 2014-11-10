@@ -5,9 +5,22 @@
 """
 from warnings import warn
 
-from core.database.postgres import BaseNode
 from sqlalchemy.ext.mutable import MutableDict
 
+from core.database.postgres import BaseNode, t_nodemapping
+from core import db
+
+q = db.session.query
+
+def _cte_subtree(node):
+    t = q(t_nodemapping.c.cid).\
+        filter(t_nodemapping.c.nid == node.id).\
+        cte(name="subtree", recursive=True)
+
+    return t.union_all(
+        q(t_nodemapping.c.cid).
+        filter(t_nodemapping.c.nid == t.c.cid)
+    )
 
 
 class Node(BaseNode):
@@ -29,7 +42,7 @@ class Node(BaseNode):
         if orderpos:
             self.orderpos = orderpos
 
-    # legacy methods
+    ### legacy methods
 
     @property
     def attributes(self):
@@ -119,6 +132,22 @@ class Node(BaseNode):
         warn("deprecated, use Node.type instead", DeprecationWarning)
         return self.type
 
+    @property
+    def all_content_children(self):
+        from contenttypes.default import ContentType
+        subtree = _cte_subtree(self)
+        query = q(ContentType).\
+            join(t_nodemapping, Node.id == t_nodemapping.c.cid).\
+            join(subtree, subtree.c.cid == t_nodemapping.c.nid)
+
+        return query
+
+    def all_children_by_query(self, query):
+        subtree = _cte_subtree(self)
+        query = query.\
+            join(t_nodemapping, Node.id == t_nodemapping.c.cid).\
+            join(subtree, subtree.c.cid == t_nodemapping.c.nid)
+        return query
 
     def __repr__(self):
         return "Node<{}: '{}'> ({})".format(self.id, self.name, object.__repr__(self))

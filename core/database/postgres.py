@@ -167,6 +167,28 @@ class BaseNodeMeta(DeclarativeMeta):
             cls.__mapper_args__ = args
         super(BaseNodeMeta, cls).__init__(name, bases, dct)
 
+class MInt(int):
+
+    """'Magic' class which represents an integer value but converts itself to a string if needed.
+    We need this because legacy code treats node ids as string and concatenates ids to strings.
+    This is a stupid idea, so it raises a DeprecationWarning if it's used as a string ;)
+    """
+
+    def __new__(cls, value):
+        return super(MInt, cls).__new__(cls, value)
+
+    def __add__(self, other):
+        if isinstance(other, str):
+            warn("magic cast int --> str in addition (left op)", DeprecationWarning)
+            return str(self) + other
+        return super(MInt, self).__add__(other)
+
+    def __radd__(self, other):
+        if isinstance(other, str):
+            warn("magic cast int --> str in addition (right op)", DeprecationWarning)
+            return other + str(self)
+        return super(MInt, self).__add__(other)
+
 
 class BaseNode(DeclarativeBase):
 
@@ -175,7 +197,7 @@ class BaseNode(DeclarativeBase):
     __metaclass__ = BaseNodeMeta
     __tablename__ = "node"
 
-    id = C(Integer, Sequence('node_id_seq', start=100), primary_key=True)
+    _id = C(Integer, Sequence('node_id_seq', start=100), primary_key=True, name="id")
     type = C(Text)
     schema = C(Unicode)
     name = C(Unicode)
@@ -197,7 +219,16 @@ class BaseNode(DeclarativeBase):
     container_children = rel("ContainerType", **child_rel_options)
     content_children = rel("ContentType", **child_rel_options)
 
-    attrs = C(MutableDict.as_mutable(JSONB))
+    attrs = deferred(C(MutableDict.as_mutable(JSONB)))
+
+    @hybrid_property
+    def id(self):
+        return MInt(self._id)
+
+    @id.expression
+    def id_expr(cls):
+        return cls._id
+
     @hybrid_property
     def a(self):
         """ see: Attributes"""
@@ -213,6 +244,7 @@ class BaseNode(DeclarativeBase):
         'polymorphic_identity': 'basenode',
         'polymorphic_on': type
     }
+
 
 Index(u'node_name', BaseNode.__table__.c.name)
 Index(u'node_type', BaseNode.__table__.c.type)

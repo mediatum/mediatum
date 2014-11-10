@@ -30,7 +30,7 @@ import core.config as config
 from core.translation import lang
 from core.styles import getContentStyles
 import core.users as users
-from schema.schema import getMetadataType, VIEW_DATA_ONLY, VIEW_HIDE_EMPTY
+from schema.schema import getMetadataType, VIEW_DATA_ONLY, VIEW_HIDE_EMPTY, NodeSchemaMixin
 from utils.utils import Menu, highlight, format_filesize
 from export.exportutils import runTALSnippet, default_context
 from web.services.cache import date2string as cache_date2string
@@ -520,7 +520,7 @@ class Default(Node):
         return self.getName()
 
 
-class ContentType(Default):
+class ContentType(Default, NodeSchemaMixin):
 
     """(Abstract) base class for all content node types.
     """

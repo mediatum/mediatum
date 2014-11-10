@@ -32,6 +32,7 @@ from core.metatype import Metatype
 import inspect
 import importlib
 import pkgutil
+from warnings import warn
 
 log = logg = logging.getLogger(__name__)
 
@@ -1383,78 +1384,78 @@ def getMetaFieldTypes():
 def getFieldsForMeta(name):
     return list(getMetaType(name).getMetaFields())
 
-""" return fields based on node class and schema name """
 
+class NodeSchemaMixin(object):
 
-def node_getMetaFields(node, type=None):
-    try:
-        l = node.metaFields()
-    except:
-        l = []
+    def getSchema(self):
+        warn("deprecated, use ContentType.schema instead", DeprecationWarning)
+        return self.schema
 
-    try:
-        if node.getSchema():
-            l += getMetaType(node.getSchema()).getMetaFields(type)
-    except AttributeError:
-        pass
-    return l
-
-
-def node_getMetaField(node, name):
-    if node.getSchema():
+    def getMetaFields(self, type=None):
+        """return fields based on node class and schema name
+        """
         try:
-            metadatatype = getMetaType(node.getSchema())
-            return getMetaType(node.getSchema()).getMetaField(name)
+            l = self.metaFields()
+        except:
+            l = []
+
+        try:
+            if self.getSchema():
+                l += getMetaType(self.getSchema()).getMetaFields(type)
         except AttributeError:
-            return None
-    else:
-        return None
+            pass
+        return l
 
-
-def node_getSearchFields(node):
-    sfields = []
-    fields = node.getMetaFields()
-    fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
-    for field in fields:
-        if field.Searchfield():
-            sfields += [field]
-    return sfields
-
-
-def node_getSortFields(node):
-    sfields = []
-    fields = node.getMetaFields()
-    fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
-    for field in fields:
-        if field.Sortfield():
-            sfields += [field]
-    return sfields
-
-
-def node_getMasks(node, type="", language=""):
-    try:
-        if node.getSchema():
-            return getMetaType(node.getSchema()).getMasks(type=type, language=language)
+    def getMetaField(self, name):
+        if self.getSchema():
+            try:
+                metadatatype = getMetaType(self.getSchema())
+                return getMetaType(self.getSchema()).getMetaField(name)
+            except AttributeError:
+                return None
         else:
+            return None
+
+    def getSearchFields(self):
+        sfields = []
+        fields = self.getMetaFields()
+        fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
+        for field in fields:
+            if field.Searchfield():
+                sfields += [field]
+        return sfields
+
+    def getSortFields(self):
+        sfields = []
+        fields = self.getMetaFields()
+        fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
+        for field in fields:
+            if field.Sortfield():
+                sfields += [field]
+        return sfields
+
+    def getMasks(self, type="", language=""):
+        try:
+            if self.getSchema():
+                return getMetaType(self.getSchema()).getMasks(type=type, language=language)
+            else:
+                return []
+        except AttributeError:
             return []
-    except AttributeError:
-        return []
 
-
-def node_getMask(node, name):
-    if node.getSchema():
-        try:
-            return getMetaType(node.getSchema()).getMask(name)
-        except AttributeError:
-            return None
-    else:
-        raise ValueError("Node of type '" + ustr(node.getSchema()) + "' has no mask")
-
-
-def node_getDescription(node):
-    if node.getSchema():
-        mtype = getMetaType(node.getSchema())
-        if mtype:
-            return mtype.getDescription()
+    def getMask(self, name):
+        if self.getSchema():
+            try:
+                return getMetaType(self.getSchema()).getMask(name)
+            except AttributeError:
+                return None
         else:
-            return ""
+            raise ValueError("Node of type '" + ustr(self.getSchema()) + "' has no mask")
+
+    def getDescription(self):
+        if self.getSchema():
+            mtype = getMetaType(self.getSchema())
+            if mtype:
+                return mtype.getDescription()
+            else:
+                return ""

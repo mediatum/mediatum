@@ -18,9 +18,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import os
 import sys
-import pkgutil
 import importlib
 import logging
 import locale
@@ -44,65 +42,13 @@ def load_system_types():
     from core.user import User
 
 
-def load_content_types():
+def load_types():
     from contenttypes import *
-
-
-def register_node_classes():
-    from contenttypes.default import Default
-    tree.registerNodeClass("default", Default)
-
-    from contenttypes.directory import Directory
-    tree.registerNodeClass("directory", Directory)
-    from contenttypes.project import Project
-    tree.registerNodeClass("project", Project)
-    tree.registerNodeClass("collection", Directory)
-    tree.registerNodeClass("collections", Directory)
-    tree.registerNodeClass("root", Root)
-    tree.registerNodeClass("home", Directory)
-
-    # user
-    from core.user import User
-    tree.registerNodeClass("user", User)
-    from core.usergroup import UserGroup
-    tree.registerNodeClass("usergroup", UserGroup)
-
-    # meta
-    from schema.schema import Metadatatype, Metadatafield, Mask, Maskitem
-    tree.registerNodeClass("metadatatypes", Metadatatypes)
-    tree.registerNodeClass("metadatatype", Metadatatype)
-    tree.registerNodeClass("metafield", Metadatafield)
-    tree.registerNodeClass("mask", Mask)
-    tree.registerNodeClass("maskitem", Maskitem)
-    from schema.searchmask import SearchMaskItem
-    tree.registerNodeClass("searchmaskitem", SearchMaskItem)
-
-    # shoppingbag
-    from core.shoppingbag import ShoppingBag
-    tree.registerNodeClass("shoppingbag", ShoppingBag)
-
-
-def register_node_functions():
-    import schema.schema as schema
-    tree.registerNodeFunction("getMetaFields", schema.node_getMetaFields)
-    tree.registerNodeFunction("getMetaField", schema.node_getMetaField)
-    tree.registerNodeFunction("getSearchFields", schema.node_getSearchFields)
-    tree.registerNodeFunction("getSortFields", schema.node_getSortFields)
-    tree.registerNodeFunction("getMasks", schema.node_getMasks)
-    tree.registerNodeFunction("getMask", schema.node_getMask)
-    tree.registerNodeFunction("getDescription", schema.node_getDescription)
-
-
-def init_register_mapping_field():
-    from schema.mapping import Mapping, MappingField
-    tree.registerNodeClass("mapping", Mapping)
-    tree.registerNodeClass("mappingfield", MappingField)
 
 
 def register_workflow():
     from workflow import workflow
     workflow.register()
-#     workflow.register_nodeclasses()
 
 
 def init_ldap():
@@ -205,15 +151,12 @@ def basic_init():
     check_imports()
     set_locale()
     init_app()
-#     register_node_classes()
-#     register_node_functions()
     load_system_types()
-    load_content_types()
+    load_types()
 
 
 def full_init():
     basic_init()
-#     init_register_mapping_field()
     register_workflow()
     init_ldap()
     init_archivemanager()

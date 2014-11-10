@@ -13,7 +13,12 @@ from core.node import Node
 class Root(Node):
     pass
 
+
 class Users(Node):
+    pass
+
+
+class Searchmasks(Node):
     pass
 
 

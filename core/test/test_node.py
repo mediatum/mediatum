@@ -156,24 +156,10 @@ def test_getChildren(some_node):
     assert children[0] is not children[1]
 
 
-def test_getContainerChildren(some_node):
-    container_children = some_node.getContainerChildren()
-    assert len(container_children) == 1
-    assert container_children[0].name == "container"
-
-
 def test_getContentChildren(some_node):
     content_children = some_node.getContentChildren()
     assert len(content_children) == 1
     assert content_children[0].name == "content"
-
-
-def test_getContentType_content(content_node):
-    assert content_node.getContentType() == "testschema"
-
-
-def test_getContentType_container(container_node):
-    assert container_node.getContentType() == "directory"
 
 
 def test_iter_raises_exception(some_node):

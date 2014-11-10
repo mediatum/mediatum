@@ -1,0 +1,3 @@
+pytest
+factory-boy
+munch

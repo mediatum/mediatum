@@ -117,7 +117,7 @@ class Access(DeclarativeBase):
 
 t_nodemapping = Table("nodemapping", metadata,
                       C("nid", Integer, FK("node.id"), primary_key=True),
-                      C("cid", Integer, FK("node.id"), primary_key=True))
+                      C("cid", Integer, FK("node.id", ondelete="CASCADE"), primary_key=True))
 
 
 Index(u'cid', t_nodemapping.c.cid)

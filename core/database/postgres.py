@@ -16,6 +16,7 @@ from sqlalchemy.ext.declarative.api import DeclarativeMeta
 
 from core import config
 from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.ext.hybrid import hybrid_property
 
 C = Column
 FK = ForeignKey
@@ -125,6 +126,35 @@ Index(u'nid', t_nodemapping.c.nid)
 Index(u'nid_2', t_nodemapping.c.nid, t_nodemapping.c.cid)
 
 
+class Attributes(object):
+
+    """
+    Proxy for the attrs dict.
+    Provides access to attribute values via dot notation and works as SQLAlchemy expression.
+
+    Examples:
+
+    object level (XXX: do we want this?):
+
+        node.a.test == node.attrs["test"]
+
+    class level:
+
+        q(Document).filter(Document.a.title == "Some Title")
+
+    => finds all documents with given title.
+    """
+
+    def __init__(self, obj):
+        object.__setattr__(self, "obj", obj)
+
+    def __getattr__(self, attr):
+        return self.obj.attrs[attr]
+
+    def __setattr__(self, attr, value):
+        self.obj.attrs[attr] = value
+
+
 class BaseNodeMeta(DeclarativeMeta):
 
     def __init__(cls, name, bases, dct):  # @NoSelf
@@ -168,6 +198,16 @@ class BaseNode(DeclarativeBase):
     content_children = rel("ContentType", **child_rel_options)
 
     attrs = C(MutableDict.as_mutable(JSONB))
+    @hybrid_property
+    def a(self):
+        """ see: Attributes"""
+        if "_attributes_accessor" not in self.__dict__:
+            setattr(self, "_attributes_accessor", Attributes(self))
+        return self._attributes_accessor
+
+    @a.setter
+    def a_set(self, value):
+        raise NotImplementedError("immutable!")
 
     __mapper_args__ = {
         'polymorphic_identity': 'basenode',

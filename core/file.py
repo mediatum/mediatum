@@ -17,7 +17,7 @@ DATADIR = config.settings["paths.datadir"]
 
 class File(BaseFile):
 
-    node = rel(Node, backref=bref("files", lazy="dynamic"))
+    node = rel(Node, backref=bref("files", lazy="dynamic", cascade="all, delete-orphan"))
 
     def __init__(self, path, filetype, mimetype, node=None, **kwargs):
         # legacy stuff

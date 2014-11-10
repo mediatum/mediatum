@@ -167,6 +167,16 @@ class BaseNodeMeta(DeclarativeMeta):
             cls.__mapper_args__ = args
         super(BaseNodeMeta, cls).__init__(name, bases, dct)
 
+
+child_rel_options = dict(
+    secondary=t_nodemapping,
+    lazy="dynamic",
+    primaryjoin="Node.id == nodemapping.c.nid",
+    secondaryjoin="Node.id == nodemapping.c.cid",
+    query_class=NodeAppenderQuery
+)
+
+
 class MInt(int):
 
     """'Magic' class which represents an integer value but converts itself to a string if needed.
@@ -207,16 +217,7 @@ class BaseNode(DeclarativeBase):
     data_access = C(Text)
     fulltext = deferred(C(Text))
     localread = C(Text)
-    child_rel_options = dict(
-        secondary=t_nodemapping,
-        lazy="dynamic",
-        primaryjoin=id == t_nodemapping.c.nid,
-        secondaryjoin=id == t_nodemapping.c.cid,
-        query_class=NodeAppenderQuery
-        )
-
     children = rel("Node", backref=bref("parents", lazy="dynamic", query_class=NodeAppenderQuery), **child_rel_options)
-    container_children = rel("ContainerType", **child_rel_options)
     content_children = rel("ContentType", **child_rel_options)
 
     attrs = deferred(C(MutableDict.as_mutable(JSONB)))

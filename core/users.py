@@ -19,6 +19,7 @@
 """
 
 import core.config as config
+from core.systemtypes import Users
 from . import usergroups
 import hashlib
 from core.node import Node

@@ -22,7 +22,6 @@ from core.node import Node
 import core.usergroups as usergroups
 import core.config as config
 import core.translation as translation
-from core.users import useroption
 
 
 class User(Node):
@@ -83,6 +82,7 @@ class User(Node):
         return self.set("opts", o)
 
     def getOptionList(self):
+        from core.users import useroption
         retList = {}
         myoptions = self.getOption()
         for option in useroption:

@@ -11,7 +11,7 @@
 from core.node import Node
 from contenttypes.audio import Audio
 from contenttypes.default import Default, ContentType
-from contenttypes.directory import Directory, Collection, ContainerType, Collections, Home
+from contenttypes.containertypes import Directory, Collection, ContainerType, Collections, Home
 from contenttypes.document import Document
 from contenttypes.flash import Flash
 from contenttypes.image import Image

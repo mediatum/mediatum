@@ -29,6 +29,7 @@ from .default import Default
 from core.database.helpers import ContainerTypeMixin
 from core.translation import t, lang
 from utils.utils import CustomItem
+from core.database.helpers import ContainerTypeMixin
 try:
     import web.frontend.modules.modules as frontendmods
     frontend_modules = 1
@@ -199,7 +200,7 @@ class ContainerType(Default, ContainerTypeMixin):
 
     """ format node image with standard template """
     def show_node_image(self, language=None):
-        return tal.getTAL("contenttypes/directory.html", {"node": self}, macro="thumbnail", language=language)
+        return tal.getTAL("contenttypes/containertype.html", {"node": self}, macro="thumbnail", language=language)
 
     def isContainer(self):
         return 1

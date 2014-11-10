@@ -5,8 +5,8 @@
 """
 import factory.alchemy
 
-from contenttypes.directory import Directory
-from contenttypes.document import Document
+from contenttypes import Directory
+from contenttypes import Document
 from core.node import Node
 from core.user import User
 from core import db

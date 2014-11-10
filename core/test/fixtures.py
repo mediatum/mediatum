@@ -64,7 +64,7 @@ def content_node():
 
 @fixture
 def other_content_node():
-    return DocumentFactory(name=u"a_content", orderpos=3, attrs=dict(sortattr=5))
+    return DocumentFactory(name=u"a_content", orderpos=2, attrs=dict(sortattr=5))
 
 
 @fixture
@@ -82,11 +82,11 @@ def some_node(content_node, container_node, some_file):
     attrs = {
         u"testattr": u"testvalue"
     }
-    some_node = NodeFactory(name=u"somenode", attrs=attrs)
+    some_node = DirectoryFactory(name=u"somenode", attrs=attrs)
     some_node.read_access = u"read_access"
     some_node.write_access = u"write_access"
     some_node.data_access = u"data_access"
-    parent = NodeFactory(name=u"parent")
+    parent = DirectoryFactory(name=u"parent")
     parent.children.append(some_node)
     print some_node, container_node, content_node
     some_node.children.extend([container_node, content_node])

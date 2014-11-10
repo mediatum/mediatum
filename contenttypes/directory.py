@@ -26,6 +26,7 @@ import core.config as config
 from core.node import Node
 from .default import Default
 
+from core.database.helpers import ContainerTypeMixin
 from core.translation import t, lang
 from utils.utils import CustomItem
 try:
@@ -102,7 +103,7 @@ def fileIsNotEmpty(file):
 """ directory class """
 
 
-class ContainerType(Default):
+class ContainerType(Default, ContainerTypeMixin):
 
     """(Abstract) Base class for Nodes which contain other ContainerType/ContentType nodes
     """

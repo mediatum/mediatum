@@ -104,26 +104,21 @@ class Node(BaseNode):
         self.orderpos = orderpos
 
     def getType(self):
-        warn("getType() is Node.type + '/' + Node.schema now", DeprecationWarning)
-        return "/".join([self.type, self.schema or ""])
+        warn("Node.getType() is Node.type now", DeprecationWarning)
+        return self.type
 
     def getChildren(self):
         warn("deprecated, use Node.children instead", DeprecationWarning)
         return self.children
-
-    def getContainerChildren(self):
-        warn("deprecated, use Node.container_children instead", DeprecationWarning)
-        return self.container_children
 
     def getContentChildren(self):
         warn("deprecated, use Node.content_children instead", DeprecationWarning)
         return self.content_children
 
     def getContentType(self):
-        warn("better use self.schema and / or self.type", DeprecationWarning)
-        if self.schema:
-            return self.schema
+        warn("deprecated, use Node.type instead", DeprecationWarning)
         return self.type
+
 
     def __repr__(self):
         return "Node<{}: '{}'> ({})".format(self.id, self.name, object.__repr__(self))

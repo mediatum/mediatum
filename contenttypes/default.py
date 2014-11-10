@@ -21,6 +21,7 @@ import re
 import sys
 import logging
 import time
+from warnings import warn
 
 from mediatumtal import tal
 import core.acl as acl
@@ -522,5 +523,11 @@ class Default(Node):
 class ContentType(Default):
 
     """(Abstract) base class for all content node types.
-    Does nothing.
     """
+    def getContentType(self):
+        warn("deprecated, use ContentType.schema", DeprecationWarning)
+        return self.schema
+
+    def getType(self):
+        warn("ContentType.getType() is ContentType.type + '/' + ContentType.schema now", DeprecationWarning)
+        return self.type + "/" + self.schema

@@ -30,8 +30,6 @@ legacy_methods = [
     Node.setOrderPos,
     Node.getType,
     Node.getChildren,
-    Node.getContainerChildren,
-    Node.getContentType,
     Node.getChildren,
 ]
 
@@ -42,8 +40,6 @@ legacy_methods = [
     Node.getName,
     Node.getOrderPos,
     Node.getType,
-    Node.getContainerChildren,
-    Node.getContentType,
     Node.getChildren])
 def legacy_getter(request):
     return request.param

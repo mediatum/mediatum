@@ -14,11 +14,16 @@ logg.basicConfig()
 from pprint import pprint
 from pytest import raises
 
-from core.init import basic_init
-basic_init()
-from core import tree
+# setup
+from core.test.setup import setup_with_db
+setup_with_db()
+
+
+from core.node import Node
 from .. import citeproc
 from ..citeproc import get_citeproc_json, DOINotFound, FIELDS, CSLField
+
+from .fixtures import *
 
 
 BASEDIR = os.path.join(os.path.dirname(__file__), "test_data")
@@ -38,26 +43,17 @@ def load_csl_record_file(doi):
 
 
 def check_node(node, expected):
-    assert isinstance(node, tree.Node)
+    assert isinstance(node, Node)
     print("expected node content:")
     pprint(expected)
     print("actual node attributes:")
     pprint(node.attributes)
+    assert node.name == expected["DOI"]
     if expected:
         doi = node.get("doi") or node.get("DOI")
         assert doi == expected["DOI"]
         publisher = node.get("publisher")
         assert publisher == expected["publisher"]
-
-
-def setup_module(module):
-    try:
-        from core import init
-    except:
-        return
-    init.register_node_classes()
-    init.register_node_functions()
-    tree.initialize()
 
 
 def _get_path(doi, typ):
@@ -85,7 +81,7 @@ def test_fields():
     assert date_field.fieldtype == "date"
 
 
-def test_import_csl():
+def test_import_csl(journal_article_mdt):
     record = load_csl_record_file(DOI_ARTICLE)
     node = citeproc.import_csl(record, testing=True)
     check_node(node, record)

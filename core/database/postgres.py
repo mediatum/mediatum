@@ -224,7 +224,8 @@ class BaseNode(DeclarativeBase):
 
     @hybrid_property
     def id(self):
-        return MInt(self._id)
+        if self._id:
+            return MInt(self._id)
 
     @id.expression
     def id_expr(cls):

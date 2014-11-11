@@ -34,6 +34,7 @@ from core.styles import getContentStyles
 from schema.schema import VIEW_HIDE_EMPTY
 from metadata.upload import getFilelist
 from contenttypes.default import ContentType
+from core.transition.postgres import check_type_arg_for_contenttype
 
 
 logg = logging.getLogger(__name__)
@@ -76,6 +77,7 @@ def getCaptionInfoDict(self):
     return d
 
 
+@check_type_arg_for_contenttype
 class Video(ContentType):
 
     """ video class """

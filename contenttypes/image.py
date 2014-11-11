@@ -34,6 +34,7 @@ from core.translation import lang, t
 from core.styles import getContentStyles
 from web.frontend import zoom
 from contenttypes.default import ContentType
+from core.transition.postgres import check_type_arg_for_contenttype
 
 """ make thumbnail (jpeg 128x128) """
 
@@ -199,6 +200,7 @@ def dozoom(self):
 """ image class for internal image-type """
 
 
+@check_type_arg_for_contenttype
 class Image(ContentType):
 
     def getTypeAlias(self):

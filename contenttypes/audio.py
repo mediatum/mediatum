@@ -29,6 +29,8 @@ from utils.date import parse_date, format_date, make_date
 from schema.schema import VIEW_HIDE_EMPTY
 from core.translation import lang
 from core.styles import getContentStyles
+from _pytest.assertion.oldinterpret import check
+from core.transition.postgres import check_type_arg_for_contenttype
 
 
 logg = logging.getLogger(__name__)
@@ -133,6 +135,7 @@ def makeMetaData(self, audiofile):
 """ audio class for internal audio-type """
 
 
+@check_type_arg_for_contenttype
 class Audio(ContentType):
 
     def getTypeAlias(self):

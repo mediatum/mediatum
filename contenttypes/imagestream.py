@@ -22,11 +22,13 @@ import logging
 import os
 import core.config as config
 import glob
+from core.transition.postgres import check_type_arg_for_contenttype
 
 
 logg = logging.getLogger(__name__)
 
 
+@check_type_arg_for_contenttype
 class Imagestream(image.Image):
 
     def getFiles(node):

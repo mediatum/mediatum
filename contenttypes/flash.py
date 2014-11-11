@@ -24,11 +24,12 @@ from core.acl import AccessData
 from . import default
 from schema.schema import VIEW_HIDE_EMPTY
 from contenttypes.default import ContentType
+from core.transition.postgres import check_type_arg_for_contenttype
 
 
 """ flash class """
 
-
+@check_type_arg_for_contenttype
 class Flash(ContentType):
 
     def getTypeAlias(self):

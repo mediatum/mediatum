@@ -18,7 +18,9 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from core.node import Node
 from core.xmlnode import getNodeXML, readNodeXML
+from core.transition.postgres import check_type_arg_for_systemtype
 
 
 def getMappings():
@@ -125,7 +127,7 @@ def importMapping(filename):
         mappings.addChild(m)
 
 
-class Mapping(tree.Node):
+class Mapping(Node):
 
     def getDescription(self):
         return self.get("description")
@@ -209,7 +211,8 @@ class Mapping(tree.Node):
         self.set("mappingtype", value)
 
 
-class MappingField(tree.Node):
+@check_type_arg_for_systemtype
+class MappingField(Node):
 
     def getFullName(self):
         if self.getMandatory():

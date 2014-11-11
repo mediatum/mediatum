@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from core.metatype import Metatype
 """
 import citeproc metadata in CSL, JSON variant as served by dx.doi.org.
 """
@@ -27,14 +28,22 @@ import logging
 import re
 import random
 from pprint import pformat
+
+from sqlalchemy.orm.exc import NoResultFound
 import requests
 
-from .schema import getMetaType
+from core.node import Node
+from core import db
+from contenttypes import Document
+from .schema import Metadatatype
 from . import importbase
 from .importbase import NoMappingFound
 
 DX_DOI_URL = "http://dx.doi.org/"
 logg = logging.getLogger(__name__)
+
+
+q = db.session.query
 
 
 class CSLField(object):
@@ -235,7 +244,7 @@ def import_csl(record, target=None, name=None, testing=False):
     :param record: CSL record
     :type record: dict
     :param: target
-    :type target: tree.Node
+    :type target: Node
     :param name: name for the new node. If none, try to get a unique id
         from the record (DOI) or generate an UUID.
     :raises: NoMappingFound if no mapping defined for the given type
@@ -247,22 +256,21 @@ def import_csl(record, target=None, name=None, testing=False):
     if typ not in TYPE_SET:
         logg.warn("unknown type %s given in CSL import, using _default", typ)
         typ = "_default"
-    metatype_name = importbase.get_import_mapping("citeproc", typ)
-    if not metatype_name:
+    schema = importbase.get_import_mapping("citeproc", typ)
+    if not schema:
         # no mapping, found, try fallback mapping
-        metatype_name = importbase.get_import_mapping("citeproc", "_default")
-        if not metatype_name:
+        schema = importbase.get_import_mapping("citeproc", "_default")
+        if not schema:
             # no _default defined, fail
             raise NoMappingFound("No citeproc schema mapping could be found", typ)
         logg.warn("no mapping found for type %s, using _default fallback mapping", typ)
-    metatype = getMetaType(metatype_name)
+    metatype = q(Metadatatype).filter_by(name=schema).one()
     mask = metatype.getMask("citeproc")
     if not mask:
         raise NoMappingFound("target schema does not have a citeproc mask", typ)
-    contenttype = "document"
     if name is None:
         name = record.get("DOI") or "".join(random.choice('0123456789abcdef') for _ in xrange(16))
-    node = tree.Node(name, contenttype + "/" + metatype_name)
+    node = Document(name, schema=schema)
 
     def get_converted_from_csl_record(key):
         value = record.get(key)
@@ -291,12 +299,12 @@ def import_csl(record, target=None, name=None, testing=False):
             csl_name = "not defined"
             mfield = "not defined"
             med_name = "not defined"
-            csl_name = tree.getNode(f.get("mappingfield")).getName()
-            mfield = tree.getNode(f.get("attribute"))
-            med_name = mfield.getName()
-        except tree.NoSuchNodeError:
+            csl_name = q(Node).get(f.get("mappingfield")).name
+            mfield = q(Node).get(f.get("attribute"))
+            med_name = mfield.name
+        except NoResultFound:
             logg.exception("citeproc import name='%s': field error for citeproc mask for type '%s and " +
-                "csl-type '%s' csl_name='%s', mfield='%s', med_name='%s'", name, metatype_name, typ, csl_name, mfield, med_name)
+                "csl-type '%s' csl_name='%s', mfield='%s', med_name='%s'", name, schema, typ, csl_name, mfield, med_name)
             continue
 
         value = get_converted_from_csl_record(csl_name)
@@ -310,10 +318,8 @@ def import_csl(record, target=None, name=None, testing=False):
             node.set(med_name, value)
 
     if target:
-        target.addChild(node)
+        target.content_children.append(node)
 
-    if not testing:
-        node.setDirty()
     return node
 
 
@@ -321,7 +327,7 @@ def import_doi(doi, target=None, name=None, testing=False):
     """Get record for a given DOI in citeproc JSON format and create a node from its information.
     :param doi:
     :param target:
-    :type target: tree.Node
+    :type target: Node
     :raises: DOINotFound if DOI is unknown to the server
     """
     record = get_citeproc_json(doi)

@@ -33,8 +33,16 @@ import inspect
 import importlib
 import pkgutil
 from warnings import warn
+from core import db
+from core.systemtypes import Metadatatypes
+from sqlalchemy.orm.exc import NoResultFound
+from core.transition.postgres import check_type_arg_for_systemtype
 
 log = logg = logging.getLogger(__name__)
+
+
+q = db.session.query
+
 
 requiredoption = []
 requiredoption += [Option("Kein Pflichtfeld", "notmandatory", "0", "/img/req2_opt.png")]
@@ -67,27 +75,28 @@ VIEW_DATA_EXPORT = 8    # deliver export format
 def getMetaType(name):
 
     if name.isdigit():
-        return tree.getNode(name)
+        nid = int(name)
+        return q(Metadatatype).get(nid)
 
     if name.find("/") > 0:
         name = name[name.rfind("/") + 1:]
 
-    metadatatypes = tree.getRoot("metadatatypes")
+    metadatatypes = q(Metadatatypes).one()
     try:
         return metadatatypes.getChild(name)
-    except tree.NoSuchNodeError as e:
+    except NoResultFound:
         return None
 
 #
 # load all meta-types from db
 #
 
-
 def loadTypesFromDB():
-    return list(tree.getRoot("metadatatypes").getChildren().sort_by_name())
+    return list(q(Metadatatype).order_by("name"))
 
 
 def getNumberNodes(name):
+    # XXX: ?!?
     return 1
     return len(tree.getRoot("metadatatypes").search("objtype=%s*" % (name)))
 
@@ -545,9 +554,7 @@ def importMetaSchema(filename):
         metadatatypes.addChild(m)
 
 
-#
-# metadatatype
-#
+@check_type_arg_for_systemtype
 class Metadatatype(Node):
 
     def getDescription(self):
@@ -627,17 +634,18 @@ class Metadatatype(Node):
     def getMask(self, name):
         try:
             if name.isdigit():
-                return tree.getNode(name)
+                nid = int(name)
+                return q(Mask).get(nid)
             else:
-                return self.get_child_with_type(name, "mask")
-        except tree.NoSuchNodeError:
+                return self.children.filter_by(name=name, type="mask").one()
+        except NoResultFound:
             return None
 
     def searchIndexCorrupt(self):
         try:
             from core.tree import searcher
             search_def = []
-            for node in node_getSearchFields(self):
+            for node in self.getSearchFields():
                 search_def.append(node.getName())
             search_def = set(search_def)
 
@@ -661,7 +669,8 @@ class Metadatatype(Node):
 """ fields for metadata """
 
 
-class Metadatafield(Node):
+@check_type_arg_for_systemtype
+class Metafield(Node):
 
     def getLabel(self):
         return self.get("label")
@@ -810,8 +819,8 @@ def getMaskTypes(key="."):
             return MaskType()
 
 
+@check_type_arg_for_systemtype
 class Mask(Node):
-
     def getFormHTML(self, nodes, req):
         if not self.getChildren():
             return None
@@ -872,14 +881,9 @@ class Mask(Node):
     def getMaskFields(self, first_level_only=False):
         ret = []
         if first_level_only:
-            for field in self.getChildren():
-                if field.getContentType() == "maskitem":
-                    ret.append(field)
+            return self.children.filter_by(type="maskitem").all()
         else:
-            for field in self.getAllChildren():
-                if field.getContentType() == "maskitem":
-                    ret.append(field)
-        return ret
+            return self.all_children_by_query(q(Maskitem)).all()
 
     """ return all fields which are empty """
 
@@ -1238,6 +1242,7 @@ class Mask(Node):
 """ class for editor/view masks """
 
 
+@check_type_arg_for_systemtype
 class Maskitem(Node):
 
     def getLabel(self):

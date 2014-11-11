@@ -31,6 +31,9 @@ class Node(BaseNode):
 
     def __init__(self, name="", type="node", id=None, schema=None, attrs=None, orderpos=None):
         self.name = name
+        if "/" in type:
+            warn("use separate type and schema parameters instead of 'type/schema'", DeprecationWarning)
+            type, schema = type.split("/")
         self.type = type
         self.attrs = MutableDict()
         if id:

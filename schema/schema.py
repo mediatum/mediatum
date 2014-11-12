@@ -36,7 +36,7 @@ from warnings import warn
 from core import db
 from core.systemtypes import Metadatatypes
 from sqlalchemy.orm.exc import NoResultFound
-from core.transition.postgres import check_type_arg_for_systemtype
+from core.transition.postgres import check_type_arg
 
 log = logg = logging.getLogger(__name__)
 
@@ -554,7 +554,7 @@ def importMetaSchema(filename):
         metadatatypes.addChild(m)
 
 
-@check_type_arg_for_systemtype
+@check_type_arg
 class Metadatatype(Node):
 
     def getDescription(self):
@@ -669,7 +669,7 @@ class Metadatatype(Node):
 """ fields for metadata """
 
 
-@check_type_arg_for_systemtype
+@check_type_arg
 class Metafield(Node):
 
     def getLabel(self):
@@ -819,7 +819,7 @@ def getMaskTypes(key="."):
             return MaskType()
 
 
-@check_type_arg_for_systemtype
+@check_type_arg
 class Mask(Node):
     def getFormHTML(self, nodes, req):
         if not self.getChildren():
@@ -1242,7 +1242,7 @@ class Mask(Node):
 """ class for editor/view masks """
 
 
-@check_type_arg_for_systemtype
+@check_type_arg
 class Maskitem(Node):
 
     def getLabel(self):

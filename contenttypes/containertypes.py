@@ -30,6 +30,7 @@ from core.database.helpers import ContainerTypeMixin
 from core.translation import t, lang
 from utils.utils import CustomItem
 from core.database.helpers import ContainerTypeMixin
+from core.transition.postgres import check_type_arg
 try:
     import web.frontend.modules.modules as frontendmods
     frontend_modules = 1
@@ -318,10 +319,11 @@ class ContainerType(Default, ContainerTypeMixin):
 # concrete ContainerTypes
 
 
+@check_type_arg
 class Directory(ContainerType):
     pass
 
-
+@check_type_arg
 class Collection(ContainerType):
     pass
 

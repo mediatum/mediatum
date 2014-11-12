@@ -6,7 +6,7 @@
 from warnings import warn
 
 
-def check_type_arg_for_systemtype(cls):
+def check_type_arg(cls):
     clsname = cls.__name__
 
     def init(self, name="", type=None, id=None, attrs=None, orderpos=None):
@@ -23,7 +23,7 @@ def check_type_arg_for_systemtype(cls):
     return cls
 
 
-def check_type_arg_for_contenttype(cls):
+def check_type_arg_with_schema(cls):
     clsname = cls.__name__
 
     def init(self, name="", type=None, id=None, schema=None, attrs=None, orderpos=None):

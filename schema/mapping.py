@@ -20,7 +20,7 @@
 
 from core.node import Node
 from core.xmlnode import getNodeXML, readNodeXML
-from core.transition.postgres import check_type_arg_for_systemtype
+from core.transition.postgres import check_type_arg
 
 
 def getMappings():
@@ -211,7 +211,7 @@ class Mapping(Node):
         self.set("mappingtype", value)
 
 
-@check_type_arg_for_systemtype
+@check_type_arg
 class MappingField(Node):
 
     def getFullName(self):

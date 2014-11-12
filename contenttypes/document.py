@@ -30,13 +30,13 @@ from core.styles import getContentStyles
 from lib.pdf import parsepdf
 from core.attachment import filebrowser
 from contenttypes.default import ContentType
-from core.transition.postgres import check_type_arg_for_contenttype
+from core.transition.postgres import check_type_arg_with_schema
 
 
 logg = logging.getLogger(__name__)
 
 
-@check_type_arg_for_contenttype
+@check_type_arg_with_schema
 class Document(ContentType):
 
     def getTypeAlias(self):

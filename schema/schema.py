@@ -41,7 +41,7 @@ from core.transition.postgres import check_type_arg
 log = logg = logging.getLogger(__name__)
 
 
-q = db.session.query
+q = db.query
 
 
 requiredoption = []

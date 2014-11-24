@@ -108,7 +108,12 @@ def check_imports():
 def init_app():
     from core.transition.app import create_app
     import core
-    core.app, core.db = create_app()
+    core.app = create_app()
+
+
+def init_db():
+    import core
+    core.db.connect()
 
 
 def init_modules():
@@ -151,6 +156,7 @@ def basic_init():
     check_imports()
     set_locale()
     init_app()
+    init_db()
     load_system_types()
     load_types()
 

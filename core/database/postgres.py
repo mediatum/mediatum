@@ -295,6 +295,11 @@ class PostgresSQLAConnector(object):
     """
 
     def __init__(self):
+        session_factory = sessionmaker()
+        self.Session = scoped_session(session_factory)
+        self.metadata = metadata
+
+    def connect(self):
         self.dbhost = config.get("database.dbhost", "localhost")
         self.dbport = int(config.get("database.dbport", "5342"))
         self.database = config.get("database.db", "mediatum")
@@ -302,19 +307,24 @@ class PostgresSQLAConnector(object):
         self.passwd = config.get("database.passwd", "")
         connectstr = CONNECTSTR_TEMPLATE.format(**self.__dict__)
         logg.info("Connecting to %s", connectstr)
-
         engine = create_engine(connectstr)
         DeclarativeBase.metadata.bind = engine
-        session_factory = sessionmaker(bind=engine)
-        self.Session = scoped_session(session_factory)
         self.conn = engine.connect()
         self.engine = engine
-        self.metadata = metadata
+        self.Session.configure(bind=engine)
 
     @property
     def session(self):
         return self.Session()
 
-    @property
-    def query(self):
-        return self.Session().query
+    def query(self, *entities, **kwargs):
+        """Query proxy.
+        :see: sqlalchemy.orm.session.Session.query
+        
+        Example:
+        
+        from core import db
+        q = db.query
+        q(Node).get(42)
+        """
+        return self.Session().query(*entities, **kwargs)

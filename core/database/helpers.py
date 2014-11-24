@@ -10,7 +10,7 @@ from core.database.postgres import child_rel_options, rel
 from sqlalchemy.ext.declarative import declared_attr
 
 
-q = db.session.query
+q = db.query
 
 
 class ContainerTypeMixin(object):

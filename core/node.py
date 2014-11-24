@@ -10,7 +10,7 @@ from sqlalchemy.ext.mutable import MutableDict
 from core.database.postgres import BaseNode, t_nodemapping
 from core import db
 
-q = db.session.query
+q = db.query
 
 def _cte_subtree(node):
     t = q(t_nodemapping.c.cid).\

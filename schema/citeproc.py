@@ -43,7 +43,7 @@ DX_DOI_URL = "http://dx.doi.org/"
 logg = logging.getLogger(__name__)
 
 
-q = db.session.query
+q = db.query
 
 
 class CSLField(object):

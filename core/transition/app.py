@@ -202,6 +202,5 @@ def create_app(name="mediatum"):
     app.register_with_athana()
     from mediatumbabel import Babel
     babel = Babel(app)
-    db = PostgresSQLAConnector()
     babel.localeselector(lambda: translation.lang(request))
-    return app, db
+    return app

@@ -17,6 +17,7 @@ from sqlalchemy.ext.declarative.api import DeclarativeMeta
 from core import config
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.ext.hybrid import hybrid_property
+import pyaml
 
 C = Column
 FK = ForeignKey
@@ -24,14 +25,23 @@ rel = relationship
 bref = backref
 
 
+DeclarativeBase = declarative_base()
+metadata = DeclarativeBase.metadata
+
+# some pretty printing for SQLAlchemy objects ;)
+
+
 def to_dict(self):
-    return dict((col.name, getattr(self, col.name))
+    return dict((str(col.name), getattr(self, col.name))
                 for col in self.__table__.columns)
 
 
-DeclarativeBase = declarative_base()
-metadata = DeclarativeBase.metadata
+def to_yaml(self):
+    return pyaml.dump(self.to_dict())
+
+
 DeclarativeBase.to_dict = to_dict
+DeclarativeBase.to_yaml = to_yaml
 
 
 logg = logging.getLogger("database")
@@ -246,6 +256,14 @@ class BaseNode(DeclarativeBase):
         'polymorphic_identity': 'basenode',
         'polymorphic_on': type
     }
+
+    def to_yaml(self):
+        """overwrite default DeclarativeBase.to_yaml method because we need to convert MutableDict and MInt first
+        """
+        as_dict = self.to_dict()
+        as_dict["attrs"] = dict(as_dict["attrs"])
+        as_dict["id"] = str(as_dict["id"])
+        return pyaml.dump(as_dict)
 
 
 Index(u'node_name', BaseNode.__table__.c.name)

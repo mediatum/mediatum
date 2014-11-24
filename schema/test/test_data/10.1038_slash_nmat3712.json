@@ -2,12 +2,12 @@
   "indexed": {
     "date-parts": [
       [
-        2013,
-        11,
-        5
+        2014,
+        9,
+        8
       ]
     ],
-    "timestamp": 1383669280046
+    "timestamp": 1410135494137
   },
   "source": "CrossRef",
   "type": "journal-article",
@@ -101,5 +101,7 @@
       ]
     ],
     "timestamp": 1379894400000
-  }
+  },
+  "member": "http://id.crossref.org/member/339", 
+  "reference-count": 35
 }

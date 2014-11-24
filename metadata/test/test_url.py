@@ -10,8 +10,6 @@ logging.basicConfig(level=logging.DEBUG)
 from mock import MagicMock
 import pytest
 
-from core.init import basic_init
-basic_init()
 from metadata import url
 
 BASEDIR = os.path.join(os.path.dirname(__file__), "test_data")

@@ -8,12 +8,11 @@ import logging
 from pytest import raises, fixture
 
 # setup
-from core.test.setup import setup_with_db
-setup_with_db()
-
+from core import db
 from core.node import Node
+from contenttypes.containertypes import Collection
 from core.test.asserts import assert_deprecation_warning, assert_sorted, assert_deprecation_warning_allow_multiple
-from core.test.fixtures import *
+from core.test.factories import NodeFactory
 
 
 legacy_methods = [
@@ -185,8 +184,8 @@ def test_legacy_getter_deprecation(some_node, legacy_getter):
     assert_deprecation_warning(legacy_getter, some_node)
 
 
-def test_all_children_by_query(session_empty, parent_node):
-    q = session_empty.query
+def test_all_children_by_query(parent_node):
+    q = db.query
     res = parent_node.all_children_by_query(q(Node).filter(Node.orderpos > 1)).all()
     for c in res:
         assert c.orderpos > 1
@@ -240,8 +239,8 @@ def test_children_getIDs(some_node):
 
 ### attribute mutation on persistent nodes
 
-def test_attribute_overwrite_all(session_empty, some_node):
-    s = session_empty
+def test_attribute_overwrite_all(some_node):
+    s = db.session
     s.commit()
     attrs = some_node.attrs.copy()
     attrs["testattr"] = "newvalue"
@@ -250,9 +249,9 @@ def test_attribute_overwrite_all(session_empty, some_node):
     assert some_node.attrs["testattr"] == "newvalue"
 
 
-def test_attribute_mutation(session_empty, some_node):
+def test_attribute_mutation(some_node):
     """some_node.attrs must be a `MutableDict` from SQLA"""
-    s = session_empty
+    s = db.session
     s.commit()
     some_node.attrs["testattr"] = "newvalue"
     s.commit()
@@ -267,9 +266,15 @@ def test_all_content_children(parent_node):
     assert some_node.container_children[0].content_children[0] in all_content_children
 
 
-def test_all_content_children_subquery(session_empty, some_node):
-    q = session_empty.query
+def test_all_content_children_subquery(some_node):
+    q = db.query
     sub = some_node.all_content_children.subquery()
     qy = q(sub).select_from(sub).order_by(sub.c.name).limit(10)
-    print(qy)
     assert qy
+    
+    
+def test_add_collection(collections):
+    q = db.query
+    c = Collection("testcollection")
+    collections.container_children.append(c)
+    

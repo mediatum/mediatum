@@ -5,19 +5,18 @@
 """
 import string
 
-import factory.alchemy
+import factory
 from factory import fuzzy
 
-from core import db
 from schema.schema import Metadatatype, Metafield, Mask, Maskitem
-
-
-class SQLAFactory(factory.alchemy.SQLAlchemyModelFactory):
-    FACTORY_SESSION = db.session
+from schema.mapping import MappingField, Mapping
+from core.test.factories import SQLAFactory
 
 
 class MetadatatypeFactory(SQLAFactory):
-    FACTORY_FOR = Metadatatype
+    class Meta:
+        model = Metadatatype
+        
     name = factory.LazyAttributeSequence(lambda o, n: "Metadatatype#{}".format(n))
 
 
@@ -30,7 +29,9 @@ class DocumentMetadatatypeFactory(MetadatatypeFactory):
 
 
 class MetafieldFactory(SQLAFactory):
-    FACTORY_FOR = Metafield
+    class Meta:
+        model = Metafield
+        
     name = factory.LazyAttributeSequence(lambda o, n: "Metafield#{}".format(n))
     attrs = factory.Dict({
         "label": fuzzy.FuzzyText(length=6, chars=string.lowercase)
@@ -45,7 +46,9 @@ class TextMetafieldFactory(MetafieldFactory):
 
 
 class FieldMaskitemFactory(SQLAFactory):
-    FACTORY_FOR = Maskitem
+    class Meta:
+        model = Maskitem
+        
     attrs = factory.Dict({
         "required": 0,
         "type": "field"
@@ -53,9 +56,34 @@ class FieldMaskitemFactory(SQLAFactory):
 
 
 class CiteprocMaskFactory(SQLAFactory):
-    FACTORY_FOR = Mask
+    class Meta:
+        model = Mask
+        
     name = "citeproc"
     attrs = factory.Dict({
         "defaultmask": True,
         "masktype": "export"
+    })
+
+
+class CiteprocMappingFactory(SQLAFactory):
+    class Meta:
+        model = Mapping
+        
+    attrs = factory.Dict({
+        "active": 1,
+        "footer": "}",
+        "header": "{",
+        "separator": ",",
+        "standardformat": "[field]: [value]", 
+        "mappingtype": "citeproc"
+    })
+
+
+class MappingFieldFactory(SQLAFactory):
+    class Meta:
+        model = MappingField
+        
+    attrs = factory.Dict({
+        "mandatory": False
     })

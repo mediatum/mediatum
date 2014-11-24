@@ -13,28 +13,29 @@ from core import db
 
 
 class SQLAFactory(factory.alchemy.SQLAlchemyModelFactory):
-    FACTORY_SESSION = db.session
+    class Meta:
+        sqlalchemy_session = db.make_session
 
 
 class NodeFactory(SQLAFactory):
-    FACTORY_FOR = Node
+    class Meta:
+        model = Node
     id = factory.Sequence(lambda n: n)
-    type = u"node"
     orderpos = 1
     name = factory.LazyAttributeSequence(lambda o, n: u"{}#{}".format(o.type, n))
 
 
 class UserFactory(NodeFactory):
-    FACTORY_FOR = User
-    type = u"user"
+    class Meta:
+        model = User
 
 
 class DocumentFactory(NodeFactory):
-    FACTORY_FOR = Document
-    type = u"document"
+    class Meta:
+        model = Document
     schema = u"testschema"
 
 
 class DirectoryFactory(NodeFactory):
-    FACTORY_FOR = Directory
-    type = u"directory"
+    class Meta:
+        model = Directory

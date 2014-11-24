@@ -11,27 +11,53 @@ from pytest import yield_fixture, fixture
 from core.file import File
 from core.test.factories import NodeFactory, DocumentFactory, DirectoryFactory
 from core import db
+from contenttypes.containertypes import Collections
+from core.database.init import init_database_values
+from core.init import load_system_types, load_types
 logg = logging.getLogger(__name__)
 
 
-@yield_fixture
-def session_empty():
-    s = db.session
+@fixture(scope="session", autouse=True)
+def database():
+    """Connect to the DB, drop/create schema and load models"""
+    from core import db
+    db.connect()
+    db.metadata.drop_all()
+    db.metadata.create_all()
+    load_system_types()
+    load_types()
+    return db
+
+
+@yield_fixture(autouse="True", scope="function")
+def session():
+    """Yields default session which is closed after the test.
+    Inner actions are wrapped in a transaction that always rolls back.
+    """
+    s = db.session 
     transaction = s.connection().begin()
     yield s
     transaction.rollback()
     s.close()
+    
+
+@fixture
+def default_data():
+    """Initial data needed for normal mediaTUM operations
+    """
+    init_database_values(db.session)
 
 
-@yield_fixture
-def session_default_data():
-    from core.database.init import init_database_values
-    s = db.session
-    init_database_values(s)
-    transaction = s.connection().begin()
-    yield s
-    transaction.rollback()
-    s.close()
+# @fixture(scope="session")
+# def session_default_data():
+#     from core.database.init import init_database_values
+#     s = db.session
+#     return init_database_values(s)
+
+
+@fixture
+def collections():
+    return Collections("collections")
 
 
 @fixture
@@ -88,7 +114,6 @@ def some_node(content_node, container_node, some_file):
     some_node.data_access = u"data_access"
     parent = DirectoryFactory(name=u"parent")
     parent.children.append(some_node)
-    print some_node, container_node, content_node
     some_node.children.extend([container_node, content_node])
     some_node.files.append(some_file)
     return some_node

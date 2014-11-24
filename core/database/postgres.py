@@ -313,6 +313,12 @@ class PostgresSQLAConnector(object):
         self.engine = engine
         self.Session.configure(bind=engine)
 
+    def make_session(self):
+        """Create a session. 
+        For testing purposes (used in core.test.factories, for example).
+        """
+        return self.Session()
+    
     @property
     def session(self):
         return self.Session()

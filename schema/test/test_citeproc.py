@@ -2,28 +2,18 @@
 '''
 Created on 22.07.2013
 @author: stenzel
-
-XXX: These tests are database dependent. They only work when the DB is prepared for that. They also change the DB!
-WARNING: Don't run them on production databases...
 '''
 from __future__ import division, absolute_import
 import json
 import os.path
-import logging as logg
-logg.basicConfig()
+import datetime
 from pprint import pprint
 from pytest import raises
-
-# setup
-from core.test.setup import setup_with_db
-setup_with_db()
 
 
 from core.node import Node
 from .. import citeproc
 from ..citeproc import get_citeproc_json, DOINotFound, FIELDS, CSLField
-
-from .fixtures import *
 
 
 BASEDIR = os.path.join(os.path.dirname(__file__), "test_data")
@@ -87,19 +77,19 @@ def test_import_csl(journal_article_mdt):
     check_node(node, record)
 
 
-def test_import_doi():
+def test_import_doi(journal_article_mdt):
     node = citeproc.import_doi(DOI_ARTICLE3, testing=True)
     expected = load_csl_record_file(DOI_ARTICLE3)
     check_node(node, expected)
 
 
-def test_import_doi_utf8():
+def test_import_doi_utf8(journal_article_mdt):
     node = citeproc.import_doi(DOI_UTF8, testing=True)
     expected = load_csl_record_file(DOI_UTF8)
     check_node(node, expected)
 
 
-def test_literal_author_raw_date():
+def test_literal_author_raw_date(journal_article_mdt):
     node = citeproc.import_doi(DOI_LITERAL_AUTHOR_RAW_DATE, testing=True)
     assert node.get("author") == "Cambridge Archaeological Unit"
-    assert node.get("publicationdate") == "2012-01-01"
+    assert node.get("issued") == datetime.date(year=2012, day=1, month=1)

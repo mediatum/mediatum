@@ -294,13 +294,13 @@ def import_csl(record, target=None, name=None, testing=False):
             logg.exception("error while converting CSL field '%s' with value '%s', ignored", key, value)
             return ""
 
-    for f in mask.getMaskFields():
+    for maskitem in mask.maskitems:
         try:
             csl_name = "not defined"
             mfield = "not defined"
             med_name = "not defined"
-            csl_name = q(Node).get(f.get("mappingfield")).name
-            mfield = q(Node).get(f.get("attribute"))
+            csl_name = q(Node).get(int(maskitem["mappingfield"])).name
+            mfield = q(Node).get(int(maskitem["attribute"]))
             med_name = mfield.name
         except NoResultFound:
             logg.exception("citeproc import name='%s': field error for citeproc mask for type '%s and " +

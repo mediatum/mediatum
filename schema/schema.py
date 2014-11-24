@@ -37,6 +37,7 @@ from core import db
 from core.systemtypes import Metadatatypes
 from sqlalchemy.orm.exc import NoResultFound
 from core.transition.postgres import check_type_arg
+from core.database.postgres import rel, child_rel_options
 
 log = logg = logging.getLogger(__name__)
 
@@ -557,8 +558,16 @@ def importMetaSchema(filename):
 @check_type_arg
 class Metadatatype(Node):
 
-    def getDescription(self):
+    masks = rel("Mask", **child_rel_options)
+    metafields = rel("Metafield", **child_rel_options)
+    
+    @property
+    def description(self):
         return self.get("description")
+    
+    def getDescription(self):
+        warn("use Metadatatype.description", DeprecationWarning)
+        return self.description
 
     def setDescription(self, value):
         self.set("description", value)
@@ -821,6 +830,16 @@ def getMaskTypes(key="."):
 
 @check_type_arg
 class Mask(Node):
+    
+    maskitems = rel("Maskitem", **child_rel_options)
+    
+    @property
+    def all_maskitems(self):
+        """Recursively get all maskitems.
+        XXX: do we really need this?
+        """
+        return self.all_children_by_query(q(Maskitem))
+    
     def getFormHTML(self, nodes, req):
         if not self.getChildren():
             return None
@@ -879,12 +898,13 @@ class Mask(Node):
         return ret
 
     def getMaskFields(self, first_level_only=False):
-        ret = []
+        warn("use Mask.maskitems or Mask.all_maskitems instead", DeprecationWarning)
+        # XXX: type changed: list -> NodeAppenderQuery
         if first_level_only:
-            return self.children.filter_by(type="maskitem").all()
+            return self.maskitems
         else:
-            return self.all_children_by_query(q(Maskitem)).all()
-
+            return self.all_maskitems
+        
     """ return all fields which are empty """
 
     def validate(self, nodes):

@@ -127,6 +127,7 @@ def importMapping(filename):
         mappings.addChild(m)
 
 
+@check_type_arg
 class Mapping(Node):
 
     def getDescription(self):

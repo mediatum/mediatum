@@ -52,3 +52,48 @@ msgstr "-- Objekttyp wählen --"
 
 msgid "edit_upload_schemeselection"
 msgstr "-- Metadatenschema wählen --"
+
+msgid "edit_upload_files_plupload_widget"
+msgstr "Datei(en) hochladen"
+
+msgid "edit_upload_meta"
+msgstr "Metadaten einstellen"
+
+msgid "edit_upload_create_objects"
+msgstr "Objekte erzeugen"
+
+msgid "edit_upload_create_object"
+msgstr "Objekt erzeugen"
+
+msgid "edit_upload_createmethod_from_schema"
+msgstr "mit Metadatenschema"
+
+msgid "edit_upload_createmethod_from_identifier"
+msgstr "von Identifier"
+
+msgid "edit_upload_create_meta"
+msgstr "Neues Metadatenobjekt anlegen"
+
+msgid "edit_upload_countfiles"
+msgstr "Datei(en) hochgeladen."
+
+msgid "edit_upload_bibtex_ok"
+msgstr "Bibtex-Datei enthält korrekte Daten und kann importiert werden."
+
+msgid "upload_encoding_error"
+msgstr "Bibtex-Datei muss im UTF-8 Format vorliegen!"
+
+msgid "edit_upload_unpack"
+msgstr "Dateiinhalt entpacken"
+
+msgid "edit_upload_no_unpack"
+msgstr "Dateiinhalt nicht entpacken (speichern wie-es-ist)"
+
+msgid "edit_upload_importer_sel"
+msgstr "Importer auswählen:"
+
+msgid "edit_upload_importerselection"
+msgstr "-- Importer wählen --"
+
+msgid "edit_upload_select_metadata_type"
+msgstr "Metadatentyp wählen: "

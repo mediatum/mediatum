@@ -23,16 +23,20 @@ import core.acl as acl
 import core.users as users
 
 from schema.schema import getMetaType
+from core.translation import lang, t
+from utils.utils import dec_entry_log
 
 
+@dec_entry_log
 def getContent(req, ids):
     user = users.getUserFromRequest(req)
     if "lza" in users.getHideMenusForUser(user):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
-
+    
     v = {}
     v['error'] = ""
 
+    nodes = []
     for id in ids:
         node = tree.getNode(id)
 
@@ -40,12 +44,13 @@ def getContent(req, ids):
         if not access.hasWriteAccess(node):
             return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
-        if "createlza" in req.params:
+        nodes.append(node)
+        if "createlza" in req.params:           
             # remove old file if existing
             for f in node.getFiles():
-                if f.getType() == "lza":
+                if f.getType()=="lza":
                     node.removeFile(f)
-            # create new file
+            # create new file     
             for f in node.getFiles():
                 if f.getType() in ("original", "document"):
                     try:
@@ -60,32 +65,36 @@ def getContent(req, ids):
                             # generate error message
                             meta = l.LZAMetadata("""
         <?xpacket begin="\xef\xbb\xbf" id="mediatum_metadata"?>
-                <lza:data>
+                <lza:data> 
                     <lza:error>-definition missing-</lza:error>
                 </lza:data><?xpacket end="w"?>
                                 """)
                         archive.writeMediatumData(meta)
                         node.addFile(tree.
 
-                                     FileNode(archive.buildLZAName(), "lza", f.getMimeType()))
-
+                        FileNode(archive.buildLZAName(),"lza", f.getMimeType()))
+                    
                     except l.FiletypeNotSupported:
                         v['error'] = "edit_lza_wrongfiletype"
+                    
 
         elif "removelza" in req.params:
             for f in node.getFiles():
-                if f.getType() == "lza":
+                if f.getType()=="lza":
                     node.removeFile(f)
 
-    v['id'] = req.params.get("id", "0")
+    v['id'] = req.params.get("id","0")
     v['tab'] = req.params.get("tab", "")
     v['ids'] = ids
+    v['nodes'] = nodes
+    v['t'] = t
+    v['language'] = lang(req)
 
     meta = {}
     for id in ids:
         node = tree.getNode(id)
         for f in node.getFiles():
-            if f.getType() == "lza":
+            if f.getType()=="lza":
                 try:
                     archive = l.LZA(f.retrieveFile(), f.getMimeType())
                     meta[id] = archive.getMediatumData()

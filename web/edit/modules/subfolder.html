@@ -1,57 +1,102 @@
 
 <tal:block metal:define-macro="edit_subfolder">
-    <script tal:condition="runscript" language="javascript">
-        parent.reloadTree('');
-    </script>
+    <style>
+        #sortable { list-style-type: none; margin: 0; padding: 0; width: 99%; }
+        #sortable li { margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; border:1px solid silver;min-height:1.2em;position:relative;background-color:#fff}
+        #sortable li:hover {cursor:move}
+        #sortable li span {position: absolute; margin-left: -1.3em}
+        .ids{position:absolute;right:5px;}
+        #navigation_content{border-width:0 0 1px 1px!important}
+    </style>
 
-    <h3 i18n:translate="edit_sort_header">TEXT</h3>
-    <form>
-        <input type="hidden" name="tab" value="subfolder"/>
-        <input tal:attributes="value python:node.id" type="hidden" name="id"/>
-            <table id="sorttable">
-                <tr>
-                    <th id="sorttable" i18n:translate="edit_sort_name"/>
-                    <th id="sorttable" width="40px" i18n:translate="edit_sort_position"/>
-                    <th id="sorttable" width="40px">&nbsp;</th>
-                    <th id="sorttable" width="40px">&nbsp;</th>
-                </tr>
-                <tr tal:repeat="child nodelist">
-                    <td id="sorttable" tal:content="python:child.name"/>
-                    <td id="sorttable" align="right" tal:content="python: nodelist.index(child)+1"/>
-                    <td id="sorttable" align="center">
-                        <input tal:condition="python: nodelist.index(child)>0" tal:attributes="name python:'up_'+str(nodelist.index(child))" i18n:attributes="title edit_sort_up_title" title="TEXT" type="image" src="/img/uparrow.png"/>
-                        <tal:block tal:condition="python: nodelist.index(child)==0" tal:replace="raw python:'&nbsp;'"/>
-                    </td>
-                    <td id="sorttable" align="center">
-                        <input tal:condition="python:nodelist.index(child)<len(nodelist)-1" tal:attributes="name python:'down_'+str(nodelist.index(child))" i18n:attributes="title edit_sort_down_title" title="TEXT" type="image" src="/img/downarrow.png"/>
-                        <tal:block tal:condition="python:nodelist.index(child)==len(nodelist)-1" tal:replace="raw python:'&nbsp;'"/>
-                    </td>
-                </tr>
-            </table>
-    </form>
-    <hr/>
-    <h3 i18n:translate="edit_sort_label">TEXT</h3>
-    <form>
+    <script tal:content="python:'var id = %r;' % str(node.id)"> </script>
+    <script tal:content="python:'var cid_list = %r;' % ([str(n.id) for n in nodelist])"> </script>
+
+    <div id="navigation_content">
+        <h3 i18n:translate="edit_sort_label">TEXT</h3>
         <input type="hidden" name="tab" value="subfolder">
         <input tal:attributes="value python:node.id" type="hidden" name="id"/>
         <input i18n:attributes="value edit_sort_name" type="hidden" name="resort"/>
-
-        <p>
             <span i18n:translate="edit_sort_label_1"/>
-            <select name="sortattribute">
-                <optgroup label="Spezialattribute">
+            <select name="sortattribute" id="sortattribute">
+                <optgroup i18n:attributes="label edit_sort_special_attributes">
                     <option value="name" i18n:translate="edit_sort_name"/>
                 </optgroup>
-                
-                <optgroup label="Attribute">
+
+                <optgroup i18n:attributes="label edit_sort_attributes">
                     <option tal:repeat="sortattribute sortattributes" tal:attributes="value python:sortattribute.getName()" tal:content="python:sortattribute.getLabel()"/>
                 </optgroup>
             </select>
-            <select name="sortdirection">
+            <select name="sortdirection" id="sortdirection">
                 <option value="up" i18n:translate="edit_sort_up"/>
                 <option value="down" i18n:translate="edit_sort_down"/>
             </select>
-        </p>
-        <input i18n:attributes="value edit_sort_sort" type="submit" name="autosort"/>       
-    </form>
+        <button type="button" i18n:translate="edit_sort_sort" id="sort">TEXT</button>
+    </div>
+
+    <div id="sub_content_content">
+        <h3 i18n:translate="edit_sort_header">TEXT</h3>
+        <form>
+            <input type="hidden" name="tab" value="subfolder"/>
+            <input tal:attributes="value python:node.id" type="hidden" name="id"/>
+            <ul id="sortable">
+                <li tal:repeat="child nodelist" class="ui-state-default" tal:attributes="id python:child.id">
+                    <small tal:on-error="python:'-'" tal:content="python: nodelist.index(child)+1" style="position:absolute;left:5px;top:7px">TEXT</small>: <tal:block tal:content="python:child.getLabel(lang=language)"/>
+                    <small class="ids">(<tal:block tal:content="python:child.id"></tal:block>)</small>
+                </li>
+            </ul>
+        </form>
+    </div>
+    <div id="sub_footer_module"> </div>
+    <script>
+        var htree = parent.gethometree();
+        var ctree = parent.getcoltree();
+
+
+        $(document).ready(function () {
+            sublayout = $('#sub_content').layout({applyDemoStyles: true,
+                center:{paneSelector: "#sub_content_content"},
+                north:{paneSelector: "#navigation_content", size:110,resizable:false},
+                south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0},
+
+                togglerTip_open: js_edit_layout_togglertip_open,
+                togglerTip_closed: js_edit_layout_togglertip_closed
+                });
+            $(function() {
+                $( "#sortable" ).sortable({
+                    update: function(event, ui) {
+                        $.ajax({
+                             type: "POST",
+                             url: "/edit/edit_content",
+                             data: "id="+id+"&tab=subfolder&popup=popup&order="+$("#sortable").sortable('toArray').toString(),
+                             success: function (data) {
+                                 $("#sortable").html(data);
+                                 parent.reload_tree_nodes_children([ctree, htree], [id]);
+                             }
+                         });
+                    }
+                }).disableSelection();
+            });
+
+            $("#sort").button().click(function(){
+                $.ajax({
+                     type: "POST",
+                     url: "/edit/edit_content",
+                     data: "id="+id+"&tab=subfolder&popup=popup&sortdirection="+$("#sortdirection").val()+"&sortattribute="+$("#sortattribute").val(),
+                     success: function (data) {
+                         $('#sortable').html(data);
+                         parent.reload_tree_nodes_children([htree, ctree], [id]);
+                       }
+                 });
+            });
+        });
+    </script>
+
+</tal:block>
+
+<tal:block metal:define-macro="ordered_list">
+   <li tal:repeat="child nodelist" class="ui-state-default" tal:attributes="id python:child.id">
+       <small tal:on-error="python:'-'" tal:content="python: nodelist.index(child)+1" style="position:absolute;left:5px;top:7px">TEXT</small>: <tal:block tal:content="python:child.getLabel(lang=language)"/>
+       <small class="ids">(<tal:block tal:content="python:child.id"></tal:block>)</small>
+   </li>
 </tal:block>

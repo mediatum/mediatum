@@ -13,3 +13,9 @@ msgstr "Objekte gesamt"
 
 msgid "edit_stats_digobjlabel"
 msgstr "Objekte mit Digitalisat"
+
+msgid "edit_stats_legend"
+msgstr "Legende"
+
+msgid "edit_stats_overview"
+msgstr "Zusammenfassung"

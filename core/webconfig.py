@@ -177,9 +177,10 @@ def initContexts():
     handler = file.addHandler("frameset")
     handler.addPattern("/")
     handler.addPattern("/edit")
-    file.addHandler("showtree").addPattern("/edit_tree")
+    #file.addHandler("showtree").addPattern("/edit_tree")
+    file.addHandler("edit_tree").addPattern("/treedata")
     file.addHandler("error").addPattern("/edit_error")
-    file.addHandler("buttons").addPattern("/edit_buttons")
+    #file.addHandler("buttons").addPattern("/edit_buttons")
     file.addHandler("content").addPattern("/edit_content")
     file.addHandler("content").addPattern("/edit_content/.*")
     file.addHandler("action").addPattern("/edit_action")
@@ -189,6 +190,11 @@ def initContexts():
     handler.addPattern("/ftree")
     file = context.addFile("web/ftree/ftree.py")
     file.addHandler("ftree").addPattern("/.*")
+
+    # === help area ===
+    context = athana.addContext("/help", '.')
+    file = context.addFile("core/help.py")
+    file.addHandler("getHelp").addPattern("/(?!img/).*")
 
     # === services handling ===
     loadServices()

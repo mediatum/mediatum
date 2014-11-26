@@ -7,29 +7,69 @@
 
 <metal:block metal:define-macro="classtree">
     <link rel="stylesheet" href="/css/ftree.css" type="text/css" />
-    <script type="text/javascript" src="/js/ajax.js"> </script>
     <script type="text/javascript" src="/js/ftree.js"> </script>
+    <script type="text/javascript" src="/js/ftree-context-menu.js"> </script>
     <script type="text/javascript" tal:content="script"> </script>
-    <script type="text/javascript"> 
+    <script type="text/javascript">
         function setFolder(){
-            markFolder(true, "", this.id);
+            //markFolder(true, "", this.id);
             changeValue(this.id);
             return false;
         }
     </script>
-    <form>
-    <div style="max-height:400px; overflow:auto;border:1px solid silver">
-        <ul id="classtree" class="tree">
-            <li tal:repeat="basedir basedirs" tal:attributes="id python:'Node'+basedir.id"><a tal:attributes="id python:str(basedir.id); title python:basedir.getLabel()+' ('+str(basedir.id)+')'" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
-                <ul>
-                    <li tal:attributes="parentId python:basedir.id" class="spinner.gif"><a href="#" id="node_0"> </a></li>
-                </ul>
-            </li>
-        </ul>
+
+    <div id="navigation_content" style="border-top:0px!important">
+        <tal:block metal:use-macro="web/edit/edit.html/itemlist"/>
     </div>
-    </form>
+
+    <div id="sub_content_content" style="border-width:0 0 0 1px!important">
+      <div style="overflow:auto;">
+        <div id="operation" style="position:relative;margin-right:200px;">
+            <div style="clear:left;padding-left:10px;padding-bottom:5px"><tal:block i18n:translate="edit_classes_select_position"/></div>
+        </div>
+        <div id="scrollcontainer"">
+            <div id="scrollcontent">
+                <form>
+                  <div>
+                    <ul id="classtree" class="tree">
+                        <li tal:repeat="basedir basedirs" tal:attributes="id python:'Node'+basedir.id"><a tal:attributes="id python:str(basedir.id); title python:basedir.getLabel()+' ('+str(basedir.id)+')'" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
+                            <ul>
+                                <li tal:attributes="parentId python:basedir.id" class="spinner.gif"><a href="#" id="node_0"> </a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                  </div>
+                </form>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="sub_footer_module"> </div>
+
+    <script tal:content="python:'var js_edit_layout_togglertip_open = \''+str(t(language, 'edit_layout_togglertip_open'))+'\';'">;</script>
+    <script tal:content="python:'var js_edit_layout_togglertip_closed = \''+str(t(language, 'edit_layout_togglertip_closed'))+'\';'">;</script>
+
     <script type="text/javascript">
-        initTree({'idOfFolderTrees': ['classtree'], 'style':'classification', 'multiselect':true});
+
+        initTree({'idOfFolderTrees': ['classtree'], 'style':'classification', 'multiselect':true, 'contextMenuActive':false});
+
+        $(document).ready(function () { // set correct height of scrollable content
+           $('#scrollcontainer').css('top', $('#operation').position().top + $('#operation').height());
+        });
+
+        $(document).ready(function () { // set correct height of scrollable content
+           var sublayout = $('#sub_content').layout({applyDemoStyles: true,
+                center:{paneSelector: "#sub_content_content", onresize: $.layout.callbacks.resizePaneAccordions},
+                //north:{paneSelector: "#navigation_content", size:60,resizable:false, closable:false},
+                north:{paneSelector: "#navigation_content", size:110,resizable:false,},
+                south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0},
+                togglerTip_open: js_edit_layout_togglertip_open,
+                togglerTip_closed: js_edit_layout_togglertip_closed
+                });
+            $("#accordion").accordion({heightStyle: "pane"});
+        });
+
     </script>
     <tal:block tal:replace="raw python:'<script type=&quot;text/javascript&quot;>'"/>
         <tal:block tal:repeat="id python:idstr.split(',')" tal:replace="python:'allobjects['+id+']=1;'"/>

@@ -16,11 +16,17 @@ msgstr "Attribute value:"
 msgid "edit_admin_add_attr"
 msgstr "Save attribute"
 
+msgid "edit_admin_noattribute"
+msgstr "No such attribute for this object set"
+
 msgid "edit_clearfromcache"
 msgstr "Clear node from cache"
 
+msgid "edit_admin_searchdata"
+msgstr "Search index data"
+
 msgid "edit_admin_index_button"
-msgstr "Load Search index"
+msgstr "Load data"
 
 msgid "edit_admin_simplesearch"
 msgstr "Simple Search"
@@ -30,3 +36,6 @@ msgstr "Extended Search"
 
 msgid "edit_admin_textsearch"
 msgstr "Fulltext Search"
+
+msgid "edit_admin_nosearchdata"
+msgstr "- no search data -"

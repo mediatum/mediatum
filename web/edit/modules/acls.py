@@ -26,7 +26,7 @@ from web.common.acl_web import makeList
 from web.common.accessuser_web import makeUserList
 from web.edit.edit_common import getHomeDir
 
-from utils.utils import removeEmptyStrings
+from utils.utils import removeEmptyStrings, dec_entry_log
 
 log = logging.getLogger('edit')
 acl_types = ["read", "write", "data"]
@@ -35,7 +35,7 @@ acl_types = ["read", "write", "data"]
 def getInformation():
     return {"version": "1.1", "system": 0}
 
-
+@dec_entry_log
 def getContent(req, ids):
     ret = ""
     user = users.getUserFromRequest(req)

@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import inspect
 import stat
 import traceback
 import sys
@@ -26,6 +27,7 @@ import hashlib
 import re
 import random
 import StringIO
+import logging
 from urlparse import parse_qsl, urlsplit, urlunsplit
 from urllib import quote, urlencode
 
@@ -971,6 +973,91 @@ def quote_uri(uri):
     query = urlencode(parse_qsl(parsed_uri.query))
     quoted_uri = urlunsplit((parsed_uri.scheme, parsed_uri.netloc, path, query, parsed_uri.fragment))
     return quoted_uri
+
+
+def funcname():
+    '''returns name of the current function'''
+    return inspect.stack()[1][3]
+
+
+def callername():
+    '''returns name of the calling function'''
+    return inspect.stack()[2][3]
+
+
+def get_user_id(req):
+    import core.users as users
+    user = users.getUserFromRequest(req)
+    res = "userid=%r|username=%r" % (user.getUserID(), user.getName())
+    return res
+
+
+def log_func_entry(req, modname, functionname, s_arg_info, logger=logging.getLogger('editor')):
+    msg = ">>> %s entering %s.%s: %s" % (
+        get_user_id(req), modname, functionname, s_arg_info)
+    logger.debug(msg)
+
+
+def log_func_exit(req, modname, functionname, extra_data, logger=logging.getLogger('editor')):
+    msg = "<<< %s exiting  %s.%s: %r" % (
+        get_user_id(req), modname, functionname, extra_data)
+    logger.debug(msg)
+
+
+def dec_entry_log(func):
+    from functools import wraps
+    import inspect
+    import traceback
+    import sys
+    from core.config import basedir
+
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        argnames = func.func_code.co_varnames[:func.func_code.co_argcount]
+        a = inspect.getargspec(func)
+        if a.defaults:
+            defaults = zip(a.args[-len(a.defaults):],a.defaults)
+        else:
+            defaults = []
+        d = {
+              #'argnames': argnames,
+              #'func.func_code.co_varnames': func.func_code.co_varnames,
+              #'args': args,
+              #'kwargs': kwargs,
+              'defaults': defaults,
+             }
+        arg_info = []
+        for arg_name, value in zip(argnames, args[:len(argnames)]) + [("args", list(args[len(argnames):]))] + [("kwargs", kwargs)]:
+
+            if ("%r" % value).find('.athana.http_request object') > 0:
+                _v = "req.path=%r|req.params=%r" % (value.path, value.params)
+                value = _v
+            arg_info.append('%s=%r' % (arg_name, value))
+        s_arg_info = ', '.join(arg_info)
+        s_arg_info = s_arg_info + ("%r" % d)
+
+        st = list(inspect.stack()[1])
+        _caller_module = st[1].replace(basedir, '').replace('.pyc', '').replace('.py', '').replace('/', '.').replace('\\', '.')
+        _caller_lineno = st[2]
+        _callername = st[3]
+        _callerline = st[4]
+        caller_info1 = 'caller: %s.%s (LINE: %d): %r' % (_caller_module, _callername, _caller_lineno, _callerline)
+
+        log_func_entry(args[0], func.__module__, func.__name__, s_arg_info + ', ' + caller_info1)
+
+        res = apply(func, args, kwargs)
+
+        extra_data = ("%r" % res)
+        if len(extra_data) > 200:
+            extra_data = extra_data[0:200] + ' ...'
+        extra_data = 'result: ' + extra_data
+        log_func_exit(args[0], func.__module__, func.__name__, extra_data)
+
+        #print_info(prefix='--> %s.%s' % (func.__module__, func.__name__), prolog='IN ' * 9, epilog='OUT ' * 9, tracecount=250, exclude=[])
+        # for later: try to retrieve exit line, log that too
+        return res
+    return wrapper
 
 
 def make_repr(**args):

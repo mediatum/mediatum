@@ -1058,7 +1058,7 @@ class Node(object):
         if f:
             return f
         # fall-through
-        raise AttributeError("Node %s of type has no attribute %s", self, name)
+        raise AttributeError("Node %r of type %r has no attribute %r" % (self, self.type, name))
 
     def getoverloadedfunction(self, name):
         global nodefunctions, nodeclasses

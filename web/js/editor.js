@@ -286,15 +286,170 @@ function edit_action(action, src, ids, add){
     }
     
     $.get('/edit/edit_action?src='+src+'&ids='+ids+'&style=popup'+url, function(data){
+       
         if (data!=""){
-            if(add==1 || add==2){
-                parent.tree.location.href = "/edit/edit_tree?id="+data;
-            }
-            parent.content.location.href = "/edit/edit_content?id="+data;
+            return data;
         }
     });
 }
 
+DEBUG_MODE = true;  // using console for debugging msg
+
+if (DEBUG_MODE && window.console) {
+  consoledb = window.console;
+}
+else {
+  do_nothing = function() {};
+  consoledb = {};
+  consoledb.log = consoledb.info = consoledb.error = consoledb.warn = consoledb.debug = do_nothing;
+  consoledb.group = consoledb.groupCollapsed = consoledb.groupEnd = do_nothing;
+  consoledb.dir = consoledb.dirxml = do_nothing;
+}
+
+
+function disable_tree_nodes(used_trees, pids) {
+            consoledb.groupCollapsed('--- disable_tree_nodes ---');
+            for (var i in used_trees) {
+              used_tree = used_trees[i];
+              for (var index in pids) {
+                  var pid = pids[index];
+                  consoledb.log('--------> ', index, pid);
+                  var testnode = used_tree.getNodeByKey(pid);
+                  if (!testnode) {
+                      continue;
+                  }
+                  $(testnode.li).addClass('fancytree-node-disabled');
+              }  
+            }
+            consoledb.groupEnd('--- disable_tree_nodes ---');
+}
+
+
+function update_tree_nodes_labels(used_trees, changednodes) {
+            consoledb.groupCollapsed('--- update_tree_nodes_labels ---');
+            for (var i in used_trees) {
+              used_tree = used_trees[i];
+              for (var key in changednodes) {
+                  consoledb.log(key);
+                  var new_label = changednodes[key];
+                  consoledb.log(new_label);
+                  consoledb.log('new label for key '+key+': '+new_label);
+                  var changed_node = used_tree.getNodeByKey(key);
+                  if (!changed_node) {
+                      continue;
+                  }
+                  changed_node.title = new_label;
+                  changed_node.renderTitle();
+              }  
+            }
+            consoledb.groupEnd('--- update_tree_nodes_labels ---');
+}
+
+
+function reload_tree_nodes_children(used_trees, pids) {
+            consoledb.groupCollapsed('--- reload_tree_nodes_children ---');
+            consoledb.log('--> pids: ' + pids);
+
+            for (var i in used_trees) {
+              used_tree = used_trees[i];
+              consoledb.log('----> tree index', i);
+              for (var index in pids) {
+                  consoledb.log('------> pid index', index);
+                  var key = pids[index];
+                  consoledb.log('------> pid', key);
+
+                  var parentnode = used_tree.getNodeByKey(key);
+
+                  if (!parentnode) {
+                      consoledb.log('------> continue');
+                      continue;
+                  }
+                  //parentnode.reloadChildren();  // dynatree
+                  consoledb.log('------> parentnode:', parentnode.title, parentnode);
+                  var pn_expanded = parentnode.isExpanded();
+                  consoledb.log('------> parentnode.isExpanded():', pn_expanded);
+                  parentnode.load(forceReload=true).done(function() {
+                    parentnode.setExpanded(pn_expanded);
+                    });
+              }  
+            }
+            consoledb.groupEnd('--- reload_tree_nodes_children ---');
+}
+
+function path_to_pidlist(path, poplast) {
+  var pids = path.split('/');
+  pids.shift();  // removing leading ""
+  if (poplast) {
+    pids.pop();
+  }
+  return pids;
+}
+
+
+// asynchronous version of editor_action: wait with javascript tree update until
+// server has responded
+function edit_action_sync(action, src, ids, add) {
+    consoledb.groupCollapsed('edit_action_sync');
+    consoledb.log('action: '+action+', src: '+src+', ids: '+ids+', add: '+add);
+    var url = '&action='+escape(action);
+
+/*
+    if(add==1){ // folder
+        url = '&newfolder='+escape(action);
+    }else if (add==2){ //collection
+        url = '&newcollection='+escape(action);
+    }
+*/
+    if (action=="move" || action=="copy"){
+        url = '&action='+escape(action)+'&dest='+add;
+    }
+
+    var ajax_response; 
+
+    var ctree = parent.getcoltree();
+    var htree = parent.gethometree();
+    
+    if (src) {
+        var src_node = htree.getNodeByKey(src);
+        if (!src_node) {
+            src_node = ctree.getNodeByKey(src);
+        }
+        if (src_node) {
+            var src_node_title_old = src_node.title;
+            src_node.setTitle(src_node_title_old + '<img height="30" src="/img/wait.gif" />');
+        }
+    }    
+
+    var options = {
+          url: '/edit/edit_action?src='+src+'&ids='+ids+'&style=popup'+url,
+          async: false,
+          dataType: 'json',
+          success: function (response) {
+              ajax_response = response;
+              new_path_endpoint = response.key;
+
+              consoledb.log('edit_action_sync: $.ajax returns: '+response);
+              consoledb.dir(response);
+
+              if (src_node) {
+                  // remove image wait.gif
+                  src_node.setTitle(src_node_title_old);
+                  src_node.render();
+              }
+
+              if ('changednodes' in ajax_response) {
+
+                  var used_trees = [ctree, htree];
+
+                  update_tree_nodes_labels(used_trees, ajax_response.changednodes);
+              }
+          },
+        };
+
+    $.ajax(options);
+    consoledb.groupEnd('edit_action_sync');
+    return ajax_response;
+}
 
 function setFolder(folderid)
 {
@@ -308,16 +463,217 @@ function setFolder(folderid)
     }
 }
 
+function activateEditorTreeNode(nid) {
+  var ctree = parent.getcoltree();
+  n = ctree.getNodeByKey(nid);
+  if (n) {
+      n.setActive();
+      return;
+  }
+  var htree = parent.gethometree();
+  var n = htree.getNodeByKey(nid);
+  if (n) {
+      n.setActive();
+      return;
+  }
+}
+
 function openWindow(fileName, width, height)
-{ 
-    win1 = window.open(fileName,'browsePopup','screenX=50,screenY=50,width='+width+',height='+height+',directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=no'); 
+{
+    win1 = window.open(fileName,'browsePopup','screenX=50,screenY=50,width='+width+',height='+height+',directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=no');
     win1.focus();
-} 
+}
 
 function reloadURL(url)
 {
     this.location.href = url;
 }
 
+function getHelp(path){
+    helpwindow = window.open(path,'browsePopup','width=600px,height=500px,directories=no,location=no,menubar=no,status=no,toolbar=no,resizable=yes');
+    return false;
+}
+
+/* edit operations */
+function doaction(action) {
+    $('input[id^="check"]').each(function(){
+        consoledb.log(value);
+        if(action.value=='markall') {
+            $(this).prop('checked', true);
+        }else if(action.value=='marknone'){
+            $(this).prop('checked', false);
+        }else{ // invert
+            $(this).prop('checked', !($(this).is(':checked')));
+        }
+    });
+    action.value = "empty";
+}
 
 
+function checkObject(field) {
+    if(field.checked) {
+        allobjects[field.name] = 1;
+    } else {
+        allobjects[field.name] = 0;
+    }
+}
+
+
+function modal_confirm(msg) {
+  var string = '<div id="dialog-confirm" title="Empty the recycle bin?"><p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p></div>';
+  var res = false;
+  res = $(function() {
+    var elem = $('<div/>').html(string);
+    res = elem.dialog({
+      resizable: false,
+      height:140,
+      modal: true,
+      appendTo: "#collectionstree",
+      closeOnEscape: true,
+      buttons: {
+        "Delete all items": function() { res = true;
+          $(this).dialog( "close" );
+
+        },
+        Cancel: function() { res = 7;
+          $(this).dialog( "close" );
+
+        }
+      }
+    });
+  });
+  return res;
+}
+
+
+function editSelected(ids){
+    if (!ids){ /* use given id */
+        ids = getAllObjectsString();
+    }
+    if (ids!=""){
+        document.location.href = '/edit/edit_content?ids='+ids+'&src='+parent.idselection+'&tab=metadata';
+    }
+}
+
+
+function movecopySelected(ids, type){
+    consoledb.groupCollapsed('movecopySelected');
+    consoledb.log('movecopySelected: ids '+ids+'   type: '+type);
+    consoledb.log('movecopySelected: getAllObjectsString(): '+getAllObjectsString());
+
+    if (!ids){
+        ids = getAllObjectsString();
+    }
+    
+    //showOverlay();
+    parent.currentselection = ids;
+    parent.action = type;
+
+    if(!ids){ /* use given id */
+        ids = getAllObjectsString();
+    }else{
+        allobjects[ids] = 1;
+    }
+    var confirm_msg = parent.$('#select_target_dir').text().replace(/\\n/g, '\n');
+    if(ids && confirm(confirm_msg)){
+        //parent.idselection = ids;
+        parent.action = type;
+        //parent.tree.$("#buttonmessage").html('&dArr; '+parent.tree.$('#select_target_dir').html()+' &dArr;');
+        //parent.$("#buttonmessage").html('&uArr; '+parent.tree.$('#select_target_dir').html()+' &uArr;');
+    }else{
+        parent.action = "";
+    }
+    consoledb.log('parent.action:'+parent.action);
+    consoledb.groupEnd('movecopySelected');
+    return;
+}
+
+function deleteSelected(ids){
+    if (!ids){ /* use given id */
+        ids = getAllObjectsString();
+    }
+    if(ids){
+        if(confirm($('#delete_text').text())) {
+            // function edit_action_sync(action, src, ids, add) ...
+            var ret = edit_action_sync('delete', parent.last_activated_node.key, ids);
+            /*
+            ret.complete(function(){
+                //parent.tree.updateNodeLabel(parent.tree.currentfolder);
+                reloadPage(parent.tree.currentfolder, '');
+            });
+            */
+            reloadPage(parent.last_activated_node.key, '');
+            try {
+                //parent.last_activated_node.reloadChildren();
+                parent.last_activated_node.load(forceReload=true);
+                //parent.last_activated_node.setExpanded(true);
+                
+                
+            }    
+            catch(e) {
+                var nname = parent.last_activated_node.title;
+                var nkey = parent.last_activated_node.key;    
+                consoledb.log('tried to reloadChildren() for node key='+nkey+', title='+nname+' caught: '+e);
+            }            
+        }
+    }
+}
+
+
+function updateNodeLabels(ids) {
+// pass ids as comma separated list
+// the users trash, import, upload and faulty dirs will be update any case
+
+  var ajax_response;
+  
+  var options = {
+        url: '/edit/edit_action?action=getlabels&ids='+ids,
+        async: false,
+        dataType: 'json',
+        success: function (response) {
+            ajax_response = response;
+            new_path_endpoint = response.key;
+
+            consoledb.log('edit_action_sync: $.ajax returns: '+response);
+            consoledb.dir(response);
+
+            if ('changednodes' in ajax_response) {
+
+                var ctree = parent.getcoltree();
+                var htree = parent.gethometree();
+                var used_trees = [ctree, htree];
+
+                update_tree_nodes_labels(used_trees, ajax_response.changednodes);
+            }
+        },
+      };
+
+  $.ajax(options);
+}
+
+
+function sortItems_sync(o){
+
+    var ajax_response;
+    var options = {
+          url: '/edit/edit_content?action=resort&id='+id+'&tab=content&value='+$(o).val(),
+          async: false,
+          dataType: 'json',
+          success: function (data) {
+              ajax_response = data;
+              $('#scrollcontent').html(data.values);
+          },
+        };
+
+    $.ajax(options);
+
+}
+
+
+function saveSort(o){
+    $.getJSON('/edit/edit_content?action=save&id='+id+'&tab=content&value='+$(o).val(), function(data) {
+        // save done
+        $("#message").html(data.message);
+        $("#message").show().delay(5000).fadeOut();
+    });
+}

@@ -1,11 +1,6 @@
 
 <tal:block metal:define-macro="schedule_popup">
 
-<script type="text/javascript" language="javascript" src="https://code.jquery.com/jquery-latest.js">
-</script>
-<script type="text/javascript" language="javascript" src="/js/mediatum.js">
-</script>
-
 <script type="text/javascript" src="/ckeditor/ckeditor.js"> </script>
 
 <script tal:content="python:'var submitbutton_run_now_label = \''+submitbutton_run_now_label+'\';'">;</script>
@@ -224,27 +219,6 @@
 
     var highlight_loaded_s = window.setInterval("highlight_loaded_schedule();", 1000);
 
-    // load both tables (nid2schedules, schedule2nids) - one may be enough ?
-    $(document).ready(function() {
-
-      var x = $("<input/>").attr('id', 'submitbutton_run_now')
-               .attr('type', 'submit')
-               .attr('name', 'submit_run_now')
-               .attr('value', submitbutton_run_now_label)
-               .attr('onClick', 'return confirm(edit_schedule_submit_run_now_button_confirm);');
-
-      if ($('#select_function').val() && !document.getElementById("submitbutton_run_now")) {
-          x.insertAfter(document.getElementById("submitbutton"));
-      }
-      if (document.getElementById("submitbutton_run_now"))  {
-        document.getElementById("submitbutton_run_now").style.display='inline';
-      }
-
-     var ids = $("#idlist").val();
-     load_table_nid2schedules(ids);
-     load_table_schedule2nids(ids);
-
-    });
 
 </script>
 
@@ -276,6 +250,12 @@
     }
 
 </style>
+
+  <div id="navigation_content" style="border-top:0px!important">
+      <tal:block metal:use-macro="web/edit/edit.html/itemlist"/>
+  </div>
+
+  <div id="sub_content_content" style="border-width:0 0 0 1px!important">
 
     <h3 i18n:translate="edit_schedule_function_selection">TEXT</h3>
 
@@ -349,6 +329,52 @@
         <img height="12" src="/img/wait.gif"/>
     </div>
 
+  </div>
+
+  <div id="sub_footer_module"> </div>
+
+  <script tal:content="python:'var js_edit_layout_togglertip_open = \''+str(t(language, 'edit_layout_togglertip_open'))+'\';'">;</script>
+  <script tal:content="python:'var js_edit_layout_togglertip_closed = \''+str(t(language, 'edit_layout_togglertip_closed'))+'\';'">;</script>
+
+  <tal:block metal:use-macro="web/edit/edit.html/include_jquery_layout_script_tags"/>
+
+<script>
+
+    // load both tables (nid2schedules, schedule2nids) - one may be enough ?
+    $(document).ready(function() {
+
+            sublayout = $('#sub_content').layout({applyDemoStyles: true,
+                center:{paneSelector: "#sub_content_content"},
+                north:{paneSelector: "#navigation_content", size:110,resizable:false},
+                south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0},
+
+                togglerTip_open: js_edit_layout_togglertip_open,
+                togglerTip_closed: js_edit_layout_togglertip_closed
+                });
+
+            console.log('schedules page ready');
+
+
+      var x = $("<input/>").attr('id', 'submitbutton_run_now')
+               .attr('type', 'submit')
+               .attr('name', 'submit_run_now')
+               .attr('value', submitbutton_run_now_label)
+               .attr('onClick', 'return confirm(edit_schedule_submit_run_now_button_confirm);');
+
+      if ($('#select_function').val() && !document.getElementById("submitbutton_run_now")) {
+          x.insertAfter(document.getElementById("submitbutton"));
+      }
+      if (document.getElementById("submitbutton_run_now"))  {
+        document.getElementById("submitbutton_run_now").style.display='inline';
+      }
+
+     var ids = $("#idlist").val();
+     load_table_nid2schedules(ids);
+     load_table_schedule2nids(ids);
+    });
+
+</script>
+
 </tal:block>
 
 
@@ -363,11 +389,13 @@
             <br/>
             <div tal:condition="python: dfield['evaluation_error']" class="editorerror">
                 <tal:block tal:replace="structure python:dfield['field'].label"/> <br/>
-                <tal:block tal:replace="structure python:dfield['field'].getEditorHTML(dfield['field'], width=400, value=str(dfield['value']))"/>
+                <!-- <tal:block tal:replace="structure python:dfield['field'].getEditorHTML(dfield['field'], width=400, value=str(dfield['value']))"/> -->
+                <tal:block tal:replace="structure python:dfield['field'].getEditorHTML(str(dfield['value']), width=400)"/>
             </div>
             <div tal:condition="python: not dfield['evaluation_error']" class="editorrow">
                 <tal:block tal:replace="structure python:dfield['field'].label"/> <br/>
-                <tal:block tal:replace="structure python:dfield['field'].getEditorHTML(dfield['field'], width=400, value=str(dfield['value']))"/>
+                <!-- <tal:block tal:replace="structure python:dfield['field'].getEditorHTML(dfield['field'], width=400, value=str(dfield['value']))"/> -->
+                <tal:block tal:replace="structure python:dfield['field'].getEditorHTML(str(dfield['value']), width=400)"/>
             </div>
         </tal:block>
 
@@ -422,7 +450,7 @@
                 <th i18n:translate="edit_schedule_nodecount_subset_selection">TEXT</th>
                 <th i18n:translate="edit_schedule_nodecount_all">TEXT</th>
                 <th i18n:translate="edit_schedule_nids">TEXT</th>
-                <th tal:condition="python:len(nid2schedules.keys())==1" i18n:translate="edit_schedule_delete_node_from_schedule"/>
+                <th tal:condition="python:len(nid2schedules.keys())==1" i18n:translate="edit_schedule_delete_node_from_schedule">TEXT</th>
             </tr>
             <tr tal:repeat="schedule_id python:sorted(schedule2nids.keys(), key=lambda x: schedule2nids[x]['schedule'].get('single_trigger'))" tal:attributes="id python:'sid_'+schedule_id; ">
                 <td>

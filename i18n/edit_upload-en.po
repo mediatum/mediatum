@@ -52,3 +52,48 @@ msgstr "-- Choose object type --"
 
 msgid "edit_upload_schemeselection"
 msgstr "-- Choose metadata schema --"
+
+msgid "edit_upload_files_plupload_widget"
+msgstr "Upload File(s)"
+
+msgid "edit_upload_meta"
+msgstr "Create from Metadata"
+
+msgid "edit_upload_create_objects"
+msgstr "Create Objects"
+
+msgid "edit_upload_create_object"
+msgstr "Create Object"
+
+msgid "edit_upload_createmethod_from_schema"
+msgstr "with metadata schema"
+
+msgid "edit_upload_createmethod_from_identifier"
+msgstr "from identifier"
+
+msgid "edit_upload_create_meta"
+msgstr "Create new Object from Metadata"
+
+msgid "edit_upload_countfiles"
+msgstr "File(s) uploaded."
+
+msgid "edit_upload_bibtex_ok"
+msgstr "Bibtex file contains correct data and can be imported."
+
+msgid "upload_encoding_error"
+msgstr "Bibtex file has to be UTF-8 encoded!"
+
+msgid "edit_upload_unpack"
+msgstr "unpack file content"
+
+msgid "edit_upload_no_unpack"
+msgstr "do not unpack file content (save file as is)"
+
+msgid "edit_upload_importer_sel"
+msgstr "Select importer:"
+
+msgid "edit_upload_importerselection"
+msgstr "-- Select importer --"
+
+msgid "edit_upload_select_metadata_type"
+msgstr "Select metadata type: "

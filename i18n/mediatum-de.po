@@ -312,7 +312,13 @@ msgstr "Verzeichnis (Systemtyp)"
 msgid "directory"
 msgstr "Verzeichnis"
 
+msgid "bare_directory"
+msgstr "Verzeichnis"
+
 msgid "collection"
+msgstr "Kollektion"
+
+msgid "bare_collection"
 msgstr "Kollektion"
 
 msgid "Root"

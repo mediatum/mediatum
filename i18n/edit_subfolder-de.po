@@ -34,3 +34,8 @@ msgstr "Automatisch sortieren"
 msgid "edit_sort_sort"
 msgstr "Sortieren"
 
+msgid "edit_sort_special_attributes"
+msgstr "Spezialattribute"
+
+msgid "edit_sort_attributes"
+msgstr "Attribute"

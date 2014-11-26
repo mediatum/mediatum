@@ -25,17 +25,66 @@ import core.tree as tree
 import logging
 
 from utils.date import format_date, parse_date, now
-from utils.utils import formatException
+from utils.utils import formatException, funcname, get_user_id, log_func_entry, dec_entry_log
 from core.translation import lang, t, getDefaultLanguage
+from pprint import pprint as pp, pformat as pf
 
 db = database.getConnection()
 
+logger = logging.getLogger('editor')
 
+
+def get_datelists(nodes):
+    '''
+    helper funtion to update default context before calling TAL interpreter
+    '''
+    update_date = []
+    if len(nodes) == 1:
+        for node in nodes:
+            if node.get("updatetime"):
+                try:
+                    date = parse_date(
+                        node.get("updatetime"), "%Y-%m-%dT%H:%M:%S")
+                    datestr = format_date(date, format='%d.%m.%Y %H:%M:%S')
+                except:
+                    datestr = node.get("updatetime")
+                update_date.append([node.get("updateuser"), datestr])
+
+    creation_date = []
+    if len(nodes) == 1:
+        for node in nodes:
+            if node.get("creationtime"):
+                try:
+                    date = parse_date(
+                        node.get("creationtime"), "%Y-%m-%dT%H:%M:%S")
+                    datestr = format_date(date, format='%d.%m.%Y %H:%M:%S')
+                except:
+                    datestr = node.get("creationtime")
+                creation_date.append([node.get("creator"), datestr])
+
+    return update_date, creation_date
+
+
+def get_maskform_and_fields(nodes, mask, req):
+    '''
+    helper funtion to update default context before calling TAL interpreter
+    '''
+    if not hasattr(mask, "i_am_not_a_mask"):
+        _maskform = mask.getFormHTML(nodes, req)
+        _fields = None
+    else:
+        _maskform = None
+        _fields = mask.metaFields()
+    return _maskform, _fields
+
+
+@dec_entry_log
 def getContent(req, ids):
     ret = ""
     user = users.getUserFromRequest(req)
 
     if "metadata" in users.getHideMenusForUser(user):
+        print "error 1"
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     access = AccessData(req)
@@ -43,10 +92,18 @@ def getContent(req, ids):
     metatypes = []
     nodes = []
     masklist = []
+    err = 0
+
+    # flag indicating change of node.name (dynatree node may have to be updated)
+    # keep as integer
+    # negative -> no change
+    # else -> id of changed node
+    flag_nodename_changed = -1
 
     for id in ids:
         node = tree.getNode(id)
         if not access.hasWriteAccess(node):
+            print "error 2"
             return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
         schema = node.getSchema()
@@ -56,6 +113,10 @@ def getContent(req, ids):
             nodes += [node]
 
     idstr = ",".join(ids)
+    action = req.params.get('action', '').strip()
+
+    logger.info("%s in editor metadata (action=%r): %r" %
+                (user.getName(), action, [[n.id, n.name, n.type]for n in nodes]))
 
     for m in node.getType().getMasks(type="edit"):
         if access.hasReadAccess(m):
@@ -82,7 +143,8 @@ def getContent(req, ids):
 
             def i_am_not_a_mask():
                 pass
-        masklist = [SystemMask("settings", t(req, "settings"), node.metaFields(lang(req)))] + masklist
+        masklist = [SystemMask(
+            "settings", t(req, "settings"), node.metaFields(lang(req)))] + masklist
 
     default = None
     for m in masklist:
@@ -112,7 +174,19 @@ def getContent(req, ids):
     if not mask:
         return req.getTAL("web/edit/modules/metadata.html", {}, macro="no_mask")
 
-    action = req.params.get('action', '').strip()
+    # context default for TAL interpreter
+    ctx = {}
+    ctx["user"] = user
+    ctx["access"] = access
+    ctx["metatypes"] = metatypes
+    ctx["idstr"] = idstr
+    ctx["node"] = nodes[0]  # ?
+    ctx["flag_nodename_changed"] = flag_nodename_changed
+    ctx["nodes"] = nodes
+    ctx["masklist"] = masklist
+    ctx["maskname"] = maskname
+    ctx["language"] = lang(req)
+    ctx["t"] = t
 
     if action == 'restore':
         vid = req.params.get('vid', '0')
@@ -145,7 +219,24 @@ def getContent(req, ids):
 
                 nodes = [n]
                 ids = [n.id]
-                return req.getTAL("web/edit/modules/metadata.html", {'url': '?id=' + n.id + '&tab=metadata', 'pid': None}, macro="redirect")
+
+                node_versions = nodes[0].getVersionList()
+                update_date, creation_date = get_datelists(nodes)
+
+                data = {'url': '?id=' + n.id + '&tab=metadata', 'pid':
+                        None, 'flag_nodename_changed': flag_nodename_changed}
+
+                data["versions"] = node_versions
+                data["creation_date"] = creation_date
+                data["update_date"] = update_date
+
+                _maskform, _fields = get_maskform_and_fields(nodes, mask, req)
+                data["maskform"] = _maskform
+                data["fields"] = _fields
+
+                data.update(ctx)
+
+                return req.getTAL("web/edit/modules/metadata.html", data, macro="redirect")
 
     if action == 'delete':
         vid = req.params.get('vid', '0')
@@ -180,10 +271,10 @@ def getContent(req, ids):
                 prev = None
                 if n.prev_nid != '0':
                     prev = tree.getNode(n.prev_nid)
-                    while prev.prev_nid is not None and prev.prev_nid != '0' and prev.get("deleted") == "true":
+                    while prev.prev_nid != None and prev.prev_nid != '0' and prev.get("deleted") == "true":
                         prev = tree.getNode(prev.prev_nid)
 
-                if prev is not None and prev.get("deleted") != "true":
+                if prev != None and prev.get("deleted") != "true":
                     prev.setNextID('0')
                     for pid in pids:
                         parentNode = tree.getNode(pid)
@@ -202,8 +293,24 @@ def getContent(req, ids):
                         _next = tree.getNode(n.next_nid)
                         _next.addChild(tree.getNode(n.prev_nid))
 
-                    return req.getTAL(
-                        "web/edit/modules/metadata.html", {'url': '?id=' + prev.id + '&tab=metadata', 'pid': None}, macro="redirect")
+                    node_versions = nodes[0].getVersionList()
+                    update_date, creation_date = get_datelists(nodes)
+
+                    data = {'url': '?id=' + prev.id + '&tab=metadata', 'pid':
+                            None, 'flag_nodename_changed': flag_nodename_changed}
+
+                    data["versions"] = node_versions
+                    data["creation_date"] = creation_date
+                    data["update_date"] = update_date
+
+                    _maskform, _fields = get_maskform_and_fields(
+                        nodes, mask, req)
+                    data["maskform"] = _maskform
+                    data["fields"] = _fields
+
+                    data.update(ctx)
+
+                    return req.getTAL("web/edit/modules/metadata.html", data, macro="redirect")
                 else:
                     # Version 0
                     # Move node to trash
@@ -213,8 +320,24 @@ def getContent(req, ids):
                         parentNode = tree.getNode(pid)
                         parentNode.removeChild(n)
 
-                    return req.getTAL(
-                        "web/edit/modules/metadata.html", {'url': '?id=' + pids[0] + '&tab=content', 'pid': pids[0]}, macro="redirect")
+                    node_versions = nodes[0].getVersionList()
+                    update_date, creation_date = get_datelists(nodes)
+
+                    data = {'url': '?id=' + pids[0] + '&tab=content', 'pid': pids[
+                        0], 'flag_nodename_changed': flag_nodename_changed}
+
+                    data["versions"] = node_versions
+                    data["creation_date"] = creation_date
+                    data["update_date"] = update_date
+
+                    _maskform, _fields = get_maskform_and_fields(
+                        nodes, mask, req)
+                    data["maskform"] = _maskform
+                    data["fields"] = _fields
+
+                    data.update(ctx)
+
+                    return req.getTAL("web/edit/modules/metadata.html", data, macro="redirect")
 
     if "edit_metadata" in req.params:
         # check and save items
@@ -222,9 +345,19 @@ def getContent(req, ids):
 
         for node in nodes:
             if not access.hasWriteAccess(node) or node.id == userdir.id:
+                print "error 3"
                 return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
-        logging.getLogger('usertracing').info(access.user.name + " change metadata " + idstr)
+        logging.getLogger('usertracing').info(
+            access.user.name + " change metadata " + idstr)
+        logging.getLogger('editor').info(
+            access.user.name + " change metadata " + idstr)
+        logging.getLogger('editor').debug(pf(req.params))
+
+        for node in nodes:
+            node.set("updateuser", user.getName())
+            if node.get('updatetime') < str(now()):
+                node.set("updatetime", str(format_date()))
 
         if not hasattr(mask, "i_am_not_a_mask"):
             errorlist = []
@@ -240,8 +373,8 @@ def getContent(req, ids):
                         _ids.append(node.id)
                     else:
                         n = node.createNewVersion(user)
-                        n.set("system.version.comment", '(' + t(req, "document_new_version_comment") + ')\n' +
-                              req.params.get('version_comment', ''))
+                        n.set("system.version.comment", '(' + t(req, "document_new_version_comment") +
+                              ')\n' + req.params.get('version_comment', ''))
 
                         # add all existing attributes to the new version node
                         for attr, value in node.items():
@@ -261,16 +394,56 @@ def getContent(req, ids):
                 nodes = mask.updateNode(nodes, req)
                 errorlist += mask.validateNodelist(nodes)
                 if len(errorlist) == 0:
+
+                    node_versions = nodes[0].getVersionList()
+                    update_date, creation_date = get_datelists(nodes)
+
+                    data = {
+                        'url': '?id=' + nodes[0].id + '&tab=metadata',
+                        'pid': None,
+                    }
+
+                    data["versions"] = node_versions
+                    data["creation_date"] = creation_date
+                    data["update_date"] = update_date
+
+                    _maskform, _fields = get_maskform_and_fields(
+                        nodes, mask, req)
+                    data["maskform"] = _maskform
+                    data["fields"] = _fields
+
+                    data.update(ctx)
+
                     ret += req.getTAL("web/edit/modules/metadata.html",
-                                      {'url': '?id=' + nodes[0].id + '&tab=metadata', 'pid': None}, macro="redirect")
+                                      data, macro="redirect")
             else:
+                if nodes:
+                    old_nodename = nodes[0].name
                 nodes = mask.updateNode(nodes, req)
+                if nodes:
+                    new_nodename = nodes[0].name
+                    if old_nodename != new_nodename:
+                        flag_nodename_changed = str(node.id)
+
                 errorlist += mask.validateNodelist(nodes)
         else:
             for field in mask.metaFields():
+                msg = "in %s.%s: (hasattr(mask,'i_am_not_a_mask')) field: %r, field.id: %r, field.name: %r, mask: %r, maskname: %r" % (
+                    __name__, funcname(), field, field.id, field.getName(), mask, maskname)
+                logger.debug(msg)
                 field_name = field.getName()
-                if field_name == 'nodename':
-                    field_name = getDefaultLanguage() + '__nodename'
+                if field_name == 'nodename' and maskname == 'settings':
+                    if '__nodename' in req.params:
+                        field_name = '__nodename'  # no multilang here !
+                    elif getDefaultLanguage() + '__nodename' in req.params:
+                        # no multilang here !
+                        field_name = getDefaultLanguage() + '__nodename'
+                    value = req.params.get(field_name, None)
+                    if value:
+                        if value != node.name:
+                            flag_nodename_changed = str(node.id)
+                        for node in nodes:
+                            node.setName(value)
                 value = req.params.get(field_name, None)
                 if value is not None:
                     for node in nodes:
@@ -280,12 +453,7 @@ def getContent(req, ids):
             errorlist = []
 
         if len(errorlist) > 0 and "save" in req.params:
-            ret += '<p class="error">' + t(lang(req), "fieldsmissing") + '<br>' + t(lang(req), 'saved_in_inconsistent_data') + '</p>'
-
-        for node in nodes:
-            node.set("updateuser", user.getName())
-            if node.get('updatetime') < str(now()):
-                node.set("updatetime", str(format_date()))
+            err = 1
 
         for node in nodes:
             if node.id in errorlist:
@@ -299,46 +467,22 @@ def getContent(req, ids):
         if not hasattr(mask, "i_am_not_a_mask"):
             req.params["errorlist"] = mask.validate(nodes)
 
-    update_date = []
-    if len(nodes) == 1:
-        for node in nodes:
-            if node.get("updatetime"):
-                try:
-                    date = parse_date(node.get("updatetime"), "%Y-%m-%dT%H:%M:%S")
-                    datestr = format_date(date, format='%d.%m.%Y %H:%M:%S')
-                except:
-                    datestr = node.get("updatetime")
-                update_date.append([node.get("updateuser"), datestr])
-
-    creation_date = []
-    if len(nodes) == 1:
-        for node in nodes:
-            if node.get("creationtime"):
-                try:
-                    date = parse_date(node.get("creationtime"), "%Y-%m-%dT%H:%M:%S")
-                    datestr = format_date(date, format='%d.%m.%Y %H:%M:%S')
-                except:
-                    datestr = node.get("creationtime")
-                creation_date.append([node.get("creator"), datestr])
-
     node_versions = nodes[0].getVersionList()
+    update_date, creation_date = get_datelists(nodes)
 
     data = {}
-    data["user"] = user
-    data["access"] = access
-    data["metatypes"] = metatypes
-    data["idstr"] = idstr
-    data["node"] = nodes[0]
     data["versions"] = node_versions
-    data["masklist"] = masklist
-    data["maskname"] = maskname
     data["creation_date"] = creation_date
     data["update_date"] = update_date
-    if not hasattr(mask, "i_am_not_a_mask"):
-        data["maskform"] = mask.getFormHTML(nodes, req)
-        data["fields"] = None
-    else:
-        data["maskform"] = None
-        data["fields"] = mask.metaFields()
-    ret += req.getTAL("web/edit/modules/metadata.html", data, macro="edit_metadata")
+    data["err"] = err
+
+    _maskform, _fields = get_maskform_and_fields(nodes, mask, req)
+    data["maskform"] = _maskform
+    data["fields"] = _fields
+
+    data.update(ctx)
+    data["flag_nodename_changed"] = flag_nodename_changed
+
+    ret += req.getTAL("web/edit/modules/metadata.html",
+                      data, macro="edit_metadata")
     return ret

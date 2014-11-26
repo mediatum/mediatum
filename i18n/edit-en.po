@@ -185,7 +185,7 @@ msgid "edit_action_clear_trash"
 msgstr "Clear Trashbox"
 
 msgid "select_target_dir"
-msgstr "Select target directory:"
+msgstr "Click on 'OK' and select in the navigation tree the folder where to move/copy the selected objects.\nYou may cancel using the cancel button."
 
 msgid "fieldsmissing"
 msgstr "Not all required fields were filled correctly."
@@ -225,9 +225,6 @@ msgstr "Inconsistent metadata"
 
 msgid "edit_common_bigview_title"
 msgstr "Full view"
-
-msgid "edit_common_edit_meta"
-msgstr "Edit metadata"
 
 msgid "edit_editor_save"
 msgstr "Save"
@@ -292,3 +289,79 @@ msgstr "mediaTUM Editor Interface"
 msgid "notpublished"
 msgstr "not published"
 
+##### new editor design #####
+
+msgid "edit_add_new_container"
+msgstr "Add new folder:"
+
+msgid "edit_edit_container_node"
+msgstr "Edit"
+
+msgid "edit_cut_container"
+msgstr "Cut folder"
+
+msgid "edit_paste_container_here"
+msgstr "Paste folder"
+
+msgid "edit_empty_recycle_bin"
+msgstr "Empty recycle bin"
+
+msgid "edit_delete_container"
+msgstr "Move folder to recycle bin"
+
+msgid "e_folder_homedir"
+msgstr "Home directory"
+
+msgid "e_folder_trashdir"
+msgstr "Recycle bin"
+
+msgid "e_folder_uploaddir"
+msgstr "Uploads"
+
+msgid "edit_help_title"
+msgstr "Editor Help"
+
+msgid "edit_selected_edit"
+msgstr "Simultaneously edit metadata of selected objects"
+
+msgid "edit_selected_move"
+msgstr "Move selected objects"
+
+msgid "edit_selected_copy"
+msgstr "Copy selected objects"
+
+msgid "edit_selected_delete"
+msgstr "Delete selected objects"
+
+msgid "edit_common_edit_meta"
+msgstr "Edit metadata"
+
+msgid "edit_common_edit_move"
+msgstr "Move object"
+
+msgid "edit_common_edit_copy"
+msgstr "Copy object"
+
+msgid "edit_common_edit_delete"
+msgstr "Delete object"
+
+msgid "edit_common_noobjectsfound"
+msgstr "No objects found"
+
+msgid "edit_add_directory"
+msgstr "New Folder"
+
+msgid "edit_add_container_default"
+msgstr "New folder of Type "
+
+msgid "edit_layout_togglertip_open"
+msgstr "Fade out"
+
+msgid "edit_layout_togglertip_closed"
+msgstr "Fade in"
+
+msgid "edit_layout_resizertip"
+msgstr "Resize"
+
+msgid "edit_add_new_collection"
+msgstr "Add new collection"

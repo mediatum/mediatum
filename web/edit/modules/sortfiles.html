@@ -1,13 +1,28 @@
 
 <tal:block metal:define-macro="edit_sortfiles">
-    <h2 tal:content="name">TEXT</h2>
-    <h3 i18n:translate="edit_sort_header_auto">TEXT</h3>
-    <form>
-        <input type="hidden" name="tab" value="sortfiles"/>
-        <input tal:attributes="value python:node.id" type="hidden" name="id"/>
-        <select name="globalsort">
-            <option tal:repeat="sortchoice sortchoices" onSelect="form.submit()" tal:attributes="value python:sortchoice.value; selected python:{'False':None,'True':'selected'}[str(sortchoice.value==collection_sortfield)]" tal:content="python:sortchoice.label"/>
-        </select>
-        <input type="submit" name="ok" value="ok"/>
-    </form>
+
+    <script>
+        $(document).ready(function () { // set correct height of scrollable content
+            var sublayout = $('#sub_content').layout({applyDemoStyles: true,
+                center:{paneSelector: "#sub_content_content", onresize: $.layout.callbacks.resizePaneAccordions},
+                south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0}
+                });
+            });
+    </script>
+
+    <div id="sub_content_content" style="border-width:0 0 0 1px!important">
+        <h2 tal:content="name">TEXT</h2>
+        <h3 i18n:translate="edit_sort_header_auto">TEXT</h3>
+        <form>
+            <input type="hidden" name="tab" value="sortfiles"/>
+            <input tal:attributes="value python:node.id" type="hidden" name="id"/>
+            <select name="globalsort">
+                <option tal:repeat="sortchoice sortchoices" onSelect="form.submit()" tal:attributes="value python:sortchoice.value; selected python:{'False':None,'True':'selected'}[str(sortchoice.value==collection_sortfield)]" tal:content="python:sortchoice.label"/>
+            </select>
+            <input type="submit" name="ok" value="ok"/>
+        </form>
+    </div>
+
+    <div id="sub_footer_module" > </div>
+
 </tal:block>

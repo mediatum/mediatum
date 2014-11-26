@@ -1,5 +1,5 @@
-﻿<metal:block metal:define-macro="manageform">
-    
+<metal:block metal:define-macro="manageform">
+
     <script type="text/javascript">
         var schema = "";
         var field = "";
@@ -11,18 +11,18 @@
             document.getElementById("indexvalues").innerHTML = "";
             getEditPage('indexfields', id, 'manageindex', 'indexfields__'+action);
         }
-        
+
         function getFields(id, action){
             field = action;
             document.getElementById("indexvalues").innerHTML = '<br/><img src="/img/wait_small.gif"/>';
             action += "__"+schema;
             getEditPage('indexvalues', id, 'manageindex', 'indexvalues__'+action);
         }
-        
+
         function getCurrentCollection(obj, id, action){
             document.getElementById("currentcollection").innerHTML = '<br/><img src="/img/wait_small.gif"/>';
             action += "__"+schema+"__"+field+"__";
-            
+
             for (var i=0; i<obj.options.length; i++){
                 if (obj.options[i].selected==true){
                     action +=encodeURIComponent(obj.options[i].value)+";"
@@ -30,11 +30,11 @@
             }
             getEditPage("currentcollection", id, 'manageindex', action);
         }
-        
+
         function setValue(val){
             document.getElementById('new_value').value = val;
         }
-        
+
         function checkForm(){
             if (document.getElementById('empty').checked){
                 if (document.getElementById('old_values').value=="" || document.getElementById('new_value').value==""){
@@ -44,15 +44,16 @@
             return true;
         }
     </script>
-    
+
+    <div id="sub_content_content" style="border-width:0 0 0 1px!important">
     <p tal:condition="message" tal:content="message" class="templateerror" style="text-align:center">
-    
+
     </p>
 
     <form method="post">
         <h2 i18n:translate="edit_manageindex_step1_header">TEXT</h2>
         <div id="schemes"><img src="/img/wait_small.gif"/></div>
-        
+
         <div id="indexfields">
         </div>
 
@@ -60,8 +61,20 @@
         </div>
 
     </form>
-    
+    </div>
+    <div id="sub_footer_module"> </div>
     <script tal:content="python:'\n\tgetEditPage(\'schemes\', \''+str(id)+'\', \'manageindex\', \'schemes\');\n    '">
+    </script>
+
+    <script>
+
+        $(document).ready(function () { // set correct height of scrollable content
+           var sublayout = $('#sub_content').layout({applyDemoStyles: true,
+                center:{paneSelector: "#sub_content_content", onresize: $.layout.callbacks.resizePaneAccordions},
+                south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0}
+                });
+        });
+
     </script>
 
 </metal:block>
@@ -90,7 +103,7 @@
         </select>
     </p>
     <div id="currentcollection" style="min-height:40px">
-    
+
     </div>
 
     <h2 i18n:translate="edit_manageindex_step4_header">TEXT</h2>

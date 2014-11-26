@@ -22,7 +22,12 @@
 import os
 import sys
 
-basedir = os.path.dirname(__file__).rsplit(os.sep, 1)[0]
+
+#basedir = os.path.dirname(__file__).rsplit(os.sep, 1)[0]
+# using abspath allows importing start.py or variants (wn 2014-11-20)
+basedir = os.path.abspath(__file__).rsplit(os.sep, 2)[0]
+
+
 print "Base path is at", basedir
 # append our own fallback lib directory
 sys.path.append(os.path.join(basedir, "external"))

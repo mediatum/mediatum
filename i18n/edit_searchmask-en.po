@@ -1,0 +1,26 @@
+msgid "edit_searchmask_type"
+msgstr "Searchmask type"
+
+msgid "edit_searchmask_none"
+msgstr "no searchmask"
+
+msgid "edit_searchmask_parent"
+msgstr "use from parent"
+
+msgid "edit_searchmask_new"
+msgstr "own searchmask"
+
+msgid "edit_searchmask_fieldtitle"
+msgstr "Search within the following fields:"
+
+msgid "edit_searchmask_add"
+msgstr "add new field"
+
+msgid "edit_searchmask_schema"
+msgstr "schema"
+
+msgid "edit_searchmask_field"
+msgstr "field"
+
+msgid "edit_searchfield_none"
+msgstr "- no schema -"

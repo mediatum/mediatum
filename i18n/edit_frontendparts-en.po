@@ -26,13 +26,13 @@ msgid "edit_frontendparts_item_delete"
 msgstr "Do you really want to delete this entry?"
 
 msgid "edit_frontendparts_header_title"
-msgstr "Header:"
+msgstr "Header"
 
 msgid "edit_frontendparts_footerleft_title"
-msgstr "Footer left:"
+msgstr "Footer left"
 
 msgid "edit_frontendparts_footerright_title"
-msgstr "Footer right:"
+msgstr "Footer right"
 
 msgid "edit_frontendparts_name_title"
 msgstr "Name"

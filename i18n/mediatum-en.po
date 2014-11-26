@@ -304,7 +304,13 @@ msgstr "directory (system type)"
 msgid "directory"
 msgstr "Directory"
 
+msgid "bare_directory"
+msgstr "Directory"
+
 msgid "collection"
+msgstr "Collection"
+
+msgid "bare_collection"
 msgstr "Collection"
 
 msgid "Root"

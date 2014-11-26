@@ -1,0 +1,67 @@
+<tal:block metal:define-macro="edit_content">
+
+    <div id="navigation_content" style="display:block;border:1px solid silver!important;border-width:0px 0px 1px 1px !important;">
+
+        <div id="selection" style="overflow:auto;float:left;">
+            <div style='float:left;'><tal:block i18n:translate="edit_common_mark">TEXT</tal:block>:&nbsp;&nbsp;</div>
+            <select onChange="doaction(this);" name="selection" style="width:170px;float:left">
+                <option value="empty">---</option>
+                <option value="markall" i18n:translate="edit_common_mark_all">TEXT</option>
+                <option value="marknone" i18n:translate="edit_common_dismark">TEXT</option>
+                <option value="invert" i18n:translate="edit_common_mark_invert">TEXT</option>
+            </select>
+
+            <div style="float:left;padding:0px 10px 0px 10px;">
+                <a href="#" onclick="editSelected()" i18n:attributes="title edit_selected_edit"><img src="/img/edit_edit.gif"/></a>
+                <a href="#" onclick="movecopySelected(null,'move')" i18n:attributes="title edit_selected_move"><img src="/img/edit_move.gif"/></a>
+                <a href="#" onclick="movecopySelected(null,'copy')" i18n:attributes="title edit_selected_copy"><img src="/img/edit_copy.gif"/></a>
+                <a href="#" onclick="deleteSelected()"><img src="/img/edit_delete.png" i18n:attributes="title edit_selected_delete"/></a>
+            </div>
+        </div>
+        <div id="operation" style="overflow:auto;float:right;">
+                <tal:block i18n:translate="edit_sort_header_auto">TEXT</tal:block>:
+                <select name="globalsort" id="globalsort" style="width:100px;padding:0px" onchange="sortItems_sync($('#globalsort'))">
+                    <option tal:repeat="sortchoice sortchoices" tal:attributes="value python:sortchoice.value; selected python:{'False':None,'True':'selected'}[str(sortchoice.value==collection_sortfield)]" tal:content="python:sortchoice.label"/>
+                </select>
+               <button type="button" style="margin-top:0px;font-size:10px!important;" onclick="saveSort($('#globalsort'))" i18n:translate="edit_save" >TEXT</button>
+        </div>
+
+    </div>
+
+    <div id="sub_footer_module" style="overflow:hidden!important;border-width:0px!important;height:20xp;padding:0px!important;">
+        <div style="position:absolute;right:5px;top:2px;font-size:11px">
+            <tal:block tal:replace="count"/> item(s)
+        </div>
+    </div>
+
+    <div id="sub_content_content">
+
+        <div style="padding-left:200px">
+            <p id="message" class="error" style="display:none;text-align:center;position:fixed;"/>
+        </div>
+        <div style="clear:left"> </div>
+
+        <div id="module_content_main">
+            <tal:block tal:replace="raw items"/>
+        </div>
+    </div>
+
+    <script tal:content="python:'var js_edit_layout_togglertip_open = \''+str(t(language, 'edit_layout_togglertip_open'))+'\';'">;</script>
+    <script tal:content="python:'var js_edit_layout_togglertip_closed = \''+str(t(language, 'edit_layout_togglertip_closed'))+'\';'">;</script>
+    <script tal:content="python:'var id = '+id+';'"/>
+
+    <script>
+        $(document).ready(function () {
+            sublayout = $('#sub_content').layout({applyDemoStyles: true,
+                center:{paneSelector: "#sub_content_content",},
+                north:{paneSelector: "#navigation_content", size:45,resizable:false,},
+                south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0,},
+
+                togglerTip_open: js_edit_layout_togglertip_open,
+                togglerTip_closed: js_edit_layout_togglertip_closed
+
+                });
+        });
+    </script>
+
+</tal:block>

@@ -2,13 +2,16 @@ msgid "edit_files_filetype_error"
 msgstr "Austausch nicht möglich, da die Dateitypen nicht übereinstimmen."
 
 msgid "edit_files_files"
-msgstr "Dateien:"
+msgstr "Dateien"
+
+msgid "edit_files_children"
+msgstr "Kindelemente"
 
 msgid "edit_files_attachments"
-msgstr "Attachments:"
+msgstr "Attachments"
 
 msgid "edit_files_stats"
-msgstr "Statistik:"
+msgstr "Statistik"
 
 msgid "edit_files_dirname"
 msgstr "Verzeichnisname: "

@@ -26,13 +26,13 @@ msgid "edit_frontendparts_item_delete"
 msgstr "Soll der Eintrag wirklich gelöscht werden?"
 
 msgid "edit_frontendparts_header_title"
-msgstr "Header:"
+msgstr "Header"
 
 msgid "edit_frontendparts_footerleft_title"
-msgstr "Fußzeile links:"
+msgstr "Fußzeile links"
 
 msgid "edit_frontendparts_footerright_title"
-msgstr "Fußzeile rechts:"
+msgstr "Fußzeile rechts"
 
 msgid "edit_frontendparts_name_title"
 msgstr "Name"

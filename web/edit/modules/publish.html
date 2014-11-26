@@ -1,15 +1,24 @@
 
 <form metal:define-macro="publish_form" tal:attributes="action python:'/edit/edit_content?id='+str(id)+'&tab=publish'" method="post" style="margin:5px" name="publishform">
+    <style>
+        #treeform{display:none;position:fixed;top:0px;left:0px;right:0px;bottom:0px;width:100%;height:100%;z-index:1000000;}
+        #treeform-background{position:absolute;top:0px;left;0px;height:100%;width:100%;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
+        #treeform-form{position:absolute;top:0px;left:0px;bottom:0px;right:0px;padding:0px;margin:30px;z-index:1000001;
+            height:90%;width:80%;margin:auto;
+        }
+        #treeform-form form{background-color:white}
+    </style>
+    
     <link rel="stylesheet" href="/css/ftree.css" type="text/css" />
-    <script type="text/javascript" src="/js/ajax.js"> </script>
     <script type="text/javascript" src="/js/ftree.js"> </script>
     <script type="text/javascript" tal:content="script"> </script>
     <script type="text/javascript"> 
         var items = new Array();
         var itemnames = new Array();
+        var showContextMenu = false;
 
         function setFolder(){
-            check = markFolder(true, "", this.id);
+            check = markFolder(false, "", this.id);
             obj = document.getElementById('Node'+this.id);
             label = obj.getElementsByTagName('A')[0].title;
             if(!check){
@@ -39,42 +48,72 @@
         }
 
         function returnvalues(ids, values){
-            var obj = document.getElementById("destination");
-            obj.value=ids;
-            obj = document.getElementById("dest_names");
-            obj.innerHTML = values;
+            $('#destination').val(ids);
+            $('#dest_names').html(values);
+        }
+        
+        function showForm(){
+            $('#treeform').css('display','block');
+        }
+        
+        function closeForm(){
+            $('#treeform').css('display','none');
         }
     </script>
-    <h3 i18n:translate="edit_publish_header">TEXT</h3>
-    <p tal:condition="python:len(faultylist)>0" class="error">
-        Objekte mit folgender ID konnten nicht publiziert werden:<br/>
-        <tal:block tal:repeat="item faultylist" tal:replace="raw python:'- '+str(id)+'<br/>'"/>
-    </p>
     
-    <p i18n:translate="edit_publish_info">TEXT</p>
-    <div style="height:250px; overflow:auto;border:1px solid silver">
-        <ul id="classtree" class="tree">
-            <li tal:attributes="id python:'Node'+basedir.id"><a tal:attributes="id python:str(basedir.id); title python:basedir.getLabel()+' ('+str(basedir.id)+')'" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
-                <ul>
-                    <li tal:attributes="parentId python:basedir.id" class="spinner.gif"><a href="#" id="node_0"> </a></li>
+    <div id="treeform">
+        <div id="treeform-background">&nbsp;</div>
+        <div id="treeform-form">
+            <div style="position:absolute;top:-7px;right:-7px;z-index:10002"><a href="#" onclick="closeForm()" i18n:attributes="title mask_editor_cancel"><img src="/img/cancel.png"/></a></div>
+            <div  style="height:90%;background-color:white;padding:5px">
+            <h3 i18n:translate="edit_publish_info">TEXT</h3>
+            <div style="height:85%; overflow:auto;border:1px solid silver;margin:20px 20px">
+                <ul id="classtree" class="tree">
+                    <li tal:attributes="id python:'Node'+basedir.id"><a tal:attributes="id python:str(basedir.id); title python:basedir.getLabel()+' ('+str(basedir.id)+')'" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
+                        <ul>
+                            <li tal:attributes="parentId python:basedir.id" class="spinner.gif"><a href="#" id="node_0"> </a></li>
+                        </ul>
+                    </li>
                 </ul>
-            </li>
-        </ul>
+            </div>
+                <p style="text-align:center;height:50px">
+                    <button type="button" onclick="closeForm()" style="width:200px">OK</button>
+                </p>
+            </div>
+        </div>
     </div>
-    <br/>
-    <span i18n:translate="edit_publish_dirs">TEXT</span>
-    <div id="dest_names" name="dest_names" style="border:1px solid silver;padding:5px;margin:10px 0px;min-height:20px" tal:content="stdname"/>
-    <p>
-        <input type="hidden" name="destination" id="destination" tal:attributes="value stddir" />
-        <button type="submit" name="dopublish" i18n:translate="edit_publish_button">TEXT</button>
-    </p>
+
+    <div style="clear:left"> </div>
+    <div>
+        <p tal:condition="python:len(faultylist)>0" class="error" style="left: 200px; top: 100px; position: absolute;">
+                Objekte mit folgender ID konnten nicht publiziert werden:<br/>
+                <tal:block tal:repeat="item faultylist" tal:replace="raw python:'- '+str(id)+'<br/>'"/>
+            </p>
+    </div>
+    
+    <div id="operation" style="position:relative;margin-right:20px;overflow:hidden;position:relative">
+        <div style="width:200px;height:100px;float:left">
+            <br/>
+            <a href="#" onclick="showForm()">Verzeichnisse auswählen</a>
+            <p>
+                <input type="hidden" name="destination" id="destination" tal:attributes="value stddir" />
+                <br/>
+                <button type="submit" name="dopublish" i18n:translate="edit_publish_button">TEXT</button>
+            </p>
+            
+        </div>
+        <div id="dest_names" name="dest_names" style="width:auto;border:1px solid silver;padding:5px;margin:10px 20px;margin-left:200px;height:50px;overflow:auto" tal:content="stdname"/>
+        <tal:block tal:replace="raw python:'<script type=&quot;text/javascript&quot;>'"/>
+            <tal:block tal:repeat="id python:idstr" tal:replace="python:'allobjects[\'check'+id+'\'] = 1;'"/>
+        <tal:block tal:replace="raw python:'</script>'"/>
+    </div>
     <tal:block tal:replace="raw showdir">TEXT</tal:block>
-    <script type="text/javascript">
-        initTree({'idOfFolderTrees': ['classtree'], 'style':'classification', 'multiselect':true});
+    <script>
+        $(document).ready(function () { // set correct height of scrollable content
+            initTree({'idOfFolderTrees': ['classtree'], 'style':'classification', 'multiselect':true});
+           $('#scrollcontainer').css('top', $('#operation').position().top + $('#operation').height());
+        });
     </script>
-    <tal:block tal:replace="raw python:'<script type=&quot;text/javascript&quot;>'"/>
-        <tal:block tal:repeat="id python:idstr" tal:replace="python:'allobjects['+id+']=1;'"/>
-    <tal:block tal:replace="raw python:'</script>'"/>
 </form>
 
 <metal:block metal:define-macro="reload">

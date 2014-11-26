@@ -17,6 +17,9 @@
 
     <script type="text/javascript" language="javascript" src="/js/mediatum.js">
     </script>
+
+    <div id="sub_content_content">
+
     <form class="edit" name="myform" method="post">
         <input type="hidden" name="save" value="save"/>
         <input type="hidden" name="nodeid" tal:attributes="value idstr"/>
@@ -43,6 +46,22 @@
             <input i18n:attributes="value edit_save_title" type="button" name="save" onClick="runsubmit()">
         </p>
     </form>
+
+    </div>
+
+    <div id="sub_footer_module"> </div>
+
+    <script>
+        $(document).ready(function () {
+            sublayout = $('#sub_content').layout({applyDemoStyles: true,
+                center:{paneSelector: "#sub_content_content"},
+                south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0},
+                togglerTip_open: js_edit_layout_togglertip_open,
+                togglerTip_closed: js_edit_layout_togglertip_closed
+                });
+                    });
+    </script>
+
 </tal:block>
 
 <tal:block metal:define-macro="edit_acls_selectbox">

@@ -23,12 +23,14 @@ import random
 import core.tree as tree
 import os
 import core.users as users
-import core.config as config
 import logging
 import core.acl as acl
-from utils.utils import getMimeType
+from utils.utils import getMimeType, get_user_id, log_func_entry, dec_entry_log
 from utils.fileutils import importFile, getImportDir, importFileIntoDir
 from contenttypes.image import makeThumbNail, makePresentationFormat
+
+log = logging.getLogger('editor')
+
 from core.translation import lang, t
 import core.db.mysqlconnector as mysqlconnector
 
@@ -39,62 +41,12 @@ def getContent(req, ids):
     node = tree.getNode(ids[0])
     update_error = False
     access = acl.AccessData(req)
+
+    msg = "%s|web.edit.modules.files.getContend|req.fullpath=%r|req.path=%r|req.params=%r|ids=%r" % (get_user_id(req), req.fullpath, req.path, req.params, ids)
+    log.debug(msg)
+
     if not access.hasWriteAccess(node) or "files" in users.getHideMenusForUser(user):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
-
-    masklist = []
-
-    for m in node.getType().getMasks(type="edit"):
-        if access.hasReadAccess(m):
-            masklist.append(m)
-
-    if hasattr(node, "metaFields"):
-
-        class SystemMask:
-
-            def __init__(self, name, description, fields):
-                self.name, self.description, self.fields = name, description, fields
-
-            def getName(self):
-                return self.name
-
-            def getDescription(self):
-                return self.description
-
-            def getDefaultMask(self):
-                return False
-
-            def metaFields(self, lang=None):
-                return self.fields
-
-            def i_am_not_a_mask():
-                pass
-        masklist = [SystemMask("settings", t(req, "settings"), node.metaFields(lang(req)))] + masklist
-
-    default = None
-    for m in masklist:
-        if m.getDefaultMask():
-            default = m
-            break
-    if not default and len(masklist):
-        default = masklist[0]
-
-    maskname = req.params.get("mask", node.get("edit.lastmask") or "editmask")
-    if maskname == "":
-        maskname = default.getName()
-
-    mask = None
-    for m in masklist:
-        if maskname == m.getName():
-            mask = m
-            break
-
-    if not mask and default:
-        mask = default
-        maskname = default.getName()
-
-    if not mask:
-        return req.getTAL("web/edit/modules/metadata.html", {}, macro="no_mask")
 
     if 'data' in req.params:
         if req.params.get('data') == 'children':  # get formated list of childnodes of selected directory
@@ -115,7 +67,7 @@ def getContent(req, ids):
                 if len(remnode.getParents()) == 1:
                     users.getUploadDir(user).addChild(remnode)
                 node.removeChild(remnode)
-            except:  # node not found
+            except: # node not found
                 pass
             req.writeTAL("web/edit/modules/files.html", {'children': node.getChildren(), 'node': node}, macro="edit_files_children_list")
 
@@ -132,10 +84,9 @@ def getContent(req, ids):
         return ""
 
     if req.params.get("style") == "popup":
-        v = {}
-        v["basedirs"] = [tree.getRoot('home'), tree.getRoot('collections')]
+        v = {"basedirs": [tree.getRoot('home'), tree.getRoot('collections')]}
         id = req.params.get("id", tree.getRoot().id)
-        v["script"] = "var currentitem = '%s';\nvar currentfolder = '%s';\nvar node = %s;" % (id, req.params.get('parent'), id)
+        v["script"] = "var currentitem = '%s';\nvar currentfolder = '%s';\nvar node = %s;" %(id, req.params.get('parent'), id)
         v["idstr"] = ",".join(ids)
         v["node"] = node
         req.writeTAL("web/edit/modules/files.html", v, macro="edit_files_popup_selection")
@@ -157,8 +108,8 @@ def getContent(req, ids):
                                             os.remove(root + "/" + name)
                                         except:
                                             pass
-                                    os.removedirs(file.retrieveFile() + "/")
-                            if len([f for f in node.getFiles() if f.getName() == filename[1] and f.type == filename[0]]) > 1:
+                                    os.removedirs(file.retrieveFile()+"/")
+                            if len([f for f in node.getFiles() if f.getName()==filename[1] and f.type==filename[0]]) > 1:
                                 # remove single file from database if there are duplicates
                                 node.removeFile(file, single=True)
                             else:
@@ -180,87 +131,73 @@ def getContent(req, ids):
                             break
                     break
 
-        elif op == "change":
+        elif op=="change":
             uploadfile = req.params.get("updatefile")
 
             if uploadfile:
                 create_version_error = False
                 # Create new version when change file
                 if (req.params.get('generate_new_version') and not hasattr(node, "metaFields")):
-                    if (req.params.get('version_comment', '').strip() == ''
-                            or req.params.get('version_comment', '').strip() == '&nbsp;'):
+                    if (req.params.get('version_comment', '').strip()==''
+                        or req.params.get('version_comment', '').strip()=='&nbsp;'):
                         create_version_error = True
                         ret += req.getTAL("web/edit/modules/files.html", {}, macro="version_error")
                     else:
                         current = node
                         node = node.createNewVersion(user)
 
-                        # for item in mask.getMaskFields():
-                        #    field = item.getField()
-                        #    if field and field.getContentType()=="metafield":
-                        #        node.set(field.getName(), current.get(field.getName()))
-
-                        # duplicate attributes
                         for attr, value in current.items():
-                            if node.get(attr) != "":  # do not overwrite attributes
+                            if node.get(attr)!="": # do not overwrite attributes
                                 pass
                             else:
                                 node.set(attr, value)
-                        ret += req.getTAL("web/edit/modules/metadata.html",
-                                          {'url': '?id={}&tab=files'.format(node.id), 'pid': None}, macro="redirect")
+                        ret += req.getTAL("web/edit/modules/metadata.html", {'url':'?id='+node.id+'&tab=files', 'pid':None}, macro="redirect")
 
-                if req.params.get("change_file") == "yes" and not create_version_error:  # remove old files
+                if req.params.get("change_file")=="yes" and not create_version_error: # remove old files
                     for f in node.getFiles():
                         if f.getType() in node.getSysFiles():
                             node.removeFile(f)
-                    node.set("system.version.comment", '(' + t(req, "edit_files_new_version_exchanging_comment") + ')\n' +
-                             req.params.get('version_comment', ''))
+                    node.set("system.version.comment", '('+t(req, "edit_files_new_version_exchanging_comment")+')\n'+req.params.get('version_comment', ''))
 
-                if req.params.get("change_file") == "no" and not create_version_error:
-                    node.set("system.version.comment", '(' + t(req, "edit_files_new_version_adding_comment") + ')\n' +
-                             req.params.get('version_comment', ''))
+                if req.params.get("change_file")=="no" and not create_version_error:
+                    node.set("system.version.comment", '('+t(req, "edit_files_new_version_adding_comment")+')\n'+req.params.get('version_comment', ''))
 
                 if req.params.get("change_file") in ["yes", "no"] and not create_version_error:
-                    file = importFile(uploadfile.filename, uploadfile.tempname)  # add new file
+                    file = importFile(uploadfile.filename, uploadfile.tempname) # add new file
                     node.addFile(file)
-                    logging.getLogger('usertracing').info(
-                        "{} changed file of node {} to {} ({})".format(user.name,
-                                                                       node.id,
-                                                                       uploadfile.filename,
-                                                                       uploadfile.tempname))
+                    logging.getLogger('usertracing').info(user.name+" changed file of node "+node.id+" to "+uploadfile.filename+" ("+uploadfile.tempname+")")
 
                 attpath = ""
                 for f in node.getFiles():
-                    if f.getMimeType() == "inode/directory":
+                    if f.getMimeType()=="inode/directory":
                         attpath = f.getName()
                         break
 
-                if req.params.get("change_file") == "attdir" and not create_version_error:  # add attachmentdir
+                if req.params.get("change_file")=="attdir" and not create_version_error: # add attachmentdir
                     dirname = req.params.get("inputname")
 
-                    if attpath == "":  # add attachment directory
+                    if attpath=="": # add attachment directory
                         attpath = req.params.get("inputname")
                         if not os.path.exists(getImportDir() + "/" + attpath):
                             os.mkdir(getImportDir() + "/" + attpath)
                             node.addFile(tree.FileNode(name=getImportDir() + "/" + attpath, mimetype="inode/directory", type="attachment"))
 
-                        file = importFileIntoDir(getImportDir() + "/" + attpath, uploadfile.tempname)  # add new file
-                    node.set("system.version.comment", '(' + t(req, "edit_files_new_version_attachment_directory_comment") + ')\n' +
-                             req.params.get('version_comment', ''))
+                        file = importFileIntoDir(getImportDir() + "/" + attpath, uploadfile.tempname) # add new file
+                    node.set("system.version.comment", '('+t(req, "edit_files_new_version_attachment_directory_comment")+')\n'+req.params.get('version_comment', ''))
                     pass
 
-                if req.params.get("change_file") == "attfile" and not create_version_error:  # add file as attachment
-                    if attpath == "":
+
+                if req.params.get("change_file")=="attfile" and not create_version_error: # add file as attachment
+                    if attpath=="":
                         # no attachment directory existing
-                        file = importFile(uploadfile.filename, uploadfile.tempname)  # add new file
+                        file = importFile(uploadfile.filename, uploadfile.tempname) # add new file
                         file.mimetype = "inode/file"
                         file.type = "attachment"
                         node.addFile(file)
                     else:
                         # import attachment file into existing attachment directory
-                        file = importFileIntoDir(getImportDir() + "/" + attpath, uploadfile.tempname)  # add new file
-                    node.set("system.version.comment", '(' + t(req, "edit_files_new_version_attachment_comment") + ')\n' +
-                             req.params.get('version_comment', ''))
+                        file = importFileIntoDir(getImportDir() + "/" + attpath, uploadfile.tempname) # add new file
+                    node.set("system.version.comment", '('+t(req, "edit_files_new_version_attachment_comment")+')\n'+req.params.get('version_comment', ''))
                     pass
 
         elif op == "addthumb":  # create new thumbanil from uploaded file
@@ -284,30 +221,21 @@ def getContent(req, ids):
 
                 node.addFile(tree.FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
                 node.addFile(tree.FileNode(name=thumbname + "2", type="presentation", mimetype="image/jpeg"))
-                logging.getLogger('usertracing').info("{} changed thumbnail of node {}".format(user.name,
-                                                                                               node.id))
+                logging.getLogger('usertracing').info(user.name + " changed thumbnail of node " + node.id)
 
         elif op == "postprocess":
             if hasattr(node, "event_files_changed"):
                 try:
                     node.event_files_changed()
-                    logging.getLogger('usertracing').info("{} postprocesses node {}".format(user.name,
-                                                                                            node.id))
-                except "PostprocessingError":
-                    update_error = True
+                    logging.getLogger('usertracing').info(user.name + " postprocesses node " + node.id)
+                except:
+                    update_error = True    
 
-    v = {}
-    v["id"] = req.params.get("id", "0")
-    v["tab"] = req.params.get("tab", "")
-    v["node"] = node
-    v["update_error"] = update_error
-    v["user"] = user
-    v["access"] = access
+    v = {"id": req.params.get("id", "0"), "tab": req.params.get("tab", ""), "node": node, "update_error": update_error,
+         "user": user, "files": filter(lambda x: x.type != 'statistic', node.getFiles()),
+         "statfiles": filter(lambda x: x.type == 'statistic', node.getFiles()),
+         "attfiles": filter(lambda x: x.type == 'attachment', node.getFiles()), "att": [], "nodes": [node], "access": access}
 
-    v["files"] = filter(lambda x: x.type != 'statistic', node.getFiles())
-    v["statfiles"] = filter(lambda x: x.type == 'statistic', node.getFiles())
-    v["attfiles"] = filter(lambda x: x.type == 'attachment', node.getFiles())
-    v["att"] = []
     for f in v["attfiles"]:  # collect all files in attachment directory
         if f.getMimeType() == "inode/directory":
             for root, dirs, files in os.walk(f.retrieveFile()):
@@ -315,5 +243,4 @@ def getContent(req, ids):
                     af = tree.FileNode(root + "/" + name, "attachmentfile", getMimeType(name)[0])
                     v["att"].append(af)
 
-    ret += req.getTAL("web/edit/modules/files.html", v, macro="edit_files_file")
-    return ret
+    return req.getTAL("web/edit/modules/files.html", v, macro="edit_files_file")

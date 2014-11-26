@@ -172,7 +172,7 @@ def importFileIntoDir(destpath, tempname):
     return None
 
 
-def importFileRandom(tempname):
+def importFileRandom(tempname, logger=logg):
     #import core.config as config
     import random
     #import core.tree as tree
@@ -193,11 +193,41 @@ def importFileRandom(tempname):
     if os.sep == '/':
         ret = os.system("cp '%s' %s" % (tempname, destname))
     else:
-        cmd = "copy '%s' %s" % (tempname, (os.path.split(destname)[0]))
-        ret = os.system(cmd.replace('/', '\\'))
-
+        import shutil
+        try:
+            shutil.copyfile(tempname, destname)
+            ret = None
+        except e:
+            logger.exception('when trying to importFileRandom')
+            ret = e
     if ret:
         raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, destname, str(ret)))
+
+    r = tempname.lower()
+    mimetype = "application/x-download"
+    type = "file"
+    mimetype, type = getMimeType(r)
+    return core.tree.FileNode(name=destname, mimetype=mimetype, type=type)
+    
+
+def importFileToUploaddirWithRandomName(tempname):
+
+    import random
+
+    path, filename = os.path.split(tempname)
+    uploaddir = getImportDir()
+
+    destfile = str(random.random())[2:]+os.path.splitext(filename)[1]
+    destname = join_paths(uploaddir, destfile)
+    if os.sep == '/':
+        ret = os.system("cp '%s' %s" %(tempname, destname))
+    else:
+        cmd = 'copy "%s" %s' %(tempname, destname)
+        print '----> going to execute: ', cmd
+        ret = os.system(cmd.replace('/','\\'))
+
+    if ret:
+        raise IOError("Couldn't copy %s to %s (error: %s)" %(tempname, destname, str(ret)))
 
     r = tempname.lower()
     mimetype = "application/x-download"

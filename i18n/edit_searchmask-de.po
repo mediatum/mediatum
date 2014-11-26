@@ -1,0 +1,26 @@
+msgid "edit_searchmask_type"
+msgstr "Suchmaskentyp"
+
+msgid "edit_searchmask_none"
+msgstr "keine Suchmaske"
+
+msgid "edit_searchmask_parent"
+msgstr "vererbt von Elternobjekt"
+
+msgid "edit_searchmask_new"
+msgstr "eigene Suchmaske"
+
+msgid "edit_searchmask_fieldtitle"
+msgstr "Folgende Felder werden durchsucht:"
+
+msgid "edit_searchmask_add"
+msgstr "Neues Feld erzeugen"
+
+msgid "edit_searchmask_schema"
+msgstr "Metadatenschema"
+
+msgid "edit_searchmask_field"
+msgstr "Feld"
+
+msgid "edit_searchfield_none"
+msgstr "- keine Metadatenschemata vorhanden -"

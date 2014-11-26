@@ -192,9 +192,8 @@ msgstr "Beim Leeren des Papierkorbs gehen alle enthaltenen Dateien und Unterverz
 msgid "edit_action_clear_trash"
 msgstr "Papierkorb leeren"
 
-
 msgid "select_target_dir"
-msgstr "Zielverzeichnis aussuchen:"
+msgstr "Klicken Sie auf 'OK' und wählen dann im Navigationsbaum den Ordner aus, in den die selektierten Datensätze verschoben bzw. kopiert werden sollen.\nFür den Abbruch der Aktion klicken Sie auf 'Abbrechen'."
 
 msgid "fieldsmissing"
 msgstr "Nicht alle Pflichtfelder wurden korrekt bef&uuml;llt."
@@ -234,9 +233,6 @@ msgstr "Metadaten inkonsistent"
 
 msgid "edit_common_bigview_title"
 msgstr "Großansicht"
-
-msgid "edit_common_edit_meta"
-msgstr "Metadaten bearbeiten"
 
 msgid "edit_editor_save"
 msgstr "Speichern"
@@ -307,3 +303,80 @@ msgstr "mediaTUM Editor Interface"
 
 msgid "notpublished"
 msgstr "Nicht publiziert"
+
+##### new editor design #####
+
+msgid "edit_add_new_container"
+msgstr "Neuen Ordner anlegen:"
+
+msgid "edit_edit_container_node"
+msgstr "Bearbeiten"
+
+msgid "edit_cut_container"
+msgstr "Ordner ausschneiden"
+
+msgid "edit_paste_container_here"
+msgstr "Ordner einfügen"
+
+msgid "edit_empty_recycle_bin"
+msgstr "Papierkorb leeren"
+
+msgid "edit_delete_container"
+msgstr "Ordner in Papierkorb verschieben"
+
+msgid "e_folder_homedir"
+msgstr "Arbeitsverzeichnis"
+
+msgid "e_folder_trashdir"
+msgstr "Papierkorb"
+
+msgid "e_folder_uploaddir"
+msgstr "Uploads"
+
+msgid "edit_help_title"
+msgstr "Editor-Hilfe"
+
+msgid "edit_selected_edit"
+msgstr "Metadaten selektierter Objekte gleichzeitig bearbeiten"
+
+msgid "edit_selected_move"
+msgstr "Selektierte Objekte verschieben"
+
+msgid "edit_selected_copy"
+msgstr "Selektierte Objekte kopieren"
+
+msgid "edit_selected_delete"
+msgstr "Selektierte Objekte löschen"
+
+msgid "edit_common_edit_meta"
+msgstr "Metadaten bearbeiten"
+
+msgid "edit_common_edit_move"
+msgstr "Objekt verschieben"
+
+msgid "edit_common_edit_copy"
+msgstr "Objekt kopieren"
+
+msgid "edit_common_edit_delete"
+msgstr "Objekt löschen"
+
+msgid "edit_common_noobjectsfound"
+msgstr "Keine Objekte gefunden"
+
+msgid "edit_add_directory"
+msgstr "Neuer Ordner"
+
+msgid "edit_add_container_default"
+msgstr "Neuer Ordner vom Typ "
+
+msgid "edit_layout_togglertip_open"
+msgstr "Ausblenden"
+
+msgid "edit_layout_togglertip_closed"
+msgstr "Einblenden"
+
+msgid "edit_layout_resizertip"
+msgstr "Verschieben"
+
+msgid "edit_add_new_collection"
+msgstr "Neue Kollektion anlegen"

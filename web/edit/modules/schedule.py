@@ -33,6 +33,7 @@ import utils.scheduleutils as su
 
 from core.translation import lang, t, getDefaultLanguage
 from utils.pathutils import isDescendantOf
+from utils.utils import dec_entry_log
 
 if sys.version[0:3] < '2.6':
     import simplejson as json
@@ -40,7 +41,8 @@ else:
     import json
 
 
-ALLOWED_CHARACTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' + '0123456789' + '+-_.'
+ALLOWED_CHARACTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' + \
+    '0123456789' + '+-_.'
 
 
 def normalizeString(s, chars=ALLOWED_CHARACTERS):
@@ -53,6 +55,7 @@ def normalizeString(s, chars=ALLOWED_CHARACTERS):
     return res
 
 
+@dec_entry_log
 def getContent(req, ids):
 
     reload(su)
@@ -72,7 +75,8 @@ def getContent(req, ids):
     if "action" in req.params.keys():
         action = req.params.get("action")
         if action.startswith("get_fields_for_"):
-            schedule_func = req.params.get("action").replace("get_fields_for_", "")
+            schedule_func = req.params.get(
+                "action").replace("get_fields_for_", "")
             fields = su.fc_dict[schedule_func].getMetafields(lang(req))
             fieldDicts = su.fc_dict[schedule_func].getMetafieldDicts(lang(req))
 
@@ -89,7 +93,8 @@ def getContent(req, ids):
                 'explain_func': su.fc_dict[schedule_func].getExplanation(language)
             }
 
-            req.writeTAL("web/edit/modules/schedule.html", d, macro="schedule_func_show_fields_and_explanation")
+            req.writeTAL("web/edit/modules/schedule.html", d,
+                         macro="schedule_func_show_fields_and_explanation")
             return ""
 
         elif action.startswith("load_schedule_"):
@@ -106,8 +111,10 @@ def getContent(req, ids):
             schedule_func = schedule.get("function")
             if schedule_func:
                 fields = su.fc_dict[schedule_func].getMetafields(lang(req))
-                fieldDicts = su.fc_dict[schedule_func].getMetafieldDicts(lang(req))
-                d['explain_func'] = su.fc_dict[schedule_func].getExplanation(language)
+                fieldDicts = su.fc_dict[
+                    schedule_func].getMetafieldDicts(lang(req))
+                d['explain_func'] = su.fc_dict[
+                    schedule_func].getExplanation(language)
             else:
                 fields = []
                 fieldDicts = []
@@ -130,7 +137,8 @@ def getContent(req, ids):
                     dfield['evaluation_error'] = False
 
             if has_evaluation_errors:
-                error = "\n<br/>\n".join([error, t(language, 'edit_schedule_field_validation_error')])
+                error = "\n<br/>\n".join([error, t(language,
+                                                   'edit_schedule_field_validation_error')])
 
             d = {
                 'fields': fields,
@@ -140,7 +148,8 @@ def getContent(req, ids):
                 'currentFunction': schedule_func,
             }
 
-            req.writeTAL("web/edit/modules/schedule.html", d, macro="schedule_func_show_fields_and_explanation")
+            req.writeTAL("web/edit/modules/schedule.html", d,
+                         macro="schedule_func_show_fields_and_explanation")
             return ""
 
         elif action == "delete_node_from_schedule":
@@ -157,14 +166,17 @@ def getContent(req, ids):
                 try:
                     schedule = tree.getNode(schedule_id)
                 except:
-                    errors.append("edit_schedule_unexpected_no_such_schedule_node")
+                    errors.append(
+                        "edit_schedule_unexpected_no_such_schedule_node")
             else:
                 errors.append("edit_schedule_unexpected_no_such_schedule_node")
 
-            delete_errors = su.deleteNodeIDsFromSchedule([node_id], schedule_id, access=access)
+            delete_errors = su.deleteNodeIDsFromSchedule(
+                [node_id], schedule_id, access=access)
 
             if not delete_errors:
-                msg = "user '%s' removed node %s from schedule '%s' (%s)" % (username, node_id, schedule.name, schedule_id)
+                msg = "user '%s' removed node %s from schedule '%s' (%s)" % (
+                    username, node_id, schedule.name, schedule_id)
                 logging.getLogger("backend").info(msg)
             else:
                 error_msg = ", ".join([t(language, e) for e in delete_errors])
@@ -180,7 +192,8 @@ def getContent(req, ids):
 
             s['delete_table_rows'] = ['sid_%s' % schedule_id]
 
-            res_msg = req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4)
+            res_msg = req.params.get(
+                "jsoncallback") + "(%s)" % json.dumps(s, indent=4)
             req.write(res_msg)
             return ""
 
@@ -190,18 +203,21 @@ def getContent(req, ids):
                 try:
                     schedule = tree.getNode(schedule_id)
                 except:
-                    errors.append("edit_schedule_unexpected_no_such_schedule_node")
+                    errors.append(
+                        "edit_schedule_unexpected_no_such_schedule_node")
             else:
                 errors.append("edit_schedule_unexpected_no_such_schedule_node")
 
             delete_errors = su.deleteSchedule(schedule_id, access=access)
 
             if not delete_errors:
-                msg = "user '%s' removed schedule %s (%s)" % (username, schedule.name, schedule_id)
+                msg = "user '%s' removed schedule %s (%s)" % (
+                    username, schedule.name, schedule_id)
                 logging.getLogger("backend").info(msg)
             else:
                 error_msg = ", ".join([t(language, e) for e in delete_errors])
-                msg = "user '%s' tried to remove schedule '%s' (%s): %s" % (username, schedule.name, schedule_id, error_msg)
+                msg = "user '%s' tried to remove schedule '%s' (%s): %s" % (
+                    username, schedule.name, schedule_id, error_msg)
                 logging.getLogger("backend").error(msg)
 
             errors += delete_errors
@@ -211,17 +227,20 @@ def getContent(req, ids):
             s['delete_errors'] = delete_errors
             s['delete_table_rows'] = ['sid_%s' % schedule_id]
 
-            res_msg = req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4)
+            res_msg = req.params.get(
+                "jsoncallback") + "(%s)" % json.dumps(s, indent=4)
             req.write(res_msg)
             return ""
 
         elif action == "load_table_nid2schedules":
 
-            nid2schedules, schedule2nids, nid2active_schedules = su.getSchedulesForIds(ids, access=access, language=language)
+            nid2schedules, schedule2nids, nid2active_schedules = su.getSchedulesForIds(
+                ids, access=access, language=language)
 
             nid2schedules_attrs = {}
             for nid in nid2schedules:
-                nid2schedules_attrs[nid] = [[s.id, s.name, s.get("single_trigger")] for s in nid2schedules[nid]['schedule_list']]
+                nid2schedules_attrs[nid] = [
+                    [s.id, s.name, s.get("single_trigger")] for s in nid2schedules[nid]['schedule_list']]
 
             d = {}
             d['nid2schedules'] = nid2schedules
@@ -230,16 +249,19 @@ def getContent(req, ids):
             d['date'] = datetime.now().isoformat()
             d['isActive'] = su.isActive
 
-            req.writeTAL("web/edit/modules/schedule.html", d, macro="table_nid2schedules")
+            req.writeTAL(
+                "web/edit/modules/schedule.html", d, macro="table_nid2schedules")
             return ""
 
         elif action == "load_table_schedule2nids":
 
-            nid2schedules, schedule2nids, nid2active_schedules = su.getSchedulesForIds(ids, access=access, language=language)
+            nid2schedules, schedule2nids, nid2active_schedules = su.getSchedulesForIds(
+                ids, access=access, language=language)
 
             nid2schedules_attrs = {}
             for nid in nid2schedules:
-                nid2schedules_attrs[nid] = [[s.id, s.name, s.get("single_trigger")] for s in nid2schedules[nid]['schedule_list']]
+                nid2schedules_attrs[nid] = [
+                    [s.id, s.name, s.get("single_trigger")] for s in nid2schedules[nid]['schedule_list']]
 
             d = {}
             d['nid2schedules'] = nid2schedules
@@ -249,10 +271,12 @@ def getContent(req, ids):
             d['date'] = datetime.now().isoformat()
             d['isActive'] = su.isActive
 
-            req.writeTAL("web/edit/modules/schedule.html", d, macro="table_schedule2nids")
+            req.writeTAL(
+                "web/edit/modules/schedule.html", d, macro="table_schedule2nids")
             return ""
 
-    nid2schedules, schedule2nids, nid2active_schedules = su.getSchedulesForIds(ids, access=access, language=language)
+    nid2schedules, schedule2nids, nid2active_schedules = su.getSchedulesForIds(
+        ids, access=access, language=language)
 
     datetime_str = req.params.get("datetime", "").strip()
     datetime_error = False
@@ -261,20 +285,25 @@ def getContent(req, ids):
     if datetime_str:
         patter = "^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$"
         if not re.match(patter, datetime_str):
-            error = t(language, "edit_schedule_input_datetime_format_error") % datetime_str
+            error = t(
+                language, "edit_schedule_input_datetime_format_error") % datetime_str
             datetime_error = True
         else:
             try:
-                parser_test_result = datetime.strptime(datetime_str, "%Y-%m-%dT%H:%M")  # "%Y-%m-%dT%H:%M:%S.%f"
+                parser_test_result = datetime.strptime(
+                    datetime_str, "%Y-%m-%dT%H:%M")  # "%Y-%m-%dT%H:%M:%S.%f"
             except:
                 parser_test_result = None
-                error = t(language, "edit_schedule_input_datetime_format_error") % datetime_str
+                error = t(
+                    language, "edit_schedule_input_datetime_format_error") % datetime_str
                 datetime_error = True
             if parser_test_result and datetime_str <= datetime.now().isoformat():
-                error = t(language, "edit_schedule_input_datetime_already_past_error") % datetime_str
+                error = t(
+                    language, "edit_schedule_input_datetime_already_past_error") % datetime_str
                 datetime_error = True
     elif "submit" in req.params:
-        error = t(language, "edit_schedule_input_datetime_format_error") % datetime_str
+        error = t(
+            language, "edit_schedule_input_datetime_format_error") % datetime_str
         datetime_error = True
 
     schedule_id = req.params.get("schedule_id", "")
@@ -293,7 +322,8 @@ def getContent(req, ids):
     if "submit" in req.params or "submit_run_now" in req.params:
         current_function = req.params.get('schedule_function', '')
         if current_function in su.fc_dict:
-            field_descriptors = su.fc_dict[current_function].getFieldDescriptors()
+            field_descriptors = su.fc_dict[
+                current_function].getFieldDescriptors()
             field_errors = []
         else:
             # should not happen
@@ -306,10 +336,20 @@ def getContent(req, ids):
         "id": req.params.get("id")
     }
 
+    # nodes list is used to display icons in upper part of page
+    # additional nodes should not / will not be shown there
+    nodes = []
+    for nid in ids:
+        node = tree.getNode(nid)
+        nodes.append(node)
+
+    d['nodes'] = nodes
+
     if current_function in su.fc_dict:
         fields = su.fc_dict[current_function].getMetafields(lang(req))
         fieldDicts = su.fc_dict[current_function].getMetafieldDicts(lang(req))
-        d['explain_func'] = su.fc_dict[current_function].getExplanation(language)
+        d['explain_func'] = su.fc_dict[
+            current_function].getExplanation(language)
     else:
         fields = []
         fieldDicts = []
@@ -335,7 +375,8 @@ def getContent(req, ids):
             # m_* classes from metadata/ are not multilingual for schedules
             # their getEditorHTML methods are used to display schedule node
             # attributes
-            field_value = req.params.get(getDefaultLanguage() + '__' + field_name, '')
+            field_value = req.params.get(
+                getDefaultLanguage() + '__' + field_name, '')
             dfield['value'] = field_value
             field_validator_func = dfield['field_validator_func']
             if field_validator_func and not field_validator_func(field_value):
@@ -349,12 +390,14 @@ def getContent(req, ids):
     additional_nodes_bad_ids = []
 
     try:
-        additional_nodes_id_list = [str(int(nid.strip())) for nid in additional_nodes_str.strip().split(";") if nid.strip()]
+        additional_nodes_id_list = [
+            str(int(nid.strip())) for nid in additional_nodes_str.strip().split(";") if nid.strip()]
     except:
         has_evaluation_errors = True
         additional_nodes_error = True
         additional_nodes_id_list = []
-        errors.append("edit_schedule_additional_nodes_list_not_semikolon_separated_list_of_integers")
+        errors.append(
+            "edit_schedule_additional_nodes_list_not_semikolon_separated_list_of_integers")
 
     if not additional_nodes_error:
         collections_root = tree.getRoot("collections")
@@ -368,7 +411,8 @@ def getContent(req, ids):
                 if nid not in additional_nodes_bad_ids:
                     additional_nodes_bad_ids.append(nid)
             if n and (not isDescendantOf(n, collections_root) or not access.hasWriteAccess(n)):
-                # to do? discussion: override collections rectriction for admins ?
+                # to do? discussion: override collections rectriction for
+                # admins ?
                 has_evaluation_errors = True
                 additional_nodes_error = True
                 if nid not in additional_nodes_bad_ids:
@@ -377,11 +421,13 @@ def getContent(req, ids):
     if additional_nodes_bad_ids:
         has_evaluation_errors = True
         additional_nodes_error = True
-        errors.append(t(language, "edit_schedule_additional_nodes_bad_ids") + (";".join(additional_nodes_bad_ids)))
+        errors.append(t(language, "edit_schedule_additional_nodes_bad_ids") +
+                      (";".join(additional_nodes_bad_ids)))
 
     if has_evaluation_errors:
         errors.append('edit_schedule_field_validation_error')
-        error = "\n<br/>\n".join(map(lambda x: t(language, x), [error] + errors))
+        error = "\n<br/>\n".join(map(lambda x:
+                                     t(language, x), [error] + errors))
 
     d['fields'] = fields
     d['fieldDicts'] = fieldDicts
@@ -420,9 +466,12 @@ def getContent(req, ids):
     d['additional_nodes'] = additional_nodes_str
     d['additional_nodes_error'] = additional_nodes_error
 
-    d['submitbutton_run_now_label'] = t(language, 'edit_schedule_submit_run_now_button')
-    d['edit_schedule_submit_run_now_button_confirm'] = t(language, 'edit_schedule_submit_run_now_button_confirm')
-    d['edit_schedule_delete_schedule_confirm'] = t(language, 'edit_schedule_delete_schedule_confirm')
+    d['submitbutton_run_now_label'] = t(
+        language, 'edit_schedule_submit_run_now_button')
+    d['edit_schedule_submit_run_now_button_confirm'] = t(
+        language, 'edit_schedule_submit_run_now_button_confirm')
+    d['edit_schedule_delete_schedule_confirm'] = t(
+        language, 'edit_schedule_delete_schedule_confirm')
 
     if has_evaluation_errors and not ('submit_run_now' in req.params):
         return req.getTAL("web/edit/modules/schedule.html", d, macro="schedule_popup")
@@ -430,7 +479,8 @@ def getContent(req, ids):
     new_schedule = None
     if (not schedule and "submit" in req.params) or "submit_run_now" in req.params:
 
-        new_schedule_name = user.name + "_created_at_" + datetime.now().isoformat()
+        new_schedule_name = user.name + \
+            "_created_at_" + datetime.now().isoformat()
         new_schedule = tree.Node(new_schedule_name, 'schedule')
 
         username = user.getName()
@@ -444,14 +494,16 @@ def getContent(req, ids):
                 username, new_schedule.name, str(new_schedule.id), datetime_str, d['currentFunction'], new_schedule.get('nodelist'))
             logging.getLogger("backend").info(msg)
 
-            d['result'] = t(language, 'edit_schedule_result_new_schedule_created')
+            d['result'] = t(
+                language, 'edit_schedule_result_new_schedule_created')
             d['created_new_schedule'] = True
         else:
             msg = "user '%s' created temporary schedule '%s' (%s), trigger='%s', function='%s', nodelist='%s'" % (
                 username, new_schedule.name, str(new_schedule.id), datetime_str, d['currentFunction'], new_schedule.get('nodelist'))
             logging.getLogger("backend").info(msg)
 
-            d['result'] = t(language, 'edit_schedule_result_temporary_schedule_created')
+            d['result'] = t(
+                language, 'edit_schedule_result_temporary_schedule_created')
             d['created_temporary_schedule'] = True
 
     elif (schedule) and ("submit" in req.params):
@@ -461,7 +513,8 @@ def getContent(req, ids):
         logging.getLogger("backend").info(msg)
         new_schedule.set("system.edited", datetime.now().isoformat())
 
-        d['result'] = t(language, 'edit_schedule_result_existing_schedule_edited')
+        d['result'] = t(
+            language, 'edit_schedule_result_existing_schedule_edited')
 
     if new_schedule:
         for i, dfield in enumerate(fieldDicts):
@@ -483,10 +536,12 @@ def getContent(req, ids):
 
         if "submit_run_now" in req.params:
             new_schedule.set("single_trigger", datetime.now().isoformat())
-            has_fired, has_error, TT = su.handle_single_trigger(new_schedule, datetime.now().isoformat(), su.OUT)
+            has_fired, has_error, TT = su.handle_single_trigger(
+                new_schedule, datetime.now().isoformat(), su.OUT)
             if has_error:
                 _error1 = d['error']
-                _error2 = "<br/>\n".join(map(lambda x: (t(language, str(x))), TT))
+                _error2 = "<br/>\n".join(map(lambda x:
+                                             (t(language, str(x))), TT))
                 _error = "<br/>\n".join([_error1, _error2])
                 d['error'] = _error
 

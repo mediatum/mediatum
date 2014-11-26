@@ -1,67 +1,981 @@
-﻿
+
 <tal:block metal:define-macro="upload_form">
+
+    <script type="text/javascript" src="/js/plupload/plupload.full.min.js"> </script>
+    <script type="text/javascript" src="/js/jquery.ui.plupload/jquery.ui.plupload.js"> </script>
+
+    <!-- activate translation for plupload -->
+   <script type="text/javascript" tal:attributes="src python:'/js/plupload/i18n/%s.js' % str(language)"> </script>
+
+
+<link href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css" type="text/css" rel="stylesheet" />
+<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css" type="text/css" />
+<link rel="stylesheet" href="/js/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
+
+    <style>
+
+        #uploadform, #metaform{display:none;position:fixed;top:0px;left:0px;right:0px;bottom:0px;width:100%;height:100%;z-index:1000000;}
+        #uploadform-background, #metaform-background{position:absolute;top:0px;left;0px;height:100%;width:100%;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
+        #pluploadform-background{position:fixed;top:0px;left;0px;height:100%;width:100%;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
+        #uploadform-form, #metaform-form{position:absolute;top:0px;left:0px;bottom:0px;right:0px;padding:0px;margin:30px;z-index:1000001;
+            height:400px;width:80%;margin:auto;
+        }
+        #metaform-form{width:400px}
+        #uploadform-form form, #metaform-form form{background-color:white}
+        .progressWrapper {width: 100%;overflow: hidden;position;relative}
+        .progressContainer {margin: 5px;padding: 4px;border: solid 1px #E8E8E8;background-color: #F7F7F7;overflow: visible;position:relative}
+
+        .message {margin: 1em 0;padding: 10px 20px;border: solid 1px #FFDD99;background-color: #FFFFCC;overflow: visible;position:relative}
+        .red {border: solid 1px #B50000;background-color: #FFEBEB;}
+        .green {border: solid 1px #DDF0DD;background-color: #EBFFEB;}
+        .blue {border: solid 1px #CEE2F2;background-color: #F0F5FF;}
+        .progressName {font-size: 8pt;font-weight: 700;color: #555;width: 323px;height: 14px;text-align: left;white-space: nowrap;overflow: visible;}
+        .progressBarInProgress, .progressBarComplete, .progressBarError {font-size: 0;width: 0%;height: 2px;background-color: blue;margin-top: 2px;}
+        .progressBarComplete {width: 100%;background-color: green;visibility: hidden;}
+        .progressBarError {width: 100%;background-color: red;visibility: hidden;}
+        .progressBarStatus {margin-top: 2px;width: 90%;font-size: 7pt;font-family: Arial;text-align: left;white-space: nowrap;}
+         a.progressCancel {font-size: 0;display: block;height: 14px;width: 14px;background-image: url(/img/delete.png);background-repeat: no-repeat;background-position: -14px 0px;float: right;}
+         a.progressCancel:hover {background-position: 0px 0px;}
+
+        .progressContainer .schema{top:10px;right:5px;text-align:right;}
+        .progressContainer .schema .selection{text-align:right;white-space:nowrap;float:right;background-color: #F0F5FF}
+        div.fieldset {border:  1px solid #afe14c;margin: 10px 0;padding: 20px 10px; height:200px;width:90%;overflow:auto}
+        div.flash {width:95%;margin: 10px 5px;border-color: #D9E4FF;position:relative}
+
+        </style>
+
+    <script tal:content="python:'var id = %r;' % str(id)"> </script>
+    <script tal:content="python:'var sid = %r;' % str(sid)"> </script>
+
+
     <script type="text/javascript">
-        function changeStep1(id, value){
-            document.getElementById('step2').innerHTML = '<img src="/img/wait.gif" style="margin-left:50px"/>';
-            document.getElementById('step3').innerHTML = '';
-            getEditPage('step2', id, 'upload', 'step2|'+value);
+
+
+        function openMetaForm(){
+
+            var ajax_response;
+
+            var options = {
+                  url: '/edit/edit_content?action=addmeta&id='+id,
+                  async: false,
+                  dataType: 'json',
+                  success: function(data){
+                      ajax_response = data;
+                      $('#metaformcontent').html(data.content);
+                      $('#metaform').show();
+                  }
+                };
+
+            $.ajax(options);
+            parent.$('#overlay').css('display', 'block');
         }
-        
-        function changeStep2(id, value){
-            document.getElementById('step3').innerHTML = '<img src="/img/wait.gif" style="margin-left:50px"/>';
-            getEditPage('step3', id, 'upload', 'step3|'+value);
+
+
+        function closeMetaForm(){ // close upload form
+            $('#metaform').hide();
+            parent.$('#overlay').css('display', 'none');
         }
-        
+
+
+        var number_files = 0;
+        var singlefile = 0;
+
+        function loadEditArea02(id){
+            $('.ui-layout-center').attr('src', '/edit/edit_content?id='+id);
+        }
+
+
     </script>
-    <p tal:condition="error" tal:content="error" i18n:translate="" class="error" style="text-align:center"/>
 
-    <script tal:content="python:'parent.tree.updateNodeLabel('+id+')'"> </script>
-    <form tal:condition="python:len(schemes)!=0" tal:attributes="action python:'/edit/edit_content?id='+id" method="post" enctype="multipart/form-data" style="border:1px solid silver">
-    <div id="step1">
-        <tal:block metal:use-macro="web/edit/modules/upload.html/step1"/>
+
+<div id="navigation_content" style="border:1px solid silver!important;border-width:0px 0px 1px 1px !important;">
+
+    <div style="padding-left:30px;clear:left">
+
+        <a id="id_a_openplupload" href="#" onclick="openUploadFormPluploadWidget()" style="border:1px solid silver;padding:5px;height:40px;display:block;float:left;margin-right:5px"><img src="/img/upload.png"/> <tal:block i18n:translate="edit_upload_files_plupload_widget"/></a>
+
+        <tal:block tal:condition="python:len(schemes)>1 and len(datatypes)>=1">
+            <a href="#" onclick="openMetaForm()" style="border:1px solid silver;padding:5px;height:40px;display:block;float:left"><img src="/img/upload.png"/> <tal:block i18n:translate="edit_upload_meta"/></a>
+        </tal:block>
+        <tal:block tal:condition="python:len(schemes)==1 and len(datatypes)==1">
+            <a href="#" tal:attributes="onclick python:'createMetaObject(\''+datatypes[0].getName()+'\',\''+schemes[0].getName()+'\')'" style="border:1px solid silver;padding:5px;height:40px;display:block;float:left"><img src="/img/upload.png"/> <tal:block i18n:translate="edit_upload_meta"/></a>
+        </tal:block>
     </div>
-    <div id="step2"> </div>
-    <div id="step3"> </div>
-    </form>
 
-</tal:block>
 
-<tal:block metal:define-macro="step1">
-    <h3 i18n:translate="edit_upload_obj_selection">TEXT</h3> 
-    <p tal:condition="python:len(datatypes)>0" style="padding-left: 30px"><label i18n:translate="edit_upload_obj_sel">TEXT</label>
-        <select name="objtype" tal:attributes="onchange python:'changeStep1(\''+id+'\', this.value)'">
-            <option i18n:translate="edit_upload_typeselection">TEXT</option>
-            <option tal:repeat="datatype datatypes" tal:attributes="value python:datatype.getName()" tal:content="python:datatype.getLongName()" i18n:translate=""/>
-        </select>
-    </p>
-    <p tal:condition="python:len(datatypes)==0" style="padding-left:30px; color:red" i18n:translate="edit_upload_msg1"/>
-</tal:block>
+<div style="clear:left"> </div>
 
-<tal:block metal:define-macro="step2">
-    <tal:block tal:condition="python:len(schemes)>0">
-        <h3><tal:block i18n:translate="edit_upload_header2"/> '<tal:block i18n:translate="" tal:content="python:objtype.getLongName()"/>'
-            <a href="#" onclick="openSearchPopup('edit_content?tab=upload&type=help&id=1&objtype=image', 'help', 350, 400)">
-                <img src="/img/tooltip.png" border="0"/>
-            </a>
-        </h3>
-        <p style="padding-left: 30px"><label i18n:translate="edit_upload_scheme">TEXT</label>
-            <select name="scheme" tal:attributes="onchange python:'changeStep2(\''+id+'\', this.value)'">
-                <option i18n:translate="edit_upload_schemeselection">TEXT</option>
-                <option tal:repeat="scheme schemes" tal:attributes="value python:scheme.getName()" tal:content="python:scheme.getLongName()" i18n:translate=""/>
+        <div id="operation">
+            <tal:block tal:replace="raw operations"/>
+            <div style="overflow:visible;float:right;">
+                    <tal:block i18n:translate="edit_sort_header_auto">TEXT</tal:block>:
+                    <select name="globalsort" id="globalsort" style="width:100px;padding:0px" onchange="sortItems_sync($('#globalsort'))">
+                        <option tal:repeat="sortchoice sortchoices" tal:attributes="value python:sortchoice.value; selected python:{'False':None,'True':'selected'}[str(sortchoice.value==collection_sortfield)]" tal:content="python:sortchoice.label"/>
+                    </select>
+               <button type="button" style="margin-top:1px;margin-right:30px;font-size:10px!important;" onclick="saveSort($('#globalsort'))" i18n:translate="edit_save" >TEXT</button>
+            </div>
+        </div>
+
+        <div id="selection">
+
+            <span style="" i18n:translate="edit_common_mark">TEXT</span><span style="">:</span>
+
+            <select onChange="doaction(this);" name="selection" >
+                <option value="empty">---</option>
+                <option value="markall" i18n:translate="edit_common_mark_all">TEXT</option>
+                <option value="marknone" i18n:translate="edit_common_dismark">TEXT</option>
+                <option value="invert" i18n:translate="edit_common_mark_invert">TEXT</option>
             </select>
-        </p>
-    </tal:block>
-    <p tal:condition="python:len(schemes)==0" style="padding-left:30px; color:red" i18n:translate="edit_upload_msg1"/>
+
+            <span style="padding:0px 10px 0px 10px;">
+                <a href="#" onclick="editSelected()" i18n:attributes="title edit_selected_edit"><img src="/img/edit_edit.gif"/></a>
+                <a href="#" onclick="movecopySelected(null,'move')" i18n:attributes="title edit_selected_move"><img src="/img/edit_move.gif"/></a>
+                <a href="#" onclick="movecopySelected(null,'copy')" i18n:attributes="title edit_selected_copy"><img src="/img/edit_copy.gif"/></a>
+                <a href="#" onclick="deleteSelected()"><img src="/img/edit_delete.png" i18n:attributes="title edit_selected_delete"/></a>
+            </span>
+        </div>
+        <!-- <div style="position:absolute;bottom:0px;right:10px"><img id="toggleSubNorth" src="/img/uparrowdisabled.png"/></div> -->
+    </div>
+
+<div style="clear:right"> </div>
+
+    <div id="sub_footer_module" style="overflow:hidden!important;border-width:0px!important;height:20xp;padding:0px!important;">
+        <div style="position:absolute;right:5px;top:2px;font-size:11px">
+            <tal:block tal:replace="count"/> item(s)
+        </div>
+    </div>
+
+
+    <div id="sub_content_content">
+        <div id="nodelist" tal:content="raw nodelist">TEXT</div>
+    </div>
+
+
+    <div id="uploadform_plupload_widget" style="display:none">
+        <div id="pluploadform-background">&nbsp;</div>
+        <div id="uploadform-form">
+            <div style="position:absolute;top:-7px;right:-7px;z-index:10002"><a href="#" onclick="closeFormPluploadWidget()" i18n:attributes="title mask_editor_cancel"><img src="/img/cancel.png"/></a></div>
+              <form tal:condition="python:len(schemes)!=0"  style="border:2px solid silver;">
+              	<div id="uploader" style="width:100%;height:450px;">
+              		<p>Your browser doesn't have Flash, Silverlight or HTML5 support.</p>
+              	</div>
+              	<br />
+              	<button id="id_button_createobjectsplupload" type="button" disabled onclick="createObjectsPlupload();" i18n:translate="edit_upload_create_objects">TEXT</button><span id="span_plupload_createobjects" > </span>
+              </form>
+              <form tal:condition="python:len(schemes)==0"  style="border:1px solid silver;">
+              	<div>
+              		<p>you cannot upload because you have no metadata types defined</p>
+              	</div>
+              	<br />
+              </form>
+        </div>
+    </div>
+
+<script tal:content="python:'var uploadstate = %r;' % str(uploadstate)"> </script>
+<script tal:content="python:'var js_upload_unpack = \''+str(t(language, 'edit_upload_unpack'))+'\';'">;</script>
+<script tal:content="python:'var js_upload_no_unpack = \''+str(t(language, 'edit_upload_no_unpack'))+'\';'">;</script>
+
+<script type="text/javascript">
+
+
+   var uploader = null;
+
+        function openUploadFormPluploadWidget(){ // show upload form
+
+            var ajax_response;
+
+            var options = {
+                  url: '/edit/edit_content?action=removefiles&id='+id,
+                  async: false,
+                  dataType: 'json',
+                  success: function(data) {
+                      ajax_response = data;
+                      if (data.state=='error'){
+                          console.log('upload.html: openUploadFormPluploadWidget: error removing files');
+                      }
+                      else {
+                          console.log('upload.html: openUploadFormPluploadWidget:' + JSON.stringify(data));
+                      }
+                  }
+                };
+
+            $.ajax(options);
+
+            uploader = init_plupload_widget();
+
+
+            uf = $('#uploadform_plupload_widget');
+            uf.show();
+
+            //hc = $('div.plupload_header_content');
+            hc = $('div.plupload_header');
+            ufs = $('#uploader_filelist');
+
+                var x = $('#uploader_dropbox');
+                x.css('height', '375px');
+                x.css('margin-bottom', '50px');
+
+             var uc = $('#uploader_container');
+                uc.css('height', '450px');
+                uc.css('margin-bottom', '50px');
+
+            hc.remove();
+
+            parent.$('#overlay').css('display', 'block');
+
+        }
+
+        function closeFormPluploadWidget() { // close upload form
+            //$('#uploadform_plupload_widget').hide();
+            parent.$('#overlay').css('display', 'none');
+
+            // make sure, the plupload widget is reinitialized
+            return reloadPage(id);
+        }
+
+
+
+        function createObjectsPlupload(){ // build object out of files
+
+            console.group('edit.modules: upload.html createObjectsPlupload');
+
+            $('#uploader_start').attr('aria-disabled','true');  // not functional ?
+
+            number_files = $('#uploader_filelist').children().length;
+            if (number_files==1){
+                singlefile==1;
+            }
+
+            console.log('number_files: ' + number_files);
+
+            var new_elem = $('<img height="30" src="/img/wait.gif" />');
+            new_elem.insertBefore('#span_plupload_createobjects');
+            new_elem.insertBefore('.plupload_logo');
+            $('.plupload_logo').attr('class', '');
+            //$('.plupload_logo').innerHTML = '<img height="30" src="/img/wait.gif" />';
+
+            var htree = parent.gethometree();
+
+            $.each($(".typesel"), function(i, l){
+                x = $(l);
+                value = x.val(); // value
+                type = x.attr('id'); // type
+                files = x.parents().children('#'+x.attr('id')+':last').val(); //files
+
+                console.log('upload.createObjects: l:'+l+', value:'+value+', type:'+type+', files:'+files);
+
+                var ajax_response;
+
+                var options = {
+                      url: '/edit/edit_content?action=buildnode&id='+id+'&files='+files+'&type='+type+'&value='+value,
+                      async: false,
+                      dataType: 'json',
+                      success: function (data) {
+                          ajax_response = data;
+                          console.log('createObjects');
+                          if (data.errornodes.length>0){
+                              $('#uploader_filelist').children().first().removeClass('blue');
+                              $('#uploader_filelist').children().first().addClass('red');
+                          }else{
+                              number_files -= 1;
+
+                              $('#uploader_filelist').children().first().remove();
+
+                              $('#divStatus').html('processing / ' + number_files);
+                              data.new_tree_labels.forEach(
+                                function(nentry) {
+                                  console.log('tree_node: '+nentry.id+', new label: '+nentry.label);
+                                  changed_node = htree.getNodeByKey(nentry.id);
+                                  changed_node.title = nentry.label;
+                                  changed_node.renderTitle();
+                                }
+                              )
+                          }
+
+
+                           console.log('$.ajax returns: '+data);
+                           console.log('number_files: ' + number_files);
+                    }, // success function
+                   }; // options
+
+               $.ajax(options);
+
+                var childnode = ajax_response;
+
+            }) // $.each
+            console.log('going to call closeForm()');
+            closeFormPluploadWidget();
+            console.log('after called: closeForm()');
+            console.log('going to call loadEditArea(id), id:'+id);
+            parent.loadEditArea(id);
+            console.log('after called loadEditArea(id), id:'+id);
+            console.groupEnd('edit.modules: upload.html createObjectsPlupload');
+            parent.$('#overlay').css('display', 'none');  // removing overlay from tree
+        }  // function createObjectsPlupload
+
+
+    var files_uploaded = 0;
+
+    function init_plupload_widget() {
+     var u = $(function() {
+    	$("#uploader").plupload({
+    		// General settings
+
+        runtimes : 'html5,flash,silverlight,html4',
+        //runtimes : 'html4',
+
+        //autostart: true,
+        autostart: false,
+
+    		url : '/edit/edit_content?action=upload&uploader=plupload&id='+id,
+
+    		// User can upload no more then 20 files in one go (sets multiple_queues to false)
+    		max_file_count: 0,  // default is 0 -> no limit
+
+
+
+    //multipart_params : mpv,
+
+    		filters : {
+    			// Maximum file size
+    			//max_file_size : '1000mb',
+    			// Specify what files to browse for
+    			mime_types: [
+      			{title : "Image files", extensions : "jpg,jpeg,gif,png,tif,tiff"},
+      			{title : "Zip files", extensions : "zip"},
+            {title : "pdf files", extensions : "pdf"},
+            {title : "flv video files", extensions : "flv"},
+            {title : "mp3 files", extensions : "mp3"},
+            {title : "bibtex files", extensions : "bib"}
+    			]
+    		},
+
+    		// Rename files by clicking on their titles
+    		rename: true,
+
+    		// Sort files
+    		sortable: false,
+
+    		// Enable ability to drag'n'drop files onto the widget (currently only HTML5 supports that)
+    		dragdrop: true,
+
+    		// Views to activate
+    		views: {
+    			list: true,
+    			thumbs: false, // deactivate thumbs view
+    			active: 'list'
+    		},
+
+    		// buttons to activate
+    		buttons: {
+    			browse: true,
+    			start: true,
+    			stop: true
+    		},
+
+    		// Flash settings
+    	  flash_swf_url : '/js/plupload/Moxie.swf',
+
+    		// Silverlight settings
+    	  silverlight_xap_url : '/js/plupload/Moxie.xap',
+
+            // PreInit events, bound before any internal events
+            preinit : {
+                Init: function(up, info) {
+                    log('[Init]', 'Info:', info, 'Features:', up.features);
+                },
+
+                UploadFile: function(up, file) {
+                    log('[UploadFile]', file);
+
+                    // You can override settings before the file is uploaded
+                    // up.setOption('url', 'upload.php?id=' + file.id);
+                    // up.setOption('multipart_params', {param1 : 'value1', param2 : 'value2'});
+                }
+            },
+
+            // Post init events, bound after the internal events
+            init : {
+                PostInit: function(up) {
+                    // Called after initialization is finished and internal event handlers bound
+                    log('[PostInit]');
+                    files_uploaded = 0;
+
+                },
+
+                Browse: function(up) {
+                    // Called when file picker is clicked
+                    log('[Browse]');
+                },
+
+                Refresh: function(up) {
+                    // Called when the position or dimensions of the picker change
+                    log('[Refresh]');
+                },
+
+                StateChanged: function(up) {
+                    // Called when the state of the queue is changed
+                    log('[StateChanged]', up.state == plupload.STARTED ? "STARTED" : "STOPPED");
+                },
+
+                QueueChanged: function(up) {
+                    // Called when queue is changed by adding or removing files
+                    log('[QueueChanged]');
+                },
+
+                OptionChanged: function(up, name, value, oldValue) {
+                    // Called when one of the configuration options is changed
+                    log('[OptionChanged]', 'Option Name: ', name, 'Value: ', value, 'Old Value: ', oldValue);
+                },
+
+                BeforeUpload: function(up, file) {
+                    // Called right before the upload for a given file starts, can be used to cancel it if required
+                    log('[BeforeUpload]', 'File: ', file);
+
+
+                                var iframe_c = $("iframe.ui-layout-center");
+            var fid = file.id;
+            console.log('fid='+fid);
+            var filelist_line = $("#"+fid);
+
+
+            var c1 = filelist_line.children()[1];
+
+    // sending additional parameters
+    this.settings.multipart_params = {
+        "file_name" : file.name,
+        "data_extra" : $('#select_extra_' + fid).val()
+    };
+
+                },
+
+                UploadProgress: function(up, file) {
+                    // Called while file is being uploaded
+                    log('[UploadProgress]', 'File:', file, "Total:", up.total);
+                },
+
+                FileFiltered: function(up, file) {
+                    // Called when file successfully files all the filters
+                    log('[FileFiltered]', 'File:', file);
+                },
+
+                FilesAdded: function(up, files) {
+                    // Called when files are added to queue
+                    log('[FilesAdded]');
+
+                    plupload.each(files, function(file) {
+                        log('  File:', file);
+                        //file.x = '777';
+
+
+
+        var iframe_c = $("iframe.ui-layout-center");
+        var fid = file.id;
+        console.log('fid='+fid);
+        var filelist_line = $("#"+fid);
+        console.log('filelist_line', filelist_line);
+
+        filelist_line.attr('class', 'progressContainer green');
+
+        var c1 = filelist_line.children()[1];
+
+        filename = file.name;
+        file_ext = filename.split('.').pop().toLowerCase();
+
+        var sel = '';
+
+        if (file_ext == 'zip') {
+
+          var sel = " <select name='tofiletype' class='select_unpack' id='select_extra_" + fid + "'>" +
+              "<option value='tofile' selected>" + js_upload_no_unpack + "</option>" +
+              "<option value='totype'>" + js_upload_unpack + "</option>" +
+          "</select>";
+
+        }
+        else if (file_ext == 'bib') {
+
+          var sel = " <select name='tofiletype' class='select_unpack' id='select_extra_" + fid + "'>" +
+              "<option value='tofile'>" + js_upload_no_unpack + "</option>" +
+              "<option value='totype' selected>" + js_upload_unpack + "</option>" +
+          "</select>";
+
+        }
+        else {
+        /*
+          var sel = "<select name='tofiletype' id='select_extra_" + fid + "'>" +
+              "<option value='tofile'>To File (no unzip)</option>" +
+              "<option value='totype' selected>To typed nodes (unzip)</option>" +
+          "</select>";
+        */
+
+        }
+
+          c1.innerHTML = c1.innerHTML + sel;
+
+            c1ppp = c1.parentNode.parentNode.parentNode;
+            c1ppp.style.position = 'relative';
+            c1ppp.style.top = '0px';
+            c1ppp.style.overflow = 'auto';
+
+                    });
+                },
+
+                FilesRemoved: function(up, files) {
+                    // Called when files are removed from queue
+                    log('[FilesRemoved]');
+
+                    plupload.each(files, function(file) {
+                        log('  File:', file);
+                    });
+                },
+
+                FileUploaded: function(up, file, info) {
+                    // Called when file has finished uploading
+                    log('[FileUploaded] File:', file, "Info:", info);
+
+            var iframe_c = $("iframe.ui-layout-center");
+            var fid = file.id;
+            console.log('fid='+fid);
+            var filelist_line = $("#"+fid);
+            console.log('filelist_line', filelist_line);
+
+            filelist_line.attr('class', 'progressContainer blue');
+
+            var c1 = filelist_line.children()[1];
+
+            c1.innerHTML = c1.innerHTML + JSON.parse(info.response).ret;
+
+            c1ppp = c1.parentNode.parentNode.parentNode;
+            c1ppp.style.position = 'relative';
+            c1ppp.style.top = '0px';
+            c1ppp.style.overflow = 'auto';
+
+            $('#select_extra_' + fid).hide();
+
+
+                    htree = parent.gethometree();
+                    JSON.parse(info.response).new_tree_labels.forEach(
+                      function(nentry) {
+                        console.log('tree_node: '+nentry.id+', new label: '+nentry.label);
+                        changed_node = htree.getNodeByKey(nentry.id);
+                        changed_node.data.title = nentry.label;
+                        changed_node.render();
+                      }
+                    );
+
+                 uc = $('#uploader_container');
+                 x = uc.find('.ui-resizable-handle');
+                 x.remove();
+
+                 files_uploaded = files_uploaded + 1;
+
+                 //debugger;
+                },
+
+                ChunkUploaded: function(up, file, info) {
+                    // Called when file chunk has finished uploading
+                    log('[ChunkUploaded] File:', file, "Info:", info);
+                },
+
+                UploadComplete: function(up, files) {
+                    // Called when all files are either uploaded or failed
+                    log('[UploadComplete]');
+
+                    if (files_uploaded > 0) {
+                        $('#id_button_createobjectsplupload').prop('disabled', false);
+                    }
+
+                },
+
+                Destroy: function(up) {
+                    // Called when uploader is destroyed
+                    log('[Destroy] ');
+                },
+
+                Error: function(up, args) {
+                    // Called when error occurs
+                    log('[Error] ', args);
+                    alert(args.message + ': ' + args.file.name);
+                }
+            }
+        });
+      });
+      return u;
+    }
+
+
+
+
+    function log() {
+        var str = "";
+
+        plupload.each(arguments, function(arg) {
+            var row = "";
+
+            if (typeof(arg) != "string") {
+                plupload.each(arg, function(value, key) {
+                    // Convert items in File objects to human readable form
+                    if (arg instanceof plupload.File) {
+                        // Convert status to human readable
+                        switch (value) {
+                            case plupload.QUEUED:
+                                value = 'QUEUED';
+                                break;
+
+                            case plupload.UPLOADING:
+                                value = 'UPLOADING';
+                                break;
+
+                            case plupload.FAILED:
+                                value = 'FAILED';
+                                break;
+
+                            case plupload.DONE:
+                                value = 'DONE';
+                                break;
+                        }
+                    }
+
+                    if (typeof(value) != "function") {
+                        row += (row ? ', ' : '') + key + '=' + value;
+                    }
+                });
+
+                str += row + " ";
+            } else {
+                str += arg + " ";
+            }
+        });
+
+        console.log(str);
+    };
+
+
+	// Handle the case when form was submitted before uploading has finished
+	$('#form').submit(function(e) {
+		// Files in queue upload them first
+		if ($('#uploader').plupload('getFiles').length > 0) {
+
+			// When all files are uploaded submit form
+			$('#uploader').on('complete', function() {
+				$('#form')[0].submit();
+			});
+
+			$('#uploader').plupload('start');
+		} else {
+			alert("You must have at least one file in the queue.");
+		}
+		return false; // Keep the form from submitting
+	});
+
+
+
+
+</script>
+
+    <div id="metaform">
+        <div id="metaform-background">&nbsp;</div>
+        <div id="metaform-form">
+            <div style="position:absolute;top:-7px;right:-7px;z-index:10002"><a href="#" onclick="closeMetaForm()" i18n:attributes="title mask_editor_cancel"><img src="/img/cancel.png"/></a></div>
+            <form id="metaformcontent"> </form>
+        </div>
+    </div>
+
+    <script tal:content="python:'var js_edit_layout_togglertip_open = \''+str(t(language, 'edit_layout_togglertip_open'))+'\';'">;</script>
+    <script tal:content="python:'var js_edit_layout_togglertip_closed = \''+str(t(language, 'edit_layout_togglertip_closed'))+'\';'">;</script>
+
+    <script>
+        $(document).ready(function () {
+            showDebugMessages: true;
+            sublayout = $('#sub_content').layout({applyDemoStyles: true,
+                center:{paneSelector: "#sub_content_content",},
+                north:{paneSelector: "#navigation_content", size:100,resizable:false,},
+                south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0,},
+
+                togglerTip_open: js_edit_layout_togglertip_open,
+                togglerTip_closed: js_edit_layout_togglertip_closed,
+
+                });
+
+        });
+    </script>
+
+
 </tal:block>
 
-<tal:block metal:define-macro="step3">
-    <h3 i18n:translate="edit_upload_header3">TEXT</h3>
-    <p style="padding-left: 30px">
-        <label i18n:translate="edit_upload_file">TEXT</label>
-        <input type="file" name="file" style="width:400px"/>
-    </p>
-    <h3 i18n:translate="edit_upload_header4">TEXT</h3>
-    <p style="padding-left: 30px">
-        <input i18n:attributes="value edit_upload_upload_label" type="submit" name="submit"/>
-    </p>
+<tal:block metal:define-macro="addmeta">
+    <script>
+        function loadSchemes(o){
+            $.getJSON('/edit/edit_content?action=getschemes&contenttype='+o.value+'&id='+id, function(data){
+                var schemes = $('#schema');
+                first = schemes.find('option')[0];
+                schemes.find('option').remove().end();
+                schemes.append(first);
+                $.each(data.schemes, function(item){
+                    schemes.append($('<option />').val(data.schemes[item].id).text(data.schemes[item].name));
+                });
+            });
+        }
+
+
+        function createMetaObject(){
+
+            parent.$('#overlay').css('display', 'none');
+
+            var ajax_response;
+
+            var options = {
+                  url: '/edit/edit_content?action=createobject&contenttype='+$('#objecttype').val()+'&schema='+$('#schema').val()+'&id='+id,
+                  async: false,
+                  dataType: 'json',
+                  success: function(data){
+                      ajax_response = data;
+                      $('#metaform').hide();
+                      document.location = '/edit/edit_content?id='+data.newid+'&tab=metadata'
+                  }
+                };
+
+            $.ajax(options);
+            updateNodeLabels("");
+        }
+
+        function createObjectFromIdentifier(){
+
+            var ajax_response;
+
+            var options = {
+                  url: '/edit/edit_content?action=obj_from_identifier&identifier_importer='+$('#identifier_importer').val()+'&identifier='+$('#input_identifier').val()+'&id='+id,
+                  async: false,
+                  dataType: 'json',
+                  success: function(data){
+                      ajax_response = data;
+
+                      if (data.error != '') {
+                        var msg = data.error;
+                        if (data.connect_error_msg != '') {
+                        msg = msg + '\n' + data.connect_error_msg;
+                        }
+                        alert(msg);
+                      }
+                      else {
+                        $('#metaform').hide();
+                        updateNodeLabels("");
+                        parent.$('#overlay').css('display', 'none');
+                        if (false && typeof data.newid !== 'undefined') {
+                          document.location = '/edit/edit_content?id='+data.newid+'&tab=metadata'  // open newly created node in metadata editor
+                        }
+                        else
+                        {
+                          document.location = '/edit/edit_content?id='+id; // show content of upload container
+                        }
+                      }
+                  }
+                };
+              $.ajax(options);
+        }
+
+
+        function disenableInput(index) {
+          if (index != 0) {
+            $("#input_identifier").prop('disabled', false);
+            $('#identifier_subform').show();
+          }
+          else {
+            $("#input_identifier").prop('disabled', true);
+            $('#identifier_subform').hide();
+          }
+        }
+
+
+    </script>
+    <h3 i18n:translate="edit_upload_create_meta">TEXT</h3>
+    <input type="radio" name="metadata_createmethod" value="from_schema" checked="checked"><span i18n:translate="edit_upload_createmethod_from_schema">TEXT</span>
+    <input type="radio" name="metadata_createmethod" value="from_identifier"><span i18n:translate="edit_upload_createmethod_from_identifier">TEXT</span>
+
+    <!-- create object via metadata schema -->
+    <div id="subform_meta">
+      <p tal:condition="python:len(datatypes)>1">
+          <tal:block i18n:translate="edit_upload_obj_sel"/><br/>
+          <select name="objecttype" id="objecttype" onchange="loadSchemes(this)" style="width:360px">
+              <option i18n:translate="edit_upload_typeselection">TEXT</option>
+              <tal:block tal:repeat="datatype datatypes">
+                  <option i18n:translate="" tal:attributes="value python:datatype.getName()" tal:content="python:datatype.getLongName()"/>
+              </tal:block>
+          </select>
+      </p>
+      <p tal:condition="python:len(datatypes)==1">
+          <tal:block i18n:translate="edit_upload_obj_sel"/><br/><b i18n:translate="" tal:content="python:datatypes[0].getLongName()"/>
+          <input type="hidden" name="objecttype" id="objecttype" tal:attributes="value python:datatypes[0].getName()"/>
+      </p>
+
+      <p><tal:block i18n:translate="edit_upload_scheme"/><br/>
+          <select name="schema" id="schema" style="width:360px;" onchange="$('#buttoncreate2').toggle();">
+              <option i18n:translate="edit_upload_schemeselection">TEXT</option>
+              <tal:block tal:condition="python:len(datatypes)==1" tal:repeat="scheme schemes">
+                  <option tal:attributes="value python:scheme.getName()" tal:content="python:scheme.getLongName()"/>
+              </tal:block>
+          </select>
+      </p>
+      <p style="text-align:center;min-height:40px">
+          <button type="button" id="buttoncreate2" onclick="createMetaObject()" style="min-width:200px;padding:4px;display:none" i18n:translate="edit_upload_create_object">TEXT</button>
+      </p>
+    </div>
+
+    <!-- create object from identifier (doi, ...) -->
+    <div id="subform_identifier" style="min-width:200px;padding:4px;display:none">
+      <div tal:condition="python:len(identifier_importers)>1">
+          <tal:block i18n:translate="edit_upload_importer_sel"/><br/>
+          <select name="identifier_importer" id="identifier_importer" style="width:360px" onchange="disenableInput(this.selectedIndex)">
+              <option value="-1" i18n:translate="edit_upload_importerselection">TEXT</option>
+              <tal:block tal:repeat="identifier_importer identifier_importers">
+                  <option i18n:translate="" tal:attributes="value python:identifier_importer.name" tal:content="python:identifier_importer.get('labels', {}).get(language, {}).get('identifier_importer_longname', 'identifier_importer_longname')"/>
+              </tal:block>
+          </select>
+          <div id="identifier_subform" style="display:none">
+          <p tal:content="structure python:identifier_importers[0].get('labels', {}).get(language, {}).get('identifier_importer_explain', 'identifier_importer_explain')">TEXT</p>
+          <div class="label"><tal:block i18n:translate="edit_upload_or_doi">TEXT</tal:block>:</div>
+          <input id="input_identifier" type="text" name="input_identifier" style="width:362px" disabled/>
+          <p style="text-align:center;min-height:40px">
+              <button type="button" id="buttoncreate3" onclick="createObjectFromIdentifier()" style="min-width:200px;padding:4px;" i18n:translate="edit_upload_create_object">TEXT</button>
+          </p>
+          </div>
+      </div>
+
+      <div tal:condition="python:len(identifier_importers)==1">
+          <p tal:content="structure python:identifier_importers[0].get('labels', {}).get(language, {}).get('identifier_importer_explain', 'identifier_importer_explain')">TEXT</p>
+          <input type="hidden" name="identifier_importer" id="identifier_importer" tal:attributes="value python:identifier_importers[0].name"/>
+          <input id="input_identifier" type="text" name="input_identifier" style="width:362px" />
+          <p style="text-align:center;min-height:40px">
+              <button type="button" id="buttoncreate3" onclick="createObjectFromIdentifier()" style="min-width:200px;padding:4px;" i18n:translate="edit_upload_create_object">TEXT</button>
+          </p>
+      </div>
+
+    </div>
+
+<script type="text/javascript">
+    $(document).ready(function(){
+
+        $('input[name="metadata_createmethod"]').click(function(){
+            if($(this).attr("value")=="from_schema"){
+                $("#subform_identifier").hide();
+                $("#subform_meta").show();
+            }
+            if($(this).attr("value")=="from_identifier"){
+                $("#subform_meta").hide();
+                $("#subform_identifier").show();
+            }
+        });
+
+    });
+</script>
+
+</tal:block>
+
+
+<tal:block metal:define-macro="uploadfileok_plupload">
+    <div class="schema" tal:define="type python:schemes.keys()[0]"> <span i18n:translate="edit_upload_select_metadata_type">Select metadata type: </span>
+        <select class="typesel" tal:attributes="name python:'scheme_'+filename; id type" tal:condition="python:len(schemes[type])>1">
+            <tal:block tal:repeat="scheme python:schemes[type]">
+                <option tal:attributes="value python:scheme.getName()" tal:content="python:scheme.getLongName()">TEXT</option>
+            </tal:block>
+        </select>
+        <tal:block tal:condition="python:len(schemes[type])==1" tal:replace="python:schemes[type][0].getLongName()"/>
+        <input type="hidden" tal:condition="python:len(schemes[type])==1" name="scheme" class="typesel" tal:attributes="id type; value python:schemes[type][0].getLongName()"/>
+        <input type="hidden" tal:attributes="value python:'|'.join(files);id type"/>
+    </div>
+</tal:block>
+
+<tal:block metal:define-macro="uploadzipfileok_plupload">
+    <div class="schema" style="overflow:hidden;z-index:0">
+        <div class="selection" style="background-color:white;z-index:3">
+        <tal:block tal:repeat="type python:schemes.keys()">
+            <tal:block tal:content="type"/>
+            <select name="scheme" class="typesel" tal:attributes="id type" tal:condition="python:len(schemes[type])>1">
+                <tal:block tal:repeat="scheme python:schemes[type]">
+                    <option tal:attributes="value python:scheme.getName()" tal:content="python:scheme.getLongName()">TEXT</option>
+                </tal:block>
+            </select>
+            <tal:block tal:condition="python:len(schemes[type])==1" tal:replace="python:schemes[type][0].getLongName()"/>
+            <input type="hidden" tal:condition="python:len(schemes[type])==1" class="typesel" name="scheme" tal:attributes="id type; value python:schemes[type][0].getLongName()"/>
+            <br/>
+            <input type="hidden" tal:attributes="value python:'|'.join(files);id type"/>
+        </tal:block>
+        </div>
+        <div style="padding-left:5px;white-space:nowrap;z-index:2">
+            <tal:block tal:repeat="file files">
+                <tal:block tal:content="file">TEXT</tal:block><br/>
+            </tal:block>
+        </div>
+    </div>
+</tal:block>
+
+<tal:block metal:define-macro="uploadbibfileok_plupload">
+    <div class="schema error" tal:condition="python:error!=''" i18n:translate="" tal:content="python:'upload_'+error">TEXT</div>
+    <tal:block tal:condition="python:error==''">
+        <div i18n:translate="edit_upload_bibtex_ok">TEXT</div>
+        <input type="hidden" class="typesel" name="scheme" id="bibtex" value="bibtex"/>
+        <input type="hidden" id="bibtex" tal:attributes="value python:'|'.join(files)"/>
+    </tal:block>
+</tal:block>
+
+<tal:block metal:define-macro="uploadfileok">
+    <div style="position:absolute;top:2px;right:2px;">
+        <a href="#" onclick="return removeItem(this)"><img src="/img/delete.png" /></a>
+    </div>
+    <div class="schema" tal:define="type python:schemes.keys()[0]">
+        <select name="scheme" class="typesel" tal:attributes="id type" tal:condition="python:len(schemes[type])>1">
+            <tal:block tal:repeat="scheme python:schemes[type]">
+                <option tal:attributes="value python:scheme.getName()" tal:content="python:scheme.getLongName()">TEXT</option>
+            </tal:block>
+        </select>
+        <tal:block tal:condition="python:len(schemes[type])==1" tal:replace="python:schemes[type][0].getLongName()"/>
+        <input type="hidden" tal:condition="python:len(schemes[type])==1" name="scheme" class="typesel" tal:attributes="id type; value python:schemes[type][0].getLongName()"/>
+        <input type="hidden" tal:attributes="value python:'|'.join(files);id type"/>
+    </div>
+</tal:block>
+
+<tal:block metal:define-macro="uploadzipfileok">
+    <div style="position:absolute;top:2px;right:2px;">
+        <a href="#" onclick="return removeItem(this)"><img src="/img/delete.png" /></a>
+    </div>
+    <div class="schema" style="overflow:hidden;z-index:0">
+        <div class="selection" style="background-color:white;z-index:3">
+        <tal:block tal:repeat="type python:schemes.keys()">
+            <tal:block tal:content="type"/>
+            <select name="scheme" class="typesel" tal:attributes="id type" tal:condition="python:len(schemes[type])>1">
+                <tal:block tal:repeat="scheme python:schemes[type]">
+                    <option tal:attributes="value python:scheme.getName()" tal:content="python:scheme.getLongName()">TEXT</option>
+                </tal:block>
+            </select>
+            <tal:block tal:condition="python:len(schemes[type])==1" tal:replace="python:schemes[type][0].getLongName()"/>
+            <input type="hidden" tal:condition="python:len(schemes[type])==1" class="typesel" name="scheme" tal:attributes="id type; value python:schemes[type][0].getLongName()"/>
+            <br/>
+            <input type="hidden" tal:attributes="value python:'|'.join(files);id type"/>
+        </tal:block>
+        </div>
+        <div style="padding-left:5px;white-space:nowrap;z-index:2">
+            <tal:block tal:repeat="file files">
+                <tal:block tal:content="file">TEXT</tal:block><br/>
+            </tal:block>
+        </div>
+    </div>
+</tal:block>
+
+<tal:block metal:define-macro="uploadbibfileok">
+    <div style="position:absolute;top:2px;right:2px;">
+        <a href="#" onclick="return removeItem(this)"><img src="/img/delete.png" /></a>
+    </div>
+    <div class="schema error" tal:condition="python:error!=''" i18n:translate="" tal:content="python:'upload_'+error">TEXT</div>
+    <tal:block tal:condition="python:error==''">
+        <div i18n:translate="edit_upload_bibtex_ok">TEXT</div>
+        <input type="hidden" class="typesel" name="scheme" id="bibtex" value="bibtex"/>
+        <input type="hidden" id="bibtex" tal:attributes="value python:'|'.join(files)"/>
+    </tal:block>
+</tal:block>
+
+<tal:block metal:define-macro="uploadfileerror">
+    <div style="position:absolute;top:2px;right:2px;">
+        <a href="#" onclick="return removeItem(this)"><img src="/img/delete.png" /></a>
+    </div>
+    <div class="schema error">Dateityp wird nicht unterstützt oder Sie besitzen keine Berechtigung.</div>
 </tal:block>

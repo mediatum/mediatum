@@ -102,11 +102,14 @@ def scheduler_thread():
                 TRIGGER_COUNT += 1
 
                 sched_root = tree.getRoot("schedules")
-                tree.remove_from_nodecaches(sched_root)
-
-                msg = "flushed schedules"
-                TT.append([msg, time.time() - atime])
-                atime = time.time()
+                try:
+                    tree.remove_from_nodecaches(sched_root)
+                    msg = "flushed schedules"
+                    TT.append([msg, time.time() - atime])
+                    atime = time.time()
+                except TypeError:
+                    msg = "scheduler thread failed to remove schedules root from cache"
+                    OUT(msg, logger='backend', level='warning')
 
                 sched_list = [c for c in sched_root.getChildren() if c.type == 'schedule']
                 # to do: sort?

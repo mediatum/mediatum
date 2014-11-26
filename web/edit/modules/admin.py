@@ -22,9 +22,12 @@ import core.tree as tree
 import core.acl as acl
 import core.users as users
 import logging
-from utils.utils import formatTechAttrs
+from utils.utils import formatTechAttrs, dec_entry_log
+from utils.date import format_date, parse_date
+from core.tree import remove_from_nodecaches
 
 
+@dec_entry_log
 def getContent(req, ids):
     user = users.getUserFromRequest(req)
     node = tree.getNode(ids[0])
@@ -33,44 +36,41 @@ def getContent(req, ids):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     if req.params.get('action') == 'getsearchdata':
-        req.writeTAL("web/edit/modules/admin.html", {'searchdata': node.search('searchcontent={}'.format(node.id))}, macro="searchdata")
+        req.writeTAL("web/edit/modules/admin.html", {'searchdata': node.search('searchcontent=%s' % node.id), 'node': node}, macro="searchdata")
         return ''
 
     if req.params.get("type", "") == "addattr" and req.params.get("new_name", "") != "" and req.params.get("new_value", "") != "":
         node.set(req.params.get("new_name", ""), req.params.get("new_value", ""))
-        logging.getLogger('editor').info("new attribute {} for node {} added".format(req.params.get("new_name", ""),
-                                                                                     node.id))
+        logging.getLogger('editor').info("new attribute %s for node %s added" % (req.params.get("new_name", ""), node.id))
 
     for key in req.params.keys():
         # update localread value of current node
         if key.startswith("del_localread"):
             node.resetLocalRead()
-            logging.getLogger('editor').info("localread attribute of node {} updated".format(node.id))
+            logging.getLogger('editor').info("localread attribute of node %s updated" % node.id)
             break
 
         # set current node 'dirty' (reindex for search)
         if key.startswith("set_dirty"):
+            node.setDirty()
+            logging.getLogger('editor').info("set node %s dirty" % node.id)
+
             if node.isContainer():
                 for child_node in node.getChildren():
-                    if not child_node.isContainer():
-                        child_node.setDirty()
-                        logging.getLogger('editor').info("set node " + str(child_node.id) + " dirty")
-            else:
-                node.setDirty()
-                logging.getLogger('editor').info("set node {} dirty".format(node.id))
+                    child_node.setDirty()
+                    logging.getLogger('editor').info("set node %s dirty" % child_node.id)
             break
 
         # delete node from cache (e.g. after changes in db)
         if key.startswith("del_cache"):
             for n in node.getAllChildren():
-                tree.remove_from_nodecaches(n)
+                remove_from_nodecaches(n)
             break
 
         # remove  attribute
         if key.startswith("attr_"):
             node.removeAttribute(key[5:-2])
-            logging.getLogger('editor').info("attribute {} of node {} removed".format(key[5:-2],
-                                                                                      node.id))
+            logging.getLogger('editor').info("attribute %s of node %s removed" % (key[5:-2], node.id))
             break
 
     fields = node.getType().getMetaFields()
@@ -104,22 +104,9 @@ def getContent(req, ids):
         for key in technfields:
             node.removeAttribute(key)
         technfields = {}
-        logging.getLogger('editor').info("technical attributes of node {} removed".format(node.id))
+        logging.getLogger('editor').info("technical attributes of node %s removed" % node.id)
 
-    return req.getTAL("web/edit/modules/admin.html",
-                      {"id": req.params.get("id",
-                                            "0"),
-                       "tab": req.params.get("tab",
-                                             ""),
-                       "node": node,
-                       "obsoletefields": obsoletefields,
-                       "metafields": metafields,
-                       "fields": fields,
-                       "technfields": technfields,
-                       "tattr": tattr,
-                       "fd": formatdate,
-                       "gf": getFormat},
-                      macro="edit_admin_file")
+    return req.getTAL("web/edit/modules/admin.html", {"id": req.params.get("id", "0"), "tab": req.params.get("tab", ""), "node": node, "obsoletefields": obsoletefields, "metafields": metafields, "fields": fields, "technfields": technfields, "tattr": tattr, "fd": formatdate, "gf": getFormat, "adminuser": user.isAdmin(), "canedit": access.hasWriteAccess(node)}, macro="edit_admin_file")
 
 
 def getFormat(fields, name):
@@ -128,10 +115,8 @@ def getFormat(fields, name):
             return field.getValues()
 
 
-def formatdate(value, format=""):
-    if format == "":
-        format = '%d.%m.%Y %H:%M:%S'
+def formatdate(value, f='%d.%m.%Y %H:%M:%S'):
     try:
-        return format_date(parse_date(value, "%Y-%m-%dT%H:%M:%S"), format=format)
+        return format_date(parse_date(value, "%Y-%m-%dT%H:%M:%S"), format=f)
     except:
         return value

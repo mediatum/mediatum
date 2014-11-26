@@ -316,7 +316,7 @@ Owner of DHTMLgoodies.com
                 if(data){
                     alert(data);
                 }
-                parent.tree.updateNodeLabel(nodeId);
+                parent.updateNodeLabels(nodeId);
             });
     }
     

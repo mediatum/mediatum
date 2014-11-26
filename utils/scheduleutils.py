@@ -841,10 +841,12 @@ class FormedFunction(object):
         count = 0
         for field_type, field_name, field_label_msgid, field_validator_func in self.field_descriptors:
             count += 1
+            fieldclass = dict_type2class.get(field_type, m_text)
+            field = fieldclass() 
             field = tree.Node(field_name, "metafield")
             field.set("label", self.t(lang, field_label_msgid))
             field.set("type", field_type)
-            field.__class__ = dict_type2class.get(field_type, m_text)
+            #field.__class__ = dict_type2class.get(field_type, m_text)
 
             if field_type in ["memo", "htmlmemo", "meta", "url", "text"] and not hasattr(field, "getValues"):
                 field.getValues = lambda: ""
@@ -862,10 +864,12 @@ class FormedFunction(object):
         count = 0
         for field_type, field_name, field_label_msgid, field_validator_func in self.field_descriptors:
             count += 1
+            fieldclass = dict_type2class.get(field_type, m_text)
+            field = fieldclass()
             field = tree.Node(field_name, "metafield")
             field.set("label", self.t(lang, field_label_msgid))
             field.set("type", field_type)
-            field.__class__ = dict_type2class.get(field_type, m_text)
+            #field.__class__ = dict_type2class.get(field_type, m_text)
 
             if field_type in ["memo", "htmlmemo", "meta", "url", "text"] and not hasattr(field, "getValues"):
                 field.getValues = lambda: ""

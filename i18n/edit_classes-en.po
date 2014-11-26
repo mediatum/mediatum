@@ -12,3 +12,6 @@ msgstr "fold"
 
 msgid "edit_classes_noparent"
 msgstr "Operation can not be performed as this is the only parent node."
+
+msgid "edit_classes_select_position"
+msgstr "Select position:"

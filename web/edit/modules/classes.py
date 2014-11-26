@@ -20,6 +20,7 @@
 import core.tree as tree
 import core.users as users
 from core.acl import AccessData
+from core.translation import lang, t
 
 
 def getInformation():
@@ -44,4 +45,7 @@ def getContent(req, ids):
     id = req.params.get("id", tree.getRoot().id)
     v["script"] = "var currentitem = '%s';\nvar currentfolder = '%s'" % (id, id)
     v["idstr"] = ",".join(ids)
+    v["nodes"] = nodes
+    v["t"] = t
+    v["language"] = lang(req)
     return req.getTAL("web/edit/modules/classes.html", v, macro="classtree")

@@ -17,12 +17,13 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 import core.tree as tree
 import core.acl as acl
 import core.users as users
 
 from core.stats import buildStat, StatisticFile
-from utils.utils import splitpath
+from utils.utils import splitpath, dec_entry_log
 from utils.date import format_date, now
 
 
@@ -124,7 +125,10 @@ class StatTypes:
             sum += datatype.getMax()
         return sum
 
+logger = logging.getLogger("usertracing")
 
+
+@dec_entry_log
 def getContent(req, ids):
     if len(ids) > 0:
         ids = ids[0]
@@ -137,6 +141,10 @@ def getContent(req, ids):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     if "update_stat" in req.params.keys():  # reset stored statistics data
+        msg = "user %r requests update of of system.statscontent for node %r (%r, %r)" % (
+            user.getName(), node.id, node.name, node.type)
+        logger.info(msg)
+        logging.getLogger('editor').info(msg)
         node.removeAttribute("system.statscontent")
         node.removeAttribute("system.statsdate")
 
@@ -147,7 +155,8 @@ def getContent(req, ids):
         if statstring == "":  # load stats from objects/renew stat
             data = StatTypes()
             for n in node.getAllChildren():
-                found_dig = 0 or len([file for file in n.getFiles() if file.type in["image", "document", "video"]])
+                found_dig = 0 or len(
+                    [file for file in n.getFiles() if file.type in["image", "document", "video"]])
                 data.addItem(n.getContentType(), n.getSchema(), found_dig)
 
             node.set("system.statscontent", str(data))
@@ -159,7 +168,8 @@ def getContent(req, ids):
 
         v["stand"] = node.get("system.statsdate")
 
-        req.writeTAL("web/edit/modules/statsfiles.html", v, macro="edit_stats_popup")
+        req.writeTAL(
+            "web/edit/modules/statsfiles.html", v, macro="edit_stats_popup")
         return ""
 
     return req.getTAL("web/edit/modules/statsfiles.html", {"id": ids}, macro="edit_stats")

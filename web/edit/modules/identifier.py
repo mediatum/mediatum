@@ -31,8 +31,10 @@ import utils.mail as mail
 import utils.doi as doi
 import utils.pathutils as pathutils
 from core.translation import lang, t
+from utils.utils import dec_entry_log
 
 
+@dec_entry_log
 def getContent(req, ids):
     """
     The standard method,  which has to be implemented by every module.

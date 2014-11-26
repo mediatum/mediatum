@@ -1,4 +1,4 @@
-﻿"""
+"""
  mediatum - a multimedia content repository
 
  Copyright (C) 2011 Arne Seifert <seiferta@in.tum.de>
@@ -21,7 +21,7 @@ import core.tree as tree
 from core.acl import AccessData
 from schema.schema import loadTypesFromDB, getMetaType
 from web.frontend.content import getPaths
-from utils.utils import u
+from utils.utils import u, dec_entry_log
 
 
 def getInformation():
@@ -58,6 +58,7 @@ def replaceValue(value, oldvalue, replacement):
     return ";".join(ret)
 
 
+@dec_entry_log
 def getContent(req, ids):
 
     def getSchemes(req):

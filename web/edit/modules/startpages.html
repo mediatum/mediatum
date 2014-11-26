@@ -1,329 +1,308 @@
 <metal:block metal:define-macro="edit_startpages">
-    <script type="text/javascript">       
-        function questionDel(){
+    <style>
+        #editform{display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:10;}
+        #editform-background{position:absolute;top:0;left:0;height:100%;width:100%;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
+        #editform-form{position:absolute;top:0;left:0;bottom:0;right:0;padding:0;margin:30px;z-index:11;height:80%;width:80%;margin:auto;}
+        #editform-form form{background-color:white;min-height:100%;padding:0}
+
+        .ui-accordion .ui-accordion-header {border:1px solid silver;color:#fff;background-color:#333; display: block; cursor: pointer; position: relative; margin-top: 2px;margin-bottom:0; padding: .5em .5em .5em .7em; zoom: 1; }
+        #accordion h3 {border-left:0;margin:0}
+        #accordion h3 a{color:#fff;}
+        #printdiv a{display:none}
+        #filetable{border:1px solid silver; border-width:1px 1px 0 0; width:100%}
+        #filetable input{background-color:transparent; margin:1px; border-width:0}
+        #filetable input:hover{border-width:0}
+        #filetable input[type="text"]{border:1px solid silver}
+        #filetable input[type="text"]:hover{border:1px solid black; background-color:#ffffff}
+
+        #filetable th{background-color:#d8d8d8; padding:3px 5px 2px 3px; border-bottom:1px solid silver; font-variant:small-caps}
+        #filetable tr{border:1px solid silver}
+        #filetable td{vertical-align:middle; padding:2px; border-bottom:1px solid silver}
+        #filetable tr:hover{background-color:silver}
+        #filetable a{color:#000000; padding:1px; margin:0}
+        td.silver{background-color:#efefef}
+
+        #sub_content_content{padding:0!important}
+        #navigation_content{border-width:0 0 1px 1px!important}
+    </style>
+
+    <script type="text/javascript" src="/ckeditor/ckeditor.js"> </script>
+    <script type="text/javascript" src="/js/jquery.layout.resizePaneAccordions-latest.min.js"> </script>
+
+    <script tal:content="python:'var id = '+id+';'"> </script>
+    <script type="text/javascript">
+        var CKEDITOR_BASEPATH = '/ckeditor/';
+
+        function questionDel(){ //old
             return confirm(unescape(document.getElementById("deleteconfirm").innerHTML));
         }
-    </script> 
-    
+
+        function editFile(filename){ // edit file click
+            $("#filename").val(filename);
+            $.getJSON('/edit/edit_content?id='+id+'&tab=startpages&action=getfile&filename='+filename, function(data) {
+                CKEDITOR.instances['page_content'].setData(data.filecontent);
+                $('#editform').css('display','block');
+                parent.$('#overlay').css('display', 'block');
+                CKEDITOR.instances['page_content'].resize('100%', $('#editform-form').height());
+            });
+        }
+
+        function addFile(){ // create new file
+            $("#filename").val('add');
+            CKEDITOR.instances['page_content'].setData('');
+            $('#editform').css('display','block');
+            parent.$('#overlay').css('display', 'block');
+            CKEDITOR.instances['page_content'].resize('100%', $('#editform-form').height());
+        }
+
+        function closeForm(){ // close form
+            $('#editform').css('display','none');
+            parent.$('#overlay').css('display', 'none');
+        }
+
+        function handleCKEditorPost(){ // save data
+            $.ajax({ type :"post",
+                data : { data: CKEDITOR.instances['page_content'].getData() },
+                url : '/edit/edit_content?id='+id+'&tab=startpages&action=save&filename='+$("#filename").val()
+            }).done(function(ret){
+                ret = jQuery.parseJSON(ret);
+                if (ret.filename==""){
+                    document.location.reload();
+                    return false;
+                }
+                o = $(document.getElementById(ret.filename)).children();
+                o.get(o.length-2).innerHTML = ret.filesize;
+                $('#editform').css('display','none');
+            });
+        }
+    </script>
+
     <div id="deleteconfirm" i18n:translate="edit_startpages_deleteconfirm" style="display:none">TEXT</div>
-    <div>
-        <form id="01" method="post" name="startpages" action="/edit/edit_content">
-            <p>
-                <b i18n:translate="edit_startpages_header">TEXT</b>
-                <small i18n:translate="edit_startpages_explain_table">TEXT</small>
-            </p>
+
+     <div id="editform">
+        <div id="editform-background">&nbsp;</div>
+        <div id="editform-form">
+            <div style="position:absolute;top:-7px;right:-7px;z-index:10002"><a href="#" onclick="closeForm()" i18n:attributes="title mask_editor_cancel"><img src="/img/cancel.png"/></a></div>
+            <form style="background-color:white;border:1px solid silver" action="javascript:handleCKEditorPost();void(0);">
+                <input type="hidden" id="filename" name="filename"/>
+                <textarea id="page_content" name="page_content"> </textarea>
+                <script>
+                    CKEDITOR.replace('page_content', {
+                         customConfig: '/edit/edit_content?tab=startpages&file=config&id='+id
+                        }
+                    );
+                </script>
+            </form>
+        </div>
+    </div>
+
+    <form id="01" method="post" name="startpages" action="/edit/edit_content" style="padding:0;margin:0">
+        <div id="navigation_content" style="text-align:center">
             <input tal:attributes="value id" type="hidden" name="id"/>
             <input tal:attributes="value tab" type="hidden" name="tab"/>
-            <style type="text/css">
-                #filetable{
-                    border:1px solid silver; border-width:1px 1px 0px 1px; width:100%
-                }
-                #filetable input{
-                    background-color:transparent; margin:1px; border-width:0px
-                }
-                #filetable input:hover{
-                    border-width:0px
-                }
-                #filetable input[type="text"]{
-                    border:1px solid silver
-                }
-                #filetable input[type="text"]:hover{
-                    border:1px solid black; background-color:#ffffff
-                }
+            <button type="submit" i18n:attributes="value edit_startpages_savechanges" name="startpages_save" i18n:translate="edit_startpages_savechanges">TEXT</button>
+        </div>
+        <div id="sub_content_content" style="border-width:0 0 0 1px!important">
+            <div id="accordion">
+                <h3><a href="#" i18n:translate="edit_startpages_header">TEXT</a> <small i18n:translate="edit_startpages_explain_table">TEXT</small></h3>
+                <div id="sectionstart">
+                    <table id="filetable" cellpadding="0px" cellspacing="0px">
+                        <thead>
+                            <tr>
+                                <th tal:repeat="lang languages" tal:content="lang" style="width:20px">TEXT</th>
+                                <th i18n:translate="edit_startpages_descriptive_name" style="border-left:1px solid silver">TEXT</th>
+                                <th i18n:translate="edit_startpages_technical_name" colspan="2">TEXT</th>
+                                <th i18n:translate="edit_startpages_file_size">TEXT</th>
+                                <th style="text-align:right">
+                                    <a href="#" i18n:attributes="value edit_startpages_addnew"  onclick="addFile()"><img src="/img/install.png"/></a>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tal:block tal:repeat="item named_filelist">
+                                <tr tal:define="cssclass python:named_filelist.index(item)%2 and 'silver' or 'norm'" tal:attributes="class cssclass; id python:item[0];">
+                                    <td tal:repeat="lang languages">
+                                        <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'radio_'+lang; value python:item[0]; checked python:{'False':None,'True':'checked'}[str(lang in item[7])]"/>
+                                    </td>
+                                    <td style="border-left:1px solid silver">
+                                        <input type="text" tal:attributes="name python:'descr.'+item[0]; value python:item[1]" style="width:300px"/>
+                                    </td>
+                                    <td tal:content="python:str(item[8])"/>
+                                    <td style="width:20px;text-align:right">
+                                        <a target="_blank" tal:attributes="href python:item[8]"  i18n:attributes="title edit_startpages_link">
+                                            <img src="/img/rightarrow.png"/>
+                                        </a>
+                                    </td>
+                                    <td style="text-align:right; font-size:9px" tal:content="python:str(item[5])"/>
+                                    <td style="text-align:right">
+                                        <a href="#" tal:attributes="onclick python:'editFile(\''+item[0]+'\')'" i18n:attributes="title edit_startpages_edit"><img src="/img/edit_opt.png"/></a>
+                                        <input tal:attributes="name python:'delete_'+item[0]" i18n:attributes="title edit_startpages_delete" type="image" src="/img/delete.png" onclick="return questionDel()"/>
+                                    </td>
+                                </tr>
+                            </tal:block>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background-color:#d8d8d8">
+                                <td tal:repeat="lang languages">
+                                    <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'radio_'+lang; value python:''; checked python:{'False':None,'True':'checked'}[str(node.getStartpageFileNode(lang)==None)]"/>
+                                </td>
+                                <td colspan="5" style="border-left:1px solid silver" i18n:translate="edit_startpages_do_not_use_a_startpage">TEXT</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
 
-                #filetable th{
-                    background-color:#d8d8d8; padding:3px 5px 2px 3px; border-bottom:1px solid silver; font-variant:small-caps
-                }
-                #filetable tr{
-                    border:1px solid silver
-                }
-                #filetable td{
-                    vertical-align:middle; padding:2px; border-bottom:1px solid silver
-                }
-                #filetable tr:hover{
-                    background-color:silver
-                }
-                #filetable a{
-                    color:#000000; padding:1px; margin:0px
-                }
-                td.silver{
-                    background-color:#efefef
-                }
-            </style>
-            <table id="filetable" cellpadding="0px" cellspacing="0px">
-                <thead>
-                    <tr>
-                        <th tal:repeat="lang languages" tal:content="lang" style="width:20px">TEXT</th> 
-                        <th i18n:translate="edit_startpages_descriptive_name" style="border-left:1px solid silver">TEXT</th>
-                        <th i18n:translate="edit_startpages_technical_name" colspan="2">TEXT</th> 
-                        <th i18n:translate="edit_startpages_file_size">TEXT</th>
-                        <th style="text-align:right"><input i18n:attributes="value edit_startpages_addnew" type="image" src="/img/install.png" name="add_page"/></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tal:block tal:repeat="item named_filelist">
-                        <tr tal:define="cssclass python:named_filelist.index(item)%2 and 'silver' or 'norm'" tal:attributes="class cssclass; id python:item[0];">
-                            <td tal:repeat="lang languages">
-                                <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'radio_'+lang; value python:item[0]; checked python:{'False':None,'True':'checked'}[str(lang in item[7])]"/>
-                            </td> 
-                            <td style="border-left:1px solid silver">  
-                                <input type="text" tal:attributes="name python:'descr.'+item[0]; value python:item[1]" style="width:300px"/>
-                            </td>  
-                            <td tal:content="python:str(item[8])"/>
-                            <td style="width:20px;text-align:right">
-                                <a target="_blank" tal:attributes="href python:item[8]"  i18n:attributes="title edit_startpages_link">
-                                    <img src="/img/rightarrow.png"/>
-                                </a>
-                            </td>
-                            <td style="text-align:right; font-size:9px" tal:content="python:str(item[5])"/>
-                            <td style="text-align:right">
-                                <a tal:attributes="href python:'edit_content?id='+id+'&tab=startpages&file_to_edit='+item[0]" i18n:attributes="title edit_startpages_edit"><img src="/img/edit_opt.png"/></a>
-                                <input tal:attributes="name python:'delete_'+item[0]" i18n:attributes="title edit_startpages_delete" type="image" src="/img/delete.png" onclick="return questionDel()"/>
-                            </td>
-                        </tr>
-                    </tal:block>
-                </tbody>
-                <tfoot>
-                    <tr style="background-color:#d8d8d8">
-                        <td tal:repeat="lang languages">
-                            <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'radio_'+lang; value python:''; checked python:{'False':None,'True':'checked'}[str(node.getStartpageFileNode(lang)==None)]"/>
-                        </td> 
-                        <td style="border-left:1px solid silver" i18n:translate="edit_startpages_do_not_use_a_startpage">TEXT</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                    </tr>
-                </tfoot>
-            </table>
-            
-            <div>&nbsp;</div> 
-            <p>
-                <b i18n:translate="edit_startpages_header2">TEXT</b>
-                <small i18n:translate="edit_startpages_explain_table">TEXT</small>
-            </p>
-            
-            <table id="filetable" cellpadding="0px" cellspacing="0px">
-                <thead>
-                    <tr>
-                        <th tal:repeat="lang languages" tal:content="lang" style="width:20px">TEXT</th>
-                        <th style="border-left:1px solid silver" i18n:translate="edit_startpages_sidebarfile">Datei</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr tal:repeat="item named_filelist">
-                        <td tal:repeat="lang languages">
-                            <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'sidebar_'+lang; value python:item[0]; checked python:{'False':None,'True':'checked'}[str(lang in item[9])]"/>
-                        </td> 
-                        <td style="border-left:1px solid silver" tal:content="python:str(item[1]+' ('+item[8]+')')"/>
-                    </tr>
-                </tbody>
-                <tfoot>
-                    <tr style="background-color:#d8d8d8">
-                        <td tal:repeat="lang languages">
-                            <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'sidebar_'+lang; value python:''; checked python:{'False':None,'True':'checked'}[str(node.getStartpageFileNode(lang)==None)]"/>
-                        </td> 
-                        <td style="border-left:1px solid silver" i18n:translate="edit_startpages_do_not_use_a_sidebar">TEXT</td>
-                    </tr>
-                </tfoot>
-            </table>
-            
-            
-            <div>&nbsp;</div> 
-            
-            <input i18n:attributes="value edit_startpages_savechanges" type="submit" name="startpages_save"/>
-            <input i18n:attributes="value edit_startpages_reset" type="reset" name="startpages_reset"/>
-        </form>
-    </div>
-</metal:block>  
+                <h3><a href="#" i18n:translate="edit_startpages_header2">TEXT</a> <small i18n:translate="edit_startpages_explain_table">TEXT</small></h3>
+                <div id="sectionside">
+                    <table id="filetable" cellpadding="0px" cellspacing="0px">
+                        <thead>
+                            <tr>
+                                <th tal:repeat="lang languages" tal:content="lang" style="width:20px">TEXT</th>
+                                <th style="border-left:1px solid silver" i18n:translate="edit_startpages_sidebarfile">Datei</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr tal:repeat="item named_filelist">
+                                <td tal:repeat="lang languages">
+                                    <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'sidebar_'+lang; value python:item[0]; checked python:{'False':None,'True':'checked'}[str(lang in item[9])]"/>
+                                </td>
+                                <td style="border-left:1px solid silver" tal:content="python:str(item[1]+' ('+item[8]+')')"/>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background-color:#d8d8d8">
+                                <td tal:repeat="lang languages">
+                                    <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'sidebar_'+lang; value python:''; checked python:{'False':None,'True':'checked'}[str(node.getStartpageFileNode(lang)==None)]"/>
+                                </td>
+                                <td style="border-left:1px solid silver" i18n:translate="edit_startpages_do_not_use_a_sidebar">TEXT</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="sub_footer_module"> </div>
+    </form>
 
-<form metal:define-macro="edit_editor" method="post" action="/edit/edit_content" name="hidden_values">
-    <div id="startpage_error_label" i18n:translate="edit_startpages_file_missing" style="display:none">
-        <tal:block i18n:name="filename" tal:content="file_to_edit"/>
-    </div>
-     
-    <script type="text/javascript" tal:condition="python:currentmissing">
-        alert($('#startpage_error_label').text());
+    <script>
+        $(document).ready(function () {
+           var sublayout = $('#sub_content').layout({applyDemoStyles: true,
+                center:{paneSelector: "#sub_content_content", onresize: $.layout.callbacks.resizePaneAccordions},
+                north:{paneSelector: "#navigation_content", size:40,resizable:false,closable:false},
+                south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0},
+                togglerTip_open: js_edit_layout_togglertip_open,
+                togglerTip_closed: js_edit_layout_togglertip_closed
+                });
+            $("#accordion").accordion({heightStyle: "fill"});
+        });
     </script>
-    <p>
-        <tal:block i18n:translate="edit_editor_header"/>
-        <strong tal:content="python: descriptiveLabel">TEXT</strong>
-    </p>    
-    <script type="text/javascript" src="/ckeditor/ckeditor.js">
-    </script>
-    <script tal:content="python:'var currentnodeid = {};\nvar language = \'{}\';\n'.format(node.id, language)"> </script>
-   
-    <textarea id="page_content" name="page_content" tal:content="python: fncFileContents(path)"> </textarea>
-    <script type="text/javascript">
-        CKEDITOR.replace( 'page_content' , {
-                on :
-                    {
-                    instanceReady : function( ev )
-                        {
-                        var tags = ['p', 'li']; 
-                        for (var key in tags) {
-                            this.dataProcessor.writer.setRules( tags[key],
-                            {
-                                indent : false, breakBeforeOpen : true, breakAfterOpen : false, breakBeforeClose : false, breakAfterClose : true
-                            });
-                        }
-                        }
-                    },
-                language : language,
-                filebrowserBrowseUrl : '/edit/edit_content/'+currentnodeid+'/startpages/filebrowser',
-                filebrowserUploadUrl : '/edit/edit_content/'+currentnodeid+'/startpages/filebrowser',
-                filebrowserImageUploadUrl : '/edit/edit_content/'+currentnodeid+'/startpages/htmlupload',
-                filebrowserImageBrowserUrl : '/edit/edit_content/'+currentnodeid+'/startpages/filebrowser',
-                currentNodeId : currentnodeid,
-                skin: 'moono' });
-    </script>
-    
-    <p align="center">
-        <input tal:attributes="value path" type="hidden" name="file_path"/>
-        <input tal:attributes="value id" type="hidden" name="id" id="id"/>
-        <input tal:attributes="value tab" type="hidden" name="tab"/>
-        <input tal:attributes="value file_to_edit" type="hidden" name="file_to_edit"/>
-        <input i18n:attributes="value edit_editor_save" type="submit" name="save_page"/>
-        <input i18n:attributes="value edit_publish_cancel" type="submit" name="cancel_page" value="cancel" style="margin-left:30px"/>
-    </p>
-</form>
+</metal:block>
+
 
 <p metal:define-macro="header">
-    <span i18n:translate="edit_editor_header">TEXT</span> 
+    <span i18n:translate="edit_editor_header">TEXT</span>
     <strong>
         <span tal:content="python: descriptiveLabel">TEXT</span>
     </strong>
 </p>
 
-<tal:block metal:define-macro="fckeditor_customs_filemanager">
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<tal:block metal:define-macro="fckeditor_customs_filemanager"><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
     <head>
-        <title>node image browser</title>
+        <title i18n:translate="edit_startpages_filebrowser_title">TEXT</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <meta name="robots" content="noindex, nofollow">
-        <link href="/module/editor/filemanager/browser/default/browser.css" type="text/css" rel="stylesheet"> 
-                
+        <link href="/module/editor/filemanager/browser/default/browser.css" type="text/css" rel="stylesheet">
         <style type="text/css">
-            .imagecontainer { height:150px; width: 150px; float:left; border:1px solid #888; padding:3px; margin:3px; text-align:center; display:block; vertical-align:middle;}
-            .innerimagecontainer { height:110px; width:144px; border:1px solid #888; }
+            html body{font-family:Arial;padding:0;margin:0;height:100%}
+            .imagecontainer { height:150px; width: 146px; float:left; border:1px solid #888; padding:10px; margin:0 0 3px 3px; text-align:center; display:block; vertical-align:middle;}
+            .innerimagecontainer { height:110px; width:144px}
             .image { border:1px solid #888;}
             #closewindowdiv{ clear:left;}
         </style>
+        <script type="text/javascript" language="javascript" src="/js/jquery.js"> </script>
+        <script tal:content="python:'var id = '+id+';'"> </script>
         <script type="text/javascript">
             function SelectFile( fileUrl ){
-                
                 // Helper function to get parameters from the query string.
-                function getUrlParam(paramName)
-                {
+                function getUrlParam(paramName){
                   var reParam = new RegExp('(?:[\?&]|&amp;)' + paramName + '=([^&]+)', 'i') ;
                   var match = window.location.search.match(reParam) ;
-                 
                   return (match && match.length > 1) ? match[1] : '' ;
                 }
                 var funcNum = getUrlParam('CKEditorFuncNum');
-                window.opener.CKEDITOR.tools.callFunction(funcNum, fileUrl);                
-                window.close() ; 
+                window.opener.CKEDITOR.tools.callFunction(funcNum, fileUrl);
+                window.close() ;
             }
         </script>
     </head>
     <body>
         <div id="deleteconfirm" i18n:translate="edit_fckeditor_cfm_deleteconfirm" style="display:none">TEXT</div>
+        <div style="background-color:silver;padding:5px;margin-0px;overflow:hidden" i18n:translate="edit_fckeditor_cfm_clicktochoose">TEXT</div>
 
-        <div height="20%">
-            <table>
-                <tr>
-                    <table width="100%" cellspacing="0" cellpadding="0" border="0" >
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <button type="button" style="width: 100%;">
-                                        <table width="100%" cellspacing="0" cellpadding="0" border="0">
-                                            <tbody>
-                                                <tr>
-                                                <td><img height="32" width="32" src="/module/editor/filemanager/browser/default/images/FolderOpened32.gif" alt=""/></td>
-                                                <td>&nbsp;</td>
-                                                <td nowrap="" width="100%" class="ActualFolder" id="tdName" tal:content="python:'/ node.id={} ({})'.format(node.id, node.id)">TEXT</td>
-                                                <td>&nbsp;</td>
-                                                <td><img height="8" width="12" alt="" src="/module/editor/filemanager/browser/default/images/ButtonArrow.gif"/></td>
-                                                <td>&nbsp;</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </tr>
-            </table>
-            <h3 tal:condition="python:len(files)>0" i18n:translate="edit_fckeditor_cfm_clicktochoose" style="border-bottom-style:solid;border-width:1px;padding:10px;">TEXT</h3>
-            <h3 tal:condition="python:len(files)==0" i18n:translate="edit_fckeditor_cfm_hasnoimages" style="border-bottom-style:solid;border-width:1px;padding:10px;">TEXT</h3>  
+        <div id="nofiles" style="display:none;position:absolute:top:400px">
+            <p i18n:translate="edit_fckeditor_cfm_hasnoimages" style="text-align:center;padding-top:30px">TEXT</p>
+        </div>
+        <div id="nofiles" style="position:absolute:top:400px" tal:condition="python:len(files)==0">
+            <p i18n:translate="edit_fckeditor_cfm_hasnoimages" style="text-align:center;padding-top:30px">TEXT</p>
+        </div>
 
-            <div tal:condition="python:len(files)==0">
-                <form method="post">
-                    <input type="button" i18n:attributes="value edit_fckeditor_cfm_closewindow" onclick="window.close()" style="background-color:#6699ff"/>
-                </form>  
-            </div>
-            <div style="padding:10">
-
-            <div>
-                <div class="imagecontainer" tal:repeat="file files" tal:attributes="id python:file.getName()">
-                    <div class="innerimagecontainer"  tal:attributes="onclick python:'return SelectFile(\'/file/{}/{}\', {})'.format(node.id, file.getName(), node.id)">
-                        <img class="image" i18n:attributes="title edit_fckeditor_cfm_clicktochoose" tal:attributes="width python:fit(file.retrieveFile(), (140,100))[0]; height python:fit(file.retrieveFile(), (140,100))[1]; src python:'/file/{}/{}'.format(node.id, file.getName());"/>
-                    </div>
-                    <div i18n:attributes="title edit_fckeditor_cfm_nameonserver;" tal:attributes="onclick python:'return SelectFile(\'/file/{}/{}\', {})'.format(node.id, file.getName(), node.id)" tal:content="python:'/file/{}/{}'.format(node.id, file.getName())">TEXT</div>
-                
-                    <span style="color:#dd0000;" width="50px" tal:condition="python:(file.getName())==(logoname)" i18n:translate="edit_fckeditor_cfm_imageislogo">TEXT</span>        
-                    <span width="50px" tal:condition="python:(file.getName())!=(logoname)">&nbsp;</span>    
-                
-                    <span tal:condition="python: True">
-                        <!-- enabled delete button !-->        
-                        <script type="text/javascript">
-                            function delete_nodefile(s, id, filename){
-                                var win1;
-                                var erg;
-                                var mssg = document.getElementById("deleteconfirm").innerHTML;
-                                erg = confirm(unescape(mssg));
-                                if (erg == true) {
-                                    win1=window.open(s+'?delete=True', '', 'width=1,height=1');
-                                    win1.close();
-                                    var el = document.getElementById(filename);
-                                    el.style.display = 'none';
-                                    return 1;
-                                } else {
-                                    return 1;
-                                };
-                            }
-                         </script>        
-                        <div width="75px" style="text-align:center;" tal:condition="python:delbutton">
-                            <img i18n:attributes="title edit_fckeditor_cfm_delete" tal:attributes="name python:'delete_'+file.getName(); onclick python:'return delete_nodefile(\'/edit/edit_content/{}/startpages/{}\', {}, \'{}\')'.format(node.id, file.getName(), node.id, file.getName()); " type="image" src="/img/delete.png"/>
-                        </div>
-                    </span>
-
-                </div>   
-            </div>  
-            <div tal:condition="python: False"> 
-                <!-- disabled upload form !-->
-                <div id="div124" style="clear:left; border-style:solid;border-width:1px;height:100;padding:13">
-                    <form id="form124" enctype="multipart/form-data" method="post">
-                        <p i18n:translate="edit_fckeditor_cfm_uploadexplain">TEXT</p>
-                        <input type="file" name="file" size="40" accept="image/*"/>
-                        <div>
-                            <input type="submit" i18n:attributes="value edit_fckeditor_cfm_uploadbutton"/>
-                        </div>
-                    </form>
+        <div style="position:absolute;top:40px;left:0px;right:0px;bottom:20px;overflow:auto" id="files">
+            <div class="imagecontainer" tal:repeat="file files" tal:attributes="id python:file.getName()">
+                <div class="innerimagecontainer"  tal:attributes="onclick python:'return SelectFile(\'/file/'+node.id+'/'+file.getName()+'\', '+node.id+')'">
+                    <img class="image" i18n:attributes="title edit_fckeditor_cfm_clicktochoose" tal:attributes="width python:fit(file.retrieveFile(), (140,100))[0]; height python:fit(file.retrieveFile(), (140,100))[1]; src python:'/file/'+node.id+'/'+file.getName();"/>
+                </div>
+                <div i18n:attributes="title edit_fckeditor_cfm_nameonserver;" tal:attributes="onclick python:'return SelectFile(\'/file/'+node.id+'/'+file.getName()+'\', '+node.id+')'" tal:content="python:'/file/'+node.id+'/'+file.getName()" style="font-size:10px">TEXT</div>
+                <span style="color:#dd0000;width:50px;font-size:10px" tal:condition="python:(file.getName())==(logoname)" i18n:translate="edit_fckeditor_cfm_imageislogo">TEXT</span>
+                <span width="50px" tal:condition="python:(file.getName())!=(logoname)">&nbsp;</span>
+                <div width="75px" style="text-align:center;cursor:pointer" tal:condition="python:delbutton">
+                    <img i18n:attributes="title edit_fckeditor_cfm_delete" tal:attributes="name python:file.getName(); onclick python:'return delete_nodefile(this)'; " type="image" src="/img/delete.png"/>
                 </div>
             </div>
-
-            <div id="closewindowdiv" tal:condition="python:len(files)>0" style="border-top-style:solid;border-width:1px;padding:10px;margin-top:5px;">
-                <form method="post">
-                    <input type="button" i18n:attributes="value edit_fckeditor_cfm_closewindow" onclick="window.close()"/>
-                </form>  
-            </div>
         </div>
+        <script tal:condition="python: True" type="text/javascript">
+            function delete_nodefile(obj){
+                o = $(obj);
+                if(confirm($('#deleteconfirm').html())){
+                    $.get('/edit/edit_content/'+id+'/startpages/'+o.attr('name')+'?delete=True', function(data) {});
+                    o.parent().parent().remove();
+                    if(($('#files').children().length)==0){
+                        $('#nofiles').show();
+                    }
+                }
+            }
+        </script>
     </body>
 </html>
+</tal:block>
+
+<tal:block metal:define-macro="ckconfig">
+CKEDITOR.editorConfig = function( config ){
+    config.language = '<tal:block tal:replace="lang"/>';
+    config.filebrowserBrowseUrl = '/edit/edit_content/<tal:block tal:replace="id"/>/startpages/filebrowser';
+    config.filebrowserUploadUrl = '/edit/edit_content/<tal:block tal:replace="id"/>/startpages/filebrowser';
+    config.filebrowserImageUploadUrl = '/edit/edit_content/<tal:block tal:replace="id"/>/startpages/htmlupload';
+    config.filebrowserImageBrowserUrl = '/edit/edit_content/<tal:block tal:replace="id"/>/startpages/filebrowser',
+    config.filebrowserWindowWidth = '500';
+    config.filebrowserWindowHeight= '500';
+
+    config.height = '100%';
+    config.toolbar = 'Full';
+
+    config.toolbar_Full =
+        [
+            ['Source', 'Save', 'cancel', 'Preview'],
+            ['Cut','Copy','Paste','PasteText','PasteFromWord','-', 'SpellChecker', 'Scayt'],
+            ['Undo','Redo','-','Find','Replace','-','SelectAll','RemoveFormat'],
+            '/',
+            ['Bold','Italic','Underline','Strike','-','Subscript','Superscript'],
+            ['JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock'],
+            ['NumberedList','BulletedList','-','Outdent','Indent','Blockquote','CreateDiv', 'Image'],
+            ['Link','Unlink','Anchor','Table','HorizontalRule','Smiley','SpecialChar'],
+            '/',
+            ['Styles','Format','Font','FontSize','TextColor','BGColor','ShowBlocks']
+        ];
+};
 </tal:block>
 
 

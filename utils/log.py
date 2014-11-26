@@ -50,7 +50,7 @@ LOGTYPES = [
     cfg("backend"),
     cfg("frontend"),
     cfg("mediatumtal", ["screen"]),
-    cfg("editor", ["screen"]),
+    cfg("editor", loglevel=logging.DEBUG),
     cfg("usertracing", ["screen"]),
     cfg("athana", ["screen", "everything"]),
     cfg("errors", ["screen", "everything"]),

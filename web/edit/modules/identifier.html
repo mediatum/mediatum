@@ -12,6 +12,23 @@
         });
     </script>
     </tal:block>
+
+    <div id="navigation_content">
+    <tal:block tal:condition="python:', ' not in nodes">
+
+    <script>
+        function Thumb2Window2(id){
+            var win1 = window.open('/thumbbig?id='+id,'thumbbig','width=100,height=100,directories=no,location=no,menubar=no,scrollbars=no,status=no,toolbar=no,resizable=1');
+            win1.focus();
+        }
+    </script>
+    <div style="float:left;width:100%;height:82px;overflow:auto">
+        <a href="#" tal:attributes="onclick python:'return Thumb2Window2('+nodes+')'"><img tal:attributes="src python:'/thumbs/'+nodes" style="width:80px;"/></a>
+    </div>
+    </tal:block>
+    </div>
+
+    <div id="sub_content_content">
     <p tal:content="msg"/>
     <tal:block tal:condition="python:hash_val !=''">
         <span>Hash: </span>
@@ -50,6 +67,24 @@
             <input i18n:attributes="value edit_files_create_identifier" type="submit" name="submit"/>
         </p>
     </form>
+
+    </div>
+
+    <div id="sub_footer_module"> </div>
+
+    <script>
+        $(document).ready(function () {
+            sublayout = $('#sub_content').layout({applyDemoStyles: true,
+                center:{paneSelector: "#sub_content_content"},
+                north:{paneSelector: "#navigation_content", size:110,resizable:false},
+                south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0},
+
+                togglerTip_open: js_edit_layout_togglertip_open,
+                togglerTip_closed: js_edit_layout_togglertip_closed
+                });
+                    });
+    </script>
+
 </tal:block>
 
 <tal:block metal:define-macro="generate_identifier_admin_mail">

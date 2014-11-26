@@ -13,3 +13,8 @@ msgstr "Items (sum)"
 msgid "edit_stats_digobjlabel"
 msgstr "Items (digital)"
 
+msgid "edit_stats_legend"
+msgstr "Legend"
+
+msgid "edit_stats_overview"
+msgstr "Overview"

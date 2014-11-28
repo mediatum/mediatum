@@ -3,26 +3,33 @@
     <div id="object_image">
         <img tal:attributes="src python:'/thumb2/{}'.format(node.id)" style="width:200px;border:1px double silver;"/>
 
-        <div id="object_versions">
-            <div><tal:block i18n:translate="document_view_current_version_from">Current version: <span i18n:name="version" tal:replace="python:'Version ' + str(node.get('system.version.id')=='' and 1 or node.get('system.version.id'))">Version</span> from</tal:block> <tal:block tal:condition="python:node.get('updatetime')" tal:replace="python:node.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:node.get('updateuser') and node.get('updateuser') or node.get('creator')" /></div>
-            <div i18n:translate="document_view_other_versions_of_the_document">Other versions of the document:</div>
-            <tal:block tal:define="versions python:node.getVersionList()">
-                <tal:block tal:repeat="v versions">
-                    <div>
-                        <a href="/" tal:attributes="href python:'?id='+v.id"><span tal:content="python:'Version ' + str(v.get('system.version.id')=='' and 1 or v.get('system.version.id'))">Version</span>
-                        <span tal:condition="python:v.get('updatetime')">(<tal:block i18n:translate="document_view_from">from</tal:block> <tal:block tal:replace="python:v.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:v.get('updateuser') and v.get('updateuser') or v.get('creator')" />)</span></a>
-                    </div>
-                </tal:block>
-            </tal:block>
+        <div id="object_versions" tal:define="versions python:node.getVersionList()" tal:condition="python:len(versions)>1">
+            <span onclick="$('#versions').toggle()" style="cursor:pointer" i18n:attributes="title document_versions_existing_title"><tal:block i18n:translate="document_versions">TEXT</tal:block> <img src="/img/greyarrow.gif"/></span>
+            <div style="display:none;border:1px solid silver;padding:5px;" id="versions">
+                <div><tal:block i18n:translate="document_view_current_version_from">Current version:<br/><span i18n:name="version" tal:replace="python:'Version ' + str(node.get('system.version.id')=='' and 1 or node.get('system.version.id'))">Version</span> from</tal:block> <tal:block tal:condition="python:node.get('updatetime') or node.get('creationtime')" tal:replace="python:node.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:node.get('updateuser') and node.get('updateuser') or node.get('creator')" /></div>
+
+                <div i18n:translate="document_view_other_versions_of_the_document">Other versions of the document:</div>
+                <div tal:repeat="v versions">
+                    <a href="/" tal:attributes="href python:'?id='+v.id"><span tal:content="python:'Version ' + str(v.get('system.version.id')=='' and 1 or v.get('system.version.id'))">Version</span>
+                    <span tal:condition="python:v.get('updatetime') or v.get('creationtime')">(<tal:block i18n:translate="document_view_from">from</tal:block> <tal:block tal:replace="python:v.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:v.get('updateuser') and v.get('updateuser') or v.get('creator')" />)</span></a>
+                </div>
+            </div>
         </div>
     </div>
 
     <div tal:content="raw metadata" style="margin-left:330px;padding-bottom:40px"/>
+
+    <p tal:condition="python:node.get('license')!='' and ', http' in node.get('license')" style="text-align:right" class="licenseicon">
+        <a tal:attributes="href python:node.get('license').split(',')[1]" target="_blank"><img tal:attributes="src python:'/img/'+node.get('license').split(',')[0]+'.png'" style="width:80px;"/></a>
+    </p>
+    
     <hr/>
     <div style="margin-left:330px">
         <tal:block tal:repeat="fl python:node.getFiles()">
-            <a tal:attributes="href python:'/file/{}/{}'.format(node.id, fl.getName())" tal:content="python:node.getName()">TEXT</a>
-            <span tal:content="python:format_size(fl.getSize())" style="padding-left: 20px"></span>
+            <tal:block tal:condition="python:fl.type not in ['thumb', 'presentation']">
+                <a tal:attributes="href python:'/file/{}/{}'.format(node.id, fl.getName())" tal:content="python:node.getName()">TEXT</a>
+                <span tal:content="python:format_size(fl.getSize())" style="padding-left: 20px"></span><br/>
+            </tal:block>
         </tal:block>
     </div>
 

@@ -389,6 +389,25 @@
 </metal:block>
 
 
+<metal:block metal:define-macro="view_testnodes">
+<!doctype html>
+    <html>
+        <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+            <meta content="text/html;charset=UTF-8" http-equiv="content-type">
+            <title>mediatum - Admin - Test Nodes</title>
+            <link rel="stylesheet" href="/css/editor.css">
+        </head>
+        <body style="padding:20px;">
+            <tal:block tal:repeat="sec sectionlist">
+                <span style="color:red" tal:content="python: sec['error_flag']">TEXT</span><br/>
+                <span tal:content="raw python: sec['node_html']">TEXT</span>
+            </tal:block>
+        </body>
+    </html>
+</metal:block>
+
+
 <html metal:define-macro="editor_popup">
     <head>
         <script type="text/javascript" language="javascript" src="/js/metaeditor.js">selected==false;</script>

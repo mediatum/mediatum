@@ -31,6 +31,7 @@
         <img tal:condition="python:canseeoriginal" tal:attributes="src python:'/thumb2/{}'.format(node.id); onClick python:'fullSizePopup({}, {}, {})'.format(node.id, (int(node.get('vid-width') or '0')+64), (int(node.get('vid-height') or '0')+53))" style="cursor:pointer;border:0px;width:300px" alt="thumbnail" src="/thumb2/_"/>
         <img tal:condition="python:not canseeoriginal" tal:attributes="src python:'/thumb2/{}'.format(node.id)" style="border:0px;width:300px"/>
         <br/>
+        
         <p style="padding-top:20px"><small i18n:translate="video_plugin_info">TEXT</small></p>
         
         <div id="object_versions" tal:define="versions python:node.getVersionList()" tal:condition="python:len(versions)>1">
@@ -51,7 +52,7 @@
 </div>
 
 <div style="clear:both"/>
-<div tal:define="children python:[c for c in node.getChildren().sort_by_orderpos() if c.isActiveVersion()]" tal:condition="python:len(children)>0" style="width:100%">
+<div tal:define="children python:[c for c in node.getChildren().sort_by_orderpos() if c.isActiveVersion()]" tal:condition="python:len(children)>0" style="width:100%;overflow:hidden;">
     <p><tal:block i18n:translate="details">TEXT</tal:block>:</p>
     <tal:block tal:repeat="child children">
         <div class="childnode" tal:condition="python:access.hasReadAccess(child)">

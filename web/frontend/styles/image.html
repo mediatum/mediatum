@@ -83,6 +83,11 @@ The document is displayed in the <a href="/" tal:attributes="href python:'?id='+
 </div>
 
 <div tal:content="raw metadata" style="margin-left:330px"/>
+
+<p tal:condition="python:node.get('license')!='' and ', http' in node.get('license')" style="text-align:right" class="licenseicon">
+    <a tal:attributes="href python:node.get('license').split(',')[1]" target="_blank"><img tal:attributes="src python:'/img/'+node.get('license').split(',')[0]+'.png'" style="width:80px;"/></a>
+</p>
+    
 <div style="clear:both"/>
 <div tal:define="children python:[c for c in node.getChildren().sort_by_orderpos() if c.isActiveVersion()]" tal:condition="python:len(children)>0" style="width:100%;padding:10px;">
     <p><tal:block i18n:translate="details">TEXT</tal:block>:</p>

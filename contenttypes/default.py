@@ -524,10 +524,6 @@ class ContentType(Default, NodeSchemaMixin):
 
     """(Abstract) base class for all content node types.
     """
-    def getContentType(self):
+    def getSchema(self):
         warn("deprecated, use ContentType.schema", DeprecationWarning)
         return self.schema
-
-    def getType(self):
-        warn("ContentType.getType() is ContentType.type + '/' + ContentType.schema now", DeprecationWarning)
-        return self.type + "/" + self.schema

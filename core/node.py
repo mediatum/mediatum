@@ -120,8 +120,8 @@ class Node(BaseNode):
         self.orderpos = orderpos
 
     def getType(self):
-        warn("Node.getType() is Node.type now", DeprecationWarning)
-        return self.type
+        warn("Node.getType() just returns self", DeprecationWarning)
+        return self
 
     def getChildren(self):
         warn("deprecated, use Node.children instead", DeprecationWarning)

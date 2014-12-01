@@ -14,11 +14,6 @@ def test_getContainerChildren(some_node):
     assert container_children[0].name == "container"
     
     
-def test_getType_container(container_node):
-    type = assert_deprecation_warning(container_node.getType)
-    assert type == container_node.type
-     
-     
 def test_getContentType_container(container_node):
     content_type = assert_deprecation_warning(container_node.getContentType)
     assert content_type == "directory"

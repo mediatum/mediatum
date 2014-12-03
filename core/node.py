@@ -153,7 +153,7 @@ class Node(BaseNode):
         return query
 
     def __repr__(self):
-        return "Node<{}: '{}'> ({})".format(self.id, self.name, object.__repr__(self))
+        return u"Node<{}: '{}'> ({})".format(self.id, self.name, object.__repr__(self)).encode("utf8")
 
     # some additional methods from dict
 

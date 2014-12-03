@@ -57,6 +57,11 @@ class LenMixin(object):
         return self.count()
 
 
+
+class AppenderQueryWithLen(AppenderQuery, LenMixin):
+    pass
+
+
 class NodeAppenderQuery(AppenderQuery, LenMixin):
 
     """Custom AppenderQuery class with additional methods for node handling

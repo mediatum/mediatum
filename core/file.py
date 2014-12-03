@@ -6,7 +6,7 @@
 import os.path
 from warnings import warn
 
-from core.database.postgres import BaseFile, bref, rel
+from core.database.postgres import BaseFile, bref, rel, AppenderQueryWithLen
 from core import config
 from core.node import Node
 from utils.utils import get_filesize
@@ -17,7 +17,7 @@ DATADIR = config.settings["paths.datadir"]
 
 class File(BaseFile):
 
-    node = rel(Node, backref=bref("files", lazy="dynamic", cascade="all, delete-orphan"))
+    node = rel(Node, backref=bref("files", lazy="dynamic", cascade="all, delete-orphan", query_class=AppenderQueryWithLen))
 
     def __init__(self, path, filetype, mimetype, node=None, **kwargs):
         # legacy stuff
@@ -46,7 +46,15 @@ class File(BaseFile):
 
     @property
     def abspath(self):
-        return os.path.join(DATADIR, self.path)
+        if os.path.isabs(self.path):
+            return self.path
+        else:
+            return os.path.join(DATADIR, self.path)
+    
+    @property
+    def _path(self):
+        warn("use File.path instead", DeprecationWarning)
+        return self.path
 
     @property
     def type(self):

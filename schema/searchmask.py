@@ -1,11 +1,13 @@
-import core.tree as tree
 import core.acl as acl
 import hashlib
 import random
 from . import schema
+from core.transition.postgres import check_type_arg
+from core.node import Node
 
 
-class SearchMaskItem(tree.Node):
+@check_type_arg
+class SearchMaskItem(Node):
 
     def getFirstField(self):
         if self.getNumChildren():

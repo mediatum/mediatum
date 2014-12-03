@@ -18,6 +18,7 @@ from core import config
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.ext.hybrid import hybrid_property
 import pyaml
+from utils.magicobjects import MInt
 
 C = Column
 FK = ForeignKey
@@ -185,29 +186,6 @@ child_rel_options = dict(
     secondaryjoin="Node.id == nodemapping.c.cid",
     query_class=NodeAppenderQuery
 )
-
-
-class MInt(int):
-
-    """'Magic' class which represents an integer value but converts itself to a string if needed.
-    We need this because legacy code treats node ids as string and concatenates ids to strings.
-    This is a stupid idea, so it raises a DeprecationWarning if it's used as a string ;)
-    """
-
-    def __new__(cls, value):
-        return super(MInt, cls).__new__(cls, value)
-
-    def __add__(self, other):
-        if isinstance(other, str):
-            warn("magic cast int --> str in addition (left op)", DeprecationWarning)
-            return str(self) + other
-        return super(MInt, self).__add__(other)
-
-    def __radd__(self, other):
-        if isinstance(other, str):
-            warn("magic cast int --> str in addition (right op)", DeprecationWarning)
-            return other + str(self)
-        return super(MInt, self).__add__(other)
 
 
 class BaseNode(DeclarativeBase):

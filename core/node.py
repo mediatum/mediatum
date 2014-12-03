@@ -13,12 +13,14 @@ from core import db
 q = db.query
 
 def _cte_subtree(node):
+    from contenttypes.containertypes import ContainerType
     t = q(t_nodemapping.c.cid).\
         filter(t_nodemapping.c.nid == node.id).\
         cte(name="subtree", recursive=True)
 
     return t.union_all(
         q(t_nodemapping.c.cid).
+        join(ContainerType, ContainerType.id == t_nodemapping.c.cid).
         filter(t_nodemapping.c.nid == t.c.cid)
     )
 

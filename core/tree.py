@@ -509,7 +509,12 @@ class Node(object):
             self.id = None
             self.prev_nid = '0'
             self.next_nid = '0'
-            self._name = name.encode("utf8") if isinstance(name, unicode) else name
+            if name is None:
+                self._name = ""
+            elif isinstance(name, unicode):
+                self._name = name.encode("utf8") 
+            else:
+                self._name = name
             self.type = type
             self.read_access = None
             self.write_access = None

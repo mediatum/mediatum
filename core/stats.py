@@ -96,7 +96,6 @@ class LogItem:
         return self.type
 
     def getIp(self):
-        print self.date, self.time, self.ip
         if " " in self.ip:
             ip = "".join(self.ip.split(":")[:-1]).split(" ")[-1]
         else:
@@ -426,7 +425,6 @@ def buildStat(collection, period="", fname=None):  # period format = yyyy-mm
                     if fin and len(data[timestamp][id][type]) > 0:
                         fin.write('\t<node id="%s">\n' % str(id))
                         for access in data[timestamp][id][type]:
-                            print access.getIp()
                             fin.write('\t\t<access date="%s" time="%s" country="%s" visitor_number="%s" bot="%s"/>\n' %
                                       (str(access.getDate()),
                                        str(access.getTime()),

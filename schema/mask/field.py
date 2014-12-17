@@ -63,7 +63,7 @@ class m_field(Metatype):
         val = nodes[0].get(element.getName())
         for node in nodes:
             elementname = node.get(element.getName())
-            if elementname == "" or (elementname == ";" and elementtype == "url"):
+            if elementname == "":
                 val = ""
         valuelist = {}
 
@@ -80,7 +80,7 @@ class m_field(Metatype):
 
         if differentvalues == 2 and containsemptystring:
             for t in valuelist.keys():
-                if (t != "" and elementtype != "url") or (t != ";" and elementtype == "url"):
+                if t != "":
                     val = t
             lock = 1
         elif differentvalues >= 2:

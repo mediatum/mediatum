@@ -1239,7 +1239,7 @@ class http_request(object):
         params = {}
         for key, values in chain(self.form.iterlists(), self.args.iterlists()):
             value = ";".join(values)
-            params[key] = value.encode("utf8")
+            params[key.encode("utf8")] = value.encode("utf8")
         params.update(self.files.iteritems())
         self.params = params
 

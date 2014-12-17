@@ -26,7 +26,7 @@ import core.config as config
 import core.tree as tree
 import utils.mail as mail
 import utils.date as date
-from web.frontend.frame import getNavigationFrame
+from web.frontend import frame
 from core.translation import lang, t
 from utils.utils import mkKey
 from core.styles import theme
@@ -71,7 +71,7 @@ def login(req):
                 if x and x.stdPassword(user):
                     return pwdchange(req, 3)
 
-            if req.session['return_after_login']:
+            if req.session.get('return_after_login'):
                 req.request['Location'] = req.session['return_after_login']
             elif config.get("config.ssh", "") == "yes":
                 req.request["Location"] = ''.join(["https://",
@@ -85,21 +85,21 @@ def login(req):
         else:
             error = 1
 
-    if any(uri in req.header[6]
-           for uri in ('/login', '/logout', '/pwdforgotten', '/pwdchange', '/pnode')) or 'Referer' not in req.header[6]:
+    referer = next((h.split(":", 1)[1].strip() for h in req.header if h.startswith("Referer:")), None)
+
+    if referer is None or any(uri in referer for uri in ('/login', '/logout', '/pwdforgotten', '/pwdchange', '/pnode')):
         req.session['return_after_login'] = False
     else:
-        if '/edit' in req.header[6]:
+        if '/edit' in referer:
             # returns the user to /edit/ instead of /edit/edit_content?id=604993, which has no sidebar
-            req.session['return_after_login'] = '/'.join(req.header[6]
-                                                         .split(': ')[-1]
+            req.session['return_after_login'] = '/'.join(referer
                                                          .split('/')[:-1])
         else:
-            req.session['return_after_login'] = req.header[6].split(': ')[-1]
+            req.session['return_after_login'] = referer
 
     # standard login form
     user = users.getUserFromRequest(req)
-    navframe = getNavigationFrame(req)
+    navframe = frame.getNavigationFrame(req)
     navframe.feedback(req)
     navframe.write(req, req.getTAL(theme.getTemplate("login.html"), {"error": error, "user": user}, macro="login"))
     return httpstatus.HTTP_OK
@@ -144,7 +144,7 @@ def pwdchange(req, error=0):
                 req.request["Location"] = req.makeLink("node", {"id": tree.getRoot("collections").id})
                 return httpstatus.HTTP_MOVED_TEMPORARILY
 
-    navframe = getNavigationFrame(req)
+    navframe = frame.getNavigationFrame(req)
     navframe.feedback(req)
     contentHTML = req.getTAL(theme.getTemplate("login.html"), {"error": error, "user": user}, macro="change_pwd")
     navframe.write(req, contentHTML)
@@ -155,7 +155,7 @@ def pwdforgotten(req):
     if len(req.params) > 3:  # user changed to browsing
         return buildURL(req)
 
-    navframe = getNavigationFrame(req)
+    navframe = frame.getNavigationFrame(req)
     navframe.feedback(req)
 
     if req.params.get("action", "") == "activate":  # do activation of new password

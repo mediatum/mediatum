@@ -21,7 +21,7 @@ import core.config as config
 import core.acl as acl
 import os
 from . import default
-from utils.utils import splitfilename, u, OperationException
+from utils.utils import splitfilename, u, OperationException, utf8_decode_escape
 from core.tree import FileNode
 from schema.schema import VIEW_HIDE_EMPTY
 from core.translation import lang, t
@@ -170,7 +170,7 @@ class Document(default.Default):
                 for line in fi.readlines():
                     i = line.find(':')
                     if i > 0:
-                        self.set("pdf_" + line[0:i].strip().lower(), u(line[i + 1:].strip()))
+                        self.set("pdf_" + line[0:i].strip().lower(), utf8_decode_escape(line[i + 1:].strip()))
                 fi.close()
                 self.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
                 self.addFile(FileNode(name=thumb2name, type="presentation", mimetype="image/jpeg"))

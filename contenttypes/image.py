@@ -29,7 +29,7 @@ from schema.schema import VIEW_HIDE_EMPTY
 from core.acl import AccessData
 from core.attachment import filebrowser
 from utils.fileutils import getImportDir
-from utils.utils import splitfilename, isnewer, iso2utf8, OperationException
+from utils.utils import splitfilename, isnewer, iso2utf8, OperationException, utf8_decode_escape
 from core.tree import FileNode
 from core.translation import lang, t
 from core.styles import getContentStyles
@@ -374,11 +374,17 @@ class Image(default.Default):
                     if file.type == "original":
                         f = open(file.retrieveFile(), 'rb')
                         tags = EXIF.process_file(f)
-
                         tags.keys().sort()
+
+                        unwanted_tags = self.unwanted_exif_attributes()
                         for k in tags.keys():
+                            # don't set unwanted exif attributes
+                            if any(tag in k for tag in unwanted_tags):
+                                print k
+                                continue
                             if tags[k] != "" and k != "JPEGThumbnail":
-                                self.set("exif_" + k.replace(" ", "_"), tags[k])
+                                self.set("exif_" + k.replace(" ", "_"),
+                                         utf8_decode_escape(str(tags[k])))
                             elif k == "JPEGThumbnail":
                                 if tags[k] != "":
                                     self.set("Thumbnail", "True")
@@ -406,8 +412,15 @@ class Image(default.Default):
                         tags = IPTC.getIPTCValues(file.retrieveFile())
                         tags.keys().sort()
                         for k in tags.keys():
+                            # skip unknown iptc tags
+                            if 'IPTC_' in k:
+                                print k
+                                continue
+                            if isinstance(tags[k], list):
+                                tags[k] = ', '.join(tags[k])
                             if tags[k] != "":
-                                self.set("iptc_" + k.replace(" ", "_"), tags[k])
+                                self.set("iptc_" + k.replace(" ", "_"),
+                                         utf8_decode_escape(str(tags[k])))
             except:
                 None
 
@@ -415,6 +428,34 @@ class Image(default.Default):
                 if f.getName().lower().endswith("png") and f.type == "tmppng":
                     self.removeFile(f)
                     break
+
+
+    def unwanted_exif_attributes(self):
+        '''
+        Returns a list of unwanted exif tags which are not to be extracted from uploaded images
+        @return: list
+        '''
+        return ['BitsPerSample',
+                'IPTC/NAA',
+                'WhitePoint',
+                'YCbCrCoefficients',
+                'ReferenceBlackWhite',
+                'PrimaryChromaticities',
+                'ImageDescription',
+                'StripOffsets',
+                'StripByteCounts',
+                'CFAPattern',
+                'CFARepeatPatternDim',
+                'YCbCrSubSampling',
+                'Tag',
+                'TIFFThumbnail',
+                'JPEGThumbnail',
+                'Thumbnail_BitsPerSample',
+                'GPS',
+                'CVAPattern',
+                'ApertureValue',
+                'ShutterSpeedValue',
+                'MakerNote']
 
     """ list with technical attributes for type image """
     def getTechnAttributes(self):
@@ -430,10 +471,8 @@ class Image(default.Default):
                              "workflownode": "Workflow Knoten",
                              "origwidth": "Originalbreite",
                              "origheight": "Originalh&ouml;he",
-                             "origsize": "Dateigr&ouml;&szlig;e",
-                             "R-Index": "rindex",
-                             "M-Index": "mindex",
-                             "L-Index": "lindex"},
+                             "origsize": "Dateigr&ouml;&szlig;e"
+        },
 
                 "Exif": {"exif_EXIF_ComponentsConfiguration": "EXIF ComponentsConfiguration",
                          "exif_EXIF_LightSource": "EXIF LightSource",

@@ -77,6 +77,19 @@ def u2(s):
                 return s
 
 
+def utf8_decode_escape(s):
+    '''
+    Returns the string if it is utf8 encoded, otherwise a string escaped version
+    @param s: string
+    @return: string
+    '''
+    try:
+        s.decode('utf8')
+        return s
+    except:
+        return s.encode('string-escape')
+
+
 def iso2utf8(s):
     return unicode(s, "latin-1").encode("utf-8")
 

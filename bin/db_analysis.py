@@ -25,8 +25,8 @@ import time
 from collections import namedtuple
 sys.path += ['../..', '../', '.']
 
-from core.init import basic_init
-basic_init()
+from core.init import full_init
+full_init()
 
 import core.tree as tree
 from core.search.ftsquery import protect
@@ -189,7 +189,9 @@ def main():
     which are set in the EMAIL_RECIPIENTS variable.
     """
     t = time.time()
-    published_nodes = set([int(node.id) for node in tree.getNode(604993).getAllChildren() if not node.isContainer()])
+    published_nodes = set([int(node.id) for node in tree.getNode(604993).getAllChildren() if hasattr(node,
+                                                                                                     'isContainer')
+                           and not node.isContainer()])
 
     for schema in searcher.schemas:
         published_schema = published_nodes.intersection(set([int(nid[0]) for nid in

@@ -261,6 +261,7 @@ def frameset(req):
     # a html snippet may be inserted in the editor header
     header_insert = tree.getRoot('collections').get('system.editor.header.insert.' + language).strip()
     help_link = tree.getRoot('collections').get('system.editor.help.link.' + language).strip()
+    homenodefilter = req.params.get('homenodefilter', '')
 
     v = {
         "id": id,
@@ -279,6 +280,7 @@ def frameset(req):
         '_getIDPath': _getIDPath,
         'system_editor_header_insert': header_insert,
         'system_editor_help_link': help_link,
+        'homenodefilter': homenodefilter,
        }
 
     req.writeTAL("web/edit/edit.html", v, macro="edit_main")
@@ -429,21 +431,39 @@ def nodeIsChildOfNode(node1, node2):
 def edit_tree(req):
     access = AccessData(req)
     language = lang(req)
-
     user = users.getUserFromRequest(req)
+    home_dir = users.getHomeDir(user)
+    match_result = ''
+    match_error = False
 
     if req.params.get('key') == 'root':
         nodes = core.tree.getRoot(
             'collections').getContainerChildren().sort_by_orderpos()
     elif req.params.get('key') == 'home':
-
         if not user.isAdmin():
-            home_dir = users.getHomeDir(user)
             nodes = [home_dir]
         else:
-            nodes = tree.getRoot(
-                'home').getContainerChildren().sort_by_orderpos()
-
+            homenodefilter = req.params.get('homenodefilter', '')
+            if homenodefilter:
+                nodes = []
+                try:
+                    pattern = re.compile(homenodefilter)
+                    nodes = tree.getRoot('home').getContainerChildren().sort_by_orderpos()
+                    # filter out shoppingbags etc.
+                    nodes = [n for n in nodes if n.isContainer()]
+                    nodes = filter(lambda n: re.match(homenodefilter, n.getLabel(language)), nodes)
+                    match_result = '# = %d' % len(nodes)
+                except Exception as e:
+                    logger.warning('pattern matching for home nodes: %r' % e)
+                    match_result = '<span style="color:red">%r</span>' % e
+                    match_error = True
+                if home_dir not in nodes:
+                    if not match_error:
+                        match_result = '# = %d + 1' % len(nodes)
+                    nodes.append(home_dir)
+                nodes = tree.NodeList(nodes).sort_by_orderpos()
+            else:
+                nodes = [home_dir]
     else:
         nodes = core.tree.getNode(
             req.params.get('key')).getContainerChildren().sort_by_orderpos()
@@ -451,6 +471,17 @@ def edit_tree(req):
         nodes = [n for n in nodes if n.isContainer()]
 
     data = []
+
+    # wn 2014-03-14
+    # special directories may be handled in a special way by the editor
+    special_dir_ids = {}
+    special_dir_ids[home_dir.id] = 'userhomedir'
+    for dir_type in ['upload', 'import', 'faulty', 'trash']:
+        special_dir_ids[users.getSpecialDir(user, dir_type).id] = dir_type
+
+    spec_dirs = ['userhomedir', 'upload', 'import', 'faulty', 'trash']
+    spec_dir_icons = ["homeicon.gif", "uploadicon.gif",
+                      "importicon.gif", "faultyicon.gif", "trashicon.gif"]
 
     for node in nodes:
 
@@ -489,23 +520,14 @@ def edit_tree(req):
         else:
             nodedata['readonly'] = 0
 
-        # wn 2014-03-14
-        # special directories may be handled in a special way by the editor
-        special_dir_ids = {}
-        homedir = users.getHomeDir(user)
-        special_dir_ids[homedir.id] = 'userhomedir'
-        for dir_type in ['upload', 'import', 'faulty', 'trash']:
-            special_dir_ids[users.getSpecialDir(user, dir_type).id] = dir_type
 
-        spec_dirs = ['userhomedir', 'upload', 'import', 'faulty', 'trash']
-        spec_dir_icons = ["homeicon.gif", "uploadicon.gif",
-                          "importicon.gif", "faultyicon.gif", "trashicon.gif"]
-        ddir2icon = dict(zip(spec_dirs, spec_dir_icons))
 
         nodedata['this_node_is_special'] = []
         if node.id in special_dir_ids:
             nodedata['this_node_is_special'] = nodedata[
                 'this_node_is_special'] + [special_dir_ids[node.id]]
+            if node.id == home_dir.id:
+                nodedata['match_result'] = match_result
 
         data.append(nodedata)
 

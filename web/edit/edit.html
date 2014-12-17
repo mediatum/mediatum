@@ -1028,6 +1028,7 @@ function set_cm_to_default() {
                     <div id="accordiontree" style="overflow:auto;">
                         <h3 class="context-menu-home"><a href="#" tal:attributes="onclick python:'loadEditArea('+str(basedirs[0].id)+')'"><span id="homedir" tal:content="python:basedirs[0].getName()" i18n:translate=""/></a></h3>
                         <div class="acc_content" id="home_content">
+                            <tal:block tal:condition="python:user.isAdmin()"><label>Filter:</label><input id="homenodefilter" name="homenodefilter" tal:attributes="value python:homenodefilter" /><button id="id_btn_reload_htree" onclick="reload_htree_filtered(); return false;">&times;</button><span id="htree_matches"> </span> </tal:block>
                             <div id="hometree"> </div>
                         </div>
 
@@ -1065,36 +1066,31 @@ function set_cm_to_default() {
 var htree = null;
 var ctree = null;
 
-$(document).ready(function () {
-  consoledb.log('document ready function #002');
+function reload_htree_filtered(homenodefilter) {
+  if (!homenodefilter) {
+     var homenodefilter = $('#homenodefilter').val();
+  }
+  //htree = $("#hometree").fancytree(get_tree_opts("#hometree", "htree-node-", "home", ["#hometree", "#collectionstree"]));
+  var ht = gethometree();
 
-  $('.context-menu-collections').on('click', function(e){
-      consoledb.log('clicked context-menu-collections', this);
-  })
+  ht.widget.tree.options.ajax.data.homenodefilter = homenodefilter;
+  ht.reload().done(function(){
+    var homedir_key = user_folders['homedir'];
+    var homedir = ht.getNodeByKey(homedir_key);
+    var match_result = homedir.data.match_result;
+    $('#htree_matches').html(match_result);
+  }); // .done()
+  return;
+  ht.reload();
+  var homedir_key = user_folders['homedir'];
+  alert(8);
+  var homedir = ht.getNodeByKey(homedir_key);
+  var match_result = homedir.match_result;
+  alert(homedir.data.match_result);
+  $('#htree_matches').text(homedir.data.match_result);
+  $('#htree_matches').text(ht.getNodeByKey(user_folders['homedir']).data.match_result);
+}
 
-  layout = $('body').layout({
-          applyDemoStyles: true,
-          center__maskContents: true,
-          north: {closable:false, resizable:false, spacing_open: 0, spacing_closed: 0, size:30},
-          south: {closable:false, resizable:false, spacing_open: 0, spacing_closed: 0, size:20},
-          west: {size:300,onresize: $.layout.callbacks.resizePaneAccordions,
-              childOptions: {
-                  spacing_open: 0,
-                  spacing_closed:0,
-                  north: {paneSelector: ".subnavigation", size:30},
-                  center:{paneSelector: ".treecontent", onresize: $.layout.callbacks.resizePaneAccordions},
-                  south:{paneSelector:  ".treesouth", closable:false, resizable:false, spacing_open: 0, spacing_closed: 0, size:21}
-              }
-
-          },
-          resizerTip: js_edit_layout_resizertip,
-          togglerTip_open: js_edit_layout_togglertip_open,
-          togglerTip_closed: js_edit_layout_togglertip_closed
-  });
-
-  $("#accordiontree").accordion({
-      heightStyle: "fill", active: 1
-  });
 
 
   // ############################################################################
@@ -1147,12 +1143,13 @@ $(document).ready(function () {
         if (iconpath == "") {data.node.data.icon = FANCYTREE_DEFAULT_ICON;}
         if (data.node.data.readonly==0){
             consoledb.log('SPAN: ', data.node.span);
-            contextmenue_on_demand('#'+tree_node_id_prefix+data.node.key, gethometree(), tree_node_id_prefix, data.node);  // tree-dependent
+            // 2014-11-26
+            //contextmenue_on_demand('#'+tree_node_id_prefix+data.node.key, $(tree_selector).fancytree("getTree"), tree_node_id_prefix, data.node);  // tree-dependent
             // arguments: '#(h|c)tree-node-'+data.node.key, get(hometree|coltree)(), '(h|c)tree-node-', data.node
         }
       },
 
-    ajax: {type: "POST", contentType: "application/json", data: {key: tree_root, mode: "edittree"}},  // tree-dependent
+    ajax: {type: "POST", contentType: "application/json", data: {key: tree_root, mode: "edittree", homenodefilter: $('#homenodefilter').val()}},  // tree-dependent
 
     source: {
       url: "/edit/treedata"
@@ -1238,6 +1235,8 @@ $(document).ready(function () {
           loadEditArea(node.key);
       }
       if(event.key==" " && node.data.readonly==0 && action==""){
+          // 2014-11-26
+          contextmenue_on_demand('#'+tree_node_id_prefix+data.node.key, $(tree_selector).fancytree("getTree"), tree_node_id_prefix, data.node);  // tree-dependent
           $('#'+tree_node_id_prefix+node.key+' span').contextMenu(); // show contextmenu programatically
         $('.context-menu-list .context-menu-root').focus();
         current_tree.widget.options.keyboard = false;
@@ -1369,7 +1368,7 @@ $(document).ready(function () {
     },  // click:
 
     activate: function(event, data) {
-      consoledb.log('--- activate ---');
+      consoledb.log('--- activate ---', data.node.title, data.node.key);
       consoledb.log(event);
       consoledb.log(data);
       var node = data.node;
@@ -1384,6 +1383,8 @@ $(document).ready(function () {
       currentpath = node.getKeyPath();
       idselection = node.key;
       tree.currentfolder = node.data.key;
+      // 2014-11-26
+      contextmenue_on_demand('#'+tree_node_id_prefix+data.node.key, $(tree_selector).fancytree("getTree"), tree_node_id_prefix, data.node);  // tree-dependent
       $(node.span).removeClass('disabled');
       if( $(".contextMenu:visible").length > 0 ){
         $(".contextMenu").hide();
@@ -1396,9 +1397,9 @@ $(document).ready(function () {
       // context menu may / is created after create event
       //contextmenue_on_demand('#htree-node-'+data.node.key, gethometree(), 'htree-node-', data.node);
 
-      if(true || event.type=="fanytreeclickactivate" && node.data.readonly==0 && action==""){
+      if(event.type=="fanytreeclickactivate" && node.data.readonly==0 && action==""){
           idselection = node.key;
-          loadEditArea(node.key);
+          loadEditArea(currentid);
       };
 
       if (flag_cut_mode) {
@@ -1406,31 +1407,10 @@ $(document).ready(function () {
       }
     },  // activate:
 
-    xinit: function(isReloading, isError){
-        consoledb.log('--- onPostInit ---');
-        if (currentpath!="/"){
-
-            this.loadKeyPath(currentpath, function(node, status){
-                if(status=="loaded"){
-                    //node.setExpanded();
-                }else if(status=="ok"){
-                    node.setActive();
-                }
-            });
-        }
-    },
-
     init: function(isReloading, isError){
-        //alert('---2init:---> currentpath='+currentpath);
         if (currentpath!="/"){
-            //this.loadKeyPath(currentpath, function(node, status){
-             //var pids = currentpath.split('/');
-             //pids.pop();
-             //spath = pids.join('/');
             $(this).fancytree("getTree").loadKeyPath(currentcpath, function(node, status){
-                consoledb.log('##### ---> ', node.title, status, currentpath, node.key);
                 if(status=="loaded"){ ;
-                    //node.setExpanded(true);
                 }else if(status=="ok"){
                     node.setActive({noEvents: true});  // prevent folder content from being reloaded
                 }
@@ -1459,6 +1439,39 @@ $(document).ready(function () {
   return tree_opts;
 
   }
+
+
+$(document).ready(function () {
+  consoledb.log('document ready function #002');
+
+  $('.context-menu-collections').on('click', function(e){
+      consoledb.log('clicked context-menu-collections', this);
+  })
+
+  layout = $('body').layout({
+          applyDemoStyles: true,
+          center__maskContents: true,
+          north: {closable:false, resizable:false, spacing_open: 0, spacing_closed: 0, size:30},
+          south: {closable:false, resizable:false, spacing_open: 0, spacing_closed: 0, size:20},
+          west: {size:300,onresize: $.layout.callbacks.resizePaneAccordions,
+              childOptions: {
+                  spacing_open: 0,
+                  spacing_closed:0,
+                  north: {paneSelector: ".subnavigation", size:30},
+                  center:{paneSelector: ".treecontent", onresize: $.layout.callbacks.resizePaneAccordions},
+                  south:{paneSelector:  ".treesouth", closable:false, resizable:false, spacing_open: 0, spacing_closed: 0, size:21}
+              }
+
+          },
+          resizerTip: js_edit_layout_resizertip,
+          togglerTip_open: js_edit_layout_togglertip_open,
+          togglerTip_closed: js_edit_layout_togglertip_closed
+  });
+
+  $("#accordiontree").accordion({
+      heightStyle: "fill", active: 1
+  });
+
 
   // create home tree
   htree = $("#hometree").fancytree(get_tree_opts("#hometree", "htree-node-", "home", ["#hometree", "#collectionstree"]));

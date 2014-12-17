@@ -18,12 +18,15 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 import os
 import core.config as config
 
 from utils.utils import splitpath
 
 contentstyles = {}
+
+logg = logging.getLogger("frontend")
 
 
 class Theme:

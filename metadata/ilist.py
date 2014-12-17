@@ -18,6 +18,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 from mediatumtal import tal
 #import core.search as search
 import core.tree as tree
@@ -25,6 +26,9 @@ from utils.utils import esc
 from core.metatype import Metatype
 from core.acl import AccessData
 from core.transition import httpstatus
+
+
+logg = logging.getLogger("frontend")
 
 
 class m_ilist(Metatype):
@@ -72,7 +76,7 @@ class m_ilist(Metatype):
             name = req.params['name']
             fieldname = req.params.get('fieldname', name)
         except:
-            logException("missing request parameter")
+            logg.exception("missing request parameter")
             return httpstatus.HTTP_NOT_FOUND
 
         index = tree.getRoot("collections").getAllAttributeValues(name, access, req.params.get('schema')).keys()

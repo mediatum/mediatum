@@ -29,11 +29,14 @@ from utils.utils import splitpath, intersection, union
 from utils.date import parse_date, now, format_date
 
 
+logg = logging.getLogger("archive")
+
+
 def archive_log(message, type="info"):
     if type == "info":
-        logging.getLogger("archive").info(message)
+        logg.info(message)
     else:
-        logging.getLogger("archive").error(message)
+        logg.error(message)
 
 
 class Archive:
@@ -160,6 +163,6 @@ def initialize():
         None
         # start archiving thread
         thread_id = thread.start_new_thread(archive_thread, ())
-        log.info("started archiving thread")
+        logg.info("started archiving thread")
 
         return archive_manager

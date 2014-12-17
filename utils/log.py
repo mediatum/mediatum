@@ -132,17 +132,9 @@ def initialize():
     logging.getLogger('backend').info('logging initialized (%s)' % (filepath))
 
 
-def logException(message=None):
+def logException(message=""):
     errlog = logging.getLogger('errors')
-
-    class Errorprint:
-
-        def write(self, message):
-            errlog.error(message.rstrip())
-    if(message):
-        errlog.error(message)
-    errlog.error(str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]))
-    traceback.print_tb(sys.exc_info()[2], None, Errorprint())
+    errlog.exception(message)
 
 
 def addLogger(loggername, additional_handlers=["screen"], loglevel=logging.DEBUG):

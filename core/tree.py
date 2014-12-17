@@ -1054,34 +1054,12 @@ class Node(object):
         if name in self.attributes:
             return self.attributes[name]
 
-        f = self.getoverloadedfunction(name)
-        if f:
-            return f
-        # fall-through
-        raise AttributeError("Node %r of type %r has no attribute %r" % (self, self.type, name))
-
-    def getoverloadedfunction(self, name):
-        global nodefunctions, nodeclasses
         if name in nodefunctions:
             return lambda *x, **y: nodefunctions[name](self, *x, **y)
-        if self.getContentType() in nodeclasses:
-            cls = nodeclasses[self.getContentType()]
+        
+        # fall-through
+        raise AttributeError("Node %s of type has no attribute %s", self, name)
 
-            def r(cls):
-                if name in cls.__dict__:
-                    return lambda *x, **y: cls.__dict__[name](self, *x, **y)
-                else:
-                    for base in cls.__bases__:
-                        if base.__name__ != self.__class__.__name__:
-                            ret = r(base)
-                            if ret:
-                                return ret
-                    return None
-            ret = r(nodeclasses[self.getContentType()])
-            if ret:
-                logg.warn("DEPRECATED: (%s).getoverloadedfunction(%s)", self, name)
-                return ret
-        return None
 
     # fill hashmap with idlists of listvalues
     def getAllAttributeValues(self, attribute, access, schema=""):

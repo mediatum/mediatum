@@ -23,25 +23,25 @@ import core.config
 import logging
 import logging.handlers
 import sys
-import traceback
-import re
 
-# additional_handlers= []: logs only to own file; ['screen', 'everything']: logs to own file, stdout, everything.log
-DEFAULT_ADDITIONAL_HANDLERS = []
+
 DEFAULT_LOGLEVEL = logging.DEBUG
+# use for special file loggers defined in LOGTYPES
 DEFAULT_LOGFORMAT = '%(asctime)s %(levelname)s %(message)s'
+# used for the root logger
+ROOT_STREAM_LOGFORMAT = '%(asctime)s [%(process)d/%(threadName)s] %(name)s/%(module)s %(levelname)s | %(message)s'
+# this also logs filename and line number, which is great for debugging
+# ROOT_STREAM_LOGFORMAT = '%(asctime)s %(name)s/%(module)s [%(threadName)s] %(levelname)s | %(message)s - %(pathname)s:%(lineno)d'
+ROOT_FILE_LOGFORMAT = ROOT_STREAM_LOGFORMAT
+
+logg = logging.getLogger(__name__)
 
 
-def cfg(logtype,
-        additional_handlers=DEFAULT_ADDITIONAL_HANDLERS,
-        logformat=DEFAULT_LOGFORMAT,
-        loglevel=DEFAULT_LOGLEVEL):
-
+def cfg(logtype, logformat=None, loglevel=None):
     d = {}
     d['logtype'] = logtype
-    d['additional_handlers'] = additional_handlers
-    d['logformat'] = logformat
-    d['loglevel'] = loglevel
+    d['logformat'] = logformat or DEFAULT_LOGFORMAT
+    d['loglevel'] = loglevel or DEFAULT_LOGLEVEL
 
     return [logtype, d]
 
@@ -49,16 +49,16 @@ LOGTYPES = [
     cfg("database"),
     cfg("backend"),
     cfg("frontend"),
-    cfg("mediatumtal", ["screen"]),
-    cfg("editor", loglevel=logging.DEBUG),
-    cfg("usertracing", ["screen"]),
-    cfg("athana", ["screen", "everything"]),
-    cfg("errors", ["screen", "everything"]),
+    cfg("mediatumtal"),
+    cfg("editor"),
+    cfg("usertracing"),
+    cfg("athana", loglevel=logging.INFO),
+    cfg("errors"),
     cfg("services"),
     cfg("searchindex"),
-    cfg("ftp", ["screen"]),
+    cfg("ftp"),
     cfg("oai"),
-    cfg("z3950", ["screen"], logformat='%(asctime)s %(message)s'),
+    cfg("z3950", logformat='%(asctime)s %(message)s'),
     cfg("workflows"),
 ]
 
@@ -66,31 +66,49 @@ LOGTYPES = [
 dlogfiles = {}
 
 
-class PatternFilter(logging.Filter):
+class ConsoleHandler(logging.StreamHandler):
 
-    def __init__(self, pattern):
-        self.pattern = pattern
+    """A handler that logs to console in the sensible way.
 
-    def filter(self, record):
-        return re.match(self.pattern, record.getMessage())
+    StreamHandler can log to *one of* sys.stdout or sys.stderr.
+
+    It is more sensible to log to sys.stdout by default with only error
+    (logging.ERROR and above) messages going to sys.stderr. This is how
+    ConsoleHandler behaves.
+    
+    from: http://code.activestate.com/recipes/576819-logging-to-console-without-surprises/ 
+    """
+
+    def __init__(self):
+        logging.StreamHandler.__init__(self)
+        self.stream = None  # reset it; we are not going to use it anyway
+
+    def emit(self, record):
+        if record.levelno >= logging.ERROR:
+            self.__emit(record, sys.stderr)
+        else:
+            self.__emit(record, sys.stdout)
+
+    def __emit(self, record, strm):
+        self.stream = strm
+        logging.StreamHandler.emit(self, record)
 
 
 def initialize():
-    log_screen = logging.getLogger('screen')
-    l = logging.StreamHandler(sys.stdout)
-    log_screen.handlers = []
-    log_screen.addHandler(l)
-    log_screen.setLevel(logging.DEBUG)
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
 
-    log_everything = logging.getLogger('everything')
-    log_everything.handlers = []
+    stream_handler = ConsoleHandler()
+    stream_handler.setFormatter(logging.Formatter(ROOT_STREAM_LOGFORMAT))
+    root_logger.handlers = []
+    root_logger.addHandler(stream_handler)
 
     filename = core.config.get('logging.file.everything', None)
     filepath = core.config.get('logging.path', None)
     if not filename and not filepath:
         filename = filepath = core.config.get('paths.tempdir')
         filename += 'everything.log'
-        print 'Using temp directory (%s) for logging' % (filepath)
+        logg.info('Using temp directory (%s) for logging', filepath)
     if not filename and filepath:
         filename = filepath + 'everything.log'
     if not filepath and filename:
@@ -101,12 +119,10 @@ def initialize():
     if filename:
         if not os.path.exists(filename[:filename.rfind("/") + 1]):
             os.mkdir(filename[:filename.rfind("/") + 1])
-        l = logging.handlers.RotatingFileHandler(filename, maxBytes=33554432, backupCount=20)
-        l.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
-        log_everything.addHandler(l)
-
-    # log_everything.addHandler(log_screen)
-    log_everything.setLevel(logging.DEBUG)
+        file_handler = logging.handlers.RotatingFileHandler(filename, maxBytes=33554432, backupCount=20)
+        file_handler.setFormatter(logging.Formatter(ROOT_FILE_LOGFORMAT))
+        root_logger.addHandler(file_handler)
+        logg.info('logging everything to %s', filepath)
 
     for name, cfgDict in LOGTYPES:
         log = logging.getLogger(name)
@@ -115,50 +131,43 @@ def initialize():
         if not filename and filepath:
             filename = filepath + name + '.log'
 
-        if filename:
-            if not os.path.exists(filename[:filename.rfind("/") + 1]):
-                os.mkdir(filename[:filename.rfind("/") + 1])
-            l = logging.handlers.RotatingFileHandler(filename, maxBytes=33554432, backupCount=20)
-            l.setFormatter(logging.Formatter(cfgDict["logformat"]))
-            log.addHandler(l)
-            if "screen" in cfgDict["additional_handlers"]:
-                log.addHandler(log_screen)
-            if "everything" in cfgDict["additional_handlers"]:
-                log.addHandler(log_everything)
-            log.setLevel(cfgDict["loglevel"])
+        if not os.path.exists(filename[:filename.rfind("/") + 1]):
+            os.mkdir(filename[:filename.rfind("/") + 1])
+        l = logging.handlers.RotatingFileHandler(filename, maxBytes=33554432, backupCount=20)
+        l.setFormatter(logging.Formatter(cfgDict["logformat"]))
+        log.addHandler(l)
+        log.setLevel(cfgDict["loglevel"])
 
         dlogfiles[name] = {'path': filepath, 'filename': filename}
+        logg.info("added logger %s, file %s", name, filename)
 
-    logging.getLogger('backend').info('logging initialized (%s)' % (filepath))
 
-
-def logException(message=""):
+def logException(message=None):
     errlog = logging.getLogger('errors')
-    errlog.exception(message)
+    errlog.exception(message or "")
 
 
-def addLogger(loggername, additional_handlers=["screen"], loglevel=logging.DEBUG):
+def addLogger(loggername, additional_handlers=None, loglevel=None, logformat=None):
     '''
     add new logger
     filename will be <loggername>.log
-    additional_handlers may be a sublist of ["screen", "everything"]
     '''
     global cfg, LOGTYPES, dlogfiles
 
     if loggername in [lt[0] for lt in LOGTYPES]:
-        logging.getLogger("backend").warning("tried to add logger for existing logger name %r" % loggername)
+        logg.warn("tried to add logger for existing logger name %r" % loggername)
         return False
 
     filepath = core.config.get('logging.path', None)
 
     _cfgDict = cfg(loggername,
-                   additional_handlers=additional_handlers,
+                   logformat=logformat,
                    loglevel=loglevel)
 
     cfgDict = _cfgDict[1]
 
-    log = logging.getLogger(loggername)
-    log.handlers = []
+    logger = logging.getLogger(loggername)
+    logger.handlers = []
     filename = core.config.get("logging.file." + loggername, None)
     if not filename and filepath:
         filename = filepath + loggername + '.log'
@@ -167,22 +176,15 @@ def addLogger(loggername, additional_handlers=["screen"], loglevel=logging.DEBUG
         if not os.path.exists(filename[:filename.rfind("/") + 1]):
             os.mkdir(filename[:filename.rfind("/") + 1])
 
-        l = logging.handlers.RotatingFileHandler(filename,
-                                                 maxBytes=33554432,
-                                                 backupCount=20)
+        file_handler = logging.handlers.RotatingFileHandler(filename,
+                                                            maxBytes=33554432,
+                                                            backupCount=20)
 
-        l.setFormatter(logging.Formatter(cfgDict["logformat"]))
-        log.addHandler(l)
-        if "screen" in cfgDict["additional_handlers"]:
-            log_screen = logging.getLogger('screen')
-            log.addHandler(log_screen)
-        if "everything" in cfgDict["additional_handlers"]:
-            log_everything = logging.getLogger('everything')
-            log.addHandler(log_everything)
-        log.setLevel(cfgDict["loglevel"])
+        file_handler.setFormatter(logging.Formatter(cfgDict["logformat"]))
+        file_handler.setLevel(cfgDict["loglevel"])
+        logger.addHandler(file_handler)
 
         LOGTYPES.append(_cfgDict)
 
     dlogfiles[loggername] = {'path': filepath, 'filename': filename}
-    logging.getLogger("backend").info("added logger %r" % loggername)
     return True

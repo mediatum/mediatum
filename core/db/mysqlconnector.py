@@ -125,7 +125,7 @@ class MYSQLConnector(Connector):
                 s = str(s)
                 return "'" + s.replace('\\', '\\\\').replace('"', '\\"').replace('\'', '\\\'') + "'"
 
-    def execute(self, sql, params=None):
+    def execute(self, sql, params=None, log_errors=True):
         self.dblock.acquire()
         try:
             while True:
@@ -139,7 +139,8 @@ class MYSQLConnector(Connector):
                     return result
                 except MySQLdb.Error as nr:
                     def log_sql_error(msg, exc_info=0):
-                        log.error(msg + " while executing SQL '%s', params %s", sql, params, exc_info=exc_info)
+                        if log_errors:
+                            log.error(msg + " while executing SQL '%s', params %s", sql, params, exc_info=exc_info)
 
                     if nr[0] == 2002:
                         log_sql_error("can't connect to sql server")
@@ -177,7 +178,7 @@ class MYSQLConnector(Connector):
         if debug:
             log.debug(sql)
         try:
-            return self.execute(sql)
+            return self.execute(sql, log_errors=False)
         except MySQLdb.OperationalError as nr:
             if nr[0] == 1050:
                 log.info("table already exists: " + sql)

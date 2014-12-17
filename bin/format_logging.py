@@ -45,19 +45,23 @@ else:
 
     period = "-".join(p)
 
+period = "2014-12"
+
 if len(sys.argv) == 2 and sys.argv[1] == "--force":
     print "force reprocess of log data"
     force = 1
+    
+LOG_FILENAME = core.config.get("logging.file.athana")
 
-path = [core.config.get("logging.file.everything")]
-outpath = "%s%s.log" % (core.config.get("logging.save", os.path.dirname(core.config.get("logging.file.everything")) + '/'), period)
+path = [LOG_FILENAME]
+outpath = "%s%s.log" % (core.config.get("logging.save", os.path.dirname(LOG_FILENAME) + '/'), period)
 
 if os.path.exists(outpath) and force == 0:
     print "file for period", period, "existing", outpath
     sys.exit()
 
 for i in range(1, 21):
-    path.append(core.config.get("logging.file.everything") + "." + str(i))
+    path.append(LOG_FILENAME + "." + str(i))
 
 d = []
 for filename in path:

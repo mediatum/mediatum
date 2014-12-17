@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 import core.tree as tree
 import core.users as users
 from core.acl import AccessData
@@ -24,6 +25,7 @@ from utils.utils import funcname, get_user_id, log_func_entry, dec_entry_log
 from schema.schema import getMetaType
 from core.translation import lang
 
+logger = logging.getLogger('editor')
 
 @dec_entry_log
 def getContent(req, ids):
@@ -34,6 +36,10 @@ def getContent(req, ids):
     
     if "sort" in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+
+    msg_t = (user.getName(), node.id, node.name, node.type, req.params)
+    msg = "%s sorting subfolders of node %r (%r, %r): %r" % msg_t
+    logger.info(msg)
 
     if "order" in req.params:  # do reorder
         ids = req.params.get('order').split(',')

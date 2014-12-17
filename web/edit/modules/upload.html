@@ -14,9 +14,8 @@
 
     <style>
 
-        #uploadform, #metaform{display:none;position:fixed;top:0px;left:0px;right:0px;bottom:0px;width:100%;height:100%;z-index:1000000;}
-        #uploadform-background, #metaform-background{position:absolute;top:0px;left;0px;height:100%;width:100%;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
-        #pluploadform-background{position:fixed;top:0px;left;0px;height:100%;width:100%;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
+        #uploadform_plupload_widget, #metaform{display:none;position:fixed;top:0px;left:0px;right:0px;bottom:0px;width:100%;height:100%;z-index:1000000;}
+        #pluploadform-background, #metaform-background{position:absolute;top:0px;left;0px;height:100%;width:100%;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
         #uploadform-form, #metaform-form{position:absolute;top:0px;left:0px;bottom:0px;right:0px;padding:0px;margin:30px;z-index:1000001;
             height:400px;width:80%;margin:auto;
         }
@@ -56,7 +55,7 @@
             var ajax_response;
 
             var options = {
-                  url: '/edit/edit_content?action=addmeta&id='+id,
+                  url: '/edit/edit_content?action=addmeta&func=openMetaForm&id='+id,
                   async: false,
                   dataType: 'json',
                   success: function(data){
@@ -185,7 +184,7 @@
             var ajax_response;
 
             var options = {
-                  url: '/edit/edit_content?action=removefiles&id='+id,
+                  url: '/edit/edit_content?action=removefiles&func=openUploadFormPluploadWidget&id='+id,
                   async: false,
                   dataType: 'json',
                   success: function(data) {
@@ -267,7 +266,7 @@
                 var ajax_response;
 
                 var options = {
-                      url: '/edit/edit_content?action=buildnode&id='+id+'&files='+files+'&type='+type+'&value='+value,
+                      url: '/edit/edit_content?action=buildnode&func=createObjectsPlupload&id='+id+'&files='+files+'&type='+type+'&value='+value,
                       async: false,
                       dataType: 'json',
                       success: function (data) {
@@ -327,7 +326,7 @@
         //autostart: true,
         autostart: false,
 
-    		url : '/edit/edit_content?action=upload&uploader=plupload&id='+id,
+    		url : '/edit/edit_content?action=upload&func=init_plupload_widget&uploader=plupload&id='+id,
 
     		// User can upload no more then 20 files in one go (sets multiple_queues to false)
     		max_file_count: 0,  // default is 0 -> no limit
@@ -706,7 +705,7 @@
 <tal:block metal:define-macro="addmeta">
     <script>
         function loadSchemes(o){
-            $.getJSON('/edit/edit_content?action=getschemes&contenttype='+o.value+'&id='+id, function(data){
+            $.getJSON('/edit/edit_content?action=getschemes&func=loadSchemes&contenttype='+o.value+'&id='+id, function(data){
                 var schemes = $('#schema');
                 first = schemes.find('option')[0];
                 schemes.find('option').remove().end();
@@ -725,13 +724,13 @@
             var ajax_response;
 
             var options = {
-                  url: '/edit/edit_content?action=createobject&contenttype='+$('#objecttype').val()+'&schema='+$('#schema').val()+'&id='+id,
+                  url: '/edit/edit_content?action=createobject&func=createMetaObject&contenttype='+$('#objecttype').val()+'&schema='+$('#schema').val()+'&id='+id,
                   async: false,
                   dataType: 'json',
                   success: function(data){
                       ajax_response = data;
                       $('#metaform').hide();
-                      document.location = '/edit/edit_content?id='+data.newid+'&tab=metadata'
+                      document.location = '/edit/edit_content?id='+data.newid+'&func=createMetaObject&tab=metadata'
                   }
                 };
 
@@ -744,7 +743,7 @@
             var ajax_response;
 
             var options = {
-                  url: '/edit/edit_content?action=obj_from_identifier&identifier_importer='+$('#identifier_importer').val()+'&identifier='+$('#input_identifier').val()+'&id='+id,
+                  url: '/edit/edit_content?action=obj_from_identifier&func=createObjectFromIdentifier&identifier_importer='+$('#identifier_importer').val()+'&identifier='+$('#input_identifier').val()+'&id='+id,
                   async: false,
                   dataType: 'json',
                   success: function(data){
@@ -762,11 +761,11 @@
                         updateNodeLabels("");
                         parent.$('#overlay').css('display', 'none');
                         if (false && typeof data.newid !== 'undefined') {
-                          document.location = '/edit/edit_content?id='+data.newid+'&tab=metadata'  // open newly created node in metadata editor
+                          document.location = '/edit/edit_content?id='+data.newid+'&func=createObjectFromIdentifier&tab=metadata'  // open newly created node in metadata editor
                         }
                         else
                         {
-                          document.location = '/edit/edit_content?id='+id; // show content of upload container
+                          document.location = '/edit/edit_content?id='+id+'&func=createObjectFromIdentifier'; // show content of upload container
                         }
                       }
                   }

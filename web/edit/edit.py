@@ -451,15 +451,16 @@ def edit_tree(req):
                     nodes = tree.getRoot('home').getContainerChildren().sort_by_orderpos()
                     # filter out shoppingbags etc.
                     nodes = [n for n in nodes if n.isContainer()]
-                    nodes = filter(lambda n: re.match(homenodefilter, n.getLabel(language)), nodes)
-                    match_result = '# = %d' % len(nodes)
+                    # filter user name - after first "("
+                    nodes = filter(lambda n: re.match(homenodefilter, n.getLabel(language).split('(', 1)[-1]), nodes)
+                    match_result = '#=%d' % len(nodes)
                 except Exception as e:
                     logger.warning('pattern matching for home nodes: %r' % e)
-                    match_result = '<span style="color:red">%r</span>' % e
+                    match_result = '<span style="color:red">Error: %r</span>' % str(e)
                     match_error = True
                 if home_dir not in nodes:
                     if not match_error:
-                        match_result = '# = %d + 1' % len(nodes)
+                        match_result = '#=%d+1' % len(nodes)
                     nodes.append(home_dir)
                 nodes = tree.NodeList(nodes).sort_by_orderpos()
             else:
@@ -514,7 +515,6 @@ def edit_tree(req):
             nodedata['readonly'] = 1
             nodedata['noLink'] = True
 
-            nodedata['addClass'] = 'readonly'  # dynatree
             nodedata['extraClasses'] = 'readonly'  # fancytree
 
         else:
@@ -866,6 +866,9 @@ def content(req):
     logger.debug("... %s inside %s.%s: ->  !!! current = %r !!!" %
                  (get_user_id(req), __name__, funcname(), current))
     msg = "%s selected editor module is %r" % (user.getName(), current)
+    jsfunc = req.params.get("func", "")
+    if jsfunc:
+        msg = msg + (', js-function: %r' % jsfunc)
     logger.info(msg)
 
     # some tabs operate on only one file

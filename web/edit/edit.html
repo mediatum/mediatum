@@ -79,10 +79,6 @@
             </style>
 
             <style>
-                /*
-                   when node (and children) is disabled
-                   copy from ui.dynatree.css: .ui-dynatree-disabled ul.dynatree-container
-                */
 
                 ul.fancytree-container {background-color: transparent; border: 0px; height: 99%;}
                 .fancytree-node-disabled {opacity: 0.5;background-color: silver}
@@ -106,10 +102,22 @@
 
                 #overlay {position:absolute;top:0;left:0;right:0;bottom:0;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;-ms-filter:'progid:DXImageTransform.Microsoft.Alpha(Opacity=50)';filter:alpha(opacity=50);}
 
+                #home_content {overflow: hidden;}
+                #home_content:hover {overflow: auto;}
+                /*  */
+                .ui-accordion-content {overflow: hidden!important;}
+                .ui-helper-reset {overflow: hidden!important;}
+                .ui-widget-content {overflow: hidden!important;}
+                .ui-corner-bottom {overflow: hidden!important;}
+                .ui-accordion-content-active {overflow: hidden!important;}
+                /*  */
+
+                html body.ui-layout-container div.ui-layout-west.ui-layout-pane.ui-layout-pane-west.ui-layout-container div#tree.treecontent.ui-layout-pane.ui-layout-pane-center {overflow: hidden;}
                 /* show scrollbars for trees only when mouseover */
                 .ui-fancytree {overflow: hidden;}
                 .ui-fancytree:hover {overflow: auto;}
-                ul.fancytree-container {overflow: hidden}
+                ul.fancytree-container {overflow: hidden;}
+
 
             </style>
 
@@ -465,6 +473,8 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curnode)
                 break;
               case "create_container":
                 consoledb.group('edit.html: create_container');
+                node.load(true);
+                node.setExpanded();
                 addNewContainer(node, container_type);
 
                 consoledb.log("should expand: " + currentpath);
@@ -475,12 +485,14 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curnode)
                                 node.setActive(true);
                             }
                         });
+
                 consoledb.log(1);
                 if (currentpath) {
                     consoledb.log(2);
                     $('.ui-layout-center').attr('src', '/edit/edit_content?id='+new_path_endpoint+'&tab=metadata');
                 }
                 consoledb.log(3);
+
                 consoledb.groupEnd('edit.html: create_container')
                 res = false;
                 break;
@@ -500,6 +512,8 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curnode)
                 break;
               case "paste_container_here":
                 consoledb.log('cut node:' + node.key);
+                node.load(true);
+                node.setExpanded();
                 node_to_paste.li.className = node_to_paste_classname;
                 if (node_to_paste_parent.key == node.key) { // nothing to be done: user tries to paste node to parent
                   flag_cut_mode = false;
@@ -514,6 +528,11 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curnode)
                 flag_cut_mode = false;
                 node_to_paste.moveTo(node);
                 node_to_paste.setActive();
+                new_path_endpoint = node_to_paste.key;
+                if (currentpath) {
+                    consoledb.log(2);
+                    $('.ui-layout-center').attr('src', '/edit/edit_content?id='+new_path_endpoint+'&tab=content');
+                }
                 res = false;
                 break;
               case "delete":
@@ -1023,13 +1042,18 @@ function set_cm_to_default() {
                     </div>
                 </div>
 
-                <div class="treecontent" id="tree" style="border:0 solid #bbb!important;overflow:hidden;background-color:#ddd;">
+                <div class="treecontent" id="tree" style="border:0 solid #bbb!important;overflow:hidden!important;background-color:#ddd;">
                     <div i18n:translate="select_target_dir" id="select_target_dir" style="display:none">TEXT</div>
-                    <div id="accordiontree" style="overflow:auto;">
-                        <h3 class="context-menu-home"><a href="#" tal:attributes="onclick python:'loadEditArea('+str(basedirs[0].id)+')'"><span id="homedir" tal:content="python:basedirs[0].getName()" i18n:translate=""/></a></h3>
-                        <div class="acc_content" id="home_content">
-                            <tal:block tal:condition="python:user.isAdmin()"><label>Filter:</label><input id="homenodefilter" name="homenodefilter" tal:attributes="value python:homenodefilter" /><button id="id_btn_reload_htree" onclick="reload_htree_filtered(); return false;">&times;</button><span id="htree_matches"> </span> </tal:block>
-                            <div id="hometree"> </div>
+                    <div id="accordiontree" style="overflow:hidden!important;">
+                        <h3 class="context-menu-home" style="overflow: hidden!important;"><a href="#" tal:attributes="onclick python:'loadEditArea('+str(basedirs[0].id)+')'"><span id="homedir" tal:content="python:basedirs[0].getName()" i18n:translate=""/></a></h3>
+                        <div id="home_content" onmouseover="$(this).scrollTop(-100);">
+                            <tal:block tal:condition="python:user.isAdmin()">
+                              <label>Filter:</label>
+                              <input id="homenodefilter" name="homenodefilter" i18n:attributes="title edit_tree_homenodefilter_tooltip" tal:attributes="value python:homenodefilter" />
+                              <button id="id_btn_reload_htree" onclick="reload_htree_filtered(); return false;" i18n:attributes="title edit_tree_filterbutton_tooltip">&times;</button>
+                              <span i18n:attributes="title edit_tree_matches_tooltip" id="htree_matches"> </span>
+                            </tal:block>
+                            <div  class="acc_content" id="hometree"> </div>
                         </div>
 
                         <h3 class="context-menu-collections"><a href="#" tal:attributes="onclick python:'loadEditArea('+str(basedirs[1].id)+')'"><span id="collections" tal:content="python:basedirs[1].getLabel()"/></a></h3>
@@ -1070,7 +1094,6 @@ function reload_htree_filtered(homenodefilter) {
   if (!homenodefilter) {
      var homenodefilter = $('#homenodefilter').val();
   }
-  //htree = $("#hometree").fancytree(get_tree_opts("#hometree", "htree-node-", "home", ["#hometree", "#collectionstree"]));
   var ht = gethometree();
 
   ht.widget.tree.options.ajax.data.homenodefilter = homenodefilter;

@@ -30,6 +30,7 @@ from utils.log import logException
 from utils.utils import dec_entry_log
 from web.edit.edit_common import showdir
 from core.translation import lang, t
+from core.acl import AccessData
 
 logg = logging.getLogger("editor")
 
@@ -40,18 +41,26 @@ def getInformation():
 
 @dec_entry_log
 def getContent(req, ids):
+    user = users.getUserFromRequest(req)
+    access = AccessData(user=user)
+    language = lang(req)
+    node = tree.getNode(ids[0])
+
+    if not access.hasWriteAccess(node):
+        return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+
     if req.params.get("upload")=="uploadfile":
         # try to import file
         return import_new(req)
-    node = tree.getNode(ids[0])
-    
+
+
     v = {"error":req.params.get("error")}
-    
+
     class SortChoice:
         def __init__(self, label, value):
             self.label = label
-            self.value = value    
-    
+            self.value = value
+
     col = node
     if "globalsort" in req.params:
         col.set("sortfield", req.params.get("globalsort"))
@@ -64,15 +73,15 @@ def getContent(req, ids):
                     sortfields += [SortChoice(sortfield.getLabel(), sortfield.getName())]
                     sortfields += [SortChoice(sortfield.getLabel()+t(req,"descending"), "-"+sortfield.getName())]
                 break
-    v['sortchoices'] = sortfields    
+    v['sortchoices'] = sortfields
     v['ids'] = ids
     v['count'] = len(node.getContentChildren())
     v['nodelist'] = showdir(req, node)
     v['language'] = lang(req)
-    v['t'] = t    
-    
+    v['t'] = t
+
     _html = req.getTAL("web/edit/modules/imports.html", v, macro="upload_form")
-     
+
     return _html
 
 
@@ -86,6 +95,10 @@ def import_new(req):
     if "file" in req.params and req.params["doi"]:
         req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"doi_and_bibtex_given"})
         req.params["error"] = "doi_and_bibtex_given"
+
+        msg_t = (user.getName(), importdir.id, importdir.name, importdir.type, req.params["error"])
+        msg = "%s using import module for node %r (%r, %r): Error: %r" % msg_t
+        logg.info(msg)
 
     elif "file" in req.params.keys():
         file = req.params["file"]
@@ -104,6 +117,9 @@ def import_new(req):
                 logException("error during upload")
                 req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"PostprocessingError"})
                 req.params["error"] = "file_processingerror"
+            msg_t = (user.getName(), importdir.id, importdir.name, importdir.type, req.params)
+            msg = "%s used import module for bibtex import for node %r (%r, %r): %r" % msg_t
+            logg.info(msg)
             return getContent(req, [importdir.id])
 
     elif req.params["doi"]:
@@ -126,8 +142,14 @@ def import_new(req):
             req.params["error"] = "doi_type_not_mapped"
         else:
             req.request["Location"] = req.makeLink("content", {"id":importdir.id})
+        msg_t = (user.getName(), importdir.id, importdir.name, importdir.type, req.params)
+        msg = "%s used import module for doi import for node %r (%r, %r): %r" % msg_t
+        logg.info(msg)
     else:
         # error while import, nothing given
         req.params["error"] = "edit_import_nothing"
+        msg_t = (user.getName(), importdir.id, importdir.name, importdir.type, req.params)
+        msg = "%s used import module but did not specify import source for node %r (%r, %r): %r" % msg_t
+        logg.info(msg)
 
     return getContent(req, [importdir.id])

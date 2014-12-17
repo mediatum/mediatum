@@ -290,3 +290,9 @@ class Directory(default.Default):
 
     def event_files_changed(self):
         print "Postprocessing node", self.id
+
+    def treeiconclass(self):
+        if 'collection' in self.type:
+            return "collection"
+        else:
+            return "directory"

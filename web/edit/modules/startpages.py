@@ -1,4 +1,4 @@
-﻿"""
+"""
  mediatum - a multimedia content repository
 
  Copyright (C) 2008 Arne Seifert <seiferta@in.tum.de>
@@ -27,15 +27,23 @@ import logging
 import core.users as users
 import core.config as config
 
-from utils.utils import format_filesize
+from utils.utils import format_filesize, dec_entry_log
 from core.translation import lang
 from core.acl import AccessData
 from core.tree import FileNode
 from web.edit.edit_common import send_nodefile_tal, upload_for_html
 
+logger = logging.getLogger('editor')
 
+
+@dec_entry_log
 def getContent(req, ids):
     node = tree.getNode(ids[0])
+    user = users.getUserFromRequest(req)
+    access = AccessData(req)
+    if not access.hasWriteAccess(node) or "editor" in users.getHideMenusForUser(user):
+        return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+
     if req.params.get('file') == "config":  # configuration file for ckeditor
         req.reply_headers['Content-Type'] = "application/javascript"
         return req.writeTAL("web/edit/modules/startpages.html", {'id': ids[0], 'lang': lang(req)}, macro="ckconfig")
@@ -48,6 +56,8 @@ def getContent(req, ids):
                 if req.params.get('filename') == filepath and os.path.exists(config.get("paths.datadir") + filepath):
                     with open(config.get("paths.datadir") + filepath, "r") as fil:
                         data = fil.read()
+                    msg = "%s opened startpage %r for node %s (%r, %r)" % (user.name, filepath, node.id, node.name, node.type)
+                    logger.info(msg)
                     break
             req.write(json.dumps({'filecontent': data}))
         if req.params.get('action') == "save":  # save filedata
@@ -61,6 +71,8 @@ def getContent(req, ids):
                     fil.write(req.params.get('data'))
                 node.addFile(FileNode(filename, "content", "text/html"))
                 req.write(json.dumps({'filename': '', 'state': 'ok'}))
+                msg = "%s added startpage %r for node %s (%r, %r)" % (user.name, filename, node.id, node.name, node.type)
+                logger.info(msg)
                 return None
             else:
                 for f in [f for f in node.getFiles() if f.mimetype == "text/html"]:
@@ -71,29 +83,35 @@ def getContent(req, ids):
                         req.write(json.dumps(
                             {'filesize': format_filesize(os.path.getsize(config.get("paths.datadir") + filepath)),
                              'filename': req.params.get('filename'), 'state': 'ok'}))
+                        msg = "%s saved startpage %r for node %s (%r, %r)" % (user.name, filepath, node.id, node.name, node.type)
+                        logger.info(msg)
                         break
         return None
 
     if "option" in req.params:
         if req.params.get("option") == "filebrowser":  # open filebrowser
+            msg = "%s opening ckeditor filebrowser for node %s (%r, %r)" % (user.name, node.id, node.name, node.type)
+            logger.info(msg)
             req.write(send_nodefile_tal(req))
             return ""
 
         if req.params.get("option") == "htmlupload":  # use fileupload
+            msg = "%s going to use ckeditor fileupload (htmlupload) for node %s (%r, %r)" % (user.name, node.id, node.name, node.type)
+            logger.info(msg)
             req.write(upload_for_html(req))
             return ""
 
-        if "delete" in req.params:  # delete file via fck
+        if "delete" in req.params:  # delete file via CKeditor
             for f in node.getFiles():
                 if f.retrieveFile().endswith(req.params.get('option')):
+                    filepath = f.retrieveFile().replace(config.get("paths.datadir"), '')
+                    msg = "%s going to delete ckeditor filebrowser file %r for node %s (%r, %r)" % (user.name, filepath, node.id, node.name, node.type)
+                    logger.info(msg)
                     if os.path.exists(f.retrieveFile()):
                         os.remove(f.retrieveFile())
                         node.removeFile(f)
                     break
             return ""
-
-    user = users.getUserFromRequest(req)
-    access = AccessData(req)
 
     if access.hasWriteAccess(node):
 
@@ -109,12 +127,12 @@ def getContent(req, ids):
                     node.removeAttribute("startpagedescr." + file_shortpath)
                     node.set("startpage.selector", node.get("startpage.selector").replace(file_shortpath, ""))
                     node.removeFile(filenode)
-                    logging.getLogger('usertracing').info(
+                    logger.info(
                         user.name + " - startpages - deleted FileNode and file for node %s (%s): %s, %s, %s, %s" % (
                             node.id, node.name, page, filenode.getName(), filenode.type, filenode.mimetype))
                 except:
-                    logging.getLogger('usertracing').error(user.name + " - startpages - error while delete FileNode and file for " + page)
-                    logging.getLogger('usertracing').error("%s - %s" % (sys.exc_info()[0], sys.exc_info()[1]))
+                    logger.error(user.name + " - startpages - error while delete FileNode and file for " + page)
+                    logger.error("%s - %s" % (sys.exc_info()[0], sys.exc_info()[1]))
                 break
 
         if "save_page" in req.params:  # save page
@@ -137,9 +155,6 @@ def getContent(req, ids):
             del req.params['cancel_page']
             return getContent(req, [node.id])
 
-    if not access.hasWriteAccess(node) or "editor" in users.getHideMenusForUser(user):
-        return req.getTAL("web/edit/edit.html", {}, macro="access_error")
-
     filelist = []
     for f in node.getFiles():
         if f.mimetype == 'text/html' and f.getType() in ['content']:
@@ -147,7 +162,10 @@ def getContent(req, ids):
 
     languages = [language.strip() for language in config.get("i18n.languages").split(",")]
 
-    if "startpages_save" in req.params.keys():
+    if "startpages_save" in req.params.keys():  # user saves startpage configuration
+        msg = "%s going to save startpage configuration for node %s (%r, %r): %r" % (user.name, node.id, node.name, node.type, req.params)
+        logger.info(msg)
+
         sidebar = ""
         for k in [k for k in req.params if k.startswith('sidebar_')]:
             sidebar += "%s:%s;" % (k[8:], req.params[k])
@@ -161,7 +179,6 @@ def getContent(req, ids):
         for language in languages:
             startpage_selector += "%s:%s;" % (language, req.params.get('radio_' + language))
         node.set('startpage.selector', startpage_selector[0:-1])
-
     named_filelist = []
 
     for f in filelist:

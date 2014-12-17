@@ -38,8 +38,8 @@ from core.datatypes import loadAllDatatypes
 from web.edit.edit_common import showdir, showoperations
 from web.edit.edit import getTreeLabel, clearFromCache
 import utils.date as date
-from utils.utils import join_paths, OperationException, EncryptionException, formatException, getMimeType, funcname, get_user_id, log_func_entry, dec_entry_log
-from utils.fileutils import importFile, importFileToRealname, getImportDir
+from utils.utils import join_paths, OperationException, EncryptionException, formatException, getMimeType, funcname, get_user_id, log_func_entry, dec_entry_log, u2
+from utils.fileutils import importFile, importFileToRealname
 from schema.bibtex import importBibTeX, MissingMapping
 
 from core.tree import Node
@@ -196,8 +196,7 @@ def getContent(req, ids):
                                 # bibtex import handler
                                 if _m[1] == "bibtex" and not req.params.get('type') == 'file':
                                     try:
-                                        nn = importBibTeX(
-                                            f.retrieveFile(), basenode)
+                                        nn = importBibTeX(f.retrieveFile(), basenode)
                                         newnodes.append(nn.id)
                                         basenodefiles_processed.append(f)
                                     except ValueError, e:
@@ -282,7 +281,6 @@ def getContent(req, ids):
         # create node with given type/schema
         if req.params.get('action') == "createobject":
             print "\n\ncreate new node without file"
-            pp(req.params)
             schema = req.params.get('schema')
             ctype = req.params.get('contenttype')
 
@@ -430,10 +428,15 @@ def getContent(req, ids):
                     content = req.getTAL(
                         'web/edit/modules/upload.html', upload_filehandler(req), macro="uploadfileok")
             basenode = tree.getNode(req.params.get('id'))
-            new_tree_labels = [
-                {'id': basenode.id, 'label': getTreeLabel(basenode, lang=language)}]
-            req.write(json.dumps({'type': mime[1], 'ret': content, 'state': state, 'filename': req.params.get(
-                'file'), 'new_tree_labels': new_tree_labels}))
+            new_tree_labels = [{'id': basenode.id, 'label': getTreeLabel(basenode, lang=language)}]
+            _d = {
+                  'type': mime[1],
+                  'ret': content,
+                  'state': state,
+                  'filename': req.params.get('file'),
+                  'new_tree_labels': new_tree_labels,
+                 }
+            req.write(json.dumps(_d))
             return None
     schemes = getSchemes(req)
 
@@ -527,22 +530,21 @@ def upload_ziphandler(req):
         if file.retrieveFile().endswith(req.params.get('file')):
             z = zipfile.ZipFile(file.retrieveFile())
             for f in z.namelist():
-                name = mybasename(f)
+                name = u2(mybasename(f))
                 if name.startswith("._"):  # ignore Mac OS X junk
                     continue
 
                 files.append(name.replace(" ", "_"))
                 _m = getMimeType(name)
-                newfilename = join_paths(
-                    config.get("paths.tempdir"), str(random.random())[2:] + name.replace(" ", "_"))
+                newfilename = join_paths(config.get("paths.tempdir"), str(random.random())[2:] + name.replace(" ", "_"))
                 fi = open(newfilename, "wb")
                 fi.write(z.read(f))
                 fi.close()
 
-                fn = importFileToRealname(
-                    mybasename(name.replace(" ", "_")), newfilename)
+                fn = importFileToRealname(mybasename(name.replace(" ", "_")), newfilename)
                 basenode.addFile(fn)
-                os.unlink(newfilename)
+                if os.path.exists(newfilename):
+                    os.unlink(newfilename)
 
                 if _m[1] not in scheme_type:
                     scheme_type[_m[1]] = []
@@ -666,7 +668,7 @@ doi_labels = {
     "de":
     [
         ("identifier_importer_longname", "Via DOI importieren"),
-        ("identifier_importer_explain", """Um Metadaten f\xc3\xbcr eine Publikation mit einem Digital Object Identifier zu importieren, bitte DOI eingeben und 'Anlegen / Hochladen' anklicken.
+        ("identifier_importer_explain", """Um Metadaten f\xc3\xbcr eine Publikation mit einem Digital Object Identifier zu importieren, bitte DOI eingeben und 'Objekt erzeugen' anklicken.
       <p>Beispiele:</p> 
       doi:10.1371/journal.pbio.0020449
       <br/>DOI:10.1002/nme.4628 """),
@@ -684,7 +686,7 @@ doi_labels = {
     "en":
     [
         ("identifier_importer_longname", "Import via DOI"),
-        ("identifier_importer_explain", """To import metadata for a publication with a Digital Object Identifier, please enter the DOI below and click 'Create / Upload'.
+        ("identifier_importer_explain", """To import metadata for a publication with a Digital Object Identifier, please enter the DOI below and click 'Create Object'.
       <p>Examples:</p> 
       doi:10.1371/journal.pbio.0020449
       <br/>DOI:10.1002/nme.4628 """),

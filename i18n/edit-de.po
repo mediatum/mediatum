@@ -380,3 +380,12 @@ msgstr "Verschieben"
 
 msgid "edit_add_new_collection"
 msgstr "Neue Kollektion anlegen"
+
+msgid "edit_tree_homenodefilter_tooltip"
+msgstr "mit einem regulären Audruck für Benutzernamen können zusätzliche Arbeitsverzeichnise angezeigt werden"
+
+msgid "edit_tree_matches_tooltip"
+msgstr "Anzahl der Matches (evtl. + 1, falls eigenes Arbeitsverzeichnis nicht matched)"
+
+msgid "edit_tree_filterbutton_tooltip"
+msgstr "Filter auf alle Arbeitsverzeichnisse anwenden"

@@ -364,7 +364,6 @@ function reload_tree_nodes_children(used_trees, pids) {
                       consoledb.log('------> continue');
                       continue;
                   }
-                  //parentnode.reloadChildren();  // dynatree
                   consoledb.log('------> parentnode:', parentnode.title, parentnode);
                   var pn_expanded = parentnode.isExpanded();
                   consoledb.log('------> parentnode.isExpanded():', pn_expanded);

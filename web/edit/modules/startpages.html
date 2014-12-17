@@ -73,6 +73,7 @@
                 o = $(document.getElementById(ret.filename)).children();
                 o.get(o.length-2).innerHTML = ret.filesize;
                 $('#editform').css('display','none');
+                parent.$('#overlay').css('display', 'none');
             });
         }
     </script>

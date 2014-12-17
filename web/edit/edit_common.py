@@ -391,7 +391,7 @@ def upload_for_html(req):
         if hasattr(file, "filesize") and file.filesize > 0:
             try:
                 logger.info(
-                    user.name + " upload " + file.filename + " (" + file.tempname + ")")
+                    user.name + " upload via ckeditor " + file.filename + " (" + file.tempname + ")")
                 nodefile = importFile(file.filename, file.tempname)
                 node.addFile(nodefile)
             except EncryptionException:

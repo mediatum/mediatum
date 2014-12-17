@@ -94,7 +94,7 @@ def getContent(req, ids):
     masklist = []
     err = 0
 
-    # flag indicating change of node.name (dynatree node may have to be updated)
+    # flag indicating change of node.name (fancytree node may have to be updated)
     # keep as integer
     # negative -> no change
     # else -> id of changed node

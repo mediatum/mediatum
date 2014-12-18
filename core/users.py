@@ -258,6 +258,7 @@ def doExternalAuthentification(name, pwd, req=None):
         req.ip = '0.0.0.0'
         req.session = athana.Session('000000-000000-000000')
         req.request_headers = ['User-Agent: ftp']
+        req.params = {}
 
     dynamic_authenticators = getDynamicUserAuthenticators()
     for priority_key in list(reversed(sorted(authenticators_priority_dict.keys()))):

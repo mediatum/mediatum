@@ -329,19 +329,6 @@
     <div id="sub_footer_module"> </div>
 
     <script>
-        function sizeAccordionSections()
-        {
-            var sections = $('.section').length;
-            var headerHeight = 37;
-            $('.section').each(function()
-            {
-                var maxHeight = $('body').height()-225-(headerHeight*sections);
-                $(this).css('height', 'auto');
-                var autoHeight = $(this).height();
-                $(this).height(Math.min(maxHeight, autoHeight));
-            });
-        }
-
         $(document).ready(function () { // set correct height of scrollable content
            var sublayout = $('#sub_content').layout({applyDemoStyles: true,
                 center:{paneSelector: "#sub_content_content", onresize: $.layout.callbacks.resizePaneAccordions},
@@ -349,21 +336,7 @@
                 south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0}
                 });
             $("#accordion").accordion({heightStyle: "pane"});
-            sizeAccordionSections();
         });
-
-        $(window).resize(function(){
-            sizeAccordionSections()
-        });
-
-      /*
-        $(document).ready(function () { // set correct height of scrollable content
-           $('#scrollcontainer').css('top', $('#operation').position().top + $('#operation').height());
-           $("#accordion").accordion({heightStyle: 'fill'});
-           sizeAccordionSections()
-        });
-      */
-
     </script>
 </metal:block>
 

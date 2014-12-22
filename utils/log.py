@@ -142,11 +142,6 @@ def initialize():
         logg.info("added logger %s, file %s", name, filename)
 
 
-def logException(message=None):
-    errlog = logging.getLogger('errors')
-    errlog.exception(message or "")
-
-
 def addLogger(loggername, additional_handlers=None, loglevel=None, logformat=None):
     '''
     add new logger

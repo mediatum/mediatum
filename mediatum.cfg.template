@@ -71,15 +71,8 @@ passwd=ABC
 pageitems=10
 
 [logging]
-path=/data/log/
-file.everything=/data/log/everything.log
-file.database=/data/log/database.log
-file.backend=/data/log/backend.log
-file.frontend=/data/log/frontend.log
-file.editor=/data/log/editor.log
-file.usertracing=/data/log/user.log
-file.athana=/data/log/athana.log
-file.errors=/data/log/errors.log
+file=/data/log/mediatum.log
+loglevel=DEBUG
 
 [server]
 mail=mysmtpserver.com

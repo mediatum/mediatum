@@ -18,17 +18,12 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import os
-import core.config
+from core import config
 import logging
-import logging.handlers
 import sys
 
 
-DEFAULT_LOGLEVEL = logging.DEBUG
-# use for special file loggers defined in LOGTYPES
-# used for the root logger
-ROOT_STREAM_LOGFORMAT = '%(asctime)s [%(process)d/%(threadName)s] %(name)s/%(module)s %(levelname)s | %(message)s'
+ROOT_STREAM_LOGFORMAT = '%(asctime)s [%(process)d/%(threadName)s] %(name)s %(levelname)s | %(message)s'
 # this also logs filename and line number, which is great for debugging
 # ROOT_STREAM_LOGFORMAT = '%(asctime)s %(name)s/%(module)s [%(threadName)s] %(levelname)s | %(message)s - %(pathname)s:%(lineno)d'
 ROOT_FILE_LOGFORMAT = ROOT_STREAM_LOGFORMAT
@@ -69,30 +64,23 @@ class ConsoleHandler(logging.StreamHandler):
 
 def initialize():
     root_logger = logging.getLogger()
-    root_logger.setLevel(logging.INFO)
+    levelname = config.get('logging.level', "DEBUG")
+    try:
+        level = getattr(logging, levelname.upper())
+    except:
+        print "unknown loglevel specified in logging config:", levelname
+    root_logger.setLevel(level)
 
     stream_handler = ConsoleHandler()
     stream_handler.setFormatter(logging.Formatter(ROOT_STREAM_LOGFORMAT))
     root_logger.handlers = []
     root_logger.addHandler(stream_handler)
 
-    filename = core.config.get('logging.file.everything', None)
-    filepath = core.config.get('logging.path', None)
-    if not filename and not filepath:
-        filename = filepath = core.config.get('paths.tempdir')
-        filename += 'everything.log'
-        logg.info('Using temp directory (%s) for logging', filepath)
-    if not filename and filepath:
-        filename = filepath + 'everything.log'
-    if not filepath and filename:
-        filepath = filename[:filename.rfind("/") + 1]
-
-    dlogfiles['everything'] = {'path': filepath, 'filename': filename}
-
-    if filename:
-        if not os.path.exists(filename[:filename.rfind("/") + 1]):
-            os.mkdir(filename[:filename.rfind("/") + 1])
-        file_handler = logging.handlers.RotatingFileHandler(filename, maxBytes=33554432, backupCount=20)
+    filepath = config.get('logging.file', None)
+        
+    if filepath:
+        dlogfiles['mediatum'] = {'path': filepath, 'filename': filepath}
+        file_handler = logging.FileHandler(filepath) 
         file_handler.setFormatter(logging.Formatter(ROOT_FILE_LOGFORMAT))
         root_logger.addHandler(file_handler)
         logg.info('logging everything to %s', filepath)

@@ -33,17 +33,15 @@ import os
 import sys
 import codecs
 import logging
+import unicodedata
 
 import core.users as users
-
 from .schema import getMetaType
 from utils.utils import u, u2, utf8_decode_escape
 from utils.date import parse_date
 
-import unicodedata
 
-
-logger = logging.getLogger("backend")
+logg = logging.getLogger(__name__)
 
 ESCAPE_BIBTEX_KEY = False
 VERBOSE = True
@@ -121,8 +119,7 @@ def save_import_file(filename):
     # leave following in for windows: "/" in path representation possible there
     _filename_only = filename.split("/")[-1]
     destname = os.path.join(temppath, "bibtex_import_saved_" + getNow() + "_" + _filename_only)
-    msg = "bibtex import: going to copy/save import file %r -> %r" % (filename, destname)
-    logger.info(msg)
+    logg.info("bibtex import: going to copy/save import file %s -> %s", filename, destname)
     if os.sep == '/':
         ret = os.system("cp %s %s" % (filename, destname))
     else:
@@ -144,25 +141,21 @@ def getentries(filename):
         data = fi.read()
     except UnicodeDecodeError:
         fi.close()
-        msg = "bibtex import: getentries(filename): encoding error when trying codec 'utf-8', filename was " + filename
-        logger.error(msg)
-        msg = "bibtex import: getentries(filename): going to try without codec 'utf-8', filename was " + filename
-        logger.info(msg)
+        logg.error("bibtex import: getentries(filename): encoding error when trying codec 'utf-8', filename was %s", filename)
+        logg.info("bibtex import: getentries(filename): going to try without codec 'utf-8', filename was %s", filename)
 
         try:
             fi = codecs.open(filename, "r")
             try:
                 data = fi.read()
                 data = u2(data)
-            except Exception as e:
+            except Exception:
                 fi.close()
-                msg = "bibtex import: getentries(filename): error at second attempt: " + str(e)
-                logger.info(msg)
+                logg.exception("bibtex import: getentries(filename): error at second attempt", exc_info=1)
 
                 raise MissingMapping("wrong encoding")
-        except Exception as e:
-            msg = "bibtex import: getentries(filename): error at second attempt: " + str(e)
-            logger.error(msg)
+        except Exception:
+            logg.exception("bibtex import: getentries(filename): error at second attempt")
 
             raise MissingMapping("wrong encoding")
     try:
@@ -227,16 +220,13 @@ def getentries(filename):
 
                 if VERBOSE:
                     try:
-                        msg = "bibtex import: placeholder: key='%s', value='%s'" % (key.strip(), value.strip()[1:-1])
-                        logger.info(msg)
-                    except Exception as e:
+                        logg.debug("bibtex import: placeholder: key='%s', value='%s'", key.strip(), value.strip()[1:-1])
+                    except Exception:
                         try:
-                            msg = "bibtex import: placeholder: key='%s', value='%s'" % (
+                            logg.exception("bibtex import: placeholder: key='%s', value='%s'",
                                 key.strip(), value.strip()[1:-1].encode("utf8", "replace"))
-                            logger.info(msg)
-                        except Exception as e:
-                            msg = "bibtex import: placeholder: 'not printable key-value pair'"
-                            logger.info(msg)
+                        except Exception:
+                            logg.exception("bibtex import: placeholder: 'not printable key-value pair'")
 
         elif doctype:
             # new record
@@ -358,8 +348,8 @@ def getbibtexmappings():
         if len(bibtextypes[bibtextype]) == 1:
             bibtextypes[bibtextype] = bibtextypes[bibtextype][-1]
         elif len(bibtextypes[bibtextype]) > 1:
-            logger.error("bibtex import: ambiguous mapping for bibtex type '%s': %s - choosing last one" % (
-                bibtextype, bibtextypes[bibtextype]))
+            logg.error("bibtex import: ambiguous mapping for bibtex type '%s': %s - choosing last one",
+                bibtextype, bibtextypes[bibtextype])
             bibtextypes[bibtextype] = bibtextypes[bibtextype][-1]
     return bibtextypes
 
@@ -407,8 +397,7 @@ def importBibTeX(infile, node=None, req=None):
             msg = "bibtex import: starting import (unable to identify user)"
     else:
         msg = "bibtex import: starting import (%s)" % str(sys.argv)
-    logger.info(msg)
-    print msg
+    logg.info(msg)
 
     bibtextypes = getbibtexmappings()
     result = []
@@ -424,12 +413,11 @@ def importBibTeX(infile, node=None, req=None):
         try:
             entries = getentries(infile)
         except:
-            logger.error("getentries failed", exc_info=1)
             msg = "bibtex import: getentries failed, import stopped (encoding error)"
-            logger.error(msg)
+            logg.error(msg)
             raise ValueError("getentries failed")
 
-    logger.info("bibtex import: %d entries" % len(entries))
+    logg.info("bibtex import: %d entries", len(entries))
 
     counter = 0
     for doctype, docid, fields in entries:
@@ -440,8 +428,7 @@ def importBibTeX(infile, node=None, req=None):
 
         if doctype == "string":
             if VERBOSE:
-                logger.info(
-                    "bibtex import:       processing %s: %s, %s --> (is string)" % (str(counter), doctype, docid))
+                logg.debug("bibtex import:       processing %s: %s, %s --> (is string)", counter, doctype, docid)
             continue
 
         if mytype:
@@ -452,8 +439,7 @@ def importBibTeX(infile, node=None, req=None):
                 continue
 
             elif mytype not in bibtextypes:
-                msg = "bibtex mapping of bibtex type '%s' not defined - import stopped" % mytype
-                logger.error("bibtex import: " + msg)
+                logg.error("bibtex mapping of bibtex type '%s' not defined - import stopped", mytype)
                 raise MissingMapping(msg)
             result += [(mytype.lower(), fields)]
 
@@ -475,10 +461,10 @@ def importBibTeX(infile, node=None, req=None):
 
                     except tree.NoSuchNodeError as e:
                         msg = "bibtex import docid='%s': field error for bibtex mask for type %s and bibtex-type '%s': %s: " % (
-                            docid_utf8, metatype, mytype, str(e))
+                            docid_utf8, metatype, mytype, e)
                         msg = msg + "_bib_name='%s', _mfield='%s', _med_name='%s'" % (
                             str(_bib_name), str(_mfield), str(_med_name))
-                        logger.error(msg)
+                        logg.error(msg)
                         continue
 
                     fieldnames[_bib_name] = _med_name
@@ -501,22 +487,21 @@ def importBibTeX(infile, node=None, req=None):
                 child_id = doc.id
                 child_type = doc.type
             except Exception as e:
-                logger.error("bibtex import: %s" % (str(e)))
+                logg.exception("bibtex exception")
                 raise ValueError()
 
             if VERBOSE:
                 try:
-                    logger.info("bibtex import: done  processing %s: %s, %s --> type=%s, id=%s" % (
-                        str(counter), doctype, docid, str(child_type), str(child_id)))
-                except Exception as e:
+                    logg.info("bibtex import: done  processing %s: %s, %s --> type=%s, id=%s",
+                        counter, doctype, docid, child_type, child_id)
+                except Exception:
                     try:
-                        logger.info("bibtex import: done  processing %s: %s, %s --> type=%s, id=%s" % (
-                            str(counter), doctype, docid.decode("utf8", "replace"), str(child_type), str(child_id)))
-                    except Exception as e:
-                        logger.info("bibtex import: done  processing %s: %s, %s --> type=%s, id=%s" % (
-                            str(counter), doctype, "'not printable bibtex key'", str(child_type), str(child_id)))
-    msg = "bibtex import: finished import"
-    logger.info(msg)
+                        logg.info("bibtex import: done  processing %s: %s, %s --> type=%s, id=%s",
+                            counter, doctype, docid.decode("utf8", "replace"), child_type, child_id)
+                    except Exception:
+                        logg.info("bibtex import: done  processing %s: %s, %s --> type=%s, id=%s",
+                            str(counter), doctype, "'not printable bibtex key'", child_type, child_id)
+    logg.debug("bibtex import: finished import")
     print msg
 
     return node

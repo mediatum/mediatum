@@ -35,7 +35,7 @@ from . import importbase
 from .importbase import NoMappingFound
 
 DX_DOI_URL = "http://dx.doi.org/"
-logg = logging.getLogger("frontend")
+logg = logging.getLogger(__name__)
 
 
 class CSLField(object):
@@ -284,7 +284,7 @@ def import_csl(record, target=None, name=None, testing=False):
         except:
             # all malformed input will be ignored
             # XXX: improve this when we know better what can happen...
-            logg.error("error while converting CSL field '%s' with value '%s', ignored", key, value, exc_info=1)
+            logg.exception("error while converting CSL field '%s' with value '%s', ignored", key, value)
             return ""
 
     for f in mask.getMaskFields():
@@ -296,9 +296,8 @@ def import_csl(record, target=None, name=None, testing=False):
             mfield = tree.getNode(f.get("attribute"))
             med_name = mfield.getName()
         except tree.NoSuchNodeError:
-            msg = "citeproc import name='{}': field error for citeproc mask for type '{}' and " \
-                "csl-type '{}' csl_name='{}', mfield='{}', med_name='{}'".format(name, metatype_name, typ, csl_name, mfield, med_name)
-            logg.error(msg, exc_info=1)
+            logg.exception("citeproc import name='%s': field error for citeproc mask for type '%s and " +
+                "csl-type '%s' csl_name='%s', mfield='%s', med_name='%s'", name, metatype_name, typ, csl_name, mfield, med_name)
             continue
 
         value = get_converted_from_csl_record(csl_name)

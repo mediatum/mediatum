@@ -25,7 +25,6 @@ import core.translation as translation
 
 from utils.utils import *
 from utils.date import *
-from utils.log import logException
 from core.config import *
 from core.xmlnode import getNodeXML, readNodeXML
 from core.db.database import getConnection
@@ -34,7 +33,7 @@ import inspect
 import importlib
 import pkgutil
 
-log = logg = logging.getLogger('backend')
+log = logg = logging.getLogger(__name__)
 
 requiredoption = []
 requiredoption += [Option("Kein Pflichtfeld", "notmandatory", "0", "/img/req2_opt.png")]
@@ -194,8 +193,8 @@ def updateMetaField(parent, name, label, orderpos, fieldtype, option="", descrip
             field.removeFile(fnode)         # remove the file from the node tree
             try:
                 os.remove(fnode.retrieveFile())  # delete the file from the hard drive
-            except Exception as e:
-                logException(e)
+            except:
+                logg.exception("exception in updateMetaField")
         field.addFile(filenode)
 
     if fieldvalues.startswith("multiple"):
@@ -210,8 +209,8 @@ def updateMetaField(parent, name, label, orderpos, fieldtype, option="", descrip
             field.removeFile(fnode)         # remove the file from the node tree
             try:
                 os.remove(fnode.retrieveFile())  # delete the file from the hard drive
-            except Exception as e:
-                logException(e)
+            except:
+                logg.exception("exception in updateMetaField")
         fieldvalues = fieldvalues.replace(";delete", "", 1)
 
     #<----- End: For fields of list type ----->
@@ -327,16 +326,16 @@ def cloneMask(mask, newmaskname):
 def checkMask(mask, fix=0, verbose=1, show_unused=0):
     if mask.type != "mask":
         if verbose:
-            print "Node", mask.id, mask.name, "is no mask"
+            logg.debug("Node %s %s is no mask", mask.id, mask.name)
         return 1
     p = mask.getParents()
     if len(p) > 1:
         if verbose:
-            print "Mask has more than one parent"
+            logg.debug("Mask has more than one parent")
         return 1
     if len(p) == 0:
         if verbose:
-            print "Mask has no parents (?)"
+            logg.debug("Mask has no parents (?)")
         return 1
 
     metatypes = p[0]
@@ -650,7 +649,7 @@ class Metadatatype(tree.Node):
                     return False
             return True
         except:
-            logException("error in searchIndexCorrupt")
+            logg.exception("error in searchIndexCorrupt")
             return False
 
     def getAllItems(self):
@@ -907,8 +906,7 @@ class Mask(tree.Node):
                 if item.getRequired() == 1:
                     if node.get(field.getName()) == "":
                         ret.append(node.id)
-                        logging.getLogger('editor').error(
-                            "Error in publishing of node %r: The required field %r is empty." % (node.id, field.name))
+                        logg.error("Error in publishing of node %r: The required field %r is empty." ,node.id, field.name)
 
                 if field and field.getContentType() == "metafield" and field.getFieldtype() == "date":
                     if not node.get(field.getName()) == "":
@@ -917,17 +915,13 @@ class Mask(tree.Node):
                                 datetime.datetime.strptime(node.get(field.getName())[:7], '%Y-%m')
                             except ValueError:
                                 ret.append(node.id)
-                                logging.getLogger('editor').error(
-                                    "Error in publishing of node %r: The date field 'yearmonth' with content %r is not valid." %
-                                    (node.id, node.get(
-                                        field.getName())))
+                                logg.error("Error in publishing of node %r: The date field 'yearmonth' with content %r is not valid.",
+                                    node.id, node.get(field.getName()))
                             continue
                         if not validateDateString(node.get(field.getName())):
                             ret.append(node.id)
-                            logging.getLogger('editor').error(
-                                "Error in publishing of node %r: The date field %r with content %r is not valid." %
-                                (node.id, field.name, node.get(
-                                    field.getName())))
+                            logg.error("Error in publishing of node %r: The date field %r with content %r is not valid.",
+                                (node.id, field.name, node.get(field.getName())))
         return ret
 
     ''' returns True if all mandatory fields of mappingdefinition are used -> valid format'''

@@ -19,6 +19,7 @@
 """
 import re
 import os
+import logging
 
 from mediatumtal import tal
 import core.tree as tree
@@ -32,6 +33,9 @@ try:
     frontend_modules = 1
 except:
     frontend_modules = 0
+
+
+logg = logging.getLogger(__name__)
 
 
 SRC_PATTERN = re.compile('src="([^":/]*)"')
@@ -289,7 +293,7 @@ class Directory(default.Default):
         self.set("system." + type, ";".join(str(i) for i in items))
 
     def event_files_changed(self):
-        print "Postprocessing node", self.id
+        logg.debug("Postprocessing node %s", self.id)
 
     def treeiconclass(self):
         if 'collection' in self.type:

@@ -18,10 +18,14 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from . import image
+import logging
 import os
 from core.tree import FileNode
 import core.config as config
 import glob
+
+
+logg = logging.getLogger(__name__)
 
 
 class Imagestream(image.Image):
@@ -36,7 +40,7 @@ class Imagestream(image.Image):
         try:
             newest_image = max(glob.iglob(image_dir + '*.jpg'), key=os.path.getctime)
         except:
-            print 'No images in %s' % (image_dir)
+            logg.warn('No images in %s', image_dir)
             return files
 
         files += [FileNode(newest_image, 'image', 'image/jpeg', node)]

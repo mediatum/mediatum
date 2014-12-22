@@ -17,6 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
+
 import core.config as config
 import core.acl as acl
 import os
@@ -30,9 +32,11 @@ from core.styles import getContentStyles
 from lib.pdf import parsepdf
 from core.attachment import filebrowser
 
+
+logg = logging.getLogger(__name__)
+
+
 """ document class """
-
-
 class Document(default.Default):
 
     def getTypeAlias(self):
@@ -121,7 +125,7 @@ class Document(default.Default):
 
     """ postprocess method for object type 'document'. called after object creation """
     def event_files_changed(self):
-        print "Postprocessing node", self.id
+        logg.debug("Postprocessing node %s", self.id)
 
         thumb = 0
         fulltext = 0

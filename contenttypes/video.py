@@ -37,7 +37,7 @@ from metadata.upload import getFilelist
 from . import default
 
 
-logger = logging.getLogger("backend")
+logg = logging.getLogger(__name__)
 
 
 def getCaptionInfoDict(self):
@@ -130,7 +130,7 @@ class Video(default.Default):
         captions_info = getCaptionInfoDict(self)
 
         if captions_info:
-            logger.info("video: '%s' (%s): captions: dictionary 'captions_info': %s" % (self.name, str(self.id), str(captions_info)))
+            logg.info("video: '%s' (%s): captions: dictionary 'captions_info': %s", self.name, self.id, captions_info)
 
         context = self._prepareData(req)
         context["captions_info"] = json.dumps(captions_info)
@@ -172,7 +172,7 @@ class Video(default.Default):
                     try:
                         os.unlink(tempname)
                     except:
-                        pass
+                        logg.exception("exception while unlinking tempfile, ignore")
 
                     try:
                         if self.get("system.thumbframe") != "":
@@ -184,6 +184,7 @@ class Video(default.Default):
                         if ret & 0xff00:
                             return
                     except:
+                        logg.exception("exception in event_files_changed, ignore")
                         return
                     path, ext = splitfilename(f.retrieveFile())
                     thumbname = path + ".thumb"
@@ -254,7 +255,7 @@ class Video(default.Default):
         # use jw player
         captions_info = getCaptionInfoDict(self)
         if captions_info:
-            logger.info("video: '%s' (%s): captions: dictionary 'captions_info': %s" % (self.name, self.id, captions_info))
+            logg.info("video: '%s' (%s): captions: dictionary 'captions_info': %s", self.name, self.id, captions_info)
 
         context = {
             "file": f,

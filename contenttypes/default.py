@@ -34,6 +34,8 @@ from utils.utils import Menu, highlight, format_filesize
 from export.exportutils import runTALSnippet, default_context
 from web.services.cache import date2string as cache_date2string
 
+logg = logging.getLogger(__name__)
+
 languages = [l.strip() for l in config.get("i18n.languages").split(",") if l.strip()]
 
 # for TAL templates from mask cache
@@ -66,13 +68,13 @@ def get_maskcache_report():
 
 def flush_maskcache(req=None):
     global maskcache, maskcache_accesscount, maskcache_shallow, maskcache_msg
-    logging.getLogger("everything").info("going to flush maskcache, content is: \r\n" + get_maskcache_report())
+    logg.info("going to flush maskcache, content is: \r\n%s", get_maskcache_report())
     maskcache = {}
     maskcache_accesscount = {}
     maskcache_shallow = {}
     if req:
         user = users.getUserFromRequest(req)
-        logging.getLogger("everything").info("flush of masks cache triggered by user %s with request on '%s'" % (user.name, req.path))
+        logg.info("flush of masks cache triggered by user %s with request on '%s'", user.name, req.path)
 
         sys.stdout.flush()
     maskcache_msg = '| cache last flushed %s\r\n|\r\n' % cache_date2string(time.time(), '%04d-%02d-%02d-%02d-%02d-%02d')
@@ -325,7 +327,7 @@ class Default(tree.Node):
                         metafields = [x for x in field.getChildren() if x.type == 'metafield']
                         if len(metafields) != 1:
                             # this can only happen in case of vgroup or hgroup
-                            logging.getLogger("error").error("maskfield %s zero or multiple metafield child(s)" % field.id)
+                            logg.error("maskfield %s zero or multiple metafield child(s)", field.id)
                             return field.name
                         return metafields[0].name
 
@@ -419,7 +421,7 @@ class Default(tree.Node):
                 def getNodeAttributeName(field):
                     metafields = [x for x in field.getChildren() if x.type == 'metafield']
                     if len(metafields) != 1:
-                        logging.getLogger("error").error("maskfield %s zero or multiple metafield child(s)" % field.id)
+                        logg.error("maskfield %s zero or multiple metafield child(s)", field.id)
                     return metafields[0].name
                 #####
 
@@ -495,8 +497,8 @@ class Default(tree.Node):
         return []
 
     def buildLZAVersion(self):
-        print "no lza builder implemented"
-
+        logg.warn("no lza builder implemented")
+         
     def getEditMenuTabs(self):
         menu = list()
         try:

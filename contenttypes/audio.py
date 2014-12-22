@@ -17,6 +17,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 import os
 from PIL import Image, ImageDraw
 from . import default
@@ -28,6 +29,9 @@ from utils.date import parse_date, format_date, make_date
 from schema.schema import VIEW_HIDE_EMPTY
 from core.translation import lang
 from core.styles import getContentStyles
+
+
+logg = logging.getLogger(__name__)
 
 
 def makeAudioThumb(self, audiofile):
@@ -191,7 +195,7 @@ class Audio(default.Default):
 
     """ postprocess method for object type 'audio'. called after object creation """
     def event_files_changed(self):
-        print "Postprocessing node", self.id
+        logg.debug("Postprocessing node %s", self.id)
 
         original = None
         audiothumb = None

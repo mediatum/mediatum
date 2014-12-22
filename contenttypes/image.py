@@ -20,6 +20,7 @@
 from core import config
 from PIL import Image as PILImage, ImageDraw
 import core.acl as acl
+import logging
 import random
 import os
 from . import default
@@ -36,6 +37,9 @@ from core.styles import getContentStyles
 from web.frontend import zoom
 
 """ make thumbnail (jpeg 128x128) """
+
+
+logg = logging.getLogger(__name__)
 
 
 def makeThumbNail(image, thumb):
@@ -95,6 +99,7 @@ def makePresentationFormat(image, thumb):
     try:
         pic.load()
     except IOError as e:
+        logg.exception("exception in makePresentationFormat")
         pic = None
         raise OperationException("error:" + str(e))
 
@@ -174,6 +179,7 @@ def getJpegSection(image, section):  # section character
                     capture = True
         fin.close()
     except:
+        logg.exception("exception in getJpegSection")
         data = ""
     return data
 
@@ -282,7 +288,7 @@ class Image(default.Default):
 
     """ postprocess method for object type 'image'. called after object creation """
     def event_files_changed(self):
-        print "Postprocessing node", self.id
+        logg.debug("Postprocessing node %s", self.id)
         if "image" in self.type:
             for f in self.getFiles():
                 if f.getName().lower().endswith('svg'):
@@ -380,7 +386,6 @@ class Image(default.Default):
                         for k in tags.keys():
                             # don't set unwanted exif attributes
                             if any(tag in k for tag in unwanted_tags):
-                                print k
                                 continue
                             if tags[k] != "" and k != "JPEGThumbnail":
                                 self.set("exif_" + k.replace(" ", "_"),
@@ -392,7 +397,7 @@ class Image(default.Default):
                                     self.set("Thumbnail", "False")
 
             except:
-                None
+                logg.exception("exception get EXIF attributes")
 
             if dozoom(self) == 1:
                 tileok = 0
@@ -414,7 +419,6 @@ class Image(default.Default):
                         for k in tags.keys():
                             # skip unknown iptc tags
                             if 'IPTC_' in k:
-                                print k
                                 continue
                             if isinstance(tags[k], list):
                                 tags[k] = ', '.join(tags[k])
@@ -422,7 +426,7 @@ class Image(default.Default):
                                 self.set("iptc_" + k.replace(" ", "_"),
                                          utf8_decode_escape(str(tags[k])))
             except:
-                None
+                logg.exception("exception getting IPTC attributes")
 
             for f in self.getFiles():
                 if f.getName().lower().endswith("png") and f.type == "tmppng":

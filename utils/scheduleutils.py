@@ -44,7 +44,7 @@ from metadata.text import m_text
 from metadata.treeselect import m_treeselect
 
 
-logger = logging.getLogger("backend")
+logg = logging.getLogger(__name__)
 
 SLEEP_INTERVAL = 1
 TRIGGER_INTERVAL = 3600  # seconds (times SLEEP_INTERVAL)
@@ -70,26 +70,6 @@ dict_type2class = {
     'text': m_text,
     'treeselect': m_treeselect,
 }
-
-
-class LogWriter:
-
-    def __init__(self, logger, level=logging.INFO):
-        self.logger = logger
-        self.level = level
-
-    def write(self, s):
-        for line in str(s).splitlines():
-            self.logger.log(self.level, line)
-
-
-def OUT(msg, logger='backend', print_stdout=False, level='info'):
-    if logger:
-        getattr(logging.getLogger(logger), level)(msg)
-    if print_stdout:
-        print msg
-        sys.stdout.flush()
-
 
 def register_schedule_func(name, func, force=False):
     if name in f_dict and not force:
@@ -133,14 +113,6 @@ def iter_date(start_datetime_obj, d, granularity=['hours', 'minutes', 'seconds']
     for dt in dts:
         if match_date_dict(dt, d):
             yield dt
-
-
-def isIsoformat(str):
-    try:
-        datetime.strptime(datetime_str, "%Y-%m-%dT%H:%M:%S")
-        return True
-    except:
-        return False
 
 
 def assert_is_cron_dict(d):
@@ -348,9 +320,8 @@ def handle_single_trigger(s, now_str, OUT):
             else:
                 sid = 'temporary schedule (immediate execution)'
                 run_as = func_object.run_as_immediate
-            msg = "scheduler going to run schedule '%s' (%s) function '%s' as '%s'" % (str(s.name), sid, str(func_name), str(run_as))
-            logger.info(msg)
-
+            logg.info("scheduler going to run schedule '%s' (%s) function '%s' as '%s'", s.name, sid, func_name, run_as)
+        
             if run_as not in RUN_METHODS:
                 run_as = DEFAULT_RUN_METHOD
 
@@ -440,8 +411,7 @@ def handle_cron_dict(s, now_obj, OUT):
             else:
                 sid = 'temporary schedule (immediate execution)'
                 run_as = func_object.run_as_immediate
-            msg = "scheduler going to run schedule '%s' (%s) function '%s' as '%s'" % (str(s.name), sid, str(func_name), str(run_as))
-            logger.info(msg)
+            logg.info("scheduler going to run schedule '%s' (%s) function '%s' as '%s'", s.name, sid, func_name, run_as)
 
             if run_as not in RUN_METHODS:
                 run_as = DEFAULT_RUN_METHOD
@@ -456,10 +426,9 @@ def handle_cron_dict(s, now_obj, OUT):
                     assert isinstance(history, list)
                 except:
                     has_error = True
-                    msg = "error decoding history string to json for node '%s' (%s): %s" % (s.name, s.id, history_str)
+                    logg.exception("error decoding history string to json for node '%s' (%s): %s", s.name, s.id, history_str)
                     TT.append([msg, time.time() - atime])
                     atime = time.time()
-                    logger.error(msg)
                     break
 
                 # history format: [['result_code', 'isodate_trigger', 'isodate_fired'], ...]
@@ -493,10 +462,9 @@ def handle_cron_dict(s, now_obj, OUT):
 
                 except:
                     has_error = True
-                    msg = "Error while executing function '%s': %s %s" % (func_name, str(sys.exc_info()[0]), str(sys.exc_info()[1]))
+                    logg.exception("Error while executing function '%s'", func_name)
                     TT.append([msg, time.time() - atime])
                     atime = time.time()
-                    logger.error(msg)
 
                 if len(history) > MAX_CRON_HISTORY:
                     history = history[-MAX_CRON_HISTORY:]

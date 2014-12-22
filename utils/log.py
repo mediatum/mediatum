@@ -155,7 +155,7 @@ def addLogger(loggername, additional_handlers=None, loglevel=None, logformat=Non
     global cfg, LOGTYPES, dlogfiles
 
     if loggername in [lt[0] for lt in LOGTYPES]:
-        logg.warn("tried to add logger for existing logger name %r" % loggername)
+        logg.warn("tried to add logger for existing logger name %r", loggername)
         return False
 
     filepath = core.config.get('logging.path', None)

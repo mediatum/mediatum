@@ -22,7 +22,8 @@ import logging
 import core.tree
 import time
 
-logg = logging.getLogger("backend")
+logg = logging.getLogger(__name__)
+
 
 from .utils import join_paths, getMimeType, formatException
 
@@ -105,7 +106,7 @@ def importFileFromData(filename, data, prefix=""):
 
         return core.tree.FileNode(name=destname, mimetype=mimetype, type=type)
     except:
-        print formatException()
+        logg.exception("exception in importFileFromData, ignoring")
     return None
 
 
@@ -141,7 +142,7 @@ def importFileToRealname(realname, tempname, prefix="", typeprefix=""):
 
         return core.tree.FileNode(name=destname, mimetype=mimetype, type=typeprefix + type)
     except:
-        print formatException()
+        logg.exception("exception in importFileToRealname, ignoring")
     return None
 
 
@@ -168,11 +169,11 @@ def importFileIntoDir(destpath, tempname):
 
         return core.tree.FileNode(name=destname, mimetype=mimetype, type=type)
     except:
-        print formatException()
+        logg.exception("exception in importFileIntoDir, ignoring")
     return None
 
 
-def importFileRandom(tempname, logger=logg):
+def importFileRandom(tempname):
     #import core.config as config
     import random
     #import core.tree as tree
@@ -197,11 +198,11 @@ def importFileRandom(tempname, logger=logg):
         try:
             shutil.copyfile(tempname, destname)
             ret = None
-        except e:
-            logger.exception('when trying to importFileRandom')
+        except Exception as e:
+            logg.exception('exception when trying to importFileRandom')
             ret = e
     if ret:
-        raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, destname, str(ret)))
+        raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, destname, ret))
 
     r = tempname.lower()
     mimetype = "application/x-download"
@@ -223,7 +224,7 @@ def importFileToUploaddirWithRandomName(tempname):
         ret = os.system("cp '%s' %s" %(tempname, destname))
     else:
         cmd = 'copy "%s" %s' %(tempname, destname)
-        print '----> going to execute: ', cmd
+        logg.debug('going to execute: ', cmd)
         ret = os.system(cmd.replace('/','\\'))
 
     if ret:

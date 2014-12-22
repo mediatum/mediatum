@@ -274,7 +274,6 @@ def get_filesize(filename):
             stat = os.stat(config.settings["paths.datadir"] + "/" + filename)
             return stat[6]
         else:
-            print "Warning: File", filename, "not found"
             return 0
     except:
         return 0

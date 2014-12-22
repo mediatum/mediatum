@@ -18,9 +18,13 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 import os
 import core.tree as tree
 import hashlib
+
+
+logg = logging.getLogger(__name__)
 
 
 def calcChecksum(filename, method):
@@ -67,8 +71,8 @@ def getChecksum(nodeId, method="SHA-1", filepath=""):
             return calcChecksumFromMetadata(node)
 
     except tree.NoSuchNodeError as e:
-        print "Node not present in mediaTUM:", e
-    except IOError as e:
-        print "File doesn't exist on filesystem", e
+        logg.error("Node not present in mediaTUM: %s", e)
+    except IOError:
+        logg.exception("File loading failed")
     except Exception:
-        print "Error occured in hash.getChecksum"
+        logg.exception("exception in getChecksum")

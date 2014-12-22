@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 import urllib2
 import json
 
@@ -24,6 +25,9 @@ from mediatumtal import tal
 import core.tree as tree
 from utils.utils import esc
 from core.metatype import Metatype
+
+
+logg = logging.getLogger(__name__)
 
 
 class m_dlist(Metatype):
@@ -69,6 +73,7 @@ class m_dlist(Metatype):
                 else:
                     num = " (" + str(num) + ")"
             except:
+                logg.exception("exception in formatValues, using empty string")
                 num = ""
 
             val = esc(val)

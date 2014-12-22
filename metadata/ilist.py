@@ -28,7 +28,7 @@ from core.acl import AccessData
 from core.transition import httpstatus
 
 
-logg = logging.getLogger("frontend")
+logg = logging.getLogger(__name__)
 
 
 class m_ilist(Metatype):
@@ -52,6 +52,7 @@ class m_ilist(Metatype):
             if value[-1] == ";":
                 value = value[0:-1]
         except:
+            logg.exception("exception in getFormatedValue, ignore")
             pass
 
         value = value.replace(";", "; ")

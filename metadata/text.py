@@ -24,11 +24,13 @@ from core.transition import httpstatus
 import core.config as config
 import re
 from utils.utils import esc
-from utils.log import logException
 from utils.pathutils import isDescendantOf
 from utils.utils import modify_tex
 from core.metatype import Metatype, charmap
 from export.exportutils import runTALSnippet
+
+
+logg = logging.getLogger(__name__)
 
 system_languages = [lang.strip() for lang in config.get("i18n.languages").split(",") if lang.strip()]
 
@@ -118,6 +120,7 @@ class m_text(Metatype):
         try:
             multilingual = field.getValues()
         except:
+            logg.exception("exception in getMaskEditorHTML, using empty string")
             multilingual = ""
         return tal.getTAL("metadata/text.html", {"multilingual": multilingual}, macro="maskeditor", language=language)
 
@@ -136,15 +139,12 @@ class m_text(Metatype):
                     index = valuesList.index(language)
                     value = valuesList[index + 1]
                 except ValueError as e:
-                    logException(e)
-
-                    log = logging.getLogger("errors")
                     msg = "Exception in getFormatedValue for textfield:\n"
                     msg += " valuesList=%r\n" % valuesList
                     msg += " node.name=%r, node.id=%r, node.type=%r\n" % (node.name, node.id, node.type)
                     msg += " field.name=%r, field.id=%r, field.type=%r\n" % (field.name, field.id, field.type)
                     msg += " language=%r, mask=%r" % (language, mask)
-                    log.error(msg)
+                    logg.exception(msg)
 
                     value = ""
             else:
@@ -189,6 +189,7 @@ class m_text(Metatype):
             try:
                 value = runTALSnippet(value, context)
             except:
+                logg.exception("exception in getFormatedValue, runTALSnippet failed, using unescaped string")
                 value = runTALSnippet(unescaped_value, context)
 
         return (field.getLabel(), value)
@@ -198,6 +199,7 @@ class m_text(Metatype):
         try:
             return value.replace("; ", ";")
         except:
+            logg.exception("exception in format_request_value_for_db, returning value")
             return value
 
     def getName(self):

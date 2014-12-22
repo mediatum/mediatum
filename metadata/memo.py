@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 from collections import OrderedDict
 from mediatumtal import tal
 from core.transition import httpstatus
@@ -25,6 +26,8 @@ from core.translation import t, getDefaultLanguage
 
 from contenttypes.default import languages as config_languages
 import re
+
+logg = logging.getLogger(__name__)
 
 max_lang_length = max([len(lang) for lang in config_languages])
 config_default_language = getDefaultLanguage()
@@ -94,11 +97,8 @@ class m_memo(Metatype):
                     d[key][-1] = d[key][-1][0:-1]  # trailing \n belongs to found cutter
                 key = m.groupdict()["lang"]
                 if key in d:  # should not happen
-                    print '#v' * 30
-                    print __file__, "----> default language conflict for:", key
-                    print "already in dict:"
-                    print "d['%s'] = '%s'" % (key, str(d[key]))
-                    print '#^' * 30
+                    logg.warn("----> default language conflict for: %s", key)
+                    logg.warn("already in dict:d['%s'] = '%s'", key, d[key])
                 value = []
                 d[key] = value
 
@@ -207,6 +207,7 @@ class m_memo(Metatype):
         try:
             value = field.getValues()
         except:
+            logg.exception("exception in getMaskEditorHTML, using empty string")
             value = ""
 
         #value = ""

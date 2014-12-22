@@ -35,10 +35,13 @@ from core.acl import AccessData
 from utils.fileutils import importFileToRealname
 
 
+logg = logging.getLogger(__name__)
+
+
 def check_context():
     webcontexts = athana.contexts
     if (not filter(lambda x: x.name == '/md_upload', webcontexts)) and athana.GLOBAL_ROOT_DIR != "no-root-dir-set":
-        print 'going to add context md_upload'
+        logg.info('adding context md_upload')
         webcontext = athana.addContext("/md_upload", ".")
         webcontext_file = webcontext.addFile("metadata/upload.py")
         webcontext_file.addHandler("handle_request").addPattern("/.*")
@@ -86,6 +89,7 @@ def getFilelist(node, fieldname=''):
             try:
                 f_mtime = str(datetime.datetime.fromtimestamp(os.path.getmtime(f_retrieve)))
             except:
+                logg.exception("exception in getFilelist, formatting datestr failed, using fake date")
                 f_mtime = "2099-01-01 12:00:00.00 " + f_name
             _t = (f_mtime, f_name, f.getMimeType(), f.getSize(), f.getType(), f_retrieve, f)
             filelist.append(_t)
@@ -117,6 +121,7 @@ class m_upload(Metatype):
         try:
             warning = [t[1] for t in self.labels[language] if t[0] == 'upload_notarget_warning'][0]
         except:
+            logg.exception("exception in getEditorHTML, using default language")
             warning = [t[1] for t in self.labels[getDefaultLanguage()] if t[0] == 'upload_notarget_warning'][0]
 
         context = {
@@ -145,7 +150,7 @@ class m_upload(Metatype):
         elif fieldname:
             s = s.replace("____FIELDNAME____", "%s" % fieldname)
         else:
-            logging.getLogger('backend').warning("metadata: m_upload: no fieldname found")
+            logg.warn("metadata: m_upload: no fieldname found")
         return s
 
     def getFormatedValue(self, field, node, language=None, html=1, template_from_caller=None, mask=None):
@@ -264,8 +269,8 @@ def handle_request(req):
 
             if not access.hasAccess(n, 'data'):
                 msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (
-                    user.name, str(n.id), n.name, n.type, str(req.ip))
-                logging.getLogger("backend").info(msg)
+                    user.name, n.id, n.name, n.type, str(req.ip))
+                logg.info(msg)
                 errors.append(msg)
 
                 s['errors'] = errors
@@ -274,9 +279,8 @@ def handle_request(req):
 
             for f in fs:
                 if f.getName() == f_name:
-                    msg = "metadata m_upload: going to remove file '%s' from node '%s' (%s) for request from user '%s' (%s)" % (
-                        f_name, n.name, str(n.id), user.name, str(req.ip))
-                    logging.getLogger("backend").info(msg)
+                    logg.info("metadata m_upload: going to remove file '%s' from node '%s' (%s) for request from user '%s' (%s)",
+                        f_name, n.name, n.id, user.name, req.ip)
                     n.removeFile(f)
                     try:
                         os.remove(f.retrieveFile())
@@ -312,16 +316,16 @@ def handle_request(req):
             except:
                 msg = "metadata m_upload: targetnodeid='%s' for non-existant node for upload from '%s'" % (str(targetnodeid), str(req.ip))
                 errors.append(msg)
-                logging.getLogger("backend").error(msg)
+                logg.error(msg)
         else:
             msg = "metadata m_upload could not find 'targetnodeid' for upload from '%s'" % str(req.ip)
             errors.append(msg)
-            logging.getLogger("backend").error(msg)
+            logg.error(msg)
 
         if not access.hasAccess(targetnode, 'data'):
             msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (
                 user.name, str(targetnode.id), targetnode.name, targetnode.type, str(req.ip))
-            logging.getLogger("backend").info(msg)
+            logg.error(msg)
             errors.append(msg)
 
             s['errors'] = errors

@@ -18,12 +18,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 import os
 from mediatumtal import tal
 import core.tree as tree
 
 from utils.utils import esc
 from core.metatype import Metatype, Context
+
+logg = logging.getLogger(__name__)
 
 
 class m_list(Metatype):
@@ -93,6 +96,7 @@ class m_list(Metatype):
                 else:
                     num = " (" + str(num) + ")"
             except:
+                logg.exception("exception in getMaskEditorHTML, using empty string")
                 num = ""
 
             val = esc(val)

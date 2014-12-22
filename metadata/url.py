@@ -26,7 +26,7 @@ from urllib import unquote
 from utils.utils import quote_uri
 
 
-logg = logging.getLogger("frontend")
+logg = logging.getLogger(__name__)
 
 
 def _replace_vars(node, s):
@@ -135,7 +135,7 @@ class m_url(Metatype):
 
             return (field.getLabel(), value)
         except:
-            logg.error("error getting formatted value for URI", exc_info=1)
+            logg.exception("exception in getFormatedValue, error getting formatted value for URI")
             return (field.getLabel(), "")
 
     def format_request_value_for_db(self, field, params, item, language=None):

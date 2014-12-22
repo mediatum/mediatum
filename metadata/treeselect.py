@@ -16,11 +16,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 from mediatumtal import tal
 from core.transition import httpstatus
 import core.tree as tree
 from utils.utils import esc
 from core.metatype import Metatype
+
+
+logg = logging.getLogger(__name__)
 
 
 class m_treeselect(Metatype):
@@ -49,6 +53,7 @@ class m_treeselect(Metatype):
         try:
             return value.replace("; ", ";")
         except:
+            logg.exception("exception in format_request_value_for_db, returning value")
             return value
 
     def getName(self):

@@ -17,11 +17,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 import os.path
 from mediatumtal import tal
 import core.tree as tree
 from utils.utils import esc
 from core.metatype import Metatype, Context
+
+
+logg = logging.getLogger(__name__)
 
 
 class m_mlist(Metatype):
@@ -88,6 +92,7 @@ class m_mlist(Metatype):
                 else:
                     num = " (" + str(num) + ")"
             except:
+                logg.exception("exception in formatValues, using empty string")
                 num = ""
 
             val = esc(val)
@@ -129,6 +134,7 @@ class m_mlist(Metatype):
             if field:
                 value = field.getValues()
         except AttributeError:
+            logg.exception("exception in getMaskEditorHTML, set value = field")
             value = field
         return tal.getTAL("metadata/mlist.html", {"value": value}, macro="maskeditor", language=language)
 

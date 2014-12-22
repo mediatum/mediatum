@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 import core.tree as tree
 
 from core.tree import getNode
@@ -34,6 +35,9 @@ from core.styles import theme
 #
 # execute fullsize method from node-type
 #
+
+
+logg = logging.getLogger(__name__)
 
 
 def popup_fullsize(req):
@@ -211,6 +215,7 @@ def show_printview(req):
                 try:
                     sort = getCollection(node).get("sortfield")
                 except:
+                    logg.exception("exception in show_printview, getting sortfield failed, setting sort = \"\"")
                     sort = ""
 
                 for i in range(0, 2):
@@ -274,4 +279,4 @@ def popup_metatype(req):
     if mtype and hasattr(mtype, "getPopup"):
         mtype.getPopup(req)
     else:
-        print "error, no popup method found"
+        logg.error("error, no popup method found")

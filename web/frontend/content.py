@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 from mediatumtal import tal
 import core.tree as tree
 import os
@@ -27,9 +28,9 @@ from core.translation import lang, t
 from web.frontend import Content
 from web.frontend.searchresult import simple_search, extended_search
 from core.styles import getContentStyles, theme
-import logging
-from core.transition import httpstatus
-log = logging.getLogger("frontend")
+
+
+logg = logging.getLogger(__name__)
 
 
 class SingleFile:
@@ -503,6 +504,7 @@ class ContentArea(Content):
                     if node.get("system.print") != "":
                         nodeprint = node.get("system.print")
             except:
+                logg.exception("exception in ContentArea.html, setting id = 0")
                 id = 0
 
             printlink = '/print/' + str(id)
@@ -515,7 +517,7 @@ class ContentArea(Content):
                 try:
                     breadscrubs = self.getPath()
                 except AttributeError:
-                    log.exception("")
+                    logg.exception("exception in html")
                     return req.error(404, "Object cannot be shown")
 
             path = req.getTAL(

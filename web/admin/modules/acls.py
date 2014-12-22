@@ -75,11 +75,6 @@ def validate(req, op):
                 break
     return view(req)
 
-    # except:
-    #    print "Warning: couldn't load module for type",type
-    #    print sys.exc_info()[0], sys.exc_info()[1]
-    #    traceback.print_tb(sys.exc_info()[2])
-
 
 #
 # show all defindes acl-rules

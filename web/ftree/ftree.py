@@ -16,10 +16,13 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
+import logging
 import core.tree as tree
 
 from .ftreedata import getData, getPathTo, getLabel
+
+
+logg = logging.getLogger(__name__)
 
 
 def ftree(req):
@@ -45,4 +48,4 @@ def ftree(req):
                 else:
                     parent.addChild(node)
         except:
-            pass
+            logg.exception("exception in ftree")

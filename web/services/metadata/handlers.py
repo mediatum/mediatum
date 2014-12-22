@@ -32,7 +32,8 @@ from utils.utils import getMimeType
 from web.services.cache import Cache
 
 
-logger = logging.getLogger('services')
+logg = logging.getLogger(__name__)
+
 host = "http://" + config.get("host.name")
 
 guestAccess = AccessData(user=users.getUser('Gast'))
@@ -183,8 +184,7 @@ def serve_file(req, path, params, data, filepath):
     else:
         basedir = os.path.dirname(os.path.abspath(__file__))
     abspath = os.path.join(basedir, 'static', filepath)
-    msg = "web service trying to serve: " + str(abspath)
-    logger.info(msg)
+    logg.info("web service trying to serve: ", abspath)
     if os.path.isfile(abspath):
         filesize = os.path.getsize(abspath)
         req.sendFile(abspath, mimetype, force=1)

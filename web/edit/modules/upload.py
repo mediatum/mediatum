@@ -23,7 +23,6 @@ import core.tree as tree
 import core.acl as acl
 import re
 import utils.date
-from utils.log import logException
 import core.config as config
 import zipfile
 import PIL.Image

@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 import re
 import sys
 import traceback
@@ -30,6 +31,9 @@ from schema.schema import parseEditorData
 from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings
 from core.translation import t, lang
+
+
+logg = logging.getLogger(__name__)
 
 
 def getInformation():
@@ -209,8 +213,7 @@ def validate(req, op):
 
         return view(req)
     except:
-        print sys.exc_info()[0], sys.exc_info()[1]
-        traceback.print_tb(sys.exc_info()[2])
+        logg.exception("exception in validate")
 
 
 """ overview of all defined workflows

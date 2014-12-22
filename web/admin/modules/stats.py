@@ -61,8 +61,6 @@ def view(req):
     v = {}
     v["gotopage"] = gotopage
 
-    print "overview", gotopage, req.params
-
     def format_num(nums):
         num = ""
         for k in nums:
@@ -70,7 +68,6 @@ def view(req):
         return num
 
     if gotopage == "overview" and req.params.get("changes") == "overview":
-        print "changes"
         for key in req.params.keys():
             if key == "overview_reset":
                 root.set("admin.stats.num", format_num(getOverviewData(req)))

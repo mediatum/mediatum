@@ -32,6 +32,9 @@ from utils.utils import mkKey
 from core.styles import theme
 
 
+logg = logging.getLogger(__name__)
+
+
 def buildURL(req):
     p = ""
     for key in req.params:
@@ -60,7 +63,7 @@ def login(req):
             if "contentarea" in req.session:
                 del req.session["contentarea"]
             req.session["user"] = user
-            logging.getLogger('usertracing').info(user.name + " logged in")
+            logg.info("%s logged in", user.name)
 
             if user.getUserType() == "users":
                 if user.stdPassword():
@@ -167,14 +170,11 @@ def pwdforgotten(req):
 
             if newpassword:
                 targetuser.set("password", newpassword)
-                print "password reset for user '%s' (id=%s) reset" % (targetuser.getName(), targetuser.id)
+                logg.info("password reset for user '%s' (id=%s) reset", targetuser.name, targetuser.id)
                 targetuser.removeAttribute("newpassword.password")
                 targetuser.set("newpassword.time_activated", date.format_date())
-                logging.getLogger('usertracing').info(
-                    "new password activated for user: %s - was requested: %s by %s" %
-                    (targetuser.getName(),
-                     targetuser.get("newpassword.time_requested"),
-                        targetuser.get("newpassword.request_ip")))
+                logg.info("new password activated for user: %s - was requested: %s by %s", 
+                          targetuser.name, targetuser.get("newpassword.time_requested"), targetuser.get("newpassword.request_ip"))
 
                 navframe.write(
                     req, req.getTAL(
@@ -183,7 +183,7 @@ def pwdforgotten(req):
                 return httpstatus.HTTP_OK
 
             else:
-                print "invalid key: wrong key or already used key"
+                logg.error("invalid key: wrong key or already used key")
                 navframe.write(
                     req, req.getTAL(
                         theme.getTemplate("login.html"), {
@@ -200,7 +200,7 @@ def pwdforgotten(req):
             targetuser = users.getUser(username)
 
             if not targetuser or not targetuser.canChangePWD():
-                logging.getLogger('usertracing').info("new password requested for non-existing user: " + username)
+                logg.info("new password requested for non-existing user: %s", username)
                 req.params['error'] = "pwdforgotten_nosuchuser"
 
             else:
@@ -227,7 +227,7 @@ def pwdforgotten(req):
                     mailtext = mailtext.strip().replace("[$newpassword]", password).replace("[wird eingesetzt]", password)
 
                     mail.sendmail(config.get("email.admin"), targetuser.getEmail(), t(lang(req), "pwdforgotten_email_subject"), mailtext)
-                    logging.getLogger('usertracing').info("new password requested for user: %s - activation email sent" % username)
+                    logg.info("new password requested for user: %s - activation email sent", username)
                     navframe.write(
                         req, req.getTAL(
                             theme.getTemplate("login.html"), {
@@ -235,9 +235,7 @@ def pwdforgotten(req):
                     return httpstatus.HTTP_OK
 
                 except mail.SocketError:
-                    print "Socket error while sending mail"
-                    logging.getLogger('usertracing').info(
-                        "new password requested for user: %s - failed to send activation email" % username)
+                    logg.exception("new password requested for user: %s - failed to send activation email", username)
                     return req.getTAL(
                         theme.getTemplate("login.html"), {"message": "pwdforgotten_emailsenderror"}, macro="pwdforgotten_message")
 

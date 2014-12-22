@@ -26,6 +26,9 @@ from schema.schema import getMetaType
 from web.services.serviceutils import attribute_name_filter
 
 
+logg = logging.getLogger(__name__)
+
+
 def buildNodeDescriptor(req, node, indent=None, written=None, children=True, children_access=None, parents=False):
     nd = []
     d = {}
@@ -53,7 +56,7 @@ def buildNodeDescriptor(req, node, indent=None, written=None, children=True, chi
         maskcachetype = req.params.get('maskcache', 'deep')  # 'deep', 'shallow', 'none'
         nodedict['defaultexport'] = node.show_node_text(labels=1, language=req.params.get('lang', ''), cachetype=maskcachetype)
         # except:
-        #    logging.getLogger('services').error('Error: web.services.jsonnode: could not get default mask content')
+        #    logg.error('Error: web.services.jsonnode: could not get default mask content')
         #    nodedict['defaultexport'] = []
 
     elif mask not in ["", "none"]:  # deliver every mask
@@ -120,8 +123,7 @@ def buildNodeDescriptor(req, node, indent=None, written=None, children=True, chi
                     attrlist.append(field_attribute)
         except:
             # no mask for this metadata type
-            msg = "no 'nodesmall' or 'shortview' for node %s" % str(node.id)
-            logging.getLogger("services").warning(msg)
+            logg.exception("exception in buildNodeDescriptor, no 'nodesmall' or 'shortview' for node %s", node.id)
 
     elif attrspec == 'all':
         nodeattributes_dict_all_attributes = node.attributes.copy()

@@ -17,13 +17,13 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 from collections import OrderedDict
 import time
 
 import core.tree as tree
 import core.users as users
 import core.config as config
-from utils.log import logException
 
 from schema.schema import getMetadataType
 from utils.utils import getCollection, getDirectory, Link, isCollection, isDirectory, isParentOf
@@ -31,6 +31,9 @@ from core.acl import AccessData
 from core.translation import lang, t
 from core.metatype import Context
 from core.styles import theme
+
+
+logg = logging.getLogger(__name__)
 
 
 class Portlet:
@@ -212,7 +215,7 @@ class Searchlet(Portlet):
                                            user=users.getUserFromRequest(self.req), ip=self.req.ip))
         except:
             # workaround for unknown error
-            logException("error during getSearchField(i)")
+            logg.exception("exception in getSearchField, return empty string")
             return ""
 
 
@@ -280,7 +283,7 @@ class NavTreeEntry:
                 return self.node.getLabel(lang=self.lang)
 
         except:
-            logException("error during NavTreeEntry.getText()")
+            logg.exception("exception in NavTreeEntry.getText, return Node (0)")
             return "Node (0)"
 
     def getClass(self):

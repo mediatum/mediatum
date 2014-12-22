@@ -36,7 +36,7 @@ from schema.schema import getMetadataType, getMetaType
 from core.transition import httpstatus
 
 
-logg = logging.getLogger("frontend")
+logg = logging.getLogger(__name__)
 
 
 def handle_json_request(req):
@@ -98,8 +98,14 @@ def display(req):
     content.feedback(req)
     try:  # add export mask data of current node to request object
         mask = getMetaType(content.actNode().getSchema()).getMask('head_meta')
-        req.params['head_meta'] = mask.getViewHTML([content.actNode()], flags=8)
+        if mask is not None:
+            req.params['head_meta'] = mask.getViewHTML([content.actNode()], flags=8)
+        else:
+            req.params['head_meta'] = ''
     except:
+        # XXX: the "common exception case" here was mask == None. This is handled in the try-block now. 
+        # Other exceptions could indicate a real failure.
+        logg.exception("exception in display, setting head_meta to empty string")
         req.params['head_meta'] = ''
     navframe = getNavigationFrame(req)
     navframe.feedback(req)
@@ -254,7 +260,7 @@ def exportsearch(req, xml=0):  # format 0=pre-formated, 1=xml, 2=plain
             req.write("a[%d]['link'] = 'http://%s?id=%s';\n" % (i, config.get('host.name'), node.id))
             i = i + 1
         req.write('add_data(a);\n')
-    print "%d node entries xml=%d" % (i, xml)
+    logg.info("%d node entries xml=%d", i, xml)
 
 
 def xmlsearch(req):

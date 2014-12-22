@@ -37,7 +37,7 @@ from utils.utils import splitpath, u
 def getInformation():
     return{"version": "1.0"}
 
-log = logging.getLogger("usertracing")
+logg = logging.getLogger(__name__)
 ALLOW_DYNAMIC_USERS = False
 
 
@@ -65,7 +65,7 @@ def validate(req, op):
 
             elif key.startswith("delete_"):
                 # delete group
-                log.debug("user %r going to delete group %r" % (user.getName(), key[7:-2]))
+                logg.debug("user %r going to delete group %r", user.getName(), key[7:-2])
                 deleteGroup(key[7:-2])
                 break
 
@@ -82,7 +82,7 @@ def validate(req, op):
                 elif existGroup(req.params.get("groupname", "")):
                     return editGroup_mask(req, "", 2)  # group still existing
                 else:
-                    log.debug("user %r going to save new group %r" % (user.getName(), req.params.get("groupname", "")))
+                    logg.debug("user %r going to save new group %r", user.getName(), req.params.get("groupname", ""))
                     if req.params.get("create_rule", "") == "True":
                         updateAclRule(req.params.get("groupname", ""), req.params.get("groupname", ""))
                     if req.params.get("checkbox_allow_dynamic", "") in ["on", "1"]:
@@ -121,16 +121,14 @@ def validate(req, op):
                         group.set("allow_dynamic", "")
                     group.set("dynamic_users", dynamic_users)
                 if groupname == oldgroupname:
-                    log.debug("user %r edited group %r" % (user.getName(), groupname))
+                    logg.debug("user %r edited group %r", user.getName(), groupname)
                 else:
-                    log.debug("user %r edited group %r, new groupname: %r" % (user.getName(), oldgroupname, groupname))
+                    logg.debug("user %r edited group %r, new groupname: %r", user.getName(), oldgroupname, groupname)
             sortUserGroups()
         return view(req)
 
     except:
-        print "Warning: couldn't load module for type", type
-        print sys.exc_info()[0], sys.exc_info()[1]
-        traceback.print_tb(sys.exc_info()[2])
+        logg.exception("exception in validate")
 
 
 def view(req):

@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 import re
 import os
 import glob
@@ -33,6 +34,8 @@ from core.tree import getNode
 import utils.utils
 from utils.utils import get_filesize, join_paths, clean_path, getMimeType
 
+
+logg = logging.getLogger(__name__)
 
 IMGNAME = re.compile("/?(attachment|doc|images|thumbs|thumb2|file|download|archive)/([^/]*)(/(.*))?$")
 
@@ -313,12 +316,14 @@ def send_attfile(req):
 
 
 def get_archived(req):
-    print "send archived"
+    logg.debug("send archived")
     id, filename = splitpath(req.path)
     node = tree.getNode(id)
     node.set("archive_state", "1")
     if not archivemanager:
-        req.write("-no archive module loaded-")
+        msg = "-no archive module loaded-"
+        req.write(msg)
+        logg.warn(msg)
         return
 
     archiveclass = ""
@@ -377,13 +382,13 @@ def build_transferzip(node):
                 fullpath = fn.retrieveFile()
                 if os.path.isfile(fullpath) and os.path.exists(fullpath):
                     dirname, filename = os.path.split(fullpath)
-                    print "adding to zip: ", fullpath, "as", filename
+                    logg.debug("adding to zip: %s as %s", fullpath, filename)
                     zip.write(fullpath, filename)
                     files_written += 1
                 if os.path.isdir(fullpath):
                     for f in get_all_file_paths(fullpath):
                         newpath = f.replace(fullpath, "")
-                        print "adding from ", fullpath, "to zip: ", f, "as", newpath
+                        logg.debug("adding from % to zip %s as %s", fullpath, f, newpath)
                         zip.write(f, newpath)
                         files_written += 1
     zip.close()

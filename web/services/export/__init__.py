@@ -24,13 +24,13 @@ import sys
 import re
 import time
 import locale
-
 import logging
-
 import BaseHTTPServer
+
 response_code_dict = BaseHTTPServer.BaseHTTPRequestHandler.responses
 
 LOCALES = ["en_US.UTF-8", "english", "german"]
+
 
 try:
     locale.setlocale(locale.LC_ALL, LOCALES[0])  # for thousands separator
@@ -43,6 +43,9 @@ except:
     pass
 
 from . import handlers
+
+
+logg = logging.getLogger(__name__)
 
 SERVICES_URL_HAS_HANDLER = 1
 SERVICES_URL_SIMPLE_REWRITE = 2
@@ -149,7 +152,7 @@ def request_handler(req):
         s += "\n| sum of execution times: %.3f sec.: %s bytes returned" % (timesum, locale.format("%d", bytes_sent, 1))
         s += '\n' + ('-' * 80)
 
-    logging.getLogger('services').info(s)
+    logg.info(s)
     sys.stdout.flush()
 
     if not matched:

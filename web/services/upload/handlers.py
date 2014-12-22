@@ -39,7 +39,8 @@ from utils.utils import u, getMimeType, OperationException
 from utils.fileutils import importFileFromData, importFile
 
 
-logger = logging.getLogger('services')
+logg = logging.getLogger(__name__)
+
 host = "http://" + config.get("host.name")
 
 collections = tree.getRoot('collections')
@@ -114,7 +115,7 @@ def upload_new_node(req, path, params, data):
             'status': 'fail',
             'html_response_code': '403',
             'errormessage': 'no access'}
-        logger.error("user has no edit permission for node %s" % parent)
+        logg.error("user has no edit permission for node %s", parent)
         return d['html_response_code'], len(s), d
 
     datatype = params.get('type')
@@ -130,7 +131,7 @@ def upload_new_node(req, path, params, data):
     if nfile:
         n.addFile(nfile)
     else:
-        logger.error("error in file uploadservice")
+        logg.error("error in file uploadservice")
 
     try:  # test metadata
         metadata = json.loads(params.get('metadata'))
@@ -266,7 +267,7 @@ def serve_file(req, path, params, data, filepath):
     else:
         basedir = os.path.dirname(os.path.abspath(__file__))
     abspath = os.path.join(basedir, 'static', filepath)
-    logger.info("web service trying to serve: %s" % abspath)
+    logg.info("web service trying to serve: %s", abspath)
     if os.path.isfile(abspath):
         filesize = os.path.getsize(abspath)
         req.sendFile(abspath, mimetype, force=1)

@@ -17,7 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
+import logging
 from core.transition import httpstatus
 import core.tree as tree
 import core.users as users
@@ -34,6 +34,9 @@ WIDTH = 102
 HEIGHT = 102
 HEADER_HEIGHT = 100
 FOOTER_HEIGHT = 0
+
+
+logg = logging.getLogger(__name__)
 
 
 def shoppingbag_action(req):
@@ -100,7 +103,7 @@ def shoppingbag_action(req):
                 if key.startswith("share_"):
                     sb = user.getShoppingBag(key[6:])
                     if len(sb) == 1:
-                        print sb[0].id, sb[0].isShared()
+                        logg.debug("shoppingbag action %s %s", sb[0].id, sb[0].isShared())
                         if sb[0].isShared():
                             sb[0].stopShare()
                         else:
@@ -332,7 +335,7 @@ def export_shoppingbag_zip(req):
                 if not access.hasAccess(node, 'data'):
                     continue
                 if node.processImage(processtype, processvalue, dest) == 0:
-                    print "image not found"
+                    logg.error("image not found")
 
     # documenttypes
     if req.params.get("type") == "document":
@@ -345,7 +348,7 @@ def export_shoppingbag_zip(req):
                 if not access.hasAccess(node, 'data'):
                     continue
                 if node.processDocument(dest) == 0:
-                    print "document not found"
+                    logg.error("document not found")
 
     # documenttypes
     if req.params.get("type") == "media":
@@ -358,7 +361,7 @@ def export_shoppingbag_zip(req):
                 if not access.hasAccess(node, 'data'):
                     continue
                 if node.processMediaFile(dest) == 0:
-                    print "file not found"
+                    logg.error("file not found")
 
     # metadata
     def flatten(arr):

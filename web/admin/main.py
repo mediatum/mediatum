@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 import os
 from core.transition import httpstatus
 import core.config as config
@@ -27,6 +28,9 @@ import core.help as help
 from version import mediatum_version
 from utils.utils import join_paths, Menu
 from web.admin.adminutils import findmodule, show_content, adminNavigation, getMenuItemID
+
+
+logg = logging.getLogger(__name__)
 
 
 def show_node(req):
@@ -80,4 +84,4 @@ def export(req):
         if os.sep == '/':  # Unix?
             os.unlink(tempfile)  # unlinking files while still reading them only works on Unix/Linux
     except:
-        print "module has no export method"
+        logg.info("module has no export method")

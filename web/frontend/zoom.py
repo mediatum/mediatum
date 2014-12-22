@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 import re
 import core.tree as tree
 import os
@@ -25,6 +26,9 @@ import zipfile
 import random
 import core.config as config
 from utils.lrucache import lru_cache
+
+
+logg = logging.getLogger(__name__)
 IMGNAME = re.compile("/?tile/([^/]*)(/(.*))?$")
 
 store = 1  # keep tiles?
@@ -173,7 +177,7 @@ def send_tile(req):
     zoomlevels = 4
 
     if not req.path.endswith(".jpg"):
-        print "invalid tile request", req.path
+        logg.warn("invalid tile request %s", req.path)
         return 404
     jpg = req.path[req.path.rindex("/") + 1:-4]
     zoom, x, y = map(int, jpg.split("-"))

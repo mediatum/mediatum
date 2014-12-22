@@ -26,7 +26,6 @@ import schema.bibtex as bibtex
 import schema.citeproc as citeproc
 import schema.importbase as importbase
 
-from utils.log import logException
 from utils.utils import dec_entry_log
 from web.edit.edit_common import showdir
 from core.translation import lang, t
@@ -116,7 +115,7 @@ def import_new(req):
                 req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":str(e)})
                 req.params["error"] = str(e)
             except:
-                logException("error during upload")
+                logg.exception("exception in import_new")
                 req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"PostprocessingError"})
                 req.params["error"] = "file_processingerror"
             msg_t = (user.getName(), importdir.id, importdir.name, importdir.type, req.params)

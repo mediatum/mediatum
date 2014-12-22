@@ -17,9 +17,13 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 import core.tree as tree
 import core.webconfig as webconfig
 from web.admin.adminutils import getAdminStdVars
+
+
+logg = logging.getLogger(__name__)
 
 
 def getInformation():
@@ -37,7 +41,7 @@ def validate(req, op):
         for key in req.params.keys():
 
             if key.startswith("flush_db"):
-                print "flush db"
+                logg.info("flush db")
                 tree.flush()
                 op = "db"
                 return view(req, op)

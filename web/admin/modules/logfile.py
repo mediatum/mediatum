@@ -17,9 +17,13 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 from utils.utils import format_filesize, get_filesize
 from utils.log import dlogfiles
 from web.admin.adminutils import Overview, getAdminStdVars
+
+
+logg = logging.getLogger(__name__)
 
 
 def getInformation():
@@ -100,4 +104,5 @@ def getFileContent(path):
         fileHandle.close()
         return _text
     except:
+        logg.exception("exception in getFileContent, return empty string")
         return ""

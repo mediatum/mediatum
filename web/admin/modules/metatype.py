@@ -20,6 +20,7 @@
 import re
 import sys
 import core.tree as tree
+import logging
 
 from core.datatypes import loadAllDatatypes, loadNonSystemTypes
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
@@ -40,6 +41,9 @@ from .metatype_field import showDetailList, FieldDetail
 from .metatype_mask import showMaskList, MaskDetails
 
 from contenttypes.default import flush_maskcache
+
+
+logg = logging.getLogger(__name__)
 
 
 def getInformation():
@@ -98,6 +102,7 @@ def validate(req, op):
                         node_html = mask.getViewHTML([node], VIEW_DEFAULT, template_from_caller=[template, mdt, mask, item_id], mask=mask)
                         section_descr['node_html'] = node_html
                     except:
+                        logg.exception("exception while evaluating template")
                         error_text = str(sys.exc_info()[1])
                         template_line = 'for node id ' + str(nid) + ': ' + error_text
                         try:
@@ -585,6 +590,7 @@ def showEditor(req):
                     item.addChild(f)
                 field.setValues(req.params.get(field.get("type") + "_value", ""))
             except:
+                logg.exception("exception in showEditor / saveedit, ignore")
                 pass
 
         elif req.params.get("op", "") == "new":
@@ -714,6 +720,7 @@ def showEditor(req):
         try:
             v["editor"] = req.getTALstr(editor.getMetaMask(language=lang(req)), {})
         except:
+            logg.exception("exception in showEditor")
             v["editor"] = editor.getMetaMask(language=lang(req))
 
     v["title"] = editor.name

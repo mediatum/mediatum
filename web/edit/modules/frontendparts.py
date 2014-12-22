@@ -17,6 +17,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 import os
 from PIL import Image
 from core.transition.athana_sep import athana_http as athana
@@ -26,6 +27,9 @@ import core.config as config
 from utils.utils import CustomItem
 from web.edit.edit_common import writetree
 from core.transition import httpstatus
+
+logg = logging.getLogger(__name__)
+
 
 def getInformation():
     return {"version": "1.0", "system": 1}
@@ -56,7 +60,7 @@ def getContent(req, ids):
                 try:
                     nodename = node.getLabel()
                 except:
-                    log.logException()
+                    logg.exception("exception in getContent")
 
                 if type == 1:
                     link = req.makeSelfLink({"tree_unfold": "", "tree_fold": node.id}) + "#node{}".format(node.id)

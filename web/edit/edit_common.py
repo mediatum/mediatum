@@ -24,7 +24,6 @@ import logging
 
 from core.acl import AccessData
 from core.translation import translate, getDefaultLanguage, t, lang
-from utils.log import logException
 from utils.utils import isDirectory, isCollection, EncryptionException, funcname
 from utils.fileutils import importFile
 from core.users import getHomeDir, getUploadDir
@@ -379,7 +378,7 @@ def upload_for_html(req):
                 req.request["Location"] = req.makeLink("content", {
                                                        "id": id, "tab": "tab_editor", "error": "EncryptionError_" + datatype[:datatype.find("/")]})
             except:
-                logException("error during upload")
+                logger.exception("error during upload")
                 req.request["Location"] = req.makeLink("content", {
                                                        "id": id, "tab": "tab_editor", "error": "PostprocessingError_" + datatype[:datatype.find("/")]})
             return send_nodefile_tal(req)
@@ -398,7 +397,7 @@ def upload_for_html(req):
                 req.request["Location"] = req.makeLink("content", {
                                                        "id": id, "tab": "tab_editor", "error": "EncryptionError_" + datatype[:datatype.find("/")]})
             except:
-                logException("error during upload")
+                logger.exception("error during upload")
                 req.request["Location"] = req.makeLink("content", {
                                                        "id": id, "tab": "tab_editor", "error": "PostprocessingError_" + datatype[:datatype.find("/")]})
 

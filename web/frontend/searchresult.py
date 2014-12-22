@@ -27,6 +27,9 @@ from core.styles import theme
 from web.frontend import Content
 
 
+logg = logging.getLogger(__name__)
+
+
 class SearchResult(Content):
 
     def __init__(self, resultlist, query, collections=[]):
@@ -122,7 +125,7 @@ def simple_search(req):
             collections.append(collection)
 
     num = 0
-    logging.getLogger('usertracing').info(access.user.name + " search for '" + q + "', " + str(num) + " results")
+    logg.info("%s search for '%s', %s results", access.user.name, q, num)
     try:
         if req.params.get("act_node", None) and tree.getNode(req.params.get("act_node")).getContentType() != "collections":
             # actual node is a collection or directory
@@ -250,7 +253,7 @@ def extended_search(req):
         else:
             result = collection.search(q_str)
         result = access.filter(result)
-        logging.getLogger('usertracing').info(access.user.name + " xsearch for '" + q_user + "', " + str(len(result)) + " results")
+        logg.info(access.user.name + "%s xsearch for '%s', %s results", access.user.name, q_user, len(result))
         if len(result) > 0:
             cl = ContentList(result, collection, q_user.strip())
             cl.feedback(req)

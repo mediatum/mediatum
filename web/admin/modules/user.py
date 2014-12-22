@@ -28,7 +28,7 @@ import core.config as config
 import core.tree as tree
 import core.acl as acl
 import core.users as users
-from utils.utils import getAllCollections, formatException
+from utils.utils import getAllCollections
 import utils.mail as mail
 from core.usergroups import loadGroupsFromDB
 from core.users import (loadUsersFromDB, useroption, getUser, update_user, existUser, create_user, makeRandomPassword, deleteUser,
@@ -37,7 +37,8 @@ from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCo
 from core.translation import lang, t
 from core.transition import httpstatus
 
-log = logging.getLogger("usertracing")
+logg = logging.getLogger(__name__)
+
 users_cache = []
 
 
@@ -50,7 +51,7 @@ def fill_users_cache(verbose=True):
     atime = time.time()
     internal_users = loadUsersFromDB()
     if verbose:
-        log.info("%.3f sec. to load %r internal users" % (time.time() - atime, len(internal_users)))
+        logg.info("%.3f sec. to load %r internal users", time.time() - atime, len(internal_users))
         atime = time.time()
     res = internal_users
     for usertype in list(getExternalUsers()):
@@ -58,7 +59,7 @@ def fill_users_cache(verbose=True):
         ext_users = list(usertype.getChildren())
         res += ext_users
         if verbose:
-            log.info("%.3f sec. to load %r external users of type %r" % (time.time() - atime, len(ext_users), usertype.name))
+            logg.info("%.3f sec. to load %r external users of type %r", time.time() - atime, len(ext_users), usertype.name)
             atime = time.time()
     users_cache = res
 
@@ -66,7 +67,7 @@ def fill_users_cache(verbose=True):
 def flush_users_cache(verbose=True):
     global users_cache
     if verbose:
-        log.debug("going to empty users_cache, which has %r entries" % (len(users_cache)))
+        logg.debug("going to empty users_cache, which has %r entries", len(users_cache))
     users_cache = []
 
 
@@ -90,7 +91,7 @@ def searchUser(value):
                 n_found += 1
         if n_found == 0:
             res.append(user)
-    log.debug("searchUser: %.3f sec. for value=%r, found %r users" % (time.time() - atime, value, len(res)))
+    logg.debug("searchUser: %.3f sec. for value=%r, found %r users", time.time() - atime, value, len(res))
     return res
 
 
@@ -126,7 +127,7 @@ def validate(req, op):
                         isDynamic = (username_from_form, dyn_auth)
                         break
                 if isDynamic:
-                    log.info("%r is requesting logout of dynamic user %r (%r)" % (user_from_request.getName(), isDynamic[0], isDynamic[1]))
+                    logg.info("%r is requesting logout of dynamic user %r (%r)", user_from_request.getName(), isDynamic[0], isDynamic[1])
                     deleteUser(isDynamic[0], isDynamic[1])
                 else:
                     usertype = req.params.get("usertype", "intern")
@@ -138,8 +139,8 @@ def validate(req, op):
                             # for children if root->users, but getUserType()
                             # returns 'users' for those
                             usertype = 'intern'
-                    log.info("%r is requesting deletion of user %r (%r, %r)" %
-                             (user_from_request.getName(), usernode.name, usernode.id, usertype))
+                    logg.info("%r is requesting deletion of user %r (%r, %r)", 
+                              user_from_request.getName(), usernode.name, usernode.id, usertype)
                     deleteUser(usernode, usertype=usertype)
                     del_index = users_cache.index(usernode)
 
@@ -243,10 +244,8 @@ def validate(req, op):
             flush_users_cache()
         return view(req)
     except:
-        print "Warning: couldn't load module for type", type
-        print sys.exc_info()[0], sys.exc_info()[1]
-        traceback.print_tb(sys.exc_info()[2])
-
+        logg.exception("exception in validate")
+        
 
 def view(req):
     """show all users"""
@@ -448,7 +447,7 @@ def addACL(username, firstname, lastname, oldusername=None):
         else:
             acl.addRule(AccessRule(username, userrule, userruledesc))
     except:
-        print formatException()
+        logg.exception("exception in addACL")
 
 
 def sendmailUser_mask(req, id, err=0):
@@ -472,7 +471,7 @@ def sendmailUser_mask(req, id, err=0):
         try:
             mail.sendmail(req.params.get("from"), req.params.get("email"), req.params.get("subject"), text)
         except mail.SocketError:
-            print "Socket error while sending mail"
+            logg.exception("exception in sendmailUser_mask, Socket error while sending mail")
             req.setStatus(httpstatus.HTTP_INTERNAL_SERVER_ERROR)
             return req.getTAL("web/admin/modules/user.html", v, macro="sendmailerror")
         return req.getTAL("web/admin/modules/user.html", v, macro="sendmaildone")

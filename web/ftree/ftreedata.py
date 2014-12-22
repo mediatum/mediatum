@@ -16,11 +16,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 
 import core.tree as tree
 from core.acl import AccessData
 from web.frontend.content import getPaths
 from core.translation import translate
+
+
+logg = logging.getLogger(__name__)
 
 
 def getData(req):
@@ -83,7 +87,7 @@ def getData(req):
 
                     ret.append('</li>')
         except:
-            pass
+            logg.exception("exception in getData")
 
     req.write("\n".join(ret))
     return

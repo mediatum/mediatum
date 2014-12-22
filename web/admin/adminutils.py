@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 import os
 import math
 import sys
@@ -28,6 +29,9 @@ from utils.utils import Link, splitpath, parseMenuString
 from core.translation import t, lang
 from core.tree import getRoot
 from core.transition import httpstatus
+
+
+logg = logging.getLogger(__name__)
 
 
 def getAdminStdVars(req):
@@ -173,9 +177,7 @@ def findmodule(type):
         m = __import__("web.admin.modules." + type)
         m = eval("m.admin.modules." + type)
     except:
-        print "Warning: couldn't load module for type", type
-        print sys.exc_info()[0], sys.exc_info()[1]
-        traceback.print_tb(sys.exc_info()[2])
+        logg.exception("Warning: couldn't load module for type %s", type)
         m = __import__("web.admin.modules.default")
         m = eval("m.admin.modules.default")
     return m
@@ -198,6 +200,7 @@ def show_content(req, op):
             if op.index("_") > -1:
                 return module.spc(req, op)
         except:
+            logg.exception("exception in show_content")
             return module.validate(req, op)
 
 # delivers all admin modules

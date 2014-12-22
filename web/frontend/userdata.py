@@ -18,7 +18,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
+import logging
 import sys
 
 from core.transition import httpstatus
@@ -30,12 +30,8 @@ from pprint import pformat as pf
 
 aclasses = {}
 
-# add logger as in utils.log.initialize
-import logging
-from utils.log import addLogger
-loggername = "userdata_debug"
-addLogger(loggername, additional_handlers=[], loglevel=logging.DEBUG)
-log = logging.getLogger(loggername)
+logg = logging.getLogger(__name__)
+
 DEBUG = True
 
 USE_EXAMPLES = True
@@ -59,8 +55,7 @@ def register_aclass(name, inst, force=False):
     if not hasattr(inst, "orderpos"):
         inst.orderpos = get_default_orderpos()
     aclasses[name] = inst
-    if DEBUG:
-        log.info("registeres %r, now %r entries registered" % (name, len(aclasses)))
+    logg.debug("registers %r, now %r entries registered" % (name, len(aclasses)))
 
 
 class HTMLSnippet:
@@ -77,17 +72,14 @@ class HTMLSnippet:
             target_key = "system.%s.%s" % (self.name, key)
             target_value = str(detail_dict[key])
             targetnode.set(target_key, target_value)
-            msg = "setting user detail: %r = %r" % (target_key, target_value)
-            log.info(msg)
+            logg.debug("setting user detail: %r = %r", target_key, target_value)
 
     def getUserDetails(self, user, req=None, **kwargs):
         targetnode = users.getHomeDir(user)
         res = dict(targetnode.items())
-        if DEBUG:
-            msg = "retrieving user details:"
-            log.info(msg)
+        if logg.isEnabledFor(logging.DEBUG):
             _d = pf(res)
-            log.debug(res)
+            logg.debug("retrieving user details: %s", _d)
         return res
 
     def getHTML(self, user, req=None, **kwargs):
@@ -114,8 +106,8 @@ def show_user_data(req):
         try:
             import userdata_examples
             reload(userdata_examples)
-        except Exception as e:
-            log.error("Error loading examples:" + str(sys.exc_info()[0]) + " " + str(sys.exc_info()[1]), exc_info=True)
+        except:
+            logg.exception("Error loading examples")
 
     if "jsonrequest" in req.params:
         python_callback_key = req.params.get("python_callback_key", "")

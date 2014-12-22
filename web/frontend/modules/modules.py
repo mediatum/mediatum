@@ -16,7 +16,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
+import logging
 import os
 import sys
 import traceback
@@ -25,6 +25,9 @@ import core.config as config
 from core.translation import addLabels
 
 # prototype of module to be used in frontend
+
+
+logg = logging.getLogger(__name__)
 
 
 class FrontendModule:
@@ -64,7 +67,7 @@ def getContent(req):  # deliver content of act
                 try:
                     req.write(mod().getModuleForm(req))
                 except:
-                    pass
+                    logg.exception("exception in getContent, ignoring")
                 return
             getDefaultModuleForm(req)  # default content of form
             return
@@ -83,9 +86,8 @@ def getFrontendModules(modname=""):
                 m = __import__("web.frontend.modules." + name)
                 m = eval("web.frontend.modules." + name)
             except:
-                print "Warning: couldn't load frontend module", name
-                print sys.exc_info()[0], sys.exc_info()[1]
-                traceback.print_tb(sys.exc_info()[2])
+                logg.exception("couldn't load frontend module %s", name)
+                
             if modname == name:
                 return getattr(m, name)
             mods[name] = getattr(m, name)
@@ -103,7 +105,8 @@ def getEditorModules():
             if mods[k]().hasParams():
                 ret.append(mods[k])
         except:
-            pass
+            logg.exception("exception in getEditorModules")
+            
     return ret
 
 

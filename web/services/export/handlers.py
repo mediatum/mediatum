@@ -43,7 +43,8 @@ from web.services.rssnode import template_rss_channel, template_rss_item, feed_c
 from web.services.serviceutils import attribute_name_filter
 
 
-logger = logging.getLogger('services')
+logg = logging.getLogger(__name__)
+
 host = "http://" + config.get("host.name")
 
 guestAccess = AccessData(user=users.getUser('Gast'))
@@ -826,7 +827,7 @@ def get_node_children_struct(
         default_guest_access_name = None
 
     if not default_guest_access_name:
-        logger.warning('No default guest access name set in config file: will use hasAccess method, which may cost web service performance')
+        logg.warning('No default guest access name set in config file: will use hasAccess method, which may cost web service performance')
 
     if not mdt and not q:
         resultcode, cachecontent = filtercache.retrieve(req_path)
@@ -1387,8 +1388,7 @@ def serve_file(req, path, params, data, filepath):
     else:
         basedir = os.path.dirname(os.path.abspath(__file__))
     abspath = os.path.join(basedir, 'static', filepath)
-    msg = "web service trying to serve: " + str(abspath)
-    logger.info(msg)
+    logg.info("web service trying to serve: ", abspath)
     if os.path.isfile(abspath):
         filesize = os.path.getsize(abspath)
         req.sendFile(abspath, mimetype, force=1)

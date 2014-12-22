@@ -17,7 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
+import logging
 import sys
 import os
 import core.config as config
@@ -27,6 +27,9 @@ import core.tree as tree
 from version import mediatum_version
 from utils.utils import format_filesize
 from core.transition import httpstatus
+
+logg = logging.getLogger(__name__)
+
 
 def getInformation():
     return {"version": "1.0", "required": 1}
@@ -39,7 +42,7 @@ def validate(req, op):
 def searchconfig_action(req):
     for key in req.params.keys():
         if key.startswith("delete|"):
-            print "delete key", key.split("|"), "for section", req.params.get("section")
+            logg.debug("delete key %s %s", "for section", key.split("|"), req.params.get("section"))
             break
 
 
@@ -138,6 +141,7 @@ def view(req):
         try:
             v['a_managers'] = core.archivemanager.getManager()
         except:
+            logg.exception("exception in settings / archive")
             req.setStatus(httpstatus.HTTP_INTERNAL_SERVER_ERROR)
             return req.getTAL("web/admin/modules/settings.html", v, macro="view_error")
 

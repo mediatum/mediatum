@@ -17,10 +17,14 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 import core.tree as tree
 from .workflow import WorkflowStep, registerStep
 from core.translation import t, lang, addLabels
 from schema.schema import getMetaType, VIEW_HIDE_EMPTY
+
+
+logg = logging.getLogger(__name__)
 
 
 def register():
@@ -52,6 +56,7 @@ class WorkflowStep_FileAttachment(WorkflowStep):
             mask = getMetaType(node.type).getMask(self.get("mask_fileatt"))
             maskdata = mask.getViewHTML([node], VIEW_HIDE_EMPTY, language=lang(req))
         except:
+            logg.exception("exception in workflow step fileAttachment, getViewHTML failed, empty string")
             maskdata = ""
 
         return req.getTAL("workflow/fileattachment.html",

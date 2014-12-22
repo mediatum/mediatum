@@ -43,6 +43,9 @@ else:
     LDAP_AVAILABLE = False
 
 
+logg = logging.getLogger(__name__)
+
+
 def register():
     tree.registerNodeClass("workflowstep-ldapauth", WorkflowStep_LdapAuth)
     registerStep("workflowstep-ldapauth")
@@ -68,8 +71,7 @@ class WorkflowStep_LdapAuth(WorkflowStep):
                 del req.params['gotrue']
                 return self.show_workflow_node(node, req)
 
-            logging.getLogger("workflows").info("workflow '%s', node %s: going to authenticate username '%s' via ldap ..." %
-                                                (current_workflow.name, node.id, username))
+            logg.info("workflow '%s', node %s: going to authenticate username '%s' via ldap", current_workflow.name, node.id, username)
 
             ldap_user = LDAPUser()
             res_dict = ldap_user.authenticate_login(username, password, create_new_user=0)
@@ -83,13 +85,12 @@ class WorkflowStep_LdapAuth(WorkflowStep):
                     attr_name = DEFAULT_ATTRIBUTE_FOR_USERNAME
 
                 node.set(attr_name, user_identifier)
-                logging.getLogger("workflows").info("workflow '%s', node %s: success authenticating username '%s': identified as '%s'" % (
-                    current_workflow.name, node.id, username, user_identifier))
+                logg.info("workflow '%s', node %s: success authenticating username '%s': identified as '%s'",
+                    current_workflow.name, node.id, username, user_identifier)
                 return self.forwardAndShow(node, True, req)
 
             else:
-                logging.getLogger("workflows").info("workflow '%s', node %s: fail authenticating username '%s'" %
-                                                    (current_workflow.name, node.id, username))
+                logg.info("workflow '%s', node %s: fail authenticating username '%s'", current_workflow.name, node.id, username)
                 error = "%s: %s" % (format_date().replace('T', ' - '), t(lang(req), "admin_wfstep_ldapauth_wrong_credentials"))
                 current_workflow_step = getNodeWorkflowStep(node)
 

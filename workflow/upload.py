@@ -18,6 +18,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 import core.tree as tree
 from .workflow import WorkflowStep, registerStep
 import utils.fileutils as fileutils
@@ -25,6 +26,9 @@ from utils.utils import OperationException
 from .showdata import mkfilelist, mkfilelistshort
 from core.translation import t, lang
 import os
+
+
+logg = logging.getLogger(__name__)
 
 
 def register():
@@ -69,6 +73,7 @@ class WorkflowStep_Upload(WorkflowStep):
                             try:
                                 node.event_files_changed()
                             except OperationException as ex:
+                                logg.exception("exception in workflow step upload")
                                 error = ex.value
                 else:
                     error = t(req, "WorkflowStep_InvalidFileType")

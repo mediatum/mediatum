@@ -19,6 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 import os.path
 import core.tree as tree
 from .workflow import WorkflowStep, registerStep
@@ -26,9 +27,10 @@ from mediatumtal import tal
 from core.translation import t, lang, addLabels
 from utils.utils import formatException
 import core.config as config
-import logging
 import utils.mail as mail
-log = logging.getLogger('backend')
+
+
+logg = logging.getLogger(__name__)
 
 
 def register():
@@ -70,11 +72,11 @@ class WorkflowStep_SendEmail(WorkflowStep):
             elif (sendcondition.startswith("schema=") and node.getSchema() not in sendcondition[7:].split(";")) or (sendcondition.startswith("type=") and not node.get("type") in sendcondition[5:].split(";")) or (sendcondition == "hasfile" and len(node.getFiles()) == 0):
                 sendOk = 0
         except:
-            log.info("syntax error in email condition: %s" % (sendcondition))
+            logg.exception("syntax error in email condition: %s", sendcondition)
 
         if sendOk:
             try:
-                log.info("sending mail to %s (%s)" % (to, self.get("email")))
+                logg.info("sending mail to %s (%s)", to, self.get("email"))
                 if not to:
                     raise MailError("No receiver address defined")
                 if not xfrom:
@@ -94,10 +96,10 @@ class WorkflowStep_SendEmail(WorkflowStep):
                     "mailtmp.text"), attachments_paths_and_filenames=attachments_paths_and_filenames)
             except:
                 node.set("mailtmp.error", formatException())
-                log.info("Error while sending mail- node stays in workflowstep %s %s" % (self.id, self.name))
+                logg.exception("Error while sending mail- node stays in workflowstep %s %s", self.id, self.name)
                 return
         else:
-            log.info("sending mail prevented by condition %s " % (sendcondition))
+            logg.info("sending mail prevented by condition %s " % (sendcondition))
             return
 
         node.removeAttribute("mailtmp.send")

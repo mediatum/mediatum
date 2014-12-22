@@ -17,11 +17,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 from .workflow import WorkflowStep, registerStep
 import core.tree as tree
 from core.translation import t, lang, addLabels
 import core.config as config
 from utils.date import now
+
+
+logg = logging.getLogger(__name__)
 
 
 def register():
@@ -61,7 +65,7 @@ class WorkflowStep_End(WorkflowStep):
                 node.set('updatetime', str(now()))
             node.setDirty()
         except:
-            pass
+            logg.exception("exception in workflow step end, runAction failed")
 
     def metaFields(self, lang=None):
         ret = []

@@ -34,6 +34,9 @@ RATIO_THRESHOLD = 0.85
 DEBUG = 0
 
 
+logg = logging.getLogger(__name__)
+
+
 def register():
     tree.registerNodeClass("workflowstep-checkdoublet", WorkflowStep_CheckDoublet)
     registerStep("workflowstep-checkdoublet")
@@ -42,7 +45,7 @@ def register():
 def getNodeAttributeName(field):
     metafields = [x for x in field.getChildren() if x.type == 'metafield']
     if len(metafields) != 1:
-        logging.getLogger("workflows").error("checkdoublet: maskfield %s zero or multiple metafield child(s)" % field.id)
+        logg.error("checkdoublet: maskfield %s zero or multiple metafield child(s)", field.id)
     return metafields[0].name
 
 
@@ -60,7 +63,7 @@ def getAttributeNamesForMask(node, language, maskname="shortview"):
         for orderpos, field in ordered_fields:
             res.append(getNodeAttributeName(field))
     else:
-        logging.getLogger("workflows").error("checkdoublet: no mask of name %s for node %s, %s" % (maskname, str(node.id), node.type))
+        logg.error("checkdoublet: no mask of name %s for node %s, %s", maskname, node.id, node.type)
 
     return res
 
@@ -123,8 +126,7 @@ class WorkflowStep_CheckDoublet(WorkflowStep):
             try:
                 chosen_node = tree.getNode(chosen_id)
             except tree.NoSuchNodeError:
-                msg = "checkdoublet: no such node as chosen_node: %s" % chosen_id
-                logging.getLogger("workflows").error(msg)
+                logg.error("checkdoublet: no such node as chosen_node: %s", chosen_id)
 
             all_ids = req.params.get('all_ids')
             nid_list = [x.strip() for x in all_ids.split(';')]
@@ -139,9 +141,9 @@ class WorkflowStep_CheckDoublet(WorkflowStep):
                         for wf_step, wf_step_children, wf_step_children_ids in step_children_list:
                             if n.id in wf_step_children_ids:
                                 if checked_to_remove:
-                                    msg_tuple = (nid, chosen_id, wf_step.name, wf_step.id, current_workflow.name, current_workflow.id)
-                                    msg = "checkdoublet: going to remove node %s (doublette of node %s) from workflowstep '%s' (%s) of workflow '%s' (%s)" % msg_tuple
-                                    logging.getLogger('workflows').info(msg)
+                                    current_workflow = getNodeWorkflow(node)
+                                    logg.info("checkdoublet: going to remove node %s (doublette of node %s) from workflowstep '%s' (%s) of workflow '%s' (%s)", 
+                                              nid, chosen_id, wf_step.name, wf_step.id, current_workflow.name, current_workflow.id)
                                     wf_step.removeChild(n)
                     except tree.NoSuchNodeError:
                         pass
@@ -201,16 +203,16 @@ class WorkflowStep_CheckDoublet(WorkflowStep):
         additional_attributes = [x[1] for x in additional_attributes_decorated if not x[1] in attribute_names]
 
         if exact_field not in all_attribute_names:
-            msg_tuple = (current_workflow.id, self.id, exact_field, schema, node.id)
+            msg_tuple = (getNodeWorkflow(node).id, self.id, exact_field, schema, node.id)
             msg = "checkdoublet: workflow %s, step %s (doubletcheck): exact_field '%s' not in schema '%s' of current node %s: contact administrator" % msg_tuple
             errors.append(msg)
-            logging.getLogger("workflows").error(msg)
+            logg.error(msg)
 
         if set(attribute_names) - set(all_attribute_names):
-            msg_tuple = (current_workflow.id, self.id, str(set(attribute_names) - set(all_attribute_names)), schema, node.id)
+            msg_tuple = (getNodeWorkflow(node).id, self.id, str(set(attribute_names) - set(all_attribute_names)), schema, node.id)
             msg = "checkdoublet: workflow %s, step %s (doubletcheck): attribute_names '%s' not in schema '%s' of current node %s: contact administrator" % msg_tuple
             errors.append(msg)
-            logging.getLogger("workflows").error(msg)
+            logg.error(msg)
 
         doublets = []
 
@@ -257,16 +259,13 @@ class WorkflowStep_CheckDoublet(WorkflowStep):
                    "buttons": self.tableRowButtons(node)}
 
         if len(doublets) == 1:
-            if DEBUG:
-                logging.getLogger('workflows').info('checkdoublet: node %s: no doublet found' % node.id)
+            logg.debug('checkdoublet: node %s: no doublet found', node.id)
             return self.forwardAndShow(node, True, req)
 
         atime = time.time()
         res = req.getTAL("workflow/checkdoublet.html", context, macro="workflow_checkdoublet")
         etime = time.time()
-
-        if DEBUG:
-            logging.getLogger('workflows').info('checkdoublet: duration getTAL: %.3f' % (etime - atime))
+        logg.debug('checkdoublet: duration getTAL: %.3f', etime - atime)
 
         return res
 

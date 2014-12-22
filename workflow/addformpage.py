@@ -36,7 +36,8 @@ import utils.utils as utils
 import core.tree as tree
 import core.config as config
 
-logger = logging.getLogger("backend")
+
+logg = logging.getLogger(__name__)
 
 
 def register():
@@ -162,8 +163,8 @@ def fillPDFForm(formPdf, fields, outputPdf="filled.pdf", input_is_fullpath=False
             os.system('pdftk %s fill_form %sinfdata.fdf output %s%s flatten' %
                       (formPdf, config.get('paths.tempdir'), config.get('paths.tempdir'), outputPdf))
 
-    except Exception as e:
-        logger.error("error while filling pdf form: " + str(e))
+    except Exception:
+        logg.exception("exception in workflow step addformpage, error while filling pdf form, ignoring")
     return config.get('paths.tempdir') + outputPdf
 
 
@@ -172,8 +173,8 @@ def addPagesToPDF(prefile, pdffile):
     try:
         os.system("pdftk %s %s output %s" % (prefile, pdffile, outfile))
         os.remove(prefile)
-    except Exception as e:
-        logger.error("error while adding pages: " + str(e))
+    except Exception:
+        logg.exception("exception in workflow step addformpage, error while adding pages, ignoring")
     return outfile
 
 
@@ -268,8 +269,8 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                                     #v = node.get(m.group(0))
                                 value = value.replace('[att:%s]' % (m.group(0)), v)
                     else:
-                        logger.warning("workflowstep %s (%s): could not find attribute for pdf form field '%s' - node: '%s' (%s)" %
-                                       (current_workflow_step.name, str(current_workflow_step.id), fieldname, node.name, node.id))
+                        logg.warning("workflowstep %s (%s): could not find attribute for pdf form field '%s' - node: '%s' (%s)",
+                                       current_workflow_step.name, current_workflow_step.id, fieldname, node.name, node.id)
                     fields.append((fieldname, remove_tags(utils.desc(value)).decode("utf-8")))
 
         if not pdf_form_separate and fnode and f_retrieve_path and os.path.isfile(f_retrieve_path):
@@ -284,11 +285,9 @@ class WorkflowStep_AddFormPage(WorkflowStep):
             node.addFile(fnode)
             node.addFile(tree.FileNode(origname, 'upload', 'application/pdf'))  # store original filename
             node.event_files_changed()
-            logger.info(
-                "workflow '%s' (%s), workflowstep '%s' (%s): added pdf form to pdf (node '%s' (%s)) fields: %s" %
-                (current_workflow.name, str(
-                    current_workflow.id), current_workflow_step.name, str(
-                    current_workflow_step.id), node.name, node.id, str(fields)))
+            logg.info("workflow '%s' (%s), workflowstep '%s' (%s): added pdf form to pdf (node '%s' (%s)) fields: %s",
+                current_workflow.name, current_workflow.id, current_workflow_step.name, current_workflow_step.id, node.name, node.id, fields)
+            
         elif pdf_form_separate and f_retrieve_path and os.path.isfile(f_retrieve_path):
             pages = fillPDFForm(f_retrieve_path, fields, input_is_fullpath=True, editable=pdf_fields_editable)
             importdir = getImportDir()
@@ -300,9 +299,9 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                         counter += 1
                         new_form_path = join_paths(importdir, "%s_%s_%s" % (node.id, counter, f_name))
                 shutil.copy(pages, new_form_path)
-            except Exception as e:
-                logger.error("workflowstep %s (%s): could not copy pdf form to import directory - node: '%s' (%s), import directory: '%s'" %
-                             (current_workflow_step.name, str(current_workflow_step.id), node.name, node.id, importdir))
+            except Exception:
+                logg.exception("workflowstep %s (%s): could not copy pdf form to import directory - node: '%s' (%s), import directory: '%s'",
+                             current_workflow_step.name, current_workflow_step.id, node.name, node.id, importdir)
             found = 0
             for fn in node.getFiles():
                 if fn.retrieveFile() == new_form_path:
@@ -311,14 +310,13 @@ class WorkflowStep_AddFormPage(WorkflowStep):
             if found == 0 or (found == 1 and not pdf_form_overwrite):
                 node.addFile(tree.FileNode(new_form_path, 'pdf_form', 'application/pdf'))
 
-            logger.info(
-                "workflow '%s' (%s), workflowstep '%s' (%s): added separate pdf form to node (node '%s' (%s)) fields: %s, path: '%s'" %
-                (current_workflow.name, str(
-                    current_workflow.id), current_workflow_step.name, str(
-                    current_workflow_step.id), node.name, node.id, str(fields), new_form_path))
+            logg.info(
+                "workflow '%s' (%s), workflowstep '%s' (%s): added separate pdf form to node (node '%s' (%s)) fields: %s, path: '%s'",
+                current_workflow.name, current_workflow.id, current_workflow_step.name, 
+                current_workflow_step.id, node.name, node.id, fields, new_form_path)
         else:
-            logger.warning("workflowstep %s (%s): could not process pdf form - node: '%s' (%s)" %
-                           (current_workflow_step.name, str(current_workflow_step.id), node.name, node.id))
+            logg.warning("workflowstep %s (%s): could not process pdf form - node: '%s' (%s)",
+                           current_workflow_step.name, str(current_workflow_step.id), node.name, node.id)
 
         self.forward(node, True)
 

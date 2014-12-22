@@ -18,12 +18,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
+import logging
 import core.tree as tree
 import utils.date as date
 import core.schedules as schedules
 from .workflow import WorkflowStep, registerStep
 from core.translation import t, addLabels
+
+
+logg = logging.getLogger(__name__)
 
 
 def register():
@@ -69,8 +72,8 @@ class WorkflowStep_Defer(WorkflowStep):
 
                         schedules.create_schedule("WorkflowStep_Defer", attr_dict)
 
-                except ValueError as e:
-                    print "Error: %s" % e
+                except ValueError:
+                    logg.exception("exception in workflow step defer, runAction failed")
 
     def show_workflow_node(self, node, req):
         return self.forwardAndShow(node, True, req)

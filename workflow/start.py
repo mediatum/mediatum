@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 import core.tree as tree
 import core.config as config
 from .workflow import WorkflowStep, registerStep
@@ -24,6 +25,9 @@ from schema.schema import getMetaType
 from core.translation import t, lang, addLabels, switch_language
 import utils.date as date
 from utils.utils import mkKey
+
+
+logg = logging.getLogger(__name__)
 
 
 def register():
@@ -71,6 +75,7 @@ class WorkflowStep_Start(WorkflowStep):
                 else:
                     message = "workflow_start_err_wrongkey"
             except:
+                logg.exception("exception in workflow step start (workflow_start_auth)")
                 message = "workflow_start_err_wrongkey"
 
         types = []

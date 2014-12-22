@@ -47,7 +47,8 @@ import thread
 
 import utils.fileutils as fileutils
 
-log = logging.getLogger('backend')
+
+logg = logging.getLogger(__name__)
 
 
 def getWorkflowList():
@@ -129,8 +130,7 @@ def runWorkflowStep(node, op):
     workflowstep.removeChild(node)
     newstep.addChild(node)
     newstep.runAction(node, op)
-    #logging.getLogger('usertracing').info("workflow run action \""+newstep.getName()+"\" (op="+str(op)+") for node "+node.id)
-    log.info('workflow run action "%s" (op="%s") for node %s' % (newstep.getName(), op, node.id))
+    logg.info('workflow run action "%s" (op="%s") for node %s', newstep.getName(), op, node.id)
     return getNodeWorkflowStep(node)
 
 # set workflow for node
@@ -231,6 +231,7 @@ def formatItemDate(d):
     try:
         return date.format_date(date.parse_date(d), 'dd.mm.yyyy HH:MM:SS')
     except:
+        logg.exception("exception in formatItemDate, return empty string")
         return ""
 
 
@@ -409,6 +410,7 @@ class WorkflowStep(tree.Node):
                         try:
                             return req.getTAL(template, {"node": node, "link": link, "email": config.get("email.workflow")}, macro=macro)
                         except:
+                            logg.exception("exception in show_node_big, ignoring")
                             return ""
 
                 if 'action' in req.params:
@@ -506,8 +508,8 @@ class WorkflowStep(tree.Node):
         return 0
 
     def runAction(self, node, op=""):
-        if self.getTrueId() == '':  # no next step defined
-            log.error("No Workflow action defined for workflowstep " + self.getId() + " (op=" + str(op) + ")")
+        if self.getTrueId() == '':
+            logg.error("No Workflow action defined for workflowstep %s (op=%s)", self.getId(), op)
 
     def forward(self, node, op):
         op_str = "true" if op else "false"
@@ -526,8 +528,8 @@ class WorkflowStep(tree.Node):
                     if k not in context:
                         context[k] = data[k]
                     else:
-                        msg_t = (getNodeWorkflow(node).name, getNodeWorkflowStep(node).name, node.id, k, data[k])
-                        log.warning("workflow '%s', step '%s', node %s: ignored data key '%s' (value='%s')" % msg_t)
+                        logg.warning("workflow '%s', step '%s', node %s: ignored data key '%s' (value='%s')", 
+                                     getNodeWorkflow(node).name, getNodeWorkflowStep(node).name, node.id, k, data[k])
 
             newloc = req.makeLink("/mask", context)
         else:
@@ -647,5 +649,5 @@ def register():
         if name != "workflow":
             m = importlib.import_module("workflow." + name)
             if hasattr(m, 'register'):
-                log.info("registering workflow step '%s'", name)
+                logg.info("registering workflow step '%s'", name)
                 m.register()

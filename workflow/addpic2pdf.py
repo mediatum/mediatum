@@ -20,7 +20,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import sys
+import json
 import os
 import logging
 import random
@@ -41,11 +41,6 @@ from metadata.upload import getFilelist
 
 from reportlab.lib.units import cm
 
-if sys.version[0:3] < '2.6':
-    import simplejson as json
-else:
-    import json
-
 try:
     import pyPdf
     PYPDF_MODULE_PRESENT = True
@@ -58,6 +53,9 @@ if PYPDF_MODULE_PRESENT:
         get_pic_size, get_pic_info, \
         get_pic_dpi, place_pic, parse_printer_range, \
         getGridBuffer, build_logo_overlay_pdf
+
+
+logg = logging.getLogger(__name__)
 
 
 def check_context():
@@ -124,14 +122,13 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                     f_name = f.getName()
                     if f_name.startswith('addpic2pdf_%s_node_%s_' %
                                          (str(current_workflow_step.id), str(node.id))) and f.type.startswith('p_document'):
-                        msg = "workflow step addpic2pdf(%s): going to remove file '%s' from node '%s' (%s) for request from user '%s' (%s)" % (
-                            current_workflow_step.id, f_name, node.name, str(node.id), user.name, str(req.ip))
-                        logging.getLogger("backend").info(msg)
+                        logg.info("workflow step addpic2pdf(%s): going to remove file '%s' from node '%s' (%s) for request from user '%s' (%s)",
+                            current_workflow_step.id, f_name, node.name, node.id, user.name, req.ip)
                         node.removeFile(f)
                         try:
                             os.remove(f.retrieveFile())
                         except:
-                            pass
+                            logg.exception("exception in workflow setep addpic2pdf, removing file failed, ignoring")
 
                 del req.params['gotrue']
                 return self.show_workflow_node(node, req)
@@ -273,9 +270,8 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                     f_name = f.getName()
                     if f_name.startswith('addpic2pdf_%s_node_%s_' %
                                          (str(current_workflow_step.id), str(node.id), )) and f.type.startswith('p_document'):
-                        msg = "workflow step addpic2pdf(%s): going to remove file '%s' from node '%s' (%s) for request from user '%s' (%s)" % (
-                            current_workflow_step.id, f_name, node.name, str(node.id), user.name, str(req.ip))
-                        logging.getLogger("backend").info(msg)
+                        logg.info("workflow step addpic2pdf(%s): going to remove file '%s' from node '%s' (%s) for request from user '%s' (%s)",
+                            current_workflow_step.id, f_name, node.name, node.id, user.name, req.ip)
                         node.removeFile(f)
                         try:
                             os.remove(f.retrieveFile())
@@ -343,8 +339,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
             pdf_dimensions = get_pdf_dimensions(pdf_filepath)
             pdf_pagecount = get_pdf_pagecount(pdf_filepath)
         except Exception as e:
-            msg = "workflow step addpic2pdf(%s): Error: %s" % (current_workflow_step.id, str(e))
-            logging.getLogger("backend").error(msg)
+            logg.exception("exception in workflow step addpic2pdf(%s)", current_workflow_step.id)
             pdf_dimensions = {'d_pages': 0, 'd_pageno2size': (0, 0), 'd_pageno2rotate': 0}
             pdf_pagecount = 0
             FATAL_ERROR = True
@@ -367,7 +362,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                 _size = list(get_pic_size(f_path))
                 _dpi = get_pic_dpi(f_path)
             except Exception as e:
-                logging.getLogger("backend").error("workflow step addpic2pdf(%s): Error: %s" % (current_workflow_step.id, str(e)))
+                logg.exception("exception in workflow step addpic2pdf(%s)", current_workflow_step.id)
                 FATAL_ERROR = True
                 FATAL_ERROR_STR += (" - ERROR loading logo '%s'" % str(f_path)) + str(e)
                 continue
@@ -386,7 +381,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
             logo_info_list.append({'size': _size, 'dpi': _dpi, 'url': logo_url})
 
         if len(logo_info) == 0:
-            logging.getLogger("backend").error("workflow step addpic2pdf(%s): Error: no logo images found" % (current_workflow_step.id))
+            logg.error("workflow step addpic2pdf(%s): Error: no logo images found", current_workflow_step.id)
             FATAL_ERROR = True
             FATAL_ERROR_STR += " - Error: no logo images found"
 
@@ -627,9 +622,8 @@ def handle_request(req):
         if False:  # and not access.hasAccess(node, "read"):
             req.params["addpic2pdf_error"] = "%s: %s" % (
                 format_date().replace('T', ' - '), t(lang(req), "admin_wfstep_addpic2pdf_no_access"))
-            msg = "workflow step addpic2pdf(%s): no access to node %s for request from user '%s' (%s)" % (
-                current_workflow_step.id, str(node.id), user.name, str(req.ip))
-            logging.getLogger("backend").info(msg)
+            logg.info("workflow step addpic2pdf(%s): no access to node %s for request from user '%s' (%s)",
+                current_workflow_step.id, node.id, user.name, req.ip)
             return 403  # forbidden
 
         if req.path == '/serve_page/document.pdf':
@@ -699,12 +693,12 @@ def handle_request(req):
         except:
             msg = "workflowstep addpic2pdf: nodeid='%s' for non-existant node for upload from '%s'" % (str(nodeid), str(req.ip))
             errors.append(msg)
-            logging.getLogger("backend").error(msg)
+            logg.error(msg)
             return 404  # not found
     else:
         msg = "workflowstep addpic2pdf: could not find 'nodeid' for upload from '%s'" % str(req.ip)
         errors.append(msg)
-        logging.getLogger("backend").error(msg)
+        logg.error(msg)
         return 404  # not found
 
     try:
@@ -715,9 +709,8 @@ def handle_request(req):
 
     if False:  # not access.hasAccess(node, "read"):
         req.params["addpic2pdf_error"] = "%s: %s" % (format_date().replace('T', ' - '), t(lang(req), "admin_wfstep_addpic2pdf_no_access"))
-        msg = "workflow step addpic2pdf(%s): no access to node %s for request from user '%s' (%s)" % (
-            current_workflow_step.id, str(node.id), user.name, str(req.ip))
-        logging.getLogger("backend").info(msg)
+        logg.info("workflow step addpic2pdf(%s): no access to node %s for request from user '%s' (%s)",
+            current_workflow_step.id, node.id, user.name, req.ip)
         return 403  # forbidden
 
     pdf_in_filepath = getPdfFilepathForProcessing(current_workflow_step, node)

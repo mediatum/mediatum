@@ -24,6 +24,9 @@ from core.translation import t, lang
 from schema.schema import getMetaType, VIEW_HIDE_EMPTY
 
 
+logg = logging.getLogger(__name__)
+
+
 def mkfilelist(node, deletebutton=0, language=None, request=None):
     return request.getTAL(
         "workflow/showdata.html", {"files": node.getFiles(), "node": node, "delbutton": deletebutton}, macro="workflow_filelist")
@@ -70,8 +73,7 @@ class WorkflowStep_ShowData(WorkflowStep):
                 try:
                     fieldmap += [mask.getViewHTML([node], VIEW_HIDE_EMPTY, language=lang(req))]
                 except:
-                    print "error"
-                    logging.getLogger("error").error("mask %s defined for workflow step not found." % mask)
+                    logg.exception("exception for mask %s, returning empty string", mask)
                     return ""
 
         filelist = ""

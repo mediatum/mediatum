@@ -19,6 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 import re
 
 from .workflow import WorkflowStep, registerStep
@@ -27,6 +28,9 @@ import utils.urn as utilsurn
 from core.translation import t, lang, addLabels
 import core.config as config
 import utils.date as date
+
+
+logg = logging.getLogger(__name__)
 
 
 def register():
@@ -58,7 +62,8 @@ class WorkflowStep_Urn(WorkflowStep):
                         try:
                             val = date.format_date(date.parse_date(val), '%Y%m%d')
                         except:
-                            pass
+                            logg.exception("exception in workflow step urn, date formatting failed, ignoring")
+                            
                         niss = niss.replace("[" + var + "]", val)
                 node.set(attrname, utilsurn.buildNBN(self.get("snid1"), self.get("snid2"), niss))
         return self.forwardAndShow(node, True, req)

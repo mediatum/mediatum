@@ -24,7 +24,8 @@ from utils import *
 import msgpack
 
 debug = 0
-log = logging.getLogger('database')
+
+logg = logging.getLogger(__name__)
 
 
 class Connector:
@@ -199,10 +200,10 @@ class Connector:
             # id,name,type,read,write,data,orderpos,localread
             return str(t[0][0]), t[0][1], t[0][2], t[0][3], t[0][4], t[0][5], t[0][6], t[0][7]
         elif len(t) == 0:
-            log.error("No node for ID " + str(id))
+            logg.error("No node for ID %s", id)
             return None
         else:
-            log.error("More than one node for id " + str(id))
+            logg.error("More than one node for id %s", id)
             return None
 
     def getNodeIdByAttribute(self, attributename, attributevalue):
@@ -269,7 +270,7 @@ class Connector:
 
         # WARNING: this might create orphans
         self.runQuery("delete from nodemapping where nid=" + id)
-        log.info("node " + id + " deleted")
+        log.info("node %s deleted", id)
 
     def mkOrderPos(self):
         t = self.runQuery("select max(orderpos) as orderpos from node")

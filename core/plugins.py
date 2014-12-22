@@ -23,12 +23,11 @@ from pprint import pformat
 import os.path
 import sys
 
-from utils.log import addLogger
 from core import config, translation
 from utils.compat import iteritems
 
-addLogger("plugins")
-logg = logging.getLogger("plugins")
+
+logg = logging.getLogger(__name__)
 
 
 plugins = {}
@@ -52,7 +51,7 @@ def import_plugin_module(name, location):
 
 
 def init_plugins():
-    logg.info("looking for plugins, sys path is %s", pformat(sys.path))
+    logg.info("looking for plugins")
     for name, location in config.getsubset("plugins").items():
         logg.info("Initializing plugin named '%s' from '%s'", name, location)
         m = import_plugin_module(name, location.strip(os.sep))
@@ -64,7 +63,7 @@ def init_plugins():
 
         if hasattr(m, 'pofiles'):  # add po file paths
             if len(m.pofiles) > 0:
-                print "  load translation files"
+                logg.info("loading translation files")
                 for fp in m.pofiles:
                     translation.addPoFilepath([fp])
 

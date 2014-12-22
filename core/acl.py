@@ -21,14 +21,14 @@ import core.users as users
 import logging
 import core.tree as tree
 import core.config as config
-from utils.log import logException
 from core.db import database
 from utils.boolparser import BoolParser
 import thread
 import time
 import hashlib
 
-logb = logging.getLogger('backend')
+
+logg = logging.getLogger(__name__)
 
 rules = {}
 conn = database.getConnection()
@@ -62,7 +62,7 @@ class AccessData:
             key = self.getUserName() + "#" + self.ip
             if key in userip2level:
                 return userip2level[key]
-            logb.info("Calculating access privilege level for user " + self.getUserName())
+            logg.info("Calculating access privilege level for user ", self.getUserName())
             if self.user.isAdmin():
                 level = 0
             else:
@@ -78,15 +78,15 @@ class AccessData:
                     aclrule2privilege_length = len(string)
                     aclrule2privilege_count = 1
                 if string in aclrule2privilege:
-                    logb.info("(Existing) access string is " + string)
+                    logg.info("(Existing) access string is ", string)
                     level = aclrule2privilege[string]
                 else:
-                    logb.info("(New) access string is " + string)
+                    logg.info("(New) access string is ", string)
                     level = aclrule2privilege_count
                     aclrule2privilege[string] = level
                     aclrule2privilege_count = aclrule2privilege_count + 1
             userip2level[key] = level
-            logb.info("Level for user " + self.getUserName() + " is " + str(level))
+            logg.info("Level for user %s is %s", self.getUserName(), level)
             return level
         finally:
             acllock.release()
@@ -110,8 +110,7 @@ class AccessData:
                     return 1
             return 0
         except ACLParseException:
-            logException("Error while parsing ACL clause")
-            # if we can't parse the acl rule, we assume no access
+            logg.exception("Error while parsing ACL clause, assuming no access")
             return 0
 
     def hasAccess(self, node, type, fnode=None):
@@ -145,11 +144,13 @@ class AccessData:
         try:
             rule = getRule(node.getAccess("write")).getRuleStr() + " "
         except:
+            logg.exception("exception in hasWriteAccess, failed getting acl rule, set rule = ''")
             rule = ""
         for n in node.getParents():
             try:
                 rule += getRule(n.getAccess("write")).getRuleStr() + " "
             except:
+                logg.exception("exception in hasWriteAccess, failed getting acl rule for parent, continue")
                 continue
         if self.user.isAdmin():  # administrator
             return 1
@@ -172,7 +173,6 @@ class AccessData:
             nodelist = tree.NodeList(nodelist)
 
         t1 = time.time()
-        print "filtering..."
         newlist = []
         for node in nodelist:
             l = node.getLocalRead()
@@ -185,7 +185,7 @@ class AccessData:
                     break
         t2 = time.time()
 
-        print "done, %.4f seconds" % (t2 - t1)
+        logg.info("filtering done, %.4f seconds", t2 - t1)
         return tree.NodeList(newlist)
 
     def filter_old(self, nodelist, accesstype="read"):
@@ -235,8 +235,7 @@ class AccessData:
             if access:
                 newlist += [newnode]
 
-        #logb.info("Filtering "+str(len(nodelist))+" nodes for read-access: "+str(len(newlist))+" nodes")
-        logb.info("Filtering " + str(len(nodelist)) + " nodes for " + accesstype + "-access: " + str(len(newlist)) + " nodes")
+        logg.info("Filtering %s nodes for %s-access: %s nodes", len(nodelist), accesstype, len(newlist))
         return newlist
 
     def verify_request_signature(self, req_path, params):
@@ -647,7 +646,7 @@ def deleteRule(rulename):
     try:
         rules.pop(rulename)
     except:
-        None
+        pass
     flush()
 
 

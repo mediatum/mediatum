@@ -27,6 +27,10 @@ import core.config as config
 
 from .connector import Connector
 
+
+logg = logging.getLogger(__name__)
+
+
 SQLITE_API = None
 
 if not SQLITE_API:
@@ -42,14 +46,14 @@ if not SQLITE_API:
             con.execute("create virtual table t using fts3(a, b)")
             SQLITE_API = "pysqlite2"
         except:
-            print 'Warning: no fts3 enabled for sqlite connector'
+            logg.warn('Warning: no fts3 enabled for sqlite connector')
 
 if SQLITE_API == 'sqlite3':
     import sqlite3 as sqlite
-    print 'using fts3 enabled module sqlite3'
+    logg.info('using fts3 enabled module sqlite3')
 elif SQLITE_API == 'pysqlite2':
     from pysqlite2 import dbapi2 as sqlite
-    print 'using fts3 enabled module pysqlite2'
+    logg.info("using fts3 enabled module pysqlite2")
 else:
     try:
         import sqlite3 as sqlite
@@ -63,7 +67,7 @@ if __name__ == "__main__":
     sys.path += [".."]
 
 debug = 0
-log = logg = logging.getLogger('database')
+log = logg = logging.getLogger(__name__)
 
 sqlite_lock = thread.allocate_lock()
 

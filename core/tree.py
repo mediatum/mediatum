@@ -19,7 +19,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from utils.utils import get_filesize, intersection, u, float_from_gps_format
-from utils.log import logException
 from core.db import database
 import logging
 import time
@@ -44,7 +43,7 @@ bulk = 0
 testmode = 0
 nocache = 0
 
-log = logg = logging.getLogger("backend")
+logg = logging.getLogger(__name__)
 
 childids_cache = None
 parentids_cache = None
@@ -66,10 +65,7 @@ class WatchLock:
             try:
                 raise ""
             except:
-                print "** Lock acquired more than once!  **"
-                for line in traceback.extract_stack():
-                    print line
-                print "************************************"
+                logg.exception("Lock acquired more than once!")
         self.lock.acquire()
         self.nr = self.nr + 1
 
@@ -190,7 +186,7 @@ class FileNode:
                     if f.add(self):
                         return
                 except:
-                    logException("file handler add() failed")
+                    logg.exception("file handler add() failed")
 
     def _delete(self):
         for f in filehandlers:
@@ -199,7 +195,7 @@ class FileNode:
                     if f.delete(self):
                         return
                 except:
-                    logException("file handler delete() failed")
+                    logg.exception("file handler delete() failed")
 
     def retrieveFile(self):
         for f in filehandlers:
@@ -209,7 +205,7 @@ class FileNode:
                     if path:
                         return path
                 except:
-                    logException("file handler retrieveFile() failed")
+                    logg.exception("file handler retrieveFile() failed")
 
         if os.path.exists(self._path):
             return self._path
@@ -226,6 +222,7 @@ class FileNode:
                         if os.path.exists(_n):
                             return _n
                     except:
+                        logg.exception("exception in retrieveFile, ignore")
                         pass
         return config.settings["paths.datadir"] + self._path
 
@@ -242,7 +239,7 @@ class FileNode:
                     else:
                         return 0
                 except:
-                    logException("file handler getSize() failed")
+                    logg.exception("file handler getSize() failed, return -1")
                     return -1
         return get_filesize(self.retrieveFile())
 
@@ -254,7 +251,7 @@ class FileNode:
                     if h:
                         return h
                 except:
-                    logException("file handler getHash() failed")
+                    logg.exception("file handler getHash() failed")
         return get_hash(self.retrieveFile())
 
     def getName(self):
@@ -361,9 +358,8 @@ class NodeList:
             logg.info("query return %s extra nids", len(extra_nids))
             sorted_nids = [i for i in sorted_nids if i not in extra_nids]
         self.ids = sorted_nids
-        if log.isEnabledFor(logging.DEBUG):
-            msg = "sorting for {} with {} ids took {} seconds".format(fields, len(self.ids), time.time() - t1)
-            log.debug(msg)
+        if logg.isEnabledFor(logging.DEBUG):
+            logg.debug("sorting for %s with %s ids took %s seconds", fields, len(self.ids), time.time() - t1)
         return self
 
     def sort_by_orderpos(self):
@@ -475,7 +471,7 @@ class Node(object):
         try:
             nodetype = type.split("/", 1)[0]
         except:
-            logg.debug("no type given for instance of %s with name %s", cls, name)
+            logg.warn("no type given for instance of %s with name %s", cls, name)
         else:
             nodecls = nodeclasses.get(nodetype)
             if nodecls:
@@ -1032,14 +1028,14 @@ class Node(object):
             if level in self.occurences2node and s in self.occurences2node[level]:
                 ret[self.occurences2node[level][s]] = v
             else:
-                print "not found", s
+                logg.warn("getAllOccurences: not found %s", s)
         return ret
 
     """ run a search query. returns a list of nodes """
 
     def search(self, q):
         global searcher, subnodes
-        log.info('search: %s for node %s %s' % (q, str(self.id), str(self.name)))
+        logg.info('search: %s for node %s %s', q, self.id, self.name)
         self._makePersistent()
         if q.startswith('searchcontent='):
             return searcher.query(q)
@@ -1075,7 +1071,7 @@ class Node(object):
             else:
                 fields = db.getMetaFields(attribute)
         except:
-            log.exception("")
+            logg.exception("exception in getAllAttributeValues")
             fields = db.getMetaFields(attribute)
 
         # REVERT BACK TO SIMPLE SQL QUERY BECAUSE BELOW CODE TOO *SLOW*
@@ -1426,33 +1422,26 @@ def initialize(load=1):
             return tablenames
 
         # check fts database for tables
-        msg = "looking for tables in sqlite database of the searcher ..."
-        log.info(msg)
+        logg.info("looking for tables in sqlite database of the searcher")
         for schema in searcher.schemas:
             for db_type in list(set(searcher.connames[DBTYPE].values())):
                 try:
                     tablenames = getTablenames(searcher, schema, db_type)
                     if tablenames:
-                        msg = "found %d tables in sqlite database of the searcher: %r" % (len(tablenames), tablenames)
-                        log.info(msg)
-                        print "fts3 searcher initialized"
+                        logg.debug("found %d tables in sqlite database of the searcher: %r", len(tablenames), tablenames)
                     else:
-                        msg = "found no tables in sqlite database of the searcher ... trying to initialize database"
-                        log.warning(msg)
+                        logg.warn("found no tables in sqlite database of the searcher ... trying to initialize database")
                         searcher.initIndexer(option="init")
                         tablenames = getTablenames(searcher, schema, db_type)
                         if tablenames:
-                            msg = "found %d tables in newly initialized sqlite database of the searcher: %r" % (len(tablenames), tablenames)
-                            log.info(msg)
-                            print "fts3 searcher initialized"
+                            logg.info("found %d tables in newly initialized sqlite database of the searcher: %r", len(tablenames), tablenames)
                         else:
                             raise
                 except:
-                    msg = "could not query tables from fts sqlite database ... searcher may not be functional"
-                    log.error(msg)
+                    logg.error("could not query tables from fts sqlite database ... searcher may not be functional")
 
     else:  # use magpy
-        print "magpy searcher initialized"
+        logg.info("magpy searcher initialized")
         from core.search.query import subnodes, mgSearcher
         from core.search.parser import searchParser
 

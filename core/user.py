@@ -131,17 +131,6 @@ class User(tree.Node):
                 continue
             return p.getName()
 
-        # try:
-        #    print "else", self.usertype
-        #    return self.usertype
-        # except AttributeError:
-        #    print " ->", self.getName()
-        #    for p in self.getParents():
-        #
-        #        print "   p:", p.getName(), p.id, p.type
-        #        if p.type=="usergroup":
-        #            continue
-        #        return p.getName()
 
     def setOrganisation(self, value):
         self.set("organisation", value)

@@ -365,7 +365,7 @@ ip2c = None
 
 def buildStat(collection, period="", fname=None):  # period format = yyyy-mm
     gi = GeoIP()
-    logging.getLogger('editor').info("update stats for node %s and period %s" % (collection.id, period))
+    logging.getLogger(__name__).info("update stats for node %s and period %s", collection.id, period)
     statfiles = []
 
     # read data from logfiles

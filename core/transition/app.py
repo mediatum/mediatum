@@ -18,7 +18,7 @@ from core.transition.helpers import get_root_path
 from utils.date import dt_fromiso
 import datetime
 
-logg = logging.getLogger("athanatransition")
+logg = logging.getLogger(__name__)
 
 if runswith == "athana":
     from core.transition.athana_sep import athana_http

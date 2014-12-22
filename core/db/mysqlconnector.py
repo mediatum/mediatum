@@ -37,7 +37,7 @@ from utils.utils import *
 debug = 0
 debug_ignore_statements_re = None
 
-log = logging.getLogger('database')
+log = logging.getLogger(__name__)
 
 
 class MYSQLConnector(Connector):
@@ -53,8 +53,7 @@ class MYSQLConnector(Connector):
         self.dblock = thread.allocate_lock()
         self.nodes = {}
 
-        function = str(traceback.extract_stack()[-2][0]) + ":" + str(traceback.extract_stack()[-2][2])
-        log.info("Connecting to [" + self.user + "@" + self.database + "] " + function)
+        log.info("Connecting to [" + self.user + "@" + self.database + "] ")
 
         # test base table
         try:
@@ -158,7 +157,7 @@ class MYSQLConnector(Connector):
                         log_sql_error("", exc_info=1)
                         raise
                 except:
-                    log.error("non-MySQL error while executing SQL '%s', params %s", sql, params, exc_info=1)
+                    log.exception("non-MySQL error while executing SQL '%s', params %s", sql, params)
                     raise
 
         finally:

@@ -28,6 +28,9 @@ except:
     pass
 
 
+logg = logging.getLogger(__name__)
+
+
 class Schedule(tree.Node):
 
     # removed #186
@@ -73,7 +76,7 @@ class Schedule(tree.Node):
                 cron_dict = json.loads(cron_dict_str)
             except:
                 msg = "error decoding string to json for node '%s' (%s): %s" % (self.name, self.id, cron_dict_str)
-                logging.getLogger('backend').error(msg)
+                logg.error(msg)
                 _error = msg
                 cron_dict = {}
         if not cron_dict:
@@ -89,7 +92,7 @@ class Schedule(tree.Node):
 
         except:
             msg = "error building datetime generator for node '%s' (%s): %s" % (self.name, self.id, cron_dict_str)
-            logging.getLogger('backend').error(msg)
+            logg.error(msg)
             _error = msg
             return _error, []
 

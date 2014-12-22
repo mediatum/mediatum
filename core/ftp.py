@@ -1,3 +1,5 @@
+
+import logging
 import time
 from . import athana
 import os
@@ -9,6 +11,9 @@ import core.users as users
 from utils.date import parse_date
 from utils.utils import utf8_decode_escape
 import core.config as config
+
+
+logg = logging.getLogger(__name__)
 
 
 class FileWriter:
@@ -44,7 +49,7 @@ class collection_ftpserver:
         self.node = None
         self.port = port
         self.logging = "ftp"
-        print "base:", basecontainer
+        logg.info("collection_ftpserver base: %s", basecontainer)
         if basecontainer:  # use special container for collections
             self.user = basecontainer.get("ftp.user")
             self.passwd = basecontainer.get("ftp.passwd")
@@ -218,7 +223,7 @@ class collection_ftpserver:
         return 1
 
     def rnto(self, line):
-        print 'in rnto'
+        logg.debug('in rnto')
         if self.filefrom:
             # check if trying to move file into another folder
             if len(line[1].split('/')) > 1:

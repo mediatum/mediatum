@@ -36,6 +36,9 @@ ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
 ldap.set_option(ldap.OPT_REFERRALS, 0)
 
 
+logg = logging.getLogger(__name__)
+
+
 class LDAPUser(ExternalUser):
 
     def _getAttribute(self, attrname, list, separator=" "):
@@ -84,7 +87,7 @@ class LDAPUser(ExternalUser):
                     count += 1
                     if count > 5:
                         raise
-                    print "timeout while trying to connect to user database, retry", count
+                    logg.warn("timeout while trying to connect to user database, retry %s", count)
                     continue
                 else:
                     return None, None
@@ -102,7 +105,7 @@ class LDAPUser(ExternalUser):
                 try:
                     return l2.result(ldap_result_id, 0, timeout=5)
                 except ldap.TIMEOUT:
-                    print "timeout while authenticating user,  retrying..."
+                    logg.info("timeout while authenticating user,  retrying...")
                     continue
                 else:
                     return None, None
@@ -125,16 +128,16 @@ class LDAPUser(ExternalUser):
                 if group != "" and not usergroups.existGroup(group):
                     #res = usergroups.create_group(group, description="LDAP Usergroup", option="")
                     #res.set("ldapusergroup.creationtime", date.format_date())
-                    logging.getLogger('usertracing').info("skipped creation of ldap user group: " + group)
+                    logg.info("skipped creation of ldap user group: ", group)
                     continue
                 g = usergroups.getGroup(group)
                 if g:
                     g.addChild(user)
                     added_to_groups += 1
 
-            logging.getLogger('usertracing').info("created ldap user: " + uname)
+            logg.info("created ldap user: ", uname)
             if not added_to_groups:
-                logging.getLogger('usertracing').warning("created ldap user %r, %r not added to any group" % (uname, user.id))
+                logg.warn("created ldap user %r, %r not added to any group", uname, user.id)
             return user
 
         def updateLDAPUser(data, user):
@@ -162,7 +165,7 @@ class LDAPUser(ExternalUser):
                 if group != "" and not usergroups.existGroup(group):
                     # res = usergroups.create_group(group, description="LDAP Usergroup", option="")
                     # res.set("ldapusergroup.creationtime", date.format_date())
-                    logging.getLogger('usertracing').info("during ldap user update: skipped creation of ldap user group: " + group)
+                    logg.info("during ldap user update: skipped creation of ldap user group: ", group)
                     continue
                 g = usergroups.getGroup(group)
                 if g and g not in user.getParents():

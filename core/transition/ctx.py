@@ -6,7 +6,8 @@ import logging
 from core.transition.globals import _app_ctx_stack, _request_ctx_stack
 from core.transition.helpers import runswith
 
-logg = logging.getLogger("athanatransition")
+
+logg = logging.getLogger(__name__)
 
 
 class _AppCtxGlobals(object):

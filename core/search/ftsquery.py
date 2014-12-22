@@ -29,14 +29,13 @@ import core
 import core.config as config
 import core.tree as tree
 import logging
-from utils.log import logException
 from utils.utils import u, union, normalize_utf8, OperationException, modify_tex
 from utils.date import format_date
 from math import ceil
 
 import core.db.sqliteconnector as sqlite
 
-log = logging.getLogger("backend")
+logg = logging.getLogger(__name__)
 
 DB_NAME_STD = 'searchindex.db'  # only 1 database
 DB_NAME_FULL = 'searchindex_full.db'  # database for simple search
@@ -336,7 +335,7 @@ class FtsSearcher:
             self.execute(sql, schema, 'full')
             return True
         except:
-            logException('error in sqlite insert/update: ' + sql)
+            logg.exception('error in sqlite insert/update: %s', sql)
             return False
 
     def nodeToExtSearch(self, node, schema):  # build extended search index from node
@@ -389,7 +388,7 @@ class FtsSearcher:
                 self.execute(sql2, schema, 'ext')  # do insert
             return True
         except:
-            logException('error in sqlite insert/update: ' + sql)
+            logg.exception('error in sqlite insert/update: %s', sql)
             return False
 
     def nodeToSchemaDef(self, node, schema):  # update schema definition
@@ -508,8 +507,7 @@ class FtsSearcher:
                 # we ignore this exception, and mark the node
                 # non-dirty anyway, to prevent it from blocking
                 # updates of other nodes
-                logException('error during updating {}'.format(node.id))
-                print "error for id", node.id
+                logg.exception("error during updating %s", node.id)
             node.cleanDirty()
 
         for key in schemas:

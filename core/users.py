@@ -30,7 +30,8 @@ from . import athana
 from utils.utils import Option
 from core.translation import getDefaultLanguage, translate
 
-log = logging.getLogger("usertracing")
+
+logg = logging.getLogger(__name__)
 
 #OPTION_ENHANCED_READRIGHTS = Option("user_option_2", "editreadrights", "r", "img/changereadrights.png", "checkbox")
 #OPTION_MAX_IMAGESIZE = Option("user_option_3", "maximagesize", "0", "img/maximagesize.png", "text")
@@ -101,7 +102,8 @@ def clearTableAccess(user):
     try:
         getAccessTable(user).clear()
     except:
-        sys.exc_info()[0]
+        logg.exception("exception in clearTableAccess")
+        
 
 
 def getCollectionSearchMode(user, collectionid):
@@ -165,8 +167,7 @@ def getDynamicUsers(atype=""):
         try:
             res = authenticators[atype].LOGGED_IN_DYNUSERS.values()
         except:
-            log.error("could not retrieve dynamic users of type %r, returning empty list" % atype)
-            log.error("%r - %r" % (sys.exc_info()[0], sys.exc_info()[1]))
+            logg.exception("could not retrieve dynamic users of type %r, returning empty list", atype)
             res = []
     else:
         res = []
@@ -263,7 +264,8 @@ def doExternalAuthentification(name, pwd, req=None):
     dynamic_authenticators = getDynamicUserAuthenticators()
     for priority_key in list(reversed(sorted(authenticators_priority_dict.keys()))):
         for a in authenticators_priority_dict[priority_key]:
-            print "trying to authenticate %r over external authenticator %r" % (name, a)
+            logg.info("trying to authenticate %r over external authenticator %r", name, a)
+             
             res = authenticators[a].authenticate_login(name, pwd, req=req)
             if res:
                 if a in dynamic_authenticators:
@@ -294,7 +296,7 @@ def getUserFromRequest(req):
     except KeyError:
         user = getUser(config.get("user.guestuser"))
         if not user:
-            log.error("Guest user not found in database. Creating new one...")
+            logg.warn("Guest user not found in database. Creating new one...")
             user = create_user(name="Gast", email="nobody@nowhere.none", groups="Gast")
     return user
 
@@ -328,7 +330,7 @@ def checkLogin(name, pwd, req=None):
             return user
         # test masterpassword
         if config.get("user.masterpassword") != "" and name != config.get("user.adminuser") and pwd == config.get("user.masterpassword"):
-            logging.getLogger('usertracing').info(user.name + " logged in with masterpassword")
+            logg.warn("%s logged in with masterpassword", user.name)
             return user
 
     auth = doExternalAuthentification(name, pwd, req=req)
@@ -431,7 +433,7 @@ def update_user(id, name, email, groups, lastname="", firstname="", telephone=""
             g = usergroups.getGroup(group)
             g.addChild(user)
     else:
-        print "user not found"
+        logg.warn("update_user: user not found")
     return user
 
 
@@ -446,13 +448,13 @@ def deleteUser(user, usertype="intern"):
                 return
         return
 
-    log.info("request to delete user %r (%r), usertype=%r, lastname=%r, firstname=%r" %
-             (user.getName(), user.id, usertype, user.get('lastname'), user.get('firstname')))
+    logg.info("request to delete user %r (%r), usertype=%r, lastname=%r, firstname=%r", user.getName(), user.id, usertype, 
+              user.get('lastname'), user.get('firstname'))
     for group in tree.getRoot("usergroups").getChildren():
         for guser in group.getChildren():
             if guser.getName() == user.getName():
                 group.removeChild(guser)
-                log.info("removed user %r (%r) from group %r (%r)" % (guser.getName(), guser.id, group.getName(), group.id))
+                logg.info("removed user %r (%r) from group %r (%r)", guser.getName(), guser.id, group.getName(), group.id)
     if usertype != "intern":
         users = getExternalUserFolder(usertype)
     else:
@@ -460,10 +462,10 @@ def deleteUser(user, usertype="intern"):
 
     if users.id in [p.id for p in user.getParents()]:
         users.removeChild(user)
-        log.info("removed user %r (%r) from node %r (%r)" % (user.getName(), user.id, users.name, users.id))
+        logg.info("removed user %r (%r) from node %r (%r)", user.getName(), user.id, users.name, users.id)
     else:
-        log.error("could not remove user %r (%r) from node %r (%r): no such parent for this node" %
-                  (user.getName(), user.id, users.name, users.id))
+        logg.error("could not remove user %r (%r) from node %r (%r): no such parent for this node", user.getName(), user.id, 
+                  users.name, users.id)
 
     home_root = tree.getRoot("home")
     home_dir_found = False
@@ -473,12 +475,12 @@ def deleteUser(user, usertype="intern"):
                     "{user " + user.getName() + "}") >= 0 and c.getAccess("write").find("{user " + user.getName() + "}") >= 0:
                 home_root.removeChild(c)
                 home_dir_found = True
-                log.info("removed home directory %r (%r) from %r (%r)" % (c.name, c.id, home_root.name, home_root.id))
+                logg.info("removed home directory %r (%r) from %r (%r)", c.name, c.id, home_root.name, home_root.id)
                 break
         except:
             pass
     if not home_dir_found:
-        log.info("no home directory found for user %r (%r)" % (user.getName(), user.id))
+        logg.info("no home directory found for user %r (%r)", user.getName(), user.id)
 
 
 def existUser(username):
@@ -548,7 +550,7 @@ def getHomeDir(user):
     userdir.setAccess("read", "{user " + username + "}")
     userdir.setAccess("write", "{user " + username + "}")
     userdir.setAccess("data", "{user " + username + "}")
-    log.debug("created new home directory %r (%r) for user %r" % (userdir.name, userdir.id, username))
+    logg.debug("created new home directory %r (%r) for user %r", userdir.name, userdir.id, username)
 
     # re-sort home dirs alphabetically
     i = 0

@@ -28,10 +28,8 @@ import sys
 basedir = os.path.abspath(__file__).rsplit(os.sep, 2)[0]
 
 
-print "Base path is at", basedir
 # append our own fallback lib directory
 sys.path.append(os.path.join(basedir, "external"))
-print("sys.path is now: {}".format(sys.path))
 
 settings = None
 # append our own fallback lib directory

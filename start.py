@@ -18,12 +18,16 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 import sys
 
 from core import config, webconfig, init
 from core import athana
 
 init.full_init()
+
+
+logg = logging.getLogger(__name__)
 
 ### init all web components
 webconfig.initContexts()
@@ -33,8 +37,7 @@ import core.schedules
 try:
     core.schedules.startThread()
 except:
-    msg = "Error starting scheduler thread: %s %s" % (str(sys.exc_info()[0]), str(sys.exc_info()[1]))
-    core.schedules.OUT(msg, logger='backend', print_stdout=True, level='error')
+    logg.exception("Error starting scheduler thread")
 
 ### full text search thread
 if config.get("config.searcher", "").startswith("fts"):

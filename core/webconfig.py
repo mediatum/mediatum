@@ -17,6 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 import os
 import core.athana as athana
 import core.config as config
@@ -24,6 +25,9 @@ import core.tree as tree
 
 from core.styles import theme
 from mediatumtal import tal
+
+
+logg = logging.getLogger(__name__)
 
 
 def loadThemes():
@@ -36,7 +40,7 @@ def loadThemes():
             athana.addFileStorePath("/img/", themepath + "themes/" + name + "/img/")
             athana.addFileStorePath("/js/", themepath + "themes/" + name + "/js/")
             theme.update(name, themepath + "themes/" + name + "/", type)
-            print "Loading theme '%s' (%s)" % (name, type)
+            logg.info("Loading theme '%s' (%s)", name, type)
 
     if config.get("config.theme", "") != "":
         manageThemes("web/", "intern")  # internal theme
@@ -44,7 +48,7 @@ def loadThemes():
         for k, v in config.getsubset("plugins").items():  # themes from plugins
             manageThemes(v, "extern")
     else:
-        print "Loading default theme"
+        logg.info("Loading default theme")
 
 
 def loadServices():
@@ -93,7 +97,7 @@ def loadServices():
                     manageService(servicedir, v, os.path.join(datapath, k, servicedir))
 
     else:
-        print "web services not activated"
+        logg.info("web services not activated")
 
 
 def initContexts():
@@ -233,7 +237,8 @@ def initContexts():
         file = context.addFile("web/frontend/modules/modules.py")
         file.addHandler("getContent").addPattern("/.*")
     except IOError:
-        print "no frontend modules found"
+        logg.exception("no frontend modules found")
+         
 
     #athana.addContext("/flush", ".").addFile("core/webconfig.py").addHandler("flush").addPattern("/py")
 
@@ -253,4 +258,4 @@ def flush(req):
     import core.__init__ as c
     initContexts()
     import core.__init__
-    print "all caches cleared"
+    logg.info("all caches cleared")

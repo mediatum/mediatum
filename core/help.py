@@ -17,6 +17,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 import os
 import re
 import zipfile
@@ -36,6 +37,9 @@ try:
     reportlab = 1
 except:
     reportlab = 0
+    
+    
+logg = logging.getLogger(__name__)
 
 helppaths = ['web/help/']
 items = {}
@@ -60,7 +64,7 @@ def addHelpPath(path):
 
 
 def initHelp():
-    print "..init help"
+    logg.info("..init help")
 
     def addHelpItem(i, part, dict):
         for j in range(i):
@@ -157,7 +161,7 @@ def getHelp(req):
     language = translation.lang(req)
 
     if "edit.x" in req.params:  # edit content
-        print "edit page"
+        logg.debug("edit page")
 
     if "refresh.x" in req.params:  # refresh content
         menustructure = []
@@ -182,7 +186,7 @@ def getHelp(req):
 
     if "export" in req.params:
         if req.params.get('export') == "pdf":
-            print "deliver pdf"
+            logg.debug("deliver pdf")
             req.reply_headers['Content-Type'] = "application/pdf; charset=utf-8"
             content = content.replace('"/help/', '"http://' + config.get('host.name') + '/help/')
             req.write(buildHelpPDF(req.params.get('url'), language))
@@ -276,10 +280,10 @@ class HelpPdf:
                     curstyle = ""
                 else:
                     if item.strip != "" and curstyle != "":
-                        print 'add', item, "-->", curstyle
+                        logg.debug('add %s --> %s')
                         if curstyle == "Bullet":
                             item = "- " + item
-                            print "bullet", item
+                            logg.debug("bullet %s", item)
                         self.data.append(Paragraph(item, self.styleSheet[curstyle]))
 
         template = SimpleDocTemplate(config.get("paths.tempdir", "") + "help.pdf", showBoundary=0)

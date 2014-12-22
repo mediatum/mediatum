@@ -32,12 +32,13 @@ import core.schedule
 from datetime import datetime
 
 
+logg = logging.getLogger(__name__)
+
+
 def OUT(msg, logger='backend', print_stdout=False, level='info'):
-    if logger:
-        getattr(logging.getLogger(logger), level)(msg)
-    if print_stdout:
-        print msg
-        sys.stdout.flush()
+    # ignore logger and stdout arguments
+    getattr(logg, level)(msg)
+    
 
 TT = []
 action_dict = {}
@@ -186,14 +187,11 @@ def scheduler_thread():
 
 
 def startThread():
-    try:
-        import utils.scheduleutils as scheduleutils
-        thread_id = thread.start_new_thread(scheduler_thread, ())
-        t = (str(thread_id), datetime.now().isoformat(), str(scheduleutils.SLEEP_INTERVAL), str(scheduleutils.TRIGGER_INTERVAL))
-        msg = "scheduler: started scheduler (thread_id='%s') thread at %s, SLEEP_INTERVAL = %s, TRIGGER_INTERVAL = %s" % t
-        OUT(msg)
-    except:
-        raise ImportError("could not import 'utils.scheduleutils'")
+    import utils.scheduleutils as scheduleutils
+    thread_id = thread.start_new_thread(scheduler_thread, ())
+    t = (str(thread_id), datetime.now().isoformat(), str(scheduleutils.SLEEP_INTERVAL), str(scheduleutils.TRIGGER_INTERVAL))
+    msg = "scheduler: started scheduler (thread_id='%s') thread at %s, SLEEP_INTERVAL = %s, TRIGGER_INTERVAL = %s" % t
+    OUT(msg)
 
 
 def getSchedules():

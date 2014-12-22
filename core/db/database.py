@@ -18,10 +18,14 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 import core.config as config
 
 _db = None
 _dbconn = None
+
+
+logg = logging.getLogger(__name__)
 
 
 class DatabaseException:
@@ -38,13 +42,13 @@ def getConnection():
     if not _db:
         type = config.get("database.type", "")
         if type == "sqlite" or type == "sqllite":
-            print "Initializing sqlite database"
+            logg.info("Initializing sqlite database")
             from core.db import sqliteconnector
             _db = sqliteconnector.SQLiteConnector
             _dbconn = _db()
             _db = lambda: _dbconn
         else:
-            print "Initializing mysql database"
+            logg.info("Initializing mysql database")
             from core.db import mysqlconnector
             _db = mysqlconnector.MYSQLConnector
     return _db()

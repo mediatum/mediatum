@@ -19,21 +19,24 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
+import sys
 import pkgutil
 import importlib
 import logging
 import locale
+from pprint import pformat
 
 import core.config as config
 from core import tree, acl
 
-logg = logging.getLogger("init")
+
+logg = logging.getLogger(__name__)
 
 
 def set_locale():
     # locale setting for sorting, default to system locale
     loc = locale.setlocale(locale.LC_COLLATE, '')
-    print("using locale {} for sorting".format(loc))
+    logg.info("using locale %s for sorting", loc)
 
 
 def load_content_types():
@@ -145,6 +148,12 @@ def tal_setup():
     tal.set_base(config.basedir)
 
 
+def log_basic_sys_info():
+    logg.info("Python Version is %s", sys.version.split("\n")[0])
+    logg.info("Base path is at %s", config.basedir)
+    logg.info("sys.path is:\n%s", pformat(sys.path))
+
+
 def check_imports():
     logg.info("testing external imports:")
     external_modules = [
@@ -186,7 +195,7 @@ def init_modules():
 def basic_init():
     import utils.log
     utils.log.initialize()
-    logg.info("start init")
+    log_basic_sys_info()
     check_imports()
     set_locale()
     register_node_classes()

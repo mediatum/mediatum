@@ -31,6 +31,9 @@ from core.acl import AccessData
 EXCLUDE_WORKFLOW_NEWNODES = True
 
 
+logg = logging.getLogger(__name__)
+
+
 def getInformation():
     return {"version": "1.1a", "system": 1}
 
@@ -114,15 +117,13 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
                                            attribute_name_filter=attribute_name_filter
                                            )
                 except:
-                    msg = "ERROR: node xml export error node.id='%s', node.name='%s', node.type='%s', exportmapping:'%s'" % (
-                        str(node.id), node.name, node.type, str(exportmapping_id))
-                    logging.getLogger("backend").error(msg)
+                    logg.exception("ERROR: node xml export error node.id='%s', node.name='%s', node.type='%s', exportmapping:'%s'",
+                        node.id, node.name, node.type, exportmapping_id)
             else:
                 pass
         except:
-            msg = "ERROR: node xml export error node.id='%s', node.name='%s', node.type='%s', exportmapping:'%s'" % (
-                str(node.id), node.name, node.type, str(exportmapping_id))
-            logging.getLogger("backend").error(msg)
+            logg.exception("ERROR: node xml export error node.id='%s', node.name='%s', node.type='%s', exportmapping:'%s'",
+                           node.id, node.name, node.type, exportmapping_id)
 
 
 class _StringWriter:
@@ -168,7 +169,7 @@ class _NodeLoader:
         try:
             p.ParseFile(fi)
         except expat.ExpatError as e:
-            print "\tfile not well-formed in line %s, %s" % (e.lineno, e.offset)
+            logg.exception("\tfile not well-formed in line %s, %s", e.lineno, e.offset)
             return
         finally:
             fi.close()
@@ -177,19 +178,17 @@ class _NodeLoader:
             mappings = tree.getRoot("mappings")
         except tree.NoSuchNodeError:
             mappings = tree.getRoot().addChild(tree.Node(name="mappings", type="mappings"))
-            logging.getLogger("backend").info("no mappings root found: added mappings root")
+            logg.info("no mappings root found: added mappings root")
 
         for node in self.nodes:
             if node.type == "mapping":
                 if node.name not in [n.name for n in mappings.getChildren() if n.type == "mapping"]:
                     mappings.addChild(node)
                     if self.verbose:
-                        msg = "xml import: added  mapping id=%s, type='%s', name='%s'" % (str(node.id), node.type, node.name)
-                        logging.getLogger("backend").info(msg)
+                        logg.info("xml import: added  mapping id=%s, type='%s', name='%s'", node.id, node.type, node.name)
 
         if self.verbose:
-            msg = "linking children to parents ..."
-            logging.getLogger("backend").info(msg)
+            logg.info("linking children to parents")
         for node in self.nodes:
             d = {}
             for id in node.tmpchilds:
@@ -198,9 +197,8 @@ class _NodeLoader:
                 d[child.id] = child
             if self.verbose and node.tmpchilds:
                 added = [(cid, d[cid].type, d[cid].name) for cid in d.keys()]
-                msg = "added %d children to node id='%s', type='%s', name='%s': %s" % (
-                    len(node.tmpchilds), str(node.id), node.type, node.name, str(added))
-                logging.getLogger("backend").info(msg)
+                logg.info("added %d children to node id='%s', type='%s', name='%s': %s",
+                    len(node.tmpchilds), node.id, node.type, node.name, added)
 
         for node in self.nodes:
             if node.type == "maskitem":
@@ -209,28 +207,25 @@ class _NodeLoader:
                     attr_new = self.id2node[attr].id
                     node.set("attribute", attr_new)
                     if self.verbose:
-                        msg = "adjusting node attribute for maskitem '%s', name='attribute', value: old='%s' -> new='%s'" % (
-                            str(node.id), attr, attr_new)
-                        logging.getLogger("backend").info(msg)
+                        logg.info("adjusting node attribute for maskitem '%s', name='attribute', value: old='%s' -> new='%s'",
+                            node.id, attr, attr_new)
                 mappingfield = node.get("mappingfield")
                 if mappingfield and mappingfield in self.id2node:
                     mappingfield_new = self.id2node[mappingfield].id
                     node.set("mappingfield", str(mappingfield_new))
                     if self.verbose:
-                        msg = "adjusting node attribute for maskitem '%s', name='mappingfield', value old='%s' -> new='%s'" % (
-                            str(node.id), mappingfield, mappingfield_new)
-                        logging.getLogger("backend").info(msg)
+                        logg.info("adjusting node attribute for maskitem '%s', name='mappingfield', value old='%s' -> new='%s'",
+                            node.id, mappingfield, mappingfield_new)
             elif node.type == "mask":
                 exportmapping = node.get("exportmapping")
                 if exportmapping and exportmapping in self.id2node:
                     exportmapping_new = self.id2node[exportmapping].id
                     node.set("exportmapping", str(exportmapping_new))
                     if self.verbose:
-                        msg = "adjusting node attribute for mask '%s',  name='exportmapping':, value old='%s' -> new='%s'" % (
-                            str(node.id), exportmapping, exportmapping_new)
-                        logging.getLogger("backend").info(msg)
+                        logg.info("adjusting node attribute for mask '%s',  name='exportmapping':, value old='%s' -> new='%s'",
+                            node.id, exportmapping, exportmapping_new)
 
-        logging.getLogger("backend").info("xml import done")
+        logg.info("xml import done")
 
     def xml_start_element(self, name, attrs):
         try:
@@ -239,7 +234,7 @@ class _NodeLoader:
             node = None
         if name == "nodelist":
             if "exportversion" in attrs:
-                logging.getLogger("backend").info("starting xml import: %s" % str(attrs))
+                logg.info("starting xml import: %s", attrs)
 
         elif name == "node":
             self.node_already_seen = False
@@ -271,8 +266,7 @@ class _NodeLoader:
                 node.setAccess("data", attrs["data"].encode("utf-8"))
 
             if self.verbose:
-                msg = "created node '%s', '%s', '%s', old_id from attr='%s'" % (node.name, node.type, str(node.id), str(attrs["id"]))
-                logging.getLogger("backend").info(msg)
+                logg.info("created node '%s', '%s', '%s', old_id from attr='%s'", node.name, node.type, node.id, attrs["id"])
 
             self.id2node[attrs["id"].encode("utf-8")] = node
             node.tmpchilds = []
@@ -314,8 +308,7 @@ class _NodeLoader:
             pass
         elif name == "attribute":
             if self.verbose:
-                msg = "  -> : added attribute '%s': '%s'" % (self.attributename, self.nodes[-1].get(self.attributename))
-                logging.getLogger("backend").info(msg)
+                logg.info("  -> : added attribute '%s': '%s'", self.attributename, self.nodes[-1].get(self.attributename))
         self.attributename = None
 
     def xml_char_data(self, data):

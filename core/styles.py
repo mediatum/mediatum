@@ -26,7 +26,8 @@ from utils.utils import splitpath
 
 contentstyles = {}
 
-logg = logging.getLogger("frontend")
+
+logg = logging.getLogger(__name__)
 
 
 class Theme:
@@ -108,7 +109,7 @@ class ContentStyle:
         try:
             return req.getTAL(self.getTemplate(), params)
         except Exception as e:
-            logg.error("error in template", exc_info=1)
+            logg.exception("exception in template")
             return "error in template"
 
 

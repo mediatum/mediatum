@@ -29,7 +29,7 @@ from utils.utils import splitpath, intersection, union
 from utils.date import parse_date, now, format_date
 
 
-logg = logging.getLogger("archive")
+logg = logging.getLogger(__name__)
 
 
 def archive_log(message, type="info"):
@@ -92,12 +92,12 @@ class ArchiveManager:
     def __init__(self):
         self.manager = {}
         if config.get("archive.activate", "").lower() == "true":
-            print "Initializing archive manager:",
+            logg.info("Initializing archive manager")
             for paths in config.get("archive.class").split(";"):
                 path, manager = splitpath(paths)
                 self.manager[manager] = paths
 
-        print "archivemanager init done", len(self.manager)
+        logg.info("archivemanager init done %s", len(self.manager))
 
     def getManager(self, name=""):
         if name == "":
@@ -146,7 +146,7 @@ class ArchiveManager:
 def initialize():
     archive_manager = []
     if config.get("archive.activate", "").lower() == "true":
-        print "Initializing archive manager:", config.get("archive.activate")
+        logg.info("Initializing archive manager:", config.get("archive.activate"))
         for paths in config.get("archive.class").split(";"):
             try:
                 path, manager = splitpath(paths)
@@ -156,9 +156,9 @@ def initialize():
             if path and path not in sys.path:
                 sys.path += [path]
             m = __import__(manager).__dict__[manager]()
-            print str(m.__class__), ",",
+            logg.info("%s", m.__class__)
             archive_manager.append(m)
-        print len(archive_manager), "manager loaded"
+        logg.info("%s manager loaded", len(archive_manager))
     if len(archive_manager) > 0:
         None
         # start archiving thread

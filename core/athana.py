@@ -40,8 +40,8 @@ from werkzeug.datastructures import ImmutableMultiDict
 from mediatumtal import tal
 
 
-logg = logging.getLogger("athana")
-logftp = logging.getLogger("ftp")
+logg = logging.getLogger(__name__)
+logftp = logging.getLogger(__name__ + ":ftp")
 
 
 class AthanaException(Exception):

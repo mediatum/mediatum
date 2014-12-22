@@ -25,7 +25,6 @@ import socket
 import random
 import re
 import time
-import sys
 import logging
 from collections import OrderedDict
 
@@ -40,6 +39,9 @@ from utils.utils import esc, fixXMLString
 from schema.schema import getMetaType
 from utils.pathutils import isDescendantOf
 from threading import Lock
+
+
+logg = logging.getLogger(__name__)
 
 
 DEBUG = False
@@ -64,15 +66,6 @@ def filterFormat(node, oai_format):
     if oai_format.lower() in FORMAT_FILTERS.keys():
         return FORMAT_FILTERS[oai_format.lower()](node)
     return True
-
-
-def OUT(msg, type="info"):
-    if DEBUG:
-        sys.stdout.flush()
-    if type == "info":
-        logging.getLogger('oai').info(msg)
-    elif type == "error":
-        logging.getLogger('oai').error(msg)
 
 
 def now():
@@ -156,8 +149,7 @@ def writeError(req, code, detail=""):
     else:
         desc = errordesc[code]
     req.write('<error code="%s">%s</error>' % (code, desc))
-    msg = "%s:%d OAI (error code: %s) %s" % (req.ip, req.channel.addr[1], (code), (req.path + req.uri).replace('//', '/'))
-    OUT(msg, 'error')
+    logg.error("%s:%d OAI (error code: %s) %s", req.ip, req.channel.addr[1], (code), (req.path + req.uri).replace('//', '/'))
 
 
 def ISO8601(t=None):
@@ -211,7 +203,7 @@ def getOAIExportFormatsForSchema(schema_name):
         res = [x.name for x in schema_node.getChildren() if (x.type == 'mask' and x.get('masktype') == 'export')]
         return [x.replace('oai_', '', 1) for x in res if x.startswith('oai_')]
     except:
-        OUT("ERROR in getOAIExportMasksForSchema('%s'):\n%s %s" % (schema_name, str(sys.exc_info()[0]), str(sys.exc_info()[1])), 'error')
+        logg.exception("ERROR in getOAIExportMasksForSchema('%s')", schema_name)
         return []
 
 
@@ -264,7 +256,7 @@ def ListMetadataFormats(req):
              </metadataFormat>
              """ % (mdf, d["schema.%s" % mdf], d["namespace.%s" % mdf]))
         except:
-            OUT("%s: OAI error reading oai metadata format %s from config file" % (__file__, mdf), 'error')
+            logg.exception("%s: OAI error reading oai metadata format %s from config file", __file__, mdf)
     req.write('\n</ListMetadataFormats>')
     if DEBUG:
         timetable_update(req, "leaving ListMetadataFormats")
@@ -392,7 +384,7 @@ def parentIsMedia(n):
         p = n.getParents()[0]
         return hasattr(p, "isContainer") and p.isContainer() == 0
     except IndexError:
-        print '---> IndexError in export.oai.parentIsMedia(...)', n, n.id, n.type, n.name
+        logg.exception("IndexError in export.oai.parentIsMedia(...) %s %s %s %s", n, n.id, n.type, n.name)
         return True
 
 
@@ -486,12 +478,12 @@ def getNodes(req):
             return None, "badResumptionToken", None
 
         if not checkParams(req, ["verb", "resumptionToken"]):
-            OUT("OAI: getNodes: additional arguments (only verb and resumptionToken allowed)")
+            logg.warn("OAI: getNodes: additional arguments (only verb and resumptionToken allowed)")
             return None, "badArgument", None
     else:
         token, metadataformat = new_token(req)
         if not checkMetaDataFormat(metadataformat):
-            OUT('OAI: ListRecords: metadataPrefix missing', 'error')
+            logg.error('OAI: ListRecords: metadataPrefix missing')
             return None, "badArgument", None
         pos = 0
 
@@ -545,7 +537,7 @@ def getNodes(req):
         tokenstring = None
         with token_lock:
             del tokenpositions[token]
-    OUT(req.params.get('verb') + ": set=" + str(req.params.get('set')) + ", " + str(len(nodes)) + " objects, format=" + metadataformat)
+    logg.info("%s : set=%s, objects, format=%s", req.params.get('verb'), req.params.get('set'), len(nodes), metadataformat)
     res = tree.NodeList(nodes[pos:pos + CHUNKSIZE])
     if DEBUG:
         timetable_update(req, "leaving getNodes: returning %d nodes, tokenstring='%s', metadataformat='%s'" %
@@ -659,8 +651,7 @@ def initSetList(req=None):
 
     oaisets.loadGroups()
     SET_LIST = oaisets.GROUPS
-
-    OUT('OAI: initSetList: found %s set groups: %s' % (len(SET_LIST), str(SET_LIST)))
+    logg.info('OAI: initSetList: found %s set groups: %s', len(SET_LIST), SET_LIST)
 
     if DEBUG:
         timetable_update(req, "leaving initSetList")
@@ -732,8 +723,8 @@ def oaiRequest(req):
 
     exit_time = now()
 
-    OUT("%s:%d OAI (exit after %.3f sec.) %s - (user-agent: %s)" %
-        (req.ip, req.channel.addr[1], (exit_time - start_time), (req.path + req.uri).replace('//', '/'), useragent))
+    logg.info("%s:%d OAI (exit after %.3f sec.) %s - (user-agent: %s)", 
+              req.ip, req.channel.addr[1], (exit_time - start_time), (req.path + req.uri).replace('//', '/'), useragent)
 
     if DEBUG:
-        OUT(timetable_string(req))
+        logg.debug(timetable_string(req))

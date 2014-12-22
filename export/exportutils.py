@@ -36,6 +36,8 @@ from utils.utils import esc, u, u2, esc2, utf82iso, iso2utf8
 from utils.date import parse_date, format_date
 from core.acl import AccessData
 
+logg = logging.getLogger(__name__)
+
 tagpattern = re.compile(r'<[^>]*?>')
 
 
@@ -91,11 +93,10 @@ def load_iso_639_2_b_names():
         text = f.read()
         f.close()
         lines = text.splitlines()
-        msg = "exportutils read file 'ISO-639-2_utf-8.txt': %d lines" % len(lines)
-        logging.getLogger("backend").info(msg)
+        logg.info("exportutils read file 'ISO-639-2_utf-8.txt': %d lines", len(lines))
     except:
         lines = []
-        logging.getLogger("backend").warning("exportutils could not load file 'ISO-639-2_utf-8.txt'")
+        logg.warning("exportutils could not load file 'ISO-639-2_utf-8.txt'")
     return lines
 
 
@@ -158,8 +159,7 @@ def normLanguage_iso_639_2_b(s, emptyval=''):
                 return s1
             elif line.find(s3) > 0:
                 return line.split("|")[0]
-        msg = 'normLanguage_iso_639_2_b(...) -> language was not matched, returning emtyval="%s" s="%s", s1="%s"' % (emptyval, s, s1)
-        logging.getLogger("backend").error(msg)
+        logg.error('normLanguage_iso_639_2_b(...) -> language was not matched, returning emtyval="%s" s="%s", s1="%s"', emptyval, s, s1)
         return emptyval
 
 
@@ -223,8 +223,7 @@ def normLanguage_iso_639_2_t(s, emptyval=''):
                     return _b
             elif line.find(s3) > 0:
                 return line.split("|")[0]
-        msg = 'normLanguage_iso_639_2_t(...) -> language was not matched, returning emtyval="%s" s="%s", s1="%s"' % (emptyval, s, s1)
-        logging.getLogger("backend").error(msg)
+        logg.error('normLanguage_iso_639_2_t(...) -> language was not matched, returning emtyval="%s" s="%s", s1="%s"', emptyval, s, s1)
         return emptyval
 
 

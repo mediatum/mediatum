@@ -23,6 +23,9 @@ import re
 import logging
 from utils.boolparser import BoolParser
 
+
+logg = logging.getLogger(__name__)
+
 DEBUG = False
 
 pattern_op = re.compile('^([a-zA-Z0-9._-]+)\s*(=|>=|<=|<|>|[Ll][Ii][Kk][Ee])\s*"?([^"]*)"?$')
@@ -101,8 +104,7 @@ class OAINodeCheckerFieldCondition:
                     return True
                 return False
 
-        if DEBUG:
-            logging.getLogger('oai').info('OAINodeChecker ---> : Error evaluating FieldCondition')
+        logg.debug('OAINodeChecker ---> : Error evaluating FieldCondition')
         return False
 
 
@@ -113,8 +115,7 @@ class OAINodeChecker(BoolParser):
         if m:
             return OAINodeCheckerFieldCondition(m.group(1), m.group(2), m.group(3))
         else:
-            if DEBUG:
-                logging.getLogger('oai').info('OAINodeChecker ---> Error: no field specified')
+            logg.debug('OAINodeChecker ---> Error: no field specified')
 
     def getAndClass(self):
         return OAINodeCheckerAndCondition

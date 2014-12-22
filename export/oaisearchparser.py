@@ -27,7 +27,7 @@ from utils.boolparser import BoolParser
 
 pattern_op = re.compile('^([\:a-zA-Z0-9._-]+)\s*(=|>=|<=|<|>|[Ll][Ii][Kk][Ee])\s*"?([^"]*)"?$')
 
-logg = logging.getLogger("oai")
+logg = logging.getLogger(__name__)
 
 
 class OAISearchAndCondition:

@@ -27,7 +27,6 @@ import sys
 
 DEFAULT_LOGLEVEL = logging.DEBUG
 # use for special file loggers defined in LOGTYPES
-DEFAULT_LOGFORMAT = '%(asctime)s %(levelname)s %(message)s'
 # used for the root logger
 ROOT_STREAM_LOGFORMAT = '%(asctime)s [%(process)d/%(threadName)s] %(name)s/%(module)s %(levelname)s | %(message)s'
 # this also logs filename and line number, which is great for debugging
@@ -35,32 +34,6 @@ ROOT_STREAM_LOGFORMAT = '%(asctime)s [%(process)d/%(threadName)s] %(name)s/%(mod
 ROOT_FILE_LOGFORMAT = ROOT_STREAM_LOGFORMAT
 
 logg = logging.getLogger(__name__)
-
-
-def cfg(logtype, logformat=None, loglevel=None):
-    d = {}
-    d['logtype'] = logtype
-    d['logformat'] = logformat or DEFAULT_LOGFORMAT
-    d['loglevel'] = loglevel or DEFAULT_LOGLEVEL
-
-    return [logtype, d]
-
-LOGTYPES = [
-    cfg("database"),
-    cfg("backend"),
-    cfg("frontend"),
-    cfg("mediatumtal"),
-    cfg("editor", loglevel=logging.INFO),
-    cfg("usertracing"),
-    cfg("athana", loglevel=logging.INFO),
-    cfg("errors"),
-    cfg("services"),
-    cfg("searchindex"),
-    cfg("ftp"),
-    cfg("oai"),
-    cfg("z3950", logformat='%(asctime)s %(message)s'),
-    cfg("workflows"),
-]
 
 # path's will be required in web/admin/modules/logfile.py
 dlogfiles = {}
@@ -123,20 +96,3 @@ def initialize():
         file_handler.setFormatter(logging.Formatter(ROOT_FILE_LOGFORMAT))
         root_logger.addHandler(file_handler)
         logg.info('logging everything to %s', filepath)
-
-    for name, cfgDict in LOGTYPES:
-        log = logging.getLogger(name)
-        log.handlers = []
-        filename = core.config.get("logging.file." + name, None)
-        if not filename and filepath:
-            filename = filepath + name + '.log'
-
-        if not os.path.exists(filename[:filename.rfind("/") + 1]):
-            os.mkdir(filename[:filename.rfind("/") + 1])
-        l = logging.handlers.RotatingFileHandler(filename, maxBytes=33554432, backupCount=20)
-        l.setFormatter(logging.Formatter(cfgDict["logformat"]))
-        log.addHandler(l)
-        log.setLevel(cfgDict["loglevel"])
-
-        dlogfiles[name] = {'path': filepath, 'filename': filename}
-        logg.info("added logger %s, file %s", name, filename)

@@ -39,9 +39,12 @@ from lxml import etree
 from ConfigParser import SafeConfigParser
 from math import ceil
 
+logg = logging.getLogger(__name__)
+
 USE_ALIASES = False
 PING_GOOGLE = True
 PING_URL_ENCODED = 'http://www.google.com/webmasters/tools/ping?sitemap=http%3A%2F%2Fmediatum.ub.tum.de%2Fsitemap-index.xml'
+
 
 
 class ConfigFile:
@@ -65,9 +68,9 @@ class ConfigFile:
                 self.parser.read(self.path)
                 self.host = self.parser.get('host', 'name')
             except IOError:
-                logging.getLogger("error").error('Error reading the configuration file %s' % self.path)
+                logg.error('Error reading the configuration file %s', self.path)
         else:
-            logging.getLogger('error').error('The specified config file: %s does not exist' % self.path)
+            logg.error('The specified config file: %s does not exist', self.path)
 
 
 class Sitemap:
@@ -109,7 +112,7 @@ class Sitemap:
                     raise TypeError('unknown date format given: %s' % date)
 
         if os.path.isfile(self.path):
-            logging.getLogger('everything').info('Sitemap already exists at %s' % self.path)
+            logg.info('Sitemap already exists at %s', self.path)
         else:
             root = etree.Element('urlset', xmlns="http://www.sitemaps.org/schemas/sitemap/0.9")
             # Doesn't create a sitemap if no nodes to place in it
@@ -138,7 +141,7 @@ class Sitemap:
                         f.write(etree.tostring(root))
                         f.close()
                 except IOError:
-                    logging.getLogger('error').error('Error creating %s' % self.path)
+                    logg.error('Error creating %s', self.path)
 
     def delete_sitemap(self):
         """
@@ -148,7 +151,7 @@ class Sitemap:
             try:
                 os.remove(self.path)
             except IOError:
-                logging.getLogger('error').error('Error removing %s' % self.path)
+                logg.error('Error removing %s', self.path)
 
 
 class SitemapIndex:
@@ -168,7 +171,7 @@ class SitemapIndex:
         @param sitemaps: a list of strings of sitemap names
         """
         if os.path.isfile(self.path):
-            logging.getLogger('everything').info('%s already exists' % self.path)
+            logg.info('%s already exists' % self.path)
         else:
             root = etree.Element('sitemapindex', xmlns="http://www.sitemaps.org/schemas/sitemap/0.9")
             if not sitemaps:
@@ -186,7 +189,7 @@ class SitemapIndex:
                         f.write(etree.tostring(root))
                         f.close()
                 except IOError:
-                    logging.getLogger('error').error('Error creating %s' % self.path)
+                    logg.error('Error creating %s', self.path)
 
     def delete_sitemap_index(self):
         """
@@ -196,14 +199,14 @@ class SitemapIndex:
             try:
                 os.remove(self.path)
             except IOError:
-                logging.getLogger('error').error('Error removing %s' % self.path)
+                logg.error('Error removing %s', self.path)
 
 
 def create():
     """
     Creates the sitemap files and the sitemap index files which are located at /web/root/
     """
-    logging.getLogger('everything').info('Creating Sitemaps and Sitemap Index...')
+    logg.info('Creating Sitemaps and Sitemap Index...')
 
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 
@@ -277,14 +280,14 @@ def create():
     now = '+'.join([datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), '02:00'])
     siteindex.create_sitemap_index(sitemaps, now)
 
-    logging.getLogger('everything').info('Generation of Sitemaps and SitemapIndex Complete')
+    logg.info('Generation of Sitemaps and SitemapIndex Complete')
 
 
 def clean():
     """
     Removes all .xml files from the /web/root/ directory
     """
-    logging.getLogger('everything').info('Cleaning /root of all Sitemaps and SitemapIndex')
+    logg.info('Cleaning /root of all Sitemaps and SitemapIndex')
 
     base_dir = os.path.abspath(os.curdir)
     web_root_dir = '/'.join([base_dir, 'web', 'root'])
@@ -293,13 +296,13 @@ def clean():
 
     # If no .xml files exist
     if not sitemaps:
-        logging.getLogger('everything').info('Nothing to remove...')
+        logg.info('Nothing to remove...')
     else:
         for sm in sitemaps:
-            logging.getLogger('everything').info('Deleting file: %s' % sm)
+            logg.info('Deleting file: %s', sm)
             os.remove('/'.join([web_root_dir, sm]))
 
-    logging.getLogger('everything').info('Cleaning Complete...')
+    logg.info('Cleaning Complete...')
 
 
 def main():
@@ -311,11 +314,11 @@ def main():
         if PING_GOOGLE:
             response = urllib2.urlopen(PING_URL_ENCODED)
             if response.getcode() == 200:
-                logging.getLogger('everything').info(
-                    'Successful ping of sitemap-index.xml to Google; Response Code: %i' % response.getcode())
+                logg.info(
+                    'Successful ping of sitemap-index.xml to Google; Response Code: %i', response.getcode())
             else:
-                logging.getLogger('everything').info(
-                    'Unsuccessful ping of sitemap-index.xml to Google; Response Code: %i' % response.getcode())
+                logg.info(
+                    'Unsuccessful ping of sitemap-index.xml to Google; Response Code: %i', response.getcode())
     elif sys.argv[1] == 'clean':
         clean()
 

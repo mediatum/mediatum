@@ -35,6 +35,9 @@ import utils.utils
 import utils.mail as mail
 import logging
 
+
+logg = logging.getLogger(__name__)
+
 #Configurable, ;-separated
 MAIL_RECIPIENTS = 'andrew.darrohn@tum.de;ga39lit@mytum.de'
 
@@ -255,7 +258,7 @@ def main():
                       mailtext)
 
     except mail.SocketError:
-        logging.getLogger('backend').error('failed to send Schema Analysis Results')
+        logg.exception('failed to send Schema Analysis Results')
 
 
 if __name__ == '__main__':

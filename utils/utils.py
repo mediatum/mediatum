@@ -28,6 +28,7 @@ import re
 import random
 import StringIO
 import logging
+from warnings import warn
 from urlparse import parse_qsl, urlsplit, urlunsplit
 from urllib import quote, urlencode
 
@@ -53,6 +54,7 @@ def desc(s):
 
 
 def u(s):
+    warn("u is deprecated, use unicode objects!!!", DeprecationWarning)
     try:
         return s.encode("utf-8")
     except:
@@ -64,6 +66,7 @@ def u(s):
 
 
 def u2(s):
+    warn("u2 is deprecated, use unicode objects!!!", DeprecationWarning)
     try:
         return s.encode("utf-8")
     except:
@@ -91,10 +94,12 @@ def utf8_decode_escape(s):
 
 
 def iso2utf8(s):
+    warn("use unicode objects!!!", DeprecationWarning)
     return unicode(s, "latin-1").encode("utf-8")
 
 
 def utf82iso(s):
+    warn("utf82iso is deprecated, use unicode objects!!!", DeprecationWarning)
     try:
         return unicode(s, "utf-8").encode("latin-1")
     except:

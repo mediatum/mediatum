@@ -19,10 +19,11 @@
 """
 
 import logging
+from mediatumtal import tal
 import os
 import core.config as config
-
 from utils.utils import splitpath
+
 
 contentstyles = {}
 
@@ -107,7 +108,7 @@ class ContentStyle:
     # build
     def renderTemplate(self, req, params={}):
         try:
-            return req.getTAL(self.getTemplate(), params)
+            return tal.u_getTAL(self.getTemplate(), params, request=req)
         except Exception as e:
             logg.exception("exception in template")
             return "error in template"

@@ -223,7 +223,7 @@ class ContentList(Content):
         if not language:
             language = None
         if self.content:
-            headline = tal.getTAL(theme.getTemplate("content_nav.html"), {"nav": self}, macro="navheadline", language=lang(req))
+            headline = tal.u_getTAL(theme.getTemplate("content_nav.html"), {"nav": self}, macro="navheadline", language=lang(req))
             return headline + self.content.html(req)
 
         nav_list = list()
@@ -282,11 +282,11 @@ class ContentList(Content):
             # no liststsyle, use collection default
             liststyle = self.liststyle
 
-        filesHTML = req.getTAL(theme.getTemplate("content_nav.html"), {
+        filesHTML = tal.u_getTAL(theme.getTemplate("content_nav.html"), {
             "nav_list": nav_list, "nav_page": nav_page, "act_page": self.page,
             "sortfields": self.sortfields, "sortfieldslist": self.getSortFieldsList(),
             "files": tal_files, "ids": ",".join(tal_ids), "maxresult": len(self.files),
-            "op": "", "query": req.params.get("query", "")}, macro="files")
+            "op": "", "query": req.params.get("query", "")}, macro="files", request=req)
 
         # use template of style and build html content
         contentList = liststyle.renderTemplate(req, {"nav_list": nav_list, "nav_page": nav_page, "act_page": self.page,
@@ -354,26 +354,27 @@ class ContentNode(Content):
 
     @ensure_unicode_returned(name="web.frontend.content:html")
     def html(self, req):
-        paths = ""
+        paths = u""
         stylebig = self.getContentStyles()
         liststyle = req.session.get("style-" + self.node.getContentType(), "")
+        show_node_big = ensure_unicode_returned(self.node.show_node_big)
 
         if not self.node.isContainer():
             plist = getPaths(self.node, AccessData(req))
-            paths = tal.getTAL(theme.getTemplate("content_nav.html"), {"paths": plist}, macro="paths", language=lang(req))
+            paths = tal.u_getTAL(theme.getTemplate("content_nav.html"), {"paths": plist}, macro="paths", language=lang(req))
         # render style of node for nodebig
         if len(stylebig) > 1:
             # more than on style found
             for item in stylebig:
                 if liststyle:
                     if item.getName() == liststyle.getName():
-                        return getFormatedString(self.node.show_node_big(req, template=item.getTemplate())) + paths
+                        return getFormatedString(show_node_big(req, template=item.getTemplate())) + paths
                 else:
                     if item.isDefaultStyle():
-                        return getFormatedString(self.node.show_node_big(req, template=item.getTemplate())) + paths
+                        return getFormatedString(show_node_big(req, template=item.getTemplate())) + paths
         elif len(stylebig) == 1:
-            return getFormatedString(self.node.show_node_big(req, template=stylebig[0].getTemplate())) + paths
-        return getFormatedString(self.node.show_node_big(req)) + paths
+            return getFormatedString(show_node_big(req, template=stylebig[0].getTemplate())) + paths
+        return getFormatedString(show_node_big(req)) + paths
 
 
 def fileIsNotEmpty(file):
@@ -525,11 +526,11 @@ class ContentArea(Content):
                     logg.exception("exception in html")
                     return req.error(404, "Object cannot be shown")
 
-            path = req.getTAL(
+            path = tal.u_getTAL(
                 theme.getTemplate("content_nav.html"), {
                     "params": self.params, "path": breadscrubs, "styles": styles, "logo": self.collectionlogo, "searchmode": req.params.get(
                         "searchmode", ""), "items": items, "id": id, "nodeprint": nodeprint, "printlink": printlink, "area": req.session.get(
-                        "area", "")}, macro="path")
+                        "area", "")}, macro="path", request=req)
         return path + '\n<!-- CONTENT START -->\n' + self.content.html(req) + '\n<!-- CONTENT END -->\n'
 
     def status(self):

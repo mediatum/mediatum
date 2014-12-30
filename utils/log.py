@@ -21,6 +21,7 @@
 from core import config
 import logging
 import sys
+import logstash
 
 
 ROOT_STREAM_LOGFORMAT = '%(asctime)s [%(process)d/%(threadName)s] %(name)s %(levelname)s | %(message)s'
@@ -75,6 +76,11 @@ def initialize():
     stream_handler.setFormatter(logging.Formatter(ROOT_STREAM_LOGFORMAT))
     root_logger.handlers = []
     root_logger.addHandler(stream_handler)
+    
+    
+    logstash_handler = logstash.TCPLogstashHandler("localhost", 5959, version=1, message_type="mediatum")
+    root_logger.addHandler(logstash_handler)
+
 
     filepath = config.get('logging.file', None)
         

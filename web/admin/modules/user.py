@@ -36,6 +36,8 @@ from core.users import (loadUsersFromDB, useroption, getUser, update_user, exist
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from core.translation import lang, t
 from core.transition import httpstatus
+from utils.strings import ensure_unicode_returned
+
 
 logg = logging.getLogger(__name__)
 
@@ -247,6 +249,7 @@ def validate(req, op):
         logg.exception("exception in validate")
         
 
+@ensure_unicode_returned(name="user:view")
 def view(req):
     """show all users"""
     global users_cache

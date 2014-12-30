@@ -29,6 +29,7 @@ from utils.utils import Link, splitpath, parseMenuString
 from core.translation import t, lang
 from core.tree import getRoot
 from core.transition import httpstatus
+from utils.strings import ensure_unicode_returned
 
 
 logg = logging.getLogger(__name__)
@@ -184,7 +185,7 @@ def findmodule(type):
 
 """ main method for content area """
 
-
+@ensure_unicode_returned(name="adminutils.show_content")
 def show_content(req, op):
     user = users.getUserFromRequest(req)
 

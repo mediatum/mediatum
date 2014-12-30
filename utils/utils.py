@@ -35,6 +35,7 @@ from urllib import quote, urlencode
 import xml.parsers.expat
 from HTMLParser import HTMLParser
 from .compat import iteritems
+from .strings import ensure_unicode_returned
 
 
 def esc(s):
@@ -114,6 +115,7 @@ replacements = {'sub': {'regex': re.compile(r'(?<=\$_)(.*?)(?=\$)'),
                         'html': '<sup>%s</sup>'}}
 
 
+@ensure_unicode_returned
 def modify_tex(string, option):
     """
     Swaps tex super and subscript markup ($^...$ and $_...$)

@@ -25,6 +25,7 @@ from core.translation import lang, translate
 from utils.utils import getAllCollections, u
 from core.styles import theme
 from web.frontend import Content
+from utils.strings import ensure_unicode_returned
 
 
 logg = logging.getLogger(__name__)
@@ -68,6 +69,7 @@ class SearchResult(Content):
     def getContentStyles(self):
         return []
 
+    @ensure_unicode_returned(name="searchresult:html")
     def html(self, req):
         if self.error > 0:
             return req.getTAL(theme.getTemplate("searchresult.html"), {

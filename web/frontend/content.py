@@ -28,6 +28,7 @@ from core.translation import lang, t
 from web.frontend import Content
 from web.frontend.searchresult import simple_search, extended_search
 from core.styles import getContentStyles, theme
+from utils.strings import ensure_unicode_returned
 
 
 logg = logging.getLogger(__name__)
@@ -216,6 +217,7 @@ class ContentList(Content):
         else:
             return getContentStyles("smallview")  # , self.collection.get("style") or "default")
 
+    @ensure_unicode_returned(name="web.frontend.content.ContentList:html")
     def html(self, req):
         language = lang(req)
         if not language:
@@ -350,6 +352,7 @@ class ContentNode(Content):
     def getContentStyles(self):
         return getContentStyles("bigview", contenttype=self.node.getContentType())
 
+    @ensure_unicode_returned(name="web.frontend.content:html")
     def html(self, req):
         paths = ""
         stylebig = self.getContentStyles()
@@ -417,6 +420,7 @@ class ContentError(Content):
         self.error = error
         self._status = status
 
+    @ensure_unicode_returned(name="contenterror.html")
     def html(self, req):
         return tal.getTAL(theme.getTemplate("content_error.html"), {"error": self.error}, language=lang(req))
 
@@ -485,6 +489,7 @@ class ContentArea(Content):
         else:
             return None
 
+    @ensure_unicode_returned
     def html(self, req):
         styles = []
         nodeprint = "1"  # show print icon

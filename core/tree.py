@@ -374,7 +374,7 @@ class NodeList:
         if locale:
             last_locale = getlocale(LC_COLLATE)
             setlocale(locale)
-        nodes.sort(key=lambda n: strxfrm(n.name), reverse=reverse)
+        nodes.sort(key=lambda n: strxfrm(n.name.encode("utf8")), reverse=reverse)
         if locale:
             setlocale(LC_COLLATE, last_locale)
         # we don't return a NodeList here, but a normal
@@ -485,7 +485,7 @@ class Node(object):
             obj.id = id
             attrs = cls._load_attributes(id)
             obj.attributes = attrs
-            obj._name = name.encode("utf8") if isinstance(name, unicode) else name
+            obj._name = name.decode("utf8") if isinstance(name, str) else name
             obj.type = type
             obj.prev_nid = attrs.get('system.prev_id', '0')
             obj.next_nid = attrs.get('system.next_id', '0')
@@ -507,8 +507,8 @@ class Node(object):
             self.next_nid = '0'
             if name is None:
                 self._name = ""
-            elif isinstance(name, unicode):
-                self._name = name.encode("utf8") 
+            elif isinstance(name, str):
+                self._name = name.decode("utf8") 
             else:
                 self._name = name
             self.type = type
@@ -531,7 +531,7 @@ class Node(object):
 
     @property
     def unicode_name(self):
-        return self._name.decode(encoding="utf8")
+        return self._name
 
     def _makePersistent(self):
         if self.id is None:
@@ -575,13 +575,13 @@ class Node(object):
     """ get the node name """
 
     def getName(self):
-        return self.name
+        return self._name
 
     """ set the node name """
 
     def setName(self, name):
-        if isinstance(name, unicode):
-            name = name.encode("utf8")
+        if isinstance(name, str):
+            name = name.decode("utf8")
         self._name = name
         if self.id:
             db.setNodeName(self.id, name)

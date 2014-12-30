@@ -100,7 +100,7 @@ class Connector:
             if value.startswith("\x11PACK\x12"):
                 attributes[name] = mloads(value[6:], encoding="utf8")
             else:
-                attributes[name] = unicode(value, encoding="utf8")
+                attributes[name] = value
         return attributes
 
     def getMetaFields(self, name):
@@ -204,6 +204,7 @@ class Connector:
             return None
         else:
             logg.error("More than one node for id %s", id)
+
             return None
 
     def getNodeIdByAttribute(self, attributename, attributevalue):

@@ -338,8 +338,8 @@ class AccessRule:
     def setDescription(self, newdesc):
         self.description = newdesc
 
-    def setParsedRule(self, str):
-        self.parsedRule = parse(str)
+    def setParsedRule(self, s):
+        self.parsedRule = parse(s)
 
     def getParsedRule(self):
         return self.parsedRule

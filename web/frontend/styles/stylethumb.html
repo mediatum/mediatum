@@ -13,7 +13,7 @@
         </div>
         
         <div style="margin-left:132px; position: absolute">
-            <p tal:replace="python:'['+str(file.nr+1)+'/'+str(file.num)+']'"/><br/>
+            <p tal:replace="python:'['+ustr(file.nr+1)+'/'+ustr(file.num)+']'"/><br/>
             <div style="overflow:hidden; width:130px">
             <a tal:attributes="href python:file.getLink()" style="white-space:normal" tal:content="raw python:file.node.show_node_text(None, language)"/>
             </div>

@@ -42,7 +42,7 @@
                         <small tal:condition="python:i>0" i18n:translate="sort_label2">TEXT</small>
                     </td>
                     <td>
-                        <select tal:attributes="name python:'sortfield'+str(i)" style="font-size: 9px" onchange="submit()">
+                        <select tal:attributes="name python:'sortfield'+ustr(i)" style="font-size: 9px" onchange="submit()">
                             <option tal:repeat="field python:sortfieldslist[i]" tal:content="python:field.getLabel()" 
                                 tal:attributes="value python:field.getName(); selected python:field.selected()"/>
                         </select>
@@ -62,7 +62,7 @@
         <tal:block tal:repeat="page python:list(nav_list)">
             <tal:block tal:condition="python:page!='...'" tal:define="page_no python:nav_page[int(nav_list.index(page))]">
                 &nbsp;
-                <tal:block tal:condition="python:act_page==page_no" tal:replace="python:'['"/><a tal:attributes="href page" tal:content="python:str(page_no+1)"/><tal:block tal:condition="python:act_page==page_no" tal:replace="python:']'"/>
+                <tal:block tal:condition="python:act_page==page_no" tal:replace="python:'['"/><a tal:attributes="href page" tal:content="python:ustr(page_no+1)"/><tal:block tal:condition="python:act_page==page_no" tal:replace="python:']'"/>
             </tal:block>
             <span tal:condition="python:page=='...'" tal:replace="python:' ...'"/>
         </tal:block>

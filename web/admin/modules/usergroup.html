@@ -17,7 +17,7 @@
                         <span i18n:translate="admin_filter_label">TEXT</span>
                         
                         <tal:block tal:repeat="tab tabs">
-                            <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit">TEXT</button>
+                            <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[ustr(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit">TEXT</button>
                         </tal:block>
                     </td>
                 </tr>
@@ -42,10 +42,10 @@
                 
                 <tal:block tal:repeat="group python:groups[pages.getStart():pages.getEnd()]">
                     <tr tal:attributes="class cssclass" tal:define="cssclass python:groups.index(group)%2 and 'norm' or 'silver'">
-                        <td tal:content="python:str(groups.index(group)+1)+'.'"/>
+                        <td tal:content="python:ustr(groups.index(group)+1)+'.'"/>
                         <td tal:content="python:group.getName()"/>
-                        <td tal:attributes="title python:group.getUserNames()+'\n'+group.getDynamicUserNames()" style="cursor:pointer;width:50px" tal:content="structure python:'&nbsp;&nbsp;&nbsp;&nbsp;'+str(len(group.getChildren())+len(group.getDynamicUserNames(as_string=False)))"/>
-                        <td tal:attributes="id python:'usergroup_'+str(group.id)+'_schema'" style="cursor:pointer;text-align:center;width:50px"><img src="/img/rightarrow.png" tal:attributes="onmouseover python:'getGroupSchema(this, \''+group.id+'\')'" title="..."/></td>
+                        <td tal:attributes="title python:group.getUserNames()+'\n'+group.getDynamicUserNames()" style="cursor:pointer;width:50px" tal:content="structure python:'&nbsp;&nbsp;&nbsp;&nbsp;'+ustr(len(group.getChildren())+len(group.getDynamicUserNames(as_string=False)))"/>
+                        <td tal:attributes="id python:'usergroup_'+ustr(group.id)+'_schema'" style="cursor:pointer;text-align:center;width:50px"><img src="/img/rightarrow.png" tal:attributes="onmouseover python:'getGroupSchema(this, \''+group.id+'\')'" title="..."/></td>
                         <td>
                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                             <tal:block tal:condition="python:group.getHideEdit()!=''">
@@ -63,8 +63,8 @@
                             </table>
                         </td>
                         <td style="width: 80px">
-                            <input i18n:attributes="title admin_usergroup_edit" tal:attributes="name python:str('edit_'+group.getName())" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
-                            <input tal:condition="python:len(group.getChildren())+len(group.getDynamicUserNames(as_string=False))==0" tal:attributes="name python:str('delete_'+group.getName()); onclick python:'return questionDelName(\''+group.getName()+'\')'" i18n:attributes="title admin_usergroup_delete" type="image" src="/img/delete.png"/>
+                            <input i18n:attributes="title admin_usergroup_edit" tal:attributes="name python:ustr('edit_'+group.getName())" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
+                            <input tal:condition="python:len(group.getChildren())+len(group.getDynamicUserNames(as_string=False))==0" tal:attributes="name python:ustr('delete_'+group.getName()); onclick python:'return questionDelName(\''+group.getName()+'\')'" i18n:attributes="title admin_usergroup_delete" type="image" src="/img/delete.png"/>
                         </td>
                     </tr>
                 </tal:block>
@@ -74,7 +74,7 @@
                     <th colspan="3" align="left">
                         <small>
                             <span i18n:translate="admin_usergroup_footer">
-                                <span i18n:name="number" tal:content="python:str(len(groups))"/>
+                                <span i18n:name="number" tal:content="python:ustr(len(groups))"/>
                             </span>
                             <span tal:content="raw python:pages.printPageList()"/>
                         </small>

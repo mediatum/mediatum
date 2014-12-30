@@ -9,8 +9,8 @@
         #navigation_content{border-width:0 0 1px 1px!important}
     </style>
 
-    <script tal:content="python:'var id = %r;' % str(node.id)"> </script>
-    <script tal:content="python:'var cid_list = %r;' % ([str(n.id) for n in nodelist])"> </script>
+    <script tal:content="python:'var id = %r;' % ustr(node.id)"> </script>
+    <script tal:content="python:'var cid_list = %r;' % ([ustr(n.id) for n in nodelist])"> </script>
 
     <div id="navigation_content">
         <h3 i18n:translate="edit_sort_label">TEXT</h3>

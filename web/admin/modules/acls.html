@@ -20,7 +20,7 @@
                     <td colspan="5">
                         <span i18n:translate="admin_filter_label">TEXT</span>
                         <tal:block tal:repeat="tab tabs">
-                            <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
+                            <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[ustr(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
                         </tal:block>
                     </td>
                 </tr>
@@ -38,7 +38,7 @@
                 </tr>
                 <tal:block tal:define="start python:pages.getStart(); end python:pages.getEnd()" tal:repeat="rule python:rules[start:end]">
                 <tr tal:define="cssclass python:rules.index(rule)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
-                    <td tal:content="python:str(rules.index(rule)+1)+'.'"/>
+                    <td tal:content="python:ustr(rules.index(rule)+1)+'.'"/>
                     <td tal:content="python:rule.getName()"/>
                     <td tal:condition="python:len(rule.getRuleStr())<=30" tal:content="python:rule.getRuleStr()"/>
                     <td tal:condition="python:len(rule.getRuleStr())>30"><a tal:attributes="title python:rule.getRuleStr()" tal:content="python:rule.getRuleStr()[:30]+'...'" style="cursor:default"/>
@@ -56,7 +56,7 @@
                     <th colspan="3" align="left">
                         <small>
                             <span i18n:translate="admin_acl_footer">
-                                <span i18n:name="number" tal:content="python:str(len(rules))"/>
+                                <span i18n:name="number" tal:content="python:ustr(len(rules))"/>
                             </span>
                             <span tal:content="structure python:pages.printPageList()"/>
                         </small>

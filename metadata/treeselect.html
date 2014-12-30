@@ -1,6 +1,6 @@
 
 <tal:block metal:define-macro="editorfield">
-    <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-26)+'px'; name name; id name; value value; maxlenght python:str(len(value))"/>
+    <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+ustr(width-26)+'px'; name name; id name; value value; maxlenght python:ustr(len(value))"/>
     <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
         <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onchange python:'handlelock(\''+name+'\')'" type="checkbox"/>
         <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
@@ -72,7 +72,7 @@
         </script>
         <div style="height:400px; overflow:auto;border:1px solid silver">
             <ul id="classtree" class="tree">
-                <li tal:attributes="id python:'Node'+basedir.id"><a tal:attributes="id python:str(basedir.id); title python:basedir.getLabel()+' ('+str(basedir.id)+')'" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
+                <li tal:attributes="id python:'Node'+basedir.id"><a tal:attributes="id python:ustr(basedir.id); title python:basedir.getLabel()+' ('+ustr(basedir.id)+')'" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
                     <ul>
                         <li tal:attributes="parentId python:basedir.id" class="spinner.gif"><a href="#" id="node_0"> </a></li>
                     </ul>

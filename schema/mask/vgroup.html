@@ -25,7 +25,7 @@
         <hr>
         <h4 i18n:translate="mask_edit_fields">TEXT</h4>
         <div align="right">
-            <input tal:attributes="name python:'newdetail_'+str(item.id)" type="image" src="/img/install.png" onclick="document.myform.type.value=''" i18n:attributes="title mask_edit_insert_field_title"/>
+            <input tal:attributes="name python:'newdetail_'+ustr(item.id)" type="image" src="/img/install.png" onclick="document.myform.type.value=''" i18n:attributes="title mask_edit_insert_field_title"/>
         </div>
     </tal:block>
     <tal:block tal:replace="raw details"/>

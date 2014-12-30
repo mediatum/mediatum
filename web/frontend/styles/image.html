@@ -41,7 +41,7 @@ The document is displayed in the <a href="/" tal:attributes="href python:'?id='+
     </tal:block>
 
     <div tal:condition="python:tif!=''" id="object_highresolution" style="padding-top:10px">
-        <a tal:attributes="href python:'/file/{}/{}'.format(node.id, str(tif))" i18n:translate="image_high_res_title">TEXT</a>
+        <a tal:attributes="href python:'/file/{}/{}'.format(node.id, ustr(tif))" i18n:translate="image_high_res_title">TEXT</a>
         <img id="object_highresolution_remark" style="display:none;" src="/img/wait_small.gif"/>
     </div>
 
@@ -52,11 +52,11 @@ The document is displayed in the <a href="/" tal:attributes="href python:'?id='+
     <div id="object_versions" tal:define="versions python:node.getVersionList()" tal:condition="python:len(versions)>1">
         <span onclick="$('#versions').toggle()" style="cursor:pointer" i18n:attributes="title document_versions_existing_title"><tal:block i18n:translate="document_versions">TEXT</tal:block> <img src="/img/greyarrow.gif"/></span>
         <div style="display:none;border:1px solid silver;padding:5px;" id="versions">
-            <div><tal:block i18n:translate="document_view_current_version_from">Current version:<br/><span i18n:name="version" tal:replace="python:'Version ' + str(node.get('system.version.id')=='' and 1 or node.get('system.version.id'))">Version</span> from</tal:block> <tal:block tal:condition="python:node.get('updatetime') or node.get('creationtime')" tal:replace="python:node.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:node.get('updateuser') and node.get('updateuser') or node.get('creator')" /></div>
+            <div><tal:block i18n:translate="document_view_current_version_from">Current version:<br/><span i18n:name="version" tal:replace="python:'Version ' + ustr(node.get('system.version.id')=='' and 1 or node.get('system.version.id'))">Version</span> from</tal:block> <tal:block tal:condition="python:node.get('updatetime') or node.get('creationtime')" tal:replace="python:node.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:node.get('updateuser') and node.get('updateuser') or node.get('creator')" /></div>
 
             <div i18n:translate="document_view_other_versions_of_the_document">Other versions of the document:</div>
             <div tal:repeat="v versions">
-                <a href="/" tal:attributes="href python:'?id='+v.id"><span tal:content="python:'Version ' + str(v.get('system.version.id')=='' and 1 or v.get('system.version.id'))">Version</span>
+                <a href="/" tal:attributes="href python:'?id='+v.id"><span tal:content="python:'Version ' + ustr(v.get('system.version.id')=='' and 1 or v.get('system.version.id'))">Version</span>
                 <span tal:condition="python:v.get('updatetime') or v.get('creationtime')">(<tal:block i18n:translate="document_view_from">from</tal:block> <tal:block tal:replace="python:v.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:v.get('updateuser') and v.get('updateuser') or v.get('creator')" />)</span></a>
             </div>
         </div>
@@ -69,12 +69,12 @@ The document is displayed in the <a href="/" tal:attributes="href python:'?id='+
     </a>
     <img tal:condition="python:not zoom" tal:attributes="src python:'/thumb2/{}'.format(node.id)" style="width: 300px;border:1px double silver;" border="1px"/>
     <div id="object_versions">
-        <div><tal:block i18n:translate="document_view_current_version_from">Current version: <span i18n:name="version" tal:replace="python:'Version ' + str(node.get('system.version.id')=='' and 1 or node.get('system.version.id'))">Version</span> from</tal:block> <tal:block tal:condition="python:node.get('updatetime')" tal:replace="python:node.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:node.get('updateuser') and node.get('updateuser') or node.get('creator')" /></div>
+        <div><tal:block i18n:translate="document_view_current_version_from">Current version: <span i18n:name="version" tal:replace="python:'Version ' + ustr(node.get('system.version.id')=='' and 1 or node.get('system.version.id'))">Version</span> from</tal:block> <tal:block tal:condition="python:node.get('updatetime')" tal:replace="python:node.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:node.get('updateuser') and node.get('updateuser') or node.get('creator')" /></div>
         <div i18n:translate="document_view_other_versions_of_the_document">Other versions of the document:</div>
         <tal:block tal:define="versions python:node.getVersionList()">
             <tal:block tal:repeat="v versions">
                 <div>
-                    <a href="/" tal:attributes="href python:'?id='+v.id"><span tal:content="python:'Version ' + str(v.get('system.version.id')=='' and 1 or v.get('system.version.id'))">Version</span>
+                    <a href="/" tal:attributes="href python:'?id='+v.id"><span tal:content="python:'Version ' + ustr(v.get('system.version.id')=='' and 1 or v.get('system.version.id'))">Version</span>
                     <span tal:condition="python:v.get('updatetime')">(<tal:block i18n:translate="document_view_from">from</tal:block> <tal:block tal:replace="python:v.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:v.get('updateuser') and v.get('updateuser') or v.get('creator')" />)</span></a>
                 </div>
             </tal:block>

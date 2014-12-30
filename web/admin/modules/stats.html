@@ -20,10 +20,10 @@
     
     <tal:block tal:define="pages python:['overview', 'type', 'size']">   
         <div id="page_tabs">
-            <div tal:repeat="page pages" tal:attributes="id python:page+'_tab'; onclick python:'tab(\''+page+'\')'; class python:{'False':None,'True':'active'}[str(pages.index(page)==0)]" class='active' tal:content="python:'admin_settings_'+page+'_header'" i18n:translate="">TEXT</div>
+            <div tal:repeat="page pages" tal:attributes="id python:page+'_tab'; onclick python:'tab(\''+page+'\')'; class python:{'False':None,'True':'active'}[ustr(pages.index(page)==0)]" class='active' tal:content="python:'admin_settings_'+page+'_header'" i18n:translate="">TEXT</div>
         </div>
         <div id="page_content" style="background-color:white;width:90%">
-            <div tal:repeat="page pages" tal:attributes="id page; style python:'display:'+{'False':'none','True':'visible'}[str(pages.index(page)==0)]"><img src="/img/wait_small.gif"/></div>
+            <div tal:repeat="page pages" tal:attributes="id page; style python:'display:'+{'False':'none','True':'visible'}[ustr(pages.index(page)==0)]"><img src="/img/wait_small.gif"/></div>
         </div>
     </tal:block>
     

@@ -48,7 +48,7 @@
         </tr>
         <tr tal:repeat="file files">
             <td tal:content="python:file.type"/>
-            <td tal:content="python:str(file.getSize())+' bytes'" style="text-align:right;width:100px"/>
+            <td tal:content="python:ustr(file.getSize())+' bytes'" style="text-align:right;width:100px"/>
             <td tal:content="python:file.mimetype"/>
             <td>
                 <a i18n:attributes="title upload_filelist_open_title" target="filewindow"
@@ -114,7 +114,7 @@
                  tal:attributes="href python:'/file/{}/{}'.format(node.id, file.getName())"
                  tal:content="python:file.getName()"/>
             </td>
-            <td tal:content="python:str(file.getSize())+' bytes'" style="text-align:right;width:100px"/>
+            <td tal:content="python:ustr(file.getSize())+' bytes'" style="text-align:right;width:100px"/>
             <td tal:condition="delbutton">
                 <input tal:attributes="name python:'delete_'+file.getName()" i18n:attributes="title upload_filelist_delete_title"  onclick="return delete_file_json_for_targetnode_FOR_____FIELDNAME____(this.name)" type="image" src="/img/delete.png" />
             </td>
@@ -133,7 +133,7 @@
     <tal:block tal:repeat="file files">
         <tal:block tal:condition="python:file.type in ['document', 'image']">
             <div style="padding:20px;margin-left:150px">
-                <p tal:content="python:str(file.getSize())+' bytes'"/>
+                <p tal:content="python:ustr(file.getSize())+' bytes'"/>
                 <a i18n:attributes="title upload_filelist_open_title" target="filewindow"
              tal:attributes="href python:'/file/{}/{}'.format(node.id, file.getName())"
              tal:content="python:file.getName()"/>
@@ -410,7 +410,7 @@
 
     </script>
 
-<div style="border:thin solid blue;" tal:attributes="id python:'upload_div_FOR_____FIELDNAME____'; name python:'upload_div_FOR_____FIELDNAME____'; style python:'width:'+str(width)+'px'">
+<div style="border:thin solid blue;" tal:attributes="id python:'upload_div_FOR_____FIELDNAME____'; name python:'upload_div_FOR_____FIELDNAME____'; style python:'width:'+ustr(width)+'px'">
 
         <input type="hidden" tal:attributes="id python:'submitter_class_'+name" name="submitter_class" value="" />
         <input type="hidden" tal:attributes="id python:'submitter02_FOR_____FIELDNAME____'; value python:name" name="submitter_FOR_____FIELDNAME____" />

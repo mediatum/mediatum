@@ -54,12 +54,12 @@
         <div class="ui-layout-west" style="display: none;">
             <ul>
                 <a href="/help">
-                    <li tal:attributes="class python:{'True':'selected', 'False':None}[str(url=='')]" i18n:translate="home" style="padding-left:5px">TEXT</li>
+                    <li tal:attributes="class python:{'True':'selected', 'False':None}[ustr(url=='')]" i18n:translate="home" style="padding-left:5px">TEXT</li>
                 </a>
                 <tal:block tal:repeat="section python:list(items)">
                     <tal:block tal:condition="python:section!='lang'">
                         <a tal:attributes="href python:'/help/'+section">
-                            <li tal:attributes="class python:{'True':'selected', 'False':None}[str(url=='/'+section)]" style="padding-left:5px">
+                            <li tal:attributes="class python:{'True':'selected', 'False':None}[ustr(url=='/'+section)]" style="padding-left:5px">
                                 <tal:block tal:content="section" i18n:translate="">TEXT</tal:block>
                                 <small tal:condition="python:items[section]['lang']!=curlang" tal:content="python:'('+items[section]['lang']+')'" i18n:attributes="title help_diff_language" class="lang">TEXT</small>
                             </li>
@@ -68,7 +68,7 @@
                         <tal:block tal:repeat="sub1 python:list(items[section])">
                         <tal:block tal:condition="python:sub1!='lang'">
                             <a tal:attributes="href python:'/help/'+section+'/'+sub1">
-                                <li tal:attributes="class python:{'True':'selected', 'False':None}[str(url=='/'+section+'/'+sub1)]" style="padding-left:15px">
+                                <li tal:attributes="class python:{'True':'selected', 'False':None}[ustr(url=='/'+section+'/'+sub1)]" style="padding-left:15px">
                                     <tal:block tal:content="python:sub1" i18n:translate="">TEXT</tal:block>
                                     <small tal:condition="python:items[section][sub1]['lang']!=curlang" tal:content="python:'('+items[section][sub1]['lang']+')'" i18n:attributes="title help_diff_language" class="lang">TEXT</small>
                                 </li>
@@ -77,7 +77,7 @@
                                 <tal:block tal:repeat="sub2 python:list(items[section][sub1])">
                                 <tal:block tal:condition="python:sub2!='lang'">
                                     <a tal:attributes="href python:'/help/'+section+'/'+sub1+'/'+sub2">
-                                        <li tal:attributes="class python:{'True':'selected', 'False':None}[str(url=='/'+section+'/'+sub1+'/'+sub2)]" style="padding-left:25px">
+                                        <li tal:attributes="class python:{'True':'selected', 'False':None}[ustr(url=='/'+section+'/'+sub1+'/'+sub2)]" style="padding-left:25px">
                                             <tal:block tal:content="python:sub2" i18n:translate="">TEXT</tal:block>
                                             <small tal:condition="python:items[section][sub1][sub2]['lang']!=curlang" tal:content="python:'('+items[section][sub1][sub2]['lang']+')'" i18n:attributes="title help_diff_language" class="lang">TEXT</small>
                                         </li>
@@ -104,7 +104,7 @@
 <div metal:define-macro="language" id="language">
     <form method="post">
         <select name="language_change" onchange="form.submit()">
-            <tal:block tal:repeat="language languages"><option tal:attributes="value language;selected python:{'True':'selected', 'False':None}[str(language==curlang)]" tal:content="language" i18n:translate="">TEXT</option></tal:block>
+            <tal:block tal:repeat="language languages"><option tal:attributes="value language;selected python:{'True':'selected', 'False':None}[ustr(language==curlang)]" tal:content="language" i18n:translate="">TEXT</option></tal:block>
         </select>
     </form>
 </div>

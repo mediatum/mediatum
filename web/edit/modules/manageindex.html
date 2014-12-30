@@ -63,7 +63,7 @@
     </form>
     </div>
     <div id="sub_footer_module"> </div>
-    <script tal:content="python:'\n\tgetEditPage(\'schemes\', \''+str(id)+'\', \'manageindex\', \'schemes\');\n    '">
+    <script tal:content="python:'\n\tgetEditPage(\'schemes\', \''+ustr(id)+'\', \'manageindex\', \'schemes\');\n    '">
     </script>
 
     <script>
@@ -80,7 +80,7 @@
 </metal:block>
 
 
-<select metal:define-macro="schemes_dropdown" name="schema" tal:attributes="onchange python:'changeScheme(\''+str(id)+'\', this.value)'">
+<select metal:define-macro="schemes_dropdown" name="schema" tal:attributes="onchange python:'changeScheme(\''+ustr(id)+'\', this.value)'">
     <option i18n:translate="edit_manageindex_choose_scheme">TEXT</option>
     <option tal:repeat="scheme schemes" tal:attributes="value python:scheme.getName()" tal:content="python:scheme.getName()"/>
 </select>
@@ -88,7 +88,7 @@
 
 <metal:block metal:define-macro="fields_dropdown">
     <h2 i18n:translate="edit_manageindex_step2_header">TEXT</h2>
-    <select name="fields" tal:attributes="onchange python:'getFields(\''+str(id)+'\', this.value)'">
+    <select name="fields" tal:attributes="onchange python:'getFields(\''+ustr(id)+'\', this.value)'">
         <option i18n:translate="edit_manageindex_choose_field">TEXT</option>
         <option tal:repeat="field fields" tal:attributes="value python:field.getName()" tal:content="python:field.getLabel()"/>
     </select>
@@ -99,7 +99,7 @@
     <h2 i18n:translate="edit_manageindex_step3_header">TEXT</h2>
     <p>
         <select size="10" name="old_values" id="old_values" multiple="multiple" style="width:50%" ondblclick="setValue(this.value)" tal:attributes="onchange python:'getCurrentCollection(this, \''+id+'\', \'children\')'">
-            <option tal:repeat="k keys" tal:content="python:k+' ('+str(len(entries[k]))+')'" tal:attributes="value k"/>
+            <option tal:repeat="k keys" tal:content="python:k+' ('+ustr(len(entries[k]))+')'" tal:attributes="value k"/>
         </select>
     </p>
     <div id="currentcollection" style="min-height:40px">
@@ -121,10 +121,10 @@
 <metal:block metal:define-macro="valueinfo">
     <tal:block i18n:translate="edit_manageindex_result"/>
     <ul>
-        <li tal:repeat="k keys" tal:content="python:str(k)+': '+ str(len(items[k]))"/>
+        <li tal:repeat="k keys" tal:content="python:ustr(k)+': '+ ustr(len(items[k]))"/>
     </ul>
 </metal:block>
 
 <metal:block metal:define-macro="operationinfo" i18n:translate="edit_manageindex_items">
-    <tal:block tal:content="python:str(number)" i18n:name="number"/>
+    <tal:block tal:content="python:ustr(number)" i18n:name="number"/>
 </metal:block>

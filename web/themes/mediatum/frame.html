@@ -123,7 +123,7 @@
             <table id="abc" name="xsearchtable" tal:define="max python:[4,11][search.isExtendedSuper()]">
                 <tr tal:repeat="i python:range(1,max)">
                     <td valign="top">
-                        <select tal:attributes="name python:'field'+str(i);id python:'id'+str(i); onchange python: 'chg_new('+str(i)+', '+str(search.collection.id)+')'">
+                        <select tal:attributes="name python:'field'+ustr(i);id python:'id'+ustr(i); onchange python: 'chg_new('+ustr(i)+', '+ustr(search.collection.id)+')'">
                             <option tal:attributes="selected python:[None,'selected'][search.names[i]=='full']" i18n:translate="all_metafields" value="full"/>
                             <tal:block tal:repeat="a python:search.getSearchFields().keys()">
                                 <option tal:attributes="value a; selected python:[None,'selected'][search.names[i]==a]" tal:content="python:search.getSearchFields()[a]"/>

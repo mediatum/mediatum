@@ -222,21 +222,21 @@
                             
                             <tal:block tal:condition="python:file['type']=='dir' or file['type']=='back'">
                                 <td tal:attributes="class cssclass" align="center">
-                                    <a tal:attributes="href python:'/attachmentbrowser?id='+str(id)+'&path='+file['req_path']">
+                                    <a tal:attributes="href python:'/attachmentbrowser?id='+ustr(id)+'&path='+file['req_path']">
                                         <img tal:attributes="src python:'/img/'+file['icon']" border="0"/>
                                     </a>
                                 </td>
-                                <td valign="top" tal:attributes="class cssclass"><a tal:attributes="href python:'/attachmentbrowser?id='+str(id)+'&path='+file['req_path']" tal:content="python:file['name']"/></td>
+                                <td valign="top" tal:attributes="class cssclass"><a tal:attributes="href python:'/attachmentbrowser?id='+ustr(id)+'&path='+file['req_path']" tal:content="python:file['name']"/></td>
                                 <td tal:attributes="class cssclass">&nbsp;</td>
                             </tal:block>
 
                             <tal:block tal:condition="python:file['type']!='dir' and file['type']!='back'">
                                 <td tal:attributes="class cssclass" align="center">
-                                    <a tal:attributes="href python:'/attfile/'+str(id)+'/'+file['path']" href="" target="_blank">
+                                    <a tal:attributes="href python:'/attfile/'+ustr(id)+'/'+file['path']" href="" target="_blank">
                                         <img tal:attributes="src python:'/img/'+file['icon']" border="0">
                                     </a>
                                 </td>
-                                <td tal:attributes="class cssclass"><a tal:attributes="href python:'attfile/'+str(id)+'/'+file['path']" target="_blank" tal:content="python:file['name']"/></td>
+                                <td tal:attributes="class cssclass"><a tal:attributes="href python:'attfile/'+ustr(id)+'/'+file['path']" target="_blank" tal:content="python:file['name']"/></td>
 
                                 <td tal:attributes="class cssclass" align="right"><small tal:content="python:file['size']"/>&nbsp;</td>
                             </tal:block>
@@ -244,7 +244,7 @@
                         </tr>
                     </tal:block>
                     <tr>
-                        <th i18n:translate="att_browser_files" colspan="2" align="left"><span i18n:name="c" tal:content="python:str(len(files))">TEXT</span></th>
+                        <th i18n:translate="att_browser_files" colspan="2" align="left"><span i18n:name="c" tal:content="python:ustr(len(files))">TEXT</span></th>
                         <th tal:content="sum_size" align="right"/>
                     </tr>
                 </table>

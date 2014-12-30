@@ -3,13 +3,13 @@
 <!--<script type="text/javascript" language="javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.22/jquery-ui.js"> </script>-->
 <script src="js/jquery-ui.js"> </script>
 
-<script tal:content="python:'var pdf_dim = '+str(json_pdf_dimensions)+';'">;</script>
-<script tal:content="python:'var keep_params = '+str(keep_params)+';'">;</script>
-<script tal:content="python:'var logo_info_list = '+str(logo_info_list)+';'">;</script>
-<script tal:content="python:'var logo_info = '+str(logo_info)+';'">;</script>
+<script tal:content="python:'var pdf_dim = '+ustr(json_pdf_dimensions)+';'">;</script>
+<script tal:content="python:'var keep_params = '+ustr(keep_params)+';'">;</script>
+<script tal:content="python:'var logo_info_list = '+ustr(logo_info_list)+';'">;</script>
+<script tal:content="python:'var logo_info = '+ustr(logo_info)+';'">;</script>
 <script tal:content="python:'var node_id = {};'.format(node.id)">;</script>
-<script tal:content="python:'var startpageno = '+str(startpageno)+';'">;</script>
-<script tal:content="python:'var FATAL_ERROR = '+str(FATAL_ERROR)+';'">;</script>
+<script tal:content="python:'var startpageno = '+ustr(startpageno)+';'">;</script>
+<script tal:content="python:'var FATAL_ERROR = '+ustr(FATAL_ERROR)+';'">;</script>
 
 <script>
 
@@ -654,7 +654,7 @@
             <span i18n:translate="admin_wfstep_addpic2pdf_select_page_to_preview">Select page to preview</span>:
             <select id="select_pdf_page" tal:attributes="name python:'pdfpage_select_for_node_{}'.format(node.id)" size=1 onchange="g(this.name, this.value);" onselect="g(this.name, this.value);" onkeyup="g(this.name, this.value);">
               <tal:block tal:repeat="i python: range(pdf_page_count)">
-                <option tal:attributes="value python:str(i)" tal:content="python: str(i+1)" />
+                <option tal:attributes="value python:ustr(i)" tal:content="python: ustr(i+1)" />
               </tal:block>
             </select>
           </div>
@@ -750,22 +750,22 @@
           <div style="overflow:hidden;">
             <tal:block tal:condition="python:wfs_files[fileindex].getName().startswith('m_upload_logoupload')">
               <div style="border:1px solid silver; padding:5px; overflow:auto;" class="subcontainer_logo" style="float:left;">
-                <input name="radio_logo" type="radio" onclick="radio_clicked(this.value);" tal:attributes="id python:'radio_logo_'+str(fileindex); value python:str(fileindex);"/>
+                <input name="radio_logo" type="radio" onclick="radio_clicked(this.value);" tal:attributes="id python:'radio_logo_'+ustr(fileindex); value python:ustr(fileindex);"/>
 
                 <tal:block tal:replace="python:wfs_files[fileindex].getName().replace('m_upload_logoupload_', '')" />
                 
                 <div style="border:1px solid silver; padding:5px; overflow:auto;" style="float:left;">
                                 
-                <span style="display:none" tal:content="python:wfs_files[fileindex].getName()" tal:attributes="id python:'radio_logo_'+str(fileindex)+'_fullname';" />
+                <span style="display:none" tal:content="python:wfs_files[fileindex].getName()" tal:attributes="id python:'radio_logo_'+ustr(fileindex)+'_fullname';" />
                 <!-- <br/> -->
-                <div tal:attributes="id python:'div_logo_small_'+str(fileindex);  title python:str(logo_info_list[fileindex])">
-                  <img tal:attributes="src python:'/file/'+wfs.id+'/'+wfs_files[fileindex].getName();id python:'image_logo_'+str(fileindex); height python: '60px';" />
+                <div tal:attributes="id python:'div_logo_small_'+ustr(fileindex);  title python:ustr(logo_info_list[fileindex])">
+                  <img tal:attributes="src python:'/file/'+wfs.id+'/'+wfs_files[fileindex].getName();id python:'image_logo_'+ustr(fileindex); height python: '60px';" />
                 </div>
-                <div style="display:none;" tal:attributes="id python:'div_logo_'+str(fileindex)">
-                  <img  tal:attributes="src python:'/file/'+wfs.id+'/'+wfs_files[fileindex].getName();id python:'image_logo_'+str(fileindex); style python:'height:'+str(float(logo_info_list[fileindex]['size'][1])/float(logo_info_list[fileindex]['dpi'])*2.54)+'cm'" />
+                <div style="display:none;" tal:attributes="id python:'div_logo_'+ustr(fileindex)">
+                  <img  tal:attributes="src python:'/file/'+wfs.id+'/'+wfs_files[fileindex].getName();id python:'image_logo_'+ustr(fileindex); style python:'height:'+ustr(float(logo_info_list[fileindex]['size'][1])/float(logo_info_list[fileindex]['dpi'])*2.54)+'cm'" />
                 </div>
                 <div class="no_wrap">
-                <input type="text" tal:attributes="value python:logo_info[wfs_files[fileindex].getName()]['url']; id python:'input_radio_logo_'+str(fileindex); size python:max(len(logo_info[wfs_files[fileindex].getName()]['url'])+10, 40)"/>
+                <input type="text" tal:attributes="value python:logo_info[wfs_files[fileindex].getName()]['url']; id python:'input_radio_logo_'+ustr(fileindex); size python:max(len(logo_info[wfs_files[fileindex].getName()]['url'])+10, 40)"/>
                 </div>
                 </div>
               </div>

@@ -33,11 +33,11 @@
                         <span i18n:translate="admin_filter_label">TEXT</span>
                         <select name="filtertype" style="margin:0px">
                             <tal:block tal:repeat="filterattr filterattrs">
-                                <option tal:content="python:filterattr[1]" tal:attributes="value python:filterattr[0]; selected python:{'False':None,'True':'selected'}[str(filterarg==filterattr[0])]" i18n:translate="">TEXT</option>
+                                <option tal:content="python:filterattr[1]" tal:attributes="value python:filterattr[0]; selected python:{'False':None,'True':'selected'}[ustr(filterarg==filterattr[0])]" i18n:translate="">TEXT</option>
                             </tal:block>
                         </select>
                         <tal:block tal:repeat="tab tabs">
-                            <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
+                            <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[ustr(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
                         </tal:block>
                     </td>
                 </tr>
@@ -65,7 +65,7 @@
                 
                 <tal:block tal:repeat="metadatatype python:metadatatypes[pages.getStart():pages.getEnd()]">
                 <tr tal:define="cssclass python:metadatatypes.index(metadatatype)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
-                    <td tal:content="python:str(metadatatypes.index(metadatatype)+1)+'.'"/>
+                    <td tal:content="python:ustr(metadatatypes.index(metadatatype)+1)+'.'"/>
                     <td tal:content="python:metadatatype.getName()"/>
                     <td tal:content="python:metadatatype.getLongName()"/>
                     <td tal:condition="python:len(metadatatype.getDescription())<=10" tal:content="python:metadatatype.getDescription()"/>
@@ -110,7 +110,7 @@
                     <th colspan="5" align="left">
                         <small>
                             <span i18n:translate="admin_meta_footer">
-                                <span i18n:name="number" tal:content="python:str(len(metadatatypes))"/>
+                                <span i18n:name="number" tal:content="python:ustr(len(metadatatypes))"/>
                             </span>
                             <span tal:content="structure python:pages.printPageList()"/>
                         </small>
@@ -196,7 +196,7 @@
             <tr>
                 <td><tal:block i18n:translate="admin_meta_active">TEXT</tal:block>:</td>
                 <td>
-                    <input tal:attributes="checked python:{'False':None,'True':'checked'}[str(metadatatype.isActive())]" type="checkbox" name="mactive" value="1"/>
+                    <input tal:attributes="checked python:{'False':None,'True':'checked'}[ustr(metadatatype.isActive())]" type="checkbox" name="mactive" value="1"/>
                     <small>(<span i18n:translate="admin_meta_msg3">TEXT</span>)</small>
                 </td>
             </tr>
@@ -204,7 +204,7 @@
                 <td><tal:block i18n:translate="admin_meta_datatype">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
                     <select name="mdatatypes" multiple="multiple" style="width:300px" size="5">
-                        <option tal:repeat="datatype datatypes" tal:attributes="value python:datatype.getName(); selected python:{'False':None,'True':'selected'}[str(datatype.getName() in metadatatype.getDatatypes())]" tal:content="python:datatype.getName()" i18n:translate=""/>
+                        <option tal:repeat="datatype datatypes" tal:attributes="value python:datatype.getName(); selected python:{'False':None,'True':'selected'}[ustr(datatype.getName() in metadatatype.getDatatypes())]" tal:content="python:datatype.getName()" i18n:translate=""/>
                     </select>
                 </td>
             </tr>
@@ -215,7 +215,7 @@
                 </td>
                 <td>
                     <select name="mbibtex" multiple="multiple" style="width:300px" size="5">
-                        <option tal:repeat="bibtex bibtextypes" tal:attributes="value python:bibtex; selected python:{'False':None,'True':'selected'}[str(bibtex in bibtexselected)]" tal:content="python:bibtex" i18n:translate=""/>
+                        <option tal:repeat="bibtex bibtextypes" tal:attributes="value python:bibtex; selected python:{'False':None,'True':'selected'}[ustr(bibtex in bibtexselected)]" tal:content="python:bibtex" i18n:translate=""/>
                     </select>
                 </td>
             </tr>
@@ -225,7 +225,7 @@
                 <td>
                     <select name="mciteproc" multiple="multiple" style="width:300px" size="5">
                         <option tal:repeat="citeproctype citeproctypes" 
-                            tal:attributes="value python:citeproctype; selected python:{'False':None,'True':'selected'}[str(citeproctype in citeprocselected)]" 
+                            tal:attributes="value python:citeproctype; selected python:{'False':None,'True':'selected'}[ustr(citeproctype in citeprocselected)]" 
                             tal:content="python:citeproctype" 
                             i18n:translate=""
                         />
@@ -261,11 +261,11 @@
             </tr>
             <tr tal:define="corrupt python:metadatatype.searchIndexCorrupt()">
                 <td>&nbsp;</td>
-                <td tal:condition="python: corrupt and str(metadatatype.id)!='None'">
-                    <span i18n:translate="admin_metatype_reindex_title">TEXT</span> &nbsp;&nbsp; <button type="submit" tal:attributes="name python:'indexupdate_'+str(metadatatype.id)" i18n:translate="admin_metatype_reindex_button" value="">TEXT</button>
+                <td tal:condition="python: corrupt and ustr(metadatatype.id)!='None'">
+                    <span i18n:translate="admin_metatype_reindex_title">TEXT</span> &nbsp;&nbsp; <button type="submit" tal:attributes="name python:'indexupdate_'+ustr(metadatatype.id)" i18n:translate="admin_metatype_reindex_button" value="">TEXT</button>
                     <br/>&nbsp;<br/>
                 </td>
-                <td tal:condition="python: not corrupt and str(metadatatype.id)!='None'">
+                <td tal:condition="python: not corrupt and ustr(metadatatype.id)!='None'">
                     <span i18n:translate="admin_metatype_index_ok">TEXT</span><br/>&nbsp;<br/>
                 </td>
             </tr>
@@ -277,7 +277,7 @@
                 </td>
             </tr>
         </table>
-        <input tal:attributes="value python:{'True':'save_new','False':'save_edit'}[str(id=='')]" type="hidden" name="form_op" id="form_op" />
+        <input tal:attributes="value python:{'True':'save_new','False':'save_edit'}[ustr(id=='')]" type="hidden" name="form_op" id="form_op" />
         <input type="hidden" name="acttype" value="schema"/>
         <input type="hidden" name="actpage" tal:attributes="value actpage"/>
         <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>

@@ -15,7 +15,7 @@
                     <td colspan="6">
                         <span i18n:translate="admin_filter_label">TEXT</span>
                         <tal:block tal:repeat="tab tabs">
-                            <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
+                            <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[ustr(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
                         </tal:block>
                     </td>
                 </tr>
@@ -40,7 +40,7 @@
                 </tr>
                 <tal:block tal:repeat="workflow python:workflows[start:end]" tal:define="start python:pages.getStart(); end python:pages.getEnd()">
                 <tr tal:define="cssclass python:workflows.index(workflow)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
-                    <td tal:content="python:str(workflows.index(workflow)+1)+'.'"/>
+                    <td tal:content="python:ustr(workflows.index(workflow)+1)+'.'"/>
                     <td tal:content="python:workflow.getName()"/>
                     <td tal:content="python:workflow.getDescription()">TEXT</td>
                     <td style="text-align:center">
@@ -52,7 +52,7 @@
                         <img tal:condition="python:workflow.getAccess('write')==''" i18n:attributes="title admin_wf_acl_title" src="/img/mark_empty.png"/>
                     </td>
                     <td style="text-align:right;width:50px">
-                        <input tal:attributes="name python:'detaillist_'+str(workflow.getId())" i18n:attributes="title admin_wf_nodeedit_title" type="image" src="/img/rightarrow.png"/>
+                        <input tal:attributes="name python:'detaillist_'+ustr(workflow.getId())" i18n:attributes="title admin_wf_nodeedit_title" type="image" src="/img/rightarrow.png"/>
                         &nbsp;
                         &nbsp;
                         <a tal:attributes="href python:'./workflows/' +workflow.getName()+'/overview?style=popup'" i18n:attributes="title admin_wf_graphic_title" target="_blank"><img src="/img/search.gif" border="0"/></a>
@@ -60,9 +60,9 @@
                         <a tal:attributes="href python:'/admin/export/workflows/' +workflow.getId()" i18n:attributes="title admin_wf_export_title" target="_blank"><img src="/img/export.png" border="0"/></a>
                     </td>
                     <td style="text-align:right;width:50px">
-                        <input tal:attributes="name python:'edit_'+str(workflow.getId())" i18n:attributes="title admin_wf_edit_title" type="image" src="/img/edit.png"/>
+                        <input tal:attributes="name python:'edit_'+ustr(workflow.getId())" i18n:attributes="title admin_wf_edit_title" type="image" src="/img/edit.png"/>
                         &nbsp;&nbsp;
-                        <input tal:attributes="name python:'delete_'+str(workflow.getId()); onclick python:'return questionDelName(\''+workflow.getName()+'\')'" i18n:attributes="title admin_wf_delete_title" type="image" src="/img/delete.png"/>
+                        <input tal:attributes="name python:'delete_'+ustr(workflow.getId()); onclick python:'return questionDelName(\''+workflow.getName()+'\')'" i18n:attributes="title admin_wf_delete_title" type="image" src="/img/delete.png"/>
                     </td>
                 </tr>
                 </tal:block>
@@ -72,7 +72,7 @@
                     <th colspan="4" align="left">
                         <small>
                             <span i18n:translate="admin_wf_footer">
-                                <span i18n:name="number" tal:content="python:str(len(workflows))"/>
+                                <span i18n:name="number" tal:content="python:ustr(len(workflows))"/>
                             </span>
                             <span tal:content="structure python:pages.printPageList()"/>
                         </small>
@@ -143,7 +143,7 @@
                 <td><tal:block i18n:translate="admin_wf_languages">TEXT</tal:block>:</td>
                 <td>
                     <tal:block tal:repeat="language languages">
-                        <input type="checkbox" name="wf_language" tal:attributes="value language;checked python:{'True':'checked','False':None}[str(language in workflow.getLanguages())]"/> <tal:block tal:content="language" i18n:translate=""/><br/>
+                        <input type="checkbox" name="wf_language" tal:attributes="value language;checked python:{'True':'checked','False':None}[ustr(language in workflow.getLanguages())]"/> <tal:block tal:content="language" i18n:translate=""/><br/>
                     </tal:block>
                 </td>
             </tr>
@@ -238,7 +238,7 @@
                     <td colspan="9">
                         <span i18n:translate="admin_filter_label">TEXT</span>
                         <tal:block tal:repeat="tab tabs">
-                            <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
+                            <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[ustr(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
                         </tal:block>
                     </td>
                 </tr>
@@ -248,7 +248,7 @@
                         <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit" value="">TEXT</button>
                     </th>
                     <th align="right">
-                        <input tal:attributes="name python:'newdetail_'+str(workflow.getId())" i18n:attributes="title admin_wfstep_new_title" type="image" src="/img/install.png">
+                        <input tal:attributes="name python:'newdetail_'+ustr(workflow.getId())" i18n:attributes="title admin_wfstep_new_title" type="image" src="/img/install.png">
                     </th>
                 </tr>
             </thead>
@@ -261,7 +261,7 @@
                 <tr tal:define="cssclass python:workflowsteps.index(workflowstep)%2 and 'norm' or 'silver';
                 tname python:workflowstep.getTrueId() or '-';
                 fname python:workflowstep.getFalseId() or '-'" tal:attributes="class cssclass">
-                    <td tal:content="python:str(workflowsteps.index(workflowstep)+1)+'.'"/>
+                    <td tal:content="python:ustr(workflowsteps.index(workflowstep)+1)+'.'"/>
                     <td tal:content="python:workflowstep.getName()"/>
                     <td tal:content="python:workflowstep.getContentType()" i18n:translate=""/>
                     <td>
@@ -274,7 +274,7 @@
                     </td>
                     <td>
                         <a tal:attributes="title python:workflowstep.getComment()" i18n:translate="admin_wfstep_chars">
-                            <tal:block tal:content="python:str(len(workflowstep.getComment()))" i18n:name="number"/> Zeichen
+                            <tal:block tal:content="python:ustr(len(workflowstep.getComment()))" i18n:name="number"/> Zeichen
                         </a>
                     </td>
                     <td style="text-align:center">
@@ -288,9 +288,9 @@
                     
                     
                      <td>
-                        <input tal:attributes="name python:'editdetail_'+str(workflow.getId())+'|'+str(workflowstep.getId())" i18n:attributes="title admin_wfstep_edit" type="image" src="/img/edit.png"/>
+                        <input tal:attributes="name python:'editdetail_'+ustr(workflow.getId())+'|'+ustr(workflowstep.getId())" i18n:attributes="title admin_wfstep_edit" type="image" src="/img/edit.png"/>
                         &nbsp;&nbsp;
-                        <input tal:attributes="name python:'deletedetail_'+str(workflow.getId())+'|'+str(workflowstep.getId()); onclick python:'return questionDelName(\''+workflowstep.getName()+'\')'" i18n:attributes="title admin_wfstep_delete" type="image" src="/img/delete.png"/>
+                        <input tal:attributes="name python:'deletedetail_'+ustr(workflow.getId())+'|'+ustr(workflowstep.getId()); onclick python:'return questionDelName(\''+workflowstep.getName()+'\')'" i18n:attributes="title admin_wfstep_delete" type="image" src="/img/delete.png"/>
                     </td>
                 </tr>
                 </tal:block>
@@ -300,7 +300,7 @@
                     <th colspan="5" align="left">
                         <small>
                             <span i18n:translate="admin_wfstep_footer">
-                                <span i18n:name="number" tal:content="python:str(len(workflowsteps))"/> TEXT
+                                <span i18n:name="number" tal:content="python:ustr(len(workflowsteps))"/> TEXT
                             </span>
                             <span tal:content="structure python:pages.printPageList()"/>
                         </small>
@@ -337,7 +337,7 @@
             }
         }
     </script>
-    <p><a tal:attributes="href python:'./workflows?detailof='+str(workflow.getId())+page" i18n:translate="admin_overview">TEXT</a></p>
+    <p><a tal:attributes="href python:'./workflows?detailof='+ustr(workflow.getId())+page" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="addmfield" id="addmfield" method="post" action="#">
         <table>
             <tr>

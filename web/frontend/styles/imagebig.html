@@ -19,7 +19,7 @@
         
         
         <div tal:condition="python:tif!=''" id="object_highresolution">
-            &nbsp;&nbsp;<a tal:attributes="href python:'/file/{}/{}'.format(node.id, str(tif))" href="#" i18n:translate="image_high_res_title">TEXT</a>
+            &nbsp;&nbsp;<a tal:attributes="href python:'/file/{}/{}'.format(node.id, ustr(tif))" href="#" i18n:translate="image_high_res_title">TEXT</a>
         </div>
     </div>
     

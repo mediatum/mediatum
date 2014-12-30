@@ -3,7 +3,7 @@
     <div style="float:left; width:128px; height:128px; margin: 3px;overflow:hidden">
         <a tal:attributes="href python:file.getLink()" tal:content="raw python:file.node.show_node_image()" target="_parent"/>
     </div>
-    <p tal:content="python:'['+str(file.nr+1)+'/'+str(file.num)+']'" class="docnum"/>
+    <p tal:content="python:'['+ustr(file.nr+1)+'/'+ustr(file.num)+']'" class="docnum"/>
     <a tal:attributes="href python:file.getLink()" tal:content="raw python:file.node.show_node_text(None, language)" style="white-space:normal"/>
 
     <div tal:attributes="onclick python:'shoppingBag(\'{}\')'.format(file.node.id)" style="position:absolute; right:0px; top:3px; width:20px; height:20px; overflow:hidden; cursor: pointer;">

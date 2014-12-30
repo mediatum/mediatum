@@ -65,11 +65,11 @@
                         val += document.mod_params.elements[x].value + '/';
                     }
                 }
-                if(val.substr(0, 1)=="/"){
+                if(val.subustr(0, 1)=="/"){
                     val = oEditor.FCK.Config.NodeId+val;
                 }
                 val = document.mod_params.mod_prefix.value + val;
-                oEditor.FCK.InsertHtml('{'+val.substr(0, val.length-1)+'}');
+                oEditor.FCK.InsertHtml('{'+val.subustr(0, val.length-1)+'}');
                 return true;
             }
 

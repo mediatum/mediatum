@@ -1,6 +1,6 @@
 <div id="object_main" metal:define-macro="login" style="margin-left:20px">
     <p>&nbsp;</p>
-    <p tal:condition="python:error>0" tal:content="python:'login_error_'+str(error)" i18n:translate="" class="error" style="text-align:center">TEXT</p>
+    <p tal:condition="python:error>0" tal:content="python:'login_error_'+ustr(error)" i18n:translate="" class="error" style="text-align:center">TEXT</p>
     <br/>
     <form method="post" class="login" name="login" style="margin-bottom:50px">
         <div class="label">&nbsp;</div>
@@ -32,7 +32,7 @@
 
 <div id="object_main" metal:define-macro="change_pwd" style="margin-left:20px">
     <p>&nbsp;</p>
-    <p tal:condition="python:error>0" tal:content="python:'login_change_err_'+str(error)" i18n:translate="" class="error" style="text-align:center">TEXT</p>
+    <p tal:condition="python:error>0" tal:content="python:'login_change_err_'+ustr(error)" i18n:translate="" class="error" style="text-align:center">TEXT</p>
     <form method="post" action="pwdchange" class="login" name="login">
         <div i18n:translate="login_act_pwd:" class="label">TEXT</div>
         <input maxlength="30" class="text" type="password" name="password_old" style="width:200px; margin-bottom:2px"/>

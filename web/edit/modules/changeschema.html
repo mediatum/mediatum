@@ -1,7 +1,7 @@
 
 <tal:block metal:define-macro="changeschema_popup">
-    <script tal:content="python:'var isContainer = %s;' % str(isContainer)"> </script>
-    <script tal:content="python:'var nid = %r;' % str(nodes[0].id)"> </script>
+    <script tal:content="python:'var isContainer = %s;' % ustr(isContainer)"> </script>
+    <script tal:content="python:'var nid = %r;' % ustr(nodes[0].id)"> </script>
     <script type="text/javascript">
       function getSelect(id, newobjtype) {
         getEditPage('schema', id, 'changeschema', 'get_schemes_for_'+newobjtype);

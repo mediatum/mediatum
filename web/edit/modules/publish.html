@@ -1,5 +1,5 @@
 
-<form metal:define-macro="publish_form" tal:attributes="action python:'/edit/edit_content?id='+str(id)+'&tab=publish'" method="post" style="margin:5px" name="publishform">
+<form metal:define-macro="publish_form" tal:attributes="action python:'/edit/edit_content?id='+ustr(id)+'&tab=publish'" method="post" style="margin:5px" name="publishform">
     <style>
         #treeform{display:none;position:fixed;top:0px;left:0px;right:0px;bottom:0px;width:100%;height:100%;z-index:1000000;}
         #treeform-background{position:absolute;top:0px;left;0px;height:100%;width:100%;background-color:silver;opacity: 0.5; -moz-opacity: 0.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);}
@@ -73,7 +73,7 @@
             <h3 i18n:translate="edit_publish_info">TEXT</h3>
             <div style="height:85%; overflow:auto;border:1px solid silver;margin:20px 20px">
                 <ul id="classtree" class="tree">
-                    <li tal:attributes="id python:'Node'+basedir.id"><a tal:attributes="id python:str(basedir.id); title python:basedir.getLabel()+' ('+str(basedir.id)+')'" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
+                    <li tal:attributes="id python:'Node'+basedir.id"><a tal:attributes="id python:ustr(basedir.id); title python:basedir.getLabel()+' ('+ustr(basedir.id)+')'" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
                         <ul>
                             <li tal:attributes="parentId python:basedir.id" class="spinner.gif"><a href="#" id="node_0"> </a></li>
                         </ul>
@@ -91,7 +91,7 @@
     <div>
         <p tal:condition="python:len(faultylist)>0" class="error" style="left: 200px; top: 100px; position: absolute;">
                 Objekte mit folgender ID konnten nicht publiziert werden:<br/>
-                <tal:block tal:repeat="item faultylist" tal:replace="raw python:'- '+str(id)+'<br/>'"/>
+                <tal:block tal:repeat="item faultylist" tal:replace="raw python:'- '+ustr(id)+'<br/>'"/>
             </p>
     </div>
     

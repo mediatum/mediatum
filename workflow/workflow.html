@@ -64,7 +64,7 @@
         <tr>
             <th colspan="7">
                 <small i18n:translate="workflow_searchfooter">
-                    <tal:block tal:content="python:str(len(items))" i18n:name="number"/>
+                    <tal:block tal:content="python:ustr(len(items))" i18n:name="number"/>
                 </small>
             </th>
         </tr>
@@ -85,7 +85,7 @@
     <p>
         <a href="/publish" i18n:translate="workflow_back">TEXT</a>
     </p>
-    <h2><tal:block i18n:translate="wf_list_header"><tal:block tal:content="python:str(len(workflow.getNodeList()))" i18n:name="number"/>
+    <h2><tal:block i18n:translate="wf_list_header"><tal:block tal:content="python:ustr(len(workflow.getNodeList()))" i18n:name="number"/>
         <tal:block tal:content="python:workflow.getName()" i18n:name="name"/>
         </tal:block>:
         <tal:block tal:replace="python:workflow.getDescription()"/>
@@ -99,7 +99,7 @@
             <tal:block tal:repeat="step python:workflow.getSteps(access, 'write')">
                 <tr tal:attributes="bgcolor python:step.get('adminstep') and '#bec2d3' or None">
                     <td align="left"><b tal:content="python:step.getName()"></b></td>
-                    <td align="left"><a tal:attributes="href python:step.getLink()" i18n:translate="wf_list_objects"><span tal:content="python:str(len(step.getChildren()))" i18n:name="number"/> TEXT</a></td>
+                    <td align="left"><a tal:attributes="href python:step.getLink()" i18n:translate="wf_list_objects"><span tal:content="python:ustr(len(step.getChildren()))" i18n:name="number"/> TEXT</a></td>
                 </tr>
             </tal:block>
         </tbody>
@@ -256,7 +256,7 @@
         <tr>
             <th colspan="6" align="left">
                 <small i18n:translate="workflow_footer">
-                    <tal:block tal:content="python:str(len(children))" i18n:name="number"/>
+                    <tal:block tal:content="python:ustr(len(children))" i18n:name="number"/>
                 </small>
             </th>
             <th colspan="2" style="text-align: right;">
@@ -297,13 +297,13 @@
 <table id="workflowbuttons" metal:define-macro="workflow_buttons" style="margin-top:20px;">
     <tr>
         <td colspan="2" style="text-align:right;padding-bottom:20px;">
-            <em><tal:block i18n:translate="workflow_identificator"/>: <tal:block tal:replace="python:str(node.id)"/>, <tal:block i18n:translate="workflow_key"/>: <tal:block tal:replace="python:node.get('key')"/></em>
+            <em><tal:block i18n:translate="workflow_identificator"/>: <tal:block tal:replace="python:ustr(node.id)"/>, <tal:block i18n:translate="workflow_key"/>: <tal:block tal:replace="python:node.get('key')"/></em>
         </td>
     </tr>
     <tr>
         <td align="left">
-            <input type="hidden" name="id" tal:attributes="value python:str(wfstep.id)"/>
-            <input type="hidden" name="obj" tal:attributes="value python:str(node.id)"/>
+            <input type="hidden" name="id" tal:attributes="value python:ustr(wfstep.id)"/>
+            <input type="hidden" name="obj" tal:attributes="value python:ustr(node.id)"/>
 
             <button tal:condition="python:wfstep.getFalseId()" type="submit" name="gofalse" tal:content="python:wfstep.getFalseLabel(lang)">TEXT</button>
             &nbsp;

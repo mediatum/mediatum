@@ -123,18 +123,18 @@
                             <tal:block tal:repeat="item named_filelist">
                                 <tr tal:define="cssclass python:named_filelist.index(item)%2 and 'silver' or 'norm'" tal:attributes="class cssclass; id python:item[0];">
                                     <td tal:repeat="lang languages">
-                                        <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'radio_'+lang; value python:item[0]; checked python:{'False':None,'True':'checked'}[str(lang in item[7])]"/>
+                                        <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'radio_'+lang; value python:item[0]; checked python:{'False':None,'True':'checked'}[ustr(lang in item[7])]"/>
                                     </td>
                                     <td style="border-left:1px solid silver">
                                         <input type="text" tal:attributes="name python:'descr.'+item[0]; value python:item[1]" style="width:300px"/>
                                     </td>
-                                    <td tal:content="python:str(item[8])"/>
+                                    <td tal:content="python:ustr(item[8])"/>
                                     <td style="width:20px;text-align:right">
                                         <a target="_blank" tal:attributes="href python:item[8]"  i18n:attributes="title edit_startpages_link">
                                             <img src="/img/rightarrow.png"/>
                                         </a>
                                     </td>
-                                    <td style="text-align:right; font-size:9px" tal:content="python:str(item[5])"/>
+                                    <td style="text-align:right; font-size:9px" tal:content="python:ustr(item[5])"/>
                                     <td style="text-align:right">
                                         <a href="#" tal:attributes="onclick python:'editFile(\''+item[0]+'\')'" i18n:attributes="title edit_startpages_edit"><img src="/img/edit_opt.png"/></a>
                                         <input tal:attributes="name python:'delete_'+item[0]" i18n:attributes="title edit_startpages_delete" type="image" src="/img/delete.png" onclick="return questionDel()"/>
@@ -145,7 +145,7 @@
                         <tfoot>
                             <tr style="background-color:#d8d8d8">
                                 <td tal:repeat="lang languages">
-                                    <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'radio_'+lang; value python:''; checked python:{'False':None,'True':'checked'}[str(node.getStartpageFileNode(lang)==None)]"/>
+                                    <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'radio_'+lang; value python:''; checked python:{'False':None,'True':'checked'}[ustr(node.getStartpageFileNode(lang)==None)]"/>
                                 </td>
                                 <td colspan="5" style="border-left:1px solid silver" i18n:translate="edit_startpages_do_not_use_a_startpage">TEXT</td>
                             </tr>
@@ -165,15 +165,15 @@
                         <tbody>
                             <tr tal:repeat="item named_filelist">
                                 <td tal:repeat="lang languages">
-                                    <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'sidebar_'+lang; value python:item[0]; checked python:{'False':None,'True':'checked'}[str(lang in item[9])]"/>
+                                    <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'sidebar_'+lang; value python:item[0]; checked python:{'False':None,'True':'checked'}[ustr(lang in item[9])]"/>
                                 </td>
-                                <td style="border-left:1px solid silver" tal:content="python:str(item[1]+' ('+item[8]+')')"/>
+                                <td style="border-left:1px solid silver" tal:content="python:ustr(item[1]+' ('+item[8]+')')"/>
                             </tr>
                         </tbody>
                         <tfoot>
                             <tr style="background-color:#d8d8d8">
                                 <td tal:repeat="lang languages">
-                                    <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'sidebar_'+lang; value python:''; checked python:{'False':None,'True':'checked'}[str(node.getStartpageFileNode(lang)==None)]"/>
+                                    <input type="radio" i18n:attributes="title edit_startpages_selectlanguage" tal:attributes="name python:'sidebar_'+lang; value python:''; checked python:{'False':None,'True':'checked'}[ustr(node.getStartpageFileNode(lang)==None)]"/>
                                 </td>
                                 <td style="border-left:1px solid silver" i18n:translate="edit_startpages_do_not_use_a_sidebar">TEXT</td>
                             </tr>

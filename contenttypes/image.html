@@ -140,8 +140,8 @@
 
 <html metal:define-macro="thumbbig">
     <head>
-        <script tal:content="python:'var height='+str(height)+';'"/>
-        <script tal:content="python:'var width='+str(width)+';'"/>
+        <script tal:content="python:'var height='+ustr(height)+';'"/>
+        <script tal:content="python:'var width='+ustr(width)+';'"/>
         <script>
             function resize(){
                 window.resizeTo(width+50, height+100);

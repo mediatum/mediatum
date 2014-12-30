@@ -10,7 +10,7 @@
                     <td colspan="10">
                         <span i18n:translate="admin_filter_label">TEXT</span>
                         <tal:block tal:repeat="tab tabs">
-                            <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
+                            <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[ustr(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
                         </tal:block>
                     </td>
                 </tr>
@@ -35,12 +35,12 @@
                 </tr>
                 <tal:block tal:define="start python:pages.getStart();end python:pages.getEnd()" tal:repeat="mapping python:mappings[start:end]">
                     <tr tal:define="cssclass python:mappings.index(mapping)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
-                        <td tal:content="python:str(mappings.index(mapping)+1)+'.'"/>
+                        <td tal:content="python:ustr(mappings.index(mapping)+1)+'.'"/>
                         <td tal:content="python:mapping.getName()"/>
                         <td tal:content="python:mapping.getNamespace()"/>
                         <td tal:content="python:mapping.getNamespaceUrl()"/>
                         <td tal:content="python:mapping.getDescription()"/>
-                        <td style="width:40px;padding-right:10px;text-align:right" tal:content="python:str(len(mapping.getFields()))"/>
+                        <td style="width:40px;padding-right:10px;text-align:right" tal:content="python:ustr(len(mapping.getFields()))"/>
                         <td tal:content="python:mapping.getMappingType()"/>
                         <td style="padding-left:14px">
                             &nbsp;<img tal:condition="python:mapping.getActive()==1" src="/img/haken.gif"/>
@@ -52,8 +52,8 @@
                             <a tal:attributes="href python:'/admin/export/mapping/'+mapping.getName()" i18n:attributes="title admin_mapping_export_title" target="_blank">
                                 <img src="/img/export.png" border="0"/>
                             </a>
-                            <input tal:attributes="name python:str('edit_'+str(mapping.id))" i18n:attributes="title admin_mapping_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
-                            <input tal:condition="python:len(mapping.getFields())==0" tal:attributes="name python:str('delete_'+str(mapping.id)); onclick python:'return questionDelName(\''+mapping.getName()+'\')'" i18n:attributes="title admin_mapping_delete_title" type="image" src="/img/delete.png"/>
+                            <input tal:attributes="name python:ustr('edit_'+ustr(mapping.id))" i18n:attributes="title admin_mapping_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
+                            <input tal:condition="python:len(mapping.getFields())==0" tal:attributes="name python:ustr('delete_'+ustr(mapping.id)); onclick python:'return questionDelName(\''+mapping.getName()+'\')'" i18n:attributes="title admin_mapping_delete_title" type="image" src="/img/delete.png"/>
                         </td>
                     </tr>
                 </tal:block>
@@ -63,7 +63,7 @@
                     <th colspan="5" align="left">
                         <small>
                             <span i18n:translate="admin_mapping_overview_footer">
-                                <span i18n:name="number" tal:content="python:str(len(mappings))"/>
+                                <span i18n:name="number" tal:content="python:ustr(len(mappings))"/>
                             </span>
                             <span tal:content="raw python:pages.printPageList()"/>
                         </small>
@@ -145,7 +145,7 @@
                 <td><tal:block i18n:translate="admin_mapping_type">TEXT</tal:block>:</td>
                 <td>
                     <select name="mappingtype">
-                        <option tal:repeat="mtype mappingtypes" tal:content="mtype" tal:attributes="value mtype; selected python:{'False':None, 'True':'selected'}[str(mapping.getMappingType()==mtype)]"/>
+                        <option tal:repeat="mtype mappingtypes" tal:content="mtype" tal:attributes="value mtype; selected python:{'False':None, 'True':'selected'}[ustr(mapping.getMappingType()==mtype)]"/>
                     </select>
                 </td>
             </tr>
@@ -235,7 +235,7 @@
                 <td colspan="7">
                     <span i18n:translate="admin_filter_label">TEXT</span>
                     <tal:block tal:repeat="tab tabs">
-                        <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[str(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
+                        <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[ustr(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
                     </tal:block>
                 </td>
             </tr>
@@ -245,7 +245,7 @@
                     <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit" value="">TEXT</button>
                 </th>
                 <th align="right">
-                    <input i18n:attributes="title admin_mappingfield_create" tal:attributes="name python:('newfield_'+str(mapping.id))" type="image" src="/img/install.png"/>
+                    <input i18n:attributes="title admin_mappingfield_create" tal:attributes="name python:('newfield_'+ustr(mapping.id))" type="image" src="/img/install.png"/>
                 </th>
             </tr>
             <tr tal:condition="python:len(fields)==0">
@@ -253,15 +253,15 @@
             </tr>
             <tal:block tal:define="start python:pages.getStart();end python:pages.getEnd()" tal:repeat="field python:fields[start:end]">
                 <tr tal:define="cssclass python:fields.index(field)%2 and 'norm' or 'silver'">
-                    <td tal:attributes="class cssclass" tal:content="python:str(fields.index(field)+1)+'.'"/>
+                    <td tal:attributes="class cssclass" tal:content="python:ustr(fields.index(field)+1)+'.'"/>
                     <td tal:attributes="class cssclass" tal:content="python:field.getName()"/>
                     <td tal:attributes="class cssclass" tal:content="python:field.getDescription()"/>
                     <td tal:attributes="class cssclass">
                         <img tal:condition="python:field.getMandatory()" src="/img/haken.gif"/>&nbsp;                    
                     </td>
                     <td tal:attributes="class cssclass" class="_norm_">
-                        <input tal:attributes="name python:str('editfield_'+str(field.id))" i18n:attributes="title admin_mappingfield_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
-                        <input tal:attributes="name python:str('deletefield_'+str(field.id)); onclick python:'return questionDelName(\''+field.getName()+'\')'" i18n:attributes="title admin_mappingfield_delete_title" type="image" src="/img/delete.png"/>
+                        <input tal:attributes="name python:ustr('editfield_'+ustr(field.id))" i18n:attributes="title admin_mappingfield_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
+                        <input tal:attributes="name python:ustr('deletefield_'+ustr(field.id)); onclick python:'return questionDelName(\''+field.getName()+'\')'" i18n:attributes="title admin_mappingfield_delete_title" type="image" src="/img/delete.png"/>
                     </td>
                 </tr>
             </tal:block>
@@ -269,7 +269,7 @@
                 <th colspan="3">
                     <small>
                         <span i18n:translate="admin_mappingfield_footer">
-                            <span i18n:name="number" tal:content="python:str(len(fields))"/>
+                            <span i18n:name="number" tal:content="python:ustr(len(fields))"/>
                         </span>
                         <span tal:content="raw python:pages.printPageList()"/>
                     </small>
@@ -329,7 +329,7 @@
             <tr>
                 <td><tal:block i18n:translate="admin_mappingfield_mandatory">TEXT</tal:block>:</td>
                 <td>
-                    <input tal:attributes="checked python:{'False':None,'True':'checked'}[str(field.getMandatory())]" type="checkbox" name="mandatory" value="1">
+                    <input tal:attributes="checked python:{'False':None,'True':'checked'}[ustr(field.getMandatory())]" type="checkbox" name="mandatory" value="1">
                 </td>
             </tr>
             <tr>

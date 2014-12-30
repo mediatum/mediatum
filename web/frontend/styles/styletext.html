@@ -1,7 +1,7 @@
 
 <div tal:repeat="file python:files" class="preview_text" style="height: auto; padding-bottom: 10px;" onmouseover="this.style.backgroundColor='#cccccc'" onmouseout="this.style.backgroundColor='white'">
     <div style="margin:3px;">
-    [<a tal:attributes="href python:file.getLink()" tal:content="python:str(file.nr+1)"></a>]
+    [<a tal:attributes="href python:file.getLink()" tal:content="python:ustr(file.nr+1)"></a>]
     </div>
     <div style="margin-left: 30px; margin-top: 5px">
         <a tal:attributes="href python:file.getLink()" style="white-space:normal">

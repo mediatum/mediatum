@@ -1,5 +1,5 @@
 <tal:block metal:define-macro="editorfield" tal:define="schema python:field.getSchemaNode().getName()">
-    <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-50)+'px'; name name; id name; value value"/>
+    <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+ustr(width-50)+'px'; name name; id name; value value"/>
     &nbsp;
     <button tal:attributes="name python:'indexbutton_'+name; onclick python:'openPopup(\'/metatype/ilist?pid='+field.getName()+'&type='+field.getFieldtype()+'&name='+name+'&schema='+schema+'\', \'\', 400, 400)'" style="width: 44px; padding: 0px;" type="button" i18:attributes="title editor_index_title" i18n:translate="editor_index">Index</button>
     <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/text?name='+name+'\', \'\', 550, 470)'" style="horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px" type="button" i18n:attributes="title ilist_titlepopupbutton"><img src="/img/edit_spc.png" style="height:14px"/></button>
@@ -12,8 +12,8 @@
 
 <select metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name" class="searchfield">
     <tal:block tal:repeat="val python:valuelist">
-        <option tal:condition="python:val[1]>0" tal:attributes="value python:''+val[0]+''; selected python:{'True':'selected', 'False':None}[str(context.value==''+val[0]+'')]" tal:content="python:val[0]+ ' ('+str(val[1])+')'"/>
-        <option tal:condition="python:val[1]==0" tal:attributes="value python:''+val[0]+''; selected python:{'True':'selected', 'False':None}[str(context.value==''+val[0]+'')]" tal:content="python:val[0]"/>
+        <option tal:condition="python:val[1]>0" tal:attributes="value python:''+val[0]+''; selected python:{'True':'selected', 'False':None}[ustr(context.value==''+val[0]+'')]" tal:content="python:val[0]+ ' ('+ustr(val[1])+')'"/>
+        <option tal:condition="python:val[1]==0" tal:attributes="value python:''+val[0]+''; selected python:{'True':'selected', 'False':None}[ustr(context.value==''+val[0]+'')]" tal:content="python:val[0]"/>
     </tal:block>
 </select>
 

@@ -41,7 +41,7 @@
         </div>
         <div id="scrollcontent">
         <tal:block tal:repeat="node nodelist">
-            <div tal:attributes="class python:{'True':'showcontent', 'False':'showcontent_error'}[str(str('')==str(node.getAttribute('faulty')))]">
+            <div tal:attributes="class python:{'True':'showcontent', 'False':'showcontent_error'}[ustr(ustr('')==ustr(node.getAttribute('faulty')))]">
                 <div style="position:absolute; left:0px; top:0px; width:296px; height:20px">
                     <input id="itemcheck" tal:attributes="name python:node.id; id python:'check'+node.id" onChange="checkObject(this)" type="checkbox"/> <span i18n:translate="edit_common_mark">TEXT</span>
                 </div>
@@ -52,7 +52,7 @@
                     <span tal:attributes="onclick python:'deleteSelected('+node.id+')'" i18n:attributes="title edit_common_edit_delete" target="content"><img src="/img/edit_delete.png"/></span>
                 </div>
                 <div style="position:absolute; left:3px; top:25px; width:148px; height:148px;">
-                    <a tal:attributes="href python:'edit_content?id='+str(node.id)+'&tab=view'" i18n:attributes="title edit_common_bigview_title">
+                    <a tal:attributes="href python:'edit_content?id='+ustr(node.id)+'&tab=view'" i18n:attributes="title edit_common_bigview_title">
                         <tal:block tal:condition="python:hasattr(node, 'show_node_image')" tal:replace="raw python:node.show_node_image()"/>
                         <img tal:condition="python:not hasattr(node, 'show_node_image')" src="/img/questionmark.png"/>
                     </a>

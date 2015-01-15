@@ -218,6 +218,7 @@ var new_path_endpoint = "";
 var flag_cut_mode = false;
 var node_to_paste = null;  // node to be moves via context menu
 var node_to_paste_classname = '';
+var node_to_paste_li = null;
 
 var dummy_temp = null;
 var temp_ctx_event = null;
@@ -500,9 +501,11 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curnode)
                 consoledb.log('cut node:' + node.key);
                 consoledb.log('cut node has focus: ', node.hasFocus());
                 node_to_paste = node;
+                node_to_paste_li = $(node.li);
+                node_to_paste_classname = node_to_paste.li.className;
                 node_to_paste_parent = node.parent;
+                node_to_paste_li.addClass('fancytree-node-disabled');
                 flag_cut_mode = true;
-                disable_tree_nodes([getcoltree(), gethometree()], [node.key])
 
                 // give tree keyboard focus so that cut mode may be canceled by "ESC" key
                 current_tree.widget.options.keyboard = FANCYTREE_KEYBOARD;
@@ -512,11 +515,9 @@ function contextmenue_on_demand(selector, curtree, curtree_node_prefix, curnode)
                 break;
               case "paste_container_here":
                 consoledb.log('cut node:' + node.key);
-                node.load(true);
-                node.setExpanded();
-                node_to_paste.li.className = node_to_paste_classname;
                 if (node_to_paste_parent.key == node.key) { // nothing to be done: user tries to paste node to parent
                   flag_cut_mode = false;
+                  node_to_paste_li.removeClass('fancytree-node-disabled');
                   res = false;
                   break;
                 }

@@ -30,7 +30,6 @@ import core.help as help
 import core.users as users
 import core.usergroups as usergroups
 import core.translation
-import core.athana as athana
 import utils.log
 import logging
 from core.acl import AccessData
@@ -40,6 +39,8 @@ from edit_common import *
 
 from core.translation import lang
 from core.translation import t as translation_t
+
+from core.transition import httpstatus
 
 from edit_common import EditorNodeList
 from core.datatypes import loadAllDatatypes, Datatype
@@ -346,7 +347,7 @@ def handletabs(req, ids, tabs):
 def error(req):
     req.writeTAL("<tal:block tal:replace=\"errormsg\"/>",
                  {"errormsg": req.params.get("errmsg", "")}, macro="edit_errorpage")
-    return athana.HTTP_OK
+    return httpstatus.HTTP_OK
 
 
 # delivers all edit modules

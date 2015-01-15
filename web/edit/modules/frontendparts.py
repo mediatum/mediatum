@@ -19,7 +19,7 @@
 
 import os
 from PIL import Image
-import core.athana as athana
+from core.transition.athana_sep import athana_http as athana
 import core.acl as acl
 import core.tree as tree
 import core.config as config

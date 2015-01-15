@@ -570,7 +570,7 @@ def upload_bibhandler(req):
                 logger.debug(
                     'going to call importBibTex(%r), import will be logged to backend!' % retrieved_file)
                 nn = importBibTeX(retrieved_file)
-                logger.debug(
+                logger.info(
                     'importBibTex(%r) done, import logged to backend!' % retrieved_file)
             except ValueError, e:
                 logger.exception('calling importBibTex(%r)' % retrieved_file)

@@ -17,6 +17,12 @@ msgstr "Zielverzeichnis auswählen"
 msgid "edit_publish_button"
 msgstr "Publizieren"
 
+msgid "edit_publish_button_deactivated_tooltip"
+msgstr "(deaktiviert) Objekte können erst nach der Auswahl der Zielverzeichnisse publiziert werden"
+
+msgid "edit_publish_button_activated_tooltip"
+msgstr "In den ausgewählten Verzeichnissen publizieren"
+
 msgid "edit_publish_popupheader"
 msgstr "Ziel auswählen:"
 

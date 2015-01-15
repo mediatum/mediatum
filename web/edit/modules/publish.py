@@ -40,18 +40,18 @@ def getContent(req, ids):
     publishdir = tree.getNode(ids[0])
     explicit = tree.getNodesByAttribute("writeaccess", user.getName())
     ret = ""
-    
+
     actionerror = []
     changes = []
     if "dopublish" in req.params.keys():
         access = AccessData(req)
-    
+
         objlist = []
         for key in req.params.keys():
             if key.isdigit():
                 objlist.append(key)
                 src = tree.getNode(req.params.get("id"))
-                
+
         for obj_id in objlist:
             faultylist = []
             obj = tree.getNode(obj_id)
@@ -63,22 +63,26 @@ def getContent(req, ids):
             if len(faultylist)>0: # object faulty
                 actionerror.append(obj_id)
                 continue
-            
+
             for dest_id in req.params.get("destination", "").split(","):
                 if dest_id=="": # no destination given
                     continue
-                
+
                 dest = tree.getNode(dest_id)
                 if dest != src and access.hasReadAccess(src) and access.hasWriteAccess(dest) and access.hasWriteAccess(obj) and isDirectory(dest):
                         if not nodeIsChildOfNode(dest,obj):
                             dest.addChild(obj)
                             src.removeChild(obj)
-                            
+
                             if dest.id not in changes:
                                 changes.append(dest.id)
                             if src.id not in changes:
                                 changes.append(src.id)
-                            
+                            log.info("%s published %s (%r, %r) from src %s (%r, %r) to dest %s (%r, %r)" % (
+                                      user.getName(),
+                                      obj.id, obj.name, obj.type,
+                                      src.id, src.name, src.type,
+                                      dest.id, dest.name, dest.type,))
                         else:
                             actionerror.append(obj.id)
                             log.error("Error in publishing of node %r: Destination node %r is child of node." % (obj_id, dest.id))
@@ -91,13 +95,12 @@ def getContent(req, ids):
                     log.error("Error in publishing of node %r: object has no write access." % obj.id)
                 if not isDirectory(dest):
                     log.error("Error in publishing of node %r: destination %r is not a directory." % (obj.id, dest.id))
-                            
+
         v = {}
         v["id"] = publishdir.id
         v["change"] = changes
         ret += req.getTAL("web/edit/modules/publish.html", v, macro="reload")
 
-        
     # build normal window
     stddir = ""
     stdname = ""
@@ -109,7 +112,7 @@ def getContent(req, ids):
     if len(l)==1:
         stddir = str(l[0])+","
         stdname = "- " + tree.getNode(l[0]).getName()
-        
+
     #v = {"id":publishdir.id,"stddir":stddir, "stdname":stdname, "showdir":showdir(req, publishdir, publishwarn=0, markunpublished=1, nodes=[])}
     v = {"id":publishdir.id,"stddir":stddir, "stdname":stdname, "showdir":showdir(req, publishdir, publishwarn=None, markunpublished=1, nodes=[])}
     v["basedir"] = tree.getRoot('collections')
@@ -118,4 +121,3 @@ def getContent(req, ids):
     v["faultylist"] = actionerror
     ret += req.getTAL("web/edit/modules/publish.html", v, macro="publish_form")
     return ret
-

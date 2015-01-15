@@ -42,6 +42,10 @@
             names = "";
             if (itemnames.length>0){
                 names = "- "+itemnames.join("<br/>- ");
+                $('#btn_publish').removeAttr('disabled');
+            }
+            else {
+            $('#btn_publish').prop('disabled', true);
             }
             returnvalues(items, names);
             return false;
@@ -60,7 +64,7 @@
             $('#treeform').css('display','none');
         }
     </script>
-    
+  <div id="sub_content_content">
     <div id="treeform">
         <div id="treeform-background">&nbsp;</div>
         <div id="treeform-form">
@@ -98,7 +102,7 @@
             <p>
                 <input type="hidden" name="destination" id="destination" tal:attributes="value stddir" />
                 <br/>
-                <button type="submit" name="dopublish" i18n:translate="edit_publish_button">TEXT</button>
+                <button disabled="" id="btn_publish" type="submit" name="dopublish" i18n:attributes="title edit_publish_button_deactivated_tooltip" i18n:translate="edit_publish_button">TEXT</button>
             </p>
             
         </div>
@@ -108,16 +112,24 @@
         <tal:block tal:replace="raw python:'</script>'"/>
     </div>
     <tal:block tal:replace="raw showdir">TEXT</tal:block>
+  </div>
+    <div id="sub_footer_module"> </div>
     <script>
         $(document).ready(function () { // set correct height of scrollable content
             initTree({'idOfFolderTrees': ['classtree'], 'style':'classification', 'multiselect':true});
-           $('#scrollcontainer').css('top', $('#operation').position().top + $('#operation').height());
+            $('#scrollcontainer').css('top', $('#operation').position().top + $('#operation').height());
+            sublayout = $('#sub_content').layout({applyDemoStyles: true,
+                center:{paneSelector: "#sub_content_content"},
+                south:{paneSelector: "#sub_footer_module",size:20,closable:false, resizable:false, spacing_open: 0, spacing_closed: 0},
+                togglerTip_open: js_edit_layout_togglertip_open,
+                togglerTip_closed: js_edit_layout_togglertip_closed
+                });
         });
     </script>
 </form>
 
 <metal:block metal:define-macro="reload">
     <tal:block tal:replace="raw python:'<script type=&quot;text/javascript&quot;>'"/>
-        <tal:block tal:repeat="item change" tal:replace="raw python:'parent.tree.updateNodeLabel('+item+');'"/>
+        <tal:block tal:repeat="item change" tal:replace="raw python:'parent.updateNodeLabels('+item+');'"/>
     <tal:block tal:replace="raw python:'</script>'"/>  
 </metal:block>

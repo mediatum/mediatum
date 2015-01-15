@@ -37,7 +37,7 @@
     </script>
 
     <script tal:content="python:'var flag_nodename_changed = %s;' % str(flag_nodename_changed)">TEXT</script>
-    <script tal:content="python:'var new_nodename = %r;' % str(nodes[0].name)">TEXT</script>
+    <script tal:content="python:'var new_nodename = decodeURIComponent(escape(%r));' % (nodes[0].name)">TEXT</script>
     
     <div id="navigation_content" style="border-top:0px!important">
 
@@ -232,7 +232,6 @@
         if (false) {
            parent.rct();
         }
-
         if (flag_nodename_changed != -1) {
 
           var k = parent.last_activated_node.key;

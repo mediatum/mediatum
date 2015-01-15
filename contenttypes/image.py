@@ -455,7 +455,8 @@ class Image(default.Default):
                 'CVAPattern',
                 'ApertureValue',
                 'ShutterSpeedValue',
-                'MakerNote']
+                'MakerNote',
+                'jpg_comment']
 
     """ list with technical attributes for type image """
     def getTechnAttributes(self):

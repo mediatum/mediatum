@@ -7,6 +7,7 @@ import utils.fileutils as fileutils
 import core.tree as tree
 import core.users as users
 from utils.date import parse_date
+from utils.utils import utf8_decode_escape
 import core.config as config
 
 
@@ -137,7 +138,8 @@ class collection_ftpserver:
         node = self.node
         self.dir = olddir
         self.node = oldnode
-        node.addChild(tree.Node(filename, type="directory"))
+        node.addChild(tree.Node(utf8_decode_escape(filename),
+                                type="directory"))
 
     def rmdir(self, path):
         path, filename = utils.splitpath(path)
@@ -340,7 +342,7 @@ def file_to_node(file_node, upload_dir):
     if not schema:
         schema = 'file'
 
-    new_node = tree.Node(new_name,
+    new_node = tree.Node(utf8_decode_escape(new_name),
                          type='/'.join([file_node.getType(),
                                         schema]))
     upload_dir.removeFile(file_node)

@@ -87,7 +87,7 @@ def utf8_decode_escape(s):
         s.decode('utf8')
         return s
     except:
-        return s.encode('string-escape')
+        return str(s).encode('string-escape')
 
 
 def iso2utf8(s):

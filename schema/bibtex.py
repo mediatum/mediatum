@@ -37,7 +37,7 @@ import logging
 import core.users as users
 
 from .schema import getMetaType
-from utils.utils import u, u2
+from utils.utils import u, u2, utf8_decode_escape
 from utils.date import parse_date
 
 import unicodedata
@@ -265,7 +265,6 @@ def getentries(filename):
             content = content.replace("&quot;", "'")
             content = xspace.sub(" ", backgarbage.sub("", frontgarbage.sub("", content)))
 
-            #content = unicode(content,"utf-8",errors='replace').encode("utf-8")
             content = u(content)
             content = content.replace("\\\"u", "\xc3\xbc").replace("\\\"a", "\xc3\xa4").replace("\\\"o", "\xc3\xb6") \
                 .replace("\\\"U", "\xc3\x9c").replace("\\\"A", "\xc3\x84").replace("\\\"O", "\xc3\x96")
@@ -275,11 +274,6 @@ def getentries(filename):
             content = content.replace("{\"u}", "\xc3\xbc").replace("{\"a}", "\xc3\xa4").replace("{\"o}", "\xc3\xb6") \
                 .replace("{\"U}", "\xc3\x9c").replace("{\"A}", "\xc3\x84").replace("{\"O}", "\xc3\x96")
 
-            #content = content.replace("\\\"u","Ã¼").replace("\\\"a","Ã¤").replace("\\\"o","Ã¶") \
-            #                 .replace("\\\"U","Ãœ").replace("\\\"A","Ã„").replace("\\\"O","Ã–")
-            #content = content.replace("\\","")
-            #content = content.replace("{\"u}","Ã¼").replace("{\"a}","Ã¤").replace("{\"o}","Ã¶") \
-            #                 .replace("{\"U}","Ãœ").replace("{\"A}","Ã„").replace("{\"O}","Ã–")
             content = content.strip()
 
             if field in ["author", "editor"] and content:
@@ -425,7 +419,8 @@ def importBibTeX(infile, node=None, req=None):
         entries = infile
     else:
         if not node:
-            node = tree.Node(name=os.path.basename(infile), type="directory")
+            node = tree.Node(name=utf8_decode_escape(os.path.basename(infile)),
+                             type="directory")
         try:
             entries = getentries(infile)
         except:
@@ -439,7 +434,7 @@ def importBibTeX(infile, node=None, req=None):
     counter = 0
     for doctype, docid, fields in entries:
         counter += 1
-        docid_utf8 = u2(docid)
+        docid_utf8 = utf8_decode_escape(docid)
 
         mytype = detecttype(doctype, fields)
 
@@ -495,10 +490,8 @@ def importBibTeX(infile, node=None, req=None):
 
                 if k in datefields.keys():  # format date field
                     v = parse_date(v, datefields[k])
-                try:
-                    doc.set(k, v)
-                except Exception as e:
-                    doc.set(k, u(v))
+
+                doc.set(k,  utf8_decode_escape(v))
 
             child_id = None
             child_type = None

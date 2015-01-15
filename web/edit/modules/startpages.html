@@ -66,14 +66,14 @@
                 url : '/edit/edit_content?id='+id+'&tab=startpages&action=save&filename='+$("#filename").val()
             }).done(function(ret){
                 ret = jQuery.parseJSON(ret);
+                $('#editform').css('display','none');
+                parent.$('#overlay').css('display', 'none');
                 if (ret.filename==""){
                     document.location.reload();
                     return false;
                 }
                 o = $(document.getElementById(ret.filename)).children();
                 o.get(o.length-2).innerHTML = ret.filesize;
-                $('#editform').css('display','none');
-                parent.$('#overlay').css('display', 'none');
             });
         }
     </script>

@@ -64,9 +64,15 @@ def getContent(req, ids):
             if req.params.get('filename') == "add":  # add new file
                 maxid = 0
                 for f in [f for f in node.getFiles() if f.type == "content"]:
-                    if int(f.retrieveFile()[:-5].split("_")[-1]) >= maxid:
-                        maxid = int(f.retrieveFile()[:-5].split("_")[-1]) + 1
+                    try:
+                        if int(f.retrieveFile()[:-5].split("_")[-1]) >= maxid:
+                            maxid = int(f.retrieveFile()[:-5].split("_")[-1]) + 1
+                    except ValueError:
+                        pass
                 filename = 'html/%s_%s.html' % (req.params.get('id'), maxid)
+                while os.path.exists(config.get("paths.datadir") + filename):
+                    maxid = maxid + 1
+                    filename = 'html/%s_%s.html' % (req.params.get('id'), maxid)
                 with open(config.get("paths.datadir") + filename, "w") as fil:
                     fil.write(req.params.get('data'))
                 node.addFile(FileNode(filename, "content", "text/html"))
@@ -113,47 +119,49 @@ def getContent(req, ids):
                     break
             return ""
 
-    if access.hasWriteAccess(node):
+    for key in req.params.keys():
+        if key.startswith("delete_"):  # delete page
+            page = key[7:-2]
+            try:
+                file_shortpath = page.replace(config.get("paths.datadir"), "")
+                fullpath = os.path.join(config.get("paths.datadir"), page)
+                if os.path.exists(fullpath):
+                    os.remove(fullpath)
+                    logger.info("%s removed file %r from disk" % (user.name, fullpath))
+                else:
+                    logger.warning("%s could not remove file %r from disk: not existing" % (user.name, fullpath))
+                filenode = FileNode(page, "", "text/html")
 
+                node.removeAttribute("startpagedescr." + file_shortpath)
+                node.set("startpage.selector", node.get("startpage.selector").replace(file_shortpath, ""))
+                node.removeFile(filenode)
+                logger.info(
+                    user.name + " - startpages - deleted FileNode and file for node %s (%s): %s, %s, %s, %s" % (
+                        node.id, node.name, page, filenode.getName(), filenode.type, filenode.mimetype))
+            except:
+                logger.error(user.name + " - startpages - error while delete FileNode and file for " + page)
+                logger.error("%s - %s" % (sys.exc_info()[0], sys.exc_info()[1]))
+            break
+
+    if "save_page" in req.params:  # save page
+        content = ""
         for key in req.params.keys():
-            if key.startswith("delete_"):  # delete page
-                page = key[7:-2]
-                try:
-                    file_shortpath = page.replace(config.get("paths.datadir"), "")
-                    if os.path.exists(page):
-                        os.remove(page)
-                    filenode = FileNode(page, "", "text/html")
-
-                    node.removeAttribute("startpagedescr." + file_shortpath)
-                    node.set("startpage.selector", node.get("startpage.selector").replace(file_shortpath, ""))
-                    node.removeFile(filenode)
-                    logger.info(
-                        user.name + " - startpages - deleted FileNode and file for node %s (%s): %s, %s, %s, %s" % (
-                            node.id, node.name, page, filenode.getName(), filenode.type, filenode.mimetype))
-                except:
-                    logger.error(user.name + " - startpages - error while delete FileNode and file for " + page)
-                    logger.error("%s - %s" % (sys.exc_info()[0], sys.exc_info()[1]))
+            if key.startswith("page_content"):
+                content = req.params.get(key, "")
                 break
 
-        if "save_page" in req.params:  # save page
-            content = ""
-            for key in req.params.keys():
-                if key.startswith("page_content"):
-                    content = req.params.get(key, "")
-                    break
+        with open(req.params.get('file_path'), "w") as fi:
+            fi.writelines(content)
 
-            with open(req.params.get('file_path'), "w") as fi:
-                fi.writelines(content)
+        del req.params['save_page']
+        del req.params['file_to_edit']
+        req.params['tab'] = 'startpages'
+        return getContent(req, [node.id])
 
-            del req.params['save_page']
-            del req.params['file_to_edit']
-            req.params['tab'] = 'startpages'
-            return getContent(req, [node.id])
-
-        if "cancel_page" in req.params:
-            del req.params['file_to_edit']
-            del req.params['cancel_page']
-            return getContent(req, [node.id])
+    if "cancel_page" in req.params:
+        del req.params['file_to_edit']
+        del req.params['cancel_page']
+        return getContent(req, [node.id])
 
     filelist = []
     for f in node.getFiles():

@@ -22,7 +22,7 @@
 <textarea class="memo_text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name python:defaultlang+'__'+name; id python:defaultlang+'__'+name; onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:'width:'+str(width-20)+'px'" rows="4">
 <tal:block tal:replace="python:langdict[defaultlang] or ''"/></textarea>
         </div>
-        <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/memo?name='+defaultlang+'__'+name+'\', \'\', 550, 600)'" style="margin-left:12px;width:14px;padding-left:0px;border-width:0px" type="button" i18n:attributes="title memo_titlepopupbutton"><img src="/img/edit_spc.png" style="height:14px;"/></button>
+        <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/memo?name='+defaultlang+'__'+name+'\', \'\', 550, 600)'" style="margin-left:5px;horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px" type="button" i18n:attributes="title memo_titlepopupbutton"><img src="/img/edit_spc.png" style="height:14px;"/></button>
 
         <img tal:condition="python: enable_multilang" i18n:attributes="title" tal:attributes="title python:'memo_hide_multilang' if expand_multilang else 'memo_show_multilang'; id python:'button_toggle_'+ident; onclick python:'toggleMemoDiv(this, \''+ident+'\')'; src python:'/img/slang.png' if expand_multilang else '/img/mlang.png'" style="margin-left:5px;cursor:pointer;"/>
         
@@ -51,7 +51,7 @@
                 </div>
             </div>
             <div style="padding-left:2px;float:left;">
-                <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/memo?name='+lang+'__'+name+'\', \'\', 550, 600)'" style="margin-left:5px;width:14px;padding-left:0px;border-width:0px" type="button" i18n:attributes="title memo_titlepopupbutton"><img src="/img/edit_spc.png" style="height:14px;"/></button>
+                <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/memo?name='+lang+'__'+name+'\', \'\', 550, 600)'" style="margin-left:5px;horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px" type="button" i18n:attributes="title memo_titlepopupbutton"><img src="/img/edit_spc.png" style="height:14px;"/></button>
             </div>
             <br/>
         </div>

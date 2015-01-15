@@ -5,7 +5,7 @@
         <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onchange python:'handlelock(\''+name+'\')'" type="checkbox"/>
         <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
    </span>
-   <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/treeselect?name='+name+'\', \'\', 550, 470)'" style="margin-left:5px;min-width:14px;padding-left:0px;border-width:0px" type="button" i18n:attributes="title treeselect_titlepopupbutton"><img src="/img/ftree/folder.gif" style="height:14px"/></button>
+   <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/treeselect?name='+name+'\', \'\', 550, 470)'" style="horizontal-align:middle;min-width:30px;width:30px;padding:4px 4px;" type="button" i18n:attributes="title treeselect_titlepopupbutton"><img src="/img/ftree/folder.gif" style="height:14px"/></button>
 </tal:block>
 
 <input metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name; value python:context.value" type="text" class="searchfield"/>

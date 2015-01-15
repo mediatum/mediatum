@@ -15,7 +15,7 @@
         <span class="surround" style="padding-left:0px;overflow:visible;">
             <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-26)+'px'; name python:defaultlang+'__'+name; id python:defaultlang+'__'+name; value python:value if not values else values.get(defaultlang+'__'+name) "/>
             <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/text?name='+defaultlang+'__'+name+'\', \'\', 550, 470)'"
-                    style="margin-left:5px;width:14px;padding-left:0px;border-width:0px;" type="button"
+                    style="horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px;" type="button"
                     i18n:attributes="title text_titlepopupbutton">
                 <img src="/img/edit_spc.png" style="height:14px"/>
             </button>
@@ -33,7 +33,7 @@
                 <div style="position:absolute;left:-20px;top:5px;" tal:content="python:lang + ': '">TEXT</div>
                 <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-26)+'px'; name python:lang + '__' + name; id python:lang+'__'+name; value python:values.get(lang+'__'+name) "/>
                 <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/text?name='+lang+'__'+name+'\', \'\', 550, 470)'"
-                    style="margin-left:5px;width:14px;padding-left:0px;border-width:0px;" type="button"
+                    style="horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px;" type="button"
                     i18n:attributes="title text_titlepopupbutton">
                     <img src="/img/edit_spc.png" style="height:14px"/>
                 </button>

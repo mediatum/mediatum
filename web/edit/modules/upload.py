@@ -490,10 +490,14 @@ FNAMESPLIT = re.compile(r'(([^/\\]*[/\\])*)([^/\\]*)')
 def mybasename(filename):
     g = FNAMESPLIT.match(filename)
     if g:
-        return g.group(3)
+        basename =  g.group(3)
     else:
-        return filename
+        basename = filename
 
+    if isinstance(basename, unicode):
+        return basename.encode('utf8')
+    else:
+        return basename
 
 @dec_entry_log
 def upload_filehandler(req):
@@ -529,13 +533,22 @@ def upload_ziphandler(req):
         if file.retrieveFile().endswith(req.params.get('file')):
             z = zipfile.ZipFile(file.retrieveFile())
             for f in z.namelist():
-                name = u2(mybasename(f))
+                #strip unwanted garbage from string
+                name = mybasename(f).decode('utf8', 'ignore').encode('utf8')
+                random_str = str(random.random())[2:]
                 if name.startswith("._"):  # ignore Mac OS X junk
                     continue
+                if name.split('.')[0] == '':
+                    name = random_str + name
 
                 files.append(name.replace(" ", "_"))
                 _m = getMimeType(name)
-                newfilename = join_paths(config.get("paths.tempdir"), str(random.random())[2:] + name.replace(" ", "_"))
+
+                if random_str in name:
+                    newfilename = join_paths(config.get("paths.tempdir"), name.replace(" ", "_"))
+                else:
+                    newfilename = join_paths(config.get("paths.tempdir"),  random_str + name.replace(" ", "_"))
+
                 fi = open(newfilename, "wb")
                 fi.write(z.read(f))
                 fi.close()

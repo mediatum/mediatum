@@ -490,7 +490,7 @@ class UserLinks:
         if self.user.isEditor():
             idstr = ""
             if self.id:
-                idstr = "?id=" + self.id
+                idstr = "?id=" + str(self.id)
             l += [Link("/edit" + idstr, t(self.language, "sub_header_edit_title"),
                        t(self.language, "sub_header_edit"), icon="/img/edit.gif")]
 

@@ -727,10 +727,8 @@ def action(req):
                    access.hasWriteAccess(dest) and \
                    access.hasWriteAccess(obj) and \
                    isDirectory(dest):
-                    print "move/copy"
                     if not nodeIsChildOfNode(dest, obj):
                         if action == "move":
-                            print "move"
                             mysrc.removeChild(obj)
                             changednodes[mysrc.id] = 1  # getLabel(mysrc)
                         dest.addChild(obj)
@@ -958,7 +956,7 @@ def content(req):
                     found = True
                     result = edit_editor(req, node, f)
                     if result == "error":
-                        print "error editing ", f.retrieveFile()
+                        logger.error("error editing %r" % f.retrieveFile())
                     break
 
         if not found:
@@ -985,11 +983,8 @@ def content(req):
             else:
                 logger.debug('empty content')
                 return
-            # content["body"] += editModules[t].getContent(req, ids) # use standard method of module
-            # print "use standard body", t
         else:
-            content[
-                "body"] += req.getTAL("web/edit/edit.html", {"module": current}, macro="module_error")
+            content["body"] += req.getTAL("web/edit/edit.html", {"module": current}, macro="module_error")
 
     if req.params.get("style", "") != "popup":  # normal page with header
         v["tabs"] = handletabs(req, ids, tabs)
@@ -1001,8 +996,7 @@ def content(req):
         if req.params.get("ids", "") == "":
             v["ids"] = req.params.get("id", "").split(",")
         v["tab"] = current
-        v["operations"] = req.getTAL(
-            "web/edit/edit_common.html", {'iscontainer': node.isContainer()}, macro="show_operations")
+        v["operations"] = req.getTAL("web/edit/edit_common.html", {'iscontainer': node.isContainer()}, macro="show_operations")
         user = users.getUserFromRequest(req)
         v['user'] = user
         v['language'] = lang(req)
@@ -1010,15 +1004,12 @@ def content(req):
 
         v['spc'] = [Menu("sub_header_frontend", "../", target="_parent")]
         if user.isAdmin():
-            v['spc'].append(
-                Menu("sub_header_administration", "../admin", target="_parent"))
+            v['spc'].append(Menu("sub_header_administration", "../admin", target="_parent"))
 
         if user.isWorkflowEditor():
-            v['spc'].append(
-                Menu("sub_header_workflow", "../publish", target="_parent"))
+            v['spc'].append(Menu("sub_header_workflow", "../publish", target="_parent"))
 
-        v['spc'].append(
-            Menu("sub_header_logout", "../logout", target="_parent"))
+        v['spc'].append(Menu("sub_header_logout", "../logout", target="_parent"))
 
         # add icons to breadcrumbs
         ipath = 'webtree/directory.gif'

@@ -873,7 +873,7 @@ function questionOperation(type){
 
             var node_to_clear = htree.getNodeByKey(key_to_clear);
             var parent_node = node_to_clear.getParent();
-            var parent_node_key = parent_node.data.key;
+            var parent_node_key = parent_node.key;
 
             // some operations may take time ... indicate activity with wait.gif
             // var node_to_clear_old_title = node_to_clear.data.title;
@@ -1406,7 +1406,7 @@ function reload_htree_filtered(homenodefilter) {
       // Close menu on click
       currentpath = node.getKeyPath();
       idselection = node.key;
-      tree.currentfolder = node.data.key;
+      tree.currentfolder = node.key;
       // 2014-11-26
       contextmenue_on_demand('#'+tree_node_id_prefix+data.node.key, $(tree_selector).fancytree("getTree"), tree_node_id_prefix, data.node);  // tree-dependent
       $(node.span).removeClass('disabled');

@@ -48,8 +48,6 @@ from schema.schema import loadTypesFromDB
 from core.translation import translate, lang, addLabels
 from core.translation import t as translation_t
 
-from pprint import pprint as pp, pformat as pf
-
 logger = logging.getLogger('editor')
 
 identifier_importers = {}
@@ -152,20 +150,16 @@ def getContent(req, ids):
                             except ValueError, e:
                                 errornodes.append((filename, str(e)))
 
-                        logger.debug(
-                            "filename: %r, mimetype: %r" % (filename, _m))
-                        logger.debug(
-                            "__name__=%r, func=%r; _m=%r, _m[1]=%r" % (__name__, funcname(), _m, _m[1]))
+                        logger.debug("filename: %r, mimetype: %r" % (filename, _m))
+                        logger.debug("__name__=%r, func=%r; _m=%r, _m[1]=%r" % (__name__, funcname(), _m, _m[1]))
 
-                        node_type = '%s/%s' % (_m[1],
-                                               filename2scheme[filename])
+                        node_type = '%s/%s' % (_m[1], filename2scheme[filename])
 
                         n = tree.Node(filename, type=node_type)
 
                         basenode.addChild(n)
                         n.set("creator", user.getName())
-                        n.set("creationtime",  str(
-                            time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
+                        n.set("creationtime",  str(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
 
                         n.addFile(f)
 
@@ -174,8 +168,7 @@ def getContent(req, ids):
                         newnodes.append(n.id)
                         basenodefiles_processed.append(f)
                         basenode.removeFile(f)
-                        msg_t = (user.getName(), n.id, n.name, n.type,
-                                 filename, basenode.id, basenode.name, basenode.type)
+                        msg_t = (user.getName(), n.id, n.name, n.type,filename, basenode.id, basenode.name, basenode.type)
                         msg = "%s created new node id=%r (name=%r, type=%r) by uploading file %r, node is child of base node id=%r (name=%r, type=%r)" % msg_t
                         logger.info(msg)
                         logging.getLogger('usertracing').info(msg)
@@ -183,11 +176,9 @@ def getContent(req, ids):
             else:
                 for filename in req.params.get('files').split('|'):
                     _m = getMimeType(filename)
-                    logger.debug("... in %s.%s: getMimeType(filename=%r)=%r" % (
-                        __name__, funcname(), filename, _m))
+                    logger.debug("... in %s.%s: getMimeType(filename=%r)=%r" % (__name__, funcname(), filename, _m))
                     fs = basenode.getFiles()
-                    logger.debug("... in %s.%s: basenode.id=%r, basenode_files: %r" % (
-                        __name__, funcname(), basenode.id, [(x.getName(), x.retrieveFile()) for x in fs]))
+                    logger.debug("... in %s.%s: basenode.id=%r, basenode_files: %r" % (__name__, funcname(), basenode.id, [(x.getName(), x.retrieveFile()) for x in fs]))
                     if _m[1] == req.params.get('type') or req.params.get('type') == 'file':
                         for f in basenode.getFiles():
                             # ambiguity here ?
@@ -202,17 +193,13 @@ def getContent(req, ids):
                                         errornodes.append((filename, str(e)))
                                 else:
 
-                                    logger.debug(
-                                        "creating new node: filename: %r" % filename)
-                                    logger.debug("files at basenode: %r" % [
-                                                 (x.getName(), x.retrieveFile()) for x in basenode.getFiles()])
+                                    logger.debug("creating new node: filename: %r" % filename)
+                                    logger.debug("files at basenode: %r" % [(x.getName(), x.retrieveFile()) for x in basenode.getFiles()])
 
-                                    n = tree.Node(
-                                        filename, type='%s/%s' % (req.params.get('type'), req.params.get('value')))
+                                    n = tree.Node(filename, type='%s/%s' % (req.params.get('type'), req.params.get('value')))
                                     basenode.addChild(n)
                                     n.set("creator", user.getName())
-                                    n.set("creationtime",  str(
-                                        time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
+                                    n.set("creationtime",  str(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
                                     # clones to a file with random name
                                     cloned_file = f.clone(None)
                                     n.addFile(cloned_file)
@@ -221,21 +208,18 @@ def getContent(req, ids):
                                     clearFromCache(n)
                                     newnodes.append(n.id)
                                     basenodefiles_processed.append(f)
-                                    msg_t = (user.getName(
-                                    ), n.id, n.name, n.type, filename, basenode.id, basenode.name, basenode.type)
+                                    msg_t = (user.getName(), n.id, n.name, n.type, filename, basenode.id, basenode.name, basenode.type)
                                     msg = "%s created new node id=%r (name=%r, type=%r) by uploading file %r, node is child of base node id=%r (name=%r, type=%r)" % msg_t
                                     logger.info(msg)
                                     logging.getLogger('usertracing').info(msg)
                                     break  # filename may not be unique
 
-            new_tree_labels = [
-                {'id': basenode.id, 'label': getTreeLabel(basenode, lang=language)}]
+            new_tree_labels = [{'id': basenode.id, 'label': getTreeLabel(basenode, lang=language)}]
             for f in basenodefiles_processed:
                 basenode.removeFile(f)
                 f_path = f.retrieveFile()
                 if os.path.exists(f_path):
-                    logger.debug(
-                        "%s going to remove file %r from disk" % (user.getName(), f_path))
+                    logger.debug("%s going to remove file %r from disk" % (user.getName(), f_path))
                     os.remove(f_path)
 
             mime = getMimeType(filename)
@@ -246,8 +230,7 @@ def getContent(req, ids):
                     # break
 
             # standard file
-            content = req.getTAL(
-                'web/edit/modules/upload.html', {'files': [filename], 'schemes': scheme_type}, macro="uploadfileok")
+            content = req.getTAL('web/edit/modules/upload.html', {'files': [filename], 'schemes': scheme_type}, macro="uploadfileok")
 
             res = json.dumps({'state': state, 'newnodes': newnodes, 'errornodes':
                               errornodes, 'new_tree_labels': new_tree_labels, 'ret': content})
@@ -272,14 +255,12 @@ def getContent(req, ids):
         if req.params.get('action') == 'getschemes':
             ret = []
             for scheme in getSchemesforType(access, req.params.get('contenttype')):
-                ret.append(
-                    {'id': scheme.getName(), 'name': scheme.getLongName()})
+                ret.append({'id': scheme.getName(), 'name': scheme.getLongName()})
             req.write(json.dumps({'schemes': ret}))
             return None
 
         # create node with given type/schema
         if req.params.get('action') == "createobject":
-            print "\n\ncreate new node without file"
             schema = req.params.get('schema')
             ctype = req.params.get('contenttype')
 
@@ -287,9 +268,11 @@ def getContent(req, ids):
             basenode = tree.getNode(req.params.get('id'))
             basenode.addChild(n)
             n.set("creator", user.getName())
-            n.set("creationtime",  str(
-                time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
+            n.set("creationtime",  str(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
             clearFromCache(n)
+            msg_t = (user.getName(), n.id, n.name, n.type, basenode.id, basenode.name, basenode.type)
+            msg = "%s created new node %r (%r, %r) using upload metadata form, node is child of base node %r (%r, %r)" % msg_t
+            logger.info(msg)
             req.write(json.dumps({'newid': n.id, 'id': req.params.get('id')}))
             return None
 
@@ -298,8 +281,7 @@ def getContent(req, ids):
             identifier_importer = req.params.get('identifier_importer')
             identifier = req.params.get('identifier')
 
-            msg = "... in %s.%s: going to create new node without file from identifier (%r)" % (
-                __name__, funcname(), identifier)
+            msg = "... in %s.%s: going to create new node without file from identifier (%r)" % (__name__, funcname(), identifier)
             logger.debug(msg)
 
             if identifier_importer in identifier_importers:
@@ -311,30 +293,25 @@ def getContent(req, ids):
 
                 new_node = importer_func(identifier, importdir, req=req)
 
-                res = {'id': req.params.get('id'), 'error': req.params.get(
-                    'error', ''), 'connect_error_msg': req.params.get('connect_error_msg', '')}
+                res = {'id': req.params.get('id'), 'error': req.params.get('error', ''), 'connect_error_msg': req.params.get('connect_error_msg', '')}
 
                 if new_node:
                     new_node.set("creator", user.getName())
-                    creation_time = str(
-                        time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time())))
+                    creation_time = str(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time())))
                     new_node.set("creationtime", creation_time)
 
-                    new_node.set(
-                        "system.identifier_importer", identifier_importer)
+                    new_node.set("system.identifier_importer", identifier_importer)
                     new_node.set("system.identifier_imported_from", identifier)
 
                     clearFromCache(new_node)
                     res['newid'] = new_node.id
 
-                    msg_t = (user.getName(), new_node.id, new_node.name, new_node.type,
-                             identifier, importdir.id, importdir.name, importdir.type)
+                    msg_t = (user.getName(), new_node.id, new_node.name, new_node.type, identifier, importdir.id, importdir.name, importdir.type)
                     msg = "%s created new node id=%r (name=%r, type=%r) by importing identifier %r, node is child of base node id=%r (name=%r, type=%r)" % msg_t
                     logger.info(msg)
                     logging.getLogger("usertracing").info(msg)
                 else:  # import failed, no new_node created
-                    logger.error("... in %s.%s: import failed, no new_node created for identifier (%r)" % (
-                        __name__, funcname(), identifier))
+                    logger.error("... in %s.%s: import failed, no new_node created for identifier (%r)" % (__name__, funcname(), identifier))
 
                 req.write(json.dumps(res))
 
@@ -363,8 +340,7 @@ def getContent(req, ids):
             n = tree.getNode(req.params.get('id'))
             n.addFile(f)
             req.write("")
-            logger.debug("%r|%s.%s: added file to node %r (%r, %r)" % (
-                get_user_id(req), __name__, funcname(), n.id, n.name, n.type))
+            logger.debug("%r|%s.%s: added file to node %r (%r, %r)" % (get_user_id(req), __name__, funcname(), n.id, n.name, n.type))
             if not proceed_to_uploadcomplete:
                 return None
 
@@ -383,20 +359,15 @@ def getContent(req, ids):
                     'filename': f.getName(),
                 }
                 ctx.update(upload_to_filetype_filehandler(req))
-                content = req.getTAL(
-                    'web/edit/modules/upload.html', ctx, macro="uploadfileok_plupload")
+                content = req.getTAL('web/edit/modules/upload.html', ctx, macro="uploadfileok_plupload")
                 basenode = tree.getNode(req.params.get('id'))
-                new_tree_labels = [
-                    {'id': basenode.id, 'label': getTreeLabel(basenode, lang=language)}]
-                req.write(json.dumps({'type': 'file', 'ret': content, 'state': state, 'filename': req.params.get(
-                    'file'), 'new_tree_labels': new_tree_labels}))
+                new_tree_labels = [{'id': basenode.id, 'label': getTreeLabel(basenode, lang=language)}]
+                req.write(json.dumps({'type': 'file', 'ret': content, 'state': state, 'filename': req.params.get('file'), 'new_tree_labels': new_tree_labels}))
                 return None
 
             if mime[1] == "other":  # file type not supported
-                req.write(json.dumps({'type': mime[1], 'ret': req.getTAL(
-                    'web/edit/modules/upload.html', {}, macro="uploadfileerror"), 'state': 'error', 'filename': req.params.get('file')}))
-                logger.debug("%r|%s.%s: added file to node %r (%r, %r) -> file type not supported" %
-                             (get_user_id(req), __name__, funcname(), n.id, n.name, n.type))
+                req.write(json.dumps({'type': mime[1], 'ret': req.getTAL('web/edit/modules/upload.html', {}, macro="uploadfileerror"), 'state': 'error', 'filename': req.params.get('file')}))
+                logger.debug("%r|%s.%s: added file to node %r (%r, %r) -> file type not supported" % (get_user_id(req), __name__, funcname(), n.id, n.name, n.type))
                 return None
 
             elif mime[1] == "zip":  # zip file
@@ -404,15 +375,13 @@ def getContent(req, ids):
                     macro = "uploadzipfileok_plupload"
                 else:
                     macro = "uploadzipfileok"
-                content = req.getTAL(
-                    'web/edit/modules/upload.html', upload_ziphandler(req), macro=macro)
+                content = req.getTAL('web/edit/modules/upload.html', upload_ziphandler(req), macro=macro)
             elif mime[1] == "bibtex":  # bibtex file
                 if req.params.get('uploader', '') == 'plupload':
                     macro = "uploadbibfileok_plupload"
                 else:
                     macro = "uploadbibfileok"
-                content = req.getTAL(
-                    'web/edit/modules/upload.html', upload_bibhandler(req), macro=macro)
+                content = req.getTAL('web/edit/modules/upload.html', upload_bibhandler(req), macro=macro)
             else:  # standard file
                 if req.params.get('uploader', '') == 'plupload':
                     ctx = {
@@ -421,11 +390,9 @@ def getContent(req, ids):
 
                     ctx.update(upload_filehandler(req))
 
-                    content = req.getTAL(
-                        'web/edit/modules/upload.html', ctx, macro="uploadfileok_plupload")
+                    content = req.getTAL('web/edit/modules/upload.html', ctx, macro="uploadfileok_plupload")
                 else:
-                    content = req.getTAL(
-                        'web/edit/modules/upload.html', upload_filehandler(req), macro="uploadfileok")
+                    content = req.getTAL('web/edit/modules/upload.html', upload_filehandler(req), macro="uploadfileok")
             basenode = tree.getNode(req.params.get('id'))
             new_tree_labels = [{'id': basenode.id, 'label': getTreeLabel(basenode, lang=language)}]
             _d = {
@@ -460,10 +427,8 @@ def getContent(req, ids):
             for ntype, num in col.getAllOccurences(acl.AccessData(req)).items():
                 if ntype.getSortFields():
                     for sortfield in ntype.getSortFields():
-                        sortfields += [
-                            SortChoice(sortfield.getLabel(), sortfield.getName())]
-                        sortfields += [SortChoice(sortfield.getLabel() + translation_t(
-                            req, "descending"), "-" + sortfield.getName())]
+                        sortfields += [SortChoice(sortfield.getLabel(), sortfield.getName())]
+                        sortfields += [SortChoice(sortfield.getLabel() + translation_t(req, "descending"), "-" + sortfield.getName())]
                     break
         v['sortchoices'] = sortfields
         v['count'] = len(node.getContentChildren())
@@ -580,17 +545,14 @@ def upload_bibhandler(req):
         if f.retrieveFile().endswith(req.params.get('file')):
             try:
                 retrieved_file = f.retrieveFile()
-                logger.debug(
-                    'going to call importBibTex(%r), import will be logged to backend!' % retrieved_file)
+                logger.debug('going to call importBibTex(%r), import will be logged to backend!' % retrieved_file)
                 nn = importBibTeX(retrieved_file)
-                logger.info(
-                    'importBibTex(%r) done, import logged to backend!' % retrieved_file)
+                logger.info('importBibTex(%r) done, import logged to backend!' % retrieved_file)
             except ValueError, e:
                 logger.exception('calling importBibTex(%r)' % retrieved_file)
                 error = str(e)
             except MissingMapping, e:
-                logger.exception(
-                    'calling importBibTex(%r): missing mapping' % retrieved_file)
+                logger.exception('calling importBibTex(%r): missing mapping' % retrieved_file)
                 error = str(e)
             break
     return {'files': [req.params.get('file')], 'error': error}
@@ -624,35 +586,29 @@ def import_from_doi(identifier, importdir, req=None):
     except citeproc.InvalidDOI:
         logger.error("Invalid DOI: '%s'", doi)
         if req:
-            req.request["Location"] = req.makeLink(
-                "content", {"id": importdir.id, "error": translation_t(req, "doi_invalid")})
+            req.request["Location"] = req.makeLink("content", {"id": importdir.id, "error": translation_t(req, "doi_invalid")})
             req.params["error"] = translation_t(req, "doi_invalid")
     except citeproc.DOINotFound:
         logger.error("DOI not found: '%s'", doi)
         if req:
-            req.request["Location"] = req.makeLink(
-                "content", {"id": importdir.id, "error": translation_t(req, "doi_unknown")})
+            req.request["Location"] = req.makeLink("content", {"id": importdir.id, "error": translation_t(req, "doi_unknown")})
             req.params["error"] = translation_t(req, "doi_unknown")
     except importbase.NoMappingFound as e:
         logger.error("no mapping found for DOI: '%s', type '%s'", doi, e.typ)
         if req:
-            req.request["Location"] = req.makeLink(
-                "content", {"id": importdir.id, "error": translation_t(req, "doi_type_not_mapped")})
+            req.request["Location"] = req.makeLink("content", {"id": importdir.id, "error": translation_t(req, "doi_type_not_mapped")})
             req.params["error"] = translation_t(req, "doi_type_not_mapped")
     except ConnectionError as e:
         msg = "Connection to external server failed: '%s', type '%s'" % (
             doi, e)
         logger.error(msg)
         if req:
-            req.request["Location"] = req.makeLink("content", {
-                                                   "id": importdir.id, "error": translation_t(req, "error_connecting_external_server")})
-            req.params["error"] = translation_t(
-                req, "doi_error_connecting_external_server")
+            req.request["Location"] = req.makeLink("content", { "id": importdir.id, "error": translation_t(req, "error_connecting_external_server")})
+            req.params["error"] = translation_t(req, "doi_error_connecting_external_server")
             req.params["connect_error_msg"] = msg
     else:
         if req:
-            req.request["Location"] = req.makeLink(
-                "content", {"id": importdir.id})
+            req.request["Location"] = req.makeLink("content", {"id": importdir.id})
 
 
 class IdentifierImporter(object):
@@ -671,8 +627,7 @@ class IdentifierImporter(object):
 
 def register_identifier_importer(uniquename, identifierImporter):
     if uniquename in identifier_importers:
-        raise KeyError(
-            "unique name %r for identifierImporter already used" % uniquename)
+        raise KeyError("unique name %r for identifierImporter already used" % uniquename)
     else:
         identifier_importers[uniquename] = identifierImporter
 

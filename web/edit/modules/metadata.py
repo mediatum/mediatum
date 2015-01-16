@@ -422,7 +422,8 @@ def getContent(req, ids):
                 nodes = mask.updateNode(nodes, req)
                 if nodes:
                     new_nodename = nodes[0].name
-                    if old_nodename != new_nodename:
+                    if (old_nodename != new_nodename) and hasattr(nodes[0], 'isContainer') and nodes[0].isContainer():
+                        # for updates of node label in editor tree
                         flag_nodename_changed = str(node.id)
 
                 errorlist += mask.validateNodelist(nodes)

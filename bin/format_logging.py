@@ -38,10 +38,10 @@ if len(sys.argv) == 3 and sys.argv[1] == "--period":
 else:
     p = period.split("-")
     if int(p[1]) - 1 == 0:
-        p[0] = str(int(p[0]) - 1)
+        p[0] = ustr(int(p[0]) - 1)
         p[1] = "12"
     else:
-        p[1] = str("%2.2i" % (int(p[1]) - 1))
+        p[1] = ustr("%2.2i" % (int(p[1]) - 1))
 
     period = "-".join(p)
 
@@ -61,7 +61,7 @@ if os.path.exists(outpath) and force == 0:
     sys.exit()
 
 for i in range(1, 21):
-    path.append(LOG_FILENAME + "." + str(i))
+    path.append(LOG_FILENAME + "." + ustr(i))
 
 d = []
 for filename in path:

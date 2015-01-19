@@ -55,7 +55,7 @@ def importFile(realname, tempname, prefix=""):
             i = 0
             while os.path.exists(destname):
                 i += 1
-                p = prefix + str(i) + "_"
+                p = prefix + ustr(i) + "_"
                 destname = join_paths(uploaddir, p + filename)
                 if not os.path.exists(destname):
                     prefix = p
@@ -67,7 +67,7 @@ def importFile(realname, tempname, prefix=""):
             ret = os.system(('copy "%s" "%s"' % (tempname, destname)).replace('/', '\\'))
 
         if ret & 0xff00:
-            raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, prefix + destname, str(ret)))
+            raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, prefix + destname, ustr(ret)))
 
         r = realname.lower()
         mimetype = "application/x-download"
@@ -90,7 +90,7 @@ def importFileFromData(filename, data, prefix=""):
             i = 0
             while os.path.exists(destname):
                 i += 1
-                p = prefix + str(i) + "_"
+                p = prefix + ustr(i) + "_"
                 destname = join_paths(uploaddir, p + filename)
                 if not os.path.exists(destname):
                     prefix = p
@@ -120,7 +120,7 @@ def importFileToRealname(realname, tempname, prefix="", typeprefix=""):
             i = 0
             while os.path.exists(destname):
                 i += 1
-                p = prefix + str(i) + "_"
+                p = prefix + ustr(i) + "_"
                 destname = join_paths(uploaddir, p + filename)
                 if not os.path.exists(destname):
                     prefix = p
@@ -132,7 +132,7 @@ def importFileToRealname(realname, tempname, prefix="", typeprefix=""):
             ret = os.system(('copy "%s" "%s"' % (tempname, destname)).replace('/', '\\'))
 
         if ret & 0xff00:
-            raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, prefix + destname, str(ret)))
+            raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, prefix + destname, ustr(ret)))
 
         r = realname.lower()
         mimetype = "application/x-download"
@@ -159,7 +159,7 @@ def importFileIntoDir(destpath, tempname):
             ret = os.system(cmd.replace('/', '\\'))
 
         if ret & 0xff00:
-            raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, destname, str(ret)))
+            raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, destname, ustr(ret)))
 
         r = destpath.lower()
         mimetype = "application/x-download"
@@ -189,7 +189,7 @@ def importFileRandom(tempname):
     except:
         pass
 
-    destfile = str(random.random())[2:] + os.path.splitext(filename)[1]
+    destfile = ustr(random.random())[2:] + os.path.splitext(filename)[1]
     destname = join_paths(uploaddir, destfile)
     if os.sep == '/':
         ret = os.system("cp '%s' %s" % (tempname, destname))
@@ -218,7 +218,7 @@ def importFileToUploaddirWithRandomName(tempname):
     path, filename = os.path.split(tempname)
     uploaddir = getImportDir()
 
-    destfile = str(random.random())[2:]+os.path.splitext(filename)[1]
+    destfile = ustr(random.random())[2:]+os.path.splitext(filename)[1]
     destname = join_paths(uploaddir, destfile)
     if os.sep == '/':
         ret = os.system("cp '%s' %s" %(tempname, destname))
@@ -228,7 +228,7 @@ def importFileToUploaddirWithRandomName(tempname):
         ret = os.system(cmd.replace('/','\\'))
 
     if ret:
-        raise IOError("Couldn't copy %s to %s (error: %s)" %(tempname, destname, str(ret)))
+        raise IOError("Couldn't copy %s to %s (error: %s)" %(tempname, destname, ustr(ret)))
 
     r = tempname.lower()
     mimetype = "application/x-download"

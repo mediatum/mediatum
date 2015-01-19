@@ -355,7 +355,7 @@ class ACLAndCondition(AccessCondition):
         self.b = b
 
     def __str__(self):
-        return "(" + str(self.a) + ") AND (" + str(self.b) + ")"
+        return "(" + ustr(self.a) + ") AND (" + ustr(self.b) + ")"
 
     def has_access(self, accessdata, node):
         return self.a.has_access(accessdata, node) and self.b.has_access(accessdata, node)
@@ -368,7 +368,7 @@ class ACLOrCondition(AccessCondition):
         self.b = b
 
     def __str__(self):
-        return "(" + str(self.a) + ") OR (" + str(self.b) + ")"
+        return "(" + ustr(self.a) + ") OR (" + ustr(self.b) + ")"
 
     def has_access(self, accessdata, node):
         return self.a.has_access(accessdata, node) or self.b.has_access(accessdata, node)
@@ -380,7 +380,7 @@ class ACLNotCondition(AccessCondition):
         self.a = a
 
     def __str__(self):
-        return "NOT (" + str(self.a) + ")"
+        return "NOT (" + ustr(self.a) + ")"
 
     def has_access(self, accessdata, node):
         return not self.a.has_access(accessdata, node)
@@ -454,7 +454,7 @@ class ACLIPCondition(AccessCondition):
         self.hex = (int(b[0]) << 24) | (int(b[1]) << 16) | (int(b[2]) << 8) | (int(b[3]) << 0)
 
     def __str__(self):
-        return "ip " + self.ip + "/" + str(self.netmask)
+        return "ip " + self.ip + "/" + ustr(self.netmask)
 
     def has_access(self, accessdata, node):
         try:
@@ -589,7 +589,7 @@ def getRuleList():
     dbrules = conn.getRuleList()
 
     for rule in dbrules:
-        rlist += [AccessRule(str(rule[0]), str(rule[2]), str(rule[1]))]
+        rlist += [AccessRule(ustr(rule[0]), ustr(rule[2]), ustr(rule[1]))]
     return rlist
 
 
@@ -633,7 +633,7 @@ def addRule(rule):
 
 def existRule(rulename):
     try:
-        description, text = conn.getRule(str(rulename))
+        description, text = conn.getRule(ustr(rulename))
         if text != "":
             return True
     except:
@@ -684,21 +684,21 @@ def initialize():
     conn = database.getConnection()
 
 if __name__ == "__main__":
-    print str(p.parse("not true or not false"))
-    print str(p.parse("true and (true and (true and (true)))"))
-    print str(p.parse("((((true) and false) and true) and false) and true"))
-    print str(p.parse("true or (true or (true or (true)))"))
-    print str(p.parse("((((true) or false) or (true or false)) or (false or true)) or true"))
-    print str(p.parse("user admin or user wichtig"))
-    print str(p.parse("group wichtigtuer and not group neulinge"))
-    print str(p.parse("date >= 01.01.2005"))
-    print str(p.parse("date > 01.01.2005"))
-    print str(p.parse("date < 01.01.2005"))
-    print str(p.parse("date <= 01.01.2005"))
-    print str(p.parse("((true and false and ((false))))"))
-    # print str(parse("(user author1A ) or  ( ((group editorgroup1) or (group editorgroup2)))"))
-    print str(p.parse("ip 131.159.16.0/24"))
-    print str(p.parse("ip 131.159.16.10"))
+    print ustr(p.parse("not true or not false"))
+    print ustr(p.parse("true and (true and (true and (true)))"))
+    print ustr(p.parse("((((true) and false) and true) and false) and true"))
+    print ustr(p.parse("true or (true or (true or (true)))"))
+    print ustr(p.parse("((((true) or false) or (true or false)) or (false or true)) or true"))
+    print ustr(p.parse("user admin or user wichtig"))
+    print ustr(p.parse("group wichtigtuer and not group neulinge"))
+    print ustr(p.parse("date >= 01.01.2005"))
+    print ustr(p.parse("date > 01.01.2005"))
+    print ustr(p.parse("date < 01.01.2005"))
+    print ustr(p.parse("date <= 01.01.2005"))
+    print ustr(p.parse("((true and false and ((false))))"))
+    # print ustr(parse("(user author1A ) or  ( ((group editorgroup1) or (group editorgroup2)))"))
+    print ustr(p.parse("ip 131.159.16.0/24"))
+    print ustr(p.parse("ip 131.159.16.10"))
 
     class Access:
         pass

@@ -31,7 +31,7 @@ logg = logging.getLogger(__name__)
 class m_date(Metatype):
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
-        d = field.getSystemFormat(str(field.getValues()))
+        d = field.getSystemFormat(ustr(field.getValues()))
 
         if value == "?":
             value = date.format_date(date.now(), d.getValue())
@@ -64,11 +64,11 @@ class m_date(Metatype):
 
     def format_request_value_for_db(self, field, params, item, language=None):
         value = params.get(item)
-        f = field.getSystemFormat(str(field.getValues()))
+        f = field.getSystemFormat(ustr(field.getValues()))
         if not f:
             return ""
         try:
-            d = parse_date(str(value), f.getValue())
+            d = parse_date(ustr(value), f.getValue())
         except ValueError:
             return ""
         if not validateDate(d):

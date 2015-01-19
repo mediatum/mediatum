@@ -47,7 +47,7 @@ log_error = su.LogWriter(logger, logging.ERROR)
 stderr_orig = sys.stderr
 sys.stderr = log_error
 
-msg = 'scheduler process entered: pid=%s, ppid=%s, %s, args: %s' % (str(pid), str(ppid), __file__, str(sys.argv))
+msg = 'scheduler process entered: pid=%s, ppid=%s, %s, args: %s' % (ustr(pid), ustr(ppid), __file__, ustr(sys.argv))
 logger.info(msg)
 
 schedule_id = sys.argv[1]
@@ -81,7 +81,7 @@ if passed_schedule_id_type == 'int':
     try:
         schedule = [s for s in [tree.getNode(schedule_id)] if s.type == 'schedule'][0]
     except:
-        msg = "no such schedule: " + str(schedule_id)
+        msg = "no such schedule: " + ustr(schedule_id)
         logger.error(msg)
         schedule = None
 elif passed_schedule_id_type == 'file':
@@ -99,7 +99,7 @@ if schedule:
         f(schedule, trigger)
 
 
-msg = 'scheduler process leaving: pid=%s, ppid=%s, %s, args: %s' % (str(pid), str(ppid), __file__, str(sys.argv))
+msg = 'scheduler process leaving: pid=%s, ppid=%s, %s, args: %s' % (ustr(pid), ustr(ppid), __file__, ustr(sys.argv))
 logger.info(msg)
 
 sys.stderr = stderr_orig

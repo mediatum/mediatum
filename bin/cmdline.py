@@ -324,7 +324,7 @@ def changescheme(collection_id, newschemename, write=0):
     j = 0
     for n in node.getAllChildren():
         if n.type != "directory":
-            if str(write) == "1":
+            if ustr(write) == "1":
                 i += 1
                 try:
                     print "\tchangig scheme for node %s from '%s' to '%s'..." % (
@@ -417,7 +417,7 @@ def searchindex():
         for part in line:
             if i < len(fields):
                 fi.write("%s:\n" % fields[i])
-                fi.write(" %s\n" % str(part))
+                fi.write(" %s\n" % ustr(part))
             i += 1
 
     fi.write("\n\n* TEXTSEARCHMETA:\n\n")

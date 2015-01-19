@@ -87,7 +87,7 @@ def getFilelist(node, fieldname=''):
         if re.match(pattern, f_name):
             f_retrieve = f.retrieveFile()
             try:
-                f_mtime = str(datetime.datetime.fromtimestamp(os.path.getmtime(f_retrieve)))
+                f_mtime = ustr(datetime.datetime.fromtimestamp(os.path.getmtime(f_retrieve)))
             except:
                 logg.exception("exception in getFilelist, formatting datestr failed, using fake date")
                 f_mtime = "2099-01-01 12:00:00.00 " + f_name
@@ -269,7 +269,7 @@ def handle_request(req):
 
             if not access.hasAccess(n, 'data'):
                 msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (
-                    user.name, n.id, n.name, n.type, str(req.ip))
+                    user.name, n.id, n.name, n.type, ustr(req.ip))
                 logg.info(msg)
                 errors.append(msg)
 
@@ -314,17 +314,17 @@ def handle_request(req):
             try:
                 targetnode = tree.getNode(targetnodeid)
             except:
-                msg = "metadata m_upload: targetnodeid='%s' for non-existant node for upload from '%s'" % (str(targetnodeid), str(req.ip))
+                msg = "metadata m_upload: targetnodeid='%s' for non-existant node for upload from '%s'" % (ustr(targetnodeid), ustr(req.ip))
                 errors.append(msg)
                 logg.error(msg)
         else:
-            msg = "metadata m_upload could not find 'targetnodeid' for upload from '%s'" % str(req.ip)
+            msg = "metadata m_upload could not find 'targetnodeid' for upload from '%s'" % ustr(req.ip)
             errors.append(msg)
             logg.error(msg)
 
         if not access.hasAccess(targetnode, 'data'):
             msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (
-                user.name, str(targetnode.id), targetnode.name, targetnode.type, str(req.ip))
+                user.name, ustr(targetnode.id), targetnode.name, targetnode.type, ustr(req.ip))
             logg.error(msg)
             errors.append(msg)
 
@@ -359,7 +359,7 @@ def handle_request(req):
                 imported_filepath = nodeFile.retrieveFile()
                 imported_filemimetype = nodeFile.getMimeType()
             else:
-                msg = "metadata m_upload: could not create file node for request from '%s'" % (str(req.ip))
+                msg = "metadata m_upload: could not create file node for request from '%s'" % (ustr(req.ip))
                 errors.append(msg)
                 logging.getLogger("backend").error(msg)
 
@@ -375,7 +375,7 @@ def handle_request(req):
             copy_report = ""
 
     else:
-        msg = "metadata m_upload: could not find submitter for request from '%s'" % (str(req.ip))
+        msg = "metadata m_upload: could not find submitter for request from '%s'" % (ustr(req.ip))
         errors.append(msg)
         logging.getLogger("backend").error(msg)
 

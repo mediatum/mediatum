@@ -84,7 +84,7 @@ class Flash(default.Default):
         f = ""
         for filenode in self.getFiles():
             if filenode.getType() in ("original", "video"):
-                f = "/file/" + str(self.id) + "/" + filenode.getName()
+                f = "/file/" + ustr(self.id) + "/" + filenode.getName()
                 break
         req.writeTAL("contenttypes/flash.html", {"path": f}, macro="fullsize")
 

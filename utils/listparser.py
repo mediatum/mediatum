@@ -55,7 +55,7 @@ class ListTrueCondition(ListCondition):
         return "TRUE"
 
     def getList(self, list):
-        return [str(x) for x in range(0, len(list))][:-1]
+        return [ustr(x) for x in range(0, len(list))][:-1]
 
     def getHTML(self, andStr, orStr):
         return "True"
@@ -196,7 +196,7 @@ class ListAndCondition(ListCondition):
         self.b = b
 
     def __str__(self):
-        return "(" + str(self.a) + ") AND (" + str(self.b) + ")"
+        return "(" + ustr(self.a) + ") AND (" + ustr(self.b) + ")"
 
     def getList(self, data):
         return intersection([self.a.getList(data), self.b.getList(data)])
@@ -212,7 +212,7 @@ class ListOrCondition(ListCondition):
         self.b = b
 
     def __str__(self):
-        return "(" + str(self.a) + ") OR (" + str(self.b) + ")"
+        return "(" + ustr(self.a) + ") OR (" + ustr(self.b) + ")"
 
     def getList(self, data):
         return union((self.a.getList(data), self.b.getList(data)))
@@ -227,7 +227,7 @@ class ListNotCondition():
         self.a = a
 
     def __str__(self):
-        return "NOT (" + str(self.a) + ")"
+        return "NOT (" + ustr(self.a) + ")"
 
     def getList(self, data):
         return []

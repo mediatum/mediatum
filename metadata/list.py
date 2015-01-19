@@ -94,7 +94,7 @@ class m_list(Metatype):
                 elif int(num) == 0:
                     num = ""
                 else:
-                    num = " (" + str(num) + ")"
+                    num = " (" + ustr(num) + ")"
             except:
                 logg.exception("exception in getMaskEditorHTML, using empty string")
                 num = ""

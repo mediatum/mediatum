@@ -108,11 +108,11 @@ def import_new(req):
                 bibtex.importBibTeX(file.tempname, importdir, req)
                 req.request["Location"] = req.makeLink("content", {"id":importdir.id})
             except ValueError, e:
-                req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":str(e)})
-                req.params["error"] = str(e)
+                req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":ustr(e)})
+                req.params["error"] = ustr(e)
             except bibtex.MissingMapping,e:
-                req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":str(e)})
-                req.params["error"] = str(e)
+                req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":ustr(e)})
+                req.params["error"] = ustr(e)
             except:
                 logg.exception("exception in import_new")
                 req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"PostprocessingError"})

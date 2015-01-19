@@ -54,7 +54,7 @@ def validate(req, op):
 
             elif key.startswith("edit_"):
                 # edit/create mapping
-                return editMapping_mask(req, str(key[key.index("_") + 1:-2]))
+                return editMapping_mask(req, ustr(key[key.index("_") + 1:-2]))
 
             elif key.startswith("delete_"):
                 # delete mapping
@@ -102,7 +102,7 @@ def validate(req, op):
             if req.params.get("form_op", "") == "cancel":
                 return viewlist(req, req.params.get("parent"))
             # save mapping field values
-            if str(req.params["name"]) == "":
+            if ustr(req.params["name"]) == "":
                 # empty required field
                 return editMappingField_mask(req, req.params.get("id", ""), tree.getNode(req.params.get("parent")), 1)
             else:
@@ -253,7 +253,7 @@ def viewlist(req, id):
 
     v = getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader([t(lang(req), "admin_mappingfield_col_1"), t(lang(req), "admin_mappingfield_col_2"), t(
-        lang(req), "admin_mappingfield_col_3")], addparams="&detailof=" + str(mapping.id))
+        lang(req), "admin_mappingfield_col_3")], addparams="&detailof=" + ustr(mapping.id))
     v["fields"] = fields
     v["mapping"] = mapping
     v["options"] = []

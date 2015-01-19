@@ -101,7 +101,7 @@ class MYSQLConnector(Connector):
                 ok = 1
         except MySQLdb.OperationalError as nr:
             ok = 0
-            log.warning("Pinging failed (" + str(nr) + ")... reconnecting to [" + self.user + "@" + self.database + "]")
+            log.warning("Pinging failed (" + ustr(nr) + ")... reconnecting to [" + self.user + "@" + self.database + "]")
             self.db = None
 
         if not ok:
@@ -121,7 +121,7 @@ class MYSQLConnector(Connector):
                 # maybe switch to
                 #       cursor.execute("select whatever from whomever where something = %s", my_parameter)
                 #?
-                s = str(s)
+                s = ustr(s)
                 return "'" + s.replace('\\', '\\\\').replace('"', '\\"').replace('\'', '\\\'') + "'"
 
     def execute(self, sql, params=None, log_errors=True):
@@ -284,8 +284,8 @@ class MYSQLConnector(Connector):
         id = self.mkID()
         orderpos = self.mkOrderPos()
         self.runQuery(
-            "insert into node (id, name, type, orderpos) values(" + id + ", " + self.esc(name) + ", '" + type + "'," + str(orderpos) + ")")
-        return str(id)
+            "insert into node (id, name, type, orderpos) values(" + id + ", " + self.esc(name) + ", '" + type + "'," + ustr(orderpos) + ")")
+        return ustr(id)
 
     def addChild(self, nodeid, childid, check=1):
         if check:
@@ -385,7 +385,7 @@ class MYSQLConnector(Connector):
         order_parts = []
 
         for i, f in enumerate(fields):
-            alias = "a" + str(i)
+            alias = "a" + ustr(i)
             if i > 0:
                 join_parts.append("nodeattribute AS " + alias)
             fname, direction = self._sql_sort_field_name_and_dir(f)
@@ -400,7 +400,7 @@ class MYSQLConnector(Connector):
         where_name_clause = " AND ".join(where_name_parts)
         order_clause = ", ".join(order_parts)
         query = q.format(join_clause, nids, where_name_clause, order_clause)
-        return [str(r[0]) for r in self.runQuery(query)]
+        return [ustr(r[0]) for r in self.runQuery(query)]
 
     def _sort_nodes_by_fields_get_all(self, nids, fields):
         """This one ignores nids and returns all nodes which have a field with name == fields[0].
@@ -416,7 +416,7 @@ class MYSQLConnector(Connector):
         order_parts = []
 
         for i, f in enumerate(fields):
-            alias = "a" + str(i)
+            alias = "a" + ustr(i)
             if i > 0:
                 join_parts.append("nodeattribute AS " + alias)
             fname, direction = self._sql_sort_field_name_and_dir(f)
@@ -431,7 +431,7 @@ class MYSQLConnector(Connector):
         where_name_clause = " AND ".join(where_name_parts)
         order_clause = ", ".join(order_parts)
         query = q.format(join_clause, where_name_clause, order_clause)
-        return [str(r[0]) for r in self.runQuery(query)]
+        return [ustr(r[0]) for r in self.runQuery(query)]
 
     def _sort_nodes_by_fields_full(self, nids, fields):
         """This one is very slow, but sorts by each field even when some sort fields are missing.
@@ -444,7 +444,7 @@ class MYSQLConnector(Connector):
         order_parts = []
 
         for i, f in enumerate(fields):
-            alias = "a" + str(i)
+            alias = "a" + ustr(i)
             fname, direction = self._sql_sort_field_name_and_dir(f)
             join_parts.append("(SELECT nid, value from nodeattribute WHERE name={} AND nid IN ({})) AS {}".format(fname, nids, alias))
             order_parts.append("CAST(BINARY({}.value) as CHAR CHARACTER SET utf8) COLLATE utf8_general_ci{}".format(alias, direction))
@@ -452,7 +452,7 @@ class MYSQLConnector(Connector):
         join_clause = " LEFT JOIN ".join(j + " USING (nid)" for j in join_parts)
         order_clause = ", ".join(order_parts)
         query = q.format(nids, join_clause, order_clause)
-        return [str(r[0]) for r in self.runQuery(query)]
+        return [ustr(r[0]) for r in self.runQuery(query)]
 
     def sort_nodes_by_fields(self, nids, fields):
         """Sorts nodes by field (attribute) values.

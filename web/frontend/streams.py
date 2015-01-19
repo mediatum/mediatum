@@ -43,7 +43,7 @@ IMGNAME = re.compile("/?(attachment|doc|images|thumbs|thumb2|file|download|archi
 def incUsage(node):
     nr = int(node.get("hit_statistic.file") or "0")
     nr += 1
-    node.set("hit_statistic.file", str(nr))
+    node.set("hit_statistic.file", ustr(nr))
 
 
 def splitpath(path):
@@ -268,7 +268,7 @@ def sendBibFile(req, path):
 
 
 def sendZipFile(req, path):
-    tempfile = join_paths(config.get("paths.tempdir"), str(random.random())) + ".zip"
+    tempfile = join_paths(config.get("paths.tempdir"), ustr(random.random())) + ".zip"
     zip = zipfile.ZipFile(tempfile, "w")
     zip.debug = 3
 
@@ -370,7 +370,7 @@ def build_transferzip(node):
     nid = node.id
     zipfilepath = join_paths(config.get("paths.tempdir"), nid + "_transfer.zip")
     if os.path.exists(zipfilepath):
-        zipfilepath = join_paths(config.get("paths.tempdir"), nid + "_" + str(random.random()) + "_transfer.zip")
+        zipfilepath = join_paths(config.get("paths.tempdir"), nid + "_" + ustr(random.random()) + "_transfer.zip")
 
     zip = zipfile.ZipFile(zipfilepath, "w", zipfile.ZIP_DEFLATED)
     files_written = 0

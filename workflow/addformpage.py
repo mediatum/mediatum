@@ -80,7 +80,7 @@ def smart_encode_str(s):
     try:
         utf16 = s.encode('utf_16_be')
     except AttributeError:  # ints and floats
-        utf16 = str(s).encode('utf_16_be')
+        utf16 = ustr(s).encode('utf_16_be')
     safe = utf16.replace(b'\x00)', b'\x00\\)').replace(b'\x00(', b'\x00\\(')
     return b''.join((codecs.BOM_UTF16_BE, safe))
 
@@ -240,7 +240,7 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                     elif fieldname.lower() == 'node.schema':
                         value = getMetaType(node.getSchema()).getLongName()
                     elif fieldname.lower() == 'node.id':
-                        value = str(node.id)
+                        value = ustr(node.id)
                     elif fieldname.lower() == 'node.type':
                         value = node.type
                     elif fieldname.lower() == 'date()':
@@ -316,7 +316,7 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                 current_workflow_step.id, node.name, node.id, fields, new_form_path)
         else:
             logg.warning("workflowstep %s (%s): could not process pdf form - node: '%s' (%s)",
-                           current_workflow_step.name, str(current_workflow_step.id), node.name, node.id)
+                           current_workflow_step.name, ustr(current_workflow_step.id), node.name, node.id)
 
         self.forward(node, True)
 

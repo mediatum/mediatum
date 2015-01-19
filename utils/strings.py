@@ -39,6 +39,6 @@ def ensure_unicode_returned(f=None, name=None):
             logg.warn("return value of '%s': expected unicode, got value of type %s: '%s'", _name, type(res), res)
             return unicode(res)
         else:
-            logg.warn("return value of '%s': expected unicode, trying to decode str as utf8: %s", _name, res.encode("string-escape"))
+            logg.warn("return value of '%s': expected unicode, trying to decode ustr as utf8: %s", _name, res.encode("string-escape"))
             return unicode(res, encoding="utf8")
     return _wrapper

@@ -38,7 +38,7 @@ class OAINodeCheckerAndCondition:
         self.b = b
 
     def __str__(self):
-        return "(" + str(self.a) + ") AND (" + str(self.b) + ")"
+        return "(" + ustr(self.a) + ") AND (" + ustr(self.b) + ")"
 
     def execute(self, node):
         res = self.a.execute(node)
@@ -54,7 +54,7 @@ class OAINodeCheckerOrCondition:
         self.b = b
 
     def __str__(self):
-        return "(" + str(self.a) + ") OR (" + str(self.b) + ")"
+        return "(" + ustr(self.a) + ") OR (" + ustr(self.b) + ")"
 
     def execute(self, node):
         res = self.a.execute(node)
@@ -69,7 +69,7 @@ class OAINodeCheckerNotCondition:
         self.a = a
 
     def __str__(self):
-        return "NOT (" + str(self.b) + ")"
+        return "NOT (" + ustr(self.b) + ")"
 
     def execute(self, node):
         return not self.a.execute(node)

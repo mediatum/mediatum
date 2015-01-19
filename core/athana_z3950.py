@@ -62,7 +62,7 @@ class AsyncPyZ3950Server(z3950.Server):
         try:
             self.decode_ctx.feed(map(ord, b))
         except asn1.BERError, val:
-            raise self.ProtocolError('ASN1 BER', str(val))
+            raise self.ProtocolError('ASN1 BER', ustr(val))
         if self.decode_ctx.val_count() > 0:
             typ, val = self.decode_ctx.get_first_decoded()
             logg.debug("received Z3950 message '%s'", typ)
@@ -179,7 +179,7 @@ class AsyncPyZ3950Server(z3950.Server):
             elt_external.direct_reference = z3950.Z3950_RECSYN_USMARC_ov
             elt_external.encoding = ('octet-aligned', marc21_node)
             n = z3950.NamePlusRecord()
-            n.name = str(node.id)
+            n.name = ustr(node.id)
             n.record = ('retrievalRecord', elt_external)
             l.append(n)
         return l
@@ -361,7 +361,7 @@ def find_query_attribute(attrs):
         if attr.attributeType == 1:  # 'use' attribute
             attr_type, value = attr.attributeValue
             if attr_type == 'numeric':
-                cmp_value = str(value)
+                cmp_value = ustr(value)
         elif attr.attributeType == 2:  # 'relation' attribute
             attr_type, value = attr.attributeValue
             if attr_type == 'numeric' and 1 <= value <= 6:

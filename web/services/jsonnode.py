@@ -73,13 +73,13 @@ def buildNodeDescriptor(req, node, indent=None, written=None, children=True, chi
         nodedict['children'] = []
         for c in node.getChildren().sort_by_orderpos():
             if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
-                nodedict['children'].append({'id': str(c.id), 'type': c.type, 'name': esc(c.name)})
+                nodedict['children'].append({'id': ustr(c.id), 'type': c.type, 'name': esc(c.name)})
 
     if parents:
         nodedict['parents'] = []
         for c in node.getParents().sort_by_orderpos():
             if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
-                nodedict['parents'].append({'id': str(c.id), 'type': c.type, 'name': esc(c.name)})
+                nodedict['parents'].append({'id': ustr(c.id), 'type': c.type, 'name': esc(c.name)})
 
     nd.append(nodedict)
 

@@ -43,9 +43,9 @@ class LDAPUser(ExternalUser):
 
     def _getAttribute(self, attrname, list, separator=" "):
         ret = ""
-        if str(attrname) == "":
+        if ustr(attrname) == "":
             return ""
-        for attr in str(attrname).split(","):
+        for attr in ustr(attrname).split(","):
             attr = attr.strip()
             if attr in list.keys():
                 for i in list[attr]:

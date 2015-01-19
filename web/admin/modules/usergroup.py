@@ -61,7 +61,7 @@ def validate(req, op):
 
             elif key.startswith("edit_"):
                 # edit usergroup
-                return editGroup_mask(req, str(key[5:-2]))
+                return editGroup_mask(req, ustr(key[5:-2]))
 
             elif key.startswith("delete_"):
                 # delete group
@@ -92,7 +92,7 @@ def validate(req, op):
                     dynamic_users = req.params.get("dynamic_users", "")
                     group = create_group(req.params.get("groupname", ""),
                                          description=req.params.get("description", ""),
-                                         option=str(_option),
+                                         option=ustr(_option),
                                          allow_dynamic=allow_dynamic,
                                          dynamic_users=dynamic_users,
                                          )
@@ -108,7 +108,7 @@ def validate(req, op):
                     updateAclRule(oldgroupname, groupname)
                 group.setName(groupname)
                 group.setDescription(req.params.get("description", ""))
-                group.setOption(str(_option))
+                group.setOption(ustr(_option))
                 group.setHideEdit(req.params.get("leftmodule", "").strip())
                 saveGroupMetadata(groupname, req.params.get("leftmodulemeta", "").split(";"))
 

@@ -297,7 +297,7 @@ def parse_date(string, format=None):
         date.has_month = hasmonth
         date.has_day = hasday
     if not validateDate(date):
-        raise ValueError("invalid date: " + str(date))
+        raise ValueError("invalid date: " + ustr(date))
     return date
 
 

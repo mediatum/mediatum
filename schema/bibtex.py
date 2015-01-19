@@ -127,7 +127,7 @@ def save_import_file(filename):
         ret = os.system(cmd.replace('/', '\\'))
 
     if ret & 0xff00:
-        raise IOError("Couldn't copy %s to %s (error: %s)" % (filename, destname, str(ret)))
+        raise IOError("Couldn't copy %s to %s (error: %s)" % (filename, destname, ustr(ret)))
 
     return
 
@@ -396,7 +396,7 @@ def importBibTeX(infile, node=None, req=None):
         except:
             msg = "bibtex import: starting import (unable to identify user)"
     else:
-        msg = "bibtex import: starting import (%s)" % str(sys.argv)
+        msg = "bibtex import: starting import (%s)" % ustr(sys.argv)
     logg.info(msg)
 
     bibtextypes = getbibtexmappings()
@@ -463,7 +463,7 @@ def importBibTeX(infile, node=None, req=None):
                         msg = "bibtex import docid='%s': field error for bibtex mask for type %s and bibtex-type '%s': %s: " % (
                             docid_utf8, metatype, mytype, e)
                         msg = msg + "_bib_name='%s', _mfield='%s', _med_name='%s'" % (
-                            str(_bib_name), str(_mfield), str(_med_name))
+                            ustr(_bib_name), ustr(_mfield), ustr(_med_name))
                         logg.error(msg)
                         continue
 
@@ -500,7 +500,7 @@ def importBibTeX(infile, node=None, req=None):
                             counter, doctype, docid.decode("utf8", "replace"), child_type, child_id)
                     except Exception:
                         logg.info("bibtex import: done  processing %s: %s, %s --> type=%s, id=%s",
-                            str(counter), doctype, "'not printable bibtex key'", child_type, child_id)
+                            ustr(counter), doctype, "'not printable bibtex key'", child_type, child_id)
     logg.debug("bibtex import: finished import")
     print msg
 

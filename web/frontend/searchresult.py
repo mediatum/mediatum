@@ -185,10 +185,10 @@ def extended_search(req):
     q_user = ''
     first2 = 1
     for i in range(1, max + 1):
-        f = u(req.params.get("field" + str(i), "").strip())
-        q = u(req.params.get("query" + str(i), "").strip())
+        f = u(req.params.get("field" + ustr(i), "").strip())
+        q = u(req.params.get("query" + ustr(i), "").strip())
 
-        if not q and "query" + str(i) + "-from" not in req.params:
+        if not q and "query" + ustr(i) + "-from" not in req.params:
             continue
 
         if not first2:
@@ -198,7 +198,7 @@ def extended_search(req):
         first2 = 0
 
         if not f.isdigit():
-            q = u(req.params.get("query" + str(i), "").strip())
+            q = u(req.params.get("query" + ustr(i), "").strip())
             q_str += f + '=' + protect(q)
             q_user += f + '=' + protect(q)
         else:
@@ -211,24 +211,24 @@ def extended_search(req):
                     q_str += " or "
                     q_user += " %s " % (translate("search_or", request=req))
                 first = 0
-                if "query" + str(i) + "-from" in req.params and metatype.getFieldtype() == "date":
+                if "query" + ustr(i) + "-from" in req.params and metatype.getFieldtype() == "date":
                     date_from = "0000-00-00T00:00:00"
                     date_to = "0000-00-00T00:00:00"
                     fld = metatype
-                    if str(req.params["query" + str(i) + "-from"]) != "":
+                    if ustr(req.params["query" + ustr(i) + "-from"]) != "":
                         date_from = date.format_date(
-                            date.parse_date(str(req.params["query" + str(i) + "-from"]), fld.getValues()), "%Y-%m-%dT%H:%M:%S")
-                    if str(req.params["query" + str(i) + "-to"]) != "":
+                            date.parse_date(ustr(req.params["query" + ustr(i) + "-from"]), fld.getValues()), "%Y-%m-%dT%H:%M:%S")
+                    if ustr(req.params["query" + ustr(i) + "-to"]) != "":
                         date_to = date.format_date(
-                            date.parse_date(str(req.params["query" + str(i) + "-to"]), fld.getValues()), "%Y-%m-%dT%H:%M:%S")
+                            date.parse_date(ustr(req.params["query" + ustr(i) + "-to"]), fld.getValues()), "%Y-%m-%dT%H:%M:%S")
 
                     if date_from == "0000-00-00T00:00:00" and date_to != date_from:  # from value
                         q_str += metatype.getName() + ' <= ' + date_to
-                        q_user += "%s &le; \"%s\"" % (metatype.getName(), str(req.params["query" + str(i) + "-to"]))
+                        q_user += "%s &le; \"%s\"" % (metatype.getName(), ustr(req.params["query" + ustr(i) + "-to"]))
 
                     elif date_to == "0000-00-00T00:00:00" and date_to != date_from:  # to value
                         q_str += metatype.getName() + ' >= ' + date_from
-                        q_user += "%s &ge; \"%s\"" % (metatype.getName(), str(req.params["query" + str(i) + "-from"]))
+                        q_user += "%s &ge; \"%s\"" % (metatype.getName(), ustr(req.params["query" + ustr(i) + "-from"]))
                     else:
                         #q_str += '('+metatype.getName()+' >= '+date_from+' and '+metatype.getName()+' <= '+date_to+')'
                         q_str += '(' + metatype.getName() + ' = ' + date_from + ')'
@@ -236,12 +236,12 @@ def extended_search(req):
                         q_user += "(%s %s \"%s\" %s \"%s\")" % (metatype.getName(),
                                                                 translate("search_between",
                                                                           request=req),
-                                                                str(req.params["query" + str(i) + "-from"]),
+                                                                ustr(req.params["query" + ustr(i) + "-from"]),
                                                                 translate("search_and",
                                                                           request=req),
-                                                                str(req.params["query" + str(i) + "-to"]))
+                                                                ustr(req.params["query" + ustr(i) + "-to"]))
                 else:
-                    q = u(req.params.get("query" + str(i), "").strip())
+                    q = u(req.params.get("query" + ustr(i), "").strip())
                     q_str += metatype.getName() + '=' + protect(q)
                     if metatype.getLabel() != "":
                         q_user += "%s = %s" % (metatype.getLabel(), protect(q))
@@ -250,7 +250,7 @@ def extended_search(req):
 
             q_str += ")"
     try:
-        if req.params.get("act_node", "") and req.params.get("act_node") != str(collection.id):
+        if req.params.get("act_node", "") and req.params.get("act_node") != ustr(collection.id):
             result = tree.getNode(req.params.get("act_node")).search(q_str)
         else:
             result = collection.search(q_str)

@@ -311,7 +311,7 @@ def replace_words(s):
     s = s.lower()
     # Processing word trees for search
     for key, value in normalization_items["words"]:
-        s = re.sub(str(key), value, s)
+        s = re.sub(ustr(key), value, s)
     return s
 
 import locale
@@ -440,10 +440,10 @@ def ArrayToString(pieces, glue=""):
 
 
 def formatException():
-    s = "Exception " + str(sys.exc_info()[0])
+    s = "Exception " + ustr(sys.exc_info()[0])
     info = sys.exc_info()[1]
     if info:
-        s += " " + str(info)
+        s += " " + ustr(info)
     s += "\n"
     for l in traceback.extract_tb(sys.exc_info()[2]):
         s += "  File \"%s\", line %d, in %s\n" % (l[0], l[1], l[2])
@@ -668,30 +668,30 @@ class HTMLTextCutter(HTMLParser):
 
     def handle_charref(self, name):
         if self.in_script + self.in_style > 0:
-            self.output.write("&#%s;" % str(name))
+            self.output.write("&#%s;" % ustr(name))
         elif self.count >= self.cutoff:
             self.is_cutted = True
         else:
             self.count += 1
-            self.output.write("&#%s;" % str(name))
+            self.output.write("&#%s;" % ustr(name))
 
     def handle_entityref(self, name):
         if self.in_script + self.in_style > 0:
-            self.output.write("&%s;" % str(name))
+            self.output.write("&%s;" % ustr(name))
         elif self.count >= self.cutoff:
             self.is_cutted = True
         else:
             self.count += 1
-            self.output.write("&%s;" % str(name))
+            self.output.write("&%s;" % ustr(name))
 
     def handle_comment(self, data):
         self.output.write("<!--%s-->" % data)
 
     def handle_decl(self, decl):
-        self.output.write("<!%s>" % str(decl))
+        self.output.write("<!%s>" % ustr(decl))
 
     def handle_pi(self, data):
-        self.output.write("<?%s>" % str(data))
+        self.output.write("<?%s>" % ustr(data))
 
     def close(self):
         HTMLParser.close(self)

@@ -149,7 +149,7 @@ class NoSuchNodeError:
         self.id = id
 
     def __str__(self):
-        return "NoSuchNodeError(" + str(self.id) + ")"
+        return "NoSuchNodeError(" + ustr(self.id) + ")"
 
 
 class InvalidOperationError:
@@ -300,7 +300,7 @@ class NodeList:
             ids = [None] * len(nodes)
             for i, n in enumerate(nodes):
                 ids[i] = n.id
-        self.ids = [str(i) for i in ids]
+        self.ids = [ustr(i) for i in ids]
         self.len = len(ids)
         self.description = description
 
@@ -314,7 +314,7 @@ class NodeList:
                 nodes += [getNode(id)]
             return nodes
         elif i >= self.len:
-            raise IndexError(str(i) + " >= " + str(self.len))
+            raise IndexError(ustr(i) + " >= " + ustr(self.len))
         return getNode(self.ids[i])
 
     def getIDs(self):
@@ -363,13 +363,13 @@ class NodeList:
         return self
 
     def sort_by_orderpos(self):
-        nodes = [getNode(str(i)) for i in self.ids]
+        nodes = [getNode(ustr(i)) for i in self.ids]
         nodes.sort(key=lambda n: n.orderpos)
         return nodes
 
     def sort_by_name(self, direction="up", locale=None):
         reverse = direction == "down"
-        nodes = [getNode(str(i)) for i in self.ids]
+        nodes = [getNode(ustr(i)) for i in self.ids]
         # set locale and restore current value after sorting if given
         if locale:
             last_locale = getlocale(LC_COLLATE)
@@ -858,8 +858,8 @@ class Node(object):
             raise NoSuchNodeError("child of None")
         id = db.getNamedNode(self.id, name)
         if not id:
-            raise NoSuchNodeError("child:" + str(name))
-        return getNode(str(id))
+            raise NoSuchNodeError("child:" + ustr(name))
+        return getNode(ustr(id))
 
     def get_child_with_type(self, name, nodetype):
         """Returns a child with specific name and nodetype."""
@@ -869,8 +869,8 @@ class Node(object):
             raise NoSuchNodeError("child of None")
         nid = db.getNamedTypedNode(self.id, name, nodetype)
         if not nid:
-            raise NoSuchNodeError("child:" + str(name))
-        return getNode(str(nid))
+            raise NoSuchNodeError("child:" + ustr(name))
+        return getNode(ustr(nid))
 
     def getContainerChildren(self):
         id = db.getContainerChildren(self.id)
@@ -915,7 +915,7 @@ class Node(object):
             if idlist is None:
                 idlist = childids_cache[long(id)] = db.getChildren(id)
             for id in idlist:
-                self._getAllChildIDs(str(id), map, 1)
+                self._getAllChildIDs(ustr(id), map, 1)
             return map
         finally:
             if not locked:
@@ -976,7 +976,7 @@ class Node(object):
             if isinstance(value, unicode):
                 self.attributes[name] = value
             else:
-                self.attributes[name] = str(value)
+                self.attributes[name] = ustr(value)
 
         if self.id:
             db.setAttribute(self.id, name, value, check=(not bulk))
@@ -1191,10 +1191,10 @@ class Node(object):
         n.set("updateuser", user.getName())
         n.set("edit.lastmask", self.get('edit.lastmask'))
 
-        if self.get('updatetime') < str(now()):
-            n.set("updatetime", str(format_date()))
+        if self.get('updatetime') < ustr(now()):
+            n.set("updatetime", ustr(format_date()))
         else:
-            n.set("updatetime", str(self.get('updatetime')))
+            n.set("updatetime", ustr(self.get('updatetime')))
 
         for f in self.getFiles():
             n.addFile(f)

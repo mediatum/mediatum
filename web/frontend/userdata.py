@@ -70,7 +70,7 @@ class HTMLSnippet:
         targetnode = users.getHomeDir(user)
         for key in detail_dict:
             target_key = "system.%s.%s" % (self.name, key)
-            target_value = str(detail_dict[key])
+            target_value = ustr(detail_dict[key])
             targetnode.set(target_key, target_value)
             logg.debug("setting user detail: %r = %r", target_key, target_value)
 

@@ -73,7 +73,7 @@ def get_pdf_dimensions(fn):
             x1 = max(x1, _x1)
         width = x1 - x0
         height = y1 - y0
-        key = str([width, height])
+        key = ustr([width, height])
         d_pages[key] = d_pages.get(key, []) + [i]
         d_pageno2size[i] = [width, height]
 

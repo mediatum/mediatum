@@ -170,7 +170,7 @@ def search_form(req, id, message=None):
            "occur": occur,
            "mtypelist": mtypelist,
            "objtype": objtype,
-           "searchvalues": searchvalues.get(str(otype)+".full", ""),
+           "searchvalues": searchvalues.get(ustr(otype)+".full", ""),
            "script": script,
            "indexdate": indexdate,
            "formlist": formlist

@@ -38,7 +38,7 @@ viewnames = ["containermapping", "contentmapping"]
 
 
 def createView(dbname, viewname, viewsql):
-    if str(dbname) in ["", "None"]:  # sqlite
+    if ustr(dbname) in ["", "None"]:  # sqlite
         try:
             db.runQuery("DROP VIEW %s;" % viewname)
         except:
@@ -71,7 +71,7 @@ for i in range(0, 2):
         viewsql = "select nodemapping.nid AS nid,nodemapping.cid AS cid, node.type AS type from (nodemapping join node on((nodemapping.cid=node.id))) where (node.type in (" + types[
             i] + "))"
     else:
-        if str(dbname) in ["", "None"]:  # sqlite
+        if ustr(dbname) in ["", "None"]:  # sqlite
             viewsql = "select nodemapping.nid AS nid,nodemapping.cid AS cid, node.type AS type from (nodemapping join node on((nodemapping.cid=node.id))) where ((" + t[
                 :-4] + "))"
         else:

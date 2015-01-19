@@ -55,7 +55,7 @@ class Schedule(tree.Node):
         elif isinstance(s, type("")):
             self.set("cron_dict", s)
         else:
-            raise TypeError("Schedule.set_cron_dict: inadmissible type:" + str(type(s)))
+            raise TypeError("Schedule.set_cron_dict: inadmissible type:" + ustr(type(s)))
 
     def get_iter_date(self, start_datetime_obj, granularity, lookahead=24 * 60, lookback=60):
         g = su.iter_date(start_datetime_obj, json.loads(self.get('cron_dict')), granularity, lookahead, lookback)

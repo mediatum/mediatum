@@ -233,7 +233,7 @@ def query(field, value):
 
 def numquery(field, fromVal, toVal):
     searcher = _getSearcher(field)
-    r = searcher.search(str(fromVal) + "-" + str(toVal))
+    r = searcher.search(ustr(fromVal) + "-" + ustr(toVal))
     print "Looking for", field, "with value between", fromVal, "and", toVal, ":", len(r), "results"
     return r
 
@@ -294,7 +294,7 @@ def _makeMetadataNumbers():
                             # print "\t", collection.name, field.getName(), v,"->",n
                     if len(nstr):
                         nstr += ";"
-                    nstr += str(num)
+                    nstr += ustr(num)
                 field.setFieldValueNum(nstr)
 
 
@@ -307,16 +307,16 @@ def _makeTreeIndices():
         pos[0] += 1
 
         try:
-            id2mindex[node.id] += ";" + str(pos[0])
+            id2mindex[node.id] += ";" + ustr(pos[0])
         except KeyError:
-            id2mindex[node.id] = str(pos[0])
+            id2mindex[node.id] = ustr(pos[0])
 
         node.set("mindex", id2mindex[node.id])
 
-        node.set("lindex", str(pos[0]))
+        node.set("lindex", ustr(pos[0]))
         for c in node.getChildren():
             r(c, pos)
-        node.set("rindex", str(pos[0]))
+        node.set("rindex", ustr(pos[0]))
 
     r(tree.getRoot(), [0])
 
@@ -423,7 +423,7 @@ def _makeCollectionIndices():
                 if type == "date":
                     if len(s):
                         try:
-                            s = str(date.parse_date(s).daynum())
+                            s = ustr(date.parse_date(s).daynum())
                         except:
                             print "Couldn't parse date", s
                             s = "0"
@@ -450,9 +450,9 @@ def _makeCollectionIndices():
             config.basedir, "core/search/runindexer.py"), itype, file, tmpdir, basename)
         exit_status = os.system(command)
         if exit_status:
-            print "Exit status " + str(exit_status) + " of subprocess " + command
+            print "Exit status " + ustr(exit_status) + " of subprocess " + command
             sys.exit(1)
-            #raise "Exit status "+str(exit_status)+" of subprocess "+command
+            #raise "Exit status "+ustr(exit_status)+" of subprocess "+command
         #mgindexer.makeindex(file, tmpdir, name)
 
     occurs = tree.getRoot().getAllOccurences(acl.getRootAccess())
@@ -500,6 +500,6 @@ def startThread():
     timewait = config.get("config.reindex_time")
     if timewait:
         thread_id = thread.start_new_thread(indexer_thread, (int(timewait),))
-        log.info("started indexer thread. frequency " + str(timewait) + ", thread id " + str(thread_id))
+        log.info("started indexer thread. frequency " + ustr(timewait) + ", thread id " + ustr(thread_id))
     else:
         log.info("no indexer thread started. Indexes will need to be updated manually")

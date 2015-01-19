@@ -121,7 +121,7 @@ def request_handler(req):
         pass
 
     s = "services %s '%s' (%s): %s for %s bytes for service request (%s, %s, %s) - (user-agent: %s)" % (req.ip,
-                                                                                                        str(response_code),
+                                                                                                        ustr(response_code),
                                                                                                         response_code_description,
                                                                                                         handle_duration,
                                                                                                         locale.format(

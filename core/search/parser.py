@@ -30,7 +30,7 @@ class SearchAndCondition:
         self.b = b
 
     def __str__(self):
-        return "(" + str(self.a) + ") AND (" + str(self.b) + ")"
+        return "(" + ustr(self.a) + ") AND (" + ustr(self.b) + ")"
 
     def execute(self):
         ids1 = self.a.execute()
@@ -47,7 +47,7 @@ class SearchOrCondition:
         self.b = b
 
     def __str__(self):
-        return "(" + str(self.a) + ") OR (" + str(self.b) + ")"
+        return "(" + ustr(self.a) + ") OR (" + ustr(self.b) + ")"
 
     def execute(self):
         ids1 = self.a.execute()
@@ -61,7 +61,7 @@ class SearchNotCondition:
         self.a = a
 
     def __str__(self):
-        return "NOT (" + str(self.a) + ")"
+        return "NOT (" + ustr(self.a) + ")"
 
     def execute(self):
         raise None  # not implemented
@@ -134,8 +134,8 @@ searchParser = SearchParser()
 
 if __name__ == "__main__":
     p = SearchParser()
-    print str(p.parse("((true and false and ((false))))"))
-    print str(p.parse("photodate > 1.1.2005 and type=image and full=\"Traktor\""))
-    print str(p.parse("Traktor"))
-    print str(p.parse("Traktor Haube"))
-    print str(p.parse("Traktor Haube Hebel and type=image"))
+    print ustr(p.parse("((true and false and ((false))))"))
+    print ustr(p.parse("photodate > 1.1.2005 and type=image and full=\"Traktor\""))
+    print ustr(p.parse("Traktor"))
+    print ustr(p.parse("Traktor Haube"))
+    print ustr(p.parse("Traktor Haube Hebel and type=image"))

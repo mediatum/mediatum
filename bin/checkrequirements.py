@@ -187,7 +187,7 @@ def step3():
         msg += "You can override this using the -c <path_to_config_file> option for this script."
         msg += "Look at mediatum.cfg.template for an explaining template."
 
-        out(msg % (CFG_FILE, str(e)), borderchar='*', title=' Configuration: ')
+        out(msg % (CFG_FILE, ustr(e)), borderchar='*', title=' Configuration: ')
         sys.exit()
 
     def check_setting(key, default):
@@ -210,7 +210,7 @@ def step3():
             access_descr = ""
             p = config.get('paths.' + pn)
             if p is None:
-                p = str("")
+                p = ustr("")
             if not p:
                 msg = "- path.%s: path value has not been set" % (pn)
                 print msg + " " * (96 - len(msg)) + "FAIL"
@@ -280,7 +280,7 @@ def step3():
                 if dbport < 0:
                     raise ValueError()
             except ValueError as e:
-                out("Fatal Error: database.port=%s is not a positive integer" % (str(dbport)), borderchar='*')
+                out("Fatal Error: database.port=%s is not a positive integer" % (ustr(dbport)), borderchar='*')
                 sys.exit(1)
 
             try:
@@ -305,7 +305,7 @@ def step3():
 
             except _mysql_exceptions.OperationalError as e:
                 print msg + " " * (96 - len(msg)) + "FAIL"
-                failures["3b"].append(('FAIL', "wrong mysql credential settings." + str(e)))
+                failures["3b"].append(('FAIL', "wrong mysql credential settings." + ustr(e)))
 
     def step3c():
         failures["3c"] = []

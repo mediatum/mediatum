@@ -61,7 +61,7 @@ def get_maskcache_report():
     s = maskcache_msg + "| %d lookup keys in cache, total access count: %d\r\n|\r\n"
     total_access_count = 0
     for k, v in sorted(maskcache_accesscount.items()):
-        s += "| %s : %s\r\n" % (k.ljust(60, '.'), str(v).rjust(8, '.'))
+        s += "| %s : %s\r\n" % (k.ljust(60, '.'), ustr(v).rjust(8, '.'))
         total_access_count += v
     return s % (len(maskcache_accesscount), total_access_count)
 
@@ -87,9 +87,9 @@ def make_lookup_key(node, language=languages[0], labels=True):
         flaglabels = 'uselabels'
 
     if language in languages:
-        return "%s_%s_%s" % (str(node.type), str(language), flaglabels)
+        return "%s_%s_%s" % (ustr(node.type), ustr(language), flaglabels)
     else:
-        return "%s_%s_%s" % (str(node.type), languages[0], flaglabels)
+        return "%s_%s_%s" % (ustr(node.type), languages[0], flaglabels)
 
 
 def get_maskcache_entry(lookup_key):

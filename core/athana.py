@@ -377,7 +377,7 @@ class counter:
         return '<counter value=%s at %x>' % (self.value, id(self))
 
     def __str__(self):
-        s = str(long(self.value))
+        s = ustr(long(self.value))
         if s[-1:] == 'L':
             s = s[:-1]
         return s
@@ -521,7 +521,7 @@ def parse_http_date(d):
 
 def check_date():
     global time_offset
-    tmpfile = join_paths(GLOBAL_TEMP_DIR, "datetest" + str(random.random()) + ".tmp")
+    tmpfile = join_paths(GLOBAL_TEMP_DIR, "datetest" + ustr(random.random()) + ".tmp")
     open(tmpfile, "wb").close()
     time1 = os.stat(tmpfile)[stat.ST_MTIME]
     os.unlink(tmpfile)
@@ -1135,7 +1135,7 @@ class http_request(object):
             return
         if length_match and ims_date:
             if mtime <= ims_date and not force:
-                # print "File "+path+" was not modified since "+str(ims_date)+" (current filedate is "+str(mtime)+")-> 304"
+                # print "File "+path+" was not modified since "+ustr(ims_date)+" (current filedate is "+ustr(mtime)+")-> 304"
                 self.reply_code = 304
                 return
         try:
@@ -1848,7 +1848,7 @@ class default_handler:
                 request.reply_code = 304
                 request.done()
                 self.cache_counter.increment()
-                # print "File "+path+" was not modified since "+str(ims_date)+" (current filedate is "+str(mtime)+")"
+                # print "File "+path+" was not modified since "+ustr(ims_date)+" (current filedate is "+ustr(mtime)+")"
                 return
         try:
             file = self.filesystem.open(path, 'rb')
@@ -3538,7 +3538,7 @@ def read_ini_file(filename):
         elif key == "pattern":
             handler.addPattern(value)
         else:
-            raise AthanaException("Syntax error in line " + str(lineno) + " of file " + filename + ":\n" + line)
+            raise AthanaException("Syntax error in line " + ustr(lineno) + " of file " + filename + ":\n" + line)
     fi.close()
     return context
 
@@ -3569,7 +3569,7 @@ class AthanaFile:
         self.param_list = param_list
         self.filename = filename
         self.content_type = content_type
-        self.tempname = GLOBAL_TEMP_DIR + str(int(random.random() * 999999)) + os.path.splitext(filename)[1]
+        self.tempname = GLOBAL_TEMP_DIR + ustr(int(random.random() * 999999)) + os.path.splitext(filename)[1]
         self.filesize = 0
         self.fi = open(self.tempname, "wb")
 
@@ -3767,10 +3767,10 @@ class Session(dict):
 
 
 def exception_string():
-    s = "Exception " + str(sys.exc_info()[0])
+    s = "Exception " + ustr(sys.exc_info()[0])
     info = sys.exc_info()[1]
     if info:
-        s += " " + str(info)
+        s += " " + ustr(info)
     s += "\n"
     for l in traceback.extract_tb(sys.exc_info()[2]):
         s += "  File \"%s\", line %d, in %s\n" % (l[0], l[1], l[2])
@@ -3867,9 +3867,9 @@ class AthanaHandler:
             self.continue_request(request, form=[])
 
     def create_session_id(self):
-        pid = abs((str(random.random())).__hash__())
-        now = abs((str(time.time())).__hash__())
-        rand = abs((str(random.random())).__hash__())
+        pid = abs((ustr(random.random())).__hash__())
+        now = abs((ustr(time.time())).__hash__())
+        rand = abs((ustr(random.random())).__hash__())
         x = "abcdefghijklmnopqrstuvwxyz0123456789"
         result = ""
         for a in range(0, 6):
@@ -4255,7 +4255,7 @@ def thread_status(req):
                 duration = time.time() - thread.lastrequest
                 if duration > 10:
                     req.write('<p style="color: red">')
-                req.write("Working on <tt>%s</tt><br />" % str(thread.uri))
+                req.write("Working on <tt>%s</tt><br />" % ustr(thread.uri))
                 req.write("Since: " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(thread.lastrequest)))
                 req.write(" (%.2f seconds)" % duration)
                 if duration > 10:
@@ -4265,7 +4265,7 @@ def thread_status(req):
                     req.write('<p style="color: green">')
                 req.write("Idle.<br />")
                 if thread.lastrequest or thread.duration:
-                    req.write("Last request <tt>%s</tt><br/>" % str(thread.uri))
+                    req.write("Last request <tt>%s</tt><br/>" % ustr(thread.uri))
                     req.write("Processed at: " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(thread.lastrequest)) + "<br />")
 
                     if thread.duration >= 10:

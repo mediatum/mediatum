@@ -74,8 +74,8 @@ class Archive:
 
     def stat(self, attribute=""):
         stat = {}
-        stat['name'] = str(self)
-        stat['used'] = db.getNodeIdByAttribute("archive_type", str(self))
+        stat['name'] = ustr(self)
+        stat['used'] = db.getNodeIdByAttribute("archive_type", ustr(self))
         stat['state1'] = len(intersection([stat['used'], db.getNodeIdByAttribute("archive_state", "1")]))
         stat['state2'] = len(intersection([stat['used'], db.getNodeIdByAttribute("archive_state", "3")]))
         stat['state3'] = len(intersection([stat['used'], db.getNodeIdByAttribute("archive_state", "3")]))
@@ -134,7 +134,7 @@ class ArchiveManager:
 
                 # union to get all nodes with state 3 and 2 with over period
                 archive_nodes = union((archive_nodes_3, archive_nodes_2))
-                nodes = intersection((db.getNodeIdByAttribute("archive_type", str(manager)), archive_nodes))
+                nodes = intersection((db.getNodeIdByAttribute("archive_type", ustr(manager)), archive_nodes))
 
                 # run action defined in manager
                 try:

@@ -144,7 +144,7 @@ def setNodeWorkflow(node, workflow):
     return getNodeWorkflowStep(node)
 
 
-def createWorkflowStep(name="", type="workflowstep", trueid="", falseid="", truelabel="", falselabel="", comment=str(""), adminstep=""):
+def createWorkflowStep(name="", type="workflowstep", trueid="", falseid="", truelabel="", falselabel="", comment=ustr(""), adminstep=""):
     n = tree.Node(name=name, type=type)
     n.set("truestep", trueid)
     n.set("falsestep", falseid)
@@ -481,7 +481,7 @@ class WorkflowStep(tree.Node):
             return '<i>' + t(lang(req), "permission_denied") + '</i>'
         c = []
         for item in self.getChildren():
-            c.append({"id": str(item.id), "creationtime": date.format_date(
+            c.append({"id": ustr(item.id), "creationtime": date.format_date(
                 date.parse_date(item.get('creationtime')), 'dd.mm.yyyy HH:MM:SS'), "name": item.getName()})
         c.sort(lambda x, y: cmp(x['name'], y['name']))
         return req.getTAL("workflow/workflow.html", {"children": c, "workflow": self.getParents()[

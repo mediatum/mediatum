@@ -67,7 +67,7 @@ def validate(req, op):
 
                 elif key.startswith("edit_"):
                     # edit workflow
-                    return WorkflowDetail(req, str(key[5:-2]))
+                    return WorkflowDetail(req, ustr(key[5:-2]))
 
                 elif key.startswith("delete_"):
                     # delete workflow
@@ -287,7 +287,7 @@ def WorkflowDetail(req, id, err=0):
         v["original_name"] = req.params.get("orig_name", "")
         workflow.id = req.params.get("id")
 
-    rule = {"read": str(workflow.getAccess("read") or "").split(","), "write": str(workflow.getAccess("write") or "").split(",")}
+    rule = {"read": ustr(workflow.getAccess("read") or "").split(","), "write": ustr(workflow.getAccess("write") or "").split(",")}
 
     v["acl_read"] = makeList(req, "read", removeEmptyStrings(rule["read"]), {}, overload=0, type="read")
     v["acl_write"] = makeList(req, "write", removeEmptyStrings(rule["write"]), {}, overload=0, type="write")
@@ -433,7 +433,7 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
     v_part["node"] = workflowstep
     v_part["hiddenvalues"] = {"wnodeid": workflowstep.name}
 
-    rule = {"read": str(workflowstep.getAccess("read") or "").split(","), "write": str(workflowstep.getAccess("write") or "").split(",")}
+    rule = {"read": ustr(workflowstep.getAccess("read") or "").split(","), "write": ustr(workflowstep.getAccess("write") or "").split(",")}
     v["acl_read"] = makeList(req, "read", removeEmptyStrings(rule["read"]), {}, overload=0, type="read")
     v["acl_write"] = makeList(req, "write", removeEmptyStrings(rule["write"]), {}, overload=0, type="write")
     v["editor"] = req.getTAL("web/admin/modules/workflows.html", v_part, macro="view_editor")

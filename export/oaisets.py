@@ -74,7 +74,7 @@ def build_container_group():
 
     d_names = OrderedDict()
     for col_node in node_list:
-        d_names[str(col_node.id)] = esc(col_node.get('oai.setname'))
+        d_names[ustr(col_node.id)] = esc(col_node.get('oai.setname'))
 
     g = OAISetGroup(d_names, descr='group of %d container sets' % len(d_names))
 

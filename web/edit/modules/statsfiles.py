@@ -109,7 +109,7 @@ class StatTypes:
         for t in self.data:
             ret += t.getName() + "("
             for i in t.getTypes():
-                ret += i[0] + "=" + str(i[1]) + "|" + str(i[2]) + ";"
+                ret += i[0] + "=" + ustr(i[1]) + "|" + ustr(i[2]) + ";"
             if ret[-1] == ";":
                 ret = ret[:-1]
             ret += ");"
@@ -158,9 +158,9 @@ def getContent(req, ids):
                     [file for file in n.getFiles() if file.type in["image", "document", "video"]])
                 data.addItem(n.getContentType(), n.getSchema(), found_dig)
 
-            node.set("system.statscontent", str(data))
-            node.set("system.statsdate", str(format_date()))
-            statstring = str(data)
+            node.set("system.statscontent", ustr(data))
+            node.set("system.statsdate", ustr(format_date()))
+            statstring = ustr(data)
 
         v = {}
         v["data"] = StatTypes(statstring)

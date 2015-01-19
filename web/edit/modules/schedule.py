@@ -387,7 +387,7 @@ def getContent(req, ids):
 
     try:
         additional_nodes_id_list = [
-            str(int(nid.strip())) for nid in additional_nodes_str.strip().split(";") if nid.strip()]
+            ustr(int(nid.strip())) for nid in additional_nodes_str.strip().split(";") if nid.strip()]
     except:
         has_evaluation_errors = True
         additional_nodes_error = True
@@ -445,7 +445,7 @@ def getContent(req, ids):
     d['loaded_schedule'] = schedule
 
     if schedule:
-        d['loaded_schedule_id'] = str(schedule.id)
+        d['loaded_schedule_id'] = ustr(schedule.id)
     else:
         d['loaded_schedule_id'] = None
 
@@ -537,7 +537,7 @@ def getContent(req, ids):
             if has_error:
                 _error1 = d['error']
                 _error2 = "<br/>\n".join(map(lambda x:
-                                             (t(language, str(x))), TT))
+                                             (t(language, ustr(x))), TT))
                 _error = "<br/>\n".join([_error1, _error2])
                 d['error'] = _error
 

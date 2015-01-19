@@ -100,13 +100,13 @@ class User(tree.Node):
 
     def isEditor(self):
         for group in self.getGroups():
-            if "e" in str(usergroups.getGroup(group).getOption()):
+            if "e" in ustr(usergroups.getGroup(group).getOption()):
                 return True
         return False
 
     def isWorkflowEditor(self):
         for group in self.getGroups():
-            if "w" in str(usergroups.getGroup(group).getOption()):
+            if "w" in ustr(usergroups.getGroup(group).getOption()):
                 return True
         return False
 
@@ -154,7 +154,7 @@ class User(tree.Node):
         ret = []
         for c in self.getChildren():
             if c.getContentType() == "shoppingbag":
-                if str(c.id) == str(name) or c.getName() == name:
+                if ustr(c.id) == ustr(name) or c.getName() == name:
                     return [c]
                 else:
                     ret.append(c)

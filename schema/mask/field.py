@@ -52,7 +52,7 @@ class m_field(Metatype):
                 '&maskid=' + field.id + '\', \'\', 400, 250)"><img src="/img/tooltip.png" border="0"/></a></div>'
 
         if not sub:
-            if str(element.id) in req.params.get("errorlist", []):
+            if ustr(element.id) in req.params.get("errorlist", []):
                 ret += '<div class="editorerror">'
             else:
                 ret += '<div class="editorrow">'
@@ -130,12 +130,12 @@ class m_field(Metatype):
                     if template_from_caller and template_from_caller[0]:  # checking template on test nodes: show full length
                         fieldvalue = nodes[0].get(element.name)
                         if fieldvalue.strip():  # field is filled for this node
-                            value = str(t.getFormatedValue(element, nodes[0], language, template_from_caller=fieldvalue, mask=mask)[1])
+                            value = ustr(t.getFormatedValue(element, nodes[0], language, template_from_caller=fieldvalue, mask=mask)[1])
                         else:  # use default
-                            value = str(
+                            value = ustr(
                                 t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1])
                     else:  # cut long values
-                        value = str(
+                        value = ustr(
                             formatLongText(
                                 t.getFormatedValue(
                                     element,
@@ -146,12 +146,12 @@ class m_field(Metatype):
                                 element))
                 elif fieldtype in ['upload']:
                     # passing mask necessary for fieldtype='upload'
-                    value = str(formatLongText(t.getFormatedValue(element, nodes[0], language, mask=mask)[1], element))
+                    value = ustr(formatLongText(t.getFormatedValue(element, nodes[0], language, mask=mask)[1], element))
                 else:
-                    value = str(formatLongText(t.getFormatedValue(element, nodes[0], language)[1], element))
+                    value = ustr(formatLongText(t.getFormatedValue(element, nodes[0], language)[1], element))
 
         if len(value.strip()) > 0:
-            value += str(unit)
+            value += ustr(unit)
 
         label = '&nbsp;'
         if field.getLabel() != "":
@@ -171,9 +171,9 @@ class m_field(Metatype):
             return ''
         elif flags & VIEW_DATA_EXPORT:
             if fieldtype in ['text']:
-                return str(t.getFormatedValue(element, nodes[0], language, html=0, template_from_caller=template_from_caller, mask=mask)[1])
+                return ustr(t.getFormatedValue(element, nodes[0], language, html=0, template_from_caller=template_from_caller, mask=mask)[1])
             else:
-                return str(t.getFormatedValue(element, nodes[0], language, html=0)[1])
+                return ustr(t.getFormatedValue(element, nodes[0], language, html=0)[1])
             # return element.get("type")
         else:
             # standard view
@@ -285,7 +285,7 @@ class m_field(Metatype):
                         fields.append(field)
             else:
                 for m in metadatatype.getMasks():
-                    if str(m.id) == str(req.params.get("pid")):
+                    if ustr(m.id) == ustr(req.params.get("pid")):
                         for field in m.getChildren():
                             fields.append(field)
 

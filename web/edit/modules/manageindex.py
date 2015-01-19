@@ -31,7 +31,7 @@ def getInformation():
 def isParent__(basenode, node, access):
     return 1
     for ls in getPaths(node, access):
-        if str(basenode.id) in tree.NodeList(ls).getIDs():
+        if ustr(basenode.id) in tree.NodeList(ls).getIDs():
             return 1
     return 0
 
@@ -128,7 +128,7 @@ def getContent(req, ids):
 
             def isChildOf(access, node, basenodeid):
                 for ls in getPaths(node, access):
-                    if str(basenodeid) in tree.NodeList(ls).getIDs():
+                    if ustr(basenodeid) in tree.NodeList(ls).getIDs():
                         return 1
                 return 0
 

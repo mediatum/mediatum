@@ -129,7 +129,7 @@ def request_handler(req):
     if not req_query:
         req_query = ''
     s = "services %s '%s' (%s): %s for %s bytes for service request no. %r (%s, %s, %s) - (user-agent: %s)" % (req.ip,
-                                                                                                               str(response_code),
+                                                                                                               ustr(response_code),
                                                                                                                response_code_description,
                                                                                                                handle_duration,
                                                                                                                locale.format(

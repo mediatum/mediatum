@@ -91,12 +91,12 @@ class WorkflowImage:
     def getPosition(self, id, add=False):
         for i in range(len(self.m)):
             for j in range(len(self.m)):
-                if str(self.m[i][j]) == str(id):
+                if ustr(self.m[i][j]) == ustr(id):
                     return i, j
 
         if add:  # add node if not found in matrix
             for i in range(len(self.m)):
-                if str(self.m[0][i]) == str("0"):
+                if ustr(self.m[0][i]) == ustr("0"):
                     self.m[0][i] = id
                     self.errorlist.append(id)
                     return 0, i
@@ -112,7 +112,7 @@ class WorkflowImage:
         if op:
             i = 0
             # test bottom position
-            while str(self.m[x + i][y]) != "0":
+            while ustr(self.m[x + i][y]) != "0":
                 i += 1
             x += i
 
@@ -120,8 +120,8 @@ class WorkflowImage:
         if not op:
             i = 0
             # test right and upper position
-            while str(self.m[x][y + i]) != "0" or str(self.m[x - i][y + i]) != "0":
-                if str(self.m[x][y + i]) == "0":
+            while ustr(self.m[x][y + i]) != "0" or ustr(self.m[x - i][y + i]) != "0":
+                if ustr(self.m[x][y + i]) == "0":
                     self.m[x][y + i] = "x"
                 i += 1
             y += i
@@ -184,7 +184,7 @@ class WorkflowImage:
         line = ""
         for i in range(self.maxx + 1):
             for j in range(self.maxy + 1):
-                line += str(self.m[i][j]) + "  "
+                line += ustr(self.m[i][j]) + "  "
 
     """ draw each step and return image (png) """
 

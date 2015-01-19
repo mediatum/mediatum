@@ -46,7 +46,7 @@ def makeThumbNail(image, thumb):
     if isnewer(thumb, image):
         return
     pic = PILImage.open(image)
-    tmpjpg = config.get("paths.datadir") + "tmp/img" + str(random.random()) + ".jpg"
+    tmpjpg = config.get("paths.datadir") + "tmp/img" + ustr(random.random()) + ".jpg"
 
     if pic.mode == "CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
         os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" % (image, tmpjpg))  # always get a rgb image
@@ -56,7 +56,7 @@ def makeThumbNail(image, thumb):
         pic.load()
     except IOError as e:
         pic = None
-        raise OperationException("error:" + str(e))
+        raise OperationException("error:" + ustr(e))
 
     width = pic.size[0]
     height = pic.size[1]
@@ -91,7 +91,7 @@ def makePresentationFormat(image, thumb):
     if isnewer(thumb, image):
         return
     pic = PILImage.open(image)
-    tmpjpg = config.get("paths.datadir") + "tmp/img" + str(random.random()) + ".jpg"
+    tmpjpg = config.get("paths.datadir") + "tmp/img" + ustr(random.random()) + ".jpg"
     if pic.mode == "CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
         os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" % (image, tmpjpg))
         pic = PILImage.open(tmpjpg)
@@ -101,7 +101,7 @@ def makePresentationFormat(image, thumb):
     except IOError as e:
         logg.exception("exception in makePresentationFormat")
         pic = None
-        raise OperationException("error:" + str(e))
+        raise OperationException("error:" + ustr(e))
 
     width = pic.size[0]
     height = pic.size[1]
@@ -130,7 +130,7 @@ def makePresentationFormat(image, thumb):
 
 def makeOriginalFormat(image, thumb):
 
-    tmpjpg = config.get("paths.datadir") + "tmp/img" + str(random.random()) + ".jpg"
+    tmpjpg = config.get("paths.datadir") + "tmp/img" + ustr(random.random()) + ".jpg"
     pic = PILImage.open(image)
     if pic.mode == "CMYK" and (image.endswith("jpg") or image.endswith("jpeg")) or pic.mode in ["P", "L"]:
         # if image.endswith("jpg") or image.endswith("jpeg"):
@@ -141,7 +141,7 @@ def makeOriginalFormat(image, thumb):
         pic.load()
     except IOError as e:
         pic = None
-        raise OperationException("error:" + str(e))
+        raise OperationException("error:" + ustr(e))
 
     pic.save(thumb, "png")
     if os.path.exists(tmpjpg):
@@ -231,7 +231,7 @@ class Image(default.Default):
                         tif = f.getName()
 
             if self.get("archive_path") != "":
-                tif = "file/" + str(self.id) + "/" + self.get("archive_path")
+                tif = "file/" + ustr(self.id) + "/" + self.get("archive_path")
 
         files, sum_size = filebrowser(self, req)
 
@@ -348,7 +348,7 @@ class Image(default.Default):
                 for f in self.getFiles():
                     if (f.type == "image" and not f.getName().lower().endswith("svg")) or f.type == "tmppng":
                         path, ext = splitfilename(f.retrieveFile())
-                        basename = hashlib.md5(str(random.random())).hexdigest()[0:8]
+                        basename = hashlib.md5(ustr(random.random())).hexdigest()[0:8]
 
                         #path = os.path.join(getImportDir(),os.path.basename(path))
                         path = os.path.join(getImportDir(), basename)
@@ -389,7 +389,7 @@ class Image(default.Default):
                                 continue
                             if tags[k] != "" and k != "JPEGThumbnail":
                                 self.set("exif_" + k.replace(" ", "_"),
-                                         utf8_decode_escape(str(tags[k])))
+                                         utf8_decode_escape(ustr(tags[k])))
                             elif k == "JPEGThumbnail":
                                 if tags[k] != "":
                                     self.set("Thumbnail", "True")
@@ -424,7 +424,7 @@ class Image(default.Default):
                                 tags[k] = ', '.join(tags[k])
                             if tags[k] != "":
                                 self.set("iptc_" + k.replace(" ", "_"),
-                                         utf8_decode_escape(str(tags[k])))
+                                         utf8_decode_escape(ustr(tags[k])))
             except:
                 logg.exception("exception getting IPTC attributes")
 
@@ -566,7 +566,7 @@ class Image(default.Default):
             self.popup_fullsize(req)
         else:
             im = PILImage.open(thumbbig.retrieveFile())
-            req.writeTAL("contenttypes/image.html", {"filename": '/file/' + str(self.id) + '/' +
+            req.writeTAL("contenttypes/image.html", {"filename": '/file/' + ustr(self.id) + '/' +
                                                      thumbbig.getName(), "width": im.size[0], "height": im.size[1]}, macro="thumbbig")
 
     def processImage(self, type="", value="", dest=""):

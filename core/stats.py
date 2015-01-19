@@ -79,7 +79,7 @@ class LogItem:
         return self.time
 
     def getTimestampShort(self):
-        return format_date(parse_date(str(self.getDate()), "yyyy-mm-dd"), "yyyy-mm")
+        return format_date(parse_date(ustr(self.getDate()), "yyyy-mm-dd"), "yyyy-mm")
 
     def getUrl(self):
         return self.url
@@ -375,7 +375,7 @@ def buildStat(collection, period="", fname=None):  # period format = yyyy-mm
             if file.getType() == "statistic":
                 try:
                     if file.getName() == "stat_{}_{}_{}.xml".format(node.id, timestamp, type):
-                        if timestamp == str(format_date(now(), "yyyy-mm")) or timestamp == period:  # update current month or given period
+                        if timestamp == ustr(format_date(now(), "yyyy-mm")) or timestamp == period:  # update current month or given period
                             if os.path.exists(file.retrieveFile()):
                                 print 'removing %s' % file.retrieveFile()
                                 os.remove(file.retrieveFile())
@@ -397,7 +397,7 @@ def buildStat(collection, period="", fname=None):  # period format = yyyy-mm
                 print 'creating writing headers %s' % f_name
                 f = open(f_name, "w")
                 f.write('<?xml version="1.0" encoding="utf-8" ?>\n')
-                f.write('<nodelist created="' + str(format_date(now(), "yyyy-mm-dd HH:MM:SS")) + '">\n')
+                f.write('<nodelist created="' + ustr(format_date(now(), "yyyy-mm-dd HH:MM:SS")) + '">\n')
 
             if f_name not in statfiles:
                 statfiles.append(f_name)
@@ -423,14 +423,14 @@ def buildStat(collection, period="", fname=None):  # period format = yyyy-mm
                 for type in ["frontend", "edit", "download"]:
                     fin = getStatFile(collection, timestamp, type, period)
                     if fin and len(data[timestamp][id][type]) > 0:
-                        fin.write('\t<node id="%s">\n' % str(id))
+                        fin.write('\t<node id="%s">\n' % ustr(id))
                         for access in data[timestamp][id][type]:
                             fin.write('\t\t<access date="%s" time="%s" country="%s" visitor_number="%s" bot="%s"/>\n' %
-                                      (str(access.getDate()),
-                                       str(access.getTime()),
+                                      (ustr(access.getDate()),
+                                       ustr(access.getTime()),
                                        gi.country_code_by_name(access.getIp()),
-                                       str(access.get_visitor_number()),
-                                       str(access.is_google_bot())))
+                                       ustr(access.get_visitor_number()),
+                                       ustr(access.is_google_bot())))
                         fin.write("\t</node>\n")
                         fin.close()
 

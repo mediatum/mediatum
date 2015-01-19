@@ -101,7 +101,7 @@ class ContentStyle:
         return self.description
 
     def isDefaultStyle(self):
-        if str(self.default) == "true":
+        if ustr(self.default) == "true":
             return 1
         return 0
 

@@ -40,7 +40,7 @@ class Connector:
         t = self.runQuery("select cid from nodemapping where nid=" + nodeid + " order by cid")
         idlist = []
         for id in t:
-            idlist += [str(id[0])]
+            idlist += [ustr(id[0])]
         return idlist
 
     def get_children_with_type(self, parent_id, nodetype):
@@ -49,7 +49,7 @@ class Connector:
                " order by cid")
         t = self.runQuery(sql, parent_id, nodetype)
 
-        return [str(i[0]) for i in t]
+        return [ustr(i[0]) for i in t]
 
     def get_num_children(self, nodeid):
         t = self.runQuery("select count(*) from nodemapping where nid=" + nodeid)
@@ -59,21 +59,21 @@ class Connector:
         t = self.runQuery("select cid from containermapping where nid=" + nodeid + " order by cid")
         idlist = []
         for id in t:
-            idlist += [str(id[0])]
+            idlist += [ustr(id[0])]
         return idlist
 
     def getContentChildren(self, nodeid):
         t = self.runQuery("select cid from contentmapping where nid=" + nodeid + " order by cid")
         idlist = []
         for id in t:
-            idlist += [str(id[0])]
+            idlist += [ustr(id[0])]
         return idlist
 
     def getParents(self, nodeid):
         t = self.runQuery("select nid from nodemapping where cid=" + nodeid)
         idlist = []
         for id in t:
-            idlist += [str(id[0])]
+            idlist += [ustr(id[0])]
         return idlist
 
     def getAttributes(self, nodeid):
@@ -132,13 +132,13 @@ class Connector:
         self.runQuery("delete from nodeattribute where nid=" + nodeid + " and name=" + self.esc(attname))
 
     def setDirty(self, nodeid):
-        self.runQuery("update node set dirty=1 where id=" + str(nodeid))
+        self.runQuery("update node set dirty=1 where id=" + ustr(nodeid))
 
     def cleanDirty(self, nodeid):
-        self.runQuery("update node set dirty=0 where id=" + str(nodeid))
+        self.runQuery("update node set dirty=0 where id=" + ustr(nodeid))
 
     def isDirty(self, nodeid):
-        return self.runQuery("select dirty from node where id=" + str(nodeid))[0][0]
+        return self.runQuery("select dirty from node where id=" + ustr(nodeid))[0][0]
 
     def getDirty(self, limit=0):
         if limit:
@@ -162,7 +162,7 @@ class Connector:
         self.runQuery("update node set name = " + self.esc(name) + " where id = " + id)
 
     def setNodeOrderPos(self, id, orderpos):
-        self.runQuery("update node set orderpos = " + str(orderpos) + " where id = " + id)
+        self.runQuery("update node set orderpos = " + ustr(orderpos) + " where id = " + id)
 
     def setNodeLocalRead(self, id, localread):
         self.runQuery("update node set localread = " + self.esc(localread) + " where id = " + id)
@@ -192,13 +192,13 @@ class Connector:
             return None
         if len(nodes) > 1:
             raise Exception("More than one root node")
-        return str(nodes[0][0])
+        return ustr(nodes[0][0])
 
     def getNode(self, id):
-        t = self.runQuery("select id,name,type,readaccess,writeaccess,dataaccess,orderpos,localread from node where id=" + str(id))
+        t = self.runQuery("select id,name,type,readaccess,writeaccess,dataaccess,orderpos,localread from node where id=" + ustr(id))
         if len(t) == 1:
             # id,name,type,read,write,data,orderpos,localread
-            return str(t[0][0]), t[0][1], t[0][2], t[0][3], t[0][4], t[0][5], t[0][6], t[0][7]
+            return ustr(t[0][0]), t[0][1], t[0][2], t[0][3], t[0][4], t[0][5], t[0][6], t[0][7]
         elif len(t) == 0:
             logg.error("No node for ID %s", id)
             return None
@@ -285,7 +285,7 @@ class Connector:
         if len(t) == 0 or t[0][0] is None:
             return "1"
         id = t[0][0] + 1
-        return str(id)
+        return ustr(id)
 
     def get_aliased_nid(self, alias):
         """Get node id which belongs to the given alias path"""

@@ -178,7 +178,7 @@ class m_text(Metatype):
         if value == '':
             value = maskitem.getDefault()
 
-        if template_from_caller and template_from_caller[0] and maskitem and str(maskitem.id) == template_from_caller[3]:
+        if template_from_caller and template_from_caller[0] and maskitem and ustr(maskitem.id) == template_from_caller[3]:
             value = template_from_caller[0]
 
         context = {'node': node, 'host': "http://" + config.get("host.name")}

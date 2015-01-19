@@ -268,7 +268,7 @@ def create():
         if len(node_dict[i]) > 50000:
             partitions = int(ceil((len(node_dict[i]) / 50000.)))
             for j in range(partitions):
-                sitemap = Sitemap(base_dir, ''.join(['sitemap-', str(i), str(j), '.xml']), hostname)
+                sitemap = Sitemap(base_dir, ''.join(['sitemap-', ustr(i), ustr(j), '.xml']), hostname)
                 sitemaps.append(sitemap.name)
                 sitemap.create_sitemap(node_dict[i][j * 50000:(j + 1) * 50000], priority_level)
         else:

@@ -71,7 +71,7 @@ class SearchIndexer:
     def createTables(self):
         s = ''
         for i in range(1, MAX_SEARCH_FIELDS):
-            s += 'field' + str(i) + ", "
+            s += 'field' + ustr(i) + ", "
         s = s[:-2]
 
         # simple search table
@@ -111,7 +111,7 @@ class SearchIndexer:
 
     def getDefForSchema(self, schema):
         ret = {}
-        res = self.db.execute('SELECT position, attrname FROM searchmeta_def WHERE name="' + str(schema) + '" ORDER BY position')
+        res = self.db.execute('SELECT position, attrname FROM searchmeta_def WHERE name="' + ustr(schema) + '" ORDER BY position')
 
         for id, attr in res:
             ret[id] = attr
@@ -151,7 +151,7 @@ class SearchIndexer:
         v_list = {}
         i = 1
         for field in node.getSearchFields():
-            v_list[str(i)] = node.get(field.getName())
+            v_list[ustr(i)] = node.get(field.getName())
             i += 1
         # save definition
         self.nodeToSchemaDef(node)
@@ -161,7 +161,7 @@ class SearchIndexer:
         try:
             if len(v_list) > 0:
                 for key in v_list:
-                    sql += 'field' + str(key) + ', '
+                    sql += 'field' + ustr(key) + ', '
                     #values += '"'+u(v_list[key])+ '", '
                     values += '"' + normalize_utf8(u(v_list[key])) + '", '
                 sql = sql[:-2]
@@ -186,7 +186,7 @@ class SearchIndexer:
         fieldnames = {}
         i = 1
         for field in node.getSearchFields():
-            fieldnames[str(i)] = field.getName()
+            fieldnames[ustr(i)] = field.getName()
             i += 1
 
         try:
@@ -241,7 +241,7 @@ class SearchIndexer:
                         content += key + " "
                 elif FULLTEXT_INDEX_MODE == 2:
                     for key in data.keys():
-                        content += key + " [" + str(data[key]) + "] "
+                        content += key + " [" + ustr(data[key]) + "] "
                 sql = ""
                 if len(content) > 0:
                     try:
@@ -271,7 +271,7 @@ class SearchIndexer:
             err['ext'].append(node.id)
         if not self.nodeToFulltextSearch(node):
             err['text'].append(node.id)
-        node.set("updatesearchindex", str(format_date()))
+        node.set("updatesearchindex", ustr(format_date()))
         return err
 
     def updateNodes(self, nodelist):

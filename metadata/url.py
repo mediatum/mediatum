@@ -109,9 +109,9 @@ class m_url(Metatype):
             uri, linktext, icon, target = [_replace_vars(node, p) for p in l]
 
             # find unsatisfied variables
-            if str(uri).find("____") >= 0:
+            if ustr(uri).find("____") >= 0:
                 uri = ''
-            if str(linktext).find("____") >= 0:
+            if ustr(linktext).find("____") >= 0:
                 linktext = ''
 
             if len(fielddef) < 4:

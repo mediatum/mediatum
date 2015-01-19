@@ -85,7 +85,7 @@ def searchUser(value):
         users = users_cache
 
     for user in users:
-        user_data = user.getName().lower() + ("").join([str(i[1]).lower().strip() for i in user.items()])
+        user_data = user.getName().lower() + ("").join([ustr(i[1]).lower().strip() for i in user.items()])
 
         n_found = 0
         for v in value:  # test each value
@@ -112,11 +112,11 @@ def validate(req, op):
 
             elif key.startswith("edit_"):
                 # edit user
-                return editUser_mask(req, str(key[key.index("_") + 1:-2]))
+                return editUser_mask(req, ustr(key[key.index("_") + 1:-2]))
 
             elif key.startswith("sendmail_") and req.params.get("form_op", "") != "cancel":
                 # send email
-                return sendmailUser_mask(req, str(key[key.index("_") + 1:-2]))
+                return sendmailUser_mask(req, ustr(key[key.index("_") + 1:-2]))
 
             elif key.startswith("delete_"):
                 # delete user
@@ -359,7 +359,7 @@ def view(req):
     v = pages.getStdVars()
     v["filterattrs"] = [("username", "admin_user_filter_username"), ("lastname", "admin_user_filter_lastname")]
     v["filterarg"] = req.params.get("filtertype", "username")
-    v["sortcol"] = pages.OrderColHeader([t(lang(req), "admin_user_col_" + str(i)) for i in range(1, 9)])
+    v["sortcol"] = pages.OrderColHeader([t(lang(req), "admin_user_col_" + ustr(i)) for i in range(1, 9)])
 
     v["options"] = list(useroption)
     v["users"] = users

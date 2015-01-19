@@ -250,18 +250,18 @@ class ContentList(Content):
             left = min
 
         if left > min:
-            nav_list.append("/node?page=" + str(min))
+            nav_list.append("/node?page=" + ustr(min))
             nav_list.append('...')
             nav_page.append(min)
             nav_page.append(-1)
 
         for a in range(left, right + 1):
-            nav_list.append("/node?page=" + str(a))
+            nav_list.append("/node?page=" + ustr(a))
             nav_page.append(a)
 
         if right < max:
             nav_list.append('...')
-            nav_list.append("/node?page=" + str(max))
+            nav_list.append("/node?page=" + ustr(max))
             nav_page.append(-1)
             nav_page.append(max)
 
@@ -513,9 +513,9 @@ class ContentArea(Content):
                 logg.exception("exception in ContentArea.html, setting id = 0")
                 id = 0
 
-            printlink = '/print/' + str(id)
+            printlink = '/print/' + ustr(id)
             if nodeprint == "1" and "sortfield0" in req.params.keys():
-                printlink += '?sortfield0=' + str(req.params.get("sortfield0")) + '&sortfield1=' + str(req.params.get("sortfield1"))
+                printlink += '?sortfield0=' + ustr(req.params.get("sortfield0")) + '&sortfield1=' + ustr(req.params.get("sortfield1"))
 
             if req.params.get("show_navbar") == 0 or req.session.get("area") == "publish":
                 breadscrubs = []
@@ -544,7 +544,7 @@ class CollectionLogo(Content):
         self.path = collection.getLogoPath()
 
         if self.path != "":
-            self.path = '/file/' + str(self.collection.id) + '/' + self.path
+            self.path = '/file/' + ustr(self.collection.id) + '/' + self.path
 
     def getPath(self):
         return self.path

@@ -138,8 +138,8 @@ class Searchlet(Portlet):
                 self.extended = 1
 
         for i in extendedfields:
-            if "field" + str(i) in req.params:
-                newname = req.params.get("field" + str(i), "full")
+            if "field" + ustr(i) in req.params:
+                newname = req.params.get("field" + ustr(i), "full")
                 if newname != self.names[i]:
                     self.values[i] = ""
                 self.names[i] = newname
@@ -153,11 +153,11 @@ class Searchlet(Portlet):
                 except tree.NoSuchNodeError:
                     f = None
 
-            if "query" + str(i) in req.params or "query" + str(i) + "-from" in req.params:
+            if "query" + ustr(i) in req.params or "query" + ustr(i) + "-from" in req.params:
                 if f and f.getFieldtype() == "date":
-                    self.values[i] = req.params.get("query" + str(i) + "-from", "") + ";" + req.params.get("query" + str(i) + "-to", "")
+                    self.values[i] = req.params.get("query" + ustr(i) + "-from", "") + ";" + req.params.get("query" + ustr(i) + "-to", "")
                 else:
-                    self.values[i] = req.params.get("query" + str(i), "")
+                    self.values[i] = req.params.get("query" + ustr(i), "")
 
         if "query" in req.params:
             self.values[0] = req.params["query"]
@@ -210,7 +210,7 @@ class Searchlet(Portlet):
             if f is None:  # All Metadata
                 # quick&dirty
                 f = g = getMetadataType("text")
-            return f.getSearchHTML(Context(g, value=self.values[i], width=width, name="query" + str(i),
+            return f.getSearchHTML(Context(g, value=self.values[i], width=width, name="query" + ustr(i),
                                            language=lang(self.req), collection=self.collection,
                                            user=users.getUserFromRequest(self.req), ip=self.req.ip))
         except:
@@ -278,7 +278,7 @@ class NavTreeEntry:
                     self.count = self.node.childcount()
 
             if self.count > 0:
-                return "%s <small>(%s)</small>" % (self.node.getLabel(lang=self.lang), str(self.count))
+                return "%s <small>(%s)</small>" % (self.node.getLabel(lang=self.lang), ustr(self.count))
             else:
                 return self.node.getLabel(lang=self.lang)
 
@@ -404,7 +404,7 @@ class Collectionlet(Portlet):
         return self.col_data
 
     def getCollUnfold(id):
-        if self.req.params.get("colunfold", "") == str(id):
+        if self.req.params.get("colunfold", "") == ustr(id):
             return True
         else:
             return False

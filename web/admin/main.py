@@ -75,7 +75,7 @@ def export(req):
     try:
         module = findmodule(path[1])
 
-        tempfile = join_paths(config.get("paths.tempdir"), str(random.random()))
+        tempfile = join_paths(config.get("paths.tempdir"), ustr(random.random()))
         file = open(tempfile, "w")
         file.write(module.export(req, path[2]))
         file.close()

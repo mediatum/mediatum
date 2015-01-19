@@ -188,7 +188,7 @@ if __name__ == '__main__':
     c = Cache(maxcount=3, maxsize=10, verbose=True)
     from random import randint
     for i in range(5):
-        c.update(randint(1000, 1010), 'test-' + str(i + 1))
+        c.update(randint(1000, 1010), 'test-' + ustr(i + 1))
 
     print c.retrieve(1007, 1000)
     print c.retrieve('test', 1000)

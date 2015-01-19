@@ -71,7 +71,7 @@ check_context()
 
 def getPdfFilepathForProcessing(workflowstep_node, node):
     res = ([f.retrieveFile() for f in node.getFiles() if f.getName().startswith('addpic2pdf_%s_node_%s_' %
-                                                                                (str(workflowstep_node.id), str(node.id))) and f.type.startswith('p_document')] +
+                                                                                (ustr(workflowstep_node.id), ustr(node.id))) and f.type.startswith('p_document')] +
            [f.retrieveFile() for f in node.getFiles() if f.getType().startswith('document')])[0]
     return res
 
@@ -121,7 +121,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                 for f in node.getFiles():
                     f_name = f.getName()
                     if f_name.startswith('addpic2pdf_%s_node_%s_' %
-                                         (str(current_workflow_step.id), str(node.id))) and f.type.startswith('p_document'):
+                                         (ustr(current_workflow_step.id), ustr(node.id))) and f.type.startswith('p_document'):
                         logg.info("workflow step addpic2pdf(%s): going to remove file '%s' from node '%s' (%s) for request from user '%s' (%s)",
                             current_workflow_step.id, f_name, node.name, node.id, user.name, req.ip)
                         node.removeFile(f)
@@ -136,7 +136,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
             elif radio_apply_reset_accept == 'accept':
 
                 p_document_files = [f for f in node.getFiles() if f.getType() == 'p_document' and f.getName().startswith(
-                    'addpic2pdf_%s_node_%s_' % (str(current_workflow_step.id), str(node.id)))]
+                    'addpic2pdf_%s_node_%s_' % (ustr(current_workflow_step.id), ustr(node.id)))]
 
                 if len(p_document_files) > 0:
 
@@ -257,7 +257,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                 date_str = format_date().replace('T', '-').replace(' ', '').replace(':', '-')
                 filetempname = tmppath + \
                     "temp_addpic_pdf_wfs_%s_node_%s_%s_%s_.pdf" % (
-                        str(current_workflow_step.id), str(node.id), date_str, str(random.random()))
+                        ustr(current_workflow_step.id), ustr(node.id), date_str, ustr(random.random()))
 
                 url = req.params.get('input_drag_logo_url', '')
 
@@ -269,7 +269,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                 for f in node.getFiles():
                     f_name = f.getName()
                     if f_name.startswith('addpic2pdf_%s_node_%s_' %
-                                         (str(current_workflow_step.id), str(node.id), )) and f.type.startswith('p_document'):
+                                         (ustr(current_workflow_step.id), ustr(node.id), )) and f.type.startswith('p_document'):
                         logg.info("workflow step addpic2pdf(%s): going to remove file '%s' from node '%s' (%s) for request from user '%s' (%s)",
                             current_workflow_step.id, f_name, node.name, node.id, user.name, req.ip)
                         node.removeFile(f)
@@ -281,7 +281,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
 
                 date_str = format_date().replace('T', '-').replace(' ', '').replace(':', '-')
                 nodeFile = importFileToRealname("_has_been_processed_%s.pdf" % (date_str), filetempname, prefix='addpic2pdf_%s_node_%s_' % (
-                    str(current_workflow_step.id), str(node.id), ), typeprefix="p_")
+                    ustr(current_workflow_step.id), ustr(node.id), ), typeprefix="p_")
                 node.addFile(nodeFile)
                 try:
                     os.remove(filetempname)
@@ -343,7 +343,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
             pdf_dimensions = {'d_pages': 0, 'd_pageno2size': (0, 0), 'd_pageno2rotate': 0}
             pdf_pagecount = 0
             FATAL_ERROR = True
-            FATAL_ERROR_STR += " - %s" % (str(e))
+            FATAL_ERROR_STR += " - %s" % (ustr(e))
 
         #wfs_files = [f for f in current_workflow_step.getFiles() if os.path.isfile(f.retrieveFile())]
 
@@ -364,7 +364,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
             except Exception as e:
                 logg.exception("exception in workflow step addpic2pdf(%s)", current_workflow_step.id)
                 FATAL_ERROR = True
-                FATAL_ERROR_STR += (" - ERROR loading logo '%s'" % str(f_path)) + str(e)
+                FATAL_ERROR_STR += (" - ERROR loading logo '%s'" % ustr(f_path)) + ustr(e)
                 continue
 
             logo_filename = f.getName()
@@ -634,7 +634,7 @@ def handle_request(req):
         if req.path == '/serve_page/p_document.pdf':
             filepath = (
                 [f.retrieveFile() for f in node.getFiles() if f.getType().startswith('p_document') and f.getName().startswith(
-                    'addpic2pdf_%s_node_%s_' % (str(current_workflow_step.id), str(node.id), )) and f.type.startswith('p_document')]
+                    'addpic2pdf_%s_node_%s_' % (ustr(current_workflow_step.id), ustr(node.id), )) and f.type.startswith('p_document')]
                 + [f.retrieveFile() for f in node.getFiles() if f.getType().startswith('document')]
             )[0]
 
@@ -691,12 +691,12 @@ def handle_request(req):
         try:
             node = tree.getNode(nodeid)
         except:
-            msg = "workflowstep addpic2pdf: nodeid='%s' for non-existant node for upload from '%s'" % (str(nodeid), str(req.ip))
+            msg = "workflowstep addpic2pdf: nodeid='%s' for non-existant node for upload from '%s'" % (ustr(nodeid), ustr(req.ip))
             errors.append(msg)
             logg.error(msg)
             return 404  # not found
     else:
-        msg = "workflowstep addpic2pdf: could not find 'nodeid' for upload from '%s'" % str(req.ip)
+        msg = "workflowstep addpic2pdf: could not find 'nodeid' for upload from '%s'" % ustr(req.ip)
         errors.append(msg)
         logg.error(msg)
         return 404  # not found

@@ -38,7 +38,7 @@ logg = logging.getLogger(__name__)
 def buildURL(req):
     p = ""
     for key in req.params:
-        p += "&" + str(key) + "=" + req.params.get(key)
+        p += "&" + ustr(key) + "=" + req.params.get(key)
     req.request["Location"] = "http://" + config.get("host.name") + "/node?" + p[1:]
     return httpstatus.HTTP_MOVED_TEMPORARILY
 

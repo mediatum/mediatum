@@ -190,12 +190,12 @@ def show_shoppingbag(req, msg=""):
             factor = 90.0 / w
             h = h * 90.0 / w
             w = 90
-            ret += 'padding:%spx 0px;' % str(int((90 - h) / 2))
+            ret += 'padding:%spx 0px;' % ustr(int((90 - h) / 2))
         else:
             w = w * 90.0 / h
             h = 90
-            ret += 'padding:0px %spx;' % str(int((90 - w) / 2))
-        return ret + 'width:%spx;height:%spx;' % (str(int(w)), str(int(h)))
+            ret += 'padding:0px %spx;' % ustr(int((90 - w) / 2))
+        return ret + 'width:%spx;height:%spx;' % (ustr(int(w)), ustr(int(h)))
 
     # deliver document file size
     def calc_size(file):
@@ -259,7 +259,7 @@ def export_shoppingbag_bibtex(req):
         if key.startswith("select_"):
             items.append(key[7:])
 
-    dest = config.get("paths.tempdir") + str(random.random()) + ".bib"
+    dest = config.get("paths.tempdir") + ustr(random.random()) + ".bib"
 
     f = open(dest, "a")
     for item in items:
@@ -300,7 +300,7 @@ def export_shoppingbag_zip(req):
             if access.hasAccess(_n, 'read'):
                 items.append(_nid)
 
-    dest = join_paths(config.get("paths.tempdir"), str(random.random())) + "/"
+    dest = join_paths(config.get("paths.tempdir"), ustr(random.random())) + "/"
 
     # images
     if req.params.get("type") == "image":

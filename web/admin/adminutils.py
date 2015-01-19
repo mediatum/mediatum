@@ -105,7 +105,7 @@ class Overview:
                 if p == self.page:
                     b_class = "admin_page_act"
                 ret += '<button type="submit" name="page" class="' + b_class + '" title="' + \
-                    t(self.language, "admin_page") + ' ' + str(p) + '" value="' + str(p) + '">' + str(p) + '</button> '
+                    t(self.language, "admin_page") + ' ' + ustr(p) + '" value="' + ustr(p) + '">' + ustr(p) + '</button> '
         if len(ret) == 0:
             return ""
         return '[' + ret + '] '
@@ -136,11 +136,11 @@ class Overview:
             if col != "":
                 if i == ordercol:
                     if orderdir == 0:
-                        retList += [Link(str(i) + "1", t(self.language, "admin_sort_label"), col + ' <img src="/img/az.png" border="0" />')]
+                        retList += [Link(ustr(i) + "1", t(self.language, "admin_sort_label"), col + ' <img src="/img/az.png" border="0" />')]
                     else:
-                        retList += [Link(str(i) + "0", t(self.language, "admin_sort_label"), col + ' <img src="/img/za.png" border="0" />')]
+                        retList += [Link(ustr(i) + "0", t(self.language, "admin_sort_label"), col + ' <img src="/img/za.png" border="0" />')]
                 else:
-                    retList += [Link(str(i) + "0", t(self.language, "admin_sort_label"), col)]
+                    retList += [Link(ustr(i) + "0", t(self.language, "admin_sort_label"), col)]
             i += 1
         return retList
 

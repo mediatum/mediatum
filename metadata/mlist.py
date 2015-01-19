@@ -90,7 +90,7 @@ class m_mlist(Metatype):
                 elif int(num) == 0:
                     num = ""
                 else:
-                    num = " (" + str(num) + ")"
+                    num = " (" + ustr(num) + ")"
             except:
                 logg.exception("exception in formatValues, using empty string")
                 num = ""

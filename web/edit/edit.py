@@ -618,7 +618,7 @@ def action(req):
         newnode = node.addChild(
             tree.Node(name=translated_label, type=newnode_type))
         newnode.set("creator", user.getName())
-        newnode.set("creationtime", str(
+        newnode.set("creationtime", ustr(
             time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
         clearFromCache(node)
         req.params["dest"] = newnode.id

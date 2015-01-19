@@ -154,7 +154,7 @@ class m_htmlmemo(Metatype):
             "width": width,
             "name": field_node_name,
             "field": field,
-            "ident": str(field.id),
+            "ident": ustr(field.id),
             "current_lang": language,
             "defaultlang": language,  # not the systems default language
             "languages": [],
@@ -182,7 +182,7 @@ class m_htmlmemo(Metatype):
                 context["expand_multilang"] = False
 
         s = tal.getTAL("metadata/htmlmemo.html", context, macro="editorfield", language=language)
-        return s.replace("REPLACE_WITH_IDENT", str(field.id))
+        return s.replace("REPLACE_WITH_IDENT", ustr(field.id))
 
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/htmlmemo.html", {"context": context}, macro="searchfield", language=context.language)

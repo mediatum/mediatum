@@ -43,23 +43,23 @@ class m_label(Metatype):
         ret = ''
         if not sub:
             ret += '<div id="' + item.id + '" class="row" onmouseover="pick(this)" onmouseout="unpick(this)" onclick="select(this)">'
-        ret += '<b>' + str(item.getLabel()) + '</b>'
+        ret += '<b>' + ustr(item.getLabel()) + '</b>'
 
         if not sub:
             ret += '<div align="right" id="' + item.id + \
                 '_sub" style="display:none"><small style="color:silver">(' + (item.get("type")) + ')</small>'
             if index > 0:
                 ret += '<input type="image" src="/img/uparrow.png" name="up_' + \
-                    str(item.id) + '" i18n:attributes="title mask_edit_up_title"/>'
+                    ustr(item.id) + '" i18n:attributes="title mask_edit_up_title"/>'
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
             if index < len(parent.getChildren()) - 1:
                 ret += '<input type="image" src="/img/downarrow.png" name="down_' + \
-                    str(item.id) + '" i18n:attributes="title mask_edit_down_title"/>'
+                    ustr(item.id) + '" i18n:attributes="title mask_edit_down_title"/>'
             else:
                 ret += '&nbsp;&nbsp;&nbsp;'
-            ret += ' <input type="image" src="/img/edit.png" name="edit_' + str(
-                item.id) + '" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/img/delete.png" name="delete_' + str(
+            ret += ' <input type="image" src="/img/edit.png" name="edit_' + ustr(
+                item.id) + '" i18n:attributes="title mask_edit_edit_row"/> <input type="image" src="/img/delete.png" name="delete_' + ustr(
                 item.id) + '" i18n:attributes="title mask_edit_delete_row" onClick="return questionDel()"/></div>'
             ret += '</div>'
 
@@ -78,7 +78,7 @@ class m_label(Metatype):
                         fields.append(field)
             else:
                 for m in metadatatype.getMasks():
-                    if str(m.id) == str(req.params.get("pid")):
+                    if ustr(m.id) == ustr(req.params.get("pid")):
                         for field in m.getChildren():
                             fields.append(field)
         fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))

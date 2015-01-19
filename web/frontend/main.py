@@ -49,7 +49,7 @@ def handle_json_request(req):
             f = tree.getNode(searchmaskitem_id).getFirstField()
         if not f:  # All Metadata
             f = g = getMetadataType("text")
-        s = [f.getSearchHTML(Context(g, value=req.params.get("query_field_value"), width=174, name="query" + str(req.params.get("fieldno")),
+        s = [f.getSearchHTML(Context(g, value=req.params.get("query_field_value"), width=174, name="query" + ustr(req.params.get("fieldno")),
                                      language=lang(req), collection=tree.getNode(req.params.get("collection_id")),
                                      user=users.getUserFromRequest(req), ip=req.ip))]
     req.write(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))

@@ -70,7 +70,7 @@ if len(invalid_mappings):
     print "* Clearing", len(invalid_mappings), "invalid nodemappings"
     if write:
         for nid, cid in invalid_mappings:
-            db.runQuery("delete from nodemapping where nid=" + str(nid) + " and cid=" + str(cid))
+            db.runQuery("delete from nodemapping where nid=" + ustr(nid) + " and cid=" + ustr(cid))
 
 
 def mark(id, level=0):
@@ -92,8 +92,8 @@ if unused:
     if write:
         for id, used in used_ids.items():
             if not used:
-                db.runQuery("delete from node where id=" + str(id))
-                db.runQuery("delete from nodemapping where nid=" + str(id))
+                db.runQuery("delete from node where id=" + ustr(id))
+                db.runQuery("delete from nodemapping where nid=" + ustr(id))
     else:
         for id, used in used_ids.items():
             if not used:
@@ -116,7 +116,7 @@ if num_attribs:
     print "* Clearing", num_attribs, "unused attributes"
     if write:
         for id in unused_attributes.keys():
-            db.runQuery("delete from nodeattribute where nid=" + str(id))
+            db.runQuery("delete from nodeattribute where nid=" + ustr(id))
 del unused_attributes
 
 # ------- NODEFILES -------
@@ -139,7 +139,7 @@ if num_files:
     print "* Clearing", num_files, "unused files"
     if write:
         for id in unused_files.keys():
-            db.runQuery("delete from nodefile where nid=" + str(id))
+            db.runQuery("delete from nodefile where nid=" + ustr(id))
 files_to_delete = 0
 for filename, used in used_files.items():
     if not used:

@@ -162,7 +162,7 @@ class m_memo(Metatype):
             "name": field_node_name,
             "field": field,
             "t": t,
-            "ident": str(field.id),
+            "ident": ustr(field.id),
             "current_lang": language,
             "defaultlang": language,  # not the systems default language
             "languages": [],

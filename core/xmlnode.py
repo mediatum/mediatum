@@ -48,9 +48,9 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
     nodename_copy = node.name
     if nodename_copy is None:
         nodename_copy = ""
-    #fi.write('%s<node name="%s" id="%s" ' % ((" " * indent), esc(nodename_copy), str(node.id)))
+    #fi.write('%s<node name="%s" id="%s" ' % ((" " * indent), esc(nodename_copy), ustr(node.id)))
     # non-utf8 encoded umlauts etc. may cause invalid xml
-    fi.write('%s<node name="%s" id="%s" ' % ((" " * indent), u2(esc(nodename_copy)), str(node.id)))
+    fi.write('%s<node name="%s" id="%s" ' % ((" " * indent), u2(esc(nodename_copy)), ustr(node.id)))
     if node.type is None:
         node.type = "node"
     fi.write('type="%s" ' % node.type)
@@ -82,7 +82,7 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
         for c in node.getChildren().sort_by_orderpos():
             if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
                 if c.type not in exclude_children_types:
-                    fi.write('%s<child id="%s" type="%s"/>\n' % ((" " * indent), str(c.id), c.type))
+                    fi.write('%s<child id="%s" type="%s"/>\n' % ((" " * indent), ustr(c.id), c.type))
 
     indent -= 4
     fi.write("%s</node>\n" % (" " * indent))
@@ -131,8 +131,8 @@ class _StringWriter:
     def __init__(self):
         self.buffer = []
 
-    def write(self, str):
-        self.buffer.append(str)
+    def write(self, ustr):
+        self.buffer.append(ustr)
 
     def get(self):
         return "".join(self.buffer)
@@ -141,7 +141,7 @@ class _StringWriter:
 def _writeNodeXML(node, fi):
     fi.write('<?xml version="1.0" encoding="utf-8"?>' + "\n")
     fi.write('<nodelist exportversion="%s" rootname="%s" roottype="%s" original_nodeid="%s">\n' %
-             (getInformation()["version"], node.name, node.type, str(node.id)))
+             (getInformation()["version"], node.name, node.type, ustr(node.id)))
     exclude_children_types = []
     if EXCLUDE_WORKFLOW_NEWNODES and node.type == 'workflow':
         for c in node.getChildren():
@@ -212,7 +212,7 @@ class _NodeLoader:
                 mappingfield = node.get("mappingfield")
                 if mappingfield and mappingfield in self.id2node:
                     mappingfield_new = self.id2node[mappingfield].id
-                    node.set("mappingfield", str(mappingfield_new))
+                    node.set("mappingfield", ustr(mappingfield_new))
                     if self.verbose:
                         logg.info("adjusting node attribute for maskitem '%s', name='mappingfield', value old='%s' -> new='%s'",
                             node.id, mappingfield, mappingfield_new)
@@ -220,7 +220,7 @@ class _NodeLoader:
                 exportmapping = node.get("exportmapping")
                 if exportmapping and exportmapping in self.id2node:
                     exportmapping_new = self.id2node[exportmapping].id
-                    node.set("exportmapping", str(exportmapping_new))
+                    node.set("exportmapping", ustr(exportmapping_new))
                     if self.verbose:
                         logg.info("adjusting node attribute for mask '%s',  name='exportmapping':, value old='%s' -> new='%s'",
                             node.id, exportmapping, exportmapping_new)
@@ -245,7 +245,7 @@ class _NodeLoader:
                 type = "directory"
 
             if "id" not in attrs:
-                attrs["id"] = str(random.random())
+                attrs["id"] = ustr(random.random())
 
             old_id = attrs["id"]
 

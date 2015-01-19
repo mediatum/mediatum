@@ -125,7 +125,7 @@ def show_printview(req):
             return
 
     # use objects from session
-    if str(nodeid) == "0":
+    if ustr(nodeid) == "0":
         children = []
         if "contentarea" in req.session:
             try:
@@ -221,8 +221,8 @@ def show_printview(req):
                 for i in range(0, 2):
                     col.append((0, ""))
                     order.append(1)
-                    if req.params.get("sortfield" + str(i)) != "":
-                        sort = req.params.get("sortfield" + str(i), sort)
+                    if req.params.get("sortfield" + ustr(i)) != "":
+                        sort = req.params.get("sortfield" + ustr(i), sort)
 
                     if sort != "":
                         if sort.startswith("-"):

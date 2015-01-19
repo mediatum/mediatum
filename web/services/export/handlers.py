@@ -410,8 +410,8 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
             item_d['title'] = esc('-unnamed-node-' + ' (' + nodeid + ', ' + nodetype + ') ' + ('/'.join(most_detailed_path)))
 
         item_d['item_pubDate'] = utime
-        item_d['guid'] = host + '/node?id=%s' % str(nodeid)
-        item_d['link'] = host + '/node?id=%s' % str(nodeid)
+        item_d['guid'] = host + '/node?id=%s' % ustr(nodeid)
+        item_d['link'] = host + '/node?id=%s' % ustr(nodeid)
 
         mtype = getMetaType(n.getSchema())
 
@@ -423,7 +423,7 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
                 mask = mtype.getMask('nodesmall')
             attr_list = mask.getViewHTML([n], VIEW_DATA_ONLY, language)  # [[attr_name, value, label, type], ...]
         else:
-            attr_list = [['', str(n.id), 'node id', ''], ['', n.name, 'node name', ''], ['', n.type, 'node type', ''], ]
+            attr_list = [['', ustr(n.id), 'node id', ''], ['', n.name, 'node name', ''], ['', n.type, 'node type', ''], ]
 
         description = ''
         for x in attr_list:
@@ -480,7 +480,7 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
         for k, v in params['feed_info'].items():
             fcd[k] = v
     else:
-        fcd['title'] = host + req.fullpath + str(req.query)
+        fcd['title'] = host + req.fullpath + ustr(req.query)
     fcd['items'] = items
     s = template_rss_channel % fcd  # params['feed_info']
 
@@ -756,7 +756,7 @@ def get_node_children_struct(
     elif parents:
         nodelist = node.getParents()
         timetable.append(['''get parents for node %s, '%s', '%s' -> (%d nodes)''' %
-                          (str(node.id), node.name, node.type, len(nodelist)), time.time() - atime])
+                          (ustr(node.id), node.name, node.type, len(nodelist)), time.time() - atime])
         atime = time.time()
     elif allchildren:
         if q and not mdt:
@@ -790,22 +790,22 @@ def get_node_children_struct(
                 res['timetable'] = timetable
                 return res
             timetable.append(['''get all children for node %s, '%s', '%s' -> (%d nodes)''' %
-                              (str(node.id), node.name, node.type, len(nodelist)), time.time() - atime])
+                              (ustr(node.id), node.name, node.type, len(nodelist)), time.time() - atime])
             atime = time.time()
     else:
         nodelist = node.getChildren()
         timetable.append(['''get direct children for node %s, '%s', '%s' -> (%d nodes)''' %
-                          (str(node.id), node.name, node.type, len(nodelist)), time.time() - atime])
+                          (ustr(node.id), node.name, node.type, len(nodelist)), time.time() - atime])
         atime = time.time()
         if q:
             nodelist = intersection([searchresult, nodelist])
             timetable.append(['''searchresult filter with direct children for node %s, '%s', '%s' -> (%d nodes)''' %
-                              (str(node.id), node.name, node.type, len(nodelist)), time.time() - atime])
+                              (ustr(node.id), node.name, node.type, len(nodelist)), time.time() - atime])
             atime = time.time()
         if mdt:
             nodelist = intersection([typed_nodelist, nodelist])
             timetable.append(['''filter typed nodes with direct children for node %s, '%s', '%s' -> (%d nodes)''' %
-                              (str(node.id), node.name, node.type, len(nodelist)), time.time() - atime])
+                              (ustr(node.id), node.name, node.type, len(nodelist)), time.time() - atime])
             atime = time.time()
 
     req_path = req.path
@@ -815,7 +815,7 @@ def get_node_children_struct(
     # else:
     #    set_nodelist_ids = set(nodelist)
 
-    set_nodeid_localread = set(["%s_%s" % (str(n.id), str(n.localread)) for n in nodelist])
+    set_nodeid_localread = set(["%s_%s" % (ustr(n.id), ustr(n.localread)) for n in nodelist])
 
     timetable.append(['get set of ids of nodelist', time.time() - atime])
     atime = time.time()
@@ -1127,7 +1127,7 @@ def write_formatted_response(
     if "_" in _p:
         del _p['_']
 
-    cache_key = '|'.join(map(str, [path, _p, allchildren, singlenode, parents, send_children]))
+    cache_key = '|'.join(map(ustr, [path, _p, allchildren, singlenode, parents, send_children]))
     cache_key = cache_key.replace(' ', '_')
 
     acceptcached = float(params.get('acceptcached', '0'))
@@ -1142,7 +1142,7 @@ def write_formatted_response(
             result_from_cache, mimetype_from_cache = cachecontent[-1]
             # replace jQuery, jsonp callback value
             if result_from_cache.startswith('jQuery') or result_from_cache.startswith('jsonp'):
-                result_from_cache = str(params['jsoncallback']) + result_from_cache[result_from_cache.find("({"):]
+                result_from_cache = ustr(params['jsoncallback']) + result_from_cache[result_from_cache.find("({"):]
 
             r_timetable.append(["retrieved filtered result from 'resultcache': (%d bytes), time_delta: %.3f lower acceptcached %.3f sec." % (
                 len(result_from_cache), time_delta, acceptcached), time.time() - atime])

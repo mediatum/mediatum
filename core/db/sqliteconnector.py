@@ -260,7 +260,7 @@ class SQLiteConnector(Connector):
         id = self.mkID()
         self.runQuery("insert into node (id,name,type,orderpos) values(?,?,?,?)", (id, name, type, orderpos))
         res = self.runQuery("select max(id) from node")
-        return str(res[0][0])
+        return ustr(res[0][0])
 
     def addChild(self, nodeid, childid, check=1):
         if check:
@@ -279,9 +279,9 @@ class SQLiteConnector(Connector):
         if check:
             t = self.runQuery("select count(*) as num from nodeattribute where nid=" + nodeid + " and name='" + attname + "'")
             if len(t) > 0 and t[0][0] > 0:
-                self.runQuery("update nodeattribute set value='" + str(attvalue) + "' where nid=" + nodeid + " and name='" + attname + "'")
+                self.runQuery("update nodeattribute set value='" + ustr(attvalue) + "' where nid=" + nodeid + " and name='" + attname + "'")
                 return
-        self.runQuery("insert into nodeattribute (nid, name, value) values(?,?,?)", (nodeid, attname, str(attvalue)))
+        self.runQuery("insert into nodeattribute (nid, name, value) values(?,?,?)", (nodeid, attname, ustr(attvalue)))
 
     def addFile(self, nodeid, path, type, mimetype):
         self.runQuery("insert into nodefile (nid, filename, type, mimetype) values(?,?,?,?)", (nodeid, path, type, mimetype))
@@ -302,7 +302,7 @@ class SQLiteConnector(Connector):
             except:
                 pass
             if len(items) > 0:
-                t.append(("sqplite_items_count", str(items[0][2]).split(" ")[0]))
+                t.append(("sqplite_items_count", ustr(items[0][2]).split(" ")[0]))
 
             ret.append(t)
 
@@ -327,7 +327,7 @@ class SQLiteConnector(Connector):
         order_parts = []
 
         for i, f in enumerate(fields):
-            alias = "a" + str(i)
+            alias = "a" + ustr(i)
             if i > 0:
                 join_parts.append("nodeattribute AS " + alias)
             fname, direction = self._sql_sort_field_name_and_dir(f)
@@ -342,4 +342,4 @@ class SQLiteConnector(Connector):
         where_name_clause = " AND ".join(where_name_parts)
         order_clause = ", ".join(order_parts)
         query = q.format(join_clause, where_name_clause, order_clause)
-        return [str(r[0]) for r in self.runQuery(query)]
+        return [ustr(r[0]) for r in self.runQuery(query)]

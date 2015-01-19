@@ -42,7 +42,7 @@ def getData(req):
                 inum = len(c.getContentChildren())
 
                 label = c.getLabel()
-                title = c.getLabel() + " (" + str(c.id) + ")"
+                title = c.getLabel() + " (" + ustr(c.id) + ")"
 
                 cls = "folder"
 
@@ -68,7 +68,7 @@ def getData(req):
 
                 if style == "edittree":  # standard tree for edit area
                     if inum > 0:
-                        label += " <small>(" + str(inum) + ")</small>"
+                        label += " <small>(" + ustr(inum) + ")</small>"
 
                     ret.append('<li class="' + cls + '.gif" id="Node' + c.id + '">')
                     ret.append('<a href="#" title="' + title + '" id="' + c.id + '" class="' + itemcls + '">' + label + '</a>')
@@ -100,7 +100,7 @@ def getLabel(req):
     inum = len(node.getContentChildren())
     label = node.getLabel()
     if inum > 0:
-        label += " <small>(" + str(inum) + ")</small>"
+        label += " <small>(" + ustr(inum) + ")</small>"
     req.write(label)
     return
 

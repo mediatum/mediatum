@@ -37,7 +37,7 @@ class OAISearchAndCondition:
         self.b = b
 
     def __str__(self):
-        return "(" + str(self.a) + ") AND (" + str(self.b) + ")"
+        return "(" + ustr(self.a) + ") AND (" + ustr(self.b) + ")"
 
     def execute(self):
         ids = self.a.execute()
@@ -53,7 +53,7 @@ class OAISearchOrCondition:
         self.b = b
 
     def __str__(self):
-        return "(" + str(self.a) + ") OR (" + str(self.b) + ")"
+        return "(" + ustr(self.a) + ") OR (" + ustr(self.b) + ")"
 
     def execute(self):
         return union([self.a.execute(), self.b.execute()])

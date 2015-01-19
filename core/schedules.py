@@ -52,14 +52,14 @@ def timetable_update(msg):
 def ensureSchedulesRoot():
     try:
         schedules = tree.getRoot('schedules')
-        msg = "scheduler: root node 'schedules' (id=%s) found" % str(schedules.id)
+        msg = "scheduler: root node 'schedules' (id=%s) found" % ustr(schedules.id)
         OUT(msg)
 
     except tree.NoSuchNodeError as e:
         schedules = tree.Node(name='schedules', type='schedules')
         root = tree.getRoot()
         root.addChild(schedules)
-        msg = "scheduler: created root node 'schedules' (id=%s)" % str(schedules.id)
+        msg = "scheduler: created root node 'schedules' (id=%s)" % ustr(schedules.id)
         OUT(msg)
 
 
@@ -71,7 +71,7 @@ try:
 except:
     if not os.path.basename(sys.argv[0]) == 'run_single_schedule.py':
         msg = '|' + '-' * 60 + '\n'
-        msg += "| Error importing module 'scheduleutils': %s %s\n" % (str(sys.exc_info()[0]), str(sys.exc_info()[1]))
+        msg += "| Error importing module 'scheduleutils': %s %s\n" % (ustr(sys.exc_info()[0]), ustr(sys.exc_info()[1]))
         msg += "| WARNING: Scheduler could not be started\n"
         msg += '|' + '-' * 60
         OUT(msg, logger='backend', print_stdout=True, level='error')
@@ -126,7 +126,7 @@ def scheduler_thread():
                     TT.append([msg, time.time() - atime])
                     atime = time.time()
                 except:
-                    msg = "Error reloading module 'scheduleutils': %s %s" % (str(sys.exc_info()[0]), str(sys.exc_info()[1]))
+                    msg = "Error reloading module 'scheduleutils': %s %s" % (ustr(sys.exc_info()[0]), ustr(sys.exc_info()[1]))
                     TT.append([msg, time.time() - atime])
                     atime = time.time()
                     OUT(msg, logger='backend', print_stdout=True, level='error')
@@ -134,7 +134,7 @@ def scheduler_thread():
 
                 if not SCHEDULES_IMPORT_ERROR:
                     interval_seconds = scheduleutils.SLEEP_INTERVAL * scheduleutils.TRIGGER_INTERVAL
-                    OUT("scheduler_thread (interval: %s sec.): %s" % (str(interval_seconds), now_str))
+                    OUT("scheduler_thread (interval: %s sec.): %s" % (ustr(interval_seconds), now_str))
                     now_obj = datetime.now()
                     now_str = now_obj.isoformat()
 
@@ -167,7 +167,7 @@ def scheduler_thread():
             msg = "scheduler: timetable (scheduleutils.DEBUG = '%s')\n|" % (scheduleutils.DEBUG) + '-' * 60 + '\n'
             msg += '| check no %d at %s:\n' % (TRIGGER_COUNT, now_str)
             for s, t in TT:
-                msg = msg + '| %.3f: %s\n' % (t, str(s))
+                msg = msg + '| %.3f: %s\n' % (t, ustr(s))
             msg += '| duration: %.3f sec.\n' % (time.time() - atime0)
             msg += '|' + '-' * 60
 
@@ -189,7 +189,7 @@ def scheduler_thread():
 def startThread():
     import utils.scheduleutils as scheduleutils
     thread_id = thread.start_new_thread(scheduler_thread, ())
-    t = (str(thread_id), datetime.now().isoformat(), str(scheduleutils.SLEEP_INTERVAL), str(scheduleutils.TRIGGER_INTERVAL))
+    t = (ustr(thread_id), datetime.now().isoformat(), ustr(scheduleutils.SLEEP_INTERVAL), ustr(scheduleutils.TRIGGER_INTERVAL))
     msg = "scheduler: started scheduler (thread_id='%s') thread at %s, SLEEP_INTERVAL = %s, TRIGGER_INTERVAL = %s" % t
     OUT(msg)
 
@@ -203,7 +203,7 @@ def getSchedules():
 
 def getSchedule(id):
 
-    if str(id).isdigit():
+    if ustr(id).isdigit():
         try:
             node = tree.getNode(id)
             if node.type == "schedule":

@@ -98,12 +98,12 @@ class FtsSearcher:
                 return 'select position, name from searchmeta_def where attrname=\'' + value + '\''
             elif type == "spcompare":
                 return 'select distinct(id) from searchmeta where schema="' + \
-                    str(spc['pos'][1]) + '" and field' + str(spc['pos'][0]) + ' ' + spc['op'] + ' "' + value + '"'
+                    ustr(spc['pos'][1]) + '" and field' + ustr(spc['pos'][0]) + ' ' + spc['op'] + ' "' + value + '"'
             elif type == "spfield":
-                return 'select distinct(id) from searchmeta where field' + str(spc['pos'][0]) + '=""'
+                return 'select distinct(id) from searchmeta where field' + ustr(spc['pos'][0]) + '=""'
             elif type == "spmatch":
                 return 'select distinct(id) from searchmeta where schema=\'' + \
-                    str(spc['pos'][1]) + '\' and field' + str(spc['pos'][0]) + ' match \'' + value + '\''
+                    ustr(spc['pos'][1]) + '\' and field' + ustr(spc['pos'][0]) + ' match \'' + value + '\''
             elif type == "content_full":
                 return 'select * from fullsearchmeta where id=\'' + value + '\''
             elif type == "content_text":
@@ -119,30 +119,30 @@ class FtsSearcher:
             if field == "full":  # all metadata incl. fulltext
                 res1 = self.execute(getSQL("full", value), schema, 'full')  # all metadata
                 res2 = self.execute(getSQL("fulltext", value), schema, 'text')  # fulltext
-                ret += union([[str(s[0]) for s in res1], [str(s[0]) for s in res2]])
+                ret += union([[ustr(s[0]) for s in res1], [ustr(s[0]) for s in res2]])
 
             elif field == "fulltext":  # fulltext
-                ret += [str(s[0]) for s in self.execute(getSQL("fulltext", value),
+                ret += [ustr(s[0]) for s in self.execute(getSQL("fulltext", value),
                                                         schema,
                                                         'text')]
 
             elif field == "allmetadata":  # all metadata
-                ret += [str(s[0]) for s in self.execute(getSQL("full", value),
+                ret += [ustr(s[0]) for s in self.execute(getSQL("full", value),
                                                         schema,
                                                         'full')]
 
             elif field == "schema":
-                ret += [str(s[0]) for s in self.execute(getSQL("schema", value),
+                ret += [ustr(s[0]) for s in self.execute(getSQL("schema", value),
                                                         schema,
                                                         'full')]
 
             elif field == "objtype":
-                ret += [str(s[0]) for s in self.execute(getSQL("objtype", value),
+                ret += [ustr(s[0]) for s in self.execute(getSQL("objtype", value),
                                                         schema,
                                                         'full')]
 
             elif field == "updatetime":
-                ret += [str(s[0]) for s in self.execute(getSQL("updatetime", value, spc={'op': op}),
+                ret += [ustr(s[0]) for s in self.execute(getSQL("updatetime", value, spc={'op': op}),
                                                         schema,
                                                         'full')]
 
@@ -166,7 +166,7 @@ class FtsSearcher:
                         else:
                             res = self.execute(getSQL("spmatch", value, spc={'pos': pos}), schema, 'ext')
 
-                    res = [str(s[0]) for s in res]
+                    res = [ustr(s[0]) for s in res]
                     if len(ret) == 0:
                         ret += res
 
@@ -193,7 +193,7 @@ class FtsSearcher:
                 self.execute(sql, schema, _type)
             except:
                 e = sys.exc_info()[1]
-                if "already exists" not in str(e):
+                if "already exists" not in ustr(e):
                     raise
 
         def createDB(schema):
@@ -203,7 +203,7 @@ class FtsSearcher:
 
             # extended search table
             create('CREATE VIRTUAL TABLE searchmeta USING fts3(id, type, schema, updatetime, ' +
-                   ", ".join(['field' + str(i) for i in range(1, MAX_SEARCH_FIELDS)]) + ')', schema, 'ext')
+                   ", ".join(['field' + ustr(i) for i in range(1, MAX_SEARCH_FIELDS)]) + ')', schema, 'ext')
             create('CREATE VIRTUAL TABLE searchmeta_def USING fts3(name, position, attrname)',
                    schema,
                    'ext')
@@ -270,7 +270,7 @@ class FtsSearcher:
     def getDefForSchema(self, schema):
         ret = {}
         for id, attr in self.execute(
-                'SELECT position, attrname FROM searchmeta_def WHERE name="' + str(schema) + '" ORDER BY position', 'ext'):
+                'SELECT position, attrname FROM searchmeta_def WHERE name="' + ustr(schema) + '" ORDER BY position', 'ext'):
             ret[id] = attr
         return ret
 
@@ -395,7 +395,7 @@ class FtsSearcher:
         fieldnames = {}
         i = 1
         for field in node.getSearchFields():
-            fieldnames[str(i)] = field.getName()
+            fieldnames[ustr(i)] = field.getName()
             i += 1
         self.execute('DELETE FROM searchmeta_def WHERE name="' + schema + '"',
                      schema,
@@ -450,7 +450,7 @@ class FtsSearcher:
                         content += key + " "
                 elif FULLTEXT_INDEX_MODE == 2:
                     for key in data.keys():
-                        content += key + " [" + str(data[key]) + "] "
+                        content += key + " [" + ustr(data[key]) + "] "
 
                 content = u(content.replace("'", "").replace('"', ""))
                 if len(content) > 0:
@@ -485,7 +485,7 @@ class FtsSearcher:
         if not self.nodeToFulltextSearch(node, schema):
             err['text'].append(node.id)
 
-        node.set("updatesearchindex", str(format_date()))
+        node.set("updatesearchindex", ustr(format_date()))
         return err
 
     def updateNodesIndex(self, nodelist):
@@ -527,7 +527,7 @@ class FtsSearcher:
                                                                node.id),
                              node.getSchema(),
                              _type)
-                print 'node %s removed from index %s %s' % (str(node.id), node.getSchema(), _type)
+                print 'node %s removed from index %s %s' % (ustr(node.id), node.getSchema(), _type)
             except Exception as e:
                 print e
 
@@ -552,7 +552,7 @@ class FtsSearcher:
                 if t[0][1] == "table":
                     items = self.execute("SELECT count(*) FROM " + t[2][1], type)
                     for item in items:
-                        t.append(("sqplite_items_count", str(item[0])))
+                        t.append(("sqplite_items_count", ustr(item[0])))
                 ret.append(t)
         return ret
 

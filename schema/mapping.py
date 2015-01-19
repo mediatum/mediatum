@@ -199,7 +199,7 @@ class Mapping(tree.Node):
     def setActive(self, value):
         if value is None:
             value = "0"
-        self.set("active", str(value))
+        self.set("active", ustr(value))
 
     def getMappingType(self):
         if self.get("mappingtype") == "":

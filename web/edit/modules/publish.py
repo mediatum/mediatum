@@ -107,11 +107,11 @@ def getContent(req, ids):
     stdname = ""
     l = []
     for n in explicit:
-        if str(getHomeDir(user).id)!=str(n):
+        if ustr(getHomeDir(user).id)!=ustr(n):
             l.append(n)
 
     if len(l)==1:
-        stddir = str(l[0])+","
+        stddir = ustr(l[0])+","
         stdname = "- " + tree.getNode(l[0]).getName()
 
     #v = {"id":publishdir.id,"stddir":stddir, "stdname":stdname, "showdir":showdir(req, publishdir, publishwarn=0, markunpublished=1, nodes=[])}

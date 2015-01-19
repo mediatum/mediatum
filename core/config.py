@@ -69,12 +69,12 @@ def _read_ini_file(basedir, filename):
             pass  # skip empty line
         elif line[0] == '[':
             if line[-1] != ']':
-                raise "Syntax error in line " + str(lineno) + " of file " + filename + ":\n" + line
+                raise "Syntax error in line " + ustr(lineno) + " of file " + filename + ":\n" + line
             module = line[1:-1]
         else:
             equals = line.find("=")
             if equals < 0:
-                raise "Syntax error in line " + str(lineno) + " of file " + filename + ":\n" + line
+                raise "Syntax error in line " + ustr(lineno) + " of file " + filename + ":\n" + line
             key = module + "." + line[0:equals].strip()
             value = line[equals + 1:].strip()
             if(len(value) and value[0] == '\'' and value[-1] == '\''):

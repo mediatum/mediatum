@@ -42,9 +42,9 @@ def getTotalSize(conn):
 def getOverviewData(req):
     conn = getConnection()
     num = {}
-    num['nodes'] = str(conn.runQuery("select count(*) from node")[0][0])
-    num['metadata'] = str(conn.runQuery("select count(*) from nodeattribute")[0][0])
-    num['files'] = str(conn.runQuery("select count(*) from nodefile where type='document' or type='image'")[0][0])
+    num['nodes'] = ustr(conn.runQuery("select count(*) from node")[0][0])
+    num['metadata'] = ustr(conn.runQuery("select count(*) from nodeattribute")[0][0])
+    num['files'] = ustr(conn.runQuery("select count(*) from nodefile where type='document' or type='image'")[0][0])
     num['size'] = format_filesize(getTotalSize(conn))
     return num
 
@@ -64,14 +64,14 @@ def view(req):
     def format_num(nums):
         num = ""
         for k in nums:
-            num += k + ":" + str(nums[k]) + ";"
+            num += k + ":" + ustr(nums[k]) + ";"
         return num
 
     if gotopage == "overview" and req.params.get("changes") == "overview":
         for key in req.params.keys():
             if key == "overview_reset":
                 root.set("admin.stats.num", format_num(getOverviewData(req)))
-                root.set("admin.stats.updatetime", str(format_date()))
+                root.set("admin.stats.updatetime", ustr(format_date()))
                 break
 
     if page == "overview":
@@ -79,7 +79,7 @@ def view(req):
         num = root.get("admin.stats.num")
         if num == "":
             root.set("admin.stats.num", format_num(getOverviewData(req)))
-            root.set("admin.stats.updatetime", str(format_date()))
+            root.set("admin.stats.updatetime", ustr(format_date()))
 
         n = {}
         for items in num[:-1].split(";"):

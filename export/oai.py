@@ -295,7 +295,7 @@ def Identify(req):
               <sampleIdentifier>%s</sampleIdentifier>
             </oai-identifier>
           </description>
-        </Identify>""" % (name, mklink(req), config.get("email.admin"), str(EARLIEST_YEAR - 1), config.get("host.name", socket.gethostname()), SAMPLE_IDENTIFIER))
+        </Identify>""" % (name, mklink(req), config.get("email.admin"), ustr(EARLIEST_YEAR - 1), config.get("host.name", socket.gethostname()), SAMPLE_IDENTIFIER))
     if DEBUG:
         timetable_update(req, "leaving Identify")
 
@@ -321,7 +321,7 @@ def writeRecord(req, node, metadataformat):
 
     if DEBUG:
         timetable_update(req, " in writeRecord: getSetSpecsForNode: node: '%s, %s', metadataformat='%s' set_specs:%s" %
-                         (str(node.id), node.type, metadataformat, str(set_specs)))
+                         (ustr(node.id), node.type, metadataformat, ustr(set_specs)))
 
     req.write("""
            <record>
@@ -332,7 +332,7 @@ def writeRecord(req, node, metadataformat):
                <metadata>""" % (mkIdentifier(node.id), d, set_specs))
 
     if DEBUG:
-        timetable_update(req, " in writeRecord: writing header: node.id='%s', metadataformat='%s'" % (str(node.id), metadataformat))
+        timetable_update(req, " in writeRecord: writing header: node.id='%s', metadataformat='%s'" % (ustr(node.id), metadataformat))
 
     if metadataformat == "mediatum":
         req.write(core.xmlnode.getSingleNodeXML(node))
@@ -343,7 +343,7 @@ def writeRecord(req, node, metadataformat):
             timetable_update(
                 req,
                 """ in writeRecord: mask = getMetaType(node.getSchema()).getMask("oai_"+metadataformat.lower()): node.id='%s', metadataformat='%s'""" %
-                (str(
+                (ustr(
                     node.id),
                     metadataformat))
         try:
@@ -354,7 +354,7 @@ def writeRecord(req, node, metadataformat):
             timetable_update(
                 req,
                 " in writeRecord: req.write(mask.getViewHTML([node], flags=8)): node.id='%s', metadataformat='%s'" %
-                (str(
+                (ustr(
                     node.id),
                     metadataformat))
 
@@ -364,7 +364,7 @@ def writeRecord(req, node, metadataformat):
     req.write('</metadata></record>')
 
     if DEBUG:
-        timetable_update(req, "leaving writeRecord: node.id='%s', metadataformat='%s'" % (str(node.id), metadataformat))
+        timetable_update(req, "leaving writeRecord: node.id='%s', metadataformat='%s'" % (ustr(node.id), metadataformat))
 
 
 def mkIdentifier(id):
@@ -407,7 +407,7 @@ def retrieveNodes(req, access, setspec, date_from=None, date_to=None, metadatafo
 
     if DEBUG:
         timetable_update(req, "in retrieveNodes: find schemata with export mask for metadata type %s (%d found: '%s')" %
-                         (metadataformat.lower(), len(schemata), str([x for x in schemata])))
+                         (metadataformat.lower(), len(schemata), ustr([x for x in schemata])))
 
     if setspec:
         res = oaisets.getNodes(setspec, schemata)
@@ -421,11 +421,11 @@ def retrieveNodes(req, access, setspec, date_from=None, date_to=None, metadatafo
         timetable_update(req, "in retrieveNodes: after building NodeList for %d nodes" % (len(res)))
 
     if date_from:
-        res = [n for n in res if n.get(DATEFIELD) >= str(date_from)]
+        res = [n for n in res if n.get(DATEFIELD) >= ustr(date_from)]
         if DEBUG:
             timetable_update(req, "in retrieveNodes: after filtering date_from --> %d nodes" % (len(res)))
     if date_to:
-        res = [n for n in res if n.get(DATEFIELD) <= str(date_to)]
+        res = [n for n in res if n.get(DATEFIELD) <= ustr(date_to)]
         if DEBUG:
             timetable_update(req, "in retrieveNodes: after filtering date_to --> %d nodes" % (len(res)))
 
@@ -442,7 +442,7 @@ def retrieveNodes(req, access, setspec, date_from=None, date_to=None, metadatafo
     if schemata:
         res = [n for n in res if n.getSchema() in schemata]
         if DEBUG:
-            timetable_update(req, "in retrieveNodes: after schemata (%s) filter --> %d nodes" % (str(schemata), len(res)))
+            timetable_update(req, "in retrieveNodes: after schemata (%s) filter --> %d nodes" % (ustr(schemata), len(res)))
 
     if metadataformat and metadataformat.lower() in FORMAT_FILTERS.keys():
         format_string = metadataformat.lower()
@@ -454,7 +454,7 @@ def retrieveNodes(req, access, setspec, date_from=None, date_to=None, metadatafo
 
 
 def new_token(req):
-    token = str(random.random())
+    token = ustr(random.random())
     with token_lock:
         # limit length to 32
         if len(tokenpositions) >= 32:
@@ -532,7 +532,7 @@ def getNodes(req):
     with token_lock:
         tokenpositions[token] = pos + CHUNKSIZE, nodes, metadataformat
     tokenstring = '<resumptionToken expirationDate="' + ISO8601(date.now().add(3600 * 24)) + '" ' + \
-        'completeListSize="' + str(len(nodes)) + '" cursor="' + str(pos) + '">' + token + '</resumptionToken>'
+        'completeListSize="' + ustr(len(nodes)) + '" cursor="' + ustr(pos) + '">' + token + '</resumptionToken>'
     if pos + CHUNKSIZE >= len(nodes):
         tokenstring = None
         with token_lock:
@@ -573,7 +573,7 @@ def ListIdentifiers(req):
 
 
 def ListRecords(req):
-    eyear = str(EARLIEST_YEAR - 1) + """-01-01T12:00:00Z"""
+    eyear = ustr(EARLIEST_YEAR - 1) + """-01-01T12:00:00Z"""
     if "until" in req.params.keys() and req.params.get("until") < eyear and len(req.params.get("until")) == len(eyear):
         return writeError(req, 'noRecordsMatch')
     if "resumptionToken" in req.params.keys() and "until" in req.params.keys():

@@ -115,7 +115,7 @@ def updateMetaType(name, description="", longname="", active=0, datatypes="", bi
 
     metadatatype.set("description", description)
     metadatatype.set("longname", longname)
-    metadatatype.set("active", str(active))
+    metadatatype.set("active", ustr(active))
     metadatatype.set("datatypes", datatypes)
     metadatatype.set("bibtexmapping", bibtexmapping)
     metadatatype.set("citeprocmapping", citeprocmapping)
@@ -501,7 +501,7 @@ def parseEditorData(req, node):
             if field.getType() == "date":
                 f = field.getSystemFormat(field.fieldvalues)
                 try:
-                    date = parse_date(str(value), f.getValue())
+                    date = parse_date(ustr(value), f.getValue())
                 except ValueError:
                     date = None
                 if date:
@@ -588,7 +588,7 @@ class Metadatatype(tree.Node):
         return self.get("datatypes")
 
     def setDatatypeString(self, value):
-        self.set("datatypes", str(value))
+        self.set("datatypes", ustr(value))
 
     def getNumFields(self):
         return len(self.getMetaFields())
@@ -736,7 +736,7 @@ class Metadatafield(tree.Node):
 
     def getValue(self, node):
         if self.get("fieldtype") == "date":
-            d = self.getSystemFormat(str(self.fieldvalues))
+            d = self.getSystemFormat(ustr(self.fieldvalues))
             v = node.get(self.name)
             try:
                 value = date.format_date(date.parse_date(v), d.getValue())
@@ -962,17 +962,17 @@ class Mask(tree.Node):
                             langPos = item.find('__')
                             if langPos != -1 and item[langPos + 2:] == field.getName():
                                 # cut the language identifier (en__, fr__, etc)
-                                if (req.params.get(str(field.id) + '_show_multilang', '') == 'multi'
+                                if (req.params.get(ustr(field.id) + '_show_multilang', '') == 'multi'
                                         and hasattr(t, "language_update")):
                                     value_old = node.get(field.getName())
                                     value_new = req.params.get(item)
                                     value = t.language_update(value_old, value_new, item[:langPos])
                                     node.set(field.getName(), value)
-                                elif req.params.get(str(field.id) + '_show_multilang', '') == 'single':
+                                elif req.params.get(ustr(field.id) + '_show_multilang', '') == 'single':
                                     if item[0:langPos] == translation.lang(req):
                                         new_value = req.params.get(item)
                                         node.set(field.getName(), new_value)
-                                elif (req.params.get(str(field.id) + '_show_multilang', '') == 'multi'
+                                elif (req.params.get(ustr(field.id) + '_show_multilang', '') == 'multi'
                                       and not hasattr(t, "language_update")):
                                     value = t.format_request_value_for_db(field, req.params, item)
                                     oldValue = node.get(field.getName())
@@ -998,8 +998,8 @@ class Mask(tree.Node):
             ''' raise event for node '''
             if hasattr(node, "event_metadata_changed"):
                 node.event_metadata_changed()
-            if node.get('updatetime') < str(now()):
-                node.set("updatetime", str(format_date()))
+            if node.get('updatetime') < ustr(now()):
+                node.set("updatetime", ustr(format_date()))
 
         return nodes
 
@@ -1116,7 +1116,7 @@ class Mask(tree.Node):
                 <br/>
                 <br/>
                 <input type="hidden" name="op" value="new"/>"""
-            ret += '<input type="hidden" name="pid" value="' + str(req.params.get("pid")) + '"/>'
+            ret += '<input type="hidden" name="pid" value="' + ustr(req.params.get("pid")) + '"/>'
             ret += '<div class="label">&nbsp;</div><button type="submit" name="new_" style="width:100px" i18n:translate="mask_editor_ok"> OK </button>'
             ret += '&nbsp;&nbsp;<button type="submit" onclick="setCancel(document.myform.op)" i18n:translate="mask_editor_cancel">Abbrechen</button><br/>'
             ret += '</div></form>'
@@ -1205,7 +1205,7 @@ class Mask(tree.Node):
         item.set("type", type)
 
         if fieldid != 0:
-            for id in str(fieldid).split(";"):
+            for id in ustr(fieldid).split(";"):
                 try:
                     field = tree.getNode(long(id))
                     # don't remove field- it may
@@ -1216,7 +1216,7 @@ class Mask(tree.Node):
                     item.addChild(field)
                 except ValueError:
                     print "node id error for id '", id, "'"
-        if str(pid) == "0":
+        if ustr(pid) == "0":
             self.addChild(item)
         else:
             node = tree.getNode(pid)
@@ -1270,7 +1270,7 @@ class Maskitem(tree.Node):
             return 0
 
     def setRequired(self, value):
-        self.set("required", str(value))
+        self.set("required", ustr(value))
 
     def getWidth(self):
         if self.get("width"):
@@ -1279,19 +1279,19 @@ class Maskitem(tree.Node):
             return 400
 
     def setWidth(self, value=400):
-        self.set("width", str(value))
+        self.set("width", ustr(value))
 
     def getDefault(self):
         return self.get("default")
 
     def setDefault(self, value):
-        self.set("default", str(value))
+        self.set("default", ustr(value))
 
     def getTestNodes(self):
         return self.get("testnodes")
 
     def setTestNodes(self, value):
-        self.set("testnodes", str(value))
+        self.set("testnodes", ustr(value))
 
     def getMultilang(self):
         field = [c for c in self.getChildren() if c.type == "metafield"]
@@ -1303,13 +1303,13 @@ class Maskitem(tree.Node):
     def setMultilang(self, value):
         field = [c for c in self.getChildren() if c.type == "metafield"]
         if len(field) > 0:
-            field[0].set("multilang", str(value))
+            field[0].set("multilang", ustr(value))
 
     def getUnit(self):
         return self.get("unit")
 
     def setUnit(self, value):
-        self.set("unit", str(value))
+        self.set("unit", ustr(value))
 
     def getFormat(self):
         return self.get("format")
@@ -1365,7 +1365,7 @@ def getMetadataType(mtype):
 def getMetaFieldTypeNames():
     ret = {}
     for key in mytypes.keys():
-        if "meta" in str(mytypes[key]):
+        if "meta" in ustr(mytypes[key]):
             ret[key] = "fieldtype_" + key
     return ret
 
@@ -1448,7 +1448,7 @@ def node_getMask(node, name):
         except AttributeError:
             return None
     else:
-        raise ValueError("Node of type '" + str(node.getSchema()) + "' has no mask")
+        raise ValueError("Node of type '" + ustr(node.getSchema()) + "' has no mask")
 
 
 def node_getDescription(node):

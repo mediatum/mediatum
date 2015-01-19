@@ -86,7 +86,7 @@ def showDetailList(req, id):
             metafields.sort(lambda x, y: cmp(x.getLabel().lower(), y.getLabel().lower()))
         elif int(order[0:1]) == 3:
             metafields.sort(
-                lambda x, y: cmp(getMetaFieldTypeNames()[str(x.getFieldtype())], getMetaFieldTypeNames()[str(y.getFieldtype())]))
+                lambda x, y: cmp(getMetaFieldTypeNames()[ustr(x.getFieldtype())], getMetaFieldTypeNames()[ustr(y.getFieldtype())]))
         if int(order[1:]) == 1:
             metafields.reverse()
     else:
@@ -107,7 +107,7 @@ def showDetailList(req, id):
     v["actfilter"] = actfilter
 
     v["actpage"] = req.params.get("actpage")
-    if str(req.params.get("page", "")).isdigit():
+    if ustr(req.params.get("page", "")).isdigit():
         v["actpage"] = req.params.get("page")
 
     return req.getTAL("web/admin/modules/metatype_field.html", v, macro="view_field")
@@ -134,7 +134,7 @@ def FieldDetail(req, pid, id, err=0):
         # error filling values
         _fieldvalue = ""
         if req.params.get('mtype', '') + "_value" in req.params.keys():
-            _fieldvalue = str(req.params[req.params.get('mtype', '') + "_value"])
+            _fieldvalue = ustr(req.params[req.params.get('mtype', '') + "_value"])
 
         if (req.params.get("mname") == ""):
             field = tree.Node(req.params.get("orig_name"), type="metafield")

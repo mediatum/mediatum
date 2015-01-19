@@ -36,7 +36,7 @@ def buildChecksum(urn):
         for digit in chkmap.get(char, ""):
             sum += int(digit) * i
             i = i + 1
-    return str(sum / int(digit))[-1:]
+    return ustr(sum / int(digit))[-1:]
 
 
 def buildNBN(snid1, snid2, niss):
@@ -49,7 +49,7 @@ def buildNBN(snid1, snid2, niss):
     can be referenced here:
     http://www.iana.org/assignments/urn-namespaces/urn-namespaces.xml
     """
-    urn = "urn:" + str(snid1) + ":" + str(snid2) + "-" + niss + "-"
+    urn = "urn:" + ustr(snid1) + ":" + ustr(snid2) + "-" + niss + "-"
     return urn + buildChecksum(urn)
 
 

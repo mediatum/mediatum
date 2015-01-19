@@ -130,7 +130,7 @@ def get_extended_field_ratio(schema, node, db_content):
 
     for field in field_names:
         node_value = normalize_utf8(modify_tex(u(protect(node.get(field.name))), 'strip'))
-        db_value = str(db_content[field.position])
+        db_value = ustr(db_content[field.position])
         equality_ratio = difflib.SequenceMatcher(None, db_value, node_value).ratio()
         ratios.append(equality_ratio)
 

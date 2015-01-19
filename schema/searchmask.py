@@ -16,7 +16,7 @@ class SearchMaskItem(tree.Node):
 def newMask(node):
     root = tree.getRoot("searchmasks")
     while True:
-        maskname = hashlib.md5(str(random.random())).hexdigest()[0:8]
+        maskname = hashlib.md5(ustr(random.random())).hexdigest()[0:8]
         if root.hasChild(maskname):
             continue
         else:

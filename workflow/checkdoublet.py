@@ -209,7 +209,7 @@ class WorkflowStep_CheckDoublet(WorkflowStep):
             logg.error(msg)
 
         if set(attribute_names) - set(all_attribute_names):
-            msg_tuple = (getNodeWorkflow(node).id, self.id, str(set(attribute_names) - set(all_attribute_names)), schema, node.id)
+            msg_tuple = (getNodeWorkflow(node).id, self.id, ustr(set(attribute_names) - set(all_attribute_names)), schema, node.id)
             msg = "checkdoublet: workflow %s, step %s (doubletcheck): attribute_names '%s' not in schema '%s' of current node %s: contact administrator" % msg_tuple
             errors.append(msg)
             logg.error(msg)

@@ -105,7 +105,7 @@ def getPopupWindow(req, ids):
     elif req.params.get("action") == "do":  # do action and refresh current month
         collection = tree.getNode(req.params.get("id"))
         collection.set("system.statsrun", "1")
-        buildStat(collection, str(format_date(now(), "yyyy-mm")))
+        buildStat(collection, ustr(format_date(now(), "yyyy-mm")))
         req.writeTAL("web/edit/modules/statsaccess.html", {}, macro="edit_stats_result")
         collection.removeAttribute("system.statsrun")
         return
@@ -205,19 +205,19 @@ class StatsAccessPDF:
                 if i < len(d):
                     try:
                         nodename = tree.getNode(d[i][0]).getName()
-                        suffix = " (" + str(d[i][0]) + ")"
+                        suffix = " (" + ustr(d[i][0]) + ")"
                         n = nodename + suffix
                         if namecut > 0 and len(n) > namecut:
                             delta = len(n) - namecut
                             new_length = len(nodename) - delta - 3
                             n = nodename[0:new_length] + "..." + suffix
                     except:
-                        n = str(d[i][0])
+                        n = ustr(d[i][0])
                     items.append(Paragraph(n, self.bv))
                     items.append((FrameBreak()))
                     items.append(PdfImage(config.basedir + "/web/img/stat_bar.png", width=d[i][1] * 280 / max, height=10))
                     items.append((FrameBreak()))
-                    items.append(Paragraph(str(d[i][1]), self.bv))
+                    items.append(Paragraph(ustr(d[i][1]), self.bv))
                     items.append((FrameBreak()))
         return items
 
@@ -258,11 +258,11 @@ class StatsAccessPDF:
 
             for v in sorted([(len(d[k]['items']), k) for k in filter(lambda x:x != 0, d.keys())], reverse=True)[:50]:
                 if v[0] != 0:
-                    items.append(Paragraph(str(v[1]), self.bv))
+                    items.append(Paragraph(ustr(v[1]), self.bv))
                     items.append((FrameBreak()))
                     items.append(PdfImage(config.basedir + "/web/img/stat_bar.png", width=v[0] * 400 / max, height=10))
                     items.append((FrameBreak()))
-                    items.append(Paragraph(str(v[0]), self.bv))
+                    items.append(Paragraph(ustr(v[0]), self.bv))
                     items.append((FrameBreak()))
 
             items = items[:-1]
@@ -334,7 +334,7 @@ class StatsAccessPDF:
                 if k > 0:  # first item holds max values
                     if self.stats.getWeekDay(k) > 4:
                         weekend.append(('BACKGROUND', (k - 1, 0), (k - 1, -1), colors.HexColor('#E6E6E6')))
-                    t_data.append('%02d \n%s' % (k, t(self.language, "monthname_" + str(int(self.period[-2:])) + "_short")))
+                    t_data.append('%02d \n%s' % (k, t(self.language, "monthname_" + ustr(int(self.period[-2:])) + "_short")))
 
             tb = Table([t_data], 31 * [17], 30)
             tb.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'),
@@ -354,7 +354,7 @@ class StatsAccessPDF:
                 if k > 0:  # first item holds max values
                     if self.stats.getWeekDay(k) > 4:
                         weekend.append(('BACKGROUND', (0, k), (-1, k), colors.HexColor('#E6E6E6')))
-                    t_data.append(['%02d.%s %s' % (k, t(self.language, "monthname_" + str(int(self.period[-2:])) + "_short"),
+                    t_data.append(['%02d.%s %s' % (k, t(self.language, "monthname_" + ustr(int(self.period[-2:])) + "_short"),
                                                    self.period[:4]), len(d[k]["visitors"]), len(d[k]["different"]), len(d[k]["items"])])
 
             tb = Table(t_data, 4 * [100], [25] + (len(d) - 1) * [12])
@@ -446,7 +446,7 @@ class StatsAccessPDF:
                     PdfImage(config.basedir + "/web/img/stat_bar_vert.gif", width=6, height=len(d[k]["items"]) * h / max["max"] + 1))
                 items.append(FrameBreak())
 
-            tb = Table([[t(self.language, "dayname_" + str(x) + "_short") for x in range(0, 7)]], 7 * [17], 17)
+            tb = Table([[t(self.language, "dayname_" + ustr(x) + "_short") for x in range(0, 7)]], 7 * [17], 17)
             tb.setStyle(TableStyle([('VALIGN', (0, 0), (-1, -1), 'TOP'),
                                     ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                                     ('INNERGRID', (0, 0), (-1, -1), 1, colors.black),
@@ -458,7 +458,7 @@ class StatsAccessPDF:
             items.append(tb)
             items.append(FrameBreak())
 
-            t_data = [[t(self.language, "dayname_" + str(x) + "_long")] for x in range(0, 7)]
+            t_data = [[t(self.language, "dayname_" + ustr(x) + "_long")] for x in range(0, 7)]
 
             for k in d:
                 if k == 0:
@@ -557,8 +557,8 @@ class StatsAccessPDF:
 
             t_data = []
             for i in range(0, 24):
-                im = PdfImage(config.basedir + "/web/img/stat_hr" + str(i % 12 + 1) + ".png", width=14, height=14)
-                p = Paragraph((str(i) + "-" + str(i + 1)), self.bv)
+                im = PdfImage(config.basedir + "/web/img/stat_hr" + ustr(i % 12 + 1) + ".png", width=14, height=14)
+                p = Paragraph((ustr(i) + "-" + ustr(i + 1)), self.bv)
                 t_data.append([p, im])
 
             tb = Table([t_data], 24 * [21], [40])

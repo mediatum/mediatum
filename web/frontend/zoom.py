@@ -87,7 +87,7 @@ class ZoomImage:
             raise AttributeError("Not an image")
 
         self.img = Image.open(filename)
-        tmpjpg = config.get("paths.datadir") + "tmp/img" + str(random.random()) + ".jpg"
+        tmpjpg = config.get("paths.datadir") + "tmp/img" + ustr(random.random()) + ".jpg"
         if self.img.mode == "CMYK" and (filename.endswith("jpg") or filename.endswith("jpeg")) or self.img.mode in ["P", "L"]:
             os.system("convert -quality 100 -draw \"rectangle 0,0 1,1\" %s %s" % (filename, tmpjpg))
             self.img = Image.open(tmpjpg)
@@ -98,7 +98,7 @@ class ZoomImage:
             l = l / 2
             self.levels = self.levels + 1
         self.width, self.height = self.img.size
-        self.node.set("levels", str(self.levels))
+        self.node.set("levels", ustr(self.levels))
         if os.path.exists(tmpjpg):
             os.unlink(tmpjpg)
 

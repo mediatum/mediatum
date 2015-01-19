@@ -355,8 +355,8 @@ def getContent(req, ids):
 
         for node in nodes:
             node.set("updateuser", user.getName())
-            if node.get('updatetime') < str(now()):
-                node.set("updatetime", str(format_date()))
+            if node.get('updatetime') < ustr(now()):
+                node.set("updatetime", ustr(format_date()))
 
         if not hasattr(mask, "i_am_not_a_mask"):
             errorlist = []
@@ -423,7 +423,7 @@ def getContent(req, ids):
                     new_nodename = nodes[0].name
                     if (old_nodename != new_nodename) and hasattr(nodes[0], 'isContainer') and nodes[0].isContainer():
                         # for updates of node label in editor tree
-                        flag_nodename_changed = str(node.id)
+                        flag_nodename_changed = ustr(node.id)
 
                 errorlist += mask.validateNodelist(nodes)
         else:
@@ -440,7 +440,7 @@ def getContent(req, ids):
                     value = req.params.get(field_name, None)
                     if value:
                         if value != node.name:
-                            flag_nodename_changed = str(node.id)
+                            flag_nodename_changed = ustr(node.id)
                         for node in nodes:
                             node.setName(value)
                 value = req.params.get(field_name, None)

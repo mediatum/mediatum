@@ -158,7 +158,7 @@ def map_node(node, mapping_fields=None):
             continue
         if field not in fields:
             fields[field] = {}
-        fields[field][subfield] = str(value)
+        fields[field][subfield] = ustr(value)
 
     # build MARC record, adding field indicators accordingly
     record = pymarc.Record()

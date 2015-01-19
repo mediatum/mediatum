@@ -104,7 +104,7 @@ def validate(req, op):
                     except:
                         logg.exception("exception while evaluating template")
                         error_text = str(sys.exc_info()[1])
-                        template_line = 'for node id ' + str(nid) + ': ' + error_text
+                        template_line = 'for node id ' + ustr(nid) + ': ' + error_text
                         try:
                             m = re.match(r".*line (?P<line>\d*), column (?P<column>\d*)", error_text)
                             if m:
@@ -112,7 +112,7 @@ def validate(req, op):
                                 line = int(mdict.get('line', 0))
                                 column = int(mdict.get('column', 0))
                                 error_text = error_text.replace('line %d' % line, 'template line %d' % (line - 1))
-                                template_line = 'for node id ' + str(nid) + '<br/>' + error_text + '<br/><code>' + esc(template.split(
+                                template_line = 'for node id ' + ustr(nid) + '<br/>' + error_text + '<br/><code>' + esc(template.split(
                                     "\n")[line - 2][0:column - 1]) + '<span style="color:red">' + esc(template.split("\n")[line - 2][column - 1:]) + '</span></code>'
                         except:
                             pass
@@ -124,7 +124,7 @@ def validate(req, op):
             except tree.NoSuchNodeError:
                 section_descr['node'] = None
                 section_descr['error_flag'] = 'NoSuchNodeError'
-                section_descr['node_html'] = 'for node id ' + str(nid)
+                section_descr['node_html'] = 'for node id ' + ustr(nid)
             sectionlist.append(section_descr)
 
         # remark: error messages will be served untranslated in English
@@ -150,7 +150,7 @@ def validate(req, op):
 
             # edit metadatatype
             elif key.startswith("edit_"):
-                return MetatypeDetail(req, str(key[5:-2]))
+                return MetatypeDetail(req, ustr(key[5:-2]))
 
             # delete metadata
             elif key.startswith("delete_"):
@@ -159,11 +159,11 @@ def validate(req, op):
 
             # show details for given metadatatype
             elif key.startswith("detaillist_"):
-                return showDetailList(req, str(key[11:-2]))
+                return showDetailList(req, ustr(key[11:-2]))
 
             # show masklist for given metadatatype
             elif key.startswith("masks_"):
-                return showMaskList(req, str(key[6:-2]))
+                return showMaskList(req, ustr(key[6:-2]))
 
             # reindex search index for current schema
             elif key.startswith("indexupdate_") and "cancel" not in req.params.keys():
@@ -246,7 +246,7 @@ def validate(req, op):
 
             _fieldvalue = ""
             if req.params.get("mtype", "") + "_value" in req.params.keys():
-                _fieldvalue = str(req.params.get(req.params.get("mtype") + "_value"))
+                _fieldvalue = ustr(req.params.get(req.params.get("mtype") + "_value"))
 
             _filenode = None
             if "valuesfile" in req.params.keys():
@@ -347,7 +347,7 @@ def validate(req, op):
                 if key.startswith("left"):
                     mask.setAccess(key[4:], req.params.get(key).replace(";", ","))
                     break
-        return showMaskList(req, str(req.params.get("parent", "")))
+        return showMaskList(req, ustr(req.params.get("parent", "")))
     return view(req)
 
 
@@ -585,7 +585,7 @@ def showEditor(req):
             field = item.getChildren()
             try:
                 field = list(field)[0]
-                if str(field.id) != str(req.params.get("field")):
+                if ustr(field.id) != ustr(req.params.get("field")):
                     item.removeChild(field)
                     item.addChild(f)
                 field.setValues(req.params.get(field.get("type") + "_value", ""))
@@ -615,7 +615,7 @@ def showEditor(req):
                     updateMetaField(parent, req.params.get("fieldname"), label, 0,
                                     req.params.get("newfieldtype"), option="", description=req.params.get("description", ""),
                                     fieldvalues=fieldvalue, fieldvaluenum="", fieldid="")
-                    fieldid = str(getMetaField(parent, req.params.get("fieldname")).id)
+                    fieldid = ustr(getMetaField(parent, req.params.get("fieldname")).id)
 
             item = editor.addMaskitem(label, req.params.get("type"), fieldid, req.params.get("pid", "0"))
 

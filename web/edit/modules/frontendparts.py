@@ -68,7 +68,7 @@ def getContent(req, ids):
                     link = req.makeSelfLink({"tree_unfold": node.id, "tree_fold": ""}) + "#node{}".format(node.id)
 
                 v = {}
-                v["id"] = str(node.id)
+                v["id"] = ustr(node.id)
                 v["type"] = type
                 v["link1"] = link
                 v["indent"] = indent + 10

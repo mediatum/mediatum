@@ -192,7 +192,24 @@ def init_modules():
     init_plugins()
 
 
+def add_ustr_builtin():
+    inspection_log = logging.getLogger("inspection")
+    
+    def ustr(s):
+        if isinstance(s, unicode):
+            inspection_log.warn("ustr() called on unicode object, ignoring '%s'", s)
+            return s
+    #     elif isinstance(s, int):
+    #         logg.warn("ustr() called on int object '%s'", s)
+        
+        return str(s)
+        
+    import __builtin__
+    __builtin__.ustr  = ustr
+
+
 def basic_init():
+    add_ustr_builtin()
     import utils.log
     utils.log.initialize()
     log_basic_sys_info()

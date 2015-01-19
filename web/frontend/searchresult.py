@@ -103,6 +103,8 @@ def protect(s):
 
 
 def simple_search(req):
+    raise NotImplementedError("doesn't work with unicode, won't fix!")
+
     from web.frontend.content import ContentList
     res = []
     words = []
@@ -111,6 +113,7 @@ def simple_search(req):
 
     access = AccessData(req)
     q = u(req.params.get("query", ""))
+    q = req.args.get("query")
 
     # test whether this query is restricted to a number of collections
     for key, value in req.params.items():

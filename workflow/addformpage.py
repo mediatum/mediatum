@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -350,11 +351,11 @@ class WorkflowStep_AddFormPage(WorkflowStep):
     def getLabels():
         return {"de":
                 [
-                    ("workflowstep-addformpage", "PDF-Seiten hinzuf\xc3\xbcgen"),
+                    ("workflowstep-addformpage", u"PDF-Seiten hinzufügen"),
                     ("workflowstep-addformpage_label_upload_pdfform", "Eine PDF-Form hier hochladen"),
                     ("workflowstep-addformpage_label_pdf_fields_editable", "PDF-Form-Felder editierbar"),
-                    ("workflowstep-addformpage_label_pdf_form_separate", "PDF-Form separat an Knoten anh\xc3\xa4ngen"),
-                    ("workflowstep-addformpage_label_pdf_overwrite", "PDF-Form \xc3\xbcberschreiben"),
+                    ("workflowstep-addformpage_label_pdf_form_separate", u"PDF-Form separat an Knoten anhängen"),
+                    ("workflowstep-addformpage_label_pdf_overwrite", u"PDF-Form überschreiben"),
                 ],
                 "en":
                 [

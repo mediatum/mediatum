@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -454,12 +455,12 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                      '<b style="color:red;">WARNUNG:</b> Python-Modul pyPdf ist nicht installiert - dieser Workflow-Schritt ist nicht funktional'),
 
                     ("admin_wfstep_addpic2pdf_no_pdf_document_for_this_node",
-                     'Kein PDF-Document vom Typ "document" gefunden - dieser Workflow-Schritt ist f\xc3\xbcr diesen Knoten nicht funktional'),
-                    ("admin_wfstep_addpic2pdf_no_logo_selected", 'Es wurde kein Bild zum Einf\xc3\xbcgen ausgew\xc3\xa4hlt'),
+                     u'Kein PDF-Document vom Typ "document" gefunden - dieser Workflow-Schritt ist für diesen Knoten nicht funktional'),
+                    ("admin_wfstep_addpic2pdf_no_logo_selected", u'Es wurde kein Bild zum Einfügen ausgewählt'),
                     ("admin_wfstep_addpic2pdf_printer_range_error", 'Fehler bei der Definition des Seitenbereiches'),
-                    ("admin_wfstep_addpic2pdf_printer_range_selected_empty", 'Der gew\xc3\xa4hlte Seitenbereich ist leer'),
+                    ("admin_wfstep_addpic2pdf_printer_range_selected_empty", u'Der gewählte Seitenbereich ist leer'),
                     ("admin_wfstep_addpic2pdf_logo_dpix_dpiy",
-                     'Das gew\xc3\xa4hlte Bild hat unterschiedliche dpi-Werte in x- und y-Richtung: Darstellungsfehler'),
+                     u'Das gewählte Bild hat unterschiedliche dpi-Werte in x- und y-Richtung: Darstellungsfehler'),
 
                     ("admin_wfstep_addpic2pdf_upload01", 'Logo hier hochladen'),
                     ("admin_wfstep_addpic2pdf_label_url_mapping", 'URL-Mapping (Separator: |)'),
@@ -477,11 +478,11 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                     ("admin_wfstep_addpic2pdf_define_range", 'Bereich festlegen:<br/>(Beispiel: 1-10;12;17;30-)'),
 
                     ("admin_wfstep_addpic2pdf_button_accept_image_position", 'Bild in PDF hineindrucken'),
-                    ("admin_wfstep_addpic2pdf_button_back_to_original", 'Zur\xc3\xbccksetzen zum Original'),
+                    ("admin_wfstep_addpic2pdf_button_back_to_original", u'Zurücksetzen zum Original'),
                     ("admin_wfstep_addpic2pdf_button_continue", 'Weiter'),
 
                     ("admin_wfstep_addpic2pdf_cb_grid", 'Gitter'),
-                    ("admin_wfstep_addpic2pdf_cb_logo_above_grid", 'Bild \xc3\xbcber Gitter'),
+                    ("admin_wfstep_addpic2pdf_cb_logo_above_grid", u'Bild über Gitter'),
                     ("admin_wfstep_addpic2pdf_link_processed", 'in Bearbeitung'),
                     ("admin_wfstep_addpic2pdf_link_original", 'Original'),
 

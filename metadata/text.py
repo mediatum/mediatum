@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -223,13 +224,13 @@ class m_text(Metatype):
 
     labels = {"de":
               [
-                  ("text_popup_title", "Eingabemaske f\xc3\xbcr Sonderzeichen"),
+                  ("text_popup_title", u"Eingabemaske für Sonderzeichen"),
                   ("fieldtype_text", "Textfeld"),
                   ("fieldtype_text_desc", "Normales Texteingabefeld"),
-                  ("text_titlepopupbutton", "Editiermaske \xc3\xb6ffnen"),
+                  ("text_titlepopupbutton", u"Editiermaske öffnen"),
                   ("text_valuelabel", "Wert:"),
                   ("text_formatedvalue", "Formatierter Wert:"),
-                  ("text_done", "\xC3\x9Cbernehmen"),
+                  ("text_done", u"Übernehmen"),
                   ("text_cancel", "Abbrechen"),
                   ("text_spcchar", "Sonderzeichen:"),
                   ("text_bold_title", "Markierten Text 'Fett' setzen"),

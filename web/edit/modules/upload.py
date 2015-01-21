@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -630,7 +631,7 @@ doi_labels = {
     "de":
     [
         ("identifier_importer_longname", "Via DOI importieren"),
-        ("identifier_importer_explain", """Um Metadaten f\xc3\xbcr eine Publikation mit einem Digital Object Identifier zu importieren, bitte DOI eingeben und 'Objekt erzeugen' anklicken.
+        ("identifier_importer_explain", u"""Um Metadaten für eine Publikation mit einem Digital Object Identifier zu importieren, bitte DOI eingeben und 'Objekt erzeugen' anklicken.
       <p>Beispiele:</p> 
       doi:10.1371/journal.pbio.0020449
       <br/>DOI:10.1002/nme.4628 """),
@@ -639,9 +640,9 @@ doi_labels = {
         ("edit_import_nothing", 'Es wurde kein DOI angegeben.'),
         ("doi_unknown", 'Der angegebene DOI existiert nicht'),
         ("doi_invalid",
-         'Dies sieht nicht wie eine g\xc3\xbcltige DOI aus! (muss eine Zeichenkette enthalten, die mit 10. beginnt)'),
+         u'Dies sieht nicht wie eine gültige DOI aus! (muss eine Zeichenkette enthalten, die mit 10. beginnt)'),
         ("doi_type_not_mapped",
-         'F\xc3\xbcr den Typ der angegebenen DOI ist kein Mapping definiert.'),
+         u'Für den Typ der angegebenen DOI ist kein Mapping definiert.'),
         ("doi_error_connecting_external_server",
          'Verbindungsfehler zum externen Server'),
     ],

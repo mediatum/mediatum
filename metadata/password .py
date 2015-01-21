@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -81,12 +82,12 @@ class m_password(Metatype):
 
     labels = {"de":
               [
-                  ("password_popup_title", "Eingabemaske f\xc3\xbcr Passwort"),
+                  ("password_popup_title", u"Eingabemaske für Passwort"),
                   ("fieldtype_password", "Passwortfeld"),
                   ("fieldtype_password_desc", "PasswordTexteingabefeld"),
-                  ("password_titlepopupbutton", "Editiermaske \xc3\xb6ffnen"),
+                  ("password_titlepopupbutton", u"Editiermaske öffnen"),
                   ("password_valuelabel", "Wert:"),
-                  ("password_done", "\xC3\x9Cbernehmen"),
+                  ("password_done", u"Übernehmen"),
                   ("password_cancel", "Abbrechen"),
               ],
               "en":

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -138,7 +139,7 @@ class WorkflowStep_Start(WorkflowStep):
                     ("admin_wfstep_node_types_to_create", "Erstellbare Node-Typen (;-separiert)"),
                     ("admin_wfstep_allowcontinue", "Fortsetzen erlauben"),
                     ("workflow_start_create", "Erstellen"),
-                    ("workflow_start_chooselang", "Bitte Sprache w\xc3\xa4hlen / Please choose language"),
+                    ("workflow_start_chooselang", u"Bitte Sprache wählen / Please choose language"),
                     ("workflow_start_type", "Melden Ihrer"),
                     ("workflow_start_type_m", "Melden Ihrer / Registering your"),
                     ("workflow_start_create_m", "Erstellen / Create"),
@@ -146,8 +147,8 @@ class WorkflowStep_Start(WorkflowStep):
                     ("workflow_start_continue_header_m", "Publizieren fortsetzen / Continue publishing"),
                     ("workflow_start_identificator", "Identifikationsnummer"),
                     ("workflow_start_identificator_m", "Identifikationsnummer / Identification Number"),
-                    ("workflow_start_key", "Schl\xc3\xbcssel"),
-                    ("workflow_start_key_m", "Schl\xc3\xbcssel / Key"),
+                    ("workflow_start_key", u"Schlüssel"),
+                    ("workflow_start_key_m", u"Schlüssel / Key"),
                     ("workflow_start_continue", "Fortsetzen"),
                     ("workflow_start_continue_m", "Fortsetzen / Continue"),
                     ("workflow_start_err_wrongkey", "Fehler bei der Eingabe."),
@@ -160,7 +161,7 @@ class WorkflowStep_Start(WorkflowStep):
                     ("admin_wfstep_node_types_to_create", "Node types to create (;-separated schema list)"),
                     ("admin_wfstep_allowcontinue", "Allow continue"),
                     ("workflow_start_create", "Create / Erstellen"),
-                    ("workflow_start_chooselang", "Please choose language / Bitte Sprache w\xc3\xa4hlen"),
+                    ("workflow_start_chooselang", u"Please choose language / Bitte Sprache wählen"),
                     ("workflow_start_identificator", "Identification Number"),
                     ("workflow_start_key", "Key"),
                     ("workflow_start_continue", "Continue / Fortsetzen"),

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -219,7 +220,7 @@ class Video(default.Default):
                 "FLV": {"audiodatarate": "Audio Datenrate",
                         "videodatarate": "Video Datenrate",
                         "framerate": "Frame Rate",
-                        "height": "Videoh\xc3\xb6he",
+                        "height": u"Videohöhe",
                         "width": "Breite",
                         "audiocodecid": "Audio Codec",
                         "duration": "Dauer",

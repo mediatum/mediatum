@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -112,7 +113,7 @@ class WorkflowStep_Defer(WorkflowStep):
     def getLabels():
         return {"de":
                 [
-                    ("workflowstep-defer", "Freischaltverz\xc3\xb6gerung"),
+                    ("workflowstep-defer", u"Freischaltverzögerung"),
                     ("attributname", "Attributname"),
                     ("accesstype", "Zugriffsattribut"),
                 ],

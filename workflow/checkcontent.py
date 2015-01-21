@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -82,9 +83,9 @@ class WorkflowStep_CheckContent(WorkflowStep):
     def getLabels():
         return {"de":
                 [
-                    ("workflowstep-checkcontent", "Inhalt Pr\xc3\xbcfen"),
+                    ("workflowstep-checkcontent", u"Inhalt Prüfen"),
                     ("admin_wfstep_checkcontent_sender", "E-Mail Absender"),
-                    ("admin_wfstep_checkcontent_recipient", "Empf\xc3\xa4nger"),
+                    ("admin_wfstep_checkcontent_recipient", u"Empfänger"),
                     ("admin_wfstep_checkcontent_subject", "Betreff"),
                     ("admin_wfstep_checkcontent_text", "Text"),
                 ],

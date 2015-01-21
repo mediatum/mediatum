@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -234,7 +235,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
                     ("workflowstep-email_label_subject", "Betreff"),
                     ("workflowstep-email_label_text", "Nachricht"),
                     ("workflowstep-email_label_send", "Absenden"),
-                    ("workflowstep-email_label_reset", "Zur\xc3\xbccksetzen"),
+                    ("workflowstep-email_label_reset", u"Zurücksetzen"),
 
                 ],
                 "en":

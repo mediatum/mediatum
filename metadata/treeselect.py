@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -77,8 +78,8 @@ class m_treeselect(Metatype):
                   ("treeselect_popup_title", "Knotenauswahl"),
                   ("fieldtype_treeselect", "Knotenauswahlfeld"),
                   ("fieldtype_text_desc", "Feld zur Knotenauswahl"),
-                  ("treeselect_titlepopupbutton", "Knotenauswahl \xc3\xb6ffnen"),
-                  ("treeselect_done", "\xC3\x9Cbernehmen"),
+                  ("treeselect_titlepopupbutton", u"Knotenauswahl öffnen"),
+                  ("treeselect_done", u"Übernehmen"),
               ],
               "en":
               [

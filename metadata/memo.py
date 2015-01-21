@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -250,16 +251,16 @@ class m_memo(Metatype):
 
     labels = {"de":
               [
-                  ("editor_memo_label", "Zeichen \xc3\xbcbrig"),
-                  ("mask_edit_max_length", "Maximall\xc3\xa4nge"),
+                  ("editor_memo_label", u"Zeichen übrig"),
+                  ("mask_edit_max_length", u"Maximallänge"),
                   ("mask_edit_enable_multilang", "Multilang aktivieren"),
                   ("fieldtype_memo", "Memofeld"),
-                  ("fieldtype_memo_desc", "Texteingabefeld beliebiger L\xc3\xa4nge"),
-                  ("memo_titlepopupbutton", "Editiermaske \xc3\xb6ffnen"),
-                  ("memo_popup_title", "Eingabemaske f\xc3\xbcr Sonderzeichen"),
+                  ("fieldtype_memo_desc", u"Texteingabefeld beliebiger Länge"),
+                  ("memo_titlepopupbutton", u"Editiermaske öffnen"),
+                  ("memo_popup_title", u"Eingabemaske für Sonderzeichen"),
                   ("memo_valuelabel", "Wert:"),
                   ("memo_formatedvalue", "Formatierter Wert:"),
-                  ("memo_done", "\xC3\x9Cbernehmen"),
+                  ("memo_done", u"Übernehmen"),
                   ("memo_cancel", "Abbrechen"),
                   ("memo_spcchar", "Sonderzeichen:"),
                   ("memo_bold_title", "Markierten Text 'Fett' setzen"),

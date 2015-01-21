@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -45,7 +46,7 @@ class m_check(Metatype):
     labels = {"de":
               [
                   ("fieldtype_check", "Checkbox"),
-                  ("fieldtype_check_desc", "Checkbox Auswahl (f\xc3\xbcr Ja/Nein-Werte)")
+                  ("fieldtype_check_desc", u"Checkbox Auswahl (für Ja/Nein-Werte)")
               ],
               "en":
               [

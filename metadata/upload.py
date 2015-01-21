@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -194,14 +195,14 @@ class m_upload(Metatype):
                   ("upload_popup_title", "MDT-m_upload"),
                   ("fieldtype_upload", "MDT-m_upload Feld"),
                   ("fieldtype_text_desc", "Feld MDT-m_upload"),
-                  ("upload_titlepopupbutton", "MDT-m_upload \xc3\xb6ffnen"),
-                  ("upload_done", "\xC3\x9Cbernehmen"),
+                  ("upload_titlepopupbutton", u"MDT-m_upload öffnen"),
+                  ("upload_done", u"Übernehmen"),
                   ("upload_filelist_loc", "Link"),
-                  ("upload_filelist_size", "Gr\xc3\xb6sse"),
+                  ("upload_filelist_size", u"Grösse"),
                   ("upload_filelist_type", "Typ"),
                   ("upload_filelist_mimetype", "Mimetype"),
-                  ("upload_filelist_delete_title", "Datei l\xc3\xb6schen und zur\xc3\xbcck zum Upload"),
-                  ("upload_filelist_open_title", "Datei \xc3\xb6ffnen"),
+                  ("upload_filelist_delete_title", u"Datei löschen und zurück zum Upload"),
+                  ("upload_filelist_open_title", u"Datei öffnen"),
                   ("upload_notarget_warning", "WARNUNG: Upload ist erst mit Zielknoten aktiv."),
               ],
               "en":

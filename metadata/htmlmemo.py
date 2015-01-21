@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -233,12 +234,12 @@ class m_htmlmemo(Metatype):
 
     labels = {"de":
               [
-                  ("editor_memo_label", "Zeichen \xc3\xbcbrig"),
-                  ("mask_edit_max_length", "Maximall\xc3\xa4nge"),
+                  ("editor_memo_label", u"Zeichen übrig"),
+                  ("mask_edit_max_length", u"Maximallänge"),
                   ("mask_edit_enable_multilang", "Multilang aktivieren"),
                   ("fieldtype_htmlmemo", "HTML Memofeld"),
-                  ("htmlmemo_titlepopupbutton", "Editiermaske \xc3\xb6ffnen"),
-                  ("htmlmemo_popup_title", "Eingabemaske f\xc3\xbcr HTML formatierte Texte"),
+                  ("htmlmemo_titlepopupbutton", u"Editiermaske öffnen"),
+                  ("htmlmemo_popup_title", u"Eingabemaske für HTML formatierte Texte"),
                   ("htmlmemo_valuelabel", "Wert:"),
                   ("htmlmemo_show_multilang", "umschalten zu mehrsprachig"),
                   ("htmlmemo_hide_multilang", "umschalten zu einsprachig"),

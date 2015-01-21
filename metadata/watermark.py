@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -186,7 +187,7 @@ class m_watermark(Metatype):
     labels = {"de":
               [
                   ("fieldtype_watermark", "Wasserzeichen"),
-                  ("fieldtye_watermark_desc", "Wasserzeichen f\xc3\xbcr Bilder")
+                  ("fieldtye_watermark_desc", u"Wasserzeichen für Bilder")
               ],
               "en":
               [

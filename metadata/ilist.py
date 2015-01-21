@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -111,7 +112,7 @@ class m_ilist(Metatype):
                   ("popup_cancel", "Abbrechen"),
                   ("fieldtype_ilist", "Werteliste mit Index"),
                   ("fieldtype_ilist_desc", "Eingabefeld mit Index als Popup"),
-                  ("ilist_titlepopupbutton", "Editiermaske \xc3\xb6ffnen")
+                  ("ilist_titlepopupbutton", u"Editiermaske öffnen")
               ],
               "en":
               [

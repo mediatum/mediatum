@@ -12,6 +12,7 @@ pyjade
 coffeescript
 lxml
 munch
+python-logstash
 git+git://mediatumdev.ub.tum.de/mediatum-babel
 git+git://mediatumdev.ub.tum.de/mediatum-tal
 git+git://mediatumdev.ub.tum.de/mediatum-fsm

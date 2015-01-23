@@ -195,6 +195,7 @@ def frameset(req):
         req.writeTAL("web/edit/edit.html", {}, macro="error")
         req.writeTAL("web/edit/edit.html",
                      {"id": id, "tab": (tab and "&tab=" + tab) or ""}, macro="edit_notree_permission")
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return
 
     try:
@@ -566,6 +567,7 @@ def action(req):
 
     if not access.user.isEditor():
         req.write("""permission denied""")
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return
 
     if "tab" in req.params:

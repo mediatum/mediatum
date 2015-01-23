@@ -24,9 +24,10 @@ from core.acl import AccessData
 from core.translation import lang, translate
 from utils.utils import getAllCollections, u
 from core.styles import theme
+from web.frontend import Content
 
 
-class SearchResult:
+class SearchResult(Content):
 
     def __init__(self, resultlist, query, collections=[]):
         self.query = query

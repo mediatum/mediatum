@@ -107,6 +107,9 @@ def display(req):
     contentHTML = content.html(req)
     contentHTML = modify_tex(contentHTML, 'html')
     navframe.write(req, contentHTML)
+    # set status code here... 
+    req.setStatus(content.status())
+    # ... Don't return a code because Athana overwrites the content if an http error code is returned from a handler.
 
 
 def display_noframe(req):

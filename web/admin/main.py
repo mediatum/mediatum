@@ -58,7 +58,6 @@ def show_node(req):
             req.writeTAL("web/admin/frame.html", v, macro="frame")
         else:
             req.write(v["content"])
-    return httpstatus.HTTP_OK
 
 
 def export(req):

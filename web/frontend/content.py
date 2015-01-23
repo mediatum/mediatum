@@ -24,19 +24,12 @@ import os
 from utils.utils import getCollection, Link, getFormatedString
 from core.acl import AccessData
 from core.translation import lang, t
+from web.frontend import Content
 from web.frontend.searchresult import simple_search, extended_search
 from core.styles import getContentStyles, theme
 import logging
+from core.transition import httpstatus
 log = logging.getLogger("frontend")
-
-
-class Content:
-
-    def feedback(self, req):
-        pass
-
-    def html(self, req):
-        return ""
 
 
 class SingleFile:
@@ -395,9 +388,9 @@ def mkContentNode(req):
     try:
         node = tree.getNode(id)
     except tree.NoSuchNodeError:
-        return ContentError("No such node")
+        return ContentError("No such node", 404)
     if not access.hasReadAccess(node):
-        return ContentError("Permission denied")
+        return ContentError("Permission denied", 403)
 
     if node.type in ["directory", "collection"]:
         if "files" not in req.params:
@@ -419,14 +412,18 @@ def mkContentNode(req):
 
 class ContentError(Content):
 
-    def __init__(self, error):
+    def __init__(self, error, status):
         self.error = error
+        self._status = status
 
     def html(self, req):
         return tal.getTAL(theme.getTemplate("content_error.html"), {"error": self.error}, language=lang(req))
 
     def getContentStyles(self):
         return []
+    
+    def status(self):
+        return self._status
 
 
 class ContentArea(Content):
@@ -528,6 +525,9 @@ class ContentArea(Content):
                         "area", "")}, macro="path")
         return path + '\n<!-- CONTENT START -->\n' + self.content.html(req) + '\n<!-- CONTENT END -->\n'
 
+    def status(self):
+        return self.content.status()
+    
 
 class CollectionLogo(Content):
 

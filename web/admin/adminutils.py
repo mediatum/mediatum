@@ -27,6 +27,7 @@ import core.config as config
 from utils.utils import Link, splitpath, parseMenuString
 from core.translation import t, lang
 from core.tree import getRoot
+from core.transition import httpstatus
 
 
 def getAdminStdVars(req):
@@ -186,6 +187,7 @@ def show_content(req, op):
     user = users.getUserFromRequest(req)
 
     if not user.inGroup(config.get('user.admingroup')):
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/admin/frame.html", {}, macro="errormessage")
     else:
         if op == "" or op not in getRoot().get("admin.menu"):

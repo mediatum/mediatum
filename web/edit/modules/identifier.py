@@ -32,6 +32,7 @@ import utils.doi as doi
 import utils.pathutils as pathutils
 from core.translation import lang, t
 from utils.utils import dec_entry_log
+from core.transition import httpstatus
 
 
 @dec_entry_log
@@ -47,6 +48,7 @@ def getContent(req, ids):
 
     # first prove if the user has the required rights to call this module
     if 'sortfiles' in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL('web/edit/edit.html', {}, macro='access_error')
 
     if node.isContainer():

@@ -35,7 +35,7 @@ from core.users import (loadUsersFromDB, useroption, getUser, update_user, exist
                         getExternalUsers, getExternalUser, moveUserToIntern, getExternalAuthentificators, getDynamicUserAuthenticators)
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from core.translation import lang, t
-
+from core.transition import httpstatus
 
 log = logging.getLogger("usertracing")
 users_cache = []
@@ -473,6 +473,7 @@ def sendmailUser_mask(req, id, err=0):
             mail.sendmail(req.params.get("from"), req.params.get("email"), req.params.get("subject"), text)
         except mail.SocketError:
             print "Socket error while sending mail"
+            req.setStatus(httpstatus.HTTP_INTERNAL_SERVER_ERROR)
             return req.getTAL("web/admin/modules/user.html", v, macro="sendmailerror")
         return req.getTAL("web/admin/modules/user.html", v, macro="sendmaildone")
 

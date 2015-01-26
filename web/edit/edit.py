@@ -986,6 +986,7 @@ def content(req):
                 logger.debug('empty content')
                 return
         else:
+            req.setStatus(httpstatus.HTTP_INTERNAL_SERVER_ERROR)
             content["body"] += req.getTAL("web/edit/edit.html", {"module": current}, macro="module_error")
 
     if req.params.get("style", "") != "popup":  # normal page with header

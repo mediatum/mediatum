@@ -28,6 +28,7 @@ from utils.date import format_date, parse_date, now
 from utils.utils import formatException, funcname, get_user_id, log_func_entry, dec_entry_log
 from core.translation import lang, t, getDefaultLanguage
 from pprint import pprint as pp, pformat as pf
+from core.transition import httpstatus
 
 db = database.getConnection()
 
@@ -85,6 +86,7 @@ def getContent(req, ids):
 
     if "metadata" in users.getHideMenusForUser(user):
         print "error 1"
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     access = AccessData(req)
@@ -104,6 +106,7 @@ def getContent(req, ids):
         node = tree.getNode(id)
         if not access.hasWriteAccess(node):
             print "error 2"
+            req.setStatus(httpstatus.HTTP_FORBIDDEN)
             return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
         schema = node.getSchema()
@@ -346,6 +349,7 @@ def getContent(req, ids):
         for node in nodes:
             if not access.hasWriteAccess(node) or node.id == userdir.id:
                 print "error 3"
+                req.setStatus(httpstatus.HTTP_FORBIDDEN)
                 return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
         logging.getLogger('usertracing').info(

@@ -25,7 +25,7 @@ import core.users as users
 from core.stats import buildStat, StatisticFile
 from utils.utils import splitpath, dec_entry_log
 from utils.date import format_date, now
-
+from core.transition import httpstatus
 
 class StatType:
 
@@ -138,6 +138,7 @@ def getContent(req, ids):
     access = acl.AccessData(req)
 
     if "statsfiles" in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     if "update_stat" in req.params.keys():  # reset stored statistics data

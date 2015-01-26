@@ -25,7 +25,7 @@ import logging
 from utils.utils import formatTechAttrs, dec_entry_log
 from utils.date import format_date, parse_date
 from core.tree import remove_from_nodecaches
-
+from core.transition import httpstatus
 
 @dec_entry_log
 def getContent(req, ids):
@@ -33,6 +33,7 @@ def getContent(req, ids):
     node = tree.getNode(ids[0])
     access = acl.AccessData(req)
     if not access.hasWriteAccess(node) or "admin" in users.getHideMenusForUser(user):
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     if req.params.get('action') == 'getsearchdata':

@@ -77,6 +77,7 @@ def getContent(req, ids):
     node = tree.getNode(ids[0])
     access = acl.AccessData(req)
     if not access.hasWriteAccess(node) or "changeschema" in users.getHideMenusForUser(user):
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     error = req.params.get("error")

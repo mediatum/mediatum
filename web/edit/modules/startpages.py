@@ -32,6 +32,7 @@ from core.translation import lang
 from core.acl import AccessData
 from core.tree import FileNode
 from web.edit.edit_common import send_nodefile_tal, upload_for_html
+from core.transition import httpstatus
 
 logger = logging.getLogger('editor')
 
@@ -42,6 +43,7 @@ def getContent(req, ids):
     user = users.getUserFromRequest(req)
     access = AccessData(req)
     if not access.hasWriteAccess(node) or "editor" in users.getHideMenusForUser(user):
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     if req.params.get('file') == "config":  # configuration file for ckeditor

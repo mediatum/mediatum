@@ -26,7 +26,7 @@ import core.tree as tree
 
 from version import mediatum_version
 from utils.utils import format_filesize
-
+from core.transition import httpstatus
 
 def getInformation():
     return {"version": "1.0", "required": 1}
@@ -138,6 +138,7 @@ def view(req):
         try:
             v['a_managers'] = core.archivemanager.getManager()
         except:
+            req.setStatus(httpstatus.HTTP_INTERNAL_SERVER_ERROR)
             return req.getTAL("web/admin/modules/settings.html", v, macro="view_error")
 
         v['archive_interval'] = config.get('archive.interval')

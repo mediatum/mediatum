@@ -22,7 +22,7 @@ import schema.schema as schema
 import schema.searchmask as searchmask
 import core.users as users
 from core.acl import AccessData
-
+from core.transition import httpstatus
 
 def getContent(req, ids):
     user = users.getUserFromRequest(req)
@@ -30,6 +30,7 @@ def getContent(req, ids):
     access = AccessData(req)
     
     if not access.hasWriteAccess(node) or "searchmask" in users.getHideMenusForUser(user):
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     p2 = {}

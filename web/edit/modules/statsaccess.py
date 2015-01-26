@@ -28,6 +28,7 @@ from core.stats import buildStat, StatisticFile
 from core.translation import t, lang
 from utils.utils import splitpath
 from utils.date import format_date, now
+from core.transition import httpstatus
 
 try:
     from reportlab.platypus import Paragraph, XPreformatted, BaseDocTemplate, SimpleDocTemplate, FrameBreak, Table, TableStyle, Image as PdfImage, Frame, PageBreak, PageTemplate
@@ -57,6 +58,7 @@ def getContent(req, ids):
     access = acl.AccessData(req)
 
     if "statsaccess" in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     if req.params.get("style", "") == "popup":

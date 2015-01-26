@@ -21,6 +21,7 @@
 import core.tree as tree
 import core.users as users
 from core.acl import AccessData
+from core.transition import httpstatus
 
 def getContent(req, ids):
     if req.params.get("style","")=="popup":
@@ -29,6 +30,7 @@ def getContent(req, ids):
     
     user = users.getUserFromRequest(req)
     if "license" in users.getHideMenusForUser(user):
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
         
     node = tree.getNode(ids[0])
@@ -39,6 +41,7 @@ def objlist(req):
     access = AccessData(req)
     
     if node.id==tree.getRoot().id or not access.hasWriteAccess(node):
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     return req.getTAL("web/edit/modules/license.html", {"node":node}, macro="edit_license")

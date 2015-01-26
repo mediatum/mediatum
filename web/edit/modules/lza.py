@@ -25,12 +25,14 @@ import core.users as users
 from schema.schema import getMetaType
 from core.translation import lang, t
 from utils.utils import dec_entry_log
+from core.transition import httpstatus
 
 
 @dec_entry_log
 def getContent(req, ids):
     user = users.getUserFromRequest(req)
     if "lza" in users.getHideMenusForUser(user):
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
     
     v = {}
@@ -42,6 +44,7 @@ def getContent(req, ids):
 
         access = acl.AccessData(req)
         if not access.hasWriteAccess(node):
+            req.setStatus(httpstatus.HTTP_FORBIDDEN)
             return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
         nodes.append(node)

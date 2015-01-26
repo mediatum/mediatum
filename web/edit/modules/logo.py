@@ -31,6 +31,7 @@ from utils.fileutils import importFile
 
 from core.translation import lang
 from core.translation import t as translation_t
+from core.transition import httpstatus
 
 logger = logging.getLogger('usertracing')
 logger_e = logging.getLogger('editor')
@@ -45,6 +46,7 @@ def getContent(req, ids):
     access = acl.AccessData(req)
 
     if "logo" in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     # delete logo file
@@ -68,6 +70,7 @@ def getContent(req, ids):
 
             if mimetype not in ("image/jpeg", "image/gif", "image/png"):
                 # wrong file type (jpeg, jpg, gif, png)
+                req.setStatus(httpstatus.HTTP_INTERNAL_SERVER_ERROR)
                 return req.getTAL("web/edit/modules/logo.html", {}, macro="filetype_error")
             else:
                 file = importFile(file.filename, file.tempname)

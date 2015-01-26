@@ -26,6 +26,7 @@ import core.translation as translation
 
 from core.styles import theme
 from core.users import getUserFromRequest
+from core.transition import httpstatus
 
 try:
     from reportlab.platypus import Paragraph, BaseDocTemplate, SimpleDocTemplate, FrameBreak, Frame, PageTemplate
@@ -176,6 +177,7 @@ def getHelp(req):
         else:
             content = getHelpFileContent(req.path, language)
     else:  # page not found 404
+        req.setStatus(httpstatus.HTTP_NOT_FOUND)
         content = req.getTAL(theme.getTemplate("help.html"), {}, macro='notfound')
 
     if "export" in req.params:

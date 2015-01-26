@@ -21,7 +21,7 @@ import core.tree as tree
 import core.users as users
 from core.acl import AccessData
 from core.translation import lang, t
-
+from core.transition import httpstatus
 
 def getInformation():
     return {"version": "1.1", "system": 0}
@@ -34,10 +34,12 @@ def getContent(req, ids):
     nodes = []
     for id in ids:
         if not access.hasWriteAccess(tree.getNode(id)):
+            req.setStatus(httpstatus.HTTP_FORBIDDEN)
             return req.getTAL("web/edit/edit.html", {}, macro="access_error")
         nodes += [tree.getNode(id)]
 
     if "classes" in users.getHideMenusForUser(user):
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     v = {}

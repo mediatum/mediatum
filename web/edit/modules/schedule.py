@@ -34,6 +34,7 @@ import utils.scheduleutils as su
 from core.translation import lang, t, getDefaultLanguage
 from utils.pathutils import isDescendantOf
 from utils.utils import dec_entry_log
+from core.transition import httpstatus
 
 if sys.version[0:3] < '2.6':
     import simplejson as json
@@ -67,6 +68,7 @@ def getContent(req, ids):
     access = acl.AccessData(req=req)
 
     if "schedule" in users.getHideMenusForUser(user):
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     errors = []

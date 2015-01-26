@@ -28,6 +28,7 @@ import core.acl as acl
 from utils.utils import getMimeType, get_user_id, log_func_entry, dec_entry_log
 from utils.fileutils import importFile, getImportDir, importFileIntoDir
 from contenttypes.image import makeThumbNail, makePresentationFormat
+from core.transition import httpstatus
 
 log = logging.getLogger('editor')
 
@@ -46,6 +47,7 @@ def getContent(req, ids):
     log.debug(msg)
 
     if not access.hasWriteAccess(node) or "files" in users.getHideMenusForUser(user):
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     if 'data' in req.params:
@@ -141,6 +143,7 @@ def getContent(req, ids):
                     if (req.params.get('version_comment', '').strip()==''
                         or req.params.get('version_comment', '').strip()=='&nbsp;'):
                         create_version_error = True
+                        req.setStatus(httpstatus.HTTP_INTERNAL_SERVER_ERROR)
                         ret += req.getTAL("web/edit/modules/files.html", {}, macro="version_error")
                     else:
                         current = node
@@ -151,6 +154,7 @@ def getContent(req, ids):
                                 pass
                             else:
                                 node.set(attr, value)
+                        req.setStatus(httpstatus.HTTP_MOVED_TEMPORARILY)
                         ret += req.getTAL("web/edit/modules/metadata.html", {'url':'?id='+node.id+'&tab=files', 'pid':None}, macro="redirect")
 
                 if req.params.get("change_file")=="yes" and not create_version_error: # remove old files

@@ -25,7 +25,7 @@ import core.tree as tree
 import core.config as config
 from utils.utils import CustomItem
 from web.edit.edit_common import writetree
-
+from core.transition import httpstatus
 
 def getInformation():
     return {"version": "1.0", "system": 1}
@@ -39,6 +39,7 @@ def getContent(req, ids):
     access = acl.AccessData(req)
 
     if not node or node.getContentType() != "collections" or not access.hasWriteAccess(node):
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     if "action" in req.params:

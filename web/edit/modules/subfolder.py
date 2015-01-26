@@ -24,6 +24,7 @@ from core.acl import AccessData
 from utils.utils import funcname, get_user_id, log_func_entry, dec_entry_log
 from schema.schema import getMetaType
 from core.translation import lang
+from core.transition import httpstatus
 
 logger = logging.getLogger('editor')
 
@@ -35,6 +36,7 @@ def getContent(req, ids):
     node = tree.getNode(ids[0])
     
     if "sort" in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     msg_t = (user.getName(), node.id, node.name, node.type, req.params)

@@ -25,11 +25,12 @@ import core.config as config
 from schema.schema import loadTypesFromDB
 from core.datatypes import loadAllDatatypes
 from core.translation import translate, lang, t
-
+from core.transition import httpstatus
 
 def getContent(req, ids):
     user = users.getUserFromRequest(req)
     if "ftp" in users.getHideMenusForUser(user):
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
     
     ids = ids[0] # use only first selected node
@@ -116,6 +117,7 @@ def getContent(req, ids):
     
     access = acl.AccessData(req)
     if not access.hasWriteAccess(node):
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
     
     v = {}

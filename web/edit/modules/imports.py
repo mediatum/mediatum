@@ -31,6 +31,7 @@ from utils.utils import dec_entry_log
 from web.edit.edit_common import showdir
 from core.translation import lang, t
 from core.acl import AccessData
+from core.transition import httpstatus
 
 logg = logging.getLogger("editor")
 
@@ -47,6 +48,7 @@ def getContent(req, ids):
     node = tree.getNode(ids[0])
 
     if not access.hasWriteAccess(node):
+        req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     if req.params.get("upload")=="uploadfile":

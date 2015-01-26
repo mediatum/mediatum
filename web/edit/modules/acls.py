@@ -24,7 +24,7 @@ import core.users as users
 from web.common.acl_web import makeList
 from web.common.accessuser_web import makeUserList
 from web.edit.edit_common import getHomeDir
-
+from core.transition import httpstatus
 from utils.utils import removeEmptyStrings, dec_entry_log
 
 log = logging.getLogger('edit')
@@ -41,6 +41,7 @@ def getContent(req, ids):
     access = acl.AccessData(req)
     for id in ids:
         if not access.hasWriteAccess(tree.getNode(id)) or "acls" in users.getHideMenusForUser(user):
+            req.setStatus(httpstatus.HTTP_FORBIDDEN)
             return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     idstr = ",".join(ids)
@@ -62,6 +63,7 @@ def getContent(req, ids):
                     else:
                         error = 1
                     if error:
+                        req.setStatus(httpstatus.HTTP_FORBIDDEN)
                         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
         # save userlevel
@@ -99,6 +101,7 @@ def getContent(req, ids):
                     else:
                         error = 1
                     if error:
+                        req.setStatus(httpstatus.HTTP_FORBIDDEN)
                         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     runsubmit = "\nfunction runsubmit(){\n"

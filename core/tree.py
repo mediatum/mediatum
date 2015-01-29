@@ -32,6 +32,7 @@ import thread
 import traceback
 from utils.compat import iteritems, string_types
 import codecs
+from utils.strings import ensure_unicode
 
 nodeclasses = {}
 nodefunctions = {}
@@ -131,7 +132,7 @@ def getAllContainerChildren(node):
     # return 0 # suppress number (fastest)
 
 
-def getNodesByAttribute(attributename, attributevalue=""):
+def getNodesByAttribute(attributename, attributevalue=u""):
     return db.getNodeIdByAttribute(attributename, attributevalue)
 
 
@@ -149,7 +150,7 @@ class NoSuchNodeError:
         self.id = id
 
     def __str__(self):
-        return "NoSuchNodeError(" + ustr(self.id) + ")"
+        return "NoSuchNodeError(%s)" % self.id
 
 
 class InvalidOperationError:
@@ -292,7 +293,7 @@ def changed_metadata(node):
 
 class NodeList:
 
-    def __init__(self, ids, description=""):
+    def __init__(self, ids, description=u""):
         if isinstance(ids, NodeList):
             ids = ids.ids
         elif len(ids) and isinstance(ids[0], Node):
@@ -300,7 +301,7 @@ class NodeList:
             ids = [None] * len(nodes)
             for i, n in enumerate(nodes):
                 ids[i] = n.id
-        self.ids = [ustr(i) for i in ids]
+        self.ids = ids
         self.len = len(ids)
         self.description = description
 
@@ -314,7 +315,7 @@ class NodeList:
                 nodes += [getNode(id)]
             return nodes
         elif i >= self.len:
-            raise IndexError(ustr(i) + " >= " + ustr(self.len))
+            raise IndexError("%s >= %s" % (i, self.len))
         return getNode(self.ids[i])
 
     def getIDs(self):
@@ -344,7 +345,7 @@ class NodeList:
                 # no fields left, all empty...
                 return self
         t1 = time.time()
-        nids = ",".join("'" + i + "'" for i in self.ids)
+        nids = ",".join('\'%s\'' % i for i in self.ids)
         sorted_nids = db.sort_nodes_by_fields(nids, fields)
         missing_nids = set(self.ids) - set(sorted_nids)
         if missing_nids:
@@ -363,13 +364,13 @@ class NodeList:
         return self
 
     def sort_by_orderpos(self):
-        nodes = [getNode(ustr(i)) for i in self.ids]
+        nodes = [getNode(i) for i in self.ids]
         nodes.sort(key=lambda n: n.orderpos)
         return nodes
 
     def sort_by_name(self, direction="up", locale=None):
         reverse = direction == "down"
-        nodes = [getNode(ustr(i)) for i in self.ids]
+        nodes = [getNode(i) for i in self.ids]
         # set locale and restore current value after sorting if given
         if locale:
             last_locale = getlocale(LC_COLLATE)
@@ -388,13 +389,10 @@ class NodeList:
         return access.filter(self)
 
 
-def _set_attribute_complex(node, name, value):
-    if isinstance(value, string_types):
-        db.setAttribute(node.id, name, codecs.encode(value, "utf8"), check=(not bulk))
-    else:
-        db.set_attribute_complex(node.id, name, value, check=(not bulk))
+# methods to patch in for Node which store complex attributes
 
-        # methods to patch in for Node which store complex attributes
+def _set_attribute_complex(node, name, value):
+    db.set_attribute_complex(node.id, name, value, check=(not bulk))
 
 
 def _node_set_complex(self, name, value):
@@ -461,7 +459,7 @@ class Node(object):
     # non string arguments will be saved in msgpack format if store_complex_attributes is True
     _store_complex_attributes = False
 
-    def __new__(cls, name="<noname>", type=None, dbid=None):
+    def __new__(cls, name=u"<noname>", type=None, dbid=None):
         if dbid:
             dbnode = db.getNode(dbid)
             if not dbnode:
@@ -485,7 +483,7 @@ class Node(object):
             obj.id = id
             attrs = cls._load_attributes(id)
             obj.attributes = attrs
-            obj._name = name.decode("utf8") if isinstance(name, str) else name
+            obj._name = ensure_unicode(name)
             obj.type = type
             obj.prev_nid = attrs.get('system.prev_id', '0')
             obj.next_nid = attrs.get('system.next_id', '0')
@@ -496,7 +494,7 @@ class Node(object):
             obj.localread = localread
         return obj
 
-    def __init__(self, name="<unbenannt>", type=None, dbid=None):
+    def __init__(self, name=u"<noname>", type=None, dbid=None):
         self.occurences = None
         self.lock = thread.allocate_lock()  # for attrlist
         if dbid is None:
@@ -506,11 +504,9 @@ class Node(object):
             self.prev_nid = '0'
             self.next_nid = '0'
             if name is None:
-                self._name = ""
-            elif isinstance(name, str):
-                self._name = name.decode("utf8") 
+                self._name = u""
             else:
-                self._name = name
+                self._name = ensure_unicode(name)
             self.type = type
             self.read_access = None
             self.write_access = None
@@ -580,9 +576,7 @@ class Node(object):
     """ set the node name """
 
     def setName(self, name):
-        if isinstance(name, str):
-            name = name.decode("utf8")
-        self._name = name
+        self._name = ensure_unicode(name)
         if self.id:
             db.setNodeName(self.id, name)
 
@@ -628,7 +622,7 @@ class Node(object):
             return self.type
 
     def invalidateLocalRead(self):
-        self.localread = ""
+        self.localread = u""
         if self.id:
             db.setNodeLocalRead(self.id, self.localread)
         for c in self.getChildren():
@@ -654,7 +648,7 @@ class Node(object):
         return self.localread
 
     def resetLocalRead(self):
-        self.localread = ""
+        self.localread = u""
         db.setNodeLocalRead(self.id, self.localread)
 
     """ set the node type (as string) """
@@ -858,8 +852,8 @@ class Node(object):
             raise NoSuchNodeError("child of None")
         id = db.getNamedNode(self.id, name)
         if not id:
-            raise NoSuchNodeError("child:" + ustr(name))
-        return getNode(ustr(id))
+            raise NoSuchNodeError("child:" + name)
+        return getNode(id)
 
     def get_child_with_type(self, name, nodetype):
         """Returns a child with specific name and nodetype."""
@@ -869,8 +863,8 @@ class Node(object):
             raise NoSuchNodeError("child of None")
         nid = db.getNamedTypedNode(self.id, name, nodetype)
         if not nid:
-            raise NoSuchNodeError("child:" + ustr(name))
-        return getNode(ustr(nid))
+            raise NoSuchNodeError("child:" + name)
+        return getNode(nid)
 
     def getContainerChildren(self):
         id = db.getContainerChildren(self.id)
@@ -915,7 +909,7 @@ class Node(object):
             if idlist is None:
                 idlist = childids_cache[long(id)] = db.getChildren(id)
             for id in idlist:
-                self._getAllChildIDs(ustr(id), map, 1)
+                self._getAllChildIDs(id, map, 1)
             return map
         finally:
             if not locked:
@@ -962,7 +956,7 @@ class Node(object):
                 return self.type
             elif name == 'node.orderpos':
                 return self.orderpos
-        return self.attributes.get(name, "")
+        return self.attributes.get(name, u"")
 
     """ set a metadate """
 
@@ -973,10 +967,7 @@ class Node(object):
             if not self.id:
                 raise "Internal Error"
         else:
-            if isinstance(value, unicode):
-                self.attributes[name] = value
-            else:
-                self.attributes[name] = ustr(value)
+            self.attributes[name] = ensure_unicode(value)
 
         if self.id:
             db.setAttribute(self.id, name, value, check=(not bulk))
@@ -1063,7 +1054,7 @@ class Node(object):
 
 
     # fill hashmap with idlists of listvalues
-    def getAllAttributeValues(self, attribute, access, schema=""):
+    def getAllAttributeValues(self, attribute, access, schema=u""):
         values = {}
         try:
             if schema != "":
@@ -1079,7 +1070,7 @@ class Node(object):
         #fields = db.getMetaFields(attribute)
         for f in fields:
             for s in f[0].split(";"):
-                s = u(s.strip())
+                s = s.strip()
                 values[s] = values.get(s, 0) + 1
         return values
 
@@ -1191,10 +1182,10 @@ class Node(object):
         n.set("updateuser", user.getName())
         n.set("edit.lastmask", self.get('edit.lastmask'))
 
-        if self.get('updatetime') < ustr(now()):
-            n.set("updatetime", ustr(format_date()))
+        if self.get('updatetime') < unicode(now()):
+            n.set("updatetime", format_date())
         else:
-            n.set("updatetime", ustr(self.get('updatetime')))
+            n.set("updatetime", self.get('updatetime'))
 
         for f in self.getFiles():
             n.addFile(f)

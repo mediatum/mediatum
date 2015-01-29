@@ -26,7 +26,7 @@ import string
 import hashlib
 import re
 import random
-import StringIO
+import io
 import logging
 from warnings import warn
 from urlparse import parse_qsl, urlsplit, urlunsplit
@@ -609,11 +609,11 @@ def splitname(fullname):
 
 
 #
-# cutting text content of html snippet after cutoff
-#
-
 
 class HTMLTextCutter(HTMLParser):
+    
+    """cutting text content of html snippet after cutoff
+    """
 
     def __init__(self, cutoff=500, output=sys.stdout):
         self.cutoff = cutoff
@@ -668,30 +668,30 @@ class HTMLTextCutter(HTMLParser):
 
     def handle_charref(self, name):
         if self.in_script + self.in_style > 0:
-            self.output.write("&#%s;" % ustr(name))
+            self.output.write("&#%s;" % name)
         elif self.count >= self.cutoff:
             self.is_cutted = True
         else:
             self.count += 1
-            self.output.write("&#%s;" % ustr(name))
+            self.output.write("&#%s;" % name)
 
     def handle_entityref(self, name):
         if self.in_script + self.in_style > 0:
-            self.output.write("&%s;" % ustr(name))
+            self.output.write("&%s;" % name)
         elif self.count >= self.cutoff:
             self.is_cutted = True
         else:
             self.count += 1
-            self.output.write("&%s;" % ustr(name))
+            self.output.write("&%s;" % name)
 
     def handle_comment(self, data):
         self.output.write("<!--%s-->" % data)
 
     def handle_decl(self, decl):
-        self.output.write("<!%s>" % ustr(decl))
+        self.output.write("<!%s>" % decl)
 
     def handle_pi(self, data):
-        self.output.write("<?%s>" % ustr(data))
+        self.output.write("<?%s>" % data)
 
     def close(self):
         HTMLParser.close(self)
@@ -704,14 +704,14 @@ class HTMLTextCutter(HTMLParser):
 
 def formatLongText(value, field, cutoff=500):
     try:
-        out = StringIO.StringIO()
+        out = io.StringIO()
         p = HTMLTextCutter(cutoff, out)
         p.feed(value)
         p.close()
         if p.is_cutted:
             val = p.output.getvalue()
-            val = val.rstrip('\xc3').rstrip()
-            return '<div id="' + field.getName() + '_full" style="display:none">' + value + '&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="Text reduzieren" onclick="expandLongMetatext(\'' + field.getName() + '\');return false">&laquo;</a></div><div id="' + \
+            val = val.rstrip()
+            return u'<div id="' + field.getName() + '_full" style="display:none">' + value + '&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="Text reduzieren" onclick="expandLongMetatext(\'' + field.getName() + '\');return false">&laquo;</a></div><div id="' + \
                 field.getName() + '_more">' + val + '...&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" title="gesamten Text zeigen" onclick="expandLongMetatext(\'' + \
                 field.getName() + '\');return false">&raquo;</a></div>'
         else:

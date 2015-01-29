@@ -20,14 +20,10 @@
 import core.acl as acl
 import core.tree as tree
 import core.users as users
-import logging
 from core.acl import AccessData
 from utils.utils import getCollection
 from core.translation import t
 from core.transition import httpstatus
-
-log = logging.getLogger('edit')
-utrace = logging.getLogger('usertracing')
 
 
 def getContent(req, ids):

@@ -30,7 +30,9 @@ from utils.utils import isDirectory
 from core.users import getHomeDir
 import logging
 
-log = logging.getLogger("editor")
+
+logg = logging.getLogger(__name__)
+
 
 def getInformation():
     return {"version":"1.1", "system":1}
@@ -78,23 +80,22 @@ def getContent(req, ids):
                                 changes.append(dest.id)
                             if src.id not in changes:
                                 changes.append(src.id)
-                            log.info("%s published %s (%r, %r) from src %s (%r, %r) to dest %s (%r, %r)" % (
-                                      user.getName(),
+                            logg.info("%s published %s (%s, %s) from src %s (%s, %s) to dest %s (%s, %s)", user.name,
                                       obj.id, obj.name, obj.type,
                                       src.id, src.name, src.type,
-                                      dest.id, dest.name, dest.type,))
+                                      dest.id, dest.name, dest.type)
                         else:
                             actionerror.append(obj.id)
-                            log.error("Error in publishing of node %r: Destination node %r is child of node." % (obj_id, dest.id))
+                            logg.error("Error in publishing of node %s: Destination node %s is child of node.", obj_id, dest.id)
 
                 if not access.hasReadAccess(src):
-                    log.error("Error in publishing of node %r: source position %r has no read access." % (obj.id, src.id))
+                    logg.error("Error in publishing of node %r: source position %r has no read access.", obj.id, src.id)
                 if not access.hasWriteAccess(dest):
-                    log.error("Error in publishing of node %r: destination %r has no write access." % (obj.id, dest.id))
+                    logg.error("Error in publishing of node %r: destination %r has no write access.", obj.id, dest.id)
                 if not access.hasWriteAccess(obj):
-                    log.error("Error in publishing of node %r: object has no write access." % obj.id)
+                    logg.error("Error in publishing of node %r: object has no write access.", obj.id)
                 if not isDirectory(dest):
-                    log.error("Error in publishing of node %r: destination %r is not a directory." % (obj.id, dest.id))
+                    logg.error("Error in publishing of node %r: destination %r is not a directory.", obj.id, dest.id)
 
         v = {}
         v["id"] = publishdir.id

@@ -27,6 +27,9 @@ from utils.utils import splitpath, dec_entry_log
 from utils.date import format_date, now
 from core.transition import httpstatus
 
+logg = logging.getLogger(__name__)
+
+
 class StatType:
 
     def __init__(self, name):
@@ -125,8 +128,6 @@ class StatTypes:
             sum += datatype.getMax()
         return sum
 
-logger = logging.getLogger("usertracing")
-
 
 @dec_entry_log
 def getContent(req, ids):
@@ -142,10 +143,7 @@ def getContent(req, ids):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     if "update_stat" in req.params.keys():  # reset stored statistics data
-        msg = "user %r requests update of of system.statscontent for node %r (%r, %r)" % (
-            user.getName(), node.id, node.name, node.type)
-        logger.info(msg)
-        logging.getLogger('editor').info(msg)
+        logg.info("user %s requests update of of system.statscontent for node %s (%s, %s)", user.name, node.id, node.name, node.type)
         node.removeAttribute("system.statscontent")
         node.removeAttribute("system.statsdate")
 

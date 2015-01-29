@@ -31,8 +31,7 @@ from pprint import pprint as pp, pformat as pf
 from core.transition import httpstatus
 
 db = database.getConnection()
-
-logger = logging.getLogger('editor')
+logg = logging.getLogger(__name__)
 
 
 def get_datelists(nodes):
@@ -118,8 +117,7 @@ def getContent(req, ids):
     idstr = ",".join(ids)
     action = req.params.get('action', '').strip()
 
-    logger.info("%s in editor metadata (action=%r): %r" %
-                (user.getName(), action, [[n.id, n.name, n.type]for n in nodes]))
+    logg.info("%s in editor metadata (action=%r): %r", user.name, action, [[n.id, n.name, n.type]for n in nodes])
 
     for m in node.getType().getMasks(type="edit"):
         if access.hasReadAccess(m):
@@ -352,11 +350,8 @@ def getContent(req, ids):
                 req.setStatus(httpstatus.HTTP_FORBIDDEN)
                 return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
-        logging.getLogger('usertracing').info(
-            access.user.name + " change metadata " + idstr)
-        logging.getLogger('editor').info(
-            access.user.name + " change metadata " + idstr)
-        logging.getLogger('editor').debug(pf(req.params))
+        logg.info("%s change metadata %s", access.user.name, idstr)
+        logg.debug(pf(req.params))
 
         for node in nodes:
             node.set("updateuser", user.getName())
@@ -433,9 +428,8 @@ def getContent(req, ids):
                 errorlist += mask.validateNodelist(nodes)
         else:
             for field in mask.metaFields():
-                msg = "in %s.%s: (hasattr(mask,'i_am_not_a_mask')) field: %r, field.id: %r, field.name: %r, mask: %r, maskname: %r" % (
+                logg.debug("in %s.%s: (hasattr(mask,'i_am_not_a_mask')) field: %s, field.id: %s, field.name: %s, mask: %s, maskname: %s",
                     __name__, funcname(), field, field.id, field.getName(), mask, maskname)
-                logger.debug(msg)
                 field_name = field.getName()
                 if field_name == 'nodename' and maskname == 'settings':
                     if '__nodename' in req.params:

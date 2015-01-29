@@ -32,8 +32,9 @@ from core.translation import lang
 import core.users as users
 from core.users import getUserFromRequest
 
-log = logging.getLogger('editor')
-utrace = logging.getLogger('usertracing')
+
+logg = logging.getLogger(__name__)
+
 
 def protect(s):
     return '"'+s.replace('"','').replace('\'','')+'"'
@@ -85,7 +86,7 @@ def search_results(req,id):
 
     query += ' and schema="'+req.params.get("objtype","*")+'"'
                                 
-    utrace.info(access.user.name + " search for "+query)
+    logg.info("%s search for %s", access.user.name, query)
     nodes = node.search(query)
     req.session["nodelist"] = EditorNodeList(nodes)
 
@@ -133,7 +134,7 @@ def search_form(req, id, message=None):
                 if objtype == mtype.getSchema():
                     otype = mtype
             else:
-                log.warning("Warning: Unknown metadatatype: "+mtype.getName())
+                logg.warn("Warning: Unknown metadatatype: %s", mtype.getName())
 
     formlist = []
     if otype:

@@ -33,8 +33,8 @@ from core.translation import lang
 from core.translation import t as translation_t
 from core.transition import httpstatus
 
-logger = logging.getLogger('usertracing')
-logger_e = logging.getLogger('editor')
+
+logg = logging.getLogger(__name__)
 
 
 # to do: limit number of logos
@@ -88,14 +88,10 @@ def getContent(req, ids):
         if req.params.get('logo') == "/img/empty.gif":
             # remove logo from current node
             node.set("system.logo", "")
-            msg = "%s cleared logo for node %r (%r, %r)" % (user.getName(), node.id, node.name, node.type)
-            logger.info(msg)
-            logger_e.info(msg)
+            logg.info("%s cleared logo for node %s (%s, %s)", user.name, node.id, node.name, node.type)
         else:
             node.set("system.logo", req.params.get("logo").split("/")[-1])
-            msg = "%s set logo for node %r (%r, %r) to %r" % (user.getName(), node.id, node.name, node.type, node.get("system.logo"))
-            logger.info(msg)
-            logger_e.info(msg)
+            logg.info("%s set logo for node %s (%s, %s) to %s", user.name, node.id, node.name, node.type, node.get("system.logo"))
 
     logofiles = []
     for f in node.getFiles():

@@ -27,7 +27,9 @@ from web.edit.edit_common import getHomeDir
 from core.transition import httpstatus
 from utils.utils import removeEmptyStrings, dec_entry_log
 
-log = logging.getLogger('edit')
+
+logg = logging.getLogger(__name__)
+
 acl_types = ["read", "write", "data"]
 
 
@@ -50,7 +52,7 @@ def getContent(req, ids):
         # save acl level
 
         userdir = users.getHomeDir(user)
-        logging.getLogger('usertracing').info(access.user.name + " change access " + idstr)
+        logg.info("%s change access %s", access.user.name, idstr)
 
         if req.params.get("type") == "acl":
             for type in acl_types:
@@ -125,7 +127,7 @@ def getContent(req, ids):
             r = node.getAccess(type)
             if r is None:
                 r = ""
-            log.debug(node.name + " " + type + " " + r)
+            logg.debug("%s %s %s", node.name, type, r)
             if not s or r == s:
                 s = r
             else:

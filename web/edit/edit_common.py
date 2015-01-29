@@ -30,7 +30,7 @@ from core.users import getHomeDir, getUploadDir
 
 from utils.utils import get_user_id, log_func_entry, dec_entry_log
 
-logger = logging.getLogger('editor')
+logg = logging.getLogger(__name__)
 
 
 class NodeWrapper:
@@ -123,20 +123,15 @@ def showdir(req, node, publishwarn="auto", markunpublished=0, nodes=[], sortfiel
     if not nodes:
         nodes = node.getChildren()
     if sortfield_from_req and sortfield_from_req is not None:
-        msg = "%r, %r, sorted by sortfield_from_req=%r" % (
-            __name__, funcname(), sortfield_from_req)
-        logger.debug(msg)
+        logg.debug("%s, %s, sorted by sortfield_from_req=%r", __name__, funcname(), sortfield_from_req)
     elif sortfield_from_req is None:
         collection_sortfield = node.get("sortfield")
         if collection_sortfield:
             nodes = tree.NodeList([n.id for n in nodes]).sort_by_fields(
                 [collection_sortfield])
-            msg = "%r, %r, sorted by collection_sortfield=%r" % (
-                __name__, funcname(), collection_sortfield)
-            logger.debug(msg)
+            logg.debug("%r, %r, sorted by collection_sortfield=%r", __name__, funcname(), collection_sortfield)
     else:
-        msg = "%r, %r, *not* sorted" % (__name__, funcname())
-        logger.debug(msg)
+        logg.debug("%s, %s, *not* sorted", __name__, funcname())
 
     nodes = tree.NodeList([n.id for n in nodes if not n.type == 'shoppingbag'])
     return shownodelist(req, nodes, publishwarn=publishwarn, markunpublished=markunpublished, dir=node)
@@ -356,6 +351,7 @@ def upload_for_html(req):
     for key in req.params.keys():
         if key.startswith("delete_"):
             filename = key[7:-2]
+            # XXX: dead code?
             for file in n.getFiles():
                 if file.getName() == filename:
                     n.removeFile(file)
@@ -368,8 +364,7 @@ def upload_for_html(req):
         del req.params["file"]
         if hasattr(file, "filesize") and file.filesize > 0:
             try:
-                logger.info(
-                    user.name + " upload " + file.filename + " (" + file.tempname + ")")
+                logg.info("%s upload (%s)", user.name, file.filename, file.tempname, user.name)
                 nodefile = importFile(file.filename, file.tempname)
                 node.addFile(nodefile)
                 req.request["Location"] = req.makeLink(
@@ -378,7 +373,7 @@ def upload_for_html(req):
                 req.request["Location"] = req.makeLink("content", {
                                                        "id": id, "tab": "tab_editor", "error": "EncryptionError_" + datatype[:datatype.find("/")]})
             except:
-                logger.exception("error during upload")
+                logg.exception("error during upload")
                 req.request["Location"] = req.makeLink("content", {
                                                        "id": id, "tab": "tab_editor", "error": "PostprocessingError_" + datatype[:datatype.find("/")]})
             return send_nodefile_tal(req)
@@ -389,15 +384,14 @@ def upload_for_html(req):
         del req.params["upload"]
         if hasattr(file, "filesize") and file.filesize > 0:
             try:
-                logger.info(
-                    user.name + " upload via ckeditor " + file.filename + " (" + file.tempname + ")")
+                logg.info("%s upload via ckeditor %s (%s)", user.name , file.filename, file.tempname)
                 nodefile = importFile(file.filename, file.tempname)
                 node.addFile(nodefile)
             except EncryptionException:
                 req.request["Location"] = req.makeLink("content", {
                                                        "id": id, "tab": "tab_editor", "error": "EncryptionError_" + datatype[:datatype.find("/")]})
             except:
-                logger.exception("error during upload")
+                logg.exception("error during upload")
                 req.request["Location"] = req.makeLink("content", {
                                                        "id": id, "tab": "tab_editor", "error": "PostprocessingError_" + datatype[:datatype.find("/")]})
 

@@ -32,7 +32,7 @@ from core.translation import lang, t
 from core.acl import AccessData
 from core.transition import httpstatus
 
-logg = logging.getLogger("editor")
+logg = logging.getLogger(__name__)
 
 
 def getInformation():
@@ -97,9 +97,8 @@ def import_new(req):
         req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"doi_and_bibtex_given"})
         req.params["error"] = "doi_and_bibtex_given"
 
-        msg_t = (user.getName(), importdir.id, importdir.name, importdir.type, req.params["error"])
-        msg = "%s using import module for node %r (%r, %r): Error: %r" % msg_t
-        logg.info(msg)
+        logg.info("%s using import module for node %s (%s, %s): Error: %s",
+                  user.name, importdir.id, importdir.name, importdir.type, req.params["error"])
 
     elif "file" in req.params.keys():
         file = req.params["file"]
@@ -118,9 +117,8 @@ def import_new(req):
                 logg.exception("exception in import_new")
                 req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"PostprocessingError"})
                 req.params["error"] = "file_processingerror"
-            msg_t = (user.getName(), importdir.id, importdir.name, importdir.type, req.params)
-            msg = "%s used import module for bibtex import for node %r (%r, %r): %r" % msg_t
-            logg.info(msg)
+            logg.info("%s used import module for bibtex import for node %r (%r, %r): %r",
+                user.name, importdir.id, importdir.name, importdir.type, req.params)
             return getContent(req, [importdir.id])
 
     elif req.params["doi"]:
@@ -143,14 +141,12 @@ def import_new(req):
             req.params["error"] = "doi_type_not_mapped"
         else:
             req.request["Location"] = req.makeLink("content", {"id":importdir.id})
-        msg_t = (user.getName(), importdir.id, importdir.name, importdir.type, req.params)
-        msg = "%s used import module for doi import for node %r (%r, %r): %r" % msg_t
-        logg.info(msg)
+        logg.info("%s used import module for doi import for node %s (%s, %s): %s", 
+            user.name, importdir.id, importdir.name, importdir.type, req.params)
     else:
         # error while import, nothing given
         req.params["error"] = "edit_import_nothing"
-        msg_t = (user.getName(), importdir.id, importdir.name, importdir.type, req.params)
-        msg = "%s used import module but did not specify import source for node %r (%r, %r): %r" % msg_t
-        logg.info(msg)
+        logg.info("%s used import module but did not specify import source for node %r (%r, %r): %r", 
+                  user.name, importdir.id, importdir.name, importdir.type, req.params)
 
     return getContent(req, [importdir.id])

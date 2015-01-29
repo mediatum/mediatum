@@ -42,6 +42,9 @@ else:
     import json
 
 
+logg = logging.getLogger(__name__)
+
+
 ALLOWED_CHARACTERS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' + \
     '0123456789' + '+-_.'
 
@@ -177,14 +180,11 @@ def getContent(req, ids):
                 [node_id], schedule_id, access=access)
 
             if not delete_errors:
-                msg = "user '%s' removed node %s from schedule '%s' (%s)" % (
-                    username, node_id, schedule.name, schedule_id)
-                logging.getLogger("backend").info(msg)
+                logg.info("user '%s' removed node %s from schedule '%s' (%s)", username, node_id, schedule.name, schedule_id)
             else:
                 error_msg = ", ".join([t(language, e) for e in delete_errors])
-                msg = "user '%s' tried to remove node %s from schedule '%s' (%s): %s" % (
-                    username, node_id, schedule.name, schedule_id, error_msg)
-                logging.getLogger("backend").error(msg)
+                logg.error("user '%s' tried to remove node %s from schedule '%s' (%s): %s" , 
+                           username, node_id, schedule.name, schedule_id, error_msg)
 
             errors += delete_errors
 
@@ -213,14 +213,10 @@ def getContent(req, ids):
             delete_errors = su.deleteSchedule(schedule_id, access=access)
 
             if not delete_errors:
-                msg = "user '%s' removed schedule %s (%s)" % (
-                    username, schedule.name, schedule_id)
-                logging.getLogger("backend").info(msg)
+                logg.info("user '%s' removed schedule %s (%s)", username, schedule.name, schedule_id)
             else:
                 error_msg = ", ".join([t(language, e) for e in delete_errors])
-                msg = "user '%s' tried to remove schedule '%s' (%s): %s" % (
-                    username, schedule.name, schedule_id, error_msg)
-                logging.getLogger("backend").error(msg)
+                logg.error("user '%s' tried to remove schedule '%s' (%s): %s", username, schedule.name, schedule_id, error_msg)
 
             errors += delete_errors
 
@@ -329,10 +325,8 @@ def getContent(req, ids):
             field_errors = []
         else:
             # should not happen
-            msg = "-> unexpected error: 'non-existant schedule function' requested in module %s: :s" % (
-                str(__file__), str(inspect.currentframe().f_lineno))
-            print msg
-            logging.getLogger("backend").error(msg)
+            logg.error("-> unexpected error: 'non-existant schedule function' requested in module %s: :s", 
+                       __file__, inspect.currentframe().f_lineno)
 
     d = {
         "id": req.params.get("id")
@@ -494,7 +488,7 @@ def getContent(req, ids):
 
             msg = "user '%s' created new schedule '%s' (%s), trigger='%s', function='%s', nodelist='%s'" % (
                 username, new_schedule.name, str(new_schedule.id), datetime_str, d['currentFunction'], new_schedule.get('nodelist'))
-            logging.getLogger("backend").info(msg)
+            logg.info(msg)
 
             d['result'] = t(
                 language, 'edit_schedule_result_new_schedule_created')
@@ -502,7 +496,7 @@ def getContent(req, ids):
         else:
             msg = "user '%s' created temporary schedule '%s' (%s), trigger='%s', function='%s', nodelist='%s'" % (
                 username, new_schedule.name, str(new_schedule.id), datetime_str, d['currentFunction'], new_schedule.get('nodelist'))
-            logging.getLogger("backend").info(msg)
+            logg.info(msg)
 
             d['result'] = t(
                 language, 'edit_schedule_result_temporary_schedule_created')
@@ -512,7 +506,7 @@ def getContent(req, ids):
         new_schedule = schedule
         msg = "user '%s' is editing schedule '%s' (%s), trigger='%s', function='%s', nodelist='%s'" % (
             username, new_schedule.name, str(new_schedule.id), datetime_str, d['currentFunction'], new_schedule.get('nodelist'))
-        logging.getLogger("backend").info(msg)
+        logg.info(msg)
         new_schedule.set("system.edited", datetime.now().isoformat())
 
         d['result'] = t(

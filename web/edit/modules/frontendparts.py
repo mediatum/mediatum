@@ -60,7 +60,7 @@ def getContent(req, ids):
                 try:
                     nodename = node.getLabel()
                 except:
-                    logg.exception("exception in getContent")
+                    logg.exception("exception in getContent, ignored")
 
                 if type == 1:
                     link = req.makeSelfLink({"tree_unfold": "", "tree_fold": node.id}) + "#node{}".format(node.id)

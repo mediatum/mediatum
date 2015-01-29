@@ -30,10 +30,11 @@ from utils.fileutils import importFile, getImportDir, importFileIntoDir
 from contenttypes.image import makeThumbNail, makePresentationFormat
 from core.transition import httpstatus
 
-log = logging.getLogger('editor')
-
 from core.translation import lang, t
 import core.db.mysqlconnector as mysqlconnector
+
+
+logg = logging.getLogger(__name__)
 
 
 def getContent(req, ids):
@@ -43,8 +44,8 @@ def getContent(req, ids):
     update_error = False
     access = acl.AccessData(req)
 
-    msg = "%s|web.edit.modules.files.getContend|req.fullpath=%r|req.path=%r|req.params=%r|ids=%r" % (get_user_id(req), req.fullpath, req.path, req.params, ids)
-    log.debug(msg)
+    logg.debug("%s|web.edit.modules.files.getContend|req.fullpath=%s|req.path=%s|req.params=%s|ids=%s", 
+               get_user_id(req), req.fullpath, req.path, req.params, ids)
 
     if not access.hasWriteAccess(node) or "files" in users.getHideMenusForUser(user):
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
@@ -70,7 +71,9 @@ def getContent(req, ids):
                     users.getUploadDir(user).addChild(remnode)
                 node.removeChild(remnode)
             except: # node not found
+                logg.exception("exception in getContent, node not found? ignore")
                 pass
+            
             req.writeTAL("web/edit/modules/files.html", {'children': node.getChildren(), 'node': node}, macro="edit_files_children_list")
 
         if req.params.get('data') == 'reorder':
@@ -109,7 +112,7 @@ def getContent(req, ids):
                                         try:
                                             os.remove(root + "/" + name)
                                         except:
-                                            pass
+                                            logg.exception("exception while removing file, ignore")
                                     os.removedirs(file.retrieveFile()+"/")
                             if len([f for f in node.getFiles() if f.getName()==filename[1] and f.type==filename[0]]) > 1:
                                 # remove single file from database if there are duplicates
@@ -129,7 +132,7 @@ def getContent(req, ids):
                             try:
                                 os.remove(file.retrieveFile() + "/" + key.split("|")[2][:-2])
                             except:
-                                pass
+                                logg.exception("exception while removing file, ignore")
                             break
                     break
 
@@ -169,7 +172,7 @@ def getContent(req, ids):
                 if req.params.get("change_file") in ["yes", "no"] and not create_version_error:
                     file = importFile(uploadfile.filename, uploadfile.tempname) # add new file
                     node.addFile(file)
-                    logging.getLogger('usertracing').info(user.name+" changed file of node "+node.id+" to "+uploadfile.filename+" ("+uploadfile.tempname+")")
+                    logg.info("%s changed file of node %s to %s (%s)", user.name, node.id, uploadfile.filename, uploadfile.tempname)
 
                 attpath = ""
                 for f in node.getFiles():
@@ -225,13 +228,13 @@ def getContent(req, ids):
 
                 node.addFile(tree.FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
                 node.addFile(tree.FileNode(name=thumbname + "2", type="presentation", mimetype="image/jpeg"))
-                logging.getLogger('usertracing').info(user.name + " changed thumbnail of node " + node.id)
+                logg.info("%s changed thumbnail of node %s", user.name, node.id)
 
         elif op == "postprocess":
             if hasattr(node, "event_files_changed"):
                 try:
                     node.event_files_changed()
-                    logging.getLogger('usertracing').info(user.name + " postprocesses node " + node.id)
+                    logg.info("%s postprocesses node %s", user.name, node.id)
                 except:
                     update_error = True    
 

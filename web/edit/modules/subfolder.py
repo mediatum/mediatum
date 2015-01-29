@@ -26,7 +26,9 @@ from schema.schema import getMetaType
 from core.translation import lang
 from core.transition import httpstatus
 
-logger = logging.getLogger('editor')
+
+logg = logging.getLogger(__name__)
+
 
 @dec_entry_log
 def getContent(req, ids):
@@ -39,9 +41,7 @@ def getContent(req, ids):
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
-    msg_t = (user.getName(), node.id, node.name, node.type, req.params)
-    msg = "%s sorting subfolders of node %r (%r, %r): %r" % msg_t
-    logger.info(msg)
+    logg.info("%s sorting subfolders of node %s (%s, %s): %s", user.name, node.id, node.name, node.type, req.params)
 
     if "order" in req.params:  # do reorder
         ids = req.params.get('order').split(',')

@@ -29,7 +29,7 @@ from schema.schema import loadTypesFromDB
 from core.translation import translate, lang, t
 from utils.utils import dec_entry_log
 
-logger = logging.getLogger('editor')
+logg = logging.getLogger(__name__)
 
 
 def elemInList(list, name):
@@ -83,9 +83,9 @@ def getContent(req, ids):
     error = req.params.get("error")
     currentContentType = node.getContentType()
 
-    try:
-        currentSchema = node.type.split('/')[1]  # string
-    except:
+    if "/" in node.type:
+        currentSchema = node.type.split('/')[1]
+    else:
         currentSchema = ''
 
     currentCategoryName = node.getCategoryName()
@@ -162,10 +162,7 @@ def getContent(req, ids):
 
         if newType != oldType:
             node.setTypeName(newType)
-            msg = "%s changed node schema for node %s '%s' from '%s' to '%s'" % (
-                user.name, node.id, node.name, oldType, newType)
-            logger.info(msg)
-            logging.getLogger('usertracing').info(msg)
+            logg.info("%s changed node schema for node %s '%s' from '%s' to '%s'", user.name, node.id, node.name, oldType, newType)
 
             node.setDirty()
             # cache clean / reload because object type changed

@@ -19,7 +19,6 @@
 """
 
 import os
-import logging
 import core.users as users
 import core.acl as acl
 import core.tree as tree
@@ -33,6 +32,8 @@ import utils.pathutils as pathutils
 from core.translation import lang, t
 from utils.utils import dec_entry_log
 from core.transition import httpstatus
+
+logg = logging.getLogger(__name__)
 
 
 @dec_entry_log
@@ -103,7 +104,7 @@ def getContent(req, ids):
                                   mailtext)
 
                 except mail.SocketError:
-                    logging.getLogger('backend').error('failed to send Autorenvertrag mail to user %s' % node.get('creator'))
+                    logg.exception('failed to send Autorenvertrag mail to user %s', node.get('creator'))
                     v['msg'] = t(lang(req), 'edit_identifier_mail_fail')
 
         if node.get('system.identifierstate') != '2':
@@ -123,8 +124,7 @@ def getContent(req, ids):
                                                            autorenvertrag_name)
 
                         if not os.path.isfile(autorenvertrag_path):
-                            logging.getLogger('backend').error(
-                                "Unable to attach Autorenvergrag. Attachment file not found: '%s'" % autorenvertrag_path)
+                            logg.error("Unable to attach Autorenvertrag. Attachment file not found: '%s'", autorenvertrag_path)
                             raise IOError('Autorenvertrag was not located on disk at %s. Please send this error message to %s' %
                                           (autorenvertrag_path, config.get('email.admin')))
                         else:
@@ -157,7 +157,7 @@ def getContent(req, ids):
                                 node.setAccess('write', ','.join([node.getAccess('write'), access_nobody]))
 
                     except mail.SocketError:
-                        logging.getLogger('backend').error('failed to send identifier request mail')
+                        logg.exception('failed to send identifier request mail')
                         v['msg'] = t(lang(req), 'edit_identifier_mail_fail')
                 else:
                     v['msg'] = t(lang(req), 'edit_identifier_state_0_usr')
@@ -188,7 +188,7 @@ def createUrn(node, namespace, urn_type):
     @param urn_type e.q. diss, epub, etc
     """
     if node.get('urn') and (node.get('urn').strip() != ''):  # keep the existing urn, if there is one
-        logging.getLogger('everything').info('urn already exists for node %s' % node.id)
+        logg.info('urn already exists for node %s', node.id)
     else:
         try:
             d = date.parse_date(node.get('date-accepted'))
@@ -203,7 +203,7 @@ def createHash(node):
     @param node for which the hash-id should be created
     """
     if node.get('hash') and (node.get('hash').strip() != ''):  # if a hash-id already exists for this node, do nothing
-        logging.getLogger('everything').info('hash already exists for node %s' % node.id)
+        logg.info('hash already exists for node %s', node.id)
     else:
         node.set('hash', hashid.getChecksum(node.id))
 
@@ -213,7 +213,7 @@ def createDOI(node):
     @param node for which the doi should be created
     """
     if node.get('doi') and (node.get('doi').strip() != ''):
-        logging.getLogger('everything').info('doi already exists for node %s' % node.id)
+        logg.info('doi already exists for node %s', node.id)
     else:
         node.set('doi', doi.generate_doi_live(node))
         meta_file = doi.create_meta_file(node)
@@ -225,7 +225,7 @@ def createDOI(node):
             node.removeAttribute('doi')
             os.remove(meta_file)
             os.remove(doi_file)
-            logging.getLogger('backend').error('doi was not successfully registered, META: %s %s | DOI: %s %s' %
-                                               (meta_response, meta_content, doi_response, doi_content))
-            raise Exception('doi was not successfully registered, META: %s %s | DOI: %s %s' %
-                            (meta_response, meta_content, doi_response, doi_content))
+            msg = 'doi was not successfully registered, META: %s %s | DOI: %s %s' % (meta_response, 
+                                                                                     meta_content, doi_response, doi_content)
+            logg.error(msg)
+            raise Exception(msg)

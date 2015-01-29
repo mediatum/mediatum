@@ -50,7 +50,7 @@ from utils.utils import funcname, get_user_id, log_func_entry, dec_entry_log
 
 from pprint import pprint as pp, pformat as pf
 
-logger = logging.getLogger('editor')
+logg = logging.getLogger(__name__)
 
 
 containertypes = []
@@ -362,23 +362,23 @@ def getEditModules(force=0):
             path = os.walk(os.path.join(config.basedir, modpath[1]))
             for root, dirs, files in path:
                 for name in [f for f in files if f.endswith(".py") and f != "__init__.py"]:
+                    basename = name[:-3]
                     try:
                         path, module = splitpath(modpath[1])
                         if modpath[0] == '':
-                            m = __import__("web.edit.modules." + name[:-3])
-                            m = eval("m.edit.modules." + name[:-3])
+                            m = __import__("web.edit.modules." + basename)
+                            m = eval("m.edit.modules." + basename)
                         else:
                             sys.path += [path]
                             m = __import__(
-                                module.replace("/", ".") + "." + name[:-3])
+                                module.replace("/", ".") + "." + basename)
                             m = eval("m." + name[:-3])
                         editModules[name[:-3]] = m
                     except ImportError as e:
                         print e
-                        logger.error("import error in module " + name[:-3])
+                        logg.exception("import error in module %s", basename)
                     except SyntaxError:
-                        logger.error("syntax error in module " + name[:-3])
-                        print sys.exc_info()
+                        logg.exception("syntax error in module %s", basename)
 
     return editModules
 
@@ -457,8 +457,8 @@ def edit_tree(req):
                     nodes = filter(lambda n: re.match(homenodefilter, n.getLabel(language).split('(', 1)[-1]), nodes)
                     match_result = '#=%d' % len(nodes)
                 except Exception as e:
-                    logger.warning('pattern matching for home nodes: %r' % e)
-                    match_result = '<span style="color:red">Error: %r</span>' % str(e)
+                    logg.exception("exception in pattern matching for home nodes, exception ignored")
+                    match_result = '<span style="color:red">Error: %r</span>' % ustr(e)
                     match_error = True
                 if home_dir not in nodes:
                     if not match_error:
@@ -583,8 +583,7 @@ def action(req):
                 changednodes[nid] = getTreeLabel(
                     tree.getNode(nid), lang=language)
             except:
-                msg = "could not make fancytree label for node %r" % nid
-                logger.error(msg)
+                logg.exception("exception ignored: could not make fancytree label for node %s", nid)
         res_dict = {'changednodes': changednodes}
         req.write(json.dumps(res_dict, indent=4))
         return
@@ -648,10 +647,8 @@ def action(req):
         }
 
         req.write(json.dumps(fancytree_nodedata))
-        msg = "%s adding new container %r (%r) to %r (%r, %r)" % (
-            access.user.name, newnode.id, newnode.type, node.id, node.name, node.type)
-        logging.getLogger('usertracing').info(msg)
-        logger.info(msg)
+        logg.info("%s adding new container %s (%s) to %s (%s, %s)", 
+                  access.user.name, newnode.id, newnode.type, node.id, node.name, node.type)
         return
 
     try:
@@ -674,24 +671,19 @@ def action(req):
             # attn: this will not touch files from children of deleted
             # containers
             if len(n.getParents()) == 1:
-                logger.info("%s going to remove files from disk for node %r (%r, %r)" % (
-                    user.getName(), n.id, n.name, n.type))
+                logg.info("%s going to remove files from disk for node %s (%s, %s)", user.name, n.id, n.name, n.type)
                 for f in n.getFiles():
                     # dangerous ??? check this
                     f_path = f.retrieveFile()
                     if os.path.exists(f_path):
-                        logger.info(
-                            "%s going to remove file %r from disk" % (user.getName(), f_path))
+                        logg.info("%s going to remove file %r from disk", user.name, f_path)
                         os.remove(f_path)
             trashdir.removeChild(n)
             dest = trashdir
         clearFromCache(trashdir)
         changednodes[trashdir.id] = 1
         _parent_descr = [(p.name, p.id, p.type) for p in trashdir_parents]
-        msg = "%s cleared trash folder with id %s, child of %r" % (
-            user.getName(), trashdir.id, _parent_descr)
-        logger.info(msg)
-        logging.getLogger('usertracing').info(msg)
+        logg.info("%s cleared trash folder with id %s, child of %s", user.name, trashdir.id, _parent_descr)
         # return
     else:
         for id in idlist:
@@ -709,15 +701,12 @@ def action(req):
                         trashdir.addChild(obj)
                         changednodes[trashdir.id] = 1
                         clearFromCache(mysrc)
-                        logger.info("%s moved to trash bin %s (%r, %r) from %s (%r, %r)" % (
-                            user.getName(), obj.id, obj.name, obj.type, mysrc.id, mysrc.name, mysrc.type))
-                        logging.getLogger('usertracing').info("%s removed %s (%r, %r) from %s (%r, %r)" % (
-                            user.getName(), obj.id, obj.name, obj.type, mysrc.id, mysrc.name, mysrc.type))
+                        logg.info("%s moved to trash bin %s (%s, %s) from %s (%s, %s)", 
+                                  user.name, obj.id, obj.name, obj.type, mysrc.id, mysrc.name, mysrc.type)
                         dest = mysrc
 
                 else:
-                    logger.info(
-                        "%s has no write access for node %s" % (user.getName(), mysrc.id))
+                    logg.info("%s has no write access for node %s", user.name, mysrc.id)
                     req.writeTALstr(
                         '<tal:block i18n:translate="edit_nopermission"/>', {})
                 dest = mysrc
@@ -737,19 +726,17 @@ def action(req):
                         changednodes[dest.id] = 1  # getLabel(dest)
                         clearFromCache(dest)
 
-                        _what = "%s %s %r (%r, %r) " % (
-                            access.user.name, action, obj.id, obj.name, obj.type)
-                        _from = "from %r (%r, %r) " % (
-                            mysrc.id, mysrc.name, mysrc.type)
-                        _to = "to %r (%r, %r)" % (
-                            dest.id, dest.name, dest.type)
-                        msg = _what + _from + _to
-                        logging.getLogger('usertracing').info(msg)
-                        logger.info(msg)
+                        if logg.isEnabledFor(logging.INFO):
+                            _what = "%s %s %r (%s, %s) " % (
+                                access.user.name, action, obj.id, obj.name, obj.type)
+                            _from = "from %s (%s, %s) " % (
+                                mysrc.id, mysrc.name, mysrc.type)
+                            _to = "to %s (%s, %s)" % (
+                                dest.id, dest.name, dest.type)
+                            logg.info(_what + _from + _to)
 
                     else:
-                        logger.error("%s could not %s %s from %s to %s" % (
-                            user.getName(), action, obj.id, mysrc.id, dest.id))
+                        logg.error("%s could not %s %s from %s to %s", user.name, action, obj.id, mysrc.id, dest.id)
                 else:
                     return
                 mysrc = None
@@ -764,8 +751,7 @@ def action(req):
                 changednodes[nid] = getTreeLabel(
                     tree.getNode(nid), lang=language)
             except:
-                msg = "could not make fancytree label for node %r" % nid
-                logger.error(msg)
+                logg.exception("exception ignored: could not make fancytree label for node %s", nid)
         res_dict = {'changednodes': changednodes}
         req.write(json.dumps(res_dict, indent=4))
     else:
@@ -773,7 +759,7 @@ def action(req):
             req.write(dest.id)
         except:
             req.write('no-node-id-specified (web.edit.edit.action)')
-            logger.warning('no-node-id-specified (web.edit.edit.action)')
+            logg.exception('exception ignored, no-node-id-specified (web.edit.edit.action)')
     return
 
 
@@ -811,11 +797,10 @@ def content(req):
             node = None
         if node:
             cmd = "cd (%s %r, %r)" % (nid, node.name, node.type)
-            logger.info("%s: %s" % (user.getName(), cmd))
-            #logging.getLogger("usertracing").info("%s: in editor %s" % (user.getName(), cmd))
+            logg.info("%s: %s", user.name, cmd)
         else:
             cmd = "ERROR-cd to non-existing id=%r" % nid
-            logger.error("%s: %s") % (user.getName(), cmd)
+            logg.error("%s: %s", user.name, cmd)
 
     if 'action' in req.params and req.params['action'] == 'upload':
         pass
@@ -864,13 +849,12 @@ def content(req):
         v["notdirectory"] = 0
 
     current = req.params.get("tab", tabs)
-    logger.debug("... %s inside %s.%s: ->  !!! current = %r !!!" %
-                 (get_user_id(req), __name__, funcname(), current))
-    msg = "%s selected editor module is %r" % (user.getName(), current)
+    logg.debug("... %s inside %s.%s: ->  !!! current = %s !!!", get_user_id(req), __name__, funcname(), current)
+    msg = "%s selected editor module is %s" % (user.name, current)
     jsfunc = req.params.get("func", "")
     if jsfunc:
         msg = msg + (', js-function: %r' % jsfunc)
-    logger.info(msg)
+    logg.info(msg)
 
     # some tabs operate on only one file
     # if current in ["files", "view", "upload"]:
@@ -890,8 +874,9 @@ def content(req):
                     else:
                         items.append(("", node.show_node_image()))
         v["items"] = items
-        logger.debug("... %s inside %s.%s: -> display current images: items: %r" %
-                     (get_user_id(req), __name__, funcname(), [_t[0] for _t in items]))
+        if logg.isEnabledFor(logging.DEBUG):
+            logg.debug("... %s inside %s.%s: -> display current images: items: %s", 
+                       get_user_id(req), __name__, funcname(), [_t[0] for _t in items])
         try:
             n = tree.getNode(req.params.get('src', req.params.get('id')))
             if current == 'metadata' and 'save' in req.params:
@@ -912,7 +897,7 @@ def content(req):
                     n = None
             v["dircontent"] = ' <b>&raquo;</b> '.join(s[1:])
         except:
-            logger.exception('ERROR displaying current images')
+            logg.exception('ERROR displaying current images, exception ignored')
 
     else:  # or current directory
         n = tree.getNode(ids[0])
@@ -956,14 +941,16 @@ def content(req):
                 filepath = f.retrieveFile().replace(basedir, '')
                 if file_to_edit == filepath:
                     found = True
+                    # XXX. dead code?
                     result = edit_editor(req, node, f)
                     if result == "error":
-                        logger.error("error editing %r" % f.retrieveFile())
+                        logg.error("error editing %s", f.retrieveFile())
                     break
 
         if not found:
             edit_editor(req, node, None)
 
+    # XXX. dead code?
     elif current == "tab_metadata":
         edit_metadata(req, ids)  # undefined
     elif current == "tab_upload":
@@ -983,7 +970,7 @@ def content(req):
             if c:
                 content["body"] += c  # use standard method of module
             else:
-                logger.debug('empty content')
+                logg.debug('empty content')
                 return
         else:
             req.setStatus(httpstatus.HTTP_INTERNAL_SERVER_ERROR)

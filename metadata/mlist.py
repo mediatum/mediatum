@@ -124,10 +124,12 @@ class m_mlist(Metatype):
         return value.replace("; ", ";")
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
+        value = ""
         try:
-            value = field.getValues()
-        except:
-            value = ""
+            if field:
+                value = field.getValues()
+        except AttributeError:
+            value = field
         return tal.getTAL("metadata/mlist.html", {"value": value}, macro="maskeditor", language=language)
 
     def getName(self):

@@ -17,7 +17,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from schema.schema import getMetadataType, getAllMetaFields, VIEW_DATA_ONLY
+from schema.schema import getMetadataType, getAllMetaFields, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, Maskitem
 from core.tree import getNode
 
 from core.translation import lang
@@ -41,9 +41,7 @@ class m_hgroup(Metatype):
             ret += f.getFormHTML(item, nodes, req, True)
         return ret + '</div>'
 
-    """ """
-
-    def getViewHTML(self, field, nodes, flags, language=None, template_from_caller=None, mask=None):
+    def getViewHTML(self, field, nodes, flags, language=None, template_from_caller=None, mask=None, use_label=True):
 
         if flags & VIEW_DATA_ONLY:
             ret = []
@@ -52,16 +50,36 @@ class m_hgroup(Metatype):
                 ret.append(f.getViewHTML(item, nodes, flags, language=language))
             return ret
         else:
-            ret = ''
-            # standard view
-            for item in field.getChildren().sort_by_orderpos():
-                ret += '<div class="mask_row">'
+            if use_label:
+                snippets = ['<div class="mask_row hgroup hgroup-%s"><div class="mask_label">%s: </div><span class="mask_value">' % (field.id, field.getLabel())]
+            else:
+                snippets = ['<div class="mask_row hgroup hgroup-%s"><span class="mask_value">' % (field.id)]
+            raw_values = []
+            sep = ''
+            items = field.getChildren().sort_by_orderpos()
+            len_items = len(items)
+            for i, item in enumerate(items):
                 f = getMetadataType(item.get("type"))
-                ret += f.getViewHTML(item, nodes, flags | VIEW_SUB_ELEMENT, language=language)
-                ret += '</div>'
-                return ret
+                raw_value = f.getViewHTML(item, nodes, flags | VIEW_SUB_ELEMENT, language=language)
+                if raw_value:
+                    raw_values.append(raw_value)
+                    if sep:
+                        snippets.append(sep)
+                        sep = item.get('separator', '&nbsp;')
+                    snippets.append('<span class="hgroup_item">%s</span>' % raw_value)
+                else:
+                    sep = ''  # no separator before or after empty sub element
 
-    """ """
+            unit = field.get('unit').strip()
+            if raw_values and unit:
+                snippets.append('&nbsp;<span class="hgroup_unit field_unit hgroup-%s">%s</span></span></div>' % (field.id, unit))
+            elif raw_values:
+                snippets.append('</span></div>')
+            else:
+                snippets = []  # no value when all sub elements are empty
+
+            ret = ''.join(snippets)
+            return ret
 
     def getMetaHTML(self, parent, index, sub=False, language=None, fieldlist={}):
         item = parent.getChildren().sort_by_orderpos()[index]

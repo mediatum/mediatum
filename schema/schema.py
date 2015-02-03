@@ -869,11 +869,16 @@ class Mask(tree.Node):
                 ret += t.getViewHTML(field, node, flags, language=language)
         return ret
 
-    def getMaskFields(self):
+    def getMaskFields(self, first_level_only=False):
         ret = []
-        for field in self.getAllChildren():
-            if field.getContentType() == "maskitem":
-                ret.append(field)
+        if first_level_only:
+            for field in self.getChildren():
+                if field.getContentType() == "maskitem":
+                    ret.append(field)
+        else:
+            for field in self.getAllChildren():
+                if field.getContentType() == "maskitem":
+                    ret.append(field)
         return ret
 
     """ return all fields which are empty """

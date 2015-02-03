@@ -162,8 +162,9 @@ class m_field(Metatype):
             return [element.getName(), value, element.getLabel(), element.get("type")]
 
         elif flags & VIEW_SUB_ELEMENT:
-            # element in h-group
-            return label + value
+            # element in hgroup
+            # only using value omitting label, delimiter like '&nbsp;' may be inserted in hgroup.getViewHTML
+            return value
 
         elif flags & VIEW_HIDE_EMPTY and value.strip() == "":
             # hide empty elements

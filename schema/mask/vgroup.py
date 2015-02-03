@@ -39,9 +39,7 @@ class m_vgroup(Metatype):
         ret += '</fieldset>'
         return ret
 
-    """  """
-
-    def getViewHTML(self, field, nodes, flags, language=None, template_from_caller=None, mask=None):
+    def getViewHTML(self, field, nodes, flags, language=None, template_from_caller=None, mask=None, use_label=True):
         if flags & VIEW_DATA_ONLY:
             ret = []
             for item in field.getChildren().sort_by_orderpos():
@@ -52,15 +50,14 @@ class m_vgroup(Metatype):
             # standard view
 
             ret = '<div class="mask_row"><fieldset>\n'
-            ret += '<legend>' + field.getLabel() + '</legend>'
+            if use_label:
+                ret += '<legend>' + field.getLabel() + '</legend>'
             for item in field.getChildren().sort_by_orderpos():
                 f = getMetadataType(item.get("type"))
                 ret += '<div class="mask_row">' + f.getViewHTML(item, nodes, flags) + '</div>\n'
             ret += '</fieldset></div>\n'
 
         return ret
-
-    """ """
 
     def getMetaHTML(self, parent, index, sub=False, language=None, fieldlist={}):
         item = parent.getChildren().sort_by_orderpos()[index]

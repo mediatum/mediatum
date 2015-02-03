@@ -183,16 +183,34 @@ class Default(tree.Node):
             res = []
             exception_count = {}
             mask = mfs[0]
+            _sep = ''
             for node_attribute, fd in mfs[1:]:
+                if _sep:
+                    res.append(_sep)
+                _sep = separator
                 metafield_type = fd['metafield_type']
+                field_type = fd['field_type']
                 if metafield_type in ['date', 'url']:
                     exception_count[metafield_type] = exception_count.setdefault(metafield_type, 0) + 1
                     value = node.get(node_attribute)
-                    value_a = value
                     try:
                         value = fd['metadatatype'].getFormatedValue(fd['element'], node, language=language, mask=mask)[1]
                     except:
                         value = fd['metadatatype'].getFormatedValue(fd['element'], node, language=language)[1]
+                elif metafield_type in ['field']:
+                    if field_type in ['hgroup', 'vgroup']:
+                        _sep = ''
+                        if field_type == 'hgroup':
+                            fd['unit'] = ''  # unit will be taken from definition of the hgroup
+                            use_label = False
+                        else:
+                            use_label = True
+                        value = getMetadataType(field_type).getViewHTML(
+                                                                         fd['field'],  # field
+                                                                         [node],  # nodes
+                                                                         0,  # flags
+                                                                         language=language,
+                                                                         mask=mask, use_label=use_label)
                 else:
                     value = node.get(node_attribute)
                     metadatatype = fd['metadatatype']
@@ -255,12 +273,15 @@ class Default(tree.Node):
                 res.append(fd["template"] % value)
             if exception_count and len(exception_count.keys()) > 1:
                 pass
-            return separator.join(res)
+            return ''.join(res)
 
         if not separator:
             separator = "<br/>"
 
         lookup_key = make_lookup_key(self, language, labels)
+
+        # if the lookup_key is already in the cache dict: render the cached mask_template
+        # else: build the mask_template
 
         if lookup_key in maskcache:
             mfs = maskcache[lookup_key]
@@ -276,31 +297,36 @@ class Default(tree.Node):
             if mask:
                 mfs = [mask]  # mask fields
                 values = []
-                fields = mask.getMaskFields()
+                fields = mask.getMaskFields(first_level_only=True)
                 ordered_fields = sorted([(f.orderpos, f) for f in fields])
                 for orderpos, field in ordered_fields:
                     fd = {}  # field descriptor
-
+                    fd['field'] = field
                     element = field.getField()
+                    element_type = element.get('type')
+                    field_type = field.get('type')
+
                     t = getMetadataType(element.get("type"))
 
                     fd['format'] = field.getFormat()
                     fd['unit'] = field.getUnit()
                     label = field.getLabel()
                     fd['label'] = label
-                    #fd['separator'] = field.getSeparator()
                     default = field.getDefault()
                     fd['default'] = default
                     fd['default_has_tal'] = (default.find('tal:') >= 0)
 
                     fd['metadatatype'] = t
-                    fd['metafield_type'] = field.getChildren()[0].get('type')
+                    fd['metafield_type'] = element_type
                     fd['element'] = element
+                    fd['field_type'] = field_type
 
                     def getNodeAttributeName(field):
                         metafields = [x for x in field.getChildren() if x.type == 'metafield']
                         if len(metafields) != 1:
+                            # this can only happen in case of vgroup or hgroup
                             logging.getLogger("error").error("maskfield %s zero or multiple metafield child(s)" % field.id)
+                            return field.name
                         return metafields[0].name
 
                     node_attribute = getNodeAttributeName(field)

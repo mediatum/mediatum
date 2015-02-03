@@ -1148,7 +1148,6 @@ class http_request(object):
         self.reply_headers['Last-Modified'] = build_http_date(mtime)
         self.reply_headers['Content-Length'] = file_length
         self.reply_headers['Content-Type'] = content_type
-        self.reply_headers['Connection'] = 'close'
         if self.command == 'GET':
             self.push(file_producer(file))
         return
@@ -1197,7 +1196,6 @@ class http_request(object):
         self.reply_headers['Last-Modified'] = build_http_date(mtime)
         self.reply_headers['Content-Length'] = file_length
         self.reply_headers['Content-Type'] = content_type
-        self.reply_headers['Connection'] = 'close'
         if self.command == 'GET':
             self.push(file_producer(file))
         return
@@ -3962,7 +3960,6 @@ class AthanaHandler:
             session = Session(sessionid)
             self.sessions[sessionid] = session
 
-        request['Connection'] = 'close'
         request['Content-Type'] = 'text/html; encoding=utf-8; charset=utf-8'
 
         maxlen = -1
@@ -4278,7 +4275,6 @@ def thread_status(req):
     req.write("""</body></html>""")
     req.channel.current_request = None
     req.reply_code = 200
-    req['Connection'] = 'close'
     return req.done()
 
 profiles = []
@@ -4303,7 +4299,6 @@ def profiling_status(req):
     req.write("""</body></html>""")
     req.channel.current_request = None
     req.reply_code = 200
-    req['Connection'] = 'close'
     return req.done()
 
 iolock = thread.allocate_lock()

@@ -992,13 +992,20 @@ class http_request(object):
     # can also be used for empty replies
     reply_now = error
 
-    def done(self):
-        "finalize this transaction - send output to the http channel"
-
+    def unlink_tempfiles(self):
+        unlinked_tempfiles = []
         if hasattr(self, "tempfiles"):
             for f in self.tempfiles:
                 os.unlink(f)
+                unlinked_tempfiles.append(f)
+                logg.info("unlinked tempfile %s", f)
+        return unlinked_tempfiles
 
+    def done(self):
+        "finalize this transaction - send output to the http channel"
+
+        self.unlink_tempfiles()
+        
         # ----------------------------------------
         # persistent connection management
         # ----------------------------------------
@@ -1429,8 +1436,12 @@ class http_channel (async_chat):
             sys.exit("Out of Memory!")
 
     def handle_error(self):
-        logg.error("uncaught exception in http_channel", exc_info=1)
+        logg.exception("uncaught exception in http_channel")
         t, v = sys.exc_info()[:2]
+        if hasattr(self, "current_request") and self.current_request:
+            unlinked_tempfiles = self.current_request.unlink_tempfiles()
+            if unlinked_tempfiles:
+                logg.warn("POSSIBLE ATTACK! tempfiles were still open, closed %s files", len(unlinked_tempfiles))
         if t is SystemExit:
             raise t(v)
         else:
@@ -3329,9 +3340,7 @@ class WebContext:
                 status = int(status)
             if status is not None and type(1) == type(status) and status > 10:
                 req.reply_code = status
-                if status == 404:
-                    return req.error(status, "not found")
-                elif(status >= 400 and status <= 500):
+                if(status >= 400 and status <= 500):
                     return req.error(status)
             return req.done()
 
@@ -3576,6 +3585,7 @@ class AthanaFile:
         del self.fieldname
         del self.param_list
         del self.fi
+        logg.info("closed file %s (%s)", self.filename, self.tempname)
 
     def __str__(self):
         return "file %s (%s), %d bytes, content-type: %s" % (self.filename, self.tempname, self.filesize, self.content_type)
@@ -3626,11 +3636,11 @@ class simple_input_collector:
                 pairs.append((key, urllib.unquote_plus(value)))
             else:
                 if len(e.strip()) > 0:
-                    logg.info("Unknown parameter: %s", e)
+                    logg.warn("corrupt parameter: %s", e.encode("string-escape"))
         self.handler.continue_request(r, pairs)
 
-
 class upload_input_collector:
+
 
     def __init__(self, handler, request, length, boundary):
         self.request = request
@@ -3641,7 +3651,7 @@ class upload_input_collector:
         self.data = ""
         self.pos = 0
         self.start_marker = "--" + boundary + "\r\n"
-        self.end_marker = "--" + boundary + "--\r\n"
+        self.end_marker = "--" + boundary + "--"
         self.prefix = "--" + boundary
         self.marker = "\r\n--" + boundary
         self.header_end_marker = "\r\n\r\n"
@@ -3650,6 +3660,7 @@ class upload_input_collector:
         self.file = None
         self.form = []
         self.files = []
+        self.tempfiles = request.tempfiles = []
 
     def parse_semicolon_parameters(self, params):
         params = params.split("; ")
@@ -3678,7 +3689,9 @@ class upload_input_collector:
         if "content-type" in headers:
             content_type = headers["content-type"]
             self.file = AthanaFile(fieldname, self.form, filename, content_type)
-            self.files += [self.file]
+            logg.info("opened file %s (%s)", filename, self.file.tempname)
+            self.files.append(self.file)
+            self.tempfiles.append(self.file.tempname)
         else:
             self.file = AthanaField(fieldname, self.form)
 
@@ -3692,6 +3705,7 @@ class upload_input_collector:
         while len(self.data) > 0:
             if self.data.startswith(self.end_marker):
                 self.data = self.data[len(self.end_marker):]
+                self.data = self.data.lstrip()
                 if self.file is not None:
                     self.file.close()
                     self.file = None
@@ -3740,7 +3754,6 @@ class upload_input_collector:
         del self.data
         r = self.request
         del self.request
-        r.tempfiles = [f.tempname for f in self.files]
         self.handler.continue_request(r, self.form)
 
 
@@ -3790,7 +3803,7 @@ def make_param_dict_utf8_values(param_list):
         try:
             return unicode(k, encoding="utf8")
         except UnicodeDecodeError as e:
-            logg.error("tried to decode non-UTF8 string: %s", k.encode("string-escape"))
+            logg.warn("tried to decode non-UTF8 string: %s", k.encode("string-escape"))
             raise
         
     return ImmutableMultiDict([(decode(k), decode(v)) for k, v in param_list])
@@ -3841,7 +3854,7 @@ class AthanaHandler:
         if size and size != '0':
             size = int(size)
             ctype = headers.get("content-type", None)
-            b = MULTIPART.match(ctype)
+            b = MULTIPART.match(ctype) if ctype else None
             if b is not None:
                 request.type = "MULTIPART"
                 boundary = b.group(1)
@@ -3978,8 +3991,12 @@ class AthanaHandler:
         request.fragment = fragment
         # COMPAT: new param style like flask
         form, files = filter_out_files(form)
-        request.args = make_param_dict_utf8_values(args)
-        request.form = make_param_dict_utf8_values(form)
+        try:
+            request.args = make_param_dict_utf8_values(args)
+            request.form = make_param_dict_utf8_values(form)
+        except UnicodeDecodeError:
+            return request.error(400)
+        
         request.files = ImmutableMultiDict(files)
         request.make_legacy_params_dict()
         # /COMPAT
@@ -4233,7 +4250,7 @@ def thread_status(req):
     if threadlist:
         i = 1
         for thread in threadlist:
-            req.write("<h3>Thread %d</h3>" % thread.number)
+            req.write("<h3>Thread %d [%s]</h3>" % (thread.number, thread.identifier))
             if thread.status == "working":
                 duration = time.time() - thread.lastrequest
                 if duration > 10:
@@ -4310,6 +4327,7 @@ class AthanaThread:
         self.number = number
         self.uri = ""
         self.duration = 0
+        self.identifier = ""
 
     def worker_thread(self):
         server = self.server
@@ -4394,7 +4412,8 @@ def run(port=8081, z3950_port=None):
         threadlist = []
         for i in range(number_of_threads):
             athanathread = AthanaThread(ph, i)
-            thread.start_new_thread(runthread, (athanathread,))
+            identifier = thread.start_new_thread(runthread, (athanathread,))
+            athanathread.identifier = identifier
             threadlist += [athanathread]
 
     ATHANA_STARTED = True

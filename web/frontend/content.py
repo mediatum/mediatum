@@ -434,12 +434,12 @@ class ContentArea(Content):
         self.collectionlogo = None
         self.params = ""
 
-    def getPath(self, req):
+    def getPath(self):
         path = []
         if hasattr(self.content, "node"):
             cd = self.content.node
             if cd is not None:
-                path.append(Link('', cd.getLabel(lang(req)), ''))
+                path.append(Link('', cd.getLabel(), ''))
                 while True:
                     parents = cd.getParents()
                     if(len(parents) == 0):
@@ -447,7 +447,7 @@ class ContentArea(Content):
                     cd = parents[0]
                     if cd is tree.getRoot("collections") or cd is tree.getRoot():
                         break
-                    path.append(Link('/?id=' + cd.id + '&dir=' + cd.id, cd.getLabel(lang(req)), cd.getLabel(lang(req))))
+                    path.append(Link('/?id=' + cd.id + '&dir=' + cd.id, cd.getLabel(), cd.getLabel()))
         elif hasattr(self.content, "linkname") and hasattr(self.content, "linktarget"):
             path.append(Link(self.content.linktarget, self.content.linkname, self.content.linkname))
         path.reverse()
@@ -513,7 +513,7 @@ class ContentArea(Content):
                 breadscrubs = []
             else:
                 try:
-                    breadscrubs = self.getPath(req)
+                    breadscrubs = self.getPath()
                 except AttributeError:
                     log.exception("")
                     return req.error(404, "Object cannot be shown")

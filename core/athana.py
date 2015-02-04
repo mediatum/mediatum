@@ -3943,10 +3943,12 @@ class AthanaHandler:
             items = cookiestr.split(';')
             for a in items:
                 a = a.strip()
-                i = a.index('=')
+                i = a.find('=')
                 if i > 0:
                     key, value = a[:i], a[i + 1:]
                     cookies[key] = value
+                else:
+                    logg.warn("corrupt cookie value: %s", a.encode("string-escape"))
 
         request.Cookies = cookies
 

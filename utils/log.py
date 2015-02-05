@@ -18,13 +18,15 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from core import config
 import logging
 import sys
 import logstash
 import inspect
 import traceback
+from logging import LogRecord
 
+from core import config
+import os
 
 ROOT_STREAM_LOGFORMAT = '%(asctime)s [%(process)d/%(threadName)s] %(name)s %(levelname)s | %(message)s'
 # this also logs filename and line number, which is great for debugging
@@ -109,27 +111,62 @@ class TraceLogger(logging.Logger):
             else:
                 end_lineno = -2
                 
-            tbtext = "".join(tblines[start_lineno:end_lineno])
-            extra["trace"] = tbtext
+            extra["trace"] = "".join(tblines[start_lineno:end_lineno])
             
+            ### hack for additional traceback info for TAL traces
+            stack = inspect.stack()
+            # search for a python expr evaluation in the TAL interpreter stack trace
+            eval_frame_result = [f for f in stack if f[3] == "evaluate" and "mediatum-tal" in f[1]]
+            if eval_frame_result:
+                eval_frame_locals = eval_frame_result[0][0].f_locals
+                extra["tal_expr"] = tal_expr = eval_frame_locals["expr"]
+                tal_engine = eval_frame_locals["self"]
+                if tal_engine.position:
+                    tal_lineno, tal_col = tal_engine.position
+                    extra["tal_lineno"] = tal_lineno
+                    extra["tal_col"] = tal_col
+                else:
+                    tal_lineno = None
+                    tal_col = None
+                # search for runTAL frame
+                tal_frame_result = [f for f in stack if f[3] == "runTAL"]
+                if tal_frame_result:
+                    tal_call_locals = tal_frame_result[0][0].f_locals
+                    extra["tal_filename"] = tal_filename = tal_call_locals["file"]
+                    extra["tal_macro"] = tal_macro = tal_call_locals["macro"]
+                    # format a line that looks like a traceback line 
+                    # this produces a clickable link in Pycharm or Eclipse, for example ;)
+                    if tal_filename:
+                        tal_filepath = os.path.join(config.basedir, tal_filename)
+                    else:
+                        # no filename? template was rendered from a string
+                        tal_filepath = "<string>"
+
+                    tal_tbline = '  File "{}", line {}, in {}\n    {}'.format(tal_filepath, 
+                                                                              tal_lineno, 
+                                                                              tal_macro or "<template>",
+                                                                              tal_expr)
+                    extra["trace"] += tal_tbline
+                
         logging.Logger._log(self, level, msg, args, exc_info=exc_info, extra=extra)
         
     def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None):
+        record = LogRecord(name, level, fn, lno, msg, args, exc_info, func)
         if exc_info:
             if extra is None:
                 extra = {}
-            
             # get additional info about the exception
-            ex_type, ex, _ = exc_info     
+            ex_type, ex, _ = exc_info
             extra["exc_type"] = ex_type.__name__
             # add members of the exception as extra info except callables and non-public stuff
             for name, val in inspect.getmembers(ex, lambda a: not callable(a)):
-                # overriding log message is not allowed, rename it
-                if name == "message":
-                    extra["exc_message"] = val
                 # args just contains all exception args again, can be ignored
-                elif not name.startswith("_") and name not in ("args",):
-                    extra[name] = val
+                if not name.startswith("_") and name not in ("args",):
+                    # rename keys which collide with names from the log record
+                    if name in ["message", "asctime"] or hasattr(record, name):
+                        extra["exc_" + name] = val
+                    else:
+                        extra[name] = val
         
             if issubclass(ex_type, UnicodeError):
                 obj = extra["object"]
@@ -146,9 +183,13 @@ class TraceLogger(logging.Logger):
                 else:
                     extra["object"] = obj[:2000]
         
-        if extra and "lineno" in extra:
-            del extra["lineno"]
-        return logging.Logger.makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=func, extra=extra)
+        if extra is not None:
+            for key in extra:
+                if (key in ["message", "asctime"]) or (key in record.__dict__):
+                    raise KeyError("Attempt to overwrite %r in LogRecord" % key)
+                record.__dict__[key] = extra[key]
+        
+        return record
 
 ### init
 logging.setLoggerClass(TraceLogger)

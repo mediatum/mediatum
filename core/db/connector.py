@@ -200,7 +200,8 @@ class Connector:
             # id,name,type,read,write,data,orderpos,localread
             return ustr(t[0][0]), t[0][1], t[0][2], t[0][3], t[0][4], t[0][5], t[0][6], t[0][7]
         elif len(t) == 0:
-            logg.error("No node for ID %s", id)
+            if id != -1: # -1 is a "special" value that is never found, no error msg
+                logg.error("No node for ID %s", id)
             return None
         else:
             logg.error("More than one node for id %s", id)

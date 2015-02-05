@@ -132,14 +132,22 @@ class TraceLogger(logging.Logger):
                     extra[name] = val
         
             if issubclass(ex_type, UnicodeError):
-                start = extra["start"]
-                end = extra["end"]
                 obj = extra["object"]
                 
-                # escape string which caused this exception
-                error_part = obj[start:end+1].encode("string_escape")
-                extra["object"] = obj[:start-1] + "[ERROR]" + error_part + "[/ERROR]" + obj[end+1:]
+                if isinstance(obj, str):
+                    # escape string that caused this exception
+                    start = extra["start"]
+                    end = extra["end"]
+                    snippet_start = start - 1000 if start > 1000 else start
+                    snippet_end = end + 1000
+                    
+                    error_part = obj[start:end+1].encode("string_escape")
+                    extra["object"] = obj[snippet_start:start-1] + "[ERROR]" + error_part + "[/ERROR]" + obj[end+1:snippet_end]
+                else:
+                    extra["object"] = obj[:2000]
         
+        if extra and "lineno" in extra:
+            del extra["lineno"]
         return logging.Logger.makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=func, extra=extra)
 
 ### init

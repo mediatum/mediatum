@@ -63,8 +63,6 @@ urls = [
     ["GET", "/static/(?P<filepath>.*)$", handlers.serve_file, None, SERVICES_URL_HAS_HANDLER, None],
 ]
 
-DEBUG = True
-
 
 def request_handler(req):
 
@@ -133,7 +131,7 @@ def request_handler(req):
                                                                                                         req.params,
                                                                                                         useragent)
 
-    if DEBUG and matched and 'timetable' in d:
+    if logg.isEnabledFor(logging.DEBUG) and matched and 'timetable' in d:
         timesum = 0
         s += '\n' + ('-' * 80)
         s += "\n| timetable for request (%s, %s, %s)" % (req.command, req.fullpath, handle_params)

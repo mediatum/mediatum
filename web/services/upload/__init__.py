@@ -87,8 +87,6 @@ urls = [["GET",
          None],
         ]
 
-DEBUG = True
-
 
 def request_handler(req):
 

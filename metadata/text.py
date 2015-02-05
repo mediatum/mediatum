@@ -147,7 +147,7 @@ class m_text(Metatype):
                     msg += " language=%r, mask=%r" % (language, mask)
                     logg.exception(msg)
 
-                    value = ""
+                    value = u""
             else:
                 # treat as monolingual
                 pass

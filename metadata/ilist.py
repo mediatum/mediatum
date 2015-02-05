@@ -50,7 +50,7 @@ class m_ilist(Metatype):
     def getFormatedValue(self, field, node, language=None, html=1):
         value = node.get(field.getName())
         try:
-            if value[-1] == ";":
+            if value and value[-1] == ";":
                 value = value[0:-1]
         except:
             logg.exception("exception in getFormatedValue, ignore")

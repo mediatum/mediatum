@@ -357,7 +357,7 @@ class ContentNode(Content):
         paths = u""
         stylebig = self.getContentStyles()
         liststyle = req.session.get("style-" + self.node.getContentType(), "")
-        show_node_big = ensure_unicode_returned(self.node.show_node_big)
+        show_node_big = ensure_unicode_returned(self.node.show_node_big, name="show_node_big of %s" % self.node)
 
         if not self.node.isContainer():
             plist = getPaths(self.node, AccessData(req))

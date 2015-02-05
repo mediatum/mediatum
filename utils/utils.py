@@ -701,7 +701,7 @@ class HTMLTextCutter(HTMLParser):
 # returns formated string for long text
 #
 
-
+@ensure_unicode_returned(silent=True)
 def formatLongText(value, field, cutoff=500):
     try:
         out = io.StringIO()

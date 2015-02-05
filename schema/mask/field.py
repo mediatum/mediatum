@@ -109,7 +109,7 @@ class m_field(Metatype):
             return []
         fieldtype = element.get("type")
         t = getMetadataType(element.get("type"))
-        unit = ''
+        unit = u''
         if field.getUnit() != "":
             unit = ' ' + field.getUnit()
 
@@ -135,23 +135,22 @@ class m_field(Metatype):
                             value = ustr(
                                 t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1])
                     else:  # cut long values
-                        value = ustr(
-                            formatLongText(
+                        value = formatLongText(
                                 t.getFormatedValue(
                                     element,
                                     nodes[0],
                                     language,
                                     template_from_caller=template_from_caller,
                                     mask=mask)[1],
-                                element))
+                                element)
                 elif fieldtype in ['upload']:
                     # passing mask necessary for fieldtype='upload'
-                    value = ustr(formatLongText(t.getFormatedValue(element, nodes[0], language, mask=mask)[1], element))
+                    value = formatLongText(t.getFormatedValue(element, nodes[0], language, mask=mask)[1], element)
                 else:
-                    value = ustr(formatLongText(t.getFormatedValue(element, nodes[0], language)[1], element))
+                    value = formatLongText(t.getFormatedValue(element, nodes[0], language)[1], element)
 
         if len(value.strip()) > 0:
-            value += ustr(unit)
+            value += unit
 
         label = '&nbsp;'
         if field.getLabel() != "":

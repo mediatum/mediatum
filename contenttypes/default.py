@@ -87,9 +87,9 @@ def make_lookup_key(node, language=languages[0], labels=True):
         flaglabels = 'uselabels'
 
     if language in languages:
-        return "%s_%s_%s" % (ustr(node.type), ustr(language), flaglabels)
+        return "%s_%s_%s" % (node.type, language, flaglabels)
     else:
-        return "%s_%s_%s" % (ustr(node.type), languages[0], flaglabels)
+        return "%s_%s_%s" % (node.type, languages[0], flaglabels)
 
 
 def get_maskcache_entry(lookup_key):

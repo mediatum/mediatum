@@ -24,11 +24,13 @@ from core.metatype import Metatype
 from core.translation import t
 from urllib import unquote
 from utils.utils import quote_uri
+from utils.strings import ensure_unicode_returned
 
 
 logg = logging.getLogger(__name__)
 
 
+@ensure_unicode_returned
 def _replace_vars(node, s):
     for var in re.findall(r'<(.+?)>', s):
         if var == "att:id":
@@ -94,7 +96,7 @@ class m_url(Metatype):
             fielddef = field.getValues().split("\r\n")
 
             while len(fielddef) < 4:
-                fielddef.append("")
+                fielddef.append(u"")
 
             l = []
             for i in range(0, 4):
@@ -109,29 +111,29 @@ class m_url(Metatype):
             uri, linktext, icon, target = [_replace_vars(node, p) for p in l]
 
             # find unsatisfied variables
-            if ustr(uri).find("____") >= 0:
-                uri = ''
-            if ustr(linktext).find("____") >= 0:
-                linktext = ''
+            if uri.find("____") >= 0:
+                uri = u''
+            if linktext.find("____") >= 0:
+                linktext = u''
 
             if len(fielddef) < 4:
-                target = ""
+                target = u""
             if uri != "" and linktext == "":
                 linktext = unquote(uri)
 
             if uri == '' and linktext == '':
-                value = icon = ""
+                value = icon = u""
             # XXX: ???
             elif uri == '' and linktext != '':
                 value = linktext
-                icon = ""
+                icon = u""
             else:  # link and text given
                 if target in ["", "_blank"]:
-                    value = '<a href="{}" target="_blank" title="{}">{}</a>'.format(uri, t(language, 'show in new window'), linktext)
+                    value = u'<a href="{}" target="_blank" title="{}">{}</a>'.format(uri, t(language, 'show in new window'), linktext)
                 else:
-                    value = '<a href="{}">{}</a>'.format(uri, linktext)
+                    value = u'<a href="{}">{}</a>'.format(uri, linktext)
             if icon != "":
-                value += '<img src="{}"/>'.format(icon)
+                value += u'<img src="{}"/>'.format(icon)
 
             return (field.getLabel(), value)
         except:

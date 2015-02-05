@@ -815,7 +815,7 @@ def get_node_children_struct(
     # else:
     #    set_nodelist_ids = set(nodelist)
 
-    set_nodeid_localread = set(["%s_%s" % (ustr(n.id), ustr(n.localread)) for n in nodelist])
+    set_nodeid_localread = set(["%s_%s" % (n.id, n.localread) for n in nodelist])
 
     timetable.append(['get set of ids of nodelist', time.time() - atime])
     atime = time.time()
@@ -1210,7 +1210,7 @@ def write_formatted_response(
             # "#".join(resultcache.getKeys())), time.time()-atime]); atime =
             # time.time()
 
-        s = modify_tex(s, 'strip')
+        s = modify_tex(s.decode("utf8"), 'strip')
 
     else:
         d = {}

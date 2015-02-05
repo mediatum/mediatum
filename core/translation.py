@@ -23,6 +23,7 @@ import os
 import stat
 import time
 import thread
+from utils.strings import ensure_unicode_returned
 
 
 class _POFile:
@@ -80,6 +81,7 @@ addlangitems = {}
 addlangfiles = []
 
 
+@ensure_unicode_returned(silent=True)
 def translate(key, language=None, request=None):
     if request and not language:
         language = lang(request)
@@ -160,7 +162,7 @@ def switch_language(req, language):
 
 
 def t(target, key):
-    if isinstance(target, type("")):
+    if isinstance(target, basestring):
         return translate(key, language=target)
     else:
         return translate(key, request=target)

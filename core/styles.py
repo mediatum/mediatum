@@ -108,7 +108,7 @@ class ContentStyle:
     # build
     def renderTemplate(self, req, params={}):
         try:
-            return tal.u_getTAL(self.getTemplate(), params, request=req)
+            return tal.getTAL(self.getTemplate(), params, request=req)
         except Exception as e:
             logg.exception("exception in template")
             return "error in template"

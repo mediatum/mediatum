@@ -223,7 +223,7 @@ class ContentList(Content):
         if not language:
             language = None
         if self.content:
-            headline = tal.u_getTAL(theme.getTemplate("content_nav.html"), {"nav": self}, macro="navheadline", language=lang(req))
+            headline = tal.getTAL(theme.getTemplate("content_nav.html"), {"nav": self}, macro="navheadline", language=lang(req))
             return headline + self.content.html(req)
 
         nav_list = list()
@@ -282,7 +282,7 @@ class ContentList(Content):
             # no liststsyle, use collection default
             liststyle = self.liststyle
 
-        filesHTML = tal.u_getTAL(theme.getTemplate("content_nav.html"), {
+        filesHTML = tal.getTAL(theme.getTemplate("content_nav.html"), {
             "nav_list": nav_list, "nav_page": nav_page, "act_page": self.page,
             "sortfields": self.sortfields, "sortfieldslist": self.getSortFieldsList(),
             "files": tal_files, "ids": ",".join(tal_ids), "maxresult": len(self.files),
@@ -361,7 +361,7 @@ class ContentNode(Content):
 
         if not self.node.isContainer():
             plist = getPaths(self.node, AccessData(req))
-            paths = tal.u_getTAL(theme.getTemplate("content_nav.html"), {"paths": plist}, macro="paths", language=lang(req))
+            paths = tal.getTAL(theme.getTemplate("content_nav.html"), {"paths": plist}, macro="paths", language=lang(req))
         # render style of node for nodebig
         if len(stylebig) > 1:
             # more than on style found
@@ -526,7 +526,7 @@ class ContentArea(Content):
                     logg.exception("exception in html")
                     return req.error(404, "Object cannot be shown")
 
-            path = tal.u_getTAL(
+            path = tal.getTAL(
                 theme.getTemplate("content_nav.html"), {
                     "params": self.params, "path": breadscrubs, "styles": styles, "logo": self.collectionlogo, "searchmode": req.params.get(
                         "searchmode", ""), "items": items, "id": id, "nodeprint": nodeprint, "printlink": printlink, "area": req.session.get(

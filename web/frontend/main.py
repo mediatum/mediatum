@@ -97,14 +97,13 @@ def display(req):
     content = getContentArea(req)
     content.feedback(req)
     try:  # add export mask data of current node to request object
-        mask = getMetaType(content.actNode().getSchema()).getMask('head_meta')
-        if mask is not None:
-            req.params['head_meta'] = mask.getViewHTML([content.actNode()], flags=8)
-        else:
-            req.params['head_meta'] = ''
+        act_node = content.actNode()
+        mdt = getMetaType(act_node.getSchema()) if act_node is not None else None
+        mask = mdt.getMask('head_meta') if mdt is not None else None
+        req.params['head_meta'] = mask.getViewHTML([content.actNode()], flags=8) if mask is not None else ''
     except:
-        # XXX: the "common exception case" here was mask == None. This is handled in the try-block now. 
-        # Other exceptions could indicate a real failure.
+        # XXX: the "common exception cases" here were act_node, mdt, mask == None. This is handled in the try-block now. 
+        # Other exceptions should indicate a real failure.
         logg.exception("exception in display, setting head_meta to empty string")
         req.params['head_meta'] = ''
     navframe = getNavigationFrame(req)

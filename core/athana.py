@@ -1081,10 +1081,10 @@ class http_request(object):
                   time.strftime('[%d/%b/%Y:%H:%M:%S ]', time.gmtime()), self.request)
 
     def write(self, text):
-        if type(text) == type(''):
-            self.push(text)
-        elif type(text) == type(u''):
+        if isinstance(text, unicode):
             self.push(text.encode("utf-8"))
+        elif isinstance(text, str):
+            self.push(text)
         else:
             text.more
             self.push(text)
@@ -1241,12 +1241,12 @@ class http_request(object):
     # COMPAT: new param style like flask
     def make_legacy_params_dict(self):
         """convert new-style params to old style athana params dict"""
-        params = {}
+        self.params = params = {}
         for key, values in chain(self.form.iterlists(), self.args.iterlists()):
             value = ";".join(values)
-            params[key.encode("utf8")] = value.encode("utf8")
+            params[key] = value
+#             params[key.encode("utf8")] = value.encode("utf8")
         params.update(self.files.iteritems())
-        self.params = params
 
     responses = {
         100: "Continue",

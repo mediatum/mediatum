@@ -32,6 +32,7 @@ import utils.pathutils as pathutils
 from core.translation import lang, t
 from utils.utils import dec_entry_log
 from core.transition import httpstatus
+import logging
 
 logg = logging.getLogger(__name__)
 

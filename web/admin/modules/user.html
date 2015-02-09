@@ -69,8 +69,8 @@
 <metal:block metal:define-macro="details">
 
     <!-- expose some variables/constants to javascript -->
-    <script tal:content="python:'var confirm_msg_delete_user = \''+ustr(t(language, 'admin_user_confirm_msg_delete_user'))+'\';'">;</script>
-    <script tal:content="python:'var confirm_msg_logout_user = \''+ustr(t(language, 'admin_user_confirm_msg_logout_user'))+'\';'">;</script>
+    <script tal:content="python:'var confirm_msg_delete_user = \''+t(language, 'admin_user_confirm_msg_delete_user')+'\';'">;</script>
+    <script tal:content="python:'var confirm_msg_logout_user = \''+t(language, 'admin_user_confirm_msg_logout_user')+'\';'">;</script>
 
     <form name="useroverview" method="post" action="#" tal:attributes="action page">
         <table class="overview">

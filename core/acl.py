@@ -589,7 +589,7 @@ def getRuleList():
     dbrules = conn.getRuleList()
 
     for rule in dbrules:
-        rlist += [AccessRule(ustr(rule[0]), ustr(rule[2]), ustr(rule[1]))]
+        rlist += [AccessRule(rule[0], rule[2], rule[1])]
     return rlist
 
 

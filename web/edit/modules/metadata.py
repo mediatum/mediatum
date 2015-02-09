@@ -64,7 +64,6 @@ def get_datelists(nodes):
 
     return update_date, creation_date
 
-
 def get_maskform_and_fields(nodes, mask, req):
     '''
     helper funtion to update default context before calling TAL interpreter

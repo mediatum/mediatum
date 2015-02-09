@@ -1,5 +1,3 @@
-
-
 <tal:block metal:define-macro="edit_lza">
 
     <div id="navigation_content" style="border-top:0px!important">
@@ -11,7 +9,7 @@
         <p class="error" i18n:translate="" tal:content="error"/>
     </tal:block>
 
-    <form tal:attributes="action python:'edit_content?id='+ustr(id)+'&tab='+tab" method="post" enctype="multipart/form-data">
+    <form tal:attributes="action python:'edit_content?id='+id+'&tab='+tab" method="post" enctype="multipart/form-data">
         <p><button i18n:attributes="title edit_lza_create_label" i18n:translate="edit_lza_create_label" type="submit" name="createlza" value="submit">TEXT</button></p>
 
         <p><button i18n:attributes="title edit_lza_remove_label" i18n:translate="edit_lza_remove_label" type="submit" name="removelza" value="submit">TEXT</button></p>
@@ -27,8 +25,8 @@
 
   <div id="sub_footer_module"> </div>
 
-    <script tal:content="python:'var js_edit_layout_togglertip_open = \''+ustr(t(language, 'edit_layout_togglertip_open'))+'\';'">;</script>
-    <script tal:content="python:'var js_edit_layout_togglertip_closed = \''+ustr(t(language, 'edit_layout_togglertip_closed'))+'\';'">;</script>
+    <script tal:content="python:'var js_edit_layout_togglertip_open = \''+t(language, 'edit_layout_togglertip_open')+'\';'">;</script>
+    <script tal:content="python:'var js_edit_layout_togglertip_closed = \''+t(language, 'edit_layout_togglertip_closed')+'\';'">;</script>
 
     <script type="text/javascript">
 

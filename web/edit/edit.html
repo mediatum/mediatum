@@ -1,4 +1,3 @@
-
 <div id="clean-container" metal:define-macro="edit_tabs" style="position:relative;">
     <ul id="nav">
         <tal:block tal:repeat="navitem python:menu">
@@ -166,14 +165,14 @@
 
             <script tal:content="python:'var containertype2iconpath = %r;' % ([[t[2], t[1], t[3]] for t in cmenu_iconpaths])">;</script>
 
-            <script tal:content="python:'var edit_t = \''+ustr(t(language, 'edit_edit_container_node'))+'\';'">;</script>
-            <script tal:content="python:'var cut_t = \''+ustr(t(language, 'edit_cut_container'))+'\';'">;</script>
-            <script tal:content="python:'var paste_t = \''+ustr(t(language, 'edit_paste_container_here'))+'\';'">;</script>
-            <script tal:content="python:'var addcontainer_t = \''+ustr(t(language, 'edit_add_new_container'))+'\';'">;</script>
-            <script tal:content="python:'var emptybin_t = \''+ustr(t(language, 'edit_empty_recycle_bin'))+'\';'">;</script>
-            <script tal:content="python:'var delete_t = \''+ustr(t(language, 'edit_delete_container'))+'\';'">;</script>
+            <script tal:content="python:'var edit_t = \''+t(language, 'edit_edit_container_node')+'\';'">;</script>
+            <script tal:content="python:'var cut_t = \''+t(language, 'edit_cut_container')+'\';'">;</script>
+            <script tal:content="python:'var paste_t = \''+t(language, 'edit_paste_container_here')+'\';'">;</script>
+            <script tal:content="python:'var addcontainer_t = \''+t(language, 'edit_add_new_container')+'\';'">;</script>
+            <script tal:content="python:'var emptybin_t = \''+t(language, 'edit_empty_recycle_bin')+'\';'">;</script>
+            <script tal:content="python:'var delete_t = \''+t(language, 'edit_delete_container')+'\';'">;</script>
 
-            <script tal:content="python:'var add_col_t = \''+ustr(t(language, 'edit_add_new_collection'))+'\';'">;</script>
+            <script tal:content="python:'var add_col_t = \''+t(language, 'edit_add_new_collection')+'\';'">;</script>
 
 <script type="text/javascript">
 
@@ -1082,9 +1081,9 @@ function set_cm_to_default() {
 
             <script> var currentselection="";</script>
 
-            <script tal:content="python:'var js_edit_layout_togglertip_open = \''+ustr(t(language, 'edit_layout_togglertip_open'))+'\';'">;</script>
-            <script tal:content="python:'var js_edit_layout_togglertip_closed = \''+ustr(t(language, 'edit_layout_togglertip_closed'))+'\';'">;</script>
-            <script tal:content="python:'var js_edit_layout_resizertip = \''+ustr(t(language, 'edit_layout_resizertip'))+'\';'">;</script>
+            <script tal:content="python:'var js_edit_layout_togglertip_open = \''+t(language, 'edit_layout_togglertip_open')+'\';'">;</script>
+            <script tal:content="python:'var js_edit_layout_togglertip_closed = \''+t(language, 'edit_layout_togglertip_closed')+'\';'">;</script>
+            <script tal:content="python:'var js_edit_layout_resizertip = \''+t(language, 'edit_layout_resizertip')+'\';'">;</script>
 
 <script type="text/javascript">
 
@@ -1712,9 +1711,9 @@ ct.visit(function(node){
                 <tal:block tal:replace="raw body"/>
             </div>
 
-            <script tal:content="python:'var js_edit_layout_togglertip_open = \''+ustr(t(language, 'edit_layout_togglertip_open'))+'\';'">;</script>
-            <script tal:content="python:'var js_edit_layout_togglertip_closed = \''+ustr(t(language, 'edit_layout_togglertip_closed'))+'\';'">;</script>
-            <script tal:content="python:'var js_edit_layout_resizertip = \''+ustr(t(language, 'edit_layout_resizertip'))+'\';'">;</script>
+            <script tal:content="python:'var js_edit_layout_togglertip_open = \''+t(language, 'edit_layout_togglertip_open')+'\';'">;</script>
+            <script tal:content="python:'var js_edit_layout_togglertip_closed = \''+t(language, 'edit_layout_togglertip_closed')+'\';'">;</script>
+            <script tal:content="python:'var js_edit_layout_resizertip = \''+t(language, 'edit_layout_resizertip')+'\';'">;</script>
 
             <script>
                 $(document).ready(function () {

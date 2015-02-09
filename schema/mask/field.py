@@ -25,6 +25,7 @@ from schema.schema import getMetaFieldTypeNames, getMetaFieldTypes, getMetadataT
 from core.translation import lang, translate
 from core.metatype import Metatype
 
+from utils.strings import ensure_unicode_returned
 
 class m_field(Metatype):
 
@@ -95,8 +96,10 @@ class m_field(Metatype):
         if field.getUnit() != "":
             unit += field.getUnit()
 
+        asdf = ensure_unicode_returned(t.getEditorHTML, name="getEditorHTML of %s" % t)
+
         ret += '<div id="editor_content">' + \
-            t.getEditorHTML(element, value=val, width=field.getWidth(), lock=lock, language=lang(req)) + unit + '</div>'
+            asdf(element, value=val, width=field.getWidth(), lock=lock, language=lang(req)) + unit + '</div>'
         if not sub:
             ret += '</div>'
         return ret

@@ -31,7 +31,7 @@ logg = logging.getLogger(__name__)
 class m_date(Metatype):
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
-        d = field.getSystemFormat(ustr(field.getValues()))
+        d = field.getSystemFormat(field.getValues())
 
         if value == "?":
             value = date.format_date(date.now(), d.getValue())

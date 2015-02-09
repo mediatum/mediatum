@@ -526,11 +526,20 @@ class ContentArea(Content):
                     logg.exception("exception in html")
                     return req.error(404, "Object cannot be shown")
 
-            path = tal.getTAL(
-                theme.getTemplate("content_nav.html"), {
-                    "params": self.params, "path": breadscrubs, "styles": styles, "logo": self.collectionlogo, "searchmode": req.params.get(
-                        "searchmode", ""), "items": items, "id": id, "nodeprint": nodeprint, "printlink": printlink, "area": req.session.get(
-                        "area", "")}, macro="path", request=req)
+            path = tal.getTAL(theme.getTemplate("content_nav.html"),
+                              {"params": self.params,
+                               "path": breadscrubs,
+                               "styles": styles,
+                               "logo": self.collectionlogo,
+                               "searchmode": req.params.get("searchmode", ""),
+                               "items": items,
+                               "id": id,
+                               "nodeprint": nodeprint,
+                               "printlink": printlink,
+                               "area": req.session.get("area", "")},
+                              macro="path",
+                              request=req)
+
         return path + '\n<!-- CONTENT START -->\n' + self.content.html(req) + '\n<!-- CONTENT END -->\n'
 
     def status(self):

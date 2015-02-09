@@ -1,4 +1,3 @@
-
 <tal:block metal:define-macro="upload_form">
 
     <script type="text/javascript" src="/js/plupload/plupload.full.min.js"> </script>
@@ -171,8 +170,8 @@
     </div>
 
 <script tal:content="python:'var uploadstate = %r;' % ustr(uploadstate)"> </script>
-<script tal:content="python:'var js_upload_unpack = \''+ustr(t(language, 'edit_upload_unpack'))+'\';'">;</script>
-<script tal:content="python:'var js_upload_no_unpack = \''+ustr(t(language, 'edit_upload_no_unpack'))+'\';'">;</script>
+<script tal:content="python:'var js_upload_unpack = \''+t(language, 'edit_upload_unpack')+'\';'">;</script>
+<script tal:content="python:'var js_upload_no_unpack = \''+t(language, 'edit_upload_no_unpack')+'\';'">;</script>
 
 <script type="text/javascript">
 
@@ -680,8 +679,8 @@
         </div>
     </div>
 
-    <script tal:content="python:'var js_edit_layout_togglertip_open = \''+ustr(t(language, 'edit_layout_togglertip_open'))+'\';'">;</script>
-    <script tal:content="python:'var js_edit_layout_togglertip_closed = \''+ustr(t(language, 'edit_layout_togglertip_closed'))+'\';'">;</script>
+    <script tal:content="python:'var js_edit_layout_togglertip_open = \''+t(language, 'edit_layout_togglertip_open')+'\';'">;</script>
+    <script tal:content="python:'var js_edit_layout_togglertip_closed = \''+t(language, 'edit_layout_togglertip_closed')+'\';'">;</script>
 
     <script>
         $(document).ready(function () {

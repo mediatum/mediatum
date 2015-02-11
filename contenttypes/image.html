@@ -95,7 +95,7 @@
     </head>
         
     <body tal:condition="python:not flash and svg"
-          tal:attributes="onload python:'load_svg(\''+width+'\', \''+height+'\')'" style="padding: 0px; border: 0px; margin: 0px;">
+          tal:attributes="onload python:u'load_svg(\'{}\', \'{}\')'.format(width, height)" style="padding: 0px; border: 0px; margin: 0px;">
         <div id="nav" align="left" name="nav" style="position:absolute; width: 300px; height:200px; margin:5px;">
             <a href="#" onclick="zoom(1);" i18n:attributes="title popup_fullview_decrease"><img src="/img/pmud-minus.png" border="0"/></a>
             <span id="zoom_val" style="border:1px solid silver; background-color:white; width: 40px; text-align: right;">100%</span>
@@ -104,11 +104,11 @@
             &nbsp;&nbsp;
         </div>
         <div id="div_image" name="div_image" style="height: 100%; width: 100%;">
-            <img tal:attributes="src python:'images/'+key" id="myimage" width="200px" />
+            <img tal:attributes="src python:u'images/{}'.format(key)" id="myimage" width="200px" />
         </div>
     </body>
     <body tal:condition="python:not flash and not svg"
-          tal:attributes="onload python:'load_image(\''+key+'\')'" style="padding: 0px; border: 0px; margin: 0px;">
+          tal:attributes="onload python:u'load_image(\'{}\')'.format(key)" style="padding: 0px; border: 0px; margin: 0px;">
         <div id="nav" align="right" name="nav" style="position:absolute; width: 300px; height:200px; margin:5px;">
             <a href="#" onclick="zoom(1);" i18n:attributes="title popup_fullview_decrease"><img src="/img/pmud-minus.png" border="0"/></a>
             <span id="zoom_val" style="border:1px solid silver; background-color:white; width: 40px; text-align: right;">100%</span>
@@ -140,8 +140,8 @@
 
 <html metal:define-macro="thumbbig">
     <head>
-        <script tal:content="python:'var height='+ustr(height)+';'"/>
-        <script tal:content="python:'var width='+ustr(width)+';'"/>
+        <script tal:content="python:u'var height={};'.format(height)"/>
+        <script tal:content="python:u'var width={};'.format(width)"/>
         <script>
             function resize(){
                 window.resizeTo(width+50, height+100);

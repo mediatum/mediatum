@@ -80,7 +80,7 @@ class m_date(Metatype):
             value = field.getValues()
         except:
             logg.exception("exception in getMaskEditorHTML, using empty string")
-            value = ""
+            value = u""
         #value = ""
         # if field:
         #    value = field.getValues()

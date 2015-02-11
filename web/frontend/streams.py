@@ -43,7 +43,7 @@ IMGNAME = re.compile("/?(attachment|doc|images|thumbs|thumb2|file|download|archi
 def incUsage(node):
     nr = int(node.get("hit_statistic.file") or "0")
     nr += 1
-    node.set("hit_statistic.file", ustr(nr))
+    node.set("hit_statistic.file", unicode(nr))
 
 
 def splitpath(path):

@@ -150,7 +150,7 @@ def validate(req, op):
 
             # edit metadatatype
             elif key.startswith("edit_"):
-                return MetatypeDetail(req, ustr(key[5:-2]))
+                return MetatypeDetail(req, key[5:-2])
 
             # delete metadata
             elif key.startswith("delete_"):
@@ -159,11 +159,11 @@ def validate(req, op):
 
             # show details for given metadatatype
             elif key.startswith("detaillist_"):
-                return showDetailList(req, ustr(key[11:-2]))
+                return showDetailList(req, key[11:-2])
 
             # show masklist for given metadatatype
             elif key.startswith("masks_"):
-                return showMaskList(req, ustr(key[6:-2]))
+                return showMaskList(req, key[6:-2])
 
             # reindex search index for current schema
             elif key.startswith("indexupdate_") and "cancel" not in req.params.keys():

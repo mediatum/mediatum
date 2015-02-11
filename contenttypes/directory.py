@@ -252,9 +252,9 @@ class Directory(default.Default):
 
         if self.type.startswith("collection"):
             # special fields for collections
-            field = tree.Node("style_hide_empty", "metafield")
+            field = tree.Node(u"style_hide_empty", "metafield")
             field.set("label", t(lang, "hide empty directories"))
-            field.set("type", "check")
+            field.set("type", u"check")
             ret.append(field)
 
         elif self.type.startswith("directory"):

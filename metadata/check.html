@@ -1,10 +1,10 @@
 <tal:block metal:define-macro="editorfield">
-    <input type="checkbox" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+ustr(width)+'px'; name name; id name; checked python:{'False':None,'True':'checked'}[ustr(ustr(value)==ustr(1))]" value="1"/>
+    <input type="checkbox" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:{}px'.format(width); name name; id name; checked python:'checked' if value=='1' else None" value="1"/>
 
-    <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
-        <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/>
+    <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
+        <input tal:attributes="name python:'lock_'+name; id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
         <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
    </span>
 </tal:block>
 
-<input metal:define-macro="searchfield" type="checkbox" tal:attributes="name python:context.name; id python:context.name; checked python:{'False':None,'True':'checked'}[ustr(ustr(context.value)==ustr(1))]" value="1"/>
+<input metal:define-macro="searchfield" type="checkbox" tal:attributes="name python:context.name; id python:context.name; checked python:'checked' if context.value=='1' else None]" value="1"/>

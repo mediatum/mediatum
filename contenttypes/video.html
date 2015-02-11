@@ -7,9 +7,9 @@
         <title i18n:translate="video_showvideo">TEXT</title>
         <script type="text/javascript" src="/js/jwplayer.min.js"> </script>
         
-        <script tal:content="python:'var file_url = \''+ustr(file)+'\';'">;</script>
-        <script tal:content="python:'var thumbnail_url = \'/thumb2/{}\';'.format(node.id)">;</script>
-        <script tal:content="python:'var captions_info = '+ustr(captions_info)+';'">;</script>
+        <script tal:content="python:u'var file_url = \'{}\';'.format(file)">;</script>
+        <script tal:content="python:u'var thumbnail_url = \'/thumb2/{}\';'.format(node.id)">;</script>
+        <script tal:content="python:u'var captions_info = {};'.format(captions_info)">;</script>
         
         <style>
             body {margin:0px;padding:0px;}

@@ -1,11 +1,11 @@
 
 <tal:block metal:define-macro="editorfield">
-    <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+ustr(width-26)+'px'; name name; id name; value value; maxlenght python:ustr(len(value))"/>
-    <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
-        <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onchange python:'handlelock(\''+name+'\')'" type="checkbox"/>
+    <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:{}px'.format(width-26); name name; id name; value value; maxlenght python:unicode(len(value))"/>
+    <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
+        <input tal:attributes="name python:'lock_'+name; id python:u'lock_{}'.format(name); onchange python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
         <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
    </span>
-   <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/treeselect?name='+name+'\', \'\', 550, 470)'" style="horizontal-align:middle;min-width:30px;width:30px;padding:4px 4px;" type="button" i18n:attributes="title treeselect_titlepopupbutton"><img src="/img/ftree/folder.gif" style="height:14px"/></button>
+   <button name="button" tal:attributes="onclick python:u'openPopup(\'/metatype/treeselect?name={}\', \'\', 550, 470)'.format(name)" style="horizontal-align:middle;min-width:30px;width:30px;padding:4px 4px;" type="button" i18n:attributes="title treeselect_titlepopupbutton"><img src="/img/ftree/folder.gif" style="height:14px"/></button>
 </tal:block>
 
 <input metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name; value python:context.value" type="text" class="searchfield"/>
@@ -45,7 +45,7 @@
         </style>
     </head>
     
-    <body tal:attributes="onload python:'init(\''+name+'\')'"> 
+    <body tal:attributes="onload python:u'init(\'{}\')'.format(name)">
         <link rel="stylesheet" href="/css/ftree.css" type="text/css" />
         <script type="text/javascript" src="/js/ftree.js"> </script>
         <script type="text/javascript"> 
@@ -72,7 +72,7 @@
         </script>
         <div style="height:400px; overflow:auto;border:1px solid silver">
             <ul id="classtree" class="tree">
-                <li tal:attributes="id python:'Node'+basedir.id"><a tal:attributes="id python:ustr(basedir.id); title python:basedir.getLabel()+' ('+ustr(basedir.id)+')'" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
+                <li tal:attributes="id python:u'Node{}'.format(basedir.id)"><a tal:attributes="id python:ustr(basedir.id); title python:u'{} ({})'.format(basedir.getLabel(), basedir.id)" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
                     <ul>
                         <li tal:attributes="parentId python:basedir.id" class="spinner.gif"><a href="#" id="node_0"> </a></li>
                     </ul>

@@ -1,10 +1,10 @@
 
 <tal:block metal:define-macro="editorfield">
-    <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+ustr(width-100)+'px'; name name; id name; value value; maxlenght python:ustr(len(value))"/>
-    <small tal:content="python:'('+field.getValues()+')'"/>
+    <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:{}px'.format(width-100); name name; id name; value value; maxlenght python:unicode(len(value))"/>
+    <small tal:content="python:u'({})'.format(field.getValues())"/>
 
-    <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
-        <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/>
+    <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
+        <input tal:attributes="name python:'lock_'+name; id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
         <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
    </span>
 
@@ -14,11 +14,11 @@
 <table metal:define-macro="searchfield" cellspacing="0px" cellpadding="0px" style="border:0px">
     <tr>
             <td>&nbsp;&nbsp;<span i18n:translate="editor_from">TEXT</span>: </td>
-            <td> <input tal:attributes="name python:context.name+'-from'; id python:context.name+'-from'; value python:context.value[0]" type="text" style="width:123px" class="searchfield"/></td>
+            <td> <input tal:attributes="name python:u'{}-from'.format(context.name); id python:u'{}-from'.format(context.name); value python:context.value[0]" type="text" style="width:123px" class="searchfield"/></td>
     </tr>
     <tr>
             <td>&nbsp;&nbsp;<span i18n:translate="editor_to">TEXT</span>: </td>
-            <td> <input tal:attributes="name python:context.name+'-to'; id python:context.name+'-to'; value python:context.value[1]" type="text" style="width:123px" class="searchfield"/></td>
+            <td> <input tal:attributes="name python:u'{}-to'.format(context.name); id python:u'{}-to'.format(context.name); value python:context.value[1]" type="text" style="width:123px" class="searchfield"/></td>
     </tr>
     <tr>
             <td colspan="2" align="right"><small><tal:block i18n:translate="editor_input_format"/><tal:block tal:content="python:context.field.getValues()"/></small>&nbsp;</td>
@@ -29,6 +29,6 @@
 <div metal:define-macro="maskeditor" style="display:none" name="div_date" id="div_date">
     <div class="label" i18n:translate="date_edit_date_format">TEXT</div>
     <select id="date_value" name="date_value" style="width:250px;">
-        <option tal:repeat="option dateoption" tal:attributes="value python:option.getShortName(); selected python:{'False':None, 'True':'selected'}[ustr(option.getShortName()==value)]" tal:content="python:option.getName()" i18n:translate=""/>
+        <option tal:repeat="option dateoption" tal:attributes="value python:option.getShortName(); selected python:'selected' if option.getShortName()==value else None" tal:content="python:option.getName()" i18n:translate=""/>
     </select>
 </div>

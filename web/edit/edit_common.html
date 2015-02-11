@@ -41,7 +41,7 @@
         </div>
         <div id="scrollcontent">
         <tal:block tal:repeat="node nodelist">
-            <div tal:attributes="class python:{'True':'showcontent', 'False':'showcontent_error'}[ustr(ustr('')==ustr(node.getAttribute('faulty')))]">
+            <div tal:attributes="class python:'showcontent' if not node.getAttribute('faulty') else 'showcontent_error'">
                 <div style="position:absolute; left:0px; top:0px; width:296px; height:20px">
                     <input id="itemcheck" tal:attributes="name python:node.id; id python:'check'+node.id" onChange="checkObject(this)" type="checkbox"/> <span i18n:translate="edit_common_mark">TEXT</span>
                 </div>

@@ -7,32 +7,32 @@
     <div id="text_show_multilang" style="display:none" i18n:translate="text_show_multilang">TEXT</div>
     <div id="text_hide_multilang" style="display:none" i18n:translate="text_hide_multilang">TEXT</div>
     
-    <script tal:content="python:'var expand_multilang = \''+ustr(expand_multilang)+'\';'"> </script>
+    <script tal:content="python:u'var expand_multilang = \'{}\';'.format(expand_multilang)"> </script>
     <script language="javascript" tal:attributes="src python:'/metatype/text?type=javascript'" type="text/javascript"> </script>
 
     <div style="float:left;position:relative;">
-        <div tal:attributes="id python:ident+'_label'; class python:{'True':'multilang_show', 'False':'multilang_hide'}[ustr(len(languages)>0 and expand_multilang)]" tal:condition="python:languages" style="position:absolute;left:-20px;top:5px;" tal:content="python:defaultlang + ':'">TEXT</div>
+        <div tal:attributes="id python:u'{}_label'.format(ident); class python:'multilang_show' if len(languages) > 0 and expand_multilang else 'multilang_hide'" tal:condition="python:languages" style="position:absolute;left:-20px;top:5px;" tal:content="python:u'{}:'.format(defaultlang)">TEXT</div>
         <span class="surround" style="padding-left:0px;overflow:visible;">
-            <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+ustr(width-26)+'px'; name python:defaultlang+'__'+name; id python:defaultlang+'__'+name; value python:value if not values else values.get(defaultlang+'__'+name) "/>
-            <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/text?name='+defaultlang+'__'+name+'\', \'\', 550, 470)'"
+            <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:{}px'.format(width-26); name python:u'{}__{}'.format(defaultlang, name); id python:u'{}__{}'.format(defaultlang, name); value python:value if not values else values.get(u'{}__{}'.format(defaultlang, name)) "/>
+            <button name="button" tal:attributes="onclick python:u'openPopup(\'/metatype/text?name={}__{}\', \'\', 550, 470)'.format(defaultlang, name)"
                     style="horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px;" type="button"
                     i18n:attributes="title text_titlepopupbutton">
                 <img src="/img/edit_spc.png" style="height:14px"/>
             </button>
         </span>
         
-        <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
-            <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onchange python:'handlelock(\''+name+'\')'" type="checkbox"/>
+        <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
+            <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}'.format(name); onchange python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
             <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
         </span>
 
-        <img tal:attributes="title python:{'True':'text_hide_multilang', 'False':'text_show_multilang'}[ustr(expand_multilang)]; src python:'/img/slang.png' if expand_multilang else '/img/mlang.png'; id python:'button_toggle_'+ident; onclick python:'toggleDiv(this, '+ident+')'" i18n:attributes="title" style="margin-left:5px;cursor:pointer;" tal:condition="languages" />
+        <img tal:attributes="title python:'text_hide_multilang' if expand_multilang else 'text_show_multilang'; src python:'/img/slang.png' if expand_multilang else '/img/mlang.png'; id python:u'button_toggle_{}'.format(ident); onclick python:u'toggleDiv(this, {})'.format(ident)" i18n:attributes="title" style="margin-left:5px;cursor:pointer;" tal:condition="languages" />
 
-        <div tal:attributes="id python:ident+'_multilang'; class python:{'True':'multilang_show', 'False':'multilang_hide'}[ustr(len(languages)>0 and expand_multilang)]" tal:condition="languages" style="position:relative;">
+        <div tal:attributes="id python:u'{}_multilang'.format(ident); class python:'multilang_show' if len(languages) > 0 and expand_multilang else 'multilang_hide'" tal:condition="languages" style="position:relative;">
             <tal:block tal:repeat="lang languages">
-                <div style="position:absolute;left:-20px;top:5px;" tal:content="python:lang + ': '">TEXT</div>
-                <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+ustr(width-26)+'px'; name python:lang + '__' + name; id python:lang+'__'+name; value python:values.get(lang+'__'+name) "/>
-                <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/text?name='+lang+'__'+name+'\', \'\', 550, 470)'"
+                <div style="position:absolute;left:-20px;top:5px;" tal:content="python:u'{}: '.format(lang)">TEXT</div>
+                <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:px'.format(width-26); name python:u'{}__{}'.format(lang, name); id python:u'{}__{}'.format(lang, name); value python:values.get(u'{}__{}'.format(lang, name)) "/>
+                <button name="button" tal:attributes="onclick python:u'openPopup(\'/metatype/text?name={}__{}\', \'\', 550, 470)'.format(lang, name)"
                     style="horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px;" type="button"
                     i18n:attributes="title text_titlepopupbutton">
                     <img src="/img/edit_spc.png" style="height:14px"/>
@@ -42,7 +42,7 @@
         </div>
     </div>
     <div style="clear:both;"> </div>
-    <input type="hidden" tal:attributes="id python:ident+'_show_multilang'; name python:ident+'_show_multilang'; value python:{'True':'multi', 'False':'single'}[ustr(expand_multilang)]" size="75" />
+    <input type="hidden" tal:attributes="id python:u'{}_show_multilang'.format(ident); name python:u'{}_show_multilang'.format(ident); value python:'multi' if expand_multilang else 'single'" size="75" />
 </tal:block>
 
 <input metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name; value python:context.value" type="text" class="searchfield"/>
@@ -168,7 +168,7 @@
         </style>
     </head>
     
-    <body tal:attributes="onload python:'init(\''+name+'\')'"> 
+    <body tal:attributes="onload python:u'init(\'{}\')'.format(name)">
         <form>
             <div>
                 <div id="buttons">
@@ -184,13 +184,13 @@
                 <span i18n:translate="text_formatedvalue">TEXT</span><br/>
                 <div id="formatedvalue"> </div>
                 <div style="float:right;text-align:right">
-                    <button type="button" tal:attributes="onclick python:'save(\''+name+'\')'" i18n:translate="text_done">TEXT</button><br/><br/>
+                    <button type="button" tal:attributes="onclick python:u'save(\'{}\')'.format(name)" i18n:translate="text_done">TEXT</button><br/><br/>
                     <button type="button" onclick="window.close()" i18n:translate="text_cancel">TEXT</button>
                 </div> 
             </div>
             <div style="clear:both" i18n:translate="text_spcchar">TEXT</div>
             <div id="spccontainer">
-                <button tal:repeat="item charmap" type="button" id="items" tal:content="raw python:item[0]" tal:attributes="title python:item[2]; value python:item[1]; onmouseover python:'detail('+item[1]+',\''+item[2]+'\')'; onclick python:'insert(\''+item[1]+'\',\'\')'"/>
+                <button tal:repeat="item charmap" type="button" id="items" tal:content="raw python:item[0]" tal:attributes="title python:item[2]; value python:item[1]; onmouseover python:u'detail({},\'{}\')'.format(item[1], item[2]); onclick python:u'insert(\'{}\',\'\')'.format(item[1])"/>
             </div>
             <div id="spcvalue"> </div>
             <div id="spcname"> </div>

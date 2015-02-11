@@ -232,11 +232,11 @@
 
                             <tal:block tal:condition="python:file['type']!='dir' and file['type']!='back'">
                                 <td tal:attributes="class cssclass" align="center">
-                                    <a tal:attributes="href python:'/attfile/'+ustr(id)+'/'+file['path']" href="" target="_blank">
+                                    <a tal:attributes="href python:'/attfile/'+id+'/'+file['path']" href="" target="_blank">
                                         <img tal:attributes="src python:'/img/'+file['icon']" border="0">
                                     </a>
                                 </td>
-                                <td tal:attributes="class cssclass"><a tal:attributes="href python:'attfile/'+ustr(id)+'/'+file['path']" target="_blank" tal:content="python:file['name']"/></td>
+                                <td tal:attributes="class cssclass"><a tal:attributes="href python:'attfile/'+id+'/'+file['path']" target="_blank" tal:content="python:file['name']"/></td>
 
                                 <td tal:attributes="class cssclass" align="right"><small tal:content="python:file['size']"/>&nbsp;</td>
                             </tal:block>

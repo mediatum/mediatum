@@ -1,10 +1,10 @@
 
 <tal:block metal:define-macro="editorfield">
-    <select class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[int(lock)]; style python:'width:'+ustr(width-16)+'px'; name python:name; id python:'select_'+name;">
-        <option tal:repeat="v valuelist" tal:attributes="value python:v['select_value']; selected python:{'True':'selected','False':None}[ustr(v['select_value']==value)]" tal:content="raw python:v['select_text']"/>
+    <select class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[int(lock)]; style python:u'width:{}px'.format(width-16); name python:name; id python:'select_'+name;">
+        <option tal:repeat="v valuelist" tal:attributes="value python:v['select_value']; selected python:'selected' if v['select_value']==value else None" tal:content="raw python:v['select_text']"/>
     </select>
     <tal:block tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
-        <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/>
+        <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
         <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
     </tal:block>
 </tal:block>
@@ -12,7 +12,7 @@
 
 <select metal:define-macro="searchfield" tal:attributes="name python:context.name; id python:context.name;" class="searchfield">
     <tal:block tal:repeat="v valuelist">
-    <option tal:condition="python:v[0]!='optgroup'" tal:attributes="value python:''+v[2]+''; selected python:{'True':'selected','False':None}[ustr(context.value==''+v[2]+'')]" tal:content="raw python:v[1]+v[2]+v[3]"/>
+    <option tal:condition="python:v[0]!='optgroup'" tal:attributes="value python:u'{}'.format(v[2]); selected python:'selected' if context.value=v[2] else None" tal:content="raw python:v[1]+v[2]+v[3]"/>
        <optgroup tal:condition="python:v[0]=='optgroup'" tal:replace="raw python:v[1]"/>
     </tal:block>
 </select>
@@ -24,7 +24,7 @@
     <br/>
     <div class="label" i18n:translate="dlist_edit_type">TEXT</div>
     <select name="dlist_value" id="dlist_value" style="width:200px;">
-        <option tal:repeat="type types" tal:attributes="value type; selected python:{'True':'selected', 'False':None}[ustr(type==value[1])]" tal:content="python:'dlist_type_'+type" i18n:translate=""/>
+        <option tal:repeat="type types" tal:attributes="value type; selected python:'selected' if type==value[1] else None" tal:content="python:u'dlist_type_{}'.format(type)" i18n:translate=""/>
     </select>
     <br/>
     <div class="label" i18n:translate="dlist_edit_attr">TEXT</div>

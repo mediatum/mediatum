@@ -1,33 +1,33 @@
 <tal:block metal:define-macro="editorfield">
-    <tal:block i18n:translate="field_msg_text">TEXT</tal:block> <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock];name name; id name; style python:'width:'+ustr(width-40)+'px'; value python:ustr(value[0])" />
+    <tal:block i18n:translate="field_msg_text">TEXT</tal:block> <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock];name name; id name; style python:u'width:{}px'.format(width-40); value python:ustr(value[0])" />
     <br/>
-    <fieldset tal:attributes="style python:'width:'+ustr(width)+'px'">
+    <fieldset tal:attributes="style python:u'width:{}px'.format(width)">
         <legend i18n:translate="field_msg_style">TEXT</legend>
         <tal:block i18n:translate="field_msg_view">TEXT</tal:block>
         <select tal:attributes="name name; id name" tal:define="v_cols python:['no', 'yes']">
             <tal:block tal:repeat="v_col v_cols">
-                <option i18n:translate="" tal:content="python:'view_'+v_col" tal:attributes="value python:ustr(v_cols.index(v_col)); selected python:{'False':None,'True':'selected'}[ustr((value[1])==ustr(v_cols.index(v_col)))]">TEXT</option>            
+                <option i18n:translate="" tal:content="python:u'view_{}'.format(v_col)" tal:attributes="value python:ustr(v_cols.index(v_col)); selected python:'selected' if value[1]==ustr(v_cols.index(v_col)) else None">TEXT</option>
             </tal:block>
         </select>
         &nbsp;&nbsp;&nbsp;&nbsp;
         <tal:block i18n:translate="field_msg_color">TEXT</tal:block>
         <select tal:attributes="name name; id name">
             <tal:block tal:repeat="c_col python:['black','red','blue','green']">
-                <option tal:content="python:'color_'+c_col" i18n:translate="" tal:attributes="value c_col; selected python:{'False':None,'True':'selected'}[ustr(ustr(value[2])==ustr(c_col))]">TEXT</option>
+                <option tal:content="python:u'color_{}'.format(c_col)" i18n:translate="" tal:attributes="value c_col; selected python:'selected' if ustr(value[2])==ustr(c_col) else None">TEXT</option>
             </tal:block>
         </select>
         
         <select tal:attributes="name name; id name" tal:define="s_cols python:['normal', 'bold', 'italic', 'bold_italic']">
             <tal:block tal:repeat="s_col s_cols">
-                <option i18n:translate="" tal:content="python:'style_'+s_col" tal:attributes="value python:ustr(s_cols.index(s_col)); selected python:{'False':None,'True':'selected'}[ustr((value[3])==ustr(s_cols.index(s_col)))]">TEXT</option>
+                <option i18n:translate="" tal:content="python:u'style_{}'.format(s_col)" tal:attributes="value python:ustr(s_cols.index(s_col)); selected python:'selected' if (value[3])==ustr(s_cols.index(s_col)) else None">TEXT</option>
             </tal:block>
         </select>
     </fieldset>
     
-    <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
-        <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/>
+    <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
+        <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
         <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
    </span>
 </tal:block>
 
-<input metal:define-macro="searchfield" type="checkbox" tal:attributes="name python:context.name; id python:context.name; checked python:{'False':None,'True':'checked'}[ustr(ustr(context.value)==ustr(1))]" value="1"/>
+<input metal:define-macro="searchfield" type="checkbox" tal:attributes="name python:context.name; id python:context.name; checked python:'checked' if ustr(context.value)==ustr(1) else None" value="1"/>

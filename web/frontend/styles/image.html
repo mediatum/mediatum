@@ -41,7 +41,7 @@ The document is displayed in the <a href="/" tal:attributes="href python:'?id='+
     </tal:block>
 
     <div tal:condition="python:tif!=''" id="object_highresolution" style="padding-top:10px">
-        <a tal:attributes="href python:'/file/{}/{}'.format(node.id, ustr(tif))" i18n:translate="image_high_res_title">TEXT</a>
+        <a tal:attributes="href python:'/file/{}/{}'.format(node.id, tif)" i18n:translate="image_high_res_title">TEXT</a>
         <img id="object_highresolution_remark" style="display:none;" src="/img/wait_small.gif"/>
     </div>
 

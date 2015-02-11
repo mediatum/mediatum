@@ -63,7 +63,7 @@
                             </table>
                         </td>
                         <td style="width: 80px">
-                            <input i18n:attributes="title admin_usergroup_edit" tal:attributes="name python:ustr('edit_'+group.getName())" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
+                            <input i18n:attributes="title admin_usergroup_edit" tal:attributes="name python:'edit_'+group.getName()" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
                             <input tal:condition="python:len(group.getChildren())+len(group.getDynamicUserNames(as_string=False))==0" tal:attributes="name python:ustr('delete_'+group.getName()); onclick python:'return questionDelName(\''+group.getName()+'\')'" i18n:attributes="title admin_usergroup_delete" type="image" src="/img/delete.png"/>
                         </td>
                     </tr>

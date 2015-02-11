@@ -15,50 +15,50 @@
 
     <div style="float:left;position:relative;">  
         <div style="width: 20px;position:absolute;left:-20px;"> 
-            <label tal:attributes="id python:ident+'_label'; style python: multilang_display;" tal:content="python:defaultlang+':'">TEXT</label>
+            <label tal:attributes="id python:u'{}_label'.format(ident); style python:multilang_display;" tal:content="python:defaultlang+':'">TEXT</label>
         </div>
 
         <div class="surr">
-<textarea class="memo_text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name python:defaultlang+'__'+name; id python:defaultlang+'__'+name; onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:'width:'+ustr(width-20)+'px'" rows="4">
-<tal:block tal:replace="python:langdict[defaultlang] or ''"/></textarea>
+<textarea class="memo_text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name python:u'{}__{}'.format(defaultlang, name); id python:u'{}__{}'.format(defaultlang, name); onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:u'width:{}px'.format(width-20)" rows="4">
+<tal:block tal:replace="python:langdict[defaultlang] or u''"/></textarea>
         </div>
-        <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/memo?name='+defaultlang+'__'+name+'\', \'\', 550, 600)'" style="margin-left:5px;horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px" type="button" i18n:attributes="title memo_titlepopupbutton"><img src="/img/edit_spc.png" style="height:14px;"/></button>
+        <button name="button" tal:attributes="onclick python:u'openPopup(\'/metatype/memo?name={}__{}\', \'\', 550, 600)'.format(defaultlang, name)" style="margin-left:5px;horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px" type="button" i18n:attributes="title memo_titlepopupbutton"><img src="/img/edit_spc.png" style="height:14px;"/></button>
 
-        <img tal:condition="python: enable_multilang" i18n:attributes="title" tal:attributes="title python:'memo_hide_multilang' if expand_multilang else 'memo_show_multilang'; id python:'button_toggle_'+ident; onclick python:'toggleMemoDiv(this, \''+ident+'\')'; src python:'/img/slang.png' if expand_multilang else '/img/mlang.png'" style="margin-left:5px;cursor:pointer;"/>
+        <img tal:condition="python: enable_multilang" i18n:attributes="title" tal:attributes="title python:'memo_hide_multilang' if expand_multilang else 'memo_show_multilang'; id python:u'button_toggle_{}'.format(ident); onclick python:u'toggleMemoDiv(this, \'\')'.format(ident); src python:'/img/slang.png' if expand_multilang else '/img/mlang.png'" style="margin-left:5px;cursor:pointer;"/>
         
-        <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
-            <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/>
+        <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
+            <input tal:attributes="name python:'lock_'+name; id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
             <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
         </span>
     </div>
     
     <div style="clear:both"> </div>
     
-    <div tal:condition="python: name and enable_multilang" tal:attributes="id python:ident+'_multilang'; style python: multilang_display" >
+    <div tal:condition="python: name and enable_multilang" tal:attributes="id python:u'{}_multilang'.format(ident); style python: multilang_display" >
         <div tal:repeat="lang languages" style="position:relative;">
 
-            <div style="width: 20px;position:absolute;left:-20px;" tal:content="python:lang+': '">TEXT</div>
-            <div tal:attributes="id python:'div_'+lang+'__'+name" style="float:left;">
+            <div style="width: 20px;position:absolute;left:-20px;" tal:content="python:u'{}: '.format(lang)">TEXT</div>
+            <div tal:attributes="id python:u'div_{}__{}'.format(lang, name)" style="float:left;">
                 <div>
                     <div class="surr">
-<textarea class="memo_text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name python:lang+'__'+name; id python:lang+'__'+name; onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:'width:'+ustr(width-20)+'px'" rows="4">
+<textarea class="memo_text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name python:u'{}__{}'.format(lang, name); id python:u'{}__{}'.format(lang, name); onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:u'width:{}px.format(width-20)'" rows="4">
 <tal:block tal:replace="python:langdict[lang]" /></textarea>
                     </div>
-                    <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
-                        <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/>
+                    <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
+                        <input tal:attributes="name python:'lock_'+name; id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
                         <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
                     </span>
                 </div>
             </div>
             <div style="padding-left:2px;float:left;">
-                <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/memo?name='+lang+'__'+name+'\', \'\', 550, 600)'" style="margin-left:5px;horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px" type="button" i18n:attributes="title memo_titlepopupbutton"><img src="/img/edit_spc.png" style="height:14px;"/></button>
+                <button name="button" tal:attributes="onclick python:u'openPopup(\'/metatype/memo?name={}__{}\', \'\', 550, 600)'.format(lang, name)" style="margin-left:5px;horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px" type="button" i18n:attributes="title memo_titlepopupbutton"><img src="/img/edit_spc.png" style="height:14px;"/></button>
             </div>
             <br/>
         </div>
     </div>
 
     <div style="clear:left"> </div>
-    <input tal:attributes="id python:ident+'_show_multilang'; name python:ident+'_show_multilang'; value python: value_is_multilang" type="hidden" size="75" />
+    <input tal:attributes="id python:u'{}_show_multilang'.format(ident); name python:u'{}_show_multilang'.format(ident); value python: value_is_multilang" type="hidden" size="75" />
 </tal:block>
 
 
@@ -90,7 +90,7 @@
 
     <div class="label" i18n:translate="mask_edit_enable_multilang">TEXT</div>
     <input name="memo_handle_attrs" type="hidden" tal:attributes="value python: additional_attrs" />
-    <input name="memo_attr_multilang" value="1" type="checkbox" tal:attributes="checked python:{'False':None,'True':'checked'}[ustr(ustr(multilang)==ustr(1))]" />
+    <input name="memo_attr_multilang" value="1" type="checkbox" tal:attributes="checked python:'checked' if multilang=='1' else None" />
     
 </div>
 
@@ -195,7 +195,7 @@
         </style>
     </head>
     
-    <body tal:attributes="onload python:'init(\''+name+'\')'"> 
+    <body tal:attributes="onload python:u'init(\'{}\')'.format(name)">
         <form>
             <div>
                 <div id="buttons">
@@ -211,13 +211,13 @@
                 <span i18n:translate="memo_formatedvalue">TEXT</span><br/>
                 <div id="formatedvalue"> </div>
                 <div style="float:right;text-align:right">
-                    <button type="button" tal:attributes="onclick python:'save(\''+name+'\')'" i18n:translate="memo_done">TEXT</button><br/><br/>
+                    <button type="button" tal:attributes="onclick python:u'save(\'\')'.format(name)" i18n:translate="memo_done">TEXT</button><br/><br/>
                     <button type="button" onclick="window.close()" i18n:translate="memo_cancel">TEXT</button>
                 </div> 
             </div>
             <div style="clear:both" i18n:translate="memo_spcchar">TEXT</div>
             <div id="spccontainer">
-                <button tal:repeat="item charmap" type="button" id="items" tal:content="raw python:item[0]" tal:attributes="title python:item[2]; value python:item[1]; onmouseover python:'detail('+item[1]+',\''+item[2]+'\')'; onclick python:'insert(\''+item[1]+'\',\'\')'"/>
+                <button tal:repeat="item charmap" type="button" id="items" tal:content="raw python:item[0]" tal:attributes="title python:item[2]; value python:item[1]; onmouseover python:u'detail({},\'\')'.format(item[1], item[2]); onclick python:u'insert(\'{}\',\'\')'.format(item[1])"/>
             </div>
             <div id="spcvalue"> </div>
             <div id="spcname"> </div>

@@ -61,7 +61,7 @@ def validate(req, op):
 
             elif key.startswith("edit_"):
                 # edit usergroup
-                return editGroup_mask(req, ustr(key[5:-2]))
+                return editGroup_mask(req, key[5:-2])
 
             elif key.startswith("delete_"):
                 # delete group

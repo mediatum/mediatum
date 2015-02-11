@@ -86,14 +86,13 @@ class m_mlist(Metatype):
 
             try:
                 if int(num) < 0:
-                    raise ""
+                    raise u""
                 elif int(num) == 0:
-                    num = ""
+                    num = u""
                 else:
-                    num = " (" + ustr(num) + ")"
+                    num = u" (" + unicode(num) + u")"
             except:
-                logg.exception("exception in formatValues, using empty string")
-                num = ""
+                num = u""
 
             val = esc(val)
 

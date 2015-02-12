@@ -108,7 +108,7 @@ def validate(req, op):
         for key in req.params.keys():
             if key.startswith("new"):
                 # create new user
-                return editUser_mask(req, "")
+                return editUser_mask(req,  u"")
 
             elif key.startswith("edit_"):
                 # edit user

@@ -204,7 +204,7 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:attributes="title admin_save_title" tal:attributes="onclick python:u'selectacl(Array(\'left_read{}\', \'left_write'{}\'))'.format(acl_read['name'], acl_write['name']);" i18n:translate="admin_save" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
+                    <button i18n:attributes="title admin_save_title" tal:attributes="onclick python:u'selectacl(Array(\'left_read{}\', \'left_write{}\'))'.format(acl_read['name'], acl_write['name']);" i18n:translate="admin_save" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
                     <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
                 </td>
             </tr>
@@ -502,7 +502,7 @@
                                 <input tal:attributes="onclick python:u'moveRight(document.addmfield.left_read{},document.addmfield.right_read{})'.format(acl_read['name'], acl_read['name'])" type="button" value=">>"/>
                             </td>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_read['val_right']" tal:attributes="name python:u'right_read'.format(acl_read['name']);  ondblclick python:u'moveLeft(document.addmfield.left_read{},document.addmfield.right_read{})'.format(acl_read['name'], acl_read['name'])" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_read['val_right']" tal:attributes="name python:u'right_read'.format(acl_read['name']); ondblclick python:u'moveLeft(document.addmfield.left_read{},document.addmfield.right_read{})'.format(acl_read['name'], acl_read['name'])" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                         </tr>
@@ -516,7 +516,7 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" tal:attributes="onclick python:u'selectacl(Array(\'left_read{}\',\'left_write{}\'))'.format(acl_read['name'], acl_write['name']);" type="submit" name="submitbutton" value="submit">TEXT</button>&nbsp;&nbsp;
+                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" tal:attributes="onclick python:u'selectacl(Array(\'left_read{}\',\'left_write{}\'));'.format(acl_read['name'], acl_write['name'])" type="submit" name="submitbutton" value="submit">TEXT</button>&nbsp;&nbsp;
                     <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
                 </td>
             </tr>

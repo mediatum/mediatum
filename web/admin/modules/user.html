@@ -150,8 +150,8 @@
                         </td>
                         <td>
                             <input tal:condition="python:not user.isDynamicUser()" tal:attributes="name python:u'edit_{}'.format(user.id)" i18n:attributes="title admin_user_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
-                            <input tal:condition="python:not user.isDynamicUser()" tal:attributes="name python:u'delete_{}'.format(user.id); onclick python:u'return confirm(confirm_msg_delete_user.replace(\'${username}\', \'{}\'))'.format(user.getName())" i18n:attributes="title admin_user_delete_title" type="image" src="/img/delete.png"/>
-                            <input tal:condition="python:user.isDynamicUser()" tal:attributes="name python:u'delete_{}'.format(user.id); onclick python:u'return confirm(confirm_msg_logout_user.replace(\'${username}\', \'{}\'))'.format(user.getName())" i18n:attributes="title admin_user_logout_title" type="image" src="/img/delete.png"/>
+                            <input tal:condition="python:not user.isDynamicUser()" tal:attributes="name python:u'delete_{}'.format(user.id); onclick python:u'return confirm(confirm_msg_delete_user.replace(\'${{username}}\', \'{0}\'))'.format(user.getName())" i18n:attributes="title admin_user_delete_title" type="image" src="/img/delete.png"/>
+                            <input tal:condition="python:user.isDynamicUser()" tal:attributes="name python:u'delete_{}'.format(user.id); onclick python:u'return confirm(confirm_msg_logout_user.replace(\'${{username}}\', \'{0}\'))'.format(user.getName())" i18n:attributes="title admin_user_logout_title" type="image" src="/img/delete.png"/>
                         </td>
                     </tr>
                 </tal:block>

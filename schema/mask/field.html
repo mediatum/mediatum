@@ -13,8 +13,8 @@
             <select name="insertposition" style="width:500px">
                 <option value="end" selected="selected" i18n:translate="mask_edit_end">TEXT</option>
                 <tal:block tal:repeat="field fields">
-                    <option tal:condition="python:hasattr(field.getField(),'getFieldtype')" tal:attributes="value python:field.id" tal:content="python:field.getLabel()+' ('+field.getField().getFieldtype()+')'"/>
-                    <option tal:condition="python:not hasattr(field.getField(),'getFieldtype')" tal:attributes="value python:field.id" tal:content="python:field.getLabel()+' ('+field.get('type')+')'"/>
+                    <option tal:condition="python:hasattr(field.getField(),'getFieldtype')" tal:attributes="value python:field.id" tal:content="python:u'{} ({})'.format(field.getLabel(), field.getField().getFieldtype())"/>
+                    <option tal:condition="python:not hasattr(field.getField(),'getFieldtype')" tal:attributes="value python:field.id" tal:content="python:u'{} ({})'.format(field.getLabel(), field.get('type'))"/>
                 </tal:block>
             </select>
             <br/>
@@ -29,7 +29,7 @@
                 <div class="label" i18n:translate="mask_edit_field">TEXT</div>
                 <select tal:condition="python:len(metafields)>0" name="field" style="width:250px;">
                     <tal:block tal:repeat="metafield metafields">
-                        <option tal:attributes="value python:metafield.id" tal:content="python:metafield.getName()+' ('+metafield.getFieldtype()+')'"/>
+                        <option tal:attributes="value python:metafield.id" tal:content="python:u'{} ({})'.format(metafield.getName(), metafield.getFieldtype())"/>
                     </tal:block>
                 </select>
                 <span tal:condition="python:len(metafields)==0" style="color:red" i18n:translate="mask_editor_no_fields">TEXT</span>
@@ -55,8 +55,8 @@
         <tal:block tal:condition="python:op=='edit'">
             <select name="field" style="width:250px;" id="newfieldtype" onchange="editmetatypechange(document)">
                 <tal:block tal:repeat="metafield metafields">
-                    <option tal:condition="python:item.getField() and item.getField().id==metafield.id and item.getField()!=None" tal:attributes="value python:metafield.id" tal:content="python:metafield.getLabel()+' ('+metafield.getFieldtype()+')'" selected="selected"/>
-                    <option tal:condition="python:(not item.getField() or item.getField().id!=metafield.id) and item.getField()!=None" tal:attributes="value python:metafield.id" tal:content="python:metafield.getLabel()+' ('+metafield.getFieldtype()+')'"/>
+                    <option tal:condition="python:item.getField() and item.getField().id==metafield.id and item.getField()!=None" tal:attributes="value python:metafield.id" tal:content="python:u'{} ({})'.format(metafield.getLabel(), metafield.getFieldtype())" selected="selected"/>
+                    <option tal:condition="python:(not item.getField() or item.getField().id!=metafield.id) and item.getField()!=None" tal:attributes="value python:metafield.id" tal:content="python:u'{} ({})'.format(metafield.getLabel(), metafield.getFieldtype())"/>
                 </tal:block>
             </select>
             <br/>
@@ -75,32 +75,32 @@
         <small i18n:translate="mask_edit_required_info">TEXT</small>
         <br/>
         <div class="label" i18n:translate="mask_edit_field_width">TEXT</div>
-        <input tal:attributes="value python:ustr(item.getWidth())" id="input_width" type="text" name="width" style="width:100px"/> 
+        <input tal:attributes="value python:unicode(item.getWidth())" id="input_width" type="text" name="width" style="width:100px"/>
         <span i18n:translate="mask_edit_width_info">TEXT</span>
         <br/>
         
         <div class="label" tal:condition="python:item.getField() and item.getField().get('type') not in ['text']" i18n:translate="mask_edit_default">TEXT</div>
-        <input tal:condition="python:item.getField() and item.getField().get('type') not in ['text']" tal:attributes="value python:ustr(item.getDefault())" type="text" name="default" style="width:500px"/> 
+        <input tal:condition="python:item.getField() and item.getField().get('type') not in ['text']" tal:attributes="value python:item.getDefault()" type="text" name="default" style="width:500px"/>
         <span tal:condition="python:item.getField() and item.getField().get('type') in ['text']">
            <div class="label" i18n:translate="mask_edit_default">TEXT</div>
-           <textarea tal:content="python:ustr(item.getDefault())" id="textarea_template" name="default" style="width:500px;height:100px" wrap="off"/>
+           <textarea tal:content="python:item.getDefault()" id="textarea_template" name="default" style="width:500px;height:100px" wrap="off"/>
            <br/>
            <div class="label" i18n:translate="mask_edit_testnodes">TEXT</div>
-           <input tal:attributes="value python:ustr(item.getTestNodes())" type="text" id="input_testnodes" name="testnodes" style="width:380px"/>  
+           <input tal:attributes="value python:item.getTestNodes()" type="text" id="input_testnodes" name="testnodes" style="width:380px"/>
            <input type="button" name="testnodes_button" onclick="show_testnodes()" style="width:120px" tal:attributes="value python:translate('mask_edit_show_testnodes', language)"/>        
         </span>
         
         <br/>
         <div class="label" i18n:translate="mask_edit_unit">TEXT</div>
-        <input tal:attributes="value python:ustr(item.getUnit())" type="text" name="unit" style="width:500px"/>
+        <input tal:attributes="value python:item.getUnit()" type="text" name="unit" style="width:500px"/>
         <br/>
         <div class="label" i18n:translate="mask_edit_format">TEXT</div>
-        <input tal:attributes="value python:ustr(item.getFormat())" type="text" name="format" style="width:500px"/>
+        <input tal:attributes="value python:item.getFormat()" type="text" name="format" style="width:500px"/>
         <br/>
         <div class="label" i18n:translate="mask_edit_separator">TEXT</div>
-        <input tal:attributes="value python:ustr(item.getSeparator())" type="text" name="separator" style="width:500px"/>
+        <input tal:attributes="value python:item.getSeparator()" type="text" name="separator" style="width:500px"/>
         <br/>
-        <input tal:attributes="value python:ustr(item.id)" type="hidden" name="id" id="item_id"/>
+        <input tal:attributes="value python:item.id" type="hidden" name="id" id="item_id"/>
         <input tal:attributes="value pid" type="hidden" name="pid"/>
         <input type="hidden" name="type" value="field"/>
         <br/>&nbsp;<br/><div class="label"><small style="color:silver">(id: <tal:block tal:replace="python:item.id"/>)</small></div>
@@ -118,21 +118,21 @@
         <br/>
         <div i18n:translate="mask_edit_mappingselection" class="label">TEXT<span class="required">*</span></div>
         <fieldset>
-            <input tal:attributes="checked python:{'False':None,'True':'checked'}[ustr(ustr(item.get('fieldtype')) in ('mapping', ''))]" type="radio" name="fieldtype" value="mapping"/> 
+            <input tal:attributes="checked python:'checked' if item.get('fieldtype') in ('mapping', '') else None" type="radio" name="fieldtype" value="mapping"/>
             <span i18n:translate="mask_edit_mapping_field">TEXT</span><br/>
             <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
             <select name="mappingfield" id="mappingfield" style="width:250px;">
                 <tal:block tal:repeat="mapping mappings">
                     <optgroup tal:attributes="label python:mapping.getName()">
                     <tal:block tal:repeat="mappingfield python:mapping.getFields()">
-                        <option tal:content="python:mappingfield.getFullName()" tal:attributes="value python:ustr(mappingfield.id); selected python:{'False':None,'True':'selected'}[ustr(ustr(item.get('mappingfield'))==ustr(mappingfield.id))]"/>
+                        <option tal:content="python:mappingfield.getFullName()" tal:attributes="value python:mappingfield.id; selected python:'selected' if item.get('mappingfield')==mappingfield.id else None"/>
                     </tal:block>
                     </optgroup>
                 </tal:block>
             </select>
             <br/>
             <br/>
-            <input tal:attributes="checked python:{'False':None,'True':'checked'}[ustr(item.get('fieldtype')=='attribute')]" type="radio" name="fieldtype" value="attribute" />
+            <input tal:attributes="checked python:'checked' if item.get('fieldtype')=='attribute' else None" type="radio" name="fieldtype" value="attribute" />
             <span i18n:translate="mask_edit_attribute_field">TEXT</span><br/> 
             <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
             
@@ -146,11 +146,11 @@
         <div i18n:translate="mask_edit_field" class="label">TEXT<span class="required">*</span></div>
         <select name="attribute" id="attribute" style="width:250px;">
             <tal:block tal:repeat="field python:metafields">
-                <option tal:content="python:field.getName()" tal:attributes="value python:ustr(field.id); selected python:{'False':None,'True':'selected'}[ustr(item.get('attribute')==ustr(field.id))]"/>
+                <option tal:content="python:field.getName()" tal:attributes="value python:field.id; selected python:'selected' if item.get('attribute')==field.id else None"/>
             </tal:block>
         </select>
         
-        <input tal:attributes="value python:ustr(item.id)" type="hidden" name="id"/>
+        <input tal:attributes="value python:item.id" type="hidden" name="id"/>
         <input tal:attributes="value pid" type="hidden" name="pid"/>
         <input type="hidden" name="type" value="field"/>
         <br/>&nbsp;<br/><div class="label">&nbsp;</div>

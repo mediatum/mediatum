@@ -389,7 +389,7 @@ def editUser_mask(req, id, err=0):
     newuser = 0
 
     if err == 0 and id == "":  # new user
-        user = tree.Node("", type="user")
+        user = tree.Node(u"", type="user")
         user.setOption("c")
         newuser = 1
 
@@ -408,7 +408,7 @@ def editUser_mask(req, id, err=0):
         for usergroup in req.params.get("usergroups", "").split(";"):
             ugroups += [usergroup]
 
-        user = tree.Node("", type="user")
+        user = tree.Node(u"", type="user")
         user.setName(req.params.get("username", ""))
         user.setEmail(req.params.get("email", ""))
         user.setOption(option)

@@ -99,7 +99,7 @@ def getEditModuleHierarchy(typename):
     for dtype in types:  # get menu for type
         _items = {}
         if dtype.name != "root":
-            n = tree.Node("", type=dtype.name)
+            n = tree.Node(u"", type=dtype.name)
             menu_str = getEditMenuString(dtype.name)
 
             if menu_str != "":
@@ -396,7 +396,7 @@ def view(req):
         v["typelongname"] = ""
         for dtype in loadAllDatatypes():
             if dtype.name != "root":
-                n = tree.Node("", type=dtype.name)
+                n = tree.Node(u"", type=dtype.name)
                 if hasattr(n, "getEditMenuTabs"):
                     v['datatypes'].append(dtype)
             if dtype.name == v["subitem"]:

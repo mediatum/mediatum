@@ -117,7 +117,7 @@
             &nbsp;&nbsp;
         </div>
         <div id="div_image" name="div_image" style="height: 100%; width: 100%;">
-            <img tal:attributes="src python:'images/'+key" id="myimage" width="200px"/>
+            <img tal:attributes="src python:u'images/{}'.format(key)" id="myimage" width="200px"/>
         </div>
     </body>
     <body tal:condition="python:flash">
@@ -125,10 +125,10 @@
                 codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,40,0"
                 width="100%" height="100%" id="theMovie">
           <param name="FlashVars" 
-                 tal:attributes="value python:'zoomifyImagePath='+tileurl">
+                 tal:attributes="value python:u'zoomifyImagePath={}'.format(tileurl)">
           <param name="MENU" value="FALSE">
           <param name="SRC" value="/img/zoom.swf">
-          <embed tal:attributes="FlashVars python:'zoomifyImagePath='+tileurl"
+          <embed tal:attributes="FlashVars python:u'zoomifyImagePath={}'.format(tileurl)"
                  src="/img/zoom.swf" 
                  menu="false" 
                  pluginspage="http://www.macromedia.com/shockwave/download/index.cgi?P1_Prod_Version=ShockwaveFlash"

@@ -633,7 +633,7 @@ def addRule(rule):
 
 def existRule(rulename):
     try:
-        description, text = conn.getRule(ustr(rulename))
+        description, text = conn.getRule(rulename)
         if text != "":
             return True
     except:

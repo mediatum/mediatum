@@ -33,18 +33,18 @@
                         <span i18n:translate="admin_filter_label">TEXT</span>
                         <select name="filtertype" style="margin:0px">
                             <tal:block tal:repeat="filterattr filterattrs">
-                                <option tal:content="python:filterattr[1]" tal:attributes="value python:filterattr[0]; selected python:{'False':None,'True':'selected'}[ustr(filterarg==filterattr[0])]" i18n:translate="">TEXT</option>
+                                <option tal:content="python:filterattr[1]" tal:attributes="value python:filterattr[0]; selected python:'selected' if filterarg==filterattr[0] else None" i18n:translate="">TEXT</option>
                             </tal:block>
                         </select>
                         <tal:block tal:repeat="tab tabs">
-                            <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[ustr(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
+                            <button tal:attributes="value python:tab[1]; class python:'admin_filter_sel' if tab[0].lower()==actfilter else 'admin_filter'" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
                         </tal:block>
                     </td>
                 </tr>
                 <tr>
                     <th>&nbsp;</th>
                     <th tal:repeat="col sortcol">
-                        <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit" value="">TEXT</button>
+                        <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:u'sortcol_{}'.format(col.link)" class="admin_sortcol" type="submit" value="">TEXT</button>
                     </th>
                     <th>&nbsp;</th>
                     
@@ -65,11 +65,11 @@
                 
                 <tal:block tal:repeat="metadatatype python:metadatatypes[pages.getStart():pages.getEnd()]">
                 <tr tal:define="cssclass python:metadatatypes.index(metadatatype)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
-                    <td tal:content="python:ustr(metadatatypes.index(metadatatype)+1)+'.'"/>
+                    <td tal:content="python:u'{}.'.format(metadatatypes.index(metadatatype)+1)"/>
                     <td tal:content="python:metadatatype.getName()"/>
                     <td tal:content="python:metadatatype.getLongName()"/>
                     <td tal:condition="python:len(metadatatype.getDescription())<=10" tal:content="python:metadatatype.getDescription()"/>
-                    <td tal:condition="python:len(metadatatype.getDescription())>10" tal:attributes="title python:metadatatype.getDescription()" tal:content="python:metadatatype.getDescription()[:10]+'...'"/>
+                    <td tal:condition="python:len(metadatatype.getDescription())>10" tal:attributes="title python:metadatatype.getDescription()" tal:content="python:u'{}...'.format(metadatatype.getDescription()[:10])"/>
                     <td>
                         &nbsp;&nbsp;&nbsp;<img tal:condition="python:metadatatype.isActive()" i18n:attributes="title admin_meta_active_title" src="/img/haken.gif"/>
                     </td>
@@ -86,21 +86,21 @@
                         <img tal:condition="python:metadatatype.getAccess('read')==''" i18n:attributes="title admin_meta_acl_title" src="/img/mark_empty.png"/>
                     </td>
                     <td>
-                        <input tal:attributes="name python:'detaillist_'+metadatatype.getName()" i18n:attributes="title admin_meta_editdetail" type="image" src="/img/rightarrow.png"/>&nbsp;
-                        <input tal:attributes="name python:'masks_'+metadatatype.getName()" i18n:attributes="title admin_meta_maskdetail_title" type="image" src="/img/styles.png"/>
+                        <input tal:attributes="name python:u'detaillist_{}'.format(metadatatype.getName())" i18n:attributes="title admin_meta_editdetail" type="image" src="/img/rightarrow.png"/>&nbsp;
+                        <input tal:attributes="name python:u'masks_{}'.format(metadatatype.getName())" i18n:attributes="title admin_meta_maskdetail_title" type="image" src="/img/styles.png"/>
                     </td>
                     <td>
-                        <a tal:attributes="href python:'./metatype/'+metadatatype.getName()+'/overview?style=popup'" i18n:attributes="title admin_meta_fieldoverview_title" target="_blank">
+                        <a tal:attributes="href python:u'./metatype/{}/overview?style=popup'.format(metadatatype.getName())" i18n:attributes="title admin_meta_fieldoverview_title" target="_blank">
                             <img src="/img/search.gif" border="0"/>
                         </a>
                         
-                        <a tal:attributes="href python:'/admin/export/metatype/'+metadatatype.getName()" i18n:attributes="title admin_meta_export_title" target="_blank">
+                        <a tal:attributes="href python:u'/admin/export/metatype/{}'.format(metadatatype.getName())" i18n:attributes="title admin_meta_export_title" target="_blank">
                             <img src="/img/export.png" border="0"/>
                         </a>
                     </td>
                     <td>
-                        <input tal:attributes="name python:'edit_'+metadatatype.getName()" i18n:attributes="title admin_meta_edit_title" type="image" src="/img/edit.png"/>
-                        &nbsp;&nbsp;<input tal:attributes="name python:'delete_'+metadatatype.getName(); onclick python:'return questionDelName(\''+metadatatype.getLongName() + ' ('+ metadatatype.getName()+')\')'" i18n:attributes="title admin_meta_delete_title" type="image" src="/img/delete.png"/>
+                        <input tal:attributes="name python:u'edit_{}'.format(metadatatype.getName())" i18n:attributes="title admin_meta_edit_title" type="image" src="/img/edit.png"/>
+                        &nbsp;&nbsp;<input tal:attributes="name python:u'delete_{}'.format(metadatatype.getName()); onclick python:u'return questionDelName(\'{} ({})\')'.format(metadatatype.getLongName(), metadatatype.getName())" i18n:attributes="title admin_meta_delete_title" type="image" src="/img/delete.png"/>
                     </td>
                 </tr>
                 </tal:block>
@@ -110,7 +110,7 @@
                     <th colspan="5" align="left">
                         <small>
                             <span i18n:translate="admin_meta_footer">
-                                <span i18n:name="number" tal:content="python:ustr(len(metadatatypes))"/>
+                                <span i18n:name="number" tal:content="python:unicode(len(metadatatypes))"/>
                             </span>
                             <span tal:content="structure python:pages.printPageList()"/>
                         </small>
@@ -161,7 +161,7 @@
             }
         }
     </script>
-    <p><a tal:attributes="href python:'./metatype'+page" i18n:translate="admin_overview">TEXT</a></p>
+    <p><a tal:attributes="href python:u'./metatype{}'.format(page)" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="editmetatype" method="post">                    
         <table>
             <tr>
@@ -196,7 +196,7 @@
             <tr>
                 <td><tal:block i18n:translate="admin_meta_active">TEXT</tal:block>:</td>
                 <td>
-                    <input tal:attributes="checked python:{'False':None,'True':'checked'}[ustr(metadatatype.isActive())]" type="checkbox" name="mactive" value="1"/>
+                    <input tal:attributes="checked python:'checked' if metadatatype.isActive() else None" type="checkbox" name="mactive" value="1"/>
                     <small>(<span i18n:translate="admin_meta_msg3">TEXT</span>)</small>
                 </td>
             </tr>
@@ -204,7 +204,7 @@
                 <td><tal:block i18n:translate="admin_meta_datatype">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
                     <select name="mdatatypes" multiple="multiple" style="width:300px" size="5">
-                        <option tal:repeat="datatype datatypes" tal:attributes="value python:datatype.getName(); selected python:{'False':None,'True':'selected'}[ustr(datatype.getName() in metadatatype.getDatatypes())]" tal:content="python:datatype.getName()" i18n:translate=""/>
+                        <option tal:repeat="datatype datatypes" tal:attributes="value python:datatype.getName(); selected python:'selected' if datatype.getName() in metadatatype.getDatatypes() else None" tal:content="python:datatype.getName()" i18n:translate=""/>
                     </select>
                 </td>
             </tr>
@@ -215,7 +215,7 @@
                 </td>
                 <td>
                     <select name="mbibtex" multiple="multiple" style="width:300px" size="5">
-                        <option tal:repeat="bibtex bibtextypes" tal:attributes="value python:bibtex; selected python:{'False':None,'True':'selected'}[ustr(bibtex in bibtexselected)]" tal:content="python:bibtex" i18n:translate=""/>
+                        <option tal:repeat="bibtex bibtextypes" tal:attributes="value python:bibtex; selected python:'selected' if bibtex in bibtexselected else None" tal:content="python:bibtex" i18n:translate=""/>
                     </select>
                 </td>
             </tr>
@@ -225,7 +225,7 @@
                 <td>
                     <select name="mciteproc" multiple="multiple" style="width:300px" size="5">
                         <option tal:repeat="citeproctype citeproctypes" 
-                            tal:attributes="value python:citeproctype; selected python:{'False':None,'True':'selected'}[ustr(citeproctype in citeprocselected)]" 
+                            tal:attributes="value python:citeproctype; selected python:'selected' if citeproctype in citeprocselected else None"
                             tal:content="python:citeproctype" 
                             i18n:translate=""
                         />
@@ -239,16 +239,16 @@
                     <table border="0px" cellpadding="0px" cellspacing="0px">
                         <tr>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl['val_left']" tal:attributes="name python:'left'+acl['name'];id python:'left'+acl['name']; ondblclick python:'moveRight(document.editmetatype.left'+acl['name']+',document.editmetatype.right'+acl['name']+')'" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl['val_left']" tal:attributes="name python:u'left{}'.format(acl['name']);id python:u'left{}'.format(acl['name']); ondblclick python:u'moveRight(document.editmetatype.left{},document.editmetatype.right{})'.format(acl['name'], acl['name'])" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
-                                <input tal:attributes="onclick python:'moveLeft(document.editmetatype.left'+acl['name']+',document.editmetatype.right'+acl['name']+')'" type="button" value="<<"/>
+                                <input tal:attributes="onclick python:u'moveLeft(document.editmetatype.left{},document.editmetatype.right{})'.format(acl['name'], acl['name'])" type="button" value="<<"/>
                                 <br>
-                                <input tal:attributes="onclick python:'moveRight(document.editmetatype.left'+acl['name']+',document.editmetatype.right'+acl['name']+')'" type="button" value=">>"/>
+                                <input tal:attributes="onclick python:u'moveRight(document.editmetatype.left{},document.editmetatype.right{})'.format(acl['name'], acl['name'])" type="button" value=">>"/>
                             </td>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl['val_right']" tal:attributes="name python:'right'+acl['name'];  ondblclick python:'moveLeft(document.editmetatype.left'+acl['name']+',document.editmetatype.right'+acl['name']+')'" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl['val_right']" tal:attributes="name python:u'right{}'.format(acl['name']);  ondblclick python:u'moveLeft(document.editmetatype.left{},document.editmetatype.right{})'.format(acl['name'], acl['name'])" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                         </tr>
@@ -261,23 +261,23 @@
             </tr>
             <tr tal:define="corrupt python:metadatatype.searchIndexCorrupt()">
                 <td>&nbsp;</td>
-                <td tal:condition="python: corrupt and ustr(metadatatype.id)!='None'">
-                    <span i18n:translate="admin_metatype_reindex_title">TEXT</span> &nbsp;&nbsp; <button type="submit" tal:attributes="name python:'indexupdate_'+ustr(metadatatype.id)" i18n:translate="admin_metatype_reindex_button" value="">TEXT</button>
+                <td tal:condition="python: corrupt and unicode(metadatatype.id)!='None'">
+                    <span i18n:translate="admin_metatype_reindex_title">TEXT</span> &nbsp;&nbsp; <button type="submit" tal:attributes="name python:u'indexupdate_{}'.format(metadatatype.id)" i18n:translate="admin_metatype_reindex_button" value="">TEXT</button>
                     <br/>&nbsp;<br/>
                 </td>
-                <td tal:condition="python: not corrupt and ustr(metadatatype.id)!='None'">
+                <td tal:condition="python: not corrupt and unicode(metadatatype.id)!='None'">
                     <span i18n:translate="admin_metatype_index_ok">TEXT</span><br/>&nbsp;<br/>
                 </td>
             </tr>
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:translate="admin_save" i18n:attributes="title admin_save_title" tal:attributes="onclick python:'selectacl(\'left'+acl['name']+'\')';"  type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
+                    <button i18n:translate="admin_save" i18n:attributes="title admin_save_title" tal:attributes="onclick python:u'selectacl(\'left{}\')'.format(acl['name']);"  type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
                     <button i18n:translate="admin_cancel" i18n:attributes="title admin_cancel_title" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
                 </td>
             </tr>
         </table>
-        <input tal:attributes="value python:{'True':'save_new','False':'save_edit'}[ustr(id=='')]" type="hidden" name="form_op" id="form_op" />
+        <input tal:attributes="value python:'save_new' if id=='' else 'save_edit'" type="hidden" name="form_op" id="form_op" />
         <input type="hidden" name="acttype" value="schema"/>
         <input type="hidden" name="actpage" tal:attributes="value actpage"/>
         <input type="hidden" name="actfilter" tal:attributes="value actfilter"/>
@@ -306,7 +306,7 @@
                     <td>
                         <p tal:repeat="fieldtype python:list(fieldtypes)" class="popup">
                             &raquo; <b tal:content="python:fieldtypes[fieldtype]" i18n:translate=""/>:<br/>
-                            <span tal:content="python:fieldtypes[fieldtype]+'_desc'" i18n:translate="" style="margin-left:30px;"/>
+                            <span tal:content="python:u'{}_desc'.format(fieldtypes[fieldtype])" i18n:translate="" style="margin-left:30px;"/>
                         </p>
                     </td>
                 </tr>
@@ -379,7 +379,7 @@
                             </table>
                         </td>
                         <td class="list">
-                            <span tal:content="structure python:len(metafield.getDescription())>15 and metafield.getDescription()[:15]+'...' or metafield.getDescription()+'&nbsp;'"/>
+                            <span tal:content="structure python:len(metafield.getDescription())>15 and u'{}...'.format(metafield.getDescription()[:15]) or u'{}&nbsp;'.format(metafield.getDescription())"/>
                         </td>
                     </tr>
                 </tbody>

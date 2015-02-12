@@ -41,9 +41,8 @@ class m_meta(Metatype):
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         try:
             value = field.getValues()
-        except:
-            logg.exception("exception in getMaskEditorHTML, using empty string")
-            value = ""
+        except AttributeError:
+            value = u""
         attr = {}
         if metadatatype:
             for t in metadatatype.getDatatypes():

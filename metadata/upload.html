@@ -410,7 +410,7 @@
 
     </script>
 
-<div style="border:thin solid blue;" tal:attributes="id python:'upload_div_FOR_____FIELDNAME____'; name python:'upload_div_FOR_____FIELDNAME____'; style python:'width:'+ustr(width)+'px'">
+<div style="border:thin solid blue;" tal:attributes="id python:'upload_div_FOR_____FIELDNAME____'; name python:'upload_div_FOR_____FIELDNAME____'; style python:u'width:{}px'.format(width)">
 
         <input type="hidden" tal:attributes="id python:u'submitter_class_{}'.format(name)" name="submitter_class" value="" />
         <input type="hidden" tal:attributes="id python:'submitter02_FOR_____FIELDNAME____'; value python:name" name="submitter_FOR_____FIELDNAME____" />

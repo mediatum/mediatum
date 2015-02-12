@@ -246,7 +246,7 @@ def validate(req, op):
 
             _fieldvalue = ""
             if req.params.get("mtype", "") + "_value" in req.params.keys():
-                _fieldvalue = ustr(req.params.get(req.params.get("mtype") + "_value"))
+                _fieldvalue = req.params.get(req.params.get("mtype") + "_value")
 
             _filenode = None
             if "valuesfile" in req.params.keys():
@@ -434,7 +434,7 @@ def MetatypeDetail(req, id, err=0):
 
     if err == 0 and id == "":
         # new metadatatype
-        metadatatype = tree.Node("", type="metadatatype")
+        metadatatype = tree.Node(u"", type="metadatatype")
         v["original_name"] = ""
 
     elif id != "" and err == 0:
@@ -585,10 +585,10 @@ def showEditor(req):
             field = item.getChildren()
             try:
                 field = list(field)[0]
-                if ustr(field.id) != ustr(req.params.get("field")):
+                if ustr(field.id) != req.params.get("field"):
                     item.removeChild(field)
                     item.addChild(f)
-                field.setValues(req.params.get(field.get("type") + "_value", ""))
+                field.setValues(req.params.get(u"{}_value".format(field.get("type")), u""))
             except:
                 logg.exception("exception in showEditor / saveedit, ignore")
                 pass
@@ -641,19 +641,19 @@ def showEditor(req):
                         f.setOrderPos(f.getOrderPos() + 1)
                 item.setOrderPos(tree.getNode(position).getOrderPos() - 1)
 
-        item.setWidth(int(req.params.get("width", 400)))
-        item.setUnit(req.params.get("unit", ""))
-        item.setDefault(req.params.get("default", ""))
-        item.setFormat(req.params.get("format", ""))
-        item.setSeparator(req.params.get("separator", ""))
-        item.setDescription(req.params.get("description", ""))
-        item.setTestNodes(req.params.get("testnodes", ""))
-        item.setMultilang(req.params.get("multilang", ""))
+        item.setWidth(req.params.get("width", u'400'))
+        item.setUnit(req.params.get("unit", u""))
+        item.setDefault(req.params.get("default", u""))
+        item.setFormat(req.params.get("format", u""))
+        item.setSeparator(req.params.get("separator", u""))
+        item.setDescription(req.params.get("description", u""))
+        item.setTestNodes(req.params.get("testnodes", u""))
+        item.setMultilang(req.params.get("multilang", u""))
 
         if "required" in req.params.keys():
-            item.setRequired(1)
+            item.setRequired(unicode(1))
         else:
-            item.setRequired(0)
+            item.setRequired(unicode(0))
 
     if "savedetail" in req.params.keys():
         label = req.params.get("label", "-new-")
@@ -698,17 +698,17 @@ def showEditor(req):
             item.setOrderPos(tree.getNode(position).getOrderPos() - 1)
 
         if "edit" not in req.params.keys():
-            item.set("type", req.params.get("type", ""))
-        item.setWidth(int(req.params.get("width", 400)))
-        item.setUnit(req.params.get("unit", ""))
-        item.setDefault(req.params.get("default", ""))
-        item.setFormat(req.params.get("format", ""))
-        item.setSeparator(req.params.get("separator", ""))
-        item.setDescription(req.params.get("description", ""))
+            item.set("type", req.params.get("type", u""))
+        item.setWidth(req.params.get("width", u'400'))
+        item.setUnit(req.params.get("unit", u""))
+        item.setDefault(req.params.get("default", u""))
+        item.setFormat(req.params.get("format", u""))
+        item.setSeparator(req.params.get("separator", u""))
+        item.setDescription(req.params.get("description", u""))
         if "required" in req.params.keys():
-            item.setRequired(1)
+            item.setRequired(unicode(1))
         else:
-            item.setRequired(0)
+            item.setRequired(unicode(0))
 
     v = {}
     v["edit"] = req.params.get("edit", "")

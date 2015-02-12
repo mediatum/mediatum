@@ -137,9 +137,9 @@ class m_list(Metatype):
         return value.replace("; ", ";")
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
-        value = ""
-        filename = ""
-        multiple_list = ""
+        value = u""
+        filename = u""
+        multiple_list = u""
         try:
             if field:
                 value = field.getValues()

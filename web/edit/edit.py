@@ -114,7 +114,7 @@ def getContainerTreeTypes_orig(req):
 
         for dtype in loadAllDatatypes():
             if dtype.name in dtypes:
-                n = tree.Node("", type=dtype.name)
+                n = tree.Node(u"", type=dtype.name)
                 if hasattr(n, "isContainer") and hasattr(n, "isSystemType"):
                     if n.isContainer() and not n.isSystemType():
                         containertypes.append(dtype)

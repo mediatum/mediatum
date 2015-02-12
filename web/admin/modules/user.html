@@ -8,7 +8,7 @@
         }
     </style>
 
-    <script tal:content="python:'var execute_search = \''+execute_search+'\';'">;</script>    
+    <script tal:content="python:u'var execute_search = \'{}\';'.format(execute_search)">;</script>
 
     <script>
         function searchUser(name){
@@ -44,7 +44,7 @@
             <a href="#" onclick="return loadDetails('all')" i18n:translate="admin_user_showall">TEXT</a> |
             <a href="#" onclick="return loadDetails('intern')" i18n:translate="admin_user_internal_user">TEXT</a> |
             <tal:block tal:repeat="auttype python:list(auth)">
-                <a href="#" tal:attributes="onclick python:'return loadDetails(\''+auttype+'\')'" i18n:translate="" tal:content="python:auth[auttype].getName()"/> |
+                <a href="#" tal:attributes="onclick python:u'return loadDetails(\'{}\')'.format(auttype)" i18n:translate="" tal:content="python:auth[auttype].getName()"/> |
             </tal:block>
 
             <tal:block i18n:translate="admin_user_search"/> <input type="text" name="searchterm" id="searchterm" style="border:1px solid silver"/> <button type="button" onclick="searchUser($('#searchterm').val())" i18n:translate="admin_user_search_start">TEXT</button>
@@ -69,8 +69,8 @@
 <metal:block metal:define-macro="details">
 
     <!-- expose some variables/constants to javascript -->
-    <script tal:content="python:'var confirm_msg_delete_user = \''+t(language, 'admin_user_confirm_msg_delete_user')+'\';'">;</script>
-    <script tal:content="python:'var confirm_msg_logout_user = \''+t(language, 'admin_user_confirm_msg_logout_user')+'\';'">;</script>
+    <script tal:content="python:u'var confirm_msg_delete_user = \'{}\';'.format(t(language, 'admin_user_confirm_msg_delete_user'))">;</script>
+    <script tal:content="python:u'var confirm_msg_logout_user = \'{}\';'.format(t(language, 'admin_user_confirm_msg_logout_user'))">;</script>
 
     <form name="useroverview" method="post" action="#" tal:attributes="action page">
         <table class="overview">
@@ -87,18 +87,18 @@
                         <span i18n:translate="admin_filter_label">TEXT</span>
                         <select name="filtertype" style="margin:0px">
                             <tal:block tal:repeat="filterattr filterattrs">
-                                <option tal:content="python:filterattr[1]" tal:attributes="value python:filterattr[0]; selected python:{'False':None,'True':'selected'}[ustr(filterarg==filterattr[0])]" i18n:translate="">TEXT</option>
+                                <option tal:content="python:filterattr[1]" tal:attributes="value python:filterattr[0]; selected python:'selected' if filterarg==filterattr[0] else None" i18n:translate="">TEXT</option>
                             </tal:block>
                         </select>
                         <tal:block tal:repeat="tab tabs">
-                            <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[ustr(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
+                            <button tal:attributes="value python:tab[1]; class python:'admin_filter_sel' if tab[0].lower()==actfilter else 'admin_filter'" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
                         </tal:block>
                     </td>
                 </tr>
                 <tr>
                     <th>&nbsp;</th>
                     <th tal:repeat="col sortcol">
-                        <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" value="" class="admin_sortcol" type="submit">TEXT</button>
+                        <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:u'sortcol_{}'.format(col.link)" value="" class="admin_sortcol" type="submit">TEXT</button>
                     </th>
                     <th style="padding:0px;margin:0px">
                         <tal:block metal:use-macro="web/admin/frame.html/optionheader"/>
@@ -111,20 +111,20 @@
                     <td colspan="12"><small i18n:translate="admin_user_nousers">TEXT</small></td>
                 </tr>
                 <tal:block tal:repeat="user python:users[pages.getStart():pages.getEnd()]">
-                    <tr tal:define="cssclass python:users.index(user)%2 and 'norm' or 'silver'" tal:attributes="class cssclass; id python:'row_'+ustr(id_func(user))">
-                        <td tal:content="python:ustr(users.index(user)+1)+'.'"/>
+                    <tr tal:define="cssclass python:users.index(user)%2 and 'norm' or 'silver'" tal:attributes="class cssclass; id python:u'row_{}'.format(id_func(user))">
+                        <td tal:content="python:u'{}.'.format(users.index(user)+1)"/>
                         <td tal:condition="python:not user.isDynamicUser()" tal:content="python:user.getName()" tal:attributes="title python:'id: %r' % user.getUserID()"/>
-                        <td tal:condition="python:user.isDynamicUser()" tal:content="python:user.getName()+ {False: ' (expired)', True: ' (%.1f sec.)' % user.getLastSessionUse(duration=True)}.get(user.isSessionValid(), '') " tal:attributes="title python:'login-time: '+user.get('login_time_iso')+' (since '+ustr(now().replace(microsecond=0)-user.get('login_datetime').replace(microsecond=0))+')\nsession_lastused_before: '+user.getLastSessionUse(duration=True, as_string=True)+' sec.\nip: '+user.get('login_ip')+'\nuser agent: '+user.get('useragent')+'\ndirid: '+user.dirid+'\ndir_groups: '+ustr(user.DIRIDS)"/>
+                        <td tal:condition="python:user.isDynamicUser()" tal:content="python:u'{}{}'.format(user.getName(), ' ({}.1f sec.)'.format(user.getLastSessionUse(duration=True)) if user.isSessionValid() else ' (expired)')" tal:attributes="title python:u'login-time: {} (since {})\nsession_lastused_before: {} sec.\nip: {}\nuser agent: {}\ndirid: {}\ndir_groups: {}'.format(user.get('login_time_iso'), unicode(now()).replace(microsecond=0)-user.get('login_datetime').replace(microsecond=0), user.getLastSessionUse(duration=True, as_string=True), user.get('login_ip'), user.get('useragent'), user.dirid, user.DIRIDS)"/>
                         <td tal:content="python:user.getLastName()"/>
                         <td tal:content="python:user.getFirstName()"/>
                         <td tal:content="python:user.getEmail()"/>
                         <td >
-                            <span tal:condition="python:len(user.getOrganisation())>10" tal:content="python:user.getOrganisation()[:10]+'...'" tal:attributes="title python:user.getOrganisation()" style="cursor:pointer"/>
+                            <span tal:condition="python:len(user.getOrganisation())>10" tal:content="python:u'{}...'.format(user.getOrganisation()[:10])" tal:attributes="title python:user.getOrganisation()" style="cursor:pointer"/>
                             <span tal:condition="python:len(user.getOrganisation())<=10" tal:content="python:user.getOrganisation()" tal:attributes="title python:user.getOrganisation()" style="cursor:pointer"/>
                         </td>
                         <td tal:define="grp python:', '.join(user.getGroups())">
                             <span tal:condition="python:len(grp)<30" tal:content="grp"/>
-                            <span tal:condition="python:len(grp)>29" tal:attributes="title grp" tal:content="python:grp[:29]+'...'" style="cursor:pointer"/>
+                            <span tal:condition="python:len(grp)>29" tal:attributes="title grp" tal:content="python:u'{}...'.format(grp[:29])" style="cursor:pointer"/>
                         </td>
                         <td tal:condition="python:user.stdPassword()">
                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img i18n:attributes="title admin_user_stdpwd_title" src="/img/unarchive.png"/>
@@ -149,9 +149,9 @@
                             </table>
                         </td>
                         <td>
-                            <input tal:condition="python:not user.isDynamicUser()" tal:attributes="name python:ustr('edit_'+ustr(user.id))" i18n:attributes="title admin_user_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
-                            <input tal:condition="python:not user.isDynamicUser()" tal:attributes="name python:ustr('delete_'+ustr(user.id)); onclick python:'return confirm(confirm_msg_delete_user.replace(\'${username}\', \''+user.getName()+'\'))'" i18n:attributes="title admin_user_delete_title" type="image" src="/img/delete.png"/>
-                            <input tal:condition="python:user.isDynamicUser()" tal:attributes="name python:ustr('delete_'+ustr(user.id)); onclick python:'return confirm(confirm_msg_logout_user.replace(\'${username}\', \''+user.getName()+'\'))'" i18n:attributes="title admin_user_logout_title" type="image" src="/img/delete.png"/>
+                            <input tal:condition="python:not user.isDynamicUser()" tal:attributes="name python:u'edit_{}'.format(user.id)" i18n:attributes="title admin_user_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
+                            <input tal:condition="python:not user.isDynamicUser()" tal:attributes="name python:u'delete_{}'.format(user.id); onclick python:u'return confirm(confirm_msg_delete_user.replace(\'${username}\', \'{}\'))'.format(user.getName())" i18n:attributes="title admin_user_delete_title" type="image" src="/img/delete.png"/>
+                            <input tal:condition="python:user.isDynamicUser()" tal:attributes="name python:u'delete_{}'.format(user.id); onclick python:u'return confirm(confirm_msg_logout_user.replace(\'${username}\', \'{}\'))'.format(user.getName())" i18n:attributes="title admin_user_logout_title" type="image" src="/img/delete.png"/>
                         </td>
                     </tr>
                 </tal:block>
@@ -161,7 +161,7 @@
                     <th colspan="7" align="left">
                         <small>
                             <span i18n:translate="admin_user_footer">
-                                <span i18n:name="number" tal:content="python:ustr(len(users))"/>
+                                <span i18n:name="number" tal:content="python:unicode(len(users))"/>
                             </span>
                             <span tal:content="raw python:pages.printPageList()"/>
                         </small>
@@ -223,9 +223,9 @@
                 <td><tal:block i18n:translate="admin_user_usertype">TEXT</tal:block>:</td>
                 <td>
                     <select name="usertype" style="height:24px">
-                        <option value="intern" tal:attributes="selected python:{'True':'selected', 'False':None}[ustr(user.getUserType()=='intern')]">Intern</option>
+                        <option value="intern" tal:attributes="selected python:'selected' if user.getUserType()=='intern' else None">Intern</option>
                         <tal:block tal:repeat="utype python:list(usertypes)">
-                            <option tal:attributes="value utype;selected python:{'True':'selected', 'False':None}[ustr(user.getUserType()==utype)]" tal:content="python:utype" i18n:translate="">TEXT</option>
+                            <option tal:attributes="value utype;selected python:'selected' if user.getUserType()==utype else None" tal:content="python:utype" i18n:translate="">TEXT</option>
                         </tal:block>
                     </select>
                 </td>
@@ -288,7 +288,7 @@
                 <td>
                     <div style="position:relative">
                     <input type="password" name="change_passwd" style="width:170px"/>
-                    <input tal:attributes="name python:'reset_'+user.getName()" i18n:attributes="title admin_user_pwdchange_title" type="image" src="/img/reset_pwd.png" style="padding:3px 5px;border:1px solid silver;position:absolute;bottom:0px"/>
+                    <input tal:attributes="name python:u'reset_{}'.format(user.getName())" i18n:attributes="title admin_user_pwdchange_title" type="image" src="/img/reset_pwd.png" style="padding:3px 5px;border:1px solid silver;position:absolute;bottom:0px"/>
                     <small style="margin-left:50px">(<span i18n:translate="admin_user_msg1">TEXT</span>)</small>
 
                     </div>
@@ -302,10 +302,10 @@
                         <legend i18n:translate="admin_user_options">TEXT</legend>
                         <tal:block tal:define="options useroption" tal:repeat="option options">
                             <input tal:condition="python:user.getOptionList()[option.getName()]"
-                                tal:attributes="name python:'option_'+option.getValue(); value python:'option_'+option.getValue()" type="checkbox" name="" value="" checked="checked">
+                                tal:attributes="name python:u'option_{}'.format(option.getValue()); value python:u'option_{}'.format(option.getValue())" type="checkbox" name="" value="" checked="checked">
 
                             <input tal:condition="python:not user.getOptionList()[option.getName()]"
-                                tal:attributes="name python:'option_'+option.getValue(); value python:'option_'+option.getValue()" type="checkbox" name="" value="">
+                                tal:attributes="name python:u'option_{}'.format(option.getValue()); value python:u'option_{}'.format(option.getValue())" type="checkbox" name="" value="">
 
                             <span tal:content="structure python:option.getName()" i18n:translate=""/>
                             <br/>
@@ -344,16 +344,16 @@
 
 <metal:block metal:define-macro="sendmaildone">
     <p i18n:translate="admin_user_emailsend">TEXT</p>
-    <p><a tal:attributes="href python:'/admin/'+path" i18n:translate="admin_overview">TEXT</a></p>
+    <p><a tal:attributes="href python:u'/admin/{}'.format(path)" i18n:translate="admin_overview">TEXT</a></p>
 </metal:block>
 
 <metal:block metal:define-macro="sendmailerror">
     <p i18n:translate="admin_user_emailsenderror">TEXT</p>
-    <p><a tal:attributes="href python:'/admin/'+path" i18n:translate="admin_overview">TEXT</a></p>
+    <p><a tal:attributes="href python:u'/admin/{}'.format(path)" i18n:translate="admin_overview">TEXT</a></p>
 </metal:block>
 
 <metal:block metal:define-macro="sendmail">
-    <p><a tal:attributes="href python:'./user'+page" i18n:translate="admin_overview">TEXT</a></p>
+    <p><a tal:attributes="href python:u'./user{}'.format(page)" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="mailuser" method="post">
         <input type="hidden" name="sendmail_execute" value=".">
         <input type="hidden" name="userid" tal:attributes="value userid">
@@ -417,10 +417,10 @@ Bitte beachten Sie, dass es sich hierbei um ein Initialpasswort handelt,
 das Sie bitte nach den ersten Login ab&auml;ndern sollten.
 
 Mit diesem Account sind Sie Mitglied in folgenden Benutzergruppen:
-    <tal:block tal:repeat="group groups" tal:replace="python:'- '+group"/>
+    <tal:block tal:repeat="group groups" tal:replace="python:u'- {}'.format(group)"/>
 
 Sie haben damit Zugriff auf die folgende(n) Kollektion(en):
-    <tal:block tal:repeat="collection collections" tal:replace="python:'- '+collection"/>
+    <tal:block tal:repeat="collection collections" tal:replace="python:u'- {}'.format(collection)"/>
 
 <tal:block tal:condition="isEditor">
 Zus&auml;tzlich haben Sie Zugriff auf ein privates Arbeitsverzeichnis, in dem

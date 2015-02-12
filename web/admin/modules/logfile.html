@@ -20,12 +20,12 @@
             <tbody>
                 <tal:block tal:define="start python:pages.getStart(); end python:pages.getEnd()" tal:repeat="file python:filelist[start:end]">
                     <tr tal:define="cssclass python:filelist.index(file)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
-                        <td tal:content="python:ustr(filelist.index(file)+1)+'.'"/>
+                        <td tal:content="python:u'{}.'.format(filelist.index(file)+1)"/>
                         <td tal:content="python:file.getName()"/>
                         <td tal:content="python:file.getPath()"/>
                         <td tal:content="python:file.getSize()"/>
                         <td>
-                            <input tal:attributes="name python:'view_'+file.getName()" i18n:attributes="title admin_log_show_title" type="image" src="/img/search.gif"/>
+                            <input tal:attributes="name python:u'view_{}'.format(file.getName())" i18n:attributes="title admin_log_show_title" type="image" src="/img/search.gif"/>
                         </td>
                     </tr>
                 </tal:block>
@@ -35,7 +35,7 @@
                     <th colspan="2">
                         <small>
                             <span i18n:translate="admin_log_footer">
-                                <span i18n:name="number" tal:content="python:ustr(len(filelist))"/>
+                                <span i18n:name="number" tal:content="python:unicode(len(filelist))"/>
                             </span>
                             <span tal:content="structure python:pages.printPageList()"/>
                         </small>

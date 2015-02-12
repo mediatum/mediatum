@@ -30,14 +30,14 @@
 
     <tal:block tal:define="pages python:['python', 'mediatum', 'database', 'search', 'searchconfig', 'archive']">   
         <div id="page_tabs">
-            <div tal:repeat="page pages" tal:attributes="id python:page+'_tab'; onclick python:'tab(\''+page+'\')'; class python:{'False':None,'True':'active'}[ustr(pages.index(page)==0)]" class='active' tal:content="python:'admin_settings_'+page+'_header'" i18n:translate="">TEXT</div>
+            <div tal:repeat="page pages" tal:attributes="id python:u'{}_tab'.format(page); onclick python:u'tab(\'{}\')'.format(page); class python:'active' if pages.index(page)==0 else None" class='active' tal:content="python:u'admin_settings_{}_header'.format(page)" i18n:translate="">TEXT</div>
         </div>
         <div id="page_content" style="background-color:white;width:90%">
-            <div tal:repeat="page pages" tal:attributes="id page; style python:'display:'+{'False':'none','True':'visible'}[ustr(pages.index(page)==0)]"><img src="/img/wait_small.gif"/></div>
+            <div tal:repeat="page pages" tal:attributes="id page; style python:u'display:{}'.format('visible' if pages.index(page)==0 else 'none')"><img src="/img/wait_small.gif"/></div>
         </div>
     </tal:block>
 
-    <script tal:condition="python:gotopage!=''" tal:content="python:'\n\ttab(\''+gotopage+'\',\''+subitem+'\')\n'">
+    <script tal:condition="python:gotopage!=''" tal:content="python:u'\n\ttab(\'{}\',\'{}\')\n'.format(gotopage, subitem)">
     </script>
     
     <script tal:condition="python:gotopage==''">
@@ -160,11 +160,11 @@
     <table style="width:100%">
         <tr>
             <td tal:repeat="section python:list(data)">
-                <form method="post" tal:attributes="name python:'form_'+section">
+                <form method="post" tal:attributes="name python:u'form_{}'.format(section)">
                 <table id="searchconfig" style="border-spacing:0px;">
                     <tr>
                         <td colspan="3">
-                            <h3 tal:content="python:'searchreplace_'+section" i18n:translate=""/>
+                            <h3 tal:content="python:u'searchreplace_{}'.format(section)" i18n:translate=""/>
                             <input type="hidden" name="section" tal:attributes="value section"/>
                         </td>
                     </tr>
@@ -172,15 +172,15 @@
                         <td tal:content="python:item[0]"/>
                         <td tal:content="python:item[1]"/>
                         <td>
-                            <input type="image" src="/img/delete.png" tal:attributes="name python:'delete|'+item[0]+'|'+item[1]"/>
+                            <input type="image" src="/img/delete.png" tal:attributes="name python:u'delete|{}|{}'.format(item[0], item[1])"/>
                         </td>
                     </tr>
                     <tr tal:repeat="i python:range(0, 11)">
                         <td style="width:180px;">
-                            <input type="text" tal:attributes="name python:'newname_'+section+'_'+ustr(i)" class="smallinput"/>
+                            <input type="text" tal:attributes="name python:u'newname_{}_{}'.format(section, i)" class="smallinput"/>
                         </td>
                         <td style="width:180px;">
-                            <input type="text" tal:attributes="name python:'newvalue_'+section+'_'+ustr(i)" class="smallinput"/>
+                            <input type="text" tal:attributes="name python:u'newvalue_{}_{}'.format(section, i)" class="smallinput"/>
                         </td>
                         <td> 
                             &nbsp;
@@ -220,7 +220,7 @@
         <tal:block tal:condition="python:len(a_managers)>0" tal:repeat="manager a_managers">
         <tr>
             <td i18n:translate="admin_settings_archive_name"/>
-            <td tal:content="python:ustr(manager)"/>
+            <td tal:content="python:manager"/>
         </tr>
         <tr>
             <td>&nbsp;</td>

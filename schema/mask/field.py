@@ -96,10 +96,8 @@ class m_field(Metatype):
         if field.getUnit() != "":
             unit += field.getUnit()
 
-        asdf = ensure_unicode_returned(t.getEditorHTML, name="getEditorHTML of %s" % t)
-
         ret += '<div id="editor_content">' + \
-            asdf(element, value=val, width=field.getWidth(), lock=lock, language=lang(req)) + unit + '</div>'
+            t.getEditorHTML(element, value=val, width=field.getWidth(), lock=lock, language=lang(req)) + unit + '</div>'
         if not sub:
             ret += '</div>'
         return ret
@@ -118,9 +116,9 @@ class m_field(Metatype):
 
         if flags & VIEW_DATA_ONLY:
             if fieldtype in ['text']:
-                value = u(t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1])
+                value = t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1]
             else:
-                value = u(t.getFormatedValue(element, nodes[0], language)[1])
+                value = t.getFormatedValue(element, nodes[0], language)[1]
         else:
             if field.getFormat() != "":
                 if fieldtype in ['text']:
@@ -133,19 +131,16 @@ class m_field(Metatype):
                     if template_from_caller and template_from_caller[0]:  # checking template on test nodes: show full length
                         fieldvalue = nodes[0].get(element.name)
                         if fieldvalue.strip():  # field is filled for this node
-                            value = ustr(t.getFormatedValue(element, nodes[0], language, template_from_caller=fieldvalue, mask=mask)[1])
+                            value = t.getFormatedValue(element, nodes[0], language, template_from_caller=fieldvalue, mask=mask)[1]
                         else:  # use default
-                            value = ustr(
-                                t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1])
+                            value = t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1]
                     else:  # cut long values
-                        value = formatLongText(
-                                t.getFormatedValue(
-                                    element,
-                                    nodes[0],
-                                    language,
-                                    template_from_caller=template_from_caller,
-                                    mask=mask)[1],
-                                element)
+                        value = formatLongText(t.getFormatedValue(element,
+                                                                  nodes[0],
+                                                                  language,
+                                                                  template_from_caller=template_from_caller,
+                                                                  mask=mask)[1],
+                                                element)
                 elif fieldtype in ['upload']:
                     # passing mask necessary for fieldtype='upload'
                     value = formatLongText(t.getFormatedValue(element, nodes[0], language, mask=mask)[1], element)
@@ -293,7 +288,7 @@ class m_field(Metatype):
 
         fields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
         add_values = []
-        val = ""
+        val = u""
         if item.getField():
             val = item.getField().getValues()
 

@@ -117,7 +117,7 @@ def MaskDetails(req, pid, id, err=0):
 
     if err == 0 and id == "":
         # new mask
-        mask = tree.Node("", type="mask")
+        mask = tree.Node(u"", type="mask")
 
     elif id != "" and err == 0:
         # edit mask

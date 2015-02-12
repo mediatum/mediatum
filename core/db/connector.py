@@ -34,10 +34,10 @@ class Connector:
         return "'" + text.replace("'", "\\'") + "'"
 
     def removeChild(self, nodeid, childid):
-        self.runQuery("delete from nodemapping where nid=" + nodeid + " and cid=" + childid)
+        self.runQuery("delete from nodemapping where nid={} and cid={}".format(nodeid, childid))
 
     def getChildren(self, nodeid):
-        t = self.runQuery("select cid from nodemapping where nid=" + nodeid + " order by cid")
+        t = self.runQuery("select cid from nodemapping where nid={} order by cid".format(nodeid))
         idlist = []
         for id in t:
             idlist += [ustr(id[0])]

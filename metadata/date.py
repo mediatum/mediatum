@@ -78,12 +78,8 @@ class m_date(Metatype):
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         try:
             value = field.getValues()
-        except:
-            logg.exception("exception in getMaskEditorHTML, using empty string")
+        except AttributeError:
             value = u""
-        #value = ""
-        # if field:
-        #    value = field.getValues()
         return tal.getTAL("metadata/date.html", {"value": value, "dateoption": dateoption}, macro="maskeditor", language=language)
 
     def getName(self):

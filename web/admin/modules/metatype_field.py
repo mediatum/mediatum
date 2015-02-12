@@ -124,7 +124,7 @@ def FieldDetail(req, pid, id, err=0):
 
     if err == 0 and id == "":
         # new field
-        field = tree.Node("", type="metafield")
+        field = tree.Node(u"", type="metafield")
 
     elif id != "":
         # edit field

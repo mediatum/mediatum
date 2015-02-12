@@ -207,13 +207,8 @@ class m_memo(Metatype):
 
         try:
             value = field.getValues()
-        except:
-            logg.exception("exception in getMaskEditorHTML, using empty string")
-            value = ""
-
-        #value = ""
-        # if field:
-        #    value = field.getValues()
+        except AttributeError:
+            value = u""
 
         context = {
             "value": value,

@@ -151,7 +151,7 @@ class m_url(Metatype):
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         try:
             value = field.getValues().split("\r\n")
-        except:
+        except AttributeError:
             value = []
         while len(value) < 4:
             value.append("")

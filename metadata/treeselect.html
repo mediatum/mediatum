@@ -72,7 +72,7 @@
         </script>
         <div style="height:400px; overflow:auto;border:1px solid silver">
             <ul id="classtree" class="tree">
-                <li tal:attributes="id python:u'Node{}'.format(basedir.id)"><a tal:attributes="id python:ustr(basedir.id); title python:u'{} ({})'.format(basedir.getLabel(), basedir.id)" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
+                <li tal:attributes="id python:u'Node{}'.format(basedir.id)"><a tal:attributes="id python:unicode(basedir.id); title python:u'{} ({})'.format(basedir.getLabel(), basedir.id)" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
                     <ul>
                         <li tal:attributes="parentId python:basedir.id" class="spinner.gif"><a href="#" id="node_0"> </a></li>
                     </ul>

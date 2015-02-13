@@ -124,7 +124,7 @@
                     <a tal:content="python:coll.collection.name" tal:attributes="href python:r.getLink(coll.collection)"/>
                 </td>
                 <td style="text-align:right">
-                    <span tal:replace="python:ustr(coll.length())"/>
+                    <span tal:replace="python:unicode(coll.length())"/>
                 </td>
                 <td i18n:translate="search_hit">
                     TEXT

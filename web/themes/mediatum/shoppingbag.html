@@ -96,12 +96,12 @@
     <tal:block i18n:translate="popup_shoppingbag_img_title"/><br/>
     <tal:block tal:repeat="file files">
         <div tal:condition="python: file.getCategoryName()=='image'" tal:define="width python:file.get('width');height python:file.get('height')" class="imagebox">
-            <img tal:attributes="src python:'/images/'+ustr(file.id); style python:calc_dim(file)" class="image_preview"/>
+            <img tal:attributes="src python:u'/images/{}'.format(file.id); style python:calc_dim(file)" class="image_preview"/>
             <br/>
-            <small tal:condition="python:width+height!=''" tal:content="python:width+'x'+height+'px'">TEXT</small>
+            <small tal:condition="python:width+height!=''" tal:content="python:u'{}x{}px'.format(width, height)">TEXT</small>
             <small tal:condition="python:width+height==''">&nbsp;</small>
-            <input tal:attributes="name python:'select_'+file.id" type="checkbox" class="checkbox"/>
-            <input tal:attributes="name python:'del_'+file.id" i18n:attributes="title shoppingbag_clear_item" type="image" src="/img/delete.png" class="delbutton"/>
+            <input tal:attributes="name python:u'select_{}'.format(file.id)" type="checkbox" class="checkbox"/>
+            <input tal:attributes="name python:u'del_{}'.format(file.id)" i18n:attributes="title shoppingbag_clear_item" type="image" src="/img/delete.png" class="delbutton"/>
         </div>
     </tal:block>
     <input type="hidden" name="action" value="items"/>
@@ -121,7 +121,7 @@
             <p><input type="radio" name="format_type" value="perc" checked="checked"> <span i18n:translate="popup_shoppingbag_imagesize"/>
                 <select name="img_perc" style="font-size:10px">
                     <option value=""> </option>
-                    <option tal:repeat="i python:img_perc_range" tal:content="python:ustr(i*10)+'%'" tal:attributes="value python:i*10; selected python:['None', 'selected'][i==10]">TEXT</option>
+                    <option tal:repeat="i python:img_perc_range" tal:content="python:u'{}%'.format(i*10)" tal:attributes="value python:i*10; selected python:['None', 'selected'][i==10]">TEXT</option>
                 </select>
                 <tal:block i18n:translate="popup_shoppingbag_or"/>
                 <input name="img_perc" style="width:40px;font-size:10px" onkeyup="data_change(this);"/> %
@@ -129,7 +129,7 @@
             <p><input type="radio" name="format_type" value="pix"> <span i18n:translate="popup_shoppingbag_maximgsize"/>
                 <select name="img_pix" style="font-size:10px">
                     <option value=""> </option>
-                    <option tal:repeat="i img_perc_range" tal:content="python:ustr(i*100)+' px'" tal:attributes="value python:i*100">TEXT</option>
+                    <option tal:repeat="i img_perc_range" tal:content="python:u'{} px'.format(i*100)" tal:attributes="value python:i*100">TEXT</option>
                 </select>
                 <tal:block i18n:translate="popup_shoppingbag_or"/>
                 <input type="text" name="img_pix" style="width:40px;font-size:10px" onkeyup="data_change(this);"/> px
@@ -138,7 +138,7 @@
             <p><input type="radio" name="format_type" value="std"> <span i18n:translate="popup_shoppingbag_stdsize"/>
                 <select name="img_pix" style="font-size:10px">
                     <option value=""> </option>
-                    <option tal:repeat="pix_size img_pix_sizes" tal:content="python:pix_size+' px'" tal:attributes="value pix_size">TEXT</option>
+                    <option tal:repeat="pix_size img_pix_sizes" tal:content="python:u'{} px'.format(pix_size)" tal:attributes="value pix_size">TEXT</option>
                 </select>
             </p>
         </div>
@@ -157,11 +157,11 @@
     <tal:block i18n:translate="popup_shoppingbag_doc_title"/><br/>
     <tal:block tal:repeat="file files">
         <div tal:condition="python: file.getCategoryName()=='document'" class="imagebox">
-            <img tal:attributes="src python:'/thumbs/'+ustr(file.id); onClick python:'fullSizePopup('+ustr(file.id)+', 400, 400)'" height="90" width="90" class="document_preview"/>
+            <img tal:attributes="src python:u'/thumbs/{}'.format(file.id); onClick python:u'fullSizePopup({}, 400, 400)'.format(file.id)" height="90" width="90" class="document_preview"/>
             <br/>
             <small tal:content="python:calc_size(file)">TEXT</small>
-            <input tal:attributes="name python:'select_'+file.id" type="checkbox" class="checkbox"/>
-            <input tal:attributes="name python:'del_'+file.id" i18n:attributes="title shoppingbag_clear_item" type="image" src="/img/delete.png" class="delbutton"/>
+            <input tal:attributes="name python:u'select_{}'.format(file.id)" type="checkbox" class="checkbox"/>
+            <input tal:attributes="name python:u'del_{}'.format(file.id)" i18n:attributes="title shoppingbag_clear_item" type="image" src="/img/delete.png" class="delbutton"/>
         </div>
     </tal:block>
     <input type="hidden" name="action" value="items"/>
@@ -193,11 +193,11 @@
     <tal:block i18n:translate="popup_shoppingbag_media_title"/><br/>
     <tal:block tal:repeat="file files">
         <div tal:condition="python: file.getCategoryName() in ['audio','video']" class="imagebox">
-            <img tal:attributes="src python:'/thumbs/'+ustr(file.id); onClick python:'fullSizePopup('+ustr(file.id)+', 400, 400)'" height="90" width="90" class="document_preview"/>
+            <img tal:attributes="src python:u'/thumbs/{}'.format(file.id); onClick python:u'fullSizePopup({}, 400, 400)'.format(file.id)" height="90" width="90" class="document_preview"/>
             <br/>
             <small tal:content="python:calc_length(file)">TEXT</small>
-            <input tal:attributes="name python:'select_'+file.id" type="checkbox" class="checkbox"/>
-            <input tal:attributes="name python:'del_'+file.id" i18n:attributes="title shoppingbag_clear_item" type="image" src="/img/delete.png" class="delbutton"/>
+            <input tal:attributes="name python:u'select_{}'.format(file.id)" type="checkbox" class="checkbox"/>
+            <input tal:attributes="name python:u'del_{}'.format(file.id)" i18n:attributes="title shoppingbag_clear_item" type="image" src="/img/delete.png" class="delbutton"/>
         </div>
     </tal:block>
     <input type="hidden" name="action" value="items"/>
@@ -230,10 +230,10 @@
             <tal:block tal:condition="python:shoppingbag.isShared()"><img src="/img/16x16.gif" class="blank"/></tal:block>
             <tal:block tal:condition="python:not shoppingbag.isShared()"><img i18n:attributes="title popup_shoppingbag_private" src="/img/greynotpublic.gif"/></tal:block>
             <tal:block tal:content="python:shoppingbag.getName()"/>
-            <small tal:condition="python:shoppingbag.isShared()" tal:content="python:'('+shoppingbag.getSharedKey()+')'" style="color:#000000"/>
-            <button tal:attributes="name python:'share_'+shoppingbag.id" i18n:attributes="title popup_shoppingbag_share_bag"><img src="/img/greyshare.gif"/></button>
-            <button tal:attributes="name python:'delete_'+shoppingbag.id" i18n:attributes="title popup_shoppingbag_delete_bag" onclick="return questionDel();"><img src="/img/greydelete.gif"/></button>
-            <button tal:attributes="name python:'load_'+shoppingbag.id" i18n:attributes="title popup_shoppingbag_load_bag"><img src="/img/greyarrow.gif"/></button>
+            <small tal:condition="python:shoppingbag.isShared()" tal:content="python:u'({})'.format(shoppingbag.getSharedKey())" style="color:#000000"/>
+            <button tal:attributes="name python:u'share_{}'.format(shoppingbag.id)" i18n:attributes="title popup_shoppingbag_share_bag"><img src="/img/greyshare.gif"/></button>
+            <button tal:attributes="name python:u'delete_{}'.format(shoppingbag.id)" i18n:attributes="title popup_shoppingbag_delete_bag" onclick="return questionDel();"><img src="/img/greydelete.gif"/></button>
+            <button tal:attributes="name python:u'load_{}'.format(shoppingbag.id)" i18n:attributes="title popup_shoppingbag_load_bag"><img src="/img/greyarrow.gif"/></button>
         </p>
     </div>
     

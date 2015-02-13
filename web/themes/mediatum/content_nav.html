@@ -10,15 +10,15 @@
     <a tal:condition="python:nodeprint=='1'" target="_blank" tal:attributes="href printlink" id="view_switch"><img src="/img/print_icon.gif"/></a>
     
     <a tal:condition="python:len(styles)>1 and items!='-1'" tal:repeat="style styles" 
-       tal:attributes="href python:'/?style='+style.getName()+params;title python:style.getLabel()" 
+       tal:attributes="href python:u'/?style={}{}'.format(style.getName(), params);title python:style.getLabel()"
        i18n:attributes="title" id="view_switch">
-        <img tal:attributes="src python:'/img/'+style.getIcon()"/>
+        <img tal:attributes="src python:u'/img/{}'/.format(style.getIcon())"/>
     </a>
     
     <a tal:condition="python:len(styles)>1 and items=='-1'" tal:repeat="style styles" 
-       tal:attributes="href python:'/?itemsperpage=-1&style='+style.getName()+params;title python:style.getLabel()" 
+       tal:attributes="href python:u'/?itemsperpage=-1&style={}{}'.format(style.getName(), params);title python:style.getLabel()"
        i18n:attributes="title" id="view_switch">
-        <img tal:attributes="src python:'/img/'+style.getIcon()"/>
+        <img tal:attributes="src python:u'/img/{}'.format(style.getIcon())"/>
     </a>
 
     <a i18n:translate="startpage" href="/">TEXT</a>
@@ -42,7 +42,7 @@
                         <small tal:condition="python:i>0" i18n:translate="sort_label2">TEXT</small>
                     </td>
                     <td>
-                        <select tal:attributes="name python:'sortfield'+ustr(i)" style="font-size: 9px" onchange="submit()">
+                        <select tal:attributes="name python:u'sortfield{}'.format(i)" style="font-size: 9px" onchange="submit()">
                             <option tal:repeat="field python:sortfieldslist[i]" tal:content="python:field.getLabel()" 
                                 tal:attributes="value python:field.getName(); selected python:field.selected()"/>
                         </select>
@@ -62,14 +62,14 @@
         <tal:block tal:repeat="page python:list(nav_list)">
             <tal:block tal:condition="python:page!='...'" tal:define="page_no python:nav_page[int(nav_list.index(page))]">
                 &nbsp;
-                <tal:block tal:condition="python:act_page==page_no" tal:replace="python:'['"/><a tal:attributes="href page" tal:content="python:ustr(page_no+1)"/><tal:block tal:condition="python:act_page==page_no" tal:replace="python:']'"/>
+                <tal:block tal:condition="python:act_page==page_no" tal:replace="python:'['"/><a tal:attributes="href page" tal:content="python:unicode(page_no+1)"/><tal:block tal:condition="python:act_page==page_no" tal:replace="python:']'"/>
             </tal:block>
             <span tal:condition="python:page=='...'" tal:replace="python:' ...'"/>
         </tal:block>
         <span>&nbsp;&nbsp;<a href="?itemsperpage=-1" i18n:translate="show_all">TEXT</a></span>
         </div>
         <span style="position:absolute;right:20px;top:0px">
-            <img i18n:attributes="title view_lists_add_shoppingbag" tal:attributes="onclick python:'shoppingBag(\''+ ids +'\')'" border="0" src="/img/favourite_add.png" style="cursor:pointer"/>
+            <img i18n:attributes="title view_lists_add_shoppingbag" tal:attributes="onclick python:u'shoppingBag(\'{}\')'.format(ids)" border="0" src="/img/favourite_add.png" style="cursor:pointer"/>
         </span>
         <div tal:condition="python:len(list(nav_list))==1">
             <span><a href="?page=0" i18n:translate="show_pages">TEXT</a></span>

@@ -70,7 +70,7 @@
 
     <div id="language_switch" tal:condition="python:len(language['name'])>1">
         <form name="chooser" action="" method="post">
-            <a tal:repeat="lang python:language['name']" tal:attributes="class python:language['actlang']==lang and 'selected_language' or ''; href python:'?change_language='+lang" tal:content="lang" i18n:translate="" />
+            <a tal:repeat="lang python:language['name']" tal:attributes="class python:language['actlang']==lang and 'selected_language' or ''; href python:u'?change_language={}'.format(lang)" tal:content="lang" i18n:translate="" />
         </form>
     </div>
     
@@ -109,7 +109,7 @@
         <form tal:condition="python:search.isSimple()" id="search-box" name="search" action="/node" method="post" accept-charset="utf-8" style="padding:10px 0px 0px 10px">
             <input tal:attributes="value python:search.query()" id="search-field" name="query" style="width:180px"/>
             <input type="hidden" name="searchmode" value="simple"/>
-            <input type="hidden" value="1" tal:attributes="name python:'c_'+search.collection.id" tal:condition="python:search.insideCollection()"/>
+            <input type="hidden" value="1" tal:attributes="name python:u'c_{}'.format(search.collection.id)" tal:condition="python:search.insideCollection()"/>
             <input i18n:attributes="value search; title search_title" id="search-button" type="submit" name="start_search"/>
             <a tal:condition="python:search.hasExtendedSearch()" tal:attributes="href python:search.searchLinkExtended()" i18n:translate="xsearch" id="advancedsearchlink"> </a> 
             <input type="hidden" name="act_node" tal:attributes="value python:act_node"/>
@@ -123,7 +123,7 @@
             <table id="abc" name="xsearchtable" tal:define="max python:[4,11][search.isExtendedSuper()]">
                 <tr tal:repeat="i python:range(1,max)">
                     <td valign="top">
-                        <select tal:attributes="name python:'field'+ustr(i);id python:'id'+ustr(i); onchange python: 'chg_new('+ustr(i)+', '+ustr(search.collection.id)+')'">
+                        <select tal:attributes="name python:u'field{}'.format(i);id python:u'id{}'.format(i); onchange python: u'chg_new({}, {})'.format(i, search.collection.id)">
                             <option tal:attributes="selected python:[None,'selected'][search.names[i]=='full']" i18n:translate="all_metafields" value="full"/>
                             <tal:block tal:repeat="a python:search.getSearchFields().keys()">
                                 <option tal:attributes="value a; selected python:[None,'selected'][search.names[i]==a]" tal:content="python:search.getSearchFields()[a]"/>

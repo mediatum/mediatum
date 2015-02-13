@@ -1,7 +1,7 @@
 <tal:block metal:define-macro="editorfield" tal:define="schema python:field.getSchemaNode().getName()">
     <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:{}px'.format(width-50); name name; id name; value value"/>
     &nbsp;
-    <button tal:attributes="name python:'indexbutton_{}'.format(name); onclick python:u'openPopup(\'/metatype/ilist?pid={}&type={}&name={}&schema={}\', \'\', 400, 400)'.format(field.getName(), field.getFieldtype(), name, schema)" style="width: 44px; padding: 0px;" type="button" i18:attributes="title editor_index_title" i18n:translate="editor_index">Index</button>
+    <button tal:attributes="name python:u'indexbutton_{}'.format(name); onclick python:u'openPopup(\'/metatype/ilist?pid={}&type={}&name={}&schema={}\', \'\', 400, 400)'.format(field.getName(), field.getFieldtype(), name, schema)" style="width: 44px; padding: 0px;" type="button" i18:attributes="title editor_index_title" i18n:translate="editor_index">Index</button>
     <button name="button" tal:attributes="onclick python:u'openPopup(\'/metatype/text?name={}\', \'\', 550, 470)'.format(name)" style="horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px" type="button" i18n:attributes="title ilist_titlepopupbutton"><img src="/img/edit_spc.png" style="height:14px"/></button>
 
     <tal:block tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;

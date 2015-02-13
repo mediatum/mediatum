@@ -145,7 +145,7 @@
                                     <td style="text-align:center"><input tal:condition="python:file.type not in ['original', 'image']" tal:attributes="name python:u'del|{}|{}'.format(file.type, file.getName())" type="image" src="/img/delete.png" onclick="return questionDelName('')"/>&nbsp;</td>
                                 </tr>
                                 <tr tal:repeat="file att">
-                                    <td tal:content="python:' - {}'.format(file.type)"/>
+                                    <td tal:content="python:u' - {}'.format(file.type)"/>
                                     <td tal:content="python:file.getSize()"/>
                                     <td tal:content="python:file.mimetype"/>
                                     <td>
@@ -381,7 +381,7 @@
             initTree({'idOfFolderTrees': ['tree'], 'multiselect':false});
         </script>
         <tal:block tal:replace="raw python:'<script type=&quot;text/javascript&quot;> var allobjects= new Array();\n'"/>
-            <tal:block tal:repeat="id python:idstr.split(',')" tal:replace="python:'allobjects[{}]=1;'.format(id)"/>
+            <tal:block tal:repeat="id python:idstr.split(',')" tal:replace="python:u'allobjects[{}]=1;'.format(id)"/>
         <tal:block tal:replace="raw python:'</script>'"/>
         <script>
             getFolderItems(currentfolder);

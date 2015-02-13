@@ -27,7 +27,7 @@
         <img tal:condition="python: enable_multilang" i18n:attributes="title" tal:attributes="title python:'memo_hide_multilang' if expand_multilang else 'memo_show_multilang'; id python:u'button_toggle_{}'.format(ident); onclick python:u'toggleMemoDiv(this, \'\')'.format(ident); src python:'/img/slang.png' if expand_multilang else '/img/mlang.png'" style="margin-left:5px;cursor:pointer;"/>
         
         <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
-            <input tal:attributes="name python:'lock_'+name; id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
+            <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
             <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
         </span>
     </div>

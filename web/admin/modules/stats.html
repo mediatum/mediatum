@@ -23,7 +23,7 @@
             <div tal:repeat="page pages" tal:attributes="id python:u'{}_tab'.format(page); onclick python:u'tab(\'{}\')'.format(page); class python:'active' if pages.index(page)==0 else None" class='active' tal:content="python:u'admin_settings_{}_header'.format(page)" i18n:translate="">TEXT</div>
         </div>
         <div id="page_content" style="background-color:white;width:90%">
-            <div tal:repeat="page pages" tal:attributes="id page; style python:'display:{}'.format('visible' if pages.index(page)==0 else 'none')"><img src="/img/wait_small.gif"/></div>
+            <div tal:repeat="page pages" tal:attributes="id page; style python:u'display:{}'.format('visible' if pages.index(page)==0 else 'none')"><img src="/img/wait_small.gif"/></div>
         </div>
     </tal:block>
     

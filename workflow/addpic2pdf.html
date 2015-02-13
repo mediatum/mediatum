@@ -3,13 +3,13 @@
 <!--<script type="text/javascript" language="javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.22/jquery-ui.js"> </script>-->
 <script src="js/jquery-ui.js"> </script>
 
-<script tal:content="python:'var pdf_dim = '+ustr(json_pdf_dimensions)+';'">;</script>
-<script tal:content="python:'var keep_params = '+ustr(keep_params)+';'">;</script>
-<script tal:content="python:'var logo_info_list = '+ustr(logo_info_list)+';'">;</script>
-<script tal:content="python:'var logo_info = '+ustr(logo_info)+';'">;</script>
-<script tal:content="python:'var node_id = {};'.format(node.id)">;</script>
-<script tal:content="python:'var startpageno = '+ustr(startpageno)+';'">;</script>
-<script tal:content="python:'var FATAL_ERROR = '+ustr(FATAL_ERROR)+';'">;</script>
+<script tal:content="python:u'var pdf_dim = '+ustr(json_pdf_dimensions)+';'">;</script>
+<script tal:content="python:u'var keep_params = '+ustr(keep_params)+';'">;</script>
+<script tal:content="python:u'var logo_info_list = '+ustr(logo_info_list)+';'">;</script>
+<script tal:content="python:u'var logo_info = '+ustr(logo_info)+';'">;</script>
+<script tal:content="python:u'var node_id = {};'.format(node.id)">;</script>
+<script tal:content="python:u'var startpageno = '+ustr(startpageno)+';'">;</script>
+<script tal:content="python:u'var FATAL_ERROR = '+ustr(FATAL_ERROR)+';'">;</script>
 
 <script>
 
@@ -637,8 +637,8 @@
       <div style="text-align:center; padding:2px;">
         <input id="checkbox_grid" type="checkbox" name="grid" onClick="gridCheckboxEvent(this.checked);"><span i18n:translate="admin_wfstep_addpic2pdf_cb_grid">Grid</span> |
         <input id="checkbox_logo_zindex" type="checkbox" name="logo_zindex" onClick="zIndexCheckboxEvent(this.checked);"><span i18n:translate="admin_wfstep_addpic2pdf_cb_logo_above_grid">logo above grid</span> |
-        <a target="_blank" tal:attributes="href python:'/wfs_addpic2pdf/serve_page/p_document.pdf?node_id={}'.format(node.id);"><span i18n:translate="admin_wfstep_addpic2pdf_link_processed">currently processed</span></a> |
-        <a target="_blank" tal:attributes="href python:'/wfs_addpic2pdf/serve_page/document.pdf?node_id={}'.format(node.id);"><span i18n:translate="admin_wfstep_addpic2pdf_link_original">original</span></a>
+        <a target="_blank" tal:attributes="href python:u'/wfs_addpic2pdf/serve_page/p_document.pdf?node_id={}'.format(node.id);"><span i18n:translate="admin_wfstep_addpic2pdf_link_processed">currently processed</span></a> |
+        <a target="_blank" tal:attributes="href python:u'/wfs_addpic2pdf/serve_page/document.pdf?node_id={}'.format(node.id);"><span i18n:translate="admin_wfstep_addpic2pdf_link_original">original</span></a>
       </div>
   </div>
 
@@ -652,7 +652,7 @@
         <form id="form_left" action="/mask" method="post">
           <div class="select">
             <span i18n:translate="admin_wfstep_addpic2pdf_select_page_to_preview">Select page to preview</span>:
-            <select id="select_pdf_page" tal:attributes="name python:'pdfpage_select_for_node_{}'.format(node.id)" size=1 onchange="g(this.name, this.value);" onselect="g(this.name, this.value);" onkeyup="g(this.name, this.value);">
+            <select id="select_pdf_page" tal:attributes="name python:u'pdfpage_select_for_node_{}'.format(node.id)" size=1 onchange="g(this.name, this.value);" onselect="g(this.name, this.value);" onkeyup="g(this.name, this.value);">
               <tal:block tal:repeat="i python: range(pdf_page_count)">
                 <option tal:attributes="value python:ustr(i)" tal:content="python: ustr(i+1)" />
               </tal:block>

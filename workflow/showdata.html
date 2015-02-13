@@ -13,7 +13,7 @@
             <td tal:content="python:file.mimetype"/>
             <td>
                 <a i18n:attributes="title workflow_filelist_open_title" target="filewindow" 
-                 tal:attributes="href python:'/file/{}/{}'.format(node.id, file.getName())"
+                 tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())"
                  tal:content="python:file.getName()"/>
             </td>
             <td tal:condition="delbutton">
@@ -27,7 +27,7 @@
     <tal:block tal:repeat="file files">
         <tal:block tal:condition="python:file.type=='thumb'">
             <div id="thumb" style="float:left">
-                <img tal:attributes="src python:'/file/{}/{}'.format(node.id, file.getName())"/>
+                <img tal:attributes="src python:u'/file/{}/{}'.format(node.id, file.getName())"/>
             </div>
         </tal:block>
     </tal:block>
@@ -36,7 +36,7 @@
             <div style="padding:20px;margin-left:150px">
                 <p tal:content="python:ustr(file.getSize())+' bytes'"/>
                 <a i18n:attributes="title workflow_filelist_open_title" target="filewindow" 
-             tal:attributes="href python:'/file/{}/{}'.format(node.id, file.getName())"
+             tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())"
              tal:content="python:file.getName()"/>
              <p style="padding-top:20px" tal:condition="delbutton">
                 <input tal:attributes="name python:'delete_'+file.getName()" i18n:attributes="title workflow_filelist_delete_title" onclick="return questionDel()" type="image" src="/img/delete.png"/>

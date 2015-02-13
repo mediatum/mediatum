@@ -469,7 +469,7 @@
                         ...
                     </tal:block>
                     <tal:block tal:condition="python: len(schedule2nids[schedule_id]['nids'])<=100" >
-                        <a tal:repeat="nid python: sorted(schedule2nids[schedule_id]['nids'])" tal:content="python: nid" tal:attributes="href python:'edit_content?id={}&tab=schedule'.format(nid);title python:nid2schedules[nid]['title']"/>
+                        <a tal:repeat="nid python: sorted(schedule2nids[schedule_id]['nids'])" tal:content="python: nid" tal:attributes="href python:u'edit_content?id={}&tab=schedule'.format(nid);title python:nid2schedules[nid]['title']"/>
                     </tal:block>
                 </td>
                 <td tal:condition="python:len(nid2schedules.keys())==1">

@@ -138,7 +138,7 @@
              tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())"
              tal:content="python:file.getName()"/>
              <p style="padding-top:20px" tal:condition="delbutton">
-                <input tal:attributes="name python:'delete_{}'.format(file.getName())" i18n:attributes="title upload_filelist_delete_title" onclick="return delete_file_json_for_targetnode_FOR_____FIELDNAME____(this.name)" type="image" src="/img/delete.png" />
+                <input tal:attributes="name python:u'delete_{}'.format(file.getName())" i18n:attributes="title upload_filelist_delete_title" onclick="return delete_file_json_for_targetnode_FOR_____FIELDNAME____(this.name)" type="image" src="/img/delete.png" />
                 <span i18n:translate="upload_filelist_delete_label">TEXT</span>
              </p>
             </div>

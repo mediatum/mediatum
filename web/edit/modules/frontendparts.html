@@ -202,7 +202,7 @@
 
 
 <tal:block metal:define-macro="edit_frontendparts_nodeselection">
-    <a tal:attributes="name python:'node{}'.format(id)"> </a>
+    <a tal:attributes="name python:u'node{}'.format(id)"> </a>
     <div class="line">
         <div class="name" tal:attributes="style python:u'padding-left: {}px'.format(indent)">
             <a tal:condition="python:type==1" i18n:attributes="title edit_classes_close_title" tal:attributes="href link1"><img src="/img/edit_box1.gif" border="0"/></a>

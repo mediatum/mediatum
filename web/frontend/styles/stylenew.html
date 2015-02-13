@@ -6,7 +6,7 @@
     <p tal:content="python:'['+ustr(file.nr+1)+'/'+ustr(file.num)+']'" class="docnum"/>
     <a tal:attributes="href python:file.getLink()" tal:content="raw python:file.node.show_node_text()" style="white-space:normal"/>
 
-    <div tal:attributes="onclick python:'shoppingBag(\'{}\')'.format(file.node.id)" style="position:absolute; right:0px; top:3px; width:20px; height:20px; overflow:hidden; cursor: pointer;">
+    <div tal:attributes="onclick python:u'shoppingBag(\'{}\')'.format(file.node.id)" style="position:absolute; right:0px; top:3px; width:20px; height:20px; overflow:hidden; cursor: pointer;">
         <img i18n:attributes="title view_list_add_shoppingbag" src="/img/favourite_add.png"/>
     </div>
 

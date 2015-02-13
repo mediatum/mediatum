@@ -105,7 +105,7 @@
     <ul tal:repeat="path paths">
         <li>
         <tal:block tal:repeat="step path">
-            <a tal:content="python: step.getLabel()" tal:attributes="href python:'/node?id={}&dir={}'.format(step.id, step.id)"></a>
+            <a tal:content="python: step.getLabel()" tal:attributes="href python:u'/node?id={}&dir={}'.format(step.id, step.id)"></a>
             <img tal:condition="python:path.index(step)<len(path)-1" src="../img/breadcrumb-arrow.gif"/>
          </tal:block>
         </li>

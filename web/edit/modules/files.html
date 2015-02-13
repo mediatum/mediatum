@@ -72,7 +72,7 @@
                 <div id="children" style="padding:10px">
                     <h2>Kindelemente</h2>
                             <b i18n:translate="edit_files_childobjects">TEXT</b><br/>
-                            <a tal:attributes="onclick python:u'openWindow(\'/edit/edit_content?id={}&tab=files&style=popup&parent=\{}')'.format(node.id, parent.tree.currentfolder)" target="_blank" i18n:attributes="title edit_files_add_title" style="cursor:pointer">
+                            <a tal:attributes="onclick python:u'openWindow(\'/edit/edit_content?id={}&tab=files&style=popup&parent=\'+parent.tree.currentfolder)'.format(node.id)" target="_blank" i18n:attributes="title edit_files_add_title" style="cursor:pointer">
                                 <div style="border:1px solid #A4A4A4; width:129px;height:129px;float:left;margin-right:2px;text-align:center;margin-top:3px">
                                     <div style="color:#A4A4A4;font-size:50px;padding-top:30px;padding-left:45px">+</div>
                                 </div>

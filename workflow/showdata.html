@@ -9,7 +9,7 @@
         </tr>
         <tr tal:repeat="file files">
             <td tal:content="python:file.type"/>
-            <td tal:content="python:ustr(file.getSize())+' bytes'" style="text-align:right;width:100px"/>
+            <td tal:content="python:u'{} bytes'.format(file.getSize())" style="text-align:right;width:100px"/>
             <td tal:content="python:file.mimetype"/>
             <td>
                 <a i18n:attributes="title workflow_filelist_open_title" target="filewindow" 
@@ -34,7 +34,7 @@
     <tal:block tal:repeat="file files">
         <tal:block tal:condition="python:file.type in ['document', 'image']">
             <div style="padding:20px;margin-left:150px">
-                <p tal:content="python:ustr(file.getSize())+' bytes'"/>
+                <p tal:content="python:u'{} bytes'.format(file.getSize())"/>
                 <a i18n:attributes="title workflow_filelist_open_title" target="filewindow" 
              tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())"
              tal:content="python:file.getName()"/>

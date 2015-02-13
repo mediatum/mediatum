@@ -62,7 +62,7 @@
                 </thead>
                     <tbody>  
                     <tal:block tal:repeat="doublet doublets">
-                        <tr tal:attributes="class python:ustr(doublet[4] % 2==0)">
+                        <tr tal:attributes="class python:unicode(doublet[4] % 2==0)">
                             <td align="center">
                                 <input tal:condition="python:not node.id==doublet[2].id" type="radio" name="_name" value="_value" tal:attributes="onclick python:'sel_changed('+doublet[2].id+')'">
                                 <input tal:condition="python:node.id==doublet[2].id" type="radio" name="_name" value="_value" checked="checked" tal:attributes="onclick python:'sel_changed('+doublet[2].id+')'">

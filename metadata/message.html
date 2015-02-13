@@ -6,7 +6,7 @@
         <tal:block i18n:translate="field_msg_view">TEXT</tal:block>
         <select tal:attributes="name name; id name" tal:define="v_cols python:['no', 'yes']">
             <tal:block tal:repeat="v_col v_cols">
-                <option i18n:translate="" tal:content="python:u'view_{}'.format(v_col)" tal:attributes="value python:unicode(v_cols.index(v_col)); selected python:'selected' if value[1]==ustr(v_cols.index(v_col)) else None">TEXT</option>
+                <option i18n:translate="" tal:content="python:u'view_{}'.format(v_col)" tal:attributes="value python:unicode(v_cols.index(v_col)); selected python:'selected' if value[1]==unicode(v_cols.index(v_col)) else None">TEXT</option>
             </tal:block>
         </select>
         &nbsp;&nbsp;&nbsp;&nbsp;
@@ -19,7 +19,7 @@
         
         <select tal:attributes="name name; id name" tal:define="s_cols python:['normal', 'bold', 'italic', 'bold_italic']">
             <tal:block tal:repeat="s_col s_cols">
-                <option i18n:translate="" tal:content="python:u'style_{}'.format(s_col)" tal:attributes="value python:unicode(s_cols.index(s_col)); selected python:'selected' if (value[3])==ustr(s_cols.index(s_col)) else None">TEXT</option>
+                <option i18n:translate="" tal:content="python:u'style_{}'.format(s_col)" tal:attributes="value python:unicode(s_cols.index(s_col)); selected python:'selected' if (value[3])==unicode(s_cols.index(s_col)) else None">TEXT</option>
             </tal:block>
         </select>
     </fieldset>

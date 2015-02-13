@@ -8,7 +8,7 @@
             </span>
         </tal:block>
         <tal:block tal:condition="python:fielddef[0]!=''">
-            <i>[<a tal:attributes="href python:unicode(fielddef[0])"><span tal:replace="python:ustr(fielddef[0])"/></a>]</i><input type="hidden" tal:attributes="name name; id name" value=""/>
+            <i>[<a tal:attributes="href python:unicode(fielddef[0])"><span tal:replace="python:unicode(fielddef[0])"/></a>]</i><input type="hidden" tal:attributes="name name; id name" value=""/>
         </tal:block>
         <br/> <span i18n:translate="url_edit_linktext">TEXT</span>
         <tal:block tal:condition="python:fielddef[1]==''">

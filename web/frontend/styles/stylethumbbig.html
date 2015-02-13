@@ -9,7 +9,7 @@
         </div>
         
         <div style="position:absolute; left:3px; top:3px; overflow:hidden">
-            <small><p tal:replace="python:'['+ustr(file.nr+1)+'/'+ustr(file.num)+']'"/></small>
+            <small><p tal:replace="python:u'[{}/{}]'.format(file.nr+1, file.num)"/></small>
         </div>
         <a tal:attributes="href python:file.getLink()" target="_parent">
             <div style="text-align:center;width:253px;height:240px;margin:3px;padding-top:12px;margin-bottom:2px;overflow:hidden">

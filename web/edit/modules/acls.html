@@ -72,16 +72,16 @@
     <table>
         <tr>
             <td align="left" valign="top">
-                <select tal:content="raw val_left" tal:attributes="name python:'left'+name; ondblclick python:'moveRight(document.myform.left'+name+',document.myform.right'+name+')'" style="width:320px" size="10" multiple="multiple">
+                <select tal:content="raw val_left" tal:attributes="name python:u'left{}'.format(name); ondblclick python:u'moveRight(document.myform.left{},document.myform.right{})'.format(name, name)" style="width:320px" size="10" multiple="multiple">
                 </select>
             </td>
             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
-                <input tal:attributes="onclick python:'moveLeft(document.myform.left'+name+',document.myform.right'+name+')'" type="button" value="<<"/>
+                <input tal:attributes="onclick python:u'moveLeft(document.myform.left{},document.myform.right{})'.format(name, name)" type="button" value="<<"/>
                 <br>
-                <input tal:attributes="onclick python:'moveRight(document.myform.left'+name+',document.myform.right'+name+')'" type="button" value=">>"/>
+                <input tal:attributes="onclick python:u'moveRight(document.myform.left{},document.myform.right{})'.format(name, name)" type="button" value=">>"/>
             </td>
             <td align="left" valign="top">
-                <select tal:content="raw val_right" tal:attributes="name python:'right'+name;  ondblclick python:'moveLeft(document.myform.left'+name+',document.myform.right'+name+')'" style="width:320px" size="10" multiple="multiple">
+                <select tal:content="raw val_right" tal:attributes="name python:u'right'.format(name);  ondblclick python:u'moveLeft(document.myform.left{},document.myform.right{})'.format(name, name)" style="width:320px" size="10" multiple="multiple">
                 </select>
             </td>
         </tr>
@@ -99,16 +99,16 @@
     <table>
         <tr>
             <td align="left" valign="top">
-                <select tal:content="raw val_left" tal:attributes="name python:'leftuser'+name; ondblclick python:'moveRight(document.myform.leftuser'+name+',document.myform.rightuser'+name+')'" style="width:320px" size="10" multiple="multiple">
+                <select tal:content="raw val_left" tal:attributes="name python:u'leftuser{}'.format(name); ondblclick python:u'moveRight(document.myform.leftuser{},document.myform.rightuser{})'.format(name, name)" style="width:320px" size="10" multiple="multiple">
                 </select>
             </td>
             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
-                <input tal:attributes="onclick python:'moveLeft(document.myform.leftuser'+name+',document.myform.rightuser'+name+')'" type="button" value="<<"/>
+                <input tal:attributes="onclick python:u'moveLeft(document.myform.leftuser{},document.myform.rightuser{})'.format(name, name)" type="button" value="<<"/>
                 <br>
-                <input tal:attributes="onclick python:'moveRight(document.myform.leftuser'+name+',document.myform.rightuser'+name+')'" type="button" value=">>"/>
+                <input tal:attributes="onclick python:u'moveRight(document.myform.leftuser{},document.myform.rightuser{})'.format(name, name)" type="button" value=">>"/>
             </td>
             <td align="left" valign="top">
-                <select tal:content="raw val_right" tal:attributes="name python:'rightuser'+name;  ondblclick python:'moveLeft(document.myform.leftuser'+name+',document.myform.rightuser'+name+')'" style="width:320px" size="10" multiple="multiple">
+                <select tal:content="raw val_right" tal:attributes="name python:u'rightuser'.format(name);  ondblclick python:u'moveLeft(document.myform.leftuser{},document.myform.rightuser{})'.format(name, name)" style="width:320px" size="10" multiple="multiple">
                 </select>
             </td>
         </tr>

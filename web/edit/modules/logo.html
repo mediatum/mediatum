@@ -1,6 +1,6 @@
 <tal:block metal:define-macro="edit_logo">
 
-    <script tal:content="python:'var id = '+id+';'"> </script>
+    <script tal:content="python:u'var id = {};'.format(id)"> </script>
 
     <style>
         #uploadform{display:none;position:fixed;top:0px;left:0px;right:0px;bottom:0px;width:100%;height:100%;z-index:99;}
@@ -56,8 +56,8 @@
         }
     </script>
 
-    <script tal:content="python:'var js_edit_layout_togglertip_open = \''+t(language, 'edit_layout_togglertip_open')+'\';'">;</script>
-    <script tal:content="python:'var js_edit_layout_togglertip_closed = \''+t(language, 'edit_layout_togglertip_closed')+'\';'">;</script>
+    <script tal:content="python:u'var js_edit_layout_togglertip_open = \'{}\';'.format(t(language, 'edit_layout_togglertip_open'))">;</script>
+    <script tal:content="python:u'var js_edit_layout_togglertip_closed = \'{}\';'.format(t(language, 'edit_layout_togglertip_closed'))">;</script>
 
     <script>
         $(document).ready(function () {
@@ -76,10 +76,10 @@
     <div id="navigation_content" style="border:1px solid silver!important;border-width:0px 0px 1px 1px !important;">
         <div id="logo" style="border:1px solid silver;height:200px;width:200px;float:right;margin-right:30px;padding:2px">
             <img tal:condition="python:logo==''" id="previewlogo" src="/img/empty.gif" style="max-height:200px;max-width:200px"/>
-            <img tal:condition="python:logo!=''" tal:attributes="src python:'/file/'+id+'/'+logo" id="previewlogo" style="max-height:200px;max-width:200px"/>
+            <img tal:condition="python:logo!=''" tal:attributes="src python:u'/file/{}/'.format(id, logo)" id="previewlogo" style="max-height:200px;max-width:200px"/>
         </div>
         <div style="margin-left:150px;overflow:auto;position:relative;max-height:200px;margin-right:230px;padding-top:20px">
-            <form tal:attributes="action python:'edit_content?id='+ustr(id)+'&tab='+tab" tal:define="files python:node.getFiles()" method="post" enctype="multipart/form-data" name="logo">
+            <form tal:attributes="action python:u'edit_content?id={}&tab={}'.format(id, tab)" tal:define="files python:node.getFiles()" method="post" enctype="multipart/form-data" name="logo">
                 <p>
                     <span i18n:translate="edit_logo_addfile"/> <input name="updatefile" type="file" size="50"/> <button i18n:attributes="title edit_upload_upload_label" i18n:translate="edit_upload_upload_label" type="submit" name="addfile" value="submit">TEXT</button>
                 </p>
@@ -117,7 +117,7 @@
   
                 <tal:block tal:repeat="item logofiles">
                 <div class="imageblock" tal:attributes="id python:item[1]">
-                    <img tal:attributes="onclick python:'setImage(\'/file/'+ustr(id)+'/'+item[1]+'\')'; src python:'/file/'+ustr(id)+'/'+item[1]" style="max-height:200px;max-width:200px" />
+                    <img tal:attributes="onclick python:u'setImage(\'/file/{}/{}\')'.format(id, item[1]); src python:u'/file/{}/{}'.format(id, item[1])" style="max-height:200px;max-width:200px" />
                     <div class="options">
                         <a href="#" tal:attributes="onclick python:'deleteLogo(this)'"><img src="/img/delete.png"/></a>
                     </div>

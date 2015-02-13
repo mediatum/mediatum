@@ -49,7 +49,7 @@
             <tal:block tal:condition="python:field!=selectedfield">
                 <tr>
                     <td valign="center">
-                        <input type="image" tal:attributes="name python:'open_'+field.id" src="/img/boxx.gif"/>
+                        <input type="image" tal:attributes="name python:u'open_{}'.format(field.id)" src="/img/boxx.gif"/>
                     </td>
                     <td valign="center" colspan="2">
                         <tal:block tal:content="python:field.getName()"/>
@@ -73,7 +73,7 @@
                     </td>
                     <td colspan="2">
                         <input type="text" name="fieldname" tal:attributes="value python:field.getName()"/>
-                        <input type="image" tal:attributes="name python:'del_'+field.id" src="/img/delete.png"/>
+                        <input type="image" tal:attributes="name python:u'del_{}'.format(field.id)" src="/img/delete.png"/>
                         <table frame="box">
                             <tr>
                                 <td colspan="3"><b i18n:translate="edit_searchmask_fieldtitle"/></td>
@@ -97,7 +97,7 @@
                                     <td tal:content="python:ss and ss.getName() or '??'"/>
                                 </tal:block>
                                 <td tal:content="python:subfield.getName()"/>
-                                <td><input type="image" tal:attributes="name python:'delsub_'+subfield.id" src="/img/delete.png"/></td>
+                                <td><input type="image" tal:attributes="name python:u'delsub_{}'.format(subfield.id)" src="/img/delete.png"/></td>
                             </tr>
                             </tal:block>
                         </table>

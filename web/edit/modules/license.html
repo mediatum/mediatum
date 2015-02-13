@@ -7,7 +7,7 @@
     </div>
     <div id="sub_content_content">
         <p i18n:translate="edit_license_info">TEXT</p>
-        <a tal:attributes="href python:'/edit/edit_content?id='+node.id+'&tab=license&style=popup'" target="licensewindow" i18n:translate="edit_license_gen">TEXT</a>
+        <a tal:attributes="href python:u'/edit/edit_content?id={}&tab=license&style=popup'.format(node.id)" target="licensewindow" i18n:translate="edit_license_gen">TEXT</a>
     </div>
     <div id="sub_footer_module"> </div>
 

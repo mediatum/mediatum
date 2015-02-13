@@ -17,7 +17,7 @@
             <input type="hidden" name="tab" value="sortfiles"/>
             <input tal:attributes="value python:node.id" type="hidden" name="id"/>
             <select name="globalsort">
-                <option tal:repeat="sortchoice sortchoices" onSelect="form.submit()" tal:attributes="value python:sortchoice.value; selected python:{'False':None,'True':'selected'}[ustr(sortchoice.value==collection_sortfield)]" tal:content="python:sortchoice.label"/>
+                <option tal:repeat="sortchoice sortchoices" onSelect="form.submit()" tal:attributes="value python:sortchoice.value; selected python:'selected' if sortchoice.value==collection_sortfield else None" tal:content="python:sortchoice.label"/>
             </select>
             <input type="submit" name="ok" value="ok"/>
         </form>

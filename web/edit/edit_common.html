@@ -43,16 +43,16 @@
         <tal:block tal:repeat="node nodelist">
             <div tal:attributes="class python:'showcontent' if not node.getAttribute('faulty') else 'showcontent_error'">
                 <div style="position:absolute; left:0px; top:0px; width:296px; height:20px">
-                    <input id="itemcheck" tal:attributes="name python:node.id; id python:'check'+node.id" onChange="checkObject(this)" type="checkbox"/> <span i18n:translate="edit_common_mark">TEXT</span>
+                    <input id="itemcheck" tal:attributes="name python:node.id; id python:u'check{}'.format(node.id)" onChange="checkObject(this)" type="checkbox"/> <span i18n:translate="edit_common_mark">TEXT</span>
                 </div>
                 <div class="actions">
-                    <span tal:attributes="onclick python:'editSelected('+node.id+')'" target="content" i18n:attributes="title edit_common_edit_meta"><img src="/img/edit_edit.gif"/></span>
-                    <span tal:attributes="onclick python:'return movecopySelected('+node.id+', \'move\')'" target="content" i18n:attributes="title edit_common_edit_move"><img src="/img/edit_move.gif"/></span>
-                    <span tal:attributes="onclick python:'movecopySelected('+node.id+', \'copy\')'" target="content" i18n:attributes="title edit_common_edit_copy"><img src="/img/edit_copy.gif"/></span>
-                    <span tal:attributes="onclick python:'deleteSelected('+node.id+')'" i18n:attributes="title edit_common_edit_delete" target="content"><img src="/img/edit_delete.png"/></span>
+                    <span tal:attributes="onclick python:u'editSelected({})'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_meta"><img src="/img/edit_edit.gif"/></span>
+                    <span tal:attributes="onclick python:u'return movecopySelected({}, \'move\')'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_move"><img src="/img/edit_move.gif"/></span>
+                    <span tal:attributes="onclick python:u'movecopySelected({}, \'copy\')'.format(node.id)" target="content" i18n:attributes="title edit_common_edit_copy"><img src="/img/edit_copy.gif"/></span>
+                    <span tal:attributes="onclick python:u'deleteSelected({})'.format(node.id)" i18n:attributes="title edit_common_edit_delete" target="content"><img src="/img/edit_delete.png"/></span>
                 </div>
                 <div style="position:absolute; left:3px; top:25px; width:148px; height:148px;">
-                    <a tal:attributes="href python:'edit_content?id='+ustr(node.id)+'&tab=view'" i18n:attributes="title edit_common_bigview_title">
+                    <a tal:attributes="href python:u'edit_content?id={}&tab=view'.format(node.id)" i18n:attributes="title edit_common_bigview_title">
                         <tal:block tal:condition="python:hasattr(node, 'show_node_image')" tal:replace="raw python:node.show_node_image()"/>
                         <img tal:condition="python:not hasattr(node, 'show_node_image')" src="/img/questionmark.png"/>
                     </a>

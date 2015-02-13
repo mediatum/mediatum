@@ -31,7 +31,7 @@
                 <form>
                   <div>
                     <ul id="classtree" class="tree">
-                        <li tal:repeat="basedir basedirs" tal:attributes="id python:'Node'+basedir.id"><a tal:attributes="id python:ustr(basedir.id); title python:basedir.getLabel()+' ('+ustr(basedir.id)+')'" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
+                        <li tal:repeat="basedir basedirs" tal:attributes="id python:u'Node{}'.format(basedir.id)"><a tal:attributes="id python:unicode(basedir.id); title python:u'{} ({})'.format(basedir.getLabel(), basedir.id)" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
                             <ul>
                                 <li tal:attributes="parentId python:basedir.id" class="spinner.gif"><a href="#" id="node_0"> </a></li>
                             </ul>
@@ -46,8 +46,8 @@
 
     <div id="sub_footer_module"> </div>
 
-    <script tal:content="python:'var js_edit_layout_togglertip_open = \''+t(language, 'edit_layout_togglertip_open')+'\';'">;</script>
-    <script tal:content="python:'var js_edit_layout_togglertip_closed = \''+t(language, 'edit_layout_togglertip_closed')+'\';'">;</script>
+    <script tal:content="python:u'var js_edit_layout_togglertip_open = \'{}\';'.format(t(language, 'edit_layout_togglertip_open'))">;</script>
+    <script tal:content="python:u'var js_edit_layout_togglertip_closed = \'{}\';'.format(t(language, 'edit_layout_togglertip_closed'))">;</script>
 
     <script type="text/javascript">
 
@@ -71,7 +71,7 @@
 
     </script>
     <tal:block tal:replace="raw python:'<script type=&quot;text/javascript&quot;>'"/>
-        <tal:block tal:repeat="id python:idstr.split(',')" tal:replace="python:'allobjects['+id+']=1;'"/>
+        <tal:block tal:repeat="id python:idstr.split(',')" tal:replace="python:u'allobjects[{}]=1;'.format(id)"/>
     <tal:block tal:replace="raw python:'</script>'"/>
 
 </metal:block>

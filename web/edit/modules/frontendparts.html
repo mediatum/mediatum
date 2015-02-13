@@ -60,13 +60,13 @@
                 <th i18n:translate="edit_frontendparts_link_title">TEXT</th>
                 <th i18n:translate="edit_frontendparts_type_title">TEXT</th>
                 <th i18n:translate="edit_frontendparts_icon_title">TEXT</th>
-                <th style="text-align:right"><input tal:attributes="name python:type+'_add'" i18n:attributes="title edit_frontendparts_add_title" type="image" src="/img/install.png"/></th>
+                <th style="text-align:right"><input tal:attributes="name python:u'{}_add'.format(type)" i18n:attributes="title edit_frontendparts_add_title" type="image" src="/img/install.png"/></th>
             </tr>
         </thead>
         <tbody>
             <tal:block tal:repeat="item items">
             <tr tal:define="cssclass python:items.index(item)%2 and 'silver' or 'norm'" tal:attributes="class cssclass">
-                <td class="position" tal:content="python:ustr(items.index(item)+1)+'.'">TEXT</td>
+                <td class="position" tal:content="python:u'{}.'.format(items.index(item)+1)">TEXT</td>
                 <td tal:content="python:item.getName()">TEXT</td>
                 <td><a tal:attributes="href python:item.getLink()" tal:content="python:item.getLink()" target="_blank">TEXT</a></td>
                 <td tal:content="python:item.getType()">TEXT</td>
@@ -75,14 +75,14 @@
                     <img tal:condition="python:item.getIcon()==''" src="/img/16x16.gif"/>
                 </td>
                 <td>
-                    <input tal:condition="python:len(items)>1 and items.index(item)<len(items)-1" tal:attributes="name python:type+'_down_'+ustr(items.index(item))" i18n:attributes="title edit_frontendparts_order_title" type="image" src="/img/downarrow.png"/>
+                    <input tal:condition="python:len(items)>1 and items.index(item)<len(items)-1" tal:attributes="name python:u'{}_down_{}'.format(type, items.index(item))" i18n:attributes="title edit_frontendparts_order_title" type="image" src="/img/downarrow.png"/>
                     <image tal:condition="python:items.index(item)==len(items)-1" src="/img/16x16.gif"/>
                     
-                    <input tal:condition="python:items.index(item)>0 and items.index(item)<len(items)" tal:attributes="name python:type+'_up_'+ustr(items.index(item))" i18n:attributes="title edit_frontendparts_order_title" type="image" src="/img/uparrow.png"/>
+                    <input tal:condition="python:items.index(item)>0 and items.index(item)<len(items)" tal:attributes="name python:u'{}_up_{}'.format(type, items.index(item))" i18n:attributes="title edit_frontendparts_order_title" type="image" src="/img/uparrow.png"/>
                     <image tal:condition="python:items.index(item)==0" src="/img/16x16.gif"/>
                     
-                    <input tal:attributes="name python:type+'_edit_'+ustr(items.index(item))" i18n:attributes="title edit_frontendparts_edit_title" type="image" src="/img/edit.png"/>
-                    <input tal:attributes="name python:type+'_delete_'+ustr(items.index(item))" i18n:attributes="title edit_frontendparts_delete_title" onclick="return questionDel()" type="image" src="/img/delete.png"/>
+                    <input tal:attributes="name python:u'{}_edit_{}'.format(type, items.index(item))" i18n:attributes="title edit_frontendparts_edit_title" type="image" src="/img/edit.png"/>
+                    <input tal:attributes="name python:u'{}_delete_{}'.format(type, items.index(item))" i18n:attributes="title edit_frontendparts_delete_title" onclick="return questionDel()" type="image" src="/img/delete.png"/>
                 </td>
                 
             </tr>
@@ -114,7 +114,7 @@
                 <div id="editor_content">
                     <select name="input_type" id="input_type" style="width:310px;height:22px">
                         <tal:block tal:repeat="item_type item_types">
-                            <option tal:attributes="value item_type; selected python:{'False':None,'True':'selected'}[ustr(item_type==item.getType())]" tal:content="python:'item_type_'+item_type" i18n:translate="">TEXT</option>
+                            <option tal:attributes="value item_type; selected python:'selected' if item_type==item.getType() else None" tal:content="python:u'item_type_{}'.format(item_type)" i18n:translate="">TEXT</option>
                         </tal:block>
                     </select>
                 </div>
@@ -126,7 +126,7 @@
                     <select name="item_intern_value" style="width:310px;height:22px">
                         <option value=""/>
                         <tal:block tal:repeat="file files">
-                        <option tal:content="python:file[1]+' ('+file[0].getName()+')'" tal:attributes="value python:file[0].getName(); selected python:{'False':None,'True':'selected'}[ustr(file[0].getName()==item.filename)]">TEXT</option>
+                        <option tal:content="python:u'{} ({})'.format(file[1], file[0].getName())" tal:attributes="value python:file[0].getName(); selected python:'selected' if file[0].getName()==item.filename else None">TEXT</option>
                         </tal:block>
                     </select>
                 </div>
@@ -147,7 +147,7 @@
                 <div class="label" i18n:translate="edit_frontendparts_node">TEXT</div>
                 <div id="editor_content">
                     <input tal:attributes="value python:item.filename" type="text" name="item_node_value" id="item_node_value" style="width:280px" readonly="readonly"/>
-                    <img src="/img/rightarrow.png" i18n:attributes="title edit_frontendparts_selectnode_title" tal:attributes="onclick python:'openPopup(\'/edit/edit_content?style=popup&tab=frontendparts&action=nodeselection&id='+ustr(node.id)+'\', \'\', 400, 600, 1)'" style="cursor:pointer"/>
+                    <img src="/img/rightarrow.png" i18n:attributes="title edit_frontendparts_selectnode_title" tal:attributes="onclick python:u'openPopup(\'/edit/edit_content?style=popup&tab=frontendparts&action=nodeselection&id={}\', \'\', 400, 600, 1)'.format(node.id)" style="cursor:pointer"/>
                 </div>
             </div>
 
@@ -155,7 +155,7 @@
                 <div class="label" i18n:translate="edit_frontendparts_icon">TEXT</div>
                 <div id="editor_content">
                     <input tal:attributes="value python:item.getIcon()" type="text" name="item_icon" id="item_icon"/>
-                    <img src="/img/rightarrow.png" i18n:attributes="title edit_frontendparts_selecticon_title" tal:attributes="onclick python:'openPopup(\'/edit/edit_content?style=popup&tab=frontendparts&action=iconselection&id='+ustr(node.id)+'&img='+item.getIcon()+'\', \'\', 400, 600, 1)'" style="cursor:pointer"/>
+                    <img src="/img/rightarrow.png" i18n:attributes="title edit_frontendparts_selecticon_title" tal:attributes="onclick python:u'openPopup(\'/edit/edit_content?style=popup&tab=frontendparts&action=iconselection&id={}&img={}\', \'\', 400, 600, 1)'.format(node.id, item.getIcon())" style="cursor:pointer"/>
                     <img id="imgdelicon" src="/img/delete.png" i18n:attributes="title edit_frontendparts_deleteicon_title" style="cursor:pointer"/>
                 </div>
             </div>
@@ -163,7 +163,7 @@
             <div class="editorrow">
                 <div class="label">&nbsp;</div>
                 <div id="editor_content" style="padding-top:20px">
-                    <button tal:attributes="name python:type+'_save'" type="submit" i18n:translate="edit_frontendparts_save">TEXT</button>
+                    <button tal:attributes="name python:u'{}_save'.format(type)" type="submit" i18n:translate="edit_frontendparts_save">TEXT</button>
                     <button type="submit" name="cancel" i18n:translate="edit_frontendparts_cancel">TEXT</button>
                 </div>
             </div>
@@ -202,15 +202,15 @@
 
 
 <tal:block metal:define-macro="edit_frontendparts_nodeselection">
-    <a tal:attributes="name python:'node'+id"> </a>
+    <a tal:attributes="name python:'node{}'.format(id)"> </a>
     <div class="line">
-        <div class="name" tal:attributes="style python:'padding-left: '+ustr(indent)+'px'">
+        <div class="name" tal:attributes="style python:u'padding-left: {}px'.format(indent)">
             <a tal:condition="python:type==1" i18n:attributes="title edit_classes_close_title" tal:attributes="href link1"><img src="/img/edit_box1.gif" border="0"/></a>
             <a tal:condition="python:type==2" i18n:attributes="title edit_classes_open_title" tal:attributes="href link1"><img src="/img/edit_box2.gif" border="0"/></a>
             <img tal:condition="python:type==3" src="/img/edit_box3.gif" border="0"/>
             &nbsp;<tal:block tal:condition="python:not writeaccess" tal:replace="nodename"/>
             <tal:block tal:condition="writeaccess">
-                <a tal:attributes="onclick python:'selectNode(\''+id+'\', \''+nodename+'\')'" i18:attributes="title edit_frontendparts_selectnode_title" href="#"><b tal:content="nodename">TEXT</b></a>
+                <a tal:attributes="onclick python:u'selectNode(\'{}\', \'{}\')'.format(id, nodename)" i18:attributes="title edit_frontendparts_selectnode_title" href="#"><b tal:content="nodename">TEXT</b></a>
            </tal:block>
         </div>
     </div>
@@ -267,8 +267,8 @@
         <tal:block tal:repeat="icon icons">
       
             <div style="float:left;width:40px;height:45px;border:1px solid silver;margin:2px;padding:4px;position:relative;text-align:center">
-                <a href="#" tal:attributes="onclick python:'selectIcon(\''+icon[0]+'\')';title python:icon[0]">
-                <img tal:attributes="src python:'/img/'+icon[0]" style="width:32px;height:32px"/><br/>
+                <a href="#" tal:attributes="onclick python:u'selectIcon(\'{}\')'.format(icon[0]);title python:icon[0]">
+                <img tal:attributes="src python:u'/img/{}'.format(icon[0])" style="width:32px;height:32px"/><br/>
                 <small tal:content="python:icon[1]" style="font-size:8px">TEXT</small>
                 </a>
             </div>

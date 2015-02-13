@@ -1590,10 +1590,10 @@ ct.visit(function(node){
 
 <div metal:define-macro="edit_paging" style="width:130px;position:absolute;right:0;">
     <div tal:condition="python:previd" style="position:absolute;left:0;top:0;width:20px">
-        <a tal:attributes="href python:u'/edit/edit_content?id={}&tab='.format(previd, tab)"><img border="0" src="/img/pageleft.gif"/></a>
+        <a tal:attributes="href python:u'/edit/edit_content?id={}&tab={}'.format(previd, tab)"><img border="0" src="/img/pageleft.gif"/></a>
     </div>
     <div tal:condition="python:nextid" style="position:absolute;right:0;top:0;width:20px">
-         <a tal:attributes="href python:u'/edit/edit_content?id={}&tab='.format(nextid, tab)"><img border="0" src="/img/pageright.gif"/></a>
+         <a tal:attributes="href python:u'/edit/edit_content?id={}&tab={}'.format(nextid, tab)"><img border="0" src="/img/pageright.gif"/></a>
     </div>
     <div tal:condition="python:previd or nextid" style="margin-left:20px;margin-right:20px;text-align:center">
         <tal:block tal:replace="raw script"/>

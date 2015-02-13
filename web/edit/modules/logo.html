@@ -76,7 +76,7 @@
     <div id="navigation_content" style="border:1px solid silver!important;border-width:0px 0px 1px 1px !important;">
         <div id="logo" style="border:1px solid silver;height:200px;width:200px;float:right;margin-right:30px;padding:2px">
             <img tal:condition="python:logo==''" id="previewlogo" src="/img/empty.gif" style="max-height:200px;max-width:200px"/>
-            <img tal:condition="python:logo!=''" tal:attributes="src python:u'/file/{}/'.format(id, logo)" id="previewlogo" style="max-height:200px;max-width:200px"/>
+            <img tal:condition="python:logo!=''" tal:attributes="src python:u'/file/{}/{}'.format(id, logo)" id="previewlogo" style="max-height:200px;max-width:200px"/>
         </div>
         <div style="margin-left:150px;overflow:auto;position:relative;max-height:200px;margin-right:230px;padding-top:20px">
             <form tal:attributes="action python:u'edit_content?id={}&tab={}'.format(id, tab)" tal:define="files python:node.getFiles()" method="post" enctype="multipart/form-data" name="logo">

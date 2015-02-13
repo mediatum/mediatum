@@ -270,8 +270,8 @@ class AccessData:
                 workingString += '&'
             else:
                 isFirst = False
-            workingString += '{}={}'.format(oneKey,
-                                            oneValue)
+            workingString += u'{}={}'.format(oneKey,
+                                             oneValue)
         testSignature = hashlib.md5(workingString).hexdigest()
         return (testSignature == signature)
 

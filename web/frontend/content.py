@@ -60,7 +60,7 @@ class SingleFile:
         self.file = file
 
     def getShoppingBagLink(self):
-        return 'shoppingBag(\'{}\')'.format(self.node.id)
+        return u'shoppingBag(\'{}\')'.format(self.node.id)
 
     def getMetadata(self, separator=".", language=None):
         return self.node.show_node_text(separator=separator, language=language)

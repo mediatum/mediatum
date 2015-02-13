@@ -142,10 +142,10 @@ class TraceLogger(logging.Logger):
                         # no filename? template was rendered from a string
                         tal_filepath = "<string>"
 
-                    tal_tbline = '  File "{}", line {}, in {}\n    {}'.format(tal_filepath, 
-                                                                              tal_lineno, 
-                                                                              tal_macro or "<template>",
-                                                                              tal_expr)
+                    tal_tbline = u'  File "{}", line {}, in {}\n    {}'.format(tal_filepath,
+                                                                               tal_lineno,
+                                                                               tal_macro or "<template>",
+                                                                               tal_expr)
                     extra["trace"] += tal_tbline
                 
         logging.Logger._log(self, level, msg, args, exc_info=exc_info, extra=extra)

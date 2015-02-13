@@ -230,13 +230,13 @@ def send_file(req, download=0):
 
     if not file and n.get("archive_type") != "":
         am = archivemanager.getManager(n.get("archive_type"))
-        req.reply_headers["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
+        req.reply_headers["Content-Disposition"] = u'attachment; filename="{}"'.format(filename)
         return req.sendFile(am.getArchivedFileStream(n.get("archive_path")), "application/x-download")
 
     if not file:
         return 404
 
-    req.reply_headers["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
+    req.reply_headers["Content-Disposition"] = u'attachment; filename="{}"'.format(filename)
     return req.sendFile(file.retrieveFile(), f.getMimeType())
 
 

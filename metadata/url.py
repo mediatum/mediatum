@@ -146,7 +146,7 @@ class m_url(Metatype):
         linktext = params.get(item + "_text").replace(";", "\xcd\xbe")
         if not quoted_uri:
             return ""
-        return "{};{}".format(quoted_uri, linktext)
+        return u"{};{}".format(quoted_uri, linktext)
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         try:

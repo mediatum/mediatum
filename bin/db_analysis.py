@@ -23,9 +23,11 @@ import sys
 import difflib
 import time
 from collections import namedtuple
+
 sys.path += ['../..', '../', '.']
 
 from core.init import full_init
+
 full_init()
 
 import core.tree as tree
@@ -38,7 +40,7 @@ import logging
 
 logg = logging.getLogger(__name__)
 
-#Configurable, ;-separated
+# Configurable, ;-separated
 MAIL_RECIPIENTS = 'andrew.darrohn@tum.de;ga39lit@mytum.de'
 
 SearchField = namedtuple('SearchField', 'position name')
@@ -160,27 +162,27 @@ def all_schemas_summary():
 
     @return: String
     """
-    output = '{}{}{:^100}{}{}{}{:46}{:15}{:15}{:20}{:15}{}{}{}'.format('*' * 100,
-                                                                       '\n',
-                                                                       'SCHEMA SUMMARY',
-                                                                       '\n',
-                                                                       '*' * 100,
-                                                                       '\n',
-                                                                       'Schema',
-                                                                       'FULL',
-                                                                       'EXT',
-                                                                       'EXT_RATIO',
-                                                                       'TEXT',
-                                                                       '\n',
-                                                                       '-' * 100,
-                                                                       '\n')
+    output = u'{}{}{:^100}{}{}{}{:46}{:15}{:15}{:20}{:15}{}{}{}'.format('*' * 100,
+                                                                        '\n',
+                                                                        'SCHEMA SUMMARY',
+                                                                        '\n',
+                                                                        '*' * 100,
+                                                                        '\n',
+                                                                        'Schema',
+                                                                        'FULL',
+                                                                        'EXT',
+                                                                        'EXT_RATIO',
+                                                                        'TEXT',
+                                                                        '\n',
+                                                                        '-' * 100,
+                                                                        '\n')
     for schema in schema_summary.keys():
-        output += '{:35}{:>15.2%}{:>15.2%}{:>20.2%}{:>15.2%}{}'.format(schema,
-                                                                       schema_summary[schema]['full'],
-                                                                       schema_summary[schema]['ext']['ratio'],
-                                                                       schema_summary[schema]['ext']['field_ratio'],
-                                                                       schema_summary[schema]['text'],
-                                                                       '\n')
+        output += u'{:35}{:>15.2%}{:>15.2%}{:>20.2%}{:>15.2%}{}'.format(schema,
+                                                                        schema_summary[schema]['full'],
+                                                                        schema_summary[schema]['ext']['ratio'],
+                                                                        schema_summary[schema]['ext']['field_ratio'],
+                                                                        schema_summary[schema]['text'],
+                                                                        '\n')
 
     return output
 
@@ -199,7 +201,7 @@ def main():
     for schema in searcher.schemas:
         published_schema = published_nodes.intersection(set([int(nid[0]) for nid in
                                                              tree.db.runQuery(
-                                                                 """select distinct(id) from node where type like "%{}%" """.format(
+                                                                 u"""select distinct(id) from node where type like "%{}%" """.format(
                                                                      schema))]))
         if len(published_schema) == 0:
             search_full_ratio = 0

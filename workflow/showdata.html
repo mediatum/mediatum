@@ -17,7 +17,7 @@
                  tal:content="python:file.getName()"/>
             </td>
             <td tal:condition="delbutton">
-                <input tal:attributes="name python:'delete_'+file.getName()" i18n:attributes="title workflow_filelist_delete_title" onclick="return questionDel()" type="image" src="/img/delete.png"/>
+                <input tal:attributes="name python:u'delete_{}'.format(file.getName())" i18n:attributes="title workflow_filelist_delete_title" onclick="return questionDel()" type="image" src="/img/delete.png"/>
             </td>
         </tr>
     </table>
@@ -39,7 +39,7 @@
              tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())"
              tal:content="python:file.getName()"/>
              <p style="padding-top:20px" tal:condition="delbutton">
-                <input tal:attributes="name python:'delete_'+file.getName()" i18n:attributes="title workflow_filelist_delete_title" onclick="return questionDel()" type="image" src="/img/delete.png"/>
+                <input tal:attributes="name python:u'delete_{}'.format(file.getName())" i18n:attributes="title workflow_filelist_delete_title" onclick="return questionDel()" type="image" src="/img/delete.png"/>
                 <span i18n:translate="workflow_filelist_delete_label">TEXT</span>
              </p>
             </div>

@@ -18,7 +18,7 @@
                 </tr>
                 <tr tal:repeat="w list">
                     <td>
-                        <a tal:content="python:w.getName()" tal:attributes="href python:'/publish/'+w.getName()" i18n:attributes="title wf_show_details_title"/>
+                        <a tal:content="python:w.getName()" tal:attributes="href python:u'/publish/{}'.format(w.getName())" i18n:attributes="title wf_show_details_title"/>
                     </td>
                     <td tal:content="raw python:w.getDescription() or '&nbsp;'"/>
                 </tr>
@@ -50,13 +50,13 @@
     <tbody>
         <tr tal:repeat="item items">
             <tal:block tal:define="step python:getStep(item)">
-                <td><a target="editorwindow" tal:attributes="href python:'/edit/edit?id='+item.id" tal:content="python:item.id"></a></td>
+                <td><a target="editorwindow" tal:attributes="href python:u'/edit/edit?id={}'.format(item.id)" tal:content="python:item.id"></a></td>
                 <td tal:content="python:format_date(item.get('creationtime'))"/>
                 <td tal:content="python:item.getName()"/>
                 <td tal:content="python:step.getName()"/>
-                <td><a tal:attributes="href python:'/mask?id='+step.id+'&obj='+item.id" i18n:translate="workflow_show_step">TEXT</a></td>
-                <td><a tal:attributes="href python:'/mask?id='+step.id+'&obj='+item.id+'&forcefalse=1'" tal:content="raw python:step.getFalseLabel() or '&nbsp;'"/></td>
-                <td><a tal:attributes="href python:'/mask?id='+step.id+'&obj='+item.id+'&forcetrue=1'" tal:content="raw python:step.getTrueLabel() or '&nbsp;'"/></td>
+                <td><a tal:attributes="href python:u'/mask?id={}&obj={}'.format(step.id, item.id)" i18n:translate="workflow_show_step">TEXT</a></td>
+                <td><a tal:attributes="href python:u'/mask?id={}&obj={}&forcefalse=1'.format(step.id, item.id)" tal:content="raw python:step.getFalseLabel() or '&nbsp;'"/></td>
+                <td><a tal:attributes="href python:u'/mask?id={}&obj={}&forcetrue=1'.format(step.id, item.id)" tal:content="raw python:step.getTrueLabel() or '&nbsp;'"/></td>
             </tal:block>
         </tr>
     </tbody>
@@ -132,7 +132,7 @@
     
     <div style="display:none" id="confirm_delete"  i18n:translate="workflow_confirm_msg_delete">TEXT</div>
     <div style="display:none" id="confirm_move"  i18n:translate="workflow_confirm_msg_move">TEXT</div>
-    <script tal:content="python:'var id='+step.id"/>
+    <script tal:content="python:u'var id={}'.format(step.id)"/>
     <script>
         var allChecked = false;
         $(document).ready(function()
@@ -215,7 +215,7 @@
         } 
     </script>
     <p>
-    <span style="text-align:left"><a tal:attributes="href python:'/publish/'+workflow.getName()" i18n:translate="workflow_back">TEXT</a></span>
+    <span style="text-align:left"><a tal:attributes="href python:u'/publish/{}'.format(workflow.getName())" i18n:translate="workflow_back">TEXT</a></span>
     </p>
     <h2 i18n:translate="workflow_msg3">TEXT <span tal:content="python:step.name" i18n:name="name"/>:</h2>
     <table id="workflowtable" cellspacing="0px" tal:define="mylist python:children">
@@ -237,15 +237,15 @@
                 <td tal:attributes="class cssclass" tal:content="python:node['creationtime']"/>
                 <td tal:attributes="class cssclass" tal:content="python:node['name']"/>
 
-                <td tal:attributes="class cssclass"><a tal:attributes="href python:nodelink+node['id']+'&type=editor'" i18n:translate="workflow_show_step">TEXT</a></td>
-                <td tal:attributes="class cssclass"><a target="editorwindow" tal:attributes="href python:'/edit/edit?id='+node['id']" i18n:translate="sub_header_edit">TEXT</a></td>
+                <td tal:attributes="class cssclass"><a tal:attributes="href python:u'{}{}&type=editor'.format(nodelink, node['id'])" i18n:translate="workflow_show_step">TEXT</a></td>
+                <td tal:attributes="class cssclass"><a target="editorwindow" tal:attributes="href python:u'/edit/edit?id={}'.format(node['id'])" i18n:translate="sub_header_edit">TEXT</a></td>
 
                 <td tal:attributes="class cssclass">
-                    <a tal:condition="python:falsestep!=''" tal:attributes="href python:nodelink+node['id']+'&forcefalse=1'" tal:content="raw falsestep"/>
+                    <a tal:condition="python:falsestep!=''" tal:attributes="href python:u'{}{}&forcefalse=1'.format(nodelink, node['id'])" tal:content="raw falsestep"/>
                     <tal:block tal:condition="python:falsestep==''">-</tal:block>
                 </td>
                 <td tal:attributes="class cssclass">
-                    <a tal:condition="python:truestep!=''" tal:attributes="href python:nodelink+node['id']+'&forcetrue=1'" tal:content="raw truestep"/>
+                    <a tal:condition="python:truestep!=''" tal:attributes="href python:u'{}{}&forcetrue=1'.format(nodelink, node['id'])" tal:content="raw truestep"/>
                     <tal:block tal:condition="python:truestep==''">-</tal:block>
                 </td>
                 <td style="vertical-align: middle; text-align: center;" tal:attributes="class cssclass">
@@ -263,7 +263,7 @@
                 <select id="selectid">
                     <option value="delete" i18n:translate="workflow_label_select_delete">TEXT</option>
                     <optgroup label="Move" i18n:attributes="label workflow_label_select_move" tal:define="steps python:sorted([[s.getName().title(), s.id] for s in workflow.getSteps() if s.id != step.id])">
-                        <option tal:repeat="value steps" tal:content="python:value[0]" tal:attributes="value python:'move_'+value[1]" />
+                        <option tal:repeat="value steps" tal:content="python:value[0]" tal:attributes="value python:u'move_{}'.format(value[1])" />
                     </optgroup>
                 </select>
                 <button value="submit" type="submit" onclick="submit()" i18n:translate="workflow_label_button_submit">TEXT</button>

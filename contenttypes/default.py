@@ -489,7 +489,7 @@ class Default(tree.Node):
                 if m.getLanguage() in ["", "no"]:
                     return m
         elif len(masks) == 0:
-            return tree.Node("", type="mask")
+            return tree.Node(u"", type="mask")
         else:
             return masks[0]
 

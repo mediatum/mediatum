@@ -120,9 +120,8 @@ class m_text(Metatype):
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         try:
             multilingual = field.getValues()
-        except:
-            logg.exception("exception in getMaskEditorHTML, using empty string")
-            multilingual = ""
+        except AttributeError:
+            multilingual = u""
         return tal.getTAL("metadata/text.html", {"multilingual": multilingual}, macro="maskeditor", language=language)
 
     def getFormatedValue(self, field, node, language=None, html=1, template_from_caller=None, mask=None):

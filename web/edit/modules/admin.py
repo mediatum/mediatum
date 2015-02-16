@@ -123,6 +123,5 @@ def getFormat(fields, name):
 def formatdate(value, f='%d.%m.%Y %H:%M:%S'):
     try:
         return format_date(parse_date(value, "%Y-%m-%dT%H:%M:%S"), format=f)
-    except:
-        logg.exception("formatdata failed, return original value")
+    except ValueError:
         return value

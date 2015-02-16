@@ -11,9 +11,9 @@
         <select name="insertposition" style="width:500px">
             <option value="end" selected="selected" i18n:translate="mask_edit_end">TEXT</option>
             <tal:block tal:repeat="field fields">
-                <option tal:condition="python:hasattr(field.getField(),'getFieldtype')" tal:attributes="value python:field.id" tal:content="python:field.getLabel()+' ('+field.getField().getFieldtype()+')'"/>
+                <option tal:condition="python:hasattr(field.getField(),'getFieldtype')" tal:attributes="value python:field.id" tal:content="python:u'{} ({})'.format(field.getLabel(), field.getField().getFieldtype())"/>
 
-                <option tal:condition="python:not hasattr(field.getField(),'getFieldtype')" tal:attributes="value python:field.id" tal:content="python:field.getLabel()+' ('+field.get('type')+')'"/>
+                <option tal:condition="python:not hasattr(field.getField(),'getFieldtype')" tal:attributes="value python:field.id" tal:content="python:u'{} ({})'.format(field.getLabel(), field.get('type'))"/>
             </tal:block>
         </select>
         <br/>
@@ -25,7 +25,7 @@
         <hr>
         <h4 i18n:translate="mask_edit_fields">TEXT</h4>
         <div align="right">
-            <input tal:attributes="name python:'newdetail_'+ustr(item.id)" type="image" src="/img/install.png" onclick="document.myform.type.value=''" i18n:attributes="title mask_edit_insert_field_title"/>
+            <input tal:attributes="name python:u'newdetail_{}'.format(item.id)" type="image" src="/img/install.png" onclick="document.myform.type.value=''" i18n:attributes="title mask_edit_insert_field_title"/>
         </div>
     </tal:block>
     <tal:block tal:replace="raw details"/>

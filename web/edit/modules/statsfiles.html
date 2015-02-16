@@ -3,7 +3,7 @@
     <div id="editcontent">
         <p><img src="/img/wait.gif"/></p>
     </div>
-    <script tal:content="python:'getEditPage(\'editcontent\', '+id+', \'statsfiles\', \'content\')'">
+    <script tal:content="python:u'getEditPage(\'editcontent\', {}, \'statsfiles\', \'content\')'.format(id)">
     </script>
 </metal:block>
 
@@ -97,14 +97,14 @@
                             <td>&nbsp;</td>
                             <td style="vertical-align:center">
                                 <tal:block i18n:translate="" tal:content="python:type.getName()"/>
-                                <small><a href="#" tal:attributes="onclick python:'return activateTab('+ustr(data.data.index(type)+1)+')'" i18n:translate="edit_stats_details">TEXT</a></small>
+                                <small><a href="#" tal:attributes="onclick python:u'return activateTab({})'.format(data.data.index(type)+1)" i18n:translate="edit_stats_details">TEXT</a></small>
                             </td>
                             <td>
-                                <img tal:attributes="width python:ustr(int(type.getSum())*400/max)+'px'" src="/img/stat_bar.png" style="height:10px">
+                                <img tal:attributes="width python:u'{}px'.format(int(type.getSum())*400/max)" src="/img/stat_bar.png" style="height:10px">
                                 <small tal:content="python:type.getSum()"/>
                                 <br/>
-                                <img tal:attributes="width python:ustr(int(type.getSumDigit())*400/max)+'px'" src="/img/stat_baruser.png" style="height:10px">
-                                <small tal:content="python:type.getSumDigit()"/> <small tal:content="python:'('+ustr(100*type.getSumDigit()/type.getSum())+'%)'"/>
+                                <img tal:attributes="width python:u'{}px'.format(int(type.getSumDigit())*400/max)" src="/img/stat_baruser.png" style="height:10px">
+                                <small tal:content="python:type.getSumDigit()"/> <small tal:content="python:u'({}%)'.format(100*type.getSumDigit()/type.getSum())"/>
                             </td>
                         </tr>
                     </table>
@@ -128,11 +128,11 @@
                             <td>&nbsp;</td>
                             <td tal:content="python:items[0]"></td>
                             <td>
-                                <img src="/img/stat_bar.png" tal:attributes="width python:ustr(int(items[1])*400/maxt)+'px'" style="height:10px">
+                                <img src="/img/stat_bar.png" tal:attributes="width python:u'{}px'.format(int(items[1])*400/maxt)" style="height:10px">
                                 <small tal:content="python:items[1]"/>
                                 <br/>
-                                <img src="/img/stat_baruser.png" tal:attributes="width python:ustr(int(items[2])*400/maxt)+'px'" style="height:10px">
-                                <small tal:content="python:items[2]"/> <small tal:content="python:'('+ustr(100*items[2]/items[1])+'%)'"/>
+                                <img src="/img/stat_baruser.png" tal:attributes="width python:u'{}px'.format(int(items[2])*400/maxt)" style="height:10px">
+                                <small tal:content="python:items[2]"/> <small tal:content="python:u'({}%)'.format(100*items[2]/items[1])"/>
                             </td>
                         </tr>
                     </table>

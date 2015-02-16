@@ -1,4 +1,3 @@
-
 <tal:block metal:define-macro="no_mask">
     <div style="clear:left"> </div>
     <div id="operation" style="position:relative;margin-right:200px;min-height:30px">
@@ -36,8 +35,8 @@
 
     </script>
 
-    <script tal:content="python:'var flag_nodename_changed = %s;' % ustr(flag_nodename_changed)">TEXT</script>
-    <script tal:content="python:'var new_nodename = decodeURIComponent(escape(%r));' % (nodes[0].name)">TEXT</script>
+    <script tal:content="python:u'var flag_nodename_changed = {};'.format(flag_nodename_changed)">TEXT</script>
+    <script tal:content="python:u'var new_nodename = decodeURIComponent(escape({}));'.format(nodes[0].name)">TEXT</script>
     
     <div id="navigation_content" style="border-top:0px!important">
 
@@ -52,7 +51,7 @@
                     <span i18n:translate="edit_meta_mask_selection">TEXT</span>:
                     <select name="mask" onChange="this.form.submit()">
                         <tal:block tal:repeat="mask masklist">
-                            <option tal:attributes="value python:mask.getName();selected python:{'False':None,'True':'selected'}[ustr(mask.getName()==maskname)]" tal:content="python:{'False':mask.getName(),'True':mask.getDescription()}[ustr(mask.getDescription()!='')]"/>
+                            <option tal:attributes="value python:mask.getName();selected python:'selected' if mask.getName()==maskname else None" tal:content="python:mask.getDescription() if mask.getDescription()!='' else mask.getName()"/>
                         </tal:block>
                     </select>
                 </tal:block>
@@ -155,9 +154,9 @@
                     </tr>
                     <tal:block tal:repeat="v versions">
                     <tr tal:attributes="class python:(v.next_nid=='0' or v.next_nid==None) and 'row active' or 'row' ">
-                        <td><a href="/" tal:attributes="href python:'?id='+v.id+'&amp;tab=metadata'" tal:content="python:'V' + ustr(v.get('system.version.id')=='' and 1 or v.get('system.version.id'))">Version</a></td>
-                        <td><a href="/" tal:attributes="href python:'?id={}&amp;tab=metadata&amp;action=delete&amp;vid={}'.format(node.id, v.id); onclick python:'if(!confirm(deleteConfirm{}))return false;;'.format(v.id)"><tal:block i18n:translate="edit_meta_delete"/></a></td>
-                        <td><a href="/" tal:attributes="href python:'?id={}&amp;tab=metadata&amp;action=restore&amp;vid={}'.format(node.id, v.id); onclick python:'if(!confirm(restoreConfirm{}))return false;;'.format(v.id)"><tal:block i18n:translate="edit_meta_restore"/></a></td>
+                        <td><a href="/" tal:attributes="href python:u'?id={}&amp;tab=metadata'.format(v.id)" tal:content="python:u'V{}'.format(v.get('system.version.id')=='' and 1 or v.get('system.version.id'))">Version</a></td>
+                        <td><a href="/" tal:attributes="href python:u'?id={}&amp;tab=metadata&amp;action=delete&amp;vid={}'.format(node.id, v.id); onclick python:u'if(!confirm(deleteConfirm{}))return false;;'.format(v.id)"><tal:block i18n:translate="edit_meta_delete"/></a></td>
+                        <td><a href="/" tal:attributes="href python:u'?id={}&amp;tab=metadata&amp;action=restore&amp;vid={}'.format(node.id, v.id); onclick python:u'if(!confirm(restoreConfirm{}))return false;;'.format(v.id)"><tal:block i18n:translate="edit_meta_restore"/></a></td>
                         <td>
                         <div tal:content="python:v.getUpdatedDate()"></div>
                         <div tal:content="python:v.get('system.version.comment')"></div>
@@ -165,8 +164,8 @@
                         <td>
                         <div tal:content="python:v.get('updateuser') and v.get('updateuser') or v.get('creator')"></div>
                         <tal:block tal:replace="raw python:'<script type=&quot;text/javascript&quot;>'"/>
-                            <tal:block tal:replace="raw python:'var deleteConfirm'+v.id+'=\''"/><tal:block i18n:translate="edit_meta_delete_confirm"><tal:block i18n:name="version" tal:replace="python:v.get('system.version.id')=='' and 1 or v.get('system.version.id')" /></tal:block><tal:block tal:replace="raw python:'\';'"/>
-                            <tal:block tal:replace="raw python:'var restoreConfirm'+v.id+'=\''"/><tal:block i18n:translate="edit_meta_restore_confirm"><tal:block i18n:name="version" tal:replace="python:v.get('system.version.id')=='' and 1 or v.get('system.version.id')" /></tal:block><tal:block tal:replace="raw python:'\';'"/>
+                            <tal:block tal:replace="raw python:u'var deleteConfirm{}=\''.format(v.id)"/><tal:block i18n:translate="edit_meta_delete_confirm"><tal:block i18n:name="version" tal:replace="python:v.get('system.version.id')=='' and 1 or v.get('system.version.id')" /></tal:block><tal:block tal:replace="raw python:'\';'"/>
+                            <tal:block tal:replace="raw python:u'var restoreConfirm{}=\''.format(v.id)"/><tal:block i18n:translate="edit_meta_restore_confirm"><tal:block i18n:name="version" tal:replace="python:v.get('system.version.id')=='' and 1 or v.get('system.version.id')" /></tal:block><tal:block tal:replace="raw python:'\';'"/>
                         <tal:block tal:replace="raw python:'</script>'"/>
                         </td>
                     </tr>
@@ -198,18 +197,18 @@
         <div style="text-align:right;margin-right:5px;overflow:hidden;">
             <small>
                 <span tal:condition="python:len(creation_date)>0"><span i18n:translate="edit_meta_created">TEXT</span>: </span>
-                <tal:block tal:repeat="c_date creation_date" tal:content="raw python:c_date[0] + ' ('+c_date[1]+')' "/>
+                <tal:block tal:repeat="c_date creation_date" tal:content="raw python:u'{} ({})'.format(c_date[0], c_date[1]) "/>
                 <span tal:condition="python:len(update_date)>0"><span i18n:translate="edit_meta_changed">TEXT</span>: </span>
-                <tal:block tal:repeat="u_date update_date" tal:content="raw python:u_date[0] + ' ('+u_date[1]+')' "/>
+                <tal:block tal:repeat="u_date update_date" tal:content="raw python:u'{} ({})'.format(u_date[0], u_date[1]) "/>
             </small>
         </div>
     </div>
     <tal:block tal:replace="raw python:'<script type=&quot;text/javascript&quot;>'"/>
-        <tal:block tal:repeat="id python:idstr.split(',')" tal:replace="python:'allobjects['+id+']=1;'"/>
+        <tal:block tal:repeat="id python:idstr.split(',')" tal:replace="python:u'allobjects[{}]=1;'.format(id)"/>
     <tal:block tal:replace="raw python:'</script>'"/>
 
-    <script tal:content="python:'var js_edit_layout_togglertip_open = \''+ustr(t(language, 'edit_layout_togglertip_open'))+'\';'">;</script>
-    <script tal:content="python:'var js_edit_layout_togglertip_closed = \''+ustr(t(language, 'edit_layout_togglertip_closed'))+'\';'">;</script>
+    <script tal:content="python:u'var js_edit_layout_togglertip_open = \'{}\';'.format(t(language, 'edit_layout_togglertip_open'))">;</script>
+    <script tal:content="python:u'var js_edit_layout_togglertip_closed = \'{}\';'.format(t(language, 'edit_layout_togglertip_closed'))">;</script>
 
 
             <script type="text/javascript" src="/js/jquery.layout.min.js"> </script>
@@ -260,7 +259,7 @@
 
 <metal:block metal:define-macro="redirect">
     <tal:block tal:replace="raw python:'<script type=&quot;text/javascript&quot;>'"/>
-        <tal:block tal:condition="pid" tal:replace="raw python:'updateNodeLabels('+pid+');'"/>
-        <tal:block tal:replace="raw python:'window.location.href=\''+url+'\';'"/>
+        <tal:block tal:condition="pid" tal:replace="raw python:u'updateNodeLabels({});'.format(pid)"/>
+        <tal:block tal:replace="raw python:u'window.location.href=\'{}\';'.format(url)"/>
     <tal:block tal:replace="raw python:'</script>'"/>
 </metal:block>

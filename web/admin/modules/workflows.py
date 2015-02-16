@@ -270,7 +270,7 @@ def WorkflowDetail(req, id, err=0):
     v = getAdminStdVars(req)
     if err == 0 and id == "":
         # new workflow
-        workflow = tree.Node("", type="workflow")
+        workflow = tree.Node(u"", type="workflow")
         v["original_name"] = ""
 
     elif id != "" and err == 0:
@@ -280,7 +280,7 @@ def WorkflowDetail(req, id, err=0):
 
     else:
         # error
-        workflow = tree.Node("", type="workflow")
+        workflow = tree.Node(u"", type="workflow")
         workflow.setName(req.params.get("name", ""))
         workflow.setDescription(req.params.get("description", ""))
         #workflow.setAccess("write", req.params.get("writeaccess", ""))

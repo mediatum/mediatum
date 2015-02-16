@@ -270,8 +270,8 @@ class AccessData:
                 workingString += '&'
             else:
                 isFirst = False
-            workingString += '{}={}'.format(oneKey,
-                                            oneValue)
+            workingString += u'{}={}'.format(oneKey,
+                                             oneValue)
         testSignature = hashlib.md5(workingString).hexdigest()
         return (testSignature == signature)
 
@@ -589,7 +589,7 @@ def getRuleList():
     dbrules = conn.getRuleList()
 
     for rule in dbrules:
-        rlist += [AccessRule(ustr(rule[0]), ustr(rule[2]), ustr(rule[1]))]
+        rlist += [AccessRule(rule[0], rule[2], rule[1])]
     return rlist
 
 
@@ -633,7 +633,7 @@ def addRule(rule):
 
 def existRule(rulename):
     try:
-        description, text = conn.getRule(ustr(rulename))
+        description, text = conn.getRule(rulename)
         if text != "":
             return True
     except:

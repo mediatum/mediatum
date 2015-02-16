@@ -17,14 +17,14 @@
                         <span i18n:translate="admin_filter_label">TEXT</span>
                         
                         <tal:block tal:repeat="tab tabs">
-                            <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[ustr(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit">TEXT</button>
+                            <button tal:attributes="value python:tab[1]; class python:'admin_filter_sel' if tab[0].lower()==actfilter else 'admin_filter'" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit">TEXT</button>
                         </tal:block>
                     </td>
                 </tr>
                 <tr>
                     <th>&nbsp;</th>
                     <th tal:repeat="col sortcol">
-                        <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit" value="">TEXT</button>
+                        <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:u'sortcol_{}'.format(col.link)" class="admin_sortcol" type="submit" value="">TEXT</button>
                     </th>
                     <th style="padding:0px;margin:0px">
                         <tal:block metal:use-macro="web/admin/frame.html/optionheader"/>
@@ -42,10 +42,10 @@
                 
                 <tal:block tal:repeat="group python:groups[pages.getStart():pages.getEnd()]">
                     <tr tal:attributes="class cssclass" tal:define="cssclass python:groups.index(group)%2 and 'norm' or 'silver'">
-                        <td tal:content="python:ustr(groups.index(group)+1)+'.'"/>
+                        <td tal:content="python:u'{}.'.format(groups.index(group)+1)"/>
                         <td tal:content="python:group.getName()"/>
-                        <td tal:attributes="title python:group.getUserNames()+'\n'+group.getDynamicUserNames()" style="cursor:pointer;width:50px" tal:content="structure python:'&nbsp;&nbsp;&nbsp;&nbsp;'+ustr(len(group.getChildren())+len(group.getDynamicUserNames(as_string=False)))"/>
-                        <td tal:attributes="id python:'usergroup_'+ustr(group.id)+'_schema'" style="cursor:pointer;text-align:center;width:50px"><img src="/img/rightarrow.png" tal:attributes="onmouseover python:'getGroupSchema(this, \''+group.id+'\')'" title="..."/></td>
+                        <td tal:attributes="title python:u'{}\n{}'.format(group.getUserNames(), group.getDynamicUserNames())" style="cursor:pointer;width:50px" tal:content="structure python:u'&nbsp;&nbsp;&nbsp;&nbsp;{}'.format(len(group.getChildren())+len(group.getDynamicUserNames(as_string=False)))"/>
+                        <td tal:attributes="id python:u'usergroup_{}_schema'.format(group.id)" style="cursor:pointer;text-align:center;width:50px"><img src="/img/rightarrow.png" tal:attributes="onmouseover python:u'getGroupSchema(this, \'{}\')'.format(group.id)" title="..."/></td>
                         <td>
                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                             <tal:block tal:condition="python:group.getHideEdit()!=''">
@@ -63,8 +63,8 @@
                             </table>
                         </td>
                         <td style="width: 80px">
-                            <input i18n:attributes="title admin_usergroup_edit" tal:attributes="name python:ustr('edit_'+group.getName())" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
-                            <input tal:condition="python:len(group.getChildren())+len(group.getDynamicUserNames(as_string=False))==0" tal:attributes="name python:ustr('delete_'+group.getName()); onclick python:'return questionDelName(\''+group.getName()+'\')'" i18n:attributes="title admin_usergroup_delete" type="image" src="/img/delete.png"/>
+                            <input i18n:attributes="title admin_usergroup_edit" tal:attributes="name python:u'edit_{}'.format(group.getName())" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
+                            <input tal:condition="python:len(group.getChildren())+len(group.getDynamicUserNames(as_string=False))==0" tal:attributes="name python:u'delete_{}'.format(group.getName()); onclick python:u'return questionDelName(\'{}\')'.format(group.getName())" i18n:attributes="title admin_usergroup_delete" type="image" src="/img/delete.png"/>
                         </td>
                     </tr>
                 </tal:block>
@@ -74,7 +74,7 @@
                     <th colspan="3" align="left">
                         <small>
                             <span i18n:translate="admin_usergroup_footer">
-                                <span i18n:name="number" tal:content="python:ustr(len(groups))"/>
+                                <span i18n:name="number" tal:content="python:unicode(len(groups))"/>
                             </span>
                             <span tal:content="raw python:pages.printPageList()"/>
                         </small>
@@ -196,10 +196,10 @@
                         <legend i18n:translate="admin_usergroup_options">TEXT</legend>
                         <tal:block tal:define="options groupoption" tal:repeat="option options">
                             <input tal:condition="python:group.getOptionList()[option.getName()]"
-                                tal:attributes="name python:'option_'+option.getValue(); value python:'option_'+option.getValue()" type="checkbox" checked="checked"/>
+                                tal:attributes="name python:u'option_{}'.format(option.getValue()); value python:u'option_{}'.format(option.getValue())" type="checkbox" checked="checked"/>
                                             
                             <input tal:condition="python:not group.getOptionList()[option.getName()]" 
-                                tal:attributes="name python:'option_'+option.getValue(); value python:'option_'+option.getValue()" type="checkbox"/>
+                                tal:attributes="name python:u'option_{}'.format(option.getValue()); value python:u'option_{}'.format(option.getValue())" type="checkbox"/>
 
                             <span tal:content="python:option.getName()" i18n:translate=""/>
                             <br>

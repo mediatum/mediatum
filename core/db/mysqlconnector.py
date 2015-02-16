@@ -389,8 +389,8 @@ class MYSQLConnector(Connector):
             if i > 0:
                 join_parts.append("nodeattribute AS " + alias)
             fname, direction = self._sql_sort_field_name_and_dir(f)
-            where_name_parts.append("{}.name={}".format(alias, fname))
-            order_parts.append("CAST(BINARY({}.value) as CHAR CHARACTER SET utf8) COLLATE utf8_general_ci{}".format(alias, direction))
+            where_name_parts.append(u"{}.name={}".format(alias, fname))
+            order_parts.append(u"CAST(BINARY({}.value) as CHAR CHARACTER SET utf8) COLLATE utf8_general_ci{}".format(alias, direction))
 
         # looks like nodeattribute as a0 INNER JOIN nodeattribute as a1 USING (nid) INNER JOIN ...
         if len(fields) > 1:
@@ -420,8 +420,8 @@ class MYSQLConnector(Connector):
             if i > 0:
                 join_parts.append("nodeattribute AS " + alias)
             fname, direction = self._sql_sort_field_name_and_dir(f)
-            where_name_parts.append("{}.name={}".format(alias, fname))
-            order_parts.append("CAST(BINARY({}.value) as CHAR CHARACTER SET utf8) COLLATE utf8_general_ci{}".format(alias, direction))
+            where_name_parts.append(u"{}.name={}".format(alias, fname))
+            order_parts.append(u"CAST(BINARY({}.value) as CHAR CHARACTER SET utf8) COLLATE utf8_general_ci{}".format(alias, direction))
 
         # looks like nodeattribute as a0 INNER JOIN nodeattribute as a1 USING (nid) INNER JOIN ...
         if len(fields) > 1:
@@ -446,8 +446,8 @@ class MYSQLConnector(Connector):
         for i, f in enumerate(fields):
             alias = "a" + ustr(i)
             fname, direction = self._sql_sort_field_name_and_dir(f)
-            join_parts.append("(SELECT nid, value from nodeattribute WHERE name={} AND nid IN ({})) AS {}".format(fname, nids, alias))
-            order_parts.append("CAST(BINARY({}.value) as CHAR CHARACTER SET utf8) COLLATE utf8_general_ci{}".format(alias, direction))
+            join_parts.append(u"(SELECT nid, value from nodeattribute WHERE name={} AND nid IN ({})) AS {}".format(fname, nids, alias))
+            order_parts.append(u"CAST(BINARY({}.value) as CHAR CHARACTER SET utf8) COLLATE utf8_general_ci{}".format(alias, direction))
 
         join_clause = " LEFT JOIN ".join(j + " USING (nid)" for j in join_parts)
         order_clause = ", ".join(order_parts)

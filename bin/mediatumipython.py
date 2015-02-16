@@ -369,7 +369,7 @@ class MediatumMagics(Magics):
             if new_node:
                 cnode, lastnode = new_node, cnode
             else:
-                print("node {} not found.".format(nid))
+                print(u"node {} not found.".format(nid))
 
     @magic_arguments()
     @argument("name")
@@ -408,7 +408,7 @@ class MediatumMagics(Magics):
         args = parse_argstring(self.remove, line)
         child = tree.getNode(args.nid)
         if child is None:
-            print("Node #{} not found!".format(args.nid))
+            print(u"Node #{} not found!".format(args.nid))
             return
         cnode.m.removeChild(child)
         
@@ -436,7 +436,7 @@ class MediatumMagics(Magics):
                 print("checking metadatatype", mdt.name)
                 for mask in mdt.children.filter_by(type="mask"):
                     print("-" * 80)
-                    print("checking mask {} of mdt {}".format(mask.name, mdt.name))
+                    print(u"checking mask {} of mdt {}".format(mask.name, mdt.name))
                     metadatatypes.checkMask(mask.m, fix=args.fix, verbose=1, show_unused=1)
         else:
             metadatatypes.checkMask(cnode.m, fix=args.fix, verbose=1, show_unused=1)

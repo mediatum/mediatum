@@ -81,7 +81,7 @@ def getContainerTreeTypes(req):
 
         for dtype in loadAllDatatypes():
             if dtype.name in dtypes:
-                n = tree.Node("", type=dtype.name)
+                n = tree.Node(u"", type=dtype.name)
                 if hasattr(n, "isContainer") and hasattr(n, "isSystemType"):
                     if n.isContainer() and not n.isSystemType():
                         if dtype not in containertypes:
@@ -114,7 +114,7 @@ def getContainerTreeTypes_orig(req):
 
         for dtype in loadAllDatatypes():
             if dtype.name in dtypes:
-                n = tree.Node("", type=dtype.name)
+                n = tree.Node(u"", type=dtype.name)
                 if hasattr(n, "isContainer") and hasattr(n, "isSystemType"):
                     if n.isContainer() and not n.isSystemType():
                         containertypes.append(dtype)
@@ -255,7 +255,7 @@ def frameset(req):
 
     for ct in cmenu:
         ct_name = ct.getName()
-        _n = tree.Node("", type=ct_name)
+        _n = tree.Node(u"", type=ct_name)
         # translations of ct_name will be offered in editor tree context menu
         cmenu_iconpaths.append(
             [ct, getEditorIconPath(_n), ct_name, translation_t(language, ct_name)])
@@ -541,7 +541,7 @@ def getEditMenuString(ntype, default=0):
 
     for dtype in loadAllDatatypes():  # all known datatypes
         if dtype.name == ntype:
-            n = tree.Node("", type=dtype.name)
+            n = tree.Node(u"", type=dtype.name)
             menu_str = getRoot().get("edit.menu." + dtype.name)
             if (menu_str == "" or default == 1) and hasattr(n, "getEditMenuTabs"):
                 menu_str = n.getEditMenuTabs()

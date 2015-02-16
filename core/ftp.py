@@ -343,7 +343,7 @@ def file_to_node(file_node, upload_dir):
     except:
         new_path = file_node.retrieveFile()
 
-    schema = home_dir.get('system.ftp.{}'.format(file_type)).lstrip('/')
+    schema = home_dir.get(u'system.ftp.{}'.format(file_type)).lstrip('/')
     if not schema:
         schema = 'file'
 

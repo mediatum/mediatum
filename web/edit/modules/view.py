@@ -27,6 +27,6 @@ def getContent(req, ids):
     node = tree.getNode(ids)
 
     if hasattr(node, "show_node_big"):
-        return req.getTAL("web/edit/modules/view.html", {'content':getFormatedString(node.show_node_big(req))}, macro="view_node")
+        return req.getTAL("web/edit/modules/view.html", {'content': getFormatedString(node.show_node_big(req))}, macro="view_node")
     else:
         return req.getTAL("web/edit/modules/view.html", {}, macro="view_noview")

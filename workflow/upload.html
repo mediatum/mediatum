@@ -12,7 +12,7 @@
     </form>
 
     <form action="/mask" method="post" enctype="multipart/form-data" style="padding:4px">
-        <div tal:condition="python:not (len(node.getFiles())>0 and ustr(singlefile)=='1')">
+        <div tal:condition="python:not (len(node.getFiles())>0 and unicode(singlefile)=='1')">
             <h2 i18n:translate="workflow_add_file">TEXT</h2>
             <input type="file" name="file"/>
             <input i18n:attributes="value workflow_upload_button" type="submit" name="submit"/>

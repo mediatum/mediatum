@@ -1,6 +1,6 @@
-<tal:block metal:define-macro="workflow_start" tal:define="multilang python:{'True':1, 'False':0}[ustr(len(languages)>1)]">
+<tal:block metal:define-macro="workflow_start" tal:define="multilang python:1 if len(languages)>1 else 0">
     <tal:block tal:content="raw js"/>
-    <script tal:condition="python:redirect!=''" tal:content="raw python:'window.location.href=\''+redirect+'\''"/>
+    <script tal:condition="python:redirect!=''" tal:content="raw python:u'window.location.href=\'{}\''.format(redirect)"/>
     <div style="position:relative;overflow:hidden;">
 
         <div tal:content="raw starttext">TEXT</div>
@@ -25,7 +25,7 @@
                     <h2 i18n:translate="workflow_start_chooselang">TEXT</h2>
                     <br/>
                         <tal:block tal:repeat="language languages">
-                            <input type="radio" name="workflow_language" tal:attributes="value language;checked python:{'True':'checked','False':None}[ustr(currentlang==language)]"/> <span i18n:translate="" tal:content="language"/><br/>
+                            <input type="radio" name="workflow_language" tal:attributes="value language;checked python:'checked' if currentlang==language else None"/> <span i18n:translate="" tal:content="language"/><br/>
                         </tal:block>
                     <br/>
                 </div>

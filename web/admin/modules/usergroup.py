@@ -61,7 +61,7 @@ def validate(req, op):
 
             elif key.startswith("edit_"):
                 # edit usergroup
-                return editGroup_mask(req, ustr(key[5:-2]))
+                return editGroup_mask(req, key[5:-2])
 
             elif key.startswith("delete_"):
                 # delete group
@@ -185,7 +185,7 @@ def editGroup_mask(req, id, err=0):
     newusergroup = 0
     if err == 0 and id == "":
         # new usergroup
-        group = tree.Node("", type="usergroup")
+        group = tree.Node(u"", type="usergroup")
         newusergroup = 1
     elif id != "":
         # edit usergroup
@@ -198,7 +198,7 @@ def editGroup_mask(req, id, err=0):
             if key.startswith("option_"):
                 option += key[7]
 
-        group = tree.Node("", type="usergroup")
+        group = tree.Node(u"", type="usergroup")
         group.setName(req.params.get("groupname", ""))
         group.setDescription(req.params.get("description", ""))
         group.setHideEdit(req.params.get("leftmodule", "").split(';'))

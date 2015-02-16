@@ -1116,7 +1116,7 @@ class Mask(tree.Node):
                 <br/>
                 <br/>
                 <input type="hidden" name="op" value="new"/>"""
-            ret += '<input type="hidden" name="pid" value="' + ustr(req.params.get("pid")) + '"/>'
+            ret += '<input type="hidden" name="pid" value="' + req.params.get("pid") + '"/>'
             ret += '<div class="label">&nbsp;</div><button type="submit" name="new_" style="width:100px" i18n:translate="mask_editor_ok"> OK </button>'
             ret += '&nbsp;&nbsp;<button type="submit" onclick="setCancel(document.myform.op)" i18n:translate="mask_editor_cancel">Abbrechen</button><br/>'
             ret += '</div></form>'
@@ -1270,7 +1270,7 @@ class Maskitem(tree.Node):
             return 0
 
     def setRequired(self, value):
-        self.set("required", ustr(value))
+        self.set("required", value)
 
     def getWidth(self):
         if self.get("width"):
@@ -1278,20 +1278,20 @@ class Maskitem(tree.Node):
         else:
             return 400
 
-    def setWidth(self, value=400):
-        self.set("width", ustr(value))
+    def setWidth(self, value=u'400'):
+        self.set("width", value)
 
     def getDefault(self):
         return self.get("default")
 
     def setDefault(self, value):
-        self.set("default", ustr(value))
+        self.set("default", value)
 
     def getTestNodes(self):
         return self.get("testnodes")
 
     def setTestNodes(self, value):
-        self.set("testnodes", ustr(value))
+        self.set("testnodes", value)
 
     def getMultilang(self):
         field = [c for c in self.getChildren() if c.type == "metafield"]
@@ -1303,13 +1303,13 @@ class Maskitem(tree.Node):
     def setMultilang(self, value):
         field = [c for c in self.getChildren() if c.type == "metafield"]
         if len(field) > 0:
-            field[0].set("multilang", ustr(value))
+            field[0].set("multilang", value)
 
     def getUnit(self):
         return self.get("unit")
 
     def setUnit(self, value):
-        self.set("unit", ustr(value))
+        self.set("unit", value)
 
     def getFormat(self):
         return self.get("format")

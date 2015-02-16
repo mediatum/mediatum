@@ -262,7 +262,7 @@ def getContent(req, ids):
             schema = req.params.get('schema')
             ctype = req.params.get('contenttype')
 
-            n = tree.Node('', type=ctype + '/' + schema)
+            n = tree.Node(u"", type=ctype + '/' + schema)
             basenode = tree.getNode(req.params.get('id'))
             basenode.addChild(n)
             n.set("creator", user.name)

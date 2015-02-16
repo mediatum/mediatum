@@ -1,24 +1,24 @@
 <tal:block metal:define-macro="editorfield">
         <span i18n:translate="url_edit_link">TEXT</span>
         <tal:block tal:condition="python:fielddef[0]==''">
-            <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+ustr(width-51)+'px'; name name; id name; value python:ustr(value[0])"/>
-            <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
-                <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/>
+            <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:{}px'.format(width-51); name name; id name; value python:value[0]"/>
+            <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
+                <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
                 <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
             </span>
         </tal:block>
         <tal:block tal:condition="python:fielddef[0]!=''">
-            <i>[<a tal:attributes="href python:ustr(fielddef[0])"><span tal:replace="python:ustr(fielddef[0])"/></a>]</i><input type="hidden" tal:attributes="name name; id name" value=""/>
+            <i>[<a tal:attributes="href python:unicode(fielddef[0])"><span tal:replace="python:unicode(fielddef[0])"/></a>]</i><input type="hidden" tal:attributes="name name; id name" value=""/>
         </tal:block>
         <br/> <span i18n:translate="url_edit_linktext">TEXT</span>
         <tal:block tal:condition="python:fielddef[1]==''">
-            <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+ustr(width-116)+'px'; name python:name+'_text'; id python: name+'_text'; value python:ustr(value[1])"/>
-            <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;
-                <input tal:attributes="name python:'lock_'+name; id python:'lock_'+name; onclick python:'handlelock(\''+name+'\')'" type="checkbox"/><small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
+            <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:{}px'.format(width-116); name python:u'{}_text'.format(name); id python: u'{}_text'.format(name); value python:value[1]"/>
+            <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
+                <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}'.format(name); onclick python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/><small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>
             </span>
         </tal:block>
         <tal:block tal:condition="python:fielddef[1]!=''">
-            <i>[<span tal:replace="python:ustr(fielddef[1])"/>]</i><input type="hidden" tal:attributes="name python: name+'_text'; id python: name+'_text'" value=""/>
+            <i>[<span tal:replace="python:unicode(fielddef[1])"/>]</i><input type="hidden" tal:attributes="name python: u'{}_text'.format(name); id python: u'{}_text'.format(name)" value=""/>
         </tal:block>
 
 </tal:block>
@@ -36,14 +36,14 @@
     <br/>
     <div class="label" i18n:translate="url_edit_icon">TEXT</div>
     <select onchange="showPreview(document, this.value)" name="url_value" id="url_value">
-        <option value="" tal:attributes="selected python:{'True':'selected', 'False':None}[ustr(value[2]=='')]" i18n:translate="url_edit_noicon">TEXT</option>
-        <option tal:repeat="pos python:list(icons)" tal:attributes="value python:icons[pos]; selected python:{'True':'selected', 'False':None}[ustr(value[2]==icons[pos])]" tal:content="pos"/>
+        <option value="" tal:attributes="selected python:'selected' if value[2]=='' else None" i18n:translate="url_edit_noicon">TEXT</option>
+        <option tal:repeat="pos python:list(icons)" tal:attributes="value python:icons[pos]; selected python:'selected' if value[2]==icons[pos] else None" tal:content="pos"/>
     </select>
-    <span i18n:translate="url_edit_preview">TEXT</span> <img tal:attributes="src python:{'True':'/img/emtyDot1Pix.gif', 'False':value[2]}[ustr(value[2]=='')]" id="image_preview"/>
+    <span i18n:translate="url_edit_preview">TEXT</span> <img tal:attributes="src python:'/img/emtyDot1Pix.gif' if value[2]=='' else value[2]" id="image_preview"/>
     <br/>
     <div class="label" i18n:translate="url_urltarget">TEXT</div>
     <select name="url_value">
-        <option tal:repeat="index python:list(url_targets)" tal:attributes="value python:url_targets[index]; selected python:{'False':None,'True':'selected'}[ustr(value[3]==url_targets[index])]" tal:content="index" value="_value_"/>  
+        <option tal:repeat="index python:list(url_targets)" tal:attributes="value python:url_targets[index]; selected python:'selected' if value[3]==url_targets[index] else None" tal:content="index" value="_value_"/>
     </select>
 </div>
 
@@ -68,7 +68,7 @@
             <select onchange="showPreview(document, this.value)" name="url_value">
                 <option value="" i18n:translate="url_edit_noicon">TEXT</option>
 
-                <option tal:repeat="index python:list(icons)" tal:attributes="value python:icons[index]; selected python:{'False':None,'True':'selected'}[ustr(valuelist[2]==icons[index])]" tal:content="index" value="_value_"/>  
+                <option tal:repeat="index python:list(icons)" tal:attributes="value python:icons[index]; selected python:'selected' if valuelist[2]==icons[index] else None" tal:content="index" value="_value_"/>
             </select>
             <tal:block i18n:translate="url_edit_preview">TEXT</tal:block> <img src="/img/emtyDot1Pix.gif" id="image_preview"/>
         </td>
@@ -77,7 +77,7 @@
         <td i18n:translate="url_urltarget">TEXT</td>
         <td>
             <select name="url_value">
-                <option tal:repeat="index python:list(url_targets)" tal:attributes="value python:url_targets[index]; selected python:{'False':None,'True':'selected'}[ustr(valuelist[3]==url_targets[index])]" tal:content="index" value="_value_"/>  
+                <option tal:repeat="index python:list(url_targets)" tal:attributes="value python:url_targets[index]; selected python:'selected' if valuelist[3]==url_targets[index] else None" tal:content="index" value="_value_"/>
             </select>
         </td>
     </tr>

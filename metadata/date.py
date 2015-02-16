@@ -31,7 +31,7 @@ logg = logging.getLogger(__name__)
 class m_date(Metatype):
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
-        d = field.getSystemFormat(ustr(field.getValues()))
+        d = field.getSystemFormat(field.getValues())
 
         if value == "?":
             value = date.format_date(date.now(), d.getValue())
@@ -78,12 +78,8 @@ class m_date(Metatype):
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         try:
             value = field.getValues()
-        except:
-            logg.exception("exception in getMaskEditorHTML, using empty string")
-            value = ""
-        #value = ""
-        # if field:
-        #    value = field.getValues()
+        except AttributeError:
+            value = u""
         return tal.getTAL("metadata/date.html", {"value": value, "dateoption": dateoption}, macro="maskeditor", language=language)
 
     def getName(self):

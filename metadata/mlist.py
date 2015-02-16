@@ -86,14 +86,13 @@ class m_mlist(Metatype):
 
             try:
                 if int(num) < 0:
-                    raise ""
+                    raise u""
                 elif int(num) == 0:
-                    num = ""
+                    num = u""
                 else:
-                    num = " (" + ustr(num) + ")"
+                    num = u" (" + unicode(num) + u")"
             except:
-                logg.exception("exception in formatValues, using empty string")
-                num = ""
+                num = u""
 
             val = esc(val)
 
@@ -129,12 +128,11 @@ class m_mlist(Metatype):
         return value.replace("; ", ";")
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
-        value = ""
+        value = u""
         try:
             if field:
                 value = field.getValues()
         except AttributeError:
-            logg.exception("exception in getMaskEditorHTML, set value = field")
             value = field
         return tal.getTAL("metadata/mlist.html", {"value": value}, macro="maskeditor", language=language)
 

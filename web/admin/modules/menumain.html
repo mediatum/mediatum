@@ -3,18 +3,18 @@
     <div class="itemmenucontainer" tal:condition="python:len(navitem['submenu'])>0">
         <div class="itemoverflow">
             <p class="itemicon" style="width:60px;display:block">
-                <img tal:condition="python:navitem['icon']!=''" i18n:attributes="alt; title" tal:attributes="src python:navitem['icon']; alt python:navitem; title python:'admin_menu_'+navitem['name']" class="itemicon" />
+                <img tal:condition="python:navitem['icon']!=''" i18n:attributes="alt; title" tal:attributes="src python:navitem['icon']; alt python:navitem; title python:u'admin_menu_{}'.format(navitem['name'])" class="itemicon" />
                 &nbsp;
             </p>
             <p class="itemtext">
-                <b i18n:translate="" tal:content="python:'admin_menu_'+navitem['name']"/>
+                <b i18n:translate="" tal:content="python:u'admin_menu_{}'.format(navitem['name'])"/>
                 <br />
-                <span i18n:translate="" tal:content="python:'admin_menu_'+navitem['name']+'_description'"/>
+                <span i18n:translate="" tal:content="python:u'admin_menu_{}_description'.format(navitem['name'])"/>
                 <br />
                 <tal:block tal:condition="python:len(navitem['submenu'])>0">
                     <span i18n:translate="admin_submenu">TEXT</span>
                     <tal:block tal:repeat="item python:navitem['submenu']">
-                        <a class="itemsublink" i18n:translate="" tal:content="python:'admin_menu_'+item" tal:attributes="href python:'/admin/'+item"></a><span tal:condition="python: navitem['submenu'].index(item)<len(navitem['submenu'])-1">, </span>
+                        <a class="itemsublink" i18n:translate="" tal:content="python:u'admin_menu_{}'.format(item)" tal:attributes="href python:u'/admin/{}'.format(item)"></a><span tal:condition="python: navitem['submenu'].index(item)<len(navitem['submenu'])-1">, </span>
                     </tal:block>                
                 </tal:block>
             </p>  

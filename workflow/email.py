@@ -172,17 +172,16 @@ class WorkflowStep_SendEmail(WorkflowStep):
             to = node.get("mailtmp.to")
             text = node.get("mailtmp.text")
             subject = tal.getTALstr(node.get("mailtmp.subject"), {}, language=node.get("system.wflanguage"))
-            return req.getTAL("workflow/email.html",
-                              {"page": "node?id={}&obj={}".format(self.id, node.id),
-                               "from": xfrom,
-                               "to": to,
-                               "text": text,
-                               "subject": subject,
-                               "node": node,
-                               "sendcondition": self.get("sendcondition"),
-                                  "wfnode": self,
-                                  "pretext": self.getPreText(lang(req)),
-                                  "posttext": self.getPostText(lang(req))},
+            return req.getTAL("workflow/email.html", {"page": u"node?id={}&obj={}".format(self.id, node.id),
+                                                      "from": xfrom,
+                                                      "to": to,
+                                                      "text": text,
+                                                      "subject": subject,
+                                                      "node": node,
+                                                      "sendcondition": self.get("sendcondition"),
+                                                      "wfnode": self,
+                                                      "pretext": self.getPreText(lang(req)),
+                                                      "posttext": self.getPostText(lang(req))},
                               macro="sendmail")
 
     def metaFields(self, lang=None):

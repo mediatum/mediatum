@@ -194,12 +194,10 @@ class m_htmlmemo(Metatype):
         return (field.getLabel(), value)
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None, attr_dict={}):
-
         try:
             value = field.getValues()
-        except:
-            logg.exception("exception in getMaskEditorHTML, using empty string")
-            value = ""
+        except AttributeError:
+            value = u""
 
         context = {
             "value": value,

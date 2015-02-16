@@ -53,7 +53,7 @@ def createView(dbname, viewname, viewsql):
 
 for dtype in loadAllDatatypes():
     if dtype.getName() not in ["root", "navitem", "home"]:
-        n = tree.Node("", type=dtype.name)
+        n = tree.Node(u"", type=dtype.name)
 
         if hasattr(n, "isSystemType") and n.isSystemType() == 0:
             if hasattr(n, "isContainer") and n.isContainer() == 1:

@@ -43,7 +43,7 @@ def validate(req, op):
 
         elif key.startswith("edit_"):
             # edit rule
-            return editRule_mask(req, ustr(key[key.index("_") + 1:-2]))
+            return editRule_mask(req, key[key.index("_") + 1:-2])
 
         elif key.startswith("delete_"):
             # delete rule

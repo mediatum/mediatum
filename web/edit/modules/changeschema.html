@@ -1,7 +1,7 @@
 
 <tal:block metal:define-macro="changeschema_popup">
-    <script tal:content="python:'var isContainer = %s;' % ustr(isContainer)"> </script>
-    <script tal:content="python:'var nid = %r;' % ustr(nodes[0].id)"> </script>
+    <script tal:content="python:u'var isContainer = {};'.format(isContainer)"> </script>
+    <script tal:content="python:u'var nid = {};'.format(nodes[0].id)"> </script>
     <script type="text/javascript">
       function getSelect(id, newobjtype) {
         getEditPage('schema', id, 'changeschema', 'get_schemes_for_'+newobjtype);
@@ -27,7 +27,7 @@
       <div id="scrollcontainer">
           <p tal:condition="error" tal:content="error" i18n:translate="" class="error" style="text-align:center"/>
 
-          <form id="selection_objtypes"  tal:attributes="action python:'/edit/edit_content?id='+id" method="post" style="margin:5px">
+          <form id="selection_objtypes"  tal:attributes="action python:u'/edit/edit_content?id={}'.format(id)" method="post" style="margin:5px">
               <h3 i18n:translate="edit_changeschema_obj_selection">TEXT</h3>
 
               <input type="hidden" name="nodeid" tal:attributes="value python:id"/>

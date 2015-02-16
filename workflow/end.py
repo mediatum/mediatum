@@ -45,11 +45,11 @@ class WorkflowStep_End(WorkflowStep):
         node.setDirty()
 
         if self.get("endtext") != "":
-            link = "http://{}/pnode?id={}&key={}".format(config.get("host.name"),
-                                                         node.id,
-                                                         node.get("key"))
-            link2 = "http://{}/node?id={}".format(config.get("host.name"),
-                                                  node.id)
+            link = u"http://{}/pnode?id={}&key={}".format(config.get("host.name"),
+                                                          node.id,
+                                                          node.get("key"))
+            link2 = u"http://{}/node?id={}".format(config.get("host.name"),
+                                                   node.id)
 
             return req.getTALstr(self.get("endtext"), {"node": node, "link": link, "link2": link2})
         return req.getTALstr(

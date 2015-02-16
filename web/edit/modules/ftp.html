@@ -52,27 +52,27 @@
 
                     <tr tal:repeat="file python:files">
                         <td>
-                            <input tal:condition="python: file.type in schemes" type="checkbox" tal:attributes="value python:file.type+'|'+file.getName()" id="filecheck" name="selfiles"/>
+                            <input tal:condition="python: file.type in schemes" type="checkbox" tal:attributes="value python:u'{}|{}'.format(file.type, file.getName())" id="filecheck" name="selfiles"/>
                             &nbsp;
                         </td>
                         <td tal:content="python:file.type"/>
                         <td tal:content="python:file.getSize()"/>
                         <td tal:content="python:file.mimetype"/>
                         <td>
-                            <a tal:attributes="href python:'/file/'+ustr(node.id)+'/'+file.getName()" tal:content="python:file.getName()" i18n:attributes="title edit_ftp_open_title" target="filewindow"/>
+                            <a tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())" tal:content="python:file.getName()" i18n:attributes="title edit_ftp_open_title" target="filewindow"/>
                         </td>
                         <td tal:condition="python: file.type in schemes">
                             <select name="schema" style="width:200px">
                                 <option selected="selected" value="" i18n:translate="edit_ftp_chooseschema">TEXT</option>
                                 <tal:block >
-                                    <option tal:repeat="item python:schemes[file.type]" tal:content="python:item.getLongName()" tal:attributes="value python:file.type+'/'+item.getName()"/>
+                                    <option tal:repeat="item python:schemes[file.type]" tal:content="python:item.getLongName()" tal:attributes="value python:u'{}/{}'.format(file.type, item.getName())"/>
                                 </tal:block>
                             </select>
-                            <input tal:attributes="name python:'process|'+file.getName()" type="image" src="/img/rightarrow.png" i18n:attributes="title edit_ftp_process_title"/>
+                            <input tal:attributes="name python:u'process|{}'.format(file.getName())" type="image" src="/img/rightarrow.png" i18n:attributes="title edit_ftp_process_title"/>
                         </td>
                         <td tal:condition="python: file.type not in schemes" i18n:translate="edit_ftp_wrongtype">TEXT</td>
                         <td style="text-align:right">
-                            <input tal:attributes="name python:'del|'+file.getName()" type="image" src="/img/delete.png" onclick="return questionDelName('')" i18n:attributes="title edit_ftp_delete_title"/>
+                            <input tal:attributes="name python:u'del|{}'.format(file.getName())" type="image" src="/img/delete.png" onclick="return questionDelName('')" i18n:attributes="title edit_ftp_delete_title"/>
                             &nbsp;
                             
                         </td>
@@ -86,7 +86,7 @@
                             <ul>
                             <tal:block tal:repeat="schema usedtypes">
                                 <li tal:content="schema"/><br/>
-                                <select tal:attributes="name python:'multschema|'+schema">
+                                <select tal:attributes="name python:u'multschema|{}'.format(schema)">
                                     <option selected="selected" value="" i18n:translate="edit_ftp_chooseschema">TEXT</option>
                                     <tal:block tal:repeat="s python:schemes[schema]">
                                         <option tal:attributes="value python:s.getName()" tal:content="python:s.getLongName()"/>

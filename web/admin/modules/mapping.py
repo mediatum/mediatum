@@ -54,7 +54,7 @@ def validate(req, op):
 
             elif key.startswith("edit_"):
                 # edit/create mapping
-                return editMapping_mask(req, ustr(key[key.index("_") + 1:-2]))
+                return editMapping_mask(req, key[key.index("_") + 1:-2])
 
             elif key.startswith("delete_"):
                 # delete mapping
@@ -87,7 +87,7 @@ def validate(req, op):
 
             if key.startswith("newfield_"):
                 # create new mapping field
-                return editMappingField_mask(req, "", tree.getNode(key[9:-2]))
+                return editMappingField_mask(req, u"", tree.getNode(key[9:-2]))
 
             elif key.startswith("editfield_"):
                 # create new mapping field
@@ -188,13 +188,13 @@ def view(req):
 def editMapping_mask(req, id, err=0):
     if err == 0 and id == "":
         # new mapping
-        mapping = tree.Node("", type="mapping")
+        mapping = tree.Node(u"", type="mapping")
     elif id != "":
         # edit mapping
         mapping = getMapping(id)
     else:
         # error while filling values
-        mapping = tree.Node("", type="mapping")
+        mapping = tree.Node(u"", type="mapping")
         mapping.setName(req.params.get("name", ""))
         mapping.setDescription(req.params.get("description", ""))
         mapping.setNamespace(req.params.get("namespace", ""))
@@ -265,13 +265,13 @@ def viewlist(req, id):
 def editMappingField_mask(req, id, parent, err=0):
     if err == 0 and id == "":
         # new mapping field
-        field = tree.Node("", type="mappingfield")
+        field = tree.Node(u"", type="mappingfield")
     elif id != "":
         # edit mapping field
         field = tree.getNode(id)
     else:
         # error while filling values
-        field = tree.Node("", type="mappingfield")
+        field = tree.Node(u"", type="mappingfield")
         field.setName(req.params.get("name", ""))
         field.setDescription(req.params.get("description", ""))
         field.setExportFormat(req.params.get("exportformat", ""))

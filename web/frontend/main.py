@@ -85,7 +85,7 @@ def display_alias(req):
         # node is set now, redirect to regular display handler
         display(req)
     else:
-        raise Exception("illegal alias '{}', should not be passed to this handler!".format(alias))
+        raise Exception(u"illegal alias '{}', should not be passed to this handler!".format(alias))
 
 
 def display(req):

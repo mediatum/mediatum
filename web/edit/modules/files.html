@@ -72,7 +72,7 @@
                 <div id="children" style="padding:10px">
                     <h2>Kindelemente</h2>
                             <b i18n:translate="edit_files_childobjects">TEXT</b><br/>
-                            <a tal:attributes="onclick python:'openWindow(\'/edit/edit_content?id='+node.id+'&tab=files&style=popup&parent=\'+parent.tree.currentfolder)'" target="_blank" i18n:attributes="title edit_files_add_title" style="cursor:pointer">
+                            <a tal:attributes="onclick python:u'openWindow(\'/edit/edit_content?id={}&tab=files&style=popup&parent=\'+parent.tree.currentfolder)'.format(node.id)" target="_blank" i18n:attributes="title edit_files_add_title" style="cursor:pointer">
                                 <div style="border:1px solid #A4A4A4; width:129px;height:129px;float:left;margin-right:2px;text-align:center;margin-top:3px">
                                     <div style="color:#A4A4A4;font-size:50px;padding-top:30px;padding-left:45px">+</div>
                                 </div>
@@ -80,16 +80,16 @@
                             <div id="childnodes" style="overflow:hidden;padding-top:2px">
                                 <div id="sortable" class="connectedSortable" style="height:130px;width:100%">
                                     <div tal:repeat="child python:node.getChildren().sort_by_name()" class="sortable-default" tal:attributes="id python:child.id">
-                                        <img tal:attributes="id python:child.id; src python:'/thumbs/'+child.id"/>
+                                        <img tal:attributes="id python:child.id; src python:u'/thumbs/{}'.format(child.id)"/>
                                         <div style="position:absolute;top:2px;right:4px">
-                                            <a tal:attributes="href python:'/edit/edit_content?id='+child.id+'&tab=metadata'" i18n:attributes="title edit_files_edit_child"><img src="/img/edit.png"/></a>
-                                            <a href="#" tal:attributes="onclick python:'return removeItem(this.id, '+node.id+')';id python:child.id" i18n:attributes="title edit_files_delete_child"><img src="/img/delete.png"/></a>
+                                            <a tal:attributes="href python:u'/edit/edit_content?id={}&tab=metadata'.format(child.id)" i18n:attributes="title edit_files_edit_child"><img src="/img/edit.png"/></a>
+                                            <a href="#" tal:attributes="onclick python:u'return removeItem(this.id, {})'.format(node.id);id python:child.id" i18n:attributes="title edit_files_delete_child"><img src="/img/delete.png"/></a>
                                         </div>
                                     </div>
                                 </div>
                                 <p><tal:block i18n:translate="edit_files_order_label">TEXT</tal:block></p>
                                 <div class="sortlist" style="display:none"> </div>
-                                <div id="orderdiv" style="display:none"><button type="button" tal:attributes="onclick python:'saveOrder('+node.id+')'" i18n:translate="edit_files_order_save">TEXT</button></div>
+                                <div id="orderdiv" style="display:none"><button type="button" tal:attributes="onclick python:u'saveOrder({})'.format(node.id)" i18n:translate="edit_files_order_save">TEXT</button></div>
                             </div>
                 </div>
             </tal:block>
@@ -109,12 +109,12 @@
                         <tr tal:repeat="file python:files">
                             <tal:block tal:condition="python:file.type!='attachment' and (user.isAdmin() or file.type!='statistic')">
                             <td>
-                                <a tal:attributes="href python:'/file/'+ustr(node.id)+'/'+file.getName()" tal:content="python:file.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
+                                <a tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())" tal:content="python:file.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
                             </td>
                             <td tal:content="python:file.type"/>
                             <td tal:content="python:file.getSize()" style="text-align:right;"/>
                             <td tal:content="python:file.mimetype"/>
-                            <td style="text-align:right;width:30px;"><input tal:condition="python:file.type not in ['original', 'image']" tal:attributes="name python:'del|'+file.type+'|'+file.getName()" type="image" src="/img/delete.png" onclick="return questionDelName('')"/>&nbsp;</td>
+                            <td style="text-align:right;width:30px;"><input tal:condition="python:file.type not in ['original', 'image']" tal:attributes="name python:u'del|{}|{}'.format(file.type, file.getName())" type="image" src="/img/delete.png" onclick="return questionDelName('')"/>&nbsp;</td>
                             </tal:block>
                         </tr>
                     </table>
@@ -139,20 +139,20 @@
                                     <td tal:content="python:file.getSize()"/>
                                     <td tal:content="python:file.mimetype"/>
                                     <td>
-                                        <a tal:condition="python:file.getSize()>0" tal:attributes="href python:'/file/'+ustr(node.id)+'/'+file.getName()" tal:content="python:file.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
+                                        <a tal:condition="python:file.getSize()>0" tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())" tal:content="python:file.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
                                         <b tal:condition="python:file.getSize()==0" tal:content="python:file.getName()"/>
                                     </td>
-                                    <td style="text-align:center"><input tal:condition="python:file.type not in ['original', 'image']" tal:attributes="name python:'del|'+file.type+'|'+file.getName()" type="image" src="/img/delete.png" onclick="return questionDelName('')"/>&nbsp;</td>
+                                    <td style="text-align:center"><input tal:condition="python:file.type not in ['original', 'image']" tal:attributes="name python:u'del|{}|{}'.format(file.type, file.getName())" type="image" src="/img/delete.png" onclick="return questionDelName('')"/>&nbsp;</td>
                                 </tr>
                                 <tr tal:repeat="file att">
-                                    <td tal:content="python:' - '+file.type"/>
+                                    <td tal:content="python:u' - {}'.format(file.type)"/>
                                     <td tal:content="python:file.getSize()"/>
                                     <td tal:content="python:file.mimetype"/>
                                     <td>
-                                        <a tal:condition="python:file.getSize()>0" tal:attributes="href python:'/attfile/'+ustr(node.id)+'/'+file._path" tal:content="python:file.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
+                                        <a tal:condition="python:file.getSize()>0" tal:attributes="href python:u'/attfile/{}/{}'.format(node.id, file._path)" tal:content="python:file.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
                                         <b tal:condition="python:file.getSize()==0" tal:content="python:file.getName()"/>
                                     </td>
-                                    <td style="text-align:center"><input tal:condition="python:file.type not in ['original', 'image']" tal:attributes="name python:'delatt|'+file.type+'|'+file.getName()" type="image" src="/img/delete.png" onclick="return questionDelName('')"/>&nbsp;</td>
+                                    <td style="text-align:center"><input tal:condition="python:file.type not in ['original', 'image']" tal:attributes="name python:u'delatt|{}|{}'.format(file.type, file.getName())" type="image" src="/img/delete.png" onclick="return questionDelName('')"/>&nbsp;</td>
                                 </tr>
                             </table>
                             <input type="hidden" name="operation" value="delete"/>
@@ -176,9 +176,9 @@
                                     <td tal:content="python:file.getSize()"/>
                                     <td tal:content="python:file.mimetype"/>
                                     <td>
-                                        <a tal:attributes="href python:'/file/'+ustr(node.id)+'/'+file.getName()" tal:content="python:file.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
+                                        <a tal:attributes="href python:u'/file/{}/{}'.format(node.id, file.getName())" tal:content="python:file.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
                                     </td>
-                                    <td style="text-align:center"><input tal:condition="python:file.type not in ['original', 'image']" tal:attributes="name python:'del|'+file.type+'|'+file.getName()" type="image" src="/img/delete.png" onclick="return questionDelName('')"/>&nbsp;</td>
+                                    <td style="text-align:center"><input tal:condition="python:file.type not in ['original', 'image']" tal:attributes="name python:u'del|{}|{}'.format(file.type, file.getName())" type="image" src="/img/delete.png" onclick="return questionDelName('')"/>&nbsp;</td>
                                 </tr>
                             </table>
                             <input type="hidden" name="operation" value="delete"/>
@@ -297,10 +297,10 @@
 
 <tal:block metal:define-macro="edit_files_children_list">
     <div tal:repeat="child children" style="float:left;width:128px;height:128px;padding-right:2px;position:relative">
-        <a tal:attributes="href python:'/edit/edit_content?id='+child.id+'&tab='+child.getDefaultEditTab()"><img tal:attributes="src python:'/thumbs/'+child.id"/></a>
+        <a tal:attributes="href python:u'/edit/edit_content?id={}&tab={}'.format(child.id, child.getDefaultEditTab())"><img tal:attributes="src python:u'/thumbs/{}'.format(child.id)"/></a>
         <div style="position:absolute; top:2px;right:4px">
-            <a tal:attributes="href python:'/edit/edit_content?id='+child.id+'&tab=metadata'"><img src="/img/edit.png"/></a>
-            <a href="#" tal:attributes="onclick python:'return removeItem(this.id, '+node.id+')';id python:child.id"><img src="/img/delete.png"/></a>
+            <a tal:attributes="href python:u'/edit/edit_content?id={}&tab=metadata'.format(child.id)"><img src="/img/edit.png"/></a>
+            <a href="#" tal:attributes="onclick python:u'return removeItem(this.id, {})'.format(node.id);id python:child.id"><img src="/img/delete.png"/></a>
         </div>
     </div>
 </tal:block>
@@ -308,7 +308,7 @@
 <tal:block metal:define-macro="edit_files_popup_children">
     <tal:block tal:repeat="child children">
     <div tal:condition="python:not child.isContainer()" style="float:left; margin:2px 2px 0px 0px; border:1px solid silver; position:relative">
-        <img tal:attributes="src python:'/thumbs/'+child.id"/>
+        <img tal:attributes="src python:u'/thumbs/{}'.format(child.id)"/>
         <div style="position:absolute;top:1px;right:1px">
             <input tal:attributes="value python:child.id" name="items_add" id="items_add" type="checkbox" style="margin:0px; padding:0px"/>
         </div>
@@ -362,7 +362,7 @@
         <h1 i18n:translate="edit_files_choosedirectory">TEXT</h1>
         <div style="height:340px; overflow:auto;border:1px solid silver;background-color:white">
             <ul id="tree" class="tree">
-                <li tal:repeat="basedir basedirs" tal:attributes="id python:'Node'+basedir.id"><a tal:attributes="id python:ustr(basedir.id); title python:basedir.getLabel()+' ('+ustr(basedir.id)+')'" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
+                <li tal:repeat="basedir basedirs" tal:attributes="id python:u'Node{}'.format(basedir.id)"><a tal:attributes="id python:unicode(basedir.id); title python:u'{} ({})'.format(basedir.getLabel(), basedir.id)" tal:content="python:basedir.getLabel()" href="#">TEXT</a>
                     <ul>
                         <li tal:attributes="parentId python:basedir.id" class="spinner.gif"><a href="#" id="node_0"> </a></li>
                     </ul>
@@ -381,7 +381,7 @@
             initTree({'idOfFolderTrees': ['tree'], 'multiselect':false});
         </script>
         <tal:block tal:replace="raw python:'<script type=&quot;text/javascript&quot;> var allobjects= new Array();\n'"/>
-            <tal:block tal:repeat="id python:idstr.split(',')" tal:replace="python:'allobjects['+id+']=1;'"/>
+            <tal:block tal:repeat="id python:idstr.split(',')" tal:replace="python:u'allobjects[{}]=1;'.format(id)"/>
         <tal:block tal:replace="raw python:'</script>'"/>
         <script>
             getFolderItems(currentfolder);

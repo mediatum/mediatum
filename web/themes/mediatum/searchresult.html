@@ -27,7 +27,7 @@
     <h2>Gesucht wurde in folgenden Kollektionen:</h2>
     <ol type="square">
         <li tal:repeat="col python:collections">
-            <a tal:content="python:col.getName()" tal:attributes="href python:'/node?id={}&dir={}'.format(col.id, col.id)"/>
+            <a tal:content="python:col.getName()" tal:attributes="href python:u'/node?id={}&dir={}'.format(col.id, col.id)"/>
         </li>
     </ol>
     
@@ -72,7 +72,7 @@
     <h2>The following collections have been searched:</h2>
     <ol type="square">
         <li tal:repeat="col python:collections">
-            <a tal:content="python:col.getName()" tal:attributes="href python:'/node?id={}&dir={}'.format(col.id, col.id)"/>
+            <a tal:content="python:col.getName()" tal:attributes="href python:u'/node?id={}&dir={}'.format(col.id, col.id)"/>
         </li>
     </ol>
     
@@ -124,7 +124,7 @@
                     <a tal:content="python:coll.collection.name" tal:attributes="href python:r.getLink(coll.collection)"/>
                 </td>
                 <td style="text-align:right">
-                    <span tal:replace="python:ustr(coll.length())"/>
+                    <span tal:replace="python:unicode(coll.length())"/>
                 </td>
                 <td i18n:translate="search_hit">
                     TEXT
@@ -135,7 +135,7 @@
         <h2 i18n:translate="search_result_text">TEXT</h2>
         <ol type="square">
             <li tal:repeat="col python:collections">
-                <a tal:content="python:col.getName()" tal:attributes="href python:'/node?id={}&dir={}'.format(col.id, col.id)"/>
+                <a tal:content="python:col.getName()" tal:attributes="href python:u'/node?id={}&dir={}'.format(col.id, col.id)"/>
             </li>
         </ol>
     </div>

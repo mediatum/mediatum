@@ -1,12 +1,11 @@
-
 <tal:block metal:define-macro="schedule_popup">
 
 <script type="text/javascript" src="/ckeditor/ckeditor.js"> </script>
 
-<script tal:content="python:'var submitbutton_run_now_label = \''+submitbutton_run_now_label+'\';'">;</script>
-<script tal:content="python:'var edit_schedule_submit_run_now_button_confirm = \''+edit_schedule_submit_run_now_button_confirm+'\';'">;</script>
-<script tal:content="python:'var edit_schedule_delete_schedule_confirm = \''+edit_schedule_delete_schedule_confirm+'\';'">;</script>
-<script tal:content="python:'var loaded_schedule_id = \''+ustr(loaded_schedule_id)+'\';'">;</script>
+<script tal:content="python:u'var submitbutton_run_now_label = \'{}\';'.format(submitbutton_run_now_label)">;</script>
+<script tal:content="python:u'var edit_schedule_submit_run_now_button_confirm = \'{}\';'.format(edit_schedule_submit_run_now_button_confirm)">;</script>
+<script tal:content="python:u'var edit_schedule_delete_schedule_confirm = \'{}\';'.format(edit_schedule_delete_schedule_confirm)">;</script>
+<script tal:content="python:u'var loaded_schedule_id = \'{}\';'.format(loaded_schedule_id)">;</script>
 
 <script type="text/javascript">
 
@@ -263,7 +262,7 @@
 
     <span id="result" style="color:blue" tal:condition="python: result" tal:content="python: result">TEXT</span>
 
-    <form id="selection_schedule_properties"  tal:attributes="action python:'/edit/edit_content?id='+id" method="post" style="margin:5px">
+    <form id="selection_schedule_properties"  tal:attributes="action python:u'/edit/edit_content?id={}'.format(id)" method="post" style="margin:5px">
 
         <input type="hidden" name="nodeid" id="idlist" tal:attributes="value python:id"/>
         <input tal:condition="python: loaded_schedule" type="hidden" name="schedule_id" tal:attributes="value python:loaded_schedule.id"/>
@@ -289,8 +288,8 @@
         <p>
             <label i18n:translate="edit_schedule_sel_func">TEXT</label>
             <select id="select_function" name="schedule_function" onchange="showWait();getSelect(this.form.nodeid.value,this.form.schedule_function.options[this.form.schedule_function.selectedIndex].value);">
-                <option tal:repeat="func_name python:['']+sorted(fc_dict.keys(), key=lambda x: fc_dict[x].getSortorderKey(language))" tal:attributes="value python:func_name;selected python:{True:'1', False:nothing}[func_name==currentFunction]">
-                    <tal:block tal:replace="python: ( (func_name != '') and ustr(fc_dict[func_name].getLongname(language) ) or '')"> TEXT </tal:block>
+                <option tal:repeat="func_name python:[u'']+sorted(fc_dict.keys(), key=lambda x: fc_dict[x].getSortorderKey(language))" tal:attributes="value python:func_name;selected python:{True:'1', False:nothing}[func_name==currentFunction]">
+                    <tal:block tal:replace="python: ( (func_name != '') and unicode(fc_dict[func_name].getLongname(language) ) or u'')"> TEXT </tal:block>
                 </option>
             </select>
         </p>
@@ -309,7 +308,7 @@
         <p tal:condition="python: currentFunction">
             <input tal:condition="python: loaded_schedule" style="display:inline" i18n:attributes="value edit_schedule_submit_edit_button" type="submit" name="submit" id="submitbutton"/>
             <input tal:condition="python: not loaded_schedule" style="display:inline" i18n:attributes="value edit_schedule_submit_new_button" type="submit" name="submit" id="submitbutton"/>
-            <input tal:condition="python: loaded_schedule or created_new_schedule" style="display:inline" tal:attributes="value python: t(language, 'edit_schedule_submit_run_now_button'); onClick python: 'return confirm(\''+t(language, 'edit_schedule_submit_run_now_button_confirm')+'\')';" type="submit" name="submit_run_now" id="submitbutton_run_now"  />
+            <input tal:condition="python: loaded_schedule or created_new_schedule" style="display:inline" tal:attributes="value python: t(language, 'edit_schedule_submit_run_now_button'); onClick python:u'return confirm(\'{}\')'.format(t(language, 'edit_schedule_submit_run_now_button_confirm'));" type="submit" name="submit_run_now" id="submitbutton_run_now"  />
         </p>
 
         <p tal:condition="python: not currentFunction">
@@ -333,8 +332,8 @@
 
   <div id="sub_footer_module"> </div>
 
-  <script tal:content="python:'var js_edit_layout_togglertip_open = \''+ustr(t(language, 'edit_layout_togglertip_open'))+'\';'">;</script>
-  <script tal:content="python:'var js_edit_layout_togglertip_closed = \''+ustr(t(language, 'edit_layout_togglertip_closed'))+'\';'">;</script>
+  <script tal:content="python:u'var js_edit_layout_togglertip_open = \'{}\';'.format(t(language, 'edit_layout_togglertip_open'))">;</script>
+  <script tal:content="python:u'var js_edit_layout_togglertip_closed = \'{}\';'.format(t(language, 'edit_layout_togglertip_closed'))">;</script>
 
   <tal:block metal:use-macro="web/edit/edit.html/include_jquery_layout_script_tags"/>
 
@@ -389,13 +388,13 @@
             <br/>
             <div tal:condition="python: dfield['evaluation_error']" class="editorerror">
                 <tal:block tal:replace="structure python:dfield['field'].label"/> <br/>
-                <!-- <tal:block tal:replace="structure python:dfield['field'].getEditorHTML(dfield['field'], width=400, value=ustr(dfield['value']))"/> -->
-                <tal:block tal:replace="structure python:dfield['field'].getEditorHTML(ustr(dfield['value']), width=400)"/>
+                <!-- <tal:block tal:replace="structure python:dfield['field'].getEditorHTML(dfield['field'], width=400, value=unicode(dfield['value']))"/> -->
+                <tal:block tal:replace="structure python:dfield['field'].getEditorHTML(unicode(dfield['value']), width=400)"/>
             </div>
             <div tal:condition="python: not dfield['evaluation_error']" class="editorrow">
                 <tal:block tal:replace="structure python:dfield['field'].label"/> <br/>
-                <!-- <tal:block tal:replace="structure python:dfield['field'].getEditorHTML(dfield['field'], width=400, value=ustr(dfield['value']))"/> -->
-                <tal:block tal:replace="structure python:dfield['field'].getEditorHTML(ustr(dfield['value']), width=400)"/>
+                <!-- <tal:block tal:replace="structure python:dfield['field'].getEditorHTML(dfield['field'], width=400, value=unicode(dfield['value']))"/> -->
+                <tal:block tal:replace="structure python:dfield['field'].getEditorHTML(unicode(dfield['value']), width=400)"/>
             </div>
         </tal:block>
 
@@ -420,18 +419,18 @@
             </tr>
             <tr tal:repeat="nid python:sorted(nid2active_schedules.keys())">
                 <td tal:attributes="title python:nid2active_schedules[nid]['title']">
-                    <a tal:content="python: nid" tal:attributes="href python:'edit_content?id='+nid+'&tab=schedule'"/>
+                    <a tal:content="python: nid" tal:attributes="href python:u'edit_content?id={}&tab=schedule'.format(nid)"/>
                 </td>
                 <tal:block tal:condition="show_thumbs">
                 <td tal:attributes="title python:nid2active_schedules[nid]['title']">
-                    <a tal:attributes="href python:'edit_content?id='+nid+'&tab=schedule'">
-                        <image height="45" width="45" tal:attributes="src python:'/thumb2/'+nid; href python:'edit_content?id='+nid+'&tab=schedule'"/>
+                    <a tal:attributes="href python:u'edit_content?id={}&tab=schedule'.format(nid)">
+                        <image height="45" width="45" tal:attributes="src python:u'/thumb2/{}'.format(nid); href python:u'edit_content?id={}&tab=schedule'.format(nid)"/>
                     </a>
                 </td>
                 </tal:block>
                 <td tal:content="python:len(nid2active_schedules[nid]['schedule_list'])" i18n:translate=""/>
                 <td>
-                    <a tal:repeat="schedule python: [s for s in sorted(nid2active_schedules[nid]['schedule_list'], key=lambda x: x.get('single_trigger'))]" tal:content="python: schedule.get('single_trigger')+' '" tal:attributes="href python:'edit_content?id='+schedule.get('nodelist')+'&tab=schedule&schedule_id='+schedule.id"/>
+                    <a tal:repeat="schedule python: [s for s in sorted(nid2active_schedules[nid]['schedule_list'], key=lambda x: x.get('single_trigger'))]" tal:content="python:u'{} '.format(schedule.get('single_trigger'))" tal:attributes="href python:u'edit_content?id={}&tab=schedule&schedule_id={}'.format(schedule.get('nodelist'), schedule.id)"/>
                 </td>
             </tr>
         </table>
@@ -452,29 +451,29 @@
                 <th i18n:translate="edit_schedule_nids">TEXT</th>
                 <th tal:condition="python:len(nid2schedules.keys())==1" i18n:translate="edit_schedule_delete_node_from_schedule">TEXT</th>
             </tr>
-            <tr tal:repeat="schedule_id python:sorted(schedule2nids.keys(), key=lambda x: schedule2nids[x]['schedule'].get('single_trigger'))" tal:attributes="id python:'sid_'+schedule_id; ">
+            <tr tal:repeat="schedule_id python:sorted(schedule2nids.keys(), key=lambda x: schedule2nids[x]['schedule'].get('single_trigger'))" tal:attributes="id python:u'sid_{}'.format(schedule_id); ">
                 <td>
                     <span tal:replace="python: schedule2nids[schedule_id]['status']">TEXT</span>
                 </td>
                 <td>
-                    <a tal:content="python: schedule2nids[schedule_id]['schedule'].get('single_trigger')" tal:attributes="href python:'edit_content?id='+schedule2nids[schedule_id]['schedule'].get('nodelist')+'&tab=schedule&schedule_id='+schedule_id"/>
+                    <a tal:content="python: schedule2nids[schedule_id]['schedule'].get('single_trigger')" tal:attributes="href python:u'edit_content?id={}&tab=schedule&schedule_id={}'.format(schedule2nids[schedule_id]['schedule'].get('nodelist'), schedule_id)"/>
                 </td>
                 <td>
-                    <input tal:attributes="name python:'delete_schedule_'+schedule_id; onclick python:'return delete_schedule('+schedule_id+',\''+schedule2nids[schedule_id]['schedule'].get('single_trigger')+'\')'" i18n:attributes="title edit_schedule_delete_schedule_title" type="image" src="/img/delete.png" />
+                    <input tal:attributes="name python:u'delete_schedule_{}'.format(schedule_id); onclick python:u'return delete_schedule({},\'{}\')'.format(schedule2nids[schedule_id]['schedule'].get('nodelist'), schedule2nids[schedule_id]['schedule'].get('single_trigger'))" i18n:attributes="title edit_schedule_delete_schedule_title" type="image" src="/img/delete.png" />
                 </td>
-                <td tal:content="python:len(schedule2nids[schedule_id]['nids'])" tal:attributes="title python: ustr(schedule2nids[schedule_id]['nids'])"/>
-                <td tal:content="python:len(schedule2nids[schedule_id]['nids_all'])" tal:attributes="title python: ustr(schedule2nids[schedule_id]['nids_all'])"/>
+                <td tal:content="python:len(schedule2nids[schedule_id]['nids'])" tal:attributes="title python: unicode(schedule2nids[schedule_id]['nids'])"/>
+                <td tal:content="python:len(schedule2nids[schedule_id]['nids_all'])" tal:attributes="title python: unicode(schedule2nids[schedule_id]['nids_all'])"/>
                 <td>
                     <tal:block tal:condition="python: len(schedule2nids[schedule_id]['nids'])>100">
-                        <a tal:repeat="nid python: sorted(schedule2nids[schedule_id]['nids'])[0:10]" tal:content="python: nid" tal:attributes="href python:'edit_content?id='+nid+'&tab=schedule';title python:nid2schedules[nid]['title']"/>
+                        <a tal:repeat="nid python: sorted(schedule2nids[schedule_id]['nids'])[0:10]" tal:content="python: nid" tal:attributes="href python:u'edit_content?id={}&tab=schedule'.format(nid);title python:nid2schedules[nid]['title']"/>
                         ...
                     </tal:block>
                     <tal:block tal:condition="python: len(schedule2nids[schedule_id]['nids'])<=100" >
-                        <a tal:repeat="nid python: sorted(schedule2nids[schedule_id]['nids'])" tal:content="python: nid" tal:attributes="href python:'edit_content?id='+nid+'&tab=schedule';title python:nid2schedules[nid]['title']"/>
+                        <a tal:repeat="nid python: sorted(schedule2nids[schedule_id]['nids'])" tal:content="python: nid" tal:attributes="href python:u'edit_content?id={}&tab=schedule'.format(nid);title python:nid2schedules[nid]['title']"/>
                     </tal:block>
                 </td>
                 <td tal:condition="python:len(nid2schedules.keys())==1">
-                    <input tal:attributes="name python:'delete_node_'+nid2schedules.keys()[0]+'_from_schedule_'+schedule_id; onclick python:'return delete_node_from_schedule('+nid2schedules.keys()[0]+','+schedule_id+')'" i18n:attributes="title edit_schedule_delete_node_title" type="image" src="/img/delete.png" />
+                    <input tal:attributes="name python:u'delete_node_{}_from_schedule_{}'.format(nid2schedules.keys()[0], schedule_id); onclick python:u'return delete_node_from_schedule({},{})'.format(nid2schedules.keys()[0], schedule_id)" i18n:attributes="title edit_schedule_delete_node_title" type="image" src="/img/delete.png" />
                 </td>
             </tr>
         </table>

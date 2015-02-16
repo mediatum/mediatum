@@ -233,28 +233,28 @@ class Directory(default.Default):
     def metaFields(self, lang=None):
         ret = list()
 
-        field = tree.Node("nodename", "metafield")
+        field = tree.Node(u"nodename", u"metafield")
         field.set("label", t(lang, "node name"))
-        field.set("type", "text")
+        field.set(u"type", u"text")
         ret.append(field)
 
-        field = tree.Node("style_full", "metafield")
+        field = tree.Node(u"style_full", u"metafield")
         field.set("label", t(lang, "full view style"))
-        field.set("type", "list")
-        field.set("valuelist", "full_standard;full_text")
+        field.set(u"type", u"list")
+        field.set(u"valuelist", u"full_standard;full_text")
         ret.append(field)
 
-        field = tree.Node("style", "metafield")
+        field = tree.Node(u"style", u"metafield")
         field.set("label", t(lang, "style"))
-        field.set("type", "list")
-        field.set("valuelist", "thumbnail;list;text")
+        field.set(u"type", u"list")
+        field.set(u"valuelist", u"thumbnail;list;text")
         ret.append(field)
 
         if self.type.startswith("collection"):
             # special fields for collections
-            field = tree.Node("style_hide_empty", "metafield")
+            field = tree.Node(u"style_hide_empty", "metafield")
             field.set("label", t(lang, "hide empty directories"))
-            field.set("type", "check")
+            field.set("type", u"check")
             ret.append(field)
 
         elif self.type.startswith("directory"):

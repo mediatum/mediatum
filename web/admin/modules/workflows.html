@@ -15,14 +15,14 @@
                     <td colspan="6">
                         <span i18n:translate="admin_filter_label">TEXT</span>
                         <tal:block tal:repeat="tab tabs">
-                            <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[ustr(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
+                            <button tal:attributes="value python:tab[1]; class python:'admin_filter_sel' if tab[0].lower()==actfilter else 'admin_filter'" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
                         </tal:block>
                     </td>
                 </tr>
                 <tr>
                     <th>&nbsp;</th>
                     <th tal:repeat="col sortcol">
-                        <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit" value="">TEXT</button>
+                        <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:u'sortcol_{}'.format(col.link)" class="admin_sortcol" type="submit" value="">TEXT</button>
                     </th>
                     <th>
                         <a i18n:attributes="title admin_wf_exportall_title" href="/admin/export/workflows/all" target="_blank">
@@ -40,7 +40,7 @@
                 </tr>
                 <tal:block tal:repeat="workflow python:workflows[start:end]" tal:define="start python:pages.getStart(); end python:pages.getEnd()">
                 <tr tal:define="cssclass python:workflows.index(workflow)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
-                    <td tal:content="python:ustr(workflows.index(workflow)+1)+'.'"/>
+                    <td tal:content="python:u'{}.'.format(workflows.index(workflow)+1)"/>
                     <td tal:content="python:workflow.getName()"/>
                     <td tal:content="python:workflow.getDescription()">TEXT</td>
                     <td style="text-align:center">
@@ -52,17 +52,17 @@
                         <img tal:condition="python:workflow.getAccess('write')==''" i18n:attributes="title admin_wf_acl_title" src="/img/mark_empty.png"/>
                     </td>
                     <td style="text-align:right;width:50px">
-                        <input tal:attributes="name python:'detaillist_'+ustr(workflow.getId())" i18n:attributes="title admin_wf_nodeedit_title" type="image" src="/img/rightarrow.png"/>
+                        <input tal:attributes="name python:u'detaillist_{}'.format(workflow.getId())" i18n:attributes="title admin_wf_nodeedit_title" type="image" src="/img/rightarrow.png"/>
                         &nbsp;
                         &nbsp;
-                        <a tal:attributes="href python:'./workflows/' +workflow.getName()+'/overview?style=popup'" i18n:attributes="title admin_wf_graphic_title" target="_blank"><img src="/img/search.gif" border="0"/></a>
+                        <a tal:attributes="href python:u'./workflows/{}/overview?style=popup'.format(workflow.getName())" i18n:attributes="title admin_wf_graphic_title" target="_blank"><img src="/img/search.gif" border="0"/></a>
                                                             
-                        <a tal:attributes="href python:'/admin/export/workflows/' +workflow.getId()" i18n:attributes="title admin_wf_export_title" target="_blank"><img src="/img/export.png" border="0"/></a>
+                        <a tal:attributes="href python:u'/admin/export/workflows/{}'.format(workflow.getId())" i18n:attributes="title admin_wf_export_title" target="_blank"><img src="/img/export.png" border="0"/></a>
                     </td>
                     <td style="text-align:right;width:50px">
-                        <input tal:attributes="name python:'edit_'+ustr(workflow.getId())" i18n:attributes="title admin_wf_edit_title" type="image" src="/img/edit.png"/>
+                        <input tal:attributes="name python:u'edit_{}'.format(workflow.getId())" i18n:attributes="title admin_wf_edit_title" type="image" src="/img/edit.png"/>
                         &nbsp;&nbsp;
-                        <input tal:attributes="name python:'delete_'+ustr(workflow.getId()); onclick python:'return questionDelName(\''+workflow.getName()+'\')'" i18n:attributes="title admin_wf_delete_title" type="image" src="/img/delete.png"/>
+                        <input tal:attributes="name python:u'delete_{}'.format(workflow.getId()); onclick python:u'return questionDelName(\'{}\')'.format(workflow.getName())" i18n:attributes="title admin_wf_delete_title" type="image" src="/img/delete.png"/>
                     </td>
                 </tr>
                 </tal:block>
@@ -72,7 +72,7 @@
                     <th colspan="4" align="left">
                         <small>
                             <span i18n:translate="admin_wf_footer">
-                                <span i18n:name="number" tal:content="python:ustr(len(workflows))"/>
+                                <span i18n:name="number" tal:content="python:unicode(len(workflows))"/>
                             </span>
                             <span tal:content="structure python:pages.printPageList()"/>
                         </small>
@@ -117,7 +117,7 @@
             }
         }
     </script>
-    <p><a tal:attributes="href python:'./workflows'+page" i18n:translate="admin_overview">TEXT</a></p>
+    <p><a tal:attributes="href python:u'./workflows{}'.format(page)" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="editworkflow" method="post" action="#">
         <table>
             <tr>
@@ -143,7 +143,7 @@
                 <td><tal:block i18n:translate="admin_wf_languages">TEXT</tal:block>:</td>
                 <td>
                     <tal:block tal:repeat="language languages">
-                        <input type="checkbox" name="wf_language" tal:attributes="value language;checked python:{'True':'checked','False':None}[ustr(language in workflow.getLanguages())]"/> <tal:block tal:content="language" i18n:translate=""/><br/>
+                        <input type="checkbox" name="wf_language" tal:attributes="value language;checked python:'checked' if language in workflow.getLanguages() else None"/> <tal:block tal:content="language" i18n:translate=""/><br/>
                     </tal:block>
                 </td>
             </tr>
@@ -153,16 +153,16 @@
                     <table border="0px" cellpadding="0px" cellspacing="0px">
                         <tr>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_write['val_left']" tal:attributes="name python:'left_write'+acl_write['name'];id python:'left_write'+acl_write['name']; ondblclick python:'moveRight(document.editworkflow.left_write'+acl_write['name']+',document.editworkflow.right_write'+acl_write['name']+')'" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_write['val_left']" tal:attributes="name python:u'left_write{}'.format(acl_write['name']);id python:u'left_write{}'.format(acl_write['name']); ondblclick python:u'moveRight(document.editworkflow.left_write{},document.editworkflow.right_write{})'.format(acl_write['name'], acl_write['name'])" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
-                                <input tal:attributes="onclick python:'moveLeft(document.editmetatype.left_write'+acl_write['name']+',document.editworkflow.right_write'+acl_write['name']+')'" type="button" value="<<"/>
+                                <input tal:attributes="onclick python:u'moveLeft(document.editmetatype.left_write{},document.editworkflow.right_write{})'.format(acl_write['name'], acl_write['name'])" type="button" value="<<"/>
                                 <br>
-                                <input tal:attributes="onclick python:'moveRight(document.editmetatype.left_write'+acl_write['name']+',document.editworkflow.right_write'+acl_write['name']+')'" type="button" value=">>"/>
+                                <input tal:attributes="onclick python:u'moveRight(document.editmetatype.left_write{},document.editworkflow.right_write{})'.format(acl_write['name'], acl_write['name'])" type="button" value=">>"/>
                             </td>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_write['val_right']" tal:attributes="name python:'right_write'+acl_write['name'];  ondblclick python:'moveLeft(document.editworkflow.left_write'+acl_write['name']+',document.editworkflow.right_write'+acl_write['name']+')'" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_write['val_right']" tal:attributes="name python:u'right_write{}'.format(acl_write['name']);  ondblclick python:u'moveLeft(document.editworkflow.left_write{},document.editworkflow.right_write{})'.format(acl_write['name'], acl_write['name'])" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                         </tr>
@@ -176,16 +176,16 @@
                     <table border="0px" cellpadding="0px" cellspacing="0px">
                         <tr>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_read['val_left']" tal:attributes="name python:'left_read'+acl_read['name'];id python:'left_read'+acl_read['name']; ondblclick python:'moveRight(document.editworkflow.left_read'+acl_read['name']+',document.editworkflow.right_read'+acl_read['name']+')'" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_read['val_left']" tal:attributes="name python:u'left_read{}'.format(acl_read['name']);id python:u'left_read{}'.format(acl_read['name']); ondblclick python:u'moveRight(document.editworkflow.left_read{},document.editworkflow.right_read{})'.format(acl_read['name'], acl_read['name'])" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
-                                <input tal:attributes="onclick python:'moveLeft(document.editmetatype.left_read'+acl_read['name']+',document.editworkflow.right_read'+acl_read['name']+')'" type="button" value="<<"/>
+                                <input tal:attributes="onclick python:u'moveLeft(document.editmetatype.left_read{},document.editworkflow.right_read{})'.format(acl_read['name'], acl_read['name'])" type="button" value="<<"/>
                                 <br>
-                                <input tal:attributes="onclick python:'moveRight(document.editmetatype.left_read'+acl_read['name']+',document.editworkflow.right_read'+acl_read['name']+')'" type="button" value=">>"/>
+                                <input tal:attributes="onclick python:u'moveRight(document.editmetatype.left_read{},document.editworkflow.right_read{})'.format(acl_read['name'], acl_read['name'])" type="button" value=">>"/>
                             </td>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_read['val_right']" tal:attributes="name python:'right_read'+acl_read['name'];  ondblclick python:'moveLeft(document.editworkflow.left_read'+acl_read['name']+',document.editworkflow.right_read'+acl_read['name']+')'" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_read['val_right']" tal:attributes="name python:u'right_read{}'.format(acl_read['name']);  ondblclick python:u'moveLeft(document.editworkflow.left_read{},document.editworkflow.right_read{})'.format(acl_read['name'], acl_read['name'])" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                         </tr>
@@ -204,7 +204,7 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:attributes="title admin_save_title" tal:attributes="onclick python:'selectacl(Array(\'left_read'+acl_read['name']+'\', \'left_write'+acl_write['name']+'\'))';" i18n:translate="admin_save" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
+                    <button i18n:attributes="title admin_save_title" tal:attributes="onclick python:u'selectacl(Array(\'left_read{}\', \'left_write{}\'))'.format(acl_read['name'], acl_write['name']);" i18n:translate="admin_save" type="submit" name="submit" value="submit">TEXT</button>&nbsp;&nbsp;
                     <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
                 </td>
             </tr>
@@ -231,24 +231,24 @@
                 <tr>
                     <td colspan="9">
                         <h3 i18n:translate="admin_wf_header">TEXT '<span tal:content="python:workflow.getName()" i18n:name="name"/>'</h3>
-                        <a tal:attributes="href python:'./workflows/'+workflow.getName()+'/overview?style=popup'" i18n:attributes="title admin_wf_graphic_title" target="_blank" i18n:translate="admin_wf_showdef">TEXT</a>
+                        <a tal:attributes="href python:u'./workflows/{}/overview?style=popup'.format(workflow.getName())" i18n:attributes="title admin_wf_graphic_title" target="_blank" i18n:translate="admin_wf_showdef">TEXT</a>
                     </td>
                 </tr>
                 <tr>
                     <td colspan="9">
                         <span i18n:translate="admin_filter_label">TEXT</span>
                         <tal:block tal:repeat="tab tabs">
-                            <button tal:attributes="value python:tab[1]; class python:{'False':'admin_filter','True':'admin_filter_sel'}[ustr(tab[0].lower()==actfilter)]" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
+                            <button tal:attributes="value python:tab[1]; class python:'admin_filter_sel' if tab[0].lower()==actfilter else 'admin_filter'" tal:content="python:tab[0]" i18n:translate="" name="filterbutton" type="submit" class="admin_filter">TEXT</button>
                         </tal:block>
                     </td>
                 </tr>
                 <tr>
                     <th>&nbsp;</th>
                     <th tal:repeat="col sortcol">
-                        <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:'sortcol_'+col.link" class="admin_sortcol" type="submit" value="">TEXT</button>
+                        <button tal:content="structure python:col.label" tal:attributes="title python:col.title; name python:u'sortcol_{}'.format(col.link)" class="admin_sortcol" type="submit" value="">TEXT</button>
                     </th>
                     <th align="right">
-                        <input tal:attributes="name python:'newdetail_'+ustr(workflow.getId())" i18n:attributes="title admin_wfstep_new_title" type="image" src="/img/install.png">
+                        <input tal:attributes="name python:u'newdetail_{}'.format(workflow.getId())" i18n:attributes="title admin_wfstep_new_title" type="image" src="/img/install.png">
                     </th>
                 </tr>
             </thead>
@@ -261,7 +261,7 @@
                 <tr tal:define="cssclass python:workflowsteps.index(workflowstep)%2 and 'norm' or 'silver';
                 tname python:workflowstep.getTrueId() or '-';
                 fname python:workflowstep.getFalseId() or '-'" tal:attributes="class cssclass">
-                    <td tal:content="python:ustr(workflowsteps.index(workflowstep)+1)+'.'"/>
+                    <td tal:content="python:u'{}.'.format(workflowsteps.index(workflowstep)+1)"/>
                     <td tal:content="python:workflowstep.getName()"/>
                     <td tal:content="python:workflowstep.getContentType()" i18n:translate=""/>
                     <td>
@@ -274,7 +274,7 @@
                     </td>
                     <td>
                         <a tal:attributes="title python:workflowstep.getComment()" i18n:translate="admin_wfstep_chars">
-                            <tal:block tal:content="python:ustr(len(workflowstep.getComment()))" i18n:name="number"/> Zeichen
+                            <tal:block tal:content="python:unicode(len(workflowstep.getComment()))" i18n:name="number"/> Zeichen
                         </a>
                     </td>
                     <td style="text-align:center">
@@ -288,9 +288,9 @@
                     
                     
                      <td>
-                        <input tal:attributes="name python:'editdetail_'+ustr(workflow.getId())+'|'+ustr(workflowstep.getId())" i18n:attributes="title admin_wfstep_edit" type="image" src="/img/edit.png"/>
+                        <input tal:attributes="name python:u'editdetail_{}|{}'.format(workflow.getId(), workflowstep.getId())" i18n:attributes="title admin_wfstep_edit" type="image" src="/img/edit.png"/>
                         &nbsp;&nbsp;
-                        <input tal:attributes="name python:'deletedetail_'+ustr(workflow.getId())+'|'+ustr(workflowstep.getId()); onclick python:'return questionDelName(\''+workflowstep.getName()+'\')'" i18n:attributes="title admin_wfstep_delete" type="image" src="/img/delete.png"/>
+                        <input tal:attributes="name python:u'deletedetail_{}|{}'.format(workflow.getId(), workflowstep.getId()); onclick python:u'return questionDelName(\'{}\')'.format(workflowstep.getName())" i18n:attributes="title admin_wfstep_delete" type="image" src="/img/delete.png"/>
                     </td>
                 </tr>
                 </tal:block>
@@ -300,7 +300,7 @@
                     <th colspan="5" align="left">
                         <small>
                             <span i18n:translate="admin_wfstep_footer">
-                                <span i18n:name="number" tal:content="python:ustr(len(workflowsteps))"/> TEXT
+                                <span i18n:name="number" tal:content="python:unicode(len(workflowsteps))"/> TEXT
                             </span>
                             <span tal:content="structure python:pages.printPageList()"/>
                         </small>
@@ -337,7 +337,7 @@
             }
         }
     </script>
-    <p><a tal:attributes="href python:'./workflows?detailof='+ustr(workflow.getId())+page" i18n:translate="admin_overview">TEXT</a></p>
+    <p><a tal:attributes="href python:u'./workflows?detailof={}{}'.format(workflow.getId(), page)" i18n:translate="admin_overview">TEXT</a></p>
     <form tal:attributes="action page" name="addmfield" id="addmfield" method="post" action="#">
         <table>
             <tr>
@@ -383,7 +383,7 @@
                     <tal:block tal:condition="python:len(workflow.getLanguages())>1">
                         <div tal:repeat="language python:workflow.getLanguages()">
                             <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
-                            <textarea tal:content="python:workflowstep.getSidebarText(language)" tal:attributes="name python:language+'.nsidebartext'" style="width:350px;margin-bottom:10px;"/><br/>
+                            <textarea tal:content="python:workflowstep.getSidebarText(language)" tal:attributes="name python:u'{}.nsidebartext'.format(language)" style="width:350px;margin-bottom:10px;"/><br/>
                         </div>
                     </tal:block>
                 </td>
@@ -395,7 +395,7 @@
                     <tal:block tal:condition="python:len(workflow.getLanguages())>1">
                         <div tal:repeat="language python:workflow.getLanguages()">
                             <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
-                            <textarea tal:content="python:workflowstep.getPreText(language)" tal:attributes="name python:language+'.npretext'" style="width:350px;margin-bottom:10px;"/><br/>
+                            <textarea tal:content="python:workflowstep.getPreText(language)" tal:attributes="name python:u'{}.npretext'.format(language)" style="width:350px;margin-bottom:10px;"/><br/>
                         </div>
                     </tal:block>
                 </td>
@@ -407,7 +407,7 @@
                     <tal:block tal:condition="python:len(workflow.getLanguages())>1">
                         <div tal:repeat="language python:workflow.getLanguages()">
                             <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
-                            <textarea tal:content="python:workflowstep.getPostText(language)" tal:attributes="name python:language+'.nposttext'" style="width:350px;margin-bottom:10px;"/><br/>
+                            <textarea tal:content="python:workflowstep.getPostText(language)" tal:attributes="name python:u'{}.nposttext'.format(language)" style="width:350px;margin-bottom:10px;"/><br/>
                         </div>
                     </tal:block>
                 </td>
@@ -423,7 +423,7 @@
                     <tal:block tal:condition="python:len(workflow.getLanguages())>1">
                         <div tal:repeat="language python:workflow.getLanguages()">
                             <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
-                            <textarea tal:content="python:workflowstep.getTrueLabel(language)"  tal:attributes="name python:language+'.ntruelabel'" style="width:350px;margin-bottom:10px;"/><br/>
+                            <textarea tal:content="python:workflowstep.getTrueLabel(language)"  tal:attributes="name python:u'{}.ntruelabel'.format(language)" style="width:350px;margin-bottom:10px;"/><br/>
                         </div>
                     </tal:block>
                 </td>
@@ -447,7 +447,7 @@
                     <tal:block tal:condition="python:len(workflow.getLanguages())>1">
                         <div tal:repeat="language python:workflow.getLanguages()">
                             <div style="float:left;width:50px;"><span tal:content="language"/>:</div>
-                            <textarea tal:content="python:workflowstep.getFalseLabel(language)" tal:attributes="name python:language+'.nfalselabel'" style="width:350px;margin-bottom:10px;"/><br/>
+                            <textarea tal:content="python:workflowstep.getFalseLabel(language)" tal:attributes="name python:u'{}.nfalselabel'.format(language)" style="width:350px;margin-bottom:10px;"/><br/>
                         </div>
                     </tal:block>
                 </td>
@@ -471,16 +471,16 @@
                     <table border="0px" cellpadding="0px" cellspacing="0px">
                         <tr>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_write['val_left']" tal:attributes="name python:'left_write'+acl_write['name'];id python:'left_write'+acl_write['name']; ondblclick python:'moveRight(document.addmfield.left_write'+acl_write['name']+',document.addmfield.right_write'+acl_write['name']+')'" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_write['val_left']" tal:attributes="name python:u'left_write{}'.format(acl_write['name']);id python:u'left_write{}'.format(acl_write['name']); ondblclick python:u'moveRight(document.addmfield.left_write{},document.addmfield.right_write{})'.format(acl_write['name'], acl_write['name'])" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
-                                <input tal:attributes="onclick python:'moveLeft(document.addmfield.left_write'+acl_write['name']+',document.addmfield.right_write'+acl_write['name']+')'" type="button" value="<<"/>
+                                <input tal:attributes="onclick python:u'moveLeft(document.addmfield.left_write{},document.addmfield.right_write{})'.format(acl_write['name'], acl_write['name'])" type="button" value="<<"/>
                                 <br>
-                                <input tal:attributes="onclick python:'moveRight(document.addmfield.left_write'+acl_write['name']+',document.addmfield.right_write'+acl_write['name']+')'" type="button" value=">>"/>
+                                <input tal:attributes="onclick python:u'moveRight(document.addmfield.left_write{},document.addmfield.right_write{})'.format(acl_write['name'], acl_write['name'])" type="button" value=">>"/>
                             </td>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_write['val_right']" tal:attributes="name python:'right_write'+acl_write['name'];  ondblclick python:'moveLeft(document.addmfield.left_write'+acl_write['name']+',document.addmfield.right_write'+acl_write['name']+')'" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_write['val_right']" tal:attributes="name python:u'right_write{}'.format(acl_write['name']);  ondblclick python:u'moveLeft(document.addmfield.left_write{},document.addmfield.right_write{})'.format(acl_write['name'], acl_write['name'])" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                         </tr>
@@ -493,16 +493,16 @@
                     <table border="0px" cellpadding="0px" cellspacing="0px">
                         <tr>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_read['val_left']" tal:attributes="name python:'left_read'+acl_read['name'];id python:'left_read'+acl_read['name']; ondblclick python:'moveRight(document.addmfield.left_read'+acl_read['name']+',document.addmfield.right_read'+acl_read['name']+')'" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_read['val_left']" tal:attributes="name python:u'left_read{}'.format(acl_read['name']);id python:u'left_read{}'.format(acl_read['name']); ondblclick python:u'moveRight(document.addmfield.left_read{},document.addmfield.right_read{})'.format(acl_read['name'], acl_read['name'])" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                             <td style="padding-left:10px;padding-right:10px;" align="left" valign="center">
-                                <input tal:attributes="onclick python:'moveLeft(document.addmfield.left_read'+acl_read['name']+',document.addmfield.right_read'+acl_read['name']+')'" type="button" value="<<"/>
+                                <input tal:attributes="onclick python:u'moveLeft(document.addmfield.left_read{},document.addmfield.right_read{})'.format(acl_read['name'], acl_read['name'])" type="button" value="<<"/>
                                 <br>
-                                <input tal:attributes="onclick python:'moveRight(document.addmfield.left_read'+acl_read['name']+',document.addmfield.right_read'+acl_read['name']+')'" type="button" value=">>"/>
+                                <input tal:attributes="onclick python:u'moveRight(document.addmfield.left_read{},document.addmfield.right_read{})'.format(acl_read['name'], acl_read['name'])" type="button" value=">>"/>
                             </td>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_read['val_right']" tal:attributes="name python:'right_read'+acl_read['name'];  ondblclick python:'moveLeft(document.addmfield.left_read'+acl_read['name']+',document.addmfield.right_read'+acl_read['name']+')'" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_read['val_right']" tal:attributes="name python:u'right_read'.format(acl_read['name']); ondblclick python:u'moveLeft(document.addmfield.left_read{},document.addmfield.right_read{})'.format(acl_read['name'], acl_read['name'])" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                         </tr>
@@ -516,7 +516,7 @@
             <tr>
                 <td>&nbsp;</td>
                 <td>
-                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" tal:attributes="onclick python:'selectacl(Array(\'left_read'+acl_read['name']+'\',\'left_write'+acl_write['name']+'\'))';" type="submit" name="submitbutton" value="submit">TEXT</button>&nbsp;&nbsp;
+                    <button i18n:attributes="title admin_save_title" i18n:translate="admin_save" tal:attributes="onclick python:u'selectacl(Array(\'left_read{}\',\'left_write{}\'));'.format(acl_read['name'], acl_write['name'])" type="submit" name="submitbutton" value="submit">TEXT</button>&nbsp;&nbsp;
                     <button i18n:attributes="title admin_cancel_title" i18n:translate="admin_cancel" type="submit" name="cancel" value="cancel" onclick="setCancel()">TEXT</button>
                 </td>
             </tr>
@@ -562,7 +562,7 @@
             <title i18n:translate="admin_wf_definition">TEXT</title>
         </head>
         <body style="margin:5px">
-            <img tal:attributes="src python:'/workflowimage?wid='+id" align="center" valign="center"/>
+            <img tal:attributes="src python:u'/workflowimage?wid={}'.format(id)" align="center" valign="center"/>
         </body>
     </html>
 </metal:block>

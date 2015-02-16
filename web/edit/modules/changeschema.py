@@ -64,7 +64,7 @@ def getContainers(datatypes):
     res = []
     datatypes = getTypes(datatypes)
     for dtype in datatypes:
-        n = tree.Node("", type=dtype.name)
+        n = tree.Node(u"", type=dtype.name)
         if hasattr(n, "isContainer"):
             if n.isContainer():
                 res.append(dtype)
@@ -123,9 +123,9 @@ def getContent(req, ids):
 
     admissible_objtypes = getTypes(datatypes)
     admissible_datatypes = [n for n in admissible_objtypes if tree.Node(
-        '', n.name).getCategoryName() in ['document', 'image', 'video', 'audio']]
+        u'', n.name).getCategoryName() in ['document', 'image', 'video', 'audio']]
     admissible_containers = [n for n in admissible_objtypes if tree.Node(
-        '', n.name).getCategoryName() in ['container']]
+        u'', n.name).getCategoryName() in ['container']]
 
     admissible_objtypes.sort(
         lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))

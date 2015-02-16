@@ -215,6 +215,24 @@ def get_all_node_ids():
     return all_ids
 
 
+def delete_recursive(node_or_id):
+    """Delete node and all of its children"""
+    if isinstance(node_or_id, Node):
+        start_nid = node_or_id.id
+    else:
+        start_nid = long(node_or_id)
+    ids_to_delete = subtree_ids(start_nid)
+    deleted_ids = []
+    for nid in ids_to_delete:
+        maybe_node = q(Node).get(nid)
+        if maybe_node:
+            s.delete(maybe_node)
+            deleted_ids.append(nid) 
+        else:
+            logg.warn("node %s not found", nid)
+    return deleted_ids
+
+
 def repair_localread():
     old_localread_values= {nid: localread for nid, localread in q(Node.id, Node.localread)}
     Node.__table__.update().values(localread="")

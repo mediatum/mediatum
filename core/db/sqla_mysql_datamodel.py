@@ -79,7 +79,7 @@ class Node(DeclarativeBase):
 
 
     def __unicode__(self):
-        return u"Node #{} {}: {} at {}".format(self.id, self.name, self.type, hex(id(self)))
+        return u"Node {} {}  {} at {}".format(self.id, self.name, self.type, hex(id(self)))
     
     
     def __repr__(self):
@@ -145,7 +145,7 @@ class NodeAttribute(DeclarativeBase):
             self.id = id
 
     def __repr__(self):
-        return u"Attribute for Node #{}: {}='{}' at {}".format(self.nid, self.name, self.value, hex(id(self))).encode("utf8")
+        return u"Attribute for Node {}  {}='{}' at {}".format(self.nid, self.name, self.value, hex(id(self))).encode("utf8")
 
 
 Index(u'nid_2', NodeAttribute.__table__.c.nid, NodeAttribute.__table__.c.name)
@@ -162,7 +162,7 @@ class NodeFile(DeclarativeBase):
     mimetype = C(Unicode)
 
     def __repr__(self):
-        return "File for Node #{} ({}) at {}".format(self.nid, self.filename, hex(id(self)))
+        return "File for Node {} ({}) at {}".format(self.nid, self.filename, hex(id(self)))
 
 
 t_nodefile = NodeFile.__table__

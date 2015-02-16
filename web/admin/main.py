@@ -37,7 +37,7 @@ def show_node(req):
     """ opens administration window with content """
 
     p = req.path[1:].split("/")
-    style = req.params.get("style", "")
+    style = req.params.get("style", u"")
     user = users.getUserFromRequest(req)
 
     v = {}
@@ -50,11 +50,11 @@ def show_node(req):
     v["spc"] = list()
 
     spc = list()
-    v["spc"].append(Menu("sub_header_frontend", "/"))
-    v["spc"].append(Menu("sub_header_edit", "/edit"))
+    v["spc"].append(Menu("sub_header_frontend", u"/"))
+    v["spc"].append(Menu("sub_header_edit", u"/edit"))
     if user.isWorkflowEditor():
-        v["spc"].append(Menu("sub_header_workflow", "../publish"))
-    v["spc"].append(Menu("sub_header_logout", "/logout"))
+        v["spc"].append(Menu("sub_header_workflow", u"../publish"))
+    v["spc"].append(Menu("sub_header_logout", u"/logout"))
     v["hashelp"] = help.getHelpPath(['admin', 'modules', req.path.split('/')[1]])
 
     if len(p) > 0:
@@ -80,7 +80,7 @@ def export(req):
         file.write(module.export(req, path[2]))
         file.close()
 
-        req.sendFile(tempfile, "application/xml")
+        req.sendFile(tempfile, u"application/xml")
         if os.sep == '/':  # Unix?
             os.unlink(tempfile)  # unlinking files while still reading them only works on Unix/Linux
     except:

@@ -25,7 +25,6 @@ from schema.schema import getMetaFieldTypeNames, getMetaFieldTypes, getMetadataT
 from core.translation import lang, translate
 from core.metatype import Metatype
 
-from utils.strings import ensure_unicode_returned
 
 class m_field(Metatype):
 

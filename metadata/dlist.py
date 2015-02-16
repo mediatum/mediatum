@@ -115,7 +115,7 @@ class m_dlist(Metatype):
                             _v = _t = item
                         valuelist.append({'select_text': _t.strip(), 'select_value': _v.strip()})
                 f.close()
-        except:
+        except ValueError:
             #enables the field to be added without fields filled in without throwing an exception
             pass
         return tal.getTAL("metadata/dlist.html", {"lock": lock,

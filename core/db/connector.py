@@ -263,6 +263,8 @@ class Connector:
         res = self.runQuery(sql, "%" + type_suffix)
         if res:
             return [r[0] for r in res]
+        else:
+            return []
 
     def deleteNode(self, id):
         self.runQuery("delete from node where id=" + id)

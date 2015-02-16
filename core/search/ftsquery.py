@@ -269,8 +269,8 @@ class FtsSearcher:
 
     def getDefForSchema(self, schema):
         ret = {}
-        for id, attr in self.execute(
-                'SELECT position, attrname FROM searchmeta_def WHERE name="' + ustr(schema) + '" ORDER BY position', 'ext'):
+        res = self.execute('SELECT position, attrname FROM searchmeta_def WHERE name="' + ustr(schema) + '" ORDER BY position', 'ext') or []
+        for id, attr in res:
             ret[id] = attr
         return ret
 

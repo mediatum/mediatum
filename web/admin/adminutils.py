@@ -197,11 +197,9 @@ def show_content(req, op):
             op = "menumain"
         module = findmodule(op.split("_")[0])
 
-        try:
-            if op.index("_") > -1:
-                return module.spc(req, op)
-        except:
-            logg.exception("exception in show_content")
+        if op.find("_") > -1:
+            return module.spc(req, op)
+        else:
             return module.validate(req, op)
 
 # delivers all admin modules

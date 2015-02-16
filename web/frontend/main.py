@@ -100,7 +100,7 @@ def display(req):
         act_node = content.actNode()
         mdt = getMetaType(act_node.getSchema()) if act_node is not None else None
         mask = mdt.getMask('head_meta') if mdt is not None else None
-        req.params['head_meta'] = mask.getViewHTML([content.actNode()], flags=8) if mask is not None else ''
+        req.params['head_meta'] = mask.getViewHTML([content.actNode()], flags=8) if mask is not None else u''
     except:
         # XXX: the "common exception cases" here were act_node, mdt, mask == None. This is handled in the try-block now. 
         # Other exceptions should indicate a real failure.

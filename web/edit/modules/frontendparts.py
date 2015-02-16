@@ -63,12 +63,16 @@ def getContent(req, ids):
                     logg.exception("exception in getContent, ignored")
 
                 if type == 1:
-                    link = req.makeSelfLink({"tree_unfold": "", "tree_fold": node.id}) + u"#node{}".format(node.id)
+                    link = u'{}{}'.format(req.makeSelfLink({"tree_unfold": u"",
+                                                            "tree_fold": node.id}),
+                                          u"#node{}".format(node.id))
                 elif type == 2:
-                    link = req.makeSelfLink({"tree_unfold": node.id, "tree_fold": ""}) + u"#node{}".format(node.id)
+                    link = u'{}{}'.format(req.makeSelfLink({"tree_unfold": node.id,
+                                                            "tree_fold": u""}),
+                                          u"#node{}".format(node.id))
 
                 v = {}
-                v["id"] = ustr(node.id)
+                v["id"] = node.id
                 v["type"] = type
                 v["link1"] = link
                 v["indent"] = indent + 10

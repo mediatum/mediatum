@@ -190,7 +190,7 @@ def lru_cache(maxsize=100, typed=False):
                 if isinstance(o, dict):
                     return o.keys()
                 else:  # list
-                    return u"id={} val={}\nprev={} next={}".format(hex(id(o)), o[RESULT], o[PREV][RESULT], o[NEXT][RESULT])
+                    return "id={} val={}\nprev={} next={}".format(hex(id(o)), o[RESULT], o[PREV][RESULT], o[NEXT][RESULT])
 
             objgraph.show_refs([cache, nonlocal_root[0]], filename=filename,
                                refcounts=True,

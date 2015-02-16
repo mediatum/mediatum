@@ -331,8 +331,8 @@ class SQLiteConnector(Connector):
             if i > 0:
                 join_parts.append("nodeattribute AS " + alias)
             fname, direction = self._sql_sort_field_name_and_dir(f)
-            where_name_parts.append(u"{}.name={}".format(alias, fname))
-            order_parts.append(u"{}.value{}".format(alias, direction))
+            where_name_parts.append("{}.name={}".format(alias, fname))
+            order_parts.append("{}.value{}".format(alias, direction))
 
         # looks like nodeattribute as a0 INNER JOIN nodeattribute as a1 USING (nid) INNER JOIN ...
         if len(fields) > 1:

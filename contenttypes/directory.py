@@ -144,9 +144,9 @@ class Directory(default.Default):
 
     """ format big view with standard template """
     def show_node_big(self, req, template="", macro=""):
-        content = ""
-        link = "node?id=" + self.id + "&amp;files=1"
-        sidebar = ""
+        content = u""
+        link = u"node?id={}&amp;files=1".format(self.id)
+        sidebar = u""
         pages = self.getStartpageDict()
         if self.get("system.sidebar") != "":
             for sb in self.get("system.sidebar").split(";"):
@@ -160,16 +160,18 @@ class Directory(default.Default):
         if sidebar != "":
             sidebar = req.getTAL("contenttypes/directory.html", {"content": sidebar}, macro="addcolumn")
         else:
-            sidebar = ""
+            sidebar = u""
 
         if "item" in req.params:
-            fpath = config.get("paths.datadir") + "html/" + req.params.get("item")
+            fpath = "{}html/{}".format(config.get("paths.datadir"),
+                                       req.params.get("item"))
             if os.path.isfile(fpath):
                 c = open(fpath, "r")
                 content = c.read()
                 c.close()
                 if sidebar != "":
-                    return '<div id="portal-column-one">' + content + '</div>' + sidebar
+                    return '<div id="portal-column-one">{}</div>{}'.format(content,
+                                                                           sidebar)
                 return content
 
         spn = self.getStartpageFileNode(lang(req))
@@ -180,10 +182,12 @@ class Directory(default.Default):
                 content = replaceModules(self, req, content)
             if content:
                 if sidebar != "":
-                    return '<div id="portal-column-one">' + content + '</div>' + sidebar
+                    return '<div id="portal-column-one">{}</div>{}'.format(content,
+                                                                           sidebar)
                 return content
 
-        return content + sidebar
+        return u'{}{}'.format(content,
+                          sidebar)
 
     """ format node image with standard template """
     def show_node_image(self, language=None):
@@ -235,19 +239,19 @@ class Directory(default.Default):
 
         field = tree.Node(u"nodename", u"metafield")
         field.set("label", t(lang, "node name"))
-        field.set(u"type", u"text")
+        field.set("type", u"text")
         ret.append(field)
 
         field = tree.Node(u"style_full", u"metafield")
         field.set("label", t(lang, "full view style"))
-        field.set(u"type", u"list")
-        field.set(u"valuelist", u"full_standard;full_text")
+        field.set("type", u"list")
+        field.set("valuelist", u"full_standard;full_text")
         ret.append(field)
 
         field = tree.Node(u"style", u"metafield")
         field.set("label", t(lang, "style"))
-        field.set(u"type", u"list")
-        field.set(u"valuelist", u"thumbnail;list;text")
+        field.set("type", u"list")
+        field.set("valuelist", u"thumbnail;list;text")
         ret.append(field)
 
         if self.type.startswith("collection"):

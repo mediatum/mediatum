@@ -270,7 +270,8 @@ class FtsSearcher:
     def getDefForSchema(self, schema):
         ret = {}
         for id, attr in self.execute(
-                'SELECT position, attrname FROM searchmeta_def WHERE name="' + ustr(schema) + '" ORDER BY position', 'ext'):
+                u'SELECT position, attrname FROM searchmeta_def WHERE name="{}" ORDER BY position'.format(schema),
+                'ext'):
             ret[id] = attr
         return ret
 
@@ -295,10 +296,10 @@ class FtsSearcher:
 
     def nodeToSimpleSearch(self, node, schema, type=""):  # build simple search index from node
 
-        sql_upd ="UPDATE fullsearchmeta SET type='{}', schema='{}', value='{}| ".format(node.getContentType(),
+        sql_upd =u"UPDATE fullsearchmeta SET type='{}', schema='{}', value='{}| ".format(node.getContentType(),
                                                                                         node.getSchema(),
                                                                                         node.name)
-        sql_ins = "INSERT INTO fullsearchmeta (id, type, schema, value) VALUES('{}', '{}', '{}', '{}| ".format(node.id,
+        sql_ins = u"INSERT INTO fullsearchmeta (id, type, schema, value) VALUES('{}', '{}', '{}', '{}| ".format(node.id,
                                                                                                                node.getContentType(),
                                                                                                                node.getSchema(),
                                                                                                                node.name)
@@ -322,12 +323,12 @@ class FtsSearcher:
         for file in node.getFiles():
             val += protect(u(file.getName() + '| ' + file.getType() + '| ' + file.getMimeType()) + '| ')
 
-        sql_upd += val + '\' WHERE id=\'{}\''.format(node.id)
+        sql_upd += val + u'\' WHERE id=\'{}\''.format(node.id)
         sql_ins += val + '\')'
 
         sql = ""
         try:
-            sql = 'SELECT id from fullsearchmeta WHERE id=\'{}\''.format(node.id)
+            sql = u'SELECT id from fullsearchmeta WHERE id=\'{}\''.format(node.id)
             if self.execute(sql, schema, 'full'):  # check existance
                 sql = sql_upd  # do update
             else:
@@ -358,7 +359,7 @@ class FtsSearcher:
                 value = node.get(field.getName())
             keyvalue += [(key, modify_tex(u(protect(value)), 'strip'))]
 
-        sql0 = 'SELECT id FROM searchmeta where id=\'{}\''.format(node.id)
+        sql0 = u'SELECT id FROM searchmeta where id=\'{}\''.format(node.id)
         sql1 = 'UPDATE searchmeta SET '
         sql2 = 'INSERT INTO searchmeta (id, type, schema, updatetime'
         for key, value in keyvalue:
@@ -367,14 +368,14 @@ class FtsSearcher:
             sql2 += key
         sql1 += "type='" + node.getContentType() + "', schema='" + schema + "', updatetime='" + node.get("updatetime") + "'"
         sql2 += ") VALUES("
-        sql2 += '\'{}\', "{}", "{}", "{}"'.format(node.id,
-                                          node.getContentType(),
-                                          schema,
-                                          node.get("updatetime"))
+        sql2 += u'\'{}\', "{}", "{}", "{}"'.format(node.id,
+                                            node.getContentType(),
+                                            schema,
+                                            node.get("updatetime"))
 
         for key, value in keyvalue:
             sql2 += ", '" + normalize_utf8(value) + "'"
-        sql1 += " WHERE id='{}'".format(node.id)
+        sql1 += u" WHERE id='{}'".format(node.id)
         sql2 += ")"
 
         sql = ""
@@ -418,7 +419,7 @@ class FtsSearcher:
             return True
         r = re.compile("[a-zA-Z0-9]+")
 
-        if self.execute('SELECT id from textsearchmeta where id=\'{}\''.format(node.id), schema, 'text'):
+        if self.execute(u'SELECT id from textsearchmeta where id=\'{}\''.format(node.id), schema, 'text'):
             # FIXME: we should not delete the old textdata from this node, and insert
             # the new files. Only problem is, DELETE from a FTS3 table is prohibitively
             # slow.
@@ -458,10 +459,10 @@ class FtsSearcher:
                     p = 0
 
                     while p in range(0, int(ceil(content_len / 500000.0))):
-                        sql = 'INSERT INTO textsearchmeta (id, type, schema, value) VALUES("{}", "{}", "{}", "{}")'.format(node.id,
-                                                                                                                           node.getContentType(),
-                                                                                                                           schema,
-                                                                                                                           normalize_utf8((content[p * 500000:(p + 1) * 500000 - 1])))
+                        sql = u'INSERT INTO textsearchmeta (id, type, schema, value) VALUES("{}", "{}", "{}", "{}")'.format(node.id,
+                                                                                                                     node.getContentType(),
+                                                                                                                     schema,
+                                                                                                                     normalize_utf8((content[p * 500000:(p + 1) * 500000 - 1])))
                         try:
                             self.execute(sql, schema, 'text')
                         except:

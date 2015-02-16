@@ -67,7 +67,7 @@ def validate(req, op):
 
                 elif key.startswith("edit_"):
                     # edit workflow
-                    return WorkflowDetail(req, ustr(key[5:-2]))
+                    return WorkflowDetail(req, unicode(key[5:-2]))
 
                 elif key.startswith("delete_"):
                     # delete workflow
@@ -433,7 +433,7 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
     v_part["node"] = workflowstep
     v_part["hiddenvalues"] = {"wnodeid": workflowstep.name}
 
-    rule = {"read": ustr(workflowstep.getAccess("read") or "").split(","), "write": ustr(workflowstep.getAccess("write") or "").split(",")}
+    rule = {"read": unicode(workflowstep.getAccess("read") or "").split(","), "write": unicode(workflowstep.getAccess("write") or "").split(",")}
     v["acl_read"] = makeList(req, "read", removeEmptyStrings(rule["read"]), {}, overload=0, type="read")
     v["acl_write"] = makeList(req, "write", removeEmptyStrings(rule["write"]), {}, overload=0, type="write")
     v["editor"] = req.getTAL("web/admin/modules/workflows.html", v_part, macro="view_editor")
@@ -442,7 +442,7 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
     v["nodelist"] = nodelist
     v["workflowtypes"] = getWorkflowTypes()
     v["error"] = err
-    v["update_type"] = req.params.get("ntype", "")
+    v["update_type"] = req.params.get("ntype", u"")
     v["actpage"] = req.params.get("actpage")
     return req.getTAL("web/admin/modules/workflows.html", v, macro="modify_step")
 

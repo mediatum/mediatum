@@ -225,8 +225,7 @@ def extended_search(req):
                         q_str += metatype.getName() + ' >= ' + date_from
                         q_user += "%s &ge; \"%s\"" % (metatype.getName(), str(req.params["query" + str(i) + "-from"]))
                     else:
-                        #q_str += '('+metatype.getName()+' >= '+date_from+' and '+metatype.getName()+' <= '+date_to+')'
-                        q_str += '(' + metatype.getName() + ' = ' + date_from + ')'
+                        q_str += '({} >= {} and {} <= {})'.format(metatype.getName(), date_from, metatype.getName(), date_to)
 
                         q_user += "(%s %s \"%s\" %s \"%s\")" % (metatype.getName(),
                                                                 translate("search_between",

@@ -502,7 +502,7 @@
                                 <input tal:attributes="onclick python:u'moveRight(document.addmfield.left_read{},document.addmfield.right_read{})'.format(acl_read['name'], acl_read['name'])" type="button" value=">>"/>
                             </td>
                             <td align="left" valign="top">
-                                <select tal:content="raw python:acl_read['val_right']" tal:attributes="name python:u'right_read'.format(acl_read['name']); ondblclick python:u'moveLeft(document.addmfield.left_read{},document.addmfield.right_read{})'.format(acl_read['name'], acl_read['name'])" style="width:320px" size="6" multiple="multiple">
+                                <select tal:content="raw python:acl_read['val_right']" tal:attributes="name python:u'right_read{}'.format(acl_read['name']);  ondblclick python:u'moveLeft(document.addmfield.left_read{},document.addmfield.right_read{})'.format(acl_read['name'], acl_read['name'])" style="width:320px" size="6" multiple="multiple">
                                 </select>
                             </td>
                         </tr>

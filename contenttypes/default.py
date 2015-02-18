@@ -61,7 +61,8 @@ def get_maskcache_report():
     s = maskcache_msg + "| %d lookup keys in cache, total access count: %d\r\n|\r\n"
     total_access_count = 0
     for k, v in sorted(maskcache_accesscount.items()):
-        s += "| %s : %s\r\n" % (k.ljust(60, '.'), ustr(v).rjust(8, '.'))
+        s += u"| {} : {}\r\n".format(k.ljust(60, '.'),
+                                     unicode(v).rjust(8, '.'))
         total_access_count += v
     return s % (len(maskcache_accesscount), total_access_count)
 

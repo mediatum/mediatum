@@ -23,6 +23,7 @@ import sys
 sys.path += ["../", "."]
 import re
 import os
+import codecs
 import core
 import core.config as config
 import core.db.sqliteconnector as sqlite
@@ -220,8 +221,7 @@ class SearchIndexer:
             if file.getType() == "fulltext" and os.path.exists(file.retrieveFile()):
                 data = {}
                 content = ''
-                f = open(file.retrieveFile())
-                try:
+                with codecs.open(file.retrieveFile(), 'r', encoding='utf8') as f:
                     for line in f:
                         if FULLTEXT_INDEX_MODE == 0:
                             content += u(line)
@@ -233,8 +233,6 @@ class SearchIndexer:
                                 data[w] += 1
                             except KeyError:
                                 data[w] = 1
-                finally:
-                    f.close()
 
                 if FULLTEXT_INDEX_MODE == 1:
                     for key in data.keys():

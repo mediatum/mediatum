@@ -1452,7 +1452,7 @@ def initialize(load=1):
 
     if file and os.path.exists(file.retrieveFile()):
         section = ""
-        for line in open(file.retrieveFile(), "r"):
+        for line in codecs.open(file.retrieveFile(), "r", encoding='utf8'):
             line = line[:-1]
             if line.startswith("[") and line.endswith("]"):
                 section = line[1:-1]

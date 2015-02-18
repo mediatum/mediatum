@@ -24,6 +24,7 @@ import sys
 import logging
 import thread
 import core.config as config
+import codecs
 
 from .connector import Connector
 
@@ -112,9 +113,8 @@ class SQLiteConnector(Connector):
         try:
             if not os.path.exists(config.get("paths.tempdir")):
                 os.makedirs(os.path.dirname(config.get("paths.tempdir")))
-            fi = open(config.get("paths.tempdir") + "sqlite.log", "ab+")
-            fi.write(sql + "\n")
-            fi.close()
+            with codecs.open(config.get("paths.tempdir") + "sqlite.log", "ab+", encoding='utf8') as fi:
+                fi.write(sql + "\n")
 
             con = sqlite.connect(self.db, check_same_thread=True)
             con.text_factory = type("")

@@ -25,6 +25,7 @@ import core.config as config
 import core.tree as tree
 import logging
 import glob
+import codecs
 
 from utils.date import parse_date, format_date, now, make_date
 from utils.utils import splitpath
@@ -160,14 +161,13 @@ class StatisticFile:
             self.type = self.filename.split("_")[3]
 
             if os.path.exists(filenode.retrieveFile()):
-                fi = open(filenode.retrieveFile(), "r")
-                p = xml.parsers.expat.ParserCreate()
-                p.StartElementHandler = lambda name, attrs: self.\
-                    xml_start_element(name, attrs)
-                p.EndElementHandler = lambda name: self.xml_end_element(name)
-                p.CharacterDataHandler = lambda d: self.xml_char_data(d)
-                p.ParseFile(fi)
-                fi.close()
+                with codecs.open(filenode.retrieveFile(), "r", encoding='utf8') as fi:
+                    p = xml.parsers.expat.ParserCreate()
+                    p.StartElementHandler = lambda name, attrs: self.\
+                        xml_start_element(name, attrs)
+                    p.EndElementHandler = lambda name: self.xml_end_element(name)
+                    p.CharacterDataHandler = lambda d: self.xml_char_data(d)
+                    p.ParseFile(fi)
 
     def getPeriodYear(self):
         return self.period_year
@@ -342,7 +342,7 @@ def readLogFiles(period, fname=None):
     for file in files:
         print "reading logfile", file
         if os.path.exists(file):
-            for line in open(file, "r"):
+            for line in codecs.open(file, "r", encoding='utf8'):
                 if "GET" in line and "id=" in line:
                     info = LogItem(line)
                     if not info or (info and info.getID() == ''):
@@ -391,11 +391,11 @@ def buildStat(collection, period="", fname=None):  # period format = yyyy-mm
             # create new file
             f_name = config.get("paths.tempdir") + u"stat_{}_{}_{}.xml".format(node.id, timestamp, type)
             if os.path.exists(f_name):
-                f = open(f_name, "a")
+                f = codecs.open(f_name, "a", encoding='utf8')
             else:
                 # create new file and write header:
                 print 'creating writing headers %s' % f_name
-                f = open(f_name, "w")
+                f = codecs.open(f_name, "w", encoding='utf8')
                 f.write('<?xml version="1.0" encoding="utf-8" ?>\n')
                 f.write('<nodelist created="' + ustr(format_date(now(), "yyyy-mm-dd HH:MM:SS")) + '">\n')
 
@@ -405,9 +405,8 @@ def buildStat(collection, period="", fname=None):  # period format = yyyy-mm
 
     def writeFooters():
         for file in statfiles:
-            f = open(file, "a")
-            f.write("</nodelist>\n")
-            f.close()
+            with codecs.open(file, "a", encoding='utf8') as f:
+                f.write("</nodelist>\n")
 
     ids = []
     items = collection.getAllChildren()
@@ -435,9 +434,8 @@ def buildStat(collection, period="", fname=None):  # period format = yyyy-mm
                         fin.close()
 
     for file in statfiles:
-        f = open(file, "a")
-        f.write("</nodelist>\n")
-        f.close()
+        with codecs.open(file, "a", encoding='utf8') as f:
+            f.write("</nodelist>\n")
 
         statfile = importFile(file.split("/")[-1], file)
         if statfile:

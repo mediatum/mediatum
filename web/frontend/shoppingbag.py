@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
+import codecs
 from core.transition import httpstatus
 import core.tree as tree
 import core.users as users
@@ -261,16 +262,15 @@ def export_shoppingbag_bibtex(req):
 
     dest = config.get("paths.tempdir") + ustr(random.random()) + ".bib"
 
-    f = open(dest, "a")
-    for item in items:
-        node = tree.getNode(item)
-        mask = getMetaType(node.getSchema()).getMask("bibtex")
-        if mask is not None:
-            f.write(mask.getViewHTML([node], flags=8))  # flags =8 -> export type
-        else:
-            f.write("The selected document type doesn't have any bibtex export mask")
-        f.write("\n")
-    f.close()
+    with codecs.open(dest, "a", encoding='utf8') as f:
+        for item in items:
+            node = tree.getNode(item)
+            mask = getMetaType(node.getSchema()).getMask("bibtex")
+            if mask is not None:
+                f.write(mask.getViewHTML([node], flags=8))  # flags =8 -> export type
+            else:
+                f.write("The selected document type doesn't have any bibtex export mask")
+            f.write("\n")
 
     if len(items) > 0:
         sendBibFile(req, dest)
@@ -381,10 +381,9 @@ def export_shoppingbag_zip(req):
                 content["header"].append(c[0])
                 content["content"].append(c[1])
 
-            f = open(dest + item + ".txt", "w")
-            f.write("\t".join(content["header"]) + "\n")
-            f.write("\t".join(content["content"]) + "\n")
-            f.close()
+            with codecs.open(dest + item + ".txt", "w", encoding='utf8') as f:
+                f.write("\t".join(content["header"]) + "\n")
+                f.write("\t".join(content["content"]) + "\n")
 
     if len(items) > 0:
         sendZipFile(req, dest)

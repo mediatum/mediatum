@@ -161,23 +161,22 @@ def getImageDimensions(image):
 def getJpegSection(image, section):  # section character
     data = ""
     try:
-        fin = open(image, "rb")
-        done = False
-        capture = False
+        with open(image, "rb") as fin:
+            done = False
+            capture = False
 
-        while not done:
-            c = fin.read(1)
-            if capture and ord(c) != 0xFF and ord(c) != section:
-                data += c
-
-            if ord(c) == 0xFF:  # found tag start
-                if capture:
-                    done = True
-
+            while not done:
                 c = fin.read(1)
-                if ord(c) == section:  # found tag
-                    capture = True
-        fin.close()
+                if capture and ord(c) != 0xFF and ord(c) != section:
+                    data += c
+
+                if ord(c) == 0xFF:  # found tag start
+                    if capture:
+                        done = True
+
+                    c = fin.read(1)
+                    if ord(c) == section:  # found tag
+                        capture = True
     except:
         logg.exception("exception in getJpegSection")
         data = ""
@@ -378,9 +377,9 @@ class Image(default.Default):
 
                 for file in files:
                     if file.type == "original":
-                        f = open(file.retrieveFile(), 'rb')
-                        tags = EXIF.process_file(f)
-                        tags.keys().sort()
+                        with open(file.retrieveFile(), 'rb') as f:
+                            tags = EXIF.process_file(f)
+                            tags.keys().sort()
 
                         unwanted_tags = self.unwanted_exif_attributes()
                         for k in tags.keys():

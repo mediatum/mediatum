@@ -20,6 +20,7 @@
 import core.tree as tree
 import core.config as config
 import os
+import codecs
 import core.acl as acl
 import time
 import sys
@@ -129,14 +130,13 @@ class _Searcher:
         if collection in collections:
             self.s2n = collections[collection]
         else:
-            fi = open(self.tmpdir + "s2n.txt", "rb")
-            self.s2n = []
-            while True:
-                s = fi.readline()
-                if not s:
-                    break
-                self.s2n += [s.strip()]
-            fi.close()
+            with codecs.open(self.tmpdir + "s2n.txt", "rb", encoding='utf8') as fi:
+                self.s2n = []
+                while True:
+                    s = fi.readline()
+                    if not s:
+                        break
+                    self.s2n += [s.strip()]
             collections[collection] = self.s2n
 
     def index(self):
@@ -331,112 +331,107 @@ def _makeCollectionIndices():
     nodelist = _getNodeList(tree.getRoot())
     print len(nodelist), "nodes"
 
-    fi = open(tmpdir + "s2n.txt", "wb")
-    fi.write("--START--\n")
-    for node in nodelist:
-        fi.write("{}\n".format(node.id))
-    fi.close()
+    with codecs.open(tmpdir + "s2n.txt", "wb", encoding='utf8') as fi:
+        fi.write("--START--\n")
+        for node in nodelist:
+            fi.write("{}\n".format(node.id))
 
     def mkIndex(name, field, type, data=None):
         print "Making Index", name
         file = tmpdir + name + ".searchfile.txt"
-        fi = open(file, "wb")
-
-        for node in nodelist:
-            if field == "alltext":
-                s = ""
-                if node.type != "directory":
-                    for key, val in node.items():
-                        if val:
-                            s += val + "\n"
-                    s += node.getName()
-
-                # for nfile in node.getFiles():
-                #    if nfile.type == "fulltext":
-                #        try:
-                #            fi2 = open(nfile.retrieveFile(), "rb")
-                #            s += " "
-                #            s += fi2.read()
-                #            s += " "
-                #            fi2.close()
-                #        except IOError:
-                #            log.error("Couldn't access file "+nfile.getName())
-            elif field == "fulltext":
-                s = ""
-                if node.type != "directory":
-                    for nfile in node.getFiles():
-                        if nfile.type == "fulltext":
-                            try:
-                                fi2 = open(nfile.retrieveFile(), "rb")
-                                s += " "
-                                s += fi2.read()
-                                s += " "
-                                fi2.close()
-                            except IOError:
-                                log.error("Couldn't access file " + nfile.getName())
-
-                #c1 = "abcdefghijklmnop"[(int(node.id)>>28)&15]
-                #c2 = "abcdefghijklmnop"[(int(node.id)>>24)&15]
-                #c3 = "abcdefghijklmnop"[(int(node.id)>>20)&15]
-                #c4 = "abcdefghijklmnop"[(int(node.id)>>16)&15]
-                #c5 = "abcdefghijklmnop"[(int(node.id)>>12)&15]
-                #c6 = "abcdefghijklmnop"[(int(node.id)>>8)&15]
-                #c7 = "abcdefghijklmnop"[(int(node.id)>>4)&15]
-                #c8 = "abcdefghijklmnop"[(int(node.id)>>0)&15]
-                #s += " mx" + c8+c7+c6+c5+c4+c3+c2+c1 + " "
-            elif field == "everything":
-                s = ""
-                if node.type != "directory":
-                    for key, val in node.items():
-                        if val:
-                            s += UTF8ToLatin(val) + "\n"
-                    s += UTF8ToLatin(node.getName())
-                    for nfile in node.getFiles():
-                        if nfile.type == "fulltext":
-                            try:
-                                fi2 = open(nfile.retrieveFile(), "rb")
-                                s += " "
-                                s += fi2.read()
-                                s += " "
-                                fi2.close()
-                            except IOError:
-                                log.error("Couldn't access file " + nfile.getName())
-
-            elif field == "objtype":
-                s = node.type
-                if "/" in s:
-                    s = s[:s.index("/")]
-            elif field == "schema":
-                s = node.type
-                if "/" in s:
-                    s = s[s.index("/") + 1:]
-                else:
+        with codecs.open(file, "wb", encoding='utf8') as fi:
+            for node in nodelist:
+                if field == "alltext":
                     s = ""
-            elif type == "union":
-                s = ""
-                for item in data:
-                    field = node.get(item)
-                    if field:
-                        s += field + " "
-            else:
-                s = node.get(field)
-                if type == "date":
-                    if len(s):
-                        try:
-                            s = ustr(date.parse_date(s).daynum())
-                        except:
-                            print "Couldn't parse date", s
-                            s = "0"
+                    if node.type != "directory":
+                        for key, val in node.items():
+                            if val:
+                                s += val + "\n"
+                        s += node.getName()
 
-            s = UTF8ToLatin(s)
-            s = modify_tex(s, 'strip')
-            fi.write(s.replace("\2", " ") + "\n")
-            fi.write("\2")
+                    # for nfile in node.getFiles():
+                    #    if nfile.type == "fulltext":
+                    #        try:
+                    #            fi2 = open(nfile.retrieveFile(), "rb")
+                    #            s += " "
+                    #            s += fi2.read()
+                    #            s += " "
+                    #            fi2.close()
+                    #        except IOError:
+                    #            log.error("Couldn't access file "+nfile.getName())
+                elif field == "fulltext":
+                    s = ""
+                    if node.type != "directory":
+                        for nfile in node.getFiles():
+                            if nfile.type == "fulltext":
+                                try:
+                                    with codecs.open(nfile.retrieveFile(), "rb", encoding='utf8') as fi2:
+                                        s += " "
+                                        s += fi2.read()
+                                        s += " "
+                                except IOError:
+                                    log.error("Couldn't access file " + nfile.getName())
 
-        if type != "num" and type != "date":
-            fi.write(
-                "ecjfadf;jwkljer;jfklajd;gyugi;wyuogsdfjg;wuriosygh;nmwert;bwweriwoue;jfkajsdf;nmweurwu;hkethre;ghbyxuidfg;ewrioafi;ewirjglsag;vhxyseoru;vnmwerwe;fajsdfwetrh")
-        fi.close()
+                    #c1 = "abcdefghijklmnop"[(int(node.id)>>28)&15]
+                    #c2 = "abcdefghijklmnop"[(int(node.id)>>24)&15]
+                    #c3 = "abcdefghijklmnop"[(int(node.id)>>20)&15]
+                    #c4 = "abcdefghijklmnop"[(int(node.id)>>16)&15]
+                    #c5 = "abcdefghijklmnop"[(int(node.id)>>12)&15]
+                    #c6 = "abcdefghijklmnop"[(int(node.id)>>8)&15]
+                    #c7 = "abcdefghijklmnop"[(int(node.id)>>4)&15]
+                    #c8 = "abcdefghijklmnop"[(int(node.id)>>0)&15]
+                    #s += " mx" + c8+c7+c6+c5+c4+c3+c2+c1 + " "
+                elif field == "everything":
+                    s = ""
+                    if node.type != "directory":
+                        for key, val in node.items():
+                            if val:
+                                s += UTF8ToLatin(val) + "\n"
+                        s += UTF8ToLatin(node.getName())
+                        for nfile in node.getFiles():
+                            if nfile.type == "fulltext":
+                                try:
+                                    with codecs.open(nfile.retrieveFile(), "rb", encoding='utf8') as fi2:
+                                        s += " "
+                                        s += fi2.read()
+                                        s += " "
+                                except IOError:
+                                    log.error("Couldn't access file " + nfile.getName())
+
+                elif field == "objtype":
+                    s = node.type
+                    if "/" in s:
+                        s = s[:s.index("/")]
+                elif field == "schema":
+                    s = node.type
+                    if "/" in s:
+                        s = s[s.index("/") + 1:]
+                    else:
+                        s = ""
+                elif type == "union":
+                    s = ""
+                    for item in data:
+                        field = node.get(item)
+                        if field:
+                            s += field + " "
+                else:
+                    s = node.get(field)
+                    if type == "date":
+                        if len(s):
+                            try:
+                                s = ustr(date.parse_date(s).daynum())
+                            except:
+                                print "Couldn't parse date", s
+                                s = "0"
+
+                s = UTF8ToLatin(s)
+                s = modify_tex(s, 'strip')
+                fi.write(s.replace("\2", " ") + "\n")
+                fi.write("\2")
+
+            if type != "num" and type != "date":
+                fi.write(
+                    "ecjfadf;jwkljer;jfklajd;gyugi;wyuogsdfjg;wuriosygh;nmwert;bwweriwoue;jfkajsdf;nmweurwu;hkethre;ghbyxuidfg;ewrioafi;ewirjglsag;vhxyseoru;vnmwerwe;fajsdfwetrh")
 
         basename = name
 

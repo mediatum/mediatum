@@ -22,6 +22,7 @@ import logging
 import core.config as config
 import core.acl as acl
 import os
+import codecs
 from . import default
 from utils.utils import splitfilename, u, OperationException, utf8_decode_escape
 from core.tree import FileNode
@@ -170,12 +171,12 @@ class Document(default.Default):
                     pdfdata = parsepdf.parsePDF2(doc.retrieveFile(), tempdir)
                 except parsepdf.PDFException as ex:
                     raise OperationException(ex.value)
-                fi = open(infoname, "rb")
-                for line in fi.readlines():
-                    i = line.find(':')
-                    if i > 0:
-                        self.set("pdf_" + line[0:i].strip().lower(), utf8_decode_escape(line[i + 1:].strip()))
-                fi.close()
+                with codecs.open(infoname, "rb", encoding='utf8') as fi:
+                    for line in fi.readlines():
+                        i = line.find(':')
+                        if i > 0:
+                            self.set("pdf_" + line[0:i].strip().lower(), utf8_decode_escape(line[i + 1:].strip()))
+
                 self.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
                 self.addFile(FileNode(name=thumb2name, type="presentation", mimetype="image/jpeg"))
                 self.addFile(FileNode(name=fulltextname, type="fulltext", mimetype="text/plain"))

@@ -22,6 +22,7 @@ __author__ = 'Andrew Darrohn andrew.darrohn@tum.de'
 
 import os
 import sys
+import codecs
 sys.path += ['../..', '../', '.']
 
 from core.init import full_init
@@ -136,10 +137,9 @@ class Sitemap:
                     priority = etree.SubElement(url, 'priority')
                     priority.text = p_num
                 try:
-                    with open(self.path, 'w') as f:
+                    with codecs.open(self.path, 'w', encoding='utf8') as f:
                         f.write('''<?xml version="1.0" encoding="UTF-8"?>\n''')
                         f.write(etree.tostring(root))
-                        f.close()
                 except IOError:
                     logg.error('Error creating %s', self.path)
 
@@ -184,10 +184,9 @@ class SitemapIndex:
                     lastmod = etree.SubElement(sm, 'lastmod')
                     lastmod.text = cur_time
                 try:
-                    with open(self.path, 'w') as f:
+                    with codecs.open(self.path, 'w', encoding='utf8') as f:
                         f.write('''<?xml version="1.0" encoding="UTF-8"?>\n''')
                         f.write(etree.tostring(root))
-                        f.close()
                 except IOError:
                     logg.error('Error creating %s', self.path)
 

@@ -22,6 +22,7 @@ import xml.parsers.expat as expat
 import StringIO
 import random
 import logging
+import codecs
 
 from utils.utils import esc, u, u2
 
@@ -335,16 +336,14 @@ def parseNodeXML(s):
 
 def readNodeXML(filename):
     try:
-        return _NodeLoader(open(filename, "rb")).root
+        return _NodeLoader(codecs.open(filename, "rb", encoding='utf8')).root
     except IOError:
         return None
 
 
 def writeNodeXML(node, filename):
-    fi = open(filename, "wb")
-    _writeNodeXML(node, fi)
-    fi.close()
-
+    with codecs.open(filename, "wb") as fi:
+        _writeNodeXML(node, fi)
 
 def getNodeXML(node):
     wr = _StringWriter()

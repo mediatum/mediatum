@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
+import codecs
 from utils.utils import format_filesize, get_filesize
 from utils.log import dlogfiles
 from web.admin.adminutils import Overview, getAdminStdVars
@@ -96,12 +97,11 @@ def view(req, op):
 
 def getFileContent(path):
     try:
-        fileHandle = open(path)
-        fileList = fileHandle.readlines()
-        _text = ""
-        for fileLine in fileList:
-            _text += fileLine
-        fileHandle.close()
+        with codecs.open(path, 'r', encoding='utf8') as fileHandle:
+            fileList = fileHandle.readlines()
+            _text = ""
+            for fileLine in fileList:
+                _text += fileLine
         return _text
     except:
         logg.exception("exception in getFileContent, return empty string")

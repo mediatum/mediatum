@@ -23,6 +23,7 @@ import os
 import stat
 import time
 import thread
+import codecs
 from utils.strings import ensure_unicode_returned
 
 
@@ -41,19 +42,18 @@ class _POFile:
         self.filedates[filename] = os.stat(filename)[stat.ST_MTIME]
         self.lastchecktime = time.time()
 
-        fi = open(filename, "rb")
-        id = None
-        for line in fi.readlines():
-            if line.startswith("msgid"):
-                id = line[5:].strip()
-                if id[0] == '"' and id[-1] == '"':
-                    id = id[1:-1]
-            elif line.startswith("msgstr"):
-                text = line[6:].strip()
-                if text[0] == '"' and text[-1] == '"':
-                    text = text[1:-1]
-                self.map[id] = text
-        fi.close()
+        with codecs.open(filename, "rb", encoding='utf8') as fi:
+            id = None
+            for line in fi.readlines():
+                if line.startswith("msgid"):
+                    id = line[5:].strip()
+                    if id[0] == '"' and id[-1] == '"':
+                        id = id[1:-1]
+                elif line.startswith("msgstr"):
+                    text = line[6:].strip()
+                    if text[0] == '"' and text[-1] == '"':
+                        text = text[1:-1]
+                    self.map[id] = text
 
     def getTranslation(self, key):
         self.lock.acquire()

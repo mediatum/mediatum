@@ -89,9 +89,8 @@ def load_iso_639_2_b_names():
     try:
         abs_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         abs_path = os.path.join(abs_dir, filename)
-        f = codecs.open(abs_path, 'rb', 'utf8')
-        text = f.read()
-        f.close()
+        with codecs.open(abs_path, 'rb', encoding='utf8') as f:
+            text = f.read()
         lines = text.splitlines()
         logg.info("exportutils read file 'ISO-639-2_utf-8.txt': %d lines", len(lines))
     except:

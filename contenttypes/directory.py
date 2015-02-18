@@ -20,6 +20,7 @@
 import re
 import os
 import logging
+import codecs
 
 from mediatumtal import tal
 import core.tree as tree
@@ -48,25 +49,24 @@ def includetemplate(self, file, substitute):
     ret = ""
     if os.path.isfile(file):
 
-        fi = open(file, "rb")
-        s = unicode(fi.read())
+        with codecs.open(file, "rb", encoding='utf8') as fi:
+            s = unicode(fi.read())
 
-        for string, replacement in substitute.items():
-            s = s.replace(string, replacement)
+            for string, replacement in substitute.items():
+                s = s.replace(string, replacement)
 
-        lastend = 0
-        scanner = SRC_PATTERN.scanner(s)
-        while True:
-            match = scanner.search()
-            if match is None:
-                ret += s[lastend:]
-                break
-            else:
-                ret += s[lastend:match.start()]
-                imgname = match.group(1)
-                ret += 'src="/file/' + self.id + '/' + imgname + '"'
-                lastend = match.end()
-        fi.close()
+            lastend = 0
+            scanner = SRC_PATTERN.scanner(s)
+            while True:
+                match = scanner.search()
+                if match is None:
+                    ret += s[lastend:]
+                    break
+                else:
+                    ret += s[lastend:match.start()]
+                    imgname = match.group(1)
+                    ret += 'src="/file/' + self.id + '/' + imgname + '"'
+                    lastend = match.end()
     return ret
 
 
@@ -91,9 +91,8 @@ def replaceModules(self, req, input):
 
 
 def fileIsNotEmpty(file):
-    f = open(file)
-    s = f.read().strip()
-    f.close()
+    with open(file) as f:
+        s = f.read().strip()
     if s:
         return 1
     else:
@@ -166,9 +165,8 @@ class Directory(default.Default):
             fpath = "{}html/{}".format(config.get("paths.datadir"),
                                        req.params.get("item"))
             if os.path.isfile(fpath):
-                c = open(fpath, "r")
-                content = c.read()
-                c.close()
+                with codecs.open(fpath, "r", encoding='utf8') as c:
+                    content = c.read()
                 if sidebar != "":
                     return '<div id="portal-column-one">{}</div>{}'.format(content,
                                                                            sidebar)

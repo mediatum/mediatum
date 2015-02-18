@@ -3,6 +3,7 @@ import logging
 import time
 from . import athana
 import os
+import codecs
 import hashlib
 import utils.utils as utils
 import utils.fileutils as fileutils
@@ -22,7 +23,7 @@ class FileWriter:
         f, ext = os.path.splitext(filename)
         self.realname = filename
         self.filename = filename
-        self.file = open(self.filename, "wb")
+        self.file = codecs.open(self.filename, "wb", encoding='utf8')
         self.node = node
 
     def write(self, data):
@@ -183,7 +184,7 @@ class collection_ftpserver:
             file = f.getFiles()[0].retrieveFile()
         else:
             file = f.retrieveFile()
-        return open(file, "rb")
+        return codecs.open(file, "rb", encoding='utf8')
 
     def current_directory(self):
         return "/" + ("/".join([d.getName() for d in self.dir[1:]]))

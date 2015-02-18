@@ -19,6 +19,7 @@
 
 import logging
 import os
+import codecs
 from PIL import Image, ImageDraw
 from . import default
 import core.acl as acl
@@ -52,9 +53,8 @@ def makeThumbNail(self, audiofile):
     if audiofile.tags:
         for k in audiofile.tags:
             if k == "APIC:thumbnail":
-                fout = open(path + ".thumb", "wb")
-                fout.write(audiofile.tags[k].data)
-                fout.close()
+                with open("{}.thumb".format(path), "wb") as fout:
+                    fout.write(audiofile.tags[k].data)
 
                 pic = Image.open(path + ".thumb2")
                 width = pic.size[0]
@@ -92,9 +92,8 @@ def makePresentationFormat(self, audiofile):
     if audiofile.tags:
         for k in audiofile.tags:
             if k == "APIC:thumbnail":
-                fout = open(path + ".thumb2", "wb")
-                fout.write(audiofile.tags[k].data)
-                fout.close()
+                with open("{}.thumb2".format(path), "wb") as fout:
+                    fout.write(audiofile.tags[k].data)
 
                 pic = Image.open(path + ".thumb2")
                 width = pic.size[0]

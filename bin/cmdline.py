@@ -19,7 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import sys
-
+import codecs
 sys.path += ["../", "."]
 
 from core.init import full_init
@@ -256,9 +256,8 @@ def dumptree(filename):
             recurse_chapters(fi, c, numbers + [num])
             num += 1
 
-    fi = open(filename, "wb")
-    recurse_chapters(fi, node, [1])
-    fi.close()
+    with codecs.open(filename, "wb", encoding='utf8') as fi:
+        recurse_chapters(fi, node, [1])
 
 
 def purge(ptype):
@@ -374,61 +373,60 @@ def searchindex():
 
     print "writing indexvalues of searchindex for node '%s' (id %s) in file 'searchindex.log'" % (node.name, node.id)
 
-    fi = open("searchindex.log", "wb")
-    fi.write("searchindex for node '%s' (id: %s)\n\n" % (node.name, node.id))
-    fi.write("* FULLSEARCHMETA:\n\n")
+    with codecs.open("searchindex.log", "wb", encoding='utf8') as fi:
+        fi.write("searchindex for node '%s' (id: %s)\n\n" % (node.name, node.id))
+        fi.write("* FULLSEARCHMETA:\n\n")
 
-    i = 0
-    fullfields = ["id", "type", "schema", "value"]
-    for line in searcher.db.execute("select * from fullsearchmeta where fullsearchmeta match ?", ["'id: %s'" % node.id]):
-        for part in line:
-            for p in part.split("| "):
-                if i < len(fullfields):
-                    fi.write(fullfields[i] + ":\n")
+        i = 0
+        fullfields = ["id", "type", "schema", "value"]
+        for line in searcher.db.execute("select * from fullsearchmeta where fullsearchmeta match ?", ["'id: %s'" % node.id]):
+            for part in line:
+                for p in part.split("| "):
+                    if i < len(fullfields):
+                        fi.write(fullfields[i] + ":\n")
 
-                fi.write("  %s\n" % p)
+                    fi.write("  %s\n" % p)
+                    i += 1
+
+        fi.write("\n\n* SEARCHMETA:\n\n")
+        i = 0
+        fields = ["id", "type", "schema", "date"]
+
+        sfields = searcher.db.execute("select position, attrname from searchmeta_def where name='%s'" % node.getSchema(), [])
+        for f in sorted(sfields, key=lambda x, y: cmp(int(x[0]), int(y[0]))):
+            fields.append(f[1])
+
+        for line in searcher.db.execute("select * from searchmeta where searchmeta match ?", ["'id:%s'" % node.id]):
+            for part in line:
+                if i < len(fields):
+                    fi.write("%s:\n" % fields[i])
+                    fi.write(" %s\n" % part)
                 i += 1
 
-    fi.write("\n\n* SEARCHMETA:\n\n")
-    i = 0
-    fields = ["id", "type", "schema", "date"]
+        fi.write("\n\n* SEARCHMETA:\n\n")
+        i = 0
+        fields = ["id", "type", "schema", "date"]
 
-    sfields = searcher.db.execute("select position, attrname from searchmeta_def where name='%s'" % node.getSchema(), [])
-    for f in sorted(sfields, key=lambda x, y: cmp(int(x[0]), int(y[0]))):
-        fields.append(f[1])
+        sfields = searcher.db.execute("select position, attrname from searchmeta_def where name='%s'" % node.getSchema(), [])
+        sfields.sort(lambda x, y: cmp(int(x[0]), int(y[0])))
+        for f in sfields:
+            fields.append(f[1])
 
-    for line in searcher.db.execute("select * from searchmeta where searchmeta match ?", ["'id:%s'" % node.id]):
-        for part in line:
-            if i < len(fields):
+        for line in searcher.db.execute("select * from searchmeta where searchmeta match ?", ["'id:%s'" % node.id]):
+            for part in line:
+                if i < len(fields):
+                    fi.write("%s:\n" % fields[i])
+                    fi.write(" %s\n" % ustr(part))
+                i += 1
+
+        fi.write("\n\n* TEXTSEARCHMETA:\n\n")
+        i = 0
+        fields = ["id", "type", "schema", "text"]
+        for line in searcher.db.execute("select * from textsearchmeta where textsearchmeta match ?", ["'id:%s'" % node.id]):
+            for field in fields:
                 fi.write("%s:\n" % fields[i])
-                fi.write(" %s\n" % part)
-            i += 1
-
-    fi.write("\n\n* SEARCHMETA:\n\n")
-    i = 0
-    fields = ["id", "type", "schema", "date"]
-
-    sfields = searcher.db.execute("select position, attrname from searchmeta_def where name='%s'" % node.getSchema(), [])
-    sfields.sort(lambda x, y: cmp(int(x[0]), int(y[0])))
-    for f in sfields:
-        fields.append(f[1])
-
-    for line in searcher.db.execute("select * from searchmeta where searchmeta match ?", ["'id:%s'" % node.id]):
-        for part in line:
-            if i < len(fields):
-                fi.write("%s:\n" % fields[i])
-                fi.write(" %s\n" % ustr(part))
-            i += 1
-
-    fi.write("\n\n* TEXTSEARCHMETA:\n\n")
-    i = 0
-    fields = ["id", "type", "schema", "text"]
-    for line in searcher.db.execute("select * from textsearchmeta where textsearchmeta match ?", ["'id:%s'" % node.id]):
-        for field in fields:
-            fi.write("%s:\n" % fields[i])
-            fi.write(" %s\n" % line[i])
-            i += 1
-    fi.close()
+                fi.write(" %s\n" % line[i])
+                i += 1
 
 
 commands = {

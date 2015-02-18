@@ -135,7 +135,7 @@ def save_import_file(filename):
 def getentries(filename):
     save_import_file(filename)
 
-    fi = codecs.open(filename, "r", "utf-8")
+    fi = codecs.open(filename, "r", encoding="utf-8")
 
     try:
         data = fi.read()

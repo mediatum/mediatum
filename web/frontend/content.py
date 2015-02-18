@@ -378,9 +378,8 @@ class ContentNode(Content):
 
 
 def fileIsNotEmpty(file):
-    f = open(file)
-    s = f.read().strip()
-    f.close()
+    with open(file) as f:
+        s = f.read().strip()
     if s:
         return 1
     else:

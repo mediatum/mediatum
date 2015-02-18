@@ -20,6 +20,7 @@
 import logging
 import sys
 import os
+import codecs
 import core.config as config
 import core
 import core.tree as tree
@@ -76,9 +77,9 @@ def view(req):
 
     elif page == "mediatum":
         # mediatum information
-        fi = open(os.path.join(config.basedir, 'mediatum.cfg'), "rb")
-        v['mediatum_cfg'] = fi.readlines()
-        v["mediatum_version"] = mediatum_version
+        with codecs.open(os.path.join(config.basedir, 'mediatum.cfg'), "rb", encoding='utf8') as fi:
+            v['mediatum_cfg'] = fi.readlines()
+            v["mediatum_version"] = mediatum_version
 
         return req.getTAL("web/admin/modules/settings.html", v, macro="view_mediatum")
 
@@ -125,7 +126,7 @@ def view(req):
 
         if file and os.path.exists(file.retrieveFile()):
             section = ""
-            for line in open(file.retrieveFile(), "r"):
+            for line in codecs.open(file.retrieveFile(), "r", encoding='utf8'):
                 line = line[:-1]
                 if line.startswith("[") and line.endswith("]"):
                     section = line[1:-1]

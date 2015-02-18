@@ -21,7 +21,7 @@
 
 import os
 import sys
-
+import codecs
 
 #basedir = os.path.dirname(__file__).rsplit(os.sep, 1)[0]
 # using abspath allows importing start.py or variants (wn 2014-11-20)
@@ -54,33 +54,32 @@ def getsubset(prefix):
 def _read_ini_file(basedir, filename):
     lineno = 0
     params = {}
-    fi = open(os.path.join(basedir, filename), "rb")
-    module = ""
-    for line in fi.readlines():
-        lineno = lineno + 1
-        # remove comments
-        hashpos = line.find("#")
-        if hashpos >= 0:
-            line = line[0:hashpos]
-        # remove whitespace
-        line = line.strip()
+    with codecs.open(os.path.join(basedir, filename), "rb", encoding='utf8') as fi:
+        module = ""
+        for line in fi.readlines():
+            lineno = lineno + 1
+            # remove comments
+            hashpos = line.find("#")
+            if hashpos >= 0:
+                line = line[0:hashpos]
+            # remove whitespace
+            line = line.strip()
 
-        if line == "":
-            pass  # skip empty line
-        elif line[0] == '[':
-            if line[-1] != ']':
-                raise "Syntax error in line " + ustr(lineno) + " of file " + filename + ":\n" + line
-            module = line[1:-1]
-        else:
-            equals = line.find("=")
-            if equals < 0:
-                raise "Syntax error in line " + ustr(lineno) + " of file " + filename + ":\n" + line
-            key = module + "." + line[0:equals].strip()
-            value = line[equals + 1:].strip()
-            if(len(value) and value[0] == '\'' and value[-1] == '\''):
-                value = value[1:-1]
-            params[key] = value
-    fi.close()
+            if line == "":
+                pass  # skip empty line
+            elif line[0] == '[':
+                if line[-1] != ']':
+                    raise "Syntax error in line " + ustr(lineno) + " of file " + filename + ":\n" + line
+                module = line[1:-1]
+            else:
+                equals = line.find("=")
+                if equals < 0:
+                    raise "Syntax error in line " + ustr(lineno) + " of file " + filename + ":\n" + line
+                key = module + "." + line[0:equals].strip()
+                value = line[equals + 1:].strip()
+                if(len(value) and value[0] == '\'' and value[-1] == '\''):
+                    value = value[1:-1]
+                params[key] = value
 
     for key, value in params.items():
         if key.startswith("paths") or key.endswith("file"):

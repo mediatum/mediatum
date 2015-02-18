@@ -49,7 +49,7 @@ def includetemplate(self, file, substitute):
     if os.path.isfile(file):
 
         fi = open(file, "rb")
-        s = ustr(fi.read())
+        s = unicode(fi.read())
 
         for string, replacement in substitute.items():
             s = s.replace(string, replacement)
@@ -208,8 +208,8 @@ class Directory(default.Default):
             return []
 
     def getLabel(self, lang=None):
-        if lang and self.get(ustr(lang) + '.name') != "":
-            return self.get(ustr(lang) + '.name')
+        if lang and self.get(u'{}.name'.format(lang)) != "":
+            return self.get(u'{}.name'.format(lang))
         label = self.get("label")
         if not label:
             label = self.getName()
@@ -294,7 +294,7 @@ class Directory(default.Default):
         return ret
 
     def setCustomItems(self, type, items):
-        self.set("system." + type, ";".join(ustr(i) for i in items))
+        self.set("system." + type, ";".join(unicode(i) for i in items))
 
     def event_files_changed(self):
         logg.debug("Postprocessing node %s", self.id)

@@ -20,7 +20,6 @@
 import core.users as users
 import logging
 import core.config as config
-from core.db import database
 from utils.boolparser import BoolParser
 import thread
 import time

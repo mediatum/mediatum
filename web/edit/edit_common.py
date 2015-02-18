@@ -18,7 +18,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import re
-import core.tree as tree
 import core.users as users
 import logging
 

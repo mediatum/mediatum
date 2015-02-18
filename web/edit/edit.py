@@ -24,7 +24,6 @@ import time
 import urllib
 import json
 import traceback
-import core.tree as tree
 import core.config as config
 import core.help as help
 import core.users as users
@@ -43,8 +42,6 @@ from core.translation import t as translation_t
 from core.transition import httpstatus
 
 from edit_common import EditorNodeList
-from core.datatypes import loadAllDatatypes, Datatype
-from core.tree import getRoot, remove_from_nodecaches
 from schema.schema import loadTypesFromDB
 from utils.utils import funcname, get_user_id, log_func_entry, dec_entry_log
 

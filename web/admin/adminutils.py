@@ -27,7 +27,6 @@ import core.users as users
 import core.config as config
 from utils.utils import Link, splitpath, parseMenuString
 from core.translation import t, lang
-from core.tree import getRoot
 from core.transition import httpstatus
 from utils.strings import ensure_unicode_returned
 

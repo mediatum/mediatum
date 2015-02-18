@@ -23,6 +23,7 @@ import schema.searchmask as searchmask
 import core.users as users
 from core.acl import AccessData
 from core.transition import httpstatus
+import json
 
 def getContent(req, ids):
     user = users.getUserFromRequest(req)
@@ -74,11 +75,18 @@ def getContent(req, ids):
     try:
         myschema = tree.getNode(req.params.get("schema", None))
     except tree.NoSuchNodeError:
-        myschema = None
+        if req.params.get("schema", None) and req.params.get("schema").endswith(";"):
+            myschema = tree.getNode(req.params.get("schema")[:-1])
+        else:
+            myschema = None
     try:
         schemafield = tree.getNode(req.params.get("schemafield", None))
     except tree.NoSuchNodeError:
-        schemafield = None
+        if req.params.get("schemafield", None) and req.params.get("schemafield").endswith(";"):
+            schemafield = tree.getNode(req.params.get("schemafield")[:-1])
+        else:
+            schemafield = None
+
     if myschema and schemafield and schemafield not in myschema.getChildren():
         schemafield = None
     if schemafield and schemafield.type != "metafield":
@@ -86,6 +94,9 @@ def getContent(req, ids):
    
     fields = None
     selectedfield = None
+    isnewfield = False
+    createsub = False
+    closefield = False
 
     if searchtype == "own":
         maskname = node.get("searchmaskname")
@@ -101,11 +112,13 @@ def getContent(req, ids):
             assert selectedfield in mask.getChildren()
             selectedfield.setName(req.params["fieldname"])
             if "createsub" in req.params and schemafield:
+                createsub = True
                 selectedfield.addChild(schemafield)
             if delsubfield:
                 selectedfield.removeChild(tree.getNode(delsubfield))
 
         if req.params.get("isnewfield", "") == "yes":  # create a new field
+            isnewfield = True
             l = mask.getNumChildren()
             mask.addChild(tree.Node("Suchfeld %s" % l, type="searchmaskitem"))
 
@@ -118,6 +131,7 @@ def getContent(req, ids):
             selectedfieldid = openfield
 
         elif "close" in req.params:  # fold a field
+            closefield = True
             selectedfieldid = None
 
         if selectedfieldid:
@@ -135,7 +149,8 @@ def getContent(req, ids):
 
     data = {"idstr": ",".join(ids), "node": node, "searchtype": searchtype, "schemas": schema.loadTypesFromDB(),
             "searchfields": fields, "selectedfield": selectedfield,
-            "newfieldlink": "edit_content?id=%s&tab=searchmask" % node.id, "defaultschemaid": None, "defaultfieldid": None}
+            "newfieldlink": "edit_content?id=%s&tab=searchmask" % node.id, "defaultschemaid": None,
+            "defaultfieldid": None, "id": req.params.get("id")}
 
     if myschema:
         data["defaultschemaid"] = myschema.id
@@ -153,5 +168,15 @@ def getContent(req, ids):
             return 0
         return 1
     data["display"] = display
+
+    searchtypechanged = False
+    if req.params.get("searchtypechanged", "") == "true":
+        searchtypechanged = True
+
+    if any([openfield, isnewfield, delfield, delsubfield, createsub, myschema, searchtypechanged, closefield]):
+        content = req.getTAL("web/edit/modules/searchmask.html", data, macro="edit_search")
+        s = json.dumps({'content': content})
+        req.write(s)
+        return None
 
     return req.getTAL("web/edit/modules/searchmask.html", data, macro="edit_search")

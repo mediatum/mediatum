@@ -17,17 +17,19 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 import logging
 import sys
 
-from core import config, webconfig, init
-from core import athana
-
+### init.full_init() must be done as early as possible to init logging etc.
+from core import init, config
 init.full_init()
 
 logg = logging.getLogger(__name__)
 
+
 ### stackdump
+
 import os
 import threading
 import traceback
@@ -36,8 +38,12 @@ try:
 except:
     ultratb = None
 
-if ultratb is not None:
+if ultratb is None:
+    logg.warn("IPython not installed, stack dumps not available!")
+else:
+    logg.info("IPython installed, write stack dumps to tmpdir with: `kill -QUIT <mediatum_pid>`")
     def dumpstacks(signal, frame):
+        print "dumping stack"
         filepath = os.path.join(config.get("paths.tempdir", "/tmp"), "mediatum_threadstatus")
         id2name = dict([(th.ident, th.name) for th in threading.enumerate()])
         full = ["-" * 80]
@@ -68,6 +74,7 @@ if ultratb is not None:
     signal.signal(signal.SIGQUIT, dumpstacks)
 
 ### init all web components
+from core import webconfig
 webconfig.initContexts()
 
 ### scheduler thread
@@ -78,9 +85,11 @@ except:
     logg.exception("Error starting scheduler thread")
 
 ### start main web server, Z.39.50 and FTP, if configured
+from core import athana
 if config.get('z3950.activate', '').lower() == 'true':
     z3950port = int(config.get("z3950.port", "2021"))
 else:
     z3950port = None
+    
 athana.setThreads(int(config.get("host.threads", "8")))
 athana.run(int(config.get("host.port", "8081")), z3950port)

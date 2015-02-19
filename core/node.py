@@ -46,8 +46,28 @@ class Node(BaseNode):
             self.attrs.update(attrs)
         if orderpos:
             self.orderpos = orderpos
+            
+    ### TODO: versions
+    @property
+    def next_nid(self):
+        return None
 
-    ### legacy methods
+
+    @property
+    def prev_nid(self):
+        return None
+
+
+    def isActiveVersion(self):
+        return True
+
+
+    def getVersionList(self):
+        return [self]
+
+
+    def getLocalRead(self):
+        return ""
 
     @property
     def attributes(self):
@@ -136,6 +156,10 @@ class Node(BaseNode):
     def getContentType(self):
         warn("deprecated, use Node.type instead", DeprecationWarning)
         return self.type
+    
+    def getActiveVersion(self):
+        """TODO: implement me..."""
+        return self
 
     @property
     def all_content_children(self):

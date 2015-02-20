@@ -27,6 +27,7 @@ from core.translation import lang, t
 from web.frontend import Content
 from web.frontend.searchresult import simple_search, extended_search
 from core.styles import getContentStyles, theme
+from contenttypes.directory import Directory
 import logging
 from core.transition import httpstatus
 log = logging.getLogger("frontend")
@@ -434,12 +435,15 @@ class ContentArea(Content):
         self.collectionlogo = None
         self.params = ""
 
-    def getPath(self):
+    def getPath(self, language=None):
         path = []
         if hasattr(self.content, "node"):
             cd = self.content.node
             if cd is not None:
-                path.append(Link('', cd.getLabel(), ''))
+                if isinstance(cd, Directory):
+                    path.append(Link('', cd.getLabel(language), ''))
+                else:
+                    path.append(Link('', cd.getLabel(), ''))
                 while True:
                     parents = cd.getParents()
                     if(len(parents) == 0):
@@ -447,7 +451,10 @@ class ContentArea(Content):
                     cd = parents[0]
                     if cd is tree.getRoot("collections") or cd is tree.getRoot():
                         break
-                    path.append(Link('/?id=' + cd.id + '&dir=' + cd.id, cd.getLabel(), cd.getLabel()))
+                    if isinstance(cd, Directory):
+                        path.append(Link('/?id=' + cd.id + '&dir=' + cd.id, cd.getLabel(language), cd.getLabel(language)))
+                    else:
+                        path.append(Link('/?id=' + cd.id + '&dir=' + cd.id, cd.getLabel(), cd.getLabel()))
         elif hasattr(self.content, "linkname") and hasattr(self.content, "linktarget"):
             path.append(Link(self.content.linktarget, self.content.linkname, self.content.linkname))
         path.reverse()
@@ -513,7 +520,7 @@ class ContentArea(Content):
                 breadscrubs = []
             else:
                 try:
-                    breadscrubs = self.getPath()
+                    breadscrubs = self.getPath(lang(req))
                 except AttributeError:
                     log.exception("")
                     return req.error(404, "Object cannot be shown")

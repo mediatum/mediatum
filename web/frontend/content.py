@@ -27,6 +27,7 @@ from core import db
 from core.acl import AccessData
 from core.styles import getContentStyles, theme
 from core.translation import lang, t
+from contenttypes.directory import Directory
 from web.frontend import Content
 from utils.strings import ensure_unicode_returned
 from utils.utils import getCollection, Link, getFormatedString
@@ -456,12 +457,15 @@ class ContentArea(Content):
         self.collectionlogo = None
         self.params = ""
 
-    def getPath(self):
+    def getPath(self, language=None):
         path = []
         if hasattr(self.content, "node"):
             cd = self.content.node
             if cd is not None:
-                path.append(Link('', cd.getLabel(), ''))
+                if isinstance(cd, Directory):
+                    path.append(Link('', cd.getLabel(language), ''))
+                else:
+                    path.append(Link('', cd.getLabel(), ''))
                 while True:
                     parents = cd.getParents()
                     if(len(parents) == 0):
@@ -469,7 +473,10 @@ class ContentArea(Content):
                     cd = parents[0]
                     if cd is q(Collections).one() or cd is q(Root).one():
                         break
-                    path.append(Link('/?id=' + cd.id + '&dir=' + cd.id, cd.getLabel(), cd.getLabel()))
+                    if isinstance(cd, Directory):
+                        path.append(Link('/?id=' + cd.id + '&dir=' + cd.id, cd.getLabel(language), cd.getLabel(language)))
+                    else:
+                        path.append(Link('/?id=' + cd.id + '&dir=' + cd.id, cd.getLabel(), cd.getLabel()))
         elif hasattr(self.content, "linkname") and hasattr(self.content, "linktarget"):
             path.append(Link(self.content.linktarget, self.content.linkname, self.content.linkname))
         path.reverse()
@@ -528,7 +535,7 @@ class ContentArea(Content):
                 breadcrumbs = []
             else:
                 try:
-                    breadcrumbs = self.getPath()
+                    breadcrumbs = self.getPath(lang(req))
                 except AttributeError:
                     logg.exception("exception in html")
                     return req.error(404, "Object cannot be shown")

@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
+import codecs
 import logging
 import time
 
@@ -95,9 +96,8 @@ def importFileFromData(filename, data, prefix=""):
                     prefix = p
                     break
 
-        file_handle = open(destname, 'wb')
-        file_handle.write(data)
-        file_handle.close()
+        with codecs.open(destname, 'wb', encoding='utf8') as file_handle:
+            file_handle.write(data)
 
         mimetype = "application/x-download"
         type = "file"

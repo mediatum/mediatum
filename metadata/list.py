@@ -20,6 +20,7 @@
 """
 import logging
 import os
+import codecs
 from mediatumtal import tal
 
 from utils.utils import esc
@@ -46,9 +47,8 @@ class m_list(Metatype):
 
         if len(valuesfiles):  # a text file with list values was uploaded
             if os.path.isfile(valuesfiles[0].retrieveFile()):
-                valuesfile = open(valuesfiles[0].retrieveFile(), 'r')
-                tempvalues = valuesfile.readlines()
-                valuesfile.close()
+                with codecs.open(valuesfiles[0].retrieveFile(), 'r', encoding='utf8') as valuesfile:
+                    tempvalues = valuesfile.readlines()
 
         if len(tempvalues):  # Has the user entered any values?
             if tempvalues[0].find('|') > 0:  # there are values in different languages available

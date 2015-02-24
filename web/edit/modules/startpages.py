@@ -22,6 +22,7 @@ import core.tree as tree
 import os
 import sys
 import json
+import codecs
 
 import logging
 import core.users as users
@@ -57,7 +58,7 @@ def getContent(req, ids):
             for f in [f for f in node.getFiles() if f.mimetype == "text/html"]:
                 filepath = f.retrieveFile().replace(config.get("paths.datadir"), '')
                 if req.params.get('filename') == filepath and os.path.exists(config.get("paths.datadir") + filepath):
-                    with open(config.get("paths.datadir") + filepath, "r") as fil:
+                    with codecs.open(config.get("paths.datadir") + filepath, "r", encoding='utf8') as fil:
                         data = fil.read()
                     logg.info("%s opened startpage %s for node %s (%s, %s)", user.name, filepath, node.id, node.name, node.type)
                     break
@@ -75,7 +76,7 @@ def getContent(req, ids):
                 while os.path.exists(config.get("paths.datadir") + filename):
                     maxid = maxid + 1
                     filename = 'html/%s_%s.html' % (req.params.get('id'), maxid)
-                with open(config.get("paths.datadir") + filename, "w") as fil:
+                with codecs.open(config.get("paths.datadir") + filename, "w", encoding='utf8') as fil:
                     fil.write(req.params.get('data'))
                 node.addFile(FileNode(filename, "content", "text/html"))
                 req.write(json.dumps({'filename': '', 'state': 'ok'}))
@@ -85,7 +86,7 @@ def getContent(req, ids):
                 for f in [f for f in node.getFiles() if f.mimetype == "text/html"]:
                     filepath = f.retrieveFile().replace(config.get("paths.datadir"), '')
                     if req.params.get('filename') == filepath and os.path.exists(config.get("paths.datadir") + filepath):
-                        with open(config.get("paths.datadir") + filepath, "w") as fil:
+                        with open(config.get("paths.datadir") + filepath, "w", encoding='utf8') as fil:
                             fil.write(req.params.get('data'))
                         req.write(json.dumps(
                             {'filesize': format_filesize(os.path.getsize(config.get("paths.datadir") + filepath)),
@@ -147,7 +148,7 @@ def getContent(req, ids):
                 content = req.params.get(key, "")
                 break
 
-        with open(req.params.get('file_path'), "w") as fi:
+        with open(req.params.get('file_path'), "w", encoding='utf8') as fi:
             fi.writelines(content)
 
         del req.params['save_page']

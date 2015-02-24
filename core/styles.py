@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import codecs
 import logging
 from mediatumtal import tal
 import os
@@ -118,13 +119,14 @@ def readStyleConfig(filename):
     path, file = splitpath(filename)
     attrs = {"type": "", "contenttype": "", "name": "", "label": "", "icon": "",
              "template": path.replace(config.basedir, "") + "/", "description": "", "default": ""}
-    fi = open(filename, "rb")
-    for line in fi:
-        if line.find("#") < 0:
-            line = line.split("=")
-            if line[0].strip() in attrs.keys():
-                attrs[line[0].strip()] += line[1].replace("\r", "").replace("\n", "").strip()
-    fi.close()
+
+    with codecs.open(filename, "rb", encoding='utf8') as fi:
+        for line in fi:
+            if line.find("#") < 0:
+                line = line.split("=")
+                if line[0].strip() in attrs.keys():
+                    attrs[line[0].strip()] += line[1].replace("\r", "").replace("\n", "").strip()
+
     return ContentStyle(attrs["type"], attrs["contenttype"], attrs["name"], attrs["label"],
                         attrs["icon"], attrs["template"], attrs["default"], attrs["description"])
 

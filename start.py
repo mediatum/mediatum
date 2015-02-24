@@ -20,6 +20,7 @@
 
 import logging
 import sys
+import codecs
 
 ### init.full_init() must be done as early as possible to init logging etc.
 from core import init, config
@@ -55,8 +56,8 @@ else:
                 stb = tb_formatter.structured_traceback(Exception, Exception(), stacktrace)[8:-1]
                 if stb:
                     formatted_trace = tb_formatter.stb2text(stb).strip()
-                    with open(filepath + "." + str(thread_id), "w") as wf:
-                        wf.write("\n" + formatted_trace)
+                    with codecs.open("{}.{}".format(filepath, thread_id), "w", encoding='utf8') as wf:
+                        wf.write("\n{}".format(formatted_trace))
                     if len(stb) > 4:
                         short_stb = stb[:2] + ["..."] + stb[-2:]
                     else:
@@ -67,7 +68,7 @@ else:
                     full.append("-" * 80)
 
 
-        with open(filepath, "wf") as wf:
+        with codecs.open(filepath, "wf", encoding='utf8') as wf:
             wf.write("\n".join(full))
 
     import signal

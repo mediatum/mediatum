@@ -22,6 +22,7 @@ import os
 from core.transition import httpstatus
 import core.config as config
 import random
+import codecs
 import core.users as users
 import core.help as help
 
@@ -76,9 +77,8 @@ def export(req):
         module = findmodule(path[1])
 
         tempfile = join_paths(config.get("paths.tempdir"), ustr(random.random()))
-        file = open(tempfile, "w")
-        file.write(module.export(req, path[2]))
-        file.close()
+        with codecs.open(tempfile, "w", encoding='utf8') as f:
+            f.write(module.export(req, path[2]))
 
         req.sendFile(tempfile, u"application/xml")
         if os.sep == '/':  # Unix?

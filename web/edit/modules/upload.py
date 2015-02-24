@@ -19,6 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
+import codecs
 import core.users as users
 import core.tree as tree
 import core.acl as acl
@@ -510,9 +511,8 @@ def upload_ziphandler(req):
                 else:
                     newfilename = join_paths(config.get("paths.tempdir"),  random_str + name.replace(" ", "_"))
 
-                fi = open(newfilename, "wb")
-                fi.write(z.read(f))
-                fi.close()
+                with codecs.open(newfilename, "wb", encoding='utf8') as fi:
+                    fi.write(z.read(f))
 
                 fn = importFileToRealname(mybasename(name.replace(" ", "_")), newfilename)
                 basenode.addFile(fn)

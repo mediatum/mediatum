@@ -104,7 +104,7 @@ def create_meta_file(node):
             pass
         else:
             try:
-                with open(path, 'w') as f:
+                with codecs.open(path, 'w', encoding='utf8') as f:
                     mask = getMetaType(node.getSchema()).getMask('doi')
                     xml = mask.getViewHTML([node], flags=8)
                     f.write(xml)
@@ -135,7 +135,7 @@ def create_doi_file(node):
             pass
         else:
             try:
-                with open(path, 'w') as f:
+                with codecs.open(path, 'w', encoding='utf8') as f:
                     f.write('doi=%s\n' % node.get('doi'))
                     f.write('url=%s%s%s%s' % ('http://', 'mediatum.ub.tum.de', '/?id=', node.get('node.id')))
             except IOError:

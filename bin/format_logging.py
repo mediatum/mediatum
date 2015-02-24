@@ -21,6 +21,7 @@ import sys
 sys.path += ["."]
 import os
 import time
+import codecs
 
 from core.init import basic_init
 basic_init()
@@ -65,17 +66,15 @@ for i in range(1, 21):
 
 d = []
 for filename in path:
-    fin = open(filename)
-    for line in fin:
-        if line.startswith(period):
-            d.append(line)
-    fin.close()
+    with open(filename) as fin:
+        for line in fin:
+            if line.startswith(period):
+                d.append(line)
 
 d.sort()
-fout = open(outpath, "w")
-for line in d:
-    fout.write(line)
-fout.close()
+with codecs.open(outpath, "w", encoding='utf8') as fout:
+    for line in d:
+        fout.write(line)
 print "done for period", period, ", found", len(d), "lines."
 
 

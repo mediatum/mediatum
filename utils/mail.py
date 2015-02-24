@@ -28,6 +28,7 @@ from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+import codecs
 import os
 import logging
 import core.config as config
@@ -95,20 +96,18 @@ def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]
                     maintype, subtype = ctype.split('/', 1)
                     if maintype == 'text':
                         # tested with ansi and utf-8
-                        fp = open(path)
-                        msg = MIMEText(fp.read(), _subtype=subtype)
-                        fp.close()
+                        with codecs.open(path, 'r', encoding='utf8') as fp:
+                            msg = MIMEText(fp.read(), _subtype=subtype)
                     else:
-                        fp = open(path, 'rb')
-                        if maintype == 'image':
-                            msg = MIMEImage(fp.read(), _subtype=subtype)
-                        elif maintype == 'audio':
-                            msg = MIMEAudio(fp.read(), _subtype=subtype)
-                        else:
-                            msg = MIMEBase(maintype, subtype)
-                            msg.set_payload(fp.read())
-                            encoders.encode_base64(msg)
-                        fp.close()
+                        with open(path, 'rb', encoding='utf8') as fp:
+                            if maintype == 'image':
+                                msg = MIMEImage(fp.read(), _subtype=subtype)
+                            elif maintype == 'audio':
+                                msg = MIMEAudio(fp.read(), _subtype=subtype)
+                            else:
+                                msg = MIMEBase(maintype, subtype)
+                                msg.set_payload(fp.read())
+                                encoders.encode_base64(msg)
                     msg.add_header('Content-Disposition', 'attachment', filename=filename)
                     mime_multipart.attach(msg)
 

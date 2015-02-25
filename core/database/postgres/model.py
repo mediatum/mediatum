@@ -101,6 +101,9 @@ class NodeAppenderQuery(AppenderQuery, LenMixin):
 
 
 # definitions
+t_nodemapping = Table("nodemapping", db_metadata,
+                      C("nid", Integer, FK("node.id"), primary_key=True, index=True),
+                      C("cid", Integer, FK("node.id", ondelete="CASCADE"), primary_key=True, index=True))
 
 
 class Access(DeclarativeBase):
@@ -111,17 +114,6 @@ class Access(DeclarativeBase):
     name = C(String(64), primary_key=True)
     description = C(Text)
     rule = C(Text)
-
-t_nodemapping = Table("nodemapping", db_metadata,
-                      C("nid", Integer, FK("node.id"), primary_key=True),
-                      C("cid", Integer, FK("node.id", ondelete="CASCADE"), primary_key=True))
-
-
-Index(u'cid', t_nodemapping.c.cid)
-Index(u'cid_2', t_nodemapping.c.cid, t_nodemapping.c.nid)
-Index(u'nid', t_nodemapping.c.nid)
-Index(u'nid_2', t_nodemapping.c.nid, t_nodemapping.c.cid)
-
 
 class Attributes(object):
 
@@ -196,9 +188,9 @@ class Node(DeclarativeBase, NodeMixin):
     __tablename__ = "node"
 
     _id = C(Integer, Sequence('node_id_seq', start=100), primary_key=True, name="id")
-    type = C(Text)
-    schema = C(Unicode)
-    name = C(Unicode)
+    type = C(Text, index=True)
+    schema = C(Unicode, index=True)
+    name = C(Unicode, index=True)
     orderpos = C(Integer, default=1, index=True)
     read_access = C(Text)
     write_access = C(Text)
@@ -278,11 +270,6 @@ class Node(DeclarativeBase, NodeMixin):
         return pyaml.dump(as_dict)
 
 
-Index(u'node_name', Node.__table__.c.name)
-Index(u'node_type', Node.__table__.c.type)
-Index(u'node_orderpos', Node.__table__.c.orderpos)
-
-
 class BaseFile(DeclarativeBase):
 
     """Represents an item on the filesystem
@@ -296,7 +283,3 @@ class BaseFile(DeclarativeBase):
     def __repr__(self):
         return "File for Node #{} ({}:{}|{}) at {}".format(
             self.nid, self.path, self.filetype, self.mimetype, hex(id(self)))
-
-
-Index(u'nodefile_nid', BaseFile.__table__.c.nid)
-

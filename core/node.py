@@ -5,48 +5,12 @@
 """
 from warnings import warn
 
-from sqlalchemy.ext.mutable import MutableDict
+class NodeMixin(object):
 
-from core.database.postgres import BaseNode, t_nodemapping
-from core import db
-
-q = db.query
-
-def _cte_subtree(node):
-    from contenttypes.containertypes import ContainerType
-    t = q(t_nodemapping.c.cid).\
-        filter(t_nodemapping.c.nid == node.id).\
-        cte(name="subtree", recursive=True)
-
-    return t.union_all(
-        q(t_nodemapping.c.cid).
-        join(ContainerType, ContainerType.id == t_nodemapping.c.cid).
-        filter(t_nodemapping.c.nid == t.c.cid)
-    )
-
-
-class Node(BaseNode):
-
-    """Provides methods for simple node handling on top of the SQLAlchemy methods provided by BaseNode.
+    """Provides methods for simple node handling on top of the SQLAlchemy methods provided by Node.
     Contains legacy methods (camelCase) needed for old code which will be removed when they become unused.
     """
 
-    def __init__(self, name="", type="node", id=None, schema=None, attrs=None, orderpos=None):
-        self.name = name
-        if "/" in type:
-            warn("use separate type and schema parameters instead of 'type/schema'", DeprecationWarning)
-            type, schema = type.split("/")
-        self.type = type
-        self.attrs = MutableDict()
-        if id:
-            self._id = id
-        if schema:
-            self.schema = schema
-        if attrs:
-            self.attrs.update(attrs)
-        if orderpos:
-            self.orderpos = orderpos
-            
     ### TODO: versions
     @property
     def next_nid(self):
@@ -92,10 +56,7 @@ class Node(BaseNode):
         return self.files
 
     def get(self, key, default=""):
-        value = self.attrs.get(key)
-        if value:
-            return value
-        return default
+        return self.attrs.get(key, default)
 
     def set(self, key, value):
         # warn("deprecated, use Node.attrs = "value" instead", DeprecationWarning)
@@ -161,23 +122,6 @@ class Node(BaseNode):
         """TODO: implement me..."""
         return self
 
-    @property
-    def all_content_children(self):
-        from contenttypes.default import ContentType
-        subtree = _cte_subtree(self)
-        query = q(ContentType).\
-            join(t_nodemapping, Node.id == t_nodemapping.c.cid).\
-            join(subtree, subtree.c.cid == t_nodemapping.c.nid)
-
-        return query
-
-    def all_children_by_query(self, query):
-        subtree = _cte_subtree(self)
-        query = query.\
-            join(t_nodemapping, Node.id == t_nodemapping.c.cid).\
-            join(subtree, subtree.c.cid == t_nodemapping.c.nid)
-        return query
-
     def __repr__(self):
         return u"Node<{} '{}'> ({})".format(self.id, self.name, object.__repr__(self)).encode("utf8")
 
@@ -225,3 +169,4 @@ class Node(BaseNode):
             return value
         else:
             return self.get(key)
+        

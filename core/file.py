@@ -6,9 +6,9 @@
 import os.path
 from warnings import warn
 
-from core.database.postgres import BaseFile, bref, rel, AppenderQueryWithLen
+from core.database.postgres.model import BaseFile, bref, rel, AppenderQueryWithLen
 from core import config
-from core.node import Node
+from core import Node
 from utils.utils import get_filesize
 
 

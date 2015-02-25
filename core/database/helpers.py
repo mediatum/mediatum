@@ -6,7 +6,7 @@
 from warnings import warn
 
 from core import db
-from core.database.postgres import child_rel_options, rel
+from core.database.postgres.model import child_rel_options, rel
 from sqlalchemy.ext.declarative import declared_attr
 
 

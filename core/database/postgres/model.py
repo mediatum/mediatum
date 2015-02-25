@@ -10,7 +10,6 @@ from sqlalchemy import (create_engine, Column, Table, ForeignKey, Index, Sequenc
                         Integer, Unicode, Text, String)
 from sqlalchemy.orm import sessionmaker, relationship, backref, scoped_session, deferred
 from sqlalchemy.orm.dynamic import AppenderQuery
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
 
@@ -19,35 +18,17 @@ from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.ext.hybrid import hybrid_property
 import pyaml
 from utils.magicobjects import MInt
+from core.node import NodeMixin
+
+from . import DeclarativeBase
+from core.database.postgres import db_metadata
 
 C = Column
 FK = ForeignKey
 rel = relationship
 bref = backref
 
-
-DeclarativeBase = declarative_base()
-metadata = DeclarativeBase.metadata
-
-# some pretty printing for SQLAlchemy objects ;)
-
-
-def to_dict(self):
-    return dict((str(col.name), getattr(self, col.name))
-                for col in self.__table__.columns)
-
-
-def to_yaml(self):
-    return pyaml.dump(self.to_dict())
-
-
-DeclarativeBase.to_dict = to_dict
-DeclarativeBase.to_yaml = to_yaml
-
-
 logg = logging.getLogger(__name__)
-
-CONNECTSTR_TEMPLATE = "postgresql+psycopg2://{user}:{passwd}@{dbhost}:{dbport}/{database}"
 
 
 class LenMixin(object):
@@ -70,19 +51,19 @@ class NodeAppenderQuery(AppenderQuery, LenMixin):
     def sort_by_orderpos(self, reverse=False):
         if reverse:
             warn("use .order_by(Node.orderpos.desc()) instead", DeprecationWarning)
-            return self.order_by(BaseNode.orderpos.desc())
+            return self.order_by(Node.orderpos.desc())
         else:
             warn("use .order_by(Node.orderpos) instead", DeprecationWarning)
-            return self.order_by(BaseNode.orderpos)
+            return self.order_by(Node.orderpos)
 
     def sort_by_name(self, direction="up"):
         reverse = direction != "up"
         if reverse:
             warn("use .order_by(Node.name.desc()) instead", DeprecationWarning)
-            return self.order_by(BaseNode.name.desc())
+            return self.order_by(Node.name.desc())
         else:
             warn("use .order_by(Node.name) instead", DeprecationWarning)
-            return self.order_by(BaseNode.name)
+            return self.order_by(Node.name)
 
     def getIDs(self):
         warn("inefficient, rewrite your code using SQLA queries", DeprecationWarning)
@@ -111,9 +92,9 @@ class NodeAppenderQuery(AppenderQuery, LenMixin):
         query = self
         for field in fields:
             if field.startswith("-"):
-                expr = BaseNode.attrs[field[1:]].astext.desc()
+                expr = Node.attrs[field[1:]].astext.desc()
             else:
-                expr = BaseNode.attrs[field].astext
+                expr = Node.attrs[field].astext
             query = query.order_by(expr)
 
         return query
@@ -131,7 +112,7 @@ class Access(DeclarativeBase):
     description = C(Text)
     rule = C(Text)
 
-t_nodemapping = Table("nodemapping", metadata,
+t_nodemapping = Table("nodemapping", db_metadata,
                       C("nid", Integer, FK("node.id"), primary_key=True),
                       C("cid", Integer, FK("node.id", ondelete="CASCADE"), primary_key=True))
 
@@ -193,7 +174,21 @@ child_rel_options = dict(
 )
 
 
-class BaseNode(DeclarativeBase):
+def _cte_subtree(node):
+    from contenttypes.containertypes import ContainerType
+    from core import db
+    t = db.query(t_nodemapping.c.cid).\
+        filter(t_nodemapping.c.nid == node.id).\
+        cte(name="subtree", recursive=True)
+
+    return t.union_all(
+        db.query(t_nodemapping.c.cid).
+        join(ContainerType, ContainerType.id == t_nodemapping.c.cid).
+        filter(t_nodemapping.c.nid == t.c.cid)
+    )
+
+
+class Node(DeclarativeBase, NodeMixin):
 
     """Base class for Nodes which holds all SQLAlchemy fields definitions
     """
@@ -235,8 +230,42 @@ class BaseNode(DeclarativeBase):
     def a_set(self, value):
         raise NotImplementedError("immutable!")
 
+    def __init__(self, name="", type="node", id=None, schema=None, attrs=None, orderpos=None):
+        self.name = name
+        if "/" in type:
+            warn("use separate type and schema parameters instead of 'type/schema'", DeprecationWarning)
+            type, schema = type.split("/")
+        self.type = type
+        self.attrs = MutableDict()
+        if id:
+            self._id = id
+        if schema:
+            self.schema = schema
+        if attrs:
+            self.attrs.update(attrs)
+        if orderpos:
+            self.orderpos = orderpos
+            
+    @property
+    def all_content_children(self):
+        from contenttypes.default import ContentType
+        from core import db
+        subtree = _cte_subtree(self)
+        query = db.query(ContentType).\
+            join(t_nodemapping, Node.id == t_nodemapping.c.cid).\
+            join(subtree, subtree.c.cid == t_nodemapping.c.nid)
+
+        return query
+
+    def all_children_by_query(self, query):
+        subtree = _cte_subtree(self)
+        query = query.\
+            join(t_nodemapping, Node.id == t_nodemapping.c.cid).\
+            join(subtree, subtree.c.cid == t_nodemapping.c.nid)
+        return query
+    
     __mapper_args__ = {
-        'polymorphic_identity': 'basenode',
+        'polymorphic_identity': 'node',
         'polymorphic_on': type
     }
 
@@ -249,9 +278,9 @@ class BaseNode(DeclarativeBase):
         return pyaml.dump(as_dict)
 
 
-Index(u'node_name', BaseNode.__table__.c.name)
-Index(u'node_type', BaseNode.__table__.c.type)
-Index(u'node_orderpos', BaseNode.__table__.c.orderpos)
+Index(u'node_name', Node.__table__.c.name)
+Index(u'node_type', Node.__table__.c.type)
+Index(u'node_orderpos', Node.__table__.c.orderpos)
 
 
 class BaseFile(DeclarativeBase):
@@ -259,7 +288,7 @@ class BaseFile(DeclarativeBase):
     """Represents an item on the filesystem
     """
     __tablename__ = "nodefile"
-    nid = C(Integer, FK(BaseNode.id), primary_key=True, index=True)
+    nid = C(Integer, FK(Node.id), primary_key=True, index=True)
     path = C(Unicode(4096), primary_key=True)
     filetype = C(Unicode(126), primary_key=True)
     mimetype = C(String(126))
@@ -271,49 +300,3 @@ class BaseFile(DeclarativeBase):
 
 Index(u'nodefile_nid', BaseFile.__table__.c.nid)
 
-
-class PostgresSQLAConnector(object):
-
-    """Basic db object used by the application
-    """
-
-    def __init__(self):
-        session_factory = sessionmaker()
-        self.Session = scoped_session(session_factory)
-        self.metadata = metadata
-
-    def connect(self):
-        self.dbhost = config.get("database.dbhost", "localhost")
-        self.dbport = int(config.get("database.dbport", "5342"))
-        self.database = config.get("database.db", "mediatum")
-        self.user = config.get("database.user", "mediatumadmin")
-        self.passwd = config.get("database.passwd", "")
-        self.connectstr = CONNECTSTR_TEMPLATE.format(**self.__dict__)
-        logg.info("Connecting to %s", self.connectstr)
-        engine = create_engine(self.connectstr)
-        DeclarativeBase.metadata.bind = engine
-        self.conn = engine.connect()
-        self.engine = engine
-        self.Session.configure(bind=engine)
-
-    def make_session(self):
-        """Create a session. 
-        For testing purposes (used in core.test.factories, for example).
-        """
-        return self.Session()
-    
-    @property
-    def session(self):
-        return self.Session()
-
-    def query(self, *entities, **kwargs):
-        """Query proxy.
-        :see: sqlalchemy.orm.session.Session.query
-        
-        Example:
-        
-        from core import db
-        q = db.query
-        q(Node).get(42)
-        """
-        return self.Session().query(*entities, **kwargs)

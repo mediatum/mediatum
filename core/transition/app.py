@@ -17,7 +17,6 @@ from core.transition.helpers import runswith
 from core.transition.helpers import get_root_path
 from utils.date import dt_fromiso
 import datetime
-from core.database.postgres import PostgresSQLAConnector
 
 logg = logging.getLogger(__name__)
 

@@ -37,7 +37,7 @@ from core import db
 from core.systemtypes import Metadatatypes
 from sqlalchemy.orm.exc import NoResultFound
 from core.transition.postgres import check_type_arg
-from core.database.postgres import rel, child_rel_options
+from core.database.postgres.model import rel, child_rel_options
 
 
 log = logg = logging.getLogger(__name__)

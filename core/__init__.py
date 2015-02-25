@@ -4,3 +4,5 @@ app = None
 
 # TODO: move to web.edit
 editmodulepaths = [('', 'web/edit/modules')]
+
+from core.database import Node

@@ -46,7 +46,7 @@ def init_database_values(s):
     home = Home("home", "home", 11)
     navigation = Navigation("navigation", "navigation", 12)
     navigation.attrs["label"] = "Kollektionen"
-    external_users = Users("external_users", "users", 14)
+    external_users = ExternalUsers("externalusers", "externalusers", 14)
     searchmasks = Searchmasks("searchmasks", "searchmasks", 15)
     root.children.extend([users, metadatatypes, workflows, usergroups, mappings, collections,
                           home, navigation, external_users, searchmasks])

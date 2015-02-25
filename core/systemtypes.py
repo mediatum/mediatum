@@ -19,6 +19,8 @@ class Root(Node):
 class Users(Node):
     pass
 
+class ExternalUsers(Node):
+    pass
 
 class Searchmasks(Node):
     pass

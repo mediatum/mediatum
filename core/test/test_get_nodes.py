@@ -97,11 +97,24 @@ def test_get_usergroup():
          
 def test_get_users():
     from core.systemtypes import Users
-    users_nodes = q(Users).all()
-    assert len(users_nodes) == 2
+    n = q(Users).one()
+    assert_node(n,
+                name="users",
+                type="users",
+                schema=None)
+         
+         
+def test_get_externalusers():
+    from core.systemtypes import ExternalUsers
+    n = q(ExternalUsers).one()
+    assert_node(n,
+                name="externalusers",
+                type="externalusers",
+                schema=None)
          
          
 def test_get_user():
     from core.user import User
     user_nodes = q(User).all()
+    # Gast and Administrator are default users
     assert len(user_nodes) == 2

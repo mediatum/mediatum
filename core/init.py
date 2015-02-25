@@ -40,7 +40,7 @@ def load_system_types():
     from core.file import File
     from core.usergroup import UserGroup
     from core.user import User
-    from schema.searchmask import SearchMaskItem
+    from schema.searchmask import SearchMaskItem, SearchMask
 
 
 def load_types():

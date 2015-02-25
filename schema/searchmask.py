@@ -6,6 +6,9 @@ from core.transition.postgres import check_type_arg
 from core.node import Node
 
 
+class SearchMask(Node):
+    pass
+
 @check_type_arg
 class SearchMaskItem(Node):
 

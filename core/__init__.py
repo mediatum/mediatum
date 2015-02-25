@@ -5,4 +5,5 @@ app = None
 # TODO: move to web.edit
 editmodulepaths = [('', 'web/edit/modules')]
 
+import utils.log
 from core.database import Node

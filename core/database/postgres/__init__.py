@@ -31,3 +31,20 @@ def to_yaml(self):
 
 DeclarativeBase.to_dict = to_dict
 DeclarativeBase.to_yaml = to_yaml
+
+
+@event.listens_for(Engine, "before_cursor_execute")
+def before_cursor_execute(conn, cursor, statement,
+                        parameters, context, executemany):
+    conn.info.setdefault('query_start_time', []).append(time.time())
+    conn.info.setdefault('current_query', []).append(statement)
+
+
+@event.listens_for(Engine, "after_cursor_execute")
+def after_cursor_execute(conn, cursor, statement,
+                        parameters, context, executemany):
+    total = time.time() - conn.info['query_start_time'].pop(-1)
+    # total in seconds
+    if total > 0.01:
+        statement = conn.info['current_query'].pop(-1)
+        logg.warn("slow query %.1fms:\n%s", total * 1000, statement)    

@@ -97,7 +97,7 @@ SQLALCHEMY_CONNECTION = core.db.connectstr
 from contenttypes import Audio, ContentType, Directory, Collection, ContainerType, Collections, Home, Document, Flash, Image, Imagestream, \
     Project, Video
 from core.systemtypes import Mappings, Metadatatypes, Root, Users, UserGroups, Navigation, Searchmasks
-from schema.schema import Metadatatype
+from schema.schema import Metadatatype, Maskitem, Mask
 
 
 rootlogg = logging.getLogger()
@@ -235,13 +235,13 @@ class MediatumMagics(Magics):
     def checkmask(self, line):
         args = parse_argstring(self.checkmask, line)
         import schema.schema as metadatatypes
-            if args.all:
+        if args.all:
             def check_masks_of_mdt(mdt):
                 for mask in mdt.masks:
                     print("-" * 80)
                     print(u"checking mask {} of mdt {}".format(mask.name, mdt.name))
                     metadatatypes.checkMask(mask, fix=args.fix, verbose=1, show_unused=1)
-                    
+                        
             if args.allmasks:
                 for mdt in q(Metadatatype):
                     print("=" * 80)
@@ -305,9 +305,12 @@ ip = get_ipython()  # @UndefinedVariable
 
 
 def current_prompt():
-    name = cnode.name
-    name = name if len(name) < 80 else name[:77] + "..."
-    prompt = u"cnode: {} {} \"{}\"\n[\\#]: ".format(cnode.id, cnode.type, name)
+    if cnode:
+        name = cnode.name
+        name = name if len(name) < 80 else name[:77] + "..."
+        prompt = u"cnode: {} {} \"{}\"\n[\\#]: ".format(cnode.id, cnode.type, name)
+    else:
+        prompt = "no cnode [\\#] "
     return prompt
 
 

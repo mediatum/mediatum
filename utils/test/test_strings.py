@@ -45,7 +45,7 @@ def test_ensure_unicode_returned_utf8_str(caplog):
     assert len(log) == 1
     assert log[0].levelname == "WARNING"
     assert "utf8_function" in caplog.text()
-    assert "expected unicode, trying to decode str as utf8" in caplog.text()
+    assert "expected unicode, trying to decode ustr as utf8" in caplog.text()
     
     
 def test_ensure_unicode_returned_custom_name(caplog):
@@ -70,5 +70,5 @@ def test_ensure_unicode_returned_latin_fail(caplog):
     assert len(log) == 1
     assert log[0].levelname == "WARNING"
     assert "latin1_function" in caplog.text()
-    assert "expected unicode, trying to decode str as utf8" in caplog.text()
+    assert "expected unicode, trying to decode ustr as utf8" in caplog.text()
     

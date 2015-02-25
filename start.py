@@ -76,7 +76,13 @@ else:
 
 ### init all web components
 from core import webconfig
+from core import athana
 webconfig.initContexts()
+
+@athana.request_finished
+def request_finished_db_session():
+    from core import db
+    db.session.close()
 
 ### scheduler thread
 import core.schedules
@@ -86,7 +92,6 @@ except:
     logg.exception("Error starting scheduler thread")
 
 ### start main web server, Z.39.50 and FTP, if configured
-from core import athana
 if config.get('z3950.activate', '').lower() == 'true':
     z3950port = int(config.get("z3950.port", "2021"))
 else:

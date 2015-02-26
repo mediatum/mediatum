@@ -25,6 +25,40 @@ METAFIELDS = [
 
 ARTICLE_METAFIELDS = METAFIELDS + []
 
+@fixture
+def some_metafield():
+    """Doesn't make much sense, but ok for hierarchy / getter testing"""
+    metafield = MetafieldFactory()
+    return metafield
+    
+@fixture
+def some_maskitem():
+    """Doesn't make much sense, but ok for hierarchy / getter testing"""
+    metafield = MetafieldFactory()
+    maskitem = FieldMaskitemFactory()
+    maskitem.children.append(metafield)
+    return maskitem
+
+
+@fixture
+def some_mask_with_maskitem(some_maskitem):
+    """Doesn't make much sense, but ok for hierarchy / getter testing"""
+    mask = MaskFactory()
+    mask.maskitems.append(some_maskitem)
+    return mask
+
+    
+@fixture
+def some_mask_with_nested_maskitem(some_mask_with_maskitem):
+    """Doesn't make much sense, but ok for hierarchy / getter testing"""
+    mask = some_mask_with_maskitem
+    metafield = MetafieldFactory()
+    nested_maskitem = FieldMaskitemFactory()
+    nested_maskitem.children.append(metafield)
+    mask.maskitems[0].children.append(nested_maskitem)
+    return mask
+    
+    
 @fixture(scope="session")
 def article_metafields():
     metafields = [MetafieldFactory(name=n, attrs__type=t) for n, t in ARTICLE_METAFIELDS]
@@ -42,9 +76,8 @@ def article_citeproc_mask(article_metafields):
     exportmapping = CiteprocMappingFactory()
     exportmapping.children.extend(itervalues(metafield_to_mappingfield))
     
-    from core import db
     # we need the actual node ids later in this fixture, which are only assigned after a flush
-    db.session.flush()
+    from core import db; db.session.flush()
     
     # create mask
     maskitems = []

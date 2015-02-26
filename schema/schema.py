@@ -38,6 +38,7 @@ from core.systemtypes import Metadatatypes
 from sqlalchemy.orm.exc import NoResultFound
 from core.transition.postgres import check_type_arg
 from core.database.postgres.model import rel, child_rel_options
+from sqlalchemy.ext.hybrid import hybrid_property
 
 
 log = logg = logging.getLogger(__name__)
@@ -834,7 +835,7 @@ class Mask(Node):
     
     @property
     def all_maskitems(self):
-        """Recursively get all maskitems.
+        """Recursively get all maskitems, they can be nested
         """
         return self.all_children_by_query(q(Maskitem))
     
@@ -1263,10 +1264,25 @@ class Mask(Node):
 @check_type_arg
 class Maskitem(Node):
 
-
-    @property
+    _metafields = rel("Metafield", backref="maskitems", **child_rel_options)
+    
+    @hybrid_property
     def metafield(self):
-        return self.children.first()
+        return self._metafields.scalar()
+    
+    @metafield.expression
+    def metafield_expr(cls):
+        class MetafieldExpr(object):
+            def __eq__(self, other):
+                return cls._metafields.contains(other)
+            
+        return MetafieldExpr()
+    
+    @metafield.setter
+    def set_metafield(self, metafield):
+        self._metafields.remove(self.metafield)
+        if metafield is not None:
+            self._metafields.append(metafield)
 
     def getLabel(self):
         return self.getName()

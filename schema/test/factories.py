@@ -54,11 +54,11 @@ class FieldMaskitemFactory(SQLAFactory):
         "type": "field"
     })
 
-
-class CiteprocMaskFactory(SQLAFactory):
+class MaskFactory(SQLAFactory):
     class Meta:
         model = Mask
-        
+
+class CiteprocMaskFactory(MaskFactory):
     name = "citeproc"
     attrs = factory.Dict({
         "defaultmask": True,

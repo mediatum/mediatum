@@ -62,4 +62,13 @@ class PostgresSQLAConnector(object):
         q(Node).get(42)
         """
         return self.Session().query(*entities, **kwargs)
+    
+    
+    def refresh(self, node):
+        """Return a refreshed copy of `node`.
+        Workaround for Node objects which are kept between requests.
+        XXX: must be removed later
+        """
+        from .model import Node
+        return self.session.query(Node).get(node.id)
 

@@ -285,7 +285,9 @@ class ContentList(Content):
         i = 0
         for i in range(self.page * files_per_page, (self.page + 1) * files_per_page):
             if i < self.num:
-                file = self.files[i]
+                # XXX: remove session-stored Node instances!
+                file = db.refresh(self.files[i])
+                
                 self.id2pos[self.files[i].id] = i
                 tal_files += [SingleFile(file, i, self.num, language=language)]
                 tal_ids += [SingleFile(file, i, self.num, language=language).node.id]

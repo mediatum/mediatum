@@ -80,7 +80,7 @@ from core import athana
 webconfig.initContexts()
 
 @athana.request_finished
-def request_finished_db_session():
+def request_finished_db_session(*args):
     from core import db
     db.session.close()
 

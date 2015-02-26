@@ -3816,10 +3816,10 @@ app = None
 
 def _call_handler_func(handler, handler_func, request):
     for handler in _request_started_handlers:
-        handler()
+        handler(request)
     res = handler.callhandler(handler_func, request)
     for handler in _request_finished_handlers:
-        handler()
+        handler(request)
     return res
 
 

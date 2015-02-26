@@ -23,7 +23,7 @@ import os
 import time
 import logging
 
-import core.tree as tree
+
 import core.users as users
 from core import config
 from core.acl import AccessData

@@ -20,7 +20,7 @@
 
 import logging
 import os
-import core.tree as tree
+
 import hashlib
 
 

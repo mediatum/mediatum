@@ -23,7 +23,7 @@ import os
 import codecs
 import core.config as config
 import core
-import core.tree as tree
+
 
 from version import mediatum_version
 from utils.utils import format_filesize

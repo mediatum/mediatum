@@ -19,7 +19,7 @@
 
 import json
 
-import core.tree as tree
+
 import core.acl as acl
 from web.edit.edit_common import showdir, showoperations
 from utils.utils import dec_entry_log

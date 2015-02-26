@@ -20,7 +20,7 @@
 import logging
 
 import core.users as users
-import core.tree as tree
+
 import core.acl as acl
 import schema.bibtex as bibtex
 import schema.citeproc as citeproc

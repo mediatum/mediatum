@@ -19,7 +19,7 @@
 """
 import re
 
-import core.tree as tree
+
 import core.config as config
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 from schema.schema import getMetaType, getMaskTypes

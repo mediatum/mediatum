@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.acl as acl
-import core.tree as tree
+
 import logging
 import utils.date as date
 from core.acl import AccessData

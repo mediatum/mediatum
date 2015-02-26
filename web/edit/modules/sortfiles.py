@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.acl as acl
-import core.tree as tree
+
 import core.users as users
 from core.acl import AccessData
 from utils.utils import getCollection

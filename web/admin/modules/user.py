@@ -25,7 +25,6 @@ import datetime
 import time
 
 import core.config as config
-import core.tree as tree
 import core.acl as acl
 import core.users as users
 from utils.utils import getAllCollections

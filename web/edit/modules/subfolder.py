@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
-import core.tree as tree
+
 import core.users as users
 from core.acl import AccessData
 from utils.utils import funcname, get_user_id, log_func_entry, dec_entry_log

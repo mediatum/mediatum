@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.acl as acl
-import core.tree as tree
+
 import logging
 import core.users as users
 from web.common.acl_web import makeList

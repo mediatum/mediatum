@@ -25,7 +25,7 @@ sys.path += ["."]
 from core.init import basic_init
 basic_init()
 
-import core.tree as tree
+
 import core.config as config
 
 from core.tree import db

@@ -19,7 +19,7 @@
 """
 
 import core.users as users
-import core.tree as tree
+
 import web.edit
 
 from core.acl import AccessData

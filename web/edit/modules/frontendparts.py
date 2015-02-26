@@ -22,7 +22,7 @@ import os
 from PIL import Image
 from core.transition.athana_sep import athana_http as athana
 import core.acl as acl
-import core.tree as tree
+
 import core.config as config
 from utils.utils import CustomItem
 from web.edit.edit_common import writetree

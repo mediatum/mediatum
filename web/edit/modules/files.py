@@ -20,7 +20,7 @@
 
 import hashlib
 import random
-import core.tree as tree
+
 import os
 import core.users as users
 import logging

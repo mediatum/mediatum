@@ -18,7 +18,7 @@
 """
 
 import logging
-import core.tree as tree
+
 import core.acl as acl
 import core.users as users
 

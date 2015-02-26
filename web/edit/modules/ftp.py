@@ -17,7 +17,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-import core.tree as tree
+
 import core.acl as acl
 import core.users as users
 import core.config as config

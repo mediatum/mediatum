@@ -19,7 +19,7 @@
 """
 import re
 import sys
-import core.tree as tree
+
 import logging
 
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter

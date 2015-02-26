@@ -27,7 +27,7 @@ import inspect
 from datetime import datetime, time
 
 import core.users as users
-import core.tree as tree
+
 import core.acl as acl
 import utils.scheduleutils as su
 

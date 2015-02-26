@@ -21,7 +21,7 @@ from core.acl import AccessData
 from core.db import database
 
 import core.users as users
-import core.tree as tree
+
 import logging
 
 from utils.date import format_date, parse_date, now

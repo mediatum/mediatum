@@ -25,7 +25,7 @@ import re
 import time
 import logging
 
-import core.tree as tree
+
 import core.users as users
 import core.xmlnode as xmlnode
 import copy

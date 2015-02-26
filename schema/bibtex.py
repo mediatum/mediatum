@@ -329,7 +329,7 @@ article_types = [
      ("author", "title", "school", "year"),
      ("address", "month", "note", "key"))]
 
-import core.tree as tree
+
 from . import schema as schema
 
 

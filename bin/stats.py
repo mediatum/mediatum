@@ -23,7 +23,7 @@ import time
 from core.init import basic_init
 basic_init()
 
-import core.tree as tree
+
 from core.stats import buildStat
 from core.db import database
 

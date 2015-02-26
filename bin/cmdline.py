@@ -25,7 +25,7 @@ sys.path += ["../", "."]
 from core.init import full_init
 full_init()
 
-import core.tree as tree
+
 import core.acl as acl
 import re
 import string

@@ -19,7 +19,7 @@
 """
 
 import core.config as config
-import core.tree as tree
+
 
 from utils.utils import parseMenuString
 from web.admin.adminutils import adminNavigation, getAdminModuleInformation, adminModules

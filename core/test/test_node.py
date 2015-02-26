@@ -258,17 +258,29 @@ def test_attribute_mutation(some_node):
     assert some_node.attrs["testattr"] == "newvalue"
 
 
-def test_all_content_children(parent_node):
-    all_content_children = parent_node.all_content_children.all()
+def test_all_children_content_type(parent_node):
+    q = db.query
+    from contenttypes import ContentType
+    all_content_children = parent_node.all_children_by_query(q(ContentType)).all()
+    assert len(all_content_children) == 3
+    some_node = parent_node.children[0]
+    assert some_node.content_children[0] in all_content_children
+    assert some_node.container_children[0].content_children[0] in all_content_children
+    # this is a contenttype below a contenttype. It's only found by all_children_by_query(), not by content_children_for_all_subcontainers.
+    assert some_node.content_children[0].content_children[0] in all_content_children
+
+
+def test_content_children_for_all_subcontainers(parent_node):
+    all_content_children = parent_node.content_children_for_all_subcontainers.all()
     assert len(all_content_children) == 2
     some_node = parent_node.children[0]
     assert some_node.content_children[0] in all_content_children
     assert some_node.container_children[0].content_children[0] in all_content_children
 
 
-def test_all_content_children_subquery(some_node):
+def test_content_children_for_all_subcontainers_subquery(some_node):
     q = db.query
-    sub = some_node.all_content_children.subquery()
+    sub = some_node.content_children_for_all_subcontainers.subquery()
     qy = q(sub).select_from(sub).order_by(sub.c.name).limit(10)
     assert qy
     

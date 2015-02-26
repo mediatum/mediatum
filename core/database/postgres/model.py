@@ -167,6 +167,19 @@ child_rel_options = dict(
 
 
 def _cte_subtree(node):
+    from core import db
+    t = db.query(t_nodemapping.c.cid).\
+        filter(t_nodemapping.c.nid == node.id).\
+        cte(name="subtree", recursive=True)
+
+    return t.union_all(
+        db.query(t_nodemapping.c.cid).
+        join(Node, Node.id == t_nodemapping.c.cid).
+        filter(t_nodemapping.c.nid == t.c.cid)
+    )
+    
+    
+def _cte_subtree_container(node):
     from contenttypes.containertypes import ContainerType
     from core import db
     t = db.query(t_nodemapping.c.cid).\
@@ -239,10 +252,10 @@ class Node(DeclarativeBase, NodeMixin):
             self.orderpos = orderpos
             
     @property
-    def all_content_children(self):
+    def content_children_for_all_subcontainers(self):
         from contenttypes.default import ContentType
         from core import db
-        subtree = _cte_subtree(self)
+        subtree = _cte_subtree_container(self)
         query = db.query(ContentType).\
             join(t_nodemapping, Node.id == t_nodemapping.c.cid).\
             join(subtree, subtree.c.cid == t_nodemapping.c.nid)
@@ -252,8 +265,7 @@ class Node(DeclarativeBase, NodeMixin):
     def all_children_by_query(self, query):
         subtree = _cte_subtree(self)
         query = query.\
-            join(t_nodemapping, Node.id == t_nodemapping.c.cid).\
-            join(subtree, subtree.c.cid == t_nodemapping.c.nid)
+            join(subtree, Node.id == subtree.c.cid)
         return query
     
     __mapper_args__ = {

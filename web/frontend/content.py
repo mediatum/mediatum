@@ -416,7 +416,7 @@ def mkContentNode(req):
                         f.retrieveFile()) and fileIsNotEmpty(f.retrieveFile()):
                     return ContentNode(node)
 
-        allowed_nodes = access.filter(list(node.all_content_children))
+        allowed_nodes = access.filter(list(node.content_children_for_all_subcontainers))
         node.ccount = len(allowed_nodes)
         #ids = access.filter(node.getAllChildren())
         c = ContentList(allowed_nodes, getCollection(node))

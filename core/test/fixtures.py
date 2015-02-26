@@ -119,6 +119,11 @@ def other_content_node():
 
 
 @fixture
+def other_content_node_2():
+    return DocumentFactory(name=u"b_content", orderpos=2)
+
+
+@fixture
 def container_node():
     return DirectoryFactory(name=u"container", orderpos=3, attrs=dict(sortattr=8))
 
@@ -151,8 +156,9 @@ def some_node_with_sort_children(some_node, other_container_node, other_content_
 
 
 @fixture
-def parent_node(some_node, other_content_node, other_container_node):
-    some_node.children.append(other_content_node)
+def parent_node(some_node, other_content_node, other_container_node, other_content_node_2):
+    other_container_node.children.append(other_content_node)
+    some_node.content_children[0].content_children.append(other_content_node_2)
     some_node.container_children[0].children.extend([other_content_node, other_container_node])
     return some_node.parents[0]
 

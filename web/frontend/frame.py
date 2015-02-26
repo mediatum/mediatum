@@ -35,6 +35,7 @@ from contenttypes import Collections
 from sqlalchemy.orm.exc import NoResultFound
 from core.node import Node
 from core.systemtypes import Searchmasks
+from contenttypes.containertypes import Directory
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -269,9 +270,9 @@ class NavTreeEntry:
 
     def getText(self, accessdata):
         try:
-            if self.node.getContentType() == "directory":
+            if isinstance(self.node, Directory):
                 if not hasattr(self.node, "ccount") or self.node.ccount == -1:
-                    self.node.ccount = self.node.all_content_children.count()
+                    self.node.ccount = self.node.children.count()
                 self.count = self.node.ccount
 
                 if self.hide_empty and self.count == 0:

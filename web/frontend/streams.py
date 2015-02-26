@@ -46,6 +46,7 @@ def incUsage(node):
     nr = int(node.get("hit_statistic.file") or "0")
     nr += 1
     node.set("hit_statistic.file", unicode(nr))
+    db.session.commit()
 
 
 def splitpath(path):

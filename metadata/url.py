@@ -34,7 +34,7 @@ logg = logging.getLogger(__name__)
 def _replace_vars(node, s):
     for var in re.findall(r'<(.+?)>', s):
         if var == "att:id":
-            s = s.replace("<" + var + ">", node.id)
+            s = s.replace("<" + var + ">", unicode(node.id))
         elif var.startswith("att:"):
             val = node.get(var[4:])
             if val == "":
@@ -43,7 +43,7 @@ def _replace_vars(node, s):
 
     for var in re.findall(r'\[(.+?)\]', s):
         if var == "att:id":
-            s = s.replace("[" + var + "]", node.id)
+            s = s.replace("[" + var + "]", unicode(node.id))
         elif var.startswith("att:"):
             val = node.get(var[4:])
             if val == "":

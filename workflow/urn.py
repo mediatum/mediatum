@@ -54,7 +54,7 @@ class WorkflowStep_Urn(WorkflowStep):
             else:
                 for var in re.findall(r'\[(.+?)\]', niss):
                     if var == "att:id":
-                        niss = niss.replace("[" + var + "]", node.id)
+                        niss = niss.replace("[" + var + "]", unicode(node.id))
                     elif var.startswith("att:"):
                         val = node.get(var[4:])
                         try:

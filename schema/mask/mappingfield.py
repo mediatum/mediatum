@@ -53,11 +53,11 @@ class MappingExtStdAttr(MappingReplacement):  # replace all 'att:X' types
             if var == "att:field":
                 s = s.replace("[" + var + "]", attrnode.getName())
             elif var == "att:id":
-                s = s.replace("[" + var + "]", ustr(node.id))
+                s = s.replace("[" + var + "]", unicode(node.id))
             elif var == "att:nodename":
-                s = s.replace("[" + var + "]", ustr(node.getName()))
+                s = s.replace("[" + var + "]", node.name)
             elif var == "att:filename":
-                s = s.replace("[" + var + "]", ustr(node.getName()))
+                s = s.replace("[" + var + "]", node.name)
             else:
                 s = s.replace("[" + var + "]", ustr(node.get(var.split(":")[-1])))
         return s

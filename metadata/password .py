@@ -46,7 +46,7 @@ class m_password(Metatype):
         # replace variables
         for var in re.findall(r'&lt;(.+?)&gt;', value):
             if var == "att:id":
-                value = value.replace("&lt;" + var + "&gt;", node.id)
+                value = value.replace("&lt;" + var + "&gt;", unicode(node.id))
             elif var.startswith("att:"):
                 val = node.get(var[4:])
                 if val == "":

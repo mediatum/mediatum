@@ -8,6 +8,11 @@ from core.test.asserts import assert_deprecation_warning
 from schema.schema import Maskitem
 
 
+def test_getMaskFields_first_level(some_mask):
+    maskitems = assert_deprecation_warning(some_mask.getMaskFields, first_level_only=True)
+    assert isinstance(maskitems.first(), Maskitem)
+    
+    
 def test_getMaskFields(some_mask):
     maskitems = assert_deprecation_warning(some_mask.getMaskFields)
     assert isinstance(maskitems.first(), Maskitem)

@@ -6,6 +6,7 @@
 
 from __future__ import division, absolute_import, print_function
 from core.node import Node
+from core.transition.postgres import check_type_arg
 
 
 # root and its children
@@ -14,6 +15,7 @@ class Root(Node):
     pass
 
 
+@check_type_arg
 class Users(Node):
     pass
 

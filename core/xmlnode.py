@@ -26,7 +26,6 @@ import codecs
 
 from utils.utils import esc, u, u2
 
-import core.users as users
 from core.acl import AccessData
 
 EXCLUDE_WORKFLOW_NEWNODES = True
@@ -355,6 +354,7 @@ def getNodeXML(node):
 
 
 def getNodeListXMLForUser(node, readuser=None, exclude_filetypes=[], attribute_name_filter=None):
+    from core import users
     if readuser:
         # only write child data if children_access_user has read access
         children_access = AccessData(user=users.getUser(readuser))

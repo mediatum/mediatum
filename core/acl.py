@@ -17,7 +17,6 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.users as users
 import logging
 import core.config as config
 from utils.boolparser import BoolParser
@@ -39,8 +38,8 @@ acllock = thread.allocate_lock()
 
 
 class AccessData:
-
     def __init__(self, req=None, user=None, ip=None):
+        from core import users
         if req is not None:
             self.user = users.getUserFromRequest(req)
             self.ip = req.ip or "127.0.0.1"
@@ -274,6 +273,7 @@ class AccessData:
 
 
 def getRootAccess():
+    from core import users
     return AccessData(user=users.getUser(config.get('user.adminuser', 'Administrator')))
 
 prefix2conditionclass = {}

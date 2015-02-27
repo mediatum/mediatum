@@ -96,7 +96,7 @@ def test_get_usergroup():
          
          
 def test_get_users():
-    from core.users import Users
+    from core.systemtypes import Users
     users_nodes = q(Users).all()
     assert len(users_nodes) == 2
          

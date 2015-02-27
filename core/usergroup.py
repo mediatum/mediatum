@@ -20,9 +20,10 @@
 from core.node import Node
 from schema.schema import loadTypesFromDB
 from core.acl import AccessData
-from core.usergroups import groupoption
+from core.transition.postgres import check_type_arg
 
 
+@check_type_arg
 class UserGroup(Node):
 
     def getDescription(self):
@@ -40,6 +41,7 @@ class UserGroup(Node):
     def getOptionList(self):
         retList = {}
         myoption = self.getOption()
+        from core.usergroups import groupoption
         for option in groupoption:
             if option.value in myoption:
                 retList[option.getName()] = True

@@ -29,7 +29,6 @@ from core.node import Node
 import core.config as config
 from core.translation import lang
 from core.styles import getContentStyles
-import core.users as users
 from schema.schema import getMetadataType, VIEW_DATA_ONLY, VIEW_HIDE_EMPTY, NodeSchemaMixin
 from utils.utils import Menu, highlight, format_filesize
 from export.exportutils import runTALSnippet, default_context
@@ -69,6 +68,7 @@ def get_maskcache_report():
 
 
 def flush_maskcache(req=None):
+    from core import users
     global maskcache, maskcache_accesscount, maskcache_shallow, maskcache_msg
     logg.info("going to flush maskcache, content is: \r\n%s", get_maskcache_report())
     maskcache = {}

@@ -7,10 +7,11 @@ import logging
 import warnings
 
 from core import config
-from core.init import load_system_types, load_types
+from core.init import add_ustr_builtin
 logg = logging.getLogger(__name__)
 
 
 def setup_basic():
     config.initialize("test_mediatum.cfg")
+    add_ustr_builtin()
     warnings.simplefilter("always")

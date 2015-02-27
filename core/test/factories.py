@@ -12,6 +12,7 @@ from contenttypes import Document
 from core.node import Node
 from core.user import User
 from core import db
+from core.usergroup import UserGroup
 
 
 class SQLAFactory(factory.alchemy.SQLAlchemyModelFactory):
@@ -41,6 +42,12 @@ class UserFactory(NodeFactory):
         "service.userkey": fuzzy.FuzzyText(length=6, chars=string.lowercase)
     })
 
+
+class UserGroupFactory(NodeFactory):
+    class Meta:
+        model = UserGroup
+    
+    
 class DocumentFactory(NodeFactory):
     class Meta:
         model = Document

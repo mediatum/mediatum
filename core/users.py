@@ -17,22 +17,26 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
-import core.config as config
-from core.systemtypes import Users
-from . import usergroups
 import hashlib
-from core.node import Node
 import random
 import thread
 import logging
-from . import athana
+from warnings import warn
 
+from sqlalchemy.orm.exc import NoResultFound
+
+import core.config as config
+from core.node import Node
+from core import db
+from . import athana
 from utils.utils import Option
 from core.translation import getDefaultLanguage, translate
+from core.user import User
+from core.systemtypes import Users
 
 
 logg = logging.getLogger(__name__)
+q = db.query
 
 #OPTION_ENHANCED_READRIGHTS = Option("user_option_2", "editreadrights", "r", "img/changereadrights.png", "checkbox")
 #OPTION_MAX_IMAGESIZE = Option("user_option_3", "maximagesize", "0", "img/maximagesize.png", "text")
@@ -224,32 +228,29 @@ def getExternalUser(name, type="intern"):
                 return n
 
 
-def getUser(id):
+def getUser(name_or_id):
     """ returns user object from db """
-    users = tree.getRoot("users")
 
-    if id.isdigit():
-        try:
-            user = tree.getNode(id)
-            if user.type == "user":
-                return user
-            return None
-        except tree.NoSuchNodeError as e:
-            return None
+    try:
+        nid = long(name_or_id)
+    except ValueError:
+        pass
     else:
-        try:
-            user = users.getChild(id)
-            return user
-        except tree.NoSuchNodeError as e:
-            for key in getExternalAuthentificators():
-                u = getExternalUser(id, type=key)
-                if u:
-                    # u.setUserType(key)
-                    return u
-            for u in tree.getRoot("users").getChildren():
-                if u.get('service.userkey') == id:
-                    return u
-            return None
+        warn("use q(User).get(id)", DeprecationWarning)
+        return q(User).get(nid)
+    
+    name = name_or_id
+    users = q(Users).one()
+    user = users.children.filter_by(name=name).scalar()
+    if user is not None:
+        return user
+    
+    for key in getExternalAuthentificators():
+        u = getExternalUser(name, type=key)
+        if u is not None:
+            return u
+        
+    return users.children.filter(User.attrs["service.userkey"].astext == name).scalar()
 
 
 def doExternalAuthentification(name, pwd, req=None):

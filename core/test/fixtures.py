@@ -9,11 +9,12 @@ import os
 from pytest import yield_fixture, fixture
 
 from core.file import File
-from core.test.factories import NodeFactory, DocumentFactory, DirectoryFactory
+from core.test.factories import NodeFactory, DocumentFactory, DirectoryFactory, UserFactory, UserGroupFactory
 from core import db
 from contenttypes.containertypes import Collections
 from core.database.init import init_database_values
 from core.init import load_system_types, load_types
+from core.systemtypes import Users, UserGroups
 logg = logging.getLogger(__name__)
 
 
@@ -58,6 +59,30 @@ def default_data():
 @fixture
 def collections():
     return Collections("collections")
+
+
+@fixture
+def some_user():
+    return UserFactory()
+
+
+@fixture
+def users_node_with_some_user(some_user):
+    users_node = Users("users")
+    users_node.children.append(some_user)
+    return users_node
+
+
+@fixture
+def some_group():
+    return UserGroupFactory()
+
+
+@fixture
+def group_node_with_some_group(some_group):
+    groups_node = UserGroups()
+    groups_node.children.append(some_group)
+    return groups_node
 
 
 @fixture

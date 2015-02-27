@@ -22,8 +22,10 @@ from core.node import Node
 import core.usergroups as usergroups
 import core.config as config
 import core.translation as translation
+from core.transition.postgres import check_type_arg
 
 
+@check_type_arg
 class User(Node):
 
     def getGroups(self):

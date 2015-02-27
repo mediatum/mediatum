@@ -18,40 +18,36 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-#
-# needs sql table usergroup:
-#   - name varchar(50) (primary key, index, unique, not null)
-#   - description text
-#
-
-from utils.utils import Option
-from core.node import Node
 import logging
+from warnings import warn
+from core.node import Node
+from core import db
+from core.usergroup import UserGroup
+from utils.utils import Option
+
 
 logg = logging.getLogger(__name__)
+q = db.query
 
 groupoption = []
 groupoption += [Option("usergroup_option_1", "editor", "e", "img/edit_opt.png"),
                 Option("usergroup_option_2", "workfloweditor", "w", "img/edit_opt.png")]
 
-""" load all groups from db """
-
-
 def loadGroupsFromDB():
-    groups = tree.getRoot("usergroups")
-    return groups.getChildren().sort_by_name()
-
-""" get group from db """
+    warn("use q(UserGroup).sort_by_name()", DeprecationWarning)
+    return q(UserGroup).sort_by_name()
 
 
-def getGroup(id):
-    if id.isdigit():
-        return tree.getNode(id)
+def getGroup(name_or_id):
+    warn("use q(UserGroup).get(id) or q(UserGroup).filter_by(name=name)", DeprecationWarning)
+    try:
+        nid = long(name_or_id)
+    except ValueError:
+        warn("use q(UserGroup).filter_by(name=name)", DeprecationWarning)
+        return q(UserGroup).filter_by(name=name_or_id).scalar()
     else:
-        groups = tree.getRoot("usergroups")
-        return groups.getChild(id)
-
-""" create new group in db """
+        warn("use q(UserGroup).get(id)", DeprecationWarning)
+        return q(UserGroup).get(nid)
 
 
 def create_group(name, description="", option="", dynamic_users="", allow_dynamic=""):

@@ -39,9 +39,8 @@ from sqlalchemy.orm.exc import NoResultFound
 from core.transition.postgres import check_type_arg
 from core.database.postgres import rel, child_rel_options
 
+
 log = logg = logging.getLogger(__name__)
-
-
 q = db.query
 
 
@@ -646,7 +645,7 @@ class Metadatatype(Node):
                 nid = int(name)
                 return q(Mask).get(nid)
             else:
-                return self.children.filter_by(name=name, type="mask").one()
+                return self.children.filter_by(name=name, type=u"mask").one()
         except NoResultFound:
             return None
 
@@ -836,7 +835,6 @@ class Mask(Node):
     @property
     def all_maskitems(self):
         """Recursively get all maskitems.
-        XXX: do we really need this?
         """
         return self.all_children_by_query(q(Maskitem))
     
@@ -1265,6 +1263,11 @@ class Mask(Node):
 @check_type_arg
 class Maskitem(Node):
 
+
+    @property
+    def metafield(self):
+        return self.children.first()
+
     def getLabel(self):
         return self.getName()
 
@@ -1272,9 +1275,10 @@ class Maskitem(Node):
         self.setName(value)
 
     def getField(self):
-        if self.getNumChildren():
-            return self.getChildren()[0]
-        else:
+        warn("use Maskitem.metafield", DeprecationWarning)
+        try:
+            return self.metafield
+        except NoResultFound:
             return None
 
     def getDescription(self):

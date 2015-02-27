@@ -17,15 +17,15 @@ class MInt(int):
         return int.__new__(cls, value)
 
     def __add__(self, other):
-        if isinstance(other, str):
-            warn("magic cast int --> str in addition (left op)", DeprecationWarning)
-            return str(self) + other
+        if isinstance(other, basestring):
+            warn("magic cast int --> unicode in addition (left op)", DeprecationWarning)
+            return unicode(self) + other
         return int.__add__(self, other)
 
     def __radd__(self, other):
-        if isinstance(other, str):
-            warn("magic cast int --> str in addition (right op)", DeprecationWarning)
-            return other + str(self)
+        if isinstance(other, basestring):
+            warn("magic cast int --> unicode in addition (right op)", DeprecationWarning)
+            return other + unicode(self)
         return int.__add__(self, other)
     
     def __unicode__(self):

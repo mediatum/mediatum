@@ -45,7 +45,7 @@ DeclarativeBase.to_dict = to_dict
 DeclarativeBase.to_yaml = to_yaml
 
 
-logg = logging.getLogger("database")
+logg = logging.getLogger(__name__)
 
 CONNECTSTR_TEMPLATE = "postgresql+psycopg2://{user}:{passwd}@{dbhost}:{dbport}/{database}"
 
@@ -288,9 +288,9 @@ class PostgresSQLAConnector(object):
         self.database = config.get("database.db", "mediatum")
         self.user = config.get("database.user", "mediatumadmin")
         self.passwd = config.get("database.passwd", "")
-        connectstr = CONNECTSTR_TEMPLATE.format(**self.__dict__)
-        logg.info("Connecting to %s", connectstr)
-        engine = create_engine(connectstr)
+        self.connectstr = CONNECTSTR_TEMPLATE.format(**self.__dict__)
+        logg.info("Connecting to %s", self.connectstr)
+        engine = create_engine(self.connectstr)
         DeclarativeBase.metadata.bind = engine
         self.conn = engine.connect()
         self.engine = engine

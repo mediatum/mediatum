@@ -143,9 +143,8 @@ def send_thumbnail(req):
 
 
 def send_thumbnail2(req):
-    try:
-        n = tree.getNode(splitpath(req.path)[0])
-    except tree.NoSuchNodeError:
+    n = q(Node).get(splitpath(req.path)[0])
+    if n is None:
         return 404
     for f in n.getFiles():
         if f.getType().startswith("presentat"):

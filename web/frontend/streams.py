@@ -25,15 +25,19 @@ import random
 import zipfile
 import time
 
+from core import db
+from core import Node
 import core.config as config
 import core.athana as athana
 from core.archive import archivemanager
 from core.acl import AccessData
 import utils.utils
 from utils.utils import get_filesize, join_paths, clean_path, getMimeType
+from sqlalchemy.orm.exc import NoResultFound
 
 
 logg = logging.getLogger(__name__)
+q = db.query
 
 IMGNAME = re.compile("/?(attachment|doc|images|thumbs|thumb2|file|download|archive)/([^/]*)(/(.*))?$")
 
@@ -113,8 +117,8 @@ def send_rawfile(req, n=None):
 
 def send_thumbnail(req):
     try:
-        n = tree.getNode(splitpath(req.path)[0])
-    except tree.NoSuchNodeError:
+        n = q(Node).get(long(splitpath(req.path)[0]))
+    except NoResultFound:
         return 404
     for f in n.getFiles():
         if f.getType() == "thumb":
@@ -193,8 +197,8 @@ def send_file(req, download=0):
         id = id[:-13]
 
     try:
-        n = tree.getNode(id)
-    except tree.NoSuchNodeError:
+        n = q(Node).get(id)
+    except NoResultFound:
         return 404
     if not access.hasAccess(n, "data") and n.type not in ["directory", "collections", "collection"]:
         return 403

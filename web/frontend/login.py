@@ -29,8 +29,10 @@ from web.frontend import frame
 from core.translation import lang, t
 from utils.utils import mkKey
 from core.styles import theme
+from contenttypes import Collections
+from core import db
 
-
+q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -46,7 +48,6 @@ def login(req):
 
     if len(req.params) > 2 and "user" not in req.params:  # user changed to browsing
         return buildURL(req)
-
     error = 0
     username = req.params.get("user", config.get("user.guestuser"))
     password = req.params.get("password", "")
@@ -79,10 +80,9 @@ def login(req):
                 req.request["Location"] = ''.join(["https://",
                                                    config.get("host.name"),
                                                    "/node?id=",
-                                                   tree.getRoot("collections").id])
+                                                   q(Collections).one().id])
             else:
-                req.request["Location"] = ''.join(["/node?id=",
-                                                   tree.getRoot("collections").id])
+                req.request["Location"] = "/node?id={}".format(q(Collections).one().id)
             return httpstatus.HTTP_MOVED_TEMPORARILY
         else:
             error = 1

@@ -21,21 +21,34 @@ import logging
 from mediatumtal import tal
 import os
 
-from utils.utils import getCollection, Link, getFormatedString
+from mediatumtal import tal
+
+from core import db
 from core.acl import AccessData
+from core.styles import getContentStyles, theme
 from core.translation import lang, t
 from web.frontend import Content
-from web.frontend.searchresult import simple_search, extended_search
-from core.styles import getContentStyles, theme
 from utils.strings import ensure_unicode_returned
-
+from utils.utils import getCollection, Link, getFormatedString
+from web.frontend.searchresult import simple_search, extended_search
+from contenttypes import Collections
+from core.systemtypes import Root
+from sqlalchemy.orm.exc import NoResultFound
+from core.node import Node
+from contenttypes.containertypes import ContainerType
 
 logg = logging.getLogger(__name__)
+q = db.query
+
+
+def get_collections_node():
+    return q(Collections).one()
 
 
 class SingleFile:
 
     def __init__(self, file, nr, num, words=None, language=None):
+        """ XXX: param file is Node! This is very confusing..."""
         self.attachment = None
         for f in file.getFiles():
             if f.getType() == "attachment":
@@ -48,7 +61,7 @@ class SingleFile:
                     self.attachment = f
                     break
 
-        self.datatype = file.getType()
+        self.datatype = file
         self.image = file.show_node_image()
         self.text = file.show_node_text(words, language=language)
         self.fields = self.datatype.getMetaFields()
@@ -83,8 +96,9 @@ class ContentList(Content):
         self.content = None
         self.id2pos = {}
         self.sortfields = [self.collection.get("sortfield")] * SORT_FIELDS
-        if self.sortfields[0]:
-            self.files.sort_by_fields(self.sortfields)
+        # TODO access.filter returns list sometimes which don't have the sort method
+#         if self.sortfields[0]:
+#             self.files.sort_by_fields(self.sortfields)
         ls = self.collection.get("style")
         if ls:
             ls = ls.split(";")[0]
@@ -147,7 +161,8 @@ class ContentList(Content):
             if ("sortfield%d" % i) in req.params:
                 self.sortfields[i] = req.params["sortfield%d" % i]
 
-        self.files.sort_by_fields(self.sortfields)
+        # XXX: would be very slow to do this here, ideas?
+#         self.files.sort_by_fields(self.sortfields)
 
         self.content = None
         if self.nr >= 0 and self.nr < self.num:
@@ -284,7 +299,7 @@ class ContentList(Content):
         filesHTML = tal.getTAL(theme.getTemplate("content_nav.html"), {
             "nav_list": nav_list, "nav_page": nav_page, "act_page": self.page,
             "sortfields": self.sortfields, "sortfieldslist": self.getSortFieldsList(),
-            "files": tal_files, "ids": ",".join(tal_ids), "maxresult": len(self.files),
+            "files": tal_files, "ids": ",".join(str(nid) for nid in tal_ids), "maxresult": len(self.files),
             "op": "", "query": req.params.get("query", "")}, macro="files", request=req)
 
         # use template of style and build html content
@@ -299,11 +314,11 @@ def getPaths(node, access):
     list = []
 
     def r(node, path):
-        if node is tree.getRoot():
+        if isinstance(node, Root):
             return
         for p in node.getParents():
             path.append(p)
-            if p is not tree.getRoot("collections"):
+            if not isinstance(p, Collections):
                 r(p, path)
         return path
 
@@ -316,7 +331,7 @@ def getPaths(node, access):
             if access.hasReadAccess(node):
                 if node.type in ("directory", "home", "collection") or node.type.startswith("directory"):
                     paths.append(node)
-                if node is tree.getRoot("collections") or node.type == "root":
+                if isinstance(node, (Collections, Root)):
                     paths.reverse()
                     if len(paths) > 0 and not omit:
                         list.append(paths)
@@ -387,25 +402,24 @@ def fileIsNotEmpty(file):
 
 def mkContentNode(req):
     access = AccessData(req)
-    id = req.params.get("id", tree.getRoot("collections").id)
-    try:
-        node = tree.getNode(id)
-    except tree.NoSuchNodeError:
+    id = req.params.get("id", get_collections_node().id)
+    node = q(Node).get(id)
+    if node is None:
         return ContentError("No such node", 404)
     if not access.hasReadAccess(node):
         return ContentError("Permission denied", 403)
 
-    if node.type in ["directory", "collection"]:
+    if isinstance(node, ContainerType):
         if "files" not in req.params:
             for f in node.getFiles():
                 if f.type == "content" and f.mimetype == "text/html" and os.path.isfile(
                         f.retrieveFile()) and fileIsNotEmpty(f.retrieveFile()):
                     return ContentNode(node)
 
-        ids = access.filter(list(set(tree.getAllContainerChildrenAbs(node, []))))
-        node.ccount = len(ids)
+        allowed_nodes = access.filter(list(node.all_content_children))
+        node.ccount = len(allowed_nodes)
         #ids = access.filter(node.getAllChildren())
-        c = ContentList(tree.NodeList(ids), getCollection(node))
+        c = ContentList(allowed_nodes, getCollection(node))
         c.feedback(req)
         c.node = node
         return c
@@ -433,7 +447,7 @@ class ContentError(Content):
 class ContentArea(Content):
 
     def __init__(self):
-        self.content = ContentNode(tree.getRoot("collections"))
+        self.content = ContentNode(q(Collections).one())
         self.collection = None
         self.collectionlogo = None
         self.params = ""
@@ -449,7 +463,7 @@ class ContentArea(Content):
                     if(len(parents) == 0):
                         break
                     cd = parents[0]
-                    if cd is tree.getRoot("collections") or cd is tree.getRoot():
+                    if cd is q(Collections).one() or cd is q(Root).one():
                         break
                     path.append(Link('/?id=' + cd.id + '&dir=' + cd.id, cd.getLabel(), cd.getLabel()))
         elif hasattr(self.content, "linkname") and hasattr(self.content, "linktarget"):

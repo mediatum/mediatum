@@ -30,8 +30,13 @@ from core.acl import AccessData
 from core.translation import lang, t
 from core.metatype import Context
 from core.styles import theme
+from core import db
+from contenttypes import Collections
+from sqlalchemy.orm.exc import NoResultFound
+from core.node import Node
+from core.systemtypes import Searchmasks
 
-
+q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -86,10 +91,8 @@ def getSearchMask(collection):
                 break
             n = n.getParents()[0]
     if n.get("searchtype") == "own":
-        try:
-            mask = tree.getRoot("searchmasks").getChild(n.get("searchmaskname"))
-        except tree.NoSuchNodeError:
-            mask = None
+        searchmasks = q(Searchmasks).one()
+        mask = searchmasks.children.filter_by(name=n.get("searchmaskname")).scalar()
     return mask
 
 
@@ -108,7 +111,7 @@ class Searchlet(Portlet):
         self.initialize()
 
     def insideCollection(self):
-        return self.collection and self.collection.id != tree.getRoot("collections").id
+        return self.collection and self.collection.id != q(Collections).one()
 
     def initialize(self):
         types = {}
@@ -222,6 +225,8 @@ class NavTreeEntry:
 
     def __init__(self, col, node, indent, small=0, hide_empty=0, lang=None):
         self.col = col
+        from contenttypes import ContainerType
+        assert isinstance(node, ContainerType)
         self.node = node
         self.id = node.id
         self.orderpos = node.getOrderPos()
@@ -265,8 +270,8 @@ class NavTreeEntry:
     def getText(self, accessdata):
         try:
             if self.node.getContentType() == "directory":
-                if self.node.ccount == -1:
-                    self.node.ccount = tree.getAllContainerChildren(self.node)
+                if not hasattr(self.node, "ccount") or self.node.ccount == -1:
+                    self.node.ccount = self.node.all_content_children.count()
                 self.count = self.node.ccount
 
                 if self.hide_empty and self.count == 0:
@@ -304,7 +309,7 @@ class Collectionlet(Portlet):
     def __init__(self):
         Portlet.__init__(self)
         self.name = "collectionlet"
-        self.collection = tree.getRoot("collections")
+        self.collection = q(Collections).one()
         self.directory = self.collection
         self.folded = 0
         self.col_data = None
@@ -319,8 +324,8 @@ class Collectionlet(Portlet):
         self.lang = lang(req)
         if "dir" in req.params or "id" in req.params:
             id = req.params.get("id", req.params.get("dir"))
-            try:
-                node = tree.getNode(id)
+            node = q(Node).get(id)
+            if node is not None:
                 if isCollection(node):
                     self.collection = node
                     self.directory = node
@@ -332,8 +337,6 @@ class Collectionlet(Portlet):
                             self.directory = getDirectory(node)
                     if self.collection.type == "collections" or not isParentOf(node, self.collection):
                         self.collection = getCollection(node)
-            except tree.NoSuchNodeError:
-                pass
         try:
             self.hide_empty = self.collection.get("style_hide_empty") == "1"
         except:
@@ -368,7 +371,7 @@ class Collectionlet(Portlet):
                         hide_empty = 1
                     f(m, c, indent + 1, hide_empty)
 
-        f(m, tree.getRoot("collections"), 0, self.hide_empty)
+        f(m, q(Collections).one(), 0, self.hide_empty)
 
         if "cunfold" in req.params:
             id = req.params["cunfold"]
@@ -396,7 +399,7 @@ class Collectionlet(Portlet):
                 for c in node.getContainerChildren().sort_by_orderpos():
                     f(col_data, c, indent + 1)
 
-        f(col_data, tree.getRoot("collections"), 0)
+        f(col_data, q(Collections).one(), 0)
         self.col_data = col_data
 
     def getCollections(self):
@@ -549,7 +552,7 @@ class NavigationFrame:
         self.params["act_node"] = req.params.get("id", req.params.get("dir", ""))
         self.params["acl"] = AccessData(req)
 
-        rootnode = tree.getRoot("collections")
+        rootnode = q(Collections).one()
         self.params["header_items"] = rootnode.getCustomItems("header")
         self.params["footer_left_items"] = rootnode.getCustomItems("footer_left")
         self.params["footer_right_items"] = rootnode.getCustomItems("footer_right")

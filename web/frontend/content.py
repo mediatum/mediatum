@@ -373,6 +373,8 @@ class ContentNode(Content):
         paths = u""
         stylebig = self.getContentStyles()
         liststyle = req.session.get("style-" + self.node.getContentType(), "")
+        # XXX: remove session-stored Node instances!
+        self.node = db.refresh(self.node)
         show_node_big = ensure_unicode_returned(self.node.show_node_big, name="show_node_big of %s" % self.node)
 
         if not self.node.isContainer():

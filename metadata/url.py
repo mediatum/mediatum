@@ -143,7 +143,7 @@ class m_url(Metatype):
     def format_request_value_for_db(self, field, params, item, language=None):
         uri = params.get(item)
         quoted_uri = quote_uri(uri)
-        linktext = params.get(item + "_text").replace(";", "\xcd\xbe")
+        linktext = params.get(item + "_text").replace(u";", u"\u037e")
         if not quoted_uri:
             return ""
         return u"{};{}".format(quoted_uri, linktext)

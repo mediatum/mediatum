@@ -17,7 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from utils.utils import formatLongText, u
+from utils.utils import formatLongText
+from utils.strings import ensure_unicode, ensure_unicode_returned
 
 from schema.schema import getMetaFieldTypeNames, getMetaFieldTypes, getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_EXPORT, dateoption
 from core.translation import lang, translate
@@ -101,21 +102,27 @@ class m_field(Metatype):
 
     """ create view format """
 
+    @ensure_unicode_returned
     def getViewHTML(self, field, nodes, flags, language=None, template_from_caller=None, mask=None):
         element = field.getField()
         if not element:
             return []
         fieldtype = element.get("type")
-        t = getMetadataType(element.get("type"))
+        
+        def get_formatted_value(*args, **kwargs):
+            _t = getMetadataType(element.get("type"))
+            result = _t.getFormatedValue(*args, **kwargs)[1]
+            return ensure_unicode(result)
+        
         unit = u''
         if field.getUnit() != "":
             unit = ' ' + field.getUnit()
 
         if flags & VIEW_DATA_ONLY:
             if fieldtype in ['text']:
-                value = t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1]
+                value = get_formatted_value(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)
             else:
-                value = t.getFormatedValue(element, nodes[0], language)[1]
+                value = get_formatted_value(element, nodes[0], language)
         else:
             if field.getFormat() != "":
                 if fieldtype in ['text']:
@@ -128,21 +135,21 @@ class m_field(Metatype):
                     if template_from_caller and template_from_caller[0]:  # checking template on test nodes: show full length
                         fieldvalue = nodes[0].get(element.name)
                         if fieldvalue.strip():  # field is filled for this node
-                            value = t.getFormatedValue(element, nodes[0], language, template_from_caller=fieldvalue, mask=mask)[1]
+                            value = get_formatted_value(element, nodes[0], language, template_from_caller=fieldvalue, mask=mask)
                         else:  # use default
-                            value = t.getFormatedValue(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)[1]
+                            value = get_formatted_value(element, nodes[0], language, template_from_caller=template_from_caller, mask=mask)
                     else:  # cut long values
-                        value = formatLongText(t.getFormatedValue(element,
+                        value = formatLongText(get_formatted_value(element,
                                                                   nodes[0],
                                                                   language,
                                                                   template_from_caller=template_from_caller,
-                                                                  mask=mask)[1],
+                                                                  mask=mask),
                                                 element)
                 elif fieldtype in ['upload']:
                     # passing mask necessary for fieldtype='upload'
-                    value = formatLongText(t.getFormatedValue(element, nodes[0], language, mask=mask)[1], element)
+                    value = formatLongText(get_formatted_value(element, nodes[0], language, mask=mask), element)
                 else:
-                    value = formatLongText(t.getFormatedValue(element, nodes[0], language)[1], element)
+                    value = formatLongText(get_formatted_value(element, nodes[0], language), element)
 
         if len(value.strip()) > 0:
             value += unit
@@ -165,9 +172,9 @@ class m_field(Metatype):
             return ''
         elif flags & VIEW_DATA_EXPORT:
             if fieldtype in ['text']:
-                return ustr(t.getFormatedValue(element, nodes[0], language, html=0, template_from_caller=template_from_caller, mask=mask)[1])
+                return get_formatted_value(element, nodes[0], language, html=0, template_from_caller=template_from_caller, mask=mask)
             else:
-                return ustr(t.getFormatedValue(element, nodes[0], language, html=0)[1])
+                return get_formatted_value(element, nodes[0], language, html=0)
             # return element.get("type")
         else:
             # standard view

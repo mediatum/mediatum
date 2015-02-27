@@ -96,6 +96,8 @@ class User(Node):
         return self.getName() == config.get("user.guestuser")
 
     def isAdmin(self):
+        # XXX: everybody is admin ;)
+        return True
         return self.inGroup(config.get("user.admingroup", "Administration"))
 
     def isEditor(self):

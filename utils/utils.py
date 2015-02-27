@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import inspect
+import logging
 import stat
 import traceback
 import sys
@@ -27,13 +28,14 @@ import hashlib
 import re
 import random
 import io
-import logging
 from warnings import warn
 from urlparse import parse_qsl, urlsplit, urlunsplit
 from urllib import quote, urlencode
 
 import xml.parsers.expat
 from HTMLParser import HTMLParser
+from functools import wraps
+
 from .compat import iteritems
 from .strings import ensure_unicode_returned
 
@@ -381,6 +383,9 @@ def isCollection(node):
 
 
 def getCollection(node):
+    from core import db
+    from contenttypes import Collections
+    q = db.query
     def p(node):
         if node.type == "collection" or node.type == "collections":
             return node
@@ -391,7 +396,7 @@ def getCollection(node):
         return None
     collection = p(node)
     if collection is None:
-        collection = tree.getRoot("collections")
+        collection = q(Collections).one()
     return collection
 
 
@@ -415,6 +420,9 @@ def isDirectory(node):
 
 
 def getDirectory(node):
+    from core import db
+    q = db.query
+    from contenttypes.containertypes import Collections
     def p(node):
         if node.type.startswith("directory"):
             return node
@@ -425,7 +433,7 @@ def getDirectory(node):
         return None
     directory = p(node)
     if directory is None:
-        directory = core.tree.getRoot("collections")
+        directory = q(Collections).one()
     return directory
 
 

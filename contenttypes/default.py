@@ -520,10 +520,14 @@ class Default(Node):
         return self.getName()
 
 
-class ContentType(Default, NodeSchemaMixin):
+class ContentType(Default, ContentTypeSchemaMixin):
 
     """(Abstract) base class for all content node types.
     """
     def getSchema(self):
         warn("deprecated, use ContentType.schema", DeprecationWarning)
         return self.schema
+
+
+class File(ContentType):
+    pass

@@ -45,6 +45,7 @@ class TextMetafieldFactory(MetafieldFactory):
     })
 
 
+
 class FieldMaskitemFactory(SQLAFactory):
     class Meta:
         model = Maskitem
@@ -54,10 +55,16 @@ class FieldMaskitemFactory(SQLAFactory):
         "type": "field"
     })
 
+
 class MaskFactory(SQLAFactory):
     class Meta:
         model = Mask
 
+    attrs = factory.Dict({
+        "masktype": fuzzy.FuzzyText(length=6, chars=string.lowercase)
+    })
+    
+    
 class CiteprocMaskFactory(MaskFactory):
     name = "citeproc"
     attrs = factory.Dict({

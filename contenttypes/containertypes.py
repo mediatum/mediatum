@@ -30,8 +30,8 @@ from .default import Default
 from core.database.helpers import ContainerTypeMixin
 from core.translation import t, lang
 from utils.utils import CustomItem
-from core.database.helpers import ContainerTypeMixin
 from core.transition.postgres import check_type_arg
+from schema.schema import Metafield, ContainerTypeSchemaMixin
 try:
     import web.frontend.modules.modules as frontendmods
     frontend_modules = 1
@@ -104,7 +104,7 @@ def fileIsNotEmpty(file):
 """ directory class """
 
 
-class ContainerType(Default, ContainerTypeMixin):
+class ContainerType(Default, ContainerTypeMixin, ContainerTypeSchemaMixin):
 
     """(Abstract) Base class for Nodes which contain other ContainerType/ContentType nodes
     """

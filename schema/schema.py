@@ -37,7 +37,7 @@ from core import db
 from core.systemtypes import Metadatatypes
 from sqlalchemy.orm.exc import NoResultFound
 from core.transition.postgres import check_type_arg
-from core.database.postgres.model import rel, child_rel_options
+from core.database.postgres.model import rel, child_rel_options, parent_rel_options
 from sqlalchemy.ext.hybrid import hybrid_property
 
 
@@ -628,27 +628,25 @@ class Metadatatype(Node):
             # *shrug*
             return None
 
-    def getMasks(self, type="", language=""):
-        masks = []
-        for item in self.getChildren().sort_by_orderpos():
-            if item.getContentType() == "mask":
-                if type == "":
-                    if item.getLanguage() in [language, "no"] or language == "":
-                        masks.append(item)
-                elif type == item.getMasktype():
-                    if item.getLanguage() in [language, "no"] or language == "":
-                        masks.append(item)
+    def filter_masks(self, masktype=None, language=None):
+        masks = self.masks
+        if masktype:
+            masks = masks.filter(Mask.a.masktype.astext == masktype)
+        if language:
+            # return masks with given language or no defined language
+            masks = masks.filter((Mask.a.language.astext == language) | ~Mask.attrs.has_key("language"))
         return masks
 
+    def get_mask(self, name):
+        return self.masks.filter_by(name=name).scalar()
+
     def getMask(self, name):
-        try:
-            if name.isdigit():
-                nid = int(name)
-                return q(Mask).get(nid)
-            else:
-                return self.children.filter_by(name=name, type=u"mask").one()
-        except NoResultFound:
-            return None
+        warn("use Metadatatype.get_mask instead", DeprecationWarning)
+        return self.get_mask(name)
+
+    def getMasks(self, type=None, language=None):
+        warn("use Metadatatype.filter_masks instead", DeprecationWarning)
+        return self.filter_masks(type, language).all()
 
     def searchIndexCorrupt(self):
         try:
@@ -832,6 +830,25 @@ def getMaskTypes(key="."):
 class Mask(Node):
     
     maskitems = rel("Maskitem", **child_rel_options)
+    
+    _metadatatypes = rel("Metadatatype", **parent_rel_options)
+    
+    @property
+    def masktype(self):
+        return self.get("masktype")
+    
+    @hybrid_property
+    def metadatatype(self):
+        return self._metadatatypes.scalar()
+    
+    @metadatatype.expression
+    def metadatatype_expr(cls):
+        class MetadatatypeExpr(object):
+            def __eq__(self, other):
+                return cls._metadatatypes.contains(other)
+            
+        return MetadatatypeExpr()
+    
     
     @property
     def all_maskitems(self):
@@ -1430,8 +1447,31 @@ def getFieldsForMeta(name):
     return list(getMetaType(name).getMetaFields())
 
 
-class NodeSchemaMixin(object):
+class SchemaMixin(object):
+    
+    def getMask(self, name):
+        warn("use Default.metadatatype.get_mask instead", DeprecationWarning)
+        mdt = self.metadatatype
+        return mdt.get_mask(name)
 
+    def getMasks(self, type=None, language=None):
+        warn("use Default.metadatatype.filter_masks instead", DeprecationWarning)
+        self.metadatatype.filter_masks(type, language).all()
+
+
+class ContainerTypeSchemaMixin(SchemaMixin):
+    
+    @hybrid_property
+    def metadatatype(self):
+        return q(Metadatatype).filter_by(name=self.type).one()
+     
+
+class ContentTypeSchemaMixin(SchemaMixin):
+    
+    @hybrid_property
+    def metadatatype(self):
+        return q(Metadatatype).filter_by(name=self.schema).one()
+     
     def getSchema(self):
         warn("deprecated, use ContentType.schema instead", DeprecationWarning)
         return self.schema

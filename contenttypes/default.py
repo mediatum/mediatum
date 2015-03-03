@@ -29,7 +29,7 @@ from core.node import Node
 import core.config as config
 from core.translation import lang
 from core.styles import getContentStyles
-from schema.schema import getMetadataType, VIEW_DATA_ONLY, VIEW_HIDE_EMPTY, NodeSchemaMixin
+from schema.schema import getMetadataType, VIEW_DATA_ONLY, VIEW_HIDE_EMPTY, ContentTypeSchemaMixin
 from utils.utils import Menu, highlight, format_filesize
 from export.exportutils import runTALSnippet, default_context
 from web.services.cache import date2string as cache_date2string
@@ -294,8 +294,8 @@ class Default(Node):
             return res
         else:
             metatext = list()
-            mask = self.getMask("nodesmall")
-            for m in self.getMasks("shortview", language=language):
+            mask = self.metadatatype.get_mask("nodesmall")
+            for m in self.metadatatype.filter_masks("shortview", language=language):
                 mask = m
 
             if mask:

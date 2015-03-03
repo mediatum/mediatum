@@ -12,6 +12,7 @@ from utils.compat import iteritems, itervalues
 logg = logging.getLogger(__name__)
 
 from .factories import *
+from core.test.fixtures import content_node
 
 
 METAFIELDS = [
@@ -109,3 +110,20 @@ def journal_article_mdt(article_citeproc_mask, article_metafields):
 @fixture(scope="session")
 def default_mdt(journal_article_mdt):
     return journal_article_mdt
+
+
+@fixture
+def some_mdt_with_masks():
+    mdt = DocumentMetadatatypeFactory()
+    mdt.masks.append(MaskFactory())
+    mdt.masks.append(MaskFactory(name="mask_de", attrs__language="de"))
+    mdt.masks.append(MaskFactory(name="mask_en", attrs__language="en"))
+    mdt.masks.append(MaskFactory(name="mask_en_2", attrs__language="en", attrs__masktype="testmasktype"))
+    return mdt
+
+
+@fixture
+def content_node_with_mdt(some_mdt_with_masks, content_node):
+    content_node.schema = some_mdt_with_masks.name
+    return content_node
+    

@@ -165,6 +165,14 @@ child_rel_options = dict(
     query_class=NodeAppenderQuery
 )
 
+parent_rel_options = dict(
+    secondary=t_nodemapping,
+    lazy="dynamic",
+    primaryjoin="Node.id == nodemapping.c.cid",
+    secondaryjoin="Node.id == nodemapping.c.nid",
+    query_class=NodeAppenderQuery
+)
+
 
 def _cte_subtree(node):
     from core import db

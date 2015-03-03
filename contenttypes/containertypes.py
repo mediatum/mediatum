@@ -207,14 +207,6 @@ class ContainerType(Default, ContainerTypeMixin):
     def getSysFiles(self):
         return ["statistic", "image"]
 
-    def getPossibleChildContainers(self):
-        if self.type.startswith("directory"):
-            return ["directory"]
-        elif self.type in ["collection", "collections"]:
-            return ["directory", "collection"]
-        else:
-            return []
-
     def getLabel(self, lang=None):
         if lang and self.get(u'{}.name'.format(lang)) != "":
             return self.get(u'{}.name'.format(lang))
@@ -243,37 +235,28 @@ class ContainerType(Default, ContainerTypeMixin):
         return ""
 
     def metaFields(self, lang=None):
-        ret = list()
+        metafields = []
 
-        field = Node(u"nodename", u"metafield")
-        field.set("label", t(lang, "node name"))
-        field.set("type", u"text")
-        ret.append(field)
+        field = Metafield(u"nodename", attrs={
+            "label": t(lang, "node name"),
+            "type": u"text"
+        })
+        metafields.append(field)
 
-        field = Node(u"style_full", u"metafield")
-        field.set("label", t(lang, "full view style"))
-        field.set("type", u"list")
-        field.set("valuelist", u"full_standard;full_text")
-        ret.append(field)
+        field = Metafield(u"style_full", attrs={
+            "label": t(lang, "full view style"),
+            "type": u"list",
+            "valuelist": u"full_standard;full_text"
+        })
+        metafields.append(field)
 
-        field = Node(u"style", u"metafield")
-        field.set("label", t(lang, "style"))
-        field.set("type", u"list")
-        field.set("valuelist", u"thumbnail;list;text")
-        ret.append(field)
-
-        if self.type.startswith("collection"):
-            # special fields for collections
-            field = Node(u"style_hide_empty", "metafield")
-            field.set("label", t(lang, "hide empty directories"))
-            field.set("type", u"check")
-            ret.append(field)
-
-        elif self.type.startswith("directory"):
-            # special fields for directories
-            pass
-
-        return ret
+        field = Metafield(u"style", attrs={
+            "label": t(lang, "style"),
+            "type": u"list",
+            "valuelist": u"thumbnail;list;text",
+        })
+        metafields.append(field)
+        return metafields
 
     def getEditMenuTabs(self):
         if self.getContentType() in ["collection", "collections"]:
@@ -306,25 +289,34 @@ class ContainerType(Default, ContainerTypeMixin):
 
     def event_files_changed(self):
         logg.debug("Postprocessing node %s", self.id)
-
-    def treeiconclass(self):
-        if 'collection' in self.type:
-            return "collection"
-        else:
-            return "directory"
         
+    
+
         
 # concrete ContainerTypes
 
-
 @check_type_arg
 class Directory(ContainerType):
-    pass
+    
+    def treeiconclass(self):
+        return "directory"
+    
 
 @check_type_arg
 class Collection(ContainerType):
-    pass
-
+    
+    def treeiconclass(self):
+        return "collection"
+        
+    def metaFields(self, lang=None):
+        metafields = ContainerType.metaFields(self, lang=lang)
+        field = Metafield(u"style_hide_empty")
+        
+        field.set("label", t(lang, "hide empty directories"))
+        field.set("type", u"check")
+        metafields.append(field)
+        return metafields
+    
 
 class Collections(ContainerType):
     pass

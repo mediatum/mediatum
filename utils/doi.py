@@ -50,6 +50,11 @@ def generate_doi_live(node):
     """
     prefix = config.get('doi.prefix_live')
     suffix = config.get('doi.suffix')
+
+    #strips suffix if not declared or set empty
+    if suffix is None:
+        suffix = ''
+
     params = {
         'year': '',
         'publisher': config.get('doi.publisher'),
@@ -87,7 +92,7 @@ def generate_doi_live(node):
                                    params['publisher'],
                                    params['type'],
                                    params['id'],
-                                   suffix)
+                                   suffix).rstrip('/')
 
 
 def create_meta_file(node):

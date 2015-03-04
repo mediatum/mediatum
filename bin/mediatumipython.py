@@ -43,19 +43,27 @@ The `q` function can be used to query the database. This returns SQLAlchemy mode
 .. code-block:: python
 
     # count collections
-    q(Node).filter_by(type="collection").count()
+    q(Collection).count()
     
     # get a node named test, fails if none or more than one result found
-    q(Node).filter_by(name="test").one()
+    q(Default).filter_by(name="test").one()
+
+    # get a node named test, fails if more than one result found, returns None if none found
+    q(Default).filter_by(name="test").scalar()
 
     # get the first document
-    q(Node).filter(Node.type.like("document/%").first()
+    q(Document).first()
     
-    # get all metafields of Metadatatype #816859
-    q(Node).get(816859).children.filter_by(type="metafield").all()
+    # get all content children of Collection #993321
+    q(Collection).get(993321).content_children # returns NodeAppenderQuery
+    q(Collection).get(993321).content_children.all() # returns list
+    
+    # get all masks of Metadatatype #816859
+    q(Metadatatype).get(816859).masks.all()
     
     # attribute access
-    q(Node).get(816859)["description"]
+    q(Default).get(816859)["description"]
+    q(Default).get(816859).a.description
 
 SQL
 ---
@@ -71,12 +79,11 @@ from __future__ import division, absolute_import, print_function
 import logging
 import sys
 
-from sqlalchemy import create_engine
 from sqlalchemy.sql import *
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.exc import NoResultFound
 
 from core.database.postgres import *
-from utils.compat import itervalues, iteritems
+from utils.compat import *
 
 from core import config
 import core.init as initmodule
@@ -84,32 +91,45 @@ from functools import wraps
 
 from core import init
 import core.database
-from sqlalchemy.orm.exc import NoResultFound
 init.basic_init()
 
-from core.node import Node
+from core import Node
 from core.file import File
 
 q = core.db.query
 s = core.db.session
 conn = core.db.conn
+
+### settings
+
+# set this to INFO for SQL statement echo, DEBUG for even more info from SQLAlchemy
+SQLALCHEMY_LOGGING = logging.WARN
+
+# use default connection specified by mediatum config for ipython-sql
 SQLALCHEMY_CONNECTION = core.db.connectstr
+# TODO: changing the connection string should be possible for the postgres connector, too
+
+# load types for interactive querying
 from contenttypes import Audio, ContentType, Directory, Collection, ContainerType, Collections, Home, Document, Flash, Image, Imagestream, \
-    Project, Video
-from core.systemtypes import Mappings, Metadatatypes, Root, Users, UserGroups, Navigation, Searchmasks
-from schema.schema import Metadatatype, Maskitem, Mask
+    Project, Video, Default
+from core.systemtypes import Mappings, Metadatatypes, Root, Users, UserGroups, Navigation, Searchmasks, ExternalUsers
+from schema.schema import Metadatatype, Maskitem, Mask, Metafield
 
 
+# disable mediatum loggers
 rootlogg = logging.getLogger()
 rootlogg.handlers = []
 
-# logg.basicConfig(level=logg.INFO)
-# logg.getLogger("sqlalchemy.engine").setLevel(logg.INFO)
+# init stdout logging
+logging.basicConfig(level=logging.INFO)
+
+logging.getLogger("sqlalchemy.engine").setLevel(SQLALCHEMY_LOGGING)
 
 global last_inserted_node
 last_inserted_node_id = None
 global cnode
-root = cnode = q(Node).get(1)
+# root can be None for uninitialized / corrupt databases. We allow this.
+root = cnode = q(Root).scalar()
 global lastnode
 lastnode = root
 

@@ -27,11 +27,11 @@ import core.config as config
 from core.node import Node
 from contenttypes.data import Data
 
-from core.database.helpers import ContainerTypeMixin
+from core.database.helpers import ContainerMixin
 from core.translation import t, lang
 from utils.utils import CustomItem
 from core.transition.postgres import check_type_arg
-from schema.schema import Metafield, ContainerTypeSchemaMixin
+from schema.schema import Metafield, ContainerSchemaMixin
 try:
     import web.frontend.modules.modules as frontendmods
     frontend_modules = 1
@@ -104,9 +104,9 @@ def fileIsNotEmpty(file):
 """ directory class """
 
 
-class ContainerType(Data, ContainerTypeMixin, ContainerTypeSchemaMixin):
+class Container(Data, ContainerMixin, ContainerSchemaMixin):
 
-    """(Abstract) Base class for Nodes which contain other ContainerType/ContentType nodes
+    """(Abstract) Base class for Nodes which contain other Container/ContentType nodes
     """
 
     def getTypeAlias(self):
@@ -199,7 +199,7 @@ class ContainerType(Data, ContainerTypeMixin, ContainerTypeSchemaMixin):
 
     """ format node image with standard template """
     def show_node_image(self, language=None):
-        return tal.getTAL("contenttypes/containertype.html", {"node": self}, macro="thumbnail", language=language)
+        return tal.getTAL("contenttypes/container.html", {"node": self}, macro="thumbnail", language=language)
 
     def isContainer(self):
         return 1
@@ -293,23 +293,23 @@ class ContainerType(Data, ContainerTypeMixin, ContainerTypeSchemaMixin):
     
 
         
-# concrete ContainerTypes
+# concrete Container classes
 
 @check_type_arg
-class Directory(ContainerType):
+class Directory(Container):
     
     def treeiconclass(self):
         return "directory"
     
 
 @check_type_arg
-class Collection(ContainerType):
+class Collection(Container):
     
     def treeiconclass(self):
         return "collection"
         
     def metaFields(self, lang=None):
-        metafields = ContainerType.metaFields(self, lang=lang)
+        metafields = Container.metaFields(self, lang=lang)
         field = Metafield(u"style_hide_empty")
         
         field.set("label", t(lang, "hide empty directories"))
@@ -318,9 +318,9 @@ class Collection(ContainerType):
         return metafields
     
 
-class Collections(ContainerType):
+class Collections(Container):
     pass
 
 
-class Home(ContainerType):
+class Home(Container):
     pass

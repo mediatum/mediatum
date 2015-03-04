@@ -35,7 +35,7 @@ from contenttypes import Collections
 from sqlalchemy.orm.exc import NoResultFound
 from core.node import Node
 from core.systemtypes import Searchmasks
-from contenttypes.containertypes import Directory
+from contenttypes.container import Directory
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -226,8 +226,8 @@ class NavTreeEntry:
 
     def __init__(self, col, node, indent, small=0, hide_empty=0, lang=None):
         self.col = col
-        from contenttypes import ContainerType
-        assert isinstance(node, ContainerType)
+        from contenttypes import Container
+        assert isinstance(node, Container)
         self.node = node
         self.id = node.id
         self.orderpos = node.getOrderPos()

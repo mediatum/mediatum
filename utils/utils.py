@@ -422,7 +422,7 @@ def isDirectory(node):
 def getDirectory(node):
     from core import db
     q = db.query
-    from contenttypes.containertypes import Collections
+    from contenttypes.container import Collections
     def p(node):
         if node.type.startswith("directory"):
             return node

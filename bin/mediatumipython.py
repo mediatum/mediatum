@@ -110,7 +110,7 @@ SQLALCHEMY_CONNECTION = core.db.connectstr
 # TODO: changing the connection string should be possible for the postgres connector, too
 
 # load types for interactive querying
-from contenttypes import Audio, ContentType, Directory, Collection, ContainerType, Collections, Home, Document, Flash, Image, Imagestream, \
+from contenttypes import Audio, ContentType, Directory, Collection, Container, Collections, Home, Document, Flash, Image, Imagestream, \
     Project, Video, Data
 from core.systemtypes import Mappings, Metadatatypes, Root, Users, UserGroups, Navigation, Searchmasks, ExternalUsers
 from schema.schema import Metadatatype, Maskitem, Mask, Metafield

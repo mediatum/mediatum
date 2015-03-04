@@ -35,7 +35,7 @@ from contenttypes import Collections
 from core.systemtypes import Root
 from sqlalchemy.orm.exc import NoResultFound
 from core.node import Node
-from contenttypes.containertypes import ContainerType
+from contenttypes.container import Container
 
 logg = logging.getLogger(__name__)
 q = db.query
@@ -413,7 +413,7 @@ def mkContentNode(req):
     if not access.hasReadAccess(node):
         return ContentError("Permission denied", 403)
 
-    if isinstance(node, ContainerType):
+    if isinstance(node, Container):
         if "files" not in req.params:
             for f in node.getFiles():
                 if f.type == "content" and f.mimetype == "text/html" and os.path.isfile(

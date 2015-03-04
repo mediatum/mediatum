@@ -13,10 +13,10 @@ from sqlalchemy.ext.declarative import declared_attr
 q = db.query
 
 
-class ContainerTypeMixin(object):
+class ContainerMixin(object):
     @declared_attr
     def container_children(self):
-        return rel("ContainerType", **child_rel_options)
+        return rel("Container", **child_rel_options)
 
     def getContainerChildren(self):
         warn("deprecated, use Node.container_children instead", DeprecationWarning)

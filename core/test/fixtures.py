@@ -11,7 +11,7 @@ from pytest import yield_fixture, fixture
 from core.file import File
 from core.test.factories import NodeFactory, DocumentFactory, DirectoryFactory, UserFactory, UserGroupFactory
 from core import db
-from contenttypes.containertypes import Collections
+from contenttypes.container import Collections
 from core.database.init import init_database_values
 from core.init import load_system_types, load_types
 from core.systemtypes import Users, UserGroups

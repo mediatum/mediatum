@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from contenttypes.containertypes import Directory
+from contenttypes.container import Directory
 
 
 class Project(Directory):

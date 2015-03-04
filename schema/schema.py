@@ -1459,7 +1459,7 @@ class SchemaMixin(object):
         self.metadatatype.filter_masks(type, language).all()
 
 
-class ContainerTypeSchemaMixin(SchemaMixin):
+class ContainerSchemaMixin(SchemaMixin):
     
     @hybrid_property
     def metadatatype(self):

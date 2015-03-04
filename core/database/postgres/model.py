@@ -188,7 +188,7 @@ def _cte_subtree(node):
     
     
 def _cte_subtree_container(node):
-    from contenttypes.containertypes import ContainerType
+    from contenttypes.container import Container
     from core import db
     t = db.query(t_nodemapping.c.cid).\
         filter(t_nodemapping.c.nid == node.id).\
@@ -196,7 +196,7 @@ def _cte_subtree_container(node):
 
     return t.union_all(
         db.query(t_nodemapping.c.cid).
-        join(ContainerType, ContainerType.id == t_nodemapping.c.cid).
+        join(Container, Container.id == t_nodemapping.c.cid).
         filter(t_nodemapping.c.nid == t.c.cid)
     )
 

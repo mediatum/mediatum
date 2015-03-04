@@ -4,11 +4,12 @@
     :license: GPL3, see COPYING for details
 """
 import logging
+from json import dumps
 from warnings import warn
 
-from sqlalchemy import (create_engine, Column, Table, ForeignKey, Index, Sequence,
+from sqlalchemy import (Column, Table, ForeignKey, Index, Sequence,
                         Integer, Unicode, Text, String)
-from sqlalchemy.orm import sessionmaker, relationship, backref, scoped_session, deferred
+from sqlalchemy.orm import relationship, backref, deferred
 from sqlalchemy.orm.dynamic import AppenderQuery
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
@@ -22,6 +23,7 @@ from core.node import NodeMixin
 
 from . import DeclarativeBase
 from core.database.postgres import db_metadata
+from sqlalchemy.dialects.postgresql.json import JSONElement
 
 C = Column
 FK = ForeignKey
@@ -115,23 +117,17 @@ class Access(DeclarativeBase):
     description = C(Text)
     rule = C(Text)
 
+
+
 class Attributes(object):
 
     """
     Proxy for the attrs dict.
-    Provides access to attribute values via dot notation and works as SQLAlchemy expression.
+    Provides access to attribute values via dot notation.
 
     Examples:
 
-    object level (XXX: do we want this?):
-
-        node.a.test == node.attrs["test"]
-
-    class level:
-
-        q(Document).filter(Document.a.title == "Some Title")
-
-    => finds all documents with given title.
+    node.a.test == node.attrs["test"]
     """
 
     def __init__(self, obj):
@@ -139,10 +135,66 @@ class Attributes(object):
 
     def __getattr__(self, attr):
         return self.obj.attrs[attr]
+    
 
-    def __setattr__(self, attr, value):
-        self.obj.attrs[attr] = value
 
+class AttributeExpression(JSONElement):
+    """
+    Wraps JSONElement for a more pythonic experience in SQLAlchemy expression with JSON attributes. 
+    Operators behave differently depending on the type of the right operand.
+    Nested dict / list structures are supported.
+    
+    Examples:
+
+        q(Document).filter(Document.a.title == "Some Title").one()
+        q(Image).filter(Image.a.height >= 600)
+        q(Document).filter(Document.a.title.between("a", "c")) # lexicographical order!
+
+    => finds all documents with given title.
+    """
+    def __init__(self, jsonexpr):
+        self.jsonexpr = jsonexpr
+    
+    def ___getattr__(self, attr):
+        return getattr(self.jsonexpr, attr)
+    
+    def operate(self, op, *other, **kwargs):
+        """This performs a JSON comparison (Postgres operator ->)."""
+        if len(other) == 1:
+            # this is just a optimization for special cases to avoid calling the JSON dump function; the final return is sufficient
+            other = other[0]
+            if isinstance(other, basestring):
+                return self.jsonexpr.operate(op, '"' + other + '"')
+            elif isinstance(other, bool):
+                return self.jsonexpr.operate(op, str(other).lower())
+            elif isinstance(other, (int, long)):
+                return self.jsonexpr.operate(op, str(other))
+        return self.jsonexpr.operate(op, *(dumps(o) for o in other), **kwargs)
+        
+    def like(self, other, **kwargs):
+        return self.jsonexpr.astext.like(other, **kwargs)
+    
+    @property
+    def astext(self):
+        return self.jsonexpr.astext
+    
+    def cast(self, arg):
+        return self.jsonexpr.cast(arg)
+    
+    
+class AttributesExpressionAdapter(object):
+
+    """
+    Allows "natural" access to attributes in SQLAlchemy expressions, see `AttributeExpression`.
+
+    """
+
+    def __init__(self, obj):
+        object.__setattr__(self, "obj", obj)
+
+    def __getattr__(self, attr):
+        return AttributeExpression(self.obj.attrs[attr])
+    
 
 class BaseNodeMeta(DeclarativeMeta):
 
@@ -237,6 +289,13 @@ class Node(DeclarativeBase, NodeMixin):
         """ see: Attributes"""
         if "_attributes_accessor" not in self.__dict__:
             setattr(self, "_attributes_accessor", Attributes(self))
+        return self._attributes_accessor
+    
+    @a.expression
+    def a_expr(self):
+        """ see: AttributesExpression"""
+        if "_attributes_accessor" not in self.__dict__:
+            setattr(self, "_attributes_accessor", AttributesExpressionAdapter(self))
         return self._attributes_accessor
 
     @a.setter

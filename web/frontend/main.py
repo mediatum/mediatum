@@ -32,7 +32,7 @@ from web.frontend.frame import getNavigationFrame
 from web.frontend.content import getContentArea, ContentNode
 from schema.schema import getMetadataType, getMetaType
 from core.transition import httpstatus
-from contenttypes.default import ContentType
+from contenttypes.data import ContentType
 
 
 logg = logging.getLogger(__name__)

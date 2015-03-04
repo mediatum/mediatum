@@ -261,7 +261,7 @@ class Node(DeclarativeBase, NodeMixin):
             
     @property
     def content_children_for_all_subcontainers(self):
-        from contenttypes.default import ContentType
+        from contenttypes.data import ContentType
         from core import db
         subtree = _cte_subtree_container(self)
         query = db.query(ContentType).\

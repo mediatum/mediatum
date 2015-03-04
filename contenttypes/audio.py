@@ -21,9 +21,9 @@ import logging
 import os
 import codecs
 from PIL import Image, ImageDraw
-from . import default
+from contenttypes import data
 import core.acl as acl
-from contenttypes.default import ContentType
+from contenttypes.data import ContentType
 from lib.audio import File as AudioFile
 from utils.utils import splitfilename
 from utils.date import parse_date, format_date, make_date

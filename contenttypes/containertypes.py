@@ -25,7 +25,7 @@ import codecs
 from mediatumtal import tal
 import core.config as config
 from core.node import Node
-from .default import Default
+from contenttypes.data import Data
 
 from core.database.helpers import ContainerTypeMixin
 from core.translation import t, lang
@@ -104,7 +104,7 @@ def fileIsNotEmpty(file):
 """ directory class """
 
 
-class ContainerType(Default, ContainerTypeMixin, ContainerTypeSchemaMixin):
+class ContainerType(Data, ContainerTypeMixin, ContainerTypeSchemaMixin):
 
     """(Abstract) Base class for Nodes which contain other ContainerType/ContentType nodes
     """

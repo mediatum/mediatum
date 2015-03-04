@@ -39,7 +39,7 @@ from .metatype_field import showDetailList, FieldDetail
 # meta mask methods
 from .metatype_mask import showMaskList, MaskDetails
 
-from contenttypes.default import flush_maskcache
+from contenttypes.data import flush_maskcache
 
 
 logg = logging.getLogger(__name__)

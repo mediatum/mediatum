@@ -1337,7 +1337,7 @@ def get_cachestatus(req, path, params, data):
 
 def get_maskcachestatus(req, path, params, data):
     atime = time.time()
-    from contenttypes.default import get_maskcache_report
+    from contenttypes.data import get_maskcache_report
     timetable = []
     d = {}
     d['status'] = 'ok'

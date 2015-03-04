@@ -23,7 +23,7 @@ import core.config as config
 import core.acl as acl
 import os
 import codecs
-from . import default
+from contenttypes import data
 from utils.utils import splitfilename, u, OperationException, utf8_decode_escape
 from schema.schema import VIEW_HIDE_EMPTY
 from core.translation import lang, t
@@ -31,7 +31,7 @@ from core.acl import AccessData
 from core.styles import getContentStyles
 from lib.pdf import parsepdf
 from core.attachment import filebrowser
-from contenttypes.default import ContentType
+from contenttypes.data import ContentType
 from core.transition.postgres import check_type_arg_with_schema
 
 

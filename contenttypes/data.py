@@ -103,7 +103,13 @@ def get_maskcache_entry(lookup_key):
     return res
 
 
-class Default(Node):
+class Data(Node):
+    
+    """Abstract base class for all node classes which can be viewed / fetched by frontend / api users.
+    Methods in this class are concerned with viewing / representing the contents of the data node.
+    
+    In other words: Node classes which don't inherit from this class are seen as internal 'system types'.
+    """
 
     def getTypeAlias(self):
         return "default"
@@ -128,7 +134,7 @@ class Default(Node):
 
     def show_node_image(self, language=None):
         return tal.getTAL(
-            "contenttypes/default.html", {'children': self.getChildren().sort_by_orderpos(), 'node': self}, macro="show_node_image")
+            "contenttypes/data.html", {'children': self.getChildren().sort_by_orderpos(), 'node': self}, macro="show_node_image")
 
     def show_node_text(self, words=None, language=None, separator="", labels=0, cachetype=DEFAULT_MASKCACHE):
         if cachetype not in ['shallow', 'deep']:
@@ -520,7 +526,7 @@ class Default(Node):
         return self.getName()
 
 
-class ContentType(Default, ContentTypeSchemaMixin):
+class ContentType(Data, ContentTypeSchemaMixin):
 
     """(Abstract) base class for all content node types.
     """

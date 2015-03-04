@@ -104,7 +104,7 @@ def buildNodeDescriptor(req, node, indent=None, written=None, children=True, chi
         # no attributes should be sent
         pass
     elif attrspec == 'default_mask' or attrspec not in ['none', 'all']:
-        from contenttypes.default import make_lookup_key, get_maskcache_entry, maskcache
+        from contenttypes.data import make_lookup_key, get_maskcache_entry, maskcache
         language = req.params.get('lang', '')
         lookup_key = make_lookup_key(node, language=language, labels=False)
         if lookup_key not in maskcache:

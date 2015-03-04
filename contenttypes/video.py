@@ -33,7 +33,7 @@ from core.translation import lang, t
 from core.styles import getContentStyles
 from schema.schema import VIEW_HIDE_EMPTY
 from metadata.upload import getFilelist
-from contenttypes.default import ContentType
+from contenttypes.data import ContentType
 from core.transition.postgres import check_type_arg_with_schema
 
 

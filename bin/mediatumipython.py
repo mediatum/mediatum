@@ -46,10 +46,10 @@ The `q` function can be used to query the database. This returns SQLAlchemy mode
     q(Collection).count()
     
     # get a node named test, fails if none or more than one result found
-    q(Default).filter_by(name="test").one()
+    q(Data).filter_by(name="test").one()
 
     # get a node named test, fails if more than one result found, returns None if none found
-    q(Default).filter_by(name="test").scalar()
+    q(Data).filter_by(name="test").scalar()
 
     # get the first document
     q(Document).first()
@@ -62,8 +62,8 @@ The `q` function can be used to query the database. This returns SQLAlchemy mode
     q(Metadatatype).get(816859).masks.all()
     
     # attribute access
-    q(Default).get(816859)["description"]
-    q(Default).get(816859).a.description
+    q(Data).get(816859)["description"]
+    q(Data).get(816859).a.description
 
 SQL
 ---
@@ -111,7 +111,7 @@ SQLALCHEMY_CONNECTION = core.db.connectstr
 
 # load types for interactive querying
 from contenttypes import Audio, ContentType, Directory, Collection, ContainerType, Collections, Home, Document, Flash, Image, Imagestream, \
-    Project, Video, Default
+    Project, Video, Data
 from core.systemtypes import Mappings, Metadatatypes, Root, Users, UserGroups, Navigation, Searchmasks, ExternalUsers
 from schema.schema import Metadatatype, Maskitem, Mask, Metafield
 

@@ -28,7 +28,7 @@ from core.metatype import Metatype
 
 from core.translation import getDefaultLanguage
 
-from contenttypes.default import languages as config_languages
+from contenttypes.data import languages as config_languages
 import re
 
 logg = logging.getLogger(__name__)

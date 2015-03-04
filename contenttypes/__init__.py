@@ -10,7 +10,7 @@
 
 from core.node import Node
 from contenttypes.audio import Audio
-from contenttypes.default import Default, ContentType
+from contenttypes.data import Data, ContentType
 from contenttypes.containertypes import Directory, Collection, ContainerType, Collections, Home
 from contenttypes.document import Document
 from contenttypes.flash import Flash

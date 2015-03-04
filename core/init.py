@@ -119,7 +119,7 @@ def init_db():
 
 def init_modules():
     """init modules with own init function"""
-    from contenttypes.default import init_maskcache
+    from contenttypes.data import init_maskcache
     init_maskcache()
     from export import oaisets
 #     oaisets.init()

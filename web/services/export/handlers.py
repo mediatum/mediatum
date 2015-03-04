@@ -25,14 +25,14 @@ import re
 import time
 import logging
 
-import core.tree as tree
 import core.users as users
 import core.xmlnode as xmlnode
 import copy
 
 from core import config
+from core import Node, db
 from core.acl import AccessData
-from schema.schema import getMetaType, VIEW_DATA_ONLY
+from schema.schema import getMetaType, VIEW_DATA_ONLY, Metadatatype
 
 from utils.date import format_date
 from utils.pathutils import getBrowsingPathList, isDescendantOf
@@ -42,14 +42,17 @@ import web.services.jsonnode as jsonnode
 from web.services.rssnode import template_rss_channel, template_rss_item, feed_channel_dict, try_node_date
 from web.services.serviceutils import attribute_name_filter
 
+from contenttypes import Collections, Home
+from contenttypes import Data
+
 
 logg = logging.getLogger(__name__)
+q = db.query
+
 
 host = "http://" + config.get("host.name")
 
 guestAccess = AccessData(user=users.getUser('Gast'))
-collections = tree.getRoot('collections')
-home = tree.getRoot('home')
 
 from web.services.cache import Cache
 from web.services.cache import date2string as cache_date2string
@@ -393,7 +396,7 @@ def struct2rss(req, path, params, data, d, debug=False, singlenode=False, send_c
         item_d = {}
 
         browsingPathList = getBrowsingPathList(n)
-        browsingPathList = [x for x in browsingPathList if (guestAccess.hasAccess(x[-1], 'read') and (isDescendantOf(x[-1], collections)))]
+        browsingPathList = [x for x in browsingPathList if (guestAccess.hasAccess(x[-1], 'read') and (isDescendantOf(x[-1], q(Collections).one())))]
         browsingPathList_names = [map(lambda x: x.name, browsingPath) for browsingPath in browsingPathList]
 
         # assumption: longest path is most detailled and illustrative for being used in the title
@@ -628,9 +631,9 @@ def get_node_children_struct(
     send_versions = params.get('send_versions', '').lower()  # return also nodes that are older versions of other nodes
     # return only nodes that have an EXIF location that lies between the given lon,lat values
     exif_location_rect = params.get('exif_location_rect', '')
-    mdt = params.get('mdt', '')
+    mdt_name = params.get('mdt_name', '')
     attrreg = params.get('attrreg', '')
-    q = params.get('q', '')  # node query
+    node_query = params.get('node_query', '')  # node query
     sortfield = params.get('sortfield', '')
     sortformat = params.get('sortformat', '')  # 'sissfi'
     sfields = []  # sortfields
@@ -674,8 +677,9 @@ def get_node_children_struct(
 
     # check node existence
     try:
-        node = tree.getNode(id)
+        node = q(Node).get(id)
     except:
+        logg.exception("exception in get_node_children_struct, return 404")
         res['status'] = 'fail'
         res['html_response_code'] = '404'  # not found
         res['errormessage'] = 'node not found'
@@ -686,7 +690,7 @@ def get_node_children_struct(
 
     # check node access
     if guestAccess is not None and guestAccess.hasAccess(node, "read") and (
-            isDescendantOf(node, collections) or isDescendantOf(node, home)):
+            isDescendantOf(node, q(Collections).one()) or isDescendantOf(node, q(Home).one())):
         pass
     else:
         res['status'] = 'fail'
@@ -699,8 +703,8 @@ def get_node_children_struct(
 
     atime = time.time()
     searchresult = []
-    if q:
-        cache_key = (path).split('?')[0] + '|q=' + q  # req.path
+    if node_query:
+        cache_key = (path).split('?')[0] + '|node_query=' + node_query  # req.path
         resultcode, cachecontent = searchcache.retrieve(cache_key, acceptcached)
         if resultcode == 'hit':
             time_cached = searchcache.getTimestamp(cache_key)
@@ -717,9 +721,9 @@ def get_node_children_struct(
             atime = time.time()
 
         if resultcode != 'hit':
-            searchresult = node.search(q)
-            timetable.append(['execute search q=%s on node (%s, %s, %s) resulting in %d nodes' %
-                              (q, node.id, node.type, node.name, len(searchresult)), time.time() - atime])
+            searchresult = node.search(node_query)
+            timetable.append(['execute search node_query=%s on node (%s, %s, %s) resulting in %d nodes' %
+                              (node_query, node.id, node.type, node.name, len(searchresult)), time.time() - atime])
             atime = time.time()
             searchresult = guestAccess.filter(searchresult)
             timetable.append(['filter access for search result resulting in %d nodes' % (len(searchresult)), time.time() - atime])
@@ -732,19 +736,17 @@ def get_node_children_struct(
 
     res['timetable'] = timetable
     typed_nodelist = []
-    if mdt:
-        mdt_names = [x.name for x in tree.getRoot("metadatatypes").getChildren()]
-        if mdt not in mdt_names:
+    if mdt_name:
+        mdt = q(Metadatatype).filter_by(name=mdt_name).scalar()
+        if not mdt:
             res['status'] = 'fail'
             res['html_response_code'] = '404'  # not found
-            res['errormessage'] = 'no such metadata type: ' + mdt
+            res['errormessage'] = 'no such metadata type: ' + mdt_name
             res['build_response_end'] = time.time()
             dataready = "%.3f" % (res['build_response_end'] - starttime)
             res['dataready'] = dataready
             return res
-        from core.db import database
-        db = database.getConnection()
-        typed_node_id_list = db.get_nids_by_type_suffix(mdt)
+        typed_node_id_list = db.get_nids_by_type_suffix(mdt_name)
         db.close()
         if typed_node_id_list:
             typed_nodelist = tree.NodeList(typed_node_id_list)
@@ -759,26 +761,26 @@ def get_node_children_struct(
                           (ustr(node.id), node.name, node.type, len(nodelist)), time.time() - atime])
         atime = time.time()
     elif allchildren:
-        if q and not mdt:
+        if node_query and not mdt_name:
             nodelist = searchresult
-        elif mdt and not q:
+        elif mdt_name and not node_query:
             if typed_nodelist:
                 nodelist = tree.NodeList([x for x in typed_nodelist if (guestAccess.hasAccess(x, 'read') and (isDescendantOf(x, node)))])
-                timetable.append(['''access filter of typed (%s) nodes -> (%d nodes)''' % (mdt, len(nodelist)), time.time() - atime])
+                timetable.append(['''access filter of typed (%s) nodes -> (%d nodes)''' % (mdt_name, len(nodelist)), time.time() - atime])
                 atime = time.time()
-        elif mdt and q:
+        elif mdt_name and node_query:
             filtered_nodelist = tree.NodeList(
                 [x for x in typed_nodelist if (guestAccess.hasAccess(x, 'read') and (isDescendantOf(x, node)))])
-            timetable.append(['''access filter of typed (%s) nodes -> (%d nodes)''' % (mdt, len(nodelist)), time.time() - atime])
+            timetable.append(['''access filter of typed (%s) nodes -> (%d nodes)''' % (mdt_name, len(nodelist)), time.time() - atime])
             atime = time.time()
             nodelist = intersection([filtered_nodelist, searchresult])
             timetable.append(['''intersection of typed (%s) nodes with searchresult -> (%d nodes)''' %
-                              (mdt, len(nodelist)), time.time() - atime])
+                              (mdt_name, len(nodelist)), time.time() - atime])
             atime = time.time()
         else:
             # refuse request for all children on collections root
-            if node.id != tree.getRoot('collections').id:
-                nodelist = node.getAllChildren()
+            if node.id != q(Collections.id).scalar():
+                nodelist = node.all_children_by_query(q(Data)).all()
             else:
                 nodelist = []
                 res['status'] = 'fail'
@@ -797,12 +799,12 @@ def get_node_children_struct(
         timetable.append(['''get direct children for node %s, '%s', '%s' -> (%d nodes)''' %
                           (ustr(node.id), node.name, node.type, len(nodelist)), time.time() - atime])
         atime = time.time()
-        if q:
+        if node_query:
             nodelist = intersection([searchresult, nodelist])
             timetable.append(['''searchresult filter with direct children for node %s, '%s', '%s' -> (%d nodes)''' %
                               (ustr(node.id), node.name, node.type, len(nodelist)), time.time() - atime])
             atime = time.time()
-        if mdt:
+        if mdt_name:
             nodelist = intersection([typed_nodelist, nodelist])
             timetable.append(['''filter typed nodes with direct children for node %s, '%s', '%s' -> (%d nodes)''' %
                               (ustr(node.id), node.name, node.type, len(nodelist)), time.time() - atime])
@@ -829,7 +831,7 @@ def get_node_children_struct(
     if not default_guest_access_name:
         logg.warning('No default guest access name set in config file: will use hasAccess method, which may cost web service performance')
 
-    if not mdt and not q:
+    if not mdt_name and not node_query:
         resultcode, cachecontent = filtercache.retrieve(req_path)
         if resultcode == 'hit' and len(set_nodeid_localread.difference(cachecontent[-1][0])) == 0:
             filtered_nodelist = cachecontent[-1][1]
@@ -837,7 +839,7 @@ def get_node_children_struct(
                               (len(nodelist), len(filtered_nodelist)), time.time() - atime])
             atime = time.time()
             nodelist = filtered_nodelist
-        elif not q:
+        elif not node_query:
 
             if 0 and default_guest_access_name:
                 filtered_nodelist = [x for x in nodelist if default_guest_access_name in x.localread.split(',')]

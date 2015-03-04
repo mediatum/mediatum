@@ -260,13 +260,14 @@ def test_attribute_mutation(some_node):
 
 def test_all_children_content_type(parent_node):
     q = db.query
-    from contenttypes import ContentType
-    all_content_children = parent_node.all_children_by_query(q(ContentType)).all()
+    from contenttypes import Content
+    all_content_children = parent_node.all_children_by_query(q(Content)).all()
     assert len(all_content_children) == 3
     some_node = parent_node.children[0]
     assert some_node.content_children[0] in all_content_children
     assert some_node.container_children[0].content_children[0] in all_content_children
-    # this is a contenttype below a contenttype. It's only found by all_children_by_query(), not by content_children_for_all_subcontainers.
+    # this is a content node below another content node. 
+    # It's only found by all_children_by_query(), not by content_children_for_all_subcontainers.
     assert some_node.content_children[0].content_children[0] in all_content_children
 
 

@@ -33,7 +33,7 @@ from core.translation import lang, t
 from core.styles import getContentStyles
 from schema.schema import VIEW_HIDE_EMPTY
 from metadata.upload import getFilelist
-from contenttypes.data import ContentType
+from contenttypes.data import Content
 from core.transition.postgres import check_type_arg_with_schema
 
 
@@ -78,7 +78,7 @@ def getCaptionInfoDict(self):
 
 
 @check_type_arg_with_schema
-class Video(ContentType):
+class Video(Content):
 
     """ video class """
     def getTypeAlias(self):

@@ -23,14 +23,14 @@ from core.translation import t, lang
 from core.acl import AccessData
 from contenttypes import data
 from schema.schema import VIEW_HIDE_EMPTY
-from contenttypes.data import ContentType
+from contenttypes.data import Content
 from core.transition.postgres import check_type_arg_with_schema
 
 
 """ flash class """
 
 @check_type_arg_with_schema
-class Flash(ContentType):
+class Flash(Content):
 
     def getTypeAlias(self):
         return "flash"

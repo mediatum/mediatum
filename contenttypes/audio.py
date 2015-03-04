@@ -23,7 +23,7 @@ import codecs
 from PIL import Image, ImageDraw
 from contenttypes import data
 import core.acl as acl
-from contenttypes.data import ContentType
+from contenttypes.data import Content
 from lib.audio import File as AudioFile
 from utils.utils import splitfilename
 from utils.date import parse_date, format_date, make_date
@@ -135,7 +135,7 @@ def makeMetaData(self, audiofile):
 
 
 @check_type_arg_with_schema
-class Audio(ContentType):
+class Audio(Content):
 
     def getTypeAlias(self):
         return "audio"

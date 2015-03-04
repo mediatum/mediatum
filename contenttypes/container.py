@@ -106,7 +106,7 @@ def fileIsNotEmpty(file):
 
 class Container(Data, ContainerMixin, ContainerSchemaMixin):
 
-    """(Abstract) Base class for Nodes which contain other Container/ContentType nodes
+    """(Abstract) Base class for Nodes that contain other Container/Content nodes and are displayed in the navigation area.
     """
 
     def getTypeAlias(self):

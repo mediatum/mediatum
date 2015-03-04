@@ -32,7 +32,7 @@ from web.frontend.frame import getNavigationFrame
 from web.frontend.content import getContentArea, ContentNode
 from schema.schema import getMetadataType, getMetaType
 from core.transition import httpstatus
-from contenttypes.data import ContentType
+from contenttypes.data import Content
 
 
 logg = logging.getLogger(__name__)
@@ -97,7 +97,7 @@ def display(req):
     content.feedback(req)
     try:  # add export mask data of current node to request object
         act_node = content.actNode()
-        if act_node and isinstance(act_node, ContentType):
+        if act_node and isinstance(act_node, Content):
             mdt = getMetaType(act_node.schema)
         else:
             mdt = None

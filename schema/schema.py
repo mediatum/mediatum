@@ -1466,14 +1466,14 @@ class ContainerSchemaMixin(SchemaMixin):
         return q(Metadatatype).filter_by(name=self.type).one()
      
 
-class ContentTypeSchemaMixin(SchemaMixin):
+class ContentSchemaMixin(SchemaMixin):
     
     @hybrid_property
     def metadatatype(self):
         return q(Metadatatype).filter_by(name=self.schema).one()
      
     def getSchema(self):
-        warn("deprecated, use ContentType.schema instead", DeprecationWarning)
+        warn("deprecated, use Content.schema instead", DeprecationWarning)
         return self.schema
 
     def getMetaFields(self, type=None):

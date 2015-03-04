@@ -33,7 +33,7 @@ from utils.utils import splitfilename, isnewer, iso2utf8, OperationException, ut
 from core.translation import lang, t
 from core.styles import getContentStyles
 from web.frontend import zoom
-from contenttypes.data import ContentType
+from contenttypes.data import Content
 from core.transition.postgres import check_type_arg_with_schema
 
 """ make thumbnail (jpeg 128x128) """
@@ -200,7 +200,7 @@ def dozoom(self):
 
 
 @check_type_arg_with_schema
-class Image(ContentType):
+class Image(Content):
 
     def getTypeAlias(self):
         return "image"

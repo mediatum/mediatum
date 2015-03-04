@@ -219,7 +219,7 @@ class Node(DeclarativeBase, NodeMixin):
     fulltext = deferred(C(Text))
     localread = C(Text)
     children = rel("Node", backref=bref("parents", lazy="dynamic", query_class=NodeAppenderQuery), **child_rel_options)
-    content_children = rel("ContentType", **child_rel_options)
+    content_children = rel("Content", **child_rel_options)
 
     attrs = deferred(C(MutableDict.as_mutable(JSONB)))
 
@@ -261,10 +261,10 @@ class Node(DeclarativeBase, NodeMixin):
             
     @property
     def content_children_for_all_subcontainers(self):
-        from contenttypes.data import ContentType
+        from contenttypes.data import Content
         from core import db
         subtree = _cte_subtree_container(self)
-        query = db.query(ContentType).\
+        query = db.query(Content).\
             join(t_nodemapping, Node.id == t_nodemapping.c.cid).\
             join(subtree, subtree.c.cid == t_nodemapping.c.nid)
 

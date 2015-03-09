@@ -31,7 +31,6 @@ import core.config as config
 from utils.utils import format_filesize, dec_entry_log
 from core.translation import lang
 from core.acl import AccessData
-from core.tree import FileNode
 from web.edit.edit_common import send_nodefile_tal, upload_for_html
 from core.transition import httpstatus
 

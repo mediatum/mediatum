@@ -19,103 +19,30 @@
 """
 import sys
 import os
-import re
 import time
-import urllib
 import json
-import traceback
 import core.config as config
 import core.help as help
-import core.users as users
-import core.usergroups as usergroups
 import core.translation
-import utils.log
-import logging
-from core.acl import AccessData
-from utils.utils import Link, isCollection, Menu, getFormatedString, splitpath, parseMenuString, isDirectory
+from core import Node
 
+from contenttypes import Container, Collections, Data, Home
+from core.systemtypes import Root
+from utils.utils import Menu, splitpath, parseMenuString
 from edit_common import *
 
 from core.translation import lang
 from core.translation import t as translation_t
-
 from core.transition import httpstatus
 
 from edit_common import EditorNodeList
-from schema.schema import loadTypesFromDB
-from utils.utils import funcname, get_user_id, log_func_entry, dec_entry_log
+from utils.utils import funcname, get_user_id, dec_entry_log
 
-from pprint import pprint as pp, pformat as pf
+
+from core import db
 
 logg = logging.getLogger(__name__)
-
-
-containertypes = []
-
-
-def clearFromCache(node):
-    if node is tree.getRoot('collections'):
-        return
-    for n in node.getAllChildren():
-        remove_from_nodecaches(n)
-
-
-def getContainerTreeTypes(req):
-    '''
-    function only called to fill context menues for editor tree
-    '''
-    global containertypes
-    containertypes = []
-
-    def getDatatypes(req):
-        dtypes = []
-        for scheme in AccessData(req).filter(loadTypesFromDB()):
-            dtypes += scheme.getDatatypes()
-        return set(dtypes)
-
-    if 1:  # len(containertypes)==0:
-        dtypes = getDatatypes(req)
-
-        for dtype in loadAllDatatypes():
-            if dtype.name in dtypes:
-                n = tree.Node(u"", type=dtype.name)
-                if hasattr(n, "isContainer") and hasattr(n, "isSystemType"):
-                    if n.isContainer() and not n.isSystemType():
-                        if dtype not in containertypes:
-                            containertypes.append(dtype)
-
-    ct_names = [ct.name for ct in containertypes]
-    # Datatype(key, key, cls.__name__, cls.__module__+'.'+cls.__name__)
-    for key in ['collection', 'directory']:
-        prefix = 'bare_'
-        # user should be able to create collection and directory containers to
-        # have a functinal system. in a completly empty mediatum there will be no
-        # metadatatypes (schemata) for those. they are inserted here on-the-fly
-        # as bare_collection, bare_directory
-        if key not in ct_names:
-            containertypes.append(Datatype(prefix + key, prefix + key, 'no_class',
-                                           'generated on-the-fly for editor to provide name for context_menue'))
-
-    return containertypes
-
-
-def getContainerTreeTypes_orig(req):
-    def getDatatypes(req):
-        dtypes = []
-        for scheme in AccessData(req).filter(loadTypesFromDB()):
-            dtypes += scheme.getDatatypes()
-        return set(dtypes)
-
-    if len(containertypes) == 0:
-        dtypes = getDatatypes(req)
-
-        for dtype in loadAllDatatypes():
-            if dtype.name in dtypes:
-                n = tree.Node(u"", type=dtype.name)
-                if hasattr(n, "isContainer") and hasattr(n, "isSystemType"):
-                    if n.isContainer() and not n.isSystemType():
-                        containertypes.append(dtype)
-    return containertypes
+q = db.query
 
 
 def getTreeLabel(node, lang=None):
@@ -158,6 +85,17 @@ def getEditorIconPath(node, req=None):
         return "webtree/" + node.getContentType() + ".gif"
 
 
+def get_editor_icon_path_from_nodeclass(cls):
+    '''
+    retrieve icon path for editor tree relative to img/
+    '''
+
+    if hasattr(cls, 'treeiconclass'):
+        return u"webtree/{}.gif".format(cls.treeiconclass())
+    else:
+        return u"webtree/{}.gif".format(cls.__name__)
+
+
 def getIDPaths(nid, access, sep="/", containers_only=True):
     '''
     return list of sep-separated id lists for paths to node with id nid
@@ -183,7 +121,7 @@ def getIDPaths(nid, access, sep="/", containers_only=True):
 
 
 def frameset(req):
-    id = req.params.get("id", tree.getRoot("collections").id)
+    id = req.params.get("id", q(Collections).one().id)
     tab = req.params.get("tab", None)
     language = lang(req)
 
@@ -195,10 +133,10 @@ def frameset(req):
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return
 
-    try:
-        currentdir = tree.getNode(id)
-    except tree.NoSuchNodeError:
-        currentdir = tree.getRoot("collections")
+    currentdir = q(Data).get(id)
+
+    if currentdir is None:
+        currentdir = q(Collections).one()
         req.params["id"] = currentdir.id
         id = req.params.get("id")
 
@@ -213,7 +151,7 @@ def frameset(req):
             n = None
 
     path = nidpath = ['%s' % p.id for p in nodepath]
-    containerpath = [('%s' % p.id) for p in nodepath if p.isContainer()]
+    containerpath = [('%s' % p.id) for p in nodepath if isinstance(p, Container)]
 
     user = users.getUserFromRequest(req)
     menu = filterMenu(getEditMenuString(currentdir.getContentType()), user)
@@ -247,19 +185,18 @@ def frameset(req):
     folders = {'homedir': getPathToFolder(users.getHomeDir(user)), 'trashdir': getPathToFolder(users.getSpecialDir(
         user, 'trash')), 'uploaddir': getPathToFolder(users.getSpecialDir(user, 'upload')), 'importdir': getPathToFolder(users.getSpecialDir(user, 'import'))}
 
-    cmenu = sorted(getContainerTreeTypes(req), key=lambda x: x.getName())
+    containertypes = [Container.__mapper__.polymorphic_map[n].class_ for n in Container.__mapper__._acceptable_polymorphic_identities if n not in ("collections", "home")]
     cmenu_iconpaths = []
 
-    for ct in cmenu:
-        ct_name = ct.getName()
-        _n = tree.Node(u"", type=ct_name)
+    for ct in containertypes:
+        ct_name = ct.__name__
         # translations of ct_name will be offered in editor tree context menu
         cmenu_iconpaths.append(
-            [ct, getEditorIconPath(_n), ct_name, translation_t(language, ct_name)])
+            [ct_name, translation_t(language, ct_name), get_editor_icon_path_from_nodeclass(ct)])
 
     # a html snippet may be inserted in the editor header
-    header_insert = tree.getRoot('collections').get('system.editor.header.insert.' + language).strip()
-    help_link = tree.getRoot('collections').get('system.editor.help.link.' + language).strip()
+    header_insert = q(Collections).one().get('system.editor.header.insert.' + language).strip()
+    help_link = q(Collections).one().get('system.editor.help.link.' + language).strip()
     homenodefilter = req.params.get('homenodefilter', '')
 
     v = {
@@ -268,9 +205,8 @@ def frameset(req):
         'user': user,
         'spc': spc,
         'folders': folders,
-        'collectionsid': tree.getRoot('collections').id,
-        "basedirs": [tree.getRoot('home'), tree.getRoot('collections')],
-        'cmenu': cmenu,
+        'collectionsid': q(Collections).one().id,
+        "basedirs": [q(Home).one(), q(Collections).one()],
         'cmenu_iconpaths': cmenu_iconpaths,
         'path': path,
         'containerpath': containerpath,
@@ -311,9 +247,9 @@ def handletabs(req, ids, tabs):
     user = users.getUserFromRequest(req)
     language = lang(req)
 
-    n = tree.getNode(ids[0])
+    n = q(Data).get(ids[0])
     if n.type.startswith("workflow"):
-        n = tree.getRoot()
+        n = q(Root).one()
 
     menu = filterMenu(getEditMenuString(n.getContentType()), user)
 
@@ -328,7 +264,7 @@ def handletabs(req, ids, tabs):
     spc.append(Menu("sub_header_logout", "../logout", target="_parent"))
 
     # a html snippet may be inserted in the editor header
-    help_link = tree.getRoot('collections').get('system.editor.help.link.' + language).strip()
+    help_link = q(Collections.attrs['system.editor.help.link.' + language]).scalar().strip()
     ctx = {
             "user": user,
             "ids": ids,
@@ -436,8 +372,7 @@ def edit_tree(req):
     match_error = False
 
     if req.params.get('key') == 'root':
-        nodes = core.tree.getRoot(
-            'collections').getContainerChildren().sort_by_orderpos()
+        nodes = q(Collections).one().container_children.sort_by_orderpos()
     elif req.params.get('key') == 'home':
         if not user.isAdmin():
             nodes = [home_dir]
@@ -447,7 +382,7 @@ def edit_tree(req):
                 nodes = []
                 try:
                     pattern = re.compile(homenodefilter)
-                    nodes = tree.getRoot('home').getContainerChildren().sort_by_orderpos()
+                    nodes = q(Home).one().container_children.sort_by_orderpos()
                     # filter out shoppingbags etc.
                     nodes = [n for n in nodes if n.isContainer()]
                     # filter user name - after first "("
@@ -536,7 +471,7 @@ def edit_tree(req):
 def getEditMenuString(ntype, default=0):
     menu_str = ""
 
-    for dtype in loadAllDatatypes():  # all known datatypes
+    for dtype in Data.get_all_datatypes():  # all known datatypes
         if dtype.name == ntype:
             n = tree.Node(u"", type=dtype.name)
             menu_str = getRoot().get("edit.menu." + dtype.name)
@@ -617,7 +552,6 @@ def action(req):
         newnode.set("creator", user.getName())
         newnode.set("creationtime", ustr(
             time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
-        clearFromCache(node)
         req.params["dest"] = newnode.id
 
         # try:
@@ -677,7 +611,6 @@ def action(req):
                         os.remove(f_path)
             trashdir.removeChild(n)
             dest = trashdir
-        clearFromCache(trashdir)
         changednodes[trashdir.id] = 1
         _parent_descr = [(p.name, p.id, p.type) for p in trashdir_parents]
         logg.info("%s cleared trash folder with id %s, child of %s", user.name, trashdir.id, _parent_descr)
@@ -697,8 +630,7 @@ def action(req):
                         changednodes[mysrc.id] = 1
                         trashdir.addChild(obj)
                         changednodes[trashdir.id] = 1
-                        clearFromCache(mysrc)
-                        logg.info("%s moved to trash bin %s (%s, %s) from %s (%s, %s)", 
+                        logg.info("%s moved to trash bin %s (%s, %s) from %s (%s, %s)",
                                   user.name, obj.id, obj.name, obj.type, mysrc.id, mysrc.name, mysrc.type)
                         dest = mysrc
 
@@ -721,7 +653,6 @@ def action(req):
                             changednodes[mysrc.id] = 1  # getLabel(mysrc)
                         dest.addChild(obj)
                         changednodes[dest.id] = 1  # getLabel(dest)
-                        clearFromCache(dest)
 
                         if logg.isEnabledFor(logging.INFO):
                             _what = "%s %s %r (%s, %s) " % (
@@ -787,12 +718,10 @@ def content(req):
         return req.writeTAL("web/edit/edit.html", {}, macro="error")
 
     if 'id' in req.params and len(req.params) == 1:
-        nid = req.params.get('id')
-        try:
-            node = tree.getNode(nid)
-        except:
-            node = None
-        if node:
+        nid = long(req.params.get('id'))
+        node = q(Data).get(nid)
+
+        if node is not None:
             cmd = "cd (%s %r, %r)" % (nid, node.name, node.type)
             logg.info("%s: %s", user.name, cmd)
         else:
@@ -833,7 +762,7 @@ def content(req):
         return upload_help(req)
 
     if len(ids) > 0:
-        node = tree.getNode(ids[0])
+        node = q(Node).get(long(ids[0]))
     tabs = "content"
     if node.type == "root":
         tabs = "content"
@@ -859,12 +788,12 @@ def content(req):
         ids = ids[0:1]
 
     # display current images
-    if not tree.getNode(ids[0]).isContainer():
+    if not isinstance(q(Data).get(ids[0]), Container):
         v["notdirectory"] = 1
         items = []
         if current != "view":
             for id in ids:
-                node = tree.getNode(id)
+                node = q(Data).get(id)
                 if hasattr(node, "show_node_image"):
                     if not isDirectory(node) and not node.isContainer():
                         items.append((id, node.show_node_image()))
@@ -875,7 +804,7 @@ def content(req):
             logg.debug("... %s inside %s.%s: -> display current images: items: %s", 
                        get_user_id(req), __name__, funcname(), [_t[0] for _t in items])
         try:
-            n = tree.getNode(req.params.get('src', req.params.get('id')))
+            n = q(Data).get(req.params.get('src', req.params.get('id')))
             if current == 'metadata' and 'save' in req.params:
                 pass
             s = []
@@ -897,7 +826,7 @@ def content(req):
             logg.exception('ERROR displaying current images, exception ignored')
 
     else:  # or current directory
-        n = tree.getNode(ids[0])
+        n = q(Data).get(long(ids[0]))
         s = []
         while n:
             if len(s) == 0:

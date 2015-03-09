@@ -20,11 +20,11 @@
 import os
 import core.config as config
 
-from core.db.database import getConnection
 from utils.utils import get_filesize, format_filesize
-from core.tree import getRoot
 from utils.date import format_date
-
+from core import db
+from core.systemtypes import Root
+q = db.query
 
 def getInformation():
     return {"version": "1.0", "required": 1}
@@ -56,7 +56,7 @@ def validate(req, op):
 def view(req):
     page = req.params.get("page", "")
     gotopage = req.params.get("gotopage", "")
-    root = getRoot()
+    root = q(Root).one()
 
     v = {}
     v["gotopage"] = gotopage

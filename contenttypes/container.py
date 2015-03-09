@@ -297,15 +297,17 @@ class Container(Data, ContainerMixin, ContainerSchemaMixin):
 
 @check_type_arg
 class Directory(Container):
-    
-    def treeiconclass(self):
+
+    @classmethod
+    def treeiconclass(cls):
         return "directory"
     
 
 @check_type_arg
 class Collection(Container):
-    
-    def treeiconclass(self):
+
+    @classmethod
+    def treeiconclass(cls):
         return "collection"
         
     def metaFields(self, lang=None):

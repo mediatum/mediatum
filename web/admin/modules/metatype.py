@@ -23,7 +23,6 @@ import sys
 import logging
 
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
-from core.tree import getNode, searcher
 from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings, esc
 from core.translation import lang, t

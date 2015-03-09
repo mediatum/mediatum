@@ -18,40 +18,31 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import os
-from PIL import Image, ImageDraw, ImageFont
-import StringIO
-import traceback
-import sys
-import random
 import pkgutil
 import importlib
 
 import core.config as config
 from mediatumtal import tal
-import math
-import logging
 
 from utils.utils import *
 from core.xmlnode import getNodeXML, readNodeXML
 
 import utils.date as date
 import core.acl as acl
-from schema.schema import showEditor, parseEditorData, getMetaType, VIEW_HIDE_EMPTY
 from core.translation import t, lang, addLabels, getDefaultLanguage, switch_language
 from core.users import getUserFromRequest, getUser
 
 import thread
 
-import utils.fileutils as fileutils
+from core import db
 from core import Node
 
-
+q = db.query
 logg = logging.getLogger(__name__)
 
 
 def getWorkflowList():
-    return tree.getRoot("workflows").getChildren()
+    return q(Workflows).one().children.all()
 
 
 def getWorkflow(name):

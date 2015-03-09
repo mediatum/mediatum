@@ -37,7 +37,14 @@ from core.translation import lang, t
 from core.transition import httpstatus
 from utils.strings import ensure_unicode_returned
 
+from core import db
+from core.systemtypes import Users
+from core.user import User
+from core.usergroup import UserGroup
+from core import Node
 
+q = db.query
+session = db.session
 logg = logging.getLogger(__name__)
 
 users_cache = []
@@ -388,9 +395,11 @@ def editUser_mask(req, id, err=0):
     newuser = 0
 
     if err == 0 and id == "":  # new user
-        user = tree.Node(u"", type="user")
+        user = User(u"")
         user.setOption("c")
         newuser = 1
+        q(Users).one().children.append(user)
+        session.commit()
 
     elif err == 0 and id != "":  # edit user
         if usertype == "intern":
@@ -407,8 +416,8 @@ def editUser_mask(req, id, err=0):
         for usergroup in req.params.get("usergroups", "").split(";"):
             ugroups += [usergroup]
 
-        user = tree.Node(u"", type="user")
-        user.setName(req.params.get("username", ""))
+        user = User(u"")
+        #user.setName(req.params.get("username", ""))
         user.setEmail(req.params.get("email", ""))
         user.setOption(option)
         user.setLastName(req.params.get("lastname", ""))
@@ -416,11 +425,12 @@ def editUser_mask(req, id, err=0):
         user.setTelephone(req.params.get("telephone", ""))
         user.setComment(req.params.get("comment", ""))
         user.setOrganisation(req.params.get("organisation", ""))
+        session.commit()
 
     v = getAdminStdVars(req)
     v["error"] = err
     v["user"] = user
-    v["groups"] = loadGroupsFromDB()
+    v["groups"] = q(UserGroup).order_by(Node.name).all()
     v["ugroups"] = ugroups
     v["useroption"] = useroption
     v["id"] = id

@@ -34,8 +34,8 @@ from core.translation import getDefaultLanguage, translate
 from core.user import User
 from core.systemtypes import Users
 
-
 logg = logging.getLogger(__name__)
+session = db.session
 q = db.query
 
 #OPTION_ENHANCED_READRIGHTS = Option("user_option_2", "editreadrights", "r", "img/changereadrights.png", "checkbox")
@@ -156,7 +156,7 @@ def hasTableAccess(user, node):
 
 def loadUsersFromDB():
     """ load all users from db """
-    users = tree.getRoot("users")
+    users = q(Users).one()
     return users.getChildren().sort_by_name()
 
 
@@ -305,7 +305,7 @@ def getUserFromRequest(req):
 
 def getExternalUserFolder(type=""):
     try:
-        extusers = tree.getRoot("external_users")
+        extusers = q(ExternalUsers).one()
     except tree.NoSuchNodeError:
         extusers = Node("external_users", "users")
         tree.getRoot().addChild(extusers)
@@ -540,23 +540,27 @@ def buildHomeDirName(username):
 
 
 def getHomeDir(user):
-    username = user.getName()
-    userdir = None
-    for c in tree.getRoot("home").getChildren():
-        if (c.getAccess("read") or "").find(
-                "{user " + username + "}") >= 0 and (c.getAccess("write") or "").find("{user " + username + "}") >= 0:
-            return c
+    from contenttypes import Home
+    from contenttypes import Directory
+
+    username = user.name
+    userdir = q(Home).one().children.filter(Node.name == u"Arbeitsverzeichnis ({})".format(username)).scalar()
+
+    if userdir is not None:
+        return userdir
 
     # create new userdir
-    userdir = tree.getRoot("home").addChild(Node(name=buildHomeDirName(username), type="directory"))
+    userdir = Directory(buildHomeDirName(username))
+    q(Home).one().children.append(userdir)
     userdir.setAccess("read", "{user " + username + "}")
     userdir.setAccess("write", "{user " + username + "}")
     userdir.setAccess("data", "{user " + username + "}")
     logg.debug("created new home directory %r (%r) for user %r", userdir.name, userdir.id, username)
 
+    session.commit()
     # re-sort home dirs alphabetically
     i = 0
-    for child in tree.getRoot("home").getChildren().sort_by_name():
+    for child in q(Home).one().children.sort_by_name():
         child.setOrderPos(i)
         i += 1
     return userdir

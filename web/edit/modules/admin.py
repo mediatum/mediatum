@@ -24,7 +24,6 @@ import core.users as users
 import logging
 from utils.utils import formatTechAttrs, dec_entry_log
 from utils.date import format_date, parse_date
-from core.tree import remove_from_nodecaches
 from core.transition import httpstatus
 
 

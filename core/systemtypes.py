@@ -19,8 +19,10 @@ class Root(Node):
 class Users(Node):
     pass
 
+
 class ExternalUsers(Node):
     pass
+
 
 class ExternalUsers(Node):
     pass
@@ -43,4 +45,8 @@ class Navigation(Node):
 
 
 class UserGroups(Node):
+    pass
+
+
+class Schedules(Node):
     pass

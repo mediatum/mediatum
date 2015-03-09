@@ -42,7 +42,6 @@ from utils.utils import join_paths, OperationException, EncryptionException, for
 from utils.fileutils import importFile, importFileToRealname
 from schema.bibtex import importBibTeX, MissingMapping
 
-from core.tree import Node
 from core.acl import AccessData
 from schema.schema import loadTypesFromDB
 

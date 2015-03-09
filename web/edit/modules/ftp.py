@@ -23,7 +23,6 @@ import core.users as users
 import core.config as config
 
 from schema.schema import loadTypesFromDB
-from core.datatypes import loadAllDatatypes
 from core.translation import translate, lang, t
 from core.transition import httpstatus
 

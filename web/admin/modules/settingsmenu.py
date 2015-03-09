@@ -24,8 +24,10 @@ import core.config as config
 from utils.utils import parseMenuString
 from web.admin.adminutils import adminNavigation, getAdminModuleInformation, adminModules
 from web.edit.edit import getEditModules, editModules, getEditMenuString
-from core.tree import getRoot
+from core.systemtypes import Root
+from core import db
 
+q = db.query
 
 def getInformation():
     return {"version": "1.0", "required": 1}
@@ -148,7 +150,7 @@ def getEditModuleHierarchy(typename):
 def adminModuleActions(req):
     for key in req.params.keys():
         if key == "adminmodules_default":
-            getRoot().set("admin.menu", config.get("admin.defaultmenu"))
+            q(Root).one().set("admin.menu", config.get("admin.defaultmenu"))
             break
 
         elif key.startswith("move|") and req.params.get(key) != "":
@@ -183,7 +185,7 @@ def adminModuleActions(req):
                         ret += i[0] + "(" + ";".join(i[1:]) + ");"
                     else:
                         ret += i[0] + "();"
-            getRoot().set("admin.menu", ret[:-1])
+            q(Root).one().set("admin.menu", ret[:-1])
             break
 
         elif key.startswith("show|"):
@@ -202,7 +204,7 @@ def adminModuleActions(req):
                 ret += m + "()"
             elif len(ret) > 2:
                 ret = ret[:-2] + ";" + m + ")"
-            getRoot().set("admin.menu", ret)
+            q(Root).one().set("admin.menu", ret)
             break
 
         elif key.startswith("up|"):
@@ -228,7 +230,7 @@ def adminModuleActions(req):
                     pass
                 elif items[k][0].startswith("menu"):
                     ret += items[k][0] + "(" + ";".join(items[k][1:]) + ");"
-            getRoot().set("admin.menu", ret[:-1])
+            q(Root).one().set("admin.menu", ret[:-1])
             break
 
         elif key.startswith("down|"):
@@ -254,7 +256,7 @@ def adminModuleActions(req):
                     pass
                 elif items[k][0].startswith("menu"):
                     ret += items[k][0] + "(" + ";".join(items[k][1:]) + ");"
-            getRoot().set("admin.menu", ret[:-1])
+            q(Root).one().set("admin.menu", ret[:-1])
             break
 
 
@@ -262,7 +264,7 @@ def editModuleActions(req):
     for key in req.params.keys():
         if key == "editmodules_default":
             type = req.params.get("datatype")
-            getRoot().set("edit.menu." + type, getEditMenuString(type, default=1))
+            q(Root).one().set("edit.menu." + type, getEditMenuString(type, default=1))
             break
 
         elif key.startswith("del|"):
@@ -277,14 +279,14 @@ def editModuleActions(req):
                         ret += i[0] + "(" + ";".join(i[1:]) + ");"
                     else:
                         ret += i[0] + "();"
-            getRoot().set("edit.menu." + type, ret[:-1])
+            q(Root).one().set("edit.menu." + type, ret[:-1])
             break
 
         elif key.startswith("show|"):  # add menu
             item = key.split("|")[-1][:-2]
             type = req.params.get("datatype")
             menu_str = getEditMenuString(type) + ";" + item + "()"
-            getRoot().set("edit.menu." + type, menu_str)
+            q(Root).one().set("edit.menu." + type, menu_str)
             break
 
         elif key.startswith("move|") and req.params.get(key) != "":
@@ -307,7 +309,7 @@ def editModuleActions(req):
                     pass
                 elif items[k][0].startswith("menu"):
                     ret += items[k][0] + "(" + ";".join(items[k][1:]) + ");"
-            getRoot().set("edit.menu." + type, ret[:-1])
+            q(Root).one().set("edit.menu." + type, ret[:-1])
             break
 
         elif key.startswith("up|"):
@@ -334,7 +336,7 @@ def editModuleActions(req):
                     pass
                 elif items[k][0].startswith("menu"):
                     ret += items[k][0] + "(" + ";".join(items[k][1:]) + ");"
-            getRoot().set("edit.menu." + type, ret[:-1])
+            q(Root).one().set("edit.menu." + type, ret[:-1])
             break
 
         elif key.startswith("down|"):
@@ -361,7 +363,7 @@ def editModuleActions(req):
                     pass
                 elif items[k][0].startswith("menu"):
                     ret += items[k][0] + "(" + ";".join(items[k][1:]) + ");"
-            getRoot().set("edit.menu." + type, ret[:-1])
+            q(Root).one().set("edit.menu." + type, ret[:-1])
             break
 
 

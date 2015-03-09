@@ -138,9 +138,9 @@ class Attributes(object):
     
 
 
-class AttributeExpression(JSONElement):
+class PythonicJSONElement(JSONElement):
     """
-    Wraps JSONElement for a more pythonic experience in SQLAlchemy expression with JSON attributes. 
+    Wraps a JSONElement for a more pythonic experience in SQLAlchemy expression with JSON attributes. 
     Operators behave differently depending on the type of the right operand.
     Nested dict / list structures are supported.
     
@@ -152,11 +152,6 @@ class AttributeExpression(JSONElement):
 
     => finds all documents with given title.
     """
-    def __init__(self, jsonexpr):
-        self.jsonexpr = jsonexpr
-    
-    def ___getattr__(self, attr):
-        return getattr(self.jsonexpr, attr)
     
     def operate(self, op, *other, **kwargs):
         """This performs a JSON comparison (Postgres operator ->)."""
@@ -164,28 +159,35 @@ class AttributeExpression(JSONElement):
             # this is just a optimization for special cases to avoid calling the JSON dump function; the final return is sufficient
             other = other[0]
             if isinstance(other, basestring):
-                return self.jsonexpr.operate(op, '"' + other + '"')
+                return super(JSONElement, self).operate(op, '"' + other + '"')
             elif isinstance(other, bool):
-                return self.jsonexpr.operate(op, str(other).lower())
+                return super(JSONElement, self).operate(op, str(other).lower())
             elif isinstance(other, (int, long)):
-                return self.jsonexpr.operate(op, str(other))
-        return self.jsonexpr.operate(op, *(dumps(o) for o in other), **kwargs)
+                return super(JSONElement, self).operate(op, str(other))
+        return super(JSONElement, self).operate(op, *(dumps(o) for o in other), **kwargs)
         
+    ### specialized text operators
+    
     def like(self, other, **kwargs):
-        return self.jsonexpr.astext.like(other, **kwargs)
+        return self.astext.like(other, **kwargs)
     
-    @property
-    def astext(self):
-        return self.jsonexpr.astext
+    def contains(self, other, **kwargs):
+        return self.astext.contains(other, **kwargs)
     
-    def cast(self, arg):
-        return self.jsonexpr.cast(arg)
+    def startswith(self, other, **kwargs):
+        return self.astext.startswith(other, **kwargs)
+    
+    def endswith(self, other, **kwargs):
+        return self.astext.endswith(other, **kwargs)
+    
+    def match(self, other, **kwargs):
+        return self.astext.match(other, **kwargs)
     
     
 class AttributesExpressionAdapter(object):
 
     """
-    Allows "natural" access to attributes in SQLAlchemy expressions, see `AttributeExpression`.
+    Allows "natural" access to attributes in SQLAlchemy expressions, see `PythonicJSONElement`.
 
     """
 
@@ -193,7 +195,8 @@ class AttributesExpressionAdapter(object):
         object.__setattr__(self, "obj", obj)
 
     def __getattr__(self, attr):
-        return AttributeExpression(self.obj.attrs[attr])
+#         return AttributeExpression(self.obj.attrs[attr])
+        return PythonicJSONElement(self.obj.attrs, attr)
     
 
 class BaseNodeMeta(DeclarativeMeta):

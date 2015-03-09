@@ -11,6 +11,13 @@ class NodeMixin(object):
     Contains legacy methods (camelCase) needed for old code which will be removed when they become unused.
     """
 
+    @classmethod
+    def get_all_subclasses(cls, filter_classnames=[]):
+        """Returns all known subclasses of cls"""
+        return [cls.__mapper__.polymorphic_map[n].class_ 
+         for n in cls.__mapper__._acceptable_polymorphic_identities
+         if n not in filter_classnames]    
+        
     ### TODO: versions
     @property
     def next_nid(self):

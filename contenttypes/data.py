@@ -114,6 +114,11 @@ class Data(Node):
     
     content_children = children_rel("Content")
 
+    @classmethod
+    def get_all_datatypes(cls):
+        """Returns all known subclasses of cls except `Collections` and `Home`"""
+        return cls.get_all_subclasses(filter_classnames=("collections", "home"))
+        
     def getTypeAlias(self):
         return "default"
 
@@ -540,3 +545,4 @@ class Content(Data, ContentSchemaMixin):
 
 class File(Content):
     pass
+

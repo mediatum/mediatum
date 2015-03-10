@@ -23,7 +23,7 @@ import logging
 
 from core.acl import AccessData
 from core.translation import translate, getDefaultLanguage, t, lang
-from utils.utils import isDirectory, isCollection, EncryptionException, funcname
+from utils.utils import EncryptionException, funcname
 from utils.fileutils import importFile
 from core.users import getHomeDir, getUploadDir
 
@@ -113,26 +113,18 @@ def renameHomeDir(user, newusername):
 
 
 @dec_entry_log
-def showdir(req, node, publishwarn="auto", markunpublished=0, nodes=[], sortfield_from_req=None):
+def showdir(req, node, publishwarn="auto", markunpublished=False, sortfield=None):
     if publishwarn == "auto":
         user = users.getUserFromRequest(req)
         homedir = getHomeDir(user)
         homedirs = getAllSubDirs(homedir)
         publishwarn = node in homedirs
-    if not nodes:
-        nodes = node.getChildren()
-    if sortfield_from_req and sortfield_from_req is not None:
-        logg.debug("%s, %s, sorted by sortfield_from_req=%r", __name__, funcname(), sortfield_from_req)
-    elif sortfield_from_req is None:
-        collection_sortfield = node.get("sortfield")
-        if collection_sortfield:
-            nodes = tree.NodeList([n.id for n in nodes]).sort_by_fields(
-                [collection_sortfield])
-            logg.debug("%r, %r, sorted by collection_sortfield=%r", __name__, funcname(), collection_sortfield)
-    else:
-        logg.debug("%s, %s, *not* sorted", __name__, funcname())
-
-    nodes = tree.NodeList([n.id for n in nodes if not n.type == 'shoppingbag'])
+    nodes = node.content_children # XXX: ?? correct
+    if sortfield is None:
+        sortfield = node.get("sortfield")
+        if sortfield:
+            nodes = node.sort_by_fields(sortfield)
+#     nodes = [n for n in nodes if not n.type == 'shoppingbag'] # XXX: ?? 
     return shownodelist(req, nodes, publishwarn=publishwarn, markunpublished=markunpublished, dir=node)
 
 
@@ -150,7 +142,7 @@ def showoperations(req, node):
 
 
 @dec_entry_log
-def shownodelist(req, nodes, publishwarn=1, markunpublished=0, dir=None):
+def shownodelist(req, nodes, publishwarn=True, markunpublished=False, dir=None):
     req.session["nodelist"] = EditorNodeList(nodes)
     script_array = "allobjects = new Array();\n"
     nodelist = []
@@ -158,13 +150,10 @@ def shownodelist(req, nodes, publishwarn=1, markunpublished=0, dir=None):
     user = users.getUserFromRequest(req)
 
     for child in nodes:
-        try:
-            if isDirectory(child) or isCollection(child):
-                continue
+        from contenttypes import Content
+        if isinstance(child, Content):
             script_array += "allobjects['%s'] = 0;\n" % child.id
             nodelist.append(child)
-        except TypeError:
-            continue
 
     chkjavascript = ""
     notpublished = {}

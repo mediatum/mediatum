@@ -114,7 +114,6 @@ def getContent(req, ids):
         stddir = ustr(l[0])+","
         stdname = "- " + tree.getNode(l[0]).getName()
 
-    #v = {"id":publishdir.id,"stddir":stddir, "stdname":stdname, "showdir":showdir(req, publishdir, publishwarn=0, markunpublished=1, nodes=[])}
     v = {"id":publishdir.id,"stddir":stddir, "stdname":stdname, "showdir":showdir(req, publishdir, publishwarn=None, markunpublished=1, nodes=[])}
     v["basedir"] = tree.getRoot('collections')
     v["script"] = "var currentitem = '%s';\nvar currentfolder = '%s'" %(publishdir.id, publishdir.id)

@@ -35,7 +35,6 @@ from core.translation import lang
 from core.translation import t as translation_t
 from core.transition import httpstatus
 
-from edit_common import EditorNodeList
 from utils.utils import funcname, get_user_id, dec_entry_log
 
 
@@ -396,12 +395,11 @@ def edit_tree(req):
                     if not match_error:
                         match_result = '#=%d+1' % len(nodes)
                     nodes.append(home_dir)
-                nodes = tree.NodeList(nodes).sort_by_orderpos()
+                nodes = nodes.sort_by_orderpos()
             else:
                 nodes = [home_dir]
     else:
-        nodes = core.tree.getNode(
-            req.params.get('key')).getContainerChildren().sort_by_orderpos()
+        nodes = q(Data).get(req.params.get('key')).container_children.sort_by_orderpos()
         # filter out shoppingbags etc.
         nodes = [n for n in nodes if n.isContainer()]
 
@@ -698,10 +696,10 @@ def showPaging(req, tab, ids):
     combodata = ""
     script = ""
     if nodelist and len(ids) == 1:
-        previd = nodelist.getPrevious(ids[0])
-        nextid = nodelist.getNext(ids[0])
-        position, absitems = nodelist.getPositionString(ids[0])
-        combodata, script = nodelist.getPositionCombo(tab)
+        previd = 0 #nodelist.getPrevious(ids[0])
+        nextid = 0 #nodelist.getNext(ids[0])
+        position, absitems = None, None#nodelist.getPositionString(ids[0])
+        combodata, script = None, None # nodelist.getPositionCombo(tab)
     v = {"nextid": nextid, "previd": previd, "position": position, "absitems":
          absitems, "tab": tab, "combodata": combodata, "script": script, "nodeid": ids[0]}
     return req.getTAL("web/edit/edit.html", v, macro="edit_paging")

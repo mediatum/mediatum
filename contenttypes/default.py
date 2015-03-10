@@ -183,11 +183,7 @@ class Default(tree.Node):
             res = []
             exception_count = {}
             mask = mfs[0]
-            _sep = ''
             for node_attribute, fd in mfs[1:]:
-                if _sep:
-                    res.append(_sep)
-                _sep = separator
                 metafield_type = fd['metafield_type']
                 field_type = fd['field_type']
                 if metafield_type in ['date', 'url', 'hlist']:
@@ -261,6 +257,7 @@ class Default(tree.Node):
                         else:
                             value = default
 
+
                 if skip_empty_fields and not value:
                     continue
 
@@ -273,7 +270,7 @@ class Default(tree.Node):
                 res.append(fd["template"] % value)
             if exception_count and len(exception_count.keys()) > 1:
                 pass
-            return ''.join(res)
+            return separator.join(res)
 
         if not separator:
             separator = "<br/>"
@@ -287,9 +284,7 @@ class Default(tree.Node):
             mfs = maskcache[lookup_key]
             res = render_mask_template(self, mfs, words=words, separator=separator)
             maskcache_accesscount[lookup_key] += 1
-            return res
         else:
-            metatext = list()
             mask = self.getMask("nodesmall")
             for m in self.getMasks("shortview", language=language):
                 mask = m
@@ -352,15 +347,13 @@ class Default(tree.Node):
 
                 maskcache[lookup_key] = mfs
                 maskcache_accesscount[lookup_key] = 0
-                return render_mask_template(self, mfs, words=words, separator=separator)
+                res = render_mask_template(self, mfs, words=words, separator=separator)
 
             else:
-                return '&lt;smallview mask not defined&gt;'
+                res = '&lt;smallview mask not defined&gt;'
 
-            if words is not None:
-                value = highlight(value, words, '<font class="hilite">', "</font>")
+        return res
 
-            return separator.join(metatext)
 
     # shallow caching
     def show_node_text_shallow(self, words=None, language=None, separator="", labels=0):

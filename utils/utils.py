@@ -327,12 +327,13 @@ def compare_digit(s1, s2):
 
 class Option:
 
-    def __init__(self, name="", shortname="", value="", imgsource="", optiontype=""):
+    def __init__(self, name="", shortname="", value="", imgsource="", optiontype="", validation_regex=""):
         self.name = name
         self.shortname = shortname
         self.value = value
         self.imgsource = imgsource
         self.optiontype = optiontype
+        self.validation_regex = validation_regex
 
     def getName(self):
         return self.name
@@ -363,6 +364,12 @@ class Option:
 
     def setOptionType(self, value):
         self.optiontype = value
+
+    def get_validation_regex(self):
+        return self.validation_regex
+
+    def set_validation_regex(self, value):
+        self.validation_regex = value
 
 
 def isCollection(node):

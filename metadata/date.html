@@ -1,6 +1,6 @@
 
 <tal:block metal:define-macro="editorfield">
-    <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-100)+'px'; name name; id name; value value; maxlenght python:str(len(value))"/>
+    <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-100)+'px'; name name; id name; value value; maxlenght python:str(len(value)); pattern pattern; title title; placeholder placeholder; required required;"/>
     <small tal:content="python:'('+field.getValues()+')'"/>
 
     <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;

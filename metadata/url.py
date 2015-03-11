@@ -55,7 +55,7 @@ class m_url(Metatype):
     icons = {"externer Link": "/img/extlink.png", "Email": "/img/email.png"}
     targets = {"selbes Fenster": "same", "neues Fenster": "_blank"}
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
         fielddef = field.getValues().split("\r\n")
         if len(fielddef) != 3:
             fielddef = ("", "", "")
@@ -64,13 +64,13 @@ class m_url(Metatype):
         if len(val) != 2:
             val = ("", "")
 
-        return tal.getTAL("metadata/url.html",
-                          {"lock": lock,
-                           "value": val,
-                           "fielddef": fielddef,
-                           "width": width,
-                           "name": field.getName(),
-                           "field": field},
+        return tal.getTAL("metadata/url.html", {"lock": lock,
+                                                "value": val,
+                                                "fielddef": fielddef,
+                                                "width": width,
+                                                "name": field.getName(),
+                                                "field": field,
+                                                "required": self.is_required(required)},
                           macro="editorfield",
                           language=language)
 

@@ -81,7 +81,7 @@ class m_dlist(Metatype):
                 valuelist.append(("option", indentstr, val, num))
         return valuelist
 
-    def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
+    def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None, required=None):
         fielddef = field.getValues().split("\r\n")  # url(source), type, name variable, value variable
         if name == "":
             name = field.getName()
@@ -89,33 +89,37 @@ class m_dlist(Metatype):
             fielddef.append("")
 
         valuelist = []
-        if fielddef[1] == 'json':
-            opener = urllib2.build_opener()
-            f = opener.open(urllib2.Request(fielddef[0], None, {}))
-            data = json.load(f)
-            data.sort(lambda x, y: cmp(x[fielddef[2]], y[fielddef[2]]))
-            for item in data:
-                valuelist.append({'select_text': fielddef[4].replace(fielddef[2], item[fielddef[2]]).replace(
-                    fielddef[3], item[fielddef[3]]), 'select_value': item[fielddef[3]]})
-            f.close()
-        elif fielddef[1] == 'list':
-            opener = urllib2.build_opener()
-            f = opener.open(urllib2.Request(fielddef[0], None, {}))
-            for item in f.read().split("\n"):
-                if not item.startswith("#"):
-                    if ";" in item:
-                        _v, _t = item.split(";")
-                    else:
-                        _v = _t = item
-                    valuelist.append({'select_text': _t.strip(), 'select_value': _v.strip()})
-            f.close()
-        return tal.getTAL("metadata/dlist.html",
-                          {"lock": lock,
-                           "name": name,
-                           "width": width,
-                           "value": value,
-                           "valuelist": valuelist,
-                           "fielddef": fielddef},
+        try:
+            if fielddef[1] == 'json':
+                opener = urllib2.build_opener()
+                f = opener.open(urllib2.Request(fielddef[0], None, {}))
+                data = json.load(f)
+                data.sort(lambda x, y: cmp(x[fielddef[2]], y[fielddef[2]]))
+                for item in data:
+                    valuelist.append({'select_text': fielddef[4].replace(fielddef[2], item[fielddef[2]]).replace(
+                        fielddef[3], item[fielddef[3]]), 'select_value': item[fielddef[3]]})
+                f.close()
+            elif fielddef[1] == 'list':
+                opener = urllib2.build_opener()
+                f = opener.open(urllib2.Request(fielddef[0], None, {}))
+                for item in f.read().split("\n"):
+                    if not item.startswith("#"):
+                        if ";" in item:
+                            _v, _t = item.split(";")
+                        else:
+                            _v = _t = item
+                        valuelist.append({'select_text': _t.strip(), 'select_value': _v.strip()})
+                f.close()
+        except:
+            #enables the field to be added without fields filled in without throwing an exception
+            pass
+        return tal.getTAL("metadata/dlist.html", {"lock": lock,
+                                                   "name": name,
+                                                   "width": width,
+                                                   "value": value,
+                                                   "valuelist": valuelist,
+                                                   "fielddef": fielddef,
+                                                   "required": self.is_required(required)},
                           macro="editorfield",
                           language=language)
 

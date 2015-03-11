@@ -1,5 +1,5 @@
 <tal:block metal:define-macro="editorfield" tal:define="schema python:field.getSchemaNode().getName()">
-    <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-50)+'px'; name name; id name; value value"/>
+    <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-50)+'px'; name name; id name; value value; required required"/>
     &nbsp;
     <button tal:attributes="name python:'indexbutton_'+name; onclick python:'openPopup(\'/metatype/ilist?pid='+field.getName()+'&type='+field.getFieldtype()+'&name='+name+'&schema='+schema+'\', \'\', 400, 400)'" style="width: 44px; padding: 0px;" type="button" i18:attributes="title editor_index_title" i18n:translate="editor_index">Index</button>
     <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/text?name='+name+'\', \'\', 550, 470)'" style="horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px" type="button" i18n:attributes="title ilist_titlepopupbutton"><img src="/img/edit_spc.png" style="height:14px"/></button>

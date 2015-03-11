@@ -26,7 +26,7 @@ from schema.schema import dateoption
 
 class m_date(Metatype):
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
         d = field.getSystemFormat(str(field.getValues()))
 
         if value == "?":
@@ -36,8 +36,17 @@ class m_date(Metatype):
         except:
             pass
 
-        return tal.getTAL("metadata/date.html", {"lock": lock, "value": value, "width": width,
-                                                 "name": field.getName(), "field": field}, macro="editorfield", language=language)
+        return tal.getTAL("metadata/date.html", {"lock": lock,
+                                                 "value": value,
+                                                 "width": width,
+                                                 "name": field.getName(),
+                                                 "field": field,
+                                                 "pattern": self.get_input_pattern(field),
+                                                 "title": self.get_input_title(field),
+                                                 "placeholder": self.get_input_placeholder(field),
+                                                 "required": self.is_required(required)},
+                          macro="editorfield",
+                          language=language)
 
     def getSearchHTML(self, context):
         context.value = context.value.split(";")
@@ -90,6 +99,16 @@ class m_date(Metatype):
     # method for additional keys
     def getLabels(self):
         return m_date.labels
+
+    def get_input_pattern(self, field):
+        regexes = {date.getShortName(): date.get_validation_regex() for date in dateoption}
+        return regexes[field.getValues()]
+
+    def get_input_title(self, field):
+        return field.getValues()
+
+    def get_input_placeholder(self, field):
+        return field.getValues()
 
     labels = {"de":
               [

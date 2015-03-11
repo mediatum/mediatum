@@ -364,62 +364,53 @@ def getContent(req, ids):
                 node.set("updatetime", str(format_date()))
 
         if not hasattr(mask, "i_am_not_a_mask"):
-            errorlist = []
             if (req.params.get('generate_new_version')):
                 # Create new node version
                 _ids = []
                 _nodes = []
                 for node in nodes:
-                    if (req.params.get('version_comment', '').strip() == ''
-                            or req.params.get('version_comment', '').strip() == '&nbsp;'):
-                        errorlist.append(node.id)
-                        _nodes.append(node)
-                        _ids.append(node.id)
-                    else:
-                        n = node.createNewVersion(user)
-                        n.set("system.version.comment", '(' + t(req, "document_new_version_comment") +
-                              ')\n' + req.params.get('version_comment', ''))
+                    n = node.createNewVersion(user)
+                    n.set("system.version.comment", '(' + t(req, "document_new_version_comment") +
+                          ')\n' + req.params.get('version_comment', ''))
 
-                        # add all existing attributes to the new version node
-                        for attr, value in node.items():
-                            # do not overwrite existing attributes
-                            # do not copy system attributes
-                            if n.get(attr) != "" or attr.startswith("system."):
-                                pass
-                            else:
-                                n.set(attr, value)
+                    # add all existing attributes to the new version node
+                    for attr, value in node.items():
+                        # do not overwrite existing attributes
+                        # do not copy system attributes
+                        if n.get(attr) != "" or attr.startswith("system."):
+                            pass
+                        else:
+                            n.set(attr, value)
 
-                        _nodes.append(n)
-                        _ids.append(n.id)
+                    _nodes.append(n)
+                    _ids.append(n.id)
 
                 ids = _ids
                 idstr = ",".join(ids)
                 nodes = _nodes
                 nodes = mask.updateNode(nodes, req)
-                errorlist += mask.validateNodelist(nodes)
-                if len(errorlist) == 0:
 
-                    node_versions = nodes[0].getVersionList()
-                    update_date, creation_date = get_datelists(nodes)
+                node_versions = nodes[0].getVersionList()
+                update_date, creation_date = get_datelists(nodes)
 
-                    data = {
-                        'url': '?id=' + nodes[0].id + '&tab=metadata',
-                        'pid': None,
-                    }
+                data = {
+                    'url': '?id=' + nodes[0].id + '&tab=metadata',
+                    'pid': None,
+                }
 
-                    data["versions"] = node_versions
-                    data["creation_date"] = creation_date
-                    data["update_date"] = update_date
+                data["versions"] = node_versions
+                data["creation_date"] = creation_date
+                data["update_date"] = update_date
 
-                    _maskform, _fields = get_maskform_and_fields(
-                        nodes, mask, req)
-                    data["maskform"] = _maskform
-                    data["fields"] = _fields
+                _maskform, _fields = get_maskform_and_fields(
+                    nodes, mask, req)
+                data["maskform"] = _maskform
+                data["fields"] = _fields
 
-                    data.update(ctx)
+                data.update(ctx)
 
-                    ret += req.getTAL("web/edit/modules/metadata.html",
-                                      data, macro="redirect")
+                ret += req.getTAL("web/edit/modules/metadata.html",
+                                  data, macro="redirect")
             else:
                 if nodes:
                     old_nodename = nodes[0].name
@@ -430,7 +421,6 @@ def getContent(req, ids):
                         # for updates of node label in editor tree
                         flag_nodename_changed = str(node.id)
 
-                errorlist += mask.validateNodelist(nodes)
         else:
             for field in mask.metaFields():
                 msg = "in %s.%s: (hasattr(mask,'i_am_not_a_mask')) field: %r, field.id: %r, field.name: %r, mask: %r, maskname: %r" % (
@@ -455,18 +445,6 @@ def getContent(req, ids):
                         node.set(field.getName(), value)
                 else:
                     node.set(field.getName(), "")
-            errorlist = []
-
-        if len(errorlist) > 0 and "save" in req.params:
-            err = 1
-
-        for node in nodes:
-            if node.id in errorlist:
-                faultydir.addChild(node)
-                node.setAttribute("faulty", "true")
-            else:
-                faultydir.removeChild(node)
-                node.removeAttribute("faulty")
 
     if "edit_metadata" in req.params or node.get("faulty") == "true":
         if not hasattr(mask, "i_am_not_a_mask"):

@@ -96,7 +96,12 @@ class m_field(Metatype):
             unit += field.getUnit()
 
         ret += '<div id="editor_content">' + \
-            t.getEditorHTML(element, value=val, width=field.getWidth(), lock=lock, language=lang(req)) + unit + '</div>'
+            t.getEditorHTML(element,
+                            value=val,
+                            width=field.getWidth(),
+                            lock=lock,
+                            language=lang(req),
+                            required=field.getRequired()) + unit + '</div>'
         if not sub:
             ret += '</div>'
         return ret

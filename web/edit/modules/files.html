@@ -227,8 +227,10 @@
                                 function onNewVersionChecked (self) {
                                     if (self.checked) {
                                         $('#version_comment').show();
+                                        $('#version_comment textarea').attr('required', '');
                                     } else {
                                         $('#version_comment').hide();
+                                        $('#version_comment textarea').removeAttr('required');
                                     }
                                 }
                             </script>

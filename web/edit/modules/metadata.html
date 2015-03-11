@@ -135,9 +135,11 @@
         <script language="javascript">
             function onNewVersionChecked (self) {
                 if (self.checked) {
-                    document.getElementById('version_comment').style.display = 'block';
+                    $('#version_comment').show();
+                    $('#version_comment textarea').attr('required', '');
                 } else {
-                    document.getElementById('version_comment').style.display = 'none';
+                    $('#version_comment').hide();
+                    $('#version_comment textarea').removeAttr('required');
                 }
             }
         </script>

@@ -13,7 +13,7 @@
     <div style="float:left;position:relative;">
         <div tal:attributes="id python:ident+'_label'; class python:{'True':'multilang_show', 'False':'multilang_hide'}[str(len(languages)>0 and expand_multilang)]" tal:condition="python:languages" style="position:absolute;left:-20px;top:5px;" tal:content="python:defaultlang + ':'">TEXT</div>
         <span class="surround" style="padding-left:0px;overflow:visible;">
-            <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-26)+'px'; name python:defaultlang+'__'+name; id python:defaultlang+'__'+name; value python:value if not values else values.get(defaultlang+'__'+name) "/>
+            <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-26)+'px'; name python:defaultlang+'__'+name; id python:defaultlang+'__'+name; value python:value if not values else values.get(defaultlang+'__'+name); required required"/>
             <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/text?name='+defaultlang+'__'+name+'\', \'\', 550, 470)'"
                     style="horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px;" type="button"
                     i18n:attributes="title text_titlepopupbutton">
@@ -31,7 +31,7 @@
         <div tal:attributes="id python:ident+'_multilang'; class python:{'True':'multilang_show', 'False':'multilang_hide'}[str(len(languages)>0 and expand_multilang)]" tal:condition="languages" style="position:relative;">
             <tal:block tal:repeat="lang languages">
                 <div style="position:absolute;left:-20px;top:5px;" tal:content="python:lang + ': '">TEXT</div>
-                <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-26)+'px'; name python:lang + '__' + name; id python:lang+'__'+name; value python:values.get(lang+'__'+name) "/>
+                <input type="text" class="text" tal:attributes="required required_multilang; disabled python:{0:None,1:'disabled'}[lock]; style python:'width:'+str(width-26)+'px'; name python:lang + '__' + name; id python:lang+'__'+name; value python:values.get(lang+'__'+name);"/>
                 <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/text?name='+lang+'__'+name+'\', \'\', 550, 470)'"
                     style="horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px;" type="button"
                     i18n:attributes="title text_titlepopupbutton">
@@ -58,6 +58,14 @@
     
     function toggleDiv(src, id){
         $('#'+id+'_multilang').toggle();
+        if ($('#'+id+'_multilang input').attr('required') == undefined)
+        {
+            $('#'+id+'_multilang input').attr('required', '');
+        }
+        else
+        {
+            $('#'+id+'_multilang input').removeAttr('required');
+        }
         $('#'+id+'_label').toggle();
         $('#'+id+'_show_multilang').val($('#'+id+'_show_multilang').val() == 'multi' ? 'single' : 'multi');
         $(src).attr("title", ($(src).attr("title")==$('#text_show_multilang:first').html() ? $('#text_hide_multilang:first').html() : $('#text_show_multilang:first').html()));

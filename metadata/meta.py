@@ -24,7 +24,7 @@ from core.metatype import Metatype
 
 class m_meta(Metatype):
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
         return tal.getTAL("metadata/meta.html", {"lock": lock, "value": value, "width": width,
                                                  "name": field.getName(), "field": field}, macro="editorfield", language=language)
 

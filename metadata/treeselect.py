@@ -25,13 +25,13 @@ from core.metatype import Metatype
 
 class m_treeselect(Metatype):
 
-    def getEditorHTML(self, field, value="", width=40, lock=0, language=None):
-        return tal.getTAL("metadata/treeselect.html",
-                          {"lock": lock,
-                           "value": value,
-                           "width": width,
-                           "name": field.getName(),
-                           "field": field},
+    def getEditorHTML(self, field, value="", width=40, lock=0, language=None, required=None):
+        return tal.getTAL("metadata/treeselect.html",{"lock": lock,
+                                                      "value": value,
+                                                      "width": width,
+                                                      "name": field.getName(),
+                                                      "field": field,
+                                                      "required": self.is_required(required)},
                           macro="editorfield",
                           language=language)
 

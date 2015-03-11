@@ -24,9 +24,18 @@ from core.metatype import Metatype
 
 class m_number(Metatype):
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
-        return tal.getTAL("metadata/number.html", {"lock": lock, "value": value, "width": width,
-                                                   "name": field.getName(), "field": field}, macro="editorfield", language=language)
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
+        return tal.getTAL("metadata/number.html", {"lock": lock,
+                                                   "value": value,
+                                                   "width": width,
+                                                   "name": field.getName(),
+                                                   "field": field,
+                                                   "pattern": self.get_input_pattern(),
+                                                   "title": self.get_input_title(),
+                                                   "placeholder": self.get_input_placeholder(),
+                                                   "required": self.is_required(required)},
+                          macro="editorfield",
+                          language=language)
 
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/number.html", {"context": context}, macro="searchfield", language=context.language)
@@ -37,12 +46,23 @@ class m_number(Metatype):
             value = esc(value)
         return (field.getLabel(), value)
 
+
+
     def getName(self):
         return "fieldtype_number"
 
     # method for additional keys of type number
     def getLabels(self):
         return m_number.labels
+
+    def get_input_pattern(self):
+        return '^\d*$'
+
+    def get_input_title(self):
+        return 'Only digits are allowed.'
+
+    def get_input_placeholder(self):
+        return '#####'
 
     labels = {"de":
               [

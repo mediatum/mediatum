@@ -1,4 +1,3 @@
-
 <tal:block metal:define-macro="editorfield">
     <style type="text/css">
         div.grippie{background:#EEEEEE url(/img/grippie.png) no-repeat scroll center 2px; cursor:s-resize; height:9px; width:100%; margin-bottom:10px !important; padding:0px;}
@@ -19,7 +18,7 @@
         </div>
 
         <div class="surr">
-<textarea class="memo_text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name python:defaultlang+'__'+name; id python:defaultlang+'__'+name; onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:'width:'+str(width-20)+'px'" rows="4">
+<textarea class="memo_text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name python:defaultlang+'__'+name; id python:defaultlang+'__'+name; onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:'width:'+str(width-20)+'px'; required required" rows="4">
 <tal:block tal:replace="python:langdict[defaultlang] or ''"/></textarea>
         </div>
         <button name="button" tal:attributes="onclick python:'openPopup(\'/metatype/memo?name='+defaultlang+'__'+name+'\', \'\', 550, 600)'" style="margin-left:5px;horizontal-align:middle;min-width:20px;width:20px;padding:4px 4px" type="button" i18n:attributes="title memo_titlepopupbutton"><img src="/img/edit_spc.png" style="height:14px;"/></button>
@@ -41,7 +40,7 @@
             <div tal:attributes="id python:'div_'+lang+'__'+name" style="float:left;">
                 <div>
                     <div class="surr">
-<textarea class="memo_text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name python:lang+'__'+name; id python:lang+'__'+name; onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:'width:'+str(width-20)+'px'" rows="4">
+<textarea class="memo_text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; name python:lang+'__'+name; id python:lang+'__'+name; onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:'width:'+str(width-20)+'px'; required required" rows="4">
 <tal:block tal:replace="python:langdict[lang]" /></textarea>
                     </div>
                     <span tal:condition="python:lock!=0" tal:attributes="id python:'lockspan_'+name">&nbsp;

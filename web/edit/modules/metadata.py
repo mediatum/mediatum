@@ -439,6 +439,10 @@ def getContent(req, ids):
                 else:
                     node.set(field.getName(), "")
 
+    if "edit_metadata" in req.params or node.get("faulty") == "true":
+        if not hasattr(mask, "i_am_not_a_mask"):
+            req.params["errorlist"] = mask.validate(nodes)
+
     node_versions = nodes[0].getVersionList()
     update_date, creation_date = get_datelists(nodes)
 

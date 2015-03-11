@@ -46,6 +46,8 @@ class m_number(Metatype):
             value = esc(value)
         return (field.getLabel(), value)
 
+
+
     def getName(self):
         return "fieldtype_number"
 

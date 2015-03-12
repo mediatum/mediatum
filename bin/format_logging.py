@@ -45,8 +45,6 @@ else:
 
     period = "-".join(p)
 
-period = "2014-12"
-
 if len(sys.argv) == 2 and sys.argv[1] == "--force":
     print "force reprocess of log data"
     force = 1

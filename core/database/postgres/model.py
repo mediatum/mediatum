@@ -184,8 +184,12 @@ class PythonicJSONElement(JSONElement):
     
     def match(self, other, **kwargs):
         return self.astext.match(other, **kwargs)
-    
-    
+
+    @property
+    def json(self):
+        return JSONElement(self.left, self._path)
+
+
 class AttributesExpressionAdapter(object):
 
     """

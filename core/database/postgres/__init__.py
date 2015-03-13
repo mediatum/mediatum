@@ -45,6 +45,6 @@ def after_cursor_execute(conn, cursor, statement,
                          parameters, context, executemany):
     total = time.time() - conn.info['query_start_time'].pop(-1)
     # total in seconds
-    if total > 0.01:
+    if total > 0.1:
         statement = conn.info['current_query'].pop(-1)
         logg.warn("slow query %.1fms:\n%s", total * 1000, statement)

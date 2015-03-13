@@ -4,7 +4,6 @@
     :license: GPL3, see COPYING for details
 """
 import logging
-from warnings import warn
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -42,11 +41,11 @@ class PostgresSQLAConnector(object):
         self.Session.configure(bind=engine)
 
     def make_session(self):
-        """Create a session. 
+        """Create a session.
         For testing purposes (used in core.test.factories, for example).
         """
         return self.Session()
-    
+
     @property
     def session(self):
         return self.Session()
@@ -54,16 +53,15 @@ class PostgresSQLAConnector(object):
     def query(self, *entities, **kwargs):
         """Query proxy.
         :see: sqlalchemy.orm.session.Session.query
-        
+
         Example:
-        
+
         from core import db
         q = db.query
         q(Node).get(42)
         """
         return self.Session().query(*entities, **kwargs)
-    
-    
+
     def refresh(self, node):
         """Return a refreshed copy of `node`.
         Workaround for Node objects which are kept between requests.
@@ -71,4 +69,3 @@ class PostgresSQLAConnector(object):
         """
         from .model import Node
         return self.session.query(Node).get(node.id)
-

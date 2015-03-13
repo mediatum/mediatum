@@ -7,23 +7,21 @@ import logging
 from json import dumps
 from warnings import warn
 
-from sqlalchemy import (Column, Table, ForeignKey, Index, Sequence,
+import pyaml
+from sqlalchemy import (Column, Table, ForeignKey, Sequence,
                         Integer, Unicode, Text, String)
 from sqlalchemy.orm import relationship, backref, deferred
 from sqlalchemy.orm.dynamic import AppenderQuery
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
-
-from core import config
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.ext.hybrid import hybrid_property
-import pyaml
-from utils.magicobjects import MInt
-from core.node import NodeMixin
+from sqlalchemy.dialects.postgresql.json import JSONElement
 
+from core.node import NodeMixin
+from utils.magicobjects import MInt
 from . import DeclarativeBase
 from core.database.postgres import db_metadata
-from sqlalchemy.dialects.postgresql.json import JSONElement
 
 C = Column
 FK = ForeignKey
@@ -38,7 +36,6 @@ class LenMixin(object):
     def __len__(self):
         warn("use query.count() instead", DeprecationWarning)
         return self.count()
-
 
 
 class AppenderQueryWithLen(AppenderQuery, LenMixin):
@@ -118,7 +115,6 @@ class Access(DeclarativeBase):
     rule = C(Text)
 
 
-
 class Attributes(object):
 
     """
@@ -135,15 +131,15 @@ class Attributes(object):
 
     def __getattr__(self, attr):
         return self.obj.attrs[attr]
-    
 
 
 class PythonicJSONElement(JSONElement):
+
     """
-    Wraps a JSONElement for a more pythonic experience in SQLAlchemy expression with JSON attributes. 
+    Wraps a JSONElement for a more pythonic experience in SQLAlchemy expression with JSON attributes.
     Operators behave differently depending on the type of the right operand.
     Nested dict / list structures are supported.
-    
+
     Examples:
 
         q(Document).filter(Document.a.title == "Some Title").one()
@@ -152,7 +148,7 @@ class PythonicJSONElement(JSONElement):
 
     => finds all documents with given title.
     """
-    
+
     def __init__(self, left, right, *args, **kwargs):
         if hasattr(right, "__iter__"):
             self._path = list(right)
@@ -174,21 +170,21 @@ class PythonicJSONElement(JSONElement):
             return super(JSONElement, self).operate(op, dumps(other), **kwargs)
         # multiple operands given
         return super(JSONElement, self).operate(op, *(dumps(o) for o in other), **kwargs)
-        
-    ### specialized text operators
-    
+
+    # specialized text operators
+
     def like(self, other, **kwargs):
         return self.astext.like(other, **kwargs)
-    
+
     def contains(self, other, **kwargs):
         return self.astext.contains(other, **kwargs)
-    
+
     def startswith(self, other, **kwargs):
         return self.astext.startswith(other, **kwargs)
-    
+
     def endswith(self, other, **kwargs):
         return self.astext.endswith(other, **kwargs)
-    
+
     def match(self, other, **kwargs):
         return self.astext.match(other, **kwargs)
 
@@ -201,7 +197,7 @@ class PythonicJSONElement(JSONElement):
         if name.startswith("_") or name in ("is_literal", "key"):
             return object.__getattribute__(self, name)
         return PythonicJSONElement(self.left, self._path + [name])
-   
+
     def __getitem__(self, item):
         if hasattr(item, "__iter__"):
             return PythonicJSONElement(self.left, self._path + list(item))
@@ -221,12 +217,12 @@ class AttributesExpressionAdapter(object):
 
     def __getattr__(self, attr):
         return PythonicJSONElement(self.obj.attrs, attr)
-    
+
     def __getitem__(self, item):
         if hasattr(item, "__iter__"):
             return PythonicJSONElement(self.obj.attrs, list(item))
         return PythonicJSONElement(self.obj.attrs, item)
-    
+
 
 class BaseNodeMeta(DeclarativeMeta):
 
@@ -257,6 +253,7 @@ parent_rel_options = dict(
     query_class=NodeAppenderQuery
 )
 
+
 def children_rel(*args, **kwargs):
     extended_kwargs = child_rel_options.copy()
     extended_kwargs.update(kwargs)
@@ -280,8 +277,8 @@ def _cte_subtree(node):
         join(Node, Node.id == t_nodemapping.c.cid).
         filter(t_nodemapping.c.nid == t.c.cid)
     )
-    
-    
+
+
 def _cte_subtree_container(node):
     from contenttypes.container import Container
     from core import db
@@ -332,7 +329,7 @@ class Node(DeclarativeBase, NodeMixin):
         if "_attributes_accessor" not in self.__dict__:
             setattr(self, "_attributes_accessor", Attributes(self))
         return self._attributes_accessor
-    
+
     @a.expression
     def a_expr(self):
         """ see: AttributesExpression"""
@@ -359,7 +356,7 @@ class Node(DeclarativeBase, NodeMixin):
             self.attrs.update(attrs)
         if orderpos:
             self.orderpos = orderpos
-            
+
     @property
     def content_children_for_all_subcontainers(self):
         from contenttypes.data import Content
@@ -376,7 +373,7 @@ class Node(DeclarativeBase, NodeMixin):
         query = query.\
             join(subtree, Node.id == subtree.c.cid)
         return query
-    
+
     __mapper_args__ = {
         'polymorphic_identity': 'node',
         'polymorphic_on': type

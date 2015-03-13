@@ -16,16 +16,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import
 import logging
-from sqlalchemy.orm import Session
+
 from core import config
-from workflow.workflow import Workflows
 from core.user import User
 from core.usergroup import UserGroup
-
 from core.systemtypes import *
 from contenttypes import Collections, Home
+from workflow.workflow import Workflows
 
 
 logg = logging.getLogger("database")

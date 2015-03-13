@@ -9,7 +9,6 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.ext.hybrid import hybrid_property
-import msgpack
 from utils.compat import string_types
 import codecs
 C = Column
@@ -76,11 +75,9 @@ class Node(DeclarativeBase):
         for attr in attributes:
             self.attributes.set(attr)
 
-
     def __unicode__(self):
         return u"Node #{} {}: {} at {}".format(self.id, self.name, self.type, hex(id(self)))
-    
-    
+
     def __repr__(self):
         return self.__unicode__().encode("utf8")
 

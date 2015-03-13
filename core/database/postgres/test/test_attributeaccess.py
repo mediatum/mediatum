@@ -18,6 +18,21 @@ def test_a_expression():
     assert(isinstance(Node.a, AttributesExpressionAdapter))
 
 
+def test_a_getattr():
+    expr = Node.a.attrname
+    assert(isinstance(expr, PythonicJSONElement))
+    assert(expr.left, Node.a)
+    assert(expr.operator.opstring == "->")
+
+
+def test_a_getattr_nested():
+    expr = Node.a.deep.path.to.attribute
+    assert(isinstance(expr, PythonicJSONElement))
+    assert(expr.left, Node.a)
+    assert(expr._path, ["deep", "path", "to", "attribute"])
+    assert(expr.operator.opstring == "#>")
+
+
 def test_a_getitem():
     expr = Node.a["attrname"]
     assert(expr._path == ["attrname"])
@@ -25,6 +40,11 @@ def test_a_getitem():
     
 def test_a_getitem_nested():
     expr = Node.a["deep", "path", "to" , "attribute"]
+    assert(expr._path, ["deep", "path", "to", "attribute"])
+    
+    
+def test_a_getattr_getitem_mix():
+    expr = Node.a.deep["path"].to["attribute"]
     assert(expr._path, ["deep", "path", "to", "attribute"])
     
 ### Binary expression tests

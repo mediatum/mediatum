@@ -153,6 +153,13 @@ class PythonicJSONElement(JSONElement):
     => finds all documents with given title.
     """
     
+    def __init__(self, left, right, *args, **kwargs):
+        if hasattr(right, "__iter__"):
+            self._path = list(right)
+        else:
+            self._path = [right]
+        super(PythonicJSONElement, self).__init__(left, right, *args, **kwargs)
+
     def operate(self, op, *other, **kwargs):
         """This performs a JSON comparison (Postgres operator ->)."""
         if len(other) == 1:
@@ -189,6 +196,12 @@ class PythonicJSONElement(JSONElement):
     def json(self):
         return JSONElement(self.left, self._path)
 
+    def __getattr__(self, name):
+        # XXX: could cause some exceptions when SQLAlchemy tries to check for attributes with getattr()
+        if name.startswith("_") or name in ("is_literal", "key"):
+            return object.__getattribute__(self, name)
+        return PythonicJSONElement(self.left, self._path + [name])
+   
     def __getitem__(self, item):
         if hasattr(item, "__iter__"):
             return PythonicJSONElement(self.left, self._path + list(item))

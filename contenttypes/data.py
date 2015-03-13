@@ -33,6 +33,7 @@ from schema.schema import getMetadataType, VIEW_DATA_ONLY, VIEW_HIDE_EMPTY, Cont
 from utils.utils import Menu, highlight, format_filesize
 from export.exportutils import runTALSnippet, default_context
 from web.services.cache import date2string as cache_date2string
+from core.database.postgres.model import children_rel
 
 logg = logging.getLogger(__name__)
 
@@ -110,6 +111,8 @@ class Data(Node):
     
     In other words: Node classes which don't inherit from this class are seen as internal 'system types'.
     """
+    
+    content_children = children_rel("Content")
 
     def getTypeAlias(self):
         return "default"

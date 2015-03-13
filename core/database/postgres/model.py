@@ -230,6 +230,17 @@ parent_rel_options = dict(
     query_class=NodeAppenderQuery
 )
 
+def children_rel(*args, **kwargs):
+    extended_kwargs = child_rel_options.copy()
+    extended_kwargs.update(kwargs)
+    return relationship(*args, **extended_kwargs)
+
+
+def parents_rel(*args, **kwargs):
+    extended_kwargs = parent_rel_options.copy()
+    extended_kwargs.update(kwargs)
+    return relationship(*args, **extended_kwargs)
+
 
 def _cte_subtree(node):
     from core import db
@@ -276,7 +287,6 @@ class Node(DeclarativeBase, NodeMixin):
     fulltext = deferred(C(Text))
     localread = C(Text)
     children = rel("Node", backref=bref("parents", lazy="dynamic", query_class=NodeAppenderQuery), **child_rel_options)
-    content_children = rel("Content", **child_rel_options)
 
     attrs = deferred(C(MutableDict.as_mutable(JSONB)))
 

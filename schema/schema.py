@@ -37,7 +37,7 @@ from core import db
 from core.systemtypes import Metadatatypes
 from sqlalchemy.orm.exc import NoResultFound
 from core.transition.postgres import check_type_arg
-from core.database.postgres.model import rel, child_rel_options, parent_rel_options
+from core.database.postgres.model import children_rel, parents_rel
 from sqlalchemy.ext.hybrid import hybrid_property
 
 
@@ -558,8 +558,8 @@ def importMetaSchema(filename):
 @check_type_arg
 class Metadatatype(Node):
 
-    masks = rel("Mask", **child_rel_options)
-    metafields = rel("Metafield", **child_rel_options)
+    masks = children_rel("Mask")
+    metafields = children_rel("Metafield")
     
     @property
     def description(self):
@@ -829,9 +829,9 @@ def getMaskTypes(key="."):
 @check_type_arg
 class Mask(Node):
     
-    maskitems = rel("Maskitem", **child_rel_options)
+    maskitems = children_rel("Maskitem")
     
-    _metadatatypes = rel("Metadatatype", **parent_rel_options)
+    _metadatatypes = parents_rel("Metadatatype")
     
     @property
     def masktype(self):
@@ -1281,7 +1281,7 @@ class Mask(Node):
 @check_type_arg
 class Maskitem(Node):
 
-    _metafields = rel("Metafield", backref="maskitems", **child_rel_options)
+    _metafields = children_rel("Metafield", backref="maskitems")
     
     @hybrid_property
     def metafield(self):

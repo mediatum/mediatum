@@ -164,6 +164,8 @@ class PythonicJSONElement(JSONElement):
                 return super(JSONElement, self).operate(op, str(other).lower())
             elif isinstance(other, (int, long)):
                 return super(JSONElement, self).operate(op, str(other))
+            return super(JSONElement, self).operate(op, dumps(other), **kwargs)
+        # multiple operands given
         return super(JSONElement, self).operate(op, *(dumps(o) for o in other), **kwargs)
         
     ### specialized text operators

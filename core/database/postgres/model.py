@@ -189,6 +189,12 @@ class PythonicJSONElement(JSONElement):
     def json(self):
         return JSONElement(self.left, self._path)
 
+    def __getitem__(self, item):
+        if hasattr(item, "__iter__"):
+            return PythonicJSONElement(self.left, self._path + list(item))
+        else:
+            return PythonicJSONElement(self.left, self._path + [item])
+
 
 class AttributesExpressionAdapter(object):
 
@@ -201,8 +207,12 @@ class AttributesExpressionAdapter(object):
         object.__setattr__(self, "obj", obj)
 
     def __getattr__(self, attr):
-#         return AttributeExpression(self.obj.attrs[attr])
         return PythonicJSONElement(self.obj.attrs, attr)
+    
+    def __getitem__(self, item):
+        if hasattr(item, "__iter__"):
+            return PythonicJSONElement(self.obj.attrs, list(item))
+        return PythonicJSONElement(self.obj.attrs, item)
     
 
 class BaseNodeMeta(DeclarativeMeta):

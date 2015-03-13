@@ -17,6 +17,15 @@ def test_a_object():
 def test_a_expression():
     assert(isinstance(Node.a, AttributesExpressionAdapter))
 
+
+def test_a_getitem():
+    expr = Node.a["attrname"]
+    assert(expr._path == ["attrname"])
+    
+    
+def test_a_getitem_nested():
+    expr = Node.a["deep", "path", "to" , "attribute"]
+    assert(expr._path, ["deep", "path", "to", "attribute"])
     
 ### Binary expression tests
     

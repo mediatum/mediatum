@@ -371,21 +371,21 @@ def build_transferzip(node):
     files_written = 0
 
     for n in node.getAllChildren():
-
-        for fn in n.getFiles():
-            if fn.getType() in ['doc', 'document', 'zip', 'attachment', 'other']:
-                fullpath = fn.retrieveFile()
-                if os.path.isfile(fullpath) and os.path.exists(fullpath):
-                    dirname, filename = os.path.split(fullpath)
-                    print "adding to zip: ", fullpath, "as", filename
-                    zip.write(fullpath, filename)
-                    files_written += 1
-                if os.path.isdir(fullpath):
-                    for f in get_all_file_paths(fullpath):
-                        newpath = f.replace(fullpath, "")
-                        print "adding from ", fullpath, "to zip: ", f, "as", newpath
-                        zip.write(f, newpath)
+        if n.isActiveVersion():
+            for fn in n.getFiles():
+                if fn.getType() in ['doc', 'document', 'zip', 'attachment', 'other']:
+                    fullpath = fn.retrieveFile()
+                    if os.path.isfile(fullpath) and os.path.exists(fullpath):
+                        dirname, filename = os.path.split(fullpath)
+                        print "adding to zip: ", fullpath, "as", filename
+                        zip.write(fullpath, filename)
                         files_written += 1
+                    if os.path.isdir(fullpath):
+                        for f in get_all_file_paths(fullpath):
+                            newpath = f.replace(fullpath, "")
+                            print "adding from ", fullpath, "to zip: ", f, "as", newpath
+                            zip.write(f, newpath)
+                            files_written += 1
     zip.close()
 
     return zipfilepath, files_written
@@ -397,19 +397,19 @@ def build_filelist(node):
     result_list = []
 
     for n in node.getAllChildren():
-
-        for fn in n.getFiles():
-            if fn.getType() in ['doc', 'document', 'zip', 'attachment', 'other']:
-                fullpath = fn.retrieveFile()
-                if os.path.isfile(fullpath) and os.path.exists(fullpath):
-                    dirname, filename = os.path.split(fullpath)
-                    result_list.append([filename, fn.getSize()])
-                    files_written += 1
-                if os.path.isdir(fullpath):
-                    for f in get_all_file_paths(fullpath):
-                        dirname, filename = os.path.split(f)
-                        result_list.append([filename, utils.utils.get_filesize(f)])
+        if n.isActiveVersion():
+            for fn in n.getFiles():
+                if fn.getType() in ['doc', 'document', 'zip', 'attachment', 'other']:
+                    fullpath = fn.retrieveFile()
+                    if os.path.isfile(fullpath) and os.path.exists(fullpath):
+                        dirname, filename = os.path.split(fullpath)
+                        result_list.append([filename, fn.getSize()])
                         files_written += 1
+                    if os.path.isdir(fullpath):
+                        for f in get_all_file_paths(fullpath):
+                            dirname, filename = os.path.split(f)
+                            result_list.append([filename, utils.utils.get_filesize(f)])
+                            files_written += 1
 
     return result_list
 

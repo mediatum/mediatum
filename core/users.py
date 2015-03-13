@@ -35,7 +35,6 @@ from core.user import User
 from core.systemtypes import Users
 
 logg = logging.getLogger(__name__)
-session = db.session
 q = db.query
 
 #OPTION_ENHANCED_READRIGHTS = Option("user_option_2", "editreadrights", "r", "img/changereadrights.png", "checkbox")
@@ -557,7 +556,7 @@ def getHomeDir(user):
     userdir.setAccess("data", "{user " + username + "}")
     logg.debug("created new home directory %r (%r) for user %r", userdir.name, userdir.id, username)
 
-    session.commit()
+    db.session.commit()
     # re-sort home dirs alphabetically
     i = 0
     for child in q(Home).one().children.sort_by_name():
@@ -567,6 +566,8 @@ def getHomeDir(user):
 
 
 def getSpecialDir(user, type):
+    from contenttypes import Directory
+
     nodename = ""
     if type == "upload":
         nodename = translate("user_upload", getDefaultLanguage())
@@ -581,11 +582,16 @@ def getSpecialDir(user, type):
 
     userdir = getHomeDir(user)
 
-    for c in userdir.getChildren():
+    for c in userdir.children:
         if c.name == nodename:
             return c
+
     # create new directory
-    return userdir.addChild(Node(name=nodename, type="directory"))
+    new_directory = Directory(nodename)
+    userdir.children.append(new_directory)
+    db.session.commit()
+
+    return new_directory
 
 
 def getUploadDir(user):

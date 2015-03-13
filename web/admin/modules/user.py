@@ -44,7 +44,6 @@ from core.usergroup import UserGroup
 from core import Node
 
 q = db.query
-session = db.session
 logg = logging.getLogger(__name__)
 
 users_cache = []
@@ -399,7 +398,7 @@ def editUser_mask(req, id, err=0):
         user.setOption("c")
         newuser = 1
         q(Users).one().children.append(user)
-        session.commit()
+        db.session.commit()
 
     elif err == 0 and id != "":  # edit user
         if usertype == "intern":
@@ -425,7 +424,7 @@ def editUser_mask(req, id, err=0):
         user.setTelephone(req.params.get("telephone", ""))
         user.setComment(req.params.get("comment", ""))
         user.setOrganisation(req.params.get("organisation", ""))
-        session.commit()
+        db.session.commit()
 
     v = getAdminStdVars(req)
     v["error"] = err

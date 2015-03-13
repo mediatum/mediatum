@@ -138,13 +138,13 @@ class AccessData:
 
         # check for explicit restriction with "NOT" rule
         try:
-            rule = getRule(node.getAccess("write")).getRuleStr() + " "
+            rule = getRule(node.read_access).getRuleStr() + " "
         except:
             logg.exception("exception in hasWriteAccess, failed getting acl rule, set rule = ''")
             rule = ""
         for n in node.getParents():
             try:
-                rule += getRule(n.getAccess("write")).getRuleStr() + " "
+                rule += getRule(n.write_acccess).getRuleStr() + " "
             except:
                 logg.exception("exception in hasWriteAccess, failed getting acl rule for parent, continue")
                 continue

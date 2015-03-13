@@ -154,9 +154,9 @@ class m_field(Metatype):
         if len(value.strip()) > 0:
             value += unit
 
-        label = '&nbsp;'
+        label = u'&nbsp;'
         if field.getLabel() != "":
-            label = field.getLabel() + ': '
+            label = u'{}: '.format(field.getLabel())
 
         if flags & VIEW_DATA_ONLY:
             # return a valuelist
@@ -169,7 +169,7 @@ class m_field(Metatype):
 
         elif flags & VIEW_HIDE_EMPTY and value.strip() == "":
             # hide empty elements
-            return ''
+            return u''
         elif flags & VIEW_DATA_EXPORT:
             if fieldtype in ['text']:
                 return get_formatted_value(element, nodes[0], language, html=0, template_from_caller=template_from_caller, mask=mask)
@@ -178,9 +178,9 @@ class m_field(Metatype):
             # return element.get("type")
         else:
             # standard view
-            ret = '<div class="mask_row field-' + element.getName() + '"><div>'
-            ret += '<div class="mask_label">' + label + '</div>\n<div class="mask_value">' + value + '&nbsp;</div>\n'
-            ret += '</div></div>'
+            ret = u'<div class="mask_row field-{}"><div>'.format(element.getName())
+            ret += u'<div class="mask_label">{}</div>\n<div class="mask_value">{}&nbsp;</div>\n'.format(label, value)
+            ret += u'</div></div>'
             return ret
 
     def getMetaHTML(self, parent, index, sub=False, language=None, itemlist=[], ptype="", fieldlist={}):

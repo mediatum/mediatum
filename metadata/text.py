@@ -175,7 +175,7 @@ class m_text(Metatype):
             return (field.getLabel(), value)
 
         # use default value from mask if value is empty
-        if value == '':
+        if value == u'':
             value = maskitem.getDefault()
 
         if template_from_caller and template_from_caller[0] and maskitem and ustr(maskitem.id) == template_from_caller[3]:

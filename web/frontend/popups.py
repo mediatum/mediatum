@@ -28,6 +28,8 @@ from core.acl import AccessData
 from core.translation import t, lang
 from utils.utils import u, getCollection
 from core.styles import theme
+from core import db
+from core.systemtypes import Root
 
 #
 # execute fullsize method from node-type
@@ -35,12 +37,13 @@ from core.styles import theme
 
 
 logg = logging.getLogger(__name__)
+q = db.query
 
 
 def popup_fullsize(req):
     #access = AccessData(req)
     try:
-        node = getNode(req.params["id"])
+        node = q(Root).one().get(req.params["id"])
     except tree.NoSuchNodeError:
         return 404
     # if not access.hasAccess(node,"data"):

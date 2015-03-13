@@ -46,9 +46,8 @@ def init_database_values(s):
     navigation.attrs["label"] = "Kollektionen"
     external_users = ExternalUsers("externalusers", "externalusers", 14)
     searchmasks = Searchmasks("searchmasks", "searchmasks", 15)
-    schedules = Schedules("schedules", "schedules", 16)
     root.children.extend([users, metadatatypes, workflows, usergroups, mappings, collections,
-                          home, navigation, external_users, searchmasks, schedules])
+                          home, navigation, external_users, searchmasks])
 
     adminuser = User(config.get("user.adminuser", "Administrator"), "user", 6)
     adminuser.attrs = {

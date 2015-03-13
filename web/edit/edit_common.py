@@ -123,7 +123,7 @@ def showdir(req, node, publishwarn="auto", markunpublished=False, sortfield=None
     if sortfield is None:
         sortfield = node.get("sortfield")
         if sortfield:
-            nodes = node.sort_by_fields(sortfield)
+            nodes = nodes.sort_by_fields(sortfield)
 #     nodes = [n for n in nodes if not n.type == 'shoppingbag'] # XXX: ?? 
     return shownodelist(req, nodes, publishwarn=publishwarn, markunpublished=markunpublished, dir=node)
 

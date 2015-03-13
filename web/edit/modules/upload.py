@@ -24,22 +24,18 @@ import core.users as users
 
 import core.acl as acl
 import re
-import utils.date
 import core.config as config
 import zipfile
-import PIL.Image
 import random
 import time
 import logging
 
 import json
 
-from core.datatypes import loadAllDatatypes
 from web.edit.edit_common import showdir, showoperations
-from web.edit.edit import getTreeLabel, clearFromCache
-import utils.date as date
-from utils.utils import join_paths, OperationException, EncryptionException, formatException, getMimeType, funcname, get_user_id, log_func_entry, dec_entry_log, u2
-from utils.fileutils import importFile, importFileToRealname
+from web.edit.edit import getTreeLabel
+from utils.utils import join_paths, getMimeType, funcname, get_user_id, dec_entry_log
+from utils.fileutils import importFileToRealname
 from schema.bibtex import importBibTeX, MissingMapping
 
 from core.acl import AccessData
@@ -47,10 +43,12 @@ from schema.schema import loadTypesFromDB
 
 from core.translation import translate, lang, addLabels
 from core.translation import t as translation_t
+from core import db
+from contenttypes import Node
 
 logg = logging.getLogger(__name__)
-
 identifier_importers = {}
+q = db.query
 
 
 class SortChoice:
@@ -113,7 +111,7 @@ def getContent(req, ids):
         state = 'ok'
 
         if req.params.get('action') == "removefiles":
-            basenode = tree.getNode(req.params.get('id'))
+            basenode = q(Node).get(req.params.get('id'))
             for f in basenode.getFiles():
                 try:
                     os.remove(f.retrieveFile())
@@ -126,7 +124,7 @@ def getContent(req, ids):
             return None
 
         if req.params.get('action') == "buildnode":  # create nodes
-            basenode = tree.getNode(req.params.get('id'))
+            basenode = q(Node).get(req.params.get('id'))
             newnodes = []
             errornodes = []
             basenodefiles_processed = []
@@ -263,7 +261,7 @@ def getContent(req, ids):
             ctype = req.params.get('contenttype')
 
             n = tree.Node(u"", type=ctype + '/' + schema)
-            basenode = tree.getNode(req.params.get('id'))
+            basenode = q(Node).get(req.params.get('id'))
             basenode.addChild(n)
             n.set("creator", user.name)
             n.set("creationtime",  ustr(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
@@ -330,7 +328,7 @@ def getContent(req, ids):
             # check this: import to realnamne or random name ?
             f = importFileToRealname(realname, tempname)
             #f = importFile(realname,tempname)
-            n = tree.getNode(req.params.get('id'))
+            n = q(Node).get(req.params.get('id'))
             n.addFile(f)
             req.write("")
             logg.debug("%s|%s.%s: added file to node %s (%s, %s)", get_user_id(req), __name__, funcname(), n.id, n.name, n.type)
@@ -353,7 +351,7 @@ def getContent(req, ids):
                 }
                 ctx.update(upload_to_filetype_filehandler(req))
                 content = req.getTAL('web/edit/modules/upload.html', ctx, macro="uploadfileok_plupload")
-                basenode = tree.getNode(req.params.get('id'))
+                basenode = q(Node).get(req.params.get('id'))
                 new_tree_labels = [{'id': basenode.id, 'label': getTreeLabel(basenode, lang=language)}]
                 req.write(json.dumps({'type': 'file', 'ret': content, 'state': state, 'filename': req.params.get('file'), 
                                       'new_tree_labels': new_tree_labels}))
@@ -389,7 +387,7 @@ def getContent(req, ids):
                     content = req.getTAL('web/edit/modules/upload.html', ctx, macro="uploadfileok_plupload")
                 else:
                     content = req.getTAL('web/edit/modules/upload.html', upload_filehandler(req), macro="uploadfileok")
-            basenode = tree.getNode(req.params.get('id'))
+            basenode = q(Node).get(req.params.get('id'))
             new_tree_labels = [{'id': basenode.id, 'label': getTreeLabel(basenode, lang=language)}]
             _d = {
                   'type': mime[1],
@@ -402,7 +400,7 @@ def getContent(req, ids):
             return None
     schemes = getSchemes(req)
 
-    node = tree.getNode(ids[0])
+    node = q(Node).get(ids[0])
     v = {}
     if node.isContainer():
         schemes = []
@@ -489,7 +487,7 @@ def upload_ziphandler(req):
     schemes = getSchemes(req)
     files = []
     scheme_type = {}
-    basenode = tree.getNode(req.params.get('id'))
+    basenode = q(Node).get(req.params.get('id'))
     for file in basenode.getFiles():
         if file.retrieveFile().endswith(req.params.get('file')):
             z = zipfile.ZipFile(file.retrieveFile())
@@ -535,7 +533,7 @@ def upload_ziphandler(req):
 @dec_entry_log
 def upload_bibhandler(req):
     error = ""
-    n = tree.getNode(req.params.get('id'))
+    n = q(Node).get(req.params.get('id'))
     for f in n.getFiles():
         if f.retrieveFile().endswith(req.params.get('file')):
             try:

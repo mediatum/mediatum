@@ -31,9 +31,11 @@ from web.edit.edit_common import showdir
 from core.translation import lang, t
 from core.acl import AccessData
 from core.transition import httpstatus
+from core import db
+from contenttypes import Node
 
 logg = logging.getLogger(__name__)
-
+q = db.query
 
 def getInformation():
     return {"version":"1.0", "system":1}
@@ -44,7 +46,7 @@ def getContent(req, ids):
     user = users.getUserFromRequest(req)
     access = AccessData(user=user)
     language = lang(req)
-    node = tree.getNode(ids[0])
+    node = q(Node).get(ids[0])
 
     if not access.hasWriteAccess(node):
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
@@ -62,17 +64,16 @@ def getContent(req, ids):
             self.label = label
             self.value = value
 
-    col = node
     if "globalsort" in req.params:
-        col.set("sortfield", req.params.get("globalsort"))
-    v['collection_sortfield'] = col.get("sortfield")
+        node.set("sortfield", req.params.get("globalsort"))
+    v['collection_sortfield'] = node.get("sortfield")
     sortfields = [SortChoice(t(req,"off"),"")]
-    if col.type not in ["root", "collections", "home"]:
-        for ntype, num in col.getAllOccurences(acl.AccessData(req)).items():
+    if node.type not in ["root", "collections", "home"]:
+        for ntype, num in node.getAllOccurences(acl.AccessData(req)).items():
             if ntype.getSortFields():
                 for sortfield in ntype.getSortFields():
                     sortfields += [SortChoice(sortfield.getLabel(), sortfield.getName())]
-                    sortfields += [SortChoice(sortfield.getLabel()+t(req,"descending"), "-"+sortfield.getName())]
+                    sortfields += [SortChoice(sortfield.getLabel()+t(req, "descending"), "-" +sortfield.getName())]
                 break
     v['sortchoices'] = sortfields
     v['ids'] = ids

@@ -289,7 +289,6 @@ editModules = {}
 
 def getEditModules(force=0):
     if len(editModules) == 0:
-
         for modpath in core.editmodulepaths:  # paths with edit modules
             path = os.walk(os.path.join(config.basedir, modpath[1]))
             for root, dirs, files in path:
@@ -386,14 +385,14 @@ def edit_tree(req):
                     nodes = [n for n in nodes if n.isContainer()]
                     # filter user name - after first "("
                     nodes = filter(lambda n: re.match(homenodefilter, n.getLabel(language).split('(', 1)[-1]), nodes)
-                    match_result = '#=%d' % len(nodes)
+                    match_result = u'#={}'.format(len(nodes))
                 except Exception as e:
                     logg.exception("exception in pattern matching for home nodes, exception ignored")
-                    match_result = '<span style="color:red">Error: %r</span>' % ustr(e)
+                    match_result = u'<span style="color:red">Error: {}</span>'.format(e)
                     match_error = True
                 if home_dir not in nodes:
                     if not match_error:
-                        match_result = '#=%d+1' % len(nodes)
+                        match_result = u'#={}+1'.format(len(nodes))
                     nodes.append(home_dir)
                 nodes = nodes.sort_by_orderpos()
             else:

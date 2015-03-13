@@ -157,7 +157,7 @@ class Data(Node):
 
     def show_node_text_orignal(self, words=None, language=None, separator="", labels=0):
         if separator == "":
-            separator = "<br/>"
+            separator = u"<br/>"
         metatext = list()
         mask = self.getMask("nodesmall")
         for m in self.getMasks("shortview", language=language):

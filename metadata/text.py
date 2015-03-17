@@ -34,12 +34,10 @@ system_languages = [lang.strip() for lang in config.get("i18n.languages").split(
 
 
 def getMaskitemForField(field, language=None, mask=None):
-
-    mdt = [p for p in field.getParents() if p.type == 'metadatatype'][0]
-
     if mask:
         masks = [mask]
     else:
+        mdt = [p for p in field.getParents() if p.type == 'metadatatype'][0]
         masks = [m for m in mdt.getChildren() if m.get('masktype') in ['shortview', 'fullview', 'editmask']]
         if masks and language:
             masks = [m for m in masks if m.get('language') in [language]]

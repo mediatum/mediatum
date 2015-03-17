@@ -7,24 +7,27 @@ from core.transition import httpstatus
 
 class m_hlist(Metatype):
 
-    def getMaskEditorHTML(self, field, metadatatype=None, language=None):
+    def getMaskEditorHTML(self, field, metadatatype=None, language=None, required=None):
         try:
             values = field.valuelist.split(u';')
         except AttributeError:
-            values = field.split(u'\r\n')
+            try:
+                values = field.split(u'\r\n')
+            except AttributeError:
+                values = []
 
         while len(values) < 3:
             values.append(u'')
         return tal.getTAL("metadata/hlist.html", {"value": dict(parentnode=values[0], attrname=values[1], onlylast=values[2])}, macro="maskeditor", language=language)
 
-    def getEditorHTML(self, field, value="", width=40, lock=0, language=None):
+    def getEditorHTML(self, field, value="", width=40, lock=0, language=None, required=None):
         try:
             values = field.valuelist.split(';')
         except AttributeError:
             values = field.split('\r\n')
         while len(values) < 3:
             values.append(u'')
-        return tal.getTAL("metadata/hlist.html", {"lock": lock, "startnode": values[0], "attrname": values[1], "onlylast": values[2], "value": value, "width": width, "name": field.getName(), "field": field}, macro="editorfield", language=language)
+        return tal.getTAL("metadata/hlist.html", {"lock": lock, "startnode": values[0], "attrname": values[1], "onlylast": values[2], "value": value, "width": width, "name": field.getName(), "field": field, "required": self.is_required(required)}, macro="editorfield", language=language)
 
     def getFormatedValue(self, field, node, language=None, html=1, template_from_caller=None, mask=None):
         value = []

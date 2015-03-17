@@ -21,10 +21,9 @@ logg = logging.getLogger(__name__)
 @fixture(scope="session", autouse=True)
 def database():
     """Connect to the DB, drop/create schema and load models"""
-    from core import db
     db.connect()
-    db.metadata.drop_all()
-    db.metadata.create_all()
+    db.drop_all()
+    db.create_all()
     load_system_types()
     load_types()
     return db

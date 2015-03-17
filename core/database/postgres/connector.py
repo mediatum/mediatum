@@ -40,6 +40,10 @@ class PostgresSQLAConnector(object):
         self.engine = engine
         self.Session.configure(bind=engine)
 
+    def get_node_class(self):
+        from .model import Node
+        return Node
+
     def make_session(self):
         """Create a session.
         For testing purposes (used in core.test.factories, for example).
@@ -69,3 +73,43 @@ class PostgresSQLAConnector(object):
         """
         from .model import Node
         return self.session.query(Node).get(node.id)
+
+    @classmethod
+    def _get_managed_tables(cls):
+        """Returns all tables which should be managed by SQLAlchemy"""
+        from .model import Access, Node, BaseFile, t_nodemapping
+        return [Access.__table__, Node.__table__, BaseFile.__table__, t_nodemapping] 
+
+    def create_tables(self, conn):
+        self.metadata.create_all(conn, tables=PostgresSQLAConnector._get_managed_tables())
+        
+    def drop_tables(self, conn):
+        self.metadata.drop_all(conn, tables=PostgresSQLAConnector._get_managed_tables())
+        
+    def create_views(self, conn):
+        pass
+        
+    def drop_views(self, conn):
+        pass
+        
+    def drop_extra_indexes(self, conn):
+        pass
+
+    def create_functions(self, conn):
+        pass
+
+    def drop_functions(self, conn):
+        pass
+
+    def create_all(self):
+        with self.engine.begin() as conn:
+            self.create_tables(conn)
+            self.create_views(conn)
+            self.create_functions(conn)
+
+    def drop_all(self):
+        with self.engine.begin() as conn:
+            self.drop_functions(conn)
+            self.drop_views(conn)
+            self.drop_tables(conn)
+            

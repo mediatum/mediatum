@@ -12,12 +12,11 @@ basic_init()
 
 logg = logging.getLogger(__name__)
 
-from core.database.postgres import DeclarativeBase
 from core.database.init import init_database_values
 from core import db
 
 logg.info("creating DB schema...")
-DeclarativeBase.metadata.create_all()
+db.create_all()
 s = db.session
 logg.info("loading default values...")
 init_database_values(db.session)

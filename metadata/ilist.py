@@ -20,6 +20,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
+import locale
 from mediatumtal import tal
 from utils.utils import esc
 from core.metatype import Metatype
@@ -49,11 +50,13 @@ class m_ilist(Metatype):
     def getSearchHTML(self, context):
         n = context.collection
         field_name = context.field.getName()
-        id_attr_val = n.all_children_by_query(q(Node.id, Node.a[field_name]).filter(Node.a[field_name] != None and Node.a[field_name] != '').distinct(Node.a[field_name]))
+        id_attr_val = n.all_children_by_query(q(Node.id, Node.a[field_name]).
+                                              filter(Node.a[field_name] != None and Node.a[field_name] != '').
+                                              distinct(Node.a[field_name]))
         valuelist = {pair[0]: pair[1] for pair in id_attr_val}
-        keys = sorted(valuelist.keys())
+        locale.setlocale(locale.LC_COLLATE, '')
         v = []
-        for key in keys:
+        for key in sorted(valuelist.keys(), cmp=locale.strcoll):
             v.append((key, valuelist[key]))
         return tal.getTAL("metadata/ilist.html", {"context": context, "valuelist": v}, macro="searchfield", language=context.language)
 

@@ -3,7 +3,7 @@ import hashlib
 import random
 from . import schema
 from core.transition.postgres import check_type_arg
-from core.node import Node
+from core import Node
 
 
 class SearchMask(Node):

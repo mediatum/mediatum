@@ -9,7 +9,7 @@ from pytest import raises, fixture
 
 # setup
 from core import db
-from core.node import Node
+from core import Node
 from contenttypes.container import Collection
 from core.test.asserts import assert_deprecation_warning, assert_sorted, assert_deprecation_warning_allow_multiple
 from core.test.factories import NodeFactory

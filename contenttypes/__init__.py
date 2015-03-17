@@ -8,7 +8,7 @@
     :license: GPL3, see COPYING for details
 """
 
-from core.node import Node
+from core import Node
 from contenttypes.audio import Audio
 from contenttypes.data import Data, Content
 from contenttypes.container import Directory, Collection, Container, Collections, Home

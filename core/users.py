@@ -26,7 +26,7 @@ from warnings import warn
 from sqlalchemy.orm.exc import NoResultFound
 
 import core.config as config
-from core.node import Node
+from core import Node
 from core import db
 from . import athana
 from utils.utils import Option

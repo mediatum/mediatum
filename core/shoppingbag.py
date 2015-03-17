@@ -17,7 +17,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from core.node import Node
+from core import Node
 
 from utils.utils import mkKey
 

@@ -7,7 +7,7 @@ import codecs
 import hashlib
 import utils.utils as utils
 import utils.fileutils as fileutils
-from core.node import Node
+from core import Node
 import core.users as users
 from utils.date import parse_date
 from utils.utils import utf8_decode_escape

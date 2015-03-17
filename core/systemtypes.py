@@ -5,7 +5,7 @@
 """
 
 from __future__ import division, absolute_import, print_function
-from core.node import Node
+from core import Node
 from core.transition.postgres import check_type_arg
 
 

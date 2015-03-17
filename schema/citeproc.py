@@ -32,7 +32,7 @@ from pprint import pformat
 from sqlalchemy.orm.exc import NoResultFound
 import requests
 
-from core.node import Node
+from core import Node
 from core import db
 from contenttypes import Document
 from .schema import Metadatatype

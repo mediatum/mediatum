@@ -20,7 +20,7 @@
 """
 import logging
 from warnings import warn
-from core.node import Node
+from core import Node
 from core import db
 from core.usergroup import UserGroup
 from utils.utils import Option

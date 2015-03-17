@@ -21,7 +21,7 @@ import json
 import logging
 from datetime import datetime
 
-from core.node import Node
+from core import Node
 try:
     import utils.scheduleutils as su
 except:

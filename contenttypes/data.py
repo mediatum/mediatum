@@ -25,7 +25,7 @@ from warnings import warn
 
 from mediatumtal import tal
 import core.acl as acl
-from core.node import Node
+from core import Node
 import core.config as config
 from core.translation import lang
 from core.styles import getContentStyles

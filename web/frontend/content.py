@@ -34,7 +34,7 @@ from web.frontend.searchresult import simple_search, extended_search
 from contenttypes import Collections
 from core.systemtypes import Root
 from sqlalchemy.orm.exc import NoResultFound
-from core.node import Node
+from core import Node
 from contenttypes.container import Container
 
 logg = logging.getLogger(__name__)

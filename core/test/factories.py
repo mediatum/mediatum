@@ -9,7 +9,7 @@ from factory import fuzzy
 
 from contenttypes import Directory
 from contenttypes import Document
-from core.node import Node
+from core import Node
 from core.user import User
 from core import db
 from core.usergroup import UserGroup

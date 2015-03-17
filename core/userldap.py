@@ -23,7 +23,7 @@ import ldap
 import re
 
 import core.users as users
-from core.node import Node
+from core import Node
 import core.config as config
 import core.usergroups as usergroups
 

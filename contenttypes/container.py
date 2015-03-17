@@ -24,7 +24,7 @@ import codecs
 
 from mediatumtal import tal
 import core.config as config
-from core.node import Node
+from core import Node
 from contenttypes.data import Data
 
 from core.database.helpers import ContainerMixin

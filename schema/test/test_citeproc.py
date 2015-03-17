@@ -11,7 +11,7 @@ from pprint import pprint
 from pytest import raises
 
 
-from core.node import Node
+from core import Node
 from .. import citeproc
 from ..citeproc import get_citeproc_json, DOINotFound, FIELDS, CSLField
 

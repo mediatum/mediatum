@@ -44,7 +44,7 @@ from core.users import getUserFromRequest, getUser
 import thread
 
 import utils.fileutils as fileutils
-from core.node import Node
+from core import Node
 
 
 logg = logging.getLogger(__name__)

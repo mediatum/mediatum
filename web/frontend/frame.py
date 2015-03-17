@@ -33,7 +33,7 @@ from core.styles import theme
 from core import db
 from contenttypes import Collections
 from sqlalchemy.orm.exc import NoResultFound
-from core.node import Node
+from core import Node
 from core.systemtypes import Searchmasks
 from contenttypes.container import Directory
 

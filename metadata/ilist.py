@@ -19,6 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
+import locale
 from mediatumtal import tal
 #import core.search as search
 import core.tree as tree
@@ -46,9 +47,9 @@ class m_ilist(Metatype):
     def getSearchHTML(self, context):
         n = context.collection
         valuelist = n.getAllAttributeValues(context.field.getName(), context.access)
-        keys = sorted(valuelist.keys())
+        locale.setlocale(locale.LC_COLLATE, '')
         v = []
-        for key in keys:
+        for key in sorted(valuelist.keys(), cmp=locale.strcoll):
             v.append((key, valuelist[key]))
         return tal.getTAL("metadata/ilist.html", {"context": context, "valuelist": v}, macro="searchfield", language=context.language)
 

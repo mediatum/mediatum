@@ -102,7 +102,10 @@ class m_date(Metatype):
 
     def get_input_pattern(self, field):
         regexes = {date.getShortName(): date.get_validation_regex() for date in dateoption}
-        return regexes[field.getValues()]
+        try:
+            return regexes[field.getValues()]
+        except KeyError:
+            return regexes[0]  # format: dd.mm.yyyy
 
     def get_input_title(self, field):
         return field.getValues()

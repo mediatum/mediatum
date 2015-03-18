@@ -197,10 +197,6 @@ def send_file(req, download=0):
         return 404
     if not access.hasAccess(n, "data") and n.type not in ["directory", "collections", "collection"]:
         return 403
-
-    if os.path.splitext(filename)[1] == os.path.splitext(n.name)[1]:
-        filename = n.name
-
     file = None
 
     if filename is None and n:

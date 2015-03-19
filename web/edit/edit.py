@@ -71,8 +71,6 @@ def getEditorIconPath(node, req=None):
             return 'webtree/homeicon.gif'
         elif name == 'Uploads' or name.startswith(translate('user_upload', request=req)) or label.startswith(translate('user_upload', request=req)):
             return 'webtree/uploadicon.gif'
-        elif name == 'Importe' or name.startswith(translate('user_import', request=req)) or label.startswith(translate('user_import', request=req)):
-            return 'webtree/importicon.gif'
         elif name == 'Inkonsistente Daten' or name.startswith(translate('user_faulty', request=req)) or label.startswith(translate('user_faulty', request=req)):
             return 'webtree/faultyicon.gif'
         elif node.name == 'Papierkorb' or name.startswith(translate('user_directory', request=req)) or label.startswith(translate('user_directory', request=req)):
@@ -169,7 +167,7 @@ def frameset(req):
         n = node
         path = []
         while n:
-            path = ['/%s' % (n.id)] + path
+            path = ['/%s' % n.id] + path
             p = n.getParents()
             if p:
                 n = p[0]
@@ -181,8 +179,10 @@ def frameset(req):
         res = getIDPaths(nid, access, sep=sep, containers_only=containers_only)
         return res
 
-    folders = {'homedir': getPathToFolder(users.getHomeDir(user)), 'trashdir': getPathToFolder(users.getSpecialDir(
-        user, 'trash')), 'uploaddir': getPathToFolder(users.getSpecialDir(user, 'upload')), 'importdir': getPathToFolder(users.getSpecialDir(user, 'import'))}
+    folders = {'homedir': getPathToFolder(users.getHomeDir(user)),
+               'trashdir': getPathToFolder(users.getSpecialDir(user, 'trash')),
+               'uploaddir': getPathToFolder(users.getSpecialDir(user, 'upload')),
+               'faultydir': getPathToFolder(users.getSpecialDir(user, 'faulty'))}
 
     containertypes = [Container.__mapper__.polymorphic_map[n].class_ for n in Container.__mapper__._acceptable_polymorphic_identities if n not in ("collections", "home")]
     cmenu_iconpaths = []
@@ -408,33 +408,23 @@ def edit_tree(req):
     # special directories may be handled in a special way by the editor
     special_dir_ids = {}
     special_dir_ids[home_dir.id] = 'userhomedir'
-    for dir_type in ['upload', 'import', 'faulty', 'trash']:
+    for dir_type in ['upload', 'faulty', 'trash']:
         special_dir_ids[users.getSpecialDir(user, dir_type).id] = dir_type
-
-    spec_dirs = ['userhomedir', 'upload', 'import', 'faulty', 'trash']
-    spec_dir_icons = ["homeicon.gif", "uploadicon.gif",
-                      "importicon.gif", "faultyicon.gif", "trashicon.gif"]
 
     for node in nodes:
 
         if not access.hasReadAccess(node):
             continue
 
-        # try:
-        #    label = node.getLabel()
-        # except:
-        #    label = node.getName()
-        #
-        # c = len(node.getContentChildren())
-        #  if c>0:
-        #     label += ' <small>(%s)</small>' %(c)
-
         label = getTreeLabel(node, lang=language)
 
-        nodedata = {'title': label, 'key': node.id, 'lazy': True, 'folder': True,
-                    'readonly': 0, 'tooltip': '%s (%s)' % (node.getLabel(lang=language),
-                                                           node.id)}
-        nodedata['icon'] = getEditorIconPath(node, req)
+        nodedata = {'title': label,
+                    'key': node.id,
+                    'lazy': True,
+                    'folder': True,
+                    'readonly': 0,
+                    'tooltip': '%s (%s)' % (node.getLabel(lang=language), node.id),
+                    'icon': getEditorIconPath(node, req)}
 
         if len(node.getContainerChildren()) == 0:
             nodedata['lazy'] = False
@@ -455,8 +445,7 @@ def edit_tree(req):
 
         nodedata['this_node_is_special'] = []
         if node.id in special_dir_ids:
-            nodedata['this_node_is_special'] = nodedata[
-                'this_node_is_special'] + [special_dir_ids[node.id]]
+            nodedata['this_node_is_special'] = nodedata['this_node_is_special'] + [special_dir_ids[node.id]]
             if node.id == home_dir.id:
                 nodedata['match_result'] = match_result
 
@@ -488,7 +477,6 @@ def action(req):
     trashdir = users.getTrashDir(user)
     uploaddir = users.getUploadDir(user)
     faultydir = users.getFaultyDir(user)
-    importdir = users.getImportDir(user)
 
     trashdir_parents = trashdir.getParents()
     action = req.params.get("action", "")
@@ -507,7 +495,7 @@ def action(req):
         nids = req.params.get('ids', [])
         nids = [nid.strip() for nid in nids.split(',') if nid.strip()]
 
-        for nid in set(nids + [_n.id for _n in [trashdir, uploaddir, importdir, faultydir]]):
+        for nid in set(nids + [_n.id for _n in [trashdir, uploaddir, faultydir]]):
             try:
                 changednodes[nid] = getTreeLabel(
                     tree.getNode(nid), lang=language)
@@ -765,8 +753,6 @@ def content(req):
         tabs = "content"
     elif node.id == users.getUploadDir(access.getUser()).id:
         tabs = "upload"
-    elif node.id == users.getImportDir(access.getUser()).id:
-        tabs = "imports"
     elif hasattr(node, "getDefaultEditTab"):
         tabs = node.getDefaultEditTab()
         v["notdirectory"] = 0
@@ -878,8 +864,6 @@ def content(req):
         edit_metadata(req, ids)  # undefined
     elif current == "tab_upload":
         edit_upload(req, ids)  # undefined
-    elif current == "tab_import":
-        edit_import(req, ids)  # undefined
     elif current == "tab_globals":
         req.write("")
     elif current == "tab_lza":
@@ -931,8 +915,6 @@ def content(req):
                 ipath = 'webtree/homeicon.gif'
             elif node.name == 'Uploads':
                 ipath = 'webtree/uploadicon.gif'
-            elif node.name == 'Importe':
-                ipath = 'webtree/importicon.gif'
             elif node.name == 'Inkonsistente Daten':
                 ipath = 'webtree/faultyicon.gif'
             elif node.name == 'Papierkorb':

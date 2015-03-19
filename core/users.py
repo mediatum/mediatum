@@ -571,8 +571,6 @@ def getSpecialDir(user, type):
     nodename = ""
     if type == "upload":
         nodename = translate("user_upload", getDefaultLanguage())
-    elif type == "import":
-        nodename = translate("user_import", getDefaultLanguage())
     elif type == "faulty":
         nodename = translate("user_faulty", getDefaultLanguage())
     elif type == "trash":
@@ -596,10 +594,6 @@ def getSpecialDir(user, type):
 
 def getUploadDir(user):
     return getSpecialDir(user, "upload")
-
-
-def getImportDir(user):
-    return getSpecialDir(user, "import")
 
 
 def getFaultyDir(user):

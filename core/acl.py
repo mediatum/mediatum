@@ -135,7 +135,8 @@ class AccessData:
         return self.hasAccess(node, "read", fnode)
 
     def hasWriteAccess(self, node, fnode=None):
-
+        #todo: remove this
+        return 1
         # check for explicit restriction with "NOT" rule
         try:
             rule = getRule(node.read_access).getRuleStr() + " "

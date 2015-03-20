@@ -1,5 +1,5 @@
 parcon
-sqlalchemy
+git+https://github.com/zzzeek/sqlalchemy/
 psycopg2
 python-Levenshtein
 pymarc

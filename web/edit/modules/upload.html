@@ -879,7 +879,7 @@
             </tal:block>
         </select>
         <tal:block tal:condition="python:len(schemes[type])==1" tal:replace="python:schemes[type][0].getLongName()"/>
-        <input type="hidden" tal:condition="python:len(schemes[type])==1" name="scheme" class="typesel" tal:attributes="id type; value python:schemes[type][0].getLongName()"/>
+        <input type="hidden" tal:condition="python:len(schemes[type])==1" name="scheme" class="typesel" tal:attributes="id type; value python:schemes[type][0].getName()"/>
         <input type="hidden" tal:attributes="value python:'|'.join(files);id type"/>
     </div>
 </tal:block>
@@ -895,7 +895,7 @@
                 </tal:block>
             </select>
             <tal:block tal:condition="python:len(schemes[type])==1" tal:replace="python:schemes[type][0].getLongName()"/>
-            <input type="hidden" tal:condition="python:len(schemes[type])==1" class="typesel" name="scheme" tal:attributes="id type; value python:schemes[type][0].getLongName()"/>
+            <input type="hidden" tal:condition="python:len(schemes[type])==1" class="typesel" name="scheme" tal:attributes="id type; value python:schemes[type][0].getName()"/>
             <br/>
             <input type="hidden" tal:attributes="value python:'|'.join(files);id type"/>
         </tal:block>
@@ -928,7 +928,7 @@
             </tal:block>
         </select>
         <tal:block tal:condition="python:len(schemes[type])==1" tal:replace="python:schemes[type][0].getLongName()"/>
-        <input type="hidden" tal:condition="python:len(schemes[type])==1" name="scheme" class="typesel" tal:attributes="id type; value python:schemes[type][0].getLongName()"/>
+        <input type="hidden" tal:condition="python:len(schemes[type])==1" name="scheme" class="typesel" tal:attributes="id type; value python:schemes[type][0].getName()"/>
         <input type="hidden" tal:attributes="value python:'|'.join(files);id type"/>
     </div>
 </tal:block>
@@ -947,7 +947,7 @@
                 </tal:block>
             </select>
             <tal:block tal:condition="python:len(schemes[type])==1" tal:replace="python:schemes[type][0].getLongName()"/>
-            <input type="hidden" tal:condition="python:len(schemes[type])==1" class="typesel" name="scheme" tal:attributes="id type; value python:schemes[type][0].getLongName()"/>
+            <input type="hidden" tal:condition="python:len(schemes[type])==1" class="typesel" name="scheme" tal:attributes="id type; value python:schemes[type][0].getName()"/>
             <br/>
             <input type="hidden" tal:attributes="value python:'|'.join(files);id type"/>
         </tal:block>

@@ -122,7 +122,7 @@ def importFileToRealname(realname, tempname, prefix="", typeprefix=""):
             i = 0
             while os.path.exists(destname):
                 i += 1
-                p = prefix + ustr(i) + "_"
+                p = prefix + unicode(i) + "_"
                 destname = join_paths(uploaddir, p + filename)
                 if not os.path.exists(destname):
                     prefix = p
@@ -134,7 +134,7 @@ def importFileToRealname(realname, tempname, prefix="", typeprefix=""):
             ret = os.system(('copy "%s" "%s"' % (tempname, destname)).replace('/', '\\'))
 
         if ret & 0xff00:
-            raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, prefix + destname, ustr(ret)))
+            raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, prefix + destname, unicode(ret)))
 
         r = realname.lower()
         mimetype = "application/x-download"

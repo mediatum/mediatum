@@ -180,10 +180,10 @@ class Document(Content):
                         if i > 0:
                             self.set("pdf_" + line[0:i].strip().lower(), utf8_decode_escape(line[i + 1:].strip()))
 
-                self.addFile(File(thumbname, "thumb", "image/jpeg"))
-                self.addFile(File(thumb2name, "presentation", "image/jpeg"))
-                self.addFile(File(fulltextname, "fulltext", "text/plain"))
-                self.addFile(File(infoname, "fileinfo", "text/plain"))
+                self.files.append(File(thumbname, "thumb", "image/jpeg"))
+                self.files.append(File(thumb2name, "presentation", "image/jpeg"))
+                self.files.append(File(fulltextname, "fulltext", "text/plain"))
+                self.files.append(File(infoname, "fileinfo", "text/plain"))
 
     """ list with technical attributes for type document """
     def getTechnAttributes(self):

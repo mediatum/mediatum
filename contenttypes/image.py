@@ -296,9 +296,9 @@ class Image(Content):
                 if f.base_name.lower().endswith('svg'):
                     self.svg_to_png(f.abspath, f.abspath[:-4] + ".png")
                     self.files.remove(f)
-                    self.files.append(File(name=f.abspath, type="original", mimetype=f.mimetype))
-                    self.files.append(File(name=f.abspath, type="image", mimetype=f.mimetype))
-                    self.files.append(File(name=f.abspath[:-4] + ".png", type="tmppng", mimetype="image/png"))
+                    self.files.append(File(f.abspath, "original", f.mimetype))
+                    self.files.append(File(f.abspath, "image", f.mimetype))
+                    self.files.append(File(f.abspath[:-4] + ".png", "tmppng", "image/png"))
                     db.session.commit()
                     break
             orig = 0
@@ -331,11 +331,11 @@ class Image(Content):
                                 self.set("width", width)
                                 self.set("height", height)
 
-                            self.files.append(File(name=pngname, type="image", mimetype="image/png"))
-                            self.files.append(File(name=f.abspath, type="original", mimetype="image/tiff"))
+                            self.files.append(File(pngname, "image", "image/png"))
+                            self.files.append(File(f.abspath, "original", "image/tiff"))
                             break
                         else:
-                            self.files.append(File(name=f.abspath, type="original", mimetype=f.mimetype))
+                            self.files.append(File(f.abspath, "original", f.mimetype))
 
             db.session.commit()
 
@@ -372,8 +372,8 @@ class Image(Content):
                                 f.mimetype = "image/jpeg"
                             else:
                                 f.mimetype = "image/tiff"
-                        self.files.append(File(name=thumbname, type="thumb", mimetype="image/jpeg"))
-                        self.files.append(File(name=thumbname2, type="presentation", mimetype="image/jpeg"))
+                        self.files.append(File(thumbname, "thumb", "image/jpeg"))
+                        self.files.append(File(thumbname2, "presentation", "image/jpeg"))
                         self.set("width", width)
                         self.set("height", height)
 
@@ -436,7 +436,8 @@ class Image(Content):
 
             for f in self.files:
                 if f.base_name.lower().endswith("png") and f.type == "tmppng":
-                    self.removeFile(f)
+                    self.files.remove(f)
+                    db.session.commit()
                     break
 
 

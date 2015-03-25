@@ -154,7 +154,7 @@ class Video(Content):
                 ret = os.system("ffmpeg -loglevel quiet -i %s -ar 44100 -ab 128 -f flv %s" % (nodefiles[0].abspath, flvname))
                 if ret & 0xff00:
                     return
-                self.files.append(File(name=flvname, type="video", mimetype="video/x-flv"))
+                self.files.append(File(flvname, "video", "video/x-flv"))
 
         db.session.commit()
 
@@ -194,8 +194,8 @@ class Video(Content):
                     thumbname2 = path + ".thumb2"
                     makeThumbNail(tempname, thumbname)
                     makePresentationFormat(tempname, thumbname2)
-                    self.files.append(File(name=thumbname, type="thumb", mimetype="image/jpeg"))
-                    self.filoes.append(File(name=thumbname2, type="presentation", mimetype="image/jpeg"))
+                    self.files.append(File(thumbname, "thumb", "image/jpeg"))
+                    self.filoes.append(File(thumbname2, "presentation", "image/jpeg"))
 
         db.session.commit()
 

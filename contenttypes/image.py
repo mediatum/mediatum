@@ -535,10 +535,10 @@ class Image(Content):
             req.write(t(req, "permission_denied"))
             return
         zoom_exists = 0
-        for file in self.getFiles():
-            if file.getType() == "zoom":
+        for file in self.files:
+            if file.filetype == "zoom":
                 zoom_exists = 1
-            if file.getName().lower().endswith('svg') and file.type == "original":
+            if file.base_name.lower().endswith('svg') and file.filetype == "original":
                 svg = 1
 
         d["svg"] = svg
@@ -558,28 +558,30 @@ class Image(Content):
             return
 
         thumbbig = None
-        for file in self.getFiles():
-            if file.getType() == "thumb2":
+        for file in self.files:
+            if file.filetype == "thumb2":
                 thumbbig = file
                 break
         if not thumbbig:
             self.popup_fullsize(req)
         else:
-            im = PILImage.open(thumbbig.retrieveFile())
-            req.writeTAL("contenttypes/image.html", {"filename": '/file/' + ustr(self.id) + '/' +
-                                                     thumbbig.getName(), "width": im.size[0], "height": im.size[1]}, macro="thumbbig")
+            im = PILImage.open(thumbbig.abspath)
+            req.writeTAL("contenttypes/image.html", {"filename": '/file/{}/{}'.format(self.id, thumbbig.base_name),
+                                                     "width": im.size[0],
+                                                     "height": im.size[1]},
+                         macro="thumbbig")
 
     def processImage(self, type="", value="", dest=""):
         import os
 
         img = None
-        for file in self.getFiles():
-            if file.type == "image":
+        for file in self.files:
+            if file.filetype == "image":
                 img = file
                 break
 
         if img:
-            pic = PILImage.open(img.retrieveFile())
+            pic = PILImage.open(img.abspath)
             pic.load()
 
             if type == "percentage":

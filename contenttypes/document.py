@@ -213,9 +213,9 @@ class Document(Content):
             req.write(t(req, "permission_denied"))
             return
 
-        for f in self.getFiles():
-            if f.getType() == "doc" or f.getType() == "document":
-                req.sendFile(f.retrieveFile(), f.getMimeType())
+        for f in self.files:
+            if f.filetype == "doc" or f.filetype == "document":
+                req.sendFile(f.abspath, f.mimetype)
                 return
 
     def popup_thumbbig(self, req):

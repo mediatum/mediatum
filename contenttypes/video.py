@@ -244,9 +244,9 @@ class Video(Content):
             return
 
         f = None
-        for filenode in self.getFiles():
-            if filenode.getType() in ["original", "video"] and filenode.retrieveFile().endswith('flv'):
-                f = "/file/%s/%s" % (self.id, filenode.getName())
+        for filenode in self.files:
+            if filenode.filetype in ["original", "video"] and filenode.abspath.endswith('flv'):
+                f = "/file/%s/%s" % (self.id, filenode.base_name)
                 break
 
         script = ""
@@ -279,9 +279,9 @@ class Video(Content):
         return "view"
 
     def processMediaFile(self, dest):
-        for nfile in self.getFiles():
-            if nfile.getType() == "video":
-                filename = nfile.retrieveFile()
+        for nfile in self.files:
+            if nfile.filetype == "video":
+                filename = nfile.abspath
                 path, ext = splitfilename(filename)
                 if os.sep == '/':
                     os.system("cp %s %s" % (filename, dest))

@@ -18,6 +18,14 @@ class NodeMixin(object):
          for n in cls.__mapper__._acceptable_polymorphic_identities
          if n not in filter_classnames]    
         
+    @classmethod
+    def get_class_for_typestring(cls, typestring):    
+        """Returns a class object for a given typestring. 
+        Typestrings are values from the Node.type attribute, always in lowercase. 
+        This is the "polymorphic identity" of the node subclass in SQLAlchemy.
+        """
+        return cls.__mapper__.polymorphic_map[typestring].class_
+    
     ### TODO: versions
     @property
     def next_nid(self):

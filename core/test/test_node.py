@@ -291,3 +291,8 @@ def test_add_collection(collections):
     c = Collection("testcollection")
     collections.container_children.append(c)
     
+    
+def test_data_get_class_for_typestring():
+    from contenttypes import Data
+    data_cls = Node.get_class_for_typestring("data")
+    assert data_cls is Data

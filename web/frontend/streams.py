@@ -61,40 +61,43 @@ def splitpath(path):
 
 
 def send_image(req):
-    try:
-        n = tree.getNode(splitpath(req.path)[0])
-    except tree.NoSuchNodeError:
+    n = q(Node).get(splitpath(req.path)[0])
+
+    if not isinstance(n, Node):
         return 404
-    for f in n.getFiles():
-        if f.getType() == "image":
-            return req.sendFile(f.retrieveFile(), f.getMimeType())
+
+    for f in n.files:
+        if f.filetype == "image":
+            return req.sendFile(f.abspath, f.mimetype)
     return 404
 
 
 def send_image_watermark(req):
-    try:
-        result = splitpath(req.path)
-        n = tree.getNode(result[0])
-    except tree.NoSuchNodeError:
+    result = splitpath(req.path)
+    n = q(Node).get(result[0])
+
+    if not isinstance(n, Node):
         return 404
-    for f in n.getFiles():
-        if f.getType() == "original_wm":
-            return req.sendFile(f.retrieveFile(), getMimeType(f.retrieveFile()))
+
+    for f in n.files:
+        if f.filetype == "original_wm":
+            return req.sendFile(f.abspath, getMimeType(f.abspath))
+
     return 404
 
 
 def send_rawimage(req):
     access = AccessData(req)
-    try:
-        n = tree.getNode(splitpath(req.path)[0])
-    except tree.NoSuchNodeError:
+    n = q(Node).get(splitpath(req.path)[0])
+
+    if not isinstance(n, Node):
         return 404
     if not access.hasAccess(n, "data") and n.type != "directory":
         return 403
-    for f in n.getFiles():
-        if f.getType() == "original":
+    for f in n.files:
+        if f.filetype == "original":
             incUsage(n)
-            return req.sendFile(f.retrieveFile(), f.getMimeType())
+            return req.sendFile(f.abspath, f.mimetype)
     return 404
 
 
@@ -102,18 +105,16 @@ def send_rawfile(req, n=None):
     access = AccessData(req)
     if not n:
         id, filename = splitpath(req.path)
-        n = None
-        try:
-            n = tree.getNode(id)
-        except tree.NoSuchNodeError:
+        n = q(Node).get(id)
+        if not isinstance(n, Node):
             return 404
 
-    if not access.hasAccess(n, "data") and n.getContentType() not in ["directory", "collections", "collection"]:
+    if not access.hasAccess(n, "data") and n.type not in ["directory", "collections", "collection"]:
         return 403
-    for f in n.getFiles():
-        if f.getType() == "original":
+    for f in n.files:
+        if f.filetype == "original":
             incUsage(n)
-            return req.sendFile(f.retrieveFile(n), f.getMimeType(n))
+            return req.sendFile(f.abspath, f.mimetype)
     return 404
 
 
@@ -213,7 +214,7 @@ def send_file(req, download=0):
     if not file and n.get("archive_type") == "":
         file_ext = os.path.splitext(filename)[1]
         for f in n.files:
-            if os.path.splitext(f.getName())[1] == file_ext and f.getType() in ['doc', 'document', 'original', 'mp3']:
+            if os.path.splitext(f.getName())[1] == file_ext and f.filetype in ['doc', 'document', 'original', 'mp3']:
                 incUsage(n)
                 file = f
                 break
@@ -239,7 +240,7 @@ def send_attachment(req):
     access = AccessData(req)
     id, filename = splitpath(req.path)
     node = q(Node).get(id)
-    if not isinstance(n, Node):
+    if not isinstance(node, Node):
         return 404
     if not access.hasAccess(node, "data") and n.type != "directory":
         return 403
@@ -308,7 +309,7 @@ def send_attfile(req):
 def get_archived(req):
     logg.debug("send archived")
     id, filename = splitpath(req.path)
-    node = tree.getNode(id)
+    node = q(Node).get(id)
     node.set("archive_state", "1")
     if not archivemanager:
         msg = "-no archive module loaded-"
@@ -366,9 +367,9 @@ def build_transferzip(node):
     files_written = 0
 
     for n in node.getAllChildren():
-        for fn in n.getFiles():
-            if fn.getType() in ['doc', 'document', 'zip', 'attachment', 'other']:
-                fullpath = fn.retrieveFile()
+        for fn in n.files:
+            if fn.filetype in ['doc', 'document', 'zip', 'attachment', 'other']:
+                fullpath = fn.abspath
                 if os.path.isfile(fullpath) and os.path.exists(fullpath):
                     dirname, filename = os.path.split(fullpath)
                     logg.debug("adding to zip: %s as %s", fullpath, filename)
@@ -392,9 +393,9 @@ def build_filelist(node):
 
     for n in node.getAllChildren():
 
-        for fn in n.getFiles():
-            if fn.getType() in ['doc', 'document', 'zip', 'attachment', 'other']:
-                fullpath = fn.retrieveFile()
+        for fn in n.files:
+            if fn.filetype in ['doc', 'document', 'zip', 'attachment', 'other']:
+                fullpath = fn.abspath
                 if os.path.isfile(fullpath) and os.path.exists(fullpath):
                     dirname, filename = os.path.split(fullpath)
                     result_list.append([filename, fn.getSize()])

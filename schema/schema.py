@@ -1448,7 +1448,7 @@ def getFieldsForMeta(name):
 
 
 class SchemaMixin(object):
-    
+
     def getMask(self, name):
         warn("use Default.metadatatype.get_mask instead", DeprecationWarning)
         mdt = self.metadatatype
@@ -1460,18 +1460,18 @@ class SchemaMixin(object):
 
 
 class ContainerSchemaMixin(SchemaMixin):
-    
+
     @hybrid_property
     def metadatatype(self):
         return q(Metadatatype).filter_by(name=self.type).one()
-     
+
 
 class ContentSchemaMixin(SchemaMixin):
-    
+
     @hybrid_property
     def metadatatype(self):
         return q(Metadatatype).filter_by(name=self.schema).one()
-     
+
     def getSchema(self):
         warn("deprecated, use Content.schema instead", DeprecationWarning)
         return self.schema
@@ -1485,17 +1485,17 @@ class ContentSchemaMixin(SchemaMixin):
             l = []
 
         try:
-            if self.getSchema():
-                l += getMetaType(self.getSchema()).getMetaFields(type)
+            if self.schema:
+                l += getMetaType(self.schema).getMetaFields(type)
         except AttributeError:
             pass
         return l
 
     def getMetaField(self, name):
-        if self.getSchema():
+        if self.schema:
             try:
-                metadatatype = getMetaType(self.getSchema())
-                return getMetaType(self.getSchema()).getMetaField(name)
+                metadatatype = getMetaType(self.schema)
+                return getMetaType(self.schema).getMetaField(name)
             except AttributeError:
                 return None
         else:
@@ -1521,25 +1521,25 @@ class ContentSchemaMixin(SchemaMixin):
 
     def getMasks(self, type="", language=""):
         try:
-            if self.getSchema():
-                return getMetaType(self.getSchema()).getMasks(type=type, language=language)
+            if self.schema:
+                return getMetaType(self.schema).getMasks(type=type, language=language)
             else:
                 return []
         except AttributeError:
             return []
 
     def getMask(self, name):
-        if self.getSchema():
+        if self.schema:
             try:
-                return getMetaType(self.getSchema()).getMask(name)
+                return getMetaType(self.schema).getMask(name)
             except AttributeError:
                 return None
         else:
-            raise ValueError("Node of type '" + ustr(self.getSchema()) + "' has no mask")
+            raise ValueError("Node of type '" + ustr(self.schema) + "' has no mask")
 
     def getDescription(self):
-        if self.getSchema():
-            mtype = getMetaType(self.getSchema())
+        if self.schema:
+            mtype = getMetaType(self.schema)
             if mtype:
                 return mtype.getDescription()
             else:

@@ -121,7 +121,7 @@ def getPathTo(req):
         if node.id not in path and node.isContainer():  # add node if container
             path.append(node)
 
-        checked.append(path[-1].id)  # last item of path is checked
+        checked.append(unicode(path[-1].id))  # last item of path is checked
 
         if path[0].getParents()[0].id == collectionsid and collectionsid not in items:
             items.append(collectionsid)
@@ -134,13 +134,13 @@ def getPathTo(req):
         if req.params.get("multiselect", "false") == "false":  # if not multiselect use only first path
             break
 
-    if len(items) == 0 or collectionsid in q(Node).get(items[0]).parents[0].id:
+    if len(items) == 0 or collectionsid == q(Node).get(items[0]).parents[0].id:
         items = [collectionsid] + items
 
-    items = (",").join(items)
+    items = u",".join([unicode(i) for i in items])
 
     for check in checked:  # set marked items
-        items = items.replace(check, "(%s)" % (check))
+        items = items.replace(check, u'({})'.format(check))
 
     req.write(items)
     return

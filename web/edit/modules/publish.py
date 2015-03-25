@@ -59,7 +59,7 @@ def getContent(req, ids):
         for obj_id in objlist:
             faultylist = []
             obj = q(Node).get(obj_id)
-            for mask in obj.type.getMasks(type="edit"): # check required fields
+            for mask in obj.getMasks(type="edit"): # check required fields
                 if access.hasReadAccess(mask) and mask.getName() == obj.get("edit.lastmask"):
                     for f in mask.validateNodelist([obj]):
                         faultylist.append(f)

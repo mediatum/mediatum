@@ -498,7 +498,7 @@ def action(req):
         for nid in set(nids + [_n.id for _n in [trashdir, uploaddir, faultydir]]):
             try:
                 changednodes[nid] = getTreeLabel(
-                    tree.getNode(nid), lang=language)
+                    q(Node).get(nid), lang=language)
             except:
                 logg.exception("exception ignored: could not make fancytree label for node %s", nid)
         res_dict = {'changednodes': changednodes}

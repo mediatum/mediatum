@@ -37,7 +37,6 @@ from sqlalchemy.orm.exc import NoResultFound
 from core import Node
 
 
-
 logg = logging.getLogger(__name__)
 q = db.query
 
@@ -119,24 +118,18 @@ def send_rawfile(req, n=None):
 
 
 def send_thumbnail(req):
-    try:
-        n = q(Node).get(long(splitpath(req.path)[0]))
-    except NoResultFound:
+    n = q(Node).get(long(splitpath(req.path)[0]))
+    if not isinstance(n, Node):
         return 404
-    for f in n.getFiles():
-        if f.getType() == "thumb":
-            if os.path.isfile(f.retrieveFile()):
-                return req.sendFile(f.retrieveFile(), f.getMimeType())
+    for f in n.files:
+        if f.type == "thumb":
+            if os.path.isfile(f.abspath):
+                return req.sendFile(f.abspath, f.mimetype)
 
     for p in athana.getFileStorePaths("/img/"):
-        for test in [
-                "default_thumb_%s_%s.*" %
-                (n.getContentType(),
-                 n.getSchema()),
-                "default_thumb_%s.*" %
-                (n.getSchema()),
-                "default_thumb_%s.*" %
-                (n.getContentType())]:
+        for test in ["default_thumb_%s_%s.*" % (n.type, n.schema),
+                     "default_thumb_%s.*" % n.schema,
+                     "default_thumb_%s.*" % n.type]:
             fps = glob.glob(os.path.join(config.basedir, p[2:], test))
             if fps:
                 thumb_mimetype, thumb_type = utils.utils.getMimeType(fps[0])
@@ -146,29 +139,25 @@ def send_thumbnail(req):
 
 def send_thumbnail2(req):
     n = q(Node).get(splitpath(req.path)[0])
-    if n is None:
+    if not isinstance(n, Node):
         return 404
-    for f in n.getFiles():
-        if f.getType().startswith("presentat"):
-            if os.path.isfile(f.retrieveFile()):
-                return req.sendFile(f.retrieveFile(), f.getMimeType())
+    for f in n.files:
+        if f.type.startswith("presentat"):
+            if os.path.isfile(f.abspath):
+                return req.sendFile(f.abspath, f.mimetype)
     # fallback
-    for f in n.getFiles():
-        if f.getType() == "image":
-            if os.path.isfile(f.retrieveFile()):
-                return req.sendFile(f.retrieveFile(), f.getMimeType())
+    for f in n.files:
+        if f.type == "image":
+            if os.path.isfile(f.abspath):
+                return req.sendFile(f.abspath, f.mimetype)
 
     # fallback2
     for p in athana.getFileStorePaths("/img/"):
         for test in [
-                "default_thumb_%s_%s.*" %
-                (n.getContentType(),
-                 n.getSchema()),
-                "default_thumb_%s.*" %
-                (n.getSchema()),
-                "default_thumb_%s.*" %
-                (n.getContentType())]:
-            #fps = glob.glob(os.path.join(config.basedir, theme.getImagePath(), "img", test))
+                    "default_thumb_%s_%s.*" % (n.type, n.schema),
+                    "default_thumb_%s.*" % n.schema,
+                    "default_thumb_%s.*" % n.type]:
+            # fps = glob.glob(os.path.join(config.basedir, theme.getImagePath(), "img", test))
             fps = glob.glob(os.path.join(config.basedir, p[2:], test))
             if fps:
                 thumb_mimetype, thumb_type = utils.utils.getMimeType(fps[0])
@@ -186,7 +175,7 @@ def send_doc(req):
     for f in n.files:
         if f.type in ["doc", "document"]:
             incUsage(n)
-            return req.sendFile(f.open(), f.mimetype)
+            return req.sendFile(f.abspath, f.mimetype)
     return 404
 
 
@@ -216,7 +205,7 @@ def send_file(req, download=0):
 
     # try full filename
     for f in n.files:
-        if f.name == filename:
+        if f.base_name == filename:
             incUsage(n)
             file = f
             break
@@ -232,14 +221,14 @@ def send_file(req, download=0):
 
     if not file and n.get("archive_type") != "":
         am = archivemanager.getManager(n.get("archive_type"))
-        req.reply_headers["Content-Disposition"] = u'attachment; filename="{}"'.format(filename)
+        req.reply_headers["Content-Disposition"] = u'attachment; filename="{}"'.format(filename).encode('utf8')
         return req.sendFile(am.getArchivedFileStream(n.get("archive_path")), "application/x-download")
 
     if not file:
         return 404
 
-    req.reply_headers["Content-Disposition"] = u'attachment; filename="{}"'.format(filename)
-    return req.sendFile(file.open(), f.mimetype)
+    req.reply_headers["Content-Disposition"] = u'attachment; filename="{}"'.format(filename).encode('utf8')
+    return req.sendFile(file.abspath, f.mimetype)
 
 
 def send_file_as_download(req):
@@ -257,7 +246,7 @@ def send_attachment(req):
     # filename is attachment.zip
     for file in node.files:
         if file.type == "attachment":
-            sendZipFile(req, file.open())
+            sendZipFile(req, file.abspath)
             break
 
 
@@ -284,6 +273,7 @@ def sendZipFile(req, path):
                 zip.write(join_paths(path, p), p)
             except:
                 pass
+
     r("/")
     zip.close()
     req.reply_headers['Content-Disposition'] = "attachment; filename=shoppingbag.zip"
@@ -303,14 +293,14 @@ def send_attfile(req):
         return 404
     if not access.hasAccess(node, "data") and node.type != "directory":
         return 403
-    if len([file for file in node.files if file.open() in ["/".join(f[1:]), "/".join(f[1:-1])]]) == 0:  # check filepath
+    if len([file for file in node.files if file.abspath in ["/".join(f[1:]), "/".join(f[1:-1])]]) == 0:  # check filepath
         return 403
 
     filename = clean_path("/".join(f[1:]))
     path = join_paths(config.get("paths.datadir"), filename)
     mime, type = getMimeType(filename)
-    if(get_filesize(filename) > 16 * 1048576):
-        req.reply_headers["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
+    if (get_filesize(filename) > 16 * 1048576):
+        req.reply_headers["Content-Disposition"] = u'attachment; filename="{}"'.format(filename).encode('utf8')
 
     return req.sendFile(path, mime)
 

@@ -15,7 +15,7 @@
 <div tal:condition="python:not canseeoriginal" style="border:1px solid silver">
     <img tal:attributes="src python:u'/thumb2/{}'.format(node.id)"/>
 </div>
-<div tal:condition="python:canseeoriginal" tal:attributes="width python:node.get('vid-width')+'px';height python:node.get('vid-height')+'px'" style="border:1px solid silver; height:400px;text-align:center">
+<div tal:condition="python:canseeoriginal" tal:attributes="width python:u'{}px'.format(node.get('vid-width'));height python:u'{}px'.format(node.get('vid-height'))" style="border:1px solid silver; height:400px;text-align:center">
 <a tal:attributes="href file" style="display:block;" id="player"> </a>
 </div>
 

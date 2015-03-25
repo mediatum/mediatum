@@ -195,7 +195,7 @@ class Video(Content):
                     makeThumbNail(tempname, thumbname)
                     makePresentationFormat(tempname, thumbname2)
                     self.files.append(File(thumbname, "thumb", "image/jpeg"))
-                    self.filoes.append(File(thumbname2, "presentation", "image/jpeg"))
+                    self.files.append(File(thumbname2, "presentation", "image/jpeg"))
 
         db.session.commit()
 

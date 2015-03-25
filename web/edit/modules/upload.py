@@ -117,7 +117,7 @@ def getContent(req, ids):
             basenode = q(Node).get(req.params.get('id'))
             for f in basenode.files:
                 try:
-                    os.remove(f.retrieveFile())
+                    os.remove(f.abspath)
                     pass
                 except:
                     state = "error"
@@ -139,13 +139,13 @@ def getContent(req, ids):
                             k.replace('scheme_', '', 1)] = req.params.get(k)
 
                 for f in basenode.files:
-                    filename = f.getName()
+                    filename = f.name
                     if filename in filename2scheme:
                         mimetype = getMimeType(filename)
 
                         if mimetype[1] == "bibtex":  # bibtex import handler
                             try:
-                                new_node = importBibTeX(f.retrieveFile(), basenode)
+                                new_node = importBibTeX(f.abspath, basenode)
                                 newnodes.append(new_node.id)
                                 basenodefiles_processed.append(f)
                             except ValueError, e:
@@ -154,7 +154,7 @@ def getContent(req, ids):
                         logg.debug("filename: %s, mimetype: %s", filename, mimetype)
                         logg.debug("__name__=%s, func=%s; _m=%s, _m[1]=%s", __name__, funcname(), mimetype, mimetype[1])
 
-                        node = Node(filename, type=mimetype[1], schema=filename2scheme[filename])
+                        node = Data(filename, type=mimetype[1], schema=filename2scheme[filename])
 
                         basenode.children.append(node)
                         node.set("creator", user.name)
@@ -178,11 +178,11 @@ def getContent(req, ids):
                     if mimetype[1] == req.params.get('type') or req.params.get('type') == 'file':
                         for f in basenode.files:
                             # ambiguity here ?
-                            if f.retrieveFile().endswith(filename):
+                            if f.abspath.endswith(filename):
                                 # bibtex import handler
                                 if mimetype[1] == "bibtex" and not req.params.get('type') == 'file':
                                     try:
-                                        new_node = importBibTeX(f.retrieveFile(), basenode)
+                                        new_node = importBibTeX(f.abspath, basenode)
                                         newnodes.append(new_node.id)
                                         basenodefiles_processed.append(f)
                                     except ValueError, e:
@@ -190,16 +190,16 @@ def getContent(req, ids):
                                 else:
 
                                     logg.debug("creating new node: filename: %s", filename)
-                                    logg.debug("files at basenode: %s", [(x.getName(), x.retrieveFile()) for x in basenode.getFiles()])
+                                    logg.debug("files at basenode: %s", [(x.getName(), x.abspath) for x in basenode.files])
 
-                                    node = Node(filename, req.params.get('type'), schema=req.params.get('value'))
+                                    node = Data(filename, req.params.get('type'), schema=req.params.get('value'))
                                     basenode.children.append(node)
                                     node.set("creator", user.name)
                                     node.set("creationtime",  unicode(time.strftime('%Y-%m-%dT%H:%M:%S',
                                                                                     time.localtime(time.time()))))
 
                                     # clones to a file with random name
-                                    cloned_file = importFileRandom(f.retrieveFile())
+                                    cloned_file = importFileRandom(f.abspath)
                                     node.files.append(cloned_file)
                                     if hasattr(node, 'event_files_changed'):
                                         node.event_files_changed()
@@ -216,7 +216,7 @@ def getContent(req, ids):
             new_tree_labels = [{'id': basenode.id, 'label': getTreeLabel(basenode, lang=language)}]
             for f in basenodefiles_processed:
                 basenode.files.remove(f)
-                f_path = f.retrieveFile()
+                f_path = f.abspath
                 if os.path.exists(f_path):
                     logg.debug("%s going to remove file %s from disk", user.name, f_path)
                     os.remove(f_path)
@@ -264,7 +264,7 @@ def getContent(req, ids):
             schema = req.params.get('schema')
             ctype = req.params.get('contenttype')
 
-            node = tree.Node(u"", type=ctype + '/' + schema)
+            node = Node(u"", type=ctype, schema=schema)
             basenode = q(Node).get(req.params.get('id'))
             basenode.children.append(node)
             node.set("creator", user.name)
@@ -363,7 +363,7 @@ def getContent(req, ids):
                                       'ret': req.getTAL('web/edit/modules/upload.html', {}, macro="uploadfileerror"),
                                       'state': 'error',
                                       'filename': req.params.get('file')}))
-                logg.debug("%s|%s.%s: added file to node %s (%s, %s) -> file type not supported", 
+                logg.debug("%s|%s.%s: added file to node %s (%s, %s) -> file type not supported",
                              get_user_id(req), __name__, funcname(), node.id, node.name, node.type)
                 return None
 
@@ -492,9 +492,9 @@ def upload_ziphandler(req):
     files = []
     scheme_type = {}
     basenode = q(Node).get(req.params.get('id'))
-    for file in basenode.getFiles():
-        if file.retrieveFile().endswith(req.params.get('file')):
-            z = zipfile.ZipFile(file.retrieveFile())
+    for file in basenode.files:
+        if file.abspath.endswith(req.params.get('file')):
+            z = zipfile.ZipFile(file.abspath)
             for f in z.namelist():
                 #strip unwanted garbage from string
                 name = mybasename(f).decode('utf8', 'ignore').encode('utf8')
@@ -527,7 +527,7 @@ def upload_ziphandler(req):
                             scheme_type[_m[1]].append(scheme)
             try:
                 z.close()
-                os.remove(file.retrieveFile())
+                os.remove(file.abspath)
             except:
                 pass
             basenode.removeFile(file)
@@ -538,10 +538,10 @@ def upload_ziphandler(req):
 def upload_bibhandler(req):
     error = ""
     n = q(Node).get(req.params.get('id'))
-    for f in n.getFiles():
-        if f.retrieveFile().endswith(req.params.get('file')):
+    for f in n.files:
+        if f.abspath.endswith(req.params.get('file')):
             try:
-                retrieved_file = f.retrieveFile()
+                retrieved_file = f.abspath
                 logg.debug('going to call importBibTex(%s), import will be logged to backend!', retrieved_file)
                 nn = importBibTeX(retrieved_file)
                 logg.info('importBibTex(%s) done, import logged to backend!', retrieved_file)

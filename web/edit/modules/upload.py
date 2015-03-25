@@ -154,14 +154,14 @@ def getContent(req, ids):
                         logg.debug("filename: %s, mimetype: %s", filename, mimetype)
                         logg.debug("__name__=%s, func=%s; _m=%s, _m[1]=%s", __name__, funcname(), mimetype, mimetype[1])
 
-                        node = Data(filename, type=mimetype[1], schema=filename2scheme[filename])
+                        content_class = Node.get_class_for_typestring(mimetype[1])
+                        node = content_class(filename, schema=filename2scheme[filename])
 
                         basenode.children.append(node)
                         node.set("creator", user.name)
                         node.set("creationtime",  unicode(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
 
                         node.files.append(f)
-
                         node.event_files_changed()
                         newnodes.append(node.id)
                         basenodefiles_processed.append(f)
@@ -192,7 +192,9 @@ def getContent(req, ids):
                                     logg.debug("creating new node: filename: %s", filename)
                                     logg.debug("files at basenode: %s", [(x.getName(), x.abspath) for x in basenode.files])
 
-                                    node = Data(filename, req.params.get('type'), schema=req.params.get('value'))
+                                    content_class = Node.get_class_for_typestring(req.params.get('type'))
+                                    node = content_class(filename, schema=req.params.get('value'))
+
                                     basenode.children.append(node)
                                     node.set("creator", user.name)
                                     node.set("creationtime",  unicode(time.strftime('%Y-%m-%dT%H:%M:%S',

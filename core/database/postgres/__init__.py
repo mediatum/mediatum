@@ -6,6 +6,7 @@
 import logging
 import pyaml
 import time
+import sqlalchemy as sqla
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
@@ -14,8 +15,8 @@ from sqlalchemy import event
 logg = logging.getLogger(__name__)
 
 
-DeclarativeBase = declarative_base()
-db_metadata = DeclarativeBase.metadata
+db_metadata = sqla.MetaData(schema="mediatum")
+DeclarativeBase = declarative_base(metadata=db_metadata)
 
 # some pretty printing for SQLAlchemy objects ;)
 

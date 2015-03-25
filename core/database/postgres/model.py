@@ -237,35 +237,6 @@ class BaseNodeMeta(DeclarativeMeta):
         super(BaseNodeMeta, cls).__init__(name, bases, dct)
 
 
-child_rel_options = dict(
-    secondary=t_nodemapping,
-    lazy="dynamic",
-    primaryjoin="Node.id == nodemapping.c.nid",
-    secondaryjoin="Node.id == nodemapping.c.cid",
-    query_class=NodeAppenderQuery
-)
-
-parent_rel_options = dict(
-    secondary=t_nodemapping,
-    lazy="dynamic",
-    primaryjoin="Node.id == nodemapping.c.cid",
-    secondaryjoin="Node.id == nodemapping.c.nid",
-    query_class=NodeAppenderQuery
-)
-
-
-def children_rel(*args, **kwargs):
-    extended_kwargs = child_rel_options.copy()
-    extended_kwargs.update(kwargs)
-    return relationship(*args, **extended_kwargs)
-
-
-def parents_rel(*args, **kwargs):
-    extended_kwargs = parent_rel_options.copy()
-    extended_kwargs.update(kwargs)
-    return relationship(*args, **extended_kwargs)
-
-
 def _cte_subtree(node):
     from core import db
     t = db.query(t_nodemapping.c.cid).\
@@ -310,7 +281,6 @@ class Node(DeclarativeBase, NodeMixin):
     data_access = C(Text)
     fulltext = deferred(C(Text))
     localread = C(Text)
-    children = rel("Node", backref=bref("parents", lazy="dynamic", query_class=NodeAppenderQuery), **child_rel_options)
 
     attrs = deferred(C(MutableDict.as_mutable(JSONB)))
 
@@ -386,6 +356,40 @@ class Node(DeclarativeBase, NodeMixin):
         as_dict["attrs"] = dict(as_dict["attrs"])
         as_dict["id"] = str(as_dict["id"])
         return pyaml.dump(as_dict)
+
+### helpers for node child/parent relationships
+
+child_rel_options = dict(
+    secondary=t_nodemapping,
+    lazy="dynamic",
+    primaryjoin=Node.id == t_nodemapping.c.nid,
+    secondaryjoin=Node.id == t_nodemapping.c.cid,
+    query_class=NodeAppenderQuery
+)
+
+parent_rel_options = dict(
+    secondary=t_nodemapping,
+    lazy="dynamic",
+    primaryjoin=Node.id == t_nodemapping.c.cid,
+    secondaryjoin=Node.id == t_nodemapping.c.nid,
+    query_class=NodeAppenderQuery
+)
+
+
+def children_rel(*args, **kwargs):
+    extended_kwargs = child_rel_options.copy()
+    extended_kwargs.update(kwargs)
+    return relationship(*args, **extended_kwargs)
+
+
+def parents_rel(*args, **kwargs):
+    extended_kwargs = parent_rel_options.copy()
+    extended_kwargs.update(kwargs)
+    return relationship(*args, **extended_kwargs)
+
+### define Node child/parent relationships here
+
+Node.children = children_rel(Node, backref=bref("parents", lazy="dynamic", query_class=NodeAppenderQuery))
 
 
 class BaseFile(DeclarativeBase):

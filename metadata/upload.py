@@ -72,7 +72,7 @@ def normalizeFilename(s, chars=ALLOWED_CHARACTERS):
 
 def getFilelist(node, fieldname=''):
 
-    fs = node.getFiles()
+    fs = node.files
     if fieldname:
         # get files for this fieldname only
         pattern = r'm_upload_%s_' % fieldname
@@ -85,13 +85,13 @@ def getFilelist(node, fieldname=''):
     for f in fs:
         f_name = f.getName()
         if re.match(pattern, f_name):
-            f_retrieve = f.retrieveFile()
+            f_retrieve = f.abspath
             try:
-                f_mtime = ustr(datetime.datetime.fromtimestamp(os.path.getmtime(f_retrieve)))
+                f_mtime = unicode(datetime.datetime.fromtimestamp(os.path.getmtime(f_retrieve)))
             except:
                 logg.exception("exception in getFilelist, formatting datestr failed, using fake date")
                 f_mtime = "2099-01-01 12:00:00.00 " + f_name
-            _t = (f_mtime, f_name, f.getMimeType(), f.getSize(), f.getType(), f_retrieve, f)
+            _t = (f_mtime, f_name, f.mimetype(), f.size, f.filetype, f_retrieve, f)
             filelist.append(_t)
 
     filelist.sort()

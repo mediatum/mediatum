@@ -29,18 +29,20 @@ from web.edit.edit import nodeIsChildOfNode
 from utils.utils import isDirectory
 from core.users import getHomeDir
 import logging
-
+from contenttypes import Collections
+from core import Node
+from core import db
 
 logg = logging.getLogger(__name__)
-
+q = db.query
 
 def getInformation():
     return {"version":"1.1", "system":1}
 
 def getContent(req, ids):
     user = users.getUserFromRequest(req)
-    publishdir = tree.getNode(ids[0])
-    explicit = tree.getNodesByAttribute("writeaccess", user.getName())
+    publishdir = q(Node).get(ids[0])
+    explicit = q(Node).filter(Node.write_access == user.name).all()
     ret = ""
 
     actionerror = []
@@ -52,13 +54,13 @@ def getContent(req, ids):
         for key in req.params.keys():
             if key.isdigit():
                 objlist.append(key)
-                src = tree.getNode(req.params.get("id"))
+                src = q(Node).get(req.params.get("id"))
 
         for obj_id in objlist:
             faultylist = []
-            obj = tree.getNode(obj_id)
-            for mask in obj.getType().getMasks(type="edit"): # check required fields
-                if access.hasReadAccess(mask) and mask.getName()==obj.get("edit.lastmask"):
+            obj = q(Node).get(obj_id)
+            for mask in obj.type.getMasks(type="edit"): # check required fields
+                if access.hasReadAccess(mask) and mask.getName() == obj.get("edit.lastmask"):
                     for f in mask.validateNodelist([obj]):
                         faultylist.append(f)
 
@@ -70,11 +72,12 @@ def getContent(req, ids):
                 if dest_id=="": # no destination given
                     continue
 
-                dest = tree.getNode(dest_id)
+                dest = q(Node).get(dest_id)
                 if dest != src and access.hasReadAccess(src) and access.hasWriteAccess(dest) and access.hasWriteAccess(obj) and isDirectory(dest):
                         if not nodeIsChildOfNode(dest,obj):
-                            dest.addChild(obj)
-                            src.removeChild(obj)
+                            dest.children.append(obj)
+                            src.children.remove(obj)
+                            db.session.commit()
 
                             if dest.id not in changes:
                                 changes.append(dest.id)
@@ -107,17 +110,23 @@ def getContent(req, ids):
     stdname = ""
     l = []
     for n in explicit:
-        if ustr(getHomeDir(user).id)!=ustr(n):
+        if unicode(getHomeDir(user).id) != unicode(n):
             l.append(n)
 
     if len(l)==1:
-        stddir = ustr(l[0])+","
-        stdname = "- " + tree.getNode(l[0]).getName()
+        stddir = unicode(l[0])+","
+        stdname = "- " + q(Node).get(l[0]).getName()
 
-    v = {"id":publishdir.id,"stddir":stddir, "stdname":stdname, "showdir":showdir(req, publishdir, publishwarn=None, markunpublished=1, nodes=[])}
-    v["basedir"] = tree.getRoot('collections')
-    v["script"] = "var currentitem = '%s';\nvar currentfolder = '%s'" %(publishdir.id, publishdir.id)
-    v["idstr"] = ids
-    v["faultylist"] = actionerror
+    v = {"id": publishdir.id,
+         "stddir": stddir,
+         "stdname": stdname,
+         "showdir": showdir(req,
+                            publishdir,
+                            publishwarn=None,
+                            markunpublished=1),
+         "basedir": q(Collections).one(),
+         "script": "var currentitem = '%s';\nvar currentfolder = '%s'" % (publishdir.id, publishdir.id), "idstr": ids,
+         "faultylist": actionerror}
+
     ret += req.getTAL("web/edit/modules/publish.html", v, macro="publish_form")
     return ret

@@ -35,6 +35,8 @@ from core.styles import getContentStyles
 from web.frontend import zoom
 from contenttypes.data import Content
 from core.transition.postgres import check_type_arg_with_schema
+from core.file import File
+from core import db
 
 """ make thumbnail (jpeg 128x128) """
 
@@ -186,10 +188,10 @@ def getJpegSection(image, section):  # section character
 def dozoom(self):
     b = 0
     svg = 0
-    for file in self.getFiles():
-        if file.getType() == "zoom":
+    for file in self.files:
+        if file.filetype == "zoom":
             b = 1
-        if file.getName().lower().endswith('svg') and file.type == "original":
+        if file.base_name.lower().endswith('svg') and file.type == "original":
             svg = 1
     if self.get("width") and self.get("height") and (int(self.get("width")) > 2000 or int(self.get("height")) > 2000) and not svg:
         b = 1
@@ -223,12 +225,12 @@ class Image(Content):
 
         access = acl.AccessData(req)
         if access.hasAccess(self, "data"):
-            for f in self.getFiles():
-                if f.getType() == "original":
+            for f in self.files:
+                if f.type == "original":
                     if self.get('system.origname') == "1":
-                        tif = self.getName()
+                        tif = self.base_name
                     else:
-                        tif = f.getName()
+                        tif = f.base_name
 
             if self.get("archive_path") != "":
                 tif = "file/" + ustr(self.id) + "/" + self.get("archive_path")
@@ -290,33 +292,35 @@ class Image(Content):
     def event_files_changed(self):
         logg.debug("Postprocessing node %s", self.id)
         if "image" in self.type:
-            for f in self.getFiles():
-                if f.getName().lower().endswith('svg'):
-                    self.svg_to_png(f.retrieveFile(), f.retrieveFile()[:-4] + ".png")
-                    self.removeFile(f)
-                    self.addFile(FileNode(name=f.retrieveFile(), type="original", mimetype=f.mimetype))
-                    self.addFile(FileNode(name=f.retrieveFile(), type="image", mimetype=f.mimetype))
-                    self.addFile(FileNode(name=f.retrieveFile()[:-4] + ".png", type="tmppng", mimetype="image/png"))
+            for f in self.files:
+                if f.base_name.lower().endswith('svg'):
+                    self.svg_to_png(f.abspath, f.abspath[:-4] + ".png")
+                    self.files.remove(f)
+                    self.files.append(File(name=f.abspath, type="original", mimetype=f.mimetype))
+                    self.files.append(File(name=f.abspath, type="image", mimetype=f.mimetype))
+                    self.files.append(File(name=f.abspath[:-4] + ".png", type="tmppng", mimetype="image/png"))
+                    db.session.commit()
                     break
             orig = 0
             thumb = 0
-            for f in self.getFiles():
+            for f in self.files:
                 if f.type == "original":
                     orig = 1
                 if f.type == "thumb":
                     thumb = 1
             if orig == 0:
-                for f in self.getFiles():
+                for f in self.files:
                     if f.type == "image":
                         if f.mimetype == "image/tiff" or ((f.mimetype is None or f.mimetype == "application/x-download")
-                                                          and (f.getName().lower().endswith("tif") or f.getName().lower().endswith("tiff"))):
+                                                          and (f.base_name.lower().endswith("tif") or f.base_name.lower().endswith("tiff"))):
                             # move old file to "original", create a new png to be used as "image"
-                            self.removeFile(f)
+                            self.files.remove(f)
+                            db.session.commit()
 
-                            path, ext = splitfilename(f.retrieveFile())
+                            path, ext = splitfilename(f.abspath)
                             pngname = path + ".png"
                             if not os.path.isfile(pngname):
-                                makeOriginalFormat(f.retrieveFile(), pngname)
+                                makeOriginalFormat(f.abspath, pngname)
 
                                 width, height = getImageDimensions(pngname)
                                 self.set("width", width)
@@ -327,27 +331,29 @@ class Image(Content):
                                 self.set("width", width)
                                 self.set("height", height)
 
-                            self.addFile(FileNode(name=pngname, type="image", mimetype="image/png"))
-                            self.addFile(FileNode(name=f.retrieveFile(), type="original", mimetype="image/tiff"))
+                            self.files.append(File(name=pngname, type="image", mimetype="image/png"))
+                            self.files.append(File(name=f.abspath, type="original", mimetype="image/tiff"))
                             break
                         else:
-                            self.addFile(FileNode(name=f.retrieveFile(), type="original", mimetype=f.mimetype))
+                            self.files.append(File(name=f.abspath, type="original", mimetype=f.mimetype))
+
+            db.session.commit()
 
             # retrieve technical metadata.
-            for f in self.getFiles():
-                if (f.type == "image" and not f.getName().lower().endswith("svg")) or f.type == "tmppng":
-                    width, height = getImageDimensions(f.retrieveFile())
+            for f in self.files:
+                if (f.type == "image" and not f.base_name.lower().endswith("svg")) or f.type == "tmppng":
+                    width, height = getImageDimensions(f.abspath)
                     self.set("origwidth", width)
                     self.set("origheight", height)
                     self.set("origsize", f.getSize())
 
                     if f.mimetype == "image/jpeg":
-                        self.set("jpg_comment", iso2utf8(getJpegSection(f.retrieveFile(), 0xFE).strip()))
+                        self.set("jpg_comment", iso2utf8(getJpegSection(f.abspath, 0xFE).strip()))
 
             if thumb == 0:
-                for f in self.getFiles():
-                    if (f.type == "image" and not f.getName().lower().endswith("svg")) or f.type == "tmppng":
-                        path, ext = splitfilename(f.retrieveFile())
+                for f in self.files:
+                    if (f.type == "image" and not f.base_name.lower().endswith("svg")) or f.type == "tmppng":
+                        path, ext = splitfilename(f.abspath)
                         basename = hashlib.md5(ustr(random.random())).hexdigest()[0:8]
 
                         #path = os.path.join(getImportDir(),os.path.basename(path))
@@ -358,27 +364,27 @@ class Image(Content):
 
                         assert not os.path.isfile(thumbname)
                         assert not os.path.isfile(thumbname2)
-                        width, height = getImageDimensions(f.retrieveFile())
-                        makeThumbNail(f.retrieveFile(), thumbname)
-                        makePresentationFormat(f.retrieveFile(), thumbname2)
+                        width, height = getImageDimensions(f.abspath)
+                        makeThumbNail(f.abspath, thumbname)
+                        makePresentationFormat(f.abspath, thumbname2)
                         if f.mimetype is None:
-                            if f.getName().lower().endswith("jpg"):
+                            if f.base_name.lower().endswith("jpg"):
                                 f.mimetype = "image/jpeg"
                             else:
                                 f.mimetype = "image/tiff"
-                        self.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
-                        self.addFile(FileNode(name=thumbname2, type="presentation", mimetype="image/jpeg"))
+                        self.files.append(File(name=thumbname, type="thumb", mimetype="image/jpeg"))
+                        self.files.append(File(name=thumbname2, type="presentation", mimetype="image/jpeg"))
                         self.set("width", width)
                         self.set("height", height)
 
             # Exif
             try:
                 from lib.Exif import EXIF
-                files = self.getFiles()
+                files = self.files
 
                 for file in files:
                     if file.type == "original":
-                        with open(file.retrieveFile(), 'rb') as f:
+                        with open(file.abspath, 'rb') as f:
                             tags = EXIF.process_file(f)
                             tags.keys().sort()
 
@@ -401,7 +407,7 @@ class Image(Content):
 
             if dozoom(self) == 1:
                 tileok = 0
-                for f in self.getFiles():
+                for f in self.files:
                     if f.type.startswith("tile"):
                         tileok = 1
                 if not tileok and self.get("width") and self.get("height"):
@@ -410,11 +416,11 @@ class Image(Content):
             # iptc
             try:
                 from lib.iptc import IPTC
-                files = self.getFiles()
+                files = self.files
 
                 for file in files:
                     if file.type == "original":
-                        tags = IPTC.getIPTCValues(file.retrieveFile())
+                        tags = IPTC.getIPTCValues(file.abspath)
                         tags.keys().sort()
                         for k in tags.keys():
                             # skip unknown iptc tags
@@ -428,8 +434,8 @@ class Image(Content):
             except:
                 logg.exception("exception getting IPTC attributes")
 
-            for f in self.getFiles():
-                if f.getName().lower().endswith("png") and f.type == "tmppng":
+            for f in self.files:
+                if f.base_name.lower().endswith("png") and f.type == "tmppng":
                     self.removeFile(f)
                     break
 

@@ -5,6 +5,7 @@
 """
 from core.test.asserts import assert_deprecation_warning
 from contenttypes import Document, Data, Home, Collections
+from workflow.workflow import Workflow
 
 
 def test_getSchema(content_node):
@@ -23,6 +24,7 @@ def test_data_get_all_subclasses():
     assert Document in all_datatypes
     assert Collections in all_datatypes
     assert Home in all_datatypes
+    assert Workflow not in all_datatypes
     
     
 def test_data_get_all_datatypes():
@@ -31,3 +33,4 @@ def test_data_get_all_datatypes():
     assert Document in all_datatypes
     assert Collections not in all_datatypes
     assert Home not in all_datatypes
+    assert Workflow not in all_datatypes

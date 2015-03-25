@@ -28,7 +28,7 @@ class PostgresSQLAConnector(object):
     def connect(self):
         from core import config
         self.dbhost = config.get("database.dbhost", "localhost")
-        self.dbport = int(config.get("database.dbport", "5342"))
+        self.dbport = int(config.get("database.dbport", "5432"))
         self.database = config.get("database.db", "mediatum")
         self.user = config.get("database.user", "mediatumadmin")
         self.passwd = config.get("database.passwd", "")

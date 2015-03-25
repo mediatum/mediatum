@@ -21,10 +21,12 @@ import logging
 from core.acl import AccessData
 from web.frontend.content import getPaths
 from core.translation import translate
-
+from contenttypes import Collections
+from core import Node
+from core import db
 
 logg = logging.getLogger(__name__)
-
+q = db.query
 
 def getData(req):
     access = AccessData(req)
@@ -32,13 +34,13 @@ def getData(req):
     style = req.params.get("style", "edittree")
     ret = []
 
-    for c in tree.getNode(pid).getChildren().sort_by_orderpos():
+    for c in q(Node).get(pid).children.sort_by_orderpos():
         if not access.hasReadAccess(c):
             continue
         try:
             if c.isContainer():
-                cnum = len(c.getContainerChildren())
-                inum = len(c.getContentChildren())
+                cnum = len(c.container_children)
+                inum = len(c.content_children)
 
                 label = c.getLabel()
                 title = c.getLabel() + " (" + ustr(c.id) + ")"
@@ -54,15 +56,15 @@ def getData(req):
                 if hasattr(c, 'treeiconclass'):
                     cls = c.treeiconclass()
 
-                if c.getName().startswith(translate('user_trash', request=req)):
+                if c.name.startswith(translate('user_trash', request=req)):
                     cls = "trashicon"
-                elif c.getName().startswith(translate('user_upload', request=req)):
+                elif c.name.startswith(translate('user_upload', request=req)):
                     cls = "uploadicon"
-                elif c.getName().startswith(translate('user_import', request=req)):
+                elif c.name.startswith(translate('user_import', request=req)):
                     cls = "importicon"
-                elif c.getName().startswith(translate('user_faulty', request=req)):
+                elif c.name.startswith(translate('user_faulty', request=req)):
                     cls = "faultyicon"
-                elif c.getName().startswith(translate('user_directory', request=req)):
+                elif c.name.startswith(translate('user_directory', request=req)):
                     cls = "homeicon"
 
                 if style == "edittree":  # standard tree for edit area
@@ -93,10 +95,10 @@ def getData(req):
 
 
 def getLabel(req):
-    node = tree.getNode(req.params.get("getLabel"))
+    node = q(Node).get(req.params.get("getLabel"))
     style = req.params.get("style", "edittree")
 
-    inum = len(node.getContentChildren())
+    inum = len(node.content_children)
     label = node.getLabel()
     if inum > 0:
         label += " <small>(" + ustr(inum) + ")</small>"
@@ -108,9 +110,9 @@ def getPathTo(req):
     # returns path(s) to selected node, 'x' separated, with selected nodes in ()
     # parameters: pathTo=selected Node
     access = AccessData(req)
-    collectionsid = tree.getRoot('collections').id
+    collectionsid = q(Collections).one().id
     id = req.params.get("pathTo", collectionsid).split(",")[0]
-    node = tree.getNode(id)
+    node = q(Node).get(id)
 
     items = []
     checked = []
@@ -132,7 +134,7 @@ def getPathTo(req):
         if req.params.get("multiselect", "false") == "false":  # if not multiselect use only first path
             break
 
-    if len(items) == 0 or collectionsid in tree.getNode(items[0]).getParents()[0].id:
+    if len(items) == 0 or collectionsid in q(Node).get(items[0]).parents[0].id:
         items = [collectionsid] + items
 
     items = (",").join(items)

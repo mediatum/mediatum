@@ -1044,7 +1044,11 @@ class http_request(object):
             # when using telnet to debug a server.
             close_it = 1
 
-        outgoing_header = simple_producer(self.build_reply_header())
+        reply_header = self.build_reply_header()
+        if isinstance(reply_header, unicode):
+            reply_header = reply_header.encode('utf8')
+
+        outgoing_header = simple_producer(reply_header)
 
         if close_it:
             self['Connection'] = 'close'

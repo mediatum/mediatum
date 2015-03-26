@@ -28,7 +28,7 @@ from core import Node
 
 from contenttypes import Container, Collections, Data, Home
 from core.systemtypes import Root
-from utils.utils import Menu, splitpath, parseMenuString
+from utils.utils import Menu, splitpath, parseMenuString, isDirectory
 from edit_common import *
 
 from core.translation import lang
@@ -319,7 +319,7 @@ def getIDs(req):
     if "nodelist" in req.params:
         nodelist = []
         for id in req.params.get("nodelist").split(","):
-            nodelist.append(tree.getNode(id))
+            nodelist.append(q(Node).get(id))
         req.session["nodelist"] = EditorNodeList(nodelist)
 
     # look for one "id" parameter, containing an id or a list of ids
@@ -341,7 +341,7 @@ def getIDs(req):
         srcid = req.params.get("src")
         if srcid == "":
             raise KeyError
-        src = tree.getNode(srcid)
+        src = q(Node).get(srcid)
     except KeyError:
         src = None
 
@@ -478,7 +478,7 @@ def action(req):
     uploaddir = users.getUploadDir(user)
     faultydir = users.getFaultyDir(user)
 
-    trashdir_parents = trashdir.getParents()
+    trashdir_parents = trashdir.parents
     action = req.params.get("action", "")
     changednodes = {}
 
@@ -509,14 +509,14 @@ def action(req):
         # all 'action's except 'getlabels' require a base dir (src)
         srcid = req.params.get("src")
         try:
-            src = tree.getNode(srcid)
+            src = q(Node).get(srcid)
         except:
             req.writeTAL(
                 "web/edit/edit.html", {"edit_action_error": srcid}, macro="edit_action_error")
             return
 
     if req.params.get('action') == 'addcontainer':
-        node = tree.getNode(srcid)
+        node = q(Node).get(srcid)
         if not access.hasWriteAccess(node):
             # deliver errorlabel
             req.writeTALstr(
@@ -532,22 +532,12 @@ def action(req):
             translated_label = t(
                 lang(req), 'edit_add_container_default') + newnode_type
 
-        newnode = node.addChild(
-            tree.Node(name=translated_label, type=newnode_type))
+        newnode = node.children.append(Node(name=translated_label, type=newnode_type))
+        db.session.commit()
         newnode.set("creator", user.getName())
         newnode.set("creationtime", ustr(
             time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
         req.params["dest"] = newnode.id
-
-        # try:
-        #    label = newnode.getLabel()
-        # except:
-        #    label = newnode.getName()
-        #
-
-        # c = len(newnode.getContentChildren())
-        # if c>0:
-        #    label += ' <small>(%s)</small>' %(c)
 
         label = getTreeLabel(newnode, lang=language)
 
@@ -563,13 +553,13 @@ def action(req):
         }
 
         req.write(json.dumps(fancytree_nodedata))
-        logg.info("%s adding new container %s (%s) to %s (%s, %s)", 
+        logg.info("%s adding new container %s (%s) to %s (%s, %s)",
                   access.user.name, newnode.id, newnode.type, node.id, node.name, node.type)
         return
 
     try:
         destid = req.params.get("dest", None)
-        dest = tree.getNode(destid)
+        dest = q(Node).get(destid)
         folderid = destid
     except:
         destid = None
@@ -582,19 +572,20 @@ def action(req):
 
     # try:
     if action == "clear_trash":
-        for n in trashdir.getChildren():
+        for n in trashdir.children:
             # if trashdir is it's sole parent, remove file from disk
             # attn: this will not touch files from children of deleted
             # containers
-            if len(n.getParents()) == 1:
+            if len(n.parents) == 1:
                 logg.info("%s going to remove files from disk for node %s (%s, %s)", user.name, n.id, n.name, n.type)
-                for f in n.getFiles():
+                for f in n.files:
                     # dangerous ??? check this
-                    f_path = f.retrieveFile()
+                    f_path = f.abspath
                     if os.path.exists(f_path):
                         logg.info("%s going to remove file %r from disk", user.name, f_path)
                         os.remove(f_path)
-            trashdir.removeChild(n)
+            trashdir.children.remove(n)
+            db.session.commit()
             dest = trashdir
         changednodes[trashdir.id] = 1
         _parent_descr = [(p.name, p.id, p.type) for p in trashdir_parents]
@@ -602,18 +593,19 @@ def action(req):
         # return
     else:
         for id in idlist:
-            obj = tree.getNode(id)
+            obj = q(Node).get(id)
             mysrc = src
 
             if isDirectory(obj):
-                mysrc = obj.getParents()[0]
+                mysrc = obj.parents[0]
 
             if action == "delete":
                 if access.hasWriteAccess(mysrc) and access.hasWriteAccess(obj):
                     if mysrc.id != trashdir.id:
-                        mysrc.removeChild(obj)
+                        mysrc.children.remove(obj)
                         changednodes[mysrc.id] = 1
-                        trashdir.addChild(obj)
+                        trashdir.children.append(obj)
+                        db.session.commit()
                         changednodes[trashdir.id] = 1
                         logg.info("%s moved to trash bin %s (%s, %s) from %s (%s, %s)",
                                   user.name, obj.id, obj.name, obj.type, mysrc.id, mysrc.name, mysrc.type)
@@ -634,10 +626,11 @@ def action(req):
                    isDirectory(dest):
                     if not nodeIsChildOfNode(dest, obj):
                         if action == "move":
-                            mysrc.removeChild(obj)
+                            mysrc.children.remove(obj)
                             changednodes[mysrc.id] = 1  # getLabel(mysrc)
-                        dest.addChild(obj)
+                        dest.children.append(obj)
                         changednodes[dest.id] = 1  # getLabel(dest)
+                        db.session.commit()
 
                         if logg.isEnabledFor(logging.INFO):
                             _what = "%s %s %r (%s, %s) " % (
@@ -662,7 +655,7 @@ def action(req):
         for nid in changednodes:
             try:
                 changednodes[nid] = getTreeLabel(
-                    tree.getNode(nid), lang=language)
+                    q(Node).get(nid), lang=language)
             except:
                 logg.exception("exception ignored: could not make fancytree label for node %s", nid)
         res_dict = {'changednodes': changednodes}

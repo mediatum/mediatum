@@ -413,7 +413,7 @@ def getAllCollections():
 
 
 def isDirectory(node):
-    if node.getContentType() == "directory" or node.isContainer():
+    if node.type == "directory" or node.isContainer():
         return 1
     else:
         return 0

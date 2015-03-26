@@ -98,7 +98,7 @@ def getIDPaths(nid, access, sep="/", containers_only=True):
     return list of sep-separated id lists for paths to node with id nid
     '''
     try:
-        node = tree.getNode(nid)
+        node = q(Node).get(nid)
         if not access.hasReadAccess(node):
             return []
     except:
@@ -459,8 +459,8 @@ def getEditMenuString(ntype, default=0):
 
     for dtype in Data.get_all_datatypes():  # all known datatypes
         if dtype.name == ntype:
-            n = tree.Node(u"", type=dtype.name)
-            menu_str = getRoot().get("edit.menu." + dtype.name)
+            n = Node(u"", type=dtype.name)
+            menu_str = q(Root).one().get("edit.menu." + dtype.name)
             if (menu_str == "" or default == 1) and hasattr(n, "getEditMenuTabs"):
                 menu_str = n.getEditMenuTabs()
             break

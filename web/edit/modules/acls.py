@@ -23,11 +23,12 @@ import logging
 import core.users as users
 from web.common.acl_web import makeList
 from web.common.accessuser_web import makeUserList
-from web.edit.edit_common import getHomeDir
 from core.transition import httpstatus
 from utils.utils import removeEmptyStrings, dec_entry_log
+from core import Node
+from core import db
 
-
+q = db.query
 logg = logging.getLogger(__name__)
 
 acl_types = ["read", "write", "data"]
@@ -42,7 +43,7 @@ def getContent(req, ids):
     user = users.getUserFromRequest(req)
     access = acl.AccessData(req)
     for id in ids:
-        if not access.hasWriteAccess(tree.getNode(id)) or "acls" in users.getHideMenusForUser(user):
+        if not access.hasWriteAccess(q(Node).get(id)) or "acls" in users.getHideMenusForUser(user):
             req.setStatus(httpstatus.HTTP_FORBIDDEN)
             return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
@@ -58,7 +59,7 @@ def getContent(req, ids):
             for type in acl_types:
                 rights = req.params.get("left" + type, "").replace(";", ",")
                 for id in ids:
-                    node = tree.getNode(id)
+                    node = q(Node).get(id)
                     error = 0
                     if access.hasWriteAccess(node) and userdir.id != node.id:
                         node.setAccess(type, rights)
@@ -73,7 +74,7 @@ def getContent(req, ids):
 
             for type in acl_types:
                 for id in ids:
-                    node = tree.getNode(id)
+                    node = q(Node).get(id)
                     error = 0
                     if access.hasWriteAccess(node) and userdir.id != node.id:
                         r = []
@@ -123,7 +124,7 @@ def getContent(req, ids):
             overload[type] = 1
 
         for id in ids:
-            node = tree.getNode(id)
+            node = q(Node).get(id)
             r = node.getAccess(type)
             if r is None:
                 r = ""
@@ -134,7 +135,7 @@ def getContent(req, ids):
                 s = ""
 
             def addNode(node):
-                for p in node.getParents():
+                for p in node.parents:
                     aclright = p.getAccess(type)
                     for right in removeEmptyStrings((aclright or "").split(",")):
                         parent_rights[type][right] = None

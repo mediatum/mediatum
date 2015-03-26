@@ -532,7 +532,8 @@ def upload_ziphandler(req):
                 os.remove(file.abspath)
             except:
                 pass
-            basenode.removeFile(file)
+            basenode.files.remove(file)
+            db.session.commit()
     return {'files': files, 'schemes': scheme_type}
 
 

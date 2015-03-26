@@ -21,11 +21,14 @@ import logging
 
 import core.users as users
 from core.acl import AccessData
-from utils.utils import funcname, get_user_id, log_func_entry, dec_entry_log
+from utils.utils import dec_entry_log
 from schema.schema import getMetaType
 from core.translation import lang
 from core.transition import httpstatus
+from core import Node
+from core import db
 
+q = db.query
 
 logg = logging.getLogger(__name__)
 
@@ -35,7 +38,7 @@ def getContent(req, ids):
     user = users.getUserFromRequest(req)
     access = AccessData(req)
     language = lang(req)
-    node = tree.getNode(ids[0])
+    node = q(Node).get(ids[0])
     
     if "sort" in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
@@ -47,7 +50,7 @@ def getContent(req, ids):
         ids = req.params.get('order').split(',')
         children = []
         for n in ids:
-            child = tree.getNode(n)
+            child = q(Node).get(n)
             child.setOrderPos(ids.index(n))
             children.append(child)
 
@@ -57,7 +60,7 @@ def getContent(req, ids):
     elif "sortdirection" in req.params:  # do automatic re-order
         i = 0
         sort_dir = "" if req.params.get("sortdirection", "up") == "up" else "-"
-        sorted_children = node.getContainerChildren().sort_by_fields(sort_dir + req.params.get("sortattribute"))
+        sorted_children = node.container_children.sort_by_fields(sort_dir + req.params.get("sortattribute"))
         for child in sorted_children:
             child.setOrderPos(i)
             i += 1
@@ -68,11 +71,11 @@ def getContent(req, ids):
     attributes = []
     fields = {}
     i = 0
-    for child in list(node.getContainerChildren().sort_by_orderpos()):
+    for child in list(node.container_children.sort_by_orderpos()):
         i += 1  # count container children
         nodelist.append(child)
-        if getMetaType(child.getSchema()):
-            for field in getMetaType(child.getSchema()).getMetaFields():
+        if getMetaType(child.schema):
+            for field in getMetaType(child.schema).getMetaFields():
                 if not field in fields.keys():
                     fields[field] = 0
                 fields[field] += 1

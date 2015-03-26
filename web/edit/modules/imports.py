@@ -32,10 +32,10 @@ from core.translation import lang, t
 from core.acl import AccessData
 from core.transition import httpstatus
 from core import db
-from contenttypes import Node
+from core import Node
 
-logg = logging.getLogger(__name__)
 q = db.query
+logg = logging.getLogger(__name__)
 
 def getInformation():
     return {"version":"1.0", "system":1}
@@ -69,6 +69,7 @@ def getContent(req, ids):
     v['collection_sortfield'] = node.get("sortfield")
     sortfields = [SortChoice(t(req,"off"),"")]
     if node.type not in ["root", "collections", "home"]:
+        #todo: find replacement for getalloccurences
         for ntype, num in node.getAllOccurences(acl.AccessData(req)).items():
             if ntype.getSortFields():
                 for sortfield in ntype.getSortFields():
@@ -77,7 +78,7 @@ def getContent(req, ids):
                 break
     v['sortchoices'] = sortfields
     v['ids'] = ids
-    v['count'] = len(node.getContentChildren())
+    v['count'] = len(node.content_children)
     v['nodelist'] = showdir(req, node)
     v['language'] = lang(req)
     v['t'] = t
@@ -91,7 +92,7 @@ def getContent(req, ids):
 def import_new(req):
     reload(bibtex)
     user = users.getUserFromRequest(req)
-    importdir= users.getImportDir(user)
+    importdir= users.getUploadDir(user)
     del req.params["upload"]
 
     if "file" in req.params and req.params["doi"]:

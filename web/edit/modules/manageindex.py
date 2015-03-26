@@ -22,7 +22,12 @@ from core.acl import AccessData
 from schema.schema import loadTypesFromDB, getMetaType
 from web.frontend.content import getPaths
 from utils.utils import u, dec_entry_log
+from core import Node
+from core import db
+from contenttypes import Home, Collections
+from core.systemtypes import Root
 
+q = db.query
 
 def getInformation():
     return {"version": "1.0", "system": 0}

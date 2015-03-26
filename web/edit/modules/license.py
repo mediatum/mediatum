@@ -22,6 +22,11 @@
 import core.users as users
 from core.acl import AccessData
 from core.transition import httpstatus
+from core import Node
+from core import db
+from core.systemtypes import Root
+
+q = db.query
 
 def getContent(req, ids):
     if req.params.get("style","")=="popup":
@@ -33,14 +38,14 @@ def getContent(req, ids):
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
         
-    node = tree.getNode(ids[0])
+    node = q(Node).get(ids[0])
     return req.getTAL("web/edit/modules/license.html", {"node":node, "nodes": [node]}, macro="edit_license_info")
 
 def objlist(req):
-    node = tree.getNode(req.params["id"])
+    node = q(Node).get(req.params["id"])
     access = AccessData(req)
     
-    if node.id==tree.getRoot().id or not access.hasWriteAccess(node):
+    if node.id==q(Root).one().id or not access.hasWriteAccess(node):
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 

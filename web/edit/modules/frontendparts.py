@@ -27,7 +27,11 @@ import core.config as config
 from utils.utils import CustomItem
 from web.edit.edit_common import writetree
 from core.transition import httpstatus
+from core import Node
+from core import db
+from contenttypes import Collections
 
+q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -39,10 +43,10 @@ def getContent(req, ids):
     if len(ids) > 0:
         ids = ids[0]
 
-    node = tree.getNode(ids)
+    node = q(Node).get(ids)
     access = acl.AccessData(req)
 
-    if not node or node.getContentType() != "collections" or not access.hasWriteAccess(node):
+    if not node or node.type != "collections" or not access.hasWriteAccess(node):
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
@@ -80,7 +84,7 @@ def getContent(req, ids):
                 v["writeaccess"] = access.hasWriteAccess(node)
                 return req.getTAL("web/edit/modules/frontendparts.html", v, macro="edit_frontendparts_nodeselection")
 
-            content = writetree(req, tree.getRoot("collections"), f, "", openednodes=[], sessionkey="nodetree", omitroot=0)
+            content = writetree(req, q(Collections).one(), f, "", openednodes=[], sessionkey="nodetree", omitroot=0)
             req.writeTAL("web/edit/modules/frontendparts.html", {"content": content}, macro="edit_frontendparts_nodepopup")
 
         if req.params.get("action") == "iconselection":
@@ -128,9 +132,11 @@ def modifyItem(req, node, type, id):
         item = node.getCustomItems(type)[id]
     v = {}
     files = []
-    for file in node.getFiles():
-        if file.getType() == "content":
-            files.append((file, node.get("startpagedescr.html/" + file.getName())))
+    for file in node.files:
+        if file.filetype == "content":
+            files.append((file, node.get("startpagedescr.html/" + file.name)))
+
+    db.session.commit()
 
     v["item"] = item  # [id]
     v["files"] = files

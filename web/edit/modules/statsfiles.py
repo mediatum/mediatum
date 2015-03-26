@@ -22,11 +22,13 @@ import logging
 import core.acl as acl
 import core.users as users
 
-from core.stats import buildStat, StatisticFile
-from utils.utils import splitpath, dec_entry_log
-from utils.date import format_date, now
+from utils.utils import dec_entry_log
+from utils.date import format_date
 from core.transition import httpstatus
+from core import Node
+from core import db
 
+q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -135,7 +137,7 @@ def getContent(req, ids):
         ids = ids[0]
 
     user = users.getUserFromRequest(req)
-    node = tree.getNode(ids)
+    node = q(Node).get(ids)
     access = acl.AccessData(req)
 
     if "statsfiles" in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
@@ -153,10 +155,11 @@ def getContent(req, ids):
 
         if statstring == "":  # load stats from objects/renew stat
             data = StatTypes()
+            #todo: getallchildren?
             for n in node.getAllChildren():
                 found_dig = 0 or len(
-                    [file for file in n.getFiles() if file.type in["image", "document", "video"]])
-                data.addItem(n.getContentType(), n.getSchema(), found_dig)
+                    [file for file in n.files if file.filetype in["image", "document", "video"]])
+                data.addItem(n.type, n.schema, found_dig)
 
             node.set("system.statscontent", ustr(data))
             node.set("system.statsdate", ustr(format_date()))

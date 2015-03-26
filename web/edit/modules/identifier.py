@@ -33,7 +33,11 @@ from core.translation import lang, t
 from utils.utils import dec_entry_log
 from core.transition import httpstatus
 import logging
+from core import Node
+from core import db
+from contenttypes import Collections
 
+q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -45,7 +49,7 @@ def getContent(req, ids):
     """
     user = users.getUserFromRequest(req)
     access = acl.AccessData(req)
-    node = tree.getNode(ids[0])
+    node = q(Node).get(ids[0])
     access_nobody = 'nicht Jeder'
 
     # first prove if the user has the required rights to call this module
@@ -54,7 +58,7 @@ def getContent(req, ids):
         return req.getTAL('web/edit/edit.html', {}, macro='access_error')
 
     if node.isContainer():
-        nodes = ', '.join(node.getChildren().getIDs())
+        nodes = ', '.join(node.children.getIDs())
     else:
         nodes = node.get('node.id')
 
@@ -114,7 +118,7 @@ def getContent(req, ids):
             v['msg'] = t(lang(req), 'edit_identifier_state_2_admin')
 
     else:
-        if pathutils.isDescendantOf(node, tree.getRoot('collections')):
+        if pathutils.isDescendantOf(node, q(Collections).one()):
             if not node.get('system.identifierstate'):
                 if 'id_type' in req.params:
                     try:
@@ -227,6 +231,8 @@ def createDOI(node):
             os.remove(meta_file)
             os.remove(doi_file)
             msg = 'doi was not successfully registered, META: %s %s | DOI: %s %s' % (meta_response, 
-                                                                                     meta_content, doi_response, doi_content)
+                                                                                     meta_content,
+                                                                                     doi_response,
+                                                                                     doi_content)
             logg.error(msg)
             raise Exception(msg)

@@ -18,7 +18,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from core.acl import AccessData
-from core.db import database
 
 import core.users as users
 
@@ -30,7 +29,6 @@ from core.translation import lang, t, getDefaultLanguage
 from pprint import pprint as pp, pformat as pf
 from core.transition import httpstatus
 
-db = database.getConnection()
 logg = logging.getLogger(__name__)
 
 

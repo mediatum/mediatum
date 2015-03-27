@@ -334,19 +334,12 @@ DECLARE
 	rel RECORD;
     child_relations noderelation;
 BEGIN
-RAISE NOTICE 'insert % %', NEW.nid, NEW.cid;
+RAISE NOTICE 'insert mapping % -> %', NEW.nid, NEW.cid;
 
-LOCK TABLE noderelation IN EXCLUSIVE MODE;
-
---update relations for "subtree" of child: copy relations of child and add distances
-FOR rel IN SELECT cid, distance FROM noderelation WHERE nid = NEW.cid LOOP
-    RAISE NOTICE 'update subtree of child: % %', rel.cid, rel.distance;
-    INSERT INTO noderelation
-    SELECT nid, rel.cid, rel.distance + distance 
-    FROM extend_relation_to_parents(NEW.nid, NEW.cid);
-END LOOP;
-
+-- copy connections from new parent (nid)
 INSERT INTO noderelation SELECT * FROM extend_relation_to_parents(NEW.nid, NEW.cid);
+
+PERFORM recalculate_relation_subtree(NEW.cid);
 
 RETURN NEW;
 END;

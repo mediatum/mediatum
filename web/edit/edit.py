@@ -458,11 +458,13 @@ def getEditMenuString(ntype, default=0):
     menu_str = ""
 
     for dtype in Data.get_all_datatypes():  # all known datatypes
-        if dtype.name == ntype:
-            n = Node(u"", type=dtype.name)
-            menu_str = q(Root).one().get("edit.menu." + dtype.name)
-            if (menu_str == "" or default == 1) and hasattr(n, "getEditMenuTabs"):
-                menu_str = n.getEditMenuTabs()
+        if dtype.__name__.lower() in ntype:
+            content_class = Node.get_class_for_typestring(dtype.__name__.lower())
+            node = content_class(u'')
+
+            menu_str = q(Root).one().get("edit.menu." + dtype.__name__.lower())
+            if (menu_str == "" or default == 1) and hasattr(node, "getEditMenuTabs"):
+                menu_str = node.getEditMenuTabs()
             break
     return menu_str
 

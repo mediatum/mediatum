@@ -259,10 +259,10 @@ class Container(Data, ContainerMixin, ContainerSchemaMixin):
         return metafields
 
     def getEditMenuTabs(self):
-        if self.getContentType() in ["collection", "collections"]:
+        if self.type in ["collection", "collections"]:
             return "menulayout(content;startpages;view);menumetadata(metadata;logo;files;admin;searchmask;sortfiles);menusecurity(acls);menuoperation(search;subfolder;license)"
 
-        elif self.getContentType() == "directory":
+        elif self.type == "directory":
             return "menulayout(content;startpages;view);menumetadata(metadata;files;admin);menusecurity(acls);menuoperation(search;subfolder;license)"
 
         else:

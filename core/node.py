@@ -4,6 +4,7 @@
     :license: GPL3, see COPYING for details
 """
 from warnings import warn
+from utils.date import format_date, parse_date, STANDARD_FORMAT, now
 
 class NodeMixin(object):
 
@@ -136,6 +137,15 @@ class NodeMixin(object):
     def getActiveVersion(self):
         """TODO: implement me..."""
         return self
+
+    def getUpdatedDate(self, format=None):
+        if format is None:
+            format = STANDARD_FORMAT
+        if self.get('updatetime'):
+            return format_date(parse_date(self.get('updatetime')), '%d.%m.%Y, %H:%M:%S')
+        if self.get('creationtime'):
+            return format_date(parse_date(self.get('creationtime')), '%d.%m.%Y, %H:%M:%S')
+        return ''
 
     def __repr__(self):
         return u"Node<{} '{}'> ({})".format(self.id, self.name, object.__repr__(self)).encode("utf8")

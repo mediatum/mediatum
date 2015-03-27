@@ -51,9 +51,9 @@ def getTreeLabel(node, lang=None):
         try:
             label = node.getLabel()
         except:
-            label = node.getName()
+            label = node.name
 
-    c = len(node.getContentChildren())
+    c = len(node.content_children)
     if c > 0:
         label += ' <small>(%s)</small>' % (c)
     return label
@@ -79,7 +79,7 @@ def getEditorIconPath(node, req=None):
     if hasattr(node, 'treeiconclass'):
         return "webtree/" + node.treeiconclass() + ".gif"
     else:
-        return "webtree/" + node.getContentType() + ".gif"
+        return "webtree/" + node.type + ".gif"
 
 
 def get_editor_icon_path_from_nodeclass(cls):
@@ -141,7 +141,7 @@ def frameset(req):
     n = currentdir
     while n:
         nodepath = [n] + nodepath
-        p = n.getParents()
+        p = n.parents
         if p:
             n = p[0]
         else:
@@ -151,7 +151,7 @@ def frameset(req):
     containerpath = [('%s' % p.id) for p in nodepath if isinstance(p, Container)]
 
     user = users.getUserFromRequest(req)
-    menu = filterMenu(getEditMenuString(currentdir.getContentType()), user)
+    menu = filterMenu(getEditMenuString(currentdir.type), user)
 
     spc = [Menu("sub_header_frontend", "../", target="_parent")]
     if user.isAdmin():
@@ -168,7 +168,7 @@ def frameset(req):
         path = []
         while n:
             path = ['/%s' % n.id] + path
-            p = n.getParents()
+            p = n.parents
             if p:
                 n = p[0]
             else:
@@ -224,7 +224,7 @@ def getBreadcrumbs(menulist, tab):
     for menuitem in menulist:
         for item in menuitem.getItemList():
             if item == tab or tab.startswith(item) or item.startswith(tab):
-                return [menuitem.getName(), "*" + item]
+                return [menuitem.name, "*" + item]
     return [tab]
 
 
@@ -250,7 +250,7 @@ def handletabs(req, ids, tabs):
     if n.type.startswith("workflow"):
         n = q(Root).one()
 
-    menu = filterMenu(getEditMenuString(n.getContentType()), user)
+    menu = filterMenu(getEditMenuString(n.type), user)
 
     spc = [Menu("sub_header_frontend", "../", target="_parent")]
     if user.isAdmin():
@@ -426,7 +426,7 @@ def edit_tree(req):
                     'tooltip': '%s (%s)' % (node.getLabel(lang=language), node.id),
                     'icon': getEditorIconPath(node, req)}
 
-        if len(node.getContainerChildren()) == 0:
+        if len(node.container_children) == 0:
             nodedata['lazy'] = False
             nodedata['children'] = []
 
@@ -534,7 +534,7 @@ def action(req):
 
         newnode = node.children.append(Node(name=translated_label, type=newnode_type))
         db.session.commit()
-        newnode.set("creator", user.getName())
+        newnode.set("creator", user.name)
         newnode.set("creationtime", ustr(
             time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
         req.params["dest"] = newnode.id
@@ -792,7 +792,7 @@ def content(req):
                     s = ['<a onClick="activateEditorTreeNode(%r); return false;" href="/edit/edit_content?id=%s">%s</a>' %
                          (n.id, n.id, n.name)] + s
 
-                p = n.getParents()
+                p = n.parents
                 if p:
                     n = p[0]
                 else:
@@ -818,7 +818,7 @@ def content(req):
                     s = ['<a onClick="activateEditorTreeNode(%r); return false;" href="/edit/edit_content?id=%s">%s</a>' %
                          (n.id, n.id, n.name)] + s
 
-            p = n.getParents()
+            p = n.parents
             if p:
                 n = p[0]
             else:
@@ -833,36 +833,19 @@ def content(req):
             file_to_edit = req.params["file_to_edit"]
 
         if not file_to_edit:
+            #todo: getstartpagedict doesnt exist
             d = node.getStartpageDict()
             if d and lang(req) in d:
                 file_to_edit = d[lang(req)]
 
         found = False
-        for f in node.getFiles():
+        for f in node.files:
             if f.mimetype == 'text/html':
-                filepath = f.retrieveFile().replace(basedir, '')
+                filepath = f.abspath.replace(basedir, '')
                 if file_to_edit == filepath:
                     found = True
-                    # XXX. dead code?
-                    result = edit_editor(req, node, f)
-                    if result == "error":
-                        logg.error("error editing %s", f.retrieveFile())
                     break
 
-        if not found:
-            edit_editor(req, node, None)
-
-    # XXX. dead code?
-    elif current == "tab_metadata":
-        edit_metadata(req, ids)  # undefined
-    elif current == "tab_upload":
-        edit_upload(req, ids)  # undefined
-    elif current == "tab_globals":
-        req.write("")
-    elif current == "tab_lza":
-        edit_lza(req, ids)  # undefined
-    elif current == "tab_logo":
-        edit_logo(req, ids)  # undefined
     else:
         t = current.split("_")[-1]
         if t in editModules.keys():

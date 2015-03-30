@@ -33,7 +33,10 @@ from core.metatype import Metatype
 from core.translation import getDefaultLanguage, t, lang
 from core.acl import AccessData
 from utils.fileutils import importFileToRealname
+from core import Node
+from core import db
 
+q = db.query
 
 logg = logging.getLogger(__name__)
 
@@ -237,7 +240,7 @@ def handle_request(req):
             targetnodeid = req.params.get("targetnodeid", "")
             m_upload_field_name = req.params.get("m_upload_field_name", "")
 
-            n = tree.getNode(targetnodeid)
+            n = q(Node).get(targetnodeid)
 
             s = {'response': 'response for cmd="%s"' % cmd}
 
@@ -265,8 +268,8 @@ def handle_request(req):
             targetnodeid = req.params.get("targetnodeid", "")
             m_upload_field_name = req.params.get("m_upload_field_name", "")
 
-            n = tree.getNode(targetnodeid)
-            fs = n.getFiles()
+            n = q(Node).get(targetnodeid)
+            fs = n.files
 
             if not access.hasAccess(n, 'data'):
                 msg = "m_upload: no access for user '%s' to node %s ('%s', '%s') from '%s'" % (
@@ -313,7 +316,7 @@ def handle_request(req):
         targetnode = None
         if targetnodeid:
             try:
-                targetnode = tree.getNode(targetnodeid)
+                targetnode = q(Node).get(targetnodeid)
             except:
                 msg = "metadata m_upload: targetnodeid='%s' for non-existant node for upload from '%s'" % (ustr(targetnodeid), ustr(req.ip))
                 errors.append(msg)
@@ -365,6 +368,7 @@ def handle_request(req):
                 logging.getLogger("backend").error(msg)
 
         if targetnode and filename:
+            #todo: check this out later
             targetnode.addFile(nodeFile)
 
             filecount = len(getFilelist(targetnode, submitter)[0])

@@ -24,7 +24,12 @@ import json
 from mediatumtal import tal
 from utils.utils import esc
 from core.metatype import Metatype
+from core import Node
+from core import db
+from contenttypes import Home, Collections
+from core.systemtypes import Root
 
+q = db.query
 
 logg = logging.getLogger(__name__)
 
@@ -36,10 +41,10 @@ class m_dlist(Metatype):
         items = {}
         try:
             n = context.collection
-            if n is None:
-                raise tree.NoSuchNodeError()
+            if not isinstance(n, Node):
+                raise KeyError
             items = n.getAllAttributeValues(context.field.getName(), context.access)
-        except tree.NoSuchNodeError:
+        except KeyError:
             None
 
         value = context.value.split(";")

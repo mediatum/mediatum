@@ -25,8 +25,10 @@ from utils.utils import esc
 from core.metatype import Metatype
 from core.acl import AccessData
 from core.transition import httpstatus
+from core import db
+from contenttypes import Collections
 
-
+q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -84,7 +86,7 @@ class m_ilist(Metatype):
             logg.exception("missing request parameter")
             return httpstatus.HTTP_NOT_FOUND
 
-        index = tree.getRoot("collections").getAllAttributeValues(name, access, req.params.get('schema')).keys()
+        index = q(Collections).one().getAllAttributeValues(name, access, req.params.get('schema')).keys()
         index.sort(lambda x, y: cmp(x.lower(), y.lower()))
 
         if req.params.get("print", "") != "":

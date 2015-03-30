@@ -25,7 +25,10 @@ from mediatumtal import tal
 
 from utils.utils import esc
 from core.metatype import Metatype, Context
+from core import Node
+from core import db
 
+q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -34,20 +37,20 @@ class m_list(Metatype):
     def formatValues(self, context):
         valuelist = []
         items = {}
-        # try:
-        #     n = context.collection
-        #     if n is None:
-        #         raise tree.NoSuchNodeError()
-        #     items = n.getAllAttributeValues(context.field.getName(), context.access)
-        # except tree.NoSuchNodeError:
-        #     None
+        try:
+            n = context.collection
+            if not isinstance(n, Node):
+                raise KeyError
+            items = n.getAllAttributeValues(context.field.getName(), context.access)
+        except KeyError:
+            None
 
         tempvalues = context.field.getValueList()
-        valuesfiles = context.field.getFiles()
+        valuesfiles = context.field.files
 
         if len(valuesfiles):  # a text file with list values was uploaded
-            if os.path.isfile(valuesfiles[0].retrieveFile()):
-                with codecs.open(valuesfiles[0].retrieveFile(), 'r', encoding='utf8') as valuesfile:
+            if os.path.isfile(valuesfiles[0].abspath):
+                with codecs.open(valuesfiles[0].abspath, 'r', encoding='utf8') as valuesfile:
                     tempvalues = valuesfile.readlines()
 
         if len(tempvalues):  # Has the user entered any values?
@@ -141,8 +144,8 @@ class m_list(Metatype):
         try:
             if field:
                 value = field.getValues()
-                if field.id and len(field.getFiles()) > 0:
-                    filename = os.path.basename(field.getFiles()[0].retrieveFile())
+                if field.id and len(field.files) > 0:
+                    filename = os.path.basename(field.files[0].abspath)
                     multiple_list = field.get('multiple')
         except AttributeError:
             value = field

@@ -20,7 +20,10 @@
 from mediatumtal import tal
 from schema.schema import VIEW_DATA_ONLY, VIEW_DEFAULT
 from core.metatype import Metatype
+from core import Node
+from core import db
 
+q = db.query
 
 class m_label(Metatype):
 
@@ -70,7 +73,7 @@ class m_label(Metatype):
         metadatatype = req.params.get("metadatatype")
 
         if req.params.get("op", "") == "new":
-            pidnode = tree.getNode(req.params.get("pid"))
+            pidnode = q(Node).get(req.params.get("pid"))
             if pidnode.get("type") in ("vgroup", "hgroup"):
                 for field in pidnode.getAllChildren():
                     if field.getType().getName() == "maskitem" and field.id != pidnode.id:

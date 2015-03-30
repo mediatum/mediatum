@@ -22,8 +22,10 @@ from mediatumtal import tal
 from core.transition import httpstatus
 from utils.utils import esc
 from core.metatype import Metatype
+from core import db
+from contenttypes import Collections
 
-
+q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -64,8 +66,10 @@ class m_treeselect(Metatype):
 
     # method for popup methods of type treeselect
     def getPopup(self, req):
-        req.writeTAL("metadata/treeselect.html", {"basedir": tree.getRoot('collections'),
-                                                  "name": req.params.get("name", ''), "value": req.params.get("value")}, macro="popup")
+        req.writeTAL("metadata/treeselect.html", {"basedir": q(Collections).one(),
+                                                  "name": req.params.get("name", ''),
+                                                  "value": req.params.get("value")},
+                     macro="popup")
         return httpstatus.HTTP_OK
 
     # method for additional keys of type treeselect

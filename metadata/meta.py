@@ -20,7 +20,7 @@
 import logging
 from mediatumtal import tal
 from core.metatype import Metatype
-
+from core import Node
 
 logg = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ class m_meta(Metatype):
         attr = {}
         if metadatatype:
             for t in metadatatype.getDatatypes():
-                node = tree.Node(type=t)
+                node = Node(u'', t)
                 attr.update(node.getTechnAttributes())
 
         return tal.getTAL("metadata/meta.html", {"value": value, "t_attrs": attr}, macro="maskeditor", language=language)

@@ -5,14 +5,24 @@
 """
 import logging
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, sql
 from sqlalchemy.orm import sessionmaker, scoped_session
 from . import db_metadata, DeclarativeBase
+from core.database.postgres.compilerext import CreateView, DropView
+import os.path
 
 
 CONNECTSTR_TEMPLATE = "postgresql+psycopg2://{user}:{passwd}@{dbhost}:{dbport}/{database}"
 
 logg = logging.getLogger(__name__)
+
+
+def read_and_prepare_sql(sql_filepath):
+    """Reads SQL code from a file, sets search path and strips comment + logging lines"""
+    with open(os.path.join(os.path.dirname(__file__), "sql", sql_filepath)) as f:
+        sql = f.read().replace(":search_path", "mediatum")
+    sql_lines = sql.split("\n")
+    return "\n".join(l for l in sql_lines if not l.startswith("--") and "RAISE" not in l)
 
 
 class PostgresSQLAConnector(object):
@@ -74,23 +84,21 @@ class PostgresSQLAConnector(object):
         from .model import Node
         return self.session.query(Node).get(node.id)
 
-    @classmethod
-    def _get_managed_tables(cls):
-        """Returns all tables which should be managed by SQLAlchemy"""
-        from .model import Access, Node, BaseFile, t_nodemapping
-        return [Access.__table__, Node.__table__, BaseFile.__table__, t_nodemapping] 
-
     def create_tables(self, conn):
-        self.metadata.create_all(conn, tables=PostgresSQLAConnector._get_managed_tables())
+        self.metadata.create_all(conn)
         
     def drop_tables(self, conn):
-        self.metadata.drop_all(conn, tables=PostgresSQLAConnector._get_managed_tables())
+        self.metadata.drop_all(conn)
         
+    def create_extra_indexes(self, conn):
+        pass
+
     def drop_extra_indexes(self, conn):
         pass
 
     def create_functions(self, conn):
-        pass
+        conn.execute(read_and_prepare_sql("noderelation_funcs.sql"))
+        conn.execute(read_and_prepare_sql("noderelation_rules_and_triggers.sql"))
 
     def drop_functions(self, conn):
         pass

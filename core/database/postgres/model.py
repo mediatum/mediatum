@@ -9,8 +9,8 @@ from warnings import warn
 
 import pyaml
 from sqlalchemy import (Column, Table, ForeignKey, Sequence,
-                        Integer, Unicode, Text, String)
-from sqlalchemy.orm import relationship, backref, deferred
+                        Integer, Unicode, Text, String, sql, text)
+from sqlalchemy.orm import relationship, backref, deferred, Query
 from sqlalchemy.orm.dynamic import AppenderQuery
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
@@ -22,6 +22,7 @@ from core.node import NodeMixin
 from utils.magicobjects import MInt
 from . import DeclarativeBase
 from core.database.postgres import db_metadata
+from core.database.postgres.compilerext import view
 
 C = Column
 FK = ForeignKey
@@ -99,10 +100,11 @@ class NodeAppenderQuery(AppenderQuery, LenMixin):
         return query
 
 
-# definitions
-t_nodemapping = Table("nodemapping", db_metadata,
+
+t_noderelation = Table("noderelation", db_metadata,
                       C("nid", Integer, FK("node.id"), primary_key=True, index=True),
-                      C("cid", Integer, FK("node.id", ondelete="CASCADE"), primary_key=True, index=True))
+                      C("cid", Integer, FK("node.id", ondelete="CASCADE"), primary_key=True, index=True),
+                      C("distance", Integer, primary_key=True, index=True))
 
 
 class Access(DeclarativeBase):
@@ -239,29 +241,25 @@ class BaseNodeMeta(DeclarativeMeta):
 
 def _cte_subtree(node):
     from core import db
-    t = db.query(t_nodemapping.c.cid).\
-        filter(t_nodemapping.c.nid == node.id).\
-        cte(name="subtree", recursive=True)
 
-    return t.union_all(
-        db.query(t_nodemapping.c.cid).
-        join(Node, Node.id == t_nodemapping.c.cid).
-        filter(t_nodemapping.c.nid == t.c.cid)
-    )
+    query = db.query(t_noderelation.c.cid).\
+        filter(t_noderelation.c.nid == node.id).\
+        join(Node, Node.id == t_noderelation.c.cid).\
+        cte(name="subtree")
+    
+    return query
 
 
 def _cte_subtree_container(node):
     from contenttypes.container import Container
     from core import db
-    t = db.query(t_nodemapping.c.cid).\
-        filter(t_nodemapping.c.nid == node.id).\
-        cte(name="subtree", recursive=True)
 
-    return t.union_all(
-        db.query(t_nodemapping.c.cid).
-        join(Container, Container.id == t_nodemapping.c.cid).
-        filter(t_nodemapping.c.nid == t.c.cid)
-    )
+    query = db.query(t_noderelation.c.cid).\
+        filter(t_noderelation.c.nid == node.id).\
+        join(Container, Container.id == t_noderelation.c.cid).\
+        cte(name="subtree")
+    
+    return query
 
 
 class Node(DeclarativeBase, NodeMixin):
@@ -333,15 +331,17 @@ class Node(DeclarativeBase, NodeMixin):
         from core import db
         subtree = _cte_subtree_container(self)
         query = db.query(Content).\
-            join(t_nodemapping, Node.id == t_nodemapping.c.cid).\
-            join(subtree, subtree.c.cid == t_nodemapping.c.nid)
-
+            join(t_noderelation, Node.id == t_noderelation.c.cid).\
+            join(subtree, subtree.c.cid == t_noderelation.c.nid).\
+            filter(t_noderelation.c.distance == 1).distinct()
+        
         return query
 
     def all_children_by_query(self, query):
         subtree = _cte_subtree(self)
         query = query.\
-            join(subtree, Node.id == subtree.c.cid)
+            join(subtree, Node.id == subtree.c.cid).\
+            distinct()
         return query
 
     __mapper_args__ = {
@@ -357,6 +357,11 @@ class Node(DeclarativeBase, NodeMixin):
         as_dict["id"] = str(as_dict["id"])
         return pyaml.dump(as_dict)
 
+
+# view for direct parent-child relationship (distance = 1), also used for inserting new node connections
+t_nodemapping = view("nodemapping", db_metadata, 
+                     sql.select([t_noderelation.c.nid, t_noderelation.c.cid]).where(t_noderelation.c.distance == text("1")))
+
 ### helpers for node child/parent relationships
 
 _children_rel_options = dict(
@@ -365,6 +370,15 @@ _children_rel_options = dict(
     primaryjoin=Node.id == t_nodemapping.c.nid,
     secondaryjoin=Node.id == t_nodemapping.c.cid,
     query_class=NodeAppenderQuery
+)
+
+_all_children_rel_options = dict(
+    secondary=t_noderelation,
+    lazy="dynamic",
+    primaryjoin=Node.id == t_noderelation.c.nid,
+    secondaryjoin=Node.id == t_noderelation.c.cid,
+    query_class=NodeAppenderQuery,
+    viewonly=True
 )
 
 _parents_rel_options = dict(
@@ -382,6 +396,12 @@ def children_rel(*args, **kwargs):
     return relationship(*args, **extended_kwargs)
 
 
+def all_children_rel(*args, **kwargs):
+    extended_kwargs = _all_children_rel_options.copy()
+    extended_kwargs.update(kwargs)
+    return relationship(*args, **extended_kwargs)
+
+
 def parents_rel(*args, **kwargs):
     extended_kwargs = _parents_rel_options.copy()
     extended_kwargs.update(kwargs)
@@ -390,6 +410,8 @@ def parents_rel(*args, **kwargs):
 ### define Node child/parent relationships here
 
 Node.children = children_rel(Node, backref=bref("parents", lazy="dynamic", query_class=NodeAppenderQuery))
+Node.all_children = all_children_rel(Node)
+    
 
 
 class BaseFile(DeclarativeBase):

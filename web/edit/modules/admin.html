@@ -78,11 +78,6 @@
                         <div class="content" tal:content="python:u'{} ({})'.format(type, node.type)">TEXT</div>
                     </div>
                     <div id="entry">
-                        <div class="label" i18n:translate="edit_dirty">TEXT</div>
-                        <div class="content" tal:content="python:node.isDirty()">TEXT</div>
-                        <input tal:condition="python:node.isDirty()==0" name="set_dirty" i18n:attributes="title edit_admin_setdirty_title" type="image" src="/img/attention.gif"/>
-                    </div>
-                    <div id="entry">
                         <div class="label" i18n:translate="edit_localread">TEXT</div>
                         <div class="content" tal:content="python:node.getLocalRead()">TEXT</div>
                         <input name="del_localread" i18n:attributes="title edit_admin_localread_del_title" type="image" src="/img/erase.gif"/>

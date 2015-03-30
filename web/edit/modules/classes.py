@@ -23,6 +23,7 @@ from core.acl import AccessData
 from core.translation import lang, t
 from core.transition import httpstatus
 from core import Node
+from core.systemtypes import Root
 from contenttypes import Collections, Home
 from core import db
 
@@ -48,7 +49,7 @@ def getContent(req, ids):
 
     v = {}
     v["basedirs"] = [q(Home).one(), q(Collections).one()]
-    id = req.params.get("id", tree.getRoot().id)
+    id = req.params.get("id", q(Root).one().id)
     v["script"] = "var currentitem = '%s';\nvar currentfolder = '%s'" % (id, id)
     v["idstr"] = ",".join(ids)
     v["nodes"] = nodes

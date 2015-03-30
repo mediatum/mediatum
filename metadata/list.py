@@ -34,13 +34,13 @@ class m_list(Metatype):
     def formatValues(self, context):
         valuelist = []
         items = {}
-        try:
-            n = context.collection
-            if n is None:
-                raise tree.NoSuchNodeError()
-            items = n.getAllAttributeValues(context.field.getName(), context.access)
-        except tree.NoSuchNodeError:
-            None
+        # try:
+        #     n = context.collection
+        #     if n is None:
+        #         raise tree.NoSuchNodeError()
+        #     items = n.getAllAttributeValues(context.field.getName(), context.access)
+        # except tree.NoSuchNodeError:
+        #     None
 
         tempvalues = context.field.getValueList()
         valuesfiles = context.field.getFiles()

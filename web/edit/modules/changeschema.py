@@ -119,7 +119,7 @@ def getContent(req, ids):
         for dtype in scheme.getDatatypes():
             if dtype not in dtypes:
                 for t in datatypes:
-                    if t.getName() == dtype and not elemInList(dtypes, t.getName()):
+                    if t.getName() == dtype and not elemInList(dtypes, t.name):
                         dtypes.append(t)
 
     dtypes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(

@@ -86,21 +86,23 @@ class m_hgroup(Metatype):
         i = 0
 
         if not sub:
-            ret += '<div id="' + item.id + '" class="row" onmouseover="pick(this)" onmouseout="unpick(this)" onclick="select(this)">'
+            ret += '<div id="{}" class="row metaeditor" onmouseover="pick(this)" onmouseout="unpick(this)" onclick="select(this)">'.format(item.id)
+
+        ret += '<fieldset>'
 
         if item.getLabel() != "":
-            ret += '<div class="hgroup_label">' + item.getLabel() + '</div>'
+            ret += '<legend>{}</legend>'.format(item.getLabel())
 
         ret += '<div id="editor_content">'
         for field in item.getChildren().sort_by_orderpos():
             f = getMetadataType(field.get("type"))
-            ret += '<div id="hitem">' + f.getMetaHTML(item, i, True, language=language, fieldlist=fieldlist) + '</div>'
+            ret += '<div id="hitem">{}</div>'.format(f.getMetaHTML(item, i, True, language=language, fieldlist=fieldlist))
             i += 1
 
         if len(item.getChildren()) == 0:
             ret += '<span i18n:translate="mask_editor_no_fields">- keine Felder definiert -</span>'
 
-        ret += '</div>'
+        ret += '</fieldset>'
 
         if not sub:
             ret += '<div align="right" id="' + item.id + \

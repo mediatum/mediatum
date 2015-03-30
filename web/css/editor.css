@@ -127,4 +127,6 @@ div#sub_footer_module{background-color:#bbb!important;}
 
 div#buttonmessage{color:#ff0000;text-align:center;}
 
-
+div.metaeditor{overflow:hidden;}
+div.metaeditor div.label{width:100px;}
+div.metaeditor div#editor_content{margin-left:110px;}

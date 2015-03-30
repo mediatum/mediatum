@@ -6,7 +6,7 @@
     <div class="label" i18n:translate="mask_edit_row_label">TEXT</div> <input tal:attributes="value python:item.getLabel()" type="text" name="label" style="width:500px"/>
     <br/>
     <div class="label" i18n:translate="mask_edit_unit">TEXT</div> <input tal:attributes="value python:item.getUnit()" type="text" name="unit"/>
-    
+    <br/>
     <tal:block tal:condition="python:op=='new'">
         <div class="label" i18n:translate="mask_edit_position">TEXT</div> 
         <select name="insertposition" style="width:500px">

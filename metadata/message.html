@@ -1,5 +1,5 @@
 <tal:block metal:define-macro="editorfield">
-    <tal:block i18n:translate="field_msg_text">TEXT</tal:block> <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock];name name; id name; style python:u'width:{}px'.format(width-40); value python:unicode(value[0])" />
+    <tal:block i18n:translate="field_msg_text">TEXT</tal:block> <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock];name name; id name; style python:u'width:{}px'.format(width-40); value python:unicode(value[0]); required required" />
     <br/>
     <fieldset tal:attributes="style python:u'width:{}px'.format(width)">
         <legend i18n:translate="field_msg_style">TEXT</legend>

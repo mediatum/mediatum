@@ -121,6 +121,16 @@ class MediatumAPIAccessMixin(object):
         """
         return self.children_shortlist(*args, recursive=True, **kwargs)
 
+    def parents(self, node_id, start=None, limit=None, type=None, sortfield=None, mask=None, attrspec=None,
+                attrlist=None, add_shortlist=None, q=None, additional_params=None, request_kwargs=None):
+        """Fetches a representation of a list with the data of the direct ascendants of the specified node.
+        """
+        request = "/parents"
+        data = self._node(node_id, request, start, limit, type, sortfield, mask, attrspec, attrlist, add_shortlist,
+                          None, None, q, additional_params, request_kwargs).json()
+        self._raise_for_cached_failure(data)
+        return NodeAPIResult(data)
+
     @property
     def default_additional_params(self):
         return self._default_additional_params

@@ -41,7 +41,7 @@ class Metatype(object):
 
     joiner = '\n'
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
         return ""
 
     def getSearchHTML(self, context):
@@ -78,6 +78,29 @@ class Metatype(object):
 
     def event_metafield_changed(self, node, field):
         None
+
+    def get_input_pattern(self, field):
+        return ''
+
+    def get_input_title(self, field):
+        return ''
+
+    def get_input_placeholder(self, field):
+        return ''
+
+    def is_required(self, required):
+        """
+        It's necessary to return different types in order for the template to render properly.
+        Since required='' or even required='False' is still interpreted as a required field,
+        it needs to be completely removed from the template where applicable. TAL attributes
+        are removed if they evaluate to None.
+        @param required: 0 or 1
+        @return: str True or None object
+        """
+        if required:
+            return 'True'
+        else:
+            return None
 
 charmap = [
     ['&nbsp;', '160', 'no-break space'],

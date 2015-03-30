@@ -21,7 +21,6 @@
 """
 import logging
 from mediatumtal import tal
-#import core.search as search
 from utils.utils import esc
 from core.metatype import Metatype
 from core.acl import AccessData
@@ -33,9 +32,15 @@ logg = logging.getLogger(__name__)
 
 class m_ilist(Metatype):
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
-        return tal.getTAL("metadata/ilist.html", {"lock": lock, "value": value, "width": width,
-                                                  "name": field.getName(), "field": field}, macro="editorfield", language=language)
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
+        return tal.getTAL("metadata/ilist.html", {"lock": lock,
+                                                  "value": value,
+                                                  "width": width,
+                                                  "name": field.getName(),
+                                                  "field": field,
+                                                  "required": self.is_required(required)},
+                          macro="editorfield",
+                          language=language)
 
     def getSearchHTML(self, context):
         n = context.collection
@@ -62,7 +67,6 @@ class m_ilist(Metatype):
 
     def format_request_value_for_db(self, field, params, item, language=None):
         value = params.get(item)
-        #value = value.replace(", ",";")
         return value
 
     def getName(self):

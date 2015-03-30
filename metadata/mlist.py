@@ -104,10 +104,13 @@ class m_mlist(Metatype):
 
         return valuelist
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
         context = Context(field, value=value, width=width, name=field.getName(), lock=lock, language=language)
-        return tal.getTAL(
-            "metadata/mlist.html", {"context": context, "valuelist": self.formatValues(context)}, macro="editorfield", language=language)
+        return tal.getTAL("metadata/mlist.html", {"context": context,
+                                                  "valuelist": self.formatValues(context),
+                                                  "required": self.is_required(required)},
+                          macro="editorfield",
+                          language=language)
 
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/mlist.html",

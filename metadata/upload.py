@@ -105,7 +105,7 @@ class m_upload(Metatype):
 
     disabled = "0"
 
-    def getEditorHTML(self, field, value="", width=40, lock=0, language=None):
+    def getEditorHTML(self, field, value="", width=40, lock=0, language=None, required=None):
         check_context()
 
         try:
@@ -133,6 +133,7 @@ class m_upload(Metatype):
             "language": language,
             "warning": warning,
             "system_lock": 0,
+            "required": self.is_required(required)
         }
 
         if lock:

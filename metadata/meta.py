@@ -27,9 +27,14 @@ logg = logging.getLogger(__name__)
 
 class m_meta(Metatype):
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
-        return tal.getTAL("metadata/meta.html", {"lock": lock, "value": value, "width": width,
-                                                 "name": field.getName(), "field": field}, macro="editorfield", language=language)
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
+        return tal.getTAL("metadata/meta.html", {"lock": lock,
+                                                 "value": value,
+                                                 "width": width,
+                                                 "name": field.getName(),
+                                                 "field": field},
+                          macro="editorfield",
+                          language=language)
 
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/meta.html", {"context": context}, macro="searchfield", language=context.language)

@@ -189,7 +189,7 @@ def getContent(req, ids):
     if action == 'restore':
         vid = req.params.get('vid', '0')
         node = nodes[0].getActiveVersion()
-        if (vid != '0' and vid != node.id):
+        if vid != '0' and vid != node.id:
             n = tree.getNode(vid)
             # Not active version
             if n.next_nid != '0':
@@ -221,16 +221,16 @@ def getContent(req, ids):
                 node_versions = nodes[0].getVersionList()
                 update_date, creation_date = get_datelists(nodes)
 
-                data = {'url': '?id=' + n.id + '&tab=metadata', 'pid':
-                        None, 'flag_nodename_changed': flag_nodename_changed}
-
-                data["versions"] = node_versions
-                data["creation_date"] = creation_date
-                data["update_date"] = update_date
-
                 _maskform, _fields = get_maskform_and_fields(nodes, mask, req)
-                data["maskform"] = _maskform
-                data["fields"] = _fields
+
+                data = {'url': u'?id={}&tab=metadata'.format(n.id),
+                        'pid': None,
+                        'flag_nodename_changed': flag_nodename_changed,
+                        "versions": node_versions,
+                        "creation_date": creation_date,
+                        "update_date": update_date,
+                        "maskform": _maskform,
+                        "fields": _fields}
 
                 data.update(ctx)
 
@@ -356,18 +356,11 @@ def getContent(req, ids):
                 node.set("updatetime", ustr(format_date()))
 
         if not hasattr(mask, "i_am_not_a_mask"):
-            errorlist = []
             if (req.params.get('generate_new_version')):
                 # Create new node version
                 _ids = []
                 _nodes = []
                 for node in nodes:
-                    if (req.params.get('version_comment', '').strip() == ''
-                            or req.params.get('version_comment', '').strip() == '&nbsp;'):
-                        errorlist.append(node.id)
-                        _nodes.append(node)
-                        _ids.append(node.id)
-                    else:
                         n = node.createNewVersion(user)
                         n.set("system.version.comment", '(' + t(req, "document_new_version_comment") +
                               ')\n' + req.params.get('version_comment', ''))
@@ -388,8 +381,6 @@ def getContent(req, ids):
                 idstr = ",".join(ids)
                 nodes = _nodes
                 nodes = mask.updateNode(nodes, req)
-                errorlist += mask.validateNodelist(nodes)
-                if len(errorlist) == 0:
 
                     node_versions = nodes[0].getVersionList()
                     update_date, creation_date = get_datelists(nodes)
@@ -422,7 +413,6 @@ def getContent(req, ids):
                         # for updates of node label in editor tree
                         flag_nodename_changed = ustr(node.id)
 
-                errorlist += mask.validateNodelist(nodes)
         else:
             for field in mask.metaFields():
                 logg.debug("in %s.%s: (hasattr(mask,'i_am_not_a_mask')) field: %s, field.id: %s, field.name: %s, mask: %s, maskname: %s",
@@ -446,18 +436,6 @@ def getContent(req, ids):
                         node.set(field.getName(), value)
                 else:
                     node.set(field.getName(), "")
-            errorlist = []
-
-        if len(errorlist) > 0 and "save" in req.params:
-            err = 1
-
-        for node in nodes:
-            if node.id in errorlist:
-                faultydir.addChild(node)
-                node.setAttribute("faulty", "true")
-            else:
-                faultydir.removeChild(node)
-                node.removeAttribute("faulty")
 
     if "edit_metadata" in req.params or node.get("faulty") == "true":
         if not hasattr(mask, "i_am_not_a_mask"):

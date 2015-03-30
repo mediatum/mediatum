@@ -139,7 +139,7 @@ class m_memo(Metatype):
         res_str = joiner.join(res_list)
         return res_str
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
 
         # field may not be persisted as tree.Node and therefore may not have
         # an attribute "get"
@@ -173,6 +173,7 @@ class m_memo(Metatype):
             "multilang_display": 'display: none',
             "enable_multilang": enable_multilang,
             "expand_multilang": False,
+            "required": self.is_required(required)
         }
 
         if enable_multilang:
@@ -193,7 +194,10 @@ class m_memo(Metatype):
             else:
                 context["expand_multilang"] = False
 
-        return tal.getTAL("metadata/memo.html", context, macro="editorfield", language=language)
+        return tal.getTAL("metadata/memo.html",
+                          context,
+                          macro="editorfield",
+                          language=language)
 
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/memo.html", {"context": context}, macro="searchfield", language=context.language)

@@ -30,7 +30,6 @@ logg = logging.getLogger(__name__)
 
 
 class m_dlist(Metatype):
-
     def formatValues(self, context):
         valuelist = []
 
@@ -85,7 +84,7 @@ class m_dlist(Metatype):
                 valuelist.append(("option", indentstr, val, num))
         return valuelist
 
-    def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None):
+    def getEditorHTML(self, field, value="", width=400, name="", lock=0, language=None, required=None):
         fielddef = field.getValues().split("\r\n")  # url(source), type, name variable, value variable
         if name == "":
             name = field.getName()
@@ -115,16 +114,18 @@ class m_dlist(Metatype):
                         valuelist.append({'select_text': _t.strip(), 'select_value': _v.strip()})
                 f.close()
         except ValueError:
-            #enables the field to be added without fields filled in without throwing an exception
+            # enables the field to be added without fields filled in without throwing an exception
             pass
         return tal.getTAL("metadata/dlist.html", {"lock": lock,
-                                                   "name": name,
-                                                   "width": width,
-                                                   "value": value,
-                                                   "valuelist": valuelist,
-                                                   "fielddef": fielddef},
+                                                  "name": name,
+                                                  "width": width,
+                                                  "value": value,
+                                                  "valuelist": valuelist,
+                                                  "fielddef": fielddef,
+                                                  "required": self.is_required(required)},
                           macro="editorfield",
                           language=language)
+
 
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/dlist.html",
@@ -147,7 +148,10 @@ class m_dlist(Metatype):
             value = []
         while len(value) < 5:
             value.append("")  # url(source), name variable, value variable
-        return tal.getTAL("metadata/dlist.html", {"value": value, "types": ['json', 'list']}, macro="maskeditor", language=language)
+        return tal.getTAL("metadata/dlist.html", {"value": value,
+                                                  "types": ['json', 'list']},
+                          macro="maskeditor",
+                          language=language)
 
     def getName(self):
         return "fieldtype_dlist"

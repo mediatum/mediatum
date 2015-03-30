@@ -40,13 +40,13 @@ class m_watermark(Metatype):
 
     """ This class implements the metatype watermark and everything that is needed to handle it """
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
-        return tal.getTAL("metadata/watermark.html",
-                          {"lock": lock,
-                           "value": value,
-                           "width": width,
-                           "name": field.getName(),
-                           "field": field},
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
+        return tal.getTAL("metadata/watermark.html", {"lock": lock,
+                                                      "value": value,
+                                                      "width": width,
+                                                      "name": field.getName(),
+                                                      "field": field,
+                                                      "required": self.is_required(required)},
                           macro="editorfield",
                           language=language)
 

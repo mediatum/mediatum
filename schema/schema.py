@@ -55,12 +55,30 @@ fieldoption += [Option("metafield_option1", "search", "s", "/img/folder_plus.gif
 fieldoption += [Option("metafield_option2", "sort", "o", "/img/ordersel.png")]
 
 dateoption = []
-dateoption += [Option("metafield_dateformat_std", "dd.mm.yyyy", "%d.%m.%Y")]
-dateoption += [Option("metafield_dateformat_long", "dd.mm.yyyy hh:mm:ss", "%d.%m.%Y %H:%M:%S")]
-dateoption += [Option("metafield_dateformat_year", "yyyy", "%Y")]
-dateoption += [Option("metafield_dateformat_yearmonth", "yyyy-mm", "%Y-%m")]
-dateoption += [Option("metafield_dateformat_month", "mm", "%m")]
-dateoption += [Option("metafield_dateformat_time", "hh:mm:ss", "%H:%M:%S")]
+dateoption += [Option("metafield_dateformat_std",
+                      "dd.mm.yyyy",
+                      "%d.%m.%Y",
+                      validation_regex='^(0[1-9]|1[0-9]|2[0-9]|3[01])\.(0[1-9]|1[012])\.[0-9]{4}$')]
+dateoption += [Option("metafield_dateformat_long",
+                      "dd.mm.yyyy hh:mm:ss",
+                      "%d.%m.%Y %H:%M:%S",
+                      validation_regex='^(0[1-9]|1[0-9]|2[0-9]|3[01])\.(0[1-9]|1[012])\.[0-9]{4} (0[0-9]|1[0-9]|2[0-3])(:[0-5][0-9]){2}$')]
+dateoption += [Option("metafield_dateformat_year",
+                      "yyyy",
+                      "%Y",
+                      validation_regex='^[0-9]{4}$')]
+dateoption += [Option("metafield_dateformat_yearmonth",
+                      "yyyy-mm",
+                      "%Y-%m",
+                      validation_regex='^[0-9]{4}-(0[1-9]|1[012])$')]
+dateoption += [Option("metafield_dateformat_month",
+                      "mm",
+                      "%m",
+                      validation_regex='^(0[1-9]|1[012])$')]
+dateoption += [Option("metafield_dateformat_time",
+                      "hh:mm:ss",
+                      "%H:%M:%S",
+                      validation_regex='^(0[0-9]|1[0-9]|2[0-3])(:[0-5][0-9]){2}$')]
 
 VIEW_DEFAULT = 0        # default view for masks
 VIEW_SUB_ELEMENT = 1    # internal parameter
@@ -763,12 +781,12 @@ class Metafield(Node):
             value = node.get(self.name)
         return value
 
-    def getEditorHTML(self, val="", width=400, lock=0, language=None):
+    def getEditorHTML(self, val="", width=400, lock=0, language=None, required=None):
         try:
             t = getMetadataType(self.getFieldtype())
         except LookupError:
             t = getMetadataType("default")
-        return t.getEditorHTML(self, val, width, lock, language=language)
+        return t.getEditorHTML(self, val, width, lock, language=language, required=required)
 
     def getSearchHTML(self, context):
         try:

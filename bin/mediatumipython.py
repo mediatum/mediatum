@@ -79,7 +79,7 @@ from __future__ import division, absolute_import, print_function
 import logging
 import sys
 
-from sqlalchemy import sql
+from sqlalchemy import sql, text
 from sqlalchemy.orm.exc import NoResultFound
 
 from core.database.postgres import *
@@ -91,6 +91,7 @@ from functools import wraps
 
 from core import init
 import core.database
+from core.database.postgres.model import t_noderelation
 init.basic_init()
 
 from core import Node
@@ -158,6 +159,22 @@ def needs_init(min_state):
         return _inner
 
     return _needs_init
+
+
+def reachable_node_ids():
+    return q(t_noderelation.c.cid).filter(t_noderelation.c.nid == 1).union_all(sql.select([sql.expression.literal(1)]))
+
+
+def delete_unreachable_nodes(synchronize_session='fetch'):
+    reachable_nodes_sq = reachable_node_ids().subquery()
+    s.execute(t_noderelation.delete(~t_noderelation.c.nid.in_(reachable_nodes_sq)))
+    q(File).filter(~File.nid.in_(reachable_nodes_sq)).delete(synchronize_session)
+    return q(Node).filter(~Node.id.in_(reachable_nodes_sq)).delete(synchronize_session)
+
+
+def unreachable_nodes():
+    reachable_node_sq = reachable_node_ids().subquery()
+    return q(Node).filter(~Node.id.in_(reachable_node_sq))
 
 
 @magics_class
@@ -319,6 +336,12 @@ class MediatumMagics(Magics):
         else:
             initmodule.full_init()
             self.init_state = INIT_STATES[new_state]
+
+    @line_magic
+    def purge_nodes(self, line):
+        res = delete_unreachable_nodes(synchronize_session=False)
+        s.expire_all()
+        print(res, "nodes deleted")
 
 
 ip = get_ipython()  # @UndefinedVariable

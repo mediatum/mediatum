@@ -48,7 +48,7 @@ def calcChecksumFromMetadata(node):
 
     def attributesToString(node):
         string = ""
-        for item in node.items():
+        for item in node.attrs.items():
             string += item[0] + item[1]
         return string
 

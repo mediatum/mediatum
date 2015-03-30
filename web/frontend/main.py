@@ -247,7 +247,7 @@ def exportsearch(req, xml=0):  # format 0=pre-formated, 1=xml, 2=plain
         for node in nodes:
             req.write('a[%d] = new Object();\n' % i)
             req.write("  a[%d]['nodename'] = '%s';\n" % (i, node.name))
-            for k, v in node.items():
+            for k, v in node.attrs.items():
                 req.write("    a[%d]['%s'] = '%s';\n" % (i, esc(k), esc(v)))
             i = i + 1
         req.write('add_data(a);\n')

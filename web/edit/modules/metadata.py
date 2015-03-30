@@ -363,12 +363,13 @@ def getContent(req, ids):
                 _ids = []
                 _nodes = []
                 for node in nodes:
+                        #todo: versioning needs to be implemented
                         n = node.createNewVersion(user)
                         n.set("system.version.comment", '(' + t(req, "document_new_version_comment") +
                               ')\n' + req.params.get('version_comment', ''))
 
                         # add all existing attributes to the new version node
-                        for attr, value in node.items():
+                        for attr, value in node.attrs.items():
                             # do not overwrite existing attributes
                             # do not copy system attributes
                             if n.get(attr) != "" or attr.startswith("system."):

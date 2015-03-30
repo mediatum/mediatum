@@ -231,7 +231,7 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                 fieldname = field_dict.get('FieldName', None)
                 if fieldname:
                     value = ''
-                    if fieldname in dict(node.items()):
+                    if fieldname in dict(node.attrs.items()):
                         schemafield = schema.getMetaField(fieldname)
                         value = schemafield.getFormatedValue(node)[1]
                         #value = node.get(fieldname)

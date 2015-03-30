@@ -164,7 +164,7 @@ class m_watermark(Metatype):
 
     def event_metafield_changed(self, node, field):
         if "image" in node.type:
-            items = node.items()
+            items = node.attrs.items()
             # check if there is an original file and modify it in case
             for f in node.getFiles():
                 if f.type == "original":

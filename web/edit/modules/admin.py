@@ -78,7 +78,7 @@ def getContent(req, ids):
     for field in fields:
         fieldnames += [field.name]
 
-    attrs = node.items()
+    attrs = node.attrs.items()
 
     metafields = {}
     technfields = {}

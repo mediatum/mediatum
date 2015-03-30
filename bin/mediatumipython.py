@@ -79,7 +79,7 @@ from __future__ import division, absolute_import, print_function
 import logging
 import sys
 
-from sqlalchemy.sql import *
+from sqlalchemy import sql
 from sqlalchemy.orm.exc import NoResultFound
 
 from core.database.postgres import *
@@ -135,7 +135,7 @@ lastnode = root
 
 # IPython magic
 
-from IPython.core.magic import Magics, magics_class, line_magic
+from IPython.core.magic import Magics, magics_class, line_magic, needs_local_scope
 from IPython.core.magic_arguments import argument, magic_arguments,\
     parse_argstring, defaults
 
@@ -340,18 +340,47 @@ def set_prompt(ip):
 ip.set_hook("pre_prompt_hook", set_prompt)
 
 
-def load_ipython_extension(ip):
-    """Load the extension in IPython."""
+try:
+    from sql.magic import SqlMagic
+except ImportError:
+    print("SQL magic not found! You should install the IPython sql extension: pip install ipython-sql")
+    SQLMagics = None
+else:
+    @magics_class
+    class SQLMagics(SqlMagic):
+        
+        """Some additions to ipython-sql, could be merged"""
+        
+        @needs_local_scope
+        @line_magic("select")
+        def select(self, line, cell='', local_ns={}):
+            return self.execute("SELECT " + line, cell, local_ns)
+            
+        @needs_local_scope
+        @line_magic("delete")
+        def delete(self, line, cell='', local_ns={}):
+            return self.execute("DELETE " + line, cell, local_ns)
+            
+            
+        @needs_local_scope
+        @line_magic("insert")
+        def insert(self, line, cell='', local_ns={}):
+            return self.execute("INSERT " + line, cell, local_ns)
+        
+        @needs_local_scope
+        @line_magic("expl")
+        def explain_analyze(self, line, cell='', local_ns={}):
+            return self.execute("EXPLAIN ANALYZE " + line, cell, local_ns)
+        
+        
+def load_ipython_extensions(ip):
     ip.register_magics(MediatumMagics)
+    if SQLMagics:
+        ip.register_magics(SqlMagic)
+        ip.register_magics(SQLMagics)
+        ip.magic("sql $SQLALCHEMY_CONNECTION")
 
-load_ipython_extension(ip)
-
-# mediaTUM
+load_ipython_extensions(ip)
 
 ip.magic("autocall 1")
 
-try:
-    ip.magic("reload_ext sql")
-    ip.magic("sql $SQLALCHEMY_CONNECTION")
-except ImportError:
-    print("SQL magic not found! You should install the IPython sql extension: pip install ipython-sql")

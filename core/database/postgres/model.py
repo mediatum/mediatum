@@ -359,7 +359,7 @@ class Node(DeclarativeBase, NodeMixin):
 
 ### helpers for node child/parent relationships
 
-child_rel_options = dict(
+_children_rel_options = dict(
     secondary=t_nodemapping,
     lazy="dynamic",
     primaryjoin=Node.id == t_nodemapping.c.nid,
@@ -367,7 +367,7 @@ child_rel_options = dict(
     query_class=NodeAppenderQuery
 )
 
-parent_rel_options = dict(
+_parents_rel_options = dict(
     secondary=t_nodemapping,
     lazy="dynamic",
     primaryjoin=Node.id == t_nodemapping.c.cid,
@@ -377,13 +377,13 @@ parent_rel_options = dict(
 
 
 def children_rel(*args, **kwargs):
-    extended_kwargs = child_rel_options.copy()
+    extended_kwargs = _children_rel_options.copy()
     extended_kwargs.update(kwargs)
     return relationship(*args, **extended_kwargs)
 
 
 def parents_rel(*args, **kwargs):
-    extended_kwargs = parent_rel_options.copy()
+    extended_kwargs = _parents_rel_options.copy()
     extended_kwargs.update(kwargs)
     return relationship(*args, **extended_kwargs)
 

@@ -113,8 +113,9 @@ def init_app():
 
 
 def init_db():
-    import core
+    import core.database
     core.db.connect()
+    core.Node = core.db.get_node_class()
 
 
 def init_modules():

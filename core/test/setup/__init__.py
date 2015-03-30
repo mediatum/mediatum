@@ -7,11 +7,12 @@ import logging
 import warnings
 
 from core import config
-from core.init import add_ustr_builtin
+from core.init import add_ustr_builtin, init_db
 logg = logging.getLogger(__name__)
 
 
 def setup_basic():
     config.initialize("test_mediatum.cfg")
     add_ustr_builtin()
+    init_db()
     warnings.simplefilter("always")

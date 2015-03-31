@@ -21,7 +21,10 @@
 import logging
 import os
 import hashlib
+from core import Node
+from core import db
 
+q = db.query
 logg = logging.getLogger(__name__)
 
 

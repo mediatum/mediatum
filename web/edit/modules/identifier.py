@@ -80,9 +80,9 @@ def getContent(req, ids):
         if 'id_type' in req.params:
             if req.params.get('id_type') == 'hash':
                 createHash(node)
-            if req.params.get('id_type') == 'urn':
+            elif req.params.get('id_type') == 'urn':
                 createUrn(node, req.params.get('namespace'), req.params.get('urn_type'))
-            if req.params.get('id_type') == 'doi':
+            elif req.params.get('id_type') == 'doi':
                 try:
                     createDOI(node)
                 except:

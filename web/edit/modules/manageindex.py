@@ -24,8 +24,6 @@ from web.frontend.content import getPaths
 from utils.utils import u, dec_entry_log
 from core import Node
 from core import db
-from contenttypes import Home, Collections
-from core.systemtypes import Root
 
 q = db.query
 
@@ -82,7 +80,7 @@ def getContent(req, ids):
         fieldname = req.params.get("fields")
         old_values = u(req.params.get("old_values", "")).split(";")
         new_value = u(req.params.get("new_value"))
-        basenode = tree.getNode(ids)
+        basenode = q(Node).get(ids)
         entries = getAllAttributeValues(fieldname, req.params.get("schema"))
 
         c = 0
@@ -114,7 +112,7 @@ def getContent(req, ids):
             return ""
 
         elif req.params.get("action", "").startswith("indexvalues__"):  # load values of selected indexfield
-            node = tree.getNode(ids)
+            node = q(Node).get(ids)
             fieldname = req.params.get("action").split("__")[-2]
             schema = req.params.get("action").split("__")[-1]
             v["entries"] = []
@@ -143,7 +141,7 @@ def getContent(req, ids):
                 if value in all_values:
                     subitems[value] = []
                     for l in all_values[value]:
-                        if isChildOf(AccessData(req), tree.getNode(l), ids):
+                        if isChildOf(AccessData(req), q(Node).get(l), ids):
                             subitems[value].append(l)
 
             v["items"] = subitems

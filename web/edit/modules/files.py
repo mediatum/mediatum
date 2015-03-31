@@ -242,16 +242,23 @@ def getContent(req, ids):
 
     db.session.commit()
 
-    v = {"id": req.params.get("id", "0"), "tab": req.params.get("tab", ""), "node": node, "update_error": update_error,
-         "user": user, "files": filter(lambda x: x.type != 'statistic', node.files),
+    v = {"id": req.params.get("id", "0"),
+         "tab": req.params.get("tab", ""),
+         "node": node,
+         "update_error": update_error,
+         "user": user,
+         "files": filter(lambda x: x.type != 'statistic', node.files),
          "statfiles": filter(lambda x: x.type == 'statistic', node.files),
-         "attfiles": filter(lambda x: x.type == 'attachment', node.files), "att": [], "nodes": [node], "access": access}
+         "attfiles": filter(lambda x: x.type == 'attachment', node.files),
+         "att": [],
+         "nodes": [node],
+         "access": access}
 
     for f in v["attfiles"]:  # collect all files in attachment directory
         if f.mimetype == "inode/directory":
             for root, dirs, files in os.walk(f.abspath):
                 for name in files:
-                    af = tree.FileNode(root + "/" + name, "attachmentfile", getMimeType(name)[0])
+                    af = File(root + "/" + name, "attachmentfile", getMimeType(name)[0])
                     v["att"].append(af)
 
     return req.getTAL("web/edit/modules/files.html", v, macro="edit_files_file")

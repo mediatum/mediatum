@@ -94,7 +94,7 @@ def scheduler_thread():
 
                 TRIGGER_COUNT += 1
 
-                sched_root = tree.getRoot("schedules")
+                sched_root = q(Schedules).one()
                 try:
                     tree.remove_from_nodecaches(sched_root)
                     msg = "flushed schedules"

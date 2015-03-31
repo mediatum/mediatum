@@ -86,12 +86,6 @@ class PostgresSQLAConnector(object):
     def drop_tables(self, conn):
         self.metadata.drop_all(conn, tables=PostgresSQLAConnector._get_managed_tables())
         
-    def create_views(self, conn):
-        pass
-        
-    def drop_views(self, conn):
-        pass
-        
     def drop_extra_indexes(self, conn):
         pass
 
@@ -104,12 +98,10 @@ class PostgresSQLAConnector(object):
     def create_all(self):
         with self.engine.begin() as conn:
             self.create_tables(conn)
-            self.create_views(conn)
             self.create_functions(conn)
 
     def drop_all(self):
         with self.engine.begin() as conn:
             self.drop_functions(conn)
-            self.drop_views(conn)
             self.drop_tables(conn)
             

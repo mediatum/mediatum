@@ -41,13 +41,16 @@ logg = logging.getLogger(__name__)
 @check_type_arg_with_schema
 class Document(Content):
 
-    def getTypeAlias(self):
+    @classmethod
+    def getTypeAlias(cls):
         return "document"
 
-    def getOriginalTypeName(self):
+    @classmethod
+    def getOriginalTypeName(cls):
         return "document"
 
-    def getCategoryName(self):
+    @classmethod
+    def getCategoryName(cls):
         return "document"
 
     def _prepareData(self, req, words=""):

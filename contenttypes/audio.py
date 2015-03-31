@@ -140,13 +140,16 @@ def makeMetaData(self, audiofile):
 @check_type_arg_with_schema
 class Audio(Content):
 
-    def getTypeAlias(self):
+    @classmethod
+    def getTypeAlias(cls):
         return "audio"
 
-    def getOriginalTypeName(self):
+    @classmethod
+    def getOriginalTypeName(cls):
         return "original"
 
-    def getCategoryName(self):
+    @classmethod
+    def getCategoryName(cls):
         return "audio"
 
     # prepare hash table with values for TAL-template

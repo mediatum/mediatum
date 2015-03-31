@@ -204,13 +204,16 @@ def dozoom(self):
 @check_type_arg_with_schema
 class Image(Content):
 
-    def getTypeAlias(self):
+    @classmethod
+    def getTypeAlias(cls):
         return "image"
 
-    def getOriginalTypeName(self):
+    @classmethod
+    def getOriginalTypeName(cls):
         return "original"
 
-    def getCategoryName(self):
+    @classmethod
+    def getCategoryName(cls):
         return "image"
 
     # prepare hash table with values for TAL-template

@@ -81,13 +81,16 @@ def getCaptionInfoDict(self):
 class Video(Content):
 
     """ video class """
-    def getTypeAlias(self):
+    @classmethod
+    def getTypeAlias(cls):
         return "video"
 
-    def getOriginalTypeName(self):
+    @classmethod
+    def getOriginalTypeName(cls):
         return "original"
 
-    def getCategoryName(self):
+    @classmethod
+    def getCategoryName(cls):
         return "video"
 
     def _prepareData(self, req, words=""):

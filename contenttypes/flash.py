@@ -32,10 +32,16 @@ from core.transition.postgres import check_type_arg_with_schema
 @check_type_arg_with_schema
 class Flash(Content):
 
-    def getTypeAlias(self):
+    @classmethod
+    def getTypeAlias(cls):
         return "flash"
 
-    def getCategoryName(self):
+    @classmethod
+    def getOriginalTypeName(cls):
+        return "original"
+
+    @classmethod
+    def getCategoryName(cls):
         return "video"
 
     def _prepareData(self, req, words=""):

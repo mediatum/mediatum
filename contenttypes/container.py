@@ -109,13 +109,16 @@ class Container(Data, ContainerMixin, ContainerSchemaMixin):
     """(Abstract) Base class for Nodes that contain other Container/Content nodes and are displayed in the navigation area.
     """
 
-    def getTypeAlias(self):
+    @classmethod
+    def getTypeAlias(cls):
         return "directory"
 
-    def getOriginalTypeName(self):
+    @classmethod
+    def getOriginalTypeName(cls):
         return "directory"
 
-    def getCategoryName(self):
+    @classmethod
+    def getCategoryName(cls):
         return "container"
 
     def getStartpageDict(self):

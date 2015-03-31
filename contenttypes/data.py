@@ -118,14 +118,17 @@ class Data(Node):
     def get_all_datatypes(cls):
         """Returns all known subclasses of cls except `Collections` and `Home`"""
         return cls.get_all_subclasses(filter_classnames=("collections", "home"))
-        
-    def getTypeAlias(self):
+
+    @classmethod
+    def getTypeAlias(cls):
         return "default"
 
-    def getOriginalTypeName(self):
+    @classmethod
+    def getOriginalTypeName(cls):
         return "original"
 
-    def getCategoryName(self):
+    @classmethod
+    def getCategoryName(cls):
         return "undefined"
 
     def show_node_big(self, req, template="", macro=""):

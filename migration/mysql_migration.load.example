@@ -1,0 +1,24 @@
+-- see pgloader reference @ http://pgloader.io/howto/pgloader.1.html 
+
+LOAD database
+    FROM mysql://mediatum:password@127.0.0.1/mediatum
+    INTO postgres://mediatum:password@127.0.0.1/mediatum
+
+WITH 
+    include drop
+    , no truncate
+    , create tables
+    , create indexes
+    , reset sequences
+    , foreign keys
+
+SET maintenance_work_mem to '2048MB', work_mem to '2048MB', search_path to 'mediatum_import'  
+
+INCLUDING ONLY TABLE NAMES MATCHING 'node', 'nodefile', 'nodemapping', 'nodeattribute', 'access'
+
+BEFORE LOAD DO 
+$$ CREATE SCHEMA IF NOT EXISTS mediatum_import; $$
+
+-- use the script without comments because pgloader doesn't like them ...
+AFTER LOAD EXECUTE '../core/database/postgres/sql/pgloader_migrate_from_import_schema.sql'
+;

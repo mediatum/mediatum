@@ -21,7 +21,9 @@ logg = logging.getLogger(__name__)
 @fixture(scope="session", autouse=True)
 def database():
     """Connect to the DB, drop/create schema and load models"""
-    db.drop_all()
+    db.session.execute("DROP schema mediatum CASCADE")
+    db.session.execute("CREATE schema mediatum")
+    db.session.commit()
     db.create_all()
     load_system_types()
     load_types()

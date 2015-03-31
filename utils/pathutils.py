@@ -20,13 +20,7 @@
 
 import os
 import string
-from core import Node
-from core import db
-from contenttypes import Collections
-from core.systemtypes import Root
 
-q = db.query
-logg.error("Node not present in mediaTUM: %s", e)
 
 def createPath(parent_node, sPath, sSeparator='/'):
     dirs = string.split(sPath, sSeparator)

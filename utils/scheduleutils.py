@@ -42,11 +42,7 @@ from metadata.htmlmemo import m_htmlmemo
 from metadata.memo import m_memo
 from metadata.text import m_text
 from metadata.treeselect import m_treeselect
-from core import Node
-from core import db
-from core.systemtypes import Schedules
 
-q = db.query
 logg = logging.getLogger(__name__)
 
 SLEEP_INTERVAL = 1
@@ -285,7 +281,7 @@ def run_as_process(func, s, trigger, now_str, trigger_info, OUT, TT):
             'node_name': s.name,
             'node_type': s.type,
             'items': s.items(),
-            'file': [(f.name, f.filetype, f.mimetype, f.abspath) for f in s.files]
+            'file': [(f.getName(), f.getType(), f.getMimeType(), f.retrieveFile()) for f in s.getFiles()]
         }
 
         tempfile = join_paths(config.get("paths.tempdir"), 'temp_schedule_' + trigger.replace(":", "_") + '_RND_' + ustr(random.random()))
@@ -622,7 +618,7 @@ def getSchedulesForIds(nid_list, active_only=False, access=None, language=None):
         node = None
         title = ""
         try:
-            node = q(Node).get(nid)
+            node = tree.getNode(nid)
             title = "'%s' - '%s'" % (node.name, node.type)
             no_such_node_error = False
         except:
@@ -651,7 +647,7 @@ def deleteNodeIDsFromSchedule(node_id_list, schedule_id, access=None):
 
     if schedule_id:
         try:
-            schedule = q(Node).get(schedule_id)
+            schedule = tree.getNode(schedule_id)
             if access and not access.hasWriteAccess(schedule):
                 errors.append("edit_schedule_no_write_access_to_schedule")
         except:
@@ -682,7 +678,7 @@ def deleteSchedule(schedule_id, access=None):
 
     if schedule_id:
         try:
-            schedule = q(Node).get(schedule_id)
+            schedule = tree.getNode(schedule_id)
             if access and not access.hasWriteAccess(schedule):
                 errors.append("edit_schedule_no_write_access_to_schedule")
 
@@ -703,8 +699,7 @@ def deleteSchedule(schedule_id, access=None):
 
     try:
         schedules_root = q(Schedules).one()
-        schedules_root.children.remove(schedule)
-        db.session.commit()
+        schedules_root.removeChild(schedule)
     except:
         errors.append("edit_schedule_error_removing_schedule_node")
 
@@ -814,8 +809,8 @@ class FormedFunction(object):
         for field_type, field_name, field_label_msgid, field_validator_func in self.field_descriptors:
             count += 1
             fieldclass = dict_type2class.get(field_type, m_text)
-            field = fieldclass() 
-            field = Node(field_name, "metafield")
+            field = fieldclass()
+            field = tree.Node(field_name, "metafield")
             field.set("label", self.t(lang, field_label_msgid))
             field.set("type", field_type)
             #field.__class__ = dict_type2class.get(field_type, m_text)
@@ -838,7 +833,7 @@ class FormedFunction(object):
             count += 1
             fieldclass = dict_type2class.get(field_type, m_text)
             field = fieldclass()
-            field = Node(field_name, "metafield")
+            field = tree.Node(field_name, "metafield")
             field.set("label", self.t(lang, field_label_msgid))
             field.set("type", field_type)
             #field.__class__ = dict_type2class.get(field_type, m_text)
@@ -948,14 +943,14 @@ def send_schedule_mail(node, trigger=None, now_str=None, trigger_info=None, OUT=
 
     def getAttribute(nid, attrname):
         try:
-            n = q(Node).get(nid)
+            n = tree.getNode(nid)
             return n.get(attrname)
         except:
             return ''
 
     def getItemDict(nid):
         try:
-            n = q(Node).get(nid)
+            n = tree.getNode(nid)
             return dict(n.items())
         except:
             return []

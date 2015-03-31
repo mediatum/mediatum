@@ -21,10 +21,7 @@
 import logging
 import os
 import hashlib
-from core import Node
-from core import db
 
-q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -73,6 +70,7 @@ def getChecksum(nodeId, method="SHA-1", filepath=""):
                 return calcChecksumFromMetadata(node)
             else:
                 logg.error("Node not present in mediaTUM: %s", nodeId)
+
     except IOError:
         logg.exception("File loading failed")
     except Exception:

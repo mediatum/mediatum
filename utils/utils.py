@@ -36,10 +36,7 @@ from HTMLParser import HTMLParser
 
 from .compat import iteritems
 from .strings import ensure_unicode_returned
-from core import db
-from contenttypes import Collections
 
-q = db.query
 
 def esc(s):
     return s.replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;").replace(">", "&gt;")

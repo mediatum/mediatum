@@ -42,8 +42,11 @@ from metadata.htmlmemo import m_htmlmemo
 from metadata.memo import m_memo
 from metadata.text import m_text
 from metadata.treeselect import m_treeselect
+from core import Node
+from core import db
+from core.systemtypes import Schedules
 
-
+q = db.query
 logg = logging.getLogger(__name__)
 
 SLEEP_INTERVAL = 1
@@ -282,7 +285,7 @@ def run_as_process(func, s, trigger, now_str, trigger_info, OUT, TT):
             'node_name': s.name,
             'node_type': s.type,
             'items': s.items(),
-            'file': [(f.getName(), f.getType(), f.getMimeType(), f.retrieveFile()) for f in s.getFiles()]
+            'file': [(f.name, f.filetype, f.mimetype, f.abspath) for f in s.files]
         }
 
         tempfile = join_paths(config.get("paths.tempdir"), 'temp_schedule_' + trigger.replace(":", "_") + '_RND_' + ustr(random.random()))
@@ -510,12 +513,12 @@ def handle_cron_dict(s, now_obj, OUT):
 def get_schedules_report(access=None):
 
     try:
-        sched_root = tree.getRoot("schedules")
+        sched_root = q(Schedules).one()
     except:
         res = ["could not find schedules root node"]
         return res
 
-    schedules = [s for s in sched_root.getChildren() if s.type == "schedule"]
+    schedules = [s for s in sched_root.children if s.type == "schedule"]
     if access:
         schedules = [s for s in schedules if access.hasAccess(s, "data")]
 
@@ -584,7 +587,7 @@ def getSchedulesForIds(nid_list, active_only=False, access=None, language=None):
     schedule2nids = {}
 
     nid_set = set(nid_list)
-    schedule_list = [c for c in tree.getRoot("schedules").getChildren() if c.type == "schedule"]
+    schedule_list = [c for c in q(Schedules).one().children if c.type == "schedule"]
     if access:
         schedule_list = [c for c in schedule_list if access.hasWriteAccess(c)]
 
@@ -619,7 +622,7 @@ def getSchedulesForIds(nid_list, active_only=False, access=None, language=None):
         node = None
         title = ""
         try:
-            node = tree.getNode(nid)
+            node = q(Node).get(nid)
             title = "'%s' - '%s'" % (node.name, node.type)
             no_such_node_error = False
         except:
@@ -648,7 +651,7 @@ def deleteNodeIDsFromSchedule(node_id_list, schedule_id, access=None):
 
     if schedule_id:
         try:
-            schedule = tree.getNode(schedule_id)
+            schedule = q(Node).get(schedule_id)
             if access and not access.hasWriteAccess(schedule):
                 errors.append("edit_schedule_no_write_access_to_schedule")
         except:
@@ -679,7 +682,7 @@ def deleteSchedule(schedule_id, access=None):
 
     if schedule_id:
         try:
-            schedule = tree.getNode(schedule_id)
+            schedule = q(Node).get(schedule_id)
             if access and not access.hasWriteAccess(schedule):
                 errors.append("edit_schedule_no_write_access_to_schedule")
 
@@ -699,8 +702,9 @@ def deleteSchedule(schedule_id, access=None):
         errors.append("edit_schedule_locked_schedule")
 
     try:
-        schedules_root = tree.getRoot("schedules")
-        schedules_root.removeChild(schedule)
+        schedules_root = q(Schedules).one()
+        schedules_root.children.remove(schedule)
+        db.session.commit()
     except:
         errors.append("edit_schedule_error_removing_schedule_node")
 
@@ -811,7 +815,7 @@ class FormedFunction(object):
             count += 1
             fieldclass = dict_type2class.get(field_type, m_text)
             field = fieldclass() 
-            field = tree.Node(field_name, "metafield")
+            field = Node(field_name, "metafield")
             field.set("label", self.t(lang, field_label_msgid))
             field.set("type", field_type)
             #field.__class__ = dict_type2class.get(field_type, m_text)
@@ -834,7 +838,7 @@ class FormedFunction(object):
             count += 1
             fieldclass = dict_type2class.get(field_type, m_text)
             field = fieldclass()
-            field = tree.Node(field_name, "metafield")
+            field = Node(field_name, "metafield")
             field.set("label", self.t(lang, field_label_msgid))
             field.set("type", field_type)
             #field.__class__ = dict_type2class.get(field_type, m_text)
@@ -944,14 +948,14 @@ def send_schedule_mail(node, trigger=None, now_str=None, trigger_info=None, OUT=
 
     def getAttribute(nid, attrname):
         try:
-            n = tree.getNode(nid)
+            n = q(Node).get(nid)
             return n.get(attrname)
         except:
             return ''
 
     def getItemDict(nid):
         try:
-            n = tree.getNode(nid)
+            n = q(Node).get(nid)
             return dict(n.items())
         except:
             return []

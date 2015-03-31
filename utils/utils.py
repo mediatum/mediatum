@@ -19,7 +19,6 @@
 """
 import inspect
 import logging
-import stat
 import traceback
 import sys
 import os
@@ -34,11 +33,13 @@ from urllib import quote, urlencode
 
 import xml.parsers.expat
 from HTMLParser import HTMLParser
-from functools import wraps
 
 from .compat import iteritems
 from .strings import ensure_unicode_returned
+from core import db
+from contenttypes import Collections
 
+q = db.query
 
 def esc(s):
     return s.replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;").replace(">", "&gt;")
@@ -415,7 +416,7 @@ def getAllCollections():
             if isCollection(c):
                 l += [c]
                 f(l, c)
-    f(l, tree.getRoot("collections"))
+    f(l, q(Collections).one())
     return l
 
 

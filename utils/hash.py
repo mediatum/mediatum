@@ -20,10 +20,11 @@
 
 import logging
 import os
-
 import hashlib
+from core import Node
+from core import db
 
-
+q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -64,14 +65,14 @@ def getChecksum(nodeId, method="SHA-1", filepath=""):
         if filepath != "" and os.path.exists(filepath):
             return calcChecksum(filepath, method)
         else:
-            node = tree.getNode(nodeId)
-            for f in node.getFiles():
-                if f.getType() == node.getOriginalTypeName():
-                    return calcChecksum(f.retrieveFile(), method)
-            return calcChecksumFromMetadata(node)
-
-    except tree.NoSuchNodeError as e:
-        logg.error("Node not present in mediaTUM: %s", e)
+            node = q(Node).get(nodeId)
+            if isinstance(node, Node):
+                for f in node.files:
+                    if f.filetype == node.getOriginalTypeName():
+                        return calcChecksum(f.abspath, method)
+                return calcChecksumFromMetadata(node)
+            else:
+                logg.error("Node not present in mediaTUM: %s", nodeId)
     except IOError:
         logg.exception("File loading failed")
     except Exception:

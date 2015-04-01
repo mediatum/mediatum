@@ -36,7 +36,7 @@ def generate_doi_test(node):
     Returns a DOI for the given node for testing purposes
     """
     prefix = config.get('doi.prefix_test')
-    node_id = node.get('node.id')
+    node_id = node.id
 
     return '/'.join([prefix, node_id])
 
@@ -52,7 +52,7 @@ def generate_doi_live(node):
         'year': '',
         'publisher': config.get('doi.publisher'),
         'type': '',
-        'id': node.get('node.id'),
+        'id': node.id,
     }
 
     possible_year_fields = [
@@ -97,7 +97,7 @@ def create_meta_file(node):
         raise Exception('doi not set')
     else:
         tmp = config.get('paths.tempdir')
-        filename = 'meta_file_%s.txt' % node.get('node.id')
+        filename = 'meta_file_%s.txt' % node.id
         path = os.path.join(tmp, filename)
 
         if os.path.exists(path):
@@ -128,7 +128,7 @@ def create_doi_file(node):
     else:
         tmp = config.get('paths.tempdir')
         host = config.get('host.name')
-        filename = 'doi_file_%s.txt' % node.get('node.id')
+        filename = 'doi_file_%s.txt' % node.id
         path = os.path.join(tmp, filename)
 
         if os.path.exists(path):
@@ -137,7 +137,7 @@ def create_doi_file(node):
             try:
                 with codecs.open(path, 'w', encoding='utf8') as f:
                     f.write('doi=%s\n' % node.get('doi'))
-                    f.write('url=%s%s%s%s' % ('http://', 'mediatum.ub.tum.de', '/?id=', node.get('node.id')))
+                    f.write('url=%s%s%s%s' % ('http://', 'mediatum.ub.tum.de', '/?id=', node.id))
             except IOError:
                 logg.exception('Error creating %s', path)
         return path

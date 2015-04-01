@@ -58,9 +58,9 @@ def getContent(req, ids):
         return req.getTAL('web/edit/edit.html', {}, macro='access_error')
 
     if node.isContainer():
-        nodes = ', '.join(node.children.getIDs())
+        nodes = u', '.join(node.children.getIDs())
     else:
-        nodes = node.get('node.id')
+        nodes = unicode(node.id)
 
     v = {'msg': '',
          'urn_institutionid': config.get('urn.institutionid'),

@@ -33,7 +33,7 @@ END;
 $f$;
 
 -- "Cuts" out a subtree from the tree (= DAG...) starting with `root_id`
-CREATE OR REPLACE FUNCTION subtree_relation(root_id integer) RETURNS SETOF noderelation
+CREATE OR REPLACE FUNCTION subtree_relation(root_id integer) RETURNS SETOF :search_path.noderelation
     LANGUAGE plpgsql
     SET search_path = :search_path
     STABLE
@@ -55,7 +55,7 @@ END;
 $f$;
 
 -- "Cuts" out a subtree from the tree (= DAG...) starting with `root_id` limited to a depth of `max_distance`
-CREATE OR REPLACE FUNCTION subtree_relation(root_id integer, max_distance integer) RETURNS SETOF noderelation
+CREATE OR REPLACE FUNCTION subtree_relation(root_id integer, max_distance integer) RETURNS SETOF :search_path.noderelation
     LANGUAGE plpgsql
     SET search_path = :search_path
     STABLE
@@ -81,7 +81,7 @@ $f$;
 
 -- Returns the full set of transitive connections between nodes 
 -- for the DAG specified by connections with distance = 1
-CREATE OR REPLACE FUNCTION transitive_closure() RETURNS SETOF noderelation
+CREATE OR REPLACE FUNCTION transitive_closure() RETURNS SETOF :search_path.noderelation
     LANGUAGE plpgsql
     SET search_path = :search_path
     AS $f$
@@ -106,7 +106,7 @@ $f$;
 -- Returns the full set of transitive connections between nodes 
 -- for the DAG specified by connections with distance = 1
 -- Direct connections (distance = 1) are not included.
-CREATE OR REPLACE FUNCTION transitive_closure_without_direct_connections() RETURNS SETOF noderelation
+CREATE OR REPLACE FUNCTION transitive_closure_without_direct_connections() RETURNS SETOF :search_path.noderelation
     LANGUAGE plpgsql
     SET search_path = :search_path
     AS $f$
@@ -131,7 +131,7 @@ $f$;
 
 
 -- Returns transitive connections for from the node with `node_id` to the root 
-CREATE OR REPLACE FUNCTION transitive_closure_for_node(node_id integer) RETURNS SETOF noderelation
+CREATE OR REPLACE FUNCTION transitive_closure_for_node(node_id integer) RETURNS SETOF :search_path.noderelation
     LANGUAGE plpgsql STABLE
     SET search_path = :search_path
     AS $f$
@@ -156,7 +156,7 @@ $f$;
 
 -- Returns transitive connections for from the node with `node_id` to the root,
 -- excluding connections through the node `excluded_id`
-CREATE OR REPLACE FUNCTION transitive_closure_for_node_excluding(node_id integer, excluded_id integer) RETURNS SETOF noderelation
+CREATE OR REPLACE FUNCTION transitive_closure_for_node_excluding(node_id integer, excluded_id integer) RETURNS SETOF :search_path.noderelation
     LANGUAGE plpgsql STABLE
     SET search_path = :search_path
     AS $f$
@@ -184,7 +184,7 @@ $f$;
 -- Takes a direct connection from `parent_id` and `child_id` 
 -- and adds all (transitive and direct) connections to the parent with incremented distance
 -- In other words: the connection from `parent_id` to `child_id` is added to all paths reaching `parent_id`
-CREATE OR REPLACE FUNCTION extend_relation_to_parents(parent_id integer, child_id integer) RETURNS SETOF noderelation
+CREATE OR REPLACE FUNCTION extend_relation_to_parents(parent_id integer, child_id integer) RETURNS SETOF :search_path.noderelation
     LANGUAGE plpgsql
     SET search_path = :search_path
     STABLE

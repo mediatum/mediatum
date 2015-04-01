@@ -480,7 +480,8 @@ class Data(Node):
                 metatext.append('&lt;smallview mask not defined&gt;')
             return separator.join(metatext)
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         return 0
 
     def getTreeIcon(self):

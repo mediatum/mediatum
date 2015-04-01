@@ -333,7 +333,8 @@ class m_field(Metatype):
         else:
             return req.getTAL("schema/mask/field.html", v, macro="metaeditor")
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         return True
 
     def getName(self):

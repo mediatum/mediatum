@@ -202,7 +202,8 @@ class Video(Content):
 
         db.session.commit()
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         return 0
 
     def getSysFiles(self):

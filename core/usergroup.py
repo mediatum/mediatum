@@ -88,5 +88,6 @@ class UserGroup(Node):
     def isSystemType(self):
         return 1
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         return 1

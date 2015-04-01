@@ -68,7 +68,8 @@ class Flash(Content):
     def show_node_image(self):
         return '<img src="/thumbs/' + self.id + '" class="thumbnail" border="0"/>'
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         return 0
 
     def getSysFiles(self):

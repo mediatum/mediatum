@@ -62,7 +62,8 @@ class Metatype(object):
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         return ""
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         return False
 
     def isFieldType(self):

@@ -204,7 +204,8 @@ class Container(Data, ContainerMixin, ContainerSchemaMixin):
     def show_node_image(self, language=None):
         return tal.getTAL("contenttypes/container.html", {"node": self}, macro="thumbnail", language=language)
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         return 1
 
     def getSysFiles(self):

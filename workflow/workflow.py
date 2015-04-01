@@ -269,7 +269,8 @@ class Workflows(Node):
                     list, req.params.get(
                         "workflow_search", ""), access), "getStep": getNodeWorkflowStep, "format_date": formatItemDate}, macro=macro)
 
-    def isContainer(node):
+    @classmethod
+    def isContainer(cls):
         return 1
 
     def isSystemType(node):
@@ -307,7 +308,8 @@ class Workflow(Node):
     def show_node_text(node, words=None):
         return ""
 
-    def isContainer(node):
+    @classmethod
+    def isContainer(cls):
         return 1
 
     def isSystemType(node):
@@ -440,7 +442,8 @@ class WorkflowStep(Node):
         finally:
             workflow_lock.release()
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         # inhibit several content enrichment features
         return 1
 

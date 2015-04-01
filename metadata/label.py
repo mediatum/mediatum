@@ -110,7 +110,8 @@ class m_label(Metatype):
             value = esc(value)
         return (field.getLabel(), value)
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         return True
 
     def getName(self):

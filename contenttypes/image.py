@@ -277,7 +277,8 @@ class Image(Content):
                 template = styles[0].getTemplate()
         return req.getTAL(template, self._prepareData(req), macro)
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         return 0
 
     def getLabel(self):

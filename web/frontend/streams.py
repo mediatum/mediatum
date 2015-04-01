@@ -119,7 +119,7 @@ def send_rawfile(req, n=None):
 
 
 def send_thumbnail(req):
-    n = q(Node).get(int(splitpath(req.path)[0]))
+    n = q(Node).get(splitpath(req.path)[0])
     if not isinstance(n, Node):
         return 404
     for f in n.files:

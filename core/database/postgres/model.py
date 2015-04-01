@@ -269,7 +269,7 @@ class Node(DeclarativeBase, NodeMixin):
     __metaclass__ = BaseNodeMeta
     __tablename__ = "node"
 
-    _id = C(Integer, Sequence('node_id_seq', start=100), primary_key=True, name="id")
+    _id = C(Integer, Sequence('node_id_seq', schema=db_metadata.schema, start=100), primary_key=True, name="id")
     type = C(Text, index=True)
     schema = C(Unicode, index=True)
     name = C(Unicode, index=True)

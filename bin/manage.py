@@ -25,7 +25,8 @@ from core.init import basic_init
 from core.database.postgres import db_metadata
 basic_init()
 
-logg = logging.getLogger(__name__)
+logg = logging.getLogger("manage.py")
+#logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)
 
 from core.database.init import init_database_values
 from core import db
@@ -51,7 +52,7 @@ def create_schema(s):
         # solution: just drop the schema it if something fails after schema creation
         s.execute("DROP SCHEMA mediatum CASCADE")
         raise
-
+    
 
 def truncate_tables(s):
         s.execute('TRUNCATE {} RESTART IDENTITY;'.format(

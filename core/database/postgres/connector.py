@@ -5,10 +5,9 @@
 """
 import logging
 
-from sqlalchemy import create_engine, sql
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from . import db_metadata, DeclarativeBase
-from core.database.postgres.compilerext import CreateView, DropView
 import os.path
 
 
@@ -105,11 +104,13 @@ class PostgresSQLAConnector(object):
 
     def create_all(self):
         with self.engine.begin() as conn:
+            conn.execute("SET search_path TO " + self.metadata.schema)
             self.create_tables(conn)
             self.create_functions(conn)
 
     def drop_all(self):
         with self.engine.begin() as conn:
+            conn.execute("SET search_path TO " + self.metadata.schema)
             self.drop_functions(conn)
             self.drop_tables(conn)
             

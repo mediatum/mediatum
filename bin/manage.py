@@ -50,6 +50,7 @@ def create_schema(s):
         # I tried to use a transaction to enclose everything, but sqlalchemy (?) fails when the schema is created within the transaction
         # solution: just drop the schema it if something fails after schema creation
         s.execute("DROP SCHEMA mediatum CASCADE")
+        raise
 
 
 def truncate_tables(s):

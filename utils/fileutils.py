@@ -21,15 +21,18 @@ import os
 import codecs
 import logging
 import time
+import core.config as config
+from core import db
+from core.file import File
 
 logg = logging.getLogger(__name__)
-
+q = db.query
 
 from .utils import join_paths, getMimeType, formatException
 
 
 def getImportDir():
-    uploaddir = join_paths(core.config.get("paths.datadir"), "incoming")
+    uploaddir = join_paths(config.get("paths.datadir"), "incoming")
     try:
         os.mkdir(uploaddir)
     except:
@@ -75,7 +78,7 @@ def importFile(realname, tempname, prefix=""):
 
         mimetype, type = getMimeType(r)
 
-        return core.tree.FileNode(name=destname, mimetype=mimetype, type=type)
+        return File(destname, type, mimetype)
     except:
         logg.exception("")
     return None
@@ -103,7 +106,7 @@ def importFileFromData(filename, data, prefix=""):
         type = "file"
         mimetype, type = getMimeType(filename.lower())
 
-        return core.tree.FileNode(name=destname, mimetype=mimetype, type=type)
+        return File(destname, type, mimetype)
     except:
         logg.exception("exception in importFileFromData, ignoring")
     return None
@@ -119,7 +122,7 @@ def importFileToRealname(realname, tempname, prefix="", typeprefix=""):
             i = 0
             while os.path.exists(destname):
                 i += 1
-                p = prefix + ustr(i) + "_"
+                p = prefix + unicode(i) + "_"
                 destname = join_paths(uploaddir, p + filename)
                 if not os.path.exists(destname):
                     prefix = p
@@ -131,7 +134,7 @@ def importFileToRealname(realname, tempname, prefix="", typeprefix=""):
             ret = os.system(('copy "%s" "%s"' % (tempname, destname)).replace('/', '\\'))
 
         if ret & 0xff00:
-            raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, prefix + destname, ustr(ret)))
+            raise IOError("Couldn't copy %s to %s (error: %s)" % (tempname, prefix + destname, unicode(ret)))
 
         r = realname.lower()
         mimetype = "application/x-download"
@@ -139,7 +142,7 @@ def importFileToRealname(realname, tempname, prefix="", typeprefix=""):
 
         mimetype, type = getMimeType(r)
 
-        return core.tree.FileNode(name=destname, mimetype=mimetype, type=typeprefix + type)
+        return File(destname, typeprefix + type, mimetype)
     except:
         logg.exception("exception in importFileToRealname, ignoring")
     return None
@@ -166,18 +169,16 @@ def importFileIntoDir(destpath, tempname):
 
         mimetype, type = getMimeType(r)
 
-        return core.tree.FileNode(name=destname, mimetype=mimetype, type=type)
+        return File(destname, type, mimetype)
     except:
         logg.exception("exception in importFileIntoDir, ignoring")
     return None
 
 
 def importFileRandom(tempname):
-    #import core.config as config
     import random
-    #import core.tree as tree
     path, filename = os.path.split(tempname)
-    uploaddir = join_paths(core.config.get("paths.datadir"), "incoming")
+    uploaddir = join_paths(config.get("paths.datadir"), "incoming")
     try:
         os.mkdir(uploaddir)
     except:
@@ -207,7 +208,7 @@ def importFileRandom(tempname):
     mimetype = "application/x-download"
     type = "file"
     mimetype, type = getMimeType(r)
-    return core.tree.FileNode(name=destname, mimetype=mimetype, type=type)
+    return File(destname, type, mimetype)
     
 
 def importFileToUploaddirWithRandomName(tempname):
@@ -233,4 +234,4 @@ def importFileToUploaddirWithRandomName(tempname):
     mimetype = "application/x-download"
     type = "file"
     mimetype, type = getMimeType(r)
-    return core.tree.FileNode(name=destname, mimetype=mimetype, type=type)
+    return File(destname, type, mimetype)

@@ -25,9 +25,15 @@ from core.metatype import Metatype
 
 class m_check(Metatype):
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
-        return tal.getTAL("metadata/check.html", {"lock": lock, "value": value, "width": width,
-                                                  "name": field.getName(), "field": field}, macro="editorfield", language=language)
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
+        return tal.getTAL("metadata/check.html", {"lock": lock,
+                                                  "value": value,
+                                                  "width": width,
+                                                  "name": field.getName(),
+                                                  "field": field,
+                                                  "required": self.is_required(required)},
+                          macro="editorfield",
+                          language=language)
 
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/check.html", {"context": context}, macro="searchfield", language=context.language)

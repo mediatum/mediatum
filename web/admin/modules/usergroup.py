@@ -20,7 +20,7 @@
 """
 import sys
 import traceback
-import core.tree as tree
+
 import logging
 import core.users as users
 import core.config as config

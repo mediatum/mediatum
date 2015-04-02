@@ -28,7 +28,7 @@ import re
 import hashlib
 from collections import OrderedDict
 
-import core.tree as tree
+
 import core.users as users
 
 from core import config

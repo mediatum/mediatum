@@ -20,7 +20,10 @@
 from mediatumtal import tal
 from schema.schema import VIEW_DATA_ONLY, VIEW_DEFAULT
 from core.metatype import Metatype
+from core import Node
+from core import db
 
+q = db.query
 
 class m_label(Metatype):
 
@@ -70,7 +73,7 @@ class m_label(Metatype):
         metadatatype = req.params.get("metadatatype")
 
         if req.params.get("op", "") == "new":
-            pidnode = tree.getNode(req.params.get("pid"))
+            pidnode = q(Node).get(req.params.get("pid"))
             if pidnode.get("type") in ("vgroup", "hgroup"):
                 for field in pidnode.getAllChildren():
                     if field.getType().getName() == "maskitem" and field.id != pidnode.id:
@@ -89,9 +92,14 @@ class m_label(Metatype):
         v["fields"] = fields
         return req.getTAL("metadata/label.html", v, macro="metaeditor")
 
-    def getEditorHTML(self, field, value="", width=40, lock=0, language=None):
-        return tal.getTAL("metadata/label.html", {"lock": lock, "value": value, "width": width,
-                                                  "name": field.getName(), "field": field}, macro="editorfield", language=language)
+    def getEditorHTML(self, field, value="", width=40, lock=0, language=None, required=None):
+        return tal.getTAL("metadata/label.html", {"lock": lock,
+                                                  "value": value,
+                                                  "width": width,
+                                                  "name": field.getName(),
+                                                  "field": field},
+                          macro="editorfield",
+                          language=language)
 
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/label.html", {"context": context}, macro="searchfield", language=context.language)
@@ -102,7 +110,8 @@ class m_label(Metatype):
             value = esc(value)
         return (field.getLabel(), value)
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         return True
 
     def getName(self):

@@ -1,4 +1,3 @@
-
 <p metal:define-macro="filetype_error" style="color:red" i18n:translate="edit_files_filetype_error">
     TEXT
 </p>
@@ -227,8 +226,10 @@
                                 function onNewVersionChecked (self) {
                                     if (self.checked) {
                                         $('#version_comment').show();
+                                        $('#version_comment textarea').attr('required', '');
                                     } else {
                                         $('#version_comment').hide();
+                                        $('#version_comment textarea').removeAttr('required');
                                     }
                                 }
                             </script>

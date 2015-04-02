@@ -17,19 +17,20 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.acl as acl
-import core.tree as tree
+
 import core.users as users
 from core.acl import AccessData
 from utils.utils import getCollection
 from core.translation import t
 from core.transition import httpstatus
-
+from core import Node
+from core import db
+q = db.query
 
 def getContent(req, ids):
     user = users.getUserFromRequest(req)
     access = AccessData(req)
-    node = tree.getNode(ids[0])
+    node = q(Node).get(ids[0])
 
     if "sortfiles" in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
@@ -51,9 +52,12 @@ def getContent(req, ids):
     for ntype, num in c.getAllOccurences(AccessData(req)).items():
         if ntype.getSortFields():
             for sortfield in ntype.getSortFields():
-                sortfields += [SortChoice(sortfield.getLabel(), sortfield.getName())]
-                sortfields += [SortChoice(sortfield.getLabel() + t(req, "descending"), "-" + sortfield.getName())]
+                sortfields += [SortChoice(sortfield.getLabel(), sortfield.name)]
+                sortfields += [SortChoice(sortfield.getLabel() + t(req, "descending"), "-" + sortfield.name)]
             break
 
-    return req.getTAL("web/edit/modules/sortfiles.html", {"node": node, "collection_sortfield": collection_sortfield,
-                                                          "sortchoices": sortfields, "name": c.getName()}, macro="edit_sortfiles")
+    return req.getTAL("web/edit/modules/sortfiles.html", {"node": node, 
+                                                          "collection_sortfield": collection_sortfield,
+                                                          "sortchoices": sortfields, 
+                                                          "name": c.name},
+                      macro="edit_sortfiles")

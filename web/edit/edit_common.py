@@ -23,14 +23,17 @@ import logging
 
 from core.acl import AccessData
 from core.translation import translate, getDefaultLanguage, t, lang
-from utils.utils import isDirectory, isCollection, EncryptionException, funcname
+from utils.utils import EncryptionException, funcname
 from utils.fileutils import importFile
 from core.users import getHomeDir, getUploadDir
-
 from utils.utils import get_user_id, log_func_entry, dec_entry_log
 
-logg = logging.getLogger(__name__)
+from core import Node
+from core import db
+from core.systemtypes import Root
 
+logg = logging.getLogger(__name__)
+q = db.query
 
 class NodeWrapper:
 
@@ -97,42 +100,19 @@ class EditorNodeList:
         return data, script
 
 
-def existsHomeDir(user):
-    username = user.getName()
-    userdir = None
-    for c in tree.getRoot("home").getChildren():
-        if (c.getAccess("read") or "").find("{user " + username + "}") >= 0 and (c.getAccess("write") or "").find("{user " + username + "}") >= 0:
-            userdir = c
-    return (userdir is not None)
-
-
-def renameHomeDir(user, newusername):
-    if (existsHomeDir(user)):
-        getHomeDir(user).setName(
-            translate("user_directory", getDefaultLanguage()) + " (" + newusername + ")")
-
-
 @dec_entry_log
-def showdir(req, node, publishwarn="auto", markunpublished=0, nodes=[], sortfield_from_req=None):
+def showdir(req, node, publishwarn="auto", markunpublished=False, sortfield=None):
     if publishwarn == "auto":
         user = users.getUserFromRequest(req)
         homedir = getHomeDir(user)
         homedirs = getAllSubDirs(homedir)
         publishwarn = node in homedirs
-    if not nodes:
-        nodes = node.getChildren()
-    if sortfield_from_req and sortfield_from_req is not None:
-        logg.debug("%s, %s, sorted by sortfield_from_req=%r", __name__, funcname(), sortfield_from_req)
-    elif sortfield_from_req is None:
-        collection_sortfield = node.get("sortfield")
-        if collection_sortfield:
-            nodes = tree.NodeList([n.id for n in nodes]).sort_by_fields(
-                [collection_sortfield])
-            logg.debug("%r, %r, sorted by collection_sortfield=%r", __name__, funcname(), collection_sortfield)
-    else:
-        logg.debug("%s, %s, *not* sorted", __name__, funcname())
-
-    nodes = tree.NodeList([n.id for n in nodes if not n.type == 'shoppingbag'])
+    nodes = node.content_children # XXX: ?? correct
+    if sortfield is None:
+        sortfield = node.get("sortfield")
+        if sortfield:
+            nodes = nodes.sort_by_fields(sortfield)
+#     nodes = [n for n in nodes if not n.type == 'shoppingbag'] # XXX: ?? 
     return shownodelist(req, nodes, publishwarn=publishwarn, markunpublished=markunpublished, dir=node)
 
 
@@ -150,7 +130,7 @@ def showoperations(req, node):
 
 
 @dec_entry_log
-def shownodelist(req, nodes, publishwarn=1, markunpublished=0, dir=None):
+def shownodelist(req, nodes, publishwarn=True, markunpublished=False, dir=None):
     req.session["nodelist"] = EditorNodeList(nodes)
     script_array = "allobjects = new Array();\n"
     nodelist = []
@@ -158,13 +138,10 @@ def shownodelist(req, nodes, publishwarn=1, markunpublished=0, dir=None):
     user = users.getUserFromRequest(req)
 
     for child in nodes:
-        try:
-            if isDirectory(child) or isCollection(child):
-                continue
+        from contenttypes import Content
+        if isinstance(child, Content):
             script_array += "allobjects['%s'] = 0;\n" % child.id
             nodelist.append(child)
-        except TypeError:
-            continue
 
     chkjavascript = ""
     notpublished = {}
@@ -175,7 +152,7 @@ def shownodelist(req, nodes, publishwarn=1, markunpublished=0, dir=None):
             chkjavascript = """<script language="javascript">"""
         for node in nodes:
             ok = 0
-            for p in node.getParents():
+            for p in node.parents:
                 if p not in homedirs:
                     ok = 1
             if not ok:
@@ -264,13 +241,13 @@ def writetree(req, node, f, key="", openednodes=None, sessionkey="unfoldedids", 
         unfoldedids = req.session[sessionkey]
         len(unfoldedids)
     except:
-        req.session[sessionkey] = unfoldedids = {tree.getRoot().id: 1}
+        req.session[sessionkey] = unfoldedids = {unicode(q(Root).one().id): 1}
 
     if openednodes:
         # open all selected nodes and their parent nodes
         def o(u, n):
             u[n.id] = 1
-            for n in n.getParents():
+            for n in n.parents:
                 o(u, n)
         for n in openednodes:
             o(unfoldedids, n)
@@ -310,7 +287,7 @@ def send_nodefile_tal(req):
         return upload_for_html(req)
 
     id = req.params.get("id")
-    node = tree.getNode(id)
+    node = q(Node).get(id)
     access = AccessData(req)
 
     if not (access.hasAccess(node, 'read') and access.hasAccess(node, 'write') and access.hasAccess(node, 'data') and node.type in ["directory", "collections", "collection"]):
@@ -333,7 +310,7 @@ def send_nodefile_tal(req):
             return cn
 
     # only pass images to the file browser
-    files = [f for f in node.getFiles() if f.mimetype.startswith("image")]
+    files = [f for f in node.files if f.mimetype.startswith("image")]
 
     # this flag may switch the display of a "delete" button in the customs
     # file browser in web/edit/modules/startpages.html
@@ -347,7 +324,7 @@ def upload_for_html(req):
     datatype = req.params.get("datatype", "image")
 
     id = req.params.get("id")
-    node = tree.getNode(id)
+    node = q(Node).get(id)
 
     access = AccessData(req)
     if not (access.hasAccess(node, 'read') and access.hasAccess(node, 'write') and access.hasAccess(node, 'data')):
@@ -357,9 +334,10 @@ def upload_for_html(req):
         if key.startswith("delete_"):
             filename = key[7:-2]
             # XXX: dead code?
-            for file in n.getFiles():
-                if file.getName() == filename:
-                    n.removeFile(file)
+            for file in node.files:
+                if file.base_name == filename:
+                    node.files.remove(file)
+            db.session.commit()
 
     if "file" in req.params.keys():  # file
 
@@ -371,7 +349,8 @@ def upload_for_html(req):
             try:
                 logg.info("%s upload (%s)", user.name, file.filename, file.tempname, user.name)
                 nodefile = importFile(file.filename, file.tempname)
-                node.addFile(nodefile)
+                node.files.append(nodefile)
+                db.session.commit()
                 req.request["Location"] = req.makeLink(
                     "nodefile_browser/%s/" % id, {})
             except EncryptionException:
@@ -391,7 +370,8 @@ def upload_for_html(req):
             try:
                 logg.info("%s upload via ckeditor %s (%s)", user.name , file.filename, file.tempname)
                 nodefile = importFile(file.filename, file.tempname)
-                node.addFile(nodefile)
+                node.files.append(nodefile)
+                db.session.commit()
             except EncryptionException:
                 req.request["Location"] = req.makeLink("content", {
                                                        "id": id, "tab": "tab_editor", "error": "EncryptionError_" + datatype[:datatype.find("/")]})

@@ -109,13 +109,16 @@ class Container(Data, ContainerMixin, ContainerSchemaMixin):
     """(Abstract) Base class for Nodes that contain other Container/Content nodes and are displayed in the navigation area.
     """
 
-    def getTypeAlias(self):
+    @classmethod
+    def getTypeAlias(cls):
         return "directory"
 
-    def getOriginalTypeName(self):
+    @classmethod
+    def getOriginalTypeName(cls):
         return "directory"
 
-    def getCategoryName(self):
+    @classmethod
+    def getCategoryName(cls):
         return "container"
 
     def getStartpageDict(self):
@@ -201,7 +204,8 @@ class Container(Data, ContainerMixin, ContainerSchemaMixin):
     def show_node_image(self, language=None):
         return tal.getTAL("contenttypes/container.html", {"node": self}, macro="thumbnail", language=language)
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         return 1
 
     def getSysFiles(self):
@@ -259,10 +263,10 @@ class Container(Data, ContainerMixin, ContainerSchemaMixin):
         return metafields
 
     def getEditMenuTabs(self):
-        if self.getContentType() in ["collection", "collections"]:
+        if self.type in ["collection", "collections"]:
             return "menulayout(content;startpages;view);menumetadata(metadata;logo;files;admin;searchmask;sortfiles);menusecurity(acls);menuoperation(search;subfolder;license)"
 
-        elif self.getContentType() == "directory":
+        elif self.type == "directory":
             return "menulayout(content;startpages;view);menumetadata(metadata;files;admin);menusecurity(acls);menuoperation(search;subfolder;license)"
 
         else:
@@ -297,15 +301,17 @@ class Container(Data, ContainerMixin, ContainerSchemaMixin):
 
 @check_type_arg
 class Directory(Container):
-    
-    def treeiconclass(self):
+
+    @classmethod
+    def treeiconclass(cls):
         return "directory"
     
 
 @check_type_arg
 class Collection(Container):
-    
-    def treeiconclass(self):
+
+    @classmethod
+    def treeiconclass(cls):
         return "collection"
         
     def metaFields(self, lang=None):

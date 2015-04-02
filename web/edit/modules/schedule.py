@@ -24,10 +24,10 @@ import logging
 import re
 import inspect
 
-from datetime import datetime, time
+from datetime import datetime
 
 import core.users as users
-import core.tree as tree
+
 import core.acl as acl
 import utils.scheduleutils as su
 
@@ -35,6 +35,11 @@ from core.translation import lang, t, getDefaultLanguage
 from utils.pathutils import isDescendantOf
 from utils.utils import dec_entry_log
 from core.transition import httpstatus
+from core import Node
+from core import db
+from contenttypes import Collections
+from core.systemtypes import Schedules
+
 
 if sys.version[0:3] < '2.6':
     import simplejson as json
@@ -42,6 +47,7 @@ else:
     import json
 
 
+q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -105,7 +111,7 @@ def getContent(req, ids):
         elif action.startswith("load_schedule_"):
             schedule_id = action.replace("load_schedule_", "")
             try:
-                schedule = tree.getNode(schedule_id)
+                schedule = q(Schedules).get(schedule_id)
             except:
                 errors.append("edit_schedule_no_such_node_error")
                 return "no such schedule error"
@@ -169,7 +175,7 @@ def getContent(req, ids):
             schedule_id = req.params.get('schedule_id', None)
             if schedule_id:
                 try:
-                    schedule = tree.getNode(schedule_id)
+                    schedule = q(Schedules).get(schedule_id)
                 except:
                     errors.append(
                         "edit_schedule_unexpected_no_such_schedule_node")
@@ -203,7 +209,7 @@ def getContent(req, ids):
             schedule_id = req.params.get('schedule_id', None)
             if schedule_id:
                 try:
-                    schedule = tree.getNode(schedule_id)
+                    schedule = q(Schedules).get(schedule_id)
                 except:
                     errors.append(
                         "edit_schedule_unexpected_no_such_schedule_node")
@@ -306,7 +312,7 @@ def getContent(req, ids):
 
     schedule_id = req.params.get("schedule_id", "")
     if schedule_id:
-        schedule = tree.getNode(schedule_id)
+        schedule = q(Schedules).get(schedule_id)
         if access and not access.hasWriteAccess(schedule):
             errors.append("edit_schedule_no_access_error")
             schedule = None
@@ -336,7 +342,7 @@ def getContent(req, ids):
     # additional nodes should not / will not be shown there
     nodes = []
     for nid in ids:
-        node = tree.getNode(nid)
+        node = q(Node).get(nid)
         nodes.append(node)
 
     d['nodes'] = nodes
@@ -396,12 +402,10 @@ def getContent(req, ids):
             "edit_schedule_additional_nodes_list_not_semikolon_separated_list_of_integers")
 
     if not additional_nodes_error:
-        collections_root = tree.getRoot("collections")
+        collections_root = q(Collections).one()
         for nid in additional_nodes_id_list:
-            n = None
-            try:
-                n = tree.getNode(nid)
-            except tree.NoSuchNodeError as e:
+            n = q(Node).get(nid)
+            if not isinstance(n, Node):
                 has_evaluation_errors = True
                 additional_nodes_error = True
                 if nid not in additional_nodes_bad_ids:
@@ -477,14 +481,15 @@ def getContent(req, ids):
 
         new_schedule_name = user.name + \
             "_created_at_" + datetime.now().isoformat()
-        new_schedule = tree.Node(new_schedule_name, 'schedule')
+        new_schedule = Node(new_schedule_name, 'schedule')
 
         username = user.getName()
         new_schedule.setAccess("write", "{user %s}" % username)
 
         if not "submit_run_now" in req.params:
-            schedules = tree.getRoot("schedules")
-            schedules.addChild(new_schedule)
+            schedules = q(Schedules).one()
+            schedules.children.append(new_schedule)
+            db.session.commit()
 
             msg = "user '%s' created new schedule '%s' (%s), trigger='%s', function='%s', nodelist='%s'" % (
                 username, new_schedule.name, str(new_schedule.id), datetime_str, d['currentFunction'], new_schedule.get('nodelist'))

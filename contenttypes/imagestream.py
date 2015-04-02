@@ -23,6 +23,7 @@ import os
 import core.config as config
 import glob
 from core.transition.postgres import check_type_arg_with_schema
+from core.file import File
 
 logg = logging.getLogger(__name__)
 
@@ -43,5 +44,5 @@ class Imagestream(image.Image):
             logg.warn('No images in %s', image_dir)
             return files
 
-        files += [FileNode(newest_image, 'image', 'image/jpeg', node)]
+        files += [File(newest_image, 'image', 'image/jpeg', node)]
         return files

@@ -20,16 +20,21 @@
 import logging
 from mediatumtal import tal
 from core.metatype import Metatype
-
+from core import Node
 
 logg = logging.getLogger(__name__)
 
 
 class m_meta(Metatype):
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
-        return tal.getTAL("metadata/meta.html", {"lock": lock, "value": value, "width": width,
-                                                 "name": field.getName(), "field": field}, macro="editorfield", language=language)
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
+        return tal.getTAL("metadata/meta.html", {"lock": lock,
+                                                 "value": value,
+                                                 "width": width,
+                                                 "name": field.getName(),
+                                                 "field": field},
+                          macro="editorfield",
+                          language=language)
 
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/meta.html", {"context": context}, macro="searchfield", language=context.language)
@@ -45,7 +50,7 @@ class m_meta(Metatype):
         attr = {}
         if metadatatype:
             for t in metadatatype.getDatatypes():
-                node = tree.Node(type=t)
+                node = Node(u'', t)
                 attr.update(node.getTechnAttributes())
 
         return tal.getTAL("metadata/meta.html", {"value": value, "t_attrs": attr}, macro="maskeditor", language=language)

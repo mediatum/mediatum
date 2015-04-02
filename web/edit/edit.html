@@ -162,7 +162,7 @@
 
             <script tal:content="python:u'var user_folders = {};'.format({k: unicode(folders[k][0].id) for k in folders})">TEXT</script>
             <script tal:content="python:u'var collectionsid = {};'.format(collectionsid)">TEXT</script>
-            <script tal:content="python:u'var containertype2iconpath = {};'.format([[t[2], t[1], t[3]] for t in cmenu_iconpaths])">;</script>
+            <script tal:content="python:u'var containertype2iconpath = {};'.format(cmenu_iconpaths)">;</script>
             <script tal:content="python:u'var edit_t = \'{}\';'.format(t(language, 'edit_edit_container_node'))">;</script>
             <script tal:content="python:u'var cut_t = \'{}\';'.format(t(language, 'edit_cut_container'))">;</script>
             <script tal:content="python:u'var paste_t = \'{}\';'.format(t(language, 'edit_paste_container_here'))">;</script>
@@ -1573,7 +1573,7 @@ ct.visit(function(node){
             </style>
 
             <tal:block tal:repeat="ct_iconpath cmenu_iconpaths">
-                <style tal:condition="python: not ct_iconpath[0].getName().startswith('bare_')" tal:content="python: '.context-menu-item.icon-%s { background-image: url(img/%s); }' % (ct_iconpath[0].getName(), ct_iconpath[1])">#</style>
+                <style tal:content="python: '.context-menu-item.icon-%s { background-image: url(img/%s); }' % (ct_iconpath[2], ct_iconpath[1])">#</style>
             </tal:block>
 
             <div id="clear_trash_question" style="display:none" i18n:translate="clear_trash_question"> </div>

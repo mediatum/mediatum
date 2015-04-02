@@ -29,10 +29,11 @@ from utils.utils import Link, splitpath, parseMenuString
 from core.translation import t, lang
 from core.transition import httpstatus
 from utils.strings import ensure_unicode_returned
-
+from core import db
+from core.systemtypes import Root
 
 logg = logging.getLogger(__name__)
-
+q = db.query
 
 def getAdminStdVars(req):
     page = ""
@@ -192,7 +193,7 @@ def show_content(req, op):
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/admin/frame.html", {}, macro="errormessage")
     else:
-        if op == "" or op not in getRoot().get("admin.menu"):
+        if op == "" or op not in q(Root).one().get("admin.menu"):
             op = "menumain"
         module = findmodule(op.split("_")[0])
 
@@ -240,7 +241,7 @@ def adminNavigation():
                 adminModules[mod] = (mods[mod])
 
     # get module configuration
-    root = getRoot()
+    root = q(Root).one()
     admin_configuration = root.get("admin.menu")
 
     if admin_configuration == "":

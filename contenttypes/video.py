@@ -35,8 +35,8 @@ from schema.schema import VIEW_HIDE_EMPTY
 from metadata.upload import getFilelist
 from contenttypes.data import Content
 from core.transition.postgres import check_type_arg_with_schema
-
-
+from core import db
+from core.file import File
 logg = logging.getLogger(__name__)
 
 
@@ -52,8 +52,8 @@ def getCaptionInfoDict(self):
     filelist, filelist2 = getFilelist(self, fieldname='.*captions.*')
 
     for filenode in filelist2:
-        if filenode.getType() in ["u_other", "u_xml"]:
-            filename = filenode.getName()
+        if filenode.filetype in ["u_other", "u_xml"]:
+            filename = filenode.base_name
             file_ext = filename.split('.')[-1]
             if file_ext in ['srt', 'xml']:
                 counter += 1
@@ -81,13 +81,16 @@ def getCaptionInfoDict(self):
 class Video(Content):
 
     """ video class """
-    def getTypeAlias(self):
+    @classmethod
+    def getTypeAlias(cls):
         return "video"
 
-    def getOriginalTypeName(self):
+    @classmethod
+    def getOriginalTypeName(cls):
         return "original"
 
-    def getCategoryName(self):
+    @classmethod
+    def getCategoryName(cls):
         return "video"
 
     def _prepareData(self, req, words=""):
@@ -100,9 +103,9 @@ class Video(Content):
         if self.get('deleted') == 'true':
             node = self.getActiveVersion()
             obj['deleted'] = True
-        for filenode in node.getFiles():
-            if filenode.getType() in ["original", "video"]:
-                obj["file"] = "/file/%s/%s" % (node.id, filenode.getName())
+        for filenode in node.files:
+            if filenode.filetype in ["original", "video"]:
+                obj["file"] = "/file/%s/%s" % (node.id, filenode.base_name)
                 break
 
         if mask:
@@ -119,12 +122,12 @@ class Video(Content):
 
         # if the file format is not flash video (edit area)
         if 'contentarea' not in req.session:
-            files = [f.retrieveFile() for f in self.getFiles()]
+            files = [f.abspath for f in self.files]
             if len(files) == 1 and 'flv' != files[0].split('/')[-1].split('.')[-1]:
                 return req.error(415, "Video is not in Flash Video format")
 
         if template == "":
-            styles = getContentStyles("bigview", contenttype=self.getContentType())
+            styles = getContentStyles("bigview", contenttype=self.type)
             if len(styles) >= 1:
                 template = styles[0].getTemplate()
 
@@ -143,23 +146,25 @@ class Video(Content):
         return '<img src="/thumbs/%s" class="thumbnail" border="0"/>' % self.id
 
     def event_files_changed(self):
-        for f in self.getFiles():
+        for f in self.files:
             if f.type in ["thumb", "presentation"]:
-                self.removeFile(f)
+                self.files.remove(f)
 
-        nodefiles = self.getFiles()
+        nodefiles = self.files
         if len(nodefiles) == 1 and nodefiles[0].mimetype == "video/quicktime":
-            if nodefiles[0].retrieveFile().endswith('.mov'):  # handle mov -> flv
-                flvname = "%sflv" % nodefiles[0].retrieveFile()[:-3]
-                ret = os.system("ffmpeg -loglevel quiet -i %s -ar 44100 -ab 128 -f flv %s" % (nodefiles[0].retrieveFile(), flvname))
+            if nodefiles[0].abspath.endswith('.mov'):  # handle mov -> flv
+                flvname = "%sflv" % nodefiles[0].abspath[:-3]
+                ret = os.system("ffmpeg -loglevel quiet -i %s -ar 44100 -ab 128 -f flv %s" % (nodefiles[0].abspath, flvname))
                 if ret & 0xff00:
                     return
-                self.addFile(FileNode(name=flvname, type="video", mimetype="video/x-flv"))
+                self.files.append(File(flvname, "video", "video/x-flv"))
 
-        for f in self.getFiles():
+        db.session.commit()
+
+        for f in self.files:
             if f.type in["original", "video"]:
                 if f.mimetype == "video/x-flv":
-                    meta = FLVReader(f.retrieveFile())
+                    meta = FLVReader(f.abspath)
                     for key in meta:
                         try:
                             self.set(key, int(meta[key]))
@@ -178,24 +183,27 @@ class Video(Content):
                     try:
                         if self.get("system.thumbframe") != "":
                             cmd = "ffmpeg -loglevel quiet  -ss %s -i %s -vframes 1 -pix_fmt rgb24 %s" % (
-                                self.get("system.thumbframe"), f.retrieveFile(), tempname)
+                                self.get("system.thumbframe"), f.abspath, tempname)
                         else:
-                            cmd = "ffmpeg -loglevel quiet -i %s -vframes 1 -pix_fmt rgb24 %s" % (f.retrieveFile(), tempname)
+                            cmd = "ffmpeg -loglevel quiet -i %s -vframes 1 -pix_fmt rgb24 %s" % (f.abspath, tempname)
                         ret = os.system(cmd)
                         if ret & 0xff00:
                             return
                     except:
                         logg.exception("exception in event_files_changed, ignore")
                         return
-                    path, ext = splitfilename(f.retrieveFile())
+                    path, ext = splitfilename(f.abspath)
                     thumbname = path + ".thumb"
                     thumbname2 = path + ".thumb2"
                     makeThumbNail(tempname, thumbname)
                     makePresentationFormat(tempname, thumbname2)
-                    self.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
-                    self.addFile(FileNode(name=thumbname2, type="presentation", mimetype="image/jpeg"))
+                    self.files.append(File(thumbname, "thumb", "image/jpeg"))
+                    self.files.append(File(thumbname2, "presentation", "image/jpeg"))
 
-    def isContainer(self):
+        db.session.commit()
+
+    @classmethod
+    def isContainer(cls):
         return 0
 
     def getSysFiles(self):
@@ -244,9 +252,9 @@ class Video(Content):
             return
 
         f = None
-        for filenode in self.getFiles():
-            if filenode.getType() in ["original", "video"] and filenode.retrieveFile().endswith('flv'):
-                f = "/file/%s/%s" % (self.id, filenode.getName())
+        for filenode in self.files:
+            if filenode.filetype in ["original", "video"] and filenode.abspath.endswith('flv'):
+                f = "/file/%s/%s" % (self.id, filenode.base_name)
                 break
 
         script = ""
@@ -279,9 +287,9 @@ class Video(Content):
         return "view"
 
     def processMediaFile(self, dest):
-        for nfile in self.getFiles():
-            if nfile.getType() == "video":
-                filename = nfile.retrieveFile()
+        for nfile in self.files:
+            if nfile.filetype == "video":
+                filename = nfile.abspath
                 path, ext = splitfilename(filename)
                 if os.sep == '/':
                     os.system("cp %s %s" % (filename, dest))

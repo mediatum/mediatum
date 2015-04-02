@@ -23,7 +23,6 @@ import core.config as config
 import core.acl as acl
 import os
 import codecs
-from contenttypes import data
 from utils.utils import splitfilename, u, OperationException, utf8_decode_escape
 from schema.schema import VIEW_HIDE_EMPTY
 from core.translation import lang, t
@@ -33,7 +32,8 @@ from lib.pdf import parsepdf
 from core.attachment import filebrowser
 from contenttypes.data import Content
 from core.transition.postgres import check_type_arg_with_schema
-
+from core.file import File
+from core import db
 
 logg = logging.getLogger(__name__)
 
@@ -41,13 +41,16 @@ logg = logging.getLogger(__name__)
 @check_type_arg_with_schema
 class Document(Content):
 
-    def getTypeAlias(self):
+    @classmethod
+    def getTypeAlias(cls):
         return "document"
 
-    def getOriginalTypeName(self):
+    @classmethod
+    def getOriginalTypeName(cls):
         return "document"
 
-    def getCategoryName(self):
+    @classmethod
+    def getCategoryName(cls):
         return "document"
 
     def _prepareData(self, req, words=""):
@@ -76,8 +79,8 @@ class Document(Content):
         if node.has_object():
             obj['canseeoriginal'] = access.hasAccess(node, "data")
             if node.get('system.origname') == "1":
-                obj['documentlink'] = u'/doc/{}/{}'.format(node.id, node.getName())
-                obj['documentdownload'] = u'/download/{}/{}'.format(node.id, node.getName())
+                obj['documentlink'] = u'/doc/{}/{}'.format(node.id, node.name)
+                obj['documentdownload'] = u'/download/{}/{}'.format(node.id, node.name)
             else:
                 obj['documentlink'] = u'/doc/{}/{}.pdf'.format(node.id, node.id)
                 obj['documentdownload'] = u'/download/{}/{}.pdf'.format(node.id, node.id)
@@ -110,11 +113,12 @@ class Document(Content):
                 template = styles[0].getTemplate()
         return req.getTAL(template, self._prepareData(req), macro)
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         return 0
 
     def has_object(self):
-        for f in self.getFiles():
+        for f in self.files:
             if f.type == "doc" or f.type == "document":
                 return True
         return False
@@ -134,7 +138,7 @@ class Document(Content):
         doc = None
         present = 0
         fileinfo = 0
-        for f in self.getFiles():
+        for f in self.files:
             if f.type == "thumb":
                 thumb = 1
             elif f.type.startswith("present"):
@@ -148,18 +152,20 @@ class Document(Content):
             elif f.type == "document":
                 doc = f
         if not doc:
-            for f in self.getFiles():
+            for f in self.files:
                 if f.type == "thumb":
-                    self.removeFile(f)
+                    self.files.remove(f)
                 elif f.type.startswith("present"):
-                    self.removeFile(f)
+                    self.files.remove(f)
                 elif f.type == "fileinfo":
-                    self.removeFile(f)
+                    self.files.remove(f)
                 elif f.type == "fulltext":
-                    self.removeFile(f)
+                    self.files.remove(f)
+
+        db.session.commit()
 
         if doc:
-            path, ext = splitfilename(doc.retrieveFile())
+            path, ext = splitfilename(doc.abspath)
 
             if not (thumb and present and fulltext and fileinfo):
                 thumbname = path + ".thumb"
@@ -169,7 +175,7 @@ class Document(Content):
                 tempdir = config.get("paths.tempdir")
 
                 try:
-                    pdfdata = parsepdf.parsePDF2(doc.retrieveFile(), tempdir)
+                    pdfdata = parsepdf.parsePDF2(doc.abspath, tempdir)
                 except parsepdf.PDFException as ex:
                     raise OperationException(ex.value)
                 with codecs.open(infoname, "rb", encoding='utf8') as fi:
@@ -178,10 +184,10 @@ class Document(Content):
                         if i > 0:
                             self.set("pdf_" + line[0:i].strip().lower(), utf8_decode_escape(line[i + 1:].strip()))
 
-                self.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
-                self.addFile(FileNode(name=thumb2name, type="presentation", mimetype="image/jpeg"))
-                self.addFile(FileNode(name=fulltextname, type="fulltext", mimetype="text/plain"))
-                self.addFile(FileNode(name=infoname, type="fileinfo", mimetype="text/plain"))
+                self.files.append(File(thumbname, "thumb", "image/jpeg"))
+                self.files.append(File(thumb2name, "presentation", "image/jpeg"))
+                self.files.append(File(fulltextname, "fulltext", "text/plain"))
+                self.files.append(File(infoname, "fileinfo", "text/plain"))
 
     """ list with technical attributes for type document """
     def getTechnAttributes(self):
@@ -206,6 +212,7 @@ class Document(Content):
                            "pdf_addnotes": "kommentierbar"},
                 "Standard": {"creationtime": "Erstelldatum",
                              "creator": "Ersteller"}}
+
     """ popup window for actual nodetype """
     def popup_fullsize(self, req):
         access = AccessData(req)
@@ -213,9 +220,9 @@ class Document(Content):
             req.write(t(req, "permission_denied"))
             return
 
-        for f in self.getFiles():
-            if f.getType() == "doc" or f.getType() == "document":
-                req.sendFile(f.retrieveFile(), f.getMimeType())
+        for f in self.files:
+            if f.filetype == "doc" or f.filetype == "document":
+                req.sendFile(f.abspath, f.mimetype)
                 return
 
     def popup_thumbbig(self, req):
@@ -228,9 +235,9 @@ class Document(Content):
         return "view"
 
     def processDocument(self, dest):
-        for file in self.getFiles():
+        for file in self.files:
             if file.getType() == "document":
-                filename = file.retrieveFile()
+                filename = file.abspath
                 if os.sep == '/':
                     cmd = "cp %s %s" % (filename, dest)
                     ret = os.system(cmd)

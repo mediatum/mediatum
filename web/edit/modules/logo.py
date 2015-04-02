@@ -18,13 +18,11 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import core.tree as tree
+
 import os
 import logging
 import core.acl as acl
 import core.users as users
-
-import json
 
 from utils.utils import getMimeType, splitpath, dec_entry_log
 from utils.fileutils import importFile
@@ -32,7 +30,10 @@ from utils.fileutils import importFile
 from core.translation import lang
 from core.translation import t as translation_t
 from core.transition import httpstatus
+from core import Node
+from core import db
 
+q = db.query
 
 logg = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ logg = logging.getLogger(__name__)
 @dec_entry_log
 def getContent(req, ids):
     user = users.getUserFromRequest(req)
-    node = tree.getNode(ids[0])
+    node = q(Node).get(ids[0])
     access = acl.AccessData(req)
 
     if "logo" in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
@@ -52,9 +53,10 @@ def getContent(req, ids):
     # delete logo file
     if "action" in req.params and req.params.get('action') == "delete":
         file = req.params.get('file').split("/")[-1]
-        for f in node.getFiles():
-            if f.retrieveFile().endswith(file):
-                node.removeFile(f)
+        for f in node.files:
+            if f.abspath.endswith(file):
+                node.files.remove(f)
+                db.session.commit()
                 req.write('ok')
                 return None
         req.write('not found')
@@ -74,7 +76,8 @@ def getContent(req, ids):
                 return req.getTAL("web/edit/modules/logo.html", {}, macro="filetype_error")
             else:
                 file = importFile(file.filename, file.tempname)
-                node.addFile(file)
+                node.files.append(file)
+                db.session.commit()
 
     # save logo
     if "logo_save" in req.params.keys():
@@ -94,9 +97,9 @@ def getContent(req, ids):
             logg.info("%s set logo for node %s (%s, %s) to %s", user.name, node.id, node.name, node.type, node.get("system.logo"))
 
     logofiles = []
-    for f in node.getFiles():
-        if f.getType() == "image":
-            logofiles.append(splitpath(f.retrieveFile()))
+    for f in node.files:
+        if f.filetype == "image":
+            logofiles.append(splitpath(f.abspath))
     
     v = {
         "id": req.params.get("id", "0"),

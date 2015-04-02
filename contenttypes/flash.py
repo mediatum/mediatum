@@ -32,10 +32,16 @@ from core.transition.postgres import check_type_arg_with_schema
 @check_type_arg_with_schema
 class Flash(Content):
 
-    def getTypeAlias(self):
+    @classmethod
+    def getTypeAlias(cls):
         return "flash"
 
-    def getCategoryName(self):
+    @classmethod
+    def getOriginalTypeName(cls):
+        return "original"
+
+    @classmethod
+    def getCategoryName(cls):
         return "video"
 
     def _prepareData(self, req, words=""):
@@ -62,7 +68,8 @@ class Flash(Content):
     def show_node_image(self):
         return '<img src="/thumbs/' + self.id + '" class="thumbnail" border="0"/>'
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         return 0
 
     def getSysFiles(self):
@@ -84,10 +91,10 @@ class Flash(Content):
             return
 
         f = ""
-        for filenode in self.getFiles():
-            if filenode.getType() in ("original", "video"):
+        for filenode in self.files:
+            if filenode.filetype in ("original", "video"):
                 f = u"/file/{}/{}".format(self.id,
-                                          filenode.getName())
+                                          filenode.base_name)
                 break
         req.writeTAL("contenttypes/flash.html", {"path": f}, macro="fullsize")
 

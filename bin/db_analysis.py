@@ -30,7 +30,7 @@ from core.init import full_init
 
 full_init()
 
-import core.tree as tree
+
 from core.search.ftsquery import protect
 from utils.utils import u, modify_tex, normalize_utf8
 import utils.utils

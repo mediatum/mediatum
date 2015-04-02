@@ -31,8 +31,10 @@ class User(Node):
     def getGroups(self):
         groups = []
         for p in self.getParents():
-            if p.type == "usergroup":
+            if p.type == "UserGroup":
                 groups += [p.getName()]
+        #todo: delete this
+        return ['Administration']
         return groups
 
     def getLastName(self):
@@ -99,16 +101,21 @@ class User(Node):
 
     def isAdmin(self):
         # XXX: everybody is admin ;)
+        #todo: delete this
         return True
         return self.inGroup(config.get("user.admingroup", "Administration"))
 
     def isEditor(self):
+        #todo: delete this
+        return True
         for group in self.getGroups():
             if "e" in usergroups.getGroup(group).getOption():
                 return True
-        return False
+        return True
 
     def isWorkflowEditor(self):
+        #todo: delete this
+        return True
         for group in self.getGroups():
             if "w" in usergroups.getGroup(group).getOption():
                 return True

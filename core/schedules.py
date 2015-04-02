@@ -30,10 +30,10 @@ import core.athana as athana
 import core.schedule
 
 from datetime import datetime
-
+from systemtypes import Schedules
 
 logg = logging.getLogger(__name__)
-
+q = core.db.query
 
 def OUT(msg, logger='backend', print_stdout=False, level='info'):
     # ignore logger and stdout arguments
@@ -50,17 +50,9 @@ def timetable_update(msg):
 
 
 def ensureSchedulesRoot():
-    try:
-        schedules = tree.getRoot('schedules')
-        msg = "scheduler: root node 'schedules' (id=%s) found" % ustr(schedules.id)
-        OUT(msg)
-
-    except tree.NoSuchNodeError as e:
-        schedules = tree.Node(name='schedules', type='schedules')
-        root = tree.getRoot()
-        root.addChild(schedules)
-        msg = "scheduler: created root node 'schedules' (id=%s)" % ustr(schedules.id)
-        OUT(msg)
+    schedules = q(Schedules).one()
+    msg = "scheduler: root node 'schedules' (id=%s) found" % ustr(schedules.id)
+    OUT(msg)
 
 
 timeline = []
@@ -102,7 +94,7 @@ def scheduler_thread():
 
                 TRIGGER_COUNT += 1
 
-                sched_root = tree.getRoot("schedules")
+                sched_root = q(Schedules).one()
                 try:
                     tree.remove_from_nodecaches(sched_root)
                     msg = "flushed schedules"

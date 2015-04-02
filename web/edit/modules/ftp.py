@@ -17,15 +17,18 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
-import core.tree as tree
+
 import core.acl as acl
 import core.users as users
 import core.config as config
 
 from schema.schema import loadTypesFromDB
-from core.datatypes import loadAllDatatypes
-from core.translation import translate, lang, t
+from core.translation import translate
 from core.transition import httpstatus
+from core import Node
+from core import db
+
+q = db.query
 
 def getContent(req, ids):
     user = users.getUserFromRequest(req)
@@ -34,23 +37,24 @@ def getContent(req, ids):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
     
     ids = ids[0] # use only first selected node
-    node = tree.getNode(ids)
+    node = q(Node).get(ids)
     error = ""
     
     def processFile(node, file, ftype):
-        nname = file.retrieveFile().split("/")
+        nname = file.abspath.split("/")
         nname = "/".join(nname[:-1])+"/"+nname[-1][4:]
         try:
-            os.rename(file.retrieveFile(), nname)
+            os.rename(file.abspath, nname)
         except:
-            nname = file.retrieveFile()
-        fnode = tree.Node(nname.split("/")[-1], ftype)
-        node.removeFile(file)
+            nname = file.abspath
+        fnode = Node(nname.split("/")[-1], ftype)
+        node.files.remove(file)
         file._path = file._path.replace(config.get("paths.datadir"), "")
-        file._path = "/".join(file._path.split("/")[:-1]) + "/"+fnode.getName()
-        fnode.addFile(file)
+        file._path = "/".join(file._path.split("/")[:-1]) + "/"+fnode.name
+        fnode.files.append(file)
         fnode.event_files_changed()
-        node.addChild(fnode)
+        node.children.append(fnode)
+        db.session.commit()
         return fnode
     
     for key in req.params.keys():
@@ -58,8 +62,8 @@ def getContent(req, ids):
             fname = key[:-2].split("|")[-1]
             ftype = req.params.get("schema").replace(";","")
             if ftype!="":
-                for f in node.getFiles():
-                    if f.getName()==fname:
+                for f in node.files:
+                    if f.name==fname:
                         processFile(node, f, ftype)
                         break
                 break
@@ -67,18 +71,18 @@ def getContent(req, ids):
                 error = "edit_ftp_error1"
                 
         elif key.startswith("del|"):
-            for f in node.getFiles():
-                if f.getName()==key[4:-2]:
-                    node.removeFile(f)
+            for f in node.files:
+                if f.name==key[4:-2]:
+                    node.files.remove(f)
                     break
             break
             
         elif key.startswith("delall"): # delete all selected files
             delfiles = [f.split("|")[-1] for f in req.params.get("selfiles").split(";")]
             
-            for f in node.getFiles():
-                if f.getName() in delfiles:
-                    node.removeFile(f)
+            for f in node.files:
+                if f.name in delfiles:
+                    node.files.remove(f)
             
             break
             
@@ -87,8 +91,8 @@ def getContent(req, ids):
                 if file:
                     ftype, fname = file.split("|")
                     if "multschema|"+ftype in req.params and req.params.get("multschema|"+ftype)!="":
-                        for f in node.getFiles():
-                            if f.getName()==fname:
+                        for f in node.files:
+                            if f.name==fname:
                                 print "use", ftype+"/"+req.params.get("multschema|"+ftype)
                                 processFile(node, f, ftype+"/"+req.params.get("multschema|"+ftype) )
                                 break
@@ -97,12 +101,12 @@ def getContent(req, ids):
                         break
             break
             
-    files = filter(lambda x: x.getName().startswith("ftp_"), node.getFiles())
+    files = filter(lambda x: x.name.startswith("ftp_"), node.files)
     types = []
     for f in files:
-        if f.getType() not in types:
-            if f.getType() != "other":
-                types.append(f.getType())
+        if f.filetype not in types:
+            if f.filetype != "other":
+                types.append(f.filetype)
 
     dtypes = {}
     for scheme in filter(lambda x: x.isActive(), acl.AccessData(req).filter(loadTypesFromDB())):
@@ -114,7 +118,9 @@ def getContent(req, ids):
     
     for t in dtypes:
         dtypes[t].sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
-    
+
+    db.session.commit()
+
     access = acl.AccessData(req)
     if not access.hasWriteAccess(node):
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
@@ -148,7 +154,7 @@ def adduseropts(user):
     i = [x.getLongName() for x in dtypes['image']]
     i.sort()
     
-    field = tree.Node("ftp.type_image", "metafield")
+    field = Node("ftp.type_image", "metafield")
     field.set("label", "ftp_image_schema")
     field.set("type", "list")
     field.set("valuelist", "\r\n".join(i))
@@ -157,7 +163,7 @@ def adduseropts(user):
     d = [x.getLongName() for x in dtypes['document']]
     d.sort()
     
-    field = tree.Node("ftp.type_document", "metafield")
+    field = Node("ftp.type_document", "metafield")
     field.set("label", "ftp_document_schema")
     field.set("type", "list")
     field.set("valuelist", "\r\n".join(d))

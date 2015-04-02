@@ -35,7 +35,7 @@ groupoption += [Option("usergroup_option_1", "editor", "e", "img/edit_opt.png"),
 
 def loadGroupsFromDB():
     warn("use q(UserGroup).sort_by_name()", DeprecationWarning)
-    return q(UserGroup).sort_by_name()
+    return q(UserGroup).order_by(Node.name)
 
 
 def getGroup(name_or_id):

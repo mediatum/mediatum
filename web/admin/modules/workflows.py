@@ -21,7 +21,7 @@ import logging
 import re
 import sys
 import traceback
-import core.tree as tree
+
 import core.config as config
 
 from core.acl import getRuleList

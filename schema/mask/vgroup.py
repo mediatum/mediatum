@@ -154,7 +154,8 @@ class m_vgroup(Metatype):
         v["selid"] = req.params.get("sel_id", "")
         return req.getTAL("schema/mask/vgroup.html", v, macro="metaeditor")
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         return True
 
     def getName(self):

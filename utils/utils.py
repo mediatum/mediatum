@@ -19,7 +19,6 @@
 """
 import inspect
 import logging
-import stat
 import traceback
 import sys
 import os
@@ -34,7 +33,6 @@ from urllib import quote, urlencode
 
 import xml.parsers.expat
 from HTMLParser import HTMLParser
-from functools import wraps
 
 from .compat import iteritems
 from .strings import ensure_unicode_returned
@@ -335,12 +333,13 @@ def compare_digit(s1, s2):
 
 class Option:
 
-    def __init__(self, name="", shortname="", value="", imgsource="", optiontype=""):
+    def __init__(self, name="", shortname="", value="", imgsource="", optiontype="", validation_regex=""):
         self.name = name
         self.shortname = shortname
         self.value = value
         self.imgsource = imgsource
         self.optiontype = optiontype
+        self.validation_regex = validation_regex
 
     def getName(self):
         return self.name
@@ -371,6 +370,12 @@ class Option:
 
     def setOptionType(self, value):
         self.optiontype = value
+
+    def get_validation_regex(self):
+        return self.validation_regex
+
+    def set_validation_regex(self, value):
+        self.validation_regex = value
 
 
 def isCollection(node):
@@ -408,12 +413,12 @@ def getAllCollections():
             if isCollection(c):
                 l += [c]
                 f(l, c)
-    f(l, tree.getRoot("collections"))
+    f(l, q(Collections).one())
     return l
 
 
 def isDirectory(node):
-    if node.getContentType() == "directory" or node.isContainer():
+    if node.type == "directory" or node.isContainer():
         return 1
     else:
         return 0

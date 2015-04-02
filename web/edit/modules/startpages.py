@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import core.tree as tree
+
 import os
 import sys
 import json
@@ -31,17 +31,21 @@ import core.config as config
 from utils.utils import format_filesize, dec_entry_log
 from core.translation import lang
 from core.acl import AccessData
-from core.tree import FileNode
 from web.edit.edit_common import send_nodefile_tal, upload_for_html
 from core.transition import httpstatus
+from core import Node
+from core import db
+from core.file import File
+from contenttypes import Home, Collections
+from core.systemtypes import Root
 
-
+q = db.query
 logg = logging.getLogger(__name__)
 
 
 @dec_entry_log
 def getContent(req, ids):
-    node = tree.getNode(ids[0])
+    node = q(Node).get(ids[0])
     user = users.getUserFromRequest(req)
     access = AccessData(req)
     if not access.hasWriteAccess(node) or "editor" in users.getHideMenusForUser(user):
@@ -55,8 +59,8 @@ def getContent(req, ids):
     if "action" in req.params:
         if req.params.get('action') == "getfile":  # deliver filecontent
             data = ""
-            for f in [f for f in node.getFiles() if f.mimetype == "text/html"]:
-                filepath = f.retrieveFile().replace(config.get("paths.datadir"), '')
+            for f in [f for f in node.files if f.mimetype == "text/html"]:
+                filepath = f.abspath.replace(config.get("paths.datadir"), '')
                 if req.params.get('filename') == filepath and os.path.exists(config.get("paths.datadir") + filepath):
                     with codecs.open(config.get("paths.datadir") + filepath, "r", encoding='utf8') as fil:
                         data = fil.read()
@@ -66,10 +70,10 @@ def getContent(req, ids):
         if req.params.get('action') == "save":  # save filedata
             if req.params.get('filename') == "add":  # add new file
                 maxid = 0
-                for f in [f for f in node.getFiles() if f.type == "content"]:
+                for f in [f for f in node.files if f.type == "content"]:
                     try:
-                        if int(f.retrieveFile()[:-5].split("_")[-1]) >= maxid:
-                            maxid = int(f.retrieveFile()[:-5].split("_")[-1]) + 1
+                        if int(f.abspath[:-5].split("_")[-1]) >= maxid:
+                            maxid = int(f.abspath[:-5].split("_")[-1]) + 1
                     except ValueError:
                         pass
                 filename = 'html/%s_%s.html' % (req.params.get('id'), maxid)
@@ -78,13 +82,14 @@ def getContent(req, ids):
                     filename = 'html/%s_%s.html' % (req.params.get('id'), maxid)
                 with codecs.open(config.get("paths.datadir") + filename, "w", encoding='utf8') as fil:
                     fil.write(req.params.get('data'))
-                node.addFile(FileNode(filename, "content", "text/html"))
+                node.files.append(File(filename, "content", "text/html"))
+                db.session.commit()
                 req.write(json.dumps({'filename': '', 'state': 'ok'}))
                 logg.info("%s added startpage %s for node %s (%s, %s)", user.name, filename, node.id, node.name, node.type)
                 return None
             else:
-                for f in [f for f in node.getFiles() if f.mimetype == "text/html"]:
-                    filepath = f.retrieveFile().replace(config.get("paths.datadir"), '')
+                for f in [f for f in node.files if f.mimetype == "text/html"]:
+                    filepath = f.abspath.replace(config.get("paths.datadir"), '')
                     if req.params.get('filename') == filepath and os.path.exists(config.get("paths.datadir") + filepath):
                         with open(config.get("paths.datadir") + filepath, "w", encoding='utf8') as fil:
                             fil.write(req.params.get('data'))
@@ -108,15 +113,16 @@ def getContent(req, ids):
             return ""
 
         if "delete" in req.params:  # delete file via CKeditor
-            for f in node.getFiles():
-                if f.retrieveFile().endswith(req.params.get('option')):
-                    filepath = f.retrieveFile().replace(config.get("paths.datadir"), '')
+            for f in node.files:
+                if f.abspath.endswith(req.params.get('option')):
+                    filepath = f.abspath.replace(config.get("paths.datadir"), '')
                     logg.info("%s going to delete ckeditor filebrowser file %s for node %s (%s, %s)", 
                               user.name, filepath, node.id, node.name, node.type)
-                    if os.path.exists(f.retrieveFile()):
-                        os.remove(f.retrieveFile())
-                        node.removeFile(f)
+                    if os.path.exists(f.abspath):
+                        os.remove(f.abspath)
+                        node.files.remove(f)
                     break
+            db.session.commit()
             return ""
 
     for key in req.params.keys():
@@ -130,15 +136,16 @@ def getContent(req, ids):
                     logg.info("%s removed file %s from disk", user.name, fullpath)
                 else:
                     logg.warn("%s could not remove file %s from disk: not existing", user.name, fullpath)
-                filenode = FileNode(page, "", "text/html")
+                filenode = File(page, "", "text/html")
 
                 node.removeAttribute("startpagedescr." + file_shortpath)
                 node.set("startpage.selector", node.get("startpage.selector").replace(file_shortpath, ""))
-                node.removeFile(filenode)
-                logg.info("%s - startpages - deleted FileNode and file for node %s (%s): %s, %s, %s, %s",
-                        user.name, node.id, node.name, page, filenode.getName(), filenode.type, filenode.mimetype)
+                node.files.remove(filenode)
+                db.session.commit()
+                logg.info("%s - startpages - deleted File and file for node %s (%s): %s, %s, %s, %s",
+                        user.name, node.id, node.name, page, filenode.name, filenode.type, filenode.mimetype)
             except:
-                logg.exception("%s - startpages - error while delete FileNode and file for %s, exception ignored", user.name, page)
+                logg.exception("%s - startpages - error while delete File and file for %s, exception ignored", user.name, page)
             break
 
     if "save_page" in req.params:  # save page
@@ -162,14 +169,17 @@ def getContent(req, ids):
         return getContent(req, [node.id])
 
     filelist = []
-    for f in node.getFiles():
+    for f in node.files:
         if f.mimetype == 'text/html' and f.getType() in ['content']:
             filelist.append(f)
+
+    db.session.commit()
+
 
     languages = [language.strip() for language in config.get("i18n.languages").split(",")]
 
     if "startpages_save" in req.params.keys():  # user saves startpage configuration
-        logg.info("%s going to save startpage configuration for node %s (%s, %s): %s", 
+        logg.info("%s going to save startpage configuration for node %s (%s, %s): %s",
                   user.name, node.id, node.name, node.type, req.params)
 
         sidebar = ""
@@ -188,7 +198,7 @@ def getContent(req, ids):
     named_filelist = []
 
     for f in filelist:
-        long_path = f.retrieveFile()
+        long_path = f.abspath
         short_path = long_path.replace(config.get("paths.datadir"), '')
 
         file_exists = os.path.isfile(long_path)
@@ -200,7 +210,7 @@ def getContent(req, ids):
         sidebar = []
         for language in languages:
             spn = node.getStartpageFileNode(language)
-            if spn and spn.retrieveFile() == long_path:
+            if spn and spn.abspath == long_path:
                 langlist.append(language)
             if node.get('system.sidebar').find(language + ":" + short_path) >= 0:
                 sidebar.append(language)
@@ -234,8 +244,13 @@ def getContent(req, ids):
 
     node.set('startpage.selector', startpage_selector[0:-1])
 
-    v = {"id": req.params.get("id", "0"), "tab": req.params.get("tab", ""), "node": node,
-         "named_filelist": named_filelist, "languages": languages, "lang2file": lang2file, "types": ['content'],
+    v = {"id": req.params.get("id", "0"),
+         "tab": req.params.get("tab", ""),
+         "node": node,
+         "named_filelist": named_filelist,
+         "languages": languages,
+         "lang2file": lang2file,
+         "types": ['content'],
          "d": lang2file and True}
 
     return req.getTAL("web/edit/modules/startpages.html", v, macro="edit_startpages")

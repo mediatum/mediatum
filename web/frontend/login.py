@@ -116,7 +116,7 @@ def logout(req):
         del req.session["user"]
     except:
         pass
-    req.request["Location"] = req.makeLink("node", {"id": tree.getRoot("collections").id})
+    req.request["Location"] = '/'
     return httpstatus.HTTP_MOVED_TEMPORARILY
 
 

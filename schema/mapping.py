@@ -190,7 +190,8 @@ class Mapping(Node):
     def getFieldtype(self):
         return "mapping"
 
-    def isContainer(node):
+    @classmethod
+    def isContainer(cls):
         return 0
 
     def getActive(self):

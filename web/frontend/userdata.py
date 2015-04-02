@@ -76,7 +76,7 @@ class HTMLSnippet:
 
     def getUserDetails(self, user, req=None, **kwargs):
         targetnode = users.getHomeDir(user)
-        res = dict(targetnode.items())
+        res = dict(targetnode.attrs.items())
         if logg.isEnabledFor(logging.DEBUG):
             _d = pf(res)
             logg.debug("retrieving user details: %s", _d)

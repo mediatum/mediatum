@@ -1,6 +1,5 @@
-
 <tal:block metal:define-macro="editorfield">
-    <select class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[int(lock)]; style python:u'width:{}px'.format(width-16); name python:name; id python:u'select_{}'.format(name);">
+    <select class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[int(lock)]; style python:u'width:{}px'.format(width-16); name python:name; id python:u'select_{}'.format(name); required required">
         <option tal:repeat="v valuelist" tal:attributes="value python:v['select_value']; selected python:'selected' if v['select_value']==value else None" tal:content="raw python:v['select_text']"/>
     </select>
     <tal:block tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;

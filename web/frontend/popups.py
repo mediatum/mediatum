@@ -28,6 +28,8 @@ from core.acl import AccessData
 from core.translation import t, lang
 from utils.utils import u, getCollection
 from core.styles import theme
+from core import db
+from core import Node
 
 #
 # execute fullsize method from node-type
@@ -35,17 +37,13 @@ from core.styles import theme
 
 
 logg = logging.getLogger(__name__)
+q = db.query
 
 
 def popup_fullsize(req):
-    #access = AccessData(req)
-    try:
-        node = getNode(req.params["id"])
-    except tree.NoSuchNodeError:
+    node = q(Node).get(req.params["id"])
+    if not isinstance(node, Node):
         return 404
-    # if not access.hasAccess(node,"data"):
-    #    req.write(t(req, "permission_denied"))
-    #    return
     node.popup_fullsize(req)
 #
 # execute thumbBig method from node-type
@@ -53,10 +51,8 @@ def popup_fullsize(req):
 
 
 def popup_thumbbig(req):
-    #access = AccessData(req)
-    try:
-        node = getNode(req.params["id"])
-    except tree.NoSuchNodeError:
+    node = q(Node).get(req.params["id"])
+    if not isinstance(node, Node):
         return 404
     node.popup_thumbbig(req)
 
@@ -66,9 +62,9 @@ def popup_thumbbig(req):
 #
 def show_help(req):
     if req.params.get("maskid", "") != "":
-        field = getNode(req.params.get("maskid", ""))
+        field = q(Node).get(req.params.get("maskid", ""))
     else:
-        field = getNode(req.params.get("id", ""))
+        field = q(Node).get(req.params.get("id", ""))
 
     req.writeTAL(theme.getTemplate("popups.html"), {"field": field}, macro="show_help")
 
@@ -80,13 +76,12 @@ def show_help(req):
 
 def show_attachmentbrowser(req):
     id = req.params.get("id")
-    node = getNode(id)
+    node = q(Node).get(id)
     access = AccessData(req)
     if not access.hasAccess(node, "data"):
         req.write(t(req, "permission_denied"))
         return
-    # if node.getContentType().startswith("document") or node.getContentType().startswith("dissertation"):
-    #    node.getAttachmentBrowser(req)
+
     from core.attachment import getAttachmentBrowser
     getAttachmentBrowser(node, req)
 
@@ -94,7 +89,7 @@ def show_attachmentbrowser(req):
 def getPrintChildren(req, node, ret):
     access = AccessData(req)
 
-    for c in node.getChildren():
+    for c in node.children:
         if access.hasAccess(c, "read"):
             ret.append(c)
 
@@ -123,7 +118,7 @@ def show_printview(req):
             return
 
     # use objects from session
-    if ustr(nodeid) == "0":
+    if unicode(nodeid) == "0":
         children = []
         if "contentarea" in req.session:
             try:
@@ -132,7 +127,7 @@ def show_printview(req):
                 c = req.session["contentarea"].content
                 nodes = c.resultlist[c.active].files
             for n in nodes:
-                c_mtype = getMetaType(n.getSchema())
+                c_mtype = getMetaType(n.schema)
                 c_mask = c_mtype.getMask("printlist")
                 if not c_mask:
                     c_mask = c_mtype.getMask("nodesmall")
@@ -144,7 +139,7 @@ def show_printview(req):
         req.write(printview.getPrintView(lang(req), None, [["", "", t(lang(req), "")]], [], 3, children))
 
     else:
-        node = getNode(nodeid)
+        node = q(Node).get(nodeid)
         if node.get("system.print") == "0":
             return 404
         access = AccessData(req)
@@ -155,7 +150,7 @@ def show_printview(req):
         style = int(req.params.get("style", 2))
 
         # nodetype
-        mtype = getMetaType(node.getSchema())
+        mtype = getMetaType(node.schema)
 
         mask = None
         metadata = None
@@ -176,11 +171,11 @@ def show_printview(req):
         if not metadata:
             metadata = [['nodename', node.getName(), 'Name', 'text']]
 
-        files = node.getFiles()
+        files = node.files
         imagepath = None
         for file in files:
-            if file.getType().startswith("presentati"):
-                imagepath = file.retrieveFile()
+            if file.filetype.startswith("presentati"):
+                imagepath = file.abspath
 
         # children
         children = []
@@ -191,7 +186,7 @@ def show_printview(req):
             for c in ret:
                 if not c.isContainer():
                     # items
-                    c_mtype = getMetaType(c.getSchema())
+                    c_mtype = getMetaType(c.schema)
                     c_mask = c_mtype.getMask("printlist")
                     if not c_mask:
                         c_mask = c_mtype.getMask("nodesmall")
@@ -203,9 +198,9 @@ def show_printview(req):
                     items = getPaths(c, AccessData(req))
                     p = []
                     for item in items[0]:
-                        p.append(u(item.getName()))
-                    p.append(u(c.getName()))
-                    children.append([(c.id, " > ".join(p[1:]), u(c.getName()), "header")])
+                        p.append(item.getName())
+                    p.append(c.getName())
+                    children.append([(c.id, " > ".join(p[1:]), c.getName(), "header")])
 
             if len(children) > 1:
                 col = []
@@ -220,7 +215,7 @@ def show_printview(req):
                     col.append((0, ""))
                     order.append(1)
                     if req.params.get("sortfield" + ustr(i)) != "":
-                        sort = req.params.get("sortfield" + ustr(i), sort)
+                        sort = req.params.get("sortfield" + unicode(i), sort)
 
                     if sort != "":
                         if sort.startswith("-"):

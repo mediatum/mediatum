@@ -71,7 +71,7 @@ class m_mappingfield(Metatype):
     def addMappingExt(self, ext):
         self.extensions.append(ext)
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
 
         ns = ""
         if field.get("fieldtype") == "mapping":

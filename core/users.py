@@ -34,7 +34,6 @@ from core.translation import getDefaultLanguage, translate
 from core.user import User
 from core.systemtypes import Users
 
-
 logg = logging.getLogger(__name__)
 q = db.query
 
@@ -156,7 +155,7 @@ def hasTableAccess(user, node):
 
 def loadUsersFromDB():
     """ load all users from db """
-    users = tree.getRoot("users")
+    users = q(Users).one()
     return users.getChildren().sort_by_name()
 
 
@@ -305,7 +304,7 @@ def getUserFromRequest(req):
 
 def getExternalUserFolder(type=""):
     try:
-        extusers = tree.getRoot("external_users")
+        extusers = q(ExternalUsers).one()
     except tree.NoSuchNodeError:
         extusers = Node("external_users", "users")
         tree.getRoot().addChild(extusers)
@@ -540,34 +539,38 @@ def buildHomeDirName(username):
 
 
 def getHomeDir(user):
-    username = user.getName()
-    userdir = None
-    for c in tree.getRoot("home").getChildren():
-        if (c.getAccess("read") or "").find(
-                "{user " + username + "}") >= 0 and (c.getAccess("write") or "").find("{user " + username + "}") >= 0:
-            return c
+    from contenttypes import Home
+    from contenttypes import Directory
+
+    username = user.name
+    userdir = q(Home).one().children.filter(Node.name == u"Arbeitsverzeichnis ({})".format(username)).scalar()
+
+    if userdir is not None:
+        return userdir
 
     # create new userdir
-    userdir = tree.getRoot("home").addChild(Node(name=buildHomeDirName(username), type="directory"))
+    userdir = Directory(buildHomeDirName(username))
+    q(Home).one().children.append(userdir)
     userdir.setAccess("read", "{user " + username + "}")
     userdir.setAccess("write", "{user " + username + "}")
     userdir.setAccess("data", "{user " + username + "}")
     logg.debug("created new home directory %r (%r) for user %r", userdir.name, userdir.id, username)
 
+    db.session.commit()
     # re-sort home dirs alphabetically
     i = 0
-    for child in tree.getRoot("home").getChildren().sort_by_name():
+    for child in q(Home).one().children.sort_by_name():
         child.setOrderPos(i)
         i += 1
     return userdir
 
 
 def getSpecialDir(user, type):
+    from contenttypes import Directory
+
     nodename = ""
     if type == "upload":
         nodename = translate("user_upload", getDefaultLanguage())
-    elif type == "import":
-        nodename = translate("user_import", getDefaultLanguage())
     elif type == "faulty":
         nodename = translate("user_faulty", getDefaultLanguage())
     elif type == "trash":
@@ -577,19 +580,20 @@ def getSpecialDir(user, type):
 
     userdir = getHomeDir(user)
 
-    for c in userdir.getChildren():
+    for c in userdir.children:
         if c.name == nodename:
             return c
+
     # create new directory
-    return userdir.addChild(Node(name=nodename, type="directory"))
+    new_directory = Directory(nodename)
+    userdir.children.append(new_directory)
+    db.session.commit()
+
+    return new_directory
 
 
 def getUploadDir(user):
     return getSpecialDir(user, "upload")
-
-
-def getImportDir(user):
-    return getSpecialDir(user, "import")
 
 
 def getFaultyDir(user):

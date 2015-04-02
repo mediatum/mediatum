@@ -30,7 +30,7 @@ import random
 
 import threading
 
-import core.tree as tree
+
 import core.config as config
 import core.acl as acl
 import core.schedules
@@ -42,7 +42,6 @@ from metadata.htmlmemo import m_htmlmemo
 from metadata.memo import m_memo
 from metadata.text import m_text
 from metadata.treeselect import m_treeselect
-
 
 logg = logging.getLogger(__name__)
 
@@ -510,12 +509,12 @@ def handle_cron_dict(s, now_obj, OUT):
 def get_schedules_report(access=None):
 
     try:
-        sched_root = tree.getRoot("schedules")
+        sched_root = q(Schedules).one()
     except:
         res = ["could not find schedules root node"]
         return res
 
-    schedules = [s for s in sched_root.getChildren() if s.type == "schedule"]
+    schedules = [s for s in sched_root.children if s.type == "schedule"]
     if access:
         schedules = [s for s in schedules if access.hasAccess(s, "data")]
 
@@ -584,7 +583,7 @@ def getSchedulesForIds(nid_list, active_only=False, access=None, language=None):
     schedule2nids = {}
 
     nid_set = set(nid_list)
-    schedule_list = [c for c in tree.getRoot("schedules").getChildren() if c.type == "schedule"]
+    schedule_list = [c for c in q(Schedules).one().children if c.type == "schedule"]
     if access:
         schedule_list = [c for c in schedule_list if access.hasWriteAccess(c)]
 
@@ -699,7 +698,7 @@ def deleteSchedule(schedule_id, access=None):
         errors.append("edit_schedule_locked_schedule")
 
     try:
-        schedules_root = tree.getRoot("schedules")
+        schedules_root = q(Schedules).one()
         schedules_root.removeChild(schedule)
     except:
         errors.append("edit_schedule_error_removing_schedule_node")
@@ -810,7 +809,7 @@ class FormedFunction(object):
         for field_type, field_name, field_label_msgid, field_validator_func in self.field_descriptors:
             count += 1
             fieldclass = dict_type2class.get(field_type, m_text)
-            field = fieldclass() 
+            field = fieldclass()
             field = tree.Node(field_name, "metafield")
             field.set("label", self.t(lang, field_label_msgid))
             field.set("type", field_type)

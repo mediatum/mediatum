@@ -46,5 +46,6 @@ class ShoppingBag(Node):
     def stopShare(self):
         self.removeAttribute("key")
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         return False

@@ -22,7 +22,7 @@ import re
 import inspect
 import logging
 
-import core.tree as tree
+
 from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilter
 from schema.schema import getMetaType, getMetaFieldTypeNames, getMetaField, getFieldsForMeta, getMetadataType, dateoption, requiredoption,\
     fieldoption

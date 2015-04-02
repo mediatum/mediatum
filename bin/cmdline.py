@@ -25,7 +25,7 @@ sys.path += ["../", "."]
 from core.init import full_init
 full_init()
 
-import core.tree as tree
+
 import core.acl as acl
 import re
 import string
@@ -79,7 +79,7 @@ def show_node():
         print "        scheme: -no scheme-"
     print "        datatype: %s" % node.getContentType()
     print "    Metadata:"
-    for k, v in node.items():
+    for k, v in node.attrs.items():
         if isinstance(v, type("")) and len(v) > 80:
             print "        %s=%s..." % (k, v[0:80])
         else:

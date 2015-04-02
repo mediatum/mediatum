@@ -44,7 +44,7 @@ class WorkflowStep_CheckContent(WorkflowStep):
 
     def runAction(self, node, op=""):
         attrs = ""
-        for k, v in node.items():
+        for k, v in node.attrs.items():
             attrs += v
 
         if not checkXMLString(attrs):

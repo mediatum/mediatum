@@ -26,9 +26,10 @@ def createPath(parent_node, sPath, sSeparator='/'):
     dirs = string.split(sPath, sSeparator)
     for dirName in dirs:
         if len(dirName) > 0:
-            dir_node = tree.Node(name=dirName, type='directory')
-            parent_node.addChild(dir_node)
+            dir_node = Node(dirName, 'directory')
+            parent_node.children.append(dir_node)
             parent_node = dir_node
+    db.session.commit()
     return parent_node
 
 
@@ -36,13 +37,13 @@ def createPathPreserve(parent_node, sPath, sSeparator='/'):
     dirs = string.split(sPath, sSeparator)
     for dirName in dirs:
         if len(dirName) > 0:
-            try:
-                node = parent_node.getChild(dirName)
-                parent_node = node
-            except tree.NoSuchNodeError as e:
-                dir_node = tree.Node(name=dirName, type='directory')
-                parent_node.addChild(dir_node)
+            node = parent_node.children.filter_by(name=dirName).one()
+            parent_node = node
+            if not isinstance(node, Node):
+                dir_node = Node(dirName, 'directory')
+                parent_node.children.append(dir_node)
                 parent_node = dir_node
+    db.session.commit()
     return parent_node
 
 
@@ -50,13 +51,13 @@ def createPathPreserve2(parent_node, sPath, sType='directory', sSeparator='/'):
     dirs = string.split(sPath, sSeparator)
     for dirName in dirs:
         if len(dirName) > 0:
-            try:
-                node = parent_node.getChild(dirName)
-                parent_node = node
-            except tree.NoSuchNodeError as e:
-                dir_node = tree.Node(name=dirName, type=sType)
-                parent_node.addChild(dir_node)
+            node = parent_node.children.filter_by(name=dirName).one()
+            parent_node = node
+            if not isinstance(node, Node):
+                dir_node = Node(dirName, sType)
+                parent_node.children.append(dir_node)
                 parent_node = dir_node
+    db.session.commit()
     return parent_node
 
 
@@ -64,9 +65,8 @@ def checkPath(parent_node, sPath, sSeparator='/'):
     dirs = string.split(sPath, sSeparator)
     for dirName in dirs:
         if len(dirName) > 0:
-            try:
-                parent_node = parent_node.getChild(dirName)
-            except tree.NoSuchNodeError as e:
+            parent_node = parent_node.children.filter_by(name=dirName).one()
+            if not isinstance(parent_node, Node):
                 return None
     return parent_node
 
@@ -77,11 +77,11 @@ def getBrowsingPathList(node):
     list = []
 
     def r(node, path):
-        if node is tree.getRoot():
+        if node is q(Root).one():
             return
-        for p in node.getParents():
+        for p in node.parents:
             path.append(p)
-            if p is not tree.getRoot("collections"):
+            if p is not q(Collections).one():
                 r(p, path)
         return path
 
@@ -95,7 +95,7 @@ def getBrowsingPathList(node):
             if True:
                 if node.type in ("directory", "home", "collection"):
                     paths.append(node)
-                if node is tree.getRoot("collections") or node.type == "root":
+                if node is q(Collections).one() or node.type == "root":
                     paths.reverse()
                     if len(paths) > 1 and not omit:
                         list.append(paths)
@@ -112,7 +112,7 @@ def getBrowsingPathList(node):
 def isDescendantOf(node, parent):
     if node.id == parent.id:
         return 1
-    for p in node.getParents():
+    for p in node.parents:
         if isDescendantOf(p, parent):
             return 1
     return 0

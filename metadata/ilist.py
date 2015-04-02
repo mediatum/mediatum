@@ -21,21 +21,28 @@
 """
 import logging
 from mediatumtal import tal
-#import core.search as search
 from utils.utils import esc
 from core.metatype import Metatype
 from core.acl import AccessData
 from core.transition import httpstatus
+from core import db
+from contenttypes import Collections
 
-
+q = db.query
 logg = logging.getLogger(__name__)
 
 
 class m_ilist(Metatype):
 
-    def getEditorHTML(self, field, value="", width=400, lock=0, language=None):
-        return tal.getTAL("metadata/ilist.html", {"lock": lock, "value": value, "width": width,
-                                                  "name": field.getName(), "field": field}, macro="editorfield", language=language)
+    def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
+        return tal.getTAL("metadata/ilist.html", {"lock": lock,
+                                                  "value": value,
+                                                  "width": width,
+                                                  "name": field.getName(),
+                                                  "field": field,
+                                                  "required": self.is_required(required)},
+                          macro="editorfield",
+                          language=language)
 
     def getSearchHTML(self, context):
         n = context.collection
@@ -62,7 +69,6 @@ class m_ilist(Metatype):
 
     def format_request_value_for_db(self, field, params, item, language=None):
         value = params.get(item)
-        #value = value.replace(", ",";")
         return value
 
     def getName(self):
@@ -80,7 +86,7 @@ class m_ilist(Metatype):
             logg.exception("missing request parameter")
             return httpstatus.HTTP_NOT_FOUND
 
-        index = tree.getRoot("collections").getAllAttributeValues(name, access, req.params.get('schema')).keys()
+        index = q(Collections).one().getAllAttributeValues(name, access, req.params.get('schema')).keys()
         index.sort(lambda x, y: cmp(x.lower(), y.lower()))
 
         if req.params.get("print", "") != "":

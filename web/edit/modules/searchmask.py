@@ -17,16 +17,21 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import core.tree as tree
+
 import schema.schema as schema
 import schema.searchmask as searchmask
 import core.users as users
 from core.acl import AccessData
 from core.transition import httpstatus
+from core import Node
+from core import db
+from core.systemtypes import Searchmasks
+
+q = db.query
 
 def getContent(req, ids):
     user = users.getUserFromRequest(req)
-    node = tree.getNode(ids[0])
+    node = q(Node).get(ids[0])
     access = AccessData(req)
     
     if not access.hasWriteAccess(node) or "searchmask" in users.getHideMenusForUser(user):
@@ -52,11 +57,7 @@ def getContent(req, ids):
         if k.startswith("delsub_"):
             delsubfield = k[7:]
 
-    try:
-        root = tree.getRoot("searchmasks") 
-    except tree.NoSuchNodeError:
-        root = tree.Node("searchmasks", type="searchmasks")
-        tree.getRoot().addChild(root)
+    root = q(Searchmasks).one()
 
     searchtype = req.params.get("searchtype", None)
     if not searchtype:
@@ -65,21 +66,21 @@ def getContent(req, ids):
             searchtype = "none"
             # if a parent has a search mask, use 'inherit'
             n = node
-            while len(n.getParents()):
-                n = n.getParents()[0]
+            while len(n.parents):
+                n = n.parents[0]
                 if n.get("searchtype") == "own":
                     searchtype = "parent"
     node.set("searchtype", searchtype)
 
-    try:
-        myschema = tree.getNode(req.params.get("schema", None))
-    except tree.NoSuchNodeError:
+    myschema = q(Node).get(req.params.get("schema", None))
+    if not isinstance(myschema, Node):
         myschema = None
-    try:
-        schemafield = tree.getNode(req.params.get("schemafield", None))
-    except tree.NoSuchNodeError:
+
+    schemafield = q(Node).get(req.params.get("schemafield", None))
+    if not isinstance(schemafield, Node):
         schemafield = None
-    if myschema and schemafield and schemafield not in myschema.getChildren():
+
+    if myschema and schemafield and schemafield not in myschema.children:
         schemafield = None
     if schemafield and schemafield.type != "metafield":
         schemafield = None
@@ -90,6 +91,7 @@ def getContent(req, ids):
     if searchtype == "own":
         maskname = node.get("searchmaskname")
 
+        #todo: hasChild doesnt exist
         if not maskname or root.hasChild(maskname) == 0:
             mask = searchmask.generateMask(node)
         else:
@@ -97,22 +99,23 @@ def getContent(req, ids):
         
         selectedfieldid = req.params.get("selectedfield", None)
         if selectedfieldid:  # edit
-            selectedfield = tree.getNode(selectedfieldid)
-            assert selectedfield in mask.getChildren()
+            selectedfield = q(Node).get(selectedfieldid)
+            assert selectedfield in mask.children
             selectedfield.setName(req.params["fieldname"])
             if "createsub" in req.params and schemafield:
-                selectedfield.addChild(schemafield)
+                selectedfield.children.append(schemafield)
             if delsubfield:
-                selectedfield.removeChild(tree.getNode(delsubfield))
+                selectedfield.children.remove(q(Node).get(delsubfield))
 
         if req.params.get("isnewfield", "") == "yes":  # create a new field
+            #todo:getNumChildren doesnt exist
             l = mask.getNumChildren()
-            mask.addChild(tree.Node("Suchfeld %s" % l, type="searchmaskitem"))
+            mask.children.append(Node("Suchfeld %s" % l, "searchmaskitem"))
 
         elif delfield:  # del a field
-            delfield = tree.getNode(delfield)
-            assert delfield in mask.getChildren()
-            mask.removeChild(delfield)
+            delfield = q(Node).get(delfield)
+            assert delfield in mask.children
+            mask.children.remove(delfield)
 
         elif openfield:  # unfold a new field
             selectedfieldid = openfield
@@ -121,21 +124,29 @@ def getContent(req, ids):
             selectedfieldid = None
 
         if selectedfieldid:
-            selectedfield = tree.getNode(selectedfieldid)
-            if selectedfield not in mask.getChildren():  # this usually happens if the field was just deleted
+            selectedfield = q(Node).get(selectedfieldid)
+            if selectedfield not in mask.children:  # this usually happens if the field was just deleted
                 selectedfield = None
         else:
             selectedfield = None
 
         if mask is None:
             print "no parent searchmask found, empty mask created"
-            mask = tree.Node(name=maskname, type="searchmask")
+            mask = Node(maskname, "searchmask")
 
-        fields = mask.getChildren()
+        fields = mask.children
 
-    data = {"idstr": ",".join(ids), "node": node, "searchtype": searchtype, "schemas": schema.loadTypesFromDB(),
-            "searchfields": fields, "selectedfield": selectedfield,
-            "newfieldlink": "edit_content?id=%s&tab=searchmask" % node.id, "defaultschemaid": None, "defaultfieldid": None}
+    db.session.commit()
+
+    data = {"idstr": ",".join(ids),
+            "node": node,
+            "searchtype": searchtype,
+            "schemas": schema.loadTypesFromDB(),
+            "searchfields": fields,
+            "selectedfield": selectedfield,
+            "newfieldlink": "edit_content?id=%s&tab=searchmask" % node.id,
+            "defaultschemaid": None,
+            "defaultfieldid": None}
 
     if myschema:
         data["defaultschemaid"] = myschema.id

@@ -18,19 +18,22 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from core.acl import AccessData
-from core.db import database
 
 import core.users as users
-import core.tree as tree
+
 import logging
 
 from utils.date import format_date, parse_date, now
-from utils.utils import formatException, funcname, get_user_id, log_func_entry, dec_entry_log
+from utils.utils import funcname, dec_entry_log
 from core.translation import lang, t, getDefaultLanguage
-from pprint import pprint as pp, pformat as pf
+from pprint import pformat as pf
 from core.transition import httpstatus
+from core import Node
+from core import db
+from contenttypes import Home, Collections
+from core.systemtypes import Root
 
-db = database.getConnection()
+q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -88,7 +91,6 @@ def getContent(req, ids):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     access = AccessData(req)
-    faultydir = users.getFaultyDir(user)
     metatypes = []
     nodes = []
     masklist = []
@@ -101,16 +103,16 @@ def getContent(req, ids):
     flag_nodename_changed = -1
 
     for id in ids:
-        node = tree.getNode(id)
+        node = q(Node).get(id)
         if not access.hasWriteAccess(node):
             print "error 2"
             req.setStatus(httpstatus.HTTP_FORBIDDEN)
             return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
-        schema = node.getSchema()
+        schema = node.schema
         if schema not in metatypes:
             metatypes.append(schema)
-        if len(nodes) == 0 or nodes[0].getSchema() == schema:
+        if len(nodes) == 0 or nodes[0].schema == schema:
             nodes += [node]
 
     idstr = ",".join(ids)
@@ -156,17 +158,17 @@ def getContent(req, ids):
 
     maskname = req.params.get("mask", node.get("edit.lastmask") or "editmask")
     if maskname == "":
-        maskname = default.getName()
+        maskname = default.name
 
     mask = None
     for m in masklist:
-        if maskname == m.getName():
+        if maskname == m.name:
             mask = m
             break
 
     if not mask and default:
         mask = default
-        maskname = default.getName()
+        maskname = default.name
 
     for n in nodes:
         n.set("edit.lastmask", maskname)
@@ -191,31 +193,31 @@ def getContent(req, ids):
     if action == 'restore':
         vid = req.params.get('vid', '0')
         node = nodes[0].getActiveVersion()
-        if (vid != '0' and vid != node.id):
-            n = tree.getNode(vid)
+        if vid != '0' and vid != node.id:
+            n = q(Node).get(vid)
             # Not active version
             if n.next_nid != '0':
 
-                next = tree.getNode(n.next_nid)
+                next = q(Node).get(n.next_nid)
                 if next.prev_nid != '0':
-                    next.removeChild(tree.getNode(next.prev_nid))
+                    next.children.remove(q(Node).get(next.prev_nid))
                 next.setPrevID(n.prev_nid)
 
                 if n.prev_nid != '0':
-                    prev = tree.getNode(n.prev_nid)
+                    prev = q(Node).get(n.prev_nid)
                     prev.setNextID(n.next_nid)
-                    n.removeChild(prev)
-                    next.addChild(prev)
+                    n.children.remove(prev)
+                    next.children.append(prev)
                 node.setNextID(n.id)
 
                 n.setPrevID(node.id)
                 n.setNextID('0')
 
                 for pid in db.getParents(node.id):
-                    parentNode = tree.getNode(pid)
-                    parentNode.addChild(n)
-                    parentNode.removeChild(node)
-                n.addChild(node)
+                    parentNode = q(Node).get(pid)
+                    parentNode.children.append(n)
+                    parentNode.children.remove(node)
+                n.children.append(node)
 
                 nodes = [n]
                 ids = [n.id]
@@ -223,16 +225,16 @@ def getContent(req, ids):
                 node_versions = nodes[0].getVersionList()
                 update_date, creation_date = get_datelists(nodes)
 
-                data = {'url': '?id=' + n.id + '&tab=metadata', 'pid':
-                        None, 'flag_nodename_changed': flag_nodename_changed}
-
-                data["versions"] = node_versions
-                data["creation_date"] = creation_date
-                data["update_date"] = update_date
-
                 _maskform, _fields = get_maskform_and_fields(nodes, mask, req)
-                data["maskform"] = _maskform
-                data["fields"] = _fields
+
+                data = {'url': u'?id={}&tab=metadata'.format(n.id),
+                        'pid': None,
+                        'flag_nodename_changed': flag_nodename_changed,
+                        "versions": node_versions,
+                        "creation_date": creation_date,
+                        "update_date": update_date,
+                        "maskform": _maskform,
+                        "fields": _fields}
 
                 data.update(ctx)
 
@@ -242,26 +244,26 @@ def getContent(req, ids):
         vid = req.params.get('vid', '0')
         if (vid != '0'):
             node = nodes[0].getActiveVersion()
-            n = tree.getNode(vid)
+            n = q(Node).get(vid)
 
             if (vid != node.id):
                 n.set("deleted", "true")
                 for pid in db.getParents(n.id):
-                    parentNode = tree.getNode(pid)
-                    parentNode.removeChild(n)
+                    parentNode = q(Node).get(pid)
+                    parentNode.children.remove(n)
                 for cid in db.getChildren(n.id):
-                    n.removeChild(tree.getNode(cid))
+                    n.children.remove(q(Node).get(cid))
                 if n.next_nid != '0' and n.prev_nid != '0':
-                    _next = tree.getNode(n.next_nid)
-                    _next.addChild(tree.getNode(n.prev_nid))
+                    _next = q(Node).get(n.next_nid)
+                    _next.children.append(q(Node).get(n.prev_nid))
 
                 if n.next_nid != '0':
-                    _next = tree.getNode(n.next_nid)
+                    _next = q(Node).get(n.next_nid)
                     if n.prev_nid != '0':
                         _next.setPrevID(n.prev_nid)
 
                 if n.prev_nid != '0':
-                    _prev = tree.getNode(n.prev_nid)
+                    _prev = q(Node).get(n.prev_nid)
                     if n.next_nid != '0':
                         _prev.setNextID(n.next_nid)
             else:
@@ -270,43 +272,42 @@ def getContent(req, ids):
                 # Active version
                 prev = None
                 if n.prev_nid != '0':
-                    prev = tree.getNode(n.prev_nid)
+                    prev = q(Node).get(n.prev_nid)
                     while prev.prev_nid != None and prev.prev_nid != '0' and prev.get("deleted") == "true":
-                        prev = tree.getNode(prev.prev_nid)
+                        prev = q(Node).get(prev.prev_nid)
 
                 if prev != None and prev.get("deleted") != "true":
                     prev.setNextID('0')
                     for pid in pids:
-                        parentNode = tree.getNode(pid)
-                        parentNode.addChild(prev)
+                        parentNode = q(Node).get(pid)
+                        parentNode.children.append(prev)
                     nodes = [prev]
                     ids = [prev.id]
                     n.set("deleted", "true")
                     for pid in pids:
-                        parentNode = tree.getNode(pid)
-                        parentNode.removeChild(n)
+                        parentNode = q(Node).get(pid)
+                        parentNode.children.remove(n)
 
                     for cid in db.getChildren(n.id):
-                        n.removeChild(tree.getNode(cid))
+                        n.children.remove(q(Node).get(cid))
 
                     if n.next_nid != '0' and n.prev_nid != '0':
-                        _next = tree.getNode(n.next_nid)
-                        _next.addChild(tree.getNode(n.prev_nid))
+                        _next = q(Node).get(n.next_nid)
+                        _next.children.append(q(Node).get(n.prev_nid))
 
                     node_versions = nodes[0].getVersionList()
                     update_date, creation_date = get_datelists(nodes)
 
-                    data = {'url': '?id=' + prev.id + '&tab=metadata', 'pid':
-                            None, 'flag_nodename_changed': flag_nodename_changed}
+                    _maskform, _fields = get_maskform_and_fields(nodes, mask, req)
 
-                    data["versions"] = node_versions
-                    data["creation_date"] = creation_date
-                    data["update_date"] = update_date
-
-                    _maskform, _fields = get_maskform_and_fields(
-                        nodes, mask, req)
-                    data["maskform"] = _maskform
-                    data["fields"] = _fields
+                    data = {'url': '?id=' + prev.id + '&tab=metadata',
+                            'pid': None,
+                            'flag_nodename_changed': flag_nodename_changed,
+                            "versions": node_versions,
+                            "creation_date": creation_date,
+                            "update_date": update_date,
+                            "maskform": _maskform,
+                            "fields": _fields}
 
                     data.update(ctx)
 
@@ -315,25 +316,24 @@ def getContent(req, ids):
                     # Version 0
                     # Move node to trash
                     trashdir = users.getTrashDir(user)
-                    trashdir.addChild(n)
+                    trashdir.children.append(n)
                     for pid in pids:
-                        parentNode = tree.getNode(pid)
-                        parentNode.removeChild(n)
+                        parentNode = q(Node).get(pid)
+                        parentNode.children.remove(n)
 
                     node_versions = nodes[0].getVersionList()
                     update_date, creation_date = get_datelists(nodes)
 
-                    data = {'url': '?id=' + pids[0] + '&tab=content', 'pid': pids[
-                        0], 'flag_nodename_changed': flag_nodename_changed}
+                    _maskform, _fields = get_maskform_and_fields(nodes, mask, req)
 
-                    data["versions"] = node_versions
-                    data["creation_date"] = creation_date
-                    data["update_date"] = update_date
-
-                    _maskform, _fields = get_maskform_and_fields(
-                        nodes, mask, req)
-                    data["maskform"] = _maskform
-                    data["fields"] = _fields
+                    data = {'url': '?id=' + pids[0] + '&tab=content',
+                            'pid': pids[0],
+                            'flag_nodename_changed': flag_nodename_changed,
+                            "versions": node_versions,
+                            "creation_date": creation_date,
+                            "update_date": update_date,
+                            "maskform": _maskform,
+                            "fields": _fields}
 
                     data.update(ctx)
 
@@ -353,29 +353,23 @@ def getContent(req, ids):
         logg.debug(pf(req.params))
 
         for node in nodes:
-            node.set("updateuser", user.getName())
+            node.set("updateuser", user.name)
             if node.get('updatetime') < ustr(now()):
                 node.set("updatetime", ustr(format_date()))
 
         if not hasattr(mask, "i_am_not_a_mask"):
-            errorlist = []
-            if (req.params.get('generate_new_version')):
+            if req.params.get('generate_new_version'):
                 # Create new node version
                 _ids = []
                 _nodes = []
                 for node in nodes:
-                    if (req.params.get('version_comment', '').strip() == ''
-                            or req.params.get('version_comment', '').strip() == '&nbsp;'):
-                        errorlist.append(node.id)
-                        _nodes.append(node)
-                        _ids.append(node.id)
-                    else:
+                        #todo: versioning needs to be implemented
                         n = node.createNewVersion(user)
                         n.set("system.version.comment", '(' + t(req, "document_new_version_comment") +
                               ')\n' + req.params.get('version_comment', ''))
 
                         # add all existing attributes to the new version node
-                        for attr, value in node.items():
+                        for attr, value in node.attrs.items():
                             # do not overwrite existing attributes
                             # do not copy system attributes
                             if n.get(attr) != "" or attr.startswith("system."):
@@ -390,46 +384,39 @@ def getContent(req, ids):
                 idstr = ",".join(ids)
                 nodes = _nodes
                 nodes = mask.updateNode(nodes, req)
-                errorlist += mask.validateNodelist(nodes)
-                if len(errorlist) == 0:
 
-                    node_versions = nodes[0].getVersionList()
-                    update_date, creation_date = get_datelists(nodes)
+                node_versions = nodes[0].getVersionList()
+                update_date, creation_date = get_datelists(nodes)
 
-                    data = {
-                        'url': '?id=' + nodes[0].id + '&tab=metadata',
+                _maskform, _fields = get_maskform_and_fields(nodes, mask, req)
+
+                data = {'url': '?id=' + nodes[0].id + '&tab=metadata',
                         'pid': None,
-                    }
+                        "versions": node_versions,
+                        "creation_date": creation_date,
+                        "update_date": update_date,
+                        "maskform": _maskform,
+                        "fields": _fields}
 
-                    data["versions"] = node_versions
-                    data["creation_date"] = creation_date
-                    data["update_date"] = update_date
+                data.update(ctx)
 
-                    _maskform, _fields = get_maskform_and_fields(
-                        nodes, mask, req)
-                    data["maskform"] = _maskform
-                    data["fields"] = _fields
+                ret += req.getTAL("web/edit/modules/metadata.html", data, macro="redirect")
 
-                    data.update(ctx)
-
-                    ret += req.getTAL("web/edit/modules/metadata.html",
-                                      data, macro="redirect")
             else:
                 if nodes:
                     old_nodename = nodes[0].name
                 nodes = mask.updateNode(nodes, req)
                 if nodes:
                     new_nodename = nodes[0].name
-                    if (old_nodename != new_nodename) and hasattr(nodes[0], 'isContainer') and nodes[0].isContainer():
+                    if old_nodename != new_nodename and hasattr(nodes[0], 'isContainer') and nodes[0].isContainer():
                         # for updates of node label in editor tree
                         flag_nodename_changed = ustr(node.id)
 
-                errorlist += mask.validateNodelist(nodes)
         else:
             for field in mask.metaFields():
                 logg.debug("in %s.%s: (hasattr(mask,'i_am_not_a_mask')) field: %s, field.id: %s, field.name: %s, mask: %s, maskname: %s",
-                    __name__, funcname(), field, field.id, field.getName(), mask, maskname)
-                field_name = field.getName()
+                    __name__, funcname(), field, field.id, field.name, mask, maskname)
+                field_name = field.name
                 if field_name == 'nodename' and maskname == 'settings':
                     if '__nodename' in req.params:
                         field_name = '__nodename'  # no multilang here !
@@ -445,25 +432,9 @@ def getContent(req, ids):
                 value = req.params.get(field_name, None)
                 if value is not None:
                     for node in nodes:
-                        node.set(field.getName(), value)
+                        node.set(field.name, value)
                 else:
                     node.set(field.getName(), "")
-            errorlist = []
-
-        if len(errorlist) > 0 and "save" in req.params:
-            err = 1
-
-        for node in nodes:
-            if node.id in errorlist:
-                faultydir.addChild(node)
-                node.setAttribute("faulty", "true")
-            else:
-                faultydir.removeChild(node)
-                node.removeAttribute("faulty")
-
-    if "edit_metadata" in req.params or node.get("faulty") == "true":
-        if not hasattr(mask, "i_am_not_a_mask"):
-            req.params["errorlist"] = mask.validate(nodes)
 
     node_versions = nodes[0].getVersionList()
     update_date, creation_date = get_datelists(nodes)

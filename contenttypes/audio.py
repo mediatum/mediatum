@@ -31,18 +31,20 @@ from schema.schema import VIEW_HIDE_EMPTY
 from core.translation import lang
 from core.styles import getContentStyles
 from core.transition.postgres import check_type_arg_with_schema
-
+from core.file import File
+from core import db
 
 logg = logging.getLogger(__name__)
 
 
 def makeAudioThumb(self, audiofile):
     ret = None
-    path, ext = splitfilename(audiofile.retrieveFile())
-    if not audiofile.retrieveFile().endswith(".mp3"):
-        os.system("lame -V 4 -q %s %s" % (audiofile.retrieveFile(), path + ".mp3"))
+    path, ext = splitfilename(audiofile.abspath)
+    if not audiofile.abspath.endswith(".mp3"):
+        os.system("lame -V 4 -q %s %s" % (audiofile.abspath, path + ".mp3"))
         ret = path + ".mp3"
-    self.addFile(FileNode(name=path + ".mp3", type="mp3", mimetype="audio/mpeg"))
+    self.files.append(File(name=path + ".mp3", type="mp3", mimetype="audio/mpeg"))
+    db.session.commit()
     return ret
 
 # """ make thumbnail (jpeg 128x128) """
@@ -82,7 +84,8 @@ def makeThumbNail(self, audiofile):
                 im = im.convert("RGB")
                 im.save(path + ".thumb", "jpeg")
 
-                self.addFile(FileNode(name=path + ".thumb", type="thumb", mimetype=audiofile.tags[k].mime))
+                self.files.append(File(name=path + ".thumb", type="thumb", mimetype=audiofile.tags[k].mime))
+                db.session.commit()
                 break
 
 
@@ -108,7 +111,8 @@ def makePresentationFormat(self, audiofile):
                     newwidth = width * newheight / height
                 pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
                 pic.save(path + ".thumb2", "jpeg")
-                self.addFile(FileNode(name=path + ".thumb2", type="presentation", mimetype=audiofile.tags[k].mime))
+                self.files.append(File(name=path + ".thumb2", type="presentation", mimetype=audiofile.tags[k].mime))
+                db.session.commit()
                 break
 
 
@@ -136,13 +140,16 @@ def makeMetaData(self, audiofile):
 @check_type_arg_with_schema
 class Audio(Content):
 
-    def getTypeAlias(self):
+    @classmethod
+    def getTypeAlias(cls):
         return "audio"
 
-    def getOriginalTypeName(self):
+    @classmethod
+    def getOriginalTypeName(cls):
         return "original"
 
-    def getCategoryName(self):
+    @classmethod
+    def getCategoryName(cls):
         return "audio"
 
     # prepare hash table with values for TAL-template
@@ -174,19 +181,20 @@ class Audio(Content):
     """ format big view with standard template """
     def show_node_big(self, req, template="", macro=""):
         if template == "":
-            styles = getContentStyles("bigview", contenttype=self.getContentType())
+            styles = getContentStyles("bigview", contenttype=self.type)
             if len(styles) >= 1:
                 template = styles[0].getTemplate()
         return req.getTAL(template, self._prepareData(req), macro)
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         return 0
 
     def getLabel(self):
         return self.name
 
     def has_object(self):
-        for f in self.getFiles():
+        for f in self.files:
             if f.type == "audio":
                 return True
         return False
@@ -203,7 +211,7 @@ class Audio(Content):
         thumb = None
         thumb2 = None
 
-        for f in self.getFiles():
+        for f in self.files:
             if f.type == "audio":
                 original = f
             if f.type == "mp3":
@@ -216,17 +224,19 @@ class Audio(Content):
         if original:
 
             if audiothumb:
-                self.removeFile(audiothumb)
+                self.files.remove(audiothumb)
             if thumb:  # delete old thumb
-                self.removeFile(thumb)
+                self.files.remove(thumb)
             if thumb2:  # delete old thumb2
-                self.removeFile(thumb2)
+                self.files.remove(thumb2)
+
+            db.session.commit()
 
             athumb = makeAudioThumb(self, original)
             if athumb:
                 _original = AudioFile(athumb)
             else:
-                _original = AudioFile(original.retrieveFile())
+                _original = AudioFile(original.abspath)
             makePresentationFormat(self, _original)
             makeThumbNail(self, _original)
             makeMetaData(self, _original)
@@ -245,9 +255,9 @@ class Audio(Content):
         return "view"
 
     def processMediaFile(self, dest):
-        for file in self.getFiles():
+        for file in self.files:
             if file.getType() == "audio":
-                filename = file.retrieveFile()
+                filename = file.abspath
                 path, ext = splitfilename(filename)
                 if os.sep == '/':
                     ret = os.system("cp %s %s" % (filename, dest))

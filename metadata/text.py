@@ -74,7 +74,7 @@ class m_text(Metatype):
 
         return lang2value.get(language, '')
 
-    def getEditorHTML(self, field, value="", width=40, lock=0, language=None):
+    def getEditorHTML(self, field, value="", width=40, lock=0, language=None, required=None):
         lang = None
         languages = config.get("i18n.languages")
         if language is None:
@@ -110,7 +110,9 @@ class m_text(Metatype):
             "ident": field.id if field.id else "",
             "languages": lang,
             "defaultlang": defaultlang,
-            "expand_multilang": True if value.find('\n') != -1 else False
+            "expand_multilang": True if value.find('\n') != -1 else False,
+            "required": self.is_required(required),
+            "required_multilang": True if value.find('\n') != -1 and self.is_required(required) else None,
         }
         return tal.getTAL("metadata/text.html", context, macro="editorfield", language=language)
 
@@ -175,7 +177,7 @@ class m_text(Metatype):
             return (field.getLabel(), value)
 
         # use default value from mask if value is empty
-        if value == '':
+        if value == u'':
             value = maskitem.getDefault()
 
         if template_from_caller and template_from_caller[0] and maskitem and ustr(maskitem.id) == template_from_caller[3]:

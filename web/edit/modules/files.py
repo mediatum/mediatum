@@ -20,27 +20,30 @@
 
 import hashlib
 import random
-import core.tree as tree
+
 import os
 import core.users as users
 import logging
 import core.acl as acl
-from utils.utils import getMimeType, get_user_id, log_func_entry, dec_entry_log
+from utils.utils import getMimeType, get_user_id
 from utils.fileutils import importFile, getImportDir, importFileIntoDir
 from contenttypes.image import makeThumbNail, makePresentationFormat
 from core.transition import httpstatus
+from core.translation import t
+from core import Node
+from core import db
+from core.file import File
+from contenttypes import Home, Collections
+from core.systemtypes import Root
 
-from core.translation import lang, t
-import core.db.mysqlconnector as mysqlconnector
-
-
+q = db.query
 logg = logging.getLogger(__name__)
 
 
 def getContent(req, ids):
     ret = ""
     user = users.getUserFromRequest(req)
-    node = tree.getNode(ids[0])
+    node = q(Node).get(ids[0])
     update_error = False
     access = acl.AccessData(req)
 
@@ -53,44 +56,46 @@ def getContent(req, ids):
 
     if 'data' in req.params:
         if req.params.get('data') == 'children':  # get formated list of childnodes of selected directory
-            req.writeTAL("web/edit/modules/files.html", {'children': node.getChildren()}, macro="edit_files_popup_children")
+            req.writeTAL("web/edit/modules/files.html", {'children': node.children}, macro="edit_files_popup_children")
 
         if req.params.get('data') == 'additems':  # add selected node as children
             for childid in req.params.get('items').split(";"):
                 if childid.strip() != "":
-                    childnode = tree.getNode(childid.strip())
-                    for p in childnode.getParents():
-                        p.removeChild(childnode)
-                    node.addChild(childnode)
-            req.writeTAL("web/edit/modules/files.html", {'children': node.getChildren(), 'node': node}, macro="edit_files_children_list")
+                    childnode = q(Node).get(childid.strip())
+                    for p in childnode.parents:
+                        p.children.remove(childnode)
+                    node.children.append(childnode)
+            req.writeTAL("web/edit/modules/files.html", {'children': node.children, 'node': node}, macro="edit_files_children_list")
 
         if req.params.get('data') == 'removeitem':  # remove selected childnode node
             try:
-                remnode = tree.getNode(req.params.get('remove'))
-                if len(remnode.getParents()) == 1:
-                    users.getUploadDir(user).addChild(remnode)
-                node.removeChild(remnode)
+                remnode = q(Node).get(req.params.get('remove'))
+                if len(remnode.parents) == 1:
+                    users.getUploadDir(user).children.append(remnode)
+                node.children.remove(remnode)
             except: # node not found
                 logg.exception("exception in getContent, node not found? ignore")
                 pass
             
-            req.writeTAL("web/edit/modules/files.html", {'children': node.getChildren(), 'node': node}, macro="edit_files_children_list")
+            req.writeTAL("web/edit/modules/files.html", {'children': node.children, 'node': node}, macro="edit_files_children_list")
 
         if req.params.get('data') == 'reorder':
             i = 0
             for id in req.params.get('order').split(","):
                 if id != "":
-                    n = tree.getNode(id)
+                    n = q(Node).get(id)
                     n.setOrderPos(i)
                     i += 1
 
         if req.params.get('data') == 'translate':
             req.writeTALstr('<tal:block i18n:translate="" tal:content="msgstr"/>', {'msgstr': req.params.get('msgstr')})
+
+        db.session.commit()
         return ""
 
     if req.params.get("style") == "popup":
-        v = {"basedirs": [tree.getRoot('home'), tree.getRoot('collections')]}
-        id = req.params.get("id", tree.getRoot().id)
+        v = {"basedirs": [q(Home).one(), q(Collections).one()]}
+        id = req.params.get("id", q(Root).one().id)
         v["script"] = "var currentitem = '%s';\nvar currentfolder = '%s';\nvar node = %s;" %(id, req.params.get('parent'), id)
         v["idstr"] = ",".join(ids)
         v["node"] = node
@@ -103,34 +108,30 @@ def getContent(req, ids):
             for key in req.params.keys():  # delete file
                 if key.startswith("del|"):
                     filename = key[4:-2].split("|")
-                    for file in node.getFiles():
-                        if file.getName() == filename[1] and file.type == filename[0]:
+                    for file in node.files:
+                        if file.base_name == filename[1] and file.type == filename[0]:
                             # remove all files in directory
-                            if file.getMimeType() == "inode/directory":
-                                for root, dirs, files in os.walk(file.retrieveFile()):
+                            if file.mimetype == "inode/directory":
+                                for root, dirs, files in os.walk(file.abspath):
                                     for name in files:
                                         try:
                                             os.remove(root + "/" + name)
                                         except:
                                             logg.exception("exception while removing file, ignore")
-                                    os.removedirs(file.retrieveFile()+"/")
-                            if len([f for f in node.getFiles() if f.getName()==filename[1] and f.type==filename[0]]) > 1:
-                                # remove single file from database if there are duplicates
-                                node.removeFile(file, single=True)
-                            else:
-                                # remove single file
-                                node.removeFile(file)
-                                try:
-                                    os.remove(file.retrieveFile())
-                                except:
-                                    pass
+                                    os.removedirs(file.abspath+"/")
+                            node.files.remove(file)
+                            try:
+                                os.remove(file.abspath)
+                            except:
+                                pass
+
                             break
                     break
                 elif key.startswith("delatt|"):
-                    for file in node.getFiles():
-                        if file.getMimeType() == "inode/directory":
+                    for file in node.files:
+                        if file.mimetype == "inode/directory":
                             try:
-                                os.remove(file.retrieveFile() + "/" + key.split("|")[2][:-2])
+                                os.remove(file.abspath + "/" + key.split("|")[2][:-2])
                             except:
                                 logg.exception("exception while removing file, ignore")
                             break
@@ -150,6 +151,7 @@ def getContent(req, ids):
                         ret += req.getTAL("web/edit/modules/files.html", {}, macro="version_error")
                     else:
                         current = node
+                        #todo: versioning needs to be implemented
                         node = node.createNewVersion(user)
 
                         for attr, value in current.items():
@@ -161,9 +163,9 @@ def getContent(req, ids):
                         ret += req.getTAL("web/edit/modules/metadata.html", {'url':'?id='+node.id+'&tab=files', 'pid':None}, macro="redirect")
 
                 if req.params.get("change_file")=="yes" and not create_version_error: # remove old files
-                    for f in node.getFiles():
-                        if f.getType() in node.getSysFiles():
-                            node.removeFile(f)
+                    for f in node.files:
+                        if f.filetype in node.getSysFiles():
+                            node.files.remove(f)
                     node.set("system.version.comment", '('+t(req, "edit_files_new_version_exchanging_comment")+')\n'+req.params.get('version_comment', ''))
 
                 if req.params.get("change_file")=="no" and not create_version_error:
@@ -171,13 +173,13 @@ def getContent(req, ids):
 
                 if req.params.get("change_file") in ["yes", "no"] and not create_version_error:
                     file = importFile(uploadfile.filename, uploadfile.tempname) # add new file
-                    node.addFile(file)
+                    node.files.append(file)
                     logg.info("%s changed file of node %s to %s (%s)", user.name, node.id, uploadfile.filename, uploadfile.tempname)
 
                 attpath = ""
-                for f in node.getFiles():
-                    if f.getMimeType()=="inode/directory":
-                        attpath = f.getName()
+                for f in node.files:
+                    if f.mimetype=="inode/directory":
+                        attpath = f.base_name
                         break
 
                 if req.params.get("change_file")=="attdir" and not create_version_error: # add attachmentdir
@@ -187,7 +189,7 @@ def getContent(req, ids):
                         attpath = req.params.get("inputname")
                         if not os.path.exists(getImportDir() + "/" + attpath):
                             os.mkdir(getImportDir() + "/" + attpath)
-                            node.addFile(tree.FileNode(name=getImportDir() + "/" + attpath, mimetype="inode/directory", type="attachment"))
+                            node.files.append(File(getImportDir() + "/" + attpath, "attachment", "inode/directory"))
 
                         file = importFileIntoDir(getImportDir() + "/" + attpath, uploadfile.tempname) # add new file
                     node.set("system.version.comment", '('+t(req, "edit_files_new_version_attachment_directory_comment")+')\n'+req.params.get('version_comment', ''))
@@ -200,7 +202,7 @@ def getContent(req, ids):
                         file = importFile(uploadfile.filename, uploadfile.tempname) # add new file
                         file.mimetype = "inode/file"
                         file.type = "attachment"
-                        node.addFile(file)
+                        node.files.append(file)
                     else:
                         # import attachment file into existing attachment directory
                         file = importFileIntoDir(getImportDir() + "/" + attpath, uploadfile.tempname) # add new file
@@ -214,20 +216,20 @@ def getContent(req, ids):
                 thumbname = os.path.join(getImportDir(), hashlib.md5(ustr(random.random())).hexdigest()[0:8]) + ".thumb"
 
                 file = importFile(thumbname, uploadfile.tempname)  # add new file
-                makeThumbNail(file.retrieveFile(), thumbname)
-                makePresentationFormat(file.retrieveFile(), thumbname + "2")
+                makeThumbNail(file.abspath, thumbname)
+                makePresentationFormat(file.abspath, thumbname + "2")
 
-                if os.path.exists(file.retrieveFile()):  # remove uploaded original
-                    os.remove(file.retrieveFile())
+                if os.path.exists(file.abspath):  # remove uploaded original
+                    os.remove(file.abspath)
 
-                for f in node.getFiles():
+                for f in node.files:
                     if f.type in ["thumb", "presentation", "presentati"]:
-                        if os.path.exists(f.retrieveFile()):
-                            os.remove(f.retrieveFile())
-                        node.removeFile(f)
+                        if os.path.exists(f.abspath):
+                            os.remove(f.abspath)
+                        node.files.remove(f)
 
-                node.addFile(tree.FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
-                node.addFile(tree.FileNode(name=thumbname + "2", type="presentation", mimetype="image/jpeg"))
+                node.files.append(File(thumbname, "thumb", "image/jpeg"))
+                node.files.append(File(thumbname + "2", "presentation", "image/jpeg"))
                 logg.info("%s changed thumbnail of node %s", user.name, node.id)
 
         elif op == "postprocess":
@@ -238,16 +240,25 @@ def getContent(req, ids):
                 except:
                     update_error = True    
 
-    v = {"id": req.params.get("id", "0"), "tab": req.params.get("tab", ""), "node": node, "update_error": update_error,
-         "user": user, "files": filter(lambda x: x.type != 'statistic', node.getFiles()),
-         "statfiles": filter(lambda x: x.type == 'statistic', node.getFiles()),
-         "attfiles": filter(lambda x: x.type == 'attachment', node.getFiles()), "att": [], "nodes": [node], "access": access}
+    db.session.commit()
+
+    v = {"id": req.params.get("id", "0"),
+         "tab": req.params.get("tab", ""),
+         "node": node,
+         "update_error": update_error,
+         "user": user,
+         "files": filter(lambda x: x.type != 'statistic', node.files),
+         "statfiles": filter(lambda x: x.type == 'statistic', node.files),
+         "attfiles": filter(lambda x: x.type == 'attachment', node.files),
+         "att": [],
+         "nodes": [node],
+         "access": access}
 
     for f in v["attfiles"]:  # collect all files in attachment directory
-        if f.getMimeType() == "inode/directory":
-            for root, dirs, files in os.walk(f.retrieveFile()):
+        if f.mimetype == "inode/directory":
+            for root, dirs, files in os.walk(f.abspath):
                 for name in files:
-                    af = tree.FileNode(root + "/" + name, "attachmentfile", getMimeType(name)[0])
+                    af = File(root + "/" + name, "attachmentfile", getMimeType(name)[0])
                     v["att"].append(af)
 
     return req.getTAL("web/edit/modules/files.html", v, macro="edit_files_file")

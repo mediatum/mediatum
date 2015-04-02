@@ -1,6 +1,5 @@
-
 <tal:block metal:define-macro="editorfield">
-    <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:{}px'.format(width); name name; id name; value value; maxlenght python:unicode(len(value))"/>
+    <input type="text" class="text" tal:attributes="disabled python:{0:None,1:'disabled'}[lock]; style python:u'width:{}px'.format(width); name name; id name; value value; maxlenght python:unicode(len(value)); required required"/>
     <span tal:condition="python:lock!=0" tal:attributes="id python:u'lockspan_{}'.format(name)">&nbsp;
         <input tal:attributes="name python:u'lock_{}'.format(name); id python:u'lock_{}'.format(name); onchange python:u'handlelock(\'{}\')'.format(name)" type="checkbox"/>
         <small style="color: silver" i18n:translate="editor_overwrite">TEXT</small>

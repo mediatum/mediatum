@@ -118,14 +118,17 @@ class Data(Node):
     def get_all_datatypes(cls):
         """Returns all known subclasses of cls except `Collections` and `Home`"""
         return cls.get_all_subclasses(filter_classnames=("collections", "home"))
-        
-    def getTypeAlias(self):
+
+    @classmethod
+    def getTypeAlias(cls):
         return "default"
 
-    def getOriginalTypeName(self):
+    @classmethod
+    def getOriginalTypeName(cls):
         return "original"
 
-    def getCategoryName(self):
+    @classmethod
+    def getCategoryName(cls):
         return "undefined"
 
     def show_node_big(self, req, template="", macro=""):
@@ -157,7 +160,7 @@ class Data(Node):
 
     def show_node_text_orignal(self, words=None, language=None, separator="", labels=0):
         if separator == "":
-            separator = "<br/>"
+            separator = u"<br/>"
         metatext = list()
         mask = self.getMask("nodesmall")
         for m in self.getMasks("shortview", language=language):
@@ -477,7 +480,8 @@ class Data(Node):
                 metatext.append('&lt;smallview mask not defined&gt;')
             return separator.join(metatext)
 
-    def isContainer(self):
+    @classmethod
+    def isContainer(cls):
         return 0
 
     def getTreeIcon(self):

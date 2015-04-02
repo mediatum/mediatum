@@ -18,21 +18,23 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import core.acl as acl
-import core.tree as tree
+
 import logging
 import utils.date as date
 from core.acl import AccessData
 import string
 from web.edit.edit_common import EditorNodeList, shownodelist
 from schema.schema import getMetaType
-import core.metatype as metatype
 from core.metatype import Context
-import core.translation as translation
 from core.translation import lang
 import core.users as users
 from core.users import getUserFromRequest
+from core import Node
+from core import db
+from contenttypes import Collections
+from core.systemtypes import Root
 
-
+q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -54,7 +56,7 @@ def search_results(req,id):
     except:
         req.session["esearchvals"] = searchvalues = {}
 
-    node = tree.getNode(id)
+    node = q(Node).get(id)
     objtype = req.params["objtype"]
     type = getMetaType(objtype)
     
@@ -96,7 +98,7 @@ def search_results(req,id):
     return search_form(req, id, "edit_search_noresult_msg")
 
 def search_form(req, id, message=None):
-    node = tree.getNode(id)
+    node = q(Node).get(id)
     occur = node.getAllOccurences(AccessData(req))
     ret = ""
 
@@ -142,7 +144,7 @@ def search_form(req, id, message=None):
             if field.Searchfield() and field.getFieldtype()!="date":
                 value = searchvalues.get(otype.getSchema()+"."+field.getName(),"")
               
-                collection = tree.getRoot("collections")
+                collection = q(Collections).one()
                 c = Context(field, value, width=640, name=field.getName(), collection=node, language=lang(req), user=getUserFromRequest(req))
                 field.searchitem = field.getSearchHTML(c)
                 
@@ -161,7 +163,7 @@ def search_form(req, id, message=None):
         </script>"""
 
     try:
-        indexdate = date.format_date(date.parse_date(tree.getRoot().get("lastindexerrun")), "%Y-%m-%d %H:%M:%S")
+        indexdate = date.format_date(date.parse_date(q(Root).one().get("lastindexerrun")), "%Y-%m-%d %H:%M:%S")
     except:
         indexdate = None
     ctx = {

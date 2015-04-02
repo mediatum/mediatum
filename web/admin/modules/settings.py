@@ -23,7 +23,7 @@ import os
 import codecs
 import core.config as config
 import core
-import core.tree as tree
+
 
 from version import mediatum_version
 from utils.utils import format_filesize
@@ -94,7 +94,6 @@ def view(req):
             v['db_driver'] = 'MySQLdb'
             v['db_connector_version'] = ('%i.%i.%i %s %i' % MySQLdb.version_info)
 
-        from core.tree import db
         v['db_status'] = db.getStatus()
         v['db_size'] = format_filesize(db.getDBSize())
 
@@ -108,7 +107,6 @@ def view(req):
         else:
             v['search_driver'] = 'magpy'
 
-        from core.tree import searcher
         v['search_info'] = searcher.getSearchInfo()
         v['search_size'] = format_filesize(searcher.getSearchSize())
 

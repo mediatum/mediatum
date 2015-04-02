@@ -23,8 +23,9 @@ from contenttypes.container import Directory
 
 class Project(Directory):
 
-    def treeiconclass(node):
+    @classmethod
+    def treeiconclass(cls):
         return "project"
 
-    def getDefaultEditTab(node):
+    def getDefaultEditTab(self):
         return "metadata"

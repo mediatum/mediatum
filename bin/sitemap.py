@@ -30,7 +30,7 @@ full_init()
 
 import core.users as users
 import core.acl as acl
-import core.tree as tree
+
 import logging
 import datetime
 import time

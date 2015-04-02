@@ -23,7 +23,7 @@ sys.path += ["../", "."]
 
 from core.init import basic_init
 basic_init()
-import core.tree as tree
+
 from core.tree import searcher
 
 searcher.reindex(tree.getRoot().getAllChildren())

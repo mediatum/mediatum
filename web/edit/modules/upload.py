@@ -514,7 +514,7 @@ def upload_ziphandler(req):
                 else:
                     newfilename = join_paths(config.get("paths.tempdir"),  random_str + name.replace(" ", "_"))
 
-                with codecs.open(newfilename, "wb", encoding='utf8') as fi:
+                with codecs.open(newfilename, "wb") as fi:
                     fi.write(z.read(f))
 
                 fn = importFileToRealname(mybasename(name.replace(" ", "_")), newfilename)

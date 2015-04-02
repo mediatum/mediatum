@@ -32,6 +32,7 @@ from core.acl import AccessData
 from core.tree import getNode
 import utils.utils
 from utils.utils import get_filesize, join_paths, clean_path, getMimeType
+from schema.schema import existMetaField
 
 
 IMGNAME = re.compile("/?(attachment|doc|images|thumbs|thumb2|file|download|archive)/([^/]*)(/(.*))?$")
@@ -187,7 +188,6 @@ def send_doc(req):
 def send_file(req, download=0):
     access = AccessData(req)
     id, filename = splitpath(req.path)
-
     if id.endswith("_transfer.zip"):
         id = id[:-13]
 
@@ -215,6 +215,7 @@ def send_file(req, download=0):
             incUsage(n)
             file = f
             break
+
     # try only extension
     if not file and n.get("archive_type") == "":
         file_ext = os.path.splitext(filename)[1]
@@ -223,17 +224,23 @@ def send_file(req, download=0):
                 incUsage(n)
                 file = f
                 break
-    # try file from archivemanager
 
+    if existMetaField(n.getSchema(), 'nodename'):
+        display_file_name = '{}.{}'.format(os.path.splitext(os.path.basename(n.name))[0], os.path.splitext(filename)[-1].strip('.'))
+    else:
+        display_file_name = filename
+
+    # try file from archivemanager
     if not file and n.get("archive_type") != "":
         am = archivemanager.getManager(n.get("archive_type"))
-        req.reply_headers["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
+        req.reply_headers["Content-Disposition"] = 'attachment; filename="{}"'.format(display_file_name)
         return req.sendFile(am.getArchivedFileStream(n.get("archive_path")), "application/x-download")
 
     if not file:
         return 404
 
-    req.reply_headers["Content-Disposition"] = 'attachment; filename="{}"'.format(filename)
+    req.reply_headers["Content-Disposition"] = 'attachment; filename="{}"'.format(display_file_name)
+
     return req.sendFile(file.retrieveFile(), f.getMimeType())
 
 

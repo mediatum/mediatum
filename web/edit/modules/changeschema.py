@@ -37,7 +37,7 @@ logg = logging.getLogger(__name__)
 
 def elemInList(list, name):
     for item in list:
-        if item.getName() == name:
+        if item.__name__.lower() == name:
             return True
     return False
 
@@ -58,7 +58,7 @@ def getTypes(datatypes):
                 'searchmaskitem',
                 'mappingfield',
                 'shoppingbag',
-                'maskitem'] and not dtype.name.startswith("workflow"):
+                'maskitem'] and not dtype.__name__.lower().startswith("workflow"):
             res.append(dtype)
     return res
 
@@ -67,9 +67,8 @@ def getContainers(datatypes):
     res = []
     datatypes = getTypes(datatypes)
     for dtype in datatypes:
-        n = Node(u"", type=dtype.name)
-        if hasattr(n, "isContainer"):
-            if n.isContainer():
+        if hasattr(dtype, "isContainer"):
+            if dtype.isContainer():
                 res.append(dtype)
     db.session.commit()
     return res
@@ -119,26 +118,22 @@ def getContent(req, ids):
         for dtype in scheme.getDatatypes():
             if dtype not in dtypes:
                 for t in datatypes:
-                    if t.getName() == dtype and not elemInList(dtypes, t.name):
+                    if t.__name__.lower() == dtype and not elemInList(dtypes, t.__name__.lower()):
                         dtypes.append(t)
 
-    dtypes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(
-    ), translate(y.getLongName(), request=req).lower()))
+    #todo: sorting needs to be fixed
+    dtypes.sort(key=lambda x: translate(x.__name__, request=req).lower())
 
     admissible_objtypes = getTypes(datatypes)
-    #todo: this nees a better solution
-    admissible_datatypes = [n for n in admissible_objtypes if Node(u'', n.name).getCategoryName() in ['document',
-                                                                                                      'image',
-                                                                                                      'video',
-                                                                                                      'audio']]
-    admissible_containers = [n for n in admissible_objtypes if Node(u'', n.name).getCategoryName() in ['container']]
+    admissible_datatypes = [n for n in admissible_objtypes if n.getCategoryName() in ['document',
+                                                                                      'image',
+                                                                                      'video',
+                                                                                      'audio']]
+    admissible_containers = [n for n in admissible_objtypes if n.getCategoryName() in ['container']]
 
-    admissible_objtypes.sort(
-        lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
-    admissible_datatypes.sort(
-        lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
-    admissible_containers.sort(
-        lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
+    admissible_objtypes.sort(key=lambda x: translate(x.__name__, request=req).lower())
+    admissible_datatypes.sort(key=lambda x: translate(x.__name__, request=req).lower())
+    admissible_containers.sort(key=lambda x: translate(x.__name__, request=req).lower())
 
     available_schemes = [
         s for s in schemes if currentContentType in s.getDatatypes()]
@@ -150,8 +145,7 @@ def getContent(req, ids):
             if req.params.get("objtype", "") in scheme.getDatatypes():
                 _schemes.append(scheme)
         schemes = _schemes
-        schemes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(
-        ), translate(y.getLongName(), request=req).lower()))
+        schemes.sort(key=lambda x: translate(x.getLongName(), request=req).lower())
 
         newObjectType = req.params.get("objtype")
         newSchema = req.params.get("schema")
@@ -167,10 +161,9 @@ def getContent(req, ids):
             oldType = oldType + '/' + currentSchema
 
         if newType != oldType:
-            node.setTypeName(newType)
+            node.type = newType
             logg.info("%s changed node schema for node %s '%s' from '%s' to '%s'", user.name, node.id, node.name, oldType, newType)
 
-            node.setDirty()
             node = q(Node).get(node.id)
 
             currentContentType = node.type

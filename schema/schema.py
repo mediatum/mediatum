@@ -1004,38 +1004,37 @@ class Mask(Node):
     def updateNode(self, nodes, req):
         default_language = translation.getDefaultLanguage()
         for node in nodes:
-            for item in self.getMaskFields():
-                field = item.getField()
-                if field and field.getContentType() == "metafield" and req.params.get(field.getName(), "").find("?") != 0:
+            for item in self.maskitems:
+                field = item.metafield
+                if field and field.type == "metafield" and req.params.get(field.name, "").find("?") != 0:
                     t = getMetadataType(field.get("type"))
-                    if field.getName() in req.params.keys():
-                        value = t.format_request_value_for_db(field, req.params, field.getName())
-                        language = translation.lang(req)
-                        node.set(field.getName(), value)
-                    elif field.getFieldtype() == "check":
-                        node.set(field.getName(), 0)
+                    if field.name in req.params.keys():
+                        value = t.format_request_value_for_db(field, req.params, field.name)
+                        node.attrs[field.name] = value
+                    elif field.type == "check":
+                        node.attrs[field.name] = 0
 
                     else:
                         # if multilingual textfields were used, their names are
                         # saved in form en__Name, de__Name, de-AU__Name, en-US__Name etc.
                         for item in req.params.keys():
                             langPos = item.find('__')
-                            if langPos != -1 and item[langPos + 2:] == field.getName():
+                            if langPos != -1 and item[langPos + 2:] == field.name:
                                 # cut the language identifier (en__, fr__, etc)
                                 if (req.params.get(ustr(field.id) + '_show_multilang', '') == 'multi'
                                         and hasattr(t, "language_update")):
-                                    value_old = node.get(field.getName())
+                                    value_old = node.get(field.name)
                                     value_new = req.params.get(item)
                                     value = t.language_update(value_old, value_new, item[:langPos])
-                                    node.set(field.getName(), value)
+                                    node.attrs[field.name] = value
                                 elif req.params.get(ustr(field.id) + '_show_multilang', '') == 'single':
                                     if item[0:langPos] == translation.lang(req):
                                         new_value = req.params.get(item)
-                                        node.set(field.getName(), new_value)
+                                        node.attrs[field.name] = new_value
                                 elif (req.params.get(ustr(field.id) + '_show_multilang', '') == 'multi'
                                       and not hasattr(t, "language_update")):
                                     value = t.format_request_value_for_db(field, req.params, item)
-                                    oldValue = node.get(field.getName())
+                                    oldValue = node.get(field.name)
                                     position = oldValue.find(item[:langPos] + t.joiner)
                                     if position != -1:
                                         # there is already a value for this language
@@ -1043,14 +1042,14 @@ class Mask(Node):
                                                     + value
                                                     + oldValue[oldValue.find(t.joiner,
                                                                              position + langPos + len(t.joiner)):])
-                                        node.set(field.getName(), newValue)
+                                        node.attrs[field.name] = newValue
                                     else:  # there is no value for this language yet
                                         if oldValue.find(t.joiner) == -1:
                                             # there are no values at all yet
-                                            node.set(field.getName(), item[:langPos] + t.joiner + value + t.joiner)
+                                            node.attrs[field.name] = item[:langPos] + t.joiner + value + t.joiner
                                         else:
                                             # there are some values for other languages, but not for the current
-                                            node.set(field.getName(), oldValue + item[:langPos] + t.joiner + value + t.joiner)
+                                            node.attrs[field.name] = oldValue + item[:langPos] + t.joiner + value + t.joiner
 
                     ''' raise event for metafield-type '''
                     if hasattr(t, "event_metafield_changed"):
@@ -1059,7 +1058,9 @@ class Mask(Node):
             if hasattr(node, "event_metadata_changed"):
                 node.event_metadata_changed()
             if node.get('updatetime') < ustr(now()):
-                node.set("updatetime", ustr(format_date()))
+                node.attrs["updatetime"] = ustr(format_date())
+
+        db.session.commit()
 
         return nodes
 

@@ -190,14 +190,17 @@ def getContent(req, ids):
 
     containers = getContainers(datatypes)
 
-    d = {"id": req.params.get("id"), "error": error, "node": node}
-    d['currentContentType'] = currentContentType
-    d['currentSchema'] = currentSchema
-    d['currentSchemaLongName'] = currentSchemaLongName
-    d['currentCategoryName'] = currentCategoryName
-    d['currentTypeAlias'] = currentTypeAlias
-    d['isContainer'] = int(isContainer)
-    d['nodes'] = [node]
+    d = {'id': req.params.get('id'),
+         'error': error,
+         'node': node,
+         'currentContentType': currentContentType,
+         'currentSchema': currentSchema,
+         'currentSchemaLongName': currentSchemaLongName,
+         'currentCategoryName': currentCategoryName,
+         'currentTypeAlias': currentTypeAlias,
+         'isContainer': int(isContainer),
+         'nodes': [node]}
+
     if currentContentType in [dtype.name for dtype in containers]:
         d['schemes'] = []
         d['datatypes'] = admissible_containers  # containers

@@ -46,7 +46,8 @@ def getContent(req, ids):
         return ''
 
     if req.params.get("type", "") == "addattr" and req.params.get("new_name", "") != "" and req.params.get("new_value", "") != "":
-        node.set(req.params.get("new_name", ""), req.params.get("new_value", ""))
+        node.attrs[req.params.get("new_name")] = req.params.get("new_value", "")
+        db.session.commit()
         logg.info("new attribute %s for node %s added", req.params.get("new_name", ""), node.id)
 
     for key in req.params.keys():
@@ -56,20 +57,10 @@ def getContent(req, ids):
             logg.info("localread attribute of node %s updated", node.id)
             break
 
-        # set current node 'dirty' (reindex for search)
-        if key.startswith("set_dirty"):
-            node.setDirty()
-            logg.info("set node %s dirty", node.id)
-
-            if node.isContainer():
-                for child_node in node.children:
-                    child_node.setDirty()
-                    logg.info("set node %s dirty", child_node.id)
-            break
-
         # remove  attribute
         if key.startswith("attr_"):
             del node.attrs[key[5:-2]]
+            db.session.commit()
             logg.info("attribute %s of node %s removed", key[5:-2], node.id)
             break
 
@@ -128,7 +119,6 @@ def getFormat(fields, name):
 
 
 def formatdate(value, f='%d.%m.%Y %H:%M:%S'):
-    print valuez
     if not isinstance(value, unicode):
         value = unicode(value)
     try:

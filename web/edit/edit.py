@@ -263,7 +263,7 @@ def handletabs(req, ids, tabs):
     spc.append(Menu("sub_header_logout", "../logout", target="_parent"))
 
     # a html snippet may be inserted in the editor header
-    help_link = q(Collections.attrs['system.editor.help.link.' + language]).scalar().strip()
+    help_link = q(Collections.attrs['system.editor.help.link.' + language]).scalar()
     ctx = {
             "user": user,
             "ids": ids,

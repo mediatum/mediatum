@@ -123,7 +123,7 @@ def getPathTo(req):
 
         checked.append(unicode(path[-1].id))  # last item of path is checked
 
-        if path[0].getParents()[0].id == collectionsid and collectionsid not in items:
+        if path[0].parents[0].id == collectionsid and collectionsid not in items:
             items.append(collectionsid)
 
         for item in path:

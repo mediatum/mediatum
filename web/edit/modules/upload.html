@@ -42,8 +42,8 @@
 
         </style>
 
-    <script tal:content="python:u'var id = {};'.format(id)"> </script>
-    <script tal:content="python:u'var sid = {};'.format(sid)"> </script>
+    <script tal:content="python:u'var id = \'{}\';'.format(id)"> </script>
+    <script tal:content="python:u'var sid = \'{}\';'.format(sid)"> </script>
 
 
     <script type="text/javascript">
@@ -169,7 +169,7 @@
         </div>
     </div>
 
-<script tal:content="python:u'var uploadstate = {};'.format(uploadstate)"> </script>
+<script tal:content="python:u'var uploadstate = \'{}\';'.format(uploadstate)"> </script>
 <script tal:content="python:u'var js_upload_unpack = \'{}\';'.format(t(language, 'edit_upload_unpack'))">;</script>
 <script tal:content="python:u'var js_upload_no_unpack = \'{}\';'.format(t(language, 'edit_upload_no_unpack'))">;</script>
 

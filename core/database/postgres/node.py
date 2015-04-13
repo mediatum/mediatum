@@ -8,39 +8,23 @@ from json import dumps
 from warnings import warn
 
 import pyaml
-from sqlalchemy import (Column, Table, ForeignKey, Sequence,
-                        Integer, Unicode, Text, String, sql, text)
-from sqlalchemy.orm import relationship, backref, deferred, Query
+from sqlalchemy import (Table, Sequence, Integer, Unicode, Text, sql, text)
+from sqlalchemy.orm import deferred
 from sqlalchemy.orm.dynamic import AppenderQuery
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.dialects.postgresql.json import JSONElement
 
 from core.node import NodeMixin
+from core.database.postgres import db_metadata, DeclarativeBase
+from core.database.postgres import rel, bref, C, FK
+from core.database.postgres.alchemyext import LenMixin, view
+from core.database.postgres.attributes import Attributes, AttributesExpressionAdapter
 from utils.magicobjects import MInt
-from . import DeclarativeBase
-from core.database.postgres import db_metadata
-from core.database.postgres.compilerext import view
 
-C = Column
-FK = ForeignKey
-rel = relationship
-bref = backref
 
 logg = logging.getLogger(__name__)
-
-
-class LenMixin(object):
-
-    def __len__(self):
-        warn("use query.count() instead", DeprecationWarning)
-        return self.count()
-
-
-class AppenderQueryWithLen(AppenderQuery, LenMixin):
-    pass
 
 
 class NodeAppenderQuery(AppenderQuery, LenMixin):
@@ -100,130 +84,10 @@ class NodeAppenderQuery(AppenderQuery, LenMixin):
         return query
 
 
-
 t_noderelation = Table("noderelation", db_metadata,
-                      C("nid", Integer, FK("node.id"), primary_key=True, index=True),
-                      C("cid", Integer, FK("node.id", ondelete="CASCADE"), primary_key=True, index=True),
-                      C("distance", Integer, primary_key=True, index=True))
-
-
-class Access(DeclarativeBase):
-
-    """Used for ACL
-    """
-    __tablename__ = "access"
-    name = C(String(64), primary_key=True)
-    description = C(Text)
-    rule = C(Text)
-
-
-class Attributes(object):
-
-    """
-    Proxy for the attrs dict.
-    Provides access to attribute values via dot notation.
-
-    Examples:
-
-    node.a.test == node.attrs["test"]
-    """
-
-    def __init__(self, obj):
-        object.__setattr__(self, "obj", obj)
-
-    def __getattr__(self, attr):
-        return self.obj.attrs[attr]
-
-
-class PythonicJSONElement(JSONElement):
-
-    """
-    Wraps a JSONElement for a more pythonic experience in SQLAlchemy expression with JSON attributes.
-    Operators behave differently depending on the type of the right operand.
-    Nested dict / list structures are supported.
-
-    Examples:
-
-        q(Document).filter(Document.a.title == "Some Title").one()
-        q(Image).filter(Image.a.height >= 600)
-        q(Document).filter(Document.a.title.between("a", "c")) # lexicographical order!
-
-    => finds all documents with given title.
-    """
-
-    def __init__(self, left, right, *args, **kwargs):
-        if hasattr(right, "__iter__"):
-            self._path = list(right)
-        else:
-            self._path = [right]
-        super(PythonicJSONElement, self).__init__(left, right, *args, **kwargs)
-
-    def operate(self, op, *other, **kwargs):
-        """This performs a JSON comparison (Postgres operator ->)."""
-        if len(other) == 1:
-            # this is just a optimization for special cases to avoid calling the JSON dump function; the final return is sufficient
-            other = other[0]
-            if isinstance(other, basestring):
-                return super(JSONElement, self).operate(op, '"' + other + '"')
-            elif isinstance(other, bool):
-                return super(JSONElement, self).operate(op, str(other).lower())
-            elif isinstance(other, (int, long)):
-                return super(JSONElement, self).operate(op, str(other))
-            return super(JSONElement, self).operate(op, dumps(other), **kwargs)
-        # multiple operands given
-        return super(JSONElement, self).operate(op, *(dumps(o) for o in other), **kwargs)
-
-    # specialized text operators
-
-    def like(self, other, **kwargs):
-        return self.astext.like(other, **kwargs)
-
-    def contains(self, other, **kwargs):
-        return self.astext.contains(other, **kwargs)
-
-    def startswith(self, other, **kwargs):
-        return self.astext.startswith(other, **kwargs)
-
-    def endswith(self, other, **kwargs):
-        return self.astext.endswith(other, **kwargs)
-
-    def match(self, other, **kwargs):
-        return self.astext.match(other, **kwargs)
-
-    @property
-    def json(self):
-        return JSONElement(self.left, self._path)
-
-    def __getattr__(self, name):
-        # XXX: could cause some exceptions when SQLAlchemy tries to check for attributes with getattr()
-        if name.startswith("_") or name in ("is_literal", "key"):
-            return object.__getattribute__(self, name)
-        return PythonicJSONElement(self.left, self._path + [name])
-
-    def __getitem__(self, item):
-        if hasattr(item, "__iter__"):
-            return PythonicJSONElement(self.left, self._path + list(item))
-        else:
-            return PythonicJSONElement(self.left, self._path + [item])
-
-
-class AttributesExpressionAdapter(object):
-
-    """
-    Allows "natural" access to attributes in SQLAlchemy expressions, see `PythonicJSONElement`.
-
-    """
-
-    def __init__(self, obj):
-        object.__setattr__(self, "obj", obj)
-
-    def __getattr__(self, attr):
-        return PythonicJSONElement(self.obj.attrs, attr)
-
-    def __getitem__(self, item):
-        if hasattr(item, "__iter__"):
-            return PythonicJSONElement(self.obj.attrs, list(item))
-        return PythonicJSONElement(self.obj.attrs, item)
+                       C("nid", Integer, FK("node.id"), primary_key=True, index=True),
+                       C("cid", Integer, FK("node.id", ondelete="CASCADE"), primary_key=True, index=True),
+                       C("distance", Integer, primary_key=True, index=True))
 
 
 class BaseNodeMeta(DeclarativeMeta):
@@ -246,7 +110,7 @@ def _cte_subtree(node):
         filter(t_noderelation.c.nid == node.id).\
         join(Node, Node.id == t_noderelation.c.cid).\
         cte(name="subtree")
-    
+
     return query
 
 
@@ -258,7 +122,7 @@ def _cte_subtree_container(node):
         filter(t_noderelation.c.nid == node.id).\
         join(Container, Container.id == t_noderelation.c.cid).\
         cte(name="subtree")
-    
+
     return query
 
 
@@ -334,7 +198,7 @@ class Node(DeclarativeBase, NodeMixin):
             join(t_noderelation, Node.id == t_noderelation.c.cid).\
             join(subtree, subtree.c.cid == t_noderelation.c.nid).\
             filter(t_noderelation.c.distance == 1).distinct()
-        
+
         return query
 
     def all_children_by_query(self, query):
@@ -359,10 +223,10 @@ class Node(DeclarativeBase, NodeMixin):
 
 
 # view for direct parent-child relationship (distance = 1), also used for inserting new node connections
-t_nodemapping = view("nodemapping", db_metadata, 
+t_nodemapping = view("nodemapping", db_metadata,
                      sql.select([t_noderelation.c.nid, t_noderelation.c.cid]).where(t_noderelation.c.distance == text("1")))
 
-### helpers for node child/parent relationships
+# helpers for node child/parent relationships
 
 _children_rel_options = dict(
     secondary=t_nodemapping,
@@ -393,37 +257,21 @@ _parents_rel_options = dict(
 def children_rel(*args, **kwargs):
     extended_kwargs = _children_rel_options.copy()
     extended_kwargs.update(kwargs)
-    return relationship(*args, **extended_kwargs)
+    return rel(*args, **extended_kwargs)
 
 
 def all_children_rel(*args, **kwargs):
     extended_kwargs = _all_children_rel_options.copy()
     extended_kwargs.update(kwargs)
-    return relationship(*args, **extended_kwargs)
+    return rel(*args, **extended_kwargs)
 
 
 def parents_rel(*args, **kwargs):
     extended_kwargs = _parents_rel_options.copy()
     extended_kwargs.update(kwargs)
-    return relationship(*args, **extended_kwargs)
+    return rel(*args, **extended_kwargs)
 
-### define Node child/parent relationships here
+# define Node child/parent relationships here
 
 Node.children = children_rel(Node, backref=bref("parents", lazy="dynamic", query_class=NodeAppenderQuery))
 Node.all_children = all_children_rel(Node)
-    
-
-
-class BaseFile(DeclarativeBase):
-
-    """Represents an item on the filesystem
-    """
-    __tablename__ = "nodefile"
-    nid = C(Integer, FK(Node.id), primary_key=True, index=True)
-    path = C(Unicode(4096), primary_key=True)
-    filetype = C(Unicode(126), primary_key=True)
-    mimetype = C(String(126))
-
-    def __repr__(self):
-        return "File for Node #{} ({}:{}|{}) at {}".format(
-            self.nid, self.path, self.filetype, self.mimetype, hex(id(self)))

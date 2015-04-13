@@ -32,7 +32,7 @@ from core.transition import httpstatus
 from core.translation import t
 from core import Node
 from core import db
-from core.file import File
+from core import File
 from contenttypes import Home, Collections
 from core.systemtypes import Root
 

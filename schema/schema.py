@@ -37,7 +37,7 @@ from core import db
 from core.systemtypes import Metadatatypes
 from sqlalchemy.orm.exc import NoResultFound
 from core.transition.postgres import check_type_arg
-from core.database.postgres.model import children_rel, parents_rel
+from core.database.postgres.node import children_rel, parents_rel
 from sqlalchemy.ext.hybrid import hybrid_property
 
 

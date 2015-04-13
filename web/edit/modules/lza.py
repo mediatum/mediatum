@@ -28,7 +28,7 @@ from utils.utils import dec_entry_log
 from core.transition import httpstatus
 from core import Node
 from core import db
-from core.file import File
+from core import File
 
 q = db.query
 

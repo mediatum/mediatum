@@ -4,15 +4,23 @@
     :license: GPL3, see COPYING for details
 """
 import logging
-import pyaml
 import time
+import pyaml
 import sqlalchemy as sqla
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
+from sqlalchemy import Column, ForeignKey
+from sqlalchemy.orm import relationship, backref
 
 
 logg = logging.getLogger(__name__)
+
+
+C = Column
+FK = ForeignKey
+rel = relationship
+bref = backref
 
 
 db_metadata = sqla.MetaData(schema="mediatum")

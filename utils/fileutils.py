@@ -23,7 +23,7 @@ import logging
 import time
 import core.config as config
 from core import db
-from core.file import File
+from core import File
 
 logg = logging.getLogger(__name__)
 q = db.query

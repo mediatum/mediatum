@@ -91,11 +91,11 @@ from functools import wraps
 
 from core import init
 import core.database
-from core.database.postgres.model import t_noderelation
+from core.database.postgres.node import t_noderelation
 init.basic_init()
 
 from core import Node
-from core.file import File
+from core import File
 
 q = core.db.query
 s = core.db.session

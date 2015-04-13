@@ -23,7 +23,7 @@ import os
 import core.config as config
 import glob
 from core.transition.postgres import check_type_arg_with_schema
-from core.file import File
+from core import File
 
 logg = logging.getLogger(__name__)
 

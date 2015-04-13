@@ -37,7 +37,7 @@ def set_locale():
 
 def load_system_types():
     from core.systemtypes import *
-    from core.file import File
+    from core import File
     from core.usergroup import UserGroup
     from core.user import User
     from schema.searchmask import SearchMaskItem, SearchMask
@@ -113,9 +113,11 @@ def init_app():
 
 
 def init_db():
-    import core.database
+    import core.database # init DB connector
     core.db.connect()
-    core.Node = core.db.get_node_class()
+    # assign model classes for selected DB connector to the core package
+    for cls in core.db.get_model_classes():
+        setattr(core, cls.__name__, cls)
 
 
 def init_modules():

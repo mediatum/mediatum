@@ -19,9 +19,7 @@
 
 import logging
 import os
-import codecs
 from PIL import Image, ImageDraw
-from contenttypes import data
 import core.acl as acl
 from contenttypes.data import Content
 from lib.audio import File as AudioFile
@@ -31,7 +29,7 @@ from schema.schema import VIEW_HIDE_EMPTY
 from core.translation import lang
 from core.styles import getContentStyles
 from core.transition.postgres import check_type_arg_with_schema
-from core.file import File
+from core import File
 from core import db
 
 logg = logging.getLogger(__name__)

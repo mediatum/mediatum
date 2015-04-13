@@ -6,34 +6,11 @@
 import os.path
 from warnings import warn
 
-from core.database.postgres.model import BaseFile, bref, rel, AppenderQueryWithLen
 from core import config
-from core import Node
 from utils.utils import get_filesize
 
 
-DATADIR = config.settings["paths.datadir"]
-
-
-class File(BaseFile):
-
-    node = rel(Node, backref=bref("files", lazy="dynamic", cascade="all, delete-orphan", query_class=AppenderQueryWithLen))
-
-    def __init__(self, path, filetype, mimetype, node=None, **kwargs):
-        # legacy stuff
-        if path.startswith(DATADIR):
-            warn("file path starts with paths.datadir, should be relative", DeprecationWarning)
-            path = path[len(DATADIR):]
-        if "type" in kwargs:
-            raise Exception("type keyword arg is not allowed anymore, use filetype")
-        if "filename" in kwargs:
-            raise Exception("name positional arg is not allowed anymore, use path")
-
-        self.path = path
-        self.filetype = filetype
-        self.mimetype = mimetype
-        if node is not None:
-            self.node = node
+class FileMixin(object):
 
     def _ni(self):
         raise NotImplementedError()
@@ -49,7 +26,7 @@ class File(BaseFile):
         if os.path.isabs(self.path):
             return self.path
         else:
-            return os.path.join(DATADIR, self.path)
+            return os.path.join(config.settings["paths.datadir"], self.path)
     
     @property
     def _path(self):

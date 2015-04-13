@@ -6,7 +6,8 @@
 from sqlalchemy.sql.elements import BinaryExpression
 from sqlalchemy.sql.operators import like_op
 
-from core.database.postgres.model import Node, Attributes, AttributesExpressionAdapter, PythonicJSONElement
+from core.database.postgres.node import Node
+from core.database.postgres.attributes import Attributes, AttributesExpressionAdapter, PythonicJSONElement
 
 
 def test_a_object():

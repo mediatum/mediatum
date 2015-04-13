@@ -7,7 +7,8 @@ import os
 
 from pytest import raises, fixture
 
-from core.file import File, DATADIR
+from core import File
+from core import config
 from core.test.asserts import assert_deprecation_warning
 
 
@@ -22,7 +23,7 @@ def legacy_getter(request):
 
 
 def test_init_deprecation_datadir():
-    path = os.path.join(DATADIR, "testfilename")
+    path = os.path.join(config.settings["paths.datadir"], "testfilename")
     assert_deprecation_warning(File, path, "ni", "spam")
 
 

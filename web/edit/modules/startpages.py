@@ -35,7 +35,7 @@ from web.edit.edit_common import send_nodefile_tal, upload_for_html
 from core.transition import httpstatus
 from core import Node
 from core import db
-from core.file import File
+from core import File
 from contenttypes import Home, Collections
 from core.systemtypes import Root
 

@@ -8,7 +8,7 @@ import os
 
 from pytest import yield_fixture, fixture
 
-from core.file import File
+from core import File
 from core.test.factories import NodeFactory, DocumentFactory, DirectoryFactory, UserFactory, UserGroupFactory
 from core import db
 from contenttypes.container import Collections

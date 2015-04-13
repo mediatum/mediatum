@@ -32,7 +32,7 @@ from lib.pdf import parsepdf
 from core.attachment import filebrowser
 from contenttypes.data import Content
 from core.transition.postgres import check_type_arg_with_schema
-from core.file import File
+from core import File
 from core import db
 
 logg = logging.getLogger(__name__)

@@ -49,9 +49,10 @@ class PostgresSQLAConnector(object):
         self.engine = engine
         self.Session.configure(bind=engine)
 
-    def get_node_class(self):
-        from .model import Node
-        return Node
+    def get_model_classes(self):
+        from core.database.postgres.file import File
+        from core.database.postgres.node import Node
+        return (File, Node)
 
     def make_session(self):
         """Create a session.
@@ -80,15 +81,15 @@ class PostgresSQLAConnector(object):
         Workaround for Node objects which are kept between requests.
         XXX: must be removed later
         """
-        from .model import Node
+        from .node import Node
         return self.session.query(Node).get(node.id)
 
     def create_tables(self, conn):
         self.metadata.create_all(conn)
-        
+
     def drop_tables(self, conn):
         self.metadata.drop_all(conn)
-        
+
     def create_extra_indexes(self, conn):
         pass
 
@@ -113,4 +114,3 @@ class PostgresSQLAConnector(object):
             conn.execute("SET search_path TO " + self.metadata.schema)
             self.drop_functions(conn)
             self.drop_tables(conn)
-            

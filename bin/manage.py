@@ -63,14 +63,14 @@ def truncate_tables(s):
 def vacuum_analyze_tables(s):
     conn = s.connection().execution_options(isolation_level="AUTOCOMMIT")
     for table in reversed(db_metadata.sorted_tables):
-        cmd = 'VACUUM ANALYZE ' + table.name
+        cmd = 'VACUUM ANALYZE ' + table.fullname
         logg.info(cmd)
         conn.execute(cmd)
 
 def reindex_tables(s):
     conn = s.connection().execution_options(isolation_level="AUTOCOMMIT")
     for table in reversed(db_metadata.sorted_tables):
-        cmd = 'REINDEX TABLE ' + table.name
+        cmd = 'REINDEX TABLE ' + table.fullname
         logg.info(cmd)
         conn.execute(cmd)
 

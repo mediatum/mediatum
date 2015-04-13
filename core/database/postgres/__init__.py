@@ -3,9 +3,14 @@
     :copyright: (c) 2014 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+import datetime
 import logging
 import time
+
 import pyaml
+from ipaddr import IPv4Network
+import psycopg2.extensions
+from psycopg2.extensions import adapt, AsIs
 import sqlalchemy as sqla
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine import Engine
@@ -21,7 +26,6 @@ C = Column
 FK = ForeignKey
 rel = relationship
 bref = backref
-
 
 # warn when queries take longer than `SLOW_QUERY_SECONDS`
 SLOW_QUERY_SECONDS = 0.1
@@ -87,3 +91,34 @@ def after_cursor_execute(conn, cursor, statement,
     if total > SLOW_QUERY_SECONDS:
         statement = conn.info['current_query'].pop(-1)
         logg.warn("slow query %.1fms:\n%s", total * 1000, statement)
+
+
+# IP types handling
+
+def adapt_ipv4network(ipnet):
+    val = adapt(str(ipnet)).getquoted()
+    return AsIs(val + "::cidr")
+
+psycopg2.extensions.register_adapter(IPv4Network, adapt_ipv4network)
+psycopg2.extensions.register_type(psycopg2.extensions.new_array_type((651,), "CIDR[]", psycopg2.STRING))
+
+
+# Date types handling
+
+class InfDateAdapter(object):
+
+    """Map datetime.date.min/max values to infinity in Postgres
+    Taken from: http://initd.org/psycopg/docs/usage.html"""
+
+    def __init__(self, wrapped):
+        self.wrapped = wrapped
+
+    def getquoted(self):
+        if self.wrapped == datetime.date.max:
+            return b"'infinity'::date"
+        elif self.wrapped == datetime.date.min:
+            return b"'-infinity'::date"
+        else:
+            return psycopg2.extensions.DateFromPy(self.wrapped).getquoted()
+
+psycopg2.extensions.register_adapter(datetime.date, InfDateAdapter)

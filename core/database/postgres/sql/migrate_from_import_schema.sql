@@ -42,6 +42,16 @@ WHERE q.nid = mediatum.node.id;
 
 UPDATE mediatum.node SET type = 'externalusers' WHERE name = 'external_users';
 
+-- dashes are not allowed, use underscores
+
 UPDATE mediatum.node SET type = replace(type, '-', '_') WHERE type LIKE '%-%';
+
+-- some workflowsteps have types which do not correspond to the class names, rename them
+
+UPDATE mediatum.node SET type = 'workflowstep_editmetadata' WHERE type = 'workflowstep_edit';
+UPDATE mediatum.node SET type = 'workflowstep_sendemail' WHERE type = 'workflowstep_send_email';
+UPDATE mediatum.node SET type = 'workflowstep_urn' WHERE type = 'workflowstep_addurn';
+
+-- add transitive node connections to noderelation table
 
 INSERT INTO mediatum.noderelation SELECT DISTINCT * FROM mediatum.transitive_closure_without_direct_connections();

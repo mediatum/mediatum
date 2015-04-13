@@ -1,3 +1,7 @@
+ 
+ 
+
+
 TRUNCATE mediatum.nodefile;
 TRUNCATE mediatum.node CASCADE;
 TRUNCATE mediatum.noderelation;
@@ -38,6 +42,16 @@ WHERE q.nid = mediatum.node.id;
 
 UPDATE mediatum.node SET type = 'externalusers' WHERE name = 'external_users';
 
+ 
+
 UPDATE mediatum.node SET type = replace(type, '-', '_') WHERE type LIKE '%-%';
+
+ 
+
+UPDATE mediatum.node SET type = 'workflowstep_editmetadata' WHERE type = 'workflowstep_edit';
+UPDATE mediatum.node SET type = 'workflowstep_sendemail' WHERE type = 'workflowstep_send_email';
+UPDATE mediatum.node SET type = 'workflowstep_urn' WHERE type = 'workflowstep_addurn';
+
+ 
 
 INSERT INTO mediatum.noderelation SELECT DISTINCT * FROM mediatum.transitive_closure_without_direct_connections();

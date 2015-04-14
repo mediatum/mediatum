@@ -214,9 +214,13 @@ class Container(Data, ContainerMixin, ContainerSchemaMixin):
     def getLabel(self, lang=None):
         if lang and self.get(u'{}.name'.format(lang)) != "":
             return self.get(u'{}.name'.format(lang))
-        label = self.get("label")
+        #removes heinous amount of error logging when building directory tree
+        try:
+            label = self.get("label")
+        except AttributeError:
+            label = ''
         if not label:
-            label = self.getName()
+            label = self.name
         return label
 
     """ list with technical attributes for type directory """

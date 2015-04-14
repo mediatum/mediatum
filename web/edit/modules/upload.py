@@ -86,7 +86,7 @@ def getDatatypes(req, schemes):
                 for t in datatypes:
                     if t.__name__.lower() == dtype and not elemInList(dtypes, t.__name__.lower()):
                         dtypes.append(t)
-    #todo: potentially needs to be changed to comtinue using longname()
+    #todo: potentially needs to be changed to continue using longname()
     dtypes.sort(lambda x, y: cmp(translate(x.__name__.lower(),
                                            request=req).lower(),
                                  translate(y.__name__.lower(),
@@ -243,7 +243,7 @@ def getContent(req, ids):
             schemes = getSchemes(req)
             dtypes = getDatatypes(req, schemes)
             if len(dtypes) == 1:  # load schemes for type
-                schemes = getSchemesforType(access, dtypes[0].getName())
+                schemes = getSchemesforType(access, dtypes[0].__name__.lower())
             content = req.getTAL('web/edit/modules/upload.html', {"datatypes": dtypes,
                                                                   "schemes": schemes,
                                                                   "language": lang(req),
@@ -256,8 +256,8 @@ def getContent(req, ids):
         # deliver schemes for given contenttype
         if req.params.get('action') == 'getschemes':
             ret = []
-            for scheme in getSchemesforType(access, req.params.get('contenttype')):
-                ret.append({'id': scheme.getName(), 'name': scheme.getLongName()})
+            for scheme in getSchemesforType(access, req.params.get('contenttype').__name__):
+                ret.append({'id': scheme.name, 'name': scheme.name})
             req.write(json.dumps({'schemes': ret}))
             return None
 
@@ -431,7 +431,7 @@ def getContent(req, ids):
         #                 sortfields += [SortChoice(sortfield.getLabel() + translation_t(req, "descending"), "-" + sortfield.getName())]
         #             break
         v['sortchoices'] = sortfields
-        v['count'] = len(node.getContentChildren())
+        v['count'] = len(node.content_children)
         v['language'] = lang(req)
         v['t'] = translation_t
 

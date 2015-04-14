@@ -96,7 +96,7 @@
             <a href="#" onclick="openMetaForm()" style="border:1px solid silver;padding:5px;height:40px;display:block;float:left"><img src="/img/upload.png"/> <tal:block i18n:translate="edit_upload_meta"/></a>
         </tal:block>
         <tal:block tal:condition="python:len(schemes)==1 and len(datatypes)==1">
-            <a href="#" tal:attributes="onclick python:u'createMetaObject(\'{}\',\'{}\')'.format(datatypes[0].getName(), schemes[0].getName())" style="border:1px solid silver;padding:5px;height:40px;display:block;float:left"><img src="/img/upload.png"/> <tal:block i18n:translate="edit_upload_meta"/></a>
+            <a href="#" tal:attributes="onclick python:u'createMetaObject(\'{}\',\'{}\')'.format(datatypes[0].name, schemes[0].name)" style="border:1px solid silver;padding:5px;height:40px;display:block;float:left"><img src="/img/upload.png"/> <tal:block i18n:translate="edit_upload_meta"/></a>
         </tal:block>
     </div>
 
@@ -797,20 +797,20 @@
           <select name="objecttype" id="objecttype" onchange="loadSchemes(this)" style="width:360px">
               <option i18n:translate="edit_upload_typeselection">TEXT</option>
               <tal:block tal:repeat="datatype datatypes">
-                  <option i18n:translate="" tal:attributes="value python:datatype.getName()" tal:content="python:datatype.getLongName()"/>
+                  <option i18n:translate="" tal:attributes="value python:datatype.__name__.lower()" tal:content="python:datatype.__name__"/>
               </tal:block>
           </select>
       </p>
       <p tal:condition="python:len(datatypes)==1">
-          <tal:block i18n:translate="edit_upload_obj_sel"/><br/><b i18n:translate="" tal:content="python:datatypes[0].getLongName()"/>
-          <input type="hidden" name="objecttype" id="objecttype" tal:attributes="value python:datatypes[0].getName()"/>
+          <tal:block i18n:translate="edit_upload_obj_sel"/><br/><b i18n:translate="" tal:content="python:datatypes[0].__name__"/>
+          <input type="hidden" name="objecttype" id="objecttype" tal:attributes="value python:datatypes[0].__name__.lower()"/>
       </p>
 
       <p><tal:block i18n:translate="edit_upload_scheme"/><br/>
           <select name="schema" id="schema" style="width:360px;" onchange="$('#buttoncreate2').toggle();">
               <option i18n:translate="edit_upload_schemeselection">TEXT</option>
               <tal:block tal:condition="python:len(datatypes)==1" tal:repeat="scheme schemes">
-                  <option tal:attributes="value python:scheme.getName()" tal:content="python:scheme.getLongName()"/>
+                  <option tal:attributes="value python:scheme.name" tal:content="python:scheme.name"/>
               </tal:block>
           </select>
       </p>
@@ -874,11 +874,11 @@
     <div class="schema" tal:define="type python:schemes.keys()[0]"> <span i18n:translate="edit_upload_select_metadata_type">Select metadata type: </span>
         <select class="typesel" tal:attributes="name python:u'scheme_{}'.format(filename); id type" tal:condition="python:len(schemes[type])>1">
             <tal:block tal:repeat="scheme python:schemes[type]">
-                <option tal:attributes="value python:scheme.getName()" tal:content="python:scheme.getLongName()">TEXT</option>
+                <option tal:attributes="value python:scheme.name" tal:content="python:scheme.name">TEXT</option>
             </tal:block>
         </select>
-        <tal:block tal:condition="python:len(schemes[type])==1" tal:replace="python:schemes[type][0].getLongName()"/>
-        <input type="hidden" tal:condition="python:len(schemes[type])==1" name="scheme" class="typesel" tal:attributes="id type; value python:schemes[type][0].getLongName()"/>
+        <tal:block tal:condition="python:len(schemes[type])==1" tal:replace="python:schemes[type][0].__name__"/>
+        <input type="hidden" tal:condition="python:len(schemes[type])==1" name="scheme" class="typesel" tal:attributes="id type; value python:schemes[type][0].__name__"/>
         <input type="hidden" tal:attributes="value python:'|'.join(files);id type"/>
     </div>
 </tal:block>
@@ -890,11 +890,11 @@
             <tal:block tal:content="type"/>
             <select name="scheme" class="typesel" tal:attributes="id type" tal:condition="python:len(schemes[type])>1">
                 <tal:block tal:repeat="scheme python:schemes[type]">
-                    <option tal:attributes="value python:scheme.getName()" tal:content="python:scheme.getLongName()">TEXT</option>
+                    <option tal:attributes="value python:scheme.name" tal:content="python:scheme.name">TEXT</option>
                 </tal:block>
             </select>
-            <tal:block tal:condition="python:len(schemes[type])==1" tal:replace="python:schemes[type][0].getLongName()"/>
-            <input type="hidden" tal:condition="python:len(schemes[type])==1" class="typesel" name="scheme" tal:attributes="id type; value python:schemes[type][0].getLongName()"/>
+            <tal:block tal:condition="python:len(schemes[type])==1" tal:replace="python:schemes[type][0].__name__"/>
+            <input type="hidden" tal:condition="python:len(schemes[type])==1" class="typesel" name="scheme" tal:attributes="id type; value python:schemes[type][0].__name__"/>
             <br/>
             <input type="hidden" tal:attributes="value python:'|'.join(files);id type"/>
         </tal:block>
@@ -923,11 +923,11 @@
     <div class="schema" tal:define="type python:schemes.keys()[0]">
         <select name="scheme" class="typesel" tal:attributes="id type" tal:condition="python:len(schemes[type])>1">
             <tal:block tal:repeat="scheme python:schemes[type]">
-                <option tal:attributes="value python:scheme.getName()" tal:content="python:scheme.getLongName()">TEXT</option>
+                <option tal:attributes="value python:scheme.name" tal:content="python:scheme.name">TEXT</option>
             </tal:block>
         </select>
-        <tal:block tal:condition="python:len(schemes[type])==1" tal:replace="python:schemes[type][0].getLongName()"/>
-        <input type="hidden" tal:condition="python:len(schemes[type])==1" name="scheme" class="typesel" tal:attributes="id type; value python:schemes[type][0].getLongName()"/>
+        <tal:block tal:condition="python:len(schemes[type])==1" tal:replace="python:schemes[type][0].__name__"/>
+        <input type="hidden" tal:condition="python:len(schemes[type])==1" name="scheme" class="typesel" tal:attributes="id type; value python:schemes[type][0].__name__"/>
         <input type="hidden" tal:attributes="value python:'|'.join(files);id type"/>
     </div>
 </tal:block>
@@ -942,11 +942,11 @@
             <tal:block tal:content="type"/>
             <select name="scheme" class="typesel" tal:attributes="id type" tal:condition="python:len(schemes[type])>1">
                 <tal:block tal:repeat="scheme python:schemes[type]">
-                    <option tal:attributes="value python:scheme.getName()" tal:content="python:scheme.getLongName()">TEXT</option>
+                    <option tal:attributes="value python:scheme.name" tal:content="python:scheme.name">TEXT</option>
                 </tal:block>
             </select>
-            <tal:block tal:condition="python:len(schemes[type])==1" tal:replace="python:schemes[type][0].getLongName()"/>
-            <input type="hidden" tal:condition="python:len(schemes[type])==1" class="typesel" name="scheme" tal:attributes="id type; value python:schemes[type][0].getLongName()"/>
+            <tal:block tal:condition="python:len(schemes[type])==1" tal:replace="python:schemes[type][0].__name__"/>
+            <input type="hidden" tal:condition="python:len(schemes[type])==1" class="typesel" name="scheme" tal:attributes="id type; value python:schemes[type][0].__name__"/>
             <br/>
             <input type="hidden" tal:attributes="value python:'|'.join(files);id type"/>
         </tal:block>

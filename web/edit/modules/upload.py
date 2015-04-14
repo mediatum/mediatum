@@ -256,7 +256,7 @@ def getContent(req, ids):
         # deliver schemes for given contenttype
         if req.params.get('action') == 'getschemes':
             ret = []
-            for scheme in getSchemesforType(access, req.params.get('contenttype').__name__):
+            for scheme in getSchemesforType(access, req.params.get('contenttype')):
                 ret.append({'id': scheme.name, 'name': scheme.name})
             req.write(json.dumps({'schemes': ret}))
             return None
@@ -271,8 +271,9 @@ def getContent(req, ids):
             basenode.children.append(node)
             node.set("creator", user.name)
             node.set("creationtime",  ustr(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
-            req.write(json.dumps({'newid': node.id, 'id': req.params.get('id')}))
             db.session.commit()
+            req.write(json.dumps({'newid': node.id,
+                                  'id': req.params.get('id')}))
             return None
 
         # create node using given identifier (doi, ...)
@@ -302,7 +303,6 @@ def getContent(req, ids):
                     new_node.set("system.identifier_importer", identifier_importer)
                     new_node.set("system.identifier_imported_from", identifier)
 
-                    clearFromCache(new_node)
                     res['newid'] = new_node.id
 
                     logg.info("%s created new node id=%s (name=%s, type=%s) by importing identifier %s, "

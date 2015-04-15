@@ -257,7 +257,7 @@ def getContent(req, ids):
         if req.params.get('action') == 'getschemes':
             ret = []
             for scheme in getSchemesforType(access, req.params.get('contenttype')):
-                ret.append({'id': scheme.name, 'name': scheme.name})
+                ret.append({'id': scheme.name, 'name': scheme.getLongName()})
             req.write(json.dumps({'schemes': ret}))
             return None
 

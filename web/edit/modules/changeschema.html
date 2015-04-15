@@ -53,7 +53,7 @@
               <p>
                   <label i18n:translate="edit_changeschema_obj_sel">TEXT</label>
                   <select name="objtype" onchange="showWait();getSelect(this.form.nodeid.value,this.form.objtype.options[this.form.objtype.selectedIndex].value);">
-                       <option tal:repeat="datatype datatypes" tal:attributes="value python:datatype.__name__; selected python:'1' if datatype.__name__.lower()==current_type else nothing" tal:content="python:datatype.__name__" i18n:translate=""/>
+                       <option tal:repeat="datatype datatypes" tal:attributes="value python:datatype.__name__.lower(); selected python:'1' if datatype.__name__.lower()==current_type else nothing" tal:content="python:datatype.__name__" i18n:translate=""/>
                   </select>
 
                   <tal:block metal:use-macro="changeschema_selectscheme"/>

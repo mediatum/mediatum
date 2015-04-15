@@ -85,8 +85,6 @@ def getContent(req, ids):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     error = req.params.get("error")
-    category_name = node.getCategoryName()
-    type_alias = node.getTypeAlias()
 
     schemes = [scheme for scheme in AccessData(req).filter(loadTypesFromDB()) if scheme.isActive()]
     long_scheme_names = {scheme.name: scheme.getLongName() for scheme in schemes}
@@ -119,47 +117,31 @@ def getContent(req, ids):
 
     # filter schemes for special datatypes
     if req.params.get("objtype", "") != "":
-        _schemes = []
-        for scheme in schemes:
-            if req.params.get("objtype", "") in scheme.getDatatypes():
-                _schemes.append(scheme)
-        schemes = _schemes
-        schemes.sort(key=lambda x: translate(x.getLongName(), request=req).lower())
+        new_type = req.params.get('objtype', '')
+        new_schema = req.params.get('schema', '')
 
-        new_type = req.params.get("objtype")
-        newSchema = req.params.get("schema")
-        if not newSchema:
-            newSchema = ''
+        schemes = [scheme for scheme in schemes if new_type in scheme.getDatatypes()]
 
-        newType = new_type
-        if newSchema:
-            newType += '/' + newSchema
-
-        oldType = currentContentType
-        if currentSchema:
-            oldType = oldType + '/' + node.schema
-
-        if newType != oldType:
-            node.type = newType
-            logg.info("%s changed node schema for node %s '%s' from '%s' to '%s'", user.name, node.id, node.name, oldType, newType)
-
-            node = q(Node).get(node.id)
-
-            currentContentType = node.type
-            currentSchema = newSchema
-            currentSchemaLongName = long_scheme_names[currentSchema]
-            category_name = node.getCategoryName()
-            type_alias = node.getTypeAlias()
-            available_schemes = [
-                s for s in schemes if new_type in s.getDatatypes()]
+        if new_type != node.type or new_schema != node.schema:
+            logg.info("{} changed node schema for node {} '{}' from '{}' to '{}'".format(user.name,
+                                                                                         node.id,
+                                                                                         node.name,
+                                                                                         node.type,
+                                                                                         new_type))
+            node.type = new_type
+            node.schema = new_schema
+            db.session.commit()
+            node = q(Node).get(req.params.get('id'))
+            available_schemes = [s for s in schemes if new_type in s.getDatatypes()]
 
     if "action" in req.params.keys():
         if req.params.get("action").startswith("get_schemes_for_"):
             new_type = req.params.get("action").replace("get_schemes_for_", "").lower()
             available_schemes = [s for s in schemes if new_type in s.getDatatypes()]
 
-            req.writeTAL("web/edit/modules/changeschema.html", {'schemes': available_schemes,
-                                                                'current_schema': node.schema},
+            req.writeTAL("web/edit/modules/changeschema.html",
+                         {'schemes': available_schemes,
+                          'current_schema': node.schema},
                          macro="changeschema_selectscheme")
         return ""
 
@@ -171,8 +153,8 @@ def getContent(req, ids):
          'current_type': node.type,
          'current_schema': node.schema,
          'long_current_schema': long_scheme_names[node.schema],
-         'category_name': category_name,
-         'type_alias': type_alias,
+         'category_name': node.getCategoryName(),
+         'type_alias': node.getTypeAlias(),
          'is_container': int(node.isContainer()),
          'nodes': [node]}
 

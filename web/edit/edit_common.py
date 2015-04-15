@@ -65,7 +65,7 @@ class EditorNodeList:
 
     def getNext(self, nodeid):
         try:
-            pos = self.nodeid2pos[nodeid]
+            pos = self.nodeid2pos[int(nodeid)]
         except KeyError:
             return None
         if pos >= len(self.nodeids) - 1:
@@ -74,7 +74,7 @@ class EditorNodeList:
 
     def getPrevious(self, nodeid):
         try:
-            pos = self.nodeid2pos[nodeid]
+            pos = self.nodeid2pos[int(nodeid)]
         except KeyError:
             return None
         if pos <= 0:
@@ -83,7 +83,7 @@ class EditorNodeList:
 
     def getPositionString(self, nodeid):
         try:
-            pos = self.nodeid2pos[nodeid]
+            pos = self.nodeid2pos[int(nodeid)]
         except KeyError:
             return "", ""
         return pos + 1, len(self.nodeids)

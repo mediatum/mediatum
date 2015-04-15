@@ -678,12 +678,20 @@ def showPaging(req, tab, ids):
     combodata = ""
     script = ""
     if nodelist and len(ids) == 1:
-        previd = 0 #nodelist.getPrevious(ids[0])
-        nextid = 0 #nodelist.getNext(ids[0])
-        position, absitems = None, None#nodelist.getPositionString(ids[0])
-        combodata, script = None, None # nodelist.getPositionCombo(tab)
-    v = {"nextid": nextid, "previd": previd, "position": position, "absitems":
-         absitems, "tab": tab, "combodata": combodata, "script": script, "nodeid": ids[0]}
+        previd = nodelist.getPrevious(ids[0])
+        nextid = nodelist.getNext(ids[0])
+        position, absitems = nodelist.getPositionString(ids[0])
+        combodata, script = nodelist.getPositionCombo(tab)
+
+    v = {"nextid": nextid,
+         "previd": previd,
+         "position": position,
+         "absitems": absitems,
+         "tab": tab,
+         "combodata": combodata,
+         "script": script,
+         "nodeid": int(ids[0])}
+
     return req.getTAL("web/edit/edit.html", v, macro="edit_paging")
 
 

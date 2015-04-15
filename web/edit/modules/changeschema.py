@@ -26,6 +26,7 @@ import logging
 from core.acl import AccessData
 from schema.schema import loadTypesFromDB
 from core.translation import translate
+from core.transition import httpstatus
 from utils.utils import dec_entry_log
 from core import Node
 from contenttypes import Data
@@ -84,34 +85,13 @@ def getContent(req, ids):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     error = req.params.get("error")
-    currentContentType = node.type
+    category_name = node.getCategoryName()
+    type_alias = node.getTypeAlias()
 
-    if "/" in node.type:
-        currentSchema = node.type.split('/')[1]
-    else:
-        currentSchema = ''
+    schemes = [scheme for scheme in AccessData(req).filter(loadTypesFromDB()) if scheme.isActive()]
+    long_scheme_names = {scheme.name: scheme.getLongName() for scheme in schemes}
 
-    currentCategoryName = node.getCategoryName()
-    currentTypeAlias = node.getTypeAlias()
-
-    schemes = AccessData(req).filter(loadTypesFromDB())
-    _schemes = []
-    for scheme in schemes:
-        if scheme.isActive():
-            _schemes.append(scheme)
-    schemes = _schemes
-
-    schemeNames2LongNames = {'': ''}
-    for s in schemes:
-        schemeNames2LongNames[s.getName()] = s.getLongName()
-
-    try:
-        currentSchemaLongName = schemeNames2LongNames[currentSchema]
-    except KeyError:
-        currentSchemaLongName = ''
-
-    # find out which schema allows which datatype, and hence,
-    # which overall data types we should display
+    # find allowed datatypes
     dtypes = []
     datatypes = Data.get_all_datatypes()
     for scheme in schemes:
@@ -135,8 +115,7 @@ def getContent(req, ids):
     admissible_datatypes.sort(key=lambda x: translate(x.__name__, request=req).lower())
     admissible_containers.sort(key=lambda x: translate(x.__name__, request=req).lower())
 
-    available_schemes = [
-        s for s in schemes if currentContentType in s.getDatatypes()]
+    available_schemes = [s for s in schemes if node.type in s.getDatatypes()]
 
     # filter schemes for special datatypes
     if req.params.get("objtype", "") != "":
@@ -147,18 +126,18 @@ def getContent(req, ids):
         schemes = _schemes
         schemes.sort(key=lambda x: translate(x.getLongName(), request=req).lower())
 
-        newObjectType = req.params.get("objtype")
+        new_type = req.params.get("objtype")
         newSchema = req.params.get("schema")
         if not newSchema:
             newSchema = ''
 
-        newType = newObjectType
+        newType = new_type
         if newSchema:
             newType += '/' + newSchema
 
         oldType = currentContentType
         if currentSchema:
-            oldType = oldType + '/' + currentSchema
+            oldType = oldType + '/' + node.schema
 
         if newType != oldType:
             node.type = newType
@@ -168,24 +147,20 @@ def getContent(req, ids):
 
             currentContentType = node.type
             currentSchema = newSchema
-            currentSchemaLongName = schemeNames2LongNames[currentSchema]
-            currentCategoryName = node.getCategoryName()
-            currentTypeAlias = node.getTypeAlias()
+            currentSchemaLongName = long_scheme_names[currentSchema]
+            category_name = node.getCategoryName()
+            type_alias = node.getTypeAlias()
             available_schemes = [
-                s for s in schemes if newObjectType in s.getDatatypes()]
-
-    isContainer = False
-    if hasattr(node, "isContainer"):
-        isContainer = node.isContainer()
+                s for s in schemes if new_type in s.getDatatypes()]
 
     if "action" in req.params.keys():
         if req.params.get("action").startswith("get_schemes_for_"):
-            newObjectType = req.params.get(
-                "action").replace("get_schemes_for_", "")
-            available_schemes = [
-                s for s in schemes if newObjectType in s.getDatatypes()]
-            req.writeTAL("web/edit/modules/changeschema.html",
-                         {'schemes': available_schemes, 'currentSchema': currentSchema}, macro="changeschema_selectscheme")
+            new_type = req.params.get("action").replace("get_schemes_for_", "").lower()
+            available_schemes = [s for s in schemes if new_type in s.getDatatypes()]
+
+            req.writeTAL("web/edit/modules/changeschema.html", {'schemes': available_schemes,
+                                                                'current_schema': node.schema},
+                         macro="changeschema_selectscheme")
         return ""
 
     containers = getContainers(datatypes)
@@ -193,15 +168,15 @@ def getContent(req, ids):
     d = {'id': req.params.get('id'),
          'error': error,
          'node': node,
-         'currentContentType': currentContentType,
-         'currentSchema': currentSchema,
-         'currentSchemaLongName': currentSchemaLongName,
-         'currentCategoryName': currentCategoryName,
-         'currentTypeAlias': currentTypeAlias,
-         'isContainer': int(isContainer),
+         'current_type': node.type,
+         'current_schema': node.schema,
+         'long_current_schema': long_scheme_names[node.schema],
+         'category_name': category_name,
+         'type_alias': type_alias,
+         'is_container': int(node.isContainer()),
          'nodes': [node]}
 
-    if currentContentType in [dtype.name for dtype in containers]:
+    if node.type in [dtype.__name__.lower() for dtype in containers]:
         d['schemes'] = []
         d['datatypes'] = admissible_containers  # containers
     else:

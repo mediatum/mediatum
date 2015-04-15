@@ -1,6 +1,5 @@
-
 <tal:block metal:define-macro="changeschema_popup">
-    <script tal:content="python:u'var isContainer = {};'.format(isContainer)"> </script>
+    <script tal:content="python:u'var is_container = {};'.format(is_container)"> </script>
     <script tal:content="python:u'var nid = {};'.format(nodes[0].id)"> </script>
     <script type="text/javascript">
       function getSelect(id, newobjtype) {
@@ -31,22 +30,22 @@
               <h3 i18n:translate="edit_changeschema_obj_selection">TEXT</h3>
 
               <input type="hidden" name="nodeid" tal:attributes="value python:id"/>
-              <input type="hidden" name="currentContentType" tal:attributes="value python:currentContentType"/>
-              <input type="hidden" name="currentSchema" tal:attributes="value python:currentSchema"/>
+              <input type="hidden" name="currentContentType" tal:attributes="value python:current_type"/>
+              <input type="hidden" name="currentSchema" tal:attributes="value python:current_schema"/>
               <input type="hidden" name="tab" value="changeschema"/>
 
               <table id="datatable" cellpadding="0px" cellspacing="0px">
                   <tr>
                       <th i18n:translate="edit_changeschema_nodeid"/>
                       <th i18n:translate="edit_changeschema_objtype"/>
-                      <th tal:condition="python:not isContainer" i18n:translate="edit_changeschema_schemename"/>
-                      <th tal:condition="python:not isContainer" i18n:translate="edit_changeschema_schemeid"/>
+                      <th tal:condition="python:not is_container" i18n:translate="edit_changeschema_schemename"/>
+                      <th tal:condition="python:not is_container" i18n:translate="edit_changeschema_schemeid"/>
                   </tr>
                   <tr>
                       <td tal:content="python:id"/>
-                      <td tal:content="python:currentContentType" i18n:translate=""/>
-                      <td tal:condition="python:not isContainer" tal:content="python:currentSchemaLongName"/>
-                      <td tal:condition="python:not isContainer" tal:content="python:currentSchema"/>
+                      <td tal:content="python:current_type" i18n:translate=""/>
+                      <td tal:condition="python:not is_container" tal:content="python:long_current_schema"/>
+                      <td tal:condition="python:not is_container" tal:content="python:current_schema"/>
                   </tr>
               </table>
 
@@ -54,7 +53,7 @@
               <p>
                   <label i18n:translate="edit_changeschema_obj_sel">TEXT</label>
                   <select name="objtype" onchange="showWait();getSelect(this.form.nodeid.value,this.form.objtype.options[this.form.objtype.selectedIndex].value);">
-                       <option tal:repeat="datatype datatypes" tal:attributes="value python:datatype.__name__;selected python:'1' if datatype.__name__==currentContentType else nothing" tal:content="python:datatype.__name__" i18n:translate=""/>
+                       <option tal:repeat="datatype datatypes" tal:attributes="value python:datatype.__name__; selected python:'1' if datatype.__name__.lower()==current_type else nothing" tal:content="python:datatype.__name__" i18n:translate=""/>
                   </select>
 
                   <tal:block metal:use-macro="changeschema_selectscheme"/>
@@ -81,7 +80,7 @@
                 });
 
         // icon in tree may need update ...
-        if (isContainer == 1) {
+        if (is_container == 1) {
           try {
             var an = parent.current_tree.getNodeByKey(nid);
             var pan = an.parent;
@@ -107,7 +106,7 @@
 <tal:block metal:define-macro="changeschema_selectscheme">
     <span tal:condition="schemes" id="schema" name="schema">
         <select name="schema">
-             <option tal:repeat="schema schemes" tal:attributes="value python:schema.getName();selected python:{True:'1', False:nothing}[schema.getName()==currentSchema]" tal:content="python:schema.getLongName()" i18n:translate=""/>
+             <option tal:repeat="schema schemes" tal:attributes="value python:schema.name;selected python:{True:'1', False:nothing}[schema.name==current_schema]" tal:content="python:schema.getLongName()" i18n:translate=""/>
         </select>
     </span>
 

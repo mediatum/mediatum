@@ -99,7 +99,6 @@ def getContent(req, ids):
                     if t.__name__.lower() == dtype and not elemInList(dtypes, t.__name__.lower()):
                         dtypes.append(t)
 
-    #todo: sorting needs to be fixed
     dtypes.sort(key=lambda x: translate(x.__name__, request=req).lower())
 
     admissible_objtypes = getTypes(datatypes)
@@ -128,9 +127,14 @@ def getContent(req, ids):
                                                                                          node.name,
                                                                                          node.type,
                                                                                          new_type))
+            #
             node.type = new_type
             node.schema = new_schema
             db.session.commit()
+            # you must remove the node reference otherwise the sqlalchemy object
+            # has the wrong class manager and throws an exception when accessing
+            # the object
+            del node
             node = q(Node).get(req.params.get('id'))
             available_schemes = [s for s in schemes if new_type in s.getDatatypes()]
 
@@ -152,11 +156,13 @@ def getContent(req, ids):
          'node': node,
          'current_type': node.type,
          'current_schema': node.schema,
-         'long_current_schema': long_scheme_names[node.schema],
          'category_name': node.getCategoryName(),
          'type_alias': node.getTypeAlias(),
          'is_container': int(node.isContainer()),
          'nodes': [node]}
+
+    if not node.isContainer():
+        d['long_current_schema'] = long_scheme_names[node.schema]
 
     if node.type in [dtype.__name__.lower() for dtype in containers]:
         d['schemes'] = []

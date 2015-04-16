@@ -120,7 +120,7 @@ def getContent(req, ids):
 
     logg.info("%s in editor metadata (action=%r): %r", user.name, action, [[n.id, n.name, n.type]for n in nodes])
 
-    for m in node.getType().getMasks(type="edit"):
+    for m in node.metadatatype.filter_masks(masktype='edit'):
         if access.hasReadAccess(m):
             masklist.append(m)
 

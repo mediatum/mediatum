@@ -10,6 +10,7 @@ from ipaddr import IPv4Network
 from psycopg2.extras import DateRange
 from sympy import Symbol
 from sympy.logic import boolalg, Not, And, Or
+from sqlalchemy import sql
 
 import core
 from core.database.postgres.permission import AccessRule
@@ -18,20 +19,78 @@ from core.users import getUser
 from migration import oldaclparser
 from migration.oldaclparser import ACLAndCondition, ACLDateAfterClause, ACLDateBeforeClause , ACLOrCondition, ACLNotCondition,\
     ACLTrueCondition, ACLFalseCondition, ACLGroupCondition, ACLIPCondition, ACLUserCondition, ACLParseException
+from sympy.logic.boolalg import Boolean
 
 
 s = core.db.session
 q = s.query
 
+PL_FUNC_EXPAND_ACL_RULE = """
 
-def prepare_acl_rulestring(self, rulestr):
+CREATE OR REPLACE FUNCTION mediatum_import.expand_acl_rule(rulestr text)
+  RETURNS text AS
+$BODY$
+DECLARE 
+    expanded_rule text;
+BEGIN
+SELECT array_to_string(array_agg((
+    SELECT CASE 
+        WHEN n LIKE '{%' THEN n
+        ELSE (SELECT rule FROM access WHERE name = n)
+        END
+        )),',') 
+    
+INTO expanded_rule
+FROM unnest(regexp_split_to_array(rulestr, ',')) AS n;
+RETURN expanded_rule;
+END;
+$BODY$
+  LANGUAGE plpgsql STABLE
+  COST 100;
+"""
+
+def prepare_acl_rulestring(rulestr):
     return rulestr.replace(",", " OR ").replace("{", "( ").replace("}", " )")
 
 
+class SymbolicRule(object):
+    
+    def __init__(self, sym, cond):
+        if isinstance(sym, Boolean):
+            self.sym = sym
+        elif isinstance(sym, unicode):
+            self.sym = Symbol(sym.encode("utf8"))
+        else:
+            self.sym = Symbol(sym)
+            
+        self.cond = cond
+        
+    def __and__(self, other):
+        return SymbolicRule(self.sym & other.sym, None)
+        
+    def __or__(self, other):
+        return SymbolicRule(self.sym | other.sym, None)
+
+    def __invert__(self):
+        return SymbolicRule(~self.sym, None)
+    
+    def __eq__(self, other):
+        if isinstance(other, SymbolicRule):
+            return self == other
+        else:
+            return self.sym == other
+        
+    def __repr__(self):
+        return repr(self.sym)
+    
+        
 class Mapper(object):
 
     def __init__(self):
         self.symbol_to_acl_condition = {}
+        self.node_to_rulestr = {}
+        self.rulestr_to_access_rules = {}
+        self.access_rule_to_rulestr = {}
 
     def get_acl_cond_for_literal(self, cond):
         if isinstance(cond, Not):
@@ -44,11 +103,45 @@ class Mapper(object):
         return acl_cond, invert
 
 
+def load_node_rules(ruletype="readaccess"):
+    s.execute("SET search_path TO mediatum_import")
+    node_rules = s.execute(sql.select(["id", sql.func.expand_acl_rule(sql.text(ruletype)).label(ruletype)], from_obj="node"))
+    return dict(node_rules.fetchall())
+
+
+def convert_node_rulestrings_to_symbolic_rules(nid_to_rulestr):
+    rulestr_set = set(nid_to_rulestr.itervalues())
+    converter = OldACLToBoolExprConverter()
+    rulestr_to_symbolic_rule = converter.batch_convert_rulestrings(rulestr_set)
+    if converter.conversion_exceptions:
+        raise Exception("some rules failed!")
+    if converter.acl_syntax_errors:
+        raise Exception("some failed parsing with an syntax error!")
+    # map node ids to bool expression results 
+    nid_to_symbolic_rule = {nid: rulestr_to_symbolic_rule.get(rulestr) for nid, rulestr in nid_to_rulestr.iteritems()}
+    return nid_to_symbolic_rule
+
+
+def convert_node_symbolic_rules_to_access_rules(nid_to_symbolic_rule):
+    converter = SymbolicExprToAccessRuleConverter()
+    symbolic_rule_set = set(nid_to_symbolic_rule.itervalues())
+    symbolic_rule_to_access_rules = converter.batch_convert_symbolic_rules(symbolic_rule_set)
+    nid_to_access_rules = {nid: symbolic_rule_to_access_rules.get(symbolic_rule) for nid, symbolic_rule in nid_to_symbolic_rule.iteritems()}
+    return nid_to_access_rules
+
+
+
 
 class OldACLToBoolExprConverter(object):
 
-    def __init__(self, mapper):
-        self.mapper = mapper
+
+    fail_on_first_exception = False
+    
+
+    def __init__(self):
+        """
+        :type mapper: Mapper
+        """
         self.acl_syntax_errors = {}
         self.conversion_exceptions = {}
 
@@ -57,37 +150,18 @@ class OldACLToBoolExprConverter(object):
         self.mapper.symbol_to_acl_condition[symbol] = cond
         return symbol
 
-    def convert_rulestring(self, rulestr):
-        parsed_condtree = oldaclparser.parse(prepare_acl_rulestring(rulestr))
-        return self.convert_acl_tree(parsed_condtree)
-
-    def batch_convert_rulestrings(self, rulestrings):
-        bool_exprs = []
-
-        for rulestr in rulestrings:
-            try:
-                boolex = self.convert_rulestring(rulestr)
-
-            except ACLParseException as e:
-                self.acl_syntax_errors[rulestr] = e
-
-            except Exception as e:
-                self.conversion_exceptions[rulestr] = e
-
-            bool_exprs.append(boolex)
-
     def convert_acl_tree(self, condition_tree):
         """Convert a acl syntax tree from ACLParser.parse() to a SymPy representation.
         """
         def visit(cond):
             if isinstance(cond, ACLAndCondition):
-                return self.visit(cond.a) & self.visit(cond.b)
+                return visit(cond.a) & visit(cond.b)
 
             elif isinstance(cond, ACLOrCondition):
-                return self.visit(cond.a) | self.visit(cond.b)
+                return visit(cond.a) | visit(cond.b)
 
             elif isinstance(cond, ACLNotCondition):
-                return ~self.visit(cond.a)
+                return ~visit(cond.a)
 
             elif isinstance(cond, ACLTrueCondition):
                 return boolalg.true
@@ -96,25 +170,51 @@ class OldACLToBoolExprConverter(object):
                 return boolalg.false
 
             elif isinstance(cond, ACLGroupCondition):
-                return self.sym(u"group_" + cond.group, cond)
+                return SymbolicRule(u"group_" + cond.group, cond)
 
             elif isinstance(cond, ACLIPCondition):
-                return self.sym(u"ip_" + cond.ip, cond)
+                return SymbolicRule(u"ip_" + cond.ip, cond)
 
             elif isinstance(cond, ACLUserCondition):
-                return self.sym(u"user_" + cond.name, cond)
+                return SymbolicRule(u"user_" + cond.name, cond)
 
             elif isinstance(cond, ACLDateBeforeClause):
-                return self.sym(u"before_{}_{}".format(cond.date, cond.end), cond)
-
+                return SymbolicRule(u"before_{}_{}".format(cond.date, cond.end), cond)
             elif isinstance(cond, ACLDateAfterClause):
-                return self.sym(u"after_{}_{}".format(cond.date, cond.end), cond)
+
+                return SymbolicRule(u"after_{}_{}".format(cond.date, cond.end), cond)
 
             else:
                 raise Exception("error, unknown condition type: " + cond.__class__)
 
         return visit(condition_tree)
 
+    def convert_rulestring(self, rulestr):
+        parsed_condtree = oldaclparser.parse(prepare_acl_rulestring(rulestr))
+        return self.convert_acl_tree(parsed_condtree)
+
+    def batch_convert_rulestrings(self, rulestrings):
+        rulestr_to_symbolic_rule = {}
+
+        for rulestr in rulestrings:
+            try:
+                boolex = self.convert_rulestring(rulestr)
+
+            except ACLParseException as e:
+                if self.fail_on_first_exception:
+                    raise
+                self.acl_syntax_errors[rulestr] = e
+
+            except Exception as e:
+                if self.fail_on_first_exception:
+                    raise
+                self.conversion_exceptions[rulestr] = e
+
+            else:
+                rulestr_to_symbolic_rule[rulestr] = boolex
+            
+        return rulestr_to_symbolic_rule
+            
 
 def make_open_daterange_from_rule(acl_cond):
     dt = datetime.datetime.strptime(acl_cond.date, "%d.%m.%Y").date()
@@ -149,10 +249,14 @@ def rule_model_from_acl_cond(acl_cond):
 
 class SymbolicExprToAccessRuleConverter(object):
     
-    def __init__(self, mapper):
-        self.mapper = mapper
+    
+    fail_on_first_exception = False
+    
+    
+    def __init__(self):
+        self.conversion_exceptions = {}
 
-    def symbolic_rule_to_access_rules(self, cond):
+    def convert_symbolic_rule(self, cond):
         if boolalg.is_literal(cond):
             acl_cond, invert = self.mapper.get_acl_cond_for_literal(cond)
             return [(rule_model_from_acl_cond(acl_cond), invert)]
@@ -184,7 +288,8 @@ class SymbolicExprToAccessRuleConverter(object):
                 if arg.func is And:
                     access_rules.extend(self.symbolic_rule_to_access_rules(arg))
                 else:
-                    acl_cond, invert = self.mapper.get_acl_cond_for_literal(arg)
+                    acl_cond = arg.cond
+                    invert = isinstance(arg, Not)
     
                     if isinstance(acl_cond, ACLGroupCondition):
                         invert_group = check_inversion(invert, invert_group)
@@ -214,3 +319,22 @@ class SymbolicExprToAccessRuleConverter(object):
             invert_access_rule))
     
         return access_rules
+
+    def batch_convert_symbolic_rules(self, symbolic_rules):
+        symbolic_rule_to_access_rules = {}
+
+        for symbolic_rule in symbolic_rules:
+            try:
+                access_rules = self.convert_symbolic_rule(symbolic_rule)
+
+            except Exception as e:
+                if self.fail_on_first_exception:
+                    raise
+                self.conversion_exceptions[symbolic_rule] = e
+
+            else:
+                symbolic_rule_to_access_rules[symbolic_rule] = access_rules
+            
+        return symbolic_rule_to_access_rules
+    
+    

@@ -1,0 +1,61 @@
+# -*- coding: utf-8 -*-
+"""
+    :copyright: (c) 2015 by the mediaTUM authors
+    :license: GPL3, see COPYING for details
+"""
+
+from pytest import fixture, yield_fixture
+import migration.acl_migration
+from migration.test.factories import AccessFactory
+from migration.test.factories import ImportNodeFactory
+
+
+@fixture(scope="session", autouse=True)
+def import_database():
+    """Drop/create schema and load models"""
+    from core import db
+    db.session.execute("DROP SCHEMA IF EXISTS mediatum_import CASCADE")
+    db.session.execute("CREATE SCHEMA mediatum_import")
+    db.session.execute(migration.acl_migration.PL_FUNC_EXPAND_ACL_RULE)
+    db.session.commit()
+    from migration.import_datamodel import ImportBase
+    ImportBase.metadata.bind = db.engine
+    ImportBase.metadata.create_all()
+    return db
+
+
+@yield_fixture(autouse="True", scope="function")
+def session():
+    """Yields default session which is closed after the test.
+    Inner actions are wrapped in a transaction that always rolls back.
+    """
+    from core import db
+    s = db.session 
+    transaction = s.connection().begin()
+    yield s
+    transaction.rollback()
+    s.close()
+    
+    
+@fixture
+def import_node_with_simple_access():
+    node = ImportNodeFactory()
+    node.readaccess = "{ group test_readers }"
+    node.writeaccess = "{ group test_writers }"
+    node.dataaccess = "{ group test_datausers }"
+    return node
+
+
+@fixture
+def import_node_with_complex_access():
+    node = ImportNodeFactory()
+    node.readaccess = "{ NOT ( group test_readers OR group test_readers2 ) }"
+    return node
+
+
+@fixture
+def import_node_with_predefined_access():
+    node = ImportNodeFactory()
+    acl1 = AccessFactory(rule="NOT ( group test_readers OR group test_readers2 )", name="not_rule")
+    node.readaccess = "not_rule,{ user darfdas }"
+    return node

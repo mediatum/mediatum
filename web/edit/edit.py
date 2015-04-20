@@ -27,7 +27,6 @@ import core.translation
 from core import Node
 
 from contenttypes import Container, Collections, Data, Home
-from core.systemtypes import Root
 from utils.utils import Menu, splitpath, parseMenuString, isDirectory
 from edit_common import *
 
@@ -45,14 +44,7 @@ q = db.query
 
 
 def getTreeLabel(node, lang=None):
-    try:
-        label = node.getLabel(lang=lang)
-    except:
-        try:
-            label = node.getLabel()
-        except:
-            label = node.name
-
+    label = node.getLabel(lang=lang)
     c = len(node.content_children)
     if c > 0:
         label += ' <small>(%s)</small>' % (c)
@@ -377,24 +369,16 @@ def edit_tree(req):
         else:
             homenodefilter = req.params.get('homenodefilter', '')
             if homenodefilter:
-                nodes = []
-                try:
-                    pattern = re.compile(homenodefilter)
-                    nodes = q(Home).one().container_children.sort_by_orderpos()
-                    # filter out shoppingbags etc.
-                    nodes = [n for n in nodes if n.isContainer()]
-                    # filter user name - after first "("
-                    nodes = filter(lambda n: re.match(homenodefilter, n.getLabel(language).split('(', 1)[-1]), nodes)
+                nodes = q(Home).one().container_children.sort_by_orderpos().filter(Home.name.ilike('%(%{}%)%'.format(homenodefilter))).all()
+                if len(nodes) > 1:
                     match_result = u'#={}'.format(len(nodes))
-                except Exception as e:
-                    logg.exception("exception in pattern matching for home nodes, exception ignored")
-                    match_result = u'<span style="color:red">Error: {}</span>'.format(e)
+                else:
+                    match_result = u'<span style="color:red">Error: {} not found</span>'.format(homenodefilter)
                     match_error = True
                 if home_dir not in nodes:
                     if not match_error:
                         match_result = u'#={}+1'.format(len(nodes))
-                    nodes.append(home_dir)
-                nodes = nodes.sort_by_orderpos()
+                    nodes.insert(0, home_dir)
             else:
                 nodes = [home_dir]
     else:

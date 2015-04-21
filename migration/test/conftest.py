@@ -7,3 +7,4 @@ logging.basicConfig(level=logging.WARN)
 setup_basic()
 
 from migration.test.fixtures import *
+from core.test.fixtures import database, session

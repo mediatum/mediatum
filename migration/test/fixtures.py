@@ -59,3 +59,17 @@ def import_node_with_predefined_access():
     acl1 = AccessFactory(rule="NOT ( group test_readers OR group test_readers2 )", name="not_rule")
     node.readaccess = "not_rule,{ user darfdas }"
     return node
+
+
+@fixture
+def users_and_groups_for_predefined_access(session):
+    from core import User, UserGroup
+    users = [User(login_name="darfdas")]
+    session.add_all(users)
+    
+    groups = [UserGroup(name="test_readers"), UserGroup(name="test_readers2")]
+    session.add_all(groups)
+    return users, groups
+    
+    
+    

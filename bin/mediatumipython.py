@@ -168,6 +168,7 @@ def reachable_node_ids():
 def delete_unreachable_nodes(synchronize_session='fetch'):
     reachable_nodes_sq = reachable_node_ids().subquery()
     s.execute(t_noderelation.delete(~t_noderelation.c.nid.in_(reachable_nodes_sq)))
+    s.execute(t_noderelation.delete(~t_noderelation.c.cid.in_(reachable_nodes_sq)))
     q(File).filter(~File.nid.in_(reachable_nodes_sq)).delete(synchronize_session)
     return q(Node).filter(~Node.id.in_(reachable_nodes_sq)).delete(synchronize_session)
 
@@ -384,11 +385,15 @@ else:
         def delete(self, line, cell='', local_ns={}):
             return self.execute("DELETE " + line, cell, local_ns)
             
-            
         @needs_local_scope
         @line_magic("insert")
         def insert(self, line, cell='', local_ns={}):
             return self.execute("INSERT " + line, cell, local_ns)
+        
+        @needs_local_scope
+        @line_magic("update")
+        def update(self, line, cell='', local_ns={}):
+            return self.execute("UPDATE " + line, cell, local_ns)
         
         @needs_local_scope
         @line_magic("expl")

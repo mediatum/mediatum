@@ -79,7 +79,7 @@ s = db.session
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        raise Exception("no action specified!")
+        raise Exception("no action specified! Actions: create drop recreate init truncate analyze_reindex")
     
     action = sys.argv[1]
     

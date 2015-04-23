@@ -38,6 +38,11 @@ SET attrs=attrjson
 FROM(SELECT nid, json_object(array_agg(name), array_agg(value))::jsonb as attrjson FROM mediatum_import.nodeattribute GROUP BY nid) q
 WHERE q.nid = mediatum.node.id;
 
+-- we want empty attrs objects for nodes without attributes. NULL doesn't make sense  
+
+UPDATE mediatum.node SET attrs = '{}' where attrs is NULL;
+
+
 -- original type is 'users', we need 'externalusers' in postgres to distinguish it from the users node
 
 UPDATE mediatum.node SET type = 'externalusers' WHERE name = 'external_users';

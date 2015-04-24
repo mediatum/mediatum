@@ -14,8 +14,8 @@ import sympy
 from migration.acl_migration import convert_symbolic_rules_to_dnf
 
 
-acl_migration.OldACLToBoolExprConverter.fail_on_first_exception = True
-acl_migration.SymbolicExprToAccessRuleConverter.fail_on_first_exception = True
+acl_migration.OldACLToBoolExprConverter.fail_on_first_error = True
+acl_migration.SymbolicExprToAccessRuleConverter.fail_on_first_error = True
 
 
 def test_load_node_rules_simple_readaccess(import_node_with_simple_access):

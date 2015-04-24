@@ -18,7 +18,7 @@ from core.database.postgres.permission import AccessRule, NodeToAccessRule
 from core import User, UserGroup
 from migration import oldaclparser
 from migration.oldaclparser import ACLAndCondition, ACLDateAfterClause, ACLDateBeforeClause , ACLOrCondition, ACLNotCondition,\
-    ACLTrueCondition, ACLFalseCondition, ACLGroupCondition, ACLIPCondition, ACLUserCondition, ACLParseException
+    ACLTrueCondition, ACLFalseCondition, ACLGroupCondition, ACLIPCondition, ACLUserCondition, ACLParseException, ACLIPListCondition
 from utils.compat import iteritems
 
 q = db.query
@@ -67,29 +67,38 @@ def load_node_rules(ruletype):
 def convert_node_rulestrings_to_symbolic_rules(nid_to_rulestr, fail_on_first_error=False, ignore_errors=False):
     rulestr_set = set(nid_to_rulestr.itervalues())
     converter = OldACLToBoolExprConverter()
+    converter.fail_on_first_error = fail_on_first_error
     rulestr_to_symbolic_rule = converter.batch_convert_rulestrings(rulestr_set)
 
-    if converter.conversion_exceptions:
-        msg = "some rules failed!"
+    if converter.syntax_errors:
+        msg = "{} rules failed with syntax error".format(len(converter.syntax_errors))
         if not ignore_errors:
             raise Exception(msg)
         logg.warn(msg)
 
-    if converter.acl_syntax_errors:
-        msg = "some failed parsing with an syntax error!"
+    if converter.conversion_exceptions:
+        msg = "{} rules failed with a conversion error".format(len(converter.conversion_exceptions))
         if not ignore_errors:
             raise Exception(msg)
         logg.warn(msg)
 
     # map node ids to bool expression results
     nid_to_symbolic_rule = {nid: rulestr_to_symbolic_rule.get(rulestr) for nid, rulestr in nid_to_rulestr.iteritems()}
-    return (nid_to_symbolic_rule, converter.symbol_to_acl_condition.copy())
+    return (nid_to_symbolic_rule, converter.symbol_to_acl_cond.copy())
 
 
-def convert_node_symbolic_rules_to_access_rules(nid_to_symbolic_rule, symbol_to_acl_condition):
-    converter = SymbolicExprToAccessRuleConverter(symbol_to_acl_condition)
+def convert_node_symbolic_rules_to_access_rules(nid_to_symbolic_rule, symbol_to_acl_cond, fail_on_first_error=False, ignore_errors=False):
+    converter = SymbolicExprToAccessRuleConverter(symbol_to_acl_cond)
+    converter.fail_on_first_error = fail_on_first_error
     symbolic_rule_set = set(nid_to_symbolic_rule.itervalues())
     symbolic_rule_to_access_rules = converter.batch_convert_symbolic_rules(symbolic_rule_set)
+
+    if converter.conversion_exceptions:
+        msg = "conversion failed for {} rules".format(len(converter.conversion_exceptions))
+        if not ignore_errors:
+            raise Exception(msg)
+        logg.warn(msg)
+
     nid_to_access_rules = {nid: symbolic_rule_to_access_rules.get(symbolic_rule) for nid, symbolic_rule in nid_to_symbolic_rule.iteritems()}
     return nid_to_access_rules
 
@@ -111,18 +120,19 @@ def save_access_rules(nid_to_access_rules, ruletype):
 
 class OldACLToBoolExprConverter(object):
 
-    fail_on_first_exception = False
+    fail_on_first_error = False
 
     def __init__(self):
         """
         """
-        self.acl_syntax_errors = {}
+        self.syntax_errors = {}
         self.conversion_exceptions = {}
-        self.symbol_to_acl_condition = {}
+        self.rulestr_to_symbolic_rule = {}
+        self.symbol_to_acl_cond = {}
 
     def sym(self, name, cond, *args):
         symbol = Symbol(name.encode("utf8"), *args)
-        self.symbol_to_acl_condition[symbol] = cond
+        self.symbol_to_acl_cond[symbol] = cond
         return symbol
 
     def convert_acl_tree(self, condition_tree):
@@ -150,21 +160,27 @@ class OldACLToBoolExprConverter(object):
             elif isinstance(cond, ACLIPCondition):
                 return self.sym(u"ip_" + cond.ip, cond)
 
+            elif isinstance(cond, ACLIPListCondition):
+                return self.sym(u"iplist_" + cond.listid, cond)
+
             elif isinstance(cond, ACLUserCondition):
                 return self.sym(u"user_" + cond.name, cond)
 
             elif isinstance(cond, ACLDateBeforeClause):
                 return self.sym(u"before_{}_{}".format(cond.date, cond.end), cond)
+
             elif isinstance(cond, ACLDateAfterClause):
-
                 return self.sym(u"after_{}_{}".format(cond.date, cond.end), cond)
-
             else:
-                raise Exception("error, unknown condition type: " + cond.__class__)
+                raise Exception("error, unknown condition type: " + cond.__class__.__name__)
 
         return visit(condition_tree)
 
     def convert_rulestring(self, rulestr):
+        # cached value?
+        if rulestr in self.rulestr_to_symbolic_rule:
+            return self.rulestr_to_symbolic_rule[rulestr]
+
         parsed_condtree = oldaclparser.parse(prepare_acl_rulestring(rulestr))
         return self.convert_acl_tree(parsed_condtree)
 
@@ -172,21 +188,22 @@ class OldACLToBoolExprConverter(object):
         rulestr_to_symbolic_rule = {}
 
         for rulestr in rulestrings:
-            try:
-                boolex = self.convert_rulestring(rulestr)
+            if rulestr not in rulestr_to_symbolic_rule:
+                try:
+                    boolex = self.convert_rulestring(rulestr)
 
-            except ACLParseException as e:
-                if self.fail_on_first_exception:
-                    raise
-                self.acl_syntax_errors[rulestr] = e
+                except ACLParseException as e:
+                    if self.fail_on_first_error:
+                        raise
+                    self.syntax_errors[rulestr] = e
 
-            except Exception as e:
-                if self.fail_on_first_exception:
-                    raise
-                self.conversion_exceptions[rulestr] = e
+                except Exception as e:
+                    if self.fail_on_first_error:
+                        raise
+                    self.conversion_exceptions[rulestr] = e
 
-            else:
-                rulestr_to_symbolic_rule[rulestr] = boolex
+                else:
+                    rulestr_to_symbolic_rule[rulestr] = boolex
 
         return rulestr_to_symbolic_rule
 
@@ -215,36 +232,52 @@ def rule_model_from_acl_cond(acl_cond):
         subnet = IPv4Network(acl_cond.ip + "/32")
         return AccessRule(subnets=[subnet])
 
+    elif isinstance(acl_cond, ACLIPListCondition):
+        # TODO: iplist
+        #         subnet = IPv4Network(acl_cond.ip + "/32")
+        logg.warn("fake iplist for %s", acl_cond.listid)
+        subnet = IPv4Network("127.0.0.0/8")
+        return AccessRule(subnets=[subnet])
+
     elif isinstance(acl_cond, (ACLDateBeforeClause, ACLDateAfterClause)):
         daterange = make_open_daterange_from_rule(acl_cond)
         return AccessRule(dateranges=[daterange])
+
     else:
         raise Exception("!?")
 
 
 class SymbolicExprToAccessRuleConverter(object):
 
-    fail_on_first_exception = False
+    fail_on_first_error = False
 
-    def __init__(self, symbol_to_acl_condition):
+    def __init__(self, symbol_to_acl_cond):
         self.conversion_exceptions = {}
-        self.symbol_to_acl_condition = symbol_to_acl_condition
+        # false means no access, so an empty tuple is returned
+        # true means access for everybody, so a tuple with a match-all rule is returned
+        self.symbolic_rule_to_access_rules = {boolalg.false: tuple(),
+                                              boolalg.true: (AccessRule(), )}
+        self.symbol_to_acl_cond = symbol_to_acl_cond
 
     def get_acl_cond_for_literal(self, cond):
         if isinstance(cond, Not):
-            acl_cond = self.symbol_to_acl_condition[cond.args[0]]
+            acl_cond = self.symbol_to_acl_cond[cond.args[0]]
             invert = True
         else:
-            acl_cond = self.symbol_to_acl_condition[cond]
+            acl_cond = self.symbol_to_acl_cond[cond]
             invert = False
 
         return acl_cond, invert
 
     def convert_symbolic_rule(self, cond):
+        # cached value? boolalg.true and boolalg.false are always returned from here
+        if cond in self.symbolic_rule_to_access_rules:
+            logg.info("convert: known rule: %s", cond)
+            return self.symbolic_rule_to_access_rules[cond]
 
         if boolalg.is_literal(cond):
             acl_cond, invert = self.get_acl_cond_for_literal(cond)
-            return [(rule_model_from_acl_cond(acl_cond), invert)]
+            return ((rule_model_from_acl_cond(acl_cond), invert))
 
         else:
             access_rules = []
@@ -292,6 +325,14 @@ class SymbolicExprToAccessRuleConverter(object):
                         subnet = IPv4Network(acl_cond.ip + "/32")
                         subnets.add(subnet)
 
+                    elif isinstance(acl_cond, ACLIPListCondition):
+                        invert_subnet = check_inversion(invert, invert_subnet)
+                        # TODO: iplist
+#                         subnet = IPv4Network(acl_cond.iplist + "/32")
+                        logg.warn("fake iplist for %s", acl_cond.listid)
+                        subnet = IPv4Network("127.0.0.0/8")
+                        subnets.add(subnet)
+
                     elif isinstance(acl_cond, (ACLDateAfterClause, ACLDateBeforeClause)):
                         invert_date = check_inversion(invert, invert_date)
                         daterange = make_open_daterange_from_rule(acl_cond)
@@ -302,21 +343,24 @@ class SymbolicExprToAccessRuleConverter(object):
             invert_subnet=invert_subnet, invert_date=invert_date),
             invert_access_rule))
 
-        return access_rules
+        return tuple(access_rules)
 
     def batch_convert_symbolic_rules(self, symbolic_rules):
         symbolic_rule_to_access_rules = {}
 
         for symbolic_rule in symbolic_rules:
-            try:
-                access_rules = self.convert_symbolic_rule(symbolic_rule)
+            if symbolic_rule not in symbolic_rule_to_access_rules:
+                try:
+                    access_rules = self.convert_symbolic_rule(symbolic_rule)
 
-            except Exception as e:
-                if self.fail_on_first_exception:
-                    raise
-                self.conversion_exceptions[symbolic_rule] = e
+                except Exception as e:
+                    if self.fail_on_first_error:
+                        raise
+                    self.conversion_exceptions[symbolic_rule] = e
 
+                else:
+                    symbolic_rule_to_access_rules[symbolic_rule] = access_rules
             else:
-                symbolic_rule_to_access_rules[symbolic_rule] = access_rules
+                logg.info("batch: known rule: %s", symbolic_rule)
 
         return symbolic_rule_to_access_rules

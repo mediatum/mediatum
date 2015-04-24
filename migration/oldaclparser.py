@@ -136,6 +136,15 @@ class ACLDateBeforeClause(AccessCondition):
             return "date < " + self.date
 
 
+class ACLIPListCondition(AccessCondition):
+
+    def __init__(self, listid):
+        self.listid = listid
+
+    def __str__(self):
+        return "iplist_" + self.listid
+
+
 class ACLParser(BoolParser):
 
     def parseSimpleCondition(self, s):
@@ -150,6 +159,9 @@ class ACLParser(BoolParser):
 
         if s2.startswith("user "):
             return ACLUserCondition(s[5:].strip())
+
+        if s2.startswith("iplist "):
+            return ACLIPListCondition(s[7:].strip())
 
         if s2.startswith("ip "):
             return ACLIPCondition(s[3:].strip())

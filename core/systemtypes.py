@@ -24,10 +24,6 @@ class ExternalUsers(Node):
     pass
 
 
-class ExternalUsers(Node):
-    pass
-
-
 class Searchmasks(Node):
     pass
 

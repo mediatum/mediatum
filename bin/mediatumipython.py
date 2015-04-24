@@ -115,6 +115,7 @@ from contenttypes import Audio, Content, Directory, Collection, Container, Colle
     Project, Video, Data
 from core.systemtypes import Mappings, Metadatatypes, Root, Users, UserGroups, Navigation, Searchmasks, ExternalUsers
 from schema.schema import Metadatatype, Maskitem, Mask, Metafield
+from workflow.workflow import Workflow, Workflows
 
 
 # disable mediatum loggers

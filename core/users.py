@@ -49,12 +49,6 @@ useroption += [Option("user_option_1", "editpwd", "c", "img/changepwd_opt.png", 
 authenticators = {}
 authenticators_priority_dict = {}
 
-# Saves a hashtable for every user which holds if he has access on a specific node
-useraccesstable = {}
-
-# Saves for each user which collection he prefers which search mode
-usercollectionsearchmode = {}
-
 
 def create_user(name, email, groups, pwd="", lastname="", firstname="", telephone="",
                 comment="", option="", organisation="", identificator="", type="intern"):
@@ -85,74 +79,6 @@ def create_user(name, email, groups, pwd="", lastname="", firstname="", telephon
     return user
 
 
-# Methods for manipulation of access hashtable
-
-
-def getAccessTable(user):
-    if user.id not in useraccesstable:
-        useraccesstable[user.id] = {}
-    return useraccesstable[user.id]
-
-
-def clearAllTableAccess():
-    """ Clears the complete cache """
-    allkeys = useraccesstable.keys()
-    for k in allkeys:
-        useraccesstable[k].clear()
-
-
-def clearTableAccess(user):
-    """Clears all entries from a hashtable"""
-    try:
-        getAccessTable(user).clear()
-    except:
-        logg.exception("exception in clearTableAccess")
-        
-
-
-def getCollectionSearchMode(user, collectionid):
-    """ Returns -1, is current user has no search mode specified for a collection"""
-    if (user in usercollectionsearchmode):
-        if (collectionid in usercollectionsearchmode[user]):
-            return usercollectionsearchmode[user][collectionid]
-    return -1
-
-
-def setCollectionSearchMode(user, collectionid, searchmode):
-    if (user not in usercollectionsearchmode):
-        usercollectionsearchmode[user] = {}
-    usercollectionsearchmode[user][collectionid] = searchmode
-
-
-def setTableAccess(user, node, access):
-    """Sets the rights of a node"""
-    if node.type == "collections":
-        return
-    getAccessTable(user)[node.id] = access
-
-
-def setTableAccessWithParents(user, node, access):
-    """Sets the rights of a node and its direct parents"""
-    setTableAccess(user, node, access)
-    for p in node.getParents():
-        if p.type != "collections":
-            setTableAccess(user, p, access)
-
-
-def getTableAccess(user, node):
-    """Retrieves the access rights of a node. Returns 0, if there are either no rights available or the node has no rights"""
-    accesstable = getAccessTable(user)
-    if node.id in accesstable:
-        return accesstable[node.id]
-    return 0
-
-
-def hasTableAccess(user, node):
-    """Checks if the user has access on a specific node and if he is even allowed to use the hashtable """
-    return node.id in getAccessTable(user)
-# End of methods for access hashtable manipulation
-
-
 def loadUsersFromDB():
     """ load all users from db """
     users = q(Users).one()
@@ -161,23 +87,6 @@ def loadUsersFromDB():
 
 def getDynamicUserAuthenticators():
     return [a for a in authenticators if hasattr(authenticators[a], "isDYNUserAuthenticator") and authenticators[a].isDYNUserAuthenticator]
-
-
-def getDynamicUsers(atype=""):
-    """
-    get list of currently logged in dynamic users of given type (or all registered types)
-    """
-    if atype:
-        try:
-            res = authenticators[atype].LOGGED_IN_DYNUSERS.values()
-        except:
-            logg.exception("could not retrieve dynamic users of type %r, returning empty list", atype)
-            res = []
-    else:
-        res = []
-        for a in getDynamicUserAuthenticators():
-            res = res + authenticators[a].LOGGED_IN_DYNUSERS.values()
-    return res
 
 
 def getExternalUsers(atype=""):
@@ -374,20 +283,6 @@ def checkLogin(name, pwd, req=None):
             finally:
                 extuser_lock.release()
         return 1
-
-
-def changePWD(name, pwd):
-    user = getUser(name)
-    user.setPassword(hashlib.md5(pwd).hexdigest())
-
-
-def addUser(user):
-    """ add new user in db """
-    tmp = ""
-    for grp in user.getGroups():
-        tmp += grp + ","
-    user.setGroups(tmp[:-1])
-    conn.addUser(user)
 
 
 def update_user(id, name, email, groups, lastname="", firstname="", telephone="",

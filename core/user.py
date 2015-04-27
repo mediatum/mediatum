@@ -85,17 +85,6 @@ class User(Node):
     def setOption(self, o):
         return self.set("opts", o)
 
-    def getOptionList(self):
-        from core.users import useroption
-        retList = {}
-        myoptions = self.getOption()
-        for option in useroption:
-            if option.value in myoptions and option.value != "":
-                retList[option.getName()] = True
-            else:
-                retList[option.getName()] = False
-        return retList
-
     def isGuest(self):
         return self.getName() == config.get("user.guestuser")
 
@@ -149,9 +138,6 @@ class User(Node):
     def getOrganisation(self):
         return self.get("organisation")
 
-    def allowAdd(self):
-        return 1
-
     def canChangePWD(self):
         if self.isAdmin():
             return 0
@@ -176,10 +162,6 @@ class User(Node):
         sb.setItems(items)
         self.addChild(sb)
 
-    def isDynamicUser(self):
-        """user objects that are not persisted in the database are labeled 'dynamic'"""
-        return False
-
     def getUserID(self):
         """
         for compatibility with dynamic users that are not persisted as nodes:
@@ -203,15 +185,5 @@ class ExternalUser:
     def getName(self):
         return ""
 
-    def allowAdd(self):
-        return 0
-
     def canChangePWD(self):
         raise "not implemented"
-
-    def getAdminOperation(self, req, params={}):
-        raise "not implemented"
-
-    def isDynamicUser(self):
-        """user objects that are not persisted in the database are labeled 'dynamic'"""
-        return False

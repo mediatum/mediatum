@@ -51,19 +51,18 @@ def getContent(req, ids):
         children = []
         for n in ids:
             child = q(Node).get(n)
-            child.setOrderPos(ids.index(n))
+            child.orderpos = ids.index(n)
             children.append(child)
 
         req.writeTAL('web/edit/modules/subfolder.html', {'nodelist': children, "language": language}, macro="ordered_list")
         return ""
 
     elif "sortdirection" in req.params:  # do automatic re-order
-        i = 0
-        sort_dir = "" if req.params.get("sortdirection", "up") == "up" else "-"
-        sorted_children = node.container_children.sort_by_fields(sort_dir + req.params.get("sortattribute"))
-        for child in sorted_children:
-            child.setOrderPos(i)
-            i += 1
+        sorted_children = node.container_children.order_by(Node.name).all()
+        if req.params.get("sortdirection", "up") != "up":
+            sorted_children.reverse()
+        for position, child in enumerate(sorted_children, start=1):
+            child.orderpos = position
         req.writeTAL('web/edit/modules/subfolder.html', {'nodelist': sorted_children, "language": language}, macro="ordered_list")
         return ""
 

@@ -876,12 +876,11 @@ class Mask(Node):
         return self.all_children_by_query(q(Maskitem))
     
     def getFormHTML(self, nodes, req):
-        if not self.getChildren():
+        if not self.children:
             return None
 
         ret = ''
-        for field in self.getChildren().sort_by_orderpos():
-            element = field.getField()
+        for field in self.children.sort_by_orderpos():
             t = getMetadataType(field.get("type"))
             ret += t.getFormHTML(field, nodes, req)
         return ret

@@ -236,7 +236,7 @@ class Document(Content):
 
     def processDocument(self, dest):
         for file in self.files:
-            if file.getType() == "document":
+            if file.filetype == "document":
                 filename = file.abspath
                 if os.sep == '/':
                     cmd = "cp %s %s" % (filename, dest)

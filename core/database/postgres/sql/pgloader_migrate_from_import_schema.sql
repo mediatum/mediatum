@@ -40,6 +40,11 @@ WHERE q.nid = mediatum.node.id;
 
  
 
+UPDATE mediatum.node SET attrs = '{}' where attrs is NULL;
+
+
+ 
+
 UPDATE mediatum.node SET type = 'externalusers' WHERE name = 'external_users';
 
  

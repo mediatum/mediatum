@@ -60,7 +60,8 @@ class PostgresSQLAConnector(object):
     def get_model_classes(self):
         from core.database.postgres.file import File
         from core.database.postgres.node import Node
-        return (File, Node)
+        from core.database.postgres.user import User, UserGroup
+        return (File, Node, User, UserGroup)
 
     def make_session(self):
         """Create a session.

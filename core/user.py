@@ -171,7 +171,7 @@ class User(Node):
         return self.id
 
 
-class ExternalUser:
+class ExternalAuth(object):
 
     def getUserType(self):
         return self.usertype

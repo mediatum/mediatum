@@ -17,12 +17,10 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from core import Node
-
 from utils.utils import mkKey
 
 
-class ShoppingBag(Node):
+class ShoppingBagMixin(object):
 
     def getItems(self):
         return self.get("items").split(";")

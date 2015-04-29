@@ -15,10 +15,3 @@ def test_getGroup_id(some_group):
     group = assert_deprecation_warning(getGroup, some_group.id)
     assert group == some_group
     
-    
-def test_getGroup_name(group_node_with_some_group):
-    from core.usergroups import getGroup
-    some_group = group_node_with_some_group.children[0]
-    group = assert_deprecation_warning(getGroup, some_group.name)
-    assert group == some_group
-    

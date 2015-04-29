@@ -15,6 +15,7 @@ from contenttypes.container import Collections
 from core.database.init import init_database_values
 from core.init import load_system_types, load_types
 from core.systemtypes import Users, UserGroups
+from core.database.postgres.user import AuthenticatorInfo
 logg = logging.getLogger(__name__)
 
 
@@ -30,15 +31,15 @@ def database():
     return db
 
 
-@yield_fixture(autouse="True", scope="function")
+@yield_fixture(autouse="True")
 def session():
     """Yields default session which is closed after the test.
     Inner actions are wrapped in a transaction that always rolls back.
     """
     s = db.session 
-    transaction = s.connection().begin()
+    s.begin(subtransactions=True)
     yield s
-    transaction.rollback()
+    s.rollback()
     s.close()
     
 
@@ -65,24 +66,40 @@ def collections():
 def some_user():
     return UserFactory()
 
+@fixture
+def editor_user(some_user):
+    editor_group = UserGroupFactory(is_editor_group=True, is_workflow_editor_group=False, is_admin_group=False)
+    some_user.groups.append(editor_group)
+    return some_user
 
 @fixture
-def users_node_with_some_user(some_user):
-    users_node = Users("users")
-    users_node.children.append(some_user)
-    return users_node
+def workflow_editor_user(some_user):
+    workflow_editor_group = UserGroupFactory(is_editor_group=False, is_workflow_editor_group=True, is_admin_group=False)
+    some_user.groups.append(workflow_editor_group)
+    return some_user
+
+@fixture
+def admin_user(some_user):
+    admin_group = UserGroupFactory(is_editor_group=False, is_workflow_editor_group=False, is_admin_group=True)
+    some_user.groups.append(admin_group)
+    return some_user
+
+@fixture
+def internal_authenticator_info():
+    from core.auth import INTERNAL_AUTHENTICATOR_KEY
+    return AuthenticatorInfo(auth_type=INTERNAL_AUTHENTICATOR_KEY[0], name=INTERNAL_AUTHENTICATOR_KEY[1])
+
+@fixture
+def internal_user(some_user, internal_authenticator_info):
+    some_user.authenticator_info = internal_authenticator_info
+    some_user.login_name = "testuser"
+    some_user.can_change_password = True
+    return some_user
 
 
 @fixture
 def some_group():
     return UserGroupFactory()
-
-
-@fixture
-def group_node_with_some_group(some_group):
-    groups_node = UserGroups()
-    groups_node.children.append(some_group)
-    return groups_node
 
 
 @fixture
@@ -173,3 +190,9 @@ def some_node_with_two_parents(some_node):
     a_parent = NodeFactory(name=u"a_parent")
     a_parent.children.append(some_node)
     return some_node
+
+
+@fixture(scope="session")
+def internal_authenticator():
+    from core.auth import InternalAuthenticator, INTERNAL_AUTHENTICATOR_KEY
+    return InternalAuthenticator(INTERNAL_AUTHENTICATOR_KEY[1])

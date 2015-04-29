@@ -26,12 +26,11 @@ from warnings import warn
 from sqlalchemy.orm.exc import NoResultFound
 
 import core.config as config
-from core import Node
+from core import Node, User
 from core import db
 from . import athana
 from utils.utils import Option
 from core.translation import getDefaultLanguage, translate
-from core.user import User
 from core.systemtypes import Users
 
 logg = logging.getLogger(__name__)
@@ -199,6 +198,7 @@ def getExternalAuthentificators():
 
 
 def getUserFromRequest(req):
+    raise NotImplementedError("obsolete!!")
     try:
         user = req.session["user"]
         if not user:

@@ -13,13 +13,13 @@ from sympy import Symbol
 from sympy.logic import boolalg, Not, And, Or
 from sqlalchemy import sql
 
-from core import db
+from core import db, User, UserGroup
 from core.database.postgres.permission import AccessRule, NodeToAccessRule
-from core import User, UserGroup
 from migration import oldaclparser
-from migration.oldaclparser import ACLAndCondition, ACLDateAfterClause, ACLDateBeforeClause , ACLOrCondition, ACLNotCondition,\
+from migration.oldaclparser import ACLAndCondition, ACLDateAfterClause, ACLDateBeforeClause, ACLOrCondition, ACLNotCondition,\
     ACLTrueCondition, ACLFalseCondition, ACLGroupCondition, ACLIPCondition, ACLUserCondition, ACLParseException, ACLIPListCondition
 from utils.compat import iteritems
+
 
 q = db.query
 
@@ -39,7 +39,7 @@ SELECT array_to_string(array_agg((
         ELSE (SELECT rule FROM access WHERE name = n)
         END
         )),',')
-    
+
 INTO expanded_rule
 FROM unnest(regexp_split_to_array(rulestr, ',')) AS n;
 RETURN expanded_rule;
@@ -57,7 +57,7 @@ def prepare_acl_rulestring(rulestr):
 def load_node_rules(ruletype):
     db.session.execute("SET search_path TO mediatum_import")
     stmt = sql.select(["id", sql.func.expand_acl_rule(sql.text(ruletype)).label(ruletype)], from_obj="node") \
-        .where(sql.func.expand_acl_rule(sql.text(ruletype)) != "")
+        .where(sql.and_(sql.func.expand_acl_rule(sql.text(ruletype)) != "", sql.text("node.name NOT LIKE 'Arbeitsverzeichnis (%'")))
 
     node_rules = db.session.execute(stmt)
     # map node id to rulestring
@@ -218,35 +218,6 @@ def make_open_daterange_from_rule(acl_cond):
         return DateRange(dt, datetime.date.max, bounds)
 
 
-def rule_model_from_acl_cond(acl_cond):
-    if isinstance(acl_cond, ACLGroupCondition):
-        group = q(UserGroup).filter_by(name=acl_cond.group).first()
-        return AccessRule(group_ids=[group.id])
-
-    elif isinstance(acl_cond, ACLUserCondition):
-        user = q(User).filter_by(login_name=acl_cond.name).first()
-        user_id = user.id if user is not None else 9999999
-        return AccessRule(group_ids=[user_id])
-
-    elif isinstance(acl_cond, ACLIPCondition):
-        subnet = IPv4Network(acl_cond.ip + "/32")
-        return AccessRule(subnets=[subnet])
-
-    elif isinstance(acl_cond, ACLIPListCondition):
-        # TODO: iplist
-        #         subnet = IPv4Network(acl_cond.ip + "/32")
-        logg.warn("fake iplist for %s", acl_cond.listid)
-        subnet = IPv4Network("127.0.0.0/8")
-        return AccessRule(subnets=[subnet])
-
-    elif isinstance(acl_cond, (ACLDateBeforeClause, ACLDateAfterClause)):
-        daterange = make_open_daterange_from_rule(acl_cond)
-        return AccessRule(dateranges=[daterange])
-
-    else:
-        raise Exception("!?")
-
-
 class SymbolicExprToAccessRuleConverter(object):
 
     fail_on_first_error = False
@@ -256,8 +227,55 @@ class SymbolicExprToAccessRuleConverter(object):
         # false means no access, so an empty tuple is returned
         # true means access for everybody, so a tuple with a match-all rule is returned
         self.symbolic_rule_to_access_rules = {boolalg.false: tuple(),
-                                              boolalg.true: (AccessRule(), )}
+                                              boolalg.true: ((AccessRule(), False), )}
         self.symbol_to_acl_cond = symbol_to_acl_cond
+        self.missing_users = {}
+        self.missing_groups = {}
+
+    def get_user_id_from_cond(self, acl_cond):
+        username = acl_cond.name
+        user = q(User).filter_by(login_name=username).first()
+        if not user:
+            logg.warn("user %s not found", username)
+            self.missing_users[acl_cond] = username
+            return 99999999
+        return user.id
+
+    def get_group_id_from_cond(self, acl_cond):
+        groupname = acl_cond.group
+        group = q(UserGroup).filter_by(name=groupname).first()
+        if not group:
+            logg.warn("group %s not found", groupname)
+            self.missing_groups[acl_cond] = groupname
+            return 99999999
+        return group.id
+
+    def rule_model_from_acl_cond(self, acl_cond):
+        if isinstance(acl_cond, ACLGroupCondition):
+            group_id = self.get_group_id_from_cond(acl_cond)
+            return AccessRule(group_ids=set([group_id]))
+
+        elif isinstance(acl_cond, ACLUserCondition):
+            user_id = self.get_user_id_from_cond(acl_cond)
+            return AccessRule(group_ids=set([user_id]))
+
+        elif isinstance(acl_cond, ACLIPCondition):
+            subnet = IPv4Network(acl_cond.ip + "/32")
+            return AccessRule(subnets=set([subnet]))
+
+        elif isinstance(acl_cond, ACLIPListCondition):
+            # TODO: iplist
+            #         subnet = IPv4Network(acl_cond.ip + "/32")
+            logg.warn("fake iplist for %s", acl_cond.listid)
+            subnet = IPv4Network("127.0.0.0/8")
+            return AccessRule(subnets=[subnet])
+
+        elif isinstance(acl_cond, (ACLDateBeforeClause, ACLDateAfterClause)):
+            daterange = make_open_daterange_from_rule(acl_cond)
+            return AccessRule(dateranges=[daterange])
+
+        else:
+            raise Exception("!?")
 
     def get_acl_cond_for_literal(self, cond):
         if isinstance(cond, Not):
@@ -277,7 +295,7 @@ class SymbolicExprToAccessRuleConverter(object):
 
         if boolalg.is_literal(cond):
             acl_cond, invert = self.get_acl_cond_for_literal(cond)
-            return ((rule_model_from_acl_cond(acl_cond), invert))
+            return ((self.rule_model_from_acl_cond(acl_cond), invert), )
 
         else:
             access_rules = []
@@ -310,15 +328,13 @@ class SymbolicExprToAccessRuleConverter(object):
 
                     if isinstance(acl_cond, ACLGroupCondition):
                         invert_group = check_inversion(invert, invert_group)
-                        group = q(UserGroup).filter_by(name=acl_cond.group).first()
-                        if group is not None:
-                            group_ids.add(group.id)
+                        group_id = self.get_group_id_from_cond(acl_cond)
+                        group_ids.add(group_id)
 
                     if isinstance(acl_cond, ACLUserCondition):
                         invert_group = check_inversion(invert, invert_group)
-                        user = q(User).filter_by(login_name=acl_cond.name).first()
-                        if user is not None:
-                            group_ids.add(user.id)
+                        user_id = self.get_user_id_from_cond(acl_cond)
+                        group_ids.add(user_id)
 
                     elif isinstance(acl_cond, ACLIPCondition):
                         invert_subnet = check_inversion(invert, invert_subnet)

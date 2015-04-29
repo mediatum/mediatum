@@ -123,12 +123,12 @@ class NodeAttribute(DeclarativeBase):
         if self._value.startswith(b"\x11PACK\x12"):
             return msgpack.loads(self._value[6:], encoding="utf8")
         else:
-            return unicode(self._value, encoding="utf8")
+            return self._value
 
     @value.setter
     def set_value(self, newvalue):
         if isinstance(newvalue, string_types):
-            self._value = codecs.encode(newvalue, "utf8")
+            self._value = newvalue
         else:
             dval = msgpack.dumps(newvalue)
             val = b"\x11PACK\x12" + dval

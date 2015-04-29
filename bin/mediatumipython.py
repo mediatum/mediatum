@@ -112,9 +112,9 @@ if len(sys.argv) == 2:
     db = sys.argv[1].lower()
     if db == "mysql":
         # insert your favorite database connection here...
-        SQLALCHEMY_CONNECTION = "mysql://user:password@localhost/database"
+        SQLALCHEMY_CONNECTION = "mysql://user:password@localhost/database?charset=utf8"
 else:
-    _connection_tmpl = "mysql://{user}:{passwd}@{dbhost}:{dbport}/{database}"
+    _connection_tmpl = "mysql://{user}:{passwd}@{dbhost}:{dbport}/{database}?charset=utf8"
     SQLALCHEMY_CONNECTION = _connection_tmpl.format(
         user=config.get("database.user", "mediatum"),
         passwd=config.get("database.passwd", ""),

@@ -457,7 +457,7 @@ class ContentArea(Content):
         self.collectionlogo = None
         self.params = ""
 
-    def getPath(self, language=None):
+    def getPath(self, language=None, access=None):
         path = []
         if hasattr(self.content, "node"):
             cd = self.content.node
@@ -468,7 +468,9 @@ class ContentArea(Content):
                     path.append(Link('', cd.getLabel(), ''))
                 while True:
                     parents = cd.getParents()
-                    if(len(parents) == 0):
+                    if access:
+                        parents = access.filter(parents)
+                    if len(parents) == 0:
                         break
                     cd = parents[0]
                     if cd is q(Collections).one() or cd is q(Root).one():
@@ -535,7 +537,7 @@ class ContentArea(Content):
                 breadcrumbs = []
             else:
                 try:
-                    breadcrumbs = self.getPath(lang(req))
+                    breadcrumbs = self.getPath(lang(req), access=AccessData(req))
                 except AttributeError:
                     logg.exception("exception in html")
                     return req.error(404, "Object cannot be shown")

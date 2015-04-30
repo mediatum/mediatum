@@ -160,10 +160,15 @@ class Video(Content):
                 self.files.append(File(flvname, "video", "video/x-flv"))
 
         for f in self.files:
+        #fetch tags to be omitted
+            unwanted_attrs = self.unwanted_attributes()
+
             if f.type in["original", "video"]:
                 if f.mimetype == "video/x-flv":
                     meta = FLVReader(f.abspath)
                     for key in meta:
+                        if any(tag in key for tag in unwanted_attrs):
+                                continue
                         try:
                             self.set(key, int(meta[key]))
                         except:
@@ -218,6 +223,16 @@ class Video(Content):
             return 0
         else:
             return format_date(make_date(0, 0, 0, int(duration) / 3600, duration / 60, int(duration % 60)), '%H:%M:%S')
+
+    def unwanted_attributes(self):
+        '''
+        Returns a list of unwanted attributes which are not to be extracted from uploaded videos
+        @return: list
+        '''
+        return ['sourcedata',
+                'httphostheader',
+                'purl',
+                'pmsg']
 
     """ list with technical attributes for type video """
     def getTechnAttributes(self):

@@ -373,6 +373,9 @@ class Image(Content):
                         self.set("width", width)
                         self.set("height", height)
 
+            #fetch unwanted tags to be omitted
+            unwanted_attrs = self.unwanted_attributes()
+
             # Exif
             try:
                 from lib.Exif import EXIF
@@ -384,10 +387,9 @@ class Image(Content):
                             tags = EXIF.process_file(f)
                             tags.keys().sort()
 
-                        unwanted_tags = self.unwanted_exif_attributes()
                         for k in tags.keys():
                             # don't set unwanted exif attributes
-                            if any(tag in k for tag in unwanted_tags):
+                            if any(tag in k for tag in unwanted_attrs):
                                 continue
                             if tags[k] != "" and k != "JPEGThumbnail":
                                 self.set("exif_" + k.replace(" ", "_"),
@@ -422,8 +424,13 @@ class Image(Content):
                             # skip unknown iptc tags
                             if 'IPTC_' in k:
                                 continue
+                            
+                            if any(tag in k for tag in unwanted_attrs):
+                                continue
+                            
                             if isinstance(tags[k], list):
                                 tags[k] = ', '.join(tags[k])
+                                
                             if tags[k] != "":
                                 self.set("iptc_" + k.replace(" ", "_"),
                                          utf8_decode_escape(ustr(tags[k])))
@@ -438,7 +445,7 @@ class Image(Content):
         db.session.commit()
 
 
-    def unwanted_exif_attributes(self):
+    def unwanted_attributes(self):
         '''
         Returns a list of unwanted exif tags which are not to be extracted from uploaded images
         @return: list
@@ -464,7 +471,13 @@ class Image(Content):
                 'ApertureValue',
                 'ShutterSpeedValue',
                 'MakerNote',
-                'jpg_comment']
+                'jpg_comment',
+                'UserComment',
+                'FlashPixVersion',
+                'ExifVersion',
+                'Caption',
+                'Byline',
+                'notice']
 
     """ list with technical attributes for type image """
     def getTechnAttributes(self):

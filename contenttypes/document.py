@@ -162,6 +162,9 @@ class Document(Content):
                 elif f.type == "fulltext":
                     self.files.remove(f)
 
+        #fetch unwanted tags to be omitted
+        unwanted_attrs = self.unwanted_attributes()
+
         if doc:
             path, ext = splitfilename(doc.abspath)
 
@@ -180,6 +183,8 @@ class Document(Content):
                     for line in fi.readlines():
                         i = line.find(':')
                         if i > 0:
+                            if any(tag in line[0:i].strip().lower() for tag in unwanted_attrs):
+                                continue
                             self.set("pdf_" + line[0:i].strip().lower(), utf8_decode_escape(line[i + 1:].strip()))
 
                 self.files.append(File(thumbname, "thumb", "image/jpeg"))
@@ -188,6 +193,14 @@ class Document(Content):
                 self.files.append(File(infoname, "fileinfo", "text/plain"))
 
         db.session.commit()
+
+    def unwanted_attributes(self):
+            '''
+            Returns a list of unwanted attributes which are not to be extracted from uploaded documents
+            @return: list
+            '''
+            return ['creator',
+                    'producer']
 
     """ list with technical attributes for type document """
     def getTechnAttributes(self):

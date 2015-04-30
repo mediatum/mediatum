@@ -152,6 +152,9 @@ class Document(default.Default):
                 elif f.type == "fulltext":
                     self.removeFile(f)
 
+        #fetch unwated tags to be omitted
+        unwanted_attrs = self.unwanted_attributes()
+
         if doc:
             path, ext = splitfilename(doc.retrieveFile())
 
@@ -170,12 +173,22 @@ class Document(default.Default):
                 for line in fi.readlines():
                     i = line.find(':')
                     if i > 0:
+                        if any(tag in line[0:i].strip().lower() for tag in unwanted_attrs):
+                                continue
                         self.set("pdf_" + line[0:i].strip().lower(), utf8_decode_escape(line[i + 1:].strip()))
                 fi.close()
                 self.addFile(FileNode(name=thumbname, type="thumb", mimetype="image/jpeg"))
                 self.addFile(FileNode(name=thumb2name, type="presentation", mimetype="image/jpeg"))
                 self.addFile(FileNode(name=fulltextname, type="fulltext", mimetype="text/plain"))
                 self.addFile(FileNode(name=infoname, type="fileinfo", mimetype="text/plain"))
+
+    def unwanted_attributes(self):
+            '''
+            Returns a list of unwanted attributes which are not to be extracted from uploaded documents
+            @return: list
+            '''
+            return ['creator',
+                    'producer']
 
     """ list with technical attributes for type document """
     def getTechnAttributes(self):

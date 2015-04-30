@@ -28,7 +28,6 @@ import re
 import hashlib
 from collections import OrderedDict
 
-
 import core.users as users
 
 from core import config
@@ -42,8 +41,6 @@ from utils.fileutils import importFileFromData, importFile
 logg = logging.getLogger(__name__)
 
 host = "http://" + config.get("host.name")
-
-collections = tree.getRoot('collections')
 
 from web.services.cache import Cache
 

@@ -23,7 +23,6 @@ import os
 import time
 import logging
 
-
 import core.users as users
 from core import config
 from core.acl import AccessData
@@ -37,7 +36,6 @@ logg = logging.getLogger(__name__)
 host = "http://" + config.get("host.name")
 
 guestAccess = AccessData(user=users.getUser('Gast'))
-collections = tree.getRoot('collections')
 
 
 FILTERCACHE_NODECOUNT_THRESHOLD = 2000000

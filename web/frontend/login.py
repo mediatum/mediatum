@@ -20,6 +20,7 @@
 import logging
 import hashlib
 
+from core import db, User, auth
 from core.transition import httpstatus
 import core.users as users
 import core.config as config
@@ -30,7 +31,7 @@ from core.translation import lang, t
 from utils.utils import mkKey
 from core.styles import theme
 from contenttypes import Collections
-from core import db
+from core import users
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -44,49 +45,35 @@ def buildURL(req):
     return httpstatus.HTTP_MOVED_TEMPORARILY
 
 
-def login(req):
+def _handle_login_submit(req):
+    login_name = req.form.get("user", config.get("user.guestuser"))
+    password = req.form.get("password", "")
 
-    if len(req.params) > 2 and "user" not in req.params:  # user changed to browsing
-        return buildURL(req)
-    error = 0
-    username = req.params.get("user", config.get("user.guestuser"))
-    password = req.params.get("password", "")
+    if not login_name.strip() and "user" in req.form:  
+        # empty username
+        return 1
 
-    if username == "" and "user" in req.params:  # empty username
-        error = 1
+    user = auth.authenticate_user_credentials(login_name, password, req)
+    if user:
+        if "contentarea" in req.session:
+            del req.session["contentarea"]
+        req.session["user"] = user
+        logg.info("%s logged in", user.login_name)
 
-    elif "LoginSubmit" in req.params:  # try given values
-
-        user = users.checkLogin(username, password, req=req)
-
-        if user:
-            if "contentarea" in req.session:
-                del req.session["contentarea"]
-            req.session["user"] = user
-            logg.info("%s logged in", user.name)
-
-            if user.getUserType() == "users":
-                if user.stdPassword():
-                    return pwdchange(req, 3)
-
-            else:
-                x = users.getExternalAuthentificator(user.getUserType())
-                if x and x.stdPassword(user):
-                    return pwdchange(req, 3)
-
-            if req.session.get('return_after_login'):
-                req.request['Location'] = req.session['return_after_login']
-            elif config.get("config.ssh", "") == "yes":
-                req.request["Location"] = ''.join(["https://",
-                                                   config.get("host.name"),
-                                                   "/node?id=",
-                                                   q(Collections).one().id])
-            else:
-                req.request["Location"] = "/node?id={}".format(q(Collections).one().id)
-            return httpstatus.HTTP_MOVED_TEMPORARILY
+        if req.session.get('return_after_login'):
+            req['Location'] = req.session['return_after_login']
+        elif config.get("config.ssh", "") == "yes":
+            req["Location"] = ''.join(["https://",
+                                               config.get("host.name"),
+                                               "/node?id=",
+                                               q(Collections).one().id])
         else:
-            error = 1
+            req["Location"] = "/node?id={}".format(q(Collections).one().id)
+    else:
+        return 1
 
+
+def _set_return_after_login(req):
     referer = next((h.split(":", 1)[1].strip() for h in req.header if h.startswith("Referer:")), None)
 
     if referer is None or any(uri in referer for uri in ('/login', '/logout', '/pwdforgotten', '/pwdchange', '/pnode')):
@@ -99,8 +86,24 @@ def login(req):
         else:
             req.session['return_after_login'] = referer
 
-    # standard login form
-    user = users.getUserFromRequest(req)
+
+def login(req):
+
+    if len(req.params) > 2 and "user" not in req.params:  # user changed to browsing
+        # XXX: ?!?
+        return buildURL(req)
+
+    if "LoginSubmit" in req.form:
+        error = _handle_login_submit(req)
+        if not error:
+            return httpstatus.HTTP_MOVED_TEMPORARILY
+    else:
+        error = None
+    
+    _set_return_after_login(req)
+
+    # show login form
+    user = users.user_from_session(req.session)
     navframe = frame.getNavigationFrame(req)
     navframe.feedback(req)
     navframe.write(req, req.getTAL(theme.getTemplate("login.html"), {"error": error, "user": user}, macro="login"))
@@ -109,18 +112,17 @@ def login(req):
 
 def logout(req):
     # if the session has expired, there may be no user in the session dictionary
-    user = req.session.get("user", None)
-    if user and user.getUserType() in users.getDynamicUserAuthenticators():
-        users.authenticators[user.getUserType()].log_user_out(user.dirid, req.session.id)
-    try:
+    user = users.user_from_session(req.session)
+    auth.logout_user(user, req)
+    if "user" in req.session:
         del req.session["user"]
-    except:
-        pass
+        
     req.request["Location"] = '/'
     return httpstatus.HTTP_MOVED_TEMPORARILY
 
 
 def pwdchange(req, error=0):
+    raise NotImplementedError()
     if len(req.params) > 2 and "password_old" not in req.params:  # user changed to browsing
         return buildURL(req)
 
@@ -142,7 +144,7 @@ def pwdchange(req, error=0):
                 error = 2  # new pwds do not match
 
             else:
-                user.setPassword(req.params.get("password_new2"))
+                auth.change_user_password(req.params.get("password_new2"))
                 req.request["Location"] = req.makeLink("node", {"id": tree.getRoot("collections").id})
                 return httpstatus.HTTP_MOVED_TEMPORARILY
 
@@ -154,6 +156,7 @@ def pwdchange(req, error=0):
 
 
 def pwdforgotten(req):
+    raise NotImplementedError()
     if len(req.params) > 3:  # user changed to browsing
         return buildURL(req)
 

@@ -14,6 +14,8 @@ def req():
     req.header = ["0", "1", "2", "3", "4", "5"]
     req.session = {}
     req.params = {}
+    req.form = {}
+    req.args = {}
     return req
 
 

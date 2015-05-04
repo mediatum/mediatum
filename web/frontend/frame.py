@@ -21,7 +21,6 @@ import logging
 from collections import OrderedDict
 import time
 
-import core.users as users
 import core.config as config
 
 from schema.schema import getMetadataType
@@ -30,7 +29,7 @@ from core.acl import AccessData
 from core.translation import lang, t
 from core.metatype import Context
 from core.styles import theme
-from core import db
+from core import db, User, users
 from contenttypes import Collections
 from sqlalchemy.orm.exc import NoResultFound
 from core import Node
@@ -46,7 +45,7 @@ class Portlet:
     def __init__(self):
         self.folded = 0
         self.name = "common"
-        self.user = users.getUser(config.get("user.guestuser", ""))
+        self.user = q(User).filter_by(login_name=config.get("user.guestuser", "")).one()
 
     def isFolded(self):
         return self.folded
@@ -66,7 +65,7 @@ class Portlet:
         return 1
 
     def feedback(self, req):
-        self.user = users.getUserFromRequest(req)
+        self.user = users.user_from_session(req.session)
         r = req.params.get(self.name, "")
         if r == "unfold":
             self.open()
@@ -478,7 +477,6 @@ class UserLinks:
         self.language = lang(req)
 
     def getLinks(self):
-
         l = [Link("http://" + config.get("host.name") + "/logout", t(self.language, "sub_header_logout_title"),
                   t(self.language, "sub_header_logout"), icon="/img/logout.gif")]
         if config.get("user.guestuser") == self.user.getName():
@@ -508,7 +506,7 @@ class UserLinks:
             l += [Link("/publish/", t(self.language, "sub_header_workflow_title"),
                        t(self.language, "sub_header_workflow"), icon="/img/workflow.gif")]
 
-        if config.get("user.guestuser") != self.user.getName() and "c" in self.user.getOption():
+        if config.get("user.guestuser") != self.user.login_name and self.user.can_change_password:
             l += [Link("/pwdchange", t(self.language, "sub_header_changepwd_title"),
                        t(self.language, "sub_header_changepwd"), "_parent", icon="/img/changepwd.gif")]
         return l

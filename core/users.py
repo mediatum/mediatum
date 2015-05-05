@@ -197,18 +197,17 @@ def getExternalAuthentificators():
     return authenticators
 
 
-def getUserFromRequest(req):
-    raise NotImplementedError("obsolete!!")
-    try:
-        user = req.session["user"]
-        if not user:
-            raise KeyError()
-    except KeyError:
-        user = getUser(config.get("user.guestuser"))
-        if not user:
-            logg.warn("Guest user not found in database. Creating new one...")
-            user = create_user(name="Gast", email="nobody@nowhere.none", groups="Gast")
+def user_from_session(session):
+    user = session.get("user")
+    if user is None:
+        user = q(User).filter_by(login_name=config.get("user.guestuser")).one()
+    else:
+        user = q(User).get(user.id)
     return user
+
+
+def getUserFromRequest(req):
+    return user_from_session(req.session)
 
 
 def getExternalUserFolder(type=""):

@@ -200,6 +200,7 @@ def getContent(req, ids):
                                     node.set("creationtime",  unicode(time.strftime('%Y-%m-%dT%H:%M:%S',
                                                                                     time.localtime(time.time()))))
 
+                                    db.session.commit()
                                     # clones to a file with random name
                                     cloned_file = importFileRandom(f.abspath)
                                     node.files.append(cloned_file)

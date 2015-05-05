@@ -42,7 +42,6 @@ def makeAudioThumb(self, audiofile):
         os.system("lame -V 4 -q %s %s" % (audiofile.abspath, path + ".mp3"))
         ret = path + ".mp3"
     self.files.append(File(path + ".mp3", "mp3", "audio/mpeg"))
-    db.session.commit()
     return ret
 
 # """ make thumbnail (jpeg 128x128) """
@@ -83,7 +82,6 @@ def makeThumbNail(self, audiofile):
                 im.save(path + ".thumb", "jpeg")
 
                 self.files.append(File(path + ".thumb", "thumb", audiofile.tags[k].mime))
-                db.session.commit()
                 break
 
 
@@ -110,7 +108,6 @@ def makePresentationFormat(self, audiofile):
                 pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
                 pic.save(path + ".thumb2", "jpeg")
                 self.files.append(File(path + ".thumb2", "presentation", audiofile.tags[k].mime))
-                db.session.commit()
                 break
 
 
@@ -235,7 +232,8 @@ class Audio(Content):
             makePresentationFormat(self, _original)
             makeThumbNail(self, _original)
             makeMetaData(self, _original)
-            db.session.commit()
+
+        db.session.commit()
 
     """ list with technical attributes for type image """
     def getTechnAttributes(self):

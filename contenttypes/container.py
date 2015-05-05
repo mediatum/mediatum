@@ -324,9 +324,11 @@ class Collection(Container):
         return metafields
     
 
+@check_type_arg
 class Collections(Container):
     pass
 
 
+@check_type_arg
 class Home(Container):
     pass

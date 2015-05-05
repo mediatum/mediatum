@@ -11,6 +11,7 @@ from core.transition.postgres import check_type_arg
 
 # root and its children
 
+@check_type_arg
 class Root(Node):
     pass
 
@@ -20,29 +21,36 @@ class Users(Node):
     pass
 
 
+@check_type_arg
 class ExternalUsers(Node):
     pass
 
 
+@check_type_arg
 class Searchmasks(Node):
     pass
 
 
+@check_type_arg
 class Mappings(Node):
     pass
 
 
+@check_type_arg
 class Metadatatypes(Node):
     pass
 
 
+@check_type_arg
 class Navigation(Node):
     pass
 
 
+@check_type_arg
 class UserGroups(Node):
     pass
 
 
+@check_type_arg
 class Schedules(Node):
     pass

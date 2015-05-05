@@ -110,6 +110,8 @@ class AccessData:
             return 0
 
     def hasAccess(self, node, type, fnode=None):
+        # XXX: ACL check disabled, new ACL system later ;)
+        return 1
         if fnode is None:
             fnode = node
 
@@ -132,10 +134,12 @@ class AccessData:
         return 0
 
     def hasReadAccess(self, node, fnode=None):
+        # XXX: ACL check disabled, new ACL system later ;)
+        return 1
         return self.hasAccess(node, "read", fnode)
 
     def hasWriteAccess(self, node, fnode=None):
-        #todo: remove this
+        # XXX: ACL check disabled, new ACL system later ;)
         return 1
         # check for explicit restriction with "NOT" rule
         try:
@@ -160,6 +164,8 @@ class AccessData:
         return self.hasAccess(node, "write", fnode)
 
     def filter(self, nodelist, accesstype="read"):
+        # XXX: ACL check disabled, new ACL system later ;)
+        return nodelist
         if accesstype != "read":
             return self.filter_old(nodelist, accesstype)
         if self.user.isAdmin():

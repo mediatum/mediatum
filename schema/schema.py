@@ -92,7 +92,7 @@ VIEW_DATA_EXPORT = 8    # deliver export format
 
 
 def getMetaType(name):
-
+    warn("use q(Metadatatype) instead", DeprecationWarning)
     if name.isdigit():
         nid = int(name)
         return q(Metadatatype).get(nid)
@@ -100,17 +100,14 @@ def getMetaType(name):
     if name.find("/") > 0:
         name = name[name.rfind("/") + 1:]
 
-    metadatatypes = q(Metadatatypes).one()
-    try:
-        return metadatatypes.getChild(name)
-    except NoResultFound:
-        return None
+    return q(Metadatatype).filter_by(name=name).scalar()
 
 #
 # load all meta-types from db
 #
 
 def loadTypesFromDB():
+    warn("use q(Metadatatype) instead", DeprecationWarning)
     return list(q(Metadatatype).order_by("name"))
 
 
@@ -125,6 +122,7 @@ def getNumberNodes(name):
 
 
 def existMetaType(name):
+    warn("use q(Metadatatype) instead", DeprecationWarning)
     if getMetaType(name):
         return True
     return False

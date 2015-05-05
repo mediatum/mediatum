@@ -155,7 +155,7 @@ def getContent(req, ids):
                         logg.debug("__name__=%s, func=%s; _m=%s, _m[1]=%s", __name__, funcname(), mimetype, mimetype[1])
 
                         content_class = Node.get_class_for_typestring(mimetype[1])
-                        node = content_class(filename, schema=filename2scheme[filename])
+                        node = content_class(name=filename, schema=filename2scheme[filename])
 
                         basenode.children.append(node)
                         node.set("creator", user.name)
@@ -193,7 +193,7 @@ def getContent(req, ids):
                                     logg.debug("files at basenode: %s", [(x.getName(), x.abspath) for x in basenode.files])
 
                                     content_class = Node.get_class_for_typestring(req.params.get('type'))
-                                    node = content_class(filename, schema=req.params.get('value'))
+                                    node = content_class(name=filename, schema=req.params.get('value'))
 
                                     basenode.children.append(node)
                                     node.set("creator", user.name)
@@ -266,7 +266,7 @@ def getContent(req, ids):
             schema = req.params.get('schema')
             ctype = req.params.get('contenttype')
 
-            node = Node(u"", type=ctype, schema=schema)
+            node = Node(name=u"", type=ctype, schema=schema)
             basenode = q(Node).get(req.params.get('id'))
             basenode.children.append(node)
             node.set("creator", user.name)

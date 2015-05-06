@@ -6,6 +6,7 @@
 from pytest import fixture
 
 from web.frontend import login
+from core.auth import PasswordsDoNotMatch, WrongPassword, PasswordChangeNotAllowed
 
 
 @fixture(autouse=True)
@@ -17,7 +18,8 @@ def login_patch(monkeypatch, user, nav_frame):
 
 LOGIN_NAME = "username"
 PASSWORD = "password"
-
+NEW_PASSWORD = "newsecurepass"
+NEW_PASSWORD_REPEATED = "wrongpass"
 
 @fixture
 def check_auth_call(user, req):
@@ -30,23 +32,47 @@ def check_auth_call(user, req):
 
     return _check
 
-
 @fixture
 def auth_success_patch(collections, monkeypatch, check_auth_call):
     import core.auth
     from core import db
     db.session.add(collections)
     monkeypatch.setattr(core.auth, "authenticate_user_credentials", check_auth_call)
-    
+
+
+def check_pwdchange(user, req, exception):
+    def _check(_user, old_password, new_password, new_password_repeated, _req):
+        assert old_password == PASSWORD
+        assert new_password == NEW_PASSWORD
+        assert new_password_repeated == NEW_PASSWORD_REPEATED
+        assert user == _user
+        assert req == _req
+        
+        if exception is not None:
+            raise exception
+        
+    return _check
+
+
+@fixture(params=[None, WrongPassword, PasswordsDoNotMatch, PasswordChangeNotAllowed])
+def pwdchange_patch(monkeypatch, request, req, user):
+    exception = request.param
+    import core.auth
+    monkeypatch.setattr(core.auth, "change_user_password", check_pwdchange(user, req, exception))
+    if exception is None:
+        return 302
+    return 200
+
+
 @fixture
 def logout_patch(monkeypatch, user):
     import core.auth
     _user = user
-    
+
     def check_logout_call(user, req):
         assert user == _user
         return True
-        
+
     monkeypatch.setattr(core.auth, "logout_user", check_logout_call)
 
 
@@ -60,6 +86,15 @@ def test_login(auth_success_patch, req):
 def test_logout(logout_patch, req):
     assert login.logout(req) == 302
     assert "user" not in req.session
+
+
+def test_pwdchange(pwdchange_patch, req):
+    req.form["ChangeSubmit"] = True
+    req.form["user"] = LOGIN_NAME
+    req.form["password_old"] = PASSWORD
+    req.form["password_new1"] = NEW_PASSWORD
+    req.form["password_new2"] = NEW_PASSWORD_REPEATED
+    assert login.pwdchange(req) == pwdchange_patch
 
 
 # Referer tests

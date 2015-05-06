@@ -31,6 +31,7 @@ from core.translation import lang, t
 from utils.utils import mkKey
 from core.styles import theme
 from contenttypes import Collections
+from core.auth import PasswordsDoNotMatch, WrongPassword, PasswordChangeNotAllowed
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -112,29 +113,30 @@ def logout(req):
     return httpstatus.HTTP_MOVED_TEMPORARILY
 
 
-def pwdchange(req, error=0):
-    raise NotImplementedError()
+def pwdchange(req):
+    user = users.user_from_session(req.session)   
+    error = 0
 
-    user = users.getUserFromRequest(req)
-
-    if not user.canChangePWD() and not user.isAdmin():
-        error = 4  # no rights
-
-    elif "ChangeSubmit" in req.params:
-        if user.getName() == config.get("user.guestuser"):
+    if "ChangeSubmit" in req.form:
+        if user.login_name == config.get("user.guestuser"):
             req.request["Location"] = _make_collection_root_link()
             return httpstatus.HTTP_MOVED_TEMPORARILY
 
         else:
-            if not users.checkLogin(user.getName(), req.params.get("password_old")):
-                error = 1  # old pwd does not match
-
-            elif req.params.get("password_new1") != req.params.get("password_new2"):
-                error = 2  # new pwds do not match
-
+            password_old = req.form.get("password_old")
+            password_new1 = req.form.get("password_new1")
+            password_new2 = req.form.get("password_new2")
+            
+            try:
+                auth.change_user_password(user, password_old, password_new1, password_new2, req)
+            except WrongPassword:
+                error = 1
+            except PasswordsDoNotMatch:
+                error = 2
+            except PasswordChangeNotAllowed:
+                error = 4
             else:
-                auth.change_user_password(req.params.get("password_new2"))
-                req.request["Location"] = _make_collection_root_link()
+                req["Location"] = _make_collection_root_link()
                 return httpstatus.HTTP_MOVED_TEMPORARILY
 
     navframe = frame.getNavigationFrame(req)
@@ -145,7 +147,7 @@ def pwdchange(req, error=0):
 
 
 def pwdforgotten(req):
-    raise NotImplementedError()
+    raise NotImplementedError("must be rewritten")
 
     navframe = frame.getNavigationFrame(req)
     navframe.feedback(req)

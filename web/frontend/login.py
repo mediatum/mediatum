@@ -31,10 +31,13 @@ from core.translation import lang, t
 from utils.utils import mkKey
 from core.styles import theme
 from contenttypes import Collections
-from core import users
 
 q = db.query
 logg = logging.getLogger(__name__)
+
+
+def _make_collection_root_link():
+    return "/node?id={}".format(q(Collections).one().id)
 
 
 def _handle_login_submit(req):
@@ -56,11 +59,11 @@ def _handle_login_submit(req):
             req['Location'] = req.session['return_after_login']
         elif config.get("config.ssh", "") == "yes":
             req["Location"] = ''.join(["https://",
-                                               config.get("host.name"),
-                                               "/node?id=",
-                                               q(Collections).one().id])
+                                       config.get("host.name"),
+                                       "/node?id=",
+                                       q(Collections).one().id])
         else:
-            req["Location"] = "/node?id={}".format(q(Collections).one().id)
+            req["Location"] = _make_collection_root_link()
     else:
         return 1
 
@@ -87,7 +90,7 @@ def login(req):
             return httpstatus.HTTP_MOVED_TEMPORARILY
     else:
         error = None
-    
+
     _set_return_after_login(req)
 
     # show login form
@@ -104,7 +107,7 @@ def logout(req):
     auth.logout_user(user, req)
     if "user" in req.session:
         del req.session["user"]
-        
+
     req.request["Location"] = '/'
     return httpstatus.HTTP_MOVED_TEMPORARILY
 
@@ -119,7 +122,7 @@ def pwdchange(req, error=0):
 
     elif "ChangeSubmit" in req.params:
         if user.getName() == config.get("user.guestuser"):
-            req.request["Location"] = req.makeLink("node", {"id": tree.getRoot("collections").id})
+            req.request["Location"] = _make_collection_root_link()
             return httpstatus.HTTP_MOVED_TEMPORARILY
 
         else:
@@ -131,7 +134,7 @@ def pwdchange(req, error=0):
 
             else:
                 auth.change_user_password(req.params.get("password_new2"))
-                req.request["Location"] = req.makeLink("node", {"id": tree.getRoot("collections").id})
+                req.request["Location"] = _make_collection_root_link()
                 return httpstatus.HTTP_MOVED_TEMPORARILY
 
     navframe = frame.getNavigationFrame(req)
@@ -159,7 +162,7 @@ def pwdforgotten(req):
                 logg.info("password reset for user '%s' (id=%s) reset", targetuser.name, targetuser.id)
                 targetuser.removeAttribute("newpassword.password")
                 targetuser.set("newpassword.time_activated", date.format_date())
-                logg.info("new password activated for user: %s - was requested: %s by %s", 
+                logg.info("new password activated for user: %s - was requested: %s by %s",
                           targetuser.name, targetuser.get("newpassword.time_requested"), targetuser.get("newpassword.request_ip"))
 
                 navframe.write(

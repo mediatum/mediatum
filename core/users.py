@@ -460,30 +460,13 @@ def getHomeDir(user):
 
 
 def getSpecialDir(user, type):
-    from contenttypes import Directory
-
-    nodename = ""
-    if type == "upload":
-        nodename = translate("user_upload", getDefaultLanguage())
-    elif type == "faulty":
-        nodename = translate("user_faulty", getDefaultLanguage())
+    warn("use User.faulty_dir | User.upload_dir | User.trash_dir instead", DeprecationWarning)
+    if type == "faulty":
+        return user.faulty_dir
+    elif type == "upload":
+        return user.upload_dir
     elif type == "trash":
-        nodename = translate("user_trash", getDefaultLanguage())
-    else:
-        return None
-
-    userdir = getHomeDir(user)
-
-    for c in userdir.children:
-        if c.name == nodename:
-            return c
-
-    # create new directory
-    new_directory = Directory(nodename)
-    userdir.children.append(new_directory)
-    db.session.commit()
-
-    return new_directory
+        return user.trash_dir
 
 
 def getUploadDir(user):

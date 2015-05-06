@@ -7,6 +7,7 @@
 from pytest import fixture
 from core.test.asserts import assert_deprecation_warning
 from core import db, User, ShoppingBag
+from contenttypes import Directory
 
 
 @fixture(params=[
@@ -53,3 +54,29 @@ def test_workflow_editor_user(workflow_editor_user):
     assert workflow_editor_user.is_workflow_editor
     assert not workflow_editor_user.is_editor
     assert not workflow_editor_user.is_admin
+
+
+def test_user_home_dir(user_with_home_dir):
+    user = user_with_home_dir
+    assert isinstance(user.home_dir, Directory) 
+    # home dir must have 3 special subdirs
+    assert user.home_dir.children.count() == 3
+
+
+def test_user_special_dirs(user_with_home_dir):
+    user = user_with_home_dir
+    home_subdirs = user.home_dir.children.all()
+    assert user.faulty_dir in home_subdirs
+    assert user.upload_dir in home_subdirs
+    assert user.trash_dir in home_subdirs
+
+
+def test_user_create_home_dir(some_user, home_root):
+    user = some_user
+    db.session.add(home_root)
+    home = user.create_home_dir()
+    assert isinstance(home, Directory)
+    home_subdirs = user.home_dir.children.all()
+    assert user.faulty_dir in home_subdirs
+    assert user.upload_dir in home_subdirs
+    assert user.trash_dir in home_subdirs

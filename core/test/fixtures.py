@@ -11,7 +11,7 @@ from pytest import yield_fixture, fixture
 from core import File
 from core.test.factories import NodeFactory, DocumentFactory, DirectoryFactory, UserFactory, UserGroupFactory
 from core import db
-from contenttypes.container import Collections
+from contenttypes.container import Collections, Home
 from core.database.init import init_database_values
 from core.init import load_system_types, load_types
 from core.systemtypes import Users, UserGroups
@@ -61,10 +61,23 @@ def default_data():
 def collections():
     return Collections("collections")
 
+@fixture
+def home_root():
+    return Home("home")
+
 
 @fixture
 def some_user():
     return UserFactory()
+
+@fixture
+def user_with_home_dir(some_user, home_root):
+    from contenttypes import Directory
+    home = Directory(name="Arbeitsverzeichnis (test)")
+    home.children.extend([Directory("faulty"), Directory("upload"), Directory("trash")])
+    home_root.children.append(home)
+    some_user.home_dir = home
+    return some_user
 
 @fixture
 def editor_user(some_user):

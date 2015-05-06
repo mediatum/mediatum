@@ -3,6 +3,8 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+import logging
+
 from sqlalchemy import Unicode, Text, Boolean, Table, DateTime, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy_utils.types import EmailType
@@ -11,6 +13,9 @@ from core.database.postgres import DeclarativeBase, db_metadata
 from core.database.postgres import rel, C
 from core.database.postgres import TimeStamp, integer_fk, integer_pk
 from core.user import UserMixin
+
+
+logg = logging.getLogger(__name__) 
 
 
 class AuthenticatorInfo(DeclarativeBase):
@@ -104,5 +109,33 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
     def is_workflow_editor(self):
         return any(g.is_workflow_editor_group for g in self.groups)
 
+    @property
+    def upload_dir(self):
+        if self.home_dir:
+            return self.home_dir.children.filter_by(name="upload").one()
+
+    @property
+    def faulty_dir(self):
+        if self.home_dir:
+            return self.home_dir.children.filter_by(name="faulty").one()
+
+    @property
+    def trash_dir(self):
+        if self.home_dir:
+            return self.home_dir.children.filter_by(name="trash").one()
+
+    def create_home_dir(self):
+        from core import db, users
+        from contenttypes.container import Directory, Home
+        # XXX: better solution for dir name? Language independency?
+        homedir_name = users.buildHomeDirName(self.display_name)
+        home = Directory(homedir_name)
+        home.children.extend([Directory("faulty"), Directory("upload"), Directory("trash")])
+        # XXX: add access rules
+        db.session.query(Home).one().children.append(home)
+        self.home_dir = home
+        logg.info("created home dir for user '%s (id: %s)'", self.login_name, self.id)
+        return home
+        
     def __repr__(self):
         return u"User<{} '{}'> ({})".format(self.id, self.login_name, object.__repr__(self)).encode("utf8")

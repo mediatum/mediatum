@@ -53,6 +53,7 @@ class UserFactory(SQLAFactory):
         model = User
 
     login_name = FuzzyText(length=6, chars=string.lowercase)
+    display_name = FuzzyText(length=6, chars=string.lowercase)
     firstname = FuzzyText(length=6, chars=string.lowercase)
     lastname = FuzzyText(length=6, chars=string.lowercase)
     email = FuzzyEmail(length=6, chars=string.lowercase)

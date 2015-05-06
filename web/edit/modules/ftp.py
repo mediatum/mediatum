@@ -101,7 +101,7 @@ def getContent(req, ids):
                         break
             break
             
-    files = filter(lambda x: x.name.startswith("ftp_"), node.files)
+    files = filter(lambda x: x.base_name.startswith("ftp_"), node.files)
     types = []
     for f in files:
         if f.filetype not in types:

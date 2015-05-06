@@ -30,8 +30,8 @@ from contenttypes.data import Data
 from core.database.helpers import ContainerMixin
 from core.translation import t, lang
 from utils.utils import CustomItem
-from core.transition.postgres import check_type_arg
-from schema.schema import Metafield, ContainerSchemaMixin
+from core.transition.postgres import check_type_arg, check_type_arg_with_schema
+from schema.schema import Metafield, SchemaMixin
 try:
     import web.frontend.modules.modules as frontendmods
     frontend_modules = 1
@@ -104,7 +104,7 @@ def fileIsNotEmpty(file):
 """ directory class """
 
 
-class Container(Data, ContainerMixin, ContainerSchemaMixin):
+class Container(Data, ContainerMixin, SchemaMixin):
 
     """(Abstract) Base class for Nodes that contain other Container/Content nodes and are displayed in the navigation area.
     """
@@ -313,7 +313,7 @@ class Container(Data, ContainerMixin, ContainerSchemaMixin):
         
 # concrete Container classes
 
-@check_type_arg
+@check_type_arg_with_schema
 class Directory(Container):
 
     @classmethod
@@ -321,7 +321,7 @@ class Directory(Container):
         return "directory"
     
 
-@check_type_arg
+@check_type_arg_with_schema
 class Collection(Container):
 
     @classmethod
@@ -338,11 +338,11 @@ class Collection(Container):
         return metafields
     
 
-@check_type_arg
+@check_type_arg_with_schema
 class Collections(Container):
     pass
 
 
-@check_type_arg
+@check_type_arg_with_schema
 class Home(Container):
     pass

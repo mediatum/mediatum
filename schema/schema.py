@@ -580,11 +580,11 @@ class Metadatatype(Node):
 
     masks = children_rel("Mask")
     metafields = children_rel("Metafield")
-    
+
     @property
     def description(self):
         return self.get("description")
-    
+
     def getDescription(self):
         warn("use Metadatatype.description", DeprecationWarning)
         return self.description
@@ -850,34 +850,34 @@ def getMaskTypes(key="."):
 
 @check_type_arg
 class Mask(Node):
-    
+
     maskitems = children_rel("Maskitem")
-    
+
     _metadatatypes = parents_rel("Metadatatype")
-    
+
     @property
     def masktype(self):
         return self.get("masktype")
-    
+
     @hybrid_property
     def metadatatype(self):
         return self._metadatatypes.scalar()
-    
+
     @metadatatype.expression
     def metadatatype_expr(cls):
         class MetadatatypeExpr(object):
             def __eq__(self, other):
                 return cls._metadatatypes.contains(other)
-            
+
         return MetadatatypeExpr()
-    
-    
+
+
     @property
     def all_maskitems(self):
         """Recursively get all maskitems, they can be nested
         """
         return self.all_children_by_query(q(Maskitem))
-    
+
     def getFormHTML(self, nodes, req):
         if not self.children:
             return None
@@ -941,7 +941,7 @@ class Mask(Node):
             return self.maskitems
         else:
             return self.all_maskitems
-        
+
     """ return all fields which are empty """
 
     def validate(self, nodes):
@@ -1304,19 +1304,19 @@ class Mask(Node):
 class Maskitem(Node):
 
     _metafields = children_rel("Metafield", backref="maskitems")
-    
+
     @hybrid_property
     def metafield(self):
         return self._metafields.scalar()
-    
+
     @metafield.expression
     def metafield_expr(cls):
         class MetafieldExpr(object):
             def __eq__(self, other):
                 return cls._metafields.contains(other)
-            
+
         return MetafieldExpr()
-    
+
     @metafield.setter
     def set_metafield(self, metafield):
         self._metafields.remove(self.metafield)
@@ -1470,7 +1470,7 @@ def getFieldsForMeta(name):
 
 
 class SchemaMixin(object):
-    
+
     def getMask(self, name):
         warn("use Default.metadatatype.get_mask instead", DeprecationWarning)
         mdt = self.metadatatype
@@ -1480,20 +1480,10 @@ class SchemaMixin(object):
         warn("use Default.metadatatype.filter_masks instead", DeprecationWarning)
         self.metadatatype.filter_masks(type, language).all()
 
-
-class ContainerSchemaMixin(SchemaMixin):
-    
-    @hybrid_property
-    def metadatatype(self):
-        return q(Metadatatype).filter_by(name=self.type).scalar()
-     
-
-class ContentSchemaMixin(SchemaMixin):
-    
     @hybrid_property
     def metadatatype(self):
         return q(Metadatatype).filter_by(name=self.schema).one()
-     
+
     def getSchema(self):
         warn("deprecated, use Content.schema instead", DeprecationWarning)
         return self.schema
@@ -1540,24 +1530,6 @@ class ContentSchemaMixin(SchemaMixin):
             if field.Sortfield():
                 sfields += [field]
         return sfields
-
-    def getMasks(self, type="", language=""):
-        try:
-            if self.getSchema():
-                return getMetaType(self.getSchema()).getMasks(type=type, language=language)
-            else:
-                return []
-        except AttributeError:
-            return []
-
-    def getMask(self, name):
-        if self.getSchema():
-            try:
-                return getMetaType(self.getSchema()).getMask(name)
-            except AttributeError:
-                return None
-        else:
-            raise ValueError("Node of type '" + ustr(self.getSchema()) + "' has no mask")
 
     def getDescription(self):
         if self.getSchema():

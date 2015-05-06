@@ -29,7 +29,7 @@ from core import Node
 import core.config as config
 from core.translation import lang
 from core.styles import getContentStyles
-from schema.schema import getMetadataType, VIEW_DATA_ONLY, VIEW_HIDE_EMPTY, ContentSchemaMixin
+from schema.schema import getMetadataType, VIEW_DATA_ONLY, VIEW_HIDE_EMPTY, SchemaMixin
 from utils.utils import Menu, highlight, format_filesize
 from export.exportutils import runTALSnippet, default_context
 from web.services.cache import date2string as cache_date2string
@@ -597,13 +597,11 @@ class Data(Node):
         return self.getName()
 
 
-class Content(Data, ContentSchemaMixin):
+class Content(Data, SchemaMixin):
 
     """(Abstract) base class for all content node types.
     """
-    def getSchema(self):
-        warn("deprecated, use Content.schema", DeprecationWarning)
-        return self.schema
+    pass
 
 
 class File(Content):

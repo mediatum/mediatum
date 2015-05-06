@@ -39,7 +39,7 @@ def init_database_values(s):
     metadatatypes = Metadatatypes(u"metadatatypes", u"metadatatypes", 3)
     workflows = Workflows(u"workflows", u"workflows", 4)
     mappings = Mappings(u"mappings", u"mappings", 9)
-    collections = Collections(u"collections", u"collections", 10)
+    collections = Collections(u"collections", u"collections", schema=u"collection", id=10)
     collections.attrs[u"label"] = u"Collections"
     home = Home(u"home", u"home", 11)
     searchmasks = Searchmasks(u"searchmasks", u"searchmasks", 15)
@@ -53,7 +53,7 @@ def init_database_values(s):
 
     # default users and groups setup
     # add internal authenticator
-    auth_type, auth_name = INTERNAL_AUTHENTICATOR_KEY  
+    auth_type, auth_name = INTERNAL_AUTHENTICATOR_KEY
     internal_auth = AuthenticatorInfo(id=0, auth_type=auth_type, name=auth_name)
 
     admin_hash, admin_salt = create_password_hash(config.get(u"user.default_admin_password", "xadmin1"))

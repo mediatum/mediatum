@@ -37,14 +37,6 @@ q = db.query
 logg = logging.getLogger(__name__)
 
 
-def buildURL(req):
-    p = ""
-    for key in req.params:
-        p += "&" + ustr(key) + "=" + req.params.get(key)
-    req.request["Location"] = "http://" + config.get("host.name") + "/node?" + p[1:]
-    return httpstatus.HTTP_MOVED_TEMPORARILY
-
-
 def _handle_login_submit(req):
     login_name = req.form.get("user", config.get("user.guestuser"))
     password = req.form.get("password", "")
@@ -89,10 +81,6 @@ def _set_return_after_login(req):
 
 def login(req):
 
-    if len(req.params) > 2 and "user" not in req.params:  # user changed to browsing
-        # XXX: ?!?
-        return buildURL(req)
-
     if "LoginSubmit" in req.form:
         error = _handle_login_submit(req)
         if not error:
@@ -123,8 +111,6 @@ def logout(req):
 
 def pwdchange(req, error=0):
     raise NotImplementedError()
-    if len(req.params) > 2 and "password_old" not in req.params:  # user changed to browsing
-        return buildURL(req)
 
     user = users.getUserFromRequest(req)
 
@@ -157,8 +143,6 @@ def pwdchange(req, error=0):
 
 def pwdforgotten(req):
     raise NotImplementedError()
-    if len(req.params) > 3:  # user changed to browsing
-        return buildURL(req)
 
     navframe = frame.getNavigationFrame(req)
     navframe.feedback(req)

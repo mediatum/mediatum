@@ -62,14 +62,6 @@ def test_logout(logout_patch, req):
     assert "user" not in req.session
 
 
-def test_login_change_to_browsing(req):
-    req.form["arg1"] = "val1"
-    req.form["arg2"] = "val2"
-    req.form["arg3"] = "val3"
-    assert login.login(req) == 302
-    assert req.request.mock_
-
-
 # Referer tests
 
 def test_login_no_referer(req):

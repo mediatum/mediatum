@@ -125,10 +125,11 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
             return self.home_dir.children.filter_by(name="trash").one()
 
     def create_home_dir(self):
-        from core import db, users
+        from core import db
+        from core.translation import getDefaultLanguage, translate
         from contenttypes.container import Directory, Home
         # XXX: better solution for dir name? Language independency?
-        homedir_name = users.buildHomeDirName(self.display_name)
+        homedir_name = translate("user_directory", getDefaultLanguage()) + " (" + self.login_name + ")"
         home = Directory(homedir_name)
         home.children.extend([Directory("faulty"), Directory("upload"), Directory("trash")])
         # XXX: add access rules

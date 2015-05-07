@@ -1,4 +1,3 @@
-
 <div metal:define-macro="show_operations" style="overflow:visible;float:left">
     <!--<div style="margin:10px;float:left" id="operation" tal:condition="python:iscontainer==1">
         <b><tal:block i18n:translate="edit_common_mark"/>:</b>
@@ -59,8 +58,8 @@
                 </div>
                 <div style="position:absolute; left:148px; top:20px; width:148px; height:148px; overflow: hidden;">
                     <p class="descbox">
-                        <tal:block tal:condition="python:hasattr(node, 'show_node_text')" tal:replace="raw python:node.show_node_text(None,language=language)"/>
-                        <tal:block tal:condition="python:not hasattr(node, 'show_node_text')" tal:replace="raw python:node.getName()"/>
+                        <tal:block tal:condition="python:hasattr(node, 'show_node_text')" tal:replace="raw python:node.show_node_text(None, language=language)"/>
+                        <tal:block tal:condition="python:not hasattr(node, 'show_node_text')" tal:replace="raw python:node.name"/>
                         <br/><span style="color: red" tal:condition="python:node in notpublished" i18n:translate="notpublished">TEXT</span>
                     </p>
                 </div>

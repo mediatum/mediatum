@@ -27,6 +27,7 @@ import core.config as config
 from .workflow import WorkflowStep, getNodeWorkflow, getNodeWorkflowStep, registerStep
 from core.translation import t, lang, addLabels
 from utils.date import format_date
+from schema.schema import Metafield
 
 LDAP_AVAILABLE = True
 LDAP_MODULE_PRESENT = True
@@ -48,7 +49,8 @@ logg = logging.getLogger(__name__)
 
 def register():
     #tree.registerNodeClass("workflowstep-ldapauth", WorkflowStep_LdapAuth)
-    registerStep("workflowstep-ldapauth")
+    # registerStep("workflowstep-ldapauth")
+    registerStep("workflowstep_ldapauth")
     addLabels(WorkflowStep_LdapAuth.getLabels())
 
 
@@ -120,19 +122,19 @@ class WorkflowStep_LdapAuth(WorkflowStep):
 
     def metaFields(self, lang=None):
         if not LDAP_AVAILABLE:
-            field = tree.Node("infotext", "metafield")
+            field = Metafield("infotext")
             field.set("label", t(lang, "xadmin_wfstep_ldapauth_label"))
             field.set("type", "label")
             field.set("value", '<span style="color:#ff0000">' + t(lang, "xadmin_wfstep_ldapauth_text") + '</span>')
             return [field]
 
         ret = list()
-        field = tree.Node("prefix", "metafield")
+        field = Metafield("prefix")
         field.set("label", t(lang, "admin_wfstep_text_before_data"))
         field.set("type", "memo")
         ret.append(field)
 
-        field = tree.Node("attribute_for_user_identifier", "metafield")
+        field = Metafield("attribute_for_user_identifier")
         field.set("label", t(lang, "admin_wfstep_ldapauth_attribute_for_user_identifier"))
         field.set("type", "text")
         ret.append(field)

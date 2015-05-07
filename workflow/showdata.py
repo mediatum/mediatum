@@ -21,27 +21,26 @@
 import logging
 from .workflow import WorkflowStep, registerStep
 from core.translation import t, lang
-from schema.schema import getMetaType, VIEW_HIDE_EMPTY
-
+from schema.schema import getMetaType, VIEW_HIDE_EMPTY, Metafield
 
 logg = logging.getLogger(__name__)
 
 
 def mkfilelist(node, deletebutton=0, language=None, request=None):
     return request.getTAL(
-        "workflow/showdata.html", {"files": node.getFiles(), "node": node, "delbutton": deletebutton}, macro="workflow_filelist")
+        "workflow/showdata.html", {"files": node.files, "node": node, "delbutton": deletebutton}, macro="workflow_filelist")
 
 
 def mkfilelistshort(node, deletebutton=0, language=None, request=None):
     return request.getTAL(
-        "workflow/showdata.html", {"files": node.getFiles(), "node": node, "delbutton": deletebutton}, macro="workflow_filelist_short")
+        "workflow/showdata.html", {"files": node.files, "node": node, "delbutton": deletebutton}, macro="workflow_filelist_short")
 
 
 def register():
     #tree.registerNodeClass("workflowstep-showdata", WorkflowStep_ShowData)
     #tree.registerNodeClass("workflowstep-wait", WorkflowStep_ShowData)
-    registerStep("workflowstep-showdata")
-    registerStep("workflowstep-wait")
+    registerStep("workflowstep_showdata")
+    registerStep("workflowstep_wait")
 
 
 class WorkflowStep_ShowData(WorkflowStep):
@@ -79,7 +78,7 @@ class WorkflowStep_ShowData(WorkflowStep):
         filelist = ""
         filelistshort = ""
 
-        if node.getFiles():
+        if node.files:
             filelist = mkfilelist(node, request=req)
             filelistshort = mkfilelistshort(node, request=req)
 
@@ -95,7 +94,7 @@ class WorkflowStep_ShowData(WorkflowStep):
                           macro="workflow_showdata")
 
     def metaFields(self, lang=None):
-        field = tree.Node("masks", "metafield")
+        field = Metafield("masks")
         field.set("label", t(lang, "admin_wfstep_masks_to_display"))
         field.set("type", "text")
         return [field]

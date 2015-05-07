@@ -26,14 +26,15 @@ from .workflow import WorkflowStep, registerStep
 import utils.urn as utilsurn
 from core.translation import t, addLabels
 import utils.date as date
-
+from core import db
+from schema.schema import Metafield
 
 logg = logging.getLogger(__name__)
 
 
 def register():
     #tree.registerNodeClass("workflowstep-addurn", WorkflowStep_Urn)
-    registerStep("workflowstep-addurn")
+    registerStep("workflowstep_urn")
     addLabels(WorkflowStep_Urn.getLabels())
 
 
@@ -47,7 +48,7 @@ class WorkflowStep_Urn(WorkflowStep):
             attrname = "urn"
 
         # create urn only for nodes with files
-        if len(node.getFiles()) > 0:
+        if len(node.files) > 0:
             urn = node.get(attrname)
             if urn:
                 node.set(attrname, utilsurn.increaseURN(node.get(attrname)))
@@ -64,26 +65,27 @@ class WorkflowStep_Urn(WorkflowStep):
                             
                         niss = niss.replace("[" + var + "]", val)
                 node.set(attrname, utilsurn.buildNBN(self.get("snid1"), self.get("snid2"), niss))
+        db.session.commit()
         return self.forwardAndShow(node, True, req)
 
     def metaFields(self, lang=None):
         ret = list()
-        field = tree.Node("attrname", "metafield")
+        field = Metafield("attrname")
         field.set("label", t(lang, "admin_wfstep_urn_attrname"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("snid1", "metafield")
+        field = Metafield("snid1")
         field.set("label", t(lang, "admin_wfstep_urn_snid1"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("snid2", "metafield")
+        field = Metafield("snid2")
         field.set("label", t(lang, "admin_wfstep_urn_snid2"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("niss", "metafield")
+        field = Metafield("niss")
         field.set("label", t(lang, "admin_wfstep_urn_niss"))
         field.set("type", "text")
         ret.append(field)

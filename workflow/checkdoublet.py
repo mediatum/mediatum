@@ -21,6 +21,12 @@
 
 import time
 import logging
+from core import Node
+from core import db
+from core.systemtypes import Metadatatypes
+from schema.schema import Metafield
+
+q = db.query
 
 try:
     import Levenshtein
@@ -39,7 +45,7 @@ logg = logging.getLogger(__name__)
 
 def register():
     #tree.registerNodeClass("workflowstep-checkdoublet", WorkflowStep_CheckDoublet)
-    registerStep("workflowstep-checkdoublet")
+    registerStep("workflowstep_checkdoublet")
 
 
 def getNodeAttributeName(field):
@@ -77,19 +83,19 @@ def getLabelForAttributename(mdt_name, attr_name, maskname_list):
     res = attr_name
 
     try:
-        mdt = tree.getRoot('metadatatypes').getChild(mdt_name)
+        mdt = q(Metadatatypes).one().children.filter_by(name=mdt_name).one()
         field = [x for x in getFieldsForMeta(mdt_name) if x.name == attr_name][0]
 
         masks = []
         for maskname in maskname_list:
-            mask = mdt.getChild(maskname)
+            mask = mdt.children.filter_by(name=maskname).one()
             if mask.type == 'mask':
                 masks.append(mask)
 
-        set_maskitems_for_field = set([x for x in field.getParents() if x.type == 'maskitem'])
+        set_maskitems_for_field = set([x for x in field.parents if x.type == 'maskitem'])
 
         for mask in masks:
-            maskitems = list(set_maskitems_for_field.intersection(set(mask.getChildren())))
+            maskitems = list(set_maskitems_for_field.intersection(set(mask.children)))
             if maskitems:
                 return maskitems[0].name
     except:
@@ -100,7 +106,7 @@ def getLabelForAttributename(mdt_name, attr_name, maskname_list):
 
 def getAttr(node, attributename):
     res = node.get(attributename)
-    if getTypeForAttributename(node.getSchema(), attributename).lower() == 'date':
+    if getTypeForAttributename(node.schema, attributename).lower() == 'date':
         test = res.split('-')
         if len(test) > 2 and test[1] == '00' and len(test[0]) == 4:
             return test[0]
@@ -123,9 +129,8 @@ class WorkflowStep_CheckDoublet(WorkflowStep):
 
         if "gotrue" in req.params:
             chosen_id = req.params.get('chosen_id').strip()
-            try:
-                chosen_node = tree.getNode(chosen_id)
-            except tree.NoSuchNodeError:
+            chosen_node = q(Node).get(chosen_id)
+            if chosen_node is None:
                 logg.error("checkdoublet: no such node as chosen_node: %s", chosen_id)
 
             all_ids = req.params.get('all_ids')
@@ -136,17 +141,16 @@ class WorkflowStep_CheckDoublet(WorkflowStep):
                 import core.xmlnode
                 checked_to_remove = self.get("checked_to_remove")
                 for nid in nid_list:
-                    try:
-                        n = tree.getNode(nid)
+                    n = q(Node).get(nid)
+                    if n:
                         for wf_step, wf_step_children, wf_step_children_ids in step_children_list:
                             if n.id in wf_step_children_ids:
                                 if checked_to_remove:
                                     current_workflow = getNodeWorkflow(node)
-                                    logg.info("checkdoublet: going to remove node %s (doublette of node %s) from workflowstep '%s' (%s) of workflow '%s' (%s)", 
+                                    logg.info("checkdoublet: going to remove node %s (doublette of node %s) from workflowstep '%s' (%s) of workflow '%s' (%s)",
                                               nid, chosen_id, wf_step.name, wf_step.id, current_workflow.name, current_workflow.id)
-                                    wf_step.removeChild(n)
-                    except tree.NoSuchNodeError:
-                        pass
+                                    wf_step.children.remove(n)
+                                    db.session.commit()
 
             handleDoublets(nid_list)
 
@@ -167,7 +171,7 @@ class WorkflowStep_CheckDoublet(WorkflowStep):
         if "gofalse" in req.params:
             return self.forwardAndShow(node, False, req)
 
-        schema = node.getSchema()
+        schema = node.schema
         attribute_names_string = self.get("attribute_names").strip()
         attribute_names = []
         if attribute_names_string:
@@ -271,37 +275,37 @@ class WorkflowStep_CheckDoublet(WorkflowStep):
 
     def metaFields(self, lang=None):
         ret = list()
-        field = tree.Node("prefix", "metafield")
+        field = Metafield("prefix")
         field.set("label", t(lang, "admin_wfstep_text_before_data"))
         field.set("type", "memo")
         ret.append(field)
 
-        field = tree.Node("suffix", "metafield")
+        field = Metafield("suffix")
         field.set("label", t(lang, "admin_wfstep_text_after_data"))
         field.set("type", "memo")
         ret.append(field)
 
-        field = tree.Node("attribute_names", "metafield")
+        field = Metafield("attribute_names")
         field.set("label", t(lang, "admin_wfstep_checkdoublet_names_of_attributes_to_check"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("exact_field", "metafield")
+        field = Metafield("exact_field")
         field.set("label", t(lang, "admin_wfstep_checkdoublet_exact_field"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("additional_attribute_to_show", "metafield")
+        field = Metafield("additional_attribute_to_show")
         field.set("label", t(lang, "admin_wfstep_checkdoublet_additional_attribute_to_show"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("masklist_for_labels", "metafield")
+        field = Metafield("masklist_for_labels")
         field.set("label", t(lang, "admin_wfstep_checkdoublet_masklist_for_labels"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("checked_to_remove", "metafield")
+        field = Metafield("checked_to_remove")
         field.set("label", t(lang, "admin_wfstep_checkdoublet_check_to_remove"))
         field.set("type", "check")
         ret.append(field)

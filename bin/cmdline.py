@@ -32,10 +32,14 @@ import string
 import core.xmlnode as xmlnode
 import schema.schema as metadatatypes
 
+from core.systemtypes import Root
+from core import db
+
+q = db.query
 rootaccess = acl.getRootAccess()
 
 path = []
-node = tree.getRoot()
+node = q(Root).one()
 lastnodes = []
 
 
@@ -261,11 +265,11 @@ def dumptree(filename):
 
 
 def purge(ptype):
-    if (node.type == "workflow" or node.type.startswith("workflowstep-")) and ptype == "workflow":
+    if (node.type == "workflow" or node.type.startswith("workflowstep_")) and ptype == "workflow":
         def recurse(node):
-            for c in node.getChildren():
+            for c in node.children:
                 if not c.type.startswith("workflow"):
-                    node.removeChild(c)
+                    node.children.remove(c)
                 else:
                     recurse(c)
 

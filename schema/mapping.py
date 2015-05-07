@@ -22,36 +22,42 @@ from core import Node
 from core.xmlnode import getNodeXML, readNodeXML
 from core.transition.postgres import check_type_arg
 
+from core import db
+from core.systemtypes import Mappings, Root
+
+q = db.query
+
 
 def getMappings():
-    try:
-        mappings = tree.getRoot("mappings")
-    except tree.NoSuchNodeError as e:
-        root = tree.getRoot()
-        root.addChild(tree.Node("mappings", "mappings"))
-        mappings = tree.getRoot("mappings")
+    mappings = q(Mappings).scalar()
+    if mappings is None:
+        root = q(Root).one()
+        root.children.append(Node("mappings", "mappings"))
+        mappings = q(Mappings).one()
+        db.session.commit()
 
     try:
-        return mappings.getChildren()
-    except tree.NoSuchNodeError as e:
+        return mappings.children
+    except:
         return []
 
 
 def getMapping(id):
-    try:
-        return tree.getNode(id)
-    except tree.NoSuchNodeError as e:
-        mappings = tree.getRoot("mappings")
+    n = q(Node).get(id)
+    if n is None:
+        mappings = q(Mappings).one()
         return mappings.getChild(id)
+    return n
 
 
 def getMappingTypes():
     ret = []
     try:
-        mappings = tree.getRoot("mappings")
+        mappings = q(Mappings).one()
         ret = mappings.get("mappingtypes").split(";")
         if len(ret) == 0 or ret[0] == "":
             mappings.set("mappingtypes", "default;bibtex;rss;marc21;z3950;citeproc")
+            db.session.commit()
             return getMappingTypes()
         return ret
     except:
@@ -61,12 +67,12 @@ def getMappingTypes():
 def updateMapping(name, namespace="", namespaceurl="", description="", header="", footer="",
                   separator="", standardformat="", id=0, mappingtype="", active=""):
     if id != "" and int(id) > 0:
-        mapping = tree.getNode(id)
+        mapping = q(Node).get(id)
     else:
-        mappings = tree.getRoot("mappings")
-        mapping = tree.Node(name=name, type="mapping")
-        mappings.addChild(mapping)
-    mapping.setName(name)
+        mappings = q(Mappings).one()
+        mapping = Node(name=name, type="mapping")
+        mappings.children.append(mapping)
+    mapping.set("name", name)
     mapping.setDescription(description)
     mapping.setNamespace(namespace)
     mapping.setNamespaceUrl(namespaceurl)
@@ -76,38 +82,42 @@ def updateMapping(name, namespace="", namespaceurl="", description="", header=""
     mapping.setStandardFormat(standardformat)
     mapping.setMappingType(mappingtype)
     mapping.setActive(active)
+    db.session.commit()
 
 
 def deleteMapping(name):
-    mappings = tree.getRoot("mappings")
-    mappings.removeChild(getMapping(name))
+    mappings = q(Mappings).one()
+    mappings.children.remove(getMapping(name))
+    db.session.commit()
 
 
 def updateMappingField(parentid, name, description="", exportformat="", mandatory=False, default="", id=0):
-    mapping = tree.getNode(parentid)
+    mapping = q(Node).get(parentid)
     if id != "" and int(id) > 0:
-        mappingfield = tree.getNode(id)
+        mappingfield = q(Node).get(id)
     else:
-        mappingfield = tree.Node(name=name, type="mappingfield")
-        mapping.addChild(mappingfield)
-    mappingfield.setName(name)
+        mappingfield = Node(name=name, type="mappingfield")
+        mapping.children.append(mappingfield)
+    mappingfield.set("name", name)
     mappingfield.setDescription(description)
     mappingfield.setExportFormat(exportformat)
     mappingfield.setMandatory(mandatory)
     mappingfield.setDefault(default)
+    db.session.commit()
 
 
 def deleteMappingField(name):
-    node = tree.getNode(name)
-    for p in node.getParents():
+    node = q(Node).get(name)
+    for p in node.parents:
         if p.type == "mapping":
-            p.removeChild(node)
+            p.children.remove(node)
+            db.session.commit()
             return
 
 
 def exportMapping(name):
     if name == "all":
-        return getNodeXML(tree.getRoot("mappings"))
+        return getNodeXML(q(Mappings).one())
     else:
         return getNodeXML(getMapping(name))
 
@@ -118,13 +128,14 @@ def importMapping(filename):
     if n.getContentType() == "mapping":
         importlist.append(n)
     elif n.getContentType() == "mappings":
-        for ch in n.getChildren():
+        for ch in n.children:
             importlist.append(ch)
 
-    mappings = tree.getRoot("mappings")
+    mappings = q(Mappings).one()
     for m in importlist:
-        m.setName("import-" + m.getName())
-        mappings.addChild(m)
+        m.set("name", "import-" + m.getName())
+        mappings.children.append(m)
+    db.session.commit()
 
 
 @check_type_arg
@@ -173,8 +184,8 @@ class Mapping(Node):
         self.set("standardformat", standardformat)
 
     def getFields(self):
-        f = list(self.getChildren())
-        f.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))
+        f = list(self.children)
+        f.sort(lambda x, y: cmp(x.name.lower(), y.name.lower()))
         return f
 
     def getMandatoryFields(self):
@@ -185,7 +196,7 @@ class Mapping(Node):
         return ret
 
     def addField(self, field):
-        self.addChild(field)
+        self.children.append(field)
 
     def getFieldtype(self):
         return "mapping"
@@ -218,8 +229,8 @@ class MappingField(Node):
 
     def getFullName(self):
         if self.getMandatory():
-            return self.getName() + " *"
-        return self.getName()
+            return self.name + " *"
+        return self.name
 
     def getDescription(self):
         return self.get("description")

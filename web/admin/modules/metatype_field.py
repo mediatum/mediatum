@@ -27,7 +27,11 @@ from web.admin.adminutils import Overview, getAdminStdVars, getSortCol, getFilte
 from schema.schema import getMetaType, getMetaFieldTypeNames, getMetaField, getFieldsForMeta, getMetadataType, dateoption, requiredoption,\
     fieldoption
 from core.translation import lang, t
+from schema.schema import Metafield
+from core import Node
+from core import db
 
+q = db.query
 
 logg = logging.getLogger(__name__)
 
@@ -79,7 +83,7 @@ def showDetailList(req, id):
     # sorting
     if order != "":
         if int(order[0:1]) == 0:
-            metafields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
+            metafields.sort(lambda x, y: cmp(x.orderpos, y.orderpos))
         elif int(order[0:1]) == 1:
             metafields.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))
         elif int(order[0:1]) == 2:
@@ -90,7 +94,7 @@ def showDetailList(req, id):
         if int(order[1:]) == 1:
             metafields.reverse()
     else:
-        metafields.sort(lambda x, y: cmp(x.getOrderPos(), y.getOrderPos()))
+        metafields.sort(lambda x, y: cmp(x.orderpos, y.orderpos))
 
     v = getAdminStdVars(req)
     v["filterattrs"] = [("name", "admin_metafield_filter_name"), ("label", "admin_metafield_filter_label")]
@@ -124,7 +128,8 @@ def FieldDetail(req, pid, id, err=0):
 
     if err == 0 and id == "":
         # new field
-        field = tree.Node(u"", type="metafield")
+        field = Metafield(u"")
+        db.session.commit()
 
     elif id != "":
         # edit field
@@ -137,20 +142,22 @@ def FieldDetail(req, pid, id, err=0):
             _fieldvalue = ustr(req.params[req.params.get('mtype', '') + "_value"])
 
         if (req.params.get("mname") == ""):
-            field = tree.Node(req.params.get("orig_name"), type="metafield")
+            field = Metafield(req.params.get("orig_name"))
         else:
-            field = tree.Node(req.params.get("mname"), type="metafield")
+            field = Metafield(req.params.get("mname"))
         field.setLabel(req.params.get("mlabel"))
         field.setOrderPos(req.params.get("orderpos"))
         field.setFieldtype(req.params.get("mtype"))
         field.setOption(_option)
         field.setValues(_fieldvalue)
         field.setDescription(req.params.get("mdescription"))
+        db.session.commit()
 
     attr = {}
     metadatatype = getMetaType(pid)
     for t in metadatatype.getDatatypes():
-        node = tree.Node(type=t)
+        node = Node(u'', t)
+        db.session.commit()
         try:
             attr.update(node.getTechnAttributes())
         except AttributeError:
@@ -160,7 +167,7 @@ def FieldDetail(req, pid, id, err=0):
     metafields = {}
     for fields in getFieldsForMeta(pid):
         if fields.getType() != "union":
-            metafields[fields.getName()] = fields
+            metafields[fields.name] = fields
 
     v = getAdminStdVars(req)
     v["metadatatype"] = metadatatype
@@ -194,9 +201,9 @@ def FieldDetail(req, pid, id, err=0):
         f = getMetadataType(t)
 
         if 'attr_dict' in inspect.getargspec(f.getMaskEditorHTML).args:
-            attr_dict = dict(field.items())
+            attr_dict = dict(field.attrs.items())
             v["adminfields"] .append(f.getMaskEditorHTML(v["field"], metadatatype=metadatatype, language=lang(req), attr_dict=attr_dict))
         else:
             v["adminfields"] .append(f.getMaskEditorHTML(v["field"], metadatatype=metadatatype, language=lang(req)))
-
+    db.session.commit()
     return req.getTAL("web/admin/modules/metatype_field.html", v, macro="modify_field")

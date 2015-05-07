@@ -25,14 +25,19 @@ from schema.schema import getMetaType
 from core.translation import t, lang, addLabels, switch_language
 import utils.date as date
 from utils.utils import mkKey
+from core.systemtypes import Metadatatypes
+from core import Node
+from core import db
+from schema.schema import Metafield
 
+q = db.query
 
 logg = logging.getLogger(__name__)
 
 
 def register():
     #tree.registerNodeClass("workflowstep-start", WorkflowStep_Start)
-    registerStep("workflowstep-start")
+    registerStep("workflowstep_start")
     addLabels(WorkflowStep_Start.getLabels())
 
 
@@ -40,32 +45,33 @@ class WorkflowStep_Start(WorkflowStep):
 
     def show_workflow_step(self, req):
         typenames = self.get("newnodetype").split(";")
-        wfnode = self.getParents()[0]
+        wfnode = self.parents[0]
         redirect = ""
         message = ""
 
         # check existence of metadata types listed in the definition of the start node
-        mdts = tree.getRoot("metadatatypes")
+        mdts = q(Metadatatypes).one()
         for schema in typenames:
             if not mdts.hasChild(schema.strip().split("/")[-1]):
                 return ('<i>%s: %s </i>') % (schema, t(lang(req), "permission_denied"))
 
         if "workflow_start" in req.params:
             switch_language(req, req.params.get('workflow_language'))
-            node = tree.Node(name="", type=req.params.get('selected_schema'))
-            self.addChild(node)
+            node = Node(name="", type=req.params.get('selected_schema'))
+            self.children.append(node)
             node.setAccess("read", "{user workflow}")
-            node.set("creator", "workflow-" + self.getParents()[0].getName())
+            node.set("creator", "workflow-" + self.parents[0].name)
             node.set("creationtime", date.format_date())
             node.set("system.wflanguage", req.params.get('workflow_language', req.session.get('language')))
             node.set("key", mkKey())
             node.set("system.key", node.get("key"))  # initial key identifier
             req.session["key"] = node.get("key")
+            db.session.commit()
             return self.forwardAndShow(node, True, req)
 
         elif "workflow_start_auth" in req.params:  # auth node by id and key
             try:
-                node = tree.getNode(req.params.get('nodeid'))
+                node = q(Node).get(req.params.get('nodeid'))
 
                 # startkey, but protected
                 if node.get('system.key') == req.params.get('nodekey') and node.get('key') != req.params.get('nodekey'):
@@ -105,7 +111,7 @@ class WorkflowStep_Start(WorkflowStep):
                            'id': self.id,
                            'js': js,
                            'starttext': self.get('starttext'),
-                           'languages': self.getParents()[0].getLanguages(),
+                           'languages': self.parents[0].getLanguages(),
                            'currentlang': lang(req),
                               'sidebartext': self.getSidebarText(lang(req)),
                               'redirect': redirect,
@@ -115,15 +121,15 @@ class WorkflowStep_Start(WorkflowStep):
 
     def metaFields(self, lang=None):
         ret = []
-        field = tree.Node("newnodetype", "metafield")
+        field = Metafield("newnodetype")
         field.set("label", t(lang, "admin_wfstep_node_types_to_create"))
         field.set("type", "text")
         ret.append(field)
-        field = tree.Node("starttext", "metafield")
+        field = Metafield("starttext")
         field.set("label", t(lang, "admin_wfstep_starttext"))
         field.set("type", "htmlmemo")
         ret.append(field)
-        field = tree.Node("allowcontinue", "metafield")
+        field = Metafield("allowcontinue")
         field.set("label", t(lang, "admin_wfstep_allowcontinue"))
         field.set("type", "check")
         ret.append(field)

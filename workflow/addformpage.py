@@ -28,7 +28,7 @@ import codecs
 from .workflow import WorkflowStep, getNodeWorkflow, getNodeWorkflowStep, registerStep
 from core.translation import t, addLabels
 from metadata.upload import getFilelist
-from schema.schema import getMetaType
+from schema.schema import getMetaType, Metafield
 from utils.fileutils import getImportDir
 from utils.utils import join_paths
 from utils.date import format_date, now
@@ -36,13 +36,15 @@ from utils.date import format_date, now
 import utils.utils as utils
 import core.config as config
 
+from core import db
+from core import File
 
 logg = logging.getLogger(__name__)
 
 
 def register():
     #tree.registerNodeClass("workflowstep-addformpage", WorkflowStep_AddFormPage)
-    registerStep("workflowstep-addformpage")
+    registerStep("workflowstep_addformpage")
     addLabels(WorkflowStep_AddFormPage.getLabels())
 
 
@@ -187,7 +189,7 @@ class WorkflowStep_AddFormPage(WorkflowStep):
 
     def runAction(self, node, op=""):
         fnode = None
-        for fnode in node.getFiles():
+        for fnode in node.files:
             if fnode.type == "document":
                 break
 
@@ -221,7 +223,7 @@ class WorkflowStep_AddFormPage(WorkflowStep):
         fields = []
         f_retrieve_path = None
 
-        schema = getMetaType(node.getSchema())
+        schema = getMetaType(node.schema)
 
         if formfilelist:
             # take newest (mtime)
@@ -238,7 +240,7 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                         if fieldname.find('author') >= 0:
                             value = reformatAuthors(value)
                     elif fieldname.lower() == 'node.schema':
-                        value = getMetaType(node.getSchema()).getLongName()
+                        value = getMetaType(node.schema).__name__
                     elif fieldname.lower() == 'node.id':
                         value = ustr(node.id)
                     elif fieldname.lower() == 'node.type':
@@ -262,7 +264,7 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                                 elif m.group(0) == 'type':
                                     v = node.type
                                 elif m.group(0) == 'schema':
-                                    v = node.getMetaType(node.getSchema()).getLongName()
+                                    v = node.getMetaType(node.schema).__name__
                                 else:
                                     schemafield = schema.getMetaField(m.group(0))
                                     v = schemafield.getFormatedValue(node)[0]
@@ -276,15 +278,16 @@ class WorkflowStep_AddFormPage(WorkflowStep):
         if not pdf_form_separate and fnode and f_retrieve_path and os.path.isfile(f_retrieve_path):
             pages = fillPDFForm(f_retrieve_path, fields, input_is_fullpath=True, editable=pdf_fields_editable)
 
-            origname = fnode.retrieveFile()
+            origname = fnode.abspath
             outfile = addPagesToPDF(pages, origname)
 
-            for f in node.getFiles():
-                node.removeFile(f)
+            for f in node.files:
+                node.files.remove(f)
             fnode._path = outfile.replace(config.get("paths.datadir"), "")
-            node.addFile(fnode)
-            node.addFile(tree.FileNode(origname, 'upload', 'application/pdf'))  # store original filename
+            node.files.append(fnode)
+            node.files.append(File(origname, 'upload', 'application/pdf'))  # store original filename
             node.event_files_changed()
+            db.session.commit()
             logg.info("workflow '%s' (%s), workflowstep '%s' (%s): added pdf form to pdf (node '%s' (%s)) fields: %s",
                 current_workflow.name, current_workflow.id, current_workflow_step.name, current_workflow_step.id, node.name, node.id, fields)
             
@@ -303,12 +306,13 @@ class WorkflowStep_AddFormPage(WorkflowStep):
                 logg.exception("workflowstep %s (%s): could not copy pdf form to import directory - node: '%s' (%s), import directory: '%s'",
                              current_workflow_step.name, current_workflow_step.id, node.name, node.id, importdir)
             found = 0
-            for fn in node.getFiles():
-                if fn.retrieveFile() == new_form_path:
+            for fn in node.files:
+                if fn.abspath == new_form_path:
                     found = 1
                     break
             if found == 0 or (found == 1 and not pdf_form_overwrite):
-                node.addFile(tree.FileNode(new_form_path, 'pdf_form', 'application/pdf'))
+                node.files.append(File(new_form_path, 'pdf_form', 'application/pdf'))
+                db.session.commit()
 
             logg.info(
                 "workflow '%s' (%s), workflowstep '%s' (%s): added separate pdf form to node (node '%s' (%s)) fields: %s, path: '%s'",
@@ -325,22 +329,22 @@ class WorkflowStep_AddFormPage(WorkflowStep):
 
     def metaFields(self, lang=None):
         ret = list()
-        field = tree.Node("upload_pdfform", "metafield")
+        field = Metafield("upload_pdfform")
         field.set("label", t(lang, "workflowstep-addformpage_label_upload_pdfform"))
         field.set("type", "upload")
         ret.append(field)
 
-        field = tree.Node("pdf_fields_editable", "metafield")
+        field = Metafield("pdf_fields_editable")
         field.set("label", t(lang, "workflowstep-addformpage_label_pdf_fields_editable"))
         field.set("type", "check")
         ret.append(field)
 
-        field = tree.Node("pdf_form_separate", "metafield")
+        field = Metafield("pdf_form_separate")
         field.set("label", t(lang, "workflowstep-addformpage_label_pdf_form_separate"))
         field.set("type", "check")
         ret.append(field)
 
-        field = tree.Node("pdf_form_overwrite", "metafield")
+        field = Metafield("pdf_form_overwrite")
         field.set("label", t(lang, "workflowstep-addformpage_label_pdf_overwrite"))
         field.set("type", "check")
         ret.append(field)

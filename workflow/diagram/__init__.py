@@ -20,7 +20,7 @@
 
 from core import config
 
-diagram_type = config.get("config.workflowdiagram_type", "internal")
+diagram_type = config.get("config.workflowdiagram_type", "graphviz")
 
 if diagram_type == "internal":
     from .internal import send_workflow_diagram

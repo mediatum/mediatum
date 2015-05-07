@@ -23,6 +23,12 @@ from schema.mapping import getMappings, getMapping, getMappingTypes, updateMappi
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from core.translation import lang, t
 
+from core import Node
+from core import db
+from core.systemtypes import Mappings
+
+q = db.query
+
 
 def getInformation():
     return{"version": "1.0"}
@@ -32,8 +38,9 @@ def validate(req, op):
     if req.params.get("acttype", "mapping") == "mapping":
 
         if req.params.get("formtype", "") == "configuration" and "save_config" in req.params:
-            mappingroot = tree.getRoot("mappings")
+            mappingroot = q(Mappings).one()
             mappingroot.set("mappingtypes", req.params.get("mappingtypes", "").replace("\r\n", ";").replace("\n", ";"))
+            db.session.commit()
             return view(req)
 
         if "file" in req.params and hasattr(req.params["file"], "filesize") and req.params["file"].filesize > 0:
@@ -87,11 +94,11 @@ def validate(req, op):
 
             if key.startswith("newfield_"):
                 # create new mapping field
-                return editMappingField_mask(req, u"", tree.getNode(key[9:-2]))
+                return editMappingField_mask(req, u"", q(Node).get(key[9:-2]))
 
             elif key.startswith("editfield_"):
                 # create new mapping field
-                return editMappingField_mask(req, key[10:-2], tree.getNode(req.params.get("parent")))
+                return editMappingField_mask(req, key[10:-2], q(Node).get(req.params.get("parent")))
 
             elif key.startswith("deletefield_"):
                 # delete mapping field
@@ -104,7 +111,7 @@ def validate(req, op):
             # save mapping field values
             if ustr(req.params["name"]) == "":
                 # empty required field
-                return editMappingField_mask(req, req.params.get("id", ""), tree.getNode(req.params.get("parent")), 1)
+                return editMappingField_mask(req, req.params.get("id", ""), q(Node).get(req.params.get("parent")), 1)
             else:
                 _mandatory = False
                 if "mandatory" in req.params.keys():
@@ -133,21 +140,21 @@ def view(req):
             None  # all users
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
-            mappings = filter(lambda x: num.match(x.getName()), mappings)
+            mappings = filter(lambda x: num.match(x.name), mappings)
 
         elif actfilter == "else" or actfilter == t(lang(req), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9])')
-            mappings = filter(lambda x: not all.match(x.getName()), mappings)
+            mappings = filter(lambda x: not all.match(x.name), mappings)
 
         else:
-            mappings = filter(lambda x: x.getName().lower().startswith(actfilter), mappings)
+            mappings = filter(lambda x: x.name.lower().startswith(actfilter), mappings)
 
     pages = Overview(req, mappings)
 
     # sorting
     if order != "":
         if int(order[0:1]) == 0:
-            mappings.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))
+            mappings.sort(lambda x, y: cmp(x.name.lower(), y.name.lower()))
         elif int(order[0:1]) == 1:
             mappings.sort(lambda x, y: cmp(x.getNamespace().lower(), y.getNamespace().lower()))
         elif int(order[0:1]) == 2:
@@ -164,7 +171,7 @@ def view(req):
         if int(order[1:]) == 1:
             mappings.reverse()
     else:
-        mappings.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))
+        mappings.sort(lambda x, y: cmp(x.name.lower(), y.name.lower()))
 
     v = getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader(
@@ -188,14 +195,15 @@ def view(req):
 def editMapping_mask(req, id, err=0):
     if err == 0 and id == "":
         # new mapping
-        mapping = tree.Node(u"", type="mapping")
+        mapping = Node(u"", type="mapping")
+        db.session.commit()
     elif id != "":
         # edit mapping
         mapping = getMapping(id)
     else:
         # error while filling values
-        mapping = tree.Node(u"", type="mapping")
-        mapping.setName(req.params.get("name", ""))
+        mapping = Node(u"", type="mapping")
+        mapping.set("name", req.params.get("name", ""))
         mapping.setDescription(req.params.get("description", ""))
         mapping.setNamespace(req.params.get("namespace", ""))
         mapping.setNamespaceUrl(req.params.get("namespaceurl", ""))
@@ -203,6 +211,7 @@ def editMapping_mask(req, id, err=0):
         mapping.setFooter(req.params.get("footer"))
         mapping.setSeparator(req.params.get("separator"))
         mapping.setStandardFormat(req.params.get("standardformat"))
+        db.session.commit()
 
     v = getAdminStdVars(req)
     v["error"] = err
@@ -226,21 +235,21 @@ def viewlist(req, id):
             None  # all mappings
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
-            fields = filter(lambda x: num.match(x.getName()), fields)
+            fields = filter(lambda x: num.match(x.name), fields)
 
         elif actfilter == "else" or actfilter == t(lang(req), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9])')
-            fields = filter(lambda x: not all.match(x.getName()), fields)
+            fields = filter(lambda x: not all.match(x.name), fields)
 
         else:
-            fields = filter(lambda x: x.getName().lower().startswith(actfilter), fields)
+            fields = filter(lambda x: x.name.lower().startswith(actfilter), fields)
 
     pages = Overview(req, fields)
 
     # sorting
     if order != "":
         if int(order[0:1]) == 0:
-            fields.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))
+            fields.sort(lambda x, y: cmp(x.name.lower(), y.name.lower()))
         elif int(order[0:1]) == 1:
             fields.sort(lambda x, y: cmp(x.getDescription().lower(), y.getDescription().lower()))
         elif int(order[0:1]) == 2:
@@ -249,7 +258,7 @@ def viewlist(req, id):
         if int(order[1:]) == 1:
             fields.reverse()
     else:
-        fields.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))
+        fields.sort(lambda x, y: cmp(x.name.lower(), y.name.lower()))
 
     v = getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader([t(lang(req), "admin_mappingfield_col_1"), t(lang(req), "admin_mappingfield_col_2"), t(
@@ -265,18 +274,20 @@ def viewlist(req, id):
 def editMappingField_mask(req, id, parent, err=0):
     if err == 0 and id == "":
         # new mapping field
-        field = tree.Node(u"", type="mappingfield")
+        field = Node(u"", type="mappingfield")
+        db.session.commit()
     elif id != "":
         # edit mapping field
-        field = tree.getNode(id)
+        field = q(Node).get(id)
     else:
         # error while filling values
-        field = tree.Node(u"", type="mappingfield")
-        field.setName(req.params.get("name", ""))
+        field = Node(u"", type="mappingfield")
+        field.set("name", req.params.get("name", ""))
         field.setDescription(req.params.get("description", ""))
         field.setExportFormat(req.params.get("exportformat", ""))
         if "mandatory" in req.params.keys():
             field.setMandatory("True")
+        db.session.commit()
 
     v = getAdminStdVars(req)
     v["error"] = err

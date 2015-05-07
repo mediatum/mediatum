@@ -25,13 +25,17 @@ import traceback
 import core.config as config
 
 from core.acl import getRuleList
-from workflow.workflow import getWorkflowList, getWorkflow, updateWorkflow, addWorkflow, deleteWorkflow, inheritWorkflowRights, getWorkflowTypes, updateWorkflowStep, createWorkflowStep, deleteWorkflowStep, exportWorkflow, importWorkflow
+from workflow.workflow import Workflow, getWorkflowList, getWorkflow, updateWorkflow, addWorkflow, deleteWorkflow, inheritWorkflowRights, getWorkflowTypes, updateWorkflowStep, createWorkflowStep, deleteWorkflowStep, exportWorkflow, importWorkflow
 from web.admin.adminutils import Overview, getAdminStdVars, getFilter, getSortCol
 from schema.schema import parseEditorData
 from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings
 from core.translation import t, lang
 
+from core import Node
+from core import db
+
+q = db.query
 
 logg = logging.getLogger(__name__)
 
@@ -114,6 +118,7 @@ def validate(req, op):
                         inheritWorkflowRights(req.params.get("name", ""), "write")
                     if "read_inherit" in req.params:
                         inheritWorkflowRights(req.params.get("name", ""), "read")
+                    db.session.commit()
 
         else:
             # workflowstep section
@@ -205,6 +210,7 @@ def validate(req, op):
                         if key.startswith("left_write"):
                             wfs.setAccess(key[10:], req.params.get(key).replace(";", ","))
                             break
+                    db.session.commit()
 
                 if "metaDataEditor" in req.params.keys():
                     parseEditorData(req, wnode)
@@ -231,19 +237,19 @@ def view(req):
             None  # all users
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
-            workflows = filter(lambda x: num.match(x.getName()), workflows)
+            workflows = filter(lambda x: num.match(x.name), workflows)
         elif actfilter == "else" or actfilter == t(lang(req), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9])')
-            workflows = filter(lambda x: not all.match(x.getName()), workflows)
+            workflows = filter(lambda x: not all.match(x.name), workflows)
         else:
-            workflows = filter(lambda x: x.getName().lower().startswith(actfilter), workflows)
+            workflows = filter(lambda x: x.name.lower().startswith(actfilter), workflows)
 
     pages = Overview(req, workflows)
 
     # sorting
     if order != "":
         if int(order[0:1]) == 1:
-            workflows.sort(lambda x, y: cmp(x.getName(), y.getName()))
+            workflows.sort(lambda x, y: cmp(x.name, y.name))
         elif int(order[0:1]) == 2:
             workflows.sort(lambda x, y: cmp(x.getDescription(), y.getDescription()))
         elif int(order[0:1]) == 3:
@@ -270,22 +276,24 @@ def WorkflowDetail(req, id, err=0):
     v = getAdminStdVars(req)
     if err == 0 and id == "":
         # new workflow
-        workflow = tree.Node(u"", type="workflow")
+        workflow = Workflow(u"")
+        db.session.commit()
         v["original_name"] = ""
 
     elif id != "" and err == 0:
         # edit workflow
         workflow = getWorkflow(id)
-        v["original_name"] = workflow.getName()
+        v["original_name"] = workflow.name
 
     else:
         # error
-        workflow = tree.Node(u"", type="workflow")
-        workflow.setName(req.params.get("name", ""))
-        workflow.setDescription(req.params.get("description", ""))
+        workflow = Workflow(u"")
+        workflow.set("name", req.params.get("name", ""))
+        workflow.set("description", req.params.get("description", ""))
+        db.session.commit()
         #workflow.setAccess("write", req.params.get("writeaccess", ""))
         v["original_name"] = req.params.get("orig_name", "")
-        workflow.id = req.params.get("id")
+        workflow.set("id", req.params.get("id"))
 
     rule = {"read": ustr(workflow.getAccess("read") or "").split(","), "write": ustr(workflow.getAccess("write") or "").split(",")}
 
@@ -315,21 +323,21 @@ def WorkflowStepList(req, wid):
             None  # all users
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
-            workflowsteps = filter(lambda x: num.match(x.getName()), workflowsteps)
+            workflowsteps = filter(lambda x: num.match(x.name), workflowsteps)
         elif actfilter == "else" or actfilter == t(lang(req), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9])')
-            workflowsteps = filter(lambda x: not all.match(x.getName()), workflowsteps)
+            workflowsteps = filter(lambda x: not all.match(x.name), workflowsteps)
         else:
-            workflowsteps = filter(lambda x: x.getName().lower().startswith(actfilter), workflowsteps)
+            workflowsteps = filter(lambda x: x.name.lower().startswith(actfilter), workflowsteps)
 
     pages = Overview(req, workflowsteps)
 
     # sorting
     if order != "":
         if int(order[0]) == 0:
-            workflowsteps.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))
+            workflowsteps.sort(lambda x, y: cmp(x.name.lower(), y.name.lower()))
         elif int(order[0]) == 1:
-            workflowsteps.sort(lambda x, y: cmp(x.getContentType(), y.getContentType()))
+            workflowsteps.sort(lambda x, y: cmp(x.type, y.type))
         elif int(order[0]) == 2:
             workflowsteps.sort(lambda x, y: cmp(x.getTrueId(), y.getTrueId()))
         elif int(order[0]) == 3:
@@ -343,7 +351,7 @@ def WorkflowStepList(req, wid):
         if int(order[1]) == 1:
             workflowsteps.reverse()
     else:
-        workflowsteps.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))
+        workflowsteps.sort(lambda x, y: cmp(x.name.lower(), y.name.lower()))
 
     v = getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader(
@@ -367,7 +375,6 @@ def WorkflowStepList(req, wid):
 
 
 def WorkflowStepDetail(req, wid, wnid, err=0):
-
     workflow = getWorkflow(wid)
     nodelist = workflow.getSteps()
     v = getAdminStdVars(req)
@@ -375,7 +382,7 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
     if err == 0 and wnid == "":
         # new workflowstep
         workflowstep = createWorkflowStep(name="", trueid="", falseid="", truelabel="", falselabel="", comment="")
-        workflowstep.id = ""
+        workflowstep.set("id",  "")
         v["orig_name"] = req.params.get("orig_name", "")
 
     elif err == -1:
@@ -403,13 +410,13 @@ def WorkflowStepDetail(req, wid, wnid, err=0):
                             "nfalselabel", ""), comment=req.params.get(
                                 "ncomment", ""))
             if req.params.get("wnid", "") == "":
-                workflowstep.id = ""
-        v["orig_name"] = workflowstep.getName()
+                workflowstep.set("id",  "")
+        v["orig_name"] = workflowstep.name
 
     elif wnid != "" and req.params.get("nname") != "":
         # edit field
         workflowstep = workflow.getStep(wnid)
-        v["orig_name"] = workflowstep.getName()
+        v["orig_name"] = workflowstep.name
     else:
         # error while filling values
         type = req.params.get("ntype", "workflowstep")

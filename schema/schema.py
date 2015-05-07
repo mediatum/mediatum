@@ -19,7 +19,6 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
-from core import Node
 import core.config as config
 import core.translation as translation
 from core import Node
@@ -181,10 +180,7 @@ def getAllMetaFields():
 # returns field for given name and metatype
 #
 def getMetaField(pid, name):
-    try:
-        return getMetaType(pid).getChild(name)
-    except tree.NoSuchNodeError as e:
-        return None
+    return getMetaType(pid).children.filter_by(name=name).scalar()
 
 
 #
@@ -204,22 +200,24 @@ def existMetaField(pid, name):
 def updateMetaField(parent, name, label, orderpos, fieldtype, option="", description="",
                     fieldvalues="", fieldvaluenum="", fieldid="", filenode=None, attr_dict={}):
     metatype = getMetaType(parent)
-    try:
-        field = tree.getNode(fieldid)
-        field.setName(name)
-    except tree.NoSuchNodeError:
-        field = tree.Node(name=name, type="metafield")
-        metatype.addChild(field)
-        field.setOrderPos(len(metatype.getChildren()) - 1)
 
-    #<----- Begin: For fields of list type ----->
+    field = q(Node).get(fieldid)
+    if field is None:
+        field = Metafield(name)
+        metatype.children.append(field)
+        field.orderpos = len(metatype.children) - 1
+        db.session.commit()
+    else:
+        field.set("name", name)
+
+    # <----- Begin: For fields of list type ----->
 
     if filenode:
         # all files of the field will be removed before a new file kann be added
-        for fnode in field.getFiles():
-            field.removeFile(fnode)         # remove the file from the node tree
+        for fnode in field.files:
+            field.files.remove(fnode)         # remove the file from the node tree
             try:
-                os.remove(fnode.retrieveFile())  # delete the file from the hard drive
+                os.remove(fnode.abspath)  # delete the file from the hard drive
             except:
                 logg.exception("exception in updateMetaField")
         field.addFile(filenode)
@@ -228,14 +226,15 @@ def updateMetaField(parent, name, label, orderpos, fieldtype, option="", descrip
         field.set("multiple", True)
         fieldvalues = fieldvalues.replace("multiple;", "", 1)
     else:
-        field.removeAttribute("multiple")
+        if field.get("multiple"):
+            field.removeAttribute("multiple")
 
     if fieldvalues.endswith("delete"):  # the checkbox 'delete' was checked
         # all files of the field will be removed
-        for fnode in field.getFiles():
-            field.removeFile(fnode)         # remove the file from the node tree
+        for fnode in field.files:
+            field.files.remove(fnode)         # remove the file from the node tree
             try:
-                os.remove(fnode.retrieveFile())  # delete the file from the hard drive
+                os.remove(fnode.abspath)  # delete the file from the hard drive
             except:
                 logg.exception("exception in updateMetaField")
         fieldvalues = fieldvalues.replace(";delete", "", 1)
@@ -251,6 +250,7 @@ def updateMetaField(parent, name, label, orderpos, fieldtype, option="", descrip
 
     for attr_name, attr_value in attr_dict.items():
         field.set(attr_name, attr_value)
+    db.session.commit()
 
 
 #
@@ -540,6 +540,7 @@ def parseEditorData(req, node):
                     node.set(name, value)
         else:  # value not in request -> remove attribute
             node.removeAttribute(field.getName())
+    db.session.commit()
     return not incorrect
 
 
@@ -631,8 +632,8 @@ class Metadatatype(Node):
 
     def getMetaFields(self, type=None):
         fields = []
-        for item in self.getChildren().sort_by_orderpos():
-            if item.getContentType() == "metafield":
+        for item in self.children.sort_by_orderpos():
+            if item.type == "metafield":
                 if not type or type in item.getOption():
                     fields.append(item)
         return fields
@@ -813,12 +814,14 @@ class MaskType:
 
     def setType(self, value):
         self.type = value
+        db.session.commit()
 
     def getType(self):
         return self.type
 
     def setSeparator(self, value):
         self.separator = value
+        db.session.commit()
 
     def getSeparator(self):
         return self.separator
@@ -1249,7 +1252,7 @@ class Mask(Node):
             self.set("defaultmask", "False")
 
     def getSeparator(self):
-        for key, value in self.items():
+        for key, value in self.attrs.items():
             if key == "separator":
                 return self.get("separator")
         return getMaskTypes(self.getMasktype()).getSeparator()

@@ -28,14 +28,15 @@ from core.translation import t, lang, addLabels
 from utils.utils import formatException
 import core.config as config
 import utils.mail as mail
-
+from core import db
+from schema.schema import Metafield
 
 logg = logging.getLogger(__name__)
 
 
 def register():
     #tree.registerNodeClass("workflowstep-send_email", WorkflowStep_SendEmail)
-    registerStep("workflowstep-send_email")
+    registerStep("workflowstep_sendemail")
     addLabels(WorkflowStep_SendEmail.getLabels())
 
 
@@ -69,7 +70,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
                 arrname, value = sendcondition[5:].split("=")
                 if node.get(arrname) != value:
                     sendOk = 0
-            elif (sendcondition.startswith("schema=") and node.getSchema() not in sendcondition[7:].split(";")) or (sendcondition.startswith("type=") and not node.get("type") in sendcondition[5:].split(";")) or (sendcondition == "hasfile" and len(node.getFiles()) == 0):
+            elif (sendcondition.startswith("schema=") and node.schema not in sendcondition[7:].split(";")) or (sendcondition.startswith("type=") and not node.get("type") in sendcondition[5:].split(";")) or (sendcondition == "hasfile" and len(node.files) == 0):
                 sendOk = 0
         except:
             logg.exception("syntax error in email condition: %s", sendcondition)
@@ -83,19 +84,20 @@ class WorkflowStep_SendEmail(WorkflowStep):
                     raise MailError("No from address defined")
                 attachments_paths_and_filenames = []
                 if attach_pdf_form:
-                    pdf_form_files = [f for f in node.getFiles() if f.getType() == 'pdf_form']
+                    pdf_form_files = [f for f in node.files if f.filetype == 'pdf_form']
                     for i, f in enumerate(pdf_form_files):
-                        if not os.path.isfile(f.retrieveFile()):
-                            raise MailError("Attachment file not found: '%s'" % f.retrieveFile())
+                        if not os.path.isfile(f.abspath):
+                            raise MailError("Attachment file not found: '%s'" % f.abspath)
                         else:
                             #attachments_paths_and_filenames.append((f.retrieveFile(), 'contract_%s_%s.pdf' %(i, node.id)))
-                            attachments_paths_and_filenames.append((f.retrieveFile(), '%s' % (f.retrieveFile().split('_')[-1])))
+                            attachments_paths_and_filenames.append((f.abspath, '%s' % (f.abspath.split('_')[-1])))
                     pass
 
                 mail.sendmail(xfrom, to, node.get("mailtmp.subject"), node.get(
                     "mailtmp.text"), attachments_paths_and_filenames=attachments_paths_and_filenames)
             except:
                 node.set("mailtmp.error", formatException())
+                db.session.commit()
                 logg.exception("Error while sending mail- node stays in workflowstep %s %s", self.id, self.name)
                 return
         else:
@@ -109,6 +111,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
         node.removeAttribute("mailtmp.text")
         node.removeAttribute("mailtmp.error")
         node.removeAttribute("mailtmp.talerror")
+        db.session.commit()
         return 1
 
     def runAction(self, node, op=""):
@@ -131,8 +134,10 @@ class WorkflowStep_SendEmail(WorkflowStep):
 
             node.set("mailtmp.subject", getTALtext(self.get("subject"), attrs))
             node.set("mailtmp.text", getTALtext(self.get("text"), attrs))
+            db.session.commit()
         except:
             node.set("mailtmp.talerror", formatException())
+            db.session.commit()
             return
         if self.get("allowedit").lower().startswith("n"):
             if(self.sendOut(node)):
@@ -149,6 +154,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
                 node.set("mailtmp.subject", req.params.get("subject"))
             if "text" in req.params:
                 node.set("mailtmp.text", req.params.get("text"))
+            db.session.commit()
             if(self.sendOut(node)):
                 return self.forwardAndShow(node, True, req)
             else:
@@ -159,6 +165,7 @@ class WorkflowStep_SendEmail(WorkflowStep):
         elif node.get("mailtmp.talerror"):
             node.removeAttribute("mailtmp.talerror")
             self.runAction(node, "true")
+            db.session.commit()
             if node.get("mailtmp.talerror"):
                 return """<pre>%s</pre>""" % node.get("mailtmp.talerror")
             else:
@@ -185,38 +192,38 @@ class WorkflowStep_SendEmail(WorkflowStep):
 
     def metaFields(self, lang=None):
         ret = list()
-        field = tree.Node("from", "metafield")
+        field = Metafield("from")
         field.set("label", t(lang, "admin_wfstep_email_sender"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("email", "metafield")
+        field = Metafield("email")
         field.set("label", t(lang, "admin_wfstep_email_recipient"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("subject", "metafield")
+        field = Metafield("subject")
         field.set("label", t(lang, "admin_wfstep_email_subject"))
         field.set("type", "memo")
         ret.append(field)
 
-        field = tree.Node("text", "metafield")
+        field = Metafield("text")
         field.set("label", t(lang, "admin_wfstep_email_text"))
         field.set("type", "memo")
         ret.append(field)
 
-        field = tree.Node("allowedit", "metafield")
+        field = Metafield("allowedit")
         field.set("label", t(lang, "admin_wfstep_email_text_editable"))
         field.set("type", "list")
         field.set("valuelist", t(lang, "admin_wfstep_email_text_editable_options"))
         ret.append(field)
 
-        field = tree.Node("sendcondition", "metafield")
+        field = Metafield("sendcondition")
         field.set("label", t(lang, "admin_wfstep_email_sendcondition"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("attach_pdf_form", "metafield")
+        field = Metafield("attach_pdf_form")
         field.set("label", t(lang, "workflowstep-email_label_attach_pdf_form"))
         field.set("type", "check")
         ret.append(field)

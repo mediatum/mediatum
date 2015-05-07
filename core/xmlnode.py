@@ -25,8 +25,12 @@ import logging
 import codecs
 
 from utils.utils import esc, u, u2
-
 from core.acl import AccessData
+from core import File
+from core import db
+from core.systemtypes import Mappings, Root
+
+q = db.query
 
 EXCLUDE_WORKFLOW_NEWNODES = True
 
@@ -64,13 +68,15 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
 
     indent += 4
 
+    db.session.commit()
+
     for name, value in node.attrs.items():
         u_esc_name = u(esc(name))
         if attribute_name_filter and not attribute_name_filter(u_esc_name):
             continue
         fi.write('%s<attribute name="%s"><![CDATA[%s]]></attribute>\n' % ((" " * indent), u_esc_name, u2(value)))
 
-    for file in node.getFiles():
+    for file in node.files:
         if file.type == "metadata" or file.type in exclude_filetypes:
             continue
         mimetype = file.mimetype
@@ -79,7 +85,7 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
         fi.write('%s<file filename="%s" mime-type="%s" type="%s"/>\n' %
                  ((" " * indent), esc(file.getName()), mimetype, (file.type is not None and file.type or "image")))
     if children:
-        for c in node.getChildren().sort_by_orderpos():
+        for c in node.children.sort_by_orderpos():
             if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
                 if c.type not in exclude_children_types:
                     fi.write('%s<child id="%s" type="%s"/>\n' % ((" " * indent), ustr(c.id), c.type))
@@ -87,12 +93,12 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
     indent -= 4
     fi.write("%s</node>\n" % (" " * indent))
     if(children):
-        for c in node.getChildren().sort_by_orderpos():
+        for c in node.children.sort_by_orderpos():
             if (not children_access) or (children_access and children_access.hasAccess(c, 'read')):
                 if c.type not in exclude_children_types:
                     if c.id not in written:
                         written[c.id] = None
-                        c.writexml(fi, indent=indent,
+                        writexml(c, fi, indent=indent,
                                    written=written,
                                    children=children,
                                    children_access=children_access,
@@ -106,9 +112,9 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
             exportmapping_id = node.get("exportmapping").strip()
             if exportmapping_id and exportmapping_id not in written:
                 try:
-                    exportmapping = tree.getNode(exportmapping_id)
+                    exportmapping = q(Node).get(exportmapping_id)
                     written[exportmapping_id] = None
-                    exportmapping.writexml(fi, indent=indent,
+                    writexml(exportmapping, fi, indent=indent,
                                            written=written,
                                            children=children,
                                            children_access=children_access,
@@ -144,12 +150,12 @@ def _writeNodeXML(node, fi):
              (getInformation()["version"], node.name, node.type, ustr(node.id)))
     exclude_children_types = []
     if EXCLUDE_WORKFLOW_NEWNODES and node.type == 'workflow':
-        for c in node.getChildren():
-            if c.type == "workflowstep-start":
+        for c in node.children:
+            if c.type == "workflowstep_start":
                 newnodetypes = c.get("newnodetype").strip().split(";")
                 for newnodetype in newnodetypes:
                     exclude_children_types.append(newnodetype)
-    node.writexml(fi, exclude_children_types=exclude_children_types)
+    writexml(node, fi, exclude_children_types=exclude_children_types)
     fi.write("</nodelist>\n")
 
 
@@ -174,16 +180,16 @@ class _NodeLoader:
         finally:
             fi.close()
 
-        try:
-            mappings = tree.getRoot("mappings")
-        except tree.NoSuchNodeError:
-            mappings = tree.getRoot().addChild(Node(name="mappings", type="mappings"))
+        mappings = q(Mappings).scalar()
+        if mappings is None:
+            mappings = q(Root).one().children.append(Node(name="mappings", type="mappings"))
             logg.info("no mappings root found: added mappings root")
 
         for node in self.nodes:
             if node.type == "mapping":
-                if node.name not in [n.name for n in mappings.getChildren() if n.type == "mapping"]:
-                    mappings.addChild(node)
+                if node.name not in [n.name for n in mappings.children if n.type == "mapping"]:
+                    mappings.children.append(node)
+                    db.session.commit()
                     if self.verbose:
                         logg.info("xml import: added  mapping id=%s, type='%s', name='%s'", node.id, node.type, node.name)
 
@@ -193,7 +199,8 @@ class _NodeLoader:
             d = {}
             for id in node.tmpchilds:
                 child = self.id2node[id]
-                node.addChild(child)
+                node.children.append(child)
+                db.session.commit()
                 d[child.id] = child
             if self.verbose and node.tmpchilds:
                 added = [(cid, d[cid].type, d[cid].name) for cid in d.keys()]
@@ -206,6 +213,7 @@ class _NodeLoader:
                 if attr and attr in self.id2node:
                     attr_new = self.id2node[attr].id
                     node.set("attribute", attr_new)
+                    db.session.commit()
                     if self.verbose:
                         logg.info("adjusting node attribute for maskitem '%s', name='attribute', value: old='%s' -> new='%s'",
                             node.id, attr, attr_new)
@@ -213,6 +221,7 @@ class _NodeLoader:
                 if mappingfield and mappingfield in self.id2node:
                     mappingfield_new = self.id2node[mappingfield].id
                     node.set("mappingfield", ustr(mappingfield_new))
+                    db.session.commit()
                     if self.verbose:
                         logg.info("adjusting node attribute for maskitem '%s', name='mappingfield', value old='%s' -> new='%s'",
                             node.id, mappingfield, mappingfield_new)
@@ -221,6 +230,7 @@ class _NodeLoader:
                 if exportmapping and exportmapping in self.id2node:
                     exportmapping_new = self.id2node[exportmapping].id
                     node.set("exportmapping", ustr(exportmapping_new))
+                    db.session.commit()
                     if self.verbose:
                         logg.info("adjusting node attribute for mask '%s',  name='exportmapping':, value old='%s' -> new='%s'",
                             node.id, exportmapping, exportmapping_new)
@@ -257,6 +267,7 @@ class _NodeLoader:
                 node = Node(name=(attrs["name"] + "_imported_" + old_id).encode("utf-8"), type=type)
             else:
                 node = Node(name=attrs["name"].encode("utf-8"), type=type)
+            db.session.commit()
 
             if "read" in attrs:
                 node.setAccess("read", attrs["read"].encode("utf-8"))
@@ -273,6 +284,7 @@ class _NodeLoader:
             self.nodes += [node]
             if self.root is None:
                 self.root = node
+            db.session.commit()
             return
         elif name == "attribute" and not self.node_already_seen:
             attr_name = attrs["name"].encode("utf-8")
@@ -283,6 +295,7 @@ class _NodeLoader:
                     node.setAttribute(attr_name, attrs["value"].encode("utf-8"))
             else:
                 self.attributename = attr_name
+            db.session.commit()
 
         elif name == "child" and not self.node_already_seen:
             id = u(attrs["id"])
@@ -299,7 +312,8 @@ class _NodeLoader:
                 mimetype = None
 
             filename = attrs["filename"].encode("utf-8")
-            node.addFile(tree.FileNode(name=filename, type=type, mimetype=mimetype))
+            node.files.append(File(name=filename, type=type, mimetype=mimetype))
+            db.session.commit()
 
     def xml_end_element(self, name):
         if self.node_already_seen:
@@ -325,6 +339,7 @@ class _NodeLoader:
                                    (val + data.encode("utf-8")).replace("\n\n", "\n").replace("\n", ";").replace(";;", ";"))
             else:
                 self.nodes[-1].set(self.attributename, val + data.encode("utf-8"))
+        db.session.commit()
 
 
 def init():
@@ -338,7 +353,7 @@ def parseNodeXML(s):
 
 def readNodeXML(filename):
     try:
-        return _NodeLoader(codecs.open(filename, "rb", encoding='utf8')).root
+        return _NodeLoader(open(filename, "rb")).root
     except IOError:
         return None
 
@@ -346,6 +361,7 @@ def readNodeXML(filename):
 def writeNodeXML(node, filename):
     with codecs.open(filename, "wb") as fi:
         _writeNodeXML(node, fi)
+
 
 def getNodeXML(node):
     wr = _StringWriter()
@@ -362,7 +378,7 @@ def getNodeListXMLForUser(node, readuser=None, exclude_filetypes=[], attribute_n
         children_access = None
     wr = _StringWriter()
     wr.write('<nodelist exportversion="%s">\n' % getInformation()["version"])
-    node.writexml(wr, children_access=children_access, exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
+    writexml(node, wr, children_access=children_access, exclude_filetypes=exclude_filetypes, attribute_name_filter=attribute_name_filter)
     wr.write("</nodelist>\n")
     return wr.get()
 

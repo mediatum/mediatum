@@ -22,12 +22,12 @@ from .workflow import WorkflowStep, registerStep
 from utils.utils import checkXMLString
 from core.translation import t, lang, addLabels
 import utils.mail as mail
-
+from schema.schema import Metafield
 
 
 def register():
     #tree.registerNodeClass("workflowstep-checkcontent", WorkflowStep_CheckContent)
-    registerStep("workflowstep-checkcontent")
+    registerStep("workflowstep_checkcontent")
     addLabels(WorkflowStep_CheckContent.getLabels())
 
 
@@ -57,22 +57,22 @@ class WorkflowStep_CheckContent(WorkflowStep):
 
     def metaFields(self, lang=None):
         ret = []
-        field = tree.Node("from", "metafield")
+        field = Metafield("from")
         field.set("label", t(lang, "admin_wfstep_checkcontent_sender"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("email", "metafield")
+        field = Metafield("email")
         field.set("label", t(lang, "admin_wfstep_checkcontent_recipient"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("subject", "metafield")
+        field = Metafield("subject")
         field.set("label", t(lang, "admin_wfstep_checkcontent_subject"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("text", "metafield")
+        field = Metafield("text")
         field.set("label", t(lang, "admin_wfstep_checkcontent_text"))
         field.set("type", "memo")
         ret.append(field)

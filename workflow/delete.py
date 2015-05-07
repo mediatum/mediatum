@@ -18,18 +18,20 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from .workflow import WorkflowStep, registerStep
+from core import db
 
 
 def register():
     #tree.registerNodeClass("workflowstep-delete", WorkflowStep_Delete)
-    registerStep("workflowstep-delete")
+    registerStep("workflowstep_delete")
 
 
 class WorkflowStep_Delete(WorkflowStep):
 
     def runAction(self, node, op=""):
-        for p in node.getParents():
+        for p in node.parents:
             try:
-                p.removeChild(node)
-            except tree.NoSuchNodeError:
+                p.children.remove(node)
+                db.session.commit()
+            except:
                 pass

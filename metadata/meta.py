@@ -51,7 +51,11 @@ class m_meta(Metatype):
         if metadatatype:
             for t in metadatatype.getDatatypes():
                 node = Node(u'', t)
-                attr.update(node.getTechnAttributes())
+                try:
+                    attr.update(node.getTechnAttributes())
+                except AttributeError:
+                    logg.exception("attribute error in getMaskEditorHTML, continue")
+                    continue
 
         return tal.getTAL("metadata/meta.html", {"value": value, "t_attrs": attr}, macro="maskeditor", language=language)
 

@@ -20,11 +20,12 @@
 from .workflow import WorkflowStep, registerStep
 from core.translation import t, lang, addLabels
 from schema.schema import getMetaType
+from schema.schema import Metafield
 
 
 def register():
     #tree.registerNodeClass("workflowstep-edit", WorkflowStep_EditMetadata)
-    registerStep("workflowstep-edit")
+    registerStep("workflowstep_editmetadata")
     addLabels(WorkflowStep_EditMetadata.getLabels())
 
 
@@ -59,7 +60,7 @@ class WorkflowStep_EditMetadata(WorkflowStep):
             maskcontent = req.getTAL("workflow/editmetadata.html", {}, macro="maskerror")
 
         return req.getTAL("workflow/editmetadata.html",
-                          {"name": self.getName(),
+                          {"name": self.name,
                            "error": error,
                            "key": key,
                            "mask": maskcontent,
@@ -70,7 +71,7 @@ class WorkflowStep_EditMetadata(WorkflowStep):
                           macro="workflow_metadateneditor")
 
     def metaFields(self, lang=None):
-        field = tree.Node("mask", "metafield")
+        field = Metafield("mask")
         field.set("label", t(lang, "admin_wfstep_editor_mask"))
         field.set("type", "text")
         return [field]

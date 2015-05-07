@@ -28,6 +28,9 @@ import core
 from version import mediatum_version
 from utils.utils import format_filesize
 from core.transition import httpstatus
+from core import db
+from core.systemtypes import Root
+q = db.query
 
 logg = logging.getLogger(__name__)
 
@@ -113,18 +116,18 @@ def view(req):
         return req.getTAL("web/admin/modules/settings.html", v, macro="view_search")
 
     elif page == "searchconfig":
-        node = tree.getRoot()
+        node = q(Root).one()
         file = None
         sections = ["chars", "words"]
         data = {"chars": [], "words": []}
-        for f in node.getFiles():
-            if f.retrieveFile().endswith("searchconfig.txt"):
+        for f in node.files:
+            if f.abspath.endswith("searchconfig.txt"):
                 file = f
                 break
 
-        if file and os.path.exists(file.retrieveFile()):
+        if file and os.path.exists(file.abspath):
             section = ""
-            for line in codecs.open(file.retrieveFile(), "r", encoding='utf8'):
+            for line in codecs.open(file.abspath, "r", encoding='utf8'):
                 line = line[:-1]
                 if line.startswith("[") and line.endswith("]"):
                     section = line[1:-1]

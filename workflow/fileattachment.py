@@ -21,14 +21,14 @@ import logging
 from .workflow import WorkflowStep, registerStep
 from core.translation import t, lang, addLabels
 from schema.schema import getMetaType, VIEW_HIDE_EMPTY
-
+from schema.schema import Metafield
 
 logg = logging.getLogger(__name__)
 
 
 def register():
     #tree.registerNodeClass("workflowstep-fileattachment", WorkflowStep_FileAttachment)
-    registerStep("workflowstep-fileattachment")
+    registerStep("workflowstep_fileattachment")
     addLabels(WorkflowStep_FileAttachment.getLabels())
 
 
@@ -60,7 +60,7 @@ class WorkflowStep_FileAttachment(WorkflowStep):
 
         return req.getTAL("workflow/fileattachment.html",
                           {"buttons": buttons,
-                           "files": self.getFiles(),
+                           "files": self.files,
                            "wfnode": self,
                            "pretext": self.getPreText(lang(req)),
                            "posttext": self.getPostText(lang(req)),
@@ -69,10 +69,10 @@ class WorkflowStep_FileAttachment(WorkflowStep):
                           macro="fileattachment_show_node")
 
     def metaFields(self, lang=None):
-        field = tree.Node("upload_fileatt", "metafield")
+        field = Metafield("upload_fileatt")
         field.set("label", t(lang, "workflowstep-fileatt_label_upload_file"))
         field.set("type", "upload")
-        field2 = tree.Node("mask_fileatt", "metafield")
+        field2 = Metafield("mask_fileatt")
         field2.set("label", t(lang, "workflowstep-fileatt_label_mask"))
         field2.set("type", "text")
         return [field, field2]

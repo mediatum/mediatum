@@ -21,11 +21,14 @@
 
 from .workflow import WorkflowStep, registerStep
 from core.translation import t, addLabels
+from core import db
+from schema.schema import Metafield
 
+q = db.query
 
 def register():
     #tree.registerNodeClass("workflowstep-condition", WorkflowStep_Condition)
-    registerStep("workflowstep-condition")
+    registerStep("workflowstep_condition")
     addLabels(WorkflowStep_Condition.getLabels())
 
 
@@ -39,24 +42,24 @@ class WorkflowStep_Condition(WorkflowStep):
             if node.get(hlp[0]) == hlp[1]:
                 gotoFalse = 0
         elif condition.startswith("schema="):
-            if node.getSchema() in condition[7:].split(";"):
+            if node.schema in condition[7:].split(";"):
                 gotoFalse = 0
         elif condition.startswith("type="):
             if node.getContentType() in condition[5:].split(";"):
                 gotoFalse = 0
         elif condition.startswith("hasfile:"):
             hlp = condition[8:].split(".")
-            for f in node.getFiles():
+            for f in node.files:
                 if len(hlp) == 1:  # only file type
-                    if f.getType() == hlp[0]:
+                    if f.filetype == hlp[0]:
                         gotoFalse = 0
                         break
                 if len(hlp) == 2:  # file itself
-                    if f.getName() == condition[8:]:
+                    if f.name == condition[8:]:
                         gotoFalse = 0
                         break
         elif condition == "hasfile":  # just test if there is file at all
-            if len(node.getFiles()) == 0:
+            if len(node.files) == 0:
                 gotoFalse = 0
 
         if gotoFalse:
@@ -65,7 +68,7 @@ class WorkflowStep_Condition(WorkflowStep):
             return self.forwardAndShow(node, True, req)
 
     def metaFields(self, lang=None):
-        field = tree.Node("condition", "metafield")
+        field = Metafield("condition")
         field.set("label", t(lang, "admin_wfstep_condition"))
         field.set("type", "text")
         return [field]

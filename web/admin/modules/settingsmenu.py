@@ -26,6 +26,8 @@ from web.admin.adminutils import adminNavigation, getAdminModuleInformation, adm
 from web.edit.edit import getEditModules, editModules, getEditMenuString
 from core.systemtypes import Root
 from core import db
+from core import Node
+from contenttypes.data import Data
 
 q = db.query
 
@@ -91,8 +93,9 @@ def getEditModuleHierarchy(typename):
     _menu = {}
     menus = {}
     types = []
+    d = Data()
 
-    for type in loadAllDatatypes():
+    for type in d.get_all_datatypes():
         if type.name == typename:
             types = [type]
             break
@@ -100,7 +103,8 @@ def getEditModuleHierarchy(typename):
     for dtype in types:  # get menu for type
         _items = {}
         if dtype.name != "root":
-            n = tree.Node(u"", type=dtype.name)
+            n = Node(u"", type=dtype.name)
+            db.session.commit()
             menu_str = getEditMenuString(dtype.name)
 
             if menu_str != "":
@@ -171,7 +175,7 @@ def adminModuleActions(req):
                     pass
                 elif items[k][0].startswith("menu"):
                     ret += items[k][0] + "(" + ";".join(items[k][1:]) + ");"
-            getRoot().set("admin.menu", ret[:-1])
+            q(Root).one().set("admin.menu", ret[:-1])
 
         elif key.startswith("hide|"):
             # hide module
@@ -258,6 +262,7 @@ def adminModuleActions(req):
                     ret += items[k][0] + "(" + ";".join(items[k][1:]) + ");"
             q(Root).one().set("admin.menu", ret[:-1])
             break
+    db.session.commit()
 
 
 def editModuleActions(req):
@@ -365,6 +370,7 @@ def editModuleActions(req):
                     ret += items[k][0] + "(" + ";".join(items[k][1:]) + ");"
             q(Root).one().set("edit.menu." + type, ret[:-1])
             break
+    db.session.commit()
 
 
 def view(req):
@@ -395,9 +401,11 @@ def view(req):
         v['mods'] = getEditModuleHierarchy(req.params.get("subitem", ""))
         v['datatypes'] = []
         v["typelongname"] = ""
-        for dtype in loadAllDatatypes():
+        d = Data()
+        for dtype in d.get_all_datatypes():
             if dtype.name != "root":
-                n = tree.Node(u"", type=dtype.name)
+                n = Node(u"", type=dtype.name)
+                db.session.commit()
                 if hasattr(n, "getEditMenuTabs"):
                     v['datatypes'].append(dtype)
             if dtype.name == v["subitem"]:

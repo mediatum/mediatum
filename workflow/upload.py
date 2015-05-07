@@ -25,14 +25,15 @@ from utils.utils import OperationException
 from .showdata import mkfilelist, mkfilelistshort
 from core.translation import t, lang
 import os
-
+from core import db
+from schema.schema import Metafield
 
 logg = logging.getLogger(__name__)
 
 
 def register():
     #tree.registerNodeClass("workflowstep-upload", WorkflowStep_Upload)
-    registerStep("workflowstep-upload")
+    registerStep("workflowstep_upload")
 
 
 class WorkflowStep_Upload(WorkflowStep):
@@ -44,15 +45,15 @@ class WorkflowStep_Upload(WorkflowStep):
             if key.startswith("delete_"):
                 filename = key[7:-2]
                 all = 0
-                for file in node.getFiles():
-                    if file.getName() == filename:
+                for file in node.files:
+                    if file.name == filename:
                         if file.type in ['document', 'image']:  # original -> delete all
                             all = 1
-                        node.removeFile(file)
+                        node.files.remove(file)
 
                 if all == 1:  # delete all files
-                    for file in node.getFiles():
-                        node.removeFile(file)
+                    for file in node.files:
+                        node.files.remove(file)
 
         if "file" in req.params:
             file = req.params["file"]
@@ -66,8 +67,8 @@ class WorkflowStep_Upload(WorkflowStep):
                     orig_filename = file.filename
                     if hasattr(file, "filename") and file.filename:
                         file = fileutils.importFile(file.filename, file.tempname)
-                        node.addFile(file)
-                        node.setName(orig_filename)
+                        node.files.append(file)
+                        node.set("name", orig_filename)
                         if hasattr(node, "event_files_changed"):
                             try:
                                 node.event_files_changed()
@@ -76,11 +77,11 @@ class WorkflowStep_Upload(WorkflowStep):
                                 error = ex.value
                 else:
                     error = t(req, "WorkflowStep_InvalidFileType")
-
+        db.session.commit()
         if "gotrue" in req.params:
             if hasattr(node, "event_files_changed"):
                 node.event_files_changed()
-            if len(node.getFiles()) > 0:
+            if len(node.files) > 0:
                 return self.forwardAndShow(node, True, req)
             elif not error:
                 error = t(req, "no_file_transferred")
@@ -114,22 +115,22 @@ class WorkflowStep_Upload(WorkflowStep):
 
     def metaFields(self, lang=None):
         ret = list()
-        field = tree.Node("prefix", "metafield")
+        field = Metafield("prefix")
         field.set("label", t(lang, "admin_wfstep_text_before_upload_form"))
         field.set("type", "memo")
         ret.append(field)
 
-        field = tree.Node("suffix", "metafield")
+        field = Metafield("suffix")
         field.set("label", t(lang, "admin_wfstep_text_after_upload_form"))
         field.set("type", "memo")
         ret.append(field)
 
-        field = tree.Node("singleobj", "metafield")
+        field = Metafield("singleobj")
         field.set("label", t(lang, "admin_wfstep_single_upload"))
         field.set("type", "check")
         ret.append(field)
 
-        field = tree.Node("limit", "metafield")
+        field = Metafield("limit")
         field.set("label", t(lang, "admin_wfstep_uploadtype"))
         field.set("type", "text")
         ret.append(field)

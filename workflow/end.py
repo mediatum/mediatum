@@ -22,14 +22,15 @@ from .workflow import WorkflowStep, registerStep
 from core.translation import t, addLabels
 import core.config as config
 from utils.date import now
-
+from schema.schema import Metafield
+from core import db
 
 logg = logging.getLogger(__name__)
 
 
 def register():
     #tree.registerNodeClass("workflowstep-end", WorkflowStep_End)
-    registerStep("workflowstep-end")
+    registerStep("workflowstep_end")
     addLabels(WorkflowStep_End.getLabels())
 
 
@@ -39,10 +40,10 @@ class WorkflowStep_End(WorkflowStep):
 
         if self.get("endremove") != "":
             # remove obj from workflownode
-            self.removeChild(node)
+            self.children.remove(node)
 
         node.setDirty()
-
+        db.session.commit()
         if self.get("endtext") != "":
             link = u"http://{}/pnode?id={}&key={}".format(config.get("host.name"),
                                                           node.id,
@@ -63,17 +64,18 @@ class WorkflowStep_End(WorkflowStep):
             if node.get('updatetime') <= ustr(now()):  # do only if date in the past
                 node.set('updatetime', ustr(now()))
             node.setDirty()
+            db.session.commit()
         except:
             logg.exception("exception in workflow step end, runAction failed")
 
     def metaFields(self, lang=None):
         ret = []
-        field = tree.Node("endtext", "metafield")
+        field = Metafield("endtext")
         field.set("label", t(lang, "admin_wfstep_endtext"))
         field.set("type", "memo")
         ret.append(field)
 
-        field = tree.Node("endremove", "metafield")
+        field = Metafield("endremove")
         field.set("label", t(lang, "admin_wfstep_endremove"))
         field.set("type", "check")
         ret.append(field)

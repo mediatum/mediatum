@@ -147,44 +147,65 @@ msgid "workflow_back"
 msgstr "Zurück"
 
 ### workflow types ###
-msgid "workflowstep-addurn"
+msgid "workflowstep_urn"
 msgstr "URN-erzeugen"
 
-msgid "workflowstep-delete"
+msgid "workflowstep_delete"
 msgstr "Eintrag löschen"
 
-msgid "workflowstep-edit"
+msgid "workflowstep_editmetadata"
 msgstr "Knotenbearbeitung"
 
-msgid "workflowstep-jahrbuch"
+msgid "workflowstep_jahrbuch"
 msgstr "Datenexport (Jahrbuch)"
 
-msgid "workflowstep-protect"
+msgid "workflowstep_protect"
 msgstr "ACL Änderungen"
 
-msgid "workflowstep-send_email"
+msgid "workflowstep_sendemail"
 msgstr "Email senden"
 
-msgid "workflowstep-showdata"
+msgid "workflowstep_showdata"
 msgstr "Metadateneditor"
 
-msgid "workflowstep-start"
+msgid "workflowstep_start"
 msgstr "Startknoten"
 
-msgid "workflowstep-upload"
+msgid "workflowstep_upload"
 msgstr "Uploadknoten"
 
-msgid "workflowstep-publish"
+msgid "workflowstep_publish"
 msgstr "Freischaltung"
 
-msgid "workflowstep-wait"
+msgid "workflowstep_wait"
 msgstr "Warten"
 
-msgid "workflowstep-checkdoublet"
+msgid "workflowstep_checkdoublet"
 msgstr "Doublettencheck (Metadaten)"
 
-msgid "workflowstep-end"
+msgid "workflowstep_end"
 msgstr "Endknoten"
+
+msgid "workflowstep_addformpage"
+msgstr "PDF-Seiten hinzufügen"
+
+msgid "workflowstep_reauth"
+msgstr "Re-Auth"
+
+msgid "workflowstep_checkcontent"
+msgstr "Inhalt Prüfen"
+
+msgid "workflowstep_deletefile"
+msgstr "Datei entfernen"
+
+msgid "workflowstep_textpage"
+msgstr "Textseite anzeigen"
+
+msgid "workflowstep_defer"
+msgstr "Freischaltverzögerung"
+
+msgid "workflowstep_fileattachment"
+msgstr "Dateianhang"
 
 #datatypes
 msgid "WorkflowStep_ShowData"

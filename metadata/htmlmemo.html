@@ -1,5 +1,7 @@
 <div tal:attributes="id python:'div_'+lang+'__'+name" style="float:left;">
 <textarea class="htmlmemo_text" tal:attributes="required required disabled python:{0:None,1:'disabled'}[lock]; name python:lang+'__'+name; id python:lang+'__'+name; onkeyup python:'countMeta(this,'+(field.getValues() or '-1')+')';style python:'width:'+str(width-20)+'px';" rows="4"><tal:block tal:replace="python:langdict[lang] or ''"/>
+</textarea>
+</div>
 <tal:block metal:define-macro="editorfield">
 
     <!-- for mask editor html memo -->

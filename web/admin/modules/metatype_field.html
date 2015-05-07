@@ -4,7 +4,7 @@
                 window.attachEvent("onload", buttonfix);
             </script>
         <![endif]-->
-    <p><a tal:attributes="href python:u'./metatype{}'.format(page)" i18n:translate="admin_overview">TEXT</a> | <a href="?masks_x=1" tal:attributes="href python:u'?masks_{}__=1'.format(metadatatype.getName())" i18n:translate="admin_meta_maskdetail_title">TEXT</a></p>
+    <p><a tal:attributes="href python:u'./metatype{}'.format(page)" i18n:translate="admin_overview">TEXT</a> | <a href="?masks_x=1" tal:attributes="href python:u'?masks_{}__=1'.format(metadatatype.name)" i18n:translate="admin_meta_maskdetail_title">TEXT</a></p>
     <script type="text/javascript">
         function openwindow(url)
         {
@@ -19,13 +19,13 @@
                 <tr>
                     <td colspan="10">
                         <h3 i18n:translate="admin_metafield_header">
-                            TEXT '<span tal:content="python:metadatatype.getName()" i18n:name="name"/>'
+                            TEXT '<span tal:content="python:metadatatype.name" i18n:name="name"/>'
                         </h3>
                     </td>
                 </tr>
                 <tr>
                     <td colspan="10">
-                        <a tal:attributes="href python:u'./metatype/{}/overview?style=popup'.format(metadatatype.getName())" i18n:translate="admin_metafield_fieldlist" target="_blank">TEXT</a>
+                        <a tal:attributes="href python:u'./metatype/{}/overview?style=popup'.format(metadatatype.name)" i18n:translate="admin_metafield_fieldlist" target="_blank">TEXT</a>
                     </td>
                 </tr>
                 <tr>
@@ -50,7 +50,7 @@
                         <table>
                             <tr>
                                 <td tal:repeat="fieldoption fieldoptions" width="20px" align="center">
-                                    <img tal:attributes="src python:fieldoption.getImagesource(); title python:fieldoption.getName()" i18n:attributes="title"/>
+                                    <img tal:attributes="src python:fieldoption.getImagesource(); title python:fieldoption.name" i18n:attributes="title"/>
                                 </td>
                             </tr>
                         </table>
@@ -62,7 +62,7 @@
                         <button i18n:translate="admin_metafield_order" i18n:attributes="title admin_sort_label" tal:attributes="name python:'sortcol_00'" class="admin_sortcol" type="submit">TEXT</button>
                     </th>
                     <th align="right">
-                        <input tal:attributes="name python:u'unewdetail_{}'.format(metadatatype.getName())" i18n:attributes="title admin_metafield_new_title" type="image" src="/img/install.png">
+                        <input tal:attributes="name python:u'unewdetail_{}'.format(metadatatype.name)" i18n:attributes="title admin_metafield_new_title" type="image" src="/img/install.png">
                     </th>
                 </tr>
             </thead>
@@ -73,14 +73,14 @@
                     <tal:block tal:repeat="metafield python:metafields[pages.getStart():pages.getEnd()]">
                         <tr tal:define="cssclass python:metafields.index(metafield)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
                             <td tal:content="python:u'{}.'.format(metafields.index(metafield)+1)"/>
-                            <td tal:content="python:metafield.getName()"/>
+                            <td tal:content="python:metafield.name"/>
                             <td tal:content="python:metafield.getLabel()"/>
-                            <td tal:content="python:fieldtypes[metafield.getFieldtype()]" i18n:translate=""/>
+                            <td tal:content="python:fieldtypes.get(metafield.getFieldtype())" i18n:translate=""/>
                             <td tal:define="flist python:metafield.getFieldOptionList()">
                                 <table>
                                     <tr>
                                         <td tal:repeat="fieldoption fieldoptions" width="20px" align="center">
-                                            <img tal:define="index python:fieldoptions.index(fieldoption)" tal:condition="python:flist[index]" tal:attributes="title python:flist[index] and fieldoption.getName() or ''; src python:flist[index] and '/img/haken.gif' or '/img/mark_empty.gif'" i18n:attributes="title"/>
+                                            <img tal:define="index python:fieldoptions.index(fieldoption)" tal:condition="python:flist[index]" tal:attributes="title python:flist[index] and fieldoption.name or ''; src python:flist[index] and '/img/haken.gif' or '/img/mark_empty.gif'" i18n:attributes="title"/>
                                         </td>
                                     </tr>
                                 </table>
@@ -88,24 +88,24 @@
                             <td tal:define="index python:metafields.index(metafield); count python:len(metafields)">
                                 &nbsp;&nbsp;&nbsp;
                                 <tal:block tal:condition="python:index>=0 and index<count-1">    
-                                    <input tal:condition="python:order[0:1]!='0' and order!=''" tal:attributes="name python:u'downdetail_{}'.format(metafield.getName())" disabled type="image" src="/img/downarrowdisabled.png"/>
+                                    <input tal:condition="python:order[0:1]!='0' and order!=''" tal:attributes="name python:u'downdetail_{}'.format(metafield.name)" disabled type="image" src="/img/downarrowdisabled.png"/>
 
-                                    <input tal:condition="python:order[0:1]=='0' or order==''" tal:attributes="name python:u'downdetail_{}'.format(metafield.getName())" i18n:attributes="title admin_metafield_down_title" type="image" src="/img/downarrow.png"/>
+                                    <input tal:condition="python:order[0:1]=='0' or order==''" tal:attributes="name python:u'downdetail_{}'.format(metafield.name)" i18n:attributes="title admin_metafield_down_title" type="image" src="/img/downarrow.png"/>
                                 </tal:block>
                                 <tal:block tal:condition="python:index==count-1">
                                     &nbsp;&nbsp;&nbsp;
                                 </tal:block>
                                 &nbsp;
                                 <tal:block tal:condition="python:index>0 and index<=count">
-                                    <input tal:condition="python:order[0:1]!='0' and order!=''" tal:attributes="name python:u'updetail_{}'.format(metafield.getName())" disabled type="image" src="/img/uparrowdisabled.png"/>
+                                    <input tal:condition="python:order[0:1]!='0' and order!=''" tal:attributes="name python:u'updetail_{}'.format(metafield.name)" disabled type="image" src="/img/uparrowdisabled.png"/>
                                 
-                                    <input tal:condition="python:order[0:1]=='0' or order==''" tal:attributes="name python:u'updetail_{}'.format(metafield.getName())" i18n:attributes="title admin_metafield_up_title" type="image" src="/img/uparrow.png"/>
+                                    <input tal:condition="python:order[0:1]=='0' or order==''" tal:attributes="name python:u'updetail_{}'.format(metafield.name)" i18n:attributes="title admin_metafield_up_title" type="image" src="/img/uparrow.png"/>
                                 </tal:block>
                             </td>
 
                             <td>
-                                <input tal:attributes="name python:u'editdetail_{}'.format(metafield.getName())" i18n:attributes="title admin_metafield_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
-                                <input tal:attributes="name python:u'deletedetail_{}'.format(metafield.getName()); onclick python:u'return questionDelName(\'{} ({})\')'.format(metafield.getLabel(), metafield.getName())" i18n:attributes="title admin_metafield_delete_title" type="image" src="/img/delete.png" alt="delete"/>
+                                <input tal:attributes="name python:u'editdetail_{}'.format(metafield.name)" i18n:attributes="title admin_metafield_edit_title" type="image" src="/img/edit.png"/>&nbsp;&nbsp;
+                                <input tal:attributes="name python:u'deletedetail_{}'.format(metafield.name); onclick python:u'return questionDelName(\'{} ({})\')'.format(metafield.getLabel(), metafield.name)" i18n:attributes="title admin_metafield_delete_title" type="image" src="/img/delete.png" alt="delete"/>
                             </td>
                         </tr>
                     </tal:block>
@@ -140,7 +140,7 @@
 
 
 
-<metal:block metal:define-macro="modify_field" tal:define="id python:metafield.getName()">
+<metal:block metal:define-macro="modify_field" tal:define="id python:metafield.name">
     <script type="text/javascript">
         function openwindow(url) {
           popup = window.open(url, "popup", "width=400,height=450,scrollbars");
@@ -148,15 +148,15 @@
         }
     </script>
     <p>
-        <a tal:attributes="href python:u'./metatype?detailof={}{}'.format(metadatatype.getName(), page)" i18n:translate="admin_overview">TEXT</a>
+        <a tal:attributes="href python:u'./metatype?detailof={}{}'.format(metadatatype.name, page)" i18n:translate="admin_overview">TEXT</a>
     </p>
     <form tal:attributes="action page" name="addmfield" id="addmfield" method="post" action="#" onload="metatypechange(document)" enctype="multipart/form-data">
         <table>
             <tr>
                 <td colspan="2">
-                    <h3 tal:condition="python:id==''" i18n:translate="admin_metafield_new_header">TEXT '<span tal:content="python:metadatatype.getName()" i18n:name="name"/>'</h3>
+                    <h3 tal:condition="python:id==''" i18n:translate="admin_metafield_new_header">TEXT '<span tal:content="python:metadatatype.name" i18n:name="name"/>'</h3>
 
-                    <h3 tal:condition="python:id!=''" i18n:translate="admin_metafield_edit_header">TEXT '<span tal:content="id" i18n:name="field"/>' TEXT '<span tal:content="python:metadatatype.getName()" i18n:name="name"/>' </h3>
+                    <h3 tal:condition="python:id!=''" i18n:translate="admin_metafield_edit_header">TEXT '<span tal:content="id" i18n:name="field"/>' TEXT '<span tal:content="python:metadatatype.name" i18n:name="name"/>' </h3>
                 </td>
             </tr>
             <tr tal:condition="python:error>0">
@@ -171,8 +171,8 @@
             <tr>
                 <td><tal:block i18n:translate="admin_metafield_name">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
-                    <input tal:attributes="value python:metafield.getName()" type="text" name="mname" maxlenght=50 style="width:390px;"/>
-                    <input tal:attributes="value python:metafield.getName()" type="hidden" name="mname_orig"/>
+                    <input tal:attributes="value python:metafield.name" type="text" name="mname" maxlenght=50 style="width:390px;"/>
+                    <input tal:attributes="value python:metafield.name" type="hidden" name="mname_orig"/>
                 </td>
             </tr>
             <tr>
@@ -185,7 +185,7 @@
                 <td><tal:block i18n:translate="admin_metafield_type">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
                     <select name="mtype" id="mtype" onchange="metatypechange(document)">
-                        <option tal:repeat="key python:fieldtypes.keys()" tal:attributes="value key; selected python:'selected' if metafield.getFieldtype()==key else None" tal:content="python:fieldtypes[key]" i18n:translate=""/>
+                        <option tal:repeat="key python:fieldtypes.keys()" tal:attributes="value key; selected python:'selected' if metafield.get('type')==key else None" tal:content="python:fieldtypes[key]" i18n:translate=""/>
                     </select>
                     &nbsp;&nbsp;&nbsp;
                     <button tal:attributes="onclick python:'openwindow(\'./metatype/info?style=popup\')'" i18n:attributes="title admin_metafield_help_title" type="button">i</button>
@@ -215,7 +215,7 @@
                         <legend i18n:translate="admin_metafield_options">TEXT</legend>
                         <tal:block  tal:repeat="fieldoption fieldoptions">
                             <input tal:define="index python:fieldoptions.index(fieldoption)" tal:attributes="name python:u'option_{}'.format(fieldoption.getValue()); value python:fieldoption.getValue(); checked python:'checked' if metafield.getFieldOptionList()[index] else None" type="checkbox">
-                            <span tal:content="python:fieldoption.getName()" i18n:translate=""/>
+                            <span tal:content="python:fieldoption.name" i18n:translate=""/>
                             <br/>
                             </tal:block>
                     </fieldset>

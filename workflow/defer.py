@@ -24,14 +24,17 @@ import utils.date as date
 import core.schedules as schedules
 from .workflow import WorkflowStep, registerStep
 from core.translation import t, addLabels
+from core import db
+from schema.schema import Metafield
 
+q = db.query
 
 logg = logging.getLogger(__name__)
 
 
 def register():
     #tree.registerNodeClass("workflowstep-defer", WorkflowStep_Defer)
-    registerStep("workflowstep-defer")
+    registerStep("workflowstep_defer")
     addLabels(WorkflowStep_Defer.getLabels())
 
 
@@ -71,7 +74,7 @@ class WorkflowStep_Defer(WorkflowStep):
                                      'attr_body': self.get('body')}
 
                         schedules.create_schedule("WorkflowStep_Defer", attr_dict)
-
+                    db.session.commit()
                 except ValueError:
                     logg.exception("exception in workflow step defer, runAction failed")
 
@@ -80,28 +83,28 @@ class WorkflowStep_Defer(WorkflowStep):
 
     def metaFields(self, lang=None):
         ret = list()
-        field = tree.Node("attrname", "metafield")
+        field = Metafield("attrname")
         field.set("label", t(lang, "attributname"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("accesstype", "metafield")
+        field = Metafield("accesstype")
         field.set("label", t(lang, "accesstype"))
         field.set("type", "mlist")
         field.set("valuelist", ";read;write;data")
         ret.append(field)
 
-        field = tree.Node("recipient", "metafield")
+        field = Metafield("recipient")
         field.set("label", t(lang, "admin_wfstep_email_recipient"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("subject", "metafield")
+        field = Metafield("subject")
         field.set("label", t(lang, "admin_wfstep_email_subject"))
         field.set("type", "text")
         ret.append(field)
 
-        field = tree.Node("body", "metafield")
+        field = Metafield("body")
         field.set("label", t(lang, "admin_wfstep_email_text"))
         field.set("type", "memo")
         ret.append(field)

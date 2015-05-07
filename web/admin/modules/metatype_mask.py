@@ -27,7 +27,10 @@ from core.translation import lang, t
 from schema.mapping import getMappings
 from utils.utils import removeEmptyStrings
 from web.common.acl_web import makeList
+from schema.schema import Mask
+from core import db
 
+q = db.query
 
 """ mask overview """
 
@@ -53,13 +56,13 @@ def showMaskList(req, id):
             None  # all users
         elif actfilter == "0-9":
             num = re.compile(r'([0-9])')
-            masks = filter(lambda x: num.match(x.getName()), masks)
+            masks = filter(lambda x: num.match(x.name), masks)
 
         elif actfilter == "else" or actfilter == t(lang(req), "admin_filter_else"):
             all = re.compile(r'([a-z]|[A-Z]|[0-9])')
-            masks = filter(lambda x: not all.match(x.getName()), masks)
+            masks = filter(lambda x: not all.match(x.name), masks)
         else:
-            masks = filter(lambda x: x.getName().lower().startswith(actfilter), masks)
+            masks = filter(lambda x: x.name.lower().startswith(actfilter), masks)
 
     pages = Overview(req, masks)
 
@@ -71,7 +74,7 @@ def showMaskList(req, id):
     # sorting
     if order != "":
         if int(order[0:1]) == 0:
-            masks.sort(lambda x, y: cmp(x.getName().lower(), y.getName().lower()))
+            masks.sort(lambda x, y: cmp(x.name.lower(), y.name.lower()))
         elif int(order[0:1]) == 1:
             masks.sort(lambda x, y: cmp(x.getMasktype(), y.getMasktype()))
         elif int(order[0:1]) == 2:
@@ -117,22 +120,24 @@ def MaskDetails(req, pid, id, err=0):
 
     if err == 0 and id == "":
         # new mask
-        mask = tree.Node(u"", type="mask")
-
+        mask = Mask(u"")
+        db.session.commit()
     elif id != "" and err == 0:
         # edit mask
         if id.isdigit():
-            mask = tree.getNode(id)
+            mask = q(Mask).get(id)
+            db.session.commit()
         else:
             mask = mtype.getMask(id)
 
     else:
         # error filling values
-        mask = tree.Node(req.params.get("mname", ""), type="mask")
+        mask = Mask(req.params.get("mname", ""))
         mask.setDescription(req.params.get("mdescription", ""))
         mask.setMasktype(req.params.get("mtype"))
         mask.setLanguage(req.params.get("mlanguage", ""))
         mask.setDefaultMask(req.params.get("mdefault", False))
+        db.session.commit()
 
     v = getAdminStdVars(req)
     v["mask"] = mask

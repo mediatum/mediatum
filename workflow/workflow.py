@@ -47,45 +47,49 @@ def getWorkflowList():
 
 def getWorkflow(name):
     if name.isdigit():
-        return tree.getNode(name)
+        return q(Workflow).get(name)
     else:
-        return tree.getRoot("workflows").getChild(name)
+        return q(Workflows).one().children.filter_by(name=name).one()
 
 
 def addWorkflow(name, description):
-    node = tree.getRoot("workflows").addChild(tree.Node(name=name, type="workflow"))
+    node = q(Workflows).one().children.append(Workflow(name))
     node.set("description", description)
+    db.session.commit()
 
 
 def updateWorkflow(name, description, origname="", writeaccess=""):
     if origname == "":
-        node = tree.getRoot("workflows")
-        if not node.hasChild(name):
+        node = q(Workflows).one()
+        if not node.children.filter_by(name=name).scalar():
             addWorkflow(name, description)
-        w = tree.getRoot("workflows").getChild(name)
+        w = q(Workflows).one().children.filter_by(name=name).one()
     else:
-        w = tree.getRoot("workflows").getChild(origname)
-        w.setName(name)
+        w = q(Workflows).one().children.filter_by(name=origname).one()
+        w.set("name", name)
     w.set("description", description)
     w.setAccess("write", writeaccess)
+    db.session.commit()
 
 
 def deleteWorkflow(id):
-    workflows = tree.getRoot("workflows")
-    w = workflows.getChild(id)
-    workflows.removeChild(w)
+    workflows = q(Workflows).one()
+    w = workflows.children.filter_by(name=id).one()
+    workflows.children.remove(w)
+    db.session.commit()
 
 
 def inheritWorkflowRights(name, type):
     w = getWorkflow(name)
     ac = w.getAccess(type)
-    for step in w.getChildren():
+    for step in w.children:
         step.setAccess(type, ac)
+    db.session.commit()
 
 
 def getNodeWorkflow(node):
-    for p in node.getParents():
-        for p2 in p.getParents():
+    for p in node.parents:
+        for p2 in p.parents:
             if p2.type == "workflow":
                 return p2
     return None
@@ -96,7 +100,7 @@ def getNodeWorkflowStep(node):
     if workflow is None:
         return None
     steps = [n.id for n in workflow.getSteps()]
-    for p in node.getParents():
+    for p in node.parents:
         if p.id in steps:
             return p
     return None
@@ -117,10 +121,11 @@ def runWorkflowStep(node, op):
     else:
         newstep = workflow.getStep(workflowstep.getFalseId())
 
-    workflowstep.removeChild(node)
-    newstep.addChild(node)
+    workflowstep.children.remove(node)
+    newstep.children.append(node)
     newstep.runAction(node, op)
-    logg.info('workflow run action "%s" (op="%s") for node %s', newstep.getName(), op, node.id)
+    db.session.commit()
+    logg.info('workflow run action "%s" (op="%s") for node %s', newstep.name, op, node.id)
     return getNodeWorkflowStep(node)
 
 # set workflow for node
@@ -129,27 +134,29 @@ def runWorkflowStep(node, op):
 def setNodeWorkflow(node, workflow):
     """XXX: unused?"""
     start = workflow.getStartNode()
-    start.addChild(node)
+    start.children.append(node)
     start.runAction(node, True)
+    db.session.commit()
     return getNodeWorkflowStep(node)
 
 
 def createWorkflowStep(name="", type="workflowstep", trueid="", falseid="", truelabel="", falselabel="", comment=ustr(""), adminstep=""):
-    n = tree.Node(name=name, type=type)
+    n = WorkflowStep(name)
     n.set("truestep", trueid)
     n.set("falsestep", falseid)
     n.set("truelabel", truelabel)
     n.set("falselabel", falselabel)
     n.set("comment", comment)
     n.set("adminstep", adminstep)
+    db.session.commit()
     return n
 
 
 def updateWorkflowStep(workflow, oldname="", newname="", type="workflowstep", trueid="", falseid="", truelabel="",
                        falselabel="", sidebartext='', pretext="", posttext="", comment='', adminstep=""):
     n = workflow.getStep(oldname)
-    n.setName(newname)
-    n.setTypeName(type)
+    n.set("name", newname)
+    n.set("type", type)
     n.set("truestep", trueid)
     n.set("falsestep", falseid)
     n.set("truelabel", truelabel)
@@ -159,34 +166,37 @@ def updateWorkflowStep(workflow, oldname="", newname="", type="workflowstep", tr
     n.set("posttext", posttext)
     n.set("comment", comment)
     n.set("adminstep", adminstep)
-    for node in workflow.getChildren():
+    db.session.commit()
+    for node in workflow.children:
         if node.get("truestep") == oldname:
             node.set("truestep", newname)
         if node.get("falsestep") == oldname:
             node.set("falsestep", newname)
+    db.session.commit()
     return n
 
 
 def deleteWorkflowStep(workflowid, stepid):
-    workflows = tree.getRoot("workflows")
-    wf = workflows.getChild(workflowid)
-    ws = wf.getChild(stepid)
-    wf.removeChild(ws)
+    workflows = q(Workflows).one()
+    wf = workflows.children.filter_by(name=workflowid).one()
+    ws = wf.children.filter_by(name=stepid).one()
+    wf.children.remove(ws)
+    db.session.commit()
 
 workflowtypes = {}
 
 
 def registerStep(nodename):
     name = nodename
-    if "-" in nodename:
-        name = nodename[nodename.index("-") + 1:]
+    if "_" in nodename:
+        name = nodename[nodename.index("_") + 1:]
     workflowtypes[nodename] = name
 
 
 def registerWorkflowStep(nodename, cls):
     name = nodename
-    if "-" in nodename:
-        name = nodename[nodename.index("-") + 1:]
+    if "_" in nodename:
+        name = nodename[nodename.index("_") + 1:]
     workflowtypes[nodename] = name
 
     addLabels(cls.getLabels())
@@ -202,9 +212,9 @@ def workflowSearch(nodes, text, access=None):
         return []
 
     ret = []
-    for node in filter(lambda x: x.getContentType() == 'workflow', nodes):
+    for node in filter(lambda x: x.type == 'workflow', nodes):
         for n in node.getSteps(access, "write"):
-            for c in n.getChildren():
+            for c in n.children:
                 if text == "*":
                     ret += [c]
                 elif isNumeric(text):
@@ -230,7 +240,7 @@ def formatItemDate(d):
 
 def exportWorkflow(name):
     if name == "all":
-        return getNodeXML(tree.getRoot("workflows"))
+        return getNodeXML(q(Workflows).one())
     else:
         return getNodeXML(getWorkflow(name))
 
@@ -242,15 +252,16 @@ def importWorkflow(filename):
     n = readNodeXML(filename)
     importlist = list()
 
-    if n.getContentType() == "workflow":
+    if n.type == "workflow":
         importlist.append(n)
-    elif n.getContentType() == "workflows":
-        for ch in n.getChildren():
+    elif n.type == "workflows":
+        for ch in n.children:
             importlist.append(ch)
-    workflows = tree.getRoot("workflows")
+    workflows = q(Workflows).one()
     for w in importlist:
-        w.setName("import-" + w.getName())
-        workflows.addChild(w)
+        w.attrs["name"] = "import_" + w.name
+        workflows.children.append(w)
+    db.session.commit()
 
 
 class Workflows(Node):
@@ -294,7 +305,7 @@ class Workflow(Node):
                         "workflow_search", ""), access), "getStep": getNodeWorkflowStep, "format_date": formatItemDate}, macro=macro)
 
     def getId(self):
-        return self.getName()
+        return self.name
 
     def setId(self, i):
         self.setName(i)
@@ -328,9 +339,10 @@ class Workflow(Node):
 
     def setDescription(self, d):
         self.set("description", d)
+        db.session.commit()
 
     def getSteps(self, access=None, accesstype="read"):
-        steps = self.getChildren()
+        steps = self.children
         if access:
             return access.filter(steps, accesstype=accesstype)
         else:
@@ -341,32 +353,33 @@ class Workflow(Node):
 
     def getStartNode(self):
         followers = {}
-        for step in self.getChildren():
+        for step in self.children:
             if step.getTrueId():
                 followers[step.getTrueId()] = None
             if step.getFalseId():
                 followers[step.getFalseId()] = None
         # Start nodes have no predecessor (= are not follower of any node)
         # XXX: no check if multiple start nodes are present!
-        for step in self.getChildren():
+        for step in self.children:
             if step.name not in followers:
                 return step
         return None  # circular workflow- shouldn't happen
 
     def getStep(self, name):
         if name.isdigit():
-            return tree.getNode(name)
+            return q(Node).get(name)
         else:
-            return self.getChild(name)
+            return self.children.filter_by(name=name).one()
 
     def getNodeList(self):
         list = []
         for step in self.getSteps():
-            list += step.getChildren()
+            list += step.children
         return list
 
     def addStep(self, step):
-        self.addChild(step)
+        self.children.append(step)
+        db.session.commit()
         return step
 
 
@@ -376,7 +389,7 @@ workflow_lock = thread.allocate_lock()
 class WorkflowStep(Node):
 
     def getId(self):
-        return self.getName()
+        return self.name
 
     def show_node_big(self, req, template="workflow/workflow.html", macro="object_step"):
 
@@ -392,7 +405,7 @@ class WorkflowStep(Node):
             req.session["key"] = key
 
             if "obj" in req.params:
-                nodes = [tree.getNode(id) for id in req.params['obj'].split(',')]
+                nodes = [q(Node).get(id) for id in req.params['obj'].split(',')]
 
                 for node in nodes:
                     if not access.hasWriteAccess(self) and \
@@ -409,20 +422,21 @@ class WorkflowStep(Node):
                     if access.hasWriteAccess(self):
                         if req.params.get('action') == 'delete':
                             for node in nodes:
-                                for parent in node.getParents():
-                                    parent.removeChild(node)
+                                for parent in node.parents:
+                                    parent.children.remove(node)
                         elif req.params.get('action').startswith('move_'):
-                            step = tree.getNode(req.params.get('action').replace('move_', ''))
+                            step = q(Node).get(req.params.get('action').replace('move_', ''))
                             for node in nodes:
-                                for parent in node.getParents():
-                                    parent.removeChild(node)
-                                step.addChild(node)
+                                for parent in node.parents:
+                                    parent.children.remove(node)
+                                step.children.append(node)
+                    db.session.commit()
                     return self.show_workflow_step(req)
 
                 else:
                     node = nodes[0]
 
-                if self in node.getParents():
+                if self in node.parents:
                     # set correct language for workflow for guest user only
                     if node.get('key') == node.get('system.key') and getUserFromRequest(req) == getUser(config.get('user.guestuser')):
                         switch_language(req, node.get('system.wflanguage'))
@@ -473,11 +487,11 @@ class WorkflowStep(Node):
         if not access.hasWriteAccess(self):
             return '<i>' + t(lang(req), "permission_denied") + '</i>'
         c = []
-        for item in self.getChildren():
+        for item in self.children:
             c.append({"id": ustr(item.id), "creationtime": date.format_date(
-                date.parse_date(item.get('creationtime')), 'dd.mm.yyyy HH:MM:SS'), "name": item.getName()})
+                date.parse_date(item.get('creationtime')), 'dd.mm.yyyy HH:MM:SS'), "name": item.name})
         c.sort(lambda x, y: cmp(x['name'], y['name']))
-        return req.getTAL("workflow/workflow.html", {"children": c, "workflow": self.getParents()[
+        return req.getTAL("workflow/workflow.html", {"children": c, "workflow": self.parents[
                           0], "step": self, "nodelink": "/mask?id=" + self.id + "&obj=", 'currentlang': lang(req)}, macro="workflow_show")
 
     def show_node_image(node):
@@ -488,9 +502,6 @@ class WorkflowStep(Node):
 
     def getLink(self):
         return "/mask?id=" + self.id
-
-    def getId(self):
-        return self.name
 
     def getLabel(node):
         return node.name
@@ -613,7 +624,7 @@ class WorkflowStep(Node):
                                                          getDefaultLanguage()}, macro="workflow_buttons", language=getDefaultLanguage())
 
     def getTypeName(self):
-        return self.getName()
+        return self.name
 
     def getShortName(self, req):
         l = lang(req)
@@ -632,9 +643,9 @@ class WorkflowStep(Node):
 
 
 def register():
-#     tree.registerNodeClass("workflows", Workflows)
-#     tree.registerNodeClass("workflow", Workflow)
-#     tree.registerNodeClass("workflowstep", WorkflowStep)
+    # tree.registerNodeClass("workflows", Workflows)
+    # tree.registerNodeClass("workflow", Workflow)
+    # tree.registerNodeClass("workflowstep", WorkflowStep)
 
     # run register method of step types
     path = os.path.dirname(__file__)

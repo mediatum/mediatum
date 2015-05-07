@@ -18,11 +18,11 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from .workflow import WorkflowStep, registerStep
-
+from core import db
 
 def register():
     #tree.registerNodeClass("workflowstep-publish", WorkflowStep_Publish)
-    registerStep("workflowstep-publish")
+    registerStep("workflowstep_publish")
 
 
 class WorkflowStep_Publish(WorkflowStep):
@@ -35,4 +35,5 @@ class WorkflowStep_Publish(WorkflowStep):
                 if right != "{user workflow}":
                     newaccess += [right]
                 node.setAccess("read", ",".join(newaccess))
+        db.session.commit()
         self.forward(node, True)

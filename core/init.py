@@ -35,6 +35,7 @@ def set_locale():
     loc = locale.setlocale(locale.LC_COLLATE, '')
     logg.info("using locale %s for sorting", loc)
 
+
 def load_system_types():
     from core.systemtypes import *
     from core import File
@@ -113,7 +114,7 @@ def init_app():
 
 
 def init_db():
-    import core.database # init DB connector
+    import core.database  # init DB connector
     core.db.connect()
     # assign model classes for selected DB connector to the core package
     for cls in core.db.get_model_classes():
@@ -136,18 +137,34 @@ def init_modules():
 
 def add_ustr_builtin():
     inspection_log = logging.getLogger("inspection")
-    
+
     def ustr(s):
         if isinstance(s, unicode):
             inspection_log.warn("ustr() called on unicode object, ignoring '%s'", s)
             return s
     #     elif isinstance(s, int):
     #         logg.warn("ustr() called on int object '%s'", s)
-        
+
         return str(s)
-        
+
     import __builtin__
-    __builtin__.ustr  = ustr
+    __builtin__.ustr = ustr
+
+
+def check_undefined_nodeclasses():
+    from core import Node, db
+    known_nodetypes = set(c.__mapper__.polymorphic_identity for c in Node.get_all_subclasses())
+    nodetypes_in_db = set(t[0] for t in db.query(Node.type.distinct()))
+    undefined_nodetypes = nodetypes_in_db - known_nodetypes
+
+    logg.warn("some node types are present in the database, but not defined in code. Missing plugins?\n%s",
+              [str(t) for t in undefined_nodetypes])
+
+    if config.get("config.stub_undefined_nodetypes", "true") == "true":
+        for t in undefined_nodetypes:
+            clsname = t.capitalize()
+            type(str(clsname), (Node, ), {})
+            logg.info("auto-generated stub class for node type '%s'", clsname)
 
 
 def basic_init():
@@ -172,3 +189,4 @@ def full_init():
     init_archivemanager()
     init_modules()
     tal_setup()
+    check_undefined_nodeclasses()

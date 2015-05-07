@@ -13,6 +13,7 @@ from core.database.postgres import DeclarativeBase, db_metadata
 from core.database.postgres import rel, C
 from core.database.postgres import TimeStamp, integer_fk, integer_pk
 from core.user import UserMixin
+from core.usergroup import UserGroupMixin
 
 
 logg = logging.getLogger(__name__) 
@@ -42,7 +43,7 @@ user_to_usergroup = Table("user_to_usergroup", db_metadata,
                           )
 
 
-class UserGroup(DeclarativeBase, TimeStamp):
+class UserGroup(DeclarativeBase, TimeStamp, UserGroupMixin):
 
     __tablename__ = "usergroup"
 

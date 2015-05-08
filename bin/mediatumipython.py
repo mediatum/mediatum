@@ -93,6 +93,8 @@ from core import init
 import core.database
 from core.database.postgres.node import t_noderelation
 init.basic_init()
+# we don't want to raise exceptions for missing node classes
+init.check_undefined_nodeclasses()
 
 from core import Node
 from core import File

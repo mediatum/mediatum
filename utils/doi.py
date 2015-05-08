@@ -51,7 +51,7 @@ def generate_doi_live(node):
     prefix = config.get('doi.prefix_live')
     suffix = config.get('doi.suffix')
 
-    #strips suffix if not declared or set empty
+    # strips suffix if not declared or set empty
     if suffix is None:
         suffix = ''
 
@@ -87,12 +87,12 @@ def generate_doi_live(node):
     else:
         params['type'] = node.type
 
-    return '{}/{}{}{}{}/{}'.format(prefix,
-                                   params['year'],
-                                   params['publisher'],
-                                   params['type'],
-                                   params['id'],
-                                   suffix).rstrip('/')
+    return '10.{}/{}{}{}{}/{}'.format(prefix,
+                                      params['year'],
+                                      params['publisher'],
+                                      params['type'],
+                                      params['id'],
+                                      suffix).rstrip('/')
 
 
 def create_meta_file(node):

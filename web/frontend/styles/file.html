@@ -1,37 +1,36 @@
-<div id="object_main" style="padding-top:30px">
+<link rel="stylesheet" href="css/childs.css">
 
+<metal:macro use-macro="web/frontend/styles/macros.html/version_alerts"/>
+
+<div id="object_main" >
     <div id="object_image">
-        <img tal:attributes="src python:u'/thumb2/{}'.format(node.id)" style="width:200px;border:1px double silver;"/>
-
-        <div id="object_versions" tal:define="versions python:node.getVersionList()" tal:condition="python:len(versions)>1">
-            <span onclick="$('#versions').toggle()" style="cursor:pointer" i18n:attributes="title document_versions_existing_title"><tal:block i18n:translate="document_versions">TEXT</tal:block> <img src="/img/greyarrow.gif"/></span>
-            <div style="display:none;border:1px solid silver;padding:5px;" id="versions">
-                <div><tal:block i18n:translate="document_view_current_version_from">Current version:<br/><span i18n:name="version" tal:replace="python:u'Version {}'.format(node.get('system.version.id')=='' and 1 or node.get('system.version.id'))">Version</span> from</tal:block> <tal:block tal:condition="python:node.get('updatetime') or node.get('creationtime')" tal:replace="python:node.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:node.get('updateuser') and node.get('updateuser') or node.get('creator')" /></div>
-
-                <div i18n:translate="document_view_other_versions_of_the_document">Other versions of the document:</div>
-                <div tal:repeat="v versions">
-                    <a href="/" tal:attributes="href python:u'?id={}'.format(v.id)"><span tal:content="python:u'Version {}'.format(v.get('system.version.id')=='' and 1 or v.get('system.version.id'))">Version</span>
-                    <span tal:condition="python:v.get('updatetime') or v.get('creationtime')">(<tal:block i18n:translate="document_view_from">from</tal:block> <tal:block tal:replace="python:v.getUpdatedDate()"></tal:block> <tal:block i18n:translate="document_view_by" /> <tal:block tal:replace="python:v.get('updateuser') and v.get('updateuser') or v.get('creator')" />)</span></a>
-                </div>
-            </div>
-        </div>
+        <img tal:attributes="src python:'/thumb2/{}'.format(node.id)" style="width:200px;border:1px double silver;"/>
+        <metal:macro use-macro="web/frontend/styles/macros.html/object_versions" />
     </div>
-
-    <div tal:content="raw metadata" style="margin-left:330px;padding-bottom:40px"/>
-
-    <p tal:condition="python:node.get('license')!='' and ', http' in node.get('license')" style="text-align:right" class="licenseicon">
-        <a tal:attributes="href python:node.get('license').split(',')[1]" target="_blank"><img tal:attributes="src python:u'/img/{}.png'.format(node.get('license').split(',')[0])" style="width:80px;"/></a>
-    </p>
-    
-    <hr/>
-    <div style="margin-left:330px">
+    <div id="object_meta">
+        <tal:block tal:content="raw metadata"> </tal:block>
+        <div id="files">
         <tal:block tal:repeat="fl python:node.getFiles()">
-            <tal:block tal:condition="python:fl.type not in ['thumb', 'presentation']">
-                <a tal:attributes="href python:u'/file/{}/{}'.format(node.id, fl.getName())" tal:content="python:node.getName()">TEXT</a>
-                <span tal:content="python:format_size(fl.getSize())" style="padding-left: 20px"></span><br/>
-            </tal:block>
+            <div class="mask_row">
+                <div class="mask_label" i18n:translate="file_size"></div>
+            </div>
+            <div class="mask_row">
+                <div class="mask_value" tal:content="python:u'{}'.format(format_size(fl.getSize()))"></div>
+            </div>
+            <div class="mask_row">
+                <div class="mask_label" i18n:translate="file"> </div>
+            </div>
+            <div class="mask_row" style="overflow: hidden">
+                <a class="mask_value" tal:attributes="href python:u'/file/{}{}{}'.format(node.id, '/', fl.getName())" tal:content="python:fl.getName()" i18n:attributes="title edit_files_open_title" target="filewindow"/>
+            </div>
         </tal:block>
+        </div>
+        </div>
+            <p tal:condition="python:node.get('license')!='' and ', http' in node.get('license')" style="text-align:right" class="licenseicon">
+                <a tal:attributes="href python:node.get('license').split(',')[1]" target="_blank"><img tal:attributes="src python:u'/img/{}{}'.format(node.get('license').split(',')[0], '.png')" style="width:80px;"/></a>
+            </p>
     </div>
 
-</div>
+<div style="clear:both"/>
+<metal:macro use-macro="web/frontend/styles/macros.html/bothView"/>
 <div style="clear:both"/>

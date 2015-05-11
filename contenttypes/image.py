@@ -267,6 +267,9 @@ class Image(Content):
                 req.session["full_style"] = "full_standard"
 
         obj['style'] = req.session["full_style"]
+
+        obj['parentInformation'] = self.getParentInformation(req)
+
         return obj
 
     """ format big view with standard template """
@@ -311,9 +314,11 @@ class Image(Content):
                     orig = 1
                 if f.type == "thumb":
                     thumb = 1
+
             if orig == 0:
                 for f in self.files:
                     if f.type == "image":
+
                         if f.mimetype == "image/tiff" or ((f.mimetype is None or f.mimetype == "application/x-download")
                                                           and (f.base_name.lower().endswith("tif") or f.base_name.lower().endswith("tiff"))):
                             # move old file to "original", create a new png to be used as "image"
@@ -321,6 +326,7 @@ class Image(Content):
 
                             path, ext = splitfilename(f.abspath)
                             pngname = path + ".png"
+
                             if not os.path.isfile(pngname):
                                 makeOriginalFormat(f.abspath, pngname)
 
@@ -493,8 +499,7 @@ class Image(Content):
                              "workflownode": "Workflow Knoten",
                              "origwidth": "Originalbreite",
                              "origheight": "Originalh&ouml;he",
-                             "origsize": "Dateigr&ouml;&szlig;e"
-        },
+                             "origsize": "Dateigr&ouml;&szlig;e"},
 
                 "Exif": {"exif_EXIF_ComponentsConfiguration": "EXIF ComponentsConfiguration",
                          "exif_EXIF_LightSource": "EXIF LightSource",

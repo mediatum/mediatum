@@ -131,6 +131,64 @@ class Data(Node):
     def getCategoryName(cls):
         return "undefined"
 
+    def getDetailsCondition(self):
+        '''checks if 'details' should be displayed
+           or not
+
+           :return: boolean
+        '''
+        if self.get('system.prev_id') != '' and len(self.getChildren()) > 0 in [(c.get('system.next_id') != '') for c in self.getChildren()]:
+            return True
+        else:
+            return (self.get('system.prev_id') == '') or (len(self.getChildren()) > 0) in [(c.get('system.prev_id') != '') for c in self.getChildren()]
+
+    def getFurtherDetailsCondition(self, req):
+        '''checks if 'further details'
+           should be displayed or not
+
+           :return: boolean
+        '''
+        if len(tree.getNode(req.params.get('pid', self.id)).getChildren()) == 1:
+            return False
+        if len(self.getParents()) > 0:
+            return True
+        else:
+            return (self.get('system.prev_id') == '') or (len(self.getChildren()) > 0) in [(c.get('system.prev_id') != '') for c in self.getChildren()]
+
+    def getParentInformation(self, req):
+        '''sets diffrent used Information
+           to a dict object
+
+           :param req: request object
+           :return: dict parentInformation
+        '''
+        parentInformation = {}
+        pid = req.params.get('pid', self.id)
+        sid = req.params.get('id', self.id)
+
+        if len(self.getChildren()) > 0 and self.type != 'directory' and self.type != 'collection':
+            parentInformation['parent_node_id'] = req.params.get('pid', self.id)
+            parentInformation['children_list'] = [child for child in self.getChildren() if not child.get('system.next_id') != '']
+        else:
+            parentInformation['parent_node_id'] = re.split('\D', req.split_uri()[2].split('pid=')[-1])[0]
+            parentInformation['children_list'] = []
+        if len([sib.id for sib in filter(lambda itm: str(itm.id) == parentInformation['parent_node_id'], self.getParents())]) != 0:
+            parentInformation['parent_condition'] = True
+            parentInformation['siblings_list'] = [c for c in tree.getNode(pid).getChildren() if c.id != self.id ]
+        else:
+            parentInformation['parent_condition'] = False
+            parentInformation['siblings_list'] = tree.getNode(sid).getParents()[0].getChildren()
+
+        if parentInformation['parent_node_id']:
+            pass
+        else:
+            parentInformation['parent_node_id'] = re.split('\D', req.split_uri()[2].split('pid=')[-1])[0]
+
+        parentInformation['paren_ex_dir&col'] = [id for id in self.getParents() if id.type != 'directory' and id.type != 'collection']
+        parentInformation['details_condition'] = self.getDetailsCondition()
+        parentInformation['further_details'] = self.getFurtherDetailsCondition(req)
+        return parentInformation
+
     def show_node_big(self, req, template="", macro=""):
         mask = self.getFullView(lang(req))
         access = acl.AccessData(req)
@@ -140,8 +198,15 @@ class Data(Node):
             if len(styles) >= 1:
                 template = styles[0].getTemplate()
         # hide empty elements}, macro)
-        return req.getTAL(template, {'node': self, 'metadata': mask.getViewHTML(
-            [self], VIEW_HIDE_EMPTY), 'format_size': format_filesize, 'access': access})
+        node = self
+
+        return req.getTAL(template,
+                          {'node': self,
+                           'metadata': mask.getViewHTML([self], VIEW_HIDE_EMPTY),
+                           'format_size': format_filesize,
+                           'access': access,
+                           'parentInformation': self.getParentInformation(req)
+                          })
 
     def show_node_image(self, language=None):
         return tal.getTAL(

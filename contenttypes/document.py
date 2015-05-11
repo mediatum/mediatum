@@ -102,6 +102,8 @@ class Document(Content):
             else:
                 req.session["full_style"] = "full_standard"
 
+        obj['parentInformation'] = self.getParentInformation(req)
+
         obj['style'] = req.session["full_style"]
         return obj
 

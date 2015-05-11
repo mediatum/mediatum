@@ -3,24 +3,9 @@
     div.childnode div.morelink{position:absolute;bottom:2px;width:128px;text-align:center}
 </style>
 
-<div style="width:100%;text-align:center;color:red;" tal:condition="python:node.next_nid!=None and node.next_nid!='0' and node.get('deleted')!='true' and node.next_nid != node.id"
-    tal:define="v python:node.getActiveVersion()">
-    <p class="info" i18n:translate="document_view_new_version_exist">
-    <span i18n:name="a_open" tal:replace="structure python:'<a href=&quot;/''?id='+v.id+'&quot;>'"></span>
-    <span i18n:name="a_close" tal:replace="structure python:'</a>'"></span>
-    There is a new version of the desired document.
-    </p>
-</div>
+<metal:macro use-macro="web/frontend/styles/macros.html/version_alerts"/>
 
-<div style="width:100%;text-align:center;color:red;" tal:condition="deleted"
-    tal:define="v python:node.getActiveVersion();">
-    <p class="error" i18n:translate="document_view_version_deleted">
-    <span i18n:name="a_open" tal:replace="structure python:'<a href=&quot;/''?id='+v.id+'&quot;>'"></span>
-    <span i18n:name="a_close" tal:replace="structure python:'</a>'"></span>
-    The desired version of the document has been deleted.<br />
-    The document is displayed in the <a href="/" tal:attributes="href python:'?id='+v.id">latest version</a>.
-    </p>
-</div>
+<metal:macro use-macro="web/frontend/styles/macros.html/deleted"/>
 
 <div style="width:100%;text-align:right">
     <img tal:condition="python:node.get('metis_url')!=''" tal:attributes="src python:node.get('metis_url')" width="1" height="1" alt="" />
@@ -80,18 +65,6 @@
 
 </div>
 
-
-<div tal:define="children python:[c for c in node.getChildren().sort_by_orderpos() if c.isActiveVersion()]" tal:condition="python:len(children)>0" style="width:100%;padding:10px;">
-    <p><tal:block i18n:translate="details">TEXT</tal:block>:</p>
-    <tal:block tal:repeat="child children">
-        <div class="childnode" tal:condition="python:access.hasReadAccess(child)">
-            <a tal:attributes="href python:'?id='+child.id" i18n:attributes="title details"><img tal:attributes="src python:'/thumbs/'+child.id"/></a>
-            <br/>
-            <small>
-                <span tal:content="python:child.getName()" tal:attributes="title python:child.getName()">TEXT</span>
-            </small>
-            <div class="morelink"><a tal:attributes="href python:'?id='+child.id"><tal:block i18n:translate="details">TEXT</tal:block>...</a></div>
-        </div>
-    </tal:block>
-</div>
+<div style="clear:both"/>
+<metal:macro use-macro="web/frontend/styles/macros.html/bothView"/>
 <div style="clear:both"/>

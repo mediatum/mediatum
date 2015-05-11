@@ -256,6 +256,9 @@ class Image(default.Default):
                 req.session["full_style"] = "full_standard"
 
         obj['style'] = req.session["full_style"]
+
+        obj['parentInformation'] = self.getParentInformation(req)
+
         return obj
 
     """ format big view with standard template """
@@ -299,16 +302,20 @@ class Image(default.Default):
                     orig = 1
                 if f.type == "thumb":
                     thumb = 1
+
             if orig == 0:
                 for f in self.getFiles():
                     if f.type == "image":
+
                         if f.mimetype == "image/tiff" or ((f.mimetype is None or f.mimetype == "application/x-download")
                                                           and (f.getName().lower().endswith("tif") or f.getName().lower().endswith("tiff"))):
+
                             # move old file to "original", create a new png to be used as "image"
                             self.removeFile(f)
 
                             path, ext = splitfilename(f.retrieveFile())
                             pngname = path + ".png"
+
                             if not os.path.isfile(pngname):
                                 makeOriginalFormat(f.retrieveFile(), pngname)
 
@@ -320,6 +327,8 @@ class Image(default.Default):
                                 width, height = getImageDimensions(pngname)
                                 self.set("width", width)
                                 self.set("height", height)
+
+                            print 'png name/path: ', pngname
 
                             self.addFile(FileNode(name=pngname, type="image", mimetype="image/png"))
                             self.addFile(FileNode(name=f.retrieveFile(), type="original", mimetype="image/tiff"))
@@ -344,11 +353,14 @@ class Image(default.Default):
                         path, ext = splitfilename(f.retrieveFile())
                         basename = hashlib.md5(str(random.random())).hexdigest()[0:8]
 
-                        #path = os.path.join(getImportDir(),os.path.basename(path))
+                        # path = os.path.join(getImportDir(),os.path.basename(path))
                         path = os.path.join(getImportDir(), basename)
 
                         thumbname = path + ".thumb"
                         thumbname2 = path + ".thumb2"
+
+                        print 'tumb: ', thumbname
+                        print 'presentation: ', thumbname2
 
                         assert not os.path.isfile(thumbname)
                         assert not os.path.isfile(thumbname2)
@@ -480,8 +492,7 @@ class Image(default.Default):
                              "workflownode": "Workflow Knoten",
                              "origwidth": "Originalbreite",
                              "origheight": "Originalh&ouml;he",
-                             "origsize": "Dateigr&ouml;&szlig;e"
-        },
+                             "origsize": "Dateigr&ouml;&szlig;e"},
 
                 "Exif": {"exif_EXIF_ComponentsConfiguration": "EXIF ComponentsConfiguration",
                          "exif_EXIF_LightSource": "EXIF LightSource",

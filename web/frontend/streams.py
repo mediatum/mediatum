@@ -240,7 +240,6 @@ def send_file(req, download=0):
         return 404
 
     req.reply_headers["Content-Disposition"] = 'attachment; filename="{}"'.format(display_file_name)
-
     return req.sendFile(file.retrieveFile(), f.getMimeType())
 
 

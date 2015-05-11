@@ -164,6 +164,8 @@ class Audio(default.Default):
         else:
             obj['canseeoriginal'] = False
 
+        obj['parentInformation'] = self.getParentInformation(req)
+
         return obj
 
     """ format big view with standard template """
@@ -172,6 +174,7 @@ class Audio(default.Default):
             styles = getContentStyles("bigview", contenttype=self.getContentType())
             if len(styles) >= 1:
                 template = styles[0].getTemplate()
+
         return req.getTAL(template, self._prepareData(req), macro)
 
     def isContainer(self):

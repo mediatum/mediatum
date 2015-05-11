@@ -1302,6 +1302,12 @@ msgstr "Änderungen an den Metadaten"
 msgid "details"
 msgstr "Details"
 
+msgid "details_colon"
+msgstr "Details:"
+
+msgid "further_details_colon"
+msgstr "weitere Details:"
+
 ###### scholar
 msgid "show_all_years"
 msgstr "Alle"
@@ -1311,3 +1317,9 @@ msgstr "Jahr:"
 
 msgid "last_update"
 msgstr "Letzte Aktualisierung:"
+
+msgid "file"
+msgstr "Datei:"
+
+msgid "file_size"
+msgstr "Dateigröße:"

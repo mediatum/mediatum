@@ -374,6 +374,7 @@ class ContentNode(Content):
 
 
 def fileIsNotEmpty(file):
+
     f = open(file)
     s = f.read().strip()
     f.close()
@@ -532,6 +533,7 @@ class ContentArea(Content):
                     "params": self.params, "path": breadscrubs, "styles": styles, "logo": self.collectionlogo, "searchmode": req.params.get(
                         "searchmode", ""), "items": items, "id": id, "nodeprint": nodeprint, "printlink": printlink, "area": req.session.get(
                         "area", "")}, macro="path")
+
         return path + '\n<!-- CONTENT START -->\n' + self.content.html(req) + '\n<!-- CONTENT END -->\n'
 
     def status(self):

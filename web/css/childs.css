@@ -1,0 +1,18 @@
+div.childnode   {
+                    position:   relative;
+                    float:      left;
+                    padding:    2px;
+                    border:     1px solid silver;
+                    margin:     2px;
+                    text-align: center;
+                    width:      128px;
+                    overflow:   hidden;
+                    height:     200px;
+                }
+
+div.morelink    {
+                    position:   absolute;
+                    bottom:     2px;
+                    width:      128px;
+                    text-align: center;
+                }

@@ -111,6 +111,9 @@ class Video(default.Default):
         obj['node'] = node
         obj['path'] = req.params.get("path", "")
         obj['canseeoriginal'] = access.hasAccess(node, "data")
+
+        obj['parentInformation'] = self.getParentInformation(req)
+
         return obj
 
     """ format big view with standard template """

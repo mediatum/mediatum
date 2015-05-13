@@ -1482,7 +1482,7 @@ class ContainerSchemaMixin(SchemaMixin):
     
     @hybrid_property
     def metadatatype(self):
-        return q(Metadatatype).filter_by(name=self.type).one()
+        return q(Metadatatype).filter_by(name=self.type).scalar()
      
 
 class ContentSchemaMixin(SchemaMixin):

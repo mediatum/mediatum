@@ -52,16 +52,16 @@
                         <input type="image" tal:attributes="name python:u'open_{}'.format(field.id)" src="/img/boxx.gif"/>
                     </td>
                     <td valign="center" colspan="2">
-                        <tal:block tal:content="python:field.getName()"/>
-                        <tal:block tal:condition="python:field.getNumChildren()">
-                        (<tal:block tal:repeat="f python:field.getChildren()[0:10]">
-                          <tal:block tal:condition="python:f.type == 'metafield'">
-                    <tal:block tal:define="fschema python:f.getSchemaNode()">
-                            <tal:block tal:content="python:fschema and fschema.getName() or '???'"/>:<tal:block tal:content="python:f.getName()"/>
-                </tal:block>
+                        <tal:block tal:content="python:field.name"/>
+                        <tal:block tal:condition="python:field.children.count()">
+                        <tal:block tal:repeat="f python:field.children.limit(10).all()">
+                            <tal:block tal:condition="python:f.type == 'metafield'">
+                                <tal:block tal:define="fschema python:f.parents.filter_by(type='metadatatype').first()">
+                                <tal:block tal:content="python:fschema and fschema.name or '???'"/>:<tal:block tal:content="python:f.name"/>
+                            </tal:block>
                           </tal:block>
                         </tal:block>
-                        <tal:block tal:condition="python:len(field.getChildren())>10">...</tal:block>)
+                        <tal:block tal:condition="python:field.children.count()>10">...</tal:block>)
                         </tal:block>
                     </td>
                 </tr>
@@ -72,7 +72,7 @@
                         <input type="image" name="close" value="close" src="/img/box.gif"/>
                     </td>
                     <td colspan="2">
-                        <input type="text" name="fieldname" tal:attributes="value python:field.getName()"/>
+                        <input type="text" name="fieldname" tal:attributes="value python:field.name"/>
                         <input type="image" tal:attributes="name python:u'del_{}'.format(field.id)" src="/img/delete.png"/>
                         <table frame="box">
                             <tr>
@@ -81,22 +81,22 @@
                             <tr>
                                 <td colspan="3">&nbsp;</td>
                             </tr>
-                            <tr tal:condition="python: not field.getNumChildren()">
+                            <tr tal:condition="python: not field.children.count()">
                                 <td colspan="3" i18n:translate="edit_searchfield_none">TEXT</td>
                             </tr>
 
-                            <tr tal:condition="python:field.getNumChildren()">
+                            <tr tal:condition="python:field.children.count()">
                                 <td><b i18n:translate="edit_searchmask_schema" /></td>
                                 <td><b i18n:translate="edit_searchmask_field" /></td>
                                 <td>&nbsp;</td>
                             </tr>
 
-                            <tal:block tal:condition="python:field.getNumChildren()" tal:repeat="subfield python:field.getChildren()">
+                            <tal:block tal:condition="python:field.children.count()" tal:repeat="subfield python:field.children">
                             <tr tal:condition="python:subfield.type == 'metafield'">
-                                <tal:block tal:define="ss python:subfield.getSchemaNode()">
-                                    <td tal:content="python:ss and ss.getName() or '??'"/>
+                                <tal:block tal:define="ss python:subfield.parents.filter_by(type='metadatatype').first()">
+                                    <td tal:content="python:ss and ss.name or '??'"/>
                                 </tal:block>
-                                <td tal:content="python:subfield.getName()"/>
+                                <td tal:content="python:subfield.name"/>
                                 <td><input type="image" tal:attributes="name python:u'delsub_{}'.format(subfield.id)" src="/img/delete.png"/></td>
                             </tr>
                             </tal:block>
@@ -108,17 +108,17 @@
                                     <select name="schema" onChange="this.form.submit()">
                                         <option value=""></option>
                                         <tal:block tal:repeat="schema schemas">
-                                            <option tal:attributes="value python:schema.id; selected python:[None,'selected'][schema.id==defaultschemaid]" tal:content="python:schema.getName()"></option>
+                                            <option tal:attributes="value python:schema.id; selected python:[None,'selected'][schema.id==defaultschemaid]" tal:content="python:schema.name"></option>
                                         </tal:block>
                                     </select>
                                 </td>
                                 <td>
                                     <select name="schemafield">
-                                        <!--<tal:block tal:condition="schema" tal:repeat="schemafield python:schema.getChildren().sort('name')">-->
-                                        <tal:block tal:condition="schema" tal:repeat="schemafield python:schema.getChildren()">
+                                        <!--<tal:block tal:condition="schema" tal:repeat="schemafield python:schema.children.sort('name')">-->
+                                        <tal:block tal:condition="schema" tal:repeat="schemafield python:schema.children">
                                         <option tal:condition="python:display(schemafield)"
                                             tal:attributes="value python:schemafield.id; selected python:[None,'selected'][schemafield.id==defaultfieldid]"
-                                            tal:content="python:schemafield.getName()"></option>
+                                            tal:content="python:schemafield.name"></option>
                                         </tal:block>
                                     </select>
                                 </td>

@@ -4,7 +4,11 @@ import random
 from . import schema
 from core.transition.postgres import check_type_arg
 from core import Node
+from core import db
+from contenttypes import Home, Collections
+from core.systemtypes import Root, Searchmasks
 
+q = db.query
 
 class SearchMask(Node):
     pass
@@ -13,35 +17,36 @@ class SearchMask(Node):
 class SearchMaskItem(Node):
 
     def getFirstField(self):
-        if self.getNumChildren():
-            return self.getChildren()[0]
+        if len(self.children):
+            return self.children[0]
         return None
 
 
 def newMask(node):
-    root = tree.getRoot("searchmasks")
+    searchmask_root = q(Searchmasks).one()
     while True:
-        maskname = hashlib.md5(ustr(random.random())).hexdigest()[0:8]
-        if root.hasChild(maskname):
+        maskname = unicode(hashlib.md5(ustr(random.random())).hexdigest()[0:8])
+        if maskname in searchmask_root.children.all():
             continue
         else:
             break
-    mask = tree.Node(name=maskname, type="searchmask")
-    root.addChild(mask)
+    mask = Node(name=maskname, type=u"searchmask")
+    searchmask_root.children.append(mask)
     node.set("searchmaskname", maskname)
     return mask
 
 
 def getMask(node):
-    root = tree.getRoot("searchmasks")
     maskname = node.get("searchmaskname")
-    if not maskname or not root.hasChild(maskname):
+    mask = q(Searchmasks).one().children.filter_by(name=maskname).scalar()
+    if not maskname or mask is None:
         return newMask(node)
     else:
-        return root.getChild(maskname)
+        return mask
 
 
 def getMainContentType(node):
+    #todo this needs acl checks
     occurences = [(k, v) for k, v in node.getAllOccurences(acl.getRootAccess()).items()]
     occurences.sort(lambda x, y: cmp(y[1], x[1]))
     maintype = None
@@ -59,10 +64,11 @@ def generateMask(node):
         return
 
     # clean up
-    for c in mask.getChildren():
-        mask.removeChild(c)
+    for field in mask.children:
+        mask.children.remove(field)
 
     allfields = schema.getMetaType(maintype.getSchema())
+    q(Metadatatype).filter_by(name=name).scalar()
 
     for metafield in maintype.getMetaFields("s"):
 
@@ -77,4 +83,5 @@ def generateMask(node):
         else:
             item.addChild(metafield)
 
+    db.session.commit()
     return mask

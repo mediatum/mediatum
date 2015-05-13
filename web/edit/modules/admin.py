@@ -64,10 +64,15 @@ def getContent(req, ids):
             logg.info("attribute %s of node %s removed", key[5:-2], node.id)
             break
 
-    fields = node.metadatatype.getMetaFields()
+    metadatatype = node.metadatatype
     fieldnames = []
-    for field in fields:
-        fieldnames += [field.name]
+
+    if metadatatype:
+        fields = metadatatype.getMetaFields()
+        for field in fields:
+            fieldnames += [field.name]
+    else:
+        fields = []
 
     attrs = node.attrs.items()
 

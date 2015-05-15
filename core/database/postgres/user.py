@@ -16,7 +16,7 @@ from core.user import UserMixin
 from core.usergroup import UserGroupMixin
 
 
-logg = logging.getLogger(__name__) 
+logg = logging.getLogger(__name__)
 
 
 class AuthenticatorInfo(DeclarativeBase):
@@ -60,6 +60,13 @@ class UserGroup(DeclarativeBase, TimeStamp, UserGroupMixin):
         return u"UserGroup<{} '{}'> ({})".format(self.id, self.name, object.__repr__(self)).encode("utf8")
 
 
+def create_special_user_dirs():
+    from contenttypes import Directory
+    return [Directory("faulty", attrs=dict(system=dict(used_as="faulty"))),
+            Directory("upload", attrs=dict(system=dict(used_as="upload"))),
+            Directory("trash", attrs=dict(system=dict(used_as="trash")))]
+
+
 class User(DeclarativeBase, TimeStamp, UserMixin):
 
     __tablename__ = "user"
@@ -67,7 +74,7 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
     id = integer_pk()
     login_name = C(Unicode)
     display_name = C(Unicode)
-    
+
     lastname = C(Unicode)
     firstname = C(Unicode)
     telephone = C(Unicode)
@@ -112,18 +119,21 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
 
     @property
     def upload_dir(self):
+        from contenttypes import Directory
         if self.home_dir:
-            return self.home_dir.children.filter_by(name="upload").one()
+            return self.home_dir.children.filter(Directory.a.system.used_as == "upload").one()
 
     @property
     def faulty_dir(self):
+        from contenttypes import Directory
         if self.home_dir:
-            return self.home_dir.children.filter_by(name="faulty").one()
+            return self.home_dir.children.filter(Directory.a.system.used_as == "faulty").one()
 
     @property
     def trash_dir(self):
+        from contenttypes import Directory
         if self.home_dir:
-            return self.home_dir.children.filter_by(name="trash").one()
+            return self.home_dir.children.filter(Directory.a.system.used_as == "trash").one()
 
     def create_home_dir(self):
         from core import db
@@ -132,12 +142,12 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
         # XXX: better solution for dir name? Language independency?
         homedir_name = translate("user_directory", getDefaultLanguage()) + " (" + self.login_name + ")"
         home = Directory(homedir_name)
-        home.children.extend([Directory("faulty"), Directory("upload"), Directory("trash")])
+        home.children.extend(create_special_user_dirs())
         # XXX: add access rules
         db.session.query(Home).one().children.append(home)
         self.home_dir = home
         logg.info("created home dir for user '%s (id: %s)'", self.login_name, self.id)
         return home
-        
+
     def __repr__(self):
         return u"User<{} '{}'> ({})".format(self.id, self.login_name, object.__repr__(self)).encode("utf8")

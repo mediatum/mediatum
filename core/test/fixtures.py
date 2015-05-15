@@ -14,8 +14,7 @@ from core import db
 from contenttypes.container import Collections, Home
 from core.database.init import init_database_values
 from core.init import load_system_types, load_types
-from core.systemtypes import Users, UserGroups
-from core.database.postgres.user import AuthenticatorInfo
+from core.database.postgres.user import AuthenticatorInfo, create_special_user_dirs
 logg = logging.getLogger(__name__)
 
 
@@ -74,7 +73,7 @@ def some_user():
 def user_with_home_dir(some_user, home_root):
     from contenttypes import Directory
     home = Directory(name="Arbeitsverzeichnis (test)")
-    home.children.extend([Directory("faulty"), Directory("upload"), Directory("trash")])
+    home.children.extend(create_special_user_dirs())
     home_root.children.append(home)
     some_user.home_dir = home
     return some_user

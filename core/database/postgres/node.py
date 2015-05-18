@@ -109,6 +109,7 @@ def _cte_subtree(node):
     query = db.query(t_noderelation.c.cid).\
         filter(t_noderelation.c.nid == node.id).\
         join(Node, Node.id == t_noderelation.c.cid).\
+        distinct().\
         cte(name="subtree")
 
     return query
@@ -121,6 +122,7 @@ def _cte_subtree_container(node):
     query = db.query(t_noderelation.c.cid).\
         filter(t_noderelation.c.nid == node.id).\
         join(Container, Container.id == t_noderelation.c.cid).\
+        distinct().\
         cte(name="subtree")
 
     return query
@@ -197,15 +199,14 @@ class Node(DeclarativeBase, NodeMixin):
         query = db.query(Content).\
             join(t_noderelation, Node.id == t_noderelation.c.cid).\
             join(subtree, subtree.c.cid == t_noderelation.c.nid).\
-            filter(t_noderelation.c.distance == 1).distinct()
+            filter(t_noderelation.c.distance == 1)
 
         return query
 
     def all_children_by_query(self, query):
         subtree = _cte_subtree(self)
         query = query.\
-            join(subtree, Node.id == subtree.c.cid).\
-            distinct()
+            join(subtree, Node.id == subtree.c.cid)
         return query
 
     __mapper_args__ = {

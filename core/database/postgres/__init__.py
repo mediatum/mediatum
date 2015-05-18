@@ -8,14 +8,14 @@ import logging
 import time
 
 import pyaml
-from ipaddr import IPv4Network
+from ipaddr import IPv4Network, IPv4Address
 import psycopg2.extensions
 from psycopg2.extensions import adapt, AsIs
 import sqlalchemy as sqla
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine import Engine
 from sqlalchemy import Column, ForeignKey, event, Integer, DateTime, func
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship, backref, Query, Mapper
 from sqlalchemy.ext.declarative import declared_attr
 
 
@@ -99,7 +99,12 @@ def adapt_ipv4network(ipnet):
     val = adapt(str(ipnet)).getquoted()
     return AsIs(val + "::cidr")
 
+def adapt_ipv4address(ipnet):
+    val = adapt(str(ipnet)).getquoted()
+    return AsIs(val + "::inet")
+
 psycopg2.extensions.register_adapter(IPv4Network, adapt_ipv4network)
+psycopg2.extensions.register_adapter(IPv4Address, adapt_ipv4address)
 psycopg2.extensions.register_type(psycopg2.extensions.new_array_type((651,), "CIDR[]", psycopg2.STRING))
 
 
@@ -122,3 +127,27 @@ class InfDateAdapter(object):
             return psycopg2.extensions.DateFromPy(self.wrapped).getquoted()
 
 psycopg2.extensions.register_adapter(datetime.date, InfDateAdapter)
+
+
+class MyQuery(Query):
+
+    def _find_nodeclass(self):
+        from core import Node
+        """Returns the query's underlying model classes."""
+        return [
+            d['entity']
+            for d in self.column_descriptions
+            if issubclass(d['entity'], Node)
+        ]
+
+    def filter_read_access(self, req):
+        from core.users import user_from_session
+        nodeclass = self._find_nodeclass()
+        if not nodeclass:
+            return self
+        else:
+            nodeclass = nodeclass[0]
+        user = user_from_session(req.session)
+        ip = IPv4Address(req.ip)
+        read_access = func.has_read_access_to_node(nodeclass.id, user.group_ids, ip, func.current_date())
+        return self.filter(read_access)

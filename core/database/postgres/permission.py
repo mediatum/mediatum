@@ -3,10 +3,10 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
-from sqlalchemy import Integer, Unicode, Boolean, Table, Text
+from sqlalchemy import Integer, Unicode, Boolean, Text 
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR
 
-from core.database.postgres import DeclarativeBase, C, FK, db_metadata, rel, integer_pk, integer_fk, TimeStamp
+from core.database.postgres import DeclarativeBase, C, rel, integer_pk, integer_fk
 from core.database.postgres.node import Node
 from core.database.postgres.alchemyext import Daterange
 
@@ -37,4 +37,6 @@ class NodeToAccessRule(DeclarativeBase):
 
     rule = rel(AccessRule, backref="node_assocs")
 
+
 Node.access_rules = rel(NodeToAccessRule, backref="node")
+

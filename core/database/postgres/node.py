@@ -8,26 +8,27 @@ from json import dumps
 from warnings import warn
 
 import pyaml
-from sqlalchemy import (Table, Sequence, Integer, Unicode, Text, sql, text)
+from sqlalchemy import (Table, Sequence, Integer, Unicode, Text, sql, text, func, select)
 from sqlalchemy.orm import deferred
-from sqlalchemy.orm.dynamic import AppenderQuery
+from sqlalchemy.orm.dynamic import AppenderQuery, AppenderMixin
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from core.node import NodeMixin
-from core.database.postgres import db_metadata, DeclarativeBase
+from core.database.postgres import db_metadata, DeclarativeBase, MyQuery
 from core.database.postgres import rel, bref, C, FK
 from core.database.postgres.alchemyext import LenMixin, view
 from core.database.postgres.attributes import Attributes, AttributesExpressionAdapter
 from utils.magicobjects import MInt
+from ipaddr import IPv4Address
 
 
 logg = logging.getLogger(__name__)
 
 
-class NodeAppenderQuery(AppenderQuery, LenMixin):
+class NodeAppenderQuery(AppenderMixin, LenMixin, MyQuery):
 
     """Custom AppenderQuery class with additional methods for node handling
     """
@@ -128,6 +129,14 @@ def _cte_subtree_container(node):
     return query
 
 
+# permission check functions for the access types 
+access_funcs = {
+    "read": func.has_read_access_to_node,
+    "write": func.has_write_access_to_node,
+    "data": func.has_data_access_to_node
+}
+
+
 class Node(DeclarativeBase, NodeMixin):
 
     """Base class for Nodes which holds all SQLAlchemy fields definitions
@@ -208,6 +217,29 @@ class Node(DeclarativeBase, NodeMixin):
         query = query.\
             join(subtree, Node.id == subtree.c.cid)
         return query
+
+    @staticmethod
+    def req_has_access_to_node_id(node_id, accesstype, req, date=func.current_date()):
+        from core import db
+        from core.users import user_from_session
+        
+        accessfunc = access_funcs[accesstype]
+        user = user_from_session(req.session)
+        ip = IPv4Address(req.ip)
+        access = accessfunc(node_id, user.group_ids, ip, date)
+        return db.session.execute(select([access])).scalar()
+
+    def has_access(self, accesstype, req):
+        return Node.req_has_access_to_node_id(self.id, accesstype, req)
+
+    def has_read_access(self, req):
+        return Node.req_has_access_to_node_id(self.id, "read", req)
+
+    def has_write_access(self, req):
+        return Node.req_has_access_to_node_id(self.id, "write", req)
+
+    def has_data_access(self, req):
+        return Node.req_has_access_to_node_id(self.id, "data", req)
 
     __mapper_args__ = {
         'polymorphic_identity': 'node',

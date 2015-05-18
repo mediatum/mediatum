@@ -1,18 +1,14 @@
-  SELECT node FROM node 
-    JOIN node_to_access_rule na on node.id=na.nid
-    JOIN access_rule a on na.rule_id=a.id
-    WHERE na.ruletype='write'
-    AND na.blocking = false
-    AND node.id = 1
-    AND check_access_rule(a, ARRAY[5], :ip::inet, current_date)
+WITH RECURSIVE rootaccess(nid) AS 
+    (SELECT nm.cid as nid
+    FROM nodemapping nm
+    WHERE nm.nid = 1
+    AND NOT EXISTS (SELECT FROM node_to_access_rule WHERE nid=nm.cid AND ruletype='read' AND inherited = false)
 
-    EXCEPT
+    UNION ALL
 
-    SELECT access_rule FROM node 
-    JOIN node_to_access_rule na on node.id=na.nid
-    JOIN access_rule a on na.rule_id=a.id
-    WHERE na.ruletype='write'
-    AND na.blocking = true
-    AND node.id = 1
-    AND NOT check_access_rule(a, ARRAY[5], :ip::inet, current_date);
+    SELECT nm.cid
+    FROM nodemapping nm JOIN rootaccess ON nm.nid=rootaccess.nid
+    AND NOT EXISTS (SELECT FROM node_to_access_rule WHERE nid=nm.cid AND ruletype='read' AND inherited = false)
+)
 
+SELECT DISTINCT nid,localread FROM rootaccess join lateral (select localread from mediatum_import.node where nid=id) i on true;

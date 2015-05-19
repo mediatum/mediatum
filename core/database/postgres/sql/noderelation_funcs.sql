@@ -330,14 +330,13 @@ CREATE OR REPLACE FUNCTION on_mapping_insert() RETURNS trigger
     LANGUAGE plpgsql
     SET search_path = :search_path
     AS $f$
-DECLARE
-	rel RECORD;
-    child_relations noderelation;
 BEGIN
 RAISE NOTICE 'insert mapping % -> %', NEW.nid, NEW.cid;
 
 -- copy connections from new parent (nid)
-INSERT INTO noderelation SELECT * FROM extend_relation_to_parents(NEW.nid, NEW.cid);
+INSERT INTO noderelation 
+SELECT * FROM extend_relation_to_parents(NEW.nid, NEW.cid) f
+WHERE NOT EXISTS(SELECT FROM noderelation WHERE nid=f.nid AND cid=f.cid AND distance=f.distance);
 
 PERFORM recalculate_relation_subtree(NEW.cid);
 

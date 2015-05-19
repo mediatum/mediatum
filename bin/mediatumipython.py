@@ -119,6 +119,7 @@ from core.systemtypes import Mappings, Metadatatypes, Root, Users, UserGroups, N
 from schema.schema import Metadatatype, Maskitem, Mask, Metafield
 from workflow.workflow import Workflow, Workflows
 
+from sqlalchemy.exc import SQLAlchemyError
 
 # disable mediatum loggers
 rootlogg = logging.getLogger()
@@ -366,6 +367,18 @@ def set_prompt(ip):
 
 ip.set_hook("pre_prompt_hook", set_prompt)
 
+# setup custom exception handler for automatic rollbacks on SQLAlchemy errors
+
+
+def handle_sqla_exception(self, etype, value, tb, tb_offset=None):
+    from core import db
+    db.session.rollback()
+    self.showtraceback((etype, value, tb), tb_offset=0)
+    stb = self.InteractiveTB.structured_traceback(
+        (etype, value, tb), tb_offset=tb_offset)
+    return stb
+
+ip.set_custom_exc((SQLAlchemyError,), handle_sqla_exception)
 
 try:
     from sql.magic import SqlMagic

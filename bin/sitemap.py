@@ -47,7 +47,6 @@ PING_GOOGLE = True
 PING_URL_ENCODED = 'http://www.google.com/webmasters/tools/ping?sitemap=http%3A%2F%2Fmediatum.ub.tum.de%2Fsitemap-index.xml'
 
 
-
 class ConfigFile:
 
     """

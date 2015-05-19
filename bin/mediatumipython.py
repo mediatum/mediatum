@@ -14,8 +14,8 @@ Run it
 Command line, from the mediaTUM base directory::
 
     ipython -i bin/mediatumipython.py
-    
-    
+
+
 In a IPython Notebook cell::
 
     %run bin/mediatumipython.py
@@ -44,7 +44,7 @@ The `q` function can be used to query the database. This returns SQLAlchemy mode
 
     # count collections
     q(Collection).count()
-    
+
     # get a node named test, fails if none or more than one result found
     q(Data).filter_by(name="test").one()
 
@@ -53,14 +53,14 @@ The `q` function can be used to query the database. This returns SQLAlchemy mode
 
     # get the first document
     q(Document).first()
-    
+
     # get all content children of Collection #993321
     q(Collection).get(993321).content_children # returns NodeAppenderQuery
     q(Collection).get(993321).content_children.all() # returns list
-    
+
     # get all masks of Metadatatype #816859
     q(Metadatatype).get(816859).masks.all()
-    
+
     # attribute access
     q(Data).get(816859)["description"]
     q(Data).get(816859).a.description
@@ -71,7 +71,7 @@ SQL
 See `ipython-sql documentation <https://pypi.python.org/pypi/ipython-sql>`_
 
 .. code:: sql
-    
+
     // select nodes with no parents
     %sql SELECT * FROM node where id NOT IN (SELECT cid FROM nodemapping)
 '''
@@ -103,7 +103,7 @@ q = core.db.query
 s = core.db.session
 conn = core.db.conn
 
-### settings
+# settings
 
 # set this to INFO for SQL statement echo, DEBUG for even more info from SQLAlchemy
 SQLALCHEMY_LOGGING = logging.WARN
@@ -115,7 +115,7 @@ SQLALCHEMY_CONNECTION = core.db.connectstr
 # load types for interactive querying
 from contenttypes import Audio, Content, Directory, Collection, Container, Collections, Home, Document, Flash, Image, Imagestream, \
     Project, Video, Data
-from core.systemtypes import Mappings, Metadatatypes, Root, Users, UserGroups, Navigation, Searchmasks, ExternalUsers
+from core.systemtypes import Mappings, Metadatatypes, Root, Navigation, Searchmasks
 from schema.schema import Metadatatype, Maskitem, Mask, Metafield
 from workflow.workflow import Workflow, Workflows
 
@@ -283,7 +283,7 @@ class MediatumMagics(Magics):
                     print("-" * 80)
                     print(u"checking mask {} of mdt {}".format(mask.name, mdt.name))
                     metadatatypes.checkMask(mask, fix=args.fix, verbose=1, show_unused=1)
-                        
+
             if args.allmasks:
                 for mdt in q(Metadatatype):
                     print("=" * 80)
@@ -388,35 +388,35 @@ except ImportError:
 else:
     @magics_class
     class SQLMagics(SqlMagic):
-        
+
         """Some additions to ipython-sql, could be merged"""
-        
+
         @needs_local_scope
         @line_magic("select")
         def select(self, line, cell='', local_ns={}):
             return self.execute("SELECT " + line, cell, local_ns)
-            
+
         @needs_local_scope
         @line_magic("delete")
         def delete(self, line, cell='', local_ns={}):
             return self.execute("DELETE " + line, cell, local_ns)
-            
+
         @needs_local_scope
         @line_magic("insert")
         def insert(self, line, cell='', local_ns={}):
             return self.execute("INSERT " + line, cell, local_ns)
-        
+
         @needs_local_scope
         @line_magic("update")
         def update(self, line, cell='', local_ns={}):
             return self.execute("UPDATE " + line, cell, local_ns)
-        
+
         @needs_local_scope
         @line_magic("expl")
         def explain_analyze(self, line, cell='', local_ns={}):
             return self.execute("EXPLAIN ANALYZE " + line, cell, local_ns)
-        
-        
+
+
 def load_ipython_extensions(ip):
     ip.register_magics(MediatumMagics)
     if SQLMagics:
@@ -427,4 +427,3 @@ def load_ipython_extensions(ip):
 load_ipython_extensions(ip)
 
 ip.magic("autocall 1")
-

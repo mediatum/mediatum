@@ -89,3 +89,69 @@ class Daterange(UserDefinedType):
 
     def get_col_spec(self, **kw):
         return "daterange[]"
+
+
+def get_table_name(obj):
+    if isinstance(obj, string_types):
+        if "." in obj:
+            return obj
+        else:
+            return "mediatum." + obj
+    elif isinstance(obj, Table):
+        return obj.fullname
+    else:
+        return obj.__table__.fullname
+
+
+def get_table(obj):
+    if isinstance(obj, DeclarativeBase):
+        return obj.__table__
+    elif isinstance(obj, string_types):
+        if "." in obj:
+            fullname = obj
+        else:
+            fullname = "mediatum." + obj
+        return db_metadata.tables[fullname]
+    else:
+        return obj
+
+
+def drop_tables(objs, cascade=False):
+    """DROP (CASCADE) tables. `objs` can be a sequence of table names, tables or Declarative models """
+    from core import db
+    tables = [get_table(m) for m in objs]
+    dropped = []
+    drop_ddl = DropTableCascade if cascade else DropTable
+
+    for table in reversed(sort_tables(tables)):
+        if db.engine.dialect.has_table(db.session.connection(), table.name, schema=table.schema):
+            db.session.execute(drop_ddl(table))
+            dropped.append(table.fullname)
+        else:
+            logg.info("ignored missing table '%s' while dropping", table.fullname)
+
+    return dropped
+
+
+def create_tables(objs):
+    """CREATE tables. `objs` can be a sequence of table names, tables or Declarative models """
+    from core import db
+    tables = [get_table(m) for m in objs]
+    created = []
+
+    for table in sort_tables(tables):
+        if not db.engine.dialect.has_table(db.session.connection(), table.name, schema=table.schema):
+            db.session.execute(CreateTable(table))
+            created.append(table.fullname)
+        else:
+            logg.info("ignored existing table '%s' while creating", table.fullname)
+
+    return created
+
+
+def recreate_tables(objs, cascade=False):
+    """DROP (CASCADE) and CREATE tables. `objs` can be a sequence of table names, tables or Declarative models """
+    dropped = drop_tables(objs, cascade)
+    created = create_tables(objs)
+
+    return dropped, created

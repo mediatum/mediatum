@@ -30,15 +30,6 @@ q = db.query
 def getInformation():
     return {"version": "1.0", "system": 0}
 
-
-def isParent__(basenode, node, access):
-    return 1
-    for ls in getPaths(node, access):
-        if ustr(basenode.id) in tree.NodeList(ls).getIDs():
-            return 1
-    return 0
-
-
 def getAllAttributeValues(attribute, schema):
     values = {}
     nids_values = tree.db.get_all_attribute_values(attribute, schema)

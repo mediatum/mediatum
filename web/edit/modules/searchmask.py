@@ -57,8 +57,6 @@ def getContent(req, ids):
         if k.startswith("delsub_"):
             delsubfield = k[7:]
 
-    root = q(Searchmasks).one()
-
     searchtype = req.params.get("searchtype", None)
     if not searchtype:
         searchtype = node.get("searchtype")
@@ -131,10 +129,6 @@ def getContent(req, ids):
                 selectedfield = None
         else:
             selectedfield = None
-
-        if mask is None:
-            print "no parent searchmask found, empty mask created"
-            mask = Node(maskname, "searchmask")
 
         fields = mask.children.all()
 

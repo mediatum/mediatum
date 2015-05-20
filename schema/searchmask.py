@@ -1,12 +1,13 @@
 import core.acl as acl
 import hashlib
 import random
+from sqlalchemy import func
 from . import schema
 from core.transition.postgres import check_type_arg
 from core import Node
 from core import db
-from contenttypes import Home, Collections
 from core.systemtypes import Root, Searchmasks
+from .schema import Metadatatype
 
 q = db.query
 
@@ -47,12 +48,11 @@ def getMask(node):
 
 def getMainContentType(node):
     #todo this needs acl checks
-    occurences = [(k, v) for k, v in node.getAllOccurences(acl.getRootAccess()).items()]
-    occurences.sort(lambda x, y: cmp(y[1], x[1]))
-    maintype = None
-    for nodetype, num in occurences:
-        if hasattr(nodetype, "isContainer") and not nodetype.isContainer():
-            return nodetype
+    occurrence = q(Root).scalar().all_children_by_query(q(Node.schema, func.count(Node.schema)).group_by(Node.schema).order_by(func.count(Node.schema).desc()))
+    for schema_name, count in occurrence:
+        metadatatype = q(Metadatatype).filter_by(name=schema_name).first()
+        if metadatatype:
+            return metadatatype
     return None
 
 
@@ -67,21 +67,21 @@ def generateMask(node):
     for field in mask.children:
         mask.children.remove(field)
 
-    allfields = schema.getMetaType(maintype.getSchema())
-    q(Metadatatype).filter_by(name=name).scalar()
+    #todo this also needs to be fixed
+    allfields = maintype.metafields.all()
 
     for metafield in maintype.getMetaFields("s"):
-
         d = metafield.get("label")
         if not d:
             d = metafield.getName()
-        item = mask.addChild(tree.Node(d, type="searchmaskitem"))
+        new_maskitem = Node(d, type="searchmaskitem")
+        mask.children.append(new_maskitem)
         if metafield.get("type") == "union":
             for t in metafield.get("valuelist").split(";"):
-                if t and allfields.hasChild(t):
-                    item.addChild(allfields.getChild(t))
+                if t and t in allfields.children:
+                    new_maskitem.children.append(allfields.children.filter_by(name=t).one())
         else:
-            item.addChild(metafield)
+            new_maskitem.children.append(metafield)
 
     db.session.commit()
     return mask

@@ -83,9 +83,15 @@ class Connector:
                 attributes[name] = value
         return attributes
 
-    def get_all_attribute_values(self, attribute, schema, distinct=False):
-        value_sql = "distinct(value)" if distinct else "value"
-        sql = ("SELECT node.id, " + value_sql + " from node, nodeattribute"
+    def get_all_attribute_values_for_schema(self, attribute, schema):
+        sql = ("SELECT DISTINCT value from node, nodeattribute"
+               " WHERE node.id=nodeattribute.nid"
+               " AND nodeattribute.name=%s"
+               " AND node.type LIKE %s")
+        return self.runQuery(sql, attribute, "%/" + schema)
+
+    def get_all_nids_attribute_values_for_schema(self, attribute, schema):
+        sql = ("SELECT node.id, value from node, nodeattribute"
                " WHERE node.id=nodeattribute.nid"
                " AND nodeattribute.name=%s"
                " AND node.type LIKE %s")

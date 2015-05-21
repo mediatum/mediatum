@@ -1071,7 +1071,7 @@ class Node(object):
         values = {}
         try:
             if schema != "":
-                fields = db.get_all_attribute_values(attribute, schema, distinct=True)
+                fields = db.get_all_attribute_values_for_schema(attribute, schema)
             else:
                 fields = db.getMetaFields(attribute)
         except:

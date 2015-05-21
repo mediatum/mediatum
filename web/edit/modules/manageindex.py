@@ -38,7 +38,7 @@ def isParent__(basenode, node, access):
 
 def getAllAttributeValues(attribute, schema):
     values = {}
-    nids_values = tree.db.get_all_attribute_values(attribute, schema)
+    nids_values = tree.db.get_all_nids_attribute_values_for_schema(attribute, schema)
     for nid, value in nids_values:
         for s in value.split(";"):
             s = u(s.strip())

@@ -176,14 +176,14 @@ def frameset(req):
                'uploaddir': getPathToFolder(users.getSpecialDir(user, 'upload')),
                'faultydir': getPathToFolder(users.getSpecialDir(user, 'faulty'))}
 
-    containertypes = [Container.__mapper__.polymorphic_map[n].class_ for n in Container.__mapper__._acceptable_polymorphic_identities if n not in ("collections", "home")]
+    containertypes = [Container.__mapper__.polymorphic_map[n].class_ for n in Container.__mapper__._acceptable_polymorphic_identities if n not in ("collections", "home", "container", "project")]
     cmenu_iconpaths = []
 
     for ct in containertypes:
         ct_name = ct.__name__
         # translations of ct_name will be offered in editor tree context menu
         cmenu_iconpaths.append(
-            [ct_name, translation_t(language, ct_name), get_editor_icon_path_from_nodeclass(ct)])
+            [ct_name.lower(), translation_t(language, ct_name), get_editor_icon_path_from_nodeclass(ct)])
 
     # a html snippet may be inserted in the editor header
     header_insert = q(Collections).one().get('system.editor.header.insert.' + language).strip()
@@ -518,11 +518,13 @@ def action(req):
             translated_label = t(
                 lang(req), 'edit_add_container_default') + newnode_type
 
-        newnode = node.children.append(Node(name=translated_label, type=newnode_type))
-        db.session.commit()
+        content_class = Node.get_class_for_typestring(newnode_type)
+        newnode = content_class(name=translated_label)
+        node.children.append(newnode)
         newnode.set("creator", user.name)
         newnode.set("creationtime", ustr(
             time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
+        db.session.commit()
         req.params["dest"] = newnode.id
 
         label = getTreeLabel(newnode, lang=language)

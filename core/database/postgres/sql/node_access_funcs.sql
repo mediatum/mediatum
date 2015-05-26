@@ -191,12 +191,16 @@ $f$;
 -- update functions
 
 -- blocking is not supported for read-type access rules, so the blocking attribute is always returned as NULL
-CREATE OR REPLACE FUNCTION _inherited_access_mappings_read_type(node_id integer, _ruletype text) 
+CREATE OR REPLACE FUNCTION _inherited_access_rules_read_type(node_id integer, _ruletype text) 
     RETURNS SETOF node_to_access_rule
     LANGUAGE plpgsql
     STABLE
 AS $f$
 BEGIN
+IF EXISTS (SELECT FROM node_to_access_rule WHERE nid=node_id AND inherited = false) THEN
+    RETURN;
+END IF;
+
 RETURN QUERY
     SELECT DISTINCT node_id AS nid, rule_id, _ruletype,
       (SELECT invert
@@ -229,56 +233,58 @@ END;
 $f$;
 
 
-CREATE OR REPLACE FUNCTION inherited_access_mappings_read(node_id integer)
+CREATE OR REPLACE FUNCTION inherited_access_rules_read(node_id integer)
     RETURNS SETOF node_to_access_rule
     LANGUAGE plpgsql
     STABLE
 AS $f$
 BEGIN
-RETURN QUERY SELECT * FROM _inherited_access_mappings_read_type(node_id, 'read');
+RETURN QUERY SELECT * FROM _inherited_access_rules_read_type(node_id, 'read');
 END;
 $f$;
 
 
-CREATE OR REPLACE FUNCTION inherited_access_mappings_data(node_id integer)
+CREATE OR REPLACE FUNCTION inherited_access_rules_data(node_id integer)
     RETURNS SETOF node_to_access_rule
     LANGUAGE plpgsql
     STABLE
 AS $f$
 BEGIN
-RETURN QUERY SELECT * FROM _inherited_access_mappings_read_type(node_id, 'data');
+RETURN QUERY SELECT * FROM _inherited_access_rules_read_type(node_id, 'data');
 END;
 $f$;
 
 
-CREATE OR REPLACE FUNCTION create_all_inherited_access_mappings_read()
+CREATE OR REPLACE FUNCTION create_all_inherited_access_rules_read()
     RETURNS void
     LANGUAGE plpgsql
+    VOLATILE
 AS $f$
 BEGIN
     INSERT INTO node_to_access_rule 
     SELECT i.* FROM node 
-    JOIN LATERAL inherited_access_mappings_read(node.id) i ON TRUE 
+    JOIN LATERAL inherited_access_rules_read(node.id) i ON TRUE 
     WHERE node.id NOT IN (SELECT nid FROM node_to_access_rule WHERE ruletype='read');
 END;
 $f$;
 
 
-CREATE OR REPLACE FUNCTION create_all_inherited_access_mappings_data()
+CREATE OR REPLACE FUNCTION create_all_inherited_access_rules_data()
     RETURNS void
     LANGUAGE plpgsql
+    VOLATILE
 AS $f$
 BEGIN
     INSERT INTO node_to_access_rule 
     SELECT i.* FROM node 
-    JOIN LATERAL inherited_access_mappings_data(node.id) i ON TRUE 
+    JOIN LATERAL inherited_access_rules_data(node.id) i ON TRUE 
     WHERE node.id NOT IN (SELECT nid FROM node_to_access_rule WHERE ruletype='data');
 END;
 $f$;
 
 
 
-CREATE OR REPLACE FUNCTION inherited_access_mappings_write(node_id integer)
+CREATE OR REPLACE FUNCTION inherited_access_rules_write(node_id integer)
     RETURNS SETOF node_to_access_rule
     LANGUAGE plpgsql
     STABLE
@@ -299,7 +305,7 @@ END;
 $f$;
 
 
-CREATE OR REPLACE FUNCTION create_all_inherited_access_mappings_write()
+CREATE OR REPLACE FUNCTION create_all_inherited_access_rules_write()
     RETURNS void
     LANGUAGE plpgsql
     VOLATILE
@@ -308,13 +314,32 @@ BEGIN
     -- XXX: very strange: this fails when trying to insert directy into the node_to_access table
     -- this solution with a temp table works
 
-    CREATE TEMPORARY TABLE temp_create_all_inherited_access_mappings_write AS
+    CREATE TEMPORARY TABLE temp_create_all_inherited_access_rules_write AS
     SELECT i.* FROM node 
-    JOIN LATERAL inherited_access_mappings_write(node.id) i ON TRUE 
+    JOIN LATERAL inherited_access_rules_write(node.id) i ON TRUE 
     WHERE node.id NOT IN (SELECT nid FROM node_to_access_rule WHERE ruletype='write');
 
     INSERT INTO node_to_access_rule 
-    SELECT * FROM temp_create_all_inherited_access_mappings_write;
+    SELECT * FROM temp_create_all_inherited_access_rules_write;
+END;
+$f$;
+
+
+CREATE OR REPLACE FUNCTION update_inherited_access_rules_for_node(node_id integer)
+    RETURNS SETOF node_to_access_rule
+    LANGUAGE plpgsql
+    VOLATILE
+AS $f$
+BEGIN
+    DELETE FROM node_to_access_rule WHERE nid=node_id AND inherited = true;
+RETURN QUERY
+    INSERT INTO node_to_access_rule 
+        SELECT * FROM inherited_access_rules_read(node_id)
+        UNION ALL
+        SELECT * FROM inherited_access_rules_write(node_id)
+        UNION ALL
+        SELECT * FROM inherited_access_rules_data(node_id)
+    RETURNING *;
 END;
 $f$;
 

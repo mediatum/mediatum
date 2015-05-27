@@ -240,6 +240,17 @@ END;
 $f$;
 
 
+CREATE OR REPLACE FUNCTION inherited_access_mappings_data(node_id integer)
+    RETURNS SETOF node_to_access_rule
+    LANGUAGE plpgsql
+    STABLE
+AS $f$
+BEGIN
+RETURN QUERY SELECT * FROM _inherited_access_mappings_read_type(node_id, 'data');
+END;
+$f$;
+
+
 CREATE OR REPLACE FUNCTION create_all_inherited_access_mappings_read()
     RETURNS void
     LANGUAGE plpgsql
@@ -267,17 +278,6 @@ $f$;
 
 
 
-CREATE OR REPLACE FUNCTION inherited_access_mappings_data(node_id integer)
-    RETURNS SETOF node_to_access_rule
-    LANGUAGE plpgsql
-    STABLE
-AS $f$
-BEGIN
-RETURN QUERY SELECT * FROM _inherited_access_mappings_read_type(node_id, 'data');
-END;
-$f$;
-
-
 CREATE OR REPLACE FUNCTION inherited_access_mappings_write(node_id integer)
     RETURNS SETOF node_to_access_rule
     LANGUAGE plpgsql
@@ -289,8 +289,8 @@ RETURN QUERY
                     na.rule_id,
                     'write' AS ruletype,
                     na.invert,
-                    na.blocking,
-                    TRUE AS inherited
+                    TRUE AS inherited,
+                    na.blocking
     FROM noderelation nr
     JOIN node_to_access_rule na ON nr.nid=na.nid
     WHERE cid=node_id
@@ -336,7 +336,7 @@ RETURN QUERY
       (SELECT rule_ids[1] AS surviving_rule_id,
                       rule_ids[2:cardinality(rule_ids)] AS duplicates
        FROM
-         (SELECT array_agg(id) AS rule_ids
+         (SELECT array_agg(id ORDER BY id) AS rule_ids
           FROM access_rule
           GROUP BY invert_subnet, invert_date, invert_group, group_ids, subnets, dateranges
           HAVING count(*) > 1) r),
@@ -352,7 +352,7 @@ RETURN QUERY
         FROM dupes
         WHERE ARRAY[rule_id] <@ dupes.duplicates)
         
-    SELECT * FROM dupes;
+    SELECT * FROM dupes ORDER BY surviving_rule_id;
 END;
 $f$;
 
@@ -368,7 +368,7 @@ RETURN QUERY
     SELECT rule_ids[1] AS surviving_rule_id,
            rule_ids[2:cardinality(rule_ids)] AS duplicates
     FROM
-      (SELECT array_agg(id) AS rule_ids,
+      (SELECT array_agg(id ORDER BY id) AS rule_ids,
               count(*)
        FROM access_rule
        GROUP BY invert_subnet,

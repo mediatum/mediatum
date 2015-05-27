@@ -219,26 +219,30 @@ class Node(DeclarativeBase, NodeMixin):
         return query
 
     @staticmethod
-    def req_has_access_to_node_id(node_id, accesstype, req, date=func.current_date()):
+    def req_has_access_to_node_id(node_id, accesstype, req=None, date=func.current_date()):
         from core import db
         from core.users import user_from_session
+        from core.transition import request
+        
+        if req is None:
+            req = request
         
         accessfunc = access_funcs[accesstype]
         user = user_from_session(req.session)
-        ip = IPv4Address(req.ip)
+        ip = IPv4Address(req.remote_addr)
         access = accessfunc(node_id, user.group_ids, ip, date)
         return db.session.execute(select([access])).scalar()
 
-    def has_access(self, accesstype, req):
+    def has_access(self, accesstype, req=None):
         return Node.req_has_access_to_node_id(self.id, accesstype, req)
 
-    def has_read_access(self, req):
+    def has_read_access(self, req=None):
         return Node.req_has_access_to_node_id(self.id, "read", req)
 
-    def has_write_access(self, req):
+    def has_write_access(self, req=None):
         return Node.req_has_access_to_node_id(self.id, "write", req)
 
-    def has_data_access(self, req):
+    def has_data_access(self, req=None):
         return Node.req_has_access_to_node_id(self.id, "data", req)
 
     __mapper_args__ = {

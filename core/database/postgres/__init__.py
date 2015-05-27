@@ -18,6 +18,8 @@ from sqlalchemy import Column, ForeignKey, event, Integer, DateTime, func
 from sqlalchemy.orm import relationship, backref, Query, Mapper
 from sqlalchemy.ext.declarative import declared_attr
 
+from core.transition import request
+
 
 logg = logging.getLogger(__name__)
 
@@ -140,7 +142,10 @@ class MyQuery(Query):
             if issubclass(d['entity'], Node)
         ]
 
-    def filter_read_access(self, req):
+    def filter_read_access(self, req=None):
+        if req is None:
+            req = request
+            
         from core.users import user_from_session
         nodeclass = self._find_nodeclass()
         if not nodeclass:
@@ -148,6 +153,6 @@ class MyQuery(Query):
         else:
             nodeclass = nodeclass[0]
         user = user_from_session(req.session)
-        ip = IPv4Address(req.ip)
+        ip = IPv4Address(req.remote_addr)
         read_access = func.has_read_access_to_node(nodeclass.id, user.group_ids, ip, func.current_date())
         return self.filter(read_access)

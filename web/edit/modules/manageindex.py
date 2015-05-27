@@ -32,7 +32,7 @@ def getInformation():
 
 def getAllAttributeValues(attribute, schema):
     values = {}
-    nids_values = tree.db.get_all_attribute_values(attribute, schema)
+    nids_values = q(Node.id, Node.a[attribute]).filter(Node.schema==schema).filter(Node.a[attribute] != None and Node.a[attribute] != '').distinct().all()
     for nid, value in nids_values:
         for s in value.split(";"):
             s = u(s.strip())
@@ -76,10 +76,9 @@ def getContent(req, ids):
 
         c = 0
         for old_val in old_values:
-            for n in AccessData(req).filter(tree.NodeList(entries[old_val])):
+            for n in AccessData(req).filter(q(Node).filter(Node.id.in_(entries[old_val])).all()):
                 try:
                     n.set(fieldname, replaceValue(n.get(fieldname), u(old_val), u(new_value)))
-                    n.setDirty()
                     c += 1
                 except:
                     pass
@@ -122,7 +121,7 @@ def getContent(req, ids):
 
             def isChildOf(access, node, basenodeid):
                 for ls in getPaths(node, access):
-                    if ustr(basenodeid) in tree.NodeList(ls).getIDs():
+                    if basenodeid in [unicode(n.id) for n in ls]:
                         return 1
                 return 0
 

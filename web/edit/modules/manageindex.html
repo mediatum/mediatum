@@ -99,7 +99,7 @@
     <h2 i18n:translate="edit_manageindex_step3_header">TEXT</h2>
     <p>
         <select size="10" name="old_values" id="old_values" multiple="multiple" style="width:50%" ondblclick="setValue(this.value)" tal:attributes="onchange python:u'getCurrentCollection(this, \'{}\', \'children\')'.format(id)">
-            <option tal:repeat="k keys" tal:content="python:u'{} ({})'.format(k, len(entries[k]))" tal:attributes="value k"/>
+            <option tal:repeat="k keys" tal:content="python:'{} ({})'.format(k, len(entries[k]))" tal:attributes="value k"/>
         </select>
     </p>
     <div id="currentcollection" style="min-height:40px">

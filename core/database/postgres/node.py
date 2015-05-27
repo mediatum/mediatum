@@ -149,11 +149,7 @@ class Node(DeclarativeBase, NodeMixin):
     schema = C(Unicode, index=True)
     name = C(Unicode, index=True)
     orderpos = C(Integer, default=1, index=True)
-    read_access = C(Text)
-    write_access = C(Text)
-    data_access = C(Text)
     fulltext = deferred(C(Text))
-    localread = C(Text)
 
     attrs = deferred(C(MutableDict.as_mutable(JSONB)))
 

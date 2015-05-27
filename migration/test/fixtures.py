@@ -8,7 +8,7 @@ from pytest import fixture, yield_fixture
 import migration.acl_migration
 from migration.test.factories import AccessFactory
 from migration.test.factories import ImportNodeFactory
-from core.database.postgres.permission import AccessRule
+from core.database.postgres.permission import AccessRule, AccessRuleset
 from core.test.factories import DirectoryFactory
 from ipaddr import IPv4Network
 
@@ -57,7 +57,7 @@ def import_node_with_complex_access():
 
 
 @fixture
-def import_node_with_predefined_access():
+def import_node_with_ruleset():
     node = ImportNodeFactory()
     acl1 = AccessFactory(rule="NOT ( group test_readers OR group test_readers2 )", name="not_rule")
     node.readaccess = "not_rule,{ user darfdas }"
@@ -65,7 +65,7 @@ def import_node_with_predefined_access():
 
 
 @fixture
-def users_and_groups_for_predefined_access(session):
+def users_and_groups_for_ruleset(session):
     from core import User, UserGroup
     users = [User(login_name="darfdas")]
     session.add_all(users)
@@ -77,17 +77,17 @@ def users_and_groups_for_predefined_access(session):
 
 @fixture
 def two_access_rules():
-    #     user = User("darfdas", id=1)
-    #     test_readers = UserGroup("test_readers", id=2)
-    #     test_readers2 = UserGroup("test_readers2", id=3)
     rule1 = AccessRule(group_ids=[11, 12], invert_group=True)
     rule2 = AccessRule(group_ids=[13], subnets=[IPv4Network("127.0.0.1/32")])
     return rule1, rule2
+
+@fixture
+def two_access_rulesets():
+    ruleset1 = AccessRuleset(name="Ruleset1")
+    ruleset2 = AccessRuleset(name="Ruleset2")
+    return ruleset1, ruleset2
 
 
 @fixture
 def some_numbered_nodes():
     return [DirectoryFactory(id=j) for j in range(1, 4)]
-
-
-return (q(AccessRule).filter_by(

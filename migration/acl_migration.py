@@ -149,7 +149,7 @@ def convert_symbolic_rules_to_dnf(nid_to_symbolic_rule, simplify=False):
     return {nid: boolalg.to_dnf(rule, simplify=simplify) for nid, rule in iteritems(nid_to_symbolic_rule)}
 
 
-def save_access_rules(nid_to_access_rules, nid_to_rulesets, ruletype):
+def save_node_to_rule_mappings(nid_to_access_rules, ruletype):
     s = db.session
     node_to_access_rule_it = (
         NodeToAccessRule(
@@ -157,23 +157,32 @@ def save_access_rules(nid_to_access_rules, nid_to_rulesets, ruletype):
             rule=r[0],
             ruletype=ruletype,
             invert=r[1]) for nid,
-        rules in nid_to_access_rules.items() for r in rules)
+        rules in nid_to_access_rules.items() for r in set(rules))
+
     s.add_all(node_to_access_rule_it)
 
-    for nid, ruleset_names in nid_to_rulesets.items():
-        for ruleset_name in set(ruleset_names):
-            if ruleset_name is not None and ruleset_name != "nicht Jeder":
-                s.execute(t_node_to_access_ruleset.insert().values(nid=nid, ruleset_name=ruleset_name))
+
+def save_node_to_ruleset_mappings(nid_to_rulesets, ruletype):
+    s = db.session
+    node_to_access_ruleset_it = (
+        NodeToAccessRuleset(
+            nid=nid,
+            ruleset_name=r,
+            ruletype=ruletype) for nid,
+        ruleset_names in nid_to_rulesets.items() for r in set(ruleset_names) if r is not None)
+
+    s.add_all(node_to_access_ruleset_it)
 
 
-def migrate_rules(ruletypes=["readaccess", "writeaccess", "dataaccess"]):
+def migrate_rules(ruletypes=["read", "write", "data"]):
     for ruletype in ruletypes:
-        nid_to_rulestr, nid_to_rulesets = load_node_rules(ruletype)
+        nid_to_rulestr, nid_to_rulesets = load_node_rules(ruletype + "access")
         nid_to_symbolic_rule, symbol_to_acl_condition = convert_node_rulestrings_to_symbolic_rules(nid_to_rulestr, ignore_errors=False,
                                                                                                    fail_on_first_error=True)
         nid_to_access_rules = convert_node_symbolic_rules_to_access_rules(nid_to_symbolic_rule, symbol_to_acl_condition,
                                                                           fail_on_first_error=True, ignore_missing_user_groups=True)
-        save_access_rules(nid_to_access_rules, nid_to_rulesets, ruletype)
+        save_node_to_rule_mappings(nid_to_access_rules, ruletype)
+        save_node_to_ruleset_mappings(nid_to_rulesets, ruletype)
 
 
 def migrate_access_entries():

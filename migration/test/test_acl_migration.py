@@ -6,7 +6,7 @@
 from sympy import Symbol, S
 
 from core import db
-from core.database.postgres.permission import AccessRule, NodeToAccessRule
+from core.database.postgres.permission import AccessRule, NodeToAccessRule, NodeToAccessRuleset, AccessRuleset
 from migration import acl_migration
 from migration.oldaclparser import ACLGroupCondition
 from migration.test.asserts import assert_access_rule
@@ -37,8 +37,8 @@ def test_load_node_rules_simple_writeaccess(import_node_with_simple_access):
 test_rulestr_replaced = "NOT ( group test_readers OR group test_readers2 ),{ user darfdas }"
 
 
-def test_load_node_rules_predefined_access(import_node_with_predefined_access):
-    node = import_node_with_predefined_access
+def test_load_node_rules_predefined_access(import_node_with_ruleset):
+    node = import_node_with_ruleset
     db.session.flush()
     nid_to_rulestr, nid_to_rulesets = acl_migration.load_node_rules("readaccess")
     assert nid_to_rulestr.keys()[0] == node.id
@@ -64,8 +64,8 @@ def test_convert_node_rulestrings_to_symbolic_rules_simple(import_node_with_simp
     assert isinstance(acl_cond, ACLGroupCondition)
 
 
-def test_convert_node_rulestrings_to_symbolic_rules_predefined_access(import_node_with_predefined_access):
-    node = import_node_with_predefined_access
+def test_convert_node_rulestrings_to_symbolic_rules_predefined_access(import_node_with_ruleset):
+    node = import_node_with_ruleset
     db.session.flush()
     nid_to_rulestr = {node.id: test_rulestr_replaced}
     nid_to_symbolic_rules, symbol_to_acl_cond = acl_migration.convert_node_rulestrings_to_symbolic_rules(nid_to_rulestr)
@@ -74,9 +74,9 @@ def test_convert_node_rulestrings_to_symbolic_rules_predefined_access(import_nod
     assert len(symbol_to_acl_cond) == 3
 
 
-def test_convert_node_symbolic_rules_to_access_rules(import_node_with_predefined_access, users_and_groups_for_predefined_access):
-    node = import_node_with_predefined_access
-    users, groups = users_and_groups_for_predefined_access
+def test_convert_node_symbolic_rules_to_access_rules(import_node_with_ruleset, users_and_groups_for_ruleset):
+    node = import_node_with_ruleset
+    users, groups = users_and_groups_for_ruleset
     nid_to_rulestr = {node.id: test_rulestr_replaced}
     # XXX: nid_to_symbolic_rule should be created here instead of using these functions
     nid_to_symbolic_rule, symbol_to_acl_cond = acl_migration.convert_node_rulestrings_to_symbolic_rules(nid_to_rulestr)
@@ -96,13 +96,30 @@ def test_convert_node_symbolic_rules_to_access_rules(import_node_with_predefined
     assert_access_rule(access_rules[1][0], group_ids=set([u.id for u in users]))
 
 
-def test_save_access_rules(two_access_rules, some_numbered_nodes, session):
+def test_save_node_to_rule_mappings(two_access_rules, some_numbered_nodes, session):
     rule1, rule2 = two_access_rules
     db.session.flush()  # we need to flush the nodes first to set their ids
     nid_to_access_rules = {1: [(rule1, True), (rule2, False)],
                            2: [(rule1, False)],
                            3: [(rule2, False)]}
-    acl_migration.save_access_rules(nid_to_access_rules, "read")
+    acl_migration.save_node_to_rule_mappings(nid_to_access_rules, "read")
     assert session.query(AccessRule).count() == 2
     assert session.query(NodeToAccessRule).count() == 4
     assert len(some_numbered_nodes[0].access_rules) == 2
+
+
+def test_save_node_to_ruleset_mappings(two_access_rulesets, some_numbered_nodes, session):
+    ruleset1, ruleset2 = two_access_rulesets
+    session.add(ruleset1)
+    session.add(ruleset2)
+#     db.session.flush()  # we need to flush the nodes first to set their ids
+    nid_to_access_ruleset_names = {1: [ruleset1.name, ruleset2.name],
+                           2: [ruleset1.name, None],
+                           3: [None]}
+    acl_migration.save_node_to_ruleset_mappings(nid_to_access_ruleset_names, "read")
+    assert session.query(AccessRuleset).count() == 2
+    assert session.query(NodeToAccessRuleset).count() == 3
+    rulesets_for_node = [m.ruleset for m in some_numbered_nodes[0].access_rulesets]
+    assert len(rulesets_for_node) == 2
+    assert ruleset1 in rulesets_for_node
+    assert ruleset2 in rulesets_for_node

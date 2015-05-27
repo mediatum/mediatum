@@ -310,10 +310,11 @@ class SymbolicExprToAccessRuleConverter(object):
 
     def __init__(self, symbol_to_acl_cond):
         self.conversion_exceptions = {}
-        # false means no access, so an empty tuple is returned
         # true means access for everybody, so a tuple with a match-all rule is returned
-        self.symbolic_rule_to_access_rules = {boolalg.false: tuple(),
-                                              boolalg.true: ((AccessRule(), False), )}
+        # false means no access, so a inverted match-all rule is returned
+        match_all_rule = AccessRule()
+        self.symbolic_rule_to_access_rules = {boolalg.false: ((match_all_rule, True), ),
+                                              boolalg.true: ((match_all_rule, False), )}
         self.symbol_to_acl_cond = symbol_to_acl_cond
         self.missing_users = {}
         self.missing_groups = {}

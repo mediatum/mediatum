@@ -13,7 +13,7 @@ from core.database.postgres.alchemyext import Daterange
 
 class AccessRule(DeclarativeBase):
     __tablename__ = "access_rule"
-
+    
     id = integer_pk()
     invert_subnet = C(Boolean, default=False, index=True)
     invert_date = C(Boolean, default=False, index=True)
@@ -60,8 +60,10 @@ class NodeToAccessRuleset(DeclarativeBase):
 
     nid = integer_fk(Node.id, primary_key=True)
     ruleset_name = integer_fk(AccessRuleset.name, primary_key=True)
-    ruleset = rel(AccessRuleset, backref="node_assocs")
     ruletype = C(Text, index=True, primary_key=True)
+    invert = C(Boolean, default=False, index=True)
+
+    ruleset = rel(AccessRuleset, backref="node_assocs")
 
 
 Node.access_rules = rel(NodeToAccessRule, backref="node")

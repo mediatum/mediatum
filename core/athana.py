@@ -1252,6 +1252,11 @@ class http_request(object):
 #             params[key.encode("utf8")] = value.encode("utf8")
         params.update(self.files.iteritems())
 
+    # COMPAT: flask-style properties
+    @property
+    def remote_addr(self):
+        return self.ip
+
     responses = {
         100: "Continue",
         101: "Switching Protocols",

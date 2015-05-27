@@ -1,5 +1,5 @@
 """
-old acl parser 
+old acl parser
 """
 
 from utils.boolparser import BoolParser
@@ -180,6 +180,7 @@ class ACLParser(BoolParser):
         return ACLNotCondition
 
 p = ACLParser()
+
 
 def parse(r):
     return p.parse(r)

@@ -6,23 +6,24 @@
     :license: GPL3, see COPYING for details
 """
 import datetime
+import logging
 from ipaddr import IPv4Network
 from psycopg2.extras import DateRange
 from sympy import Symbol
 from sympy.logic import boolalg, Not, And, Or
 from sqlalchemy import sql
 
-import core
-from core.database.postgres.permission import AccessRule
+from core import db
+from core.database.postgres.permission import AccessRule, NodeToAccessRule
 from core import User, UserGroup
 from migration import oldaclparser
 from migration.oldaclparser import ACLAndCondition, ACLDateAfterClause, ACLDateBeforeClause , ACLOrCondition, ACLNotCondition,\
     ACLTrueCondition, ACLFalseCondition, ACLGroupCondition, ACLIPCondition, ACLUserCondition, ACLParseException
-from sympy.logic.boolalg import Boolean
+from utils.compat import iteritems
 
+q = db.query
 
-s = core.db.session
-q = s.query
+logg = logging.getLogger(__name__)
 
 PL_FUNC_EXPAND_ACL_RULE = """
 
@@ -53,20 +54,33 @@ def prepare_acl_rulestring(rulestr):
     return rulestr.replace(",", " OR ").replace("{", "( ").replace("}", " )")
 
 
-def load_node_rules(ruletype="readaccess"):
-    s.execute("SET search_path TO mediatum_import")
-    node_rules = s.execute(sql.select(["id", sql.func.expand_acl_rule(sql.text(ruletype)).label(ruletype)], from_obj="node"))
+def load_node_rules(ruletype):
+    db.session.execute("SET search_path TO mediatum_import")
+    stmt = sql.select(["id", sql.func.expand_acl_rule(sql.text(ruletype)).label(ruletype)], from_obj="node") \
+        .where(sql.func.expand_acl_rule(sql.text(ruletype)) != "")
+
+    node_rules = db.session.execute(stmt)
+    # map node id to rulestring
     return dict(node_rules.fetchall())
 
 
-def convert_node_rulestrings_to_symbolic_rules(nid_to_rulestr):
+def convert_node_rulestrings_to_symbolic_rules(nid_to_rulestr, fail_on_first_error=False, ignore_errors=False):
     rulestr_set = set(nid_to_rulestr.itervalues())
     converter = OldACLToBoolExprConverter()
     rulestr_to_symbolic_rule = converter.batch_convert_rulestrings(rulestr_set)
+
     if converter.conversion_exceptions:
-        raise Exception("some rules failed!")
+        msg = "some rules failed!"
+        if not ignore_errors:
+            raise Exception(msg)
+        logg.warn(msg)
+
     if converter.acl_syntax_errors:
-        raise Exception("some failed parsing with an syntax error!")
+        msg = "some failed parsing with an syntax error!"
+        if not ignore_errors:
+            raise Exception(msg)
+        logg.warn(msg)
+
     # map node ids to bool expression results
     nid_to_symbolic_rule = {nid: rulestr_to_symbolic_rule.get(rulestr) for nid, rulestr in nid_to_rulestr.iteritems()}
     return (nid_to_symbolic_rule, converter.symbol_to_acl_condition.copy())
@@ -78,6 +92,21 @@ def convert_node_symbolic_rules_to_access_rules(nid_to_symbolic_rule, symbol_to_
     symbolic_rule_to_access_rules = converter.batch_convert_symbolic_rules(symbolic_rule_set)
     nid_to_access_rules = {nid: symbolic_rule_to_access_rules.get(symbolic_rule) for nid, symbolic_rule in nid_to_symbolic_rule.iteritems()}
     return nid_to_access_rules
+
+
+def convert_symbolic_rules_to_dnf(nid_to_symbolic_rule, simplify=False):
+    return {nid: boolalg.to_dnf(rule, simplify=simplify) for nid, rule in iteritems(nid_to_symbolic_rule)}
+
+
+def save_access_rules(nid_to_access_rules, ruletype):
+    node_to_access_rule_it = (
+        NodeToAccessRule(
+            nid=nid,
+            rule=r[0],
+            ruletype=ruletype,
+            invert=r[1]) for nid,
+        rules in nid_to_access_rules.items() for r in rules)
+    db.session.add_all(node_to_access_rule_it)
 
 
 class OldACLToBoolExprConverter(object):
@@ -212,8 +241,6 @@ class SymbolicExprToAccessRuleConverter(object):
         return acl_cond, invert
 
     def convert_symbolic_rule(self, cond):
-
-        cond = boolalg.to_dnf(cond, simplify=True)
 
         if boolalg.is_literal(cond):
             acl_cond, invert = self.get_acl_cond_for_literal(cond)

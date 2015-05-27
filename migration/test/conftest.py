@@ -1,5 +1,5 @@
 import logging
-from core.test.setup import setup_basic  
+from core.test.setup import setup_basic
 
 logging.basicConfig(level=logging.WARN)
 

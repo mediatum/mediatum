@@ -8,6 +8,9 @@ from pytest import fixture, yield_fixture
 import migration.acl_migration
 from migration.test.factories import AccessFactory
 from migration.test.factories import ImportNodeFactory
+from core.database.postgres.permission import AccessRule
+from core.test.factories import DirectoryFactory
+from ipaddr import IPv4Network
 
 
 @fixture(scope="session", autouse=True)
@@ -30,13 +33,13 @@ def session():
     Inner actions are wrapped in a transaction that always rolls back.
     """
     from core import db
-    s = db.session 
+    s = db.session
     transaction = s.connection().begin()
     yield s
     transaction.rollback()
     s.close()
-    
-    
+
+
 @fixture
 def import_node_with_simple_access():
     node = ImportNodeFactory()
@@ -70,6 +73,18 @@ def users_and_groups_for_predefined_access(session):
     groups = [UserGroup(name="test_readers"), UserGroup(name="test_readers2")]
     session.add_all(groups)
     return users, groups
-    
-    
-    
+
+
+@fixture
+def two_access_rules():
+    #     user = User("darfdas", id=1)
+    #     test_readers = UserGroup("test_readers", id=2)
+    #     test_readers2 = UserGroup("test_readers2", id=3)
+    rule1 = AccessRule(group_ids=[11, 12], invert_group=True)
+    rule2 = AccessRule(group_ids=[13], subnets=[IPv4Network("127.0.0.1/32")])
+    return rule1, rule2
+
+
+@fixture
+def some_numbered_nodes():
+    return [DirectoryFactory(id=j) for j in range(1, 4)]

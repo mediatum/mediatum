@@ -132,12 +132,25 @@ def expand_rulestr(rulestr):
     return res["expanded_rule"], res["predefined"]
 
 
+def add_blocking_flag_to_access_rules(rulestr, access_rules):
+    """
+       The old ACL system blocked write access to a node if a "NOT rule" was found at the node or at one of its parents.
+       We use the test from the old core.acl module to find out if a rule should be interpreted as 'blocking'
+       :type access_rules: a list of (a: AccessRule, invert: bool)
+       :return: a list of (a: AccessRule, (invert: bool, blocking: bool))
+    """
+    if "NOT ( true )" in rulestr or "NOT ( group" in rulestr:
+        return [(a[0], (a[1], True)) for a in access_rules]
+
+    return [(a[0], (a[1], False)) for a in access_rules]
+
+
 def convert_old_acl(rulestr):
     expr_converter = OldACLToBoolExprConverter()
     symbolic = expr_converter.convert_rulestring(rulestr)
-    print symbolic,
     access_rules = SymbolicExprToAccessRuleConverter(expr_converter.symbol_to_acl_cond).convert_symbolic_rule(symbolic)
-    return access_rules
+
+    return add_blocking_flag_to_access_rules(rulestr, access_rules)
 
 
 def find_equivalent_access_rule(a):
@@ -156,7 +169,8 @@ def save_node_to_rule_mappings(nid_to_access_rules, ruletype):
             nid=nid,
             rule=r[0],
             ruletype=ruletype,
-            invert=r[1]) for nid,
+            invert=r[1][0],
+            blocking=r[1][1]) for nid,
         rules in nid_to_access_rules.items() for r in set(rules))
 
     s.add_all(node_to_access_rule_it)
@@ -181,6 +195,11 @@ def migrate_rules(ruletypes=["read", "write", "data"]):
                                                                                                    fail_on_first_error=True)
         nid_to_access_rules = convert_node_symbolic_rules_to_access_rules(nid_to_symbolic_rule, symbol_to_acl_condition,
                                                                           fail_on_first_error=True, ignore_missing_user_groups=True)
+
+        for nid, access_rules in nid_to_access_rules:
+            rulestr = nid_to_rulestr[nid]
+            nid_to_access_rules[nid] = add_blocking_flag_to_access_rules(rulestr, access_rules)
+
         save_node_to_rule_mappings(nid_to_access_rules, ruletype)
         save_node_to_ruleset_mappings(nid_to_rulesets, ruletype)
 
@@ -305,7 +324,7 @@ def make_open_daterange_from_rule(acl_cond):
         bounds = "(]" if acl_cond.end else "()"
         return DateRange(datetime.date.min, dt, bounds)
     else:
-        bounds = "[)" if acl_cond.end else "()"
+        bounds = "()" if acl_cond.end else "[)"
         return DateRange(dt, datetime.date.max, bounds)
 
 
@@ -377,7 +396,7 @@ class SymbolicExprToAccessRuleConverter(object):
 
         elif isinstance(acl_cond, (ACLDateBeforeClause, ACLDateAfterClause)):
             daterange = make_open_daterange_from_rule(acl_cond)
-            return AccessRule(dateranges=[daterange])
+            return AccessRule(dateranges=set([daterange]))
 
         else:
             raise Exception("!?")
@@ -413,12 +432,9 @@ class SymbolicExprToAccessRuleConverter(object):
             invert_access_rule = True if isinstance(cond, Not) else False
 
             def check_inversion(invert_flag, inversion_state):
-                if invert_flag and not inversion_state:
-                    return True
-                elif not invert_flag and inversion_state:
+                if not invert_flag and inversion_state:
                     raise Exception("cannot be represented: {}".format(cond))
-                else:
-                    return False
+                return invert_flag
 
             if cond.func is And:
                 print "And found"

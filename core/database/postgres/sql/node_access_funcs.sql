@@ -13,7 +13,9 @@ END;
 $f$;
 
 
+--
 -- functions that determine if the current user (in groups `group_ids`) from ipaddr has access to `node_id` on the given date
+--
 
 CREATE OR REPLACE FUNCTION _has_read_type_access_to_node(node_id integer, _ruletype text, _group_ids integer[], ipaddr inet, _date date) 
     RETURNS boolean
@@ -96,22 +98,7 @@ END;
 $f$;
 
 
-CREATE OR REPLACE FUNCTION experiment_read_accessible_nodes(_group_ids integer[] = NULL, ipaddr inet = NULL, _date date = NULL, lim integer = null, off integer= null) 
-    RETURNS SETOF node
-    LANGUAGE plpgsql
-    STABLE
-AS $f$
-BEGIN
-RETURN QUERY
-    SELECT node.* FROM node
-    WHERE has_read_access_to_node(node.id, _group_ids, ipaddr, _date)
-    LIMIT lim
-    OFFSET off;
-END;
-$f$;
-
-
-CREATE OR REPLACE FUNCTION _read_type_accessible_nodes(_ruletype text, _group_ids integer[] = NULL, ipaddr inet = NULL, _date date = NULL, lim integer = null)
+CREATE OR REPLACE FUNCTION _read_type_accessible_nodes(_ruletype text, _group_ids integer[] = NULL, ipaddr inet = NULL, _date date = NULL)
     RETURNS SETOF node
     LANGUAGE plpgsql
     STABLE
@@ -129,7 +116,7 @@ END;
 $f$;
 
 
-CREATE OR REPLACE FUNCTION read_accessible_nodes(_group_ids integer[] = NULL, ipaddr inet = NULL, _date date = NULL, lim integer = null) 
+CREATE OR REPLACE FUNCTION read_accessible_nodes(_group_ids integer[] = NULL, ipaddr inet = NULL, _date date = NULL) 
     RETURNS SETOF node
     LANGUAGE plpgsql
     STABLE
@@ -188,7 +175,9 @@ END;
 $f$;
 
 
+--
 -- update functions
+--
 
 -- blocking is not supported for read-type access rules, so the blocking attribute is always returned as NULL
 CREATE OR REPLACE FUNCTION _inherited_access_rules_read_type(node_id integer, _ruletype text) 
@@ -313,7 +302,6 @@ AS $f$
 BEGIN
     -- XXX: very strange: this fails when trying to insert directy into the node_to_access table
     -- this solution with a temp table works
-
     CREATE TEMPORARY TABLE temp_create_all_inherited_access_rules_write AS
     SELECT i.* FROM node 
     JOIN LATERAL inherited_access_rules_write(node.id) i ON TRUE;
@@ -345,10 +333,9 @@ END;
 $f$;
 
 
--- remove duplicate access rules with same content, but different id. Updates foreign keys in dependent tables.
-
 CREATE TYPE rule_duplication AS (surviving_rule_id integer, duplicates integer[]);
 
+-- remove duplicate access rules with same content, but different id. Updates foreign keys in dependent tables.
 CREATE OR REPLACE FUNCTION deduplicate_access_rules ()
    RETURNS SETOF rule_duplication
    LANGUAGE plpgsql

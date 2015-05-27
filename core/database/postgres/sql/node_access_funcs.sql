@@ -302,6 +302,7 @@ $f$;
 CREATE OR REPLACE FUNCTION create_all_inherited_access_mappings_write()
     RETURNS void
     LANGUAGE plpgsql
+    VOLATILE
 AS $f$
 BEGIN
     -- XXX: very strange: this fails when trying to insert directy into the node_to_access table
@@ -317,4 +318,66 @@ BEGIN
 END;
 $f$;
 
+
+-- remove duplicate access rules with same content, but different id. Updates foreign keys in dependent tables.
+
+CREATE TYPE rule_duplication AS (surviving_rule_id integer, duplicates integer[]);
+
+CREATE OR REPLACE FUNCTION deduplicate_access_rules ()
+   RETURNS SETOF rule_duplication
+   LANGUAGE plpgsql
+   VOLATILE
+AS
+$f$
+BEGIN
+SET CONSTRAINTS ALL DEFERRED;
+RETURN QUERY
+    WITH dupes AS
+      (SELECT rule_ids[1] AS surviving_rule_id,
+                      rule_ids[2:cardinality(rule_ids)] AS duplicates
+       FROM
+         (SELECT array_agg(id) AS rule_ids
+          FROM access_rule
+          GROUP BY invert_subnet, invert_date, invert_group, group_ids, subnets, dateranges
+          HAVING count(*) > 1) r),
+
+    deleted_dupes AS
+      (DELETE
+       FROM access_rule
+       WHERE ARRAY[id] <@ ANY (SELECT duplicates FROM dupes)),
+       
+    updated_node_to_access_rule AS
+        (UPDATE node_to_access_rule
+        SET rule_id = dupes.surviving_rule_id
+        FROM dupes
+        WHERE ARRAY[rule_id] <@ dupes.duplicates)
+        
+    SELECT * FROM dupes;
+END;
+$f$;
+
+
+CREATE OR REPLACE FUNCTION find_duplicate_rules()
+   RETURNS SETOF rule_duplication
+   LANGUAGE plpgsql
+   STABLE
+AS
+$f$
+BEGIN
+RETURN QUERY
+    SELECT rule_ids[1] AS surviving_rule_id,
+           rule_ids[2:cardinality(rule_ids)] AS duplicates
+    FROM
+      (SELECT array_agg(id) AS rule_ids,
+              count(*)
+       FROM access_rule
+       GROUP BY invert_subnet,
+                invert_date,
+                invert_group,
+                group_ids,
+                subnets,
+                dateranges HAVING count(*) > 1
+       ORDER BY count(*) DESC) r ;
+END;
+$f$;
 

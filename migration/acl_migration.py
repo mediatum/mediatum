@@ -173,7 +173,7 @@ class OldACLToBoolExprConverter(object):
                 return self.sym(u"group_" + cond.group, cond)
 
             elif isinstance(cond, ACLIPCondition):
-                return self.sym(u"ip_" + cond.ip, cond)
+                return self.sym(u"ip_{}/{}".format(cond.ip, cond.netmask), cond)
 
             elif isinstance(cond, ACLIPListCondition):
                 return self.sym(u"iplist_" + cond.listid, cond)
@@ -233,6 +233,10 @@ def make_open_daterange_from_rule(acl_cond):
         return DateRange(dt, datetime.date.max, bounds)
 
 
+def make_ipnetwork_from_rule(acl_cond):
+    return IPv4Network("{}/{}".format(acl_cond.ip, acl_cond.netmask))
+
+
 class SymbolicExprToAccessRuleConverter(object):
 
     fail_on_first_error = False
@@ -284,7 +288,7 @@ class SymbolicExprToAccessRuleConverter(object):
             return AccessRule(group_ids=set([user_id]))
 
         elif isinstance(acl_cond, ACLIPCondition):
-            subnet = IPv4Network(acl_cond.ip + "/32")
+            subnet = make_ipnetwork_from_rule(acl_cond)
             return AccessRule(subnets=set([subnet]))
 
         elif isinstance(acl_cond, ACLIPListCondition):
@@ -362,7 +366,7 @@ class SymbolicExprToAccessRuleConverter(object):
 
                     elif isinstance(acl_cond, ACLIPCondition):
                         invert_subnet = check_inversion(invert, invert_subnet)
-                        subnet = IPv4Network(acl_cond.ip + "/32")
+                        subnet = make_ipnetwork_from_rule(acl_cond)
                         subnets.add(subnet)
 
                     elif isinstance(acl_cond, ACLIPListCondition):

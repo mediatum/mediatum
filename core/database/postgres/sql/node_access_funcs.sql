@@ -316,11 +316,12 @@ BEGIN
 
     CREATE TEMPORARY TABLE temp_create_all_inherited_access_rules_write AS
     SELECT i.* FROM node 
-    JOIN LATERAL inherited_access_rules_write(node.id) i ON TRUE 
-    WHERE node.id NOT IN (SELECT nid FROM node_to_access_rule WHERE ruletype='write');
+    JOIN LATERAL inherited_access_rules_write(node.id) i ON TRUE;
 
     INSERT INTO node_to_access_rule 
-    SELECT * FROM temp_create_all_inherited_access_rules_write;
+    SELECT DISTINCT * FROM temp_create_all_inherited_access_rules_write t
+    WHERE NOT EXISTS (SELECT FROM node_to_access_rule WHERE nid=t.nid AND rule_id=t.rule_id AND ruletype='write');
+    
 END;
 $f$;
 

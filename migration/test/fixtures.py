@@ -88,3 +88,6 @@ def two_access_rules():
 @fixture
 def some_numbered_nodes():
     return [DirectoryFactory(id=j) for j in range(1, 4)]
+
+
+return (q(AccessRule).filter_by(

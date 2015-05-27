@@ -7,14 +7,15 @@
 """
 import datetime
 import logging
+from pprint import pformat
 from ipaddr import IPv4Network
 from psycopg2.extras import DateRange
 from sympy import Symbol
 from sympy.logic import boolalg, Not, And, Or
-from sqlalchemy import sql
+from sqlalchemy import sql, func
 
 from core import db, User, UserGroup
-from core.database.postgres.permission import AccessRule, NodeToAccessRule
+from core.database.postgres.permission import AccessRule, NodeToAccessRule, AccessRulesetToRule, AccessRuleset, NodeToAccessRuleset
 from migration import oldaclparser
 from migration.oldaclparser import ACLAndCondition, ACLDateAfterClause, ACLDateBeforeClause, ACLOrCondition, ACLNotCondition,\
     ACLTrueCondition, ACLFalseCondition, ACLGroupCondition, ACLIPCondition, ACLUserCondition, ACLParseException, ACLIPListCondition
@@ -26,27 +27,30 @@ q = db.query
 logg = logging.getLogger(__name__)
 
 PL_FUNC_EXPAND_ACL_RULE = """
+SET SEARCH_PATH TO mediatum_import;
+CREATE TYPE expanded_accessrule AS (expanded_rule text, rulesets text[]);
 
 CREATE OR REPLACE FUNCTION mediatum_import.expand_acl_rule(rulestr text)
-  RETURNS text AS
+  RETURNS expanded_accessrule AS
 $BODY$
 DECLARE
-    expanded_rule text;
+    expanded expanded_accessrule;
 BEGIN
-SELECT array_to_string(array_agg((
-    SELECT CASE
-        WHEN n LIKE '{%' THEN n
-        ELSE (SELECT rule FROM access WHERE name = n)
-        END
-        )),',')
-
-INTO expanded_rule
+SELECT array_to_string(array_agg(
+                               (SELECT CASE WHEN n LIKE '{%' THEN n ELSE
+                                  (SELECT RULE
+                                   FROM ACCESS
+                                WHERE name = n) END)),',') as expanded_rule,
+       array_agg(
+               (SELECT n
+                WHERE n NOT LIKE '{%')) as rulesets
+INTO expanded
 FROM unnest(regexp_split_to_array(rulestr, ',')) AS n;
-RETURN expanded_rule;
+RETURN expanded;
 END;
 $BODY$
   LANGUAGE plpgsql STABLE
-  COST 100;
+  COST 100
 """
 
 
@@ -56,12 +60,15 @@ def prepare_acl_rulestring(rulestr):
 
 def load_node_rules(ruletype):
     db.session.execute("SET search_path TO mediatum_import")
-    stmt = sql.select(["id", sql.func.expand_acl_rule(sql.text(ruletype)).label(ruletype)], from_obj="node") \
-        .where(sql.and_(sql.func.expand_acl_rule(sql.text(ruletype)) != "", sql.text("node.name NOT LIKE 'Arbeitsverzeichnis (%'")))
+    expanded_accessrule = func.to_json(func.expand_acl_rule(sql.text(ruletype)))
+    stmt = sql.select(["id", expanded_accessrule], from_obj="node") \
+        .where(sql.and_(sql.text("%s != ''" % ruletype), sql.text("node.name NOT LIKE 'Arbeitsverzeichnis (%'")))
 
     node_rules = db.session.execute(stmt)
-    # map node id to rulestring
-    return dict(node_rules.fetchall())
+    res = node_rules.fetchall()
+    nid_to_rulestr = {r[0]: r[1]["expanded_rule"] for r in res}
+    nid_to_rulesets = {r[0]: r[1]["rulesets"] for r in res}
+    return nid_to_rulestr, nid_to_rulesets
 
 
 def convert_node_rulestrings_to_symbolic_rules(nid_to_rulestr, fail_on_first_error=False, ignore_errors=False):
@@ -87,7 +94,8 @@ def convert_node_rulestrings_to_symbolic_rules(nid_to_rulestr, fail_on_first_err
     return (nid_to_symbolic_rule, converter.symbol_to_acl_cond.copy())
 
 
-def convert_node_symbolic_rules_to_access_rules(nid_to_symbolic_rule, symbol_to_acl_cond, fail_on_first_error=False, ignore_errors=False):
+def convert_node_symbolic_rules_to_access_rules(nid_to_symbolic_rule, symbol_to_acl_cond,
+                                                fail_on_first_error=False, ignore_errors=False, ignore_missing_user_groups=False):
     converter = SymbolicExprToAccessRuleConverter(symbol_to_acl_cond)
     converter.fail_on_first_error = fail_on_first_error
     symbolic_rule_set = set(nid_to_symbolic_rule.itervalues())
@@ -118,11 +126,31 @@ def convert_node_symbolic_rules_to_access_rules(nid_to_symbolic_rule, symbol_to_
     return nid_to_access_rules
 
 
+def expand_rulestr(rulestr):
+    expanded_accessrule = func.to_json(func.expand_acl_rule(rulestr))
+    res = db.session.execute(sql.select([expanded_accessrule])).scalar()
+    return res["expanded_rule"], res["predefined"]
+
+
+def convert_old_acl(rulestr):
+    expr_converter = OldACLToBoolExprConverter()
+    symbolic = expr_converter.convert_rulestring(rulestr)
+    print symbolic,
+    access_rules = SymbolicExprToAccessRuleConverter(expr_converter.symbol_to_acl_cond).convert_symbolic_rule(symbolic)
+    return access_rules
+
+
+def find_equivalent_access_rule(a):
+    return q(AccessRule).filter_by(invert_date=a.invert_date, invert_group=a.invert_group, invert_subnet=a.invert_subnet,
+                                   group_ids=a.group_ids, subnets=a.subnets, dateranges=a.dateranges).scalar()
+
+
 def convert_symbolic_rules_to_dnf(nid_to_symbolic_rule, simplify=False):
     return {nid: boolalg.to_dnf(rule, simplify=simplify) for nid, rule in iteritems(nid_to_symbolic_rule)}
 
 
-def save_access_rules(nid_to_access_rules, ruletype):
+def save_access_rules(nid_to_access_rules, nid_to_rulesets, ruletype):
+    s = db.session
     node_to_access_rule_it = (
         NodeToAccessRule(
             nid=nid,
@@ -130,7 +158,46 @@ def save_access_rules(nid_to_access_rules, ruletype):
             ruletype=ruletype,
             invert=r[1]) for nid,
         rules in nid_to_access_rules.items() for r in rules)
-    db.session.add_all(node_to_access_rule_it)
+    s.add_all(node_to_access_rule_it)
+
+    for nid, ruleset_names in nid_to_rulesets.items():
+        for ruleset_name in set(ruleset_names):
+            if ruleset_name is not None and ruleset_name != "nicht Jeder":
+                s.execute(t_node_to_access_ruleset.insert().values(nid=nid, ruleset_name=ruleset_name))
+
+
+def migrate_rules(ruletypes=["readaccess", "writeaccess", "dataaccess"]):
+    for ruletype in ruletypes:
+        nid_to_rulestr, nid_to_rulesets = load_node_rules(ruletype)
+        nid_to_symbolic_rule, symbol_to_acl_condition = convert_node_rulestrings_to_symbolic_rules(nid_to_rulestr, ignore_errors=False,
+                                                                                                   fail_on_first_error=True)
+        nid_to_access_rules = convert_node_symbolic_rules_to_access_rules(nid_to_symbolic_rule, symbol_to_acl_condition,
+                                                                          fail_on_first_error=True, ignore_missing_user_groups=True)
+        save_access_rules(nid_to_access_rules, nid_to_rulesets, ruletype)
+
+
+def migrate_access_entries():
+    s = db.session
+    access = s.execute("select * from mediatum_import.access").fetchall()
+    for a in access:
+        rulestr = a["rule"]
+        ruleset = AccessRuleset(name=a["name"], description=a["description"])
+        access_rules = convert_old_acl(rulestr)
+        for rule, invert in access_rules:
+            if rule.invert_group is None:
+                rule.invert_group = False
+            if rule.invert_subnet is None:
+                rule.invert_subnet = False
+            if rule.invert_date is None:
+                rule.invert_date = False
+
+            existing_rule = find_equivalent_access_rule(rule)
+
+            if existing_rule:
+                rule = existing_rule
+
+            rule_assoc = AccessRulesetToRule(rule=rule, ruleset=ruleset, invert=invert)
+            s.add(rule_assoc)
 
 
 class OldACLToBoolExprConverter(object):

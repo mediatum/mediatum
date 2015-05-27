@@ -3,10 +3,10 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
-from sqlalchemy import Integer, Unicode, Boolean, Text 
+from sqlalchemy import Integer, Unicode, Boolean, Table, Text
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR
 
-from core.database.postgres import DeclarativeBase, C, rel, integer_pk, integer_fk
+from core.database.postgres import DeclarativeBase, C, db_metadata, rel, integer_pk, integer_fk, TimeStamp
 from core.database.postgres.node import Node
 from core.database.postgres.alchemyext import Daterange
 
@@ -36,5 +36,35 @@ class NodeToAccessRule(DeclarativeBase):
     rule = rel(AccessRule, backref="node_assocs")
 
 
-Node.access_rules = rel(NodeToAccessRule, backref="node")
+class AccessRuleset(DeclarativeBase, TimeStamp):
+    __tablename__ = "access_ruleset"
 
+    name = C(Unicode, primary_key=True)
+    description = C(Unicode)
+    invert = C(Boolean, default=False, index=True)
+
+
+class AccessRulesetToRule(DeclarativeBase):
+    __tablename__ = "access_ruleset_to_rule"
+
+    rule_id = integer_fk(AccessRule.id, primary_key=True)
+    ruleset_name = integer_fk(AccessRuleset.name, primary_key=True)
+    invert = C(Boolean, default=False, index=True)
+    blocking = C(Boolean, default=False, index=True)
+
+    rule = rel(AccessRule, backref="ruleset_assocs")
+
+
+class NodeToAccessRuleset(DeclarativeBase):
+    __tablename__ = "node_to_access_ruleset"
+
+    nid = integer_fk(Node.id, primary_key=True)
+    ruleset_name = integer_fk(AccessRuleset.name, primary_key=True)
+    ruleset = rel(AccessRuleset, backref="node_assocs")
+    ruletype = C(Text, index=True, primary_key=True)
+
+
+Node.access_rules = rel(NodeToAccessRule, backref="node")
+Node.access_rulesets = rel(NodeToAccessRuleset, backref="node")
+
+AccessRuleset.access_rules = rel(AccessRulesetToRule, backref="ruleset")

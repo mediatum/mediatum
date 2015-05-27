@@ -99,6 +99,21 @@ def convert_node_symbolic_rules_to_access_rules(nid_to_symbolic_rule, symbol_to_
             raise Exception(msg)
         logg.warn(msg)
 
+    if converter.missing_users:
+        msg = "missing users: {}".format(converter.missing_users.values())
+        if not ignore_missing_user_groups:
+            raise Exception(msg)
+        logg.warn(msg)
+
+    if converter.missing_groups:
+        msg = "missing groups: {}".format(converter.missing_groups.values())
+        if not ignore_missing_user_groups:
+            raise Exception(msg)
+        logg.warn(msg)
+
+    if converter.fake_groups:
+        logg.warn("inserted fake group ids for missing groups / users:\n%s", pformat(converter.fake_groups))
+
     nid_to_access_rules = {nid: symbolic_rule_to_access_rules.get(symbolic_rule) for nid, symbolic_rule in nid_to_symbolic_rule.iteritems()}
     return nid_to_access_rules
 
@@ -231,6 +246,7 @@ class SymbolicExprToAccessRuleConverter(object):
         self.symbol_to_acl_cond = symbol_to_acl_cond
         self.missing_users = {}
         self.missing_groups = {}
+        self.fake_groups = {}
 
     def get_user_id_from_cond(self, acl_cond):
         username = acl_cond.name
@@ -238,8 +254,16 @@ class SymbolicExprToAccessRuleConverter(object):
         if not user:
             logg.warn("user %s not found", username)
             self.missing_users[acl_cond] = username
-            return 99999999
+            return self._fake_groupid(username)
         return user.id
+
+    def _fake_groupid(self, name):
+        if name in self.fake_groups:
+            return self.fake_groups[name]
+        else:
+            next_groupid = max(self.fake_groups.values()) + 1 if self.fake_groups else 99990000
+            self.fake_groups[name] = next_groupid
+            return next_groupid
 
     def get_group_id_from_cond(self, acl_cond):
         groupname = acl_cond.group
@@ -247,7 +271,7 @@ class SymbolicExprToAccessRuleConverter(object):
         if not group:
             logg.warn("group %s not found", groupname)
             self.missing_groups[acl_cond] = groupname
-            return 99999999
+            return self._fake_groupid(groupname)
         return group.id
 
     def rule_model_from_acl_cond(self, acl_cond):

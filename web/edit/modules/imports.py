@@ -33,6 +33,7 @@ from core.acl import AccessData
 from core.transition import httpstatus
 from core import db
 from core import Node
+from schema.schema import Metadatatype
 
 q = db.query
 logg = logging.getLogger(__name__)

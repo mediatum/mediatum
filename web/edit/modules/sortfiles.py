@@ -18,6 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from sqlalchemy import func
 import core.users as users
 from core.acl import AccessData
 from utils.utils import getCollection
@@ -25,7 +26,10 @@ from core.translation import t
 from core.transition import httpstatus
 from core import Node
 from core import db
+from schema.schema import Metadatatype
+
 q = db.query
+
 
 def getContent(req, ids):
     user = users.getUserFromRequest(req)
@@ -49,15 +53,21 @@ def getContent(req, ids):
             self.value = value
 
     sortfields = [SortChoice(t(req, "off"), "")]
-    for ntype, num in c.getAllOccurences(AccessData(req)).items():
-        if ntype.getSortFields():
-            for sortfield in ntype.getSortFields():
-                sortfields += [SortChoice(sortfield.getLabel(), sortfield.name)]
-                sortfields += [SortChoice(sortfield.getLabel() + t(req, "descending"), "-" + sortfield.name)]
-            break
+    sorted_schema_count = c.all_children_by_query(q(Node.schema, func.count(Node.schema)).group_by(Node.schema).order_by(func.count(Node.schema).desc()))
 
-    return req.getTAL("web/edit/modules/sortfiles.html", {"node": node, 
+    for schema_count in sorted_schema_count:
+        metadatatype = q(Metadatatype).filter_by(name=schema_count[0]).first()
+        if metadatatype:
+            sort_fields = metadatatype.metafields.filter(Node.a.opts.like("%o%")).all()
+            if sort_fields:
+                for sortfield in sort_fields:
+                    sortfields += [SortChoice(sortfield.getLabel(), sortfield.name)]
+                    sortfields += [SortChoice(sortfield.getLabel() + t(req, "descending"), "-" + sortfield.name)]
+                break
+
+
+    return req.getTAL("web/edit/modules/sortfiles.html", {"node": node,
                                                           "collection_sortfield": collection_sortfield,
-                                                          "sortchoices": sortfields, 
+                                                          "sortchoices": sortfields,
                                                           "name": c.name},
                       macro="edit_sortfiles")

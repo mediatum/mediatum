@@ -44,7 +44,6 @@ class AccessRuleset(DeclarativeBase, TimeStamp):
 
     name = C(Unicode, primary_key=True)
     description = C(Unicode)
-    invert = C(Boolean, default=False, index=True)
 
 
 class AccessRulesetToRule(DeclarativeBase):

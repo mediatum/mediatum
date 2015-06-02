@@ -412,3 +412,25 @@ RETURN QUERY
 END;
 $f$;
 
+
+CREATE OR REPLACE FUNCTION group_ids_to_names(group_ids integer[])
+   RETURNS text[]
+   LANGUAGE plpgsql
+   SET search_path TO :search_path
+   STABLE
+AS
+$f$
+DECLARE 
+    group_names text[];
+BEGIN
+    SELECT array_agg(( SELECT usergroup.name
+                   FROM usergroup
+                  WHERE usergroup.id = f.f)) AS a
+           INTO group_names
+           FROM unnest(group_ids) f
+    ;
+    
+RETURN group_names;
+END;
+$f$;
+

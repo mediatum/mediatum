@@ -31,6 +31,7 @@ class AthanaTestRequest(athana_http.http_request):
         athana_http.http_request.__init__(self, None, None, None, uri, 0, headers)
         self.request_headers = headers
         self.params = params or {}
+        self.ip = "127.0.0.1"
 
     @property
     def text(self):

@@ -46,6 +46,8 @@ from core.translation import t as translation_t
 from core import db
 from contenttypes import Data
 from core import Node
+from schema.schema import Metadatatype
+from sqlalchemy import func
 
 logg = logging.getLogger(__name__)
 identifier_importers = {}
@@ -86,7 +88,6 @@ def getDatatypes(req, schemes):
                 for t in datatypes:
                     if t.__name__.lower() == dtype and not elemInList(dtypes, t.__name__.lower()):
                         dtypes.append(t)
-    #todo: potentially needs to be changed to continue using longname()
     dtypes.sort(lambda x, y: cmp(translate(x.__name__.lower(),
                                            request=req).lower(),
                                  translate(y.__name__.lower(),
@@ -423,14 +424,19 @@ def getContent(req, ids):
         v['collection_sortfield'] = node.get("sortfield")
         sortfields = [SortChoice(translation_t(req, "off"), "")]
 
-        #todo: figure out what to do about getalloccurences
-        # if node.type not in ["root", "collections", "home"]:
-        #     for ntype, num in node.getAllOccurences(acl.AccessData(req)).items():
-        #         if ntype.getSortFields():
-        #             for sortfield in ntype.getSortFields():
-        #                 sortfields += [SortChoice(sortfield.getLabel(), sortfield.getName())]
-        #                 sortfields += [SortChoice(sortfield.getLabel() + translation_t(req, "descending"), "-" + sortfield.getName())]
-        #             break
+        if node.type not in ["root", "collections", "home"]:
+            sorted_schema_count = node.all_children_by_query(q(Node.schema, func.count(Node.schema)).group_by(Node.schema).order_by(func.count(Node.schema).desc()))
+
+            for schema_count in sorted_schema_count:
+                metadatatype = q(Metadatatype).filter_by(name=schema_count[0]).first()
+                if metadatatype:
+                    sort_fields = metadatatype.metafields.filter(Node.a.opts.like("%o%")).all()
+                    if sort_fields:
+                        for sortfield in sort_fields:
+                            sortfields += [SortChoice(sortfield.getLabel(), sortfield.name)]
+                            sortfields += [SortChoice(sortfield.getLabel() + translation_t(req, "descending"), "-" + sortfield.name)]
+                        break
+
         v['sortchoices'] = sortfields
         v['count'] = len(node.content_children)
         v['language'] = lang(req)

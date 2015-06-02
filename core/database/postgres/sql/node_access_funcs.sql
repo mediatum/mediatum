@@ -50,6 +50,7 @@ $f$;
 CREATE OR REPLACE FUNCTION has_data_access_to_node(node_id integer, _group_ids integer[] = NULL, ipaddr inet = NULL, _date date = NULL) 
     RETURNS boolean
     LANGUAGE plpgsql
+    SET search_path TO :search_path
     STABLE
 AS $f$
 BEGIN
@@ -61,6 +62,7 @@ $f$;
 CREATE OR REPLACE FUNCTION _has_write_type_access_to_node(node_id integer, _ruletype text, _group_ids integer[], ipaddr inet, _date date) 
     RETURNS boolean
     LANGUAGE plpgsql
+    SET search_path TO :search_path
     STABLE
 AS $f$
 BEGIN
@@ -90,6 +92,7 @@ $f$;
 CREATE OR REPLACE FUNCTION has_write_access_to_node(node_id integer, _group_ids integer[] = NULL, ipaddr inet = NULL, _date date = NULL) 
     RETURNS boolean
     LANGUAGE plpgsql
+    SET search_path TO :search_path
     STABLE
 AS $f$
 BEGIN
@@ -101,6 +104,7 @@ $f$;
 CREATE OR REPLACE FUNCTION _read_type_accessible_nodes(_ruletype text, _group_ids integer[] = NULL, ipaddr inet = NULL, _date date = NULL)
     RETURNS SETOF node
     LANGUAGE plpgsql
+    SET search_path TO :search_path
     STABLE
 AS $f$
 DECLARE
@@ -119,6 +123,7 @@ $f$;
 CREATE OR REPLACE FUNCTION read_accessible_nodes(_group_ids integer[] = NULL, ipaddr inet = NULL, _date date = NULL) 
     RETURNS SETOF node
     LANGUAGE plpgsql
+    SET search_path TO :search_path
     STABLE
 AS $f$
 BEGIN
@@ -130,6 +135,7 @@ $f$;
 CREATE OR REPLACE FUNCTION data_accessible_nodes(_group_ids integer[] = NULL, ipaddr inet = NULL, _date date = NULL) 
     RETURNS SETOF node
     LANGUAGE plpgsql
+    SET search_path TO :search_path
     STABLE
 AS $f$
 BEGIN
@@ -141,6 +147,7 @@ $f$;
 CREATE OR REPLACE FUNCTION _write_type_accessible_nodes(_ruletype text, _group_ids integer[] = NULL, ipaddr inet = NULL, _date date = NULL) 
     RETURNS SETOF node
     LANGUAGE plpgsql
+    SET search_path TO :search_path
     STABLE
 AS $f$
 BEGIN
@@ -167,6 +174,7 @@ $f$;
 CREATE OR REPLACE FUNCTION write_accessible_nodes(_group_ids integer[] = NULL, ipaddr inet = NULL, _date date = NULL) 
     RETURNS SETOF node
     LANGUAGE plpgsql
+    SET search_path TO :search_path
     STABLE
 AS $f$
 BEGIN
@@ -183,6 +191,7 @@ $f$;
 CREATE OR REPLACE FUNCTION _inherited_access_rules_read_type(node_id integer, _ruletype text) 
     RETURNS SETOF node_to_access_rule
     LANGUAGE plpgsql
+    SET search_path TO :search_path
     STABLE
 AS $f$
 BEGIN
@@ -225,6 +234,7 @@ $f$;
 CREATE OR REPLACE FUNCTION inherited_access_rules_read(node_id integer)
     RETURNS SETOF node_to_access_rule
     LANGUAGE plpgsql
+    SET search_path TO :search_path
     STABLE
 AS $f$
 BEGIN
@@ -236,6 +246,7 @@ $f$;
 CREATE OR REPLACE FUNCTION inherited_access_rules_data(node_id integer)
     RETURNS SETOF node_to_access_rule
     LANGUAGE plpgsql
+    SET search_path TO :search_path
     STABLE
 AS $f$
 BEGIN
@@ -247,6 +258,7 @@ $f$;
 CREATE OR REPLACE FUNCTION create_all_inherited_access_rules_read()
     RETURNS void
     LANGUAGE plpgsql
+    SET search_path TO :search_path
     VOLATILE
 AS $f$
 BEGIN
@@ -261,6 +273,7 @@ $f$;
 CREATE OR REPLACE FUNCTION create_all_inherited_access_rules_data()
     RETURNS void
     LANGUAGE plpgsql
+    SET search_path TO :search_path
     VOLATILE
 AS $f$
 BEGIN
@@ -276,6 +289,7 @@ $f$;
 CREATE OR REPLACE FUNCTION inherited_access_rules_write(node_id integer)
     RETURNS SETOF node_to_access_rule
     LANGUAGE plpgsql
+    SET search_path TO :search_path
     STABLE
 AS $f$
 BEGIN
@@ -297,6 +311,7 @@ $f$;
 CREATE OR REPLACE FUNCTION create_all_inherited_access_rules_write()
     RETURNS void
     LANGUAGE plpgsql
+    SET search_path TO :search_path
     VOLATILE
 AS $f$
 BEGIN
@@ -317,6 +332,7 @@ $f$;
 CREATE OR REPLACE FUNCTION update_inherited_access_rules_for_node(node_id integer)
     RETURNS SETOF node_to_access_rule
     LANGUAGE plpgsql
+    SET search_path TO :search_path
     VOLATILE
 AS $f$
 BEGIN
@@ -339,6 +355,7 @@ CREATE TYPE rule_duplication AS (surviving_rule_id integer, duplicates integer[]
 CREATE OR REPLACE FUNCTION deduplicate_access_rules ()
    RETURNS SETOF rule_duplication
    LANGUAGE plpgsql
+    SET search_path TO :search_path
    VOLATILE
 AS
 $f$
@@ -373,6 +390,7 @@ $f$;
 CREATE OR REPLACE FUNCTION find_duplicate_rules()
    RETURNS SETOF rule_duplication
    LANGUAGE plpgsql
+   SET search_path TO :search_path
    STABLE
 AS
 $f$

@@ -23,7 +23,7 @@ class FileWriter:
         f, ext = os.path.splitext(filename)
         self.realname = filename
         self.filename = filename
-        self.file = codecs.open(self.filename, "wb", encoding='utf8')
+        self.file = codecs.open(self.filename, "wb")
         self.node = node
 
     def write(self, data):
@@ -35,7 +35,7 @@ class FileWriter:
             f = fileutils.importFile(self.realname, self.filename, "ftp_")
             os.remove(self.filename)
             self.node.files.append(f)
-            db.seession.commit()
+            db.session.commit()
         except:
             pass
 
@@ -188,7 +188,7 @@ class collection_ftpserver:
             file = f.files[0].abspath
         else:
             file = f.abspath
-        return codecs.open(file, "rb", encoding='utf8')
+        return codecs.open(file, "rb")
 
     def current_directory(self):
         return "/" + ("/".join([d.name for d in self.dir[1:]]))
@@ -294,7 +294,7 @@ class collection_ftpserver:
         # convert nodefiles to nodes
         for nodefile in self.dir[-1].files:
             if not nodefile.filetype.startswith('tile') and "ftp_" in nodefile.abspath and os.path.exists(nodefile.abspath):
-                pass #file_to_node(nodefile, upload_dir)
+                file_to_node(nodefile, upload_dir)
 
         # display folders and nodes
         for node in self.dir[-1].children:
@@ -354,7 +354,7 @@ def file_to_node(file_node, upload_dir):
 
     schema = home_dir.get(u'system.ftp.{}'.format(file_type)).lstrip('/')
     if not schema:
-        schema = None
+        schema = 'file'
 
     content_class = Node.get_class_for_typestring(file_node.filetype)
     new_node = content_class(utf8_decode_escape(new_name), schema=schema)

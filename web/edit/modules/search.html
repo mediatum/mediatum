@@ -37,7 +37,7 @@
                           <td>
                               <select onChange="document.searchform.search.value='reload';document.searchform.submit()" name="objtype" style="width:640px">
                                   <tal:block tal:repeat="mtype mtypelist">
-                                      <option tal:attributes="value python:mtype.getSchema(); selected python:'selected' if mtype.getSchema()==objtype else None" tal:content="python:mtype.getDescription()"/>
+                                      <option tal:attributes="value python:mtype.name; selected python:'selected' if mtype.name==objtype else None" tal:content="python:mtype.getDescription()"/>
                                   </tal:block>
                               </select>
                           </td>

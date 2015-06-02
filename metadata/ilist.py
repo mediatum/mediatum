@@ -26,6 +26,7 @@ from core.metatype import Metatype
 from core.acl import AccessData
 from core.transition import httpstatus
 from core import db
+from core import Node
 from contenttypes import Collections
 from web.edit.modules.manageindex import getAllAttributeValues
 
@@ -47,7 +48,9 @@ class m_ilist(Metatype):
 
     def getSearchHTML(self, context):
         n = context.collection
-        valuelist = n.getAllAttributeValues(context.field.getName(), context.access)
+        field_name = context.field.getName()
+        id_attr_val = n.all_children_by_query(q(Node.id, Node.a[field_name]).filter(Node.a[field_name] != None and Node.a[field_name] != '').distinct(Node.a[field_name]))
+        valuelist = {pair[0]: pair[1] for pair in id_attr_val}
         keys = sorted(valuelist.keys())
         v = []
         for key in keys:

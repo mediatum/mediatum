@@ -32,7 +32,7 @@ def getInformation():
 
 def getAllAttributeValues(attribute, schema):
     values = {}
-    nids_values = q(Node.id, Node.a[attribute]).filter(Node.schema==schema).filter(Node.a[attribute] != None and Node.a[attribute] != '').distinct().all()
+    nids_values = q(Node.id, Node.a[attribute]).filter(Node.schema==schema).filter(Node.a[attribute] != None and Node.a[attribute] != '').distinct(Node.a[attribute]).all()
     for nid, value in nids_values:
         for s in value.split(";"):
             s = u(s.strip())

@@ -33,6 +33,8 @@ from core import Node
 from core import db
 from contenttypes import Collections
 from core.systemtypes import Root
+from sqlalchemy import func
+from schema.schema import Metadatatype
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -99,8 +101,15 @@ def search_results(req,id):
 
 def search_form(req, id, message=None):
     node = q(Node).get(id)
-    occur = node.getAllOccurences(AccessData(req))
-    ret = ""
+    ret = ''
+    occur = []
+
+    schema_count = node.all_children_by_query(q(Node.schema, func.count(Node.schema)).group_by(Node.schema).order_by(func.count(Node.schema).desc())).all()
+    for index, schema_num in enumerate(schema_count):
+        schema = q(Metadatatype).filter_by(name=schema_num[0]).first()
+        if schema:
+            new_tuple = (schema, schema_num[1])
+            occur.append(new_tuple)
 
     objtype = req.params.get("objtype", None)
     if objtype:
@@ -126,25 +135,25 @@ def search_form(req, id, message=None):
     otype = None
     mtypelist = []
     itemlist = {}
-    for mtype,num in occur.items():
-        if num>0 and mtype.getDescription():
+    for mtype_count_pair in occur:
+        mtype, num = mtype_count_pair[0], mtype_count_pair[1]
+        if num > 0 and mtype.getDescription():
             if otype is None:
                 otype = mtype
-            if mtype.getSchema() not in itemlist and mtype.type.find("directory")==-1:
-                itemlist[mtype.getSchema()] = None
+            if mtype.name not in itemlist and mtype.type.find("directory") == -1:
+                itemlist[mtype.name] = None
                 mtypelist.append(mtype)
-                if objtype == mtype.getSchema():
+                if objtype == mtype.name:
                     otype = mtype
             else:
                 logg.warn("Warning: Unknown metadatatype: %s", mtype.getName())
 
     formlist = []
     if otype:
-        for field in otype.getMetaFields():
-            if field.Searchfield() and field.getFieldtype()!="date":
-                value = searchvalues.get(otype.getSchema()+"."+field.getName(),"")
+        for field in otype.metafields:
+            if 's' in field.get('opts') and field.getFieldtype() != "date":
+                value = searchvalues.get(otype.schema+"."+field.getName(),"")
               
-                collection = q(Collections).one()
                 c = Context(field, value, width=640, name=field.getName(), collection=node, language=lang(req), user=getUserFromRequest(req))
                 field.searchitem = field.getSearchHTML(c)
                 
@@ -177,6 +186,7 @@ def search_form(req, id, message=None):
            "indexdate": indexdate,
            "formlist": formlist
           }
+
     ret += req.getTAL("web/edit/modules/search.html", ctx, macro="search_form")
     return ret
 

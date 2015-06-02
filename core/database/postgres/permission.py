@@ -3,17 +3,18 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
-from sqlalchemy import Integer, Unicode, Boolean, Table, Text
+from sqlalchemy import Integer, Unicode, Boolean, Text, sql
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR
 
-from core.database.postgres import DeclarativeBase, C, db_metadata, rel, integer_pk, integer_fk, TimeStamp
+from core.database.postgres import DeclarativeBase, C, rel, integer_pk, integer_fk, TimeStamp, func
 from core.database.postgres.node import Node
 from core.database.postgres.alchemyext import Daterange
+from sqlalchemy.orm import column_property
 
 
 class AccessRule(DeclarativeBase):
     __tablename__ = "access_rule"
-    
+
     id = integer_pk()
     invert_subnet = C(Boolean, default=False, index=True)
     invert_date = C(Boolean, default=False, index=True)
@@ -21,6 +22,8 @@ class AccessRule(DeclarativeBase):
     group_ids = C(ARRAY(Integer), index=True)
     subnets = C(ARRAY(CIDR), index=True)
     dateranges = C(ARRAY(Daterange), index=True)
+
+    group_names = column_property(func.group_ids_to_names(sql.text("group_ids")))
 
 
 class NodeToAccessRule(DeclarativeBase):
@@ -66,7 +69,19 @@ class NodeToAccessRuleset(DeclarativeBase):
     ruleset = rel(AccessRuleset, backref="node_assocs")
 
 
-Node.access_rules = rel(NodeToAccessRule, backref="node")
-Node.access_rulesets = rel(NodeToAccessRuleset, backref="node")
+Node.access_rule_assocs = rel(NodeToAccessRule, backref="node", lazy="dynamic")
+Node.access_ruleset_assocs = rel(NodeToAccessRuleset, backref="node", lazy="dynamic")
+
+
+def make_access_rule_rel(ruletype):
+    return rel(AccessRule,
+               secondary=NodeToAccessRule.__table__,
+               primaryjoin=(NodeToAccessRule.ruletype == ruletype) & (Node.id == NodeToAccessRule.nid),
+               secondaryjoin=NodeToAccessRule.rule_id == AccessRule.id, viewonly=True)
+
+Node.effective_read_access_rules = make_access_rule_rel("read")
+Node.effective_write_access_rules = make_access_rule_rel("write")
+Node.effective_data_access_rules = make_access_rule_rel("data")
+
 
 AccessRuleset.access_rules = rel(AccessRulesetToRule, backref="ruleset")

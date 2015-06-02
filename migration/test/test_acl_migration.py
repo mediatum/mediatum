@@ -181,7 +181,7 @@ def test_save_node_to_rule_mappings(two_access_rules, some_numbered_nodes, sessi
     acl_migration.save_node_to_rule_mappings(nid_to_access_rules, "read")
     assert session.query(AccessRule).count() == 2
     assert session.query(NodeToAccessRule).count() == 4
-    assert len(some_numbered_nodes[0].access_rules) == 2
+    assert some_numbered_nodes[0].access_rule_assocs.count() == 2
 
 
 def test_save_node_to_ruleset_mappings(two_access_rulesets, some_numbered_nodes, session):
@@ -194,7 +194,7 @@ def test_save_node_to_ruleset_mappings(two_access_rulesets, some_numbered_nodes,
     acl_migration.save_node_to_ruleset_mappings(nid_to_access_ruleset_names, "read")
     assert session.query(AccessRuleset).count() == 2
     assert session.query(NodeToAccessRuleset).count() == 3
-    rulesets_for_node = [m.ruleset for m in some_numbered_nodes[0].access_rulesets]
+    rulesets_for_node = [m.ruleset for m in some_numbered_nodes[0].access_ruleset_assocs]
     assert len(rulesets_for_node) == 2
     assert ruleset1 in rulesets_for_node
     assert ruleset2 in rulesets_for_node

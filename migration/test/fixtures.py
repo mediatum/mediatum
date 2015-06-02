@@ -4,6 +4,7 @@
     :license: GPL3, see COPYING for details
 """
 
+import os.path
 from pytest import fixture, yield_fixture
 import migration.acl_migration
 from migration.test.factories import AccessFactory
@@ -11,6 +12,7 @@ from migration.test.factories import ImportNodeFactory
 from core.database.postgres.permission import AccessRule, AccessRuleset
 from core.test.factories import DirectoryFactory
 from ipaddr import IPv4Network
+from core.database.postgres.connector import read_and_prepare_sql
 
 
 @fixture(scope="session", autouse=True)
@@ -19,7 +21,8 @@ def import_database():
     from core import db
     db.session.execute("DROP SCHEMA IF EXISTS mediatum_import CASCADE")
     db.session.execute("CREATE SCHEMA mediatum_import")
-    db.session.execute(migration.acl_migration.PL_FUNC_EXPAND_ACL_RULE)
+    sql_dir = os.path.join(os.path.dirname(__file__), "..")
+    db.session.execute(read_and_prepare_sql("acl_migration.sql", sql_dir=sql_dir))
     db.session.commit()
     from migration.import_datamodel import ImportBase
     ImportBase.metadata.bind = db.engine

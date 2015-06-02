@@ -285,7 +285,6 @@ END;
 $f$;
 
 
-
 CREATE OR REPLACE FUNCTION inherited_access_rules_write(node_id integer)
     RETURNS SETOF node_to_access_rule
     LANGUAGE plpgsql
@@ -348,6 +347,100 @@ RETURN QUERY
 END;
 $f$;
 
+
+----
+-- ruleset functions
+----
+
+CREATE OR REPLACE FUNCTION _inherited_access_rulesets_read_type(node_id integer, _ruletype text) 
+    RETURNS SETOF node_to_access_ruleset
+    LANGUAGE plpgsql
+    SET search_path TO :search_path
+    STABLE
+AS $f$
+BEGIN
+IF EXISTS (SELECT FROM node_to_access_ruleset WHERE nid=node_id) THEN
+    RETURN;
+END IF;
+
+RETURN QUERY
+    SELECT DISTINCT node_id AS nid, ruleset_name, _ruletype,
+      (SELECT invert
+       FROM node_to_access_ruleset na
+       WHERE na.nid=q.nid
+        AND na.ruleset_name=q.ruleset_name
+        AND na.ruletype=_ruletype) as invert 
+    FROM (WITH RECURSIVE ra(nid, ruleset_names) AS
+            (SELECT nm.nid,
+               (SELECT array_agg(ruleset_name) AS ruleset_names
+                FROM node_to_access_ruleset na
+                WHERE nid=nm.nid
+                  AND na.ruletype=_ruletype)
+             FROM nodemapping nm
+             WHERE nm.cid = node_id
+             UNION ALL SELECT nm.nid,
+               (SELECT array_agg(ruleset_name) AS ruleset_names
+                FROM node_to_access_ruleset na
+                WHERE nid=nm.nid
+                  AND na.ruletype=_ruletype)
+             FROM nodemapping nm,
+                              ra
+             WHERE nm.cid = ra.nid
+               AND ra.ruleset_names IS NULL)
+          SELECT DISTINCT nid,
+                          unnest(ruleset_names) AS ruleset_name
+          FROM ra) q;
+END;
+$f$;
+
+
+CREATE OR REPLACE FUNCTION inherited_access_rulesets_read(node_id integer)
+    RETURNS SETOF node_to_access_ruleset
+    LANGUAGE plpgsql
+    SET search_path TO :search_path
+    STABLE
+AS $f$
+BEGIN
+RETURN QUERY SELECT * FROM _inherited_access_rulesets_read_type(node_id, 'read');
+END;
+$f$;
+
+
+CREATE OR REPLACE FUNCTION inherited_access_rulesets_data(node_id integer)
+    RETURNS SETOF node_to_access_ruleset
+    LANGUAGE plpgsql
+    SET search_path TO :search_path
+    STABLE
+AS $f$
+BEGIN
+RETURN QUERY SELECT * FROM _inherited_access_rulesets_read_type(node_id, 'data');
+END;
+$f$;
+
+
+CREATE OR REPLACE FUNCTION inherited_access_rulesets_write(node_id integer)
+    RETURNS SETOF node_to_access_ruleset
+    LANGUAGE plpgsql
+    SET search_path TO :search_path
+    STABLE
+AS $f$
+BEGIN
+RETURN QUERY
+    SELECT DISTINCT node_id AS nid,
+                    na.ruleset_name,
+                    'write' AS ruletype,
+                    na.invert
+    FROM noderelation nr
+    JOIN node_to_access_ruleset na ON nr.nid=na.nid
+    WHERE cid=node_id
+      AND ruletype = 'write';
+END;
+$f$;
+
+
+----
+-- maintenance functions
+----
 
 CREATE TYPE rule_duplication AS (surviving_rule_id integer, duplicates integer[]);
 
@@ -413,6 +506,10 @@ END;
 $f$;
 
 
+----
+-- utility functions
+----
+
 CREATE OR REPLACE FUNCTION group_ids_to_names(group_ids integer[])
    RETURNS text[]
    LANGUAGE plpgsql
@@ -433,4 +530,3 @@ BEGIN
 RETURN group_names;
 END;
 $f$;
-

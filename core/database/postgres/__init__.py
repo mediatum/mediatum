@@ -29,6 +29,8 @@ FK = ForeignKey
 rel = relationship
 bref = backref
 
+DB_SCHEMA_NAME = "mediatum"
+
 # warn when queries take longer than `SLOW_QUERY_SECONDS`
 SLOW_QUERY_SECONDS = 0.1
 
@@ -43,7 +45,7 @@ class TimeStamp(object):
 
     @declared_attr
     def created_at(cls):
-        return C(DateTime, default=func.now())
+        return C(DateTime, default=sqla.func.now())
 
 
 def integer_pk(**kwargs):
@@ -59,7 +61,8 @@ def integer_fk(*args, **kwargs):
         raise ValueError("at least one argument must be specified (type)!")
 
 
-db_metadata = sqla.MetaData(schema="mediatum")
+db_metadata = sqla.MetaData(schema=DB_SCHEMA_NAME)
+func = getattr(sqla.func, DB_SCHEMA_NAME)
 DeclarativeBase = declarative_base(metadata=db_metadata)
 
 # some pretty printing for SQLAlchemy objects ;)

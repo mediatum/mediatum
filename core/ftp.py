@@ -6,6 +6,7 @@ import codecs
 import hashlib
 import utils.utils as utils
 import utils.fileutils as fileutils
+from random import random
 from core import Node
 import core.users as users
 from utils.date import parse_date
@@ -309,6 +310,9 @@ class collection_ftpserver:
                 else:
                     l += ["drwxrwxrwx    1 1001     100          4096 Jan 10  2008 %s" % node.name]
             else:
+                display_name = node.name
+                if node.get('nodename'):
+                    display_name = node.get('nodename')
                 l += ["-rw-rw-rw-    1 1001      100         0 %d %d %d (%s) %s" % (1,
                                                                                     1,
                                                                                     2000,
@@ -342,8 +346,11 @@ def file_to_node(file_node, upload_dir):
         return
 
     path = file_node.abspath.split('/')
-    new_name = path.pop().replace('ftp_', '', 1)
-    path.append(new_name)
+
+    new_nodename = path.pop().replace('ftp_', '', 1)
+    new_filename = '.'.join([hashlib.md5(unicode(random())).hexdigest()[0:8],
+                             new_nodename.split('.')[-1]])
+    path.append(new_filename)
     new_abspath = '/'.join(path)
 
     try:
@@ -357,10 +364,10 @@ def file_to_node(file_node, upload_dir):
         schema = 'file'
 
     content_class = Node.get_class_for_typestring(file_node.filetype)
-    new_node = content_class(utf8_decode_escape(new_name), schema=schema)
+    new_node = content_class(utf8_decode_escape(new_nodename), schema=schema)
 
-    upload_dir.files.remove(file_node)
     new_node.files.append(file_node)
+    upload_dir.files.remove(file_node)
     new_node.event_files_changed()
     upload_dir.children.append(new_node)
     db.session.commit()

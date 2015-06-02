@@ -3,13 +3,14 @@
 Created on 06.06.2013
 @author: stenzel
 
+***************
 mediatumipython
-===============
+***************
 
 mediaTUM command line based on many great IPython features and some extensions.
 
 Run it
-------
+======
 
 Command line, from the mediaTUM base directory::
 
@@ -21,24 +22,88 @@ In a IPython Notebook cell::
     %run bin/mediatumipython.py
 
 
+Basics
+======
+
+* shell-like "filesystem" browsing for the mediaTUM node tree
+* IPython prompt shows the current node
+* the current node can be accessed with `cnode`, the previous node with `lastnode`
+
+
 Commands
---------
+========
 
-* `%l` - show current node info
-* `%cd <node id>` - change to node
-* `%child <child name>` - change to named child of current node
+Commands are implemented as IPython magic functions. You can omit the leading % most of the time.
 
+Initialization
+--------------
+
+* `%init full` - init everything, needed for some commands.
+    At startup, only important stuff is initialized (database, plugins, ...) automatically.
+
+
+Change current node
+-------------------
+
+* `%cd <nid>` - change current node by ID
+* `%cd -` - change to previous node
+* `%child <child name>` - change to named child of current node (alias ch)
+
+
+Display info for current node
+-----------------------------
+
+* `%list_all` - list current node info for all categories: parents, children, attributes, files (alias l)
+* `%list_attributes` - (alias la)
+* `%list_children` - (alias lc)
+* `%list_parents` - (alias lp)
+* `%list_files` - (alias lf)
+
+
+Set `limit_number_of_info_lines = <n>` to display only the first <n> lines of a category.
+
+
+Change the tree
+---------------
+
+* `%link <nid>` - add node with <nid> as child to current node
+* `%remove <nid>` - remove child with <nid> from current node
+
+
+SQL shortcuts
+-------------
+
+See `ipython-sql documentation <https://pypi.python.org/pypi/ipython-sql>`_ for more info.
 
 * `%sql` - run any sql statement (provided by ipython-sql)
+* `%select` - run a select statement
+* `%insert` - run a insert statement
+* `%update` - run a update statement
+* `%delete` - run a delete statement
+
+
+Misc information
+----------------
+
 * `%citeproc` - show citeproc mappings
 
-You can omit the leading % most of the time.
+
+Maintenance
+^^^^^^^^^^^
+
+* `%postprocess <nid>` - run postprocessing on current node or <nid>, if given
+* `%checkmask [--fix] [--all] [--allmasks]` - run integrity checks on masks, see %checkmask? for details
+* `%purge_nodes`: delete nodes that are not connected to the root node in any way ("unreachable nodes")
 
 
 SQLAlchemy
-----------
+==========
 
-The `q` function can be used to query the database. This returns SQLAlchemy model nodes, not mediaTUM nodes!
+The `q` function can be used to query the database:
+
+
+Node queries
+------------
 
 .. code-block:: python
 
@@ -65,15 +130,6 @@ The `q` function can be used to query the database. This returns SQLAlchemy mode
     q(Data).get(816859)["description"]
     q(Data).get(816859).a.description
 
-SQL
----
-
-See `ipython-sql documentation <https://pypi.python.org/pypi/ipython-sql>`_
-
-.. code:: sql
-
-    // select nodes with no parents
-    %sql SELECT * FROM node where id NOT IN (SELECT cid FROM nodemapping)
 '''
 from __future__ import division, absolute_import, print_function
 import logging
@@ -92,12 +148,13 @@ from functools import wraps
 from core import init
 import core.database
 from core.database.postgres.node import t_noderelation
+from itertools import islice
+from collections import OrderedDict
 init.basic_init()
 # we don't want to raise exceptions for missing node classes
 init.check_undefined_nodeclasses()
 
-from core import Node
-from core import File
+from core import Node, File
 
 q = core.db.query
 s = core.db.session
@@ -137,6 +194,9 @@ global cnode
 root = cnode = q(Root).scalar()
 global lastnode
 lastnode = root
+
+global limit_number_of_info_lines
+limit_number_of_info_lines = None
 
 # IPython magic
 
@@ -180,6 +240,25 @@ def delete_unreachable_nodes(synchronize_session='fetch'):
 def unreachable_nodes():
     reachable_node_sq = reachable_node_ids().subquery()
     return q(Node).filter(~Node.id.in_(reachable_node_sq))
+
+
+INFO_PRODUCERS = OrderedDict([
+    ("parents", lambda node: (u"{} {}:  {}".format(n.id, n.name, n.type) for n in node.parents)),
+    ("children", lambda node: (u"{} {}:  {}".format(n.id, n.name, n.type) for n in node.children)),
+    ("attributes", lambda node: (u"{} = {}".format(name, value) for name, value in iteritems(node.attrs))),
+    ("files", lambda node: (u"{} {} {}".format(a.path, a.filetype, a.mimetype) for a in node.files))]
+)
+
+
+def print_info_for_category(category, limit=None):
+    if limit is None:
+        limit = limit_number_of_info_lines
+
+    print(u"\t" + category.capitalize() + ":")
+    info_producer = INFO_PRODUCERS[category]
+
+    for line in islice(info_producer(cnode), 0, limit):
+        print(u"\t\t" + line)
 
 
 @magics_class
@@ -229,21 +308,32 @@ class MediatumMagics(Magics):
         except NoResultFound:
             print(u"Child {} not found!".format(args.name))
 
-    @line_magic
-    def l(self, line):
+    @line_magic("list_all")
+    @line_magic("l")
+    def list_all(self, line):
         print(cnode)
-        section_names = ["Parents", "Subnodes", "Attributes", "Files"]
-        section_lines = [
-            [u"{} {}:  {}".format(n.id, n.name, n.type) for n in cnode.parents],
-            [u"{} {}:  {}".format(n.id, n.name, n.type) for n in cnode.children],
-            [u"{} = {}".format(name, value) for name, value in iteritems(cnode.attrs)],
-            [u"{} {} {}".format(a.path, a.filetype, a.mimetype) for a in cnode.files]
-        ]
+        for category in INFO_PRODUCERS:
+            print_info_for_category(category)
 
-        for name, lines in zip(section_names, section_lines):
-            print(u"\t" + name + ":")
-            for line in lines:
-                print(u"\t\t" + line)
+    @line_magic("list_attributes")
+    @line_magic("la")
+    def list_attributes(self, line):
+        print_info_for_category("attributes")
+
+    @line_magic("list_children")
+    @line_magic("lc")
+    def list_children(self, line):
+        print_info_for_category("children")
+
+    @line_magic("list_parents")
+    @line_magic("lp")
+    def list_parents(self, line):
+        print_info_for_category("parents")
+
+    @line_magic("list_files")
+    @line_magic("lf")
+    def list_files(self, line):
+        print_info_for_category("files")
 
     @needs_init("basic")
     @magic_arguments()
@@ -261,7 +351,8 @@ class MediatumMagics(Magics):
     @needs_init("basic")
     @magic_arguments()
     @argument("nid")
-    @line_magic
+    @line_magic("link")
+    @line_magic("ln")
     def ln(self, line):
         args = parse_argstring(self.ln, line)
         new_child = q(Node).get(args.nid)

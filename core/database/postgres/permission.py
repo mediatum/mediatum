@@ -6,7 +6,7 @@
 from sqlalchemy import Integer, Unicode, Boolean, Text, sql
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR
 
-from core.database.postgres import DeclarativeBase, C, rel, integer_pk, integer_fk, TimeStamp, func
+from core.database.postgres import DeclarativeBase, C, rel, integer_pk, TimeStamp, func, FK, dynamic_rel
 from core.database.postgres.node import Node
 from core.database.postgres.alchemyext import Daterange
 from sqlalchemy.orm import column_property
@@ -29,8 +29,8 @@ class AccessRule(DeclarativeBase):
 class NodeToAccessRule(DeclarativeBase):
     __tablename__ = "node_to_access_rule"
 
-    nid = integer_fk(Node.id, primary_key=True)
-    rule_id = integer_fk(AccessRule.id, primary_key=True)
+    nid = C(FK(Node.id, ondelete="CASCADE"), primary_key=True)
+    rule_id = C(FK(AccessRule.id, ondelete="CASCADE"), primary_key=True)
     ruletype = C(Text, index=True, primary_key=True)
     invert = C(Boolean, default=False, index=True)
     inherited = C(Boolean, default=False, index=True)
@@ -49,8 +49,8 @@ class AccessRuleset(DeclarativeBase, TimeStamp):
 class AccessRulesetToRule(DeclarativeBase):
     __tablename__ = "access_ruleset_to_rule"
 
-    rule_id = integer_fk(AccessRule.id, primary_key=True)
-    ruleset_name = integer_fk(AccessRuleset.name, primary_key=True)
+    rule_id = C(FK(AccessRule.id), primary_key=True)
+    ruleset_name = C(FK(AccessRuleset.name, ondelete="CASCADE", onupdate="CASCADE"), primary_key=True)
     invert = C(Boolean, default=False, index=True)
     blocking = C(Boolean, default=False, index=True)
 
@@ -60,27 +60,27 @@ class AccessRulesetToRule(DeclarativeBase):
 class NodeToAccessRuleset(DeclarativeBase):
     __tablename__ = "node_to_access_ruleset"
 
-    nid = integer_fk(Node.id, primary_key=True)
-    ruleset_name = integer_fk(AccessRuleset.name, primary_key=True)
-    ruletype = C(Text, index=True, primary_key=True)
+    nid = C(FK(Node.id, ondelete="CASCADE"), primary_key=True, nullable=False)
+    ruleset_name = C(FK(AccessRuleset.name, ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, nullable=False)
+    ruletype = C(Text, index=True, primary_key=True, nullable=False)
     invert = C(Boolean, default=False, index=True)
 
     ruleset = rel(AccessRuleset, backref="node_assocs")
 
 
-Node.access_rule_assocs = rel(NodeToAccessRule, backref="node", lazy="dynamic")
-Node.access_ruleset_assocs = rel(NodeToAccessRuleset, backref="node", lazy="dynamic")
+Node.access_rule_assocs = dynamic_rel(NodeToAccessRule, backref="node", cascade="all, delete-orphan", passive_deletes=True)
+Node.access_ruleset_assocs = dynamic_rel(NodeToAccessRuleset, backref="node", cascade="all, delete-orphan", passive_deletes=True)
 
 
 def make_access_rule_rel(ruletype):
-    return rel(AccessRule,
+    return dynamic_rel(AccessRule,
                secondary=NodeToAccessRule.__table__,
                primaryjoin=(NodeToAccessRule.ruletype == ruletype) & (Node.id == NodeToAccessRule.nid),
                secondaryjoin=NodeToAccessRule.rule_id == AccessRule.id, viewonly=True)
 
+
 Node.effective_read_access_rules = make_access_rule_rel("read")
 Node.effective_write_access_rules = make_access_rule_rel("write")
 Node.effective_data_access_rules = make_access_rule_rel("data")
-
 
 AccessRuleset.access_rules = rel(AccessRulesetToRule, backref="ruleset")

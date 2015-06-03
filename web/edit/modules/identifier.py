@@ -67,7 +67,7 @@ def getContent(req, ids):
          'urn_pubtypes': config.get('urn.pubtypes').split(';'),
          'namespaces': config.get('urn.namespace').split(';'),
          'user': user,
-         'nodes': nodes,
+         'nodes': nodes.split(', '),
          'type': req.params.get('id_type'),
          'show_form': True,
          'namespace': req.params.get('namespace'),
@@ -88,11 +88,15 @@ def getContent(req, ids):
                 except:
                     return req.error(500, "doi was not successfully registered")
 
+            db.session.commit()
+
             if any(identifier in node.attributes for identifier in ('hash', 'urn', 'doi')):
                 if not node.get('system.identifierdate'):
-                    node.set('system.identifierdate', date.now())
+                    node.set('system.identifierdate', unicode(date.now()))
+                    db.session.commit()
                 if node.get('system.identifierstate') != '2':
-                    node.set('system.identifierstate', '2')
+                    node.set('system.identifierstate', u'2')
+                    db.session.commit()
 
                     # add nobody rule if not set
                     if node.getAccess('write') is None:
@@ -104,8 +108,8 @@ def getContent(req, ids):
                 try:
                     mailtext = req.getTAL('web/edit/modules/identifier.html', v, macro='generate_identifier_usr_mail_2')
                     mail.sendmail(config.get('email.admin'),
-                                  users.getUser(node.get('creator')).get('email'),
-                                  'Vergabe eines Idektifikators / Generation of an Identifier',
+                                  config.get('email.admin'),
+                                  u'Vergabe eines Idektifikators / Generation of an Identifier',
                                   mailtext)
 
                 except mail.SocketError:
@@ -139,8 +143,8 @@ def getContent(req, ids):
                         mailtext_user = req.getTAL(
                             'web/edit/modules/identifier.html', v, macro='generate_identifier_usr_mail_1_' + lang(req))
                         mail.sendmail(config.get('email.admin'),
-                                      user.get('email'),
-                                      t(lang(req), 'edit_identifier_mail_title_usr_1'),
+                                      config.get('email.admin'),
+                                      unicode(t(lang(req), 'edit_identifier_mail_title_usr_1')),
                                       mailtext_user,
                                       attachments_paths_and_filenames=attachment)
 
@@ -148,10 +152,11 @@ def getContent(req, ids):
                         mailtext_admin = req.getTAL('web/edit/modules/identifier.html', v, macro='generate_identifier_admin_mail')
                         mail.sendmail(config.get('email.admin'),
                                       config.get('email.admin'),
-                                      'Antrag auf Vergabe eines Identifikators',
+                                      u'Antrag auf Vergabe eines Identifikators',
                                       mailtext_admin)
 
-                        node.set('system.identifierstate', '1')
+                        node.set('system.identifierstate', u'1')
+                        db.session.commit()
 
                         # add nobody rule
                         print node.getAccess('write')
@@ -199,8 +204,10 @@ def createUrn(node, namespace, urn_type):
             d = date.parse_date(node.get('date-accepted'))
         except:
             d = date.now()
-        niss = '%s-%s-%s-0' % (urn_type, date.format_date(d, '%Y%m%d'), node.id)
-        node.set('urn', urn.buildNBN(namespace, config.get('urn.institutionid'), niss))
+        niss = u'{}-{}-{}-0'.format(urn_type,
+                                    date.format_date(d, '%Y%m%d'),
+                                    node.id)
+        node.set('urn', unicode(urn.buildNBN(namespace, config.get('urn.institutionid'), niss)))
 
 
 def createHash(node):
@@ -210,7 +217,7 @@ def createHash(node):
     if node.get('hash') and (node.get('hash').strip() != ''):  # if a hash-id already exists for this node, do nothing
         logg.info('hash already exists for node %s', node.id)
     else:
-        node.set('hash', hashid.getChecksum(node.id))
+        node.set('hash', unicode(hashid.getChecksum(node.id)))
 
 
 def createDOI(node):
@@ -220,7 +227,11 @@ def createDOI(node):
     if node.get('doi') and (node.get('doi').strip() != ''):
         logg.info('doi already exists for node %s', node.id)
     else:
-        node.set('doi', doi.generate_doi_live(node))
+        if config.get('doi.testing') == 'true':
+            node.set('doi', unicode(doi.generate_doi_test(node)))
+        else:
+            node.set('doi', unicode(doi.generate_doi_live(node)))
+        db.session.commit()
         meta_file = doi.create_meta_file(node)
         doi_file = doi.create_doi_file(node)
         meta_response, meta_content = doi.post_file('metadata', meta_file)

@@ -82,34 +82,34 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         raise Exception("no action specified! Actions: create drop recreate init truncate analyze_reindex")
 
-    action = sys.argv[1]
+    for action in sys.argv[1:]:
 
-    if action == "create":
-        create_schema(s)
-
-    elif action == "drop":
-        drop_schema(s)
-
-    elif action == "recreate":
-        drop_schema(s)
-        create_schema(s)
-
-    elif action == "init":
-        logg.info("loading initial data...")
-        init_database_values(s)
-        s.commit()
-        logg.info("commited initial data")
-
-    elif action == "truncate":
-        logg.info("truncating tables...")
-        truncate_tables(s)
-        s.commit()
-        logg.info("commited table truncation")
-
-    elif action == "analyze_reindex":
-        vacuum_analyze_tables(s)
-        reindex_tables(s)
-        logg.info("vacuum analyze and reindex complete")
-
-    else:
-        raise Exception("unknown action: " + action)
+        if action == "create":
+            create_schema(s)
+    
+        elif action == "drop":
+            drop_schema(s)
+    
+        elif action == "recreate":
+            drop_schema(s)
+            create_schema(s)
+    
+        elif action == "init":
+            logg.info("loading initial data...")
+            init_database_values(s)
+            s.commit()
+            logg.info("commited initial data")
+    
+        elif action == "truncate":
+            logg.info("truncating tables...")
+            truncate_tables(s)
+            s.commit()
+            logg.info("commited table truncation")
+    
+        elif action == "analyze_reindex":
+            vacuum_analyze_tables(s)
+            reindex_tables(s)
+            logg.info("vacuum analyze and reindex complete")
+    
+        else:
+            raise Exception("unknown action: " + action)

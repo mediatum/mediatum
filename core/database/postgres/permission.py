@@ -64,6 +64,7 @@ class NodeToAccessRuleset(DeclarativeBase):
     ruleset_name = C(FK(AccessRuleset.name, ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, nullable=False)
     ruletype = C(Text, index=True, primary_key=True, nullable=False)
     invert = C(Boolean, default=False, index=True)
+    blocking = C(Boolean, default=False, index=True)
 
     ruleset = rel(AccessRuleset, backref="node_assocs")
 

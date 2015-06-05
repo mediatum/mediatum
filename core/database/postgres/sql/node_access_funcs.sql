@@ -195,7 +195,7 @@ CREATE OR REPLACE FUNCTION _inherited_access_rules_read_type(node_id integer, _r
     STABLE
 AS $f$
 BEGIN
-IF EXISTS (SELECT FROM node_to_access_rule WHERE nid=node_id AND inherited = false) THEN
+IF EXISTS (SELECT FROM node_to_access_rule WHERE nid=node_id AND ruletype=_ruletype AND inherited = false) THEN
     RETURN;
 END IF;
 
@@ -359,7 +359,7 @@ CREATE OR REPLACE FUNCTION _inherited_access_rulesets_read_type(node_id integer,
     STABLE
 AS $f$
 BEGIN
-IF EXISTS (SELECT FROM node_to_access_ruleset WHERE nid=node_id) THEN
+IF EXISTS (SELECT FROM node_to_access_ruleset WHERE nid=node_id AND ruletype=_ruletype) THEN
     RETURN;
 END IF;
 

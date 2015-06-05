@@ -63,8 +63,18 @@ class PostgresSQLAConnector(object):
         from core.database.postgres.node import Node
         from core.database.postgres.user import User, UserGroup, AuthenticatorInfo
         from core.database.postgres.shoppingbag import ShoppingBag
-        from core.database.postgres.permission import AccessRule, AccessRuleset
-        return (File, Node, User, UserGroup, AuthenticatorInfo, ShoppingBag, AccessRule, AccessRuleset)
+        from core.database.postgres.permission import AccessRule, AccessRuleset, NodeToAccessRule, NodeToAccessRuleset
+        return (
+            File,
+            Node,
+            User,
+            UserGroup,
+            AuthenticatorInfo,
+            ShoppingBag,
+            AccessRule,
+            AccessRuleset,
+            NodeToAccessRule,
+            NodeToAccessRuleset)
 
     def make_session(self):
         """Create a session.

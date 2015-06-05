@@ -87,28 +87,10 @@ class NodeMixin(object):
         del self.attrs[key]
 
     def getAccess(self, type):
-        """ get a named access right (e.g. read, write, etc.)"""
-        if type == "read":
-            warn("deprecated, use Node.read_access instead", DeprecationWarning)
-            return self.read_access
-        elif type == "write":
-            warn("deprecated, use Node.write_access instead", DeprecationWarning)
-            return self.write_access
-        elif type == "data":
-            warn("deprecated, use Node.data_access instead", DeprecationWarning)
-            return self.data_access
+        raise Exception("old acl stuff removed!")
 
     def setAccess(self, type, access):
-        """set a named access right (e.g. read, write, etc.)"""
-        if type == "read":
-            warn("deprecated, use Node.read_access = new_read_access instead", DeprecationWarning)
-            self.read_access = access
-        elif type == "write":
-            warn("deprecated, use Node.write_access = new_write_access instead", DeprecationWarning)
-            self.write_access = access
-        elif type == "data":
-            warn("deprecated, use Node.data_access = new_data_access instead", DeprecationWarning)
-            self.data_access = access
+        raise Exception("old acl stuff removed!")
 
     def getOrderPos(self):
         warn("deprecated, use Node.orderpos instead", DeprecationWarning)

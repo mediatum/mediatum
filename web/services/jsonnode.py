@@ -91,13 +91,6 @@ def buildNodeDescriptor(req, node, indent=None, written=None, children=True, chi
                     childnodedict = buildNodeDescriptor(req, c, indent, children_access=children_access)
                     nd.append(childnodedict)
 
-    # if node.read_access:
-    #    nodedict['read'] = esc(node.read_access)
-    # if node.write_access:
-    #    nodedict['write'] = esc(node.write_access)
-    # if node.data_access:
-    #    nodedict['data'] = esc(node.data_access)
-
     nodeattributes_dict = {}
 
     if attrspec == 'none':

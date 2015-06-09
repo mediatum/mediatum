@@ -16,9 +16,9 @@ class AccessRule(DeclarativeBase):
     __tablename__ = "access_rule"
 
     id = integer_pk()
-    invert_subnet = C(Boolean, default=False, index=True)
-    invert_date = C(Boolean, default=False, index=True)
-    invert_group = C(Boolean, default=False, index=True)
+    invert_subnet = C(Boolean, server_default="false", index=True)
+    invert_date = C(Boolean, server_default="false", index=True)
+    invert_group = C(Boolean, server_default="false", index=True)
     group_ids = C(ARRAY(Integer), index=True)
     subnets = C(ARRAY(CIDR), index=True)
     dateranges = C(ARRAY(Daterange), index=True)
@@ -32,9 +32,9 @@ class NodeToAccessRule(DeclarativeBase):
     nid = C(FK(Node.id, ondelete="CASCADE"), primary_key=True)
     rule_id = C(FK(AccessRule.id, ondelete="CASCADE"), primary_key=True)
     ruletype = C(Text, index=True, primary_key=True)
-    invert = C(Boolean, default=False, index=True, primary_key=True)
-    inherited = C(Boolean, default=False, index=True)
-    blocking = C(Boolean, default=False, index=True, primary_key=True)
+    invert = C(Boolean, server_default="false", index=True, primary_key=True)
+    inherited = C(Boolean, server_default="false", index=True)
+    blocking = C(Boolean, server_default="false", index=True, primary_key=True)
 
     rule = rel(AccessRule, backref="node_assocs")
 
@@ -43,7 +43,7 @@ class AccessRuleset(DeclarativeBase, TimeStamp):
     __tablename__ = "access_ruleset"
 
     name = C(Unicode, primary_key=True)
-    description = C(Unicode)
+    description = C(Unicode, server_default="''")
 
 
 class AccessRulesetToRule(DeclarativeBase):
@@ -51,8 +51,8 @@ class AccessRulesetToRule(DeclarativeBase):
 
     rule_id = C(FK(AccessRule.id), primary_key=True)
     ruleset_name = C(FK(AccessRuleset.name, ondelete="CASCADE", onupdate="CASCADE"), primary_key=True)
-    invert = C(Boolean, default=False, index=True)
-    blocking = C(Boolean, default=False, index=True)
+    invert = C(Boolean, server_default="false", index=True)
+    blocking = C(Boolean, server_default="false", index=True)
 
     rule = rel(AccessRule, backref="ruleset_assocs")
 
@@ -63,8 +63,8 @@ class NodeToAccessRuleset(DeclarativeBase):
     nid = C(FK(Node.id, ondelete="CASCADE"), primary_key=True, nullable=False)
     ruleset_name = C(FK(AccessRuleset.name, ondelete="CASCADE", onupdate="CASCADE"), primary_key=True, nullable=False)
     ruletype = C(Text, index=True, primary_key=True, nullable=False)
-    invert = C(Boolean, default=False, index=True)
-    blocking = C(Boolean, default=False, index=True)
+    invert = C(Boolean, server_default="false", index=True)
+    blocking = C(Boolean, server_default="false", index=True)
 
     ruleset = rel(AccessRuleset, backref="node_assocs")
 

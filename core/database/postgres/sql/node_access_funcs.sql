@@ -348,6 +348,41 @@ END;
 $f$;
 
 
+--- trigger functions for access rules
+
+
+CREATE OR REPLACE FUNCTION on_node_to_access_rule_insert_delete()
+    RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO :search_path
+    VOLATILE
+AS $f$
+DECLARE
+    c record;
+    rec node_to_access_rule;
+BEGIN
+IF TG_OP = 'INSERT' THEN
+    rec = NEW;
+ELSE
+    rec = OLD;
+END IF;
+IF rec.ruletype IN ('read', 'data') THEN
+    FOR c IN SELECT cid FROM noderelation WHERE nid = rec.nid LOOP
+        -- ignore nodes that have their own access rules
+        IF NOT EXISTS (SELECT FROM node_to_access_rule WHERE nid=c.cid AND ruletype = rec.ruletype AND inherited = false) THEN
+            DELETE FROM node_to_access_rule WHERE nid=c.cid AND inherited = true AND ruletype = rec.ruletype;
+            INSERT INTO node_to_access_rule SELECT * from _inherited_access_rules_read_type(c.cid, rec.ruletype);
+        END IF;
+    END LOOP;
+ELSE
+    FOR c in SELECT cid FROM noderelation WHERE nid = rec.nid LOOP
+        DELETE FROM node_to_access_rule WHERE nid = c.cid AND inherited = true AND ruletype = rec.ruletype;
+        INSERT INTO node_to_access_rule SELECT * from inherited_access_rules_write(c.cid);
+    END LOOP;
+END IF;
+RETURN NULL;
+END;
+$f$;
 ----
 -- ruleset functions
 ----
@@ -434,6 +469,7 @@ RETURN QUERY
 END;
 $f$;
 
+
 CREATE OR REPLACE FUNCTION effective_access_rulesets_write_type(node_id integer, _ruletype text)
     RETURNS SETOF node_to_access_ruleset
     LANGUAGE plpgsql
@@ -481,6 +517,68 @@ UNION ALL
 UNION ALL
     SELECT * FROM effective_access_rulesets_read_type(node_id, 'data')
 ;
+END;
+$f$;
+
+--- trigger functions for access rules
+
+CREATE OR REPLACE FUNCTION on_node_to_access_ruleset_insert()
+    RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO :search_path
+    VOLATILE
+AS $f$
+BEGIN
+    IF NEW.ruletype in ('read', 'data') THEN
+        -- clear inherited rules first for read-type rules
+        DELETE FROM node_to_access_rule 
+        WHERE nid=NEW.nid 
+        AND ruletype=NEW.ruletype 
+        AND inherited=true;
+    END IF;
+
+    INSERT INTO node_to_access_rule
+    SELECT NEW.nid AS nid,
+           rule_id, 
+           NEW.ruletype AS ruletype,
+           invert != NEW.invert AS invert,
+           false as inherited, 
+           blocking OR NEW.blocking AS blocking
+    FROM access_ruleset_to_rule 
+    WHERE ruleset_name=NEW.ruleset_name
+    -- exclude existing rules
+    EXCEPT 
+    SELECT * FROM node_to_access_rule 
+    WHERE nid=NEW.nid AND ruletype=NEW.ruletype;
+    
+RETURN NEW;
+END;
+$f$;
+
+
+CREATE OR REPLACE FUNCTION on_node_to_access_ruleset_delete()
+    RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO :search_path
+    VOLATILE
+AS $f$
+BEGIN
+    DELETE FROM node_to_access_rule
+    WHERE nid=OLD.nid
+    AND ruletype=OLD.ruletype
+    AND (nid, rule_id, ruletype, invert, false, blocking) 
+        NOT IN (SELECT na.nid, arr.rule_id, na.ruletype, na.invert != arr.invert, false, na.blocking OR arr.blocking
+                    FROM access_ruleset_to_rule arr
+                    JOIN node_to_access_ruleset na ON arr.ruleset_name=na.ruleset_name
+                    WHERE na.nid=OLD.nid);
+
+    IF OLD.ruletype IN ('read', 'data') 
+        AND NOT EXISTS (SELECT FROM node_to_access_rulesets WHERE nid=OLD.nid AND ruletype=OLD.ruletype)
+        AND NOT EXISTS (SELECT FROM node_to_access_rule WHERE nid=OLD.nid AND ruletype=OLD.ruletype) THEN
+        -- inherit from parents if no rules and rulesets are present for the node anymore
+        INSERT INTO node_to_access_rule SELECT * FROM _inherited_access_rules_read_type(OLD.nid, OLD.ruletype);
+    END IF;
+RETURN OLD;
 END;
 $f$;
 

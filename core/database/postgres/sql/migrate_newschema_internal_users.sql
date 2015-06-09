@@ -25,7 +25,7 @@ WHERE id IN (SELECT cid FROM nodemapping WHERE nid=(SELECT id FROM node WHERE na
 
 UPDATE mediatum.user u
 SET home_dir_id = (SELECT n.id 
-            FROM mediatum_import.node AS n WHERE n.name LIKE 'Arbeitsverzeichnis (%' AND n.readaccess = ('{user ' || u.display_name || '}'))
+            FROM mediatum_import.node AS n WHERE n.name LIKE 'Arbeitsverzeichnis (%' AND n.readaccess = '{user ' || u.display_name || '}' LIMIT 1)
     WHERE authenticator_id = 0;
 
 

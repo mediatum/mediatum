@@ -8,8 +8,8 @@ from sqlalchemy.dialects.postgresql import ARRAY, CIDR
 
 from core.database.postgres import DeclarativeBase, C, rel, integer_pk, TimeStamp, func, FK, dynamic_rel
 from core.database.postgres.node import Node
-from core.database.postgres.alchemyext import Daterange
-from sqlalchemy.orm import column_property
+from core.database.postgres.alchemyext import Daterange, map_function_to_mapped_class
+from sqlalchemy.orm import column_property, object_session
 
 
 class AccessRule(DeclarativeBase):
@@ -73,15 +73,13 @@ Node.access_rule_assocs = dynamic_rel(NodeToAccessRule, backref="node", cascade=
 Node.access_ruleset_assocs = dynamic_rel(NodeToAccessRuleset, backref="node", cascade="all, delete-orphan", passive_deletes=True)
 
 
-def make_access_rule_rel(ruletype):
-    return dynamic_rel(AccessRule,
-               secondary=NodeToAccessRule.__table__,
-               primaryjoin=(NodeToAccessRule.ruletype == ruletype) & (Node.id == NodeToAccessRule.nid),
-               secondaryjoin=NodeToAccessRule.rule_id == AccessRule.id, viewonly=True)
+EffectiveNodeToAccessRuleset = map_function_to_mapped_class(func.effective_access_rulesets, NodeToAccessRuleset, "node_id")
 
 
-Node.effective_read_access_rules = make_access_rule_rel("read")
-Node.effective_write_access_rules = make_access_rule_rel("write")
-Node.effective_data_access_rules = make_access_rule_rel("data")
+def _effective_access_ruleset_assocs(self):
+    return object_session(self).query(EffectiveNodeToAccessRuleset).params(node_id=self.id)
 
-AccessRuleset.access_rules = rel(AccessRulesetToRule, backref="ruleset")
+
+Node.effective_access_ruleset_assocs = property(_effective_access_ruleset_assocs)
+
+AccessRuleset.rule_assocs = rel(AccessRulesetToRule, backref="ruleset")

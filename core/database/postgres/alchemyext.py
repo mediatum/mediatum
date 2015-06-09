@@ -19,7 +19,8 @@ from sqlalchemy.sql.type_api import UserDefinedType
 from sqlalchemy.orm.dynamic import AppenderQuery
 from core.database.postgres import DeclarativeBase, db_metadata
 from utils.compat import string_types
-from sqlalchemy import Table
+from sqlalchemy import Table, bindparam, select, column
+from sqlalchemy.orm import aliased, mapper
 
 
 logg = logging.getLogger(__name__)
@@ -89,6 +90,18 @@ class Daterange(UserDefinedType):
 
     def get_col_spec(self, **kw):
         return "daterange[]"
+
+
+def map_function_to_mapped_class(function, mapped_cls, *argnames):
+    """Creates an additional mapping from a database function to an existing mapped class.
+    The resulting mapper can be used in queries like that:
+    
+    session.query(MappedFunction).params(arg1=3, arg2="test").first()
+    """ 
+    select_columns = [column(c) for c in mapped_cls.__table__.columns.keys()]
+    stmt = select(select_columns).select_from(function(*[bindparam(arg) for arg in argnames]))
+    primary_key_columns = [getattr(stmt.c, c.name) for c in mapped_cls.__table__.primary_key.columns]
+    return mapper(mapped_cls, aliased(stmt), non_primary=True, primary_key=primary_key_columns)
 
 
 def get_table_name(obj):

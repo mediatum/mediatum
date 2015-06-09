@@ -32,9 +32,9 @@ class NodeToAccessRule(DeclarativeBase):
     nid = C(FK(Node.id, ondelete="CASCADE"), primary_key=True)
     rule_id = C(FK(AccessRule.id, ondelete="CASCADE"), primary_key=True)
     ruletype = C(Text, index=True, primary_key=True)
-    invert = C(Boolean, default=False, index=True)
+    invert = C(Boolean, default=False, index=True, primary_key=True)
     inherited = C(Boolean, default=False, index=True)
-    blocking = C(Boolean, default=False, index=True)
+    blocking = C(Boolean, default=False, index=True, primary_key=True)
 
     rule = rel(AccessRule, backref="node_assocs")
 

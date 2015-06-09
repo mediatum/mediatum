@@ -102,7 +102,7 @@ def convert_node_symbolic_rules_to_access_rules(nid_to_symbolic_rule, symbol_to_
 def expand_rulestr(rulestr):
     expanded_accessrule = func.to_json(func.expand_acl_rule(rulestr))
     res = db.session.execute(sql.select([expanded_accessrule])).scalar()
-    return res["expanded_rule"], res["predefined"]
+    return res["expanded_rule"], res["rulesets"]
 
 
 def add_blocking_flag_to_access_rules(rulestr, access_rules):
@@ -113,7 +113,8 @@ def add_blocking_flag_to_access_rules(rulestr, access_rules):
        :return: a list of (a: AccessRule, (invert: bool, blocking: bool))
     """
     if "NOT ( true )" in rulestr or "NOT ( group" in rulestr:
-        return [(a[0], (a[1], True)) for a in access_rules]
+        # only inverted rules can be used as 'blocking'
+        return [(a[0], (a[1], a[1])) for a in access_rules]
 
     return [(a[0], (a[1], False)) for a in access_rules]
 
@@ -169,7 +170,7 @@ def migrate_rules(ruletypes=["read", "write", "data"]):
         nid_to_access_rules = convert_node_symbolic_rules_to_access_rules(nid_to_symbolic_rule, symbol_to_acl_condition,
                                                                           fail_on_first_error=True, ignore_missing_user_groups=True)
 
-        for nid, access_rules in nid_to_access_rules:
+        for nid, access_rules in nid_to_access_rules.iteritems():
             rulestr = nid_to_rulestr[nid]
             nid_to_access_rules[nid] = add_blocking_flag_to_access_rules(rulestr, access_rules)
 
@@ -184,7 +185,7 @@ def migrate_access_entries():
         rulestr = a["rule"]
         ruleset = AccessRuleset(name=a["name"], description=a["description"])
         access_rules = convert_old_acl(rulestr)
-        for rule, invert in access_rules:
+        for rule, (invert, blocking) in access_rules:
             if rule.invert_group is None:
                 rule.invert_group = False
             if rule.invert_subnet is None:
@@ -197,7 +198,7 @@ def migrate_access_entries():
             if existing_rule:
                 rule = existing_rule
 
-            rule_assoc = AccessRulesetToRule(rule=rule, ruleset=ruleset, invert=invert)
+            rule_assoc = AccessRulesetToRule(rule=rule, ruleset=ruleset, invert=invert, blocking=blocking)
             s.add(rule_assoc)
 
 

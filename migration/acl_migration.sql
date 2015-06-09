@@ -16,7 +16,7 @@ SELECT array_to_string(array_agg(
                                    FROM ACCESS
                                 WHERE name = n) END)),',') as expanded_rule,
        array_agg(
-               (SELECT n
+               (SELECT trim(' ' from n)
                 WHERE n NOT LIKE '{%')) as rulesets
 INTO expanded
 FROM unnest(regexp_split_to_array(rulestr, ',')) AS n;

@@ -352,7 +352,7 @@ $f$;
 -- ruleset functions
 ----
 
-CREATE OR REPLACE FUNCTION _inherited_access_rulesets_read_type(node_id integer, _ruletype text) 
+CREATE OR REPLACE FUNCTION inherited_access_rulesets_read_type(node_id integer, _ruletype text) 
     RETURNS SETOF node_to_access_ruleset
     LANGUAGE plpgsql
     SET search_path TO :search_path
@@ -399,31 +399,22 @@ END;
 $f$;
 
 
-CREATE OR REPLACE FUNCTION inherited_access_rulesets_read(node_id integer)
+CREATE OR REPLACE FUNCTION effective_access_rulesets_read_type(node_id integer, _ruletype text)
     RETURNS SETOF node_to_access_ruleset
     LANGUAGE plpgsql
     SET search_path TO :search_path
     STABLE
 AS $f$
 BEGIN
-RETURN QUERY SELECT * FROM _inherited_access_rulesets_read_type(node_id, 'read');
+IF EXISTS (SELECT * FROM node_to_access_ruleset WHERE nid=node_id AND ruletype=_ruletype) THEN
+    RETURN QUERY SELECT * FROM node_to_access_ruleset WHERE nid=node_id AND ruletype=_ruletype;
+END IF;
+RETURN QUERY SELECT * FROM inherited_access_rulesets_read_type(node_id, _ruletype);
 END;
 $f$;
 
 
-CREATE OR REPLACE FUNCTION inherited_access_rulesets_data(node_id integer)
-    RETURNS SETOF node_to_access_ruleset
-    LANGUAGE plpgsql
-    SET search_path TO :search_path
-    STABLE
-AS $f$
-BEGIN
-RETURN QUERY SELECT * FROM _inherited_access_rulesets_read_type(node_id, 'data');
-END;
-$f$;
-
-
-CREATE OR REPLACE FUNCTION inherited_access_rulesets_write(node_id integer)
+CREATE OR REPLACE FUNCTION inherited_access_rulesets_write_type(node_id integer, _ruletype text)
     RETURNS SETOF node_to_access_ruleset
     LANGUAGE plpgsql
     SET search_path TO :search_path
@@ -433,16 +424,65 @@ BEGIN
 RETURN QUERY
     SELECT DISTINCT node_id AS nid,
                     na.ruleset_name,
-                    'write' AS ruletype,
+                    _ruletype AS ruletype,
                     na.invert,
                     na.blocking
     FROM noderelation nr
     JOIN node_to_access_ruleset na ON nr.nid=na.nid
     WHERE cid=node_id
-      AND ruletype = 'write';
+      AND ruletype = _ruletype;
 END;
 $f$;
 
+CREATE OR REPLACE FUNCTION effective_access_rulesets_write_type(node_id integer, _ruletype text)
+    RETURNS SETOF node_to_access_ruleset
+    LANGUAGE plpgsql
+    SET search_path TO :search_path
+    STABLE
+AS $f$
+BEGIN
+RETURN QUERY
+    SELECT * FROM inherited_access_rulesets_write_type(node_id, _ruletype)
+    UNION
+    SELECT * FROM node_to_access_ruleset WHERE nid=node_id AND ruletype=_ruletype;
+END;
+$f$;
+
+
+CREATE OR REPLACE FUNCTION inherited_access_rulesets(node_id integer)
+    RETURNS SETOF node_to_access_ruleset
+    LANGUAGE plpgsql
+    SET search_path TO :search_path
+    STABLE
+AS $f$
+BEGIN
+RETURN QUERY 
+    SELECT * FROM inherited_access_rulesets_read_type(node_id, 'read')
+UNION ALL 
+    SELECT * FROM inherited_access_rulesets_write_type(node_id, 'write')
+UNION ALL
+    SELECT * FROM inherited_access_rulesets_read_type(node_id, 'data')
+;
+END;
+$f$;
+
+
+CREATE OR REPLACE FUNCTION effective_access_rulesets(node_id integer)
+    RETURNS SETOF node_to_access_ruleset
+    LANGUAGE plpgsql
+    SET search_path TO :search_path
+    STABLE
+AS $f$
+BEGIN
+RETURN QUERY 
+    SELECT * FROM effective_access_rulesets_read_type(node_id, 'read')
+UNION ALL 
+    SELECT * FROM effective_access_rulesets_write_type(node_id, 'write')
+UNION ALL
+    SELECT * FROM effective_access_rulesets_read_type(node_id, 'data')
+;
+END;
+$f$;
 
 ----
 -- maintenance functions

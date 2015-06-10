@@ -78,13 +78,9 @@ class TraceLogger(logging.Logger):
     or requested in the logging call (if `trace` is a true value). 
     """
     
-    _trace_level = logging.WARN 
+    # All log messages above the given `level` will have an additional field with a stack trace up to the logging call
+    trace_level = logging.WARN 
     
-    @property
-    def trace_level(self, level):
-        """All log messages above the given `level` will have an additional field with a stack trace up to the logging call
-        """  
-        self._trace_level = level
     
     def _log(self, level, msg, args, exc_info=None, extra=None, trace=None):
         """Adds an optional traceback for some messages and calls Logger._log.
@@ -92,7 +88,7 @@ class TraceLogger(logging.Logger):
         
         :param trace: Always add a trace if trace is true
         """
-        if trace or (level >= self._trace_level and not exc_info):
+        if trace or (level >= self.trace_level and not exc_info):
             if extra is None:
                 extra = {}
             f = inspect.currentframe()

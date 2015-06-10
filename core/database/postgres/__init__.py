@@ -23,6 +23,10 @@ rel = relationship
 bref = backref
 
 
+# warn when queries take longer than `SLOW_QUERY_SECONDS`
+SLOW_QUERY_SECONDS = 0.1
+
+
 def dynamic_rel(*args, **kwargs):
         return relationship(*args, lazy="dynamic", **kwargs)
 
@@ -80,6 +84,6 @@ def after_cursor_execute(conn, cursor, statement,
                          parameters, context, executemany):
     total = time.time() - conn.info['query_start_time'].pop(-1)
     # total in seconds
-    if total > 0.1:
+    if total > SLOW_QUERY_SECONDS:
         statement = conn.info['current_query'].pop(-1)
         logg.warn("slow query %.1fms:\n%s", total * 1000, statement)

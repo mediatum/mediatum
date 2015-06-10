@@ -14,7 +14,6 @@ from core import File
 
 q = core.db.query
 s = core.db.session
-conn = core.db.conn
 
 
 from core import User

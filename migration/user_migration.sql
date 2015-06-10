@@ -44,12 +44,16 @@ BEGIN
     WHERE id IN (SELECT cid FROM nodemapping WHERE nid=(SELECT id FROM node WHERE name = 'users'));
     
     -- find home dirs by name
-    -- XXX: LIMIT 1 hack for duplicate home directories
-    -- (warning: home dir association must be unique or this will fail!)
+    -- warning: home dir association must be unique or this will fail!
     
     UPDATE mediatum.user u
     SET home_dir_id = (SELECT n.id 
-                FROM mediatum_import.node AS n WHERE n.name LIKE 'Arbeitsverzeichnis (%' AND n.readaccess = '{user ' || u.display_name || '}' LIMIT 1)
+                FROM mediatum_import.node AS n 
+                WHERE n.name LIKE 'Arbeitsverzeichnis (%' 
+                AND n.readaccess = '{user ' || u.display_name || '}' 
+                -- check if home dir is actually present, could be unreachable in mediatum_import.node
+                AND n.id IN (SELECT id FROM mediatum.node) 
+                )
         WHERE authenticator_id = 0;
     
     

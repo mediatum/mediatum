@@ -22,6 +22,11 @@ FK = ForeignKey
 rel = relationship
 bref = backref
 
+
+def dynamic_rel(*args, **kwargs):
+        return relationship(*args, lazy="dynamic", **kwargs)
+
+
 class TimeStamp(object):
 
     """a simple timestamp mixin"""

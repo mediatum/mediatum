@@ -45,7 +45,6 @@ class PostgresSQLAConnector(object):
         logg.info("Connecting to %s", self.connectstr)
         engine = create_engine(self.connectstr)
         DeclarativeBase.metadata.bind = engine
-        self.conn = engine.connect()
         self.engine = engine
         self.Session.configure(bind=engine)
 

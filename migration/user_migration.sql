@@ -1,10 +1,10 @@
 -- Creates usergroup entries from imported group nodes
-CREATE OR REPLACE FUNCTION mediatum_import.migrate_usergroups() RETURNS void
+CREATE OR REPLACE FUNCTION mediatum.migrate_usergroups() RETURNS void
     LANGUAGE plpgsql
-    SET search_path = mediatum_import
+    SET search_path = mediatum
     AS $f$
 BEGIN
-    INSERT INTO mediatum.usergroup (id, name, description, hidden_edit_functions, is_workflow_editor_group, is_editor_group)
+    INSERT INTO usergroup (id, name, description, hidden_edit_functions, is_workflow_editor_group, is_editor_group)
     SELECT id, 
     trim(' ' from name), 
     trim(' ' from attrs->>'description') AS description,
@@ -18,12 +18,14 @@ $f$;
 
 
 -- Creates user entries from imported internal user nodes
-CREATE OR REPLACE FUNCTION mediatum_import.migrate_internal_users() RETURNS void
+CREATE OR REPLACE FUNCTION mediatum.migrate_internal_users() RETURNS void
     LANGUAGE plpgsql
-    SET search_path = mediatum_import
+    SET search_path = mediatum
     AS $f$
+    
+DECLARE rows integer;
 BEGIN
-    INSERT INTO mediatum.authenticator (id, auth_type, name)
+    INSERT INTO authenticator (id, auth_type, name)
          VALUES (0, 'internal', 'default');
     
     INSERT INTO mediatum.user (id, login_name, display_name, firstname, lastname, telephone, email, organisation, password_hash, comment, can_change_password, can_edit_shoppingbag, authenticator_id) 
@@ -43,6 +45,9 @@ BEGIN
     FROM node 
     WHERE id IN (SELECT cid FROM nodemapping WHERE nid=(SELECT id FROM node WHERE name = 'users'));
     
+    GET DIAGNOSTICS rows = ROW_COUNT;
+    RAISE NOTICE '% internal users inserted', rows;
+    
     -- find home dirs by name
     -- warning: home dir association must be unique or this will fail!
     
@@ -56,8 +61,9 @@ BEGIN
                 )
         WHERE authenticator_id = 0;
     
+    RAISE NOTICE 'home dirs set, % users with home dir', (SELECT COUNT(*) FROM mediatum.user WHERE home_dir_id IS NOT NULL);
     
-    INSERT INTO mediatum.user_to_usergroup
+    INSERT INTO user_to_usergroup
        SELECT cid AS user_id, id AS usergroup_id
          FROM nodemapping JOIN node ON nid = id
         WHERE     node.id IN (SELECT cid
@@ -77,15 +83,20 @@ BEGIN
                                 FROM nodemapping
                                WHERE nid = 674265) -- user from Jahrbuch-User group ignored
     ;
+    
+    GET DIAGNOSTICS rows = ROW_COUNT;
+    RAISE NOTICE 'users mapped to groups, % mappings', rows;
 END;
 $f$;
 
     
 -- Creates user entries from imported home directories for dynamic users (mediatum-dynauth plugin)
-CREATE OR REPLACE FUNCTION mediatum_import.migrate_ads_users() RETURNS void
+CREATE OR REPLACE FUNCTION mediatum.migrate_dynauth_users() RETURNS void
     LANGUAGE plpgsql
-    SET search_path = mediatum_import
+    SET search_path = mediatum
     AS $f$
+DECLARE
+    rows integer;
 BEGIN
     INSERT INTO authenticator (id, name, auth_type) VALUES (1, 'ads', 'dynauth');
     
@@ -101,6 +112,10 @@ BEGIN
     WHERE id IN (SELECT cid FROM nodemapping WHERE nid=(SELECT id FROM node WHERE name = 'home')) 
     AND attrs ? 'system.dirid.adsuser'
     ;
+    
+    GET DIAGNOSTICS rows = ROW_COUNT;
+    RAISE NOTICE '% dynauth users created from their home dirs', rows;
+    
     -- additional user info from home dir
     
     INSERT INTO dynauth.user_info (name, user_type, dirid, dirgroups, user_id) 
@@ -115,9 +130,11 @@ BEGIN
     AND attrs ? 'system.dirid.adsuser'
     ;
     
+    RAISE NOTICE 'added additional user infos';
+    
     -- group membership is determined by the dynamic_users attr of groups that contains a newline-separated login name list
     
-    INSERT INTO mediatum.user_to_usergroup (usergroup_id, user_id)
+    INSERT INTO user_to_usergroup (usergroup_id, user_id)
     SELECT usergroup_id, user_id FROM 
         (SELECT id as usergroup_id, 
             (SELECT user_id FROM dynauth.user_info WHERE dynauth.user_info.dirid = q.dirid LIMIT 1) as user_id
@@ -128,6 +145,9 @@ BEGIN
             ) q
         ) s
     WHERE user_id is not NULL ORDER BY usergroup_id;
+    
+    GET DIAGNOSTICS rows = ROW_COUNT;
+    RAISE NOTICE 'users mapped to groups, % mappings', rows;
 END;
 $f$;
 

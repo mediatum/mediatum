@@ -148,13 +148,15 @@ from functools import wraps
 from core import init
 import core.database
 from core.database.postgres.node import t_noderelation
-from itertools import islice
+from itertools import islice, chain
 from collections import OrderedDict
+import copy
 init.basic_init()
 # we don't want to raise exceptions for missing node classes
 init.check_undefined_nodeclasses()
 
-from core import Node, File
+from core import Node, File, db
+from core import AccessRule, AccessRuleset
 
 q = core.db.query
 s = core.db.session
@@ -174,6 +176,7 @@ from contenttypes import Audio, Content, Directory, Collection, Container, Colle
 from core.systemtypes import Mappings, Metadatatypes, Root, Navigation, Searchmasks
 from schema.schema import Metadatatype, Maskitem, Mask, Metafield
 from workflow.workflow import Workflow, Workflows
+from core.database.postgres.permission import NodeToAccessRule, NodeToAccessRuleset, EffectiveNodeToAccessRuleset
 
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -241,19 +244,86 @@ def unreachable_nodes():
     return q(Node).filter(~Node.id.in_(reachable_node_sq))
 
 
+def inversion_label(invert):
+    return u"(-)" if invert else u""
+
+
+def blocking_label(blocking):
+    return u"(blocking)" if blocking else u""
+
+
+def inherited_label(inherited):
+    return u"(inherited)" if inherited else u""
+
+
+def format_access_ruleset_assoc(ra, inherited):
+    r = ra.ruleset
+
+    return u"{}{}{} {}".format(inversion_label(ra.invert), blocking_label(ra.blocking), inherited_label(inherited), r.name)
+
+
+def format_access_rule_assoc(ra):
+    r = ra.rule
+    group_names = [n or str(r.group_ids[i]) for i, n in enumerate(r.group_names)] 
+    
+    return u"{}{} groups:{} {} subnets:{} {} dateranges:{} {}".format(inversion_label(ra.invert), blocking_label(ra.blocking),
+                                                                      inversion_label(r.invert_group), ", ".join(group_names) or "-",
+                                                                      inversion_label(r.invert_subnet), r.subnets or "-",
+                                                                      inversion_label(r.invert_date), r.dateranges or "-")
+
+
+def make_info_producer_access_rules(ruletype):
+    def _info_producer(node):
+        rule_assocs = node.access_rule_assocs.filter_by(ruletype=ruletype).all()
+        own_ruleset_assocs = node.access_ruleset_assocs.filter_by(ruletype=ruletype).all()
+        effective_ruleset_assocs = node.effective_access_ruleset_assocs.filter(
+            EffectiveNodeToAccessRuleset.c.ruletype == ruletype).all()
+        inherited_ruleset_assocs = set(effective_ruleset_assocs) - set(own_ruleset_assocs)
+        
+        effective_rulesets = [rsa.ruleset for rsa in effective_ruleset_assocs]
+        rule_assocs_in_rulesets = [r for rs in effective_rulesets for r in rs.rule_assocs]
+
+        def assoc_filter(assocs, to_remove):
+
+            def _f(a):
+                for rem in to_remove:
+                    if a.rule == rem.rule and a.invert == rem.invert and a.blocking == rem.blocking:
+                        return False
+                return True
+
+            return [a for a in assocs if _f(a)]
+
+        remaining_rule_assocs = assoc_filter(rule_assocs, rule_assocs_in_rulesets)
+
+        return chain(
+            [u"Rulesets:"],
+            ("\t" + format_access_ruleset_assoc(rs, inherited=False)
+             for rs in own_ruleset_assocs),
+            ("\t" + format_access_ruleset_assoc(rs, inherited=True)
+             for rs in inherited_ruleset_assocs),
+            [u"", u"Additional Rules:"] if remaining_rule_assocs else [""],
+            ("\t" + format_access_rule_assoc(r) for r in remaining_rule_assocs)
+        )
+
+    return _info_producer
+
+
 INFO_PRODUCERS = OrderedDict([
     ("parents", lambda node: (u"{} {}:  {}".format(n.id, n.name, n.type) for n in node.parents)),
     ("children", lambda node: (u"{} {}:  {}".format(n.id, n.name, n.type) for n in node.children)),
     ("attributes", lambda node: (u"{} = {}".format(name, value) for name, value in iteritems(node.attrs))),
-    ("files", lambda node: (u"{} {} {}".format(a.path, a.filetype, a.mimetype) for a in node.files))]
-)
+    ("files", lambda node: (u"{} {} {}".format(a.path, a.filetype, a.mimetype) for a in node.files)),
+    ("read_rules", make_info_producer_access_rules("read")),
+    ("write_rules", make_info_producer_access_rules("write")),
+    ("data_rules", make_info_producer_access_rules("data")),
+])
 
 
 def print_info_for_category(category, limit=None):
     if limit is None:
         limit = limit_number_of_info_lines
 
-    print(u"\t" + category.capitalize() + ":")
+    print(u"\t" + category.replace("_", " ").capitalize() + ":")
     info_producer = INFO_PRODUCERS[category]
 
     for line in islice(info_producer(cnode), 0, limit):
@@ -334,6 +404,13 @@ class MediatumMagics(Magics):
     def list_files(self, line):
         print_info_for_category("files")
 
+    @line_magic("list_rules")
+    @line_magic("lr")
+    def list_rules(self, line):
+        print_info_for_category("read_rules")
+        print_info_for_category("write_rules")
+        print_info_for_category("data_rules")
+
     @needs_init("basic")
     @magic_arguments()
     @argument("nid")
@@ -356,6 +433,51 @@ class MediatumMagics(Magics):
         args = parse_argstring(self.ln, line)
         new_child = q(Node).get(args.nid)
         cnode.children.append(new_child)
+
+    @needs_init("basic")
+    @magic_arguments()
+    @argument("ruletype")
+    @argument("name")
+    @argument("-i", "--invert", action="store_true")
+    @line_magic
+    def link_ruleset(self, line):
+        args = parse_argstring(self.link_ruleset, line)
+        existing_assoc = cnode.access_ruleset_assocs.filter_by(ruleset_name=args.name, ruletype=args.ruletype).scalar()
+        if existing_assoc is not None:
+            logg.warn(
+                "ruleset %s (%s, %s) already used by current node, ignored",
+                args.name,
+                sign(
+                    not existing_assoc.invert),
+                args.ruletype)
+        else:
+            new_assoc = NodeToAccessRuleset(ruleset_name=args.name, ruletype=args.ruletype, invert=args.invert)
+            cnode.access_ruleset_assocs.append(new_assoc)
+
+    @needs_init("basic")
+    @magic_arguments()
+    @argument("ruletype")
+    @argument("name")
+    @line_magic
+    def unlink_ruleset(self, line):
+        args = parse_argstring(self.unlink_ruleset, line)
+        assoc = cnode.access_ruleset_assocs.filter_by(ruleset_name=args.name, ruletype=args.ruletype).scalar()
+        if assoc is None:
+            logg.warn("ruleset %s (%s) not used by current node, ignored", args.name, args.ruletype)
+        else:
+            cnode.access_ruleset_assocs.remove(assoc)
+
+    @needs_init("basic")
+    @magic_arguments()
+    @argument("ruletype")
+    @argument("-i", "--invert", action="store_true")
+    @argument("-b", "--blocking", action="store_true")
+    @line_magic
+    def add_rule(self, line):
+        args = parse_argstring(self.link_ruleset, line)
+        rule = AccessRule()
+        assoc = NodeToAccessRule(rule=rule, ruletype=args.ruletype, invert=args.invert, blocking=args.blocking)
+        cnode.access_ruleset_assocs.append(assoc)
 
     @needs_init("basic")
     @magic_arguments()

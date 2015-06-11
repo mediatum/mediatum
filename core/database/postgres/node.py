@@ -216,17 +216,23 @@ class Node(DeclarativeBase, NodeMixin):
 
     @staticmethod
     def req_has_access_to_node_id(node_id, accesstype, req=None, date=func.current_date()):
-        from core import db
-        from core.users import user_from_session
         from core.transition import request
-        
+
         if req is None:
             req = request
-        
-        accessfunc = access_funcs[accesstype]
+
         user = user_from_session(req.session)
         ip = IPv4Address(req.remote_addr)
-        access = accessfunc(node_id, user.group_ids, ip, date)
+        return Node.has_access_to_node_id(node_id, accesstype, user, ip, date)
+
+    @staticmethod
+    def has_access_to_node_id(node_id, accesstype, user=None, ip=None, date=func.current_date()):
+        from core import db
+        from core.users import user_from_session
+        
+        accessfunc = access_funcs[accesstype]
+        group_ids = user.group_ids if user else None
+        access = accessfunc(node_id, group_ids, ip, date)
         return db.session.execute(select([access])).scalar()
 
     def has_access(self, accesstype, req=None):

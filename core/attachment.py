@@ -39,6 +39,7 @@ fileicons = {'directory': 'mmicon_dir.gif',
              'application/msword': 'mmicon_doc.gif',
              'video/x-msvideo': 'mmicon_avi.gif',
              'video/x-flv': 'mmicon_mpeg.gif',
+             'video/quicktime': 'mmicon_mpeg.gif',
              'audio/x-wav': 'mmicon_avi.gif',
              'audio/mpeg': 'mmicon_mpeg.gif',
              'text/x-bibtex': 'mmicon_txt.gif'}

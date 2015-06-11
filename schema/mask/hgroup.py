@@ -41,7 +41,6 @@ class m_hgroup(Metatype):
         return ret + '</div>'
 
     def getViewHTML(self, field, nodes, flags, language=None, template_from_caller=None, mask=None, use_label=True):
-
         if flags & VIEW_DATA_ONLY:
             ret = []
             for item in field.getChildren().sort_by_orderpos():
@@ -50,18 +49,21 @@ class m_hgroup(Metatype):
             return ret
         else:
             if use_label:
-                snippets = ['<div class="mask_row hgroup hgroup-%s"><div class="mask_label">%s: </div><span class="mask_value">' % (field.id, field.getLabel())]
+                snippets = ['<div class="mask_row hgroup hgroup-%s"><div class="mask_label">%s: </div><div class="mask_value">' % (field.id, field.getLabel())]
             else:
-                snippets = ['<div class="mask_row hgroup hgroup-%s"><span class="mask_value">' % (field.id)]
-            raw_values = []
+                snippets = ['<div class="mask_row hgroup hgroup-%s"><div class="mask_value">' % (field.id)]
+            raw_values = ['&nbsp;']
             sep = ''
+            has_raw_value = False  # skip group display if no item has raw_value
             items = field.getChildren().sort_by_orderpos()
             len_items = len(items)
             for i, item in enumerate(items):
                 f = getMetadataType(item.get("type"))
                 raw_value = f.getViewHTML(item, nodes, flags | VIEW_SUB_ELEMENT, language=language)
-                if raw_value:
+                if raw_value.strip():
                     raw_values.append(raw_value)
+                    if not raw_value == '&nbsp;':
+                        has_raw_value = True
                     if sep:
                         snippets.append(sep)
                         sep = item.get('separator', '&nbsp;')
@@ -70,13 +72,12 @@ class m_hgroup(Metatype):
                     sep = ''  # no separator before or after empty sub element
 
             unit = field.get('unit').strip()
-            if raw_values and unit:
-                snippets.append('&nbsp;<span class="hgroup_unit field_unit hgroup-%s">%s</span></span></div>' % (field.id, unit))
-            elif raw_values:
-                snippets.append('</span></div>')
-            else:
+            if not has_raw_value:
                 snippets = []  # no value when all sub elements are empty
-
+            elif raw_values and unit:
+                snippets.append('&nbsp;<span class="hgroup_unit field_unit hgroup-%s">%s</span></div></div>' % (field.id, unit))
+            elif raw_values:
+                snippets.append('</div></div>')
             ret = ''.join(snippets)
             return ret
 

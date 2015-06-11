@@ -27,12 +27,12 @@ from core import db
 from core.acl import AccessData
 from core.styles import getContentStyles, theme
 from core.translation import lang, t
-from contenttypes.directory import Directory
+from contenttypes import Collections, Directory
+from contenttypes.directory import includetemplate, replaceModules
 from web.frontend import Content
 from utils.strings import ensure_unicode_returned
 from utils.utils import getCollection, Link, getFormatedString
 from web.frontend.searchresult import simple_search, extended_search
-from contenttypes import Collections
 from core.systemtypes import Root
 from sqlalchemy.orm.exc import NoResultFound
 from core import Node
@@ -292,7 +292,7 @@ class ContentList(Content):
                 self.id2pos[self.files[i].id] = i
                 tal_files += [SingleFile(file, i, self.num, language=language)]
                 tal_ids += [SingleFile(file, i, self.num, language=language).node.id]
-            i = i + 1
+            i += 1
 
         liststyle = req.session.get("liststyle-" + self.collection.id, "")  # .split(";")[0]# user/session setting for liststyle?
         if not liststyle:
@@ -308,9 +308,17 @@ class ContentList(Content):
         # use template of style and build html content
         contentList = liststyle.renderTemplate(req, {"nav_list": nav_list, "nav_page": nav_page, "act_page": self.page,
                                                      "files": tal_files, "maxresult": len(self.files), "op": "", "language": lang(req)})
-
-        return filesHTML + '<div id="nodes">' + contentList + '</div>' + filesHTML
-
+        sidebar = ""  # check for sidebar
+        if self.collection.get("system.sidebar") != "":
+            for sb in [s for s in self.collection.get("system.sidebar").split(";") if s != ""]:
+                l, fn = sb.split(":")
+                if l == lang(req):
+                    for f in [f for f in self.collection.getFiles() if fn.endswith(f.getName())]:
+                        sidebar = replaceModules(self, req, includetemplate(self, f.retrieveFile(), {})).strip()
+        if sidebar != "":
+            return '<div id="portal-column-one">{0}<div id="nodes">{1}</div>{0}</div><div id="portal-column-two">{2}</div>'.format(filesHTML, contentList, sidebar)
+        else:
+            return '{0}<div id="nodes">{1}</div>{0}'.format(filesHTML, contentList)
 
 # paths
 def getPaths(node, access):
@@ -415,7 +423,7 @@ def mkContentNode(req):
         return ContentError("Permission denied", 403)
 
     if isinstance(node, Container):
-        if "files" not in req.params:
+        if "files" not in req.params and len(filter(None, node.getStartpageDict().values())) > 0:
             for f in node.getFiles():
                 if f.type == "content" and f.mimetype == "text/html" and os.path.isfile(
                         f.retrieveFile()) and fileIsNotEmpty(f.retrieveFile()):

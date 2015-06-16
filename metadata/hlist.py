@@ -15,6 +15,8 @@ class m_hlist(Metatype):
                 values = field.split(u'\r\n')
             except AttributeError:
                 values = []
+        except UnicodeDecodeError:
+            values = field.valuelist.split(';')
 
         while len(values) < 3:
             values.append(u'')

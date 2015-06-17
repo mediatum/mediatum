@@ -21,6 +21,9 @@ from .workflow import WorkflowStep, registerStep
 from core.translation import t, lang, addLabels
 from schema.schema import getMetaType
 from schema.schema import Metafield
+from core import db
+
+q = db.query
 
 
 def register():
@@ -39,10 +42,10 @@ class WorkflowStep_EditMetadata(WorkflowStep):
         maskname = self.get("mask")
         mask = None
         if node.get('system.wflanguage') != '':  # use correct language
-            mask = getMetaType(node.type).getMask("%s.%s" % (node.get('system.wflanguage'), maskname))
+            mask = getMetaType(node.schema).getMask("%s.%s" % (node.get('system.wflanguage'), maskname))
 
         if not mask:
-            mask = getMetaType(node.type).getMask(maskname)
+            mask = getMetaType(node.schema).getMask(maskname)
 
         if "metaDataEditor" in req.params:
             mask.updateNode([node], req)

@@ -24,6 +24,7 @@ from utils.utils import isNumeric
 from core import Node
 from core import db
 from schema.schema import Metafield
+from contenttypes.container import Directory
 
 q = db.query
 
@@ -67,20 +68,21 @@ class WorkflowStep_Classify(WorkflowStep):
             name = name[int(start):]
 
         for nid in self.get('destination').split(";"):
-            pnode = q(Node).get(nid)
-            cnode = None
-            if pnode:
-                if name != "":
-                    cnode = pnode.children.filter_by(name=name).scalar()
-                    if cnode is None:
-                        cnode = Node(name, type="directory")
-                        pnode.children.append(cnode)
+            if nid:
+                pnode = q(Node).get(nid)
+                cnode = None
+                if pnode:
+                    if name != "":
+                        cnode = pnode.children.filter_by(name=name).scalar()
+                        if cnode is None:
+                            cnode = Directory(name)
+                            pnode.children.append(cnode)
 
-                if cnode:  # add node to child given by attributename
-                    cnode.children.append(node)
-                if self.get('only_sub') != '1':  # add to node (no hierarchy)
-                    pnode.children.append(node)
-                db.session.commit()
+                    if cnode:  # add node to child given by attributename
+                        cnode.children.append(node)
+                    if self.get('only_sub') != '1':  # add to node (no hierarchy)
+                        pnode.children.append(node)
+                    db.session.commit()
 
     def metaFields(self, lang=None):
         ret = []
@@ -96,7 +98,6 @@ class WorkflowStep_Classify(WorkflowStep):
         field.set("label", t(lang, "admin_wfstep_classify_only_sub"))
         field.set("type", "check")
         ret.append(field)
-        # db.session.commit()
         return ret
 
     @staticmethod

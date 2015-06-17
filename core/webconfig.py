@@ -24,7 +24,10 @@ import core.config as config
 
 from core.styles import theme
 from mediatumtal import tal
+from core import db
+from contenttypes import Collections
 
+q = db.query
 
 logg = logging.getLogger(__name__)
 
@@ -246,7 +249,7 @@ def initContexts():
         # dummy handler for users
         athana.addFTPHandler(collection_ftpserver(None, port=int(config.get("ftp.port", 21)), debug=config.get("host.type", "testing")))
 
-        for collection in tree.getRoot("collections").getChildren():
+        for collection in q(Collections).one().children:
             if collection.get("ftp.user") and collection.get("ftp.passwd"):
                 athana.addFTPHandler(collection_ftpserver(
                     collection, port=int(config.get("ftp.port", 21)), debug=config.get("host.type", "testing")))

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -63,12 +64,17 @@ def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]
                 text = unicode(text, "utf-8").encode("latin1")
             except:
                 logg.exception("exception in sendmail, ignoring")
-                
-            msg = """From: %s\nTo: %s\nSubject: %s\n\n%s""" % (fromaddr, toaddrs_string, subject, text)
+
+            m = """From: %s\nTo: %s\nSubject: %s\n\n%s""" % (fromaddr, toaddrs_string, subject, text)
+            msg = MIMEText(m.encode('utf-8'), _charset="utf-8")
+            msg['Subject'] = subject
+            msg['From'] = fromaddr
+            msg['To'] = toaddrs_string
+
             try:
                 server = smtplib.SMTP(config.get("server.mail"))
                 server.set_debuglevel(1)
-                server.sendmail(fromaddr, toaddrs, msg)
+                server.sendmail(fromaddr, toaddrs, msg.as_string())
                 server.quit()
             except smtplib.socket.error:
                 raise SocketError
@@ -99,7 +105,7 @@ def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]
                         with codecs.open(path, 'r', encoding='utf8') as fp:
                             msg = MIMEText(fp.read(), _subtype=subtype)
                     else:
-                        with open(path, 'rb', encoding='utf8') as fp:
+                        with open(path, 'rb') as fp:
                             if maintype == 'image':
                                 msg = MIMEImage(fp.read(), _subtype=subtype)
                             elif maintype == 'audio':

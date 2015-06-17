@@ -42,7 +42,7 @@ def validate(req, op):
 
             if key.startswith("flush_db"):
                 logg.info("flush db")
-                tree.flush()
+                # tree.flush()
                 op = "db"
                 return view(req, op)
 

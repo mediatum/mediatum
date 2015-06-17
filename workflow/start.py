@@ -52,7 +52,7 @@ class WorkflowStep_Start(WorkflowStep):
         # check existence of metadata types listed in the definition of the start node
         mdts = q(Metadatatypes).one()
         for schema in typenames:
-            if not mdts.hasChild(schema.strip().split("/")[-1]):
+            if not mdts.children.filter_by(name=schema.strip().split("/")[-1]).scalar():
                 return ('<i>%s: %s </i>') % (schema, t(lang(req), "permission_denied"))
 
         if "workflow_start" in req.params:

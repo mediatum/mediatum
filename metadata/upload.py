@@ -94,7 +94,7 @@ def getFilelist(node, fieldname=''):
             except:
                 logg.exception("exception in getFilelist, formatting datestr failed, using fake date")
                 f_mtime = "2099-01-01 12:00:00.00 " + f_name
-            _t = (f_mtime, f_name, f.mimetype(), f.size, f.filetype, f_retrieve, f)
+            _t = (f_mtime, f_name, f.mimetype, f.size, f.filetype, f_retrieve, f)
             filelist.append(_t)
 
     filelist.sort()

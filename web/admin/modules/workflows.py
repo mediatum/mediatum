@@ -31,11 +31,7 @@ from schema.schema import parseEditorData
 from web.common.acl_web import makeList
 from utils.utils import removeEmptyStrings
 from core.translation import t, lang
-
-from core import Node
 from core import db
-
-q = db.query
 
 logg = logging.getLogger(__name__)
 

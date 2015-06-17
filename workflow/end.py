@@ -42,7 +42,6 @@ class WorkflowStep_End(WorkflowStep):
             # remove obj from workflownode
             self.children.remove(node)
 
-        node.setDirty()
         db.session.commit()
         if self.get("endtext") != "":
             link = u"http://{}/pnode?id={}&key={}".format(config.get("host.name"),
@@ -63,7 +62,6 @@ class WorkflowStep_End(WorkflowStep):
         try:
             if node.get('updatetime') <= ustr(now()):  # do only if date in the past
                 node.set('updatetime', ustr(now()))
-            node.setDirty()
             db.session.commit()
         except:
             logg.exception("exception in workflow step end, runAction failed")

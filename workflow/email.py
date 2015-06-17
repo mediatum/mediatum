@@ -104,13 +104,12 @@ class WorkflowStep_SendEmail(WorkflowStep):
             logg.info("sending mail prevented by condition %s " % (sendcondition))
             return
 
-        node.removeAttribute("mailtmp.send")
-        node.removeAttribute("mailtmp.from")
-        node.removeAttribute("mailtmp.to")
-        node.removeAttribute("mailtmp.subject")
-        node.removeAttribute("mailtmp.text")
-        node.removeAttribute("mailtmp.error")
-        node.removeAttribute("mailtmp.talerror")
+        for s in ["mailtmp.from", "mailtmp.to", "mailtmp.subject", "mailtmp.text", "mailtmp.error", "mailtmp.talerror", "mailtmp.send"]:
+            try:
+                node.removeAttribute(s)
+            except KeyError:
+                continue
+
         db.session.commit()
         return 1
 

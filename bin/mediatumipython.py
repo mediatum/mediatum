@@ -158,7 +158,6 @@ from core import Node, File
 
 q = core.db.query
 s = core.db.session
-conn = core.db.conn
 
 # settings
 

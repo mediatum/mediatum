@@ -16,12 +16,21 @@ CONNECTSTR_TEMPLATE = "postgresql+psycopg2://{user}:{passwd}@{dbhost}:{dbport}/{
 logg = logging.getLogger(__name__)
 
 
-def read_and_prepare_sql(sql_filepath):
+def read_and_prepare_sql(sql_filepath, sql_dir=None, filter_notices=True, filter_comments=True):
     """Reads SQL code from a file, sets search path and strips comment + logging lines"""
-    with open(os.path.join(os.path.dirname(__file__), "sql", sql_filepath)) as f:
-        sql = f.read().replace(":search_path", "mediatum")
-    sql_lines = sql.split("\n")
-    return "\n".join(l for l in sql_lines if not l.startswith("--") and "RAISE" not in l)
+    if sql_dir is None:
+        sql_dir = os.path.join(os.path.dirname(__file__), "sql")
+
+    with open(os.path.join(sql_dir, sql_filepath)) as f:
+        sql = f.read().replace(":search_path", "mediatum").replace("%", "%%")
+
+    if filter_notices or filter_comments:
+        sql_lines = sql.split("\n")
+        return "\n".join(l for l in sql_lines
+                         if (not filter_comments or not l.startswith("--"))
+                         and (not filter_notices or "RAISE NOTICE" not in l))
+    else:
+        return sql
 
 
 class PostgresSQLAConnector(object):

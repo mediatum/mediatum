@@ -16,14 +16,14 @@ action is one of:
 * truncate: deletes all data, but keeps the db structure
 
 """
-
 from __future__ import division, absolute_import, print_function
 
 from functools import partial
 import logging
-import sys
 from core.init import basic_init
 from core.database.postgres import db_metadata
+import configargparse
+from collections import OrderedDict
 basic_init()
 
 logg = logging.getLogger("manage.py")
@@ -55,15 +55,20 @@ def create_schema(s):
         raise
 
 
+def recreate(s):
+    drop_schema(s)
+    create_schema(s)
+
+
 def reverse_sorted_tables():
-    return reversed(db_metadata.sorted_tables) 
+    return reversed(db_metadata.sorted_tables)
 
 
 def truncate_tables(s, table_fullnames=None):
 
     if not table_fullnames:
         table_fullnames = [t.fullname for t in reverse_sorted_tables()]
-        
+
     s.execute('TRUNCATE {} RESTART IDENTITY;'.format(
         ','.join(table_fullnames)))
 
@@ -71,21 +76,23 @@ def truncate_tables(s, table_fullnames=None):
 
 
 def run_maint_command_for_tables(command, s, table_fullnames=None):
-    """Runs a maintenance postgres command on tables that must be run outside a transaction. 
+    """Runs a maintenance postgres command on tables that must be run outside a transaction.
     Uses all tables if `table_fullnames` is None.
     :param s: session to use
     :param table_fullnames: sequence of schema-qualified table names or None.
     """
     # we can't run inside an (implicit) transaction, so we have to use autocommit mode
     conn = s.connection().execution_options(isolation_level="AUTOCOMMIT")
-    
+
     if not table_fullnames:
         table_fullnames = [t.fullname for t in reverse_sorted_tables()]
-        
+
     for fullname in table_fullnames:
         cmd = command + " " + fullname
         logg.info(cmd)
         conn.execute(cmd)
+
+    logg.info("completed %s", command)
 
 
 vacuum_tables = partial(run_maint_command_for_tables, "VACUUM")
@@ -95,45 +102,27 @@ reindex_tables = partial(run_maint_command_for_tables, "REINDEX TABLE")
 
 s = db.session
 
+actions = OrderedDict([
+    ("create", create_schema),
+    ("drop", drop_schema),
+    ("recreate", recreate),
+    ("init", init_database_values),
+    ("truncate", truncate_tables),
+    ("vacuum", vacuum_tables),
+    ("analyze", vacuum_analyze_tables),
+    ("reindex", reindex_tables)
+])
+
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        raise Exception("no action specified! Actions: create drop recreate init truncate analyze_reindex")
+    parser = configargparse.ArgumentParser("mediaTUM manage.py")
+    parser.add_argument("action", nargs="*", choices=actions.keys())
 
-    for action in sys.argv[1:]:
+    print()
+    print("-" * 80)
+    print()
 
-        if action == "create":
-            create_schema(s)
+    args = parser.parse_args()
 
-        elif action == "drop":
-            drop_schema(s)
-
-        elif action == "recreate":
-            drop_schema(s)
-            create_schema(s)
-
-        elif action == "init":
-            logg.info("loading initial data...")
-            init_database_values(s)
-            s.commit()
-            logg.info("commited initial data")
-
-        elif action == "truncate":
-            logg.info("truncating tables...")
-            truncate_tables(s)
-            s.commit()
-            logg.info("commited table truncation")
-
-        elif action == "vacuum":
-            vacuum_tables(s)
-            logg.info("vacuum complete")
-
-        elif action == "analyze":
-            vacuum_analyze_tables(s)
-            logg.info("vacuum analyze complete")
-
-        elif action == "reindex":
-            reindex_tables(s)
-            logg.info("reindex complete")
-
-        else:
-            raise Exception("unknown action: " + action)
+    for action in args.action:
+        actions[action](s)
+        db.session.commit()

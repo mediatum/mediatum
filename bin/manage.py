@@ -19,6 +19,7 @@ action is one of:
 
 from __future__ import division, absolute_import, print_function
 
+from functools import partial
 import logging
 import sys
 from core.init import basic_init
@@ -54,26 +55,42 @@ def create_schema(s):
         raise
 
 
-def truncate_tables(s):
+def reverse_sorted_tables():
+    return reversed(db_metadata.sorted_tables) 
+
+
+def truncate_tables(s, table_fullnames=None):
+
+    if not table_fullnames:
+        table_fullnames = [t.fullname for t in reverse_sorted_tables()]
+        
     s.execute('TRUNCATE {} RESTART IDENTITY;'.format(
-        ','.join(table.name
-                 for table in reversed(db_metadata.sorted_tables))))
+        ','.join(table_fullnames)))
+
+    logg.info("truncated %s", table_fullnames)
 
 
-def vacuum_analyze_tables(s):
+def run_maint_command_for_tables(command, s, table_fullnames=None):
+    """Runs a maintenance postgres command on tables that must be run outside a transaction. 
+    Uses all tables if `table_fullnames` is None.
+    :param s: session to use
+    :param table_fullnames: sequence of schema-qualified table names or None.
+    """
+    # we can't run inside an (implicit) transaction, so we have to use autocommit mode
     conn = s.connection().execution_options(isolation_level="AUTOCOMMIT")
-    for table in reversed(db_metadata.sorted_tables):
-        cmd = 'VACUUM ANALYZE ' + table.fullname
+    
+    if not table_fullnames:
+        table_fullnames = [t.fullname for t in reverse_sorted_tables()]
+        
+    for fullname in table_fullnames:
+        cmd = command + " " + fullname
         logg.info(cmd)
         conn.execute(cmd)
 
 
-def reindex_tables(s):
-    conn = s.connection().execution_options(isolation_level="AUTOCOMMIT")
-    for table in reversed(db_metadata.sorted_tables):
-        cmd = 'REINDEX TABLE ' + table.fullname
-        logg.info(cmd)
-        conn.execute(cmd)
+vacuum_tables = partial(run_maint_command_for_tables, "VACUUM")
+vacuum_analyze_tables = partial(run_maint_command_for_tables, "VACUUM ANALYZE")
+reindex_tables = partial(run_maint_command_for_tables, "REINDEX TABLE")
 
 
 s = db.session
@@ -86,30 +103,37 @@ if __name__ == "__main__":
 
         if action == "create":
             create_schema(s)
-    
+
         elif action == "drop":
             drop_schema(s)
-    
+
         elif action == "recreate":
             drop_schema(s)
             create_schema(s)
-    
+
         elif action == "init":
             logg.info("loading initial data...")
             init_database_values(s)
             s.commit()
             logg.info("commited initial data")
-    
+
         elif action == "truncate":
             logg.info("truncating tables...")
             truncate_tables(s)
             s.commit()
             logg.info("commited table truncation")
-    
-        elif action == "analyze_reindex":
+
+        elif action == "vacuum":
+            vacuum_tables(s)
+            logg.info("vacuum complete")
+
+        elif action == "analyze":
             vacuum_analyze_tables(s)
+            logg.info("vacuum analyze complete")
+
+        elif action == "reindex":
             reindex_tables(s)
-            logg.info("vacuum analyze and reindex complete")
-    
+            logg.info("reindex complete")
+
         else:
             raise Exception("unknown action: " + action)

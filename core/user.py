@@ -28,7 +28,7 @@ class UserMixin(object):
 
     def getName(self):
         warn("deprecated, use User.display_name or User.login_name instead", DeprecationWarning)
-        return self.display_name
+        return self.display_name or self.login_name
 
     def getGroups(self):
         warn("deprecated, use User.groups instead", DeprecationWarning)

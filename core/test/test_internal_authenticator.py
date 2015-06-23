@@ -6,11 +6,20 @@
 
 import hashlib
 from pytest import fixture, raises
-from core.test.asserts import assert_deprecation_warning
-from core import User
-from core.auth import InternalAuthenticator, WrongPassword, PasswordChangeNotAllowed
 from mock import MagicMock
+from core.test.asserts import assert_deprecation_warning
+from core import User, db
+from core.auth import InternalAuthenticator, WrongPassword, PasswordChangeNotAllowed, INTERNAL_AUTHENTICATOR_KEY
 from core.test.fixtures import internal_authenticator
+from core.database.postgres.user import AuthenticatorInfo
+
+
+def test_default_internal_auth_in_default_data(default_data):
+    q = db.session.query
+    auth_type, auth_name = INTERNAL_AUTHENTICATOR_KEY
+    auth_info = q(AuthenticatorInfo).one()
+    assert auth_info.name == auth_name
+    assert auth_info.auth_type == auth_type
 
 
 def test_authenticate_user_credentials(internal_authenticator, internal_user):

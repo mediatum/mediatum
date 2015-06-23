@@ -6,8 +6,9 @@
 
 from pytest import fixture
 from core.test.asserts import assert_deprecation_warning
-from core import db, User, ShoppingBag
+from core import config, db, User, ShoppingBag
 from contenttypes import Directory
+from core.test.factories import UserGroupFactory
 
 
 @fixture(params=[
@@ -58,7 +59,7 @@ def test_workflow_editor_user(workflow_editor_user):
 
 def test_user_home_dir(user_with_home_dir):
     user = user_with_home_dir
-    assert isinstance(user.home_dir, Directory) 
+    assert isinstance(user.home_dir, Directory)
     # home dir must have 3 special subdirs
     assert user.home_dir.children.count() == 3
 
@@ -80,3 +81,15 @@ def test_user_create_home_dir(some_user, home_root):
     assert user.faulty_dir in home_subdirs
     assert user.upload_dir in home_subdirs
     assert user.trash_dir in home_subdirs
+
+
+def test_guest_user_in_default_data(default_data):
+    q = db.session.query
+    guest_username = config.get("user.guestuser")
+    assert q(User).filter_by(login_name=guest_username).one()
+
+
+def test_admin_user_in_default_data(default_data):
+    q = db.session.query
+    admin_username = config.get("user.adminuser")
+    assert q(User).filter_by(login_name=admin_username).one()

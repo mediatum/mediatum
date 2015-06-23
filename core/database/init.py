@@ -23,6 +23,7 @@ from core import User, UserGroup, AuthenticatorInfo
 from core.systemtypes import *
 from contenttypes import Collections, Home
 from workflow.workflow import Workflows
+from core.auth import INTERNAL_AUTHENTICATOR_KEY
 
 
 logg = logging.getLogger("database")
@@ -55,7 +56,8 @@ def init_database_values(s):
 
     # default users and groups setup
     # add internal authenticator
-    internal_auth = AuthenticatorInfo(id=0, auth_type="internal", name="internal")
+    auth_type, auth_name = INTERNAL_AUTHENTICATOR_KEY  
+    internal_auth = AuthenticatorInfo(id=0, auth_type=auth_type, name=auth_name)
 
     adminuser = User(login_name=config.get("user.adminuser", "Administrator"),
                      password_hash="226fa8e6cbb1f4e25019e2645225fd47",

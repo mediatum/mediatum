@@ -3,6 +3,7 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+from itertools import chain
 import logging
 
 from sqlalchemy import Unicode, Text, Boolean, Table, DateTime, UniqueConstraint
@@ -116,6 +117,10 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
     @property
     def is_workflow_editor(self):
         return any(g.is_workflow_editor_group for g in self.groups)
+
+    @property
+    def hidden_edit_functions(self):
+        return [f for group in self.groups for f in group.hidden_edit_functions or []]
 
     @property
     def upload_dir(self):

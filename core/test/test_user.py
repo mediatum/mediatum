@@ -83,6 +83,16 @@ def test_user_create_home_dir(some_user, home_root):
     assert user.trash_dir in home_subdirs
 
 
+def test_user_hidden_edit_functions(some_user, some_group):
+    g1 = UserGroupFactory()
+    g2 = UserGroupFactory(hidden_edit_functions=["func1", "func2"])
+    g3 = UserGroupFactory(hidden_edit_functions=None)
+    some_user.groups = [g1, g2, g3]
+    hidden_edit_functions = some_user.hidden_edit_functions
+    for f in g1.hidden_edit_functions:
+        assert f in hidden_edit_functions
+    
+
 def test_guest_user_in_default_data(default_data):
     q = db.session.query
     guest_username = config.get("user.guestuser")

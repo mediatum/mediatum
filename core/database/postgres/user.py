@@ -13,6 +13,7 @@ from sqlalchemy_utils.types import EmailType
 from core.database.postgres import DeclarativeBase, db_metadata
 from core.database.postgres import rel, C
 from core.database.postgres import TimeStamp, integer_fk, integer_pk
+from core import config
 from core.user import UserMixin
 from core.usergroup import UserGroupMixin
 
@@ -112,7 +113,8 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
 
     @property
     def is_admin(self):
-        return any(g.is_admin_group for g in self.groups)
+        # XXX: I think we should remove user.adminuser
+        return any(g.is_admin_group for g in self.groups) or self.login_name == config.get("user.adminuser")
 
     @property
     def is_workflow_editor(self):

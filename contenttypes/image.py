@@ -354,10 +354,6 @@ class Image(Content):
                 for f in self.files:
                     if (f.type == "image" and not f.base_name.lower().endswith("svg")) or f.type == "tmppng":
                         path, ext = splitfilename(f.abspath)
-                        basename = hashlib.md5(ustr(random.random())).hexdigest()[0:8]
-
-                        #path = os.path.join(getImportDir(),os.path.basename(path))
-                        path = os.path.join(getImportDir(), basename)
 
                         thumbname = path + ".thumb"
                         thumbname2 = path + ".thumb2"

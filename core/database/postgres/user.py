@@ -33,7 +33,7 @@ class AuthenticatorInfo(DeclarativeBase):
         return (self.auth_type, self.name)
 
     def __repr__(self):
-        return u"AuthencticatorInfo<{id: {} key: ({}, {})> ({})".format(self.id, self.name,
+        return u"AuthenticatorInfo<id: {} key: ({}, {})> ({})".format(self.id, self.name,
                                                                         self.auth_type, object.__repr__(self)).encode("utf8")
 
     __table_args__ = (UniqueConstraint(name, auth_type),)

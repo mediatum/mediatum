@@ -24,9 +24,11 @@ import codecs
 import logging
 import os
 import core.config as config
-from schema.schema import getMetaType
+from core import Node
+from core import db
+from schema.schema import getMetaType, Metadatatype
 
-
+q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -36,9 +38,9 @@ def generate_doi_test(node):
     Returns a DOI for the given node for testing purposes
     """
     prefix = config.get('doi.prefix_test')
-    node_id = node.id
+    node_id = unicode(node.id)
 
-    return '/'.join([prefix, node_id])
+    return u'/'.join([prefix, node_id])
 
 
 def generate_doi_live(node):
@@ -76,16 +78,16 @@ def generate_doi_live(node):
             break
 
     if node.getContentType() not in ('document', 'image'):
-        raise Exception('document type not document or image but rather %s' % node.getContentType())
+        raise Exception('document type not document or image but rather {}'.format(node.type))
     else:
-        params['type'] = node.getContentType()[0]
+        params['type'] = node.type
 
-    return '%s/%s%s%s%s/%s' % (prefix,
-                               params['year'],
-                               params['publisher'],
-                               params['type'],
-                               params['id'],
-                               suffix)
+    return '{}/{}{}{}{}/{}'.format(prefix,
+                                   params['year'],
+                                   params['publisher'],
+                                   params['type'],
+                                   params['id'],
+                                   suffix)
 
 
 def create_meta_file(node):
@@ -97,7 +99,7 @@ def create_meta_file(node):
         raise Exception('doi not set')
     else:
         tmp = config.get('paths.tempdir')
-        filename = 'meta_file_%s.txt' % node.id
+        filename = 'meta_file_{}.txt'.format(node.id)
         path = os.path.join(tmp, filename)
 
         if os.path.exists(path):
@@ -105,13 +107,14 @@ def create_meta_file(node):
         else:
             try:
                 with codecs.open(path, 'w', encoding='utf8') as f:
-                    mask = getMetaType(node.getSchema()).getMask('doi')
+                    mask = q(Metadatatype).filter_by(name=node.schema).scalar().get_mask('doi')
                     xml = mask.getViewHTML([node], flags=8)
                     f.write(xml)
             except AttributeError:
                 logg.error(
-                    'Doi was not successfully registered: Doi-mask for Schema %s is missing and should be created', node.getSchema())
-                node.removeAttribute('doi')
+                    'Doi was not successfully registered: Doi-mask for Schema %s is missing and should be created',
+                    node.schema)
+                del node.attrs['doi']
             except IOError:
                 logg.exception('Error creating %s', path)
 
@@ -123,12 +126,12 @@ def create_doi_file(node):
     @param node
     Creates and returns the path to the 'doi file' needed to register the doi with datacite via api
     """
-    if 'doi' not in node.attributes:
+    if 'doi' not in node.attrs:
         raise Exception('doi not set')
     else:
         tmp = config.get('paths.tempdir')
         host = config.get('host.name')
-        filename = 'doi_file_%s.txt' % node.id
+        filename = 'doi_file_{}.txt'.format(node.id)
         path = os.path.join(tmp, filename)
 
         if os.path.exists(path):
@@ -136,8 +139,11 @@ def create_doi_file(node):
         else:
             try:
                 with codecs.open(path, 'w', encoding='utf8') as f:
-                    f.write('doi=%s\n' % node.get('doi'))
-                    f.write('url=%s%s%s%s' % ('http://', 'mediatum.ub.tum.de', '/?id=', node.id))
+                    f.write('doi={}\n'.format(node.get('doi')))
+                    f.write('url={}{}{}{}'.format('http://',
+                                                  'mediatum.ub.tum.de',
+                                                  '/?id=',
+                                                  node.id))
             except IOError:
                 logg.exception('Error creating %s', path)
         return path

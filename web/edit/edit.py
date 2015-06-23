@@ -27,7 +27,6 @@ import core.translation
 from core import Node
 
 from contenttypes import Container, Collections, Data, Home
-from core.systemtypes import Root
 from utils.utils import Menu, splitpath, parseMenuString, isDirectory
 from edit_common import *
 
@@ -45,14 +44,7 @@ q = db.query
 
 
 def getTreeLabel(node, lang=None):
-    try:
-        label = node.getLabel(lang=lang)
-    except:
-        try:
-            label = node.getLabel()
-        except:
-            label = node.name
-
+    label = node.getLabel(lang=lang)
     c = len(node.content_children)
     if c > 0:
         label += ' <small>(%s)</small>' % (c)
@@ -184,14 +176,14 @@ def frameset(req):
                'uploaddir': getPathToFolder(users.getSpecialDir(user, 'upload')),
                'faultydir': getPathToFolder(users.getSpecialDir(user, 'faulty'))}
 
-    containertypes = [Container.__mapper__.polymorphic_map[n].class_ for n in Container.__mapper__._acceptable_polymorphic_identities if n not in ("collections", "home")]
+    containertypes = [Container.__mapper__.polymorphic_map[n].class_ for n in Container.__mapper__._acceptable_polymorphic_identities if n not in ("collections", "home", "container", "project")]
     cmenu_iconpaths = []
 
     for ct in containertypes:
         ct_name = ct.__name__
         # translations of ct_name will be offered in editor tree context menu
         cmenu_iconpaths.append(
-            [ct_name, translation_t(language, ct_name), get_editor_icon_path_from_nodeclass(ct)])
+            [ct_name.lower(), translation_t(language, ct_name), get_editor_icon_path_from_nodeclass(ct)])
 
     # a html snippet may be inserted in the editor header
     header_insert = q(Collections).one().get('system.editor.header.insert.' + language).strip()
@@ -263,7 +255,7 @@ def handletabs(req, ids, tabs):
     spc.append(Menu("sub_header_logout", "../logout", target="_parent"))
 
     # a html snippet may be inserted in the editor header
-    help_link = q(Collections.attrs['system.editor.help.link.' + language]).scalar().strip()
+    help_link = q(Collections.attrs['system.editor.help.link.' + language]).scalar()
     ctx = {
             "user": user,
             "ids": ids,
@@ -377,24 +369,16 @@ def edit_tree(req):
         else:
             homenodefilter = req.params.get('homenodefilter', '')
             if homenodefilter:
-                nodes = []
-                try:
-                    pattern = re.compile(homenodefilter)
-                    nodes = q(Home).one().container_children.sort_by_orderpos()
-                    # filter out shoppingbags etc.
-                    nodes = [n for n in nodes if n.isContainer()]
-                    # filter user name - after first "("
-                    nodes = filter(lambda n: re.match(homenodefilter, n.getLabel(language).split('(', 1)[-1]), nodes)
+                nodes = q(Home).one().container_children.sort_by_orderpos().filter(Home.name.ilike('%(%{}%)%'.format(homenodefilter))).all()
+                if len(nodes) > 1:
                     match_result = u'#={}'.format(len(nodes))
-                except Exception as e:
-                    logg.exception("exception in pattern matching for home nodes, exception ignored")
-                    match_result = u'<span style="color:red">Error: {}</span>'.format(e)
+                else:
+                    match_result = u'<span style="color:red">Error: {} not found</span>'.format(homenodefilter)
                     match_error = True
                 if home_dir not in nodes:
                     if not match_error:
                         match_result = u'#={}+1'.format(len(nodes))
-                    nodes.append(home_dir)
-                nodes = nodes.sort_by_orderpos()
+                    nodes.insert(0, home_dir)
             else:
                 nodes = [home_dir]
     else:
@@ -534,11 +518,13 @@ def action(req):
             translated_label = t(
                 lang(req), 'edit_add_container_default') + newnode_type
 
-        newnode = node.children.append(Node(name=translated_label, type=newnode_type))
-        db.session.commit()
+        content_class = Node.get_class_for_typestring(newnode_type)
+        newnode = content_class(name=translated_label)
+        node.children.append(newnode)
         newnode.set("creator", user.name)
         newnode.set("creationtime", ustr(
             time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
+        db.session.commit()
         req.params["dest"] = newnode.id
 
         label = getTreeLabel(newnode, lang=language)
@@ -678,12 +664,20 @@ def showPaging(req, tab, ids):
     combodata = ""
     script = ""
     if nodelist and len(ids) == 1:
-        previd = 0 #nodelist.getPrevious(ids[0])
-        nextid = 0 #nodelist.getNext(ids[0])
-        position, absitems = None, None#nodelist.getPositionString(ids[0])
-        combodata, script = None, None # nodelist.getPositionCombo(tab)
-    v = {"nextid": nextid, "previd": previd, "position": position, "absitems":
-         absitems, "tab": tab, "combodata": combodata, "script": script, "nodeid": ids[0]}
+        previd = nodelist.getPrevious(ids[0])
+        nextid = nodelist.getNext(ids[0])
+        position, absitems = nodelist.getPositionString(ids[0])
+        combodata, script = nodelist.getPositionCombo(tab)
+
+    v = {"nextid": nextid,
+         "previd": previd,
+         "position": position,
+         "absitems": absitems,
+         "tab": tab,
+         "combodata": combodata,
+         "script": script,
+         "nodeid": int(ids[0])}
+
     return req.getTAL("web/edit/edit.html", v, macro="edit_paging")
 
 

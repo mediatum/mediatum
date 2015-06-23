@@ -162,8 +162,6 @@ class Document(Content):
                 elif f.type == "fulltext":
                     self.files.remove(f)
 
-        db.session.commit()
-
         if doc:
             path, ext = splitfilename(doc.abspath)
 
@@ -188,6 +186,8 @@ class Document(Content):
                 self.files.append(File(thumb2name, "presentation", "image/jpeg"))
                 self.files.append(File(fulltextname, "fulltext", "text/plain"))
                 self.files.append(File(infoname, "fileinfo", "text/plain"))
+
+        db.session.commit()
 
     """ list with technical attributes for type document """
     def getTechnAttributes(self):
@@ -236,7 +236,7 @@ class Document(Content):
 
     def processDocument(self, dest):
         for file in self.files:
-            if file.getType() == "document":
+            if file.filetype == "document":
                 filename = file.abspath
                 if os.sep == '/':
                     cmd = "cp %s %s" % (filename, dest)

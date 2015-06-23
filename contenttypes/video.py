@@ -159,8 +159,6 @@ class Video(Content):
                     return
                 self.files.append(File(flvname, "video", "video/x-flv"))
 
-        db.session.commit()
-
         for f in self.files:
             if f.type in["original", "video"]:
                 if f.mimetype == "video/x-flv":

@@ -26,6 +26,7 @@ import logging
 from core.acl import AccessData
 from schema.schema import loadTypesFromDB
 from core.translation import translate
+from core.transition import httpstatus
 from utils.utils import dec_entry_log
 from core import Node
 from contenttypes import Data
@@ -37,7 +38,7 @@ logg = logging.getLogger(__name__)
 
 def elemInList(list, name):
     for item in list:
-        if item.getName() == name:
+        if item.__name__.lower() == name:
             return True
     return False
 
@@ -58,7 +59,7 @@ def getTypes(datatypes):
                 'searchmaskitem',
                 'mappingfield',
                 'shoppingbag',
-                'maskitem'] and not dtype.name.startswith("workflow"):
+                'maskitem'] and not dtype.__name__.lower().startswith("workflow"):
             res.append(dtype)
     return res
 
@@ -67,9 +68,8 @@ def getContainers(datatypes):
     res = []
     datatypes = getTypes(datatypes)
     for dtype in datatypes:
-        n = Node(u"", type=dtype.name)
-        if hasattr(n, "isContainer"):
-            if n.isContainer():
+        if hasattr(dtype, "isContainer"):
+            if dtype.isContainer():
                 res.append(dtype)
     db.session.commit()
     return res
@@ -85,127 +85,86 @@ def getContent(req, ids):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     error = req.params.get("error")
-    currentContentType = node.type
 
-    if "/" in node.type:
-        currentSchema = node.type.split('/')[1]
-    else:
-        currentSchema = ''
+    schemes = [scheme for scheme in AccessData(req).filter(loadTypesFromDB()) if scheme.isActive()]
+    long_scheme_names = {scheme.name: scheme.getLongName() for scheme in schemes}
 
-    currentCategoryName = node.getCategoryName()
-    currentTypeAlias = node.getTypeAlias()
-
-    schemes = AccessData(req).filter(loadTypesFromDB())
-    _schemes = []
-    for scheme in schemes:
-        if scheme.isActive():
-            _schemes.append(scheme)
-    schemes = _schemes
-
-    schemeNames2LongNames = {'': ''}
-    for s in schemes:
-        schemeNames2LongNames[s.getName()] = s.getLongName()
-
-    try:
-        currentSchemaLongName = schemeNames2LongNames[currentSchema]
-    except KeyError:
-        currentSchemaLongName = ''
-
-    # find out which schema allows which datatype, and hence,
-    # which overall data types we should display
+    # find allowed datatypes
     dtypes = []
     datatypes = Data.get_all_datatypes()
     for scheme in schemes:
         for dtype in scheme.getDatatypes():
             if dtype not in dtypes:
                 for t in datatypes:
-                    if t.getName() == dtype and not elemInList(dtypes, t.name):
+                    if t.__name__.lower() == dtype and not elemInList(dtypes, t.__name__.lower()):
                         dtypes.append(t)
 
-    dtypes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(
-    ), translate(y.getLongName(), request=req).lower()))
+    dtypes.sort(key=lambda x: translate(x.__name__, request=req).lower())
 
     admissible_objtypes = getTypes(datatypes)
-    #todo: this nees a better solution
-    admissible_datatypes = [n for n in admissible_objtypes if Node(u'', n.name).getCategoryName() in ['document',
-                                                                                                      'image',
-                                                                                                      'video',
-                                                                                                      'audio']]
-    admissible_containers = [n for n in admissible_objtypes if Node(u'', n.name).getCategoryName() in ['container']]
+    admissible_datatypes = [n for n in admissible_objtypes if n.getCategoryName() in ['document',
+                                                                                      'image',
+                                                                                      'video',
+                                                                                      'audio']]
+    admissible_containers = [n for n in admissible_objtypes if n.getCategoryName() in ['container']]
 
-    admissible_objtypes.sort(
-        lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
-    admissible_datatypes.sort(
-        lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
-    admissible_containers.sort(
-        lambda x, y: cmp(translate(x.getLongName(), request=req).lower(), translate(y.getLongName(), request=req).lower()))
+    admissible_objtypes.sort(key=lambda x: translate(x.__name__, request=req).lower())
+    admissible_datatypes.sort(key=lambda x: translate(x.__name__, request=req).lower())
+    admissible_containers.sort(key=lambda x: translate(x.__name__, request=req).lower())
 
-    available_schemes = [
-        s for s in schemes if currentContentType in s.getDatatypes()]
+    available_schemes = [s for s in schemes if node.type in s.getDatatypes()]
 
     # filter schemes for special datatypes
     if req.params.get("objtype", "") != "":
-        _schemes = []
-        for scheme in schemes:
-            if req.params.get("objtype", "") in scheme.getDatatypes():
-                _schemes.append(scheme)
-        schemes = _schemes
-        schemes.sort(lambda x, y: cmp(translate(x.getLongName(), request=req).lower(
-        ), translate(y.getLongName(), request=req).lower()))
+        new_type = req.params.get('objtype', '')
+        new_schema = req.params.get('schema', '')
 
-        newObjectType = req.params.get("objtype")
-        newSchema = req.params.get("schema")
-        if not newSchema:
-            newSchema = ''
+        schemes = [scheme for scheme in schemes if new_type in scheme.getDatatypes()]
 
-        newType = newObjectType
-        if newSchema:
-            newType += '/' + newSchema
-
-        oldType = currentContentType
-        if currentSchema:
-            oldType = oldType + '/' + currentSchema
-
-        if newType != oldType:
-            node.setTypeName(newType)
-            logg.info("%s changed node schema for node %s '%s' from '%s' to '%s'", user.name, node.id, node.name, oldType, newType)
-
-            node.setDirty()
-            node = q(Node).get(node.id)
-
-            currentContentType = node.type
-            currentSchema = newSchema
-            currentSchemaLongName = schemeNames2LongNames[currentSchema]
-            currentCategoryName = node.getCategoryName()
-            currentTypeAlias = node.getTypeAlias()
-            available_schemes = [
-                s for s in schemes if newObjectType in s.getDatatypes()]
-
-    isContainer = False
-    if hasattr(node, "isContainer"):
-        isContainer = node.isContainer()
+        if new_type != node.type or new_schema != node.schema:
+            logg.info("{} changed node schema for node {} '{}' from '{}' to '{}'".format(user.name,
+                                                                                         node.id,
+                                                                                         node.name,
+                                                                                         node.type,
+                                                                                         new_type))
+            #
+            node.type = new_type
+            node.schema = new_schema
+            db.session.commit()
+            # you must remove the node reference otherwise the sqlalchemy object
+            # has the wrong class manager and throws an exception when accessing
+            # the object
+            del node
+            node = q(Node).get(req.params.get('id'))
+            available_schemes = [s for s in schemes if new_type in s.getDatatypes()]
 
     if "action" in req.params.keys():
         if req.params.get("action").startswith("get_schemes_for_"):
-            newObjectType = req.params.get(
-                "action").replace("get_schemes_for_", "")
-            available_schemes = [
-                s for s in schemes if newObjectType in s.getDatatypes()]
+            new_type = req.params.get("action").replace("get_schemes_for_", "").lower()
+            available_schemes = [s for s in schemes if new_type in s.getDatatypes()]
+
             req.writeTAL("web/edit/modules/changeschema.html",
-                         {'schemes': available_schemes, 'currentSchema': currentSchema}, macro="changeschema_selectscheme")
+                         {'schemes': available_schemes,
+                          'current_schema': node.schema},
+                         macro="changeschema_selectscheme")
         return ""
 
     containers = getContainers(datatypes)
 
-    d = {"id": req.params.get("id"), "error": error, "node": node}
-    d['currentContentType'] = currentContentType
-    d['currentSchema'] = currentSchema
-    d['currentSchemaLongName'] = currentSchemaLongName
-    d['currentCategoryName'] = currentCategoryName
-    d['currentTypeAlias'] = currentTypeAlias
-    d['isContainer'] = int(isContainer)
-    d['nodes'] = [node]
-    if currentContentType in [dtype.name for dtype in containers]:
+    d = {'id': req.params.get('id'),
+         'error': error,
+         'node': node,
+         'current_type': node.type,
+         'current_schema': node.schema,
+         'category_name': node.getCategoryName(),
+         'type_alias': node.getTypeAlias(),
+         'is_container': int(node.isContainer()),
+         'nodes': [node]}
+
+    if not node.isContainer():
+        d['long_current_schema'] = long_scheme_names[node.schema]
+
+    if node.type in [dtype.__name__.lower() for dtype in containers]:
         d['schemes'] = []
         d['datatypes'] = admissible_containers  # containers
     else:

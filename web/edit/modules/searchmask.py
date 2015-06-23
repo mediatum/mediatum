@@ -25,7 +25,7 @@ from core.acl import AccessData
 from core.transition import httpstatus
 from core import Node
 from core import db
-from core.systemtypes import Searchmasks
+from core.systemtypes import Searchmasks, Metadatatypes
 
 q = db.query
 
@@ -57,8 +57,6 @@ def getContent(req, ids):
         if k.startswith("delsub_"):
             delsubfield = k[7:]
 
-    root = q(Searchmasks).one()
-
     searchtype = req.params.get("searchtype", None)
     if not searchtype:
         searchtype = node.get("searchtype")
@@ -72,15 +70,21 @@ def getContent(req, ids):
                     searchtype = "parent"
     node.set("searchtype", searchtype)
 
-    myschema = q(Node).get(req.params.get("schema", None))
-    if not isinstance(myschema, Node):
-        myschema = None
+    schema = req.params.get("schema", None)
+    schemafield = req.params.get("schemafield", None)
+    selectedfieldid = req.params.get("selectedfield", None)
 
-    schemafield = q(Node).get(req.params.get("schemafield", None))
-    if not isinstance(schemafield, Node):
-        schemafield = None
+    if schema:
+        schema = q(Node).get(schema)
+        if not isinstance(schema, Node):
+            schema = None
 
-    if myschema and schemafield and schemafield not in myschema.children:
+    if schemafield:
+        schemafield = q(Node).get(schemafield)
+        if not isinstance(schemafield, Node):
+            schemafield = None
+
+    if schema and schemafield and schemafield not in schema.children:
         schemafield = None
     if schemafield and schemafield.type != "metafield":
         schemafield = None
@@ -91,25 +95,21 @@ def getContent(req, ids):
     if searchtype == "own":
         maskname = node.get("searchmaskname")
 
-        #todo: hasChild doesnt exist
-        if not maskname or root.hasChild(maskname) == 0:
+        mask = q(Searchmasks).one().children.filter_by(name=maskname).scalar()
+        if not maskname or mask is None:
             mask = searchmask.generateMask(node)
-        else:
-            mask = root.getChild(maskname)
-        
-        selectedfieldid = req.params.get("selectedfield", None)
+
         if selectedfieldid:  # edit
             selectedfield = q(Node).get(selectedfieldid)
             assert selectedfield in mask.children
-            selectedfield.setName(req.params["fieldname"])
+            selectedfield.name = req.params["fieldname"]
             if "createsub" in req.params and schemafield:
                 selectedfield.children.append(schemafield)
             if delsubfield:
                 selectedfield.children.remove(q(Node).get(delsubfield))
 
         if req.params.get("isnewfield", "") == "yes":  # create a new field
-            #todo:getNumChildren doesnt exist
-            l = mask.getNumChildren()
+            l = mask.children.count()
             mask.children.append(Node("Suchfeld %s" % l, "searchmaskitem"))
 
         elif delfield:  # del a field
@@ -130,30 +130,26 @@ def getContent(req, ids):
         else:
             selectedfield = None
 
-        if mask is None:
-            print "no parent searchmask found, empty mask created"
-            mask = Node(maskname, "searchmask")
-
-        fields = mask.children
+        fields = mask.children.all()
 
     db.session.commit()
 
     data = {"idstr": ",".join(ids),
             "node": node,
             "searchtype": searchtype,
-            "schemas": schema.loadTypesFromDB(),
+            "schemas": q(Metadatatypes).one().children.sort_by_name().all(),
             "searchfields": fields,
             "selectedfield": selectedfield,
             "newfieldlink": "edit_content?id=%s&tab=searchmask" % node.id,
             "defaultschemaid": None,
             "defaultfieldid": None}
 
-    if myschema:
-        data["defaultschemaid"] = myschema.id
+    if schema:
+        data["defaultschemaid"] = schema.id
     if schemafield:
         data["defaultfieldid"] = schemafield.id
 
-    data["schema"] = myschema
+    data["schema"] = schema
 
     def display(schemafield): 
         if not schemafield or schemafield.type != 'metafield':

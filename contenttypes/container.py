@@ -212,11 +212,23 @@ class Container(Data, ContainerMixin, ContainerSchemaMixin):
         return ["statistic", "image"]
 
     def getLabel(self, lang=None):
+        #removes exceptions when object has to attr dict
+        if getattr(self, 'attrs') is None:
+            return self.name
+
         if lang and self.get(u'{}.name'.format(lang)) != "":
             return self.get(u'{}.name'.format(lang))
-        label = self.get("label")
+
+        if lang == 'de' and self.get('nodename'):
+            return self.attrs['nodename']
+
+        #removes heinous amount of error logging when building directory tree
+        try:
+            label = self.get("label")
+        except AttributeError:
+            label = ''
         if not label:
-            label = self.getName()
+            label = self.name
         return label
 
     """ list with technical attributes for type directory """

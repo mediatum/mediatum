@@ -7,7 +7,7 @@ import os.path
 from warnings import warn
 
 from core import config
-from utils.utils import get_filesize
+from utils.utils import get_filesize, get_hash
 
 
 class FileMixin(object):
@@ -41,6 +41,10 @@ class FileMixin(object):
     @property
     def size(self):
         return get_filesize(self.path)
+
+    @property
+    def hash(self):
+        return get_hash(self.path)
 
     def open(self, *args, **kwargs):
         """Opens and returns the referenced file from the file system

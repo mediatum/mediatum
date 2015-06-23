@@ -36,7 +36,7 @@
     </script>
 
     <script tal:content="python:u'var flag_nodename_changed = {};'.format(flag_nodename_changed)">TEXT</script>
-    <script tal:content="python:u'var new_nodename = decodeURIComponent(escape({}));'.format(nodes[0].name)">TEXT</script>
+    <script tal:content="python:u'var new_nodename = decodeURIComponent(escape(\'{}\'));'.format(nodes[0].name)">TEXT</script>
     
     <div id="navigation_content" style="border-top:0px!important">
 

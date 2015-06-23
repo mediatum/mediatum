@@ -34,13 +34,14 @@ class m_mlist(Metatype):
         valuelist = []
 
         items = {}
-        # try:
-        #     n = context.collection
-        #     if n is None:
-        #         raise tree.NoSuchNodeError()
-        #     items = n.getAllAttributeValues(context.field.getName(), context.access)
-        # except tree.NoSuchNodeError:
-        #     None
+        try:
+            n = context.collection
+            if n is not None:
+                field_name = context.field.getName()
+                id_attr_val = n.all_children_by_query(q(Node.id, Node.a[field_name]).filter(Node.a[field_name] != None and Node.a[field_name] != '').distinct(Node.a[field_name]))
+                items = {pair[0]: pair[1] for pair in id_attr_val}
+        except:
+            None
 
         tempvalues = context.field.getValueList()
         valuesfiles = context.field.getFiles()

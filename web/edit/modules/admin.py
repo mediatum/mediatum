@@ -46,7 +46,8 @@ def getContent(req, ids):
         return ''
 
     if req.params.get("type", "") == "addattr" and req.params.get("new_name", "") != "" and req.params.get("new_value", "") != "":
-        node.set(req.params.get("new_name", ""), req.params.get("new_value", ""))
+        node.attrs[req.params.get("new_name")] = req.params.get("new_value", "")
+        db.session.commit()
         logg.info("new attribute %s for node %s added", req.params.get("new_name", ""), node.id)
 
     for key in req.params.keys():
@@ -56,27 +57,22 @@ def getContent(req, ids):
             logg.info("localread attribute of node %s updated", node.id)
             break
 
-        # set current node 'dirty' (reindex for search)
-        if key.startswith("set_dirty"):
-            node.setDirty()
-            logg.info("set node %s dirty", node.id)
-
-            if node.isContainer():
-                for child_node in node.children:
-                    child_node.setDirty()
-                    logg.info("set node %s dirty", child_node.id)
-            break
-
         # remove  attribute
         if key.startswith("attr_"):
             del node.attrs[key[5:-2]]
+            db.session.commit()
             logg.info("attribute %s of node %s removed", key[5:-2], node.id)
             break
 
-    fields = node.getMetaFields()
+    metadatatype = node.metadatatype
     fieldnames = []
-    for field in fields:
-        fieldnames += [field.name]
+
+    if metadatatype:
+        fields = metadatatype.getMetaFields()
+        for field in fields:
+            fieldnames += [field.name]
+    else:
+        fields = []
 
     attrs = node.attrs.items()
 
@@ -128,6 +124,8 @@ def getFormat(fields, name):
 
 
 def formatdate(value, f='%d.%m.%Y %H:%M:%S'):
+    if not isinstance(value, unicode):
+        value = unicode(value)
     try:
         return format_date(parse_date(value, "%Y-%m-%dT%H:%M:%S"), format=f)
     except ValueError:

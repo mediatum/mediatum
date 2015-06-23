@@ -160,9 +160,9 @@
               consoledb.groupEnd('--- loading contextmenu js ---');
             </script>
 
-            <script tal:content="python:u'var user_folders = {};'.format({k: unicode(folders[k][0].id) for k in folders})">TEXT</script>
-            <script tal:content="python:u'var collectionsid = {};'.format(collectionsid)">TEXT</script>
-            <script tal:content="python:u'var containertype2iconpath = {};'.format(cmenu_iconpaths)">;</script>
+            <script tal:content="python:u'var user_folders = {};'.format({k: str(folders[k][0].id) for k in folders})">TEXT</script>
+            <script tal:content="python:u'var collectionsid = \'{}\';'.format(collectionsid)">TEXT</script>
+            <script tal:content="python:u'var containertype2iconpath = {};'.format([[str(i) for i in j] for j in cmenu_iconpaths])">;</script>
             <script tal:content="python:u'var edit_t = \'{}\';'.format(t(language, 'edit_edit_container_node'))">;</script>
             <script tal:content="python:u'var cut_t = \'{}\';'.format(t(language, 'edit_cut_container'))">;</script>
             <script tal:content="python:u'var paste_t = \'{}\';'.format(t(language, 'edit_paste_container_here'))">;</script>
@@ -252,7 +252,7 @@ function build_context_menu_items(node, opts) {
 
     containertype2iconpath.forEach(
           function(t){
-            create_container_items['create_container_'+t[0]] = {name: t[2], icon:t[0]};
+            create_container_items['create_container_'+t[0]] = {name: t[1], icon:t[2]};
             }
     );
 
@@ -1068,8 +1068,8 @@ function set_cm_to_default() {
             </div>
 
             <script tal:content="python:u'var currentid = {};'.format(id)">TEXT</script>
-            <script tal:content="python:u'var currentpath = \'/{}\';'.format(u'/'.join(path[2:]))">TEXT</script>
-            <script tal:content="python:u'var currentcpath = \'/{}\';'.format(u'/'.join(containerpath[2:]))">TEXT</script>
+            <script tal:content="python:u'var currentpath = \'/{}\';'.format('/'.join(path[2:]))">TEXT</script>
+            <script tal:content="python:u'var currentcpath = \'/{}\';'.format('/'.join(containerpath[2:]))">TEXT</script>
 
             <script>
                var rct = null;

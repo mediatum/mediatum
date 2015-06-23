@@ -500,7 +500,7 @@ class Data(Node):
         return True
 
     def getFullView(self, language):
-        masks = self.getMasks(type="fullview", language=language)
+        masks = self.metadatatype.filter_masks(masktype='fullview', language=language).all()
         if len(masks) > 1:
             for m in masks:
                 if m.getLanguage() == language:

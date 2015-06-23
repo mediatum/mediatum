@@ -1,4 +1,3 @@
-
 import logging
 import time
 from . import athana
@@ -12,7 +11,8 @@ import core.users as users
 from utils.date import parse_date
 from utils.utils import utf8_decode_escape
 import core.config as config
-
+from core import db
+from contenttypes import Directory
 
 logg = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class FileWriter:
         f, ext = os.path.splitext(filename)
         self.realname = filename
         self.filename = filename
-        self.file = codecs.open(self.filename, "wb", encoding='utf8')
+        self.file = codecs.open(self.filename, "wb")
         self.node = node
 
     def write(self, data):
@@ -34,7 +34,8 @@ class FileWriter:
         try:
             f = fileutils.importFile(self.realname, self.filename, "ftp_")
             os.remove(self.filename)
-            self.node.addFile(f)
+            self.node.files.append(f)
+            db.session.commit()
         except:
             pass
 
@@ -98,11 +99,11 @@ class collection_ftpserver:
         result = self.cwd(path)
         if result:
             result = None
-            for f in self.node.getFiles():
-                if filename == f.getName():
+            for f in self.node.files:
+                if filename == f.base_name:
                     result = self.node, f
-            for node in self.node.getChildren():
-                if filename.replace('(%s) ' % node.id, '') == node.getName():
+            for node in self.node.children:
+                if filename.replace('(%s) ' % node.id, '') == node.name:
                     result = self.node, node
         self.dir = olddir
         self.node = oldnode
@@ -117,23 +118,24 @@ class collection_ftpserver:
     def stat(self, path):
         node, f = self.getfile(path)
         time = 1209465429
-        return (0, 0, 2052, 1, 1000, 100, f.getSize(), time, time, time)
+        return (0, 0, 2052, 1, 1000, 100, f.size, time, time, time)
 
     def unlink(self, path):
         node, f = self.getfile(path)
         if f == "metadata":
             raise IOError("Can't delete file")
         elif isinstance(f, Node):
-            parent = self.dir[0].getParents()[0]
-            for subfolder in parent.getChildren():
-                if subfolder.getName() == 'Papierkorb':
-                    subfolder.addChild(f)
-                    node.removeChild(f)
+            parent = self.dir[0].parents[0]
+            for subfolder in parent.children:
+                if subfolder.name == 'Papierkorb':
+                    subfolder.children.append(f)
+                    node.children.remove(f)
                     break
         else:
-            if os.path.exists(f.retrieveFile()):
-                os.remove(f.retrieveFile())
-            node.removeFile(f)
+            if os.path.exists(f.abspath):
+                os.remove(f.abspath)
+            node.files.remove(f)
+        db.session.commit()
 
     def mkdir(self, path):
         path, filename = utils.splitpath(path)
@@ -144,7 +146,9 @@ class collection_ftpserver:
         node = self.node
         self.dir = olddir
         self.node = oldnode
-        node.addChild(Node(utf8_decode_escape(filename), type="directory"))
+        node.children.append(Directory(utf8_decode_escape(filename)))
+        db.session.commit()
+
 
     def rmdir(self, path):
         path, filename = utils.splitpath(path)
@@ -153,12 +157,13 @@ class collection_ftpserver:
         if not self.cwd(path):
             raise IOError("no such directory: " + path)
         try:
-            for subdir in self.node.getChildren():
-                if subdir.getName() == filename:
-                    self.node.removeChild(subdir)
+            for subdir in self.node.children:
+                if subdir.name == filename:
+                    self.node.children.remove(subdir)
         finally:
             self.dir = olddir
             self.node = oldnode
+        db.session.commit()
 
     def open_for_write(self, path, mode):
         path, filename = utils.splitpath(path)
@@ -180,13 +185,13 @@ class collection_ftpserver:
         if not f:
             raise IOError("No such file: " + path)
         if isinstance(f, Node):
-            file = f.getFiles()[0].retrieveFile()
+            file = f.files[0].abspath
         else:
-            file = f.retrieveFile()
-        return codecs.open(file, "rb", encoding='utf8')
+            file = f.abspath
+        return codecs.open(file, "rb")
 
     def current_directory(self):
-        return "/" + ("/".join([d.getName() for d in self.dir[1:]]))
+        return "/" + ("/".join([d.name for d in self.dir[1:]]))
 
     def cwd(self, dir):
         d = self.dir
@@ -199,8 +204,8 @@ class collection_ftpserver:
             elif c == '..' and len(d):
                 d = d[0:-1]
             else:
-                if d[-1].hasChild(c):
-                    d += [d[-1].getChild(c)]
+                if d[-1].children.filter_by(name=c).scalar():
+                    d += [d[-1].children.filter_by(name=c).one()]
                 else:
                     return 0
         self.dir = d
@@ -238,38 +243,41 @@ class collection_ftpserver:
 
                 if not new_parent:
                     # find destination folder
-                    for node in self.dir[0].getAllChildren():
-                        if node.getName() == destination_dir:
+                    for node in self.dir[0].all_children:
+                        if node.name == destination_dir:
                             new_parent = node
                             break
 
                 # find node object
-                for node in self.node.getChildren():
-                    if node.getName() == filename.replace('(%s) ' % node.id, ''):
-                        new_parent.addChild(node)
-                        self.node.removeChild(node)
+                for node in self.node.children:
+                    if node.name == filename.replace('(%s) ' % node.id, ''):
+                        new_parent.children.append(node)
+                        self.node.children.remove(node)
+                        db.session.commit()
                         return 1
 
             # check directory
-            for c in self.node.getChildren():
+            for c in self.node.children:
                 # sets the name of the node
-                if c.getName() == self.filefrom.replace('(%s) ' % c.id, ''):
+                if c.name == self.filefrom.replace('(%s) ' % c.id, ''):
                     c.set("nodename", line[1].replace('(%s) ' % c.id, ''))
                     del self.filefrom
+                    db.session.commit()
                     return 1
 
             # check files
-            for f in self.node.getFiles():
-                if f.retrieveFile().split("/")[-1] == self.filefrom:
+            for f in self.node.files:
+                if f.abspath.split("/")[-1] == self.filefrom:
                     if not line[1].startswith("ftp_"):
                         line[1] = "ftp_" + line[1]
-                    nname = ("/".join(f.retrieveFile().split("/")[:-1]) + "/" + line[1]).replace(" ", "_")
+                    nname = ("/".join(f.abspath.split("/")[:-1]) + "/" + line[1]).replace(" ", "_")
                     if not os.path.exists(nname):
-                        os.rename(f.retrieveFile(), nname)
-                        self.node.removeFile(f)
-                        f._path = ("/".join(f._path.split("/")[:-1]) + "/" + line[1]).replace(" ", "_")
-                        self.node.addFile(f)
+                        os.rename(f.abspath, nname)
+                        self.node.files.remove(f)
+                        f.path = ("/".join(f.path.split("/")[:-1]) + "/" + line[1]).replace(" ", "_")
+                        self.node.files.append(f)
                         del self.filefrom
+                        db.session.commit()
                         return 1
         return 0
 
@@ -284,34 +292,34 @@ class collection_ftpserver:
         l = []
 
         # convert nodefiles to nodes
-        for nodefile in self.dir[-1].getFiles():
-            if not nodefile.getType().startswith('tile') and "ftp_" in nodefile.retrieveFile() and os.path.exists(nodefile.retrieveFile()):
+        for nodefile in self.dir[-1].files:
+            if not nodefile.filetype.startswith('tile') and "ftp_" in nodefile.abspath and os.path.exists(nodefile.abspath):
                 file_to_node(nodefile, upload_dir)
 
         # display folders and nodes
-        for node in self.dir[-1].getChildren():
-            if node.getName().strip() != "" and node.isContainer():
+        for node in self.dir[-1].children:
+            if node.name.strip() != "" and node.isContainer():
                 nodedate = node.get("creationtime")
                 if nodedate:
                     t = parse_date(nodedate)
                     l += ["drwxrwxrwx    1 1001     100          4096 %d %d %d %s" % (t.month,
                                                                                       t.day,
                                                                                       t.year,
-                                                                                      node.getName())]
+                                                                                      node.name)]
                 else:
-                    l += ["drwxrwxrwx    1 1001     100          4096 Jan 10  2008 %s" % node.getName()]
+                    l += ["drwxrwxrwx    1 1001     100          4096 Jan 10  2008 %s" % node.name]
             else:
                 l += ["-rw-rw-rw-    1 1001      100         0 %d %d %d (%s) %s" % (1,
                                                                                     1,
                                                                                     2000,
                                                                                     node.id,
-                                                                                    node.getName())]
+                                                                                    node.name)]
         # display any unconverted files
-        for nodefile in self.dir[-1].getFiles():
-            if not nodefile.getType().startswith('tile') and "ftp_" in nodefile.retrieveFile() and os.path.exists(nodefile.retrieveFile()):
-                t = os.stat(nodefile.retrieveFile())[8]  # last modification date
+        for nodefile in self.dir[-1].files:
+            if not nodefile.filetype.startswith('tile') and "ftp_" in nodefile.abspath and os.path.exists(nodefile.abspath):
+                t = os.stat(nodefile.abspath)[8]  # last modification date
                 l += ["-rw-rw-rw-    1 1001     100      %8d %d %d  %d %s" %
-                      (nodefile.getSize(), time.localtime(t)[1], time.localtime(t)[2], time.localtime(t)[0], nodefile.getName())]
+                      (nodefile.size, time.localtime(t)[1], time.localtime(t)[2], time.localtime(t)[0], nodefile.base_name)]
 
         self.dir = olddir
         self.node = oldnode
@@ -327,34 +335,34 @@ def file_to_node(file_node, upload_dir):
     @return: Node if one was created
     '''
 
-    home_dir = upload_dir.getParents()[0]
-    file_type = file_node.getType()
+    home_dir = upload_dir.parents[0]
+    file_type = file_node.filetype
 
     if file_type == 'other' or file_type == 'zip':
         return
 
-    path = file_node.retrieveFile().split('/')
+    path = file_node.abspath.split('/')
     new_name = path.pop().replace('ftp_', '', 1)
     path.append(new_name)
-    new_path = '/'.join(path)
+    new_abspath = '/'.join(path)
 
     try:
-        os.rename(file_node.retrieveFile(), new_path)
+        os.rename(file_node.abspath, new_abspath)
+        file_node.path = new_abspath.replace(config.get('paths.datadir'), '')
     except:
-        new_path = file_node.retrieveFile()
+        return
 
     schema = home_dir.get(u'system.ftp.{}'.format(file_type)).lstrip('/')
     if not schema:
         schema = 'file'
 
-    new_node = Node(utf8_decode_escape(new_name),
-                         type='/'.join([file_node.getType(),
-                                        schema]))
-    upload_dir.removeFile(file_node)
-    file_node._path = file_node._path.replace(config.get('paths.datadir'), '')
-    file_node._path = file_node._path.replace(file_node._path.split('/')[-1], new_node.getName())
-    new_node.addFile(file_node)
+    content_class = Node.get_class_for_typestring(file_node.filetype)
+    new_node = content_class(utf8_decode_escape(new_name), schema=schema)
+
+    upload_dir.files.remove(file_node)
+    new_node.files.append(file_node)
     new_node.event_files_changed()
-    upload_dir.addChild(new_node)
+    upload_dir.children.append(new_node)
+    db.session.commit()
 
     return new_node

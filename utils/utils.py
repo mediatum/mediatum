@@ -133,7 +133,7 @@ def modify_tex(string, option):
             if option == 'strip':
                 string = string.replace(replacements[tag]['tex'] % match,
                                         match)
-    return string
+    return unicode(string)
 
 
 def splitpath(path):

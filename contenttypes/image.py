@@ -303,7 +303,6 @@ class Image(Content):
                     self.files.append(File(f.abspath, "original", f.mimetype))
                     self.files.append(File(f.abspath, "image", f.mimetype))
                     self.files.append(File(f.abspath[:-4] + ".png", "tmppng", "image/png"))
-                    db.session.commit()
                     break
             orig = 0
             thumb = 0
@@ -319,7 +318,6 @@ class Image(Content):
                                                           and (f.base_name.lower().endswith("tif") or f.base_name.lower().endswith("tiff"))):
                             # move old file to "original", create a new png to be used as "image"
                             self.files.remove(f)
-                            db.session.commit()
 
                             path, ext = splitfilename(f.abspath)
                             pngname = path + ".png"
@@ -340,8 +338,6 @@ class Image(Content):
                             break
                         else:
                             self.files.append(File(f.abspath, "original", f.mimetype))
-
-            db.session.commit()
 
             # retrieve technical metadata.
             for f in self.files:
@@ -441,8 +437,9 @@ class Image(Content):
             for f in self.files:
                 if f.base_name.lower().endswith("png") and f.type == "tmppng":
                     self.files.remove(f)
-                    db.session.commit()
                     break
+
+        db.session.commit()
 
 
     def unwanted_exif_attributes(self):

@@ -25,6 +25,7 @@ from core.transition import httpstatus
 from core import Node
 from core import db
 from core.systemtypes import Root
+from utils.utils import get_hash
 
 q = db.query
 
@@ -49,4 +50,6 @@ def objlist(req):
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
-    return req.getTAL("web/edit/modules/license.html", {"node":node}, macro="edit_license")
+    return req.getTAL("web/edit/modules/license.html", {"children": node.children,
+                                                        'hash_function': get_hash},
+                      macro="edit_license")

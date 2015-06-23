@@ -59,12 +59,12 @@ def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]
     logg.info("Sending mail from %s to %s", fromaddr, toaddrs)
     if not testing:
         if not attachments_paths_and_filenames:
-            try:
-                text = unicode(text, "utf-8").encode("latin1")
-            except:
-                logg.exception("exception in sendmail, ignoring")
-                
-            msg = """From: %s\nTo: %s\nSubject: %s\n\n%s""" % (fromaddr, toaddrs_string, subject, text)
+            msg = u"From: {}\nTo: {}\nSubject: {}\n\n{}".format(fromaddr,
+                                                                toaddrs_string,
+                                                                subject,
+                                                                text)
+
+            msg = msg.encode('latin1')
             try:
                 server = smtplib.SMTP(config.get("server.mail"))
                 server.set_debuglevel(1)

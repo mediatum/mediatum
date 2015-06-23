@@ -46,6 +46,8 @@ from core.translation import t as translation_t
 from core import db
 from contenttypes import Data
 from core import Node
+from schema.schema import Metadatatype
+from sqlalchemy import func
 
 logg = logging.getLogger(__name__)
 identifier_importers = {}
@@ -86,7 +88,6 @@ def getDatatypes(req, schemes):
                 for t in datatypes:
                     if t.__name__.lower() == dtype and not elemInList(dtypes, t.__name__.lower()):
                         dtypes.append(t)
-    #todo: potentially needs to be changed to comtinue using longname()
     dtypes.sort(lambda x, y: cmp(translate(x.__name__.lower(),
                                            request=req).lower(),
                                  translate(y.__name__.lower(),
@@ -155,7 +156,7 @@ def getContent(req, ids):
                         logg.debug("__name__=%s, func=%s; _m=%s, _m[1]=%s", __name__, funcname(), mimetype, mimetype[1])
 
                         content_class = Node.get_class_for_typestring(mimetype[1])
-                        node = content_class(filename, schema=filename2scheme[filename])
+                        node = content_class(name=filename, schema=filename2scheme[filename])
 
                         basenode.children.append(node)
                         node.set("creator", user.name)
@@ -193,13 +194,14 @@ def getContent(req, ids):
                                     logg.debug("files at basenode: %s", [(x.getName(), x.abspath) for x in basenode.files])
 
                                     content_class = Node.get_class_for_typestring(req.params.get('type'))
-                                    node = content_class(filename, schema=req.params.get('value'))
+                                    node = content_class(name=filename, schema=req.params.get('value'))
 
                                     basenode.children.append(node)
                                     node.set("creator", user.name)
                                     node.set("creationtime",  unicode(time.strftime('%Y-%m-%dT%H:%M:%S',
                                                                                     time.localtime(time.time()))))
 
+                                    db.session.commit()
                                     # clones to a file with random name
                                     cloned_file = importFileRandom(f.abspath)
                                     node.files.append(cloned_file)
@@ -243,7 +245,7 @@ def getContent(req, ids):
             schemes = getSchemes(req)
             dtypes = getDatatypes(req, schemes)
             if len(dtypes) == 1:  # load schemes for type
-                schemes = getSchemesforType(access, dtypes[0].getName())
+                schemes = getSchemesforType(access, dtypes[0].__name__.lower())
             content = req.getTAL('web/edit/modules/upload.html', {"datatypes": dtypes,
                                                                   "schemes": schemes,
                                                                   "language": lang(req),
@@ -257,7 +259,7 @@ def getContent(req, ids):
         if req.params.get('action') == 'getschemes':
             ret = []
             for scheme in getSchemesforType(access, req.params.get('contenttype')):
-                ret.append({'id': scheme.getName(), 'name': scheme.getLongName()})
+                ret.append({'id': scheme.name, 'name': scheme.getLongName()})
             req.write(json.dumps({'schemes': ret}))
             return None
 
@@ -266,13 +268,14 @@ def getContent(req, ids):
             schema = req.params.get('schema')
             ctype = req.params.get('contenttype')
 
-            node = Node(u"", type=ctype, schema=schema)
+            node = Node(name=u"", type=ctype, schema=schema)
             basenode = q(Node).get(req.params.get('id'))
             basenode.children.append(node)
             node.set("creator", user.name)
             node.set("creationtime",  ustr(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
-            req.write(json.dumps({'newid': node.id, 'id': req.params.get('id')}))
             db.session.commit()
+            req.write(json.dumps({'newid': node.id,
+                                  'id': req.params.get('id')}))
             return None
 
         # create node using given identifier (doi, ...)
@@ -302,7 +305,6 @@ def getContent(req, ids):
                     new_node.set("system.identifier_importer", identifier_importer)
                     new_node.set("system.identifier_imported_from", identifier)
 
-                    clearFromCache(new_node)
                     res['newid'] = new_node.id
 
                     logg.info("%s created new node id=%s (name=%s, type=%s) by importing identifier %s, "
@@ -422,16 +424,21 @@ def getContent(req, ids):
         v['collection_sortfield'] = node.get("sortfield")
         sortfields = [SortChoice(translation_t(req, "off"), "")]
 
-        #todo: figure out what to do about getalloccurences
-        # if node.type not in ["root", "collections", "home"]:
-        #     for ntype, num in node.getAllOccurences(acl.AccessData(req)).items():
-        #         if ntype.getSortFields():
-        #             for sortfield in ntype.getSortFields():
-        #                 sortfields += [SortChoice(sortfield.getLabel(), sortfield.getName())]
-        #                 sortfields += [SortChoice(sortfield.getLabel() + translation_t(req, "descending"), "-" + sortfield.getName())]
-        #             break
+        if node.type not in ["root", "collections", "home"]:
+            sorted_schema_count = node.all_children_by_query(q(Node.schema, func.count(Node.schema)).group_by(Node.schema).order_by(func.count(Node.schema).desc()))
+
+            for schema_count in sorted_schema_count:
+                metadatatype = q(Metadatatype).filter_by(name=schema_count[0]).first()
+                if metadatatype:
+                    sort_fields = metadatatype.metafields.filter(Node.a.opts.like("%o%")).all()
+                    if sort_fields:
+                        for sortfield in sort_fields:
+                            sortfields += [SortChoice(sortfield.getLabel(), sortfield.name)]
+                            sortfields += [SortChoice(sortfield.getLabel() + translation_t(req, "descending"), "-" + sortfield.name)]
+                        break
+
         v['sortchoices'] = sortfields
-        v['count'] = len(node.getContentChildren())
+        v['count'] = len(node.content_children)
         v['language'] = lang(req)
         v['t'] = translation_t
 
@@ -514,7 +521,7 @@ def upload_ziphandler(req):
                 else:
                     newfilename = join_paths(config.get("paths.tempdir"),  random_str + name.replace(" ", "_"))
 
-                with codecs.open(newfilename, "wb", encoding='utf8') as fi:
+                with codecs.open(newfilename, "wb") as fi:
                     fi.write(z.read(f))
 
                 fn = importFileToRealname(mybasename(name.replace(" ", "_")), newfilename)

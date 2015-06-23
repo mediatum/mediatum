@@ -17,10 +17,12 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
+from core import Node
+from core import db
 
 from .ftreedata import getData, getPathTo, getLabel
 
-
+q = db.query
 logg = logging.getLogger(__name__)
 
 
@@ -37,14 +39,16 @@ def ftree(req):
     if "changeCheck" in req.params:
         try:
             for id in req.params.get("currentitem").split(","):
-                node = tree.getNode(id)
-                parent = tree.getNode(req.params.get("changeCheck"))
-                if node in parent.getChildren():
-                    if len(node.getParents()) > 1:
-                        parent.removeChild(node)
+                node = q(Node).get(id)
+                parent = q(Node).get(req.params.get("changeCheck"))
+                if node in parent.children:
+                    if len(node.parents) > 1:
+                        parent.children.remove(node)
+                        db.session.commit()
                     else:
                         req.writeTALstr('<tal:block i18n:translate="edit_classes_noparent"/>', {})
                 else:
-                    parent.addChild(node)
+                    parent.children.add(node)
+                    db.session.commit()
         except:
             logg.exception("exception in ftree")

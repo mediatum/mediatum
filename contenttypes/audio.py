@@ -41,8 +41,7 @@ def makeAudioThumb(self, audiofile):
     if not audiofile.abspath.endswith(".mp3"):
         os.system("lame -V 4 -q %s %s" % (audiofile.abspath, path + ".mp3"))
         ret = path + ".mp3"
-    self.files.append(File(name=path + ".mp3", type="mp3", mimetype="audio/mpeg"))
-    db.session.commit()
+    self.files.append(File(path + ".mp3", "mp3", "audio/mpeg"))
     return ret
 
 # """ make thumbnail (jpeg 128x128) """
@@ -82,8 +81,7 @@ def makeThumbNail(self, audiofile):
                 im = im.convert("RGB")
                 im.save(path + ".thumb", "jpeg")
 
-                self.files.append(File(name=path + ".thumb", type="thumb", mimetype=audiofile.tags[k].mime))
-                db.session.commit()
+                self.files.append(File(path + ".thumb", "thumb", audiofile.tags[k].mime))
                 break
 
 
@@ -109,28 +107,26 @@ def makePresentationFormat(self, audiofile):
                     newwidth = width * newheight / height
                 pic = pic.resize((newwidth, newheight), Image.ANTIALIAS)
                 pic.save(path + ".thumb2", "jpeg")
-                self.files.append(File(name=path + ".thumb2", type="presentation", mimetype=audiofile.tags[k].mime))
-                db.session.commit()
+                self.files.append(File(path + ".thumb2", "presentation", audiofile.tags[k].mime))
                 break
 
 
 def makeMetaData(self, audiofile):
-    self.set("mp3.version", audiofile.info.version)
-    self.set("mp3.layer", audiofile.info.layer)
-    self.set("mp3.bitrate", unicode(int(audiofile.info.bitrate) / 1000) + " kBit/s")
-    self.set("mp3.sample_rate", unicode(float(audiofile.info.sample_rate) / 1000) + " kHz")
+    self.attrs["mp3.version"] = audiofile.info.version
+    self.attrs["mp3.layer"] = audiofile.info.layer
+    self.attrs["mp3.bitrate"] = u"{} kBit/s".format(audiofile.info.bitrate / 1000)
+    self.attrs["mp3.sample_rate"] = u"{} kHz".format(audiofile.info.sample_rate / 1000)
 
     _s = int(audiofile.info.length % 60)
     _m = audiofile.info.length / 60
     _h = int(audiofile.info.length) / 3600
 
-    self.set("mp3.length", format_date(make_date(0, 0, 0, _h, _m, _s), '%Y-%m-%dT%H:%M:%S'))
+    self.attrs["mp3.length"] = format_date(make_date(0, 0, 0, _h, _m, _s), '%Y-%m-%dT%H:%M:%S')
 
     if audiofile.tags:
         for key in audio_frames.keys():
             if key in audiofile.tags.keys():
-                self.set("mp3." + audio_frames[key], audiofile.tags[key])
-
+                self.attrs["mp3." + audio_frames[key]] = unicode(audiofile.tags[key])
 
 """ audio class for internal audio-type """
 
@@ -228,8 +224,6 @@ class Audio(Content):
             if thumb2:  # delete old thumb2
                 self.files.remove(thumb2)
 
-            db.session.commit()
-
             athumb = makeAudioThumb(self, original)
             if athumb:
                 _original = AudioFile(athumb)
@@ -238,6 +232,8 @@ class Audio(Content):
             makePresentationFormat(self, _original)
             makeThumbNail(self, _original)
             makeMetaData(self, _original)
+
+        db.session.commit()
 
     """ list with technical attributes for type image """
     def getTechnAttributes(self):

@@ -33,6 +33,7 @@ from core.acl import AccessData
 from core.transition import httpstatus
 from core import db
 from core import Node
+from schema.schema import Metadatatype
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -69,13 +70,16 @@ def getContent(req, ids):
     v['collection_sortfield'] = node.get("sortfield")
     sortfields = [SortChoice(t(req,"off"),"")]
     if node.type not in ["root", "collections", "home"]:
-        #todo: find replacement for getalloccurences
-        for ntype, num in node.getAllOccurences(acl.AccessData(req)).items():
-            if ntype.getSortFields():
-                for sortfield in ntype.getSortFields():
-                    sortfields += [SortChoice(sortfield.getLabel(), sortfield.getName())]
-                    sortfields += [SortChoice(sortfield.getLabel()+t(req, "descending"), "-" +sortfield.getName())]
-                break
+        sorted_schema_count = c.all_children_by_query(q(Node.schema, func.count(Node.schema)).group_by(Node.schema).order_by(func.count(Node.schema).desc()))
+        for schema_count in sorted_schema_count:
+            metadatatype = q(Metadatatype).filter_by(name=schema_count[0]).first()
+            if metadatatype:
+                sort_fields = metadatatype.metafields.filter(Node.a.opts.like("%o%")).all()
+                if sort_fields:
+                    for sortfield in sort_fields:
+                        sortfields += [SortChoice(sortfield.getLabel(), sortfield.name)]
+                        sortfields += [SortChoice(sortfield.getLabel() + t(req, "descending"), "-" + sortfield.name)]
+                    break
     v['sortchoices'] = sortfields
     v['ids'] = ids
     v['count'] = len(node.content_children)

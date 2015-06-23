@@ -479,7 +479,7 @@ class UserLinks:
     def getLinks(self):
         l = [Link("http://" + config.get("host.name") + "/logout", t(self.language, "sub_header_logout_title"),
                   t(self.language, "sub_header_logout"), icon="/img/logout.gif")]
-        if config.get("user.guestuser") == self.user.getName():
+        if config.get("user.guestuser") == self.user.login_name:
             if config.get("config.ssh") == "yes":
                 l = [Link("https://" + config.get("host.name") + "/login", t(self.language, "sub_header_login_title"),
                           t(self.language, "sub_header_login"), icon="/img/login.gif")]
@@ -491,18 +491,18 @@ class UserLinks:
             l += [Link("/", t(self.language, "sub_header_frontend_title"),
                        t(self.language, "sub_header_frontend"), icon="/img/frontend.gif")]
 
-        if self.user.isEditor():
+        if self.user.is_editor:
             idstr = ""
             if self.id:
                 idstr = "?id=" + str(self.id)
             l += [Link("/edit" + idstr, t(self.language, "sub_header_edit_title"),
                        t(self.language, "sub_header_edit"), icon="/img/edit.gif")]
 
-        if self.user.isAdmin():
+        if self.user.is_admin:
             l += [Link("/admin", t(self.language, "sub_header_administration_title"),
                        t(self.language, "sub_header_administration"), icon="/img/admin.gif")]
 
-        if self.user.isWorkflowEditor() and self.area != "publish":
+        if self.user.is_workflow_editor:
             l += [Link("/publish/", t(self.language, "sub_header_workflow_title"),
                        t(self.language, "sub_header_workflow"), icon="/img/workflow.gif")]
 

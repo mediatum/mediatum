@@ -1,0 +1,50 @@
+
+<tal:block metal:define-macro="editorfield">
+    <style tal:attributes="name python:name">
+        select.vertical{display:block;width:100%;margin-bottom:5px;height:25px;}
+    </style>
+    <script src="/js/jquery.optionTree.min.js"> </script>
+    <div tal:attributes="style python:'width:{}px'.format(width-16)">
+        <input type="text" tal:attributes="name python:'{}'.format(name); value python:value" style="display:none;"/>
+    </div>
+    <script tal:content="python:'var startnode = {};\nvar attrname = \'{}\';\nvar attrfilter = \'{}\';\nvar pre = Object();\npre[\'{}\'] = {};'.format(startnode, name, attrname, str(name), str(value).split(';'))">TEXT</script>
+    <script type="text/javascript">
+    $(function() {
+
+        var options = {
+                choose: ' ',
+                empty_value: 'null',
+                preselect: pre,
+                indexed: true,
+                set_value_on: 'each',
+                on_each_change: '/metatype/hlist?attrfilter='+attrfilter,
+                select_class: 'vertical',
+                loading_image: '/img/loading.gif',
+                attr: 'id'
+            };
+        var displayParents = function() {
+            var labels = [];
+            $(this).siblings().find(':selected').each(function() { labels.push($(this).val()); });
+                $('input[name='+attrname+']').val(labels.join(';'));
+            };
+
+        $.getJSON('/metatype/hlist?attrfilter='+attrfilter, {id: startnode}, function(tree) {
+            $('input[name='+attrname+']').optionTree(tree, options).change(displayParents);
+        });
+    });
+    </script>
+
+
+</tal:block>
+
+<div metal:define-macro="maskeditor" style="display:none" name="div_hlist" id="div_hlist">
+    <div class="label" i18n:translate="hlist_edit_parentnodes">TEXT</div>
+    <input type="text" name="hlist_value" tal:attributes="value python:value['parentnode']" style="width:200px;"/>
+    <br/>
+    <div class="label" i18n:translate="hlist_edit_attrname">TEXT</div>
+    <input type="text" class="text" name="hlist_value" tal:attributes="value python:value['attrname']" style="width:200px;"/>
+    <br/>
+    <div class="label" i18n:translate="hlist_edit_onlylast">TEXT</div>
+    <input type="checkbox" class="text" name="hlist_value" value="1" tal:attributes="checked python:{'True':'checked', 'False':None}['{}'.format(value['onlylast']=='1')]" style="width:200px;"/>
+    <br/>
+</div>

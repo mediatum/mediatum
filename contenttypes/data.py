@@ -211,7 +211,7 @@ class Data(Node):
                 _sep = separator
                 metafield_type = fd['metafield_type']
                 field_type = fd['field_type']
-                if metafield_type in ['date', 'url']:
+                if metafield_type in ['date', 'url', 'hlist']:
                     exception_count[metafield_type] = exception_count.setdefault(metafield_type, 0) + 1
                     value = node.get(node_attribute)
                     try:

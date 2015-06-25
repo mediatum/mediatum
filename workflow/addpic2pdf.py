@@ -76,7 +76,7 @@ check_context()
 
 
 def getPdfFilepathForProcessing(workflowstep_node, node):
-    res = ([f.abspath for f in node.files if f.name.startswith('addpic2pdf_%s_node_%s_' %
+    res = ([f.abspath for f in node.files if f.getName().startswith('addpic2pdf_%s_node_%s_' %
                                                                                     (ustr(workflowstep_node.id), ustr(node.id))) and f.filetype.startswith('p_document')] +
            [f.abspath for f in node.files if f.filetype.startswith('document')])[0]
     return res
@@ -125,7 +125,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
 
             if radio_apply_reset_accept == 'reset':
                 for f in node.files:
-                    f_name = f.name
+                    f_name = f.getName()
                     if f_name.startswith('addpic2pdf_%s_node_%s_' %
                                          (ustr(current_workflow_step.id), ustr(node.id))) and f.filetype.startswith('p_document'):
                         logg.info("workflow step addpic2pdf(%s): going to remove file '%s' from node '%s' (%s) for request from user '%s' (%s)",
@@ -142,7 +142,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
 
             elif radio_apply_reset_accept == 'accept':
 
-                p_document_files = [f for f in node.files if f.filetype == 'p_document' and f.name.startswith(
+                p_document_files = [f for f in node.files if f.filetype == 'p_document' and f.getName().startswith(
                     'addpic2pdf_%s_node_%s_' % (ustr(current_workflow_step.id), ustr(node.id)))]
 
                 if len(p_document_files) > 0:
@@ -160,7 +160,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
 
                     for f in node.files:
                         if f.type in ['thumb', 'fileinfo', 'fulltext'] or f.type.startswith('present'):
-                            if os.path.splitext(f.name)[0] == os.path.splitext(o_document_name)[0]:
+                            if os.path.splitext(f.getName())[0] == os.path.splitext(o_document_name)[0]:
                                 new_f = File(f._path, 'o_' + f.filetype, f.mimetype)
                                 node.files.remove(f)
                                 node.files.apped(new_f)
@@ -274,7 +274,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                                        mask='auto', pages=printer_range, follow_rotate=True, url=(" " * ADD_NBSP) + url)
 
                 for f in node.files:
-                    f_name = f.name
+                    f_name = f.getName()
                     if f_name.startswith('addpic2pdf_%s_node_%s_' %
                                          (ustr(current_workflow_step.id), ustr(node.id), )) and f.type.startswith('p_document'):
                         logg.info("workflow step addpic2pdf(%s): going to remove file '%s' from node '%s' (%s) for request from user '%s' (%s)",
@@ -364,7 +364,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
 
         logo_info = {}
         logo_info_list = []
-        for f in [f for f in wfs_files if f.name.startswith('m_upload_logoupload')]:
+        for f in [f for f in wfs_files if f.getName().startswith('m_upload_logoupload')]:
             f_path = f.abspath
 
             try:
@@ -376,7 +376,7 @@ class WorkflowStep_AddPic2Pdf(WorkflowStep):
                 FATAL_ERROR_STR += (" - ERROR loading logo '%s'" % ustr(f_path)) + ustr(e)
                 continue
 
-            logo_filename = f.name
+            logo_filename = f.getName()
 
             logo_url = ""
             for key in url_mapping:
@@ -641,7 +641,7 @@ def handle_request(req):
 
         if req.path == '/serve_page/p_document.pdf':
             filepath = (
-                [f.abspath for f in node.files if f.filetype.startswith('p_document') and f.name.startswith(
+                [f.abspath for f in node.files if f.filetype.startswith('p_document') and f.getName().startswith(
                     'addpic2pdf_%s_node_%s_' % (ustr(current_workflow_step.id), ustr(node.id), )) and f.type.startswith('p_document')]
                 + [f.abspath for f in node.files if f.filetype.startswith('document')]
             )[0]

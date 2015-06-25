@@ -21,7 +21,10 @@
 import logging
 from .workflow import WorkflowStep, registerStep
 from core.translation import t, lang
-from schema.schema import getMetaType, VIEW_HIDE_EMPTY, Metafield
+from schema.schema import VIEW_HIDE_EMPTY, Metafield, Metadatatype
+from core import db
+
+q = db.query
 
 logg = logging.getLogger(__name__)
 
@@ -62,7 +65,7 @@ class WorkflowStep_ShowData(WorkflowStep):
         fieldmap = []
         mask = None
         for maskname in masklist:
-            t = getMetaType(node.type)
+            t = q(Metadatatype).filter_by(name=node.schema).scalar()
             if t:
                 if node.get('system.wflanguage') != '':  # use correct language
                     mask = t.getMask("%s.%s" % (node.get('system.wflanguage'), maskname))

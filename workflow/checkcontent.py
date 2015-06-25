@@ -46,8 +46,7 @@ class WorkflowStep_CheckContent(WorkflowStep):
         attrs = ""
         for k, v in node.attrs.items():
             attrs += v
-
-        if not checkXMLString(attrs):
+        if not checkXMLString('<?xml version="1.0" encoding="UTF-8"?>' + '<tag>' + attrs + '</tag>'):
             try:
                 mail.sendmail(self.get('from'), self.get('to'), self.get('subject'), self.get('text'))
             except:

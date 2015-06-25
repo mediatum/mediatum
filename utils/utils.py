@@ -91,7 +91,7 @@ def utf8_decode_escape(s):
         s.decode('utf8')
         return s
     except:
-        return str(s).encode('string-escape')
+        return s.encode('unicode-escape')
 
 
 def iso2utf8(s):
@@ -985,7 +985,7 @@ def fixXMLString(s, i=100):
 def checkXMLString(s):
     parser = xml.parsers.expat.ParserCreate()
     try:
-        parser.Parse(s)
+        parser.Parse(s.encode('utf-8'))
         return 1
     except xml.parsers.expat.ExpatError as err:
         return 0

@@ -497,7 +497,7 @@ def parseEditorData(req, node):
     incorrect = False
     defaultlang = translation.lang(req)
 
-    for field in node.getType().getMetaFields():
+    for field in node.metaFields():
         name = field.getName()
         if "%s__%s" % (defaultlang, name) in req.params:
             value = req.params.get("%s__%s" % (defaultlang, name), "? ")
@@ -525,7 +525,7 @@ def parseEditorData(req, node):
             #    for node in nodes:
             #        node.set(name, value)
 
-            if field.getType() == "date":
+            if field.get('type') == "date":
                 f = field.getSystemFormat(field.fieldvalues)
                 try:
                     date = parse_date(ustr(value), f.getValue())
@@ -539,7 +539,10 @@ def parseEditorData(req, node):
                 for node in nodes:
                     node.set(name, value)
         else:  # value not in request -> remove attribute
-            node.removeAttribute(field.getName())
+            try:
+                node.removeAttribute(field.getName())
+            except KeyError:
+                pass
     db.session.commit()
     return not incorrect
 

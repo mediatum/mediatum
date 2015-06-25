@@ -33,6 +33,12 @@ from web.frontend.content import getContentArea, ContentNode
 from schema.schema import getMetadataType, getMetaType
 from core.transition import httpstatus
 from contenttypes.data import Content
+from core import db
+from core import Node
+from contenttypes import Collections
+from workflow.workflow import Workflows
+
+q = db.query
 
 
 logg = logging.getLogger(__name__)
@@ -45,11 +51,11 @@ def handle_json_request(req):
         f = None
         g = None
         if searchmaskitem_id and searchmaskitem_id != "full":
-            f = tree.getNode(searchmaskitem_id).getFirstField()
+            f = q(Node).get(searchmaskitem_id).getFirstField()
         if not f:  # All Metadata
             f = g = getMetadataType("text")
         s = [f.getSearchHTML(Context(g, value=req.params.get("query_field_value"), width=174, name="query" + ustr(req.params.get("fieldno")),
-                                     language=lang(req), collection=tree.getNode(req.params.get("collection_id")),
+                                     language=lang(req), collection=q(Collections).get(req.params.get("collection_id")),
                                      user=users.getUserFromRequest(req), ip=req.ip))]
     req.write(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
     return
@@ -142,13 +148,12 @@ PUBPATH = re.compile("/?(publish|pub)/(.*)$")
 def publish(req):
     m = PUBPATH.match(req.path)
 
-    node = tree.getRoot("workflows")
+    node = q(Workflows).one()
     if m:
         for a in m.group(2).split("/"):
             if a:
-                try:
-                    node = node.getChild(a)
-                except tree.NoSuchNodeError:
+                node = node.children.filter_by(name=a).scalar()
+                if node is None:
                     return 404
 
     req.params["id"] = node.id
@@ -162,12 +167,11 @@ def publish(req):
 
 def show_parent_node(req):
     parent = None
-    try:
-        node = tree.getNode(req.params.get("id"))
-    except tree.NoSuchNodeError:
+    node = q(Node).get(req.params.get("id"))
+    if node is None:
         return display_noframe(req)
 
-    for p in node.getParents():
+    for p in node.parents:
         if p.type != "directory" and p.type != "collection":
             parent = p
     if not parent:
@@ -193,7 +197,7 @@ def exportsearch(req, xml=0):  # format 0=pre-formated, 1=xml, 2=plain
     id = req.params.get("id")
     q = req.params.get("q", "")
     lang = req.params.get("language", "")
-    collections = tree.getRoot("collections")
+    collections = q(Collections).one()
 
     if xml:
         req.reply_headers['Content-Type'] = "text/xml; charset=utf-8"
@@ -202,9 +206,8 @@ def exportsearch(req, xml=0):  # format 0=pre-formated, 1=xml, 2=plain
     else:
         req.reply_headers['Content-Type'] = "text/plain; charset=utf-8"
 
-    try:
-        node = tree.getNode(id)
-    except tree.NoSuchNodeError:
+    node = q(Node).get(id)
+    if node is None:
         if xml:
             req.write("<error>Invalid ID</error>")
         else:

@@ -21,7 +21,10 @@ import logging
 from .workflow import WorkflowStep, registerStep
 from core.translation import t, lang, addLabels
 from schema.schema import getMetaType, VIEW_HIDE_EMPTY
-from schema.schema import Metafield
+from schema.schema import Metafield, Metadatatype
+from core import db
+
+q = db.query
 
 logg = logging.getLogger(__name__)
 
@@ -52,7 +55,7 @@ class WorkflowStep_FileAttachment(WorkflowStep):
             buttons = self.tableRowButtons(node)
 
         try:
-            mask = getMetaType(node.type).getMask(self.get("mask_fileatt"))
+            mask = q(Metadatatype).filter_by(name=node.schema).one().getMask(self.get("mask_fileatt"))
             maskdata = mask.getViewHTML([node], VIEW_HIDE_EMPTY, language=lang(req))
         except:
             logg.exception("exception in workflow step fileAttachment, getViewHTML failed, empty string")

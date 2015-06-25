@@ -221,7 +221,7 @@ def workflowSearch(nodes, text, access=None):
                     if c.id == text:
                         ret += [c]
                 else:
-                    if "|".join([f[1].lower() for f in c.items()]).find(text.lower()) >= 0:
+                    if "|".join([f[1].lower() for f in c.attrs.items()]).find(text.lower()) >= 0:
                         ret += [c]
 
     return ret

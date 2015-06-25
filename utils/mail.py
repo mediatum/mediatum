@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
  mediatum - a multimedia content repository
 
@@ -59,16 +60,15 @@ def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]
     logg.info("Sending mail from %s to %s", fromaddr, toaddrs)
     if not testing:
         if not attachments_paths_and_filenames:
-            msg = u"From: {}\nTo: {}\nSubject: {}\n\n{}".format(fromaddr,
-                                                                toaddrs_string,
-                                                                subject,
-                                                                text)
+            msg = MIMEText(text.encode('utf-8'), _charset="utf-8")
+            msg['Subject'] = subject
+            msg['From'] = fromaddr
+            msg['To'] = toaddrs_string
 
-            msg = msg.encode('latin1')
             try:
                 server = smtplib.SMTP(config.get("server.mail"))
                 server.set_debuglevel(1)
-                server.sendmail(fromaddr, toaddrs, msg)
+                server.sendmail(fromaddr, toaddrs, msg.as_string())
                 server.quit()
             except smtplib.socket.error:
                 raise SocketError
@@ -99,7 +99,7 @@ def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]
                         with codecs.open(path, 'r', encoding='utf8') as fp:
                             msg = MIMEText(fp.read(), _subtype=subtype)
                     else:
-                        with open(path, 'rb', encoding='utf8') as fp:
+                        with open(path, 'rb') as fp:
                             if maintype == 'image':
                                 msg = MIMEImage(fp.read(), _subtype=subtype)
                             elif maintype == 'audio':

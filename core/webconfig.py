@@ -19,14 +19,14 @@
 """
 import logging
 import os
+from mediatumtal import tal
 import core.athana as athana
 import core.config as config
-
 from core.styles import theme
-from mediatumtal import tal
-
-from contenttypes import Collections
 from core import db
+from contenttypes import Collections
+
+q = db.query
 
 logg = logging.getLogger(__name__)
 q = db.query

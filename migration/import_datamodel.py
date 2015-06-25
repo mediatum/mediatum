@@ -4,13 +4,15 @@ datamodel.py
 Created on 06.06.2013
 @author: stenzel
 '''
+import codecs
+import msgpack
+import sqlalchemy as sqla
 from sqlalchemy import Column, ForeignKey, String, Text, Integer, Index, Table, Boolean, Unicode
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.ext.hybrid import hybrid_property
 from utils.compat import string_types
-import codecs
 C = Column
 FK = ForeignKey
 rel = relationship
@@ -21,31 +23,32 @@ def to_dict(self):
     return dict((col.name, getattr(self, col.name)) for col in self.__table__.columns)
 
 
-DeclarativeBase = declarative_base()
-metadata = DeclarativeBase.metadata
-DeclarativeBase.to_dict = to_dict
+ImportBase = declarative_base()
+db_metadata = sqla.MetaData(schema="mediatum_import")
+ImportBase = declarative_base(metadata=db_metadata)
+ImportBase.to_dict = to_dict
 
 
-class Access(DeclarativeBase):
+class Access(ImportBase):
     __tablename__ = "access"
     name = C(String(64), primary_key=True)
     description = C(Text)
     rule = C(Text)
 
 
-t_nodemapping = Table("nodemapping", metadata,
+t_nodemapping = Table("nodemapping", db_metadata,
                       C("nid", Integer, FK("node.id"), primary_key=True),
                       C("cid", Integer, FK("node.id"), primary_key=True))
 
-Index(u'cid', t_nodemapping.c.cid)
-Index(u'cid_2', t_nodemapping.c.cid, t_nodemapping.c.nid)
-Index(u'nid', t_nodemapping.c.nid)
-Index(u'nid_2', t_nodemapping.c.nid, t_nodemapping.c.cid)
+Index(t_nodemapping.c.cid)
+Index(t_nodemapping.c.cid, t_nodemapping.c.nid)
+Index(t_nodemapping.c.nid)
+Index(t_nodemapping.c.nid, t_nodemapping.c.cid)
 
 t_access = Access.__table__
 
 
-class Node(DeclarativeBase):
+class Node(ImportBase):
     __tablename__ = "node"
     id = C(Integer, primary_key=True)
     name = C(Unicode, index=True)
@@ -66,14 +69,6 @@ class Node(DeclarativeBase):
                      backref=bref("node"),
                      collection_class=attribute_mapped_collection("name"),
                      cascade="save-update, delete, delete-orphan")
-
-    def __init__(self, name, type, id=None, attributes=[]):
-        self.name = name
-        self.type = type
-        if id is not None:
-            self.id = id
-        for attr in attributes:
-            self.attributes.set(attr)
 
     def __unicode__(self):
         return u"Node #{} {}: {} at {}".format(self.id, self.name, self.type, hex(id(self)))
@@ -106,7 +101,7 @@ class Node(DeclarativeBase):
 t_node = Node.__table__
 
 
-class NodeAttribute(DeclarativeBase):
+class NodeAttribute(ImportBase):
     __tablename__ = "nodeattribute"
     nid = C(Integer, FK("node.id"), primary_key=True, index=True)
     name = C(Unicode, primary_key=True, index=True)
@@ -144,12 +139,12 @@ class NodeAttribute(DeclarativeBase):
         return u"Attribute for Node #{}: {}='{}' at {}".format(self.nid, self.name, self.value, hex(id(self))).encode("utf8")
 
 
-Index(u'nid_2', NodeAttribute.__table__.c.nid, NodeAttribute.__table__.c.name)
+Index(NodeAttribute.__table__.c.nid, NodeAttribute.__table__.c.name)
 
 t_nodeattribute = NodeAttribute.__table__
 
 
-class NodeFile(DeclarativeBase):
+class NodeFile(ImportBase):
     __tablename__ = "nodefile"
     nid = C(Integer, FK("node.id"), primary_key=True, index=True)
     filename = C(Unicode, primary_key=True)

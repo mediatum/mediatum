@@ -23,8 +23,6 @@ legacy_methods = [
     # Node.get,
     Node.getName,
     Node.removeAttribute,
-    # Node.getAccess,
-    # Node.setAccess,
     Node.getOrderPos,
     Node.setOrderPos,
     Node.getType,
@@ -108,36 +106,6 @@ def test_removeAttribute(some_node):
     num_attrs = len(some_node.attrs)
     assert_deprecation_warning(some_node.removeAttribute, "testattr")
     assert len(some_node.attrs) == num_attrs - 1
-
-
-def test_getAccess_read(some_node):
-    read_access = assert_deprecation_warning(some_node.getAccess, "read")
-    assert read_access == "read_access"
-
-
-def test_getAccess_write(some_node):
-    write_access = assert_deprecation_warning(some_node.getAccess, "write")
-    assert write_access == "write_access"
-
-
-def test_getAccess_data(some_node):
-    data_access = assert_deprecation_warning(some_node.getAccess, "data")
-    assert data_access == "data_access"
-
-
-def test_setAccess_read(some_node):
-    assert_deprecation_warning(some_node.setAccess, "read", "new_read_access")
-    assert some_node.read_access == "new_read_access"
-
-
-def test_setAccess_write(some_node):
-    assert_deprecation_warning(some_node.setAccess, "write", "new_write_access")
-    assert some_node.write_access == "new_write_access"
-
-
-def test_setAccess_data(some_node):
-    assert_deprecation_warning(some_node.setAccess, "data", "new_data_access")
-    assert some_node.data_access == "new_data_access"
 
 
 def test_getOrderPos(some_node):

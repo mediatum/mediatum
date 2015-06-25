@@ -316,6 +316,8 @@ FOR rel IN SELECT cid, distance FROM noderelation WHERE nid = root_id LOOP
 	 GET DIAGNOSTICS ins = ROW_COUNT;
 
 	RAISE NOTICE 'cid % distance %, deleted %, inserted %', rel.cid, rel.distance, del, ins;
+    
+    PERFORM update_inherited_access_rules_for_node(rel.cid);
 	
 	inserted := inserted + ins;
 	deleted := deleted + del;

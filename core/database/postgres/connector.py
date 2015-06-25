@@ -9,6 +9,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from . import db_metadata, DeclarativeBase
 import os.path
+from core.database.postgres import MyQuery
 
 
 CONNECTSTR_TEMPLATE = "postgresql+psycopg2://{user}:{passwd}@{dbhost}:{dbport}/{database}"
@@ -39,7 +40,7 @@ class PostgresSQLAConnector(object):
     """
 
     def __init__(self):
-        session_factory = sessionmaker()
+        session_factory = sessionmaker(query_cls=MyQuery)
         self.Session = scoped_session(session_factory)
         self.metadata = db_metadata
 
@@ -62,7 +63,18 @@ class PostgresSQLAConnector(object):
         from core.database.postgres.node import Node
         from core.database.postgres.user import User, UserGroup, AuthenticatorInfo
         from core.database.postgres.shoppingbag import ShoppingBag
-        return (File, Node, User, UserGroup, AuthenticatorInfo, ShoppingBag)
+        from core.database.postgres.permission import AccessRule, AccessRuleset, NodeToAccessRule, NodeToAccessRuleset
+        return (
+            File,
+            Node,
+            User,
+            UserGroup,
+            AuthenticatorInfo,
+            ShoppingBag,
+            AccessRule,
+            AccessRuleset,
+            NodeToAccessRule,
+            NodeToAccessRuleset)
 
     def make_session(self):
         """Create a session.
@@ -109,6 +121,7 @@ class PostgresSQLAConnector(object):
     def create_functions(self, conn):
         conn.execute(read_and_prepare_sql("mediatum_utils.sql"))
         conn.execute(read_and_prepare_sql("noderelation_funcs.sql"))
+        conn.execute(read_and_prepare_sql("node_access_funcs.sql"))
         conn.execute(read_and_prepare_sql("noderelation_rules_and_triggers.sql"))
 
     def drop_functions(self, conn):

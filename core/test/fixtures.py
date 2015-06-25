@@ -168,9 +168,6 @@ def some_node(content_node, container_node, some_file):
         u"testattr": u"testvalue"
     }
     some_node = DirectoryFactory(name=u"somenode", attrs=attrs)
-    some_node.read_access = u"read_access"
-    some_node.write_access = u"write_access"
-    some_node.data_access = u"data_access"
     parent = DirectoryFactory(name=u"parent")
     parent.children.append(some_node)
     some_node.children.extend([container_node, content_node])

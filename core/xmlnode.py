@@ -58,12 +58,7 @@ def writexml(node, fi, indent=None, written=None, children=True, children_access
     if node.type is None:
         node.type = "node"
     fi.write('type="%s" ' % node.type)
-    if node.read_access:
-        fi.write('read="%s" ' % esc(node.read_access))
-    if node.write_access:
-        fi.write('write="%s" ' % esc(node.write_access))
-    if node.data_access:
-        fi.write('data="%s" ' % esc(node.data_access))
+    # TODO: serialize access rights
     fi.write(">\n")
 
     indent += 4

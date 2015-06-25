@@ -14,6 +14,8 @@ action is one of:
 * pgloader: migrate data from mysql DB to postgres import schema (edit config in migration/mysql_migration.load first!)
 * prepare: prepare functions for data migration from import schema
 * core: basic migrations from import schema to mediatum schema
+* users: migrate users and usergroups in mediatum schema
+* permissons: migrate node permissons from import schema to mediatum schema
 * everything: run all tasks above
 
 Database changes are commited after all actions have been run.
@@ -55,7 +57,7 @@ def pgloader(s=None):
 
 
 def prepare_import_migration(s):
-    for sql_file in ["migration.sql"]:
+    for sql_file in ["migration.sql", "acl_migration.sql", "user_migration.sql"]:
         s.execute(read_and_prepare_sql(sql_file, MIGRATION_DIR))
     logg.info("finished db preparations")
 
@@ -65,16 +67,51 @@ def migrate_core(s):
     logg.info("finished node + attrs, nodefile and nodemapping migration")
 
 
+def users(s):
+    s.execute("SELECT mediatum.migrate_usergroups()")
+    s.execute("SELECT mediatum.migrate_internal_users()")
+    s.execute("SELECT mediatum.migrate_dynauth_users()")
+    logg.info("finished user migration")
+
+
+def permissions(s):
+    from migration import acl_migration
+    acl_migration.migrate_access_entries()
+    acl_migration.migrate_rules()
+    logg.info("finished permissions migration")
+
+
+def inherited_permissions(s):
+    s.commit()
+    vacuum_analyze_tables(s)
+    try:
+        s.execute("SELECT mediatum.create_all_inherited_access_rules_read()")
+        s.execute("SELECT mediatum.create_all_inherited_access_rules_write()")
+        s.execute("SELECT mediatum.create_all_inherited_access_rules_data()")
+    except:
+        s.execute("TRUNCATE mediatum.access_rule, mediatum.access_ruleset CASCADE")
+        s.commit()
+        raise
+
+    logg.info("created inherited access rules")
+
+
 def everything(s):
     pgloader()
     prepare_import_migration(s)
     migrate_core(s)
+    users(s)
+    permissions(s)
+    inherited_permissions(s)
 
 
 actions = OrderedDict([
     ("pgloader", pgloader),
     ("prepare", prepare_import_migration),
     ("core", migrate_core),
+    ("users", users),
+    ("permissions", permissions),
+    ("inherited_permissions", inherited_permissions),
     ("everything", everything)
 ])
 

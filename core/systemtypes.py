@@ -17,16 +17,6 @@ class Root(Node):
 
 
 @check_type_arg
-class Users(Node):
-    pass
-
-
-@check_type_arg
-class ExternalUsers(Node):
-    pass
-
-
-@check_type_arg
 class Searchmasks(Node):
     pass
 
@@ -43,11 +33,6 @@ class Metadatatypes(Node):
 
 @check_type_arg
 class Navigation(Node):
-    pass
-
-
-@check_type_arg
-class UserGroups(Node):
     pass
 
 

@@ -19,11 +19,11 @@
 import logging
 
 from core import config
-from core.user import User
-from core.usergroup import UserGroup
+from core import User, UserGroup, AuthenticatorInfo
 from core.systemtypes import *
 from contenttypes import Collections, Home
 from workflow.workflow import Workflows
+from core.auth import INTERNAL_AUTHENTICATOR_KEY
 
 
 logg = logging.getLogger("database")
@@ -33,40 +33,49 @@ def init_database_values(s):
     """
     :type s: Session
     """
+
+    # node tree setup
     root = Root("Gesamtbestand", "root", 1)
-    users = Users("users", "users", 2)
     metadatatypes = Metadatatypes("metadatatypes", "metadatatypes", 3)
     workflows = Workflows("workflows", "workflows", 4)
-    usergroups = UserGroups("usergroups", "usergroups", 5)
     mappings = Mappings("mappings", "mappings", 9)
     collections = Collections("collections", "collections", 10)
     collections.attrs["label"] = "Gesamtbestand"
     home = Home("home", "home", 11)
     navigation = Navigation("navigation", "navigation", 12)
     navigation.attrs["label"] = "Kollektionen"
-    external_users = ExternalUsers("externalusers", "externalusers", 14)
     searchmasks = Searchmasks("searchmasks", "searchmasks", 15)
     schedules = Schedules("schedules", "schedules", 16)
 
-    root.children.extend([users, metadatatypes, workflows, usergroups, mappings, collections,
-                          home, navigation, external_users, searchmasks, schedules])
+    root.children.extend([metadatatypes, workflows, mappings, collections,
+                          home, navigation, searchmasks, schedules])
 
-    adminuser = User(config.get("user.adminuser", "Administrator"), "user", 6)
-    adminuser.attrs = {
-        "password": "226fa8e6cbb1f4e25019e2645225fd47",
-        "email": "admin@mediatum",
-        "opts": "c"
-    }
-    guestuser = User(config.get("user.guestuser", "Gast"), "user", 7)
-    guestuser.attrs["email"] = "guest@mediatum"
-    users.children.extend([adminuser, guestuser])
-
-    admingroup = UserGroup(config.get("user.admingroup", "Administration"), "usergroup", 8)
-    admingroup.attrs["opts"] = "ew"
-    admingroup.children.append(adminuser)
-    guestgroup = UserGroup("Gast", "usergroup", 13)
-    guestgroup.children.append(guestuser)
-    usergroups.children.extend([admingroup, guestgroup])
-
+    # finally, add node tree. All nodes will be added automatically
     s.add(root)
     logg.info("loaded initial values")
+
+    # default users and groups setup
+    # add internal authenticator
+    auth_type, auth_name = INTERNAL_AUTHENTICATOR_KEY  
+    internal_auth = AuthenticatorInfo(id=0, auth_type=auth_type, name=auth_name)
+
+    adminuser = User(login_name=config.get("user.adminuser", "Administrator"),
+                     password_hash="226fa8e6cbb1f4e25019e2645225fd47",
+                     email=u"admin@mediatum",
+                     authenticator_info=internal_auth
+                     )
+
+    guestuser = User(login_name=config.get("user.guestuser", "Gast"),
+                     email=u"guest@mediatum",
+                     authenticator_info=internal_auth
+                     )
+
+    admingroup = UserGroup(name=config.get("user.admingroup", "Administration"),
+                           is_workflow_editor_group=True,
+                           is_editor_group=True
+                           )
+    admingroup.users.append(adminuser)
+    s.add(admingroup)
+    guestgroup = UserGroup(name="Gast")
+    guestgroup.users.append(guestuser)
+    s.add(guestgroup)

@@ -17,77 +17,32 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from core import Node
-from schema.schema import loadTypesFromDB
-from core.acl import AccessData
-from core.transition.postgres import check_type_arg
+from warnings import warn
 
 
-@check_type_arg
-class UserGroup(Node):
+class UserGroupMixin(object):
 
     def getDescription(self):
-        return self.get("description")
+        warn("use UserGroup.description", DeprecationWarning)
+        return self.description
 
     def setDescription(self, d):
-        return self.set("description", d)
+        warn("use UserGroup.description", DeprecationWarning)
+        self.description = d
 
     def getOption(self):
-        return self.get("opts")
+        raise Exception("obsolete, use UserGroup.is_editor_group, UserGroup.is_admin or UserGroup.is_workflow_editor_group")
 
     def setOption(self, o):
-        return self.set("opts", o)
-
-    def getOptionList(self):
-        retList = {}
-        myoption = self.getOption()
-        from core.usergroups import groupoption
-        for option in groupoption:
-            if option.value in myoption:
-                retList[option.getName()] = True
-            else:
-                retList[option.getName()] = False
-        return retList
-
-    def getUserNames(self):
-        ret = []
-        for user in self.getChildren().sort_by_orderpos():
-            ret.append(user.getName())
-        return ", ".join(ret)
-
-    def getDynamicUserNames(self, as_string=True):
-        """return list with names of dynamic users"""
-        ret = []
-        if self.get("allow_dynamic") == "1":
-            _s = self.get("dynamic_users")
-            _s = _s.replace(" ", ",").replace("\r", ",").replace("\l", ",").replace("\n", ",")
-            ret = ret + [_name.strip() for _name in _s.split(",") if _name.strip()]
-        if as_string:
-            return ", ".join(ret)
-        else:
-            return ret
+        raise Exception("obsolete, use UserGroup.is_editor_group, UserGroup.is_admin or UserGroup.is_workflow_editor_group")
 
     def getSchemas(self):
-        schemas = filter(lambda x: x.isActive(), loadTypesFromDB())
-        schemalist = {}
-        for user in self.getChildren():
-            try:
-                for schema in AccessData(user=user).filter(schemas):
-                    schemalist[schema.getName()] = "."
-            except:
-                pass
-        schemalist = sorted(schemalist.keys())
-        return schemalist
+        """Returns metadatatypes which can be read by members of this group"""
+        raise Exception("obsolete")
 
     def getHideEdit(self):
-        return self.get("hideedit")
+        raise Exception("use UserGroup.hidden_edit_functions")
 
     def setHideEdit(self, value):
-        self.set("hideedit", value)
+        raise Exception("use UserGroup.hidden_edit_functions")
 
-    def isSystemType(self):
-        return 1
-
-    @classmethod
-    def isContainer(cls):
-        return 1

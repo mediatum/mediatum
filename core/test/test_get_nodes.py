@@ -34,15 +34,6 @@ def test_get_collections():
                 label="Gesamtbestand")
          
          
-def test_get_usergroups():
-    from core.systemtypes import UserGroups
-    n = q(UserGroups).one()
-    assert_node(n,
-                name="usergroups",
-                type="usergroups",
-                schema=None)
-         
-         
 def test_get_metadatatypes():
     from core.systemtypes import Metadatatypes
     n = q(Metadatatypes).one()
@@ -88,33 +79,3 @@ def test_get_navigation():
                 schema=None,
                 label="Kollektionen")
          
-         
-def test_get_usergroup():
-    from core.usergroup import UserGroup
-    usergroup_nodes = q(UserGroup).all()
-    assert len(usergroup_nodes) == 2
-         
-         
-def test_get_users():
-    from core.systemtypes import Users
-    n = q(Users).one()
-    assert_node(n,
-                name="users",
-                type="users",
-                schema=None)
-         
-         
-def test_get_externalusers():
-    from core.systemtypes import ExternalUsers
-    n = q(ExternalUsers).one()
-    assert_node(n,
-                name="externalusers",
-                type="externalusers",
-                schema=None)
-         
-         
-def test_get_user():
-    from core.user import User
-    user_nodes = q(User).all()
-    # Gast and Administrator are default users
-    assert len(user_nodes) == 2

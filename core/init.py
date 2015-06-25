@@ -38,10 +38,8 @@ def set_locale():
 
 def load_system_types():
     from core.systemtypes import *
-    from core import File
-    from core.usergroup import UserGroup
-    from core.user import User
     from schema.searchmask import SearchMaskItem, SearchMask
+    from core import ShoppingBag
 
 
 def load_types():
@@ -131,6 +129,8 @@ def init_modules():
     schema.init()
     from core import xmlnode
 #     xmlnode.init()
+    from core import auth
+    auth.init()
     from core.plugins import init_plugins
     init_plugins()
 

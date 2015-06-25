@@ -20,7 +20,12 @@
 
 import os
 import string
+from core import db
+from core import Node
+from contenttypes import Collections
+from core.systemtypes import Root
 
+q = db.query
 
 def createPath(parent_node, sPath, sSeparator='/'):
     dirs = string.split(sPath, sSeparator)

@@ -65,8 +65,7 @@ def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]
             except:
                 logg.exception("exception in sendmail, ignoring")
 
-            m = """From: %s\nTo: %s\nSubject: %s\n\n%s""" % (fromaddr, toaddrs_string, subject, text)
-            msg = MIMEText(m.encode('utf-8'), _charset="utf-8")
+            msg = MIMEText(text.encode('utf-8'), _charset="utf-8")
             msg['Subject'] = subject
             msg['From'] = fromaddr
             msg['To'] = toaddrs_string

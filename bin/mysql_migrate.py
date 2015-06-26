@@ -15,6 +15,7 @@ action is one of:
 * prepare: prepare functions for data migration from import schema
 * core: basic migrations from import schema to mediatum schema
 * users: migrate users and usergroups in mediatum schema
+* dynusers: migrate users from dynauth plugin
 * permissons: migrate node permissons from import schema to mediatum schema
 * everything: run all tasks above
 
@@ -70,8 +71,12 @@ def migrate_core(s):
 def users(s):
     s.execute("SELECT mediatum.migrate_usergroups()")
     s.execute("SELECT mediatum.migrate_internal_users()")
-    s.execute("SELECT mediatum.migrate_dynauth_users()")
     logg.info("finished user migration")
+
+
+def dynusers(s):
+    s.execute("SELECT mediatum.migrate_dynauth_users()")
+    logg.info("finished dynauth user migration")
 
 
 def permissions(s):
@@ -101,6 +106,7 @@ def everything(s):
     prepare_import_migration(s)
     migrate_core(s)
     users(s)
+    dynusers()
     permissions(s)
     inherited_permissions(s)
 
@@ -110,6 +116,7 @@ actions = OrderedDict([
     ("prepare", prepare_import_migration),
     ("core", migrate_core),
     ("users", users),
+    ("dynusers", dynusers),
     ("permissions", permissions),
     ("inherited_permissions", inherited_permissions),
     ("everything", everything)

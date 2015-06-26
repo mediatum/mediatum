@@ -18,59 +18,34 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-__author__ = 'Andrew Darrohn andrew.darrohn@tum.de'
 
 import os
 import sys
-import codecs
 sys.path += ['../..', '../', '.']
 
-from core.init import full_init
-full_init()
-
-import core.users as users
-import core.acl as acl
-
+import core.config as config
 import logging
 import datetime
 import time
 import urllib2
 import re
 from lxml import etree
-from ConfigParser import SafeConfigParser
 from math import ceil
 
-logg = logging.getLogger(__name__)
+from core.init import full_init
+full_init()
+
+import core.users as users
+import core.acl as acl
+from core import Node
+from core import db
+from contenttypes import Collections
+
+q = db.query
 
 USE_ALIASES = False
 PING_GOOGLE = True
 PING_URL_ENCODED = 'http://www.google.com/webmasters/tools/ping?sitemap=http%3A%2F%2Fmediatum.ub.tum.de%2Fsitemap-index.xml'
-
-
-class ConfigFile:
-
-    """
-    A configuration file object
-    """
-
-    def __init__(self, path, name):
-        self.name = name
-        self.path = '/'.join([path, self.name])
-        self.parser = SafeConfigParser()
-        self.host = None
-
-    def get_hostname(self):
-        """
-        Attempts to parse the configuration file for the host value
-        """
-        if os.path.isfile(self.path):
-            try:
-                self.parser.read(self.path)
-                self.host = self.parser.get('host', 'name')
-            except IOError:
-                logg.error('Error reading the configuration file %s', self.path)
-        else:
-            logg.error('The specified config file: %s does not exist', self.path)
 
 
 class Sitemap:
@@ -94,53 +69,71 @@ class Sitemap:
             Checks to see whether dates are in proper datetime format and converts times in ##/##/#### format to
             datetime or raises an error when it encounters a different format
             """
-            slashpattern = re.compile(r'\d{2}/\d{2}/\d{4}')
-            datetimepattern = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}')
-
             # check if date is already in the proper format
-            matched = re.search(datetimepattern, date)
-            if matched is not None:
-                return date
+            datetime_pattern = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$')
 
+            # regex and its accompanying strptime format
+            misc_date_formats = ((re.compile(r'\d{2}/\d{2}/\d{4}\+\d{2}:\d{2}T\d{2}:\d{2}:\d{2}$'), '%m/%d/%Y+%H:%MT%H:%M:%S'),
+                                 (re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$'), '%Y-%m-%dT%H:%M:%S'),
+                                 (re.compile(r'\d{4}/\d{2}/\d{2}$'), '%d/%m/%YT%H:%M:%S'),
+                                 (re.compile(r'\d{4}/\d{2}/\d{2}$'), '%/%d/%YT%H:%M:%S'),
+                                 (re.compile(r'\d{2}/\d{2}/\d{4}\+\d{2}:\d{2}$'), '%m/%d/%Y+%H:%M'),
+                                 (re.compile(r'\d{4}-\d{2}-\d{2}$'), '%Y-%m-%d'),
+                                 (re.compile(r'\d{2}/\d{2}/\d{4}$'), '%d/%m/%Y'),
+                                 (re.compile(r'\d{2}/\d{2}/\d{4}$'), '%m/%d/%Y'))
+
+            matched = re.search(datetime_pattern, date)
+            if matched:
+                return date
             else:
-                matched = re.search(slashpattern, date)
-                if matched is not None:
-                    timestruct = time.strptime(date, '%m/%d/%Y+%H:%M')
-                    timedatetime = datetime.datetime.fromtimestamp(time.mktime(timestruct))
-                    return ''.join([timedatetime.strftime('%Y-%m-%dT%H:%M:%S'), '+02:00'])
+                for date_format_tuple in misc_date_formats:
+                    matched = re.search(date_format_tuple[0], date)
+                    if matched:
+                        try:
+                            timestruct = time.strptime(date, date_format_tuple[1])
+                            timedatetime = datetime.datetime.fromtimestamp(time.mktime(timestruct))
+                            return timedatetime.strftime('%Y-%m-%dT%H:%M:%S')
+                        except ValueError:
+                            continue
                 else:
                     raise TypeError('unknown date format given: %s' % date)
 
         if os.path.isfile(self.path):
-            logg.info('Sitemap already exists at %s', self.path)
+            logging.getLogger('everything').info('Sitemap already exists at %s' % self.path)
         else:
             root = etree.Element('urlset', xmlns="http://www.sitemaps.org/schemas/sitemap/0.9")
             # Doesn't create a sitemap if no nodes to place in it
             if not nodes:
                 pass
             else:
-                for i in nodes:
+                for id_lastmod_tuple in nodes:
                     url = etree.SubElement(root, 'url')
                     loc = etree.SubElement(url, 'loc')
-                    if 'system.aliascol' in tree.getNode(i[0]).attributes and USE_ALIASES:
-                        loc.text = ''.join(['http://', self.host, '/', tree.getNode(i[0]).attributes['system.aliascol']])
+                    if 'system.aliascol' in q(Node).get(id_lastmod_tuple[0]).attrs and USE_ALIASES:
+                        loc.text = ''.join(['http://', self.host, '/', q(Node).get(id_lastmod_tuple[0]).attrs['system.aliascol']])
                     else:
-                        loc.text = ''.join(['http://', self.host, '/node?id=', i[0]])
+                        loc.text = ''.join(['http://', self.host, '/node?id=', id_lastmod_tuple[0]])
                     lastmod = etree.SubElement(url, 'lastmod')
-                    if i[1] == '+02:00':
-                        lastmod.text = ''.join([datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), i[1]])
+
+                    #remove preexisting time zone indicator
+                    stripped_date = id_lastmod_tuple[1].replace('+02:00', '')
+
+                    if stripped_date == '':
+                        lastmod.text = ''.join([datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), '+02:00'])
                     else:
-                        lastmod.text = check_date_format(i[1])
+                        lastmod.text = ''.join([check_date_format(stripped_date), '+02:00'])
+
                     changefreq = etree.SubElement(url, 'changefreq')
                     changefreq.text = 'monthly'
                     priority = etree.SubElement(url, 'priority')
                     priority.text = p_num
                 try:
-                    with codecs.open(self.path, 'w', encoding='utf8') as f:
+                    with open(self.path, 'w') as f:
                         f.write('''<?xml version="1.0" encoding="UTF-8"?>\n''')
                         f.write(etree.tostring(root))
+                        f.close()
                 except IOError:
-                    logg.error('Error creating %s', self.path)
+                    logging.getLogger('error').error('Error creating %s' % self.path)
 
     def delete_sitemap(self):
         """
@@ -150,7 +143,7 @@ class Sitemap:
             try:
                 os.remove(self.path)
             except IOError:
-                logg.error('Error removing %s', self.path)
+                logging.getLogger('error').error('Error removing %s' % self.path)
 
 
 class SitemapIndex:
@@ -170,7 +163,7 @@ class SitemapIndex:
         @param sitemaps: a list of strings of sitemap names
         """
         if os.path.isfile(self.path):
-            logg.info('%s already exists' % self.path)
+            logging.getLogger('everything').info('%s already exists' % self.path)
         else:
             root = etree.Element('sitemapindex', xmlns="http://www.sitemaps.org/schemas/sitemap/0.9")
             if not sitemaps:
@@ -183,11 +176,12 @@ class SitemapIndex:
                     lastmod = etree.SubElement(sm, 'lastmod')
                     lastmod.text = cur_time
                 try:
-                    with codecs.open(self.path, 'w', encoding='utf8') as f:
+                    with open(self.path, 'w') as f:
                         f.write('''<?xml version="1.0" encoding="UTF-8"?>\n''')
                         f.write(etree.tostring(root))
+                        f.close()
                 except IOError:
-                    logg.error('Error creating %s', self.path)
+                    logging.getLogger('error').error('Error creating %s' % self.path)
 
     def delete_sitemap_index(self):
         """
@@ -197,95 +191,78 @@ class SitemapIndex:
             try:
                 os.remove(self.path)
             except IOError:
-                logg.error('Error removing %s', self.path)
+                logging.getLogger('error').error('Error removing %s' % self.path)
 
 
 def create():
     """
     Creates the sitemap files and the sitemap index files which are located at /web/root/
     """
-    logg.info('Creating Sitemaps and Sitemap Index...')
+    logging.getLogger('everything').info('Creating Sitemaps and Sitemap Index...')
 
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+    hostname = config.get('host.name')
 
-    config = ConfigFile(base_dir, 'mediatum.cfg')
-    config.get_hostname()
-
-    if config.host is None:
-        print 'The host was never set. \n Exiting process...'
-        return
-    else:
-        hostname = config.host
-
-    root = tree.getRoot('collections')
-    all_nodes = root.getAllChildren()
+    root = q(Collections).one()
+    all_nodes = root.all_children_by_query(q(Node))
+    #todo acl check here needed
     user = users.getUser('Gast')
     access = acl.AccessData(user=user)
-
-    node_dict = {'collections': [],
-                 'directories': [],
-                 'documents': [],
-                 'dissertations': [],
-                 'images': [],
-                 'videos': [],
-                 'audio': [],
-                 }
     sitemaps = []
 
-    for i in all_nodes:
+    node_dict = {'collection': [],
+                 'directory': [],
+                 'document': [],
+                 'dissertation': [],
+                 'image': [],
+                 'video': [],
+                 'audio': [],
+    }
+
+    for node in all_nodes:
         # Arkitekt had a guest field that is actually not visible
-        if access.hasAccess(i, 'read'):
-            if 'collection' in tree.getNode(i.id).type:
-                node_dict['collections'].append((i.id, '+'.join([tree.getNode(i.id).get('updatetime'), '02:00'])))
-            elif 'directory' in tree.getNode(i.id).type:
-                node_dict['directories'].append((i.id, '+'.join([tree.getNode(i.id).get('updatetime'), '02:00'])))
-            elif 'document' in tree.getNode(i.id).type:
-                node_dict['documents'].append((i.id, '+'.join([tree.getNode(i.id).get('updatetime'), '02:00'])))
-            elif 'dissertation' in tree.getNode(i.id).type:
-                node_dict['dissertations'].append((i.id, '+'.join([tree.getNode(i.id).get('updatetime'), '02:00'])))
-            elif 'image' in tree.getNode(i.id).type:
-                node_dict['images'].append((i.id, '+'.join([tree.getNode(i.id).get('updatetime'), '02:00'])))
-            elif 'video' in tree.getNode(i.id).type:
-                node_dict['videos'].append((i.id, '+'.join([tree.getNode(i.id).get('updatetime'), '02:00'])))
-            elif 'audio' in tree.getNode(i.id).type:
-                node_dict['audio'].append((i.id, '+'.join([tree.getNode(i.id).get('updatetime'), '02:00'])))
+        #todo acl check here needed
+        if access.hasAccess(node, 'read'):
+            for node_type in node_dict.keys():
+                if node_type in q(Node).get(node.id).type:
+                    node_dict[node_type].append((unicode(node.id), q(Node).get(node.id).get('updatetime')))
 
     # Reassign node_dict to a dict where empty values were removed
     node_dict = dict((k, v) for k, v in node_dict.iteritems() if v)
 
     # Sitemap can have at most 50k entries
-    for i in node_dict.keys():
-        if i is 'dissertations' or i is 'documents' or i is 'images':
+    for key in node_dict.keys():
+        if key in ('dissertation', 'document', 'image'):
             priority_level = '1.0'
-        elif i is 'videos':
+        elif key == 'videos':
             priority_level = '0.8'
         else:
             priority_level = '0.5'
 
         # Create multiple sitemaps for node lists > 50k
-        if len(node_dict[i]) > 50000:
-            partitions = int(ceil((len(node_dict[i]) / 50000.)))
-            for j in range(partitions):
-                sitemap = Sitemap(base_dir, ''.join(['sitemap-', ustr(i), ustr(j), '.xml']), hostname)
+        if len(node_dict[key]) > 50000:
+            partitions = int(ceil((len(node_dict[key]) / 50000.)))
+            for partition_number in range(partitions):
+                sitemap = Sitemap(base_dir, ''.join(['sitemap-', str(key), str(partition_number), '.xml']), hostname)
                 sitemaps.append(sitemap.name)
-                sitemap.create_sitemap(node_dict[i][j * 50000:(j + 1) * 50000], priority_level)
+                sitemap.create_sitemap(node_dict[key][partition_number * 50000:(partition_number + 1) * 50000], priority_level)
         else:
-            sitemap = Sitemap(base_dir, ''.join(['sitemap-', i, '.xml']), hostname)
+            sitemap = Sitemap(base_dir, ''.join(['sitemap-', key, '.xml']), hostname)
             sitemaps.append(sitemap.name)
-            sitemap.create_sitemap(node_dict[i], priority_level)
+            sitemap.create_sitemap(node_dict[key], priority_level)
 
     siteindex = SitemapIndex(base_dir, 'sitemap-index.xml', hostname)
     now = '+'.join([datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), '02:00'])
     siteindex.create_sitemap_index(sitemaps, now)
 
-    logg.info('Generation of Sitemaps and SitemapIndex Complete')
+    logging.getLogger('everything').info('Generation of Sitemaps and SitemapIndex Complete')
 
 
 def clean():
     """
     Removes all .xml files from the /web/root/ directory
     """
-    logg.info('Cleaning /root of all Sitemaps and SitemapIndex')
+    logging.getLogger('everything').info('Cleaning /root of all Sitemaps and SitemapIndex')
 
     base_dir = os.path.abspath(os.curdir)
     web_root_dir = '/'.join([base_dir, 'web', 'root'])
@@ -294,13 +271,13 @@ def clean():
 
     # If no .xml files exist
     if not sitemaps:
-        logg.info('Nothing to remove...')
+        logging.getLogger('everything').info('Nothing to remove...')
     else:
         for sm in sitemaps:
-            logg.info('Deleting file: %s', sm)
+            logging.getLogger('everything').info('Deleting file: %s' % sm)
             os.remove('/'.join([web_root_dir, sm]))
 
-    logg.info('Cleaning Complete...')
+    logging.getLogger('everything').info('Cleaning Complete...')
 
 
 def main():
@@ -312,11 +289,11 @@ def main():
         if PING_GOOGLE:
             response = urllib2.urlopen(PING_URL_ENCODED)
             if response.getcode() == 200:
-                logg.info(
-                    'Successful ping of sitemap-index.xml to Google; Response Code: %i', response.getcode())
+                logging.getLogger('everything').info(
+                    'Successful ping of sitemap-index.xml to Google; Response Code: %i' % response.getcode())
             else:
-                logg.info(
-                    'Unsuccessful ping of sitemap-index.xml to Google; Response Code: %i', response.getcode())
+                logging.getLogger('everything').info(
+                    'Unsuccessful ping of sitemap-index.xml to Google; Response Code: %i' % response.getcode())
     elif sys.argv[1] == 'clean':
         clean()
 

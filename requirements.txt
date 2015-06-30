@@ -18,6 +18,7 @@ scrypt
 ipaddr
 decorator
 pypdf
+sympy
 git+git://mediatumdev.ub.tum.de/mediatum-babel
 git+git://mediatumdev.ub.tum.de/mediatum-tal@unicode
 git+git://mediatumdev.ub.tum.de/mediatum-fsm

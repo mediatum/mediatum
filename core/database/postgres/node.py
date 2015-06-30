@@ -9,7 +9,7 @@ from warnings import warn
 
 import pyaml
 from sqlalchemy import (Table, Sequence, Integer, Unicode, Text, sql, text, func, select)
-from sqlalchemy.orm import deferred
+from sqlalchemy.orm import deferred, object_session
 from sqlalchemy.orm.dynamic import AppenderQuery, AppenderMixin
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
@@ -23,6 +23,7 @@ from core.database.postgres.alchemyext import LenMixin, view
 from core.database.postgres.attributes import Attributes, AttributesExpressionAdapter
 from utils.magicobjects import MInt
 from ipaddr import IPv4Address
+from core.database.postgres.search import searchtree_to_query_cond as query_from_searchtree
 
 
 logg = logging.getLogger(__name__)
@@ -240,6 +241,14 @@ class Node(DeclarativeBase, NodeMixin):
         access = accessfunc(node_id, group_ids, ip, date)
         return db.session.execute(select([access])).scalar()
 
+    def search(self, searchquery):
+        from contenttypes import Content
+        q = object_session(self).query
+        from core.search import parser
+        searchtree = parser.parse_string(searchquery)
+        searchcond = query_from_searchtree(searchtree)
+        return self.all_children_by_query(q(Content).filter(searchcond))
+        
     __mapper_args__ = {
         'polymorphic_identity': 'node',
         'polymorphic_on': type

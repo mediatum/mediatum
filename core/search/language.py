@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-    Define the search language as parcon expression.
+    Define the search language as parcon expression. 
+    Use `parser.parse_string(s)` to convert a query string to the search tree representation.
 
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
@@ -16,14 +17,16 @@ SL = SignificantLiteral
 AC = AnyCase
 
 
+umlauts = u"äÄöÖüÜß"
+
 def _join(seq):
     return "".join(seq)
 
 compare_op = (SL(">=") | SL("<=") | SL(">") | SL("<"))(name="compare_op")
 attr_name = Word(string.letters + string.digits + "_" + "-" + ".")(desc="attribute")
-printable_without_doublequote = string.printable.replace("\"", "")
+printable_without_doublequote = umlauts + string.printable.replace("\"", "")
 value = Word(printable_without_doublequote)(desc="printable_without_doublequote")
-bare_value = UntilRegex("or|and|[)(]") | value  # may end with or | and | ( | )
+bare_value = UntilRegex(u"or|and|[)(]") | value  # may end with or | and | ( | )
 maybe_quoted = (SL('"') + value + SL('"'))[_join] | bare_value
 
 attr_match = (attr_name + "=" + maybe_quoted)(name="attr_match")[AttributeMatch.tup]
@@ -42,3 +45,6 @@ negated = (AC("not") + t)[Not]
 t = negated | t
 
 expr << t(name="search_expr")
+
+# expr is used for parsing the search language, name it `parser` to make it clearer ;)
+parser = expr

@@ -11,8 +11,8 @@ class UntilRegex(parcon._RParser):
     """
     """
 
-    def __init__(self, regex):
-        self.regex = re.compile(regex)
+    def __init__(self, regex, flags=re.UNICODE):
+        self.regex = re.compile(regex, flags)
 
     def parse(self, text, position, end, space):
         position = start = space.consume(text, position, end)

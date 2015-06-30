@@ -111,7 +111,7 @@ class Searchlet(Portlet):
         self.initialize()
 
     def insideCollection(self):
-        return self.collection and self.collection.id != q(Collections).one()
+        return self.collection and not isinstance(self.collection, Collections)
 
     def initialize(self):
         types = {}

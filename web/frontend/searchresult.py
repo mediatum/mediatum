@@ -19,12 +19,15 @@
 """
 import utils.date as date
 import logging
-from core.acl import AccessData
+from core import Node, db
 from core.translation import lang, translate
 from utils.utils import getAllCollections, u
 from core.styles import theme
 from web.frontend import Content
 from utils.strings import ensure_unicode_returned
+from contenttypes.container import Collections, Collection, Container
+
+q = db.query
 
 
 logg = logging.getLogger(__name__)
@@ -48,7 +51,7 @@ class SearchResult(Content):
 
     def feedback(self, req):
         if "scoll" in req.params:
-            id = req.params["scoll"]
+            id = req.args.get("scoll", type=int)
             for nr in range(len(self.resultlist)):
                 if self.resultlist[nr].collection.id == id:
                     self.active = nr
@@ -102,68 +105,53 @@ def protect(s):
 
 
 def simple_search(req):
-    raise NotImplementedError("doesn't work with unicode, won't fix!")
-
     from web.frontend.content import ContentList
-    res = []
-    words = []
-    collections = []
-    collection_ids = {}
-
-    access = AccessData(req)
-    q = u(req.params.get("query", ""))
-    q = req.args.get("query")
+    searchquery = req.form.get("query")
 
     # test whether this query is restricted to a number of collections
-    for key, value in req.params.items():
+    collection_ids = []
+    for key in req.params:
         if key.startswith("c_"):
-            collection_ids[key[2:]] = 1
+            collection_ids.append(key[2:])
+            
     # no collection means: all collections
-    if len(collection_ids) == 0 or 1 in collection_ids.keys():
-        for collection in access.filter(tree.getRoot("collections").getChildren()):
-            collection_ids[collection.id] = 1
+    if collection_ids:
+        collection_query = q(Container).filter(Container.id.in_(collection_ids))
+    else:
+        collection_query = q(Collections).one().container_children
+        
+    # TODO: access.filter collections
+    collections = collection_query.all()
+    
+    if logg.isEnabledFor(logging.DEBUG):
+        logg.debug("simple_search with query '%s' on %s collections: %s", searchquery, len(collections), [c.name for c in collections])
+    
+    def do_search(start_node): 
+        result = start_node.search('full=' + searchquery).all()
+#             result = access.filter(result)
+        if len(result) > 0:
+            cl = ContentList(result, start_node, [])
+            cl.feedback(req)
+            cl.linkname = "Suchergebnis"
+            cl.linktarget = ""
+            return cl
+            
+    act_node_id = req.params.get("act_node")
+    act_node = q(Node).get(act_node_id) if act_node_id else None
+    if act_node is not None and not isinstance(act_node, Collections):
+        # actual node is a collection or directory
+        res = [do_search(act_node)]
+    else:
+        # actual node is collections-node
+        res = [cl for cl in (do_search(collection) for collection in collections) if cl is not None]
+        
+    if logg.isEnabledFor(logging.DEBUG):
+        logg.debug("%s result sets found with %s nodes", len(res), len([n for cl in res for n in cl.files]))
 
-    # now retrieve all results in all collections
-    for collection in getAllCollections():
-        if collection.id in collection_ids:
-            collections.append(collection)
-
-    num = 0
-    logg.info("%s search for '%s', %s results", access.user.name, q, num)
-    try:
-        if req.params.get("act_node", None) and tree.getNode(req.params.get("act_node")).getContentType() != "collections":
-            # actual node is a collection or directory
-            result = tree.getNode(req.params.get("act_node")).search('full=' + q)
-            result = access.filter(result)
-            num += len(result)
-            if len(result) > 0:
-                cl = ContentList(result, collection, words)
-                cl.feedback(req)
-                cl.linkname = "Suchergebnis"
-                cl.linktarget = ""
-                res.append(cl)
-        else:
-            # actual node is collections-node
-            for collection in collections:
-                result = collection.search('full=' + q)
-                result = access.filter(result)
-                num += len(result)
-
-                if len(result) > 0:
-                    cl = ContentList(result, collection, words)
-                    cl.feedback(req)
-                    cl.linkname = "Suchergebnis"
-                    cl.linktarget = ""
-                    res.append(cl)
-
-        if len(res) == 1:
-            return res[0]
-        else:
-            return SearchResult(res, q, collections)
-    except:
-        return SearchResult(None, q, collections)
-
-# method handles all parts of the extended search
+    if len(res) == 1:
+        return res[0]
+    else:
+        return SearchResult(res, searchquery, collections)
 
 
 def extended_search(req):

@@ -7,7 +7,6 @@
 """
 from sqlalchemy import func as sqlfunc, and_, or_
 from core.search.representation import AttributeMatch, FullMatch, SchemaMatch, FulltextMatch, AttributeCompare, TypeMatch, And, Or, Not
-from core import Node
 from core.database.postgres import func
 
 
@@ -35,28 +34,29 @@ def make_fts_expr(language, target, searchterm, op="|"):
     return tsvec.op("@@")(ts_query)
 
 
-def walk(n):
+def searchtree_to_query_cond(n):
+    from core import Node
     if isinstance(n, And):
-        left = walk(n.left)
-        right = walk(n.right)
+        left = searchtree_to_query_cond(n.left)
+        right = searchtree_to_query_cond(n.right)
         return and_(left, right)
 
     elif isinstance(n, Or):
-        left = walk(n.left)
-        right = walk(n.right)
+        left = searchtree_to_query_cond(n.left)
+        right = searchtree_to_query_cond(n.right)
         return or_(left, right)
 
     elif isinstance(n, AttributeMatch):
         return make_fts_expr(language,
-                                              Node.attrs[n.attribute].astext,
-                                              n.searchterm)
+                             Node.attrs[n.attribute].astext,
+                             n.searchterm)
 
     elif isinstance(n, FulltextMatch):
         return make_fts_expr(language, Node.fulltext, n.searchterm)
 
     elif isinstance(n, FullMatch):
         fulltext_cl = make_fts_expr(language, Node.fulltext, n.searchterm)
-        attrs_cl = make_fts_expr(language, func.json_object_values_text_concat(Node.attrs, "|"), n.searchterm)
+        attrs_cl = make_fts_expr(language, func.jsonb_object_values_text_concat(Node.attrs, "|"), n.searchterm)
         return or_(fulltext_cl, attrs_cl)
 
     elif isinstance(n, AttributeCompare):

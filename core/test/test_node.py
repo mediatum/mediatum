@@ -265,10 +265,3 @@ def test_data_get_class_for_typestring():
     data_cls = Node.get_class_for_typestring("data")
     assert data_cls is Data
 
-
-def test_node_empty_search(container_node):
-    db.session.flush()
-    res = container_node.search("full=test")
-    # this doesn't find anything, just a quick function test
-    assert res.all() == []
-    

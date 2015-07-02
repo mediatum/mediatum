@@ -109,7 +109,6 @@ def _cte_subtree(node):
 
     query = db.query(t_noderelation.c.cid).\
         filter(t_noderelation.c.nid == node.id).\
-        join(Node, Node.id == t_noderelation.c.cid).\
         distinct().\
         cte(name="subtree")
 

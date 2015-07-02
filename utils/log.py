@@ -81,6 +81,9 @@ class TraceLogger(logging.Logger):
     # All log messages above the given `level` will have an additional field with a stack trace up to the logging call
     trace_level = logging.WARN 
     
+    start_trace_at = (", in call_and_close", )
+    stop_trace_at = ("/sqlalchemy/", )
+
     
     def _log(self, level, msg, args, exc_info=None, extra=None, trace=None):
         """Adds an optional traceback for some messages and calls Logger._log.
@@ -94,20 +97,45 @@ class TraceLogger(logging.Logger):
             f = inspect.currentframe()
             tblines = traceback.format_stack(f)
             
-            # nice hack to shorten long and ugly athana handler stack traces ;)
-            for start_lineno, line in enumerate(tblines):
-                if ", in call_and_close" in line:
-                    break
-            else:
-                start_lineno = 0
+            
+            def find_start_lineno():
+                # nice hack to shorten long and ugly stack traces ;)
+                for start_lineno, line in enumerate(tblines):
+                    for text in self.start_trace_at:
+                        if text in line:
+                            return start_lineno + 1, text
+                else:
+                    return 0, None
                 
-            # cut off calls in the logging module
-            if "_showwarning" in tblines[-3]:
-                end_lineno = -3
-            else:
-                end_lineno = -2
+            def find_end_lineno():
+                # nice hack to shorten long and ugly stack traces ;)
+                for end_lineno, line in enumerate(tblines):
+                    for text in self.stop_trace_at:
+                        if text in line:
+                            return end_lineno, text
+                else:
+                    # cut off calls in the logging module
+                    if "_showwarning" in tblines[-3]:
+                        return -3, None
+                    else:
+                        return -2, None
                 
-            extra["trace"] = "".join(tblines[start_lineno:end_lineno])
+                
+                
+            start_lineno, start_cutoff = find_start_lineno()
+            end_lineno, end_cutoff = find_end_lineno()
+            
+            final_tracelines = []
+            
+            if start_cutoff: 
+                final_tracelines.append("[... omitting lines up to '{}']\n".format(start_cutoff))
+                
+            final_tracelines.extend(tblines[start_lineno:end_lineno])
+            
+            if end_cutoff: 
+                final_tracelines.append("[omitting lines starting at '{}' ...]".format(end_cutoff))
+                
+            extra["trace"] = "".join(final_tracelines)
             
             ### hack for additional traceback info for TAL traces
             stack = inspect.stack()

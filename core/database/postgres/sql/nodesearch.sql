@@ -104,11 +104,8 @@ BEGIN
     JOIN LATERAL (SELECT id AS nid 
             FROM node JOIN nodefile nf ON node.id=nf.nid
             WHERE filetype='fulltext' 
-            AND path = replace(imp.dir, '.', '/') || '/' || imp.id || '.txt') q ON true
-    ;
+            AND path = replace(imp.dir, '.', '/') || '/' || imp.id || '.txt') q ON true;
 RETURN;
 END;
 $$;
-
-
 

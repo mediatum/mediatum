@@ -23,7 +23,6 @@ from core.database.postgres.alchemyext import LenMixin, view
 from core.database.postgres.attributes import Attributes, AttributesExpressionAdapter
 from utils.magicobjects import MInt
 from ipaddr import IPv4Address
-from core.database.postgres.search import searchtree_to_query_cond as query_from_searchtree
 
 
 logg = logging.getLogger(__name__)
@@ -243,11 +242,12 @@ class Node(DeclarativeBase, NodeMixin):
 
     def search(self, searchquery):
         from contenttypes import Content
+        from core.database.postgres.search import apply_searchtree_to_query
         q = object_session(self).query
         from core.search import parser
         searchtree = parser.parse_string(searchquery)
-        searchcond = query_from_searchtree(searchtree)
-        return self.all_children_by_query(q(Content).filter(searchcond))
+        query = self.all_children_by_query(q(Content))
+        return apply_searchtree_to_query(query, searchtree)
         
     __mapper_args__ = {
         'polymorphic_identity': 'node',

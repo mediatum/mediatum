@@ -388,7 +388,8 @@ class MediatumMagics(Magics):
     def list_all(self, line):
         print(cnode)
         for category in INFO_PRODUCERS:
-            print_info_for_category(category)
+            if not category.endswith("_rules"):
+                print_info_for_category(category)
 
     @line_magic("list_attributes")
     @line_magic("la")

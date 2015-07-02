@@ -138,6 +138,11 @@ import sys
 from sqlalchemy import sql, text
 from sqlalchemy.orm.exc import NoResultFound
 
+try:
+    import pygments
+except ImportError:
+    pygments = None
+
 from core.database.postgres import *
 from utils.compat import *
 
@@ -148,6 +153,7 @@ from functools import wraps
 from core import init
 import core.database
 from core.database.postgres.node import t_noderelation
+from core.database.postgres import alchemyext
 from itertools import islice, chain
 from collections import OrderedDict
 import copy
@@ -264,8 +270,8 @@ def format_access_ruleset_assoc(ra, inherited):
 
 def format_access_rule_assoc(ra):
     r = ra.rule
-    group_names = [n or str(r.group_ids[i]) for i, n in enumerate(r.group_names)] 
-    
+    group_names = [n or str(r.group_ids[i]) for i, n in enumerate(r.group_names)]
+
     return u"{}{} groups:{} {} subnets:{} {} dateranges:{} {}".format(inversion_label(ra.invert), blocking_label(ra.blocking),
                                                                       inversion_label(r.invert_group), ", ".join(group_names) or "-",
                                                                       inversion_label(r.invert_subnet), r.subnets or "-",
@@ -279,7 +285,7 @@ def make_info_producer_access_rules(ruletype):
         effective_ruleset_assocs = node.effective_access_ruleset_assocs.filter(
             EffectiveNodeToAccessRuleset.c.ruletype == ruletype).all()
         inherited_ruleset_assocs = set(effective_ruleset_assocs) - set(own_ruleset_assocs)
-        
+
         effective_rulesets = [rsa.ruleset for rsa in effective_ruleset_assocs]
         rule_assocs_in_rulesets = [r for rs in effective_rulesets for r in rs.rule_assocs]
 
@@ -580,6 +586,21 @@ def set_prompt(ip):
 ip.set_hook("pre_prompt_hook", set_prompt)
 
 # setup custom exception handler for automatic rollbacks on SQLAlchemy errors
+
+
+def explain(query, analyze=False, pygments_style="vim"):
+    """Prints EXPLAIN (ANALYZE) query in current session."""
+    print(query)
+    print("")
+    explained = alchemyext.explain(query, s, analyze)
+    if pygments is not None:
+        from pygments.lexers import PostgresConsoleLexer
+        from pygments.formatters import Terminal256Formatter
+        explained = pygments.highlight(
+            explained,
+            PostgresConsoleLexer(),
+            Terminal256Formatter(style=pygments_style))
+    print(explained)
 
 
 def handle_sqla_exception(self, etype, value, tb, tb_offset=None):

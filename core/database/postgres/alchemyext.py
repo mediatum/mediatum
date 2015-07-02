@@ -14,7 +14,7 @@ from warnings import warn
 from sqlalchemy.ext import compiler
 from sqlalchemy.sql import table
 from sqlalchemy.sql.ddl import CreateTable, _CreateDropBase, DropTable, sort_tables
-from sqlalchemy.sql.elements import quoted_name
+from sqlalchemy.sql.elements import quoted_name, ClauseElement, _literal_as_text, Executable
 from sqlalchemy.sql.type_api import UserDefinedType
 from sqlalchemy.orm.dynamic import AppenderQuery
 from core.database.postgres import DeclarativeBase, db_metadata
@@ -73,6 +73,34 @@ def visit_drop_table_cascade(ddl_element, compiler, **kw):
     return "DROP TABLE IF EXISTS %s CASCADE" % (ddl_element.element.fullname)
 
 
+# modified version of https://bitbucket.org/zzzeek/sqlalchemy/wiki/UsageRecipes/Explain
+
+class Explain(Executable, ClauseElement):
+
+    def __init__(self, stmt, analyze=False, verbose=False):
+        self.statement = _literal_as_text(stmt)
+        self.analyze = analyze
+        self.verbose = verbose
+        # helps with INSERT statements
+        self.inline = getattr(stmt, 'inline', None)
+
+
+@compiler.compiles(Explain, 'postgresql')
+def pg_explain(element, compiler, **kw):
+    text = "EXPLAIN "
+    if element.analyze:
+        text += "ANALYZE "
+    if element.verbose:
+        text += "VERBOSE "
+    text += compiler.process(element.statement, **kw)
+    return text
+
+
+def explain(query, session, analyze=False):
+    lines = session.execute(Explain(query, analyze)).fetchall()
+    return "\n".join(l[0] for l in lines)
+
+
 class LenMixin(object):
 
     def __len__(self):
@@ -95,9 +123,9 @@ class Daterange(UserDefinedType):
 def map_function_to_mapped_class(function, mapped_cls, *argnames):
     """Creates an additional mapping from a database function to an existing mapped class.
     The resulting mapper can be used in queries like that:
-    
+
     session.query(MappedFunction).params(arg1=3, arg2="test").first()
-    """ 
+    """
     select_columns = [column(c) for c in mapped_cls.__table__.columns.keys()]
     stmt = select(select_columns).select_from(function(*[bindparam(arg) for arg in argnames]))
     primary_key_columns = [getattr(stmt.c, c.name) for c in mapped_cls.__table__.primary_key.columns]

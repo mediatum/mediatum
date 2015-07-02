@@ -117,7 +117,7 @@
 
         <form tal:condition="python:search.isExtended()" name="xsearch" id="search-box" method="post" action="/node" accept-charset="utf-8"  style="padding:10px 0px 0px 10px">
             <input type="hidden" name="submittype" value="search"/>
-            <input type="hidden" name="collection" tal:attributes="value python:search.collection.id"/>
+            <input type="hidden" name="collection" tal:attributes="value python:search.collection.id" tal:condition="python:search.insideCollection()"/>
             <input type="hidden" name="act_node" tal:attributes="value python:act_node"/>
             <input type="hidden" name="searchmode" id="searchmodeId" tal:attributes="value python:['extendedsuper','extended'][search.isExtendedNormal()]"/>
             <table id="abc" name="xsearchtable" tal:define="max python:[4,11][search.isExtendedSuper()]">

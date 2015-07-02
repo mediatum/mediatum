@@ -26,6 +26,7 @@ from core.styles import theme
 from web.frontend import Content
 from utils.strings import ensure_unicode_returned
 from contenttypes.container import Collections, Collection, Container
+from schema.searchmask import SearchMaskItem
 
 q = db.query
 
@@ -136,7 +137,7 @@ def simple_search(req):
             cl.linktarget = ""
             return cl
             
-    act_node_id = req.params.get("act_node")
+    act_node_id = req.form.get("act_node", type=int)
     act_node = q(Node).get(act_node_id) if act_node_id else None
     if act_node is not None and not isinstance(act_node, Collections):
         # actual node is a collection or directory
@@ -154,31 +155,19 @@ def simple_search(req):
         return SearchResult(res, searchquery, collections)
 
 
-def extended_search(req):
-    from web.frontend.content import ContentList
-    max = 3
+def _extended_searchquery_from_req(req):
+    max_fields = 3
     if req.params.get("searchmode") == "extendedsuper":
-        max = 10
-    sfields = []
-    access = AccessData(req)
-    metatype = None
-
-    collectionid = req.params.get("collection", tree.getRoot().id)
-    try:
-        collection = tree.getNode(collectionid)
-    except:
-        for coll in tree.getRoot("collections").getChildren():
-            collection = tree.getNode(coll.id)
-            break
+        max_fields = 10
 
     q_str = ''
     q_user = ''
     first2 = 1
-    for i in range(1, max + 1):
-        f = u(req.params.get("field" + ustr(i), "").strip())
-        q = u(req.params.get("query" + ustr(i), "").strip())
+    for i in range(1, max_fields + 1):
+        field_id_or_name = u(req.params.get("field" + ustr(i), "").strip())
+        element_query = u(req.params.get("query" + ustr(i), "").strip())
 
-        if not q and "query" + ustr(i) + "-from" not in req.params:
+        if not element_query and "query" + ustr(i) + "-from" not in req.params:
             continue
 
         if not first2:
@@ -187,16 +176,15 @@ def extended_search(req):
 
         first2 = 0
 
-        if not f.isdigit():
-            q = u(req.params.get("query" + ustr(i), "").strip())
-            q_str += f + '=' + protect(q)
-            q_user += f + '=' + protect(q)
+        if not field_id_or_name.isdigit():
+            element_query = u(req.params.get("query" + ustr(i), "").strip())
+            q_str += field_id_or_name + '=' + protect(element_query)
+            q_user += field_id_or_name + '=' + protect(element_query)
         else:
-            masknode = tree.getNode(f)
-            assert masknode.type == "searchmaskitem"
+            searchmaskitem = q(SearchMaskItem).get(field_id_or_name)
             first = 1
             q_str += "("
-            for metatype in masknode.getChildren():
+            for metatype in searchmaskitem.children:
                 if not first:
                     q_str += " or "
                     q_user += " %s " % (translate("search_or", request=req))
@@ -231,27 +219,47 @@ def extended_search(req):
                                                                           request=req),
                                                                 ustr(req.params["query" + ustr(i) + "-to"]))
                 else:
-                    q = u(req.params.get("query" + ustr(i), "").strip())
-                    q_str += metatype.getName() + '=' + protect(q)
+                    element_query = u(req.params.get("query" + ustr(i), "").strip())
+                    q_str += metatype.getName() + '=' + protect(element_query)
                     if metatype.getLabel() != "":
-                        q_user += "%s = %s" % (metatype.getLabel(), protect(q))
+                        q_user += "%s = %s" % (metatype.getLabel(), protect(element_query))
                     else:
-                        q_user += "%s = %s" % (metatype.getName(), protect(q))
+                        q_user += "%s = %s" % (metatype.getName(), protect(element_query))
 
             q_str += ")"
-    try:
-        if req.params.get("act_node", "") and req.params.get("act_node") != ustr(collection.id):
-            result = tree.getNode(req.params.get("act_node")).search(q_str)
-        else:
-            result = collection.search(q_str)
-        result = access.filter(result)
-        logg.info(access.user.name + "%s xsearch for '%s', %s results", access.user.name, q_user, len(result))
-        if len(result) > 0:
-            cl = ContentList(result, collection, q_user.strip())
-            cl.feedback(req)
-            cl.linkname = ""
-            cl.linktarget = ""
-            return cl
-        return SearchResult([], q_user.strip())
-    except:
-        return SearchResult(None, q_user.strip())
+    
+    return q_str, q_user.strip()
+
+
+def extended_search(req):
+    from web.frontend.content import ContentList
+        
+    collection_id = req.form.get("collection", type=int)
+    if collection_id:
+        collection = q(Collection).get(collection_id)
+    else:
+        # no collection id given -> search starts at collection root
+        collection = q(Collections).one()
+
+    searchquery, readable_query = _extended_searchquery_from_req(req)
+
+    logg.debug("extended_search with query '%s' on collection '%s'(%s)", searchquery, collection.name, collection.id)
+        
+    act_node_id = req.form.get("act_node", type=int)
+    act_node = q(Node).get(act_node_id) if act_node_id else None
+    
+    search_collection = act_node if act_node is not None else collection
+    
+    result = search_collection.search(searchquery).all()
+    
+#         result = access.filter(result)
+#         logg.info(access.user.name + "%s xsearch for '%s', %s results", access.user.name, q_user, len(result))
+
+    if len(result) > 0:
+        cl = ContentList(result, collection, readable_query)
+        cl.feedback(req)
+        cl.linkname = ""
+        cl.linktarget = ""
+        return cl
+    
+    return SearchResult([], readable_query)

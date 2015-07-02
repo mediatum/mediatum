@@ -30,7 +30,7 @@ def make_fts_expr(language, target, searchterm, op="|"):
     :param op: operator used to join searchterms separated by space, | or &
     """
     tsvec = func.to_tsvector_safe(language, target)
-    ts_query = sqlfunc.to_tsquery(language, op.join(searchterm.split()))
+    ts_query = sqlfunc.to_tsquery(language, op.join(searchterm.strip('"').strip().split()))
     return tsvec.op("@@")(ts_query)
 
 

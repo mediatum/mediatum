@@ -593,10 +593,8 @@ ip.set_hook("pre_prompt_hook", set_prompt)
 # setup custom exception handler for automatic rollbacks on SQLAlchemy errors
 
 
-def explain(query, analyze=False, pygments_style="vim"):
+def explain(query, analyze=False, pygments_style="native"):
     """Prints EXPLAIN (ANALYZE) query in current session."""
-    print(query)
-    print("")
     explained = alchemyext.explain(query, s, analyze)
     if pygments is not None:
         from pygments.lexers import PostgresConsoleLexer
@@ -605,6 +603,8 @@ def explain(query, analyze=False, pygments_style="vim"):
             explained,
             PostgresConsoleLexer(),
             Terminal256Formatter(style=pygments_style))
+
+    db.statement_history.print_last_statement(show_time=False)
     print(explained)
 
 

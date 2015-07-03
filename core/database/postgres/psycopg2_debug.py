@@ -84,6 +84,11 @@ class StatementHistory(object):
     def statements_with_time(self):
         return self._statements.items()
 
+    def format_statement(self, stmt, highlight=True, time=0, duration=0, pygments_style=DEFAULT_PYGMENTS_STYLE):
+        show_time = time and duration
+        highlight_format_stmt = _make_statement_formatter(show_time, highlight, pygments_style)
+        return highlight_format_stmt(stmt)
+
     def print_last_statement(self, show_time=True, highlight=True, pygments_style=DEFAULT_PYGMENTS_STYLE):
         if self.last_statement is None:
             print("history is empty")

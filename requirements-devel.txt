@@ -1,5 +1,5 @@
 pytest
-factory-boy
+git+https://github.com/dpausp/factory_boy@sqlalchemy_callable_session#egg=factory_boy
 munch
 mock
 msgpack-python

@@ -10,6 +10,8 @@ from core.search.representation import AttributeMatch, FullMatch, SchemaMatch, F
 from core.database.postgres import func, DeclarativeBase, integer_pk, integer_fk, C
 from sqlalchemy.dialects.postgresql.base import TSVECTOR
 from core.database.postgres.node import Node
+import operator
+from functools import reduce
 
 
 comparisons = {
@@ -20,13 +22,13 @@ comparisons = {
     "=": (lambda l, r: l == r)
 }
 
-language = "german"
+default_languages = ("german", "english")
 
 
 class Fts(DeclarativeBase):
-    
+
     __tablename__ = "fts"
-    
+
     id = integer_pk()
     # XXX: we allow multiple search items with the same configuration
     # XXX: otherwise, we could use nid, config, searchtype as primary key
@@ -41,7 +43,23 @@ def _prepare_searchstring(op, searchstring):
     return op.join(searchstring.strip('"').strip().split())
 
 
-def make_fts_expr(language, target, searchstring, op="|"):
+def make_fts_expr_tsvec(languages, target, searchstring, op="|"):
+    """Searches tsvector column. `target` should have a gin index.
+    :param language: postgresql language string
+    :param target: SQLAlchemy expression with type tsvector
+    :param searchstring: string of space-separated words to search
+    :param op: operator used to join searchterms separated by space, | or &
+    """
+    prepared_searchstring = _prepare_searchstring(op, searchstring)
+    ts_query = sqlfunc.to_tsquery(languages[0], prepared_searchstring)
+
+    for language in languages[1:]:
+        ts_query = ts_query.op("||")(sqlfunc.to_tsquery(language, prepared_searchstring))
+
+    return target.op("@@")(ts_query)
+
+
+def make_fts_expr(languages, target, searchstring, op="|"):
     """Searches fulltext column, building ts_vector on the fly.
     `target` must have a gin index built with an ts_vector or this will be extremly slow.
     :param language: postgresql language string
@@ -49,23 +67,23 @@ def make_fts_expr(language, target, searchstring, op="|"):
     :param searchstring: string of space-separated words to search
     :param op: operator used to join searchterms separated by space, | or &
     """
-    tsvec = func.to_tsvector_safe(language, target)
-    ts_query = sqlfunc.to_tsquery(language, _prepare_searchstring(op, searchstring))
-    return tsvec.op("@@")(ts_query)
+    prepared_searchstring = _prepare_searchstring(op, searchstring)
+    tsvec = func.to_tsvector_safe(languages[0], target)
+
+    for language in languages[1:]:
+        tsvec = tsvec.op("||")(func.to_tsvector_safe(language, prepared_searchstring))
+
+    return make_fts_expr_tsvec(languages, target, searchstring, op)
 
 
-def make_fts_expr_tsvec(language, target, searchstring, op="|"):
-    """Searches tsvector column. `target` should have a gin index.
-    :param language: postgresql language string
-    :param target: SQLAlchemy expression with type tsvector
-    :param searchstring: string of space-separated words to search
-    :param op: operator used to join searchterms separated by space, | or &
-    """
-    ts_query = sqlfunc.to_tsquery(language, _prepare_searchstring(op, searchstring))
-    return target.op("@@")(ts_query)
+def make_config_cond(languages):
+    return reduce(operator.or_, (Fts.config == l for l in languages))
 
 
-def apply_searchtree_to_query(query, searchtree):
+def apply_searchtree_to_query(query, searchtree, languages=None):
+
+    if languages is None:
+        languages = default_languages
 
     def walk(n):
         from core import Node
@@ -80,21 +98,24 @@ def apply_searchtree_to_query(query, searchtree):
             return left | right, fts_left or fts_right
 
         elif isinstance(n, AttributeMatch):
-            return make_fts_expr(language,
+            return make_fts_expr(languages,
                                  Node.attrs[n.attribute].astext,
                                  n.searchterm), True
 
         elif isinstance(n, FulltextMatch):
-            cond = (make_fts_expr_tsvec(language, Fts.tsvec, n.searchterm)
-                    & (Fts.config == language)
+            cond = (make_fts_expr_tsvec(languages, Fts.tsvec, n.searchterm)
                     & (Fts.searchtype == 'fulltext'))
+
+            cond &= make_config_cond(languages)
 
             return cond, True
 
         elif isinstance(n, FullMatch):
-            cond = (make_fts_expr_tsvec(language, Fts.tsvec, n.searchterm)
-                    & (Fts.config == language)
+            cond = (make_fts_expr_tsvec(languages, Fts.tsvec, n.searchterm)
                     & ((Fts.searchtype == 'fulltext') | (Fts.searchtype == 'attrs')))
+
+            cond &= make_config_cond(languages)
+
             return cond, True
 
         elif isinstance(n, AttributeCompare):

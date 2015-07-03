@@ -240,15 +240,43 @@ class Node(DeclarativeBase, NodeMixin):
         access = accessfunc(node_id, group_ids, ip, date)
         return db.session.execute(select([access])).scalar()
 
-    def search(self, searchquery):
-        from contenttypes import Content
-        from core.database.postgres.search import apply_searchtree_to_query
-        q = object_session(self).query
+    def _parse_searchquery(self, searchquery):
+        """Parses `searchquery` and transforms it into the search tree."""
         from core.search import parser
+        q = object_session(self).query
         searchtree = parser.parse_string(searchquery)
-        query = self.all_children_by_query(q(Content))
-        return apply_searchtree_to_query(query, searchtree)
-        
+        return searchtree
+
+
+    def _search_query_object(self):
+        """Builds the query object that is used as basis for content node searches below this node"""
+        from contenttypes import Content
+        q = object_session(self).query
+        base_query = self.all_children_by_query(q(Content))
+        return base_query
+
+    def search(self, searchquery, language=None):
+        """Creates a search query.
+        :param searchquery: query in search language :
+        :param language: language config string matching Fts.config
+        :returns: Node Query
+        """
+        from core.database.postgres.search import apply_searchtree_to_query
+        searchtree = self._parse_searchquery(searchquery)
+        query = self._search_query_object()
+        return apply_searchtree_to_query(query, searchtree, [language] if language else None)
+
+    def search_multilang(self, searchquery, languages=None):
+        """Creates search queries for a sequence of languages.
+        :param searchquery: query in search language :
+        :param languages: language config strings matching Fts.config
+        :returns list of Node Query
+        """
+        from core.database.postgres.search import apply_searchtree_to_query
+        searchtree = self._parse_searchquery(searchquery)
+        query = self._search_query_object()
+        return [apply_searchtree_to_query(query, searchtree, l) for l in languages]
+
     __mapper_args__ = {
         'polymorphic_identity': 'node',
         'polymorphic_on': type

@@ -53,32 +53,28 @@ def _make_statement_formatter(show_time, highlight, pygments_style):
 
 class StatementHistory(object):
 
-    """Keeps a history of SQL statements (optionally with time) and offers some pretty printing options.
+    """Keeps a history of SQL statements with execution time and offers some pretty printing options.
     No precautions for thread safety.
     """
 
-    def __init__(self, save_time=False):
+    def __init__(self):
+        self._reset()
+
+    def _reset(self):
         self._statements = OrderedMultiDict()
-        self.save_time = save_time
         self.last_statement = None
-        if save_time:
-            self.append = self._append_with_time
-        else:
-            self.append = self._append
+        self.last_duration = None
+        self.last_timestamp = None
 
-    def _append_with_time(self, stmt, timestamp, duration):
+    def append(self, stmt, timestamp, duration):
         self.last_statement = stmt
-        self.last_duration = duration
         self.last_timestamp = timestamp
+        self.last_duration = duration
         self._statements.add(stmt, (timestamp, duration))
-
-    def _append(self, stmt, timestamp, duration):
-        self.last_statement = stmt
-        self._statements.add(stmt, tuple())
 
     def clear(self):
         # clear() does not work on OrderedMultiDict, bug in werkzeug?
-        self._statements = OrderedMultiDict()
+        self._reset()
 
     @property
     def statements(self):
@@ -88,16 +84,19 @@ class StatementHistory(object):
     def statements_with_time(self):
         return self._statements.items()
 
-    def print_last_statement(self, show_time=None, highlight=True, pygments_style=DEFAULT_PYGMENTS_STYLE):
-        if show_time is None:
-            show_time = self.save_time
+    def print_last_statement(self, show_time=True, highlight=True, pygments_style=DEFAULT_PYGMENTS_STYLE):
+        if self.last_statement is None:
+            print("history is empty")
+            return
+
         highlight_format_stmt = _make_statement_formatter(show_time, highlight, pygments_style)
         print()
         print(highlight_format_stmt(self.last_statement, self.last_timestamp, self.last_duration))
 
-    def print_statements(self, show_time=None, highlight=True, pygments_style=DEFAULT_PYGMENTS_STYLE):
-        if show_time is None:
-            show_time = self.save_time
+    def print_statements(self, show_time=True, highlight=True, pygments_style=DEFAULT_PYGMENTS_STYLE):
+        if self.last_statement is None:
+            print("history is empty")
+            return
 
         highlight_format_stmt = _make_statement_formatter(show_time, highlight, pygments_style)
         print()
@@ -107,7 +106,7 @@ class StatementHistory(object):
 
 
 class DebugCursor(_cursor):
-        
+
     """A cursor that logs queries with execution timestamp and duration,
     using its connection logging facilities.
     """
@@ -129,12 +128,10 @@ class DebugCursor(_cursor):
             return super(DebugCursor, self).callproc(procname, vars)
 
 
-def make_debug_connection_factory(log_statement_trace=False, history_save_time=False):
+def make_debug_connection_factory(log_statement_trace=False):
     """Creates a DebugConnection which can be used as connection_factory for Psycopg2.connect()
     :param log_statement_trace: add trace to all SQL statement logs
-    :param history_save_time: record unix time of execution in statement history
     """
-
 
     class DebugConnection(_connection):
 
@@ -148,7 +145,7 @@ def make_debug_connection_factory(log_statement_trace=False, history_save_time=F
 
         def _check(self):
             if not hasattr(self, "_history"):
-                self._history = StatementHistory(history_save_time)
+                self._history = StatementHistory()
 
         @property
         def history(self):

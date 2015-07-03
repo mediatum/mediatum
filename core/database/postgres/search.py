@@ -76,8 +76,23 @@ def make_fts_expr(languages, target, searchstring, op="|"):
     return make_fts_expr_tsvec(languages, target, searchstring, op)
 
 
-def make_config_cond(languages):
-    return reduce(operator.or_, (Fts.config == l for l in languages))
+def make_config_searchtype_cond(languages, searchtypes):
+    # we must repeat the language for all search types, because Postgres is to stupid to find the optimal plan without that ;)
+    
+    def make_searchtype_cond_for_language(lang):
+        inner_cond = (Fts.config == lang) & (Fts.searchtype == searchtypes[0])
+
+        for searchtype in searchtypes[1:]:
+            inner_cond |= ((Fts.config == lang) & (Fts.searchtype == searchtype))
+
+        return inner_cond
+    
+    cond = make_searchtype_cond_for_language(languages[0])
+
+    for lang in languages[1:]:
+        cond |= make_searchtype_cond_for_language(lang)
+
+    return cond
 
 
 def apply_searchtree_to_query(query, searchtree, languages=None):
@@ -103,19 +118,13 @@ def apply_searchtree_to_query(query, searchtree, languages=None):
                                  n.searchterm), True
 
         elif isinstance(n, FulltextMatch):
-            cond = (make_fts_expr_tsvec(languages, Fts.tsvec, n.searchterm)
-                    & (Fts.searchtype == 'fulltext'))
-
-            cond &= make_config_cond(languages)
-
+            cond = make_fts_expr_tsvec(languages, Fts.tsvec, n.searchterm)
+            cond &= make_config_searchtype_cond(languages, ['fulltext'])
             return cond, True
 
         elif isinstance(n, FullMatch):
-            cond = (make_fts_expr_tsvec(languages, Fts.tsvec, n.searchterm)
-                    & ((Fts.searchtype == 'fulltext') | (Fts.searchtype == 'attrs')))
-
-            cond &= make_config_cond(languages)
-
+            cond = make_fts_expr_tsvec(languages, Fts.tsvec, n.searchterm)
+            cond &= make_config_searchtype_cond(languages, ['fulltext', 'attrs'])
             return cond, True
 
         elif isinstance(n, AttributeCompare):

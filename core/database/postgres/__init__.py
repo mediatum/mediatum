@@ -32,7 +32,7 @@ bref = backref
 DB_SCHEMA_NAME = "mediatum"
 
 # warn when queries take longer than `SLOW_QUERY_SECONDS`
-SLOW_QUERY_SECONDS = 0.1
+SLOW_QUERY_SECONDS = 0.2
 
 
 def dynamic_rel(*args, **kwargs):
@@ -94,7 +94,10 @@ def after_cursor_execute(conn, cursor, statement,
     total = time.time() - conn.info['query_start_time'].pop(-1)
     # total in seconds
     if total > SLOW_QUERY_SECONDS:
-        statement = conn.info['current_query'].pop(-1)
+        if hasattr(conn.connection.connection, "history"):
+            statement = conn.connection.connection.history.last_statement
+        else:
+            statement = conn.info['current_query'].pop(-1)
         logg.warn("slow query %.1fms:\n%s", total * 1000, statement)
 
 

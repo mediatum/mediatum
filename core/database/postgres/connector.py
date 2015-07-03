@@ -134,6 +134,8 @@ class PostgresSQLAConnector(object):
         return self.session.query(Node).get(node.id)
 
     def create_tables(self, conn):
+        # Fts is imported nowhere else, make it known to SQLAlchemy by importing it here
+        from core.database.postgres.search import Fts
         self.metadata.create_all(conn)
 
     def drop_tables(self, conn):

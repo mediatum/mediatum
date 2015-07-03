@@ -10,7 +10,11 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from . import db_metadata, DeclarativeBase
 import os.path
 from core.database.postgres import MyQuery
+from core.database.postgres.psycopg2_debug import make_debug_connection_factory
 
+# set this to True or False to override debug config settings
+DEBUG = None
+DEBUG_SHOW_TRACE = None
 
 CONNECTSTR_TEMPLATE = "postgresql+psycopg2://{user}:{passwd}@{dbhost}:{dbport}/{database}"
 
@@ -52,8 +56,24 @@ class PostgresSQLAConnector(object):
         self.user = config.get("database.user", "mediatumadmin")
         self.passwd = config.get("database.passwd", "")
         self.connectstr = CONNECTSTR_TEMPLATE.format(**self.__dict__)
+
+        if DEBUG is None:
+            self.debug = config.get("database.debug", "").lower() == "true"
+        else:
+            self.debug = DEBUG
+            
+        if self.debug:
+            if DEBUG_SHOW_TRACE is None:
+                show_trace = config.get("database.debug_show_trace", "").lower() == "true"
+            else:
+                show_trace = DEBUG_SHOW_TRACE
+            connect_args = {"connection_factory": make_debug_connection_factory(show_trace)}
+        else:
+            connect_args = {}
+
         logg.info("Connecting to %s", self.connectstr)
-        engine = create_engine(self.connectstr)
+        engine = create_engine(self.connectstr, connect_args=connect_args)
+
         DeclarativeBase.metadata.bind = engine
         self.engine = engine
         self.Session.configure(bind=engine)
@@ -85,6 +105,12 @@ class PostgresSQLAConnector(object):
     @property
     def session(self):
         return self.Session()
+
+    @property
+    def statement_history(self):
+        if not self.debug:
+            raise Exception("connector debugging disabled (cfg: database.debug), statement history not available")
+        return self.Session().connection().connection.connection.history
 
     def query(self, *entities, **kwargs):
         """Query proxy.

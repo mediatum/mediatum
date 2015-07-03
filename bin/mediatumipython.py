@@ -147,6 +147,7 @@ from core.database.postgres import *
 from utils.compat import *
 
 from core import config
+
 import core.init as initmodule
 from functools import wraps
 
@@ -154,6 +155,9 @@ from core import init
 import core.database
 from core.database.postgres.node import t_noderelation
 from core.database.postgres import alchemyext
+import core.database.postgres.connector
+core.database.postgres.connector.DEBUG_SHOW_TRACE = False
+core.database.postgres.connector.DEBUG = True
 from itertools import islice, chain
 from collections import OrderedDict
 import copy

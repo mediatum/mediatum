@@ -10,8 +10,9 @@ from __future__ import print_function
 import logging
 import time
 from psycopg2.extensions import connection as _connection
-from psycopg2.extras import LoggingCursor
+from psycopg2.extensions import cursor as _cursor
 from werkzeug.datastructures import OrderedMultiDict
+from decorator import contextmanager
 
 # used for SQL formatting, if present
 try:
@@ -20,10 +21,34 @@ except ImportError:
     pygments = None
 
 
+DEFAULT_PYGMENTS_STYLE = "native"
+
 logg = logging.getLogger(__name__)
 
 # logs SQL statements run by a psycopg2 logging connection
 sql_log = logging.getLogger("sqllog")
+
+
+def _make_statement_formatter(show_time, highlight, pygments_style):
+
+    def format_stmt(stmt, timestamp=0, duration=0):
+        if show_time:
+            return "{:.2f} ({:.2f}ms): {}".format(timestamp, duration * 1000, stmt.strip())
+        else:
+            return stmt
+
+    if highlight and pygments:
+        from pygments.lexers import PostgresLexer
+        from pygments.formatters import Terminal256Formatter
+        lexer = PostgresLexer()
+        formatter = Terminal256Formatter(style=pygments_style)
+
+        def highlight_format_stmt(stmt, timestamp=0, duration=0):
+            return pygments.highlight(format_stmt(stmt, timestamp, duration), lexer, formatter)
+
+        return highlight_format_stmt
+    else:
+        return format_stmt
 
 
 class StatementHistory(object):
@@ -41,53 +66,67 @@ class StatementHistory(object):
         else:
             self.append = self._append
 
-    def _append_with_time(self, stmt):
-        self.last_statement = stmt 
-        self._statements.add(stmt, time.time())
-        
-    def _append(self, stmt):
-        self.last_statement = stmt 
-        self._statements.add(stmt, 0)
+    def _append_with_time(self, stmt, timestamp, duration):
+        self.last_statement = stmt
+        self.last_duration = duration
+        self.last_timestamp = timestamp
+        self._statements.add(stmt, (timestamp, duration))
+
+    def _append(self, stmt, timestamp, duration):
+        self.last_statement = stmt
+        self._statements.add(stmt, tuple())
 
     def clear(self):
-        self._statements.clear()
+        # clear() does not work on OrderedMultiDict, bug in werkzeug?
+        self._statements = OrderedMultiDict()
 
     @property
     def statements(self):
         return self._statements.keys()
-    
+
     @property
     def statements_with_time(self):
         return self._statements.items()
-    
 
-    def print_statements(self, show_time=None, highlight=True, pygments_style="native"):
-        
+    def print_last_statement(self, show_time=None, highlight=True, pygments_style=DEFAULT_PYGMENTS_STYLE):
         if show_time is None:
             show_time = self.save_time
-        
-        def format_stmt(stmt, timestamp):
-            if show_time:
-                return "{:.2f}: {}".format(timestamp, stmt)
-            else:
-                return stmt
-        
-        if highlight and pygments:
-            from pygments.lexers import PostgresLexer
-            from pygments.formatters import Terminal256Formatter
-            lexer = PostgresLexer()
-            formatter = Terminal256Formatter(style=pygments_style)
+        highlight_format_stmt = _make_statement_formatter(show_time, highlight, pygments_style)
+        print()
+        print(highlight_format_stmt(self.last_statement, self.last_timestamp, self.last_duration))
 
-            def highlight_format_stmt(stmt, timestamp):
-                return pygments.highlight(format_stmt(stmt, timestamp), lexer, formatter)
-        
-        else:
-            highlight_format_stmt = format_stmt
-            
+    def print_statements(self, show_time=None, highlight=True, pygments_style=DEFAULT_PYGMENTS_STYLE):
+        if show_time is None:
+            show_time = self.save_time
+
+        highlight_format_stmt = _make_statement_formatter(show_time, highlight, pygments_style)
         print()
 
-        for stmt, timestamp in self._statements.items(multi=True):
-            print(highlight_format_stmt(stmt, timestamp))
+        for stmt, (timestamp, duration) in self._statements.items(multi=True):
+            print(highlight_format_stmt(stmt, timestamp, duration))
+
+
+class DebugCursor(_cursor):
+        
+    """A cursor that logs queries with execution timestamp and duration,
+    using its connection logging facilities.
+    """
+
+    @contextmanager
+    def _logging(self):
+        start_ts = time.time()
+        yield
+        end_ts = time.time()
+        duration = end_ts - start_ts
+        self.connection.log(self.query, end_ts, duration, self)
+
+    def execute(self, query, vars=None):
+        with self._logging():
+            return super(DebugCursor, self).execute(query, vars)
+
+    def callproc(self, procname, vars=None):
+        with self._logging():
+            return super(DebugCursor, self).callproc(procname, vars)
 
 
 def make_debug_connection_factory(log_statement_trace=False, history_save_time=False):
@@ -96,15 +135,16 @@ def make_debug_connection_factory(log_statement_trace=False, history_save_time=F
     :param history_save_time: record unix time of execution in statement history
     """
 
+
     class DebugConnection(_connection):
 
         """Psycopg2 connection which keeps a history of SQL statements and logs them.
         Inspired by psycopg2.extras.LoggingConnection
         """
 
-        def log(self, msg, curs):
-            sql_log.debug(msg, trace=log_statement_trace)
-            self._history.append(msg)
+        def log(self, msg, timestamp, duration, curs):
+            sql_log.debug(msg, trace=log_statement_trace, extra={"duration": duration, "timestamp": timestamp})
+            self._history.append(msg, timestamp, duration)
 
         def _check(self):
             if not hasattr(self, "_history"):
@@ -117,7 +157,7 @@ def make_debug_connection_factory(log_statement_trace=False, history_save_time=F
 
         def cursor(self, *args, **kwargs):
             self._check()
-            kwargs.setdefault('cursor_factory', LoggingCursor)
+            kwargs.setdefault('cursor_factory', DebugCursor)
             return super(DebugConnection, self).cursor(*args, **kwargs)
 
     return DebugConnection

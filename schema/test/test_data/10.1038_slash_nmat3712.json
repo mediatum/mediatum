@@ -1,4 +1,5 @@
 {
+  "score": 1.0,
   "issued": {
     "date-parts": [
       [
@@ -8,93 +9,108 @@
       ]
     ]
   },
-  "DOI": "10.1038/nmat3712",
-  "issue": "10",
-  "deposited": {
-    "timestamp": 1379894400000,
-    "date-parts": [
-      [
-        2013,
-        9,
-        23
-      ]
-    ]
-  },
-  "title": "The effect of particle proximity on the oxygen reduction rate of size-selected platinum clusters",
-  "source": "CrossRef",
-  "page": "919-924",
-  "reference-count": 35,
-  "type": "journal-article",
-  "URL": "http://dx.doi.org/10.1038/nmat3712",
-  "volume": "12",
-  "publisher": "Nature Publishing Group",
-  "prefix": "http://id.crossref.org/prefix/10.1038",
-  "container-title": "Nat Mater",
-  "member": "http://id.crossref.org/member/339",
   "subtitle": [],
-  "score": 1.0,
-  "author": [
-    {
-      "given": "Markus",
-      "family": "Nesselberger"
-    },
-    {
-      "given": "Melanie",
-      "family": "Roefzaad"
-    },
-    {
-      "given": "R.",
-      "family": "Fay\u00e7al Hamou"
-    },
-    {
-      "given": "P.",
-      "family": "Ulrich Biedermann"
-    },
-    {
-      "given": "Florian F.",
-      "family": "Schweinberger"
-    },
-    {
-      "given": "Sebastian",
-      "family": "Kunz"
-    },
-    {
-      "given": "Katrin",
-      "family": "Schloegl"
-    },
-    {
-      "given": "Gustav K. H.",
-      "family": "Wiberg"
-    },
-    {
-      "given": "Sean",
-      "family": "Ashton"
-    },
-    {
-      "given": "Ueli",
-      "family": "Heiz"
-    },
-    {
-      "given": "Karl J. J.",
-      "family": "Mayrhofer"
-    },
-    {
-      "given": "Matthias",
-      "family": "Arenz"
-    }
-  ],
-  "ISSN": [
-    "1476-1122",
-    "1476-4660"
-  ],
   "indexed": {
-    "timestamp": 1410777257391,
     "date-parts": [
       [
         2014,
         9,
         15
       ]
-    ]
-  }
+    ],
+    "timestamp": 1410777257391
+  },
+  "issue": "10",
+  "ISSN": [
+    "1476-1122",
+    "1476-4660"
+  ],
+  "URL": "http://dx.doi.org/10.1038/nmat3712",
+  "page": "919-924",
+  "deposited": {
+    "date-parts": [
+      [
+        2013,
+        9,
+        23
+      ]
+    ],
+    "timestamp": 1379894400000
+  },
+  "volume": "12",
+  "title": "The effect of particle proximity on the oxygen reduction rate of size-selected platinum clusters",
+  "reference-count": 35,
+  "author": [
+    {
+      "affiliation": [],
+      "given": "Markus",
+      "family": "Nesselberger"
+    },
+    {
+      "affiliation": [],
+      "given": "Melanie",
+      "family": "Roefzaad"
+    },
+    {
+      "affiliation": [],
+      "given": "R.",
+      "family": "Fay\u00e7al Hamou"
+    },
+    {
+      "affiliation": [],
+      "given": "P.",
+      "family": "Ulrich Biedermann"
+    },
+    {
+      "affiliation": [],
+      "given": "Florian F.",
+      "family": "Schweinberger"
+    },
+    {
+      "affiliation": [],
+      "given": "Sebastian",
+      "family": "Kunz"
+    },
+    {
+      "affiliation": [],
+      "given": "Katrin",
+      "family": "Schloegl"
+    },
+    {
+      "affiliation": [],
+      "given": "Gustav K. H.",
+      "family": "Wiberg"
+    },
+    {
+      "affiliation": [],
+      "given": "Sean",
+      "family": "Ashton"
+    },
+    {
+      "affiliation": [],
+      "given": "Ueli",
+      "family": "Heiz"
+    },
+    {
+      "affiliation": [],
+      "given": "Karl J. J.",
+      "family": "Mayrhofer"
+    },
+    {
+      "affiliation": [],
+      "given": "Matthias",
+      "family": "Arenz"
+    }
+  ],
+  "member": "http://id.crossref.org/member/339",
+  "container-title": "Nat Mater",
+  "prefix": "http://id.crossref.org/prefix/10.1038",
+  "publisher": "Nature Publishing Group",
+  "type": "journal-article",
+  "alternative-id": [
+    "nmat3712"
+  ],
+  "source": "CrossRef",
+  "DOI": "10.1038/nmat3712"
 }
+

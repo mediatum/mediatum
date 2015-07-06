@@ -115,7 +115,7 @@ def apply_searchtree_to_query(query, searchtree, languages=None):
         elif isinstance(n, AttributeMatch):
             return make_fts_expr(languages,
                                  Node.attrs[n.attribute].astext,
-                                 n.searchterm), True
+                                 n.searchterm), False
 
         elif isinstance(n, FulltextMatch):
             cond = make_fts_expr_tsvec(languages, Fts.tsvec, n.searchterm)

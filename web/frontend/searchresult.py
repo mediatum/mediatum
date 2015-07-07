@@ -158,74 +158,76 @@ def simple_search(req):
 
 def _extended_searchquery_from_req(req):
     max_fields = 3
-    if req.params.get("searchmode") == "extendedsuper":
+    if req.form.get("searchmode") == "extendedsuper":
         max_fields = 10
 
-    q_str = ''
-    q_user = ''
+    q_str = u''
+    q_user = u''
     first2 = 1
     for i in range(1, max_fields + 1):
-        field_id_or_name = u(req.params.get("field" + ustr(i), "").strip())
-        element_query = u(req.params.get("query" + ustr(i), "").strip())
+        query_key = "query" + unicode(i)
+        # for range queries
+        query_to_key = "query" + unicode(i) + "-to"
+        query_from_key = "query" + unicode(i) + "-from"
+        field_id_or_name = req.form.get("field" + unicode(i), "").strip()
+        element_query = req.form.get(query_key, "").strip()
 
-        if not element_query and "query" + ustr(i) + "-from" not in req.params:
+        if not element_query and query_from_key not in req.form:
+            # no query found, do nothing
             continue
 
         if not first2:
             q_str += " and "
-            q_user += " %s " % (translate("search_and", request=req))
+            q_user += translate("search_and", request=req) + " "
 
         first2 = 0
 
         if not field_id_or_name.isdigit():
-            element_query = u(req.params.get("query" + ustr(i), "").strip())
             q_str += field_id_or_name + '=' + protect(element_query)
             q_user += field_id_or_name + '=' + protect(element_query)
         else:
             searchmaskitem = q(SearchMaskItem).get(field_id_or_name)
             first = 1
             q_str += "("
-            for metatype in searchmaskitem.children:
+            for field in searchmaskitem.children:
                 if not first:
                     q_str += " or "
                     q_user += " %s " % (translate("search_or", request=req))
                 first = 0
-                if "query" + ustr(i) + "-from" in req.params and metatype.getFieldtype() == "date":
+                if query_to_key in req.form and field.getFieldtype() == "date":
                     date_from = "0000-00-00T00:00:00"
                     date_to = "0000-00-00T00:00:00"
-                    fld = metatype
-                    if ustr(req.params["query" + ustr(i) + "-from"]) != "":
-                        date_from = date.format_date(
-                            date.parse_date(ustr(req.params["query" + ustr(i) + "-from"]), fld.getValues()), "%Y-%m-%dT%H:%M:%S")
-                    if ustr(req.params["query" + ustr(i) + "-to"]) != "":
-                        date_to = date.format_date(
-                            date.parse_date(ustr(req.params["query" + ustr(i) + "-to"]), fld.getValues()), "%Y-%m-%dT%H:%M:%S")
+                    
+                    from_value = req.form.get(query_from_key)
+                    if from_value:
+                        date_from = date.format_date(date.parse_date(from_value, field.getValues()), "%Y-%m-%dT%H:%M:%S")
+                            
+                    to_value = req.form.get(query_to_key)
+                    if to_value:
+                        date_to = date.format_date(date.parse_date(to_value, field.getValues()), "%Y-%m-%dT%H:%M:%S")
 
-                    if date_from == "0000-00-00T00:00:00" and date_to != date_from:  # from value
-                        q_str += metatype.getName() + ' <= ' + date_to
-                        q_user += "%s &le; \"%s\"" % (metatype.getName(), ustr(req.params["query" + ustr(i) + "-to"]))
+                    if date_from == "0000-00-00T00:00:00" and date_to != date_from:
+                        q_str += field.name + ' <= ' + date_to
+                        q_user += "%s &le; \"%s\"" % (field.name, to_value)
 
-                    elif date_to == "0000-00-00T00:00:00" and date_to != date_from:  # to value
-                        q_str += metatype.getName() + ' >= ' + date_from
-                        q_user += "%s &ge; \"%s\"" % (metatype.getName(), ustr(req.params["query" + ustr(i) + "-from"]))
+                    elif date_to == "0000-00-00T00:00:00" and date_to != date_from:
+                        q_str += field.name + ' >= ' + date_from
+                        q_user += "%s &ge; \"%s\"" % (field.name, from_value)
                     else:
-                        #q_str += '('+metatype.getName()+' >= '+date_from+' and '+metatype.getName()+' <= '+date_to+')'
-                        q_str += '(' + metatype.getName() + ' = ' + date_from + ')'
+                        q_str += u'({} >= {} and {} <= {})'.format(field.name, date_from, field.name, date_to)
 
-                        q_user += "(%s %s \"%s\" %s \"%s\")" % (metatype.getName(),
-                                                                translate("search_between",
-                                                                          request=req),
-                                                                ustr(req.params["query" + ustr(i) + "-from"]),
-                                                                translate("search_and",
-                                                                          request=req),
-                                                                ustr(req.params["query" + ustr(i) + "-to"]))
+                        q_user += "(%s %s \"%s\" %s \"%s\")" % (field.name,
+                                                                translate("search_between", request=req),
+                                                                from_value,
+                                                                translate("search_and", request=req),
+                                                                to_value)
                 else:
-                    element_query = u(req.params.get("query" + ustr(i), "").strip())
-                    q_str += metatype.getName() + '=' + protect(element_query)
-                    if metatype.getLabel() != "":
-                        q_user += "%s = %s" % (metatype.getLabel(), protect(element_query))
+                    q_str += field.name + "=" + protect(element_query)
+                    
+                    if field.label:
+                        q_user += field.label + " = " + protect(element_query)
                     else:
-                        q_user += "%s = %s" % (metatype.getName(), protect(element_query))
+                        q_user += field.name + " = " + protect(element_query)
 
             q_str += ")"
     

@@ -141,7 +141,8 @@ def simple_search(req):
     act_node = q(Node).get(act_node_id) if act_node_id else None
     if act_node is not None and not isinstance(act_node, Collections):
         # actual node is a collection or directory
-        res = [do_search(act_node)]
+        single_result = do_search(act_node)
+        res = [single_result] if single_result else []
     else:
         # actual node is collections-node
         res = [cl for cl in (do_search(collection) for collection in collections) if cl is not None]

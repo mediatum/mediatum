@@ -508,49 +508,43 @@ class ContentArea(Content):
 
     @ensure_unicode_returned
     def html(self, req):
-        styles = []
-        nodeprint = "1"  # show print icon
-        styles = self.content.getContentStyles()
-
         if "raw" in req.params:
             path = ""
         else:
-            items = req.params.get("itemsperpage")
-            try:
-                id = self.content.node.id
-                node = self.content.node
-
-                if not node.getContentType() in ['collection', 'directory']:
-                    nodeprint = 0
-                else:
-                    if node.get("system.print") != "":
-                        nodeprint = node.get("system.print")
-            except:
-                logg.exception("exception in ContentArea.html, setting id = 0")
-                id = 0
-
-            printlink = '/print/' + ustr(id)
-            if nodeprint == "1" and "sortfield0" in req.params.keys():
-                printlink += '?sortfield0=' + ustr(req.params.get("sortfield0")) + '&sortfield1=' + ustr(req.params.get("sortfield1"))
+            node = self.content.node if hasattr(self.content, "node") else None
+            
+            if node is None:
+                printlink = '/print/0' 
+            else:
+                if isinstance(node, Container) and node.get("system.print") == "1":
+                    printlink = '/print/' + unicode(node.id)
+                else: 
+                    printlink = None
+                    
+            if printlink and "sortfield0" in req.params:
+                printlink += '?sortfield0=' + req.params.get("sortfield0") + '&sortfield1=' + req.params.get("sortfield1")
 
             if req.params.get("show_navbar") == 0 or req.session.get("area") == "publish":
-                breadscrubs = []
+                breadcrumbs = []
             else:
                 try:
-                    breadscrubs = self.getPath()
+                    breadcrumbs = self.getPath()
                 except AttributeError:
                     logg.exception("exception in html")
                     return req.error(404, "Object cannot be shown")
 
+            styles = self.content.getContentStyles()
+            items = req.params.get("itemsperpage")
+            
             path = tal.getTAL(theme.getTemplate("content_nav.html"),
                               {"params": self.params,
-                               "path": breadscrubs,
+                               "path": breadcrumbs,
                                "styles": styles,
                                "logo": self.collectionlogo,
                                "searchmode": req.params.get("searchmode", ""),
                                "items": items,
                                "id": id,
-                               "nodeprint": nodeprint,
+                               "nodeprint": "1" if printlink else "0", # XXX: template compat for non-default templates
                                "printlink": printlink,
                                "area": req.session.get("area", "")},
                               macro="path",

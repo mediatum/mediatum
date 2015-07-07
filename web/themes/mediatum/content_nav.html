@@ -7,7 +7,7 @@
             <img tal:condition="python: not logo.getURL()" tal:attributes="src python:logo.getPath()" style="margin-left: 30px;"/>
     </div>
 
-    <a tal:condition="python:nodeprint=='1'" target="_blank" tal:attributes="href printlink" id="view_switch"><img src="/img/print_icon.gif"/></a>
+    <a tal:condition="python:printlink" target="_blank" tal:attributes="href printlink" id="view_switch"><img src="/img/print_icon.gif"/></a>
     
     <a tal:condition="python:len(styles)>1 and items!='-1'" tal:repeat="style styles" 
        tal:attributes="href python:u'/?style={}{}'.format(style.getName(), params);title python:style.getLabel()"

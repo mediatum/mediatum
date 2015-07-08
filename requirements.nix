@@ -570,6 +570,18 @@ let
     doCheck = false;
   };
 
+  sqlalchemy-continuum = self.buildPythonPackage {
+    name = "sqlalchemy-continuum-1.2.0";
+    src = fetchurl {
+      url = "https://pypi.python.org/packages/source/S/SQLAlchemy-Continuum/SQLAlchemy-Continuum-1.2.0.tar.gz";
+      md5 = "a2ff22e7172f08dac069200925cf2043";
+    };
+    propagatedBuildInputs = with self; [sqlalchemy sqlalchemy-utils];
+    buildInputs = with self; [];
+    doCheck = false;
+  };
+
+
 in {
   production = [
       coffeescript
@@ -601,6 +613,7 @@ in {
       requests
       scrypt
       sqlalchemy
+      sqlalchemy-continuum
       sqlalchemy-utils
       sympy
       unicodecsv

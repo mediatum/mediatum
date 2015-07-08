@@ -26,6 +26,7 @@ reportlab
 requests
 scrypt
 sqlalchemy
+sqlalchemy-continuum
 sqlalchemy-utils
 sympy
 unicodecsv

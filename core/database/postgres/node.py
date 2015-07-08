@@ -143,7 +143,7 @@ class Node(DeclarativeBase, NodeMixin):
     __metaclass__ = BaseNodeMeta
     __tablename__ = "node"
 
-    _id = C(Integer, Sequence('node_id_seq', schema=db_metadata.schema, start=100), primary_key=True, name="id")
+    id = C(Integer, Sequence('node_id_seq', schema=db_metadata.schema, start=100), primary_key=True)
     type = C(Text, index=True)
     schema = C(Unicode, index=True)
     name = C(Unicode, index=True)
@@ -151,15 +151,6 @@ class Node(DeclarativeBase, NodeMixin):
     fulltext = deferred(C(Text))
 
     attrs = deferred(C(MutableDict.as_mutable(JSONB)))
-
-    @hybrid_property
-    def id(self):
-        if self._id:
-            return MInt(self._id)
-
-    @id.expression
-    def id_expr(cls):
-        return cls._id
 
     @hybrid_property
     def a(self):

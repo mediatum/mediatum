@@ -23,10 +23,10 @@ from core import User, UserGroup, AuthenticatorInfo
 from core.systemtypes import *
 from contenttypes import Collections, Home
 from workflow.workflow import Workflows
-from core.auth import INTERNAL_AUTHENTICATOR_KEY
+from core.auth import INTERNAL_AUTHENTICATOR_KEY, create_password_hash
 
 
-logg = logging.getLogger("database")
+logg = logging.getLogger(u"database")
 
 
 def init_database_values(s):
@@ -35,47 +35,47 @@ def init_database_values(s):
     """
 
     # node tree setup
-    root = Root("Gesamtbestand", "root", 1)
-    metadatatypes = Metadatatypes("metadatatypes", "metadatatypes", 3)
-    workflows = Workflows("workflows", "workflows", 4)
-    mappings = Mappings("mappings", "mappings", 9)
-    collections = Collections("collections", "collections", 10)
-    collections.attrs["label"] = "Gesamtbestand"
-    home = Home("home", "home", 11)
-    navigation = Navigation("navigation", "navigation", 12)
-    navigation.attrs["label"] = "Kollektionen"
-    searchmasks = Searchmasks("searchmasks", "searchmasks", 15)
-    schedules = Schedules("schedules", "schedules", 16)
+    root = Root(u"root", u"root", 1)
+    metadatatypes = Metadatatypes(u"metadatatypes", u"metadatatypes", 3)
+    workflows = Workflows(u"workflows", u"workflows", 4)
+    mappings = Mappings(u"mappings", u"mappings", 9)
+    collections = Collections(u"collections", u"collections", 10)
+    collections.attrs[u"label"] = u"Collections"
+    home = Home(u"home", u"home", 11)
+    searchmasks = Searchmasks(u"searchmasks", u"searchmasks", 15)
+    schedules = Schedules(u"schedules", u"schedules", 16)
 
-    root.children.extend([metadatatypes, workflows, mappings, collections,
-                          home, navigation, searchmasks, schedules])
+    root.children.extend([metadatatypes, workflows, mappings, collections, home, searchmasks, schedules])
 
     # finally, add node tree. All nodes will be added automatically
     s.add(root)
-    logg.info("loaded initial values")
+    logg.info(u"loaded initial values")
 
     # default users and groups setup
     # add internal authenticator
     auth_type, auth_name = INTERNAL_AUTHENTICATOR_KEY  
     internal_auth = AuthenticatorInfo(id=0, auth_type=auth_type, name=auth_name)
 
-    adminuser = User(login_name=config.get("user.adminuser", "Administrator"),
-                     password_hash="226fa8e6cbb1f4e25019e2645225fd47",
+    admin_hash, admin_salt = create_password_hash(config.get(u"user.default_admin_password", "xadmin1"))
+
+    adminuser = User(login_name=config.get(u"user.adminuser", u"administrator"),
+                     password_hash=admin_hash,
+                     salt=admin_salt,
                      email=u"admin@mediatum",
                      authenticator_info=internal_auth
                      )
 
-    guestuser = User(login_name=config.get("user.guestuser", "Gast"),
+    guestuser = User(login_name=config.get(u"user.guestuser", u"guest"),
                      email=u"guest@mediatum",
                      authenticator_info=internal_auth
                      )
 
-    admingroup = UserGroup(name=config.get("user.admingroup", "Administration"),
+    admingroup = UserGroup(name=config.get(u"user.admingroup", u"administration"),
                            is_workflow_editor_group=True,
                            is_editor_group=True
                            )
     admingroup.users.append(adminuser)
     s.add(admingroup)
-    guestgroup = UserGroup(name="Gast")
+    guestgroup = UserGroup(name=u"guests")
     guestgroup.users.append(guestuser)
     s.add(guestgroup)

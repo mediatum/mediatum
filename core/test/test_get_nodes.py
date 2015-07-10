@@ -19,11 +19,11 @@ def test_get_root():
     from core.systemtypes import Root
     n = q(Root).one()
     assert_node(n,
-                name="Gesamtbestand",
+                name="root",
                 type="root",
                 schema=None)
-    
-    
+
+
 def test_get_collections():
     from contenttypes import Collections
     n = q(Collections).one()
@@ -31,9 +31,9 @@ def test_get_collections():
                 name="collections",
                 type="collections",
                 schema=None,
-                label="Gesamtbestand")
-         
-         
+                label="Collections")
+
+
 def test_get_metadatatypes():
     from core.systemtypes import Metadatatypes
     n = q(Metadatatypes).one()
@@ -41,8 +41,8 @@ def test_get_metadatatypes():
                 name="metadatatypes",
                 type="metadatatypes",
                 schema=None)
-         
-         
+
+
 def test_get_workflows():
     from workflow.workflow import Workflows
     n = q(Workflows).one()
@@ -50,8 +50,8 @@ def test_get_workflows():
                 name="workflows",
                 type="workflows",
                 schema=None)
-         
-         
+
+
 def test_get_mappings():
     from core.systemtypes import Mappings
     n = q(Mappings).one()
@@ -59,8 +59,8 @@ def test_get_mappings():
                 name="mappings",
                 type="mappings",
                 schema=None)
-         
-         
+
+
 def test_get_home():
     from contenttypes import Home
     n = q(Home).one()
@@ -68,14 +68,3 @@ def test_get_home():
                 name="home",
                 type="home",
                 schema=None)
-         
-         
-def test_get_navigation():
-    from core.systemtypes import Navigation
-    n = q(Navigation).one()
-    assert_node(n,
-                name="navigation",
-                type="navigation",
-                schema=None,
-                label="Kollektionen")
-         

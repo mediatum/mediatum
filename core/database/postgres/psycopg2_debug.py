@@ -29,7 +29,7 @@ logg = logging.getLogger(__name__)
 sql_log = logging.getLogger("sqllog")
 
 
-def _make_statement_formatter(show_time, highlight, pygments_style):
+def _make_statement_formatter(show_time, highlight, pygments_style, formatter_cls=None):
 
     def format_stmt(stmt, timestamp=0, duration=0):
         if show_time:
@@ -39,10 +39,14 @@ def _make_statement_formatter(show_time, highlight, pygments_style):
 
     if highlight and pygments:
         from pygments.lexers import PostgresLexer
-        from pygments.formatters import Terminal256Formatter
         lexer = PostgresLexer()
-        formatter = Terminal256Formatter(style=pygments_style)
 
+        if formatter_cls is None:
+            from pygments.formatters import Terminal256Formatter
+            formatter_cls = Terminal256Formatter
+            
+        formatter = formatter_cls(style=pygments_style)
+        
         def highlight_format_stmt(stmt, timestamp=0, duration=0):
             return pygments.highlight(format_stmt(stmt, timestamp, duration), lexer, formatter)
 
@@ -84,9 +88,9 @@ class StatementHistory(object):
     def statements_with_time(self):
         return self._statements.items()
 
-    def format_statement(self, stmt, highlight=True, time=0, duration=0, pygments_style=DEFAULT_PYGMENTS_STYLE):
+    def format_statement(self, stmt, highlight=True, time=0, duration=0, pygments_style=DEFAULT_PYGMENTS_STYLE, formatter_cls=None):
         show_time = time and duration
-        highlight_format_stmt = _make_statement_formatter(show_time, highlight, pygments_style)
+        highlight_format_stmt = _make_statement_formatter(show_time, highlight, pygments_style, formatter_cls)
         return highlight_format_stmt(stmt)
 
     def print_last_statement(self, show_time=True, highlight=True, pygments_style=DEFAULT_PYGMENTS_STYLE):

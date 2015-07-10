@@ -81,8 +81,15 @@ class TraceLogger(logging.Logger):
     # All log messages above the given `level` will have an additional field with a stack trace up to the logging call
     trace_level = logging.WARN 
     
+    # omit stack trace lines before these token have been found
     start_trace_at = (", in call_and_close", )
+    
+    # omit stack trace lines after these token have been found
     stop_trace_at = ("/sqlalchemy/", )
+    
+    # skip lines in the strack trace
+    # the tuple may contain strings or callables which are called with a single line as argument, returning bool
+    skip_trace_lines = (lambda l: "tal" in l and not ("TAL" in l or "evaluate" in l), )
 
     
     def _log(self, level, msg, args, exc_info=None, extra=None, trace=None):
@@ -100,6 +107,7 @@ class TraceLogger(logging.Logger):
             
             def find_start_lineno():
                 # nice hack to shorten long and ugly stack traces ;)
+                # TODO: support callables
                 for start_lineno, line in enumerate(tblines):
                     for text in self.start_trace_at:
                         if text in line:
@@ -108,7 +116,6 @@ class TraceLogger(logging.Logger):
                     return 0, None
                 
             def find_end_lineno():
-                # nice hack to shorten long and ugly stack traces ;)
                 for end_lineno, line in enumerate(tblines):
                     for text in self.stop_trace_at:
                         if text in line:
@@ -121,16 +128,30 @@ class TraceLogger(logging.Logger):
                         return -2, None
                 
                 
-                
             start_lineno, start_cutoff = find_start_lineno()
             end_lineno, end_cutoff = find_end_lineno()
+            lines_cut = tblines[start_lineno:end_lineno]
             
+            def skip_line(line):
+                for skip in self.skip_trace_lines:
+                    if callable(skip):
+                        return skip(line)
+                    else:
+                        return skip in line
+                
+            lines_without_skipped = [l for l in lines_cut if not skip_line(l)]
+            num_skipped_lines = len(lines_cut) - len(lines_without_skipped)
+            
+            # now, let's start building our customized strack trace
             final_tracelines = []
             
             if start_cutoff: 
                 final_tracelines.append("[... omitting lines up to '{}']\n".format(start_cutoff))
                 
-            final_tracelines.extend(tblines[start_lineno:end_lineno])
+            final_tracelines.extend(lines_without_skipped)
+            
+            if num_skipped_lines:
+                final_tracelines.append("[filtered {} lines]".format(num_skipped_lines))
             
             if end_cutoff: 
                 final_tracelines.append("[omitting lines starting at '{}' ...]".format(end_cutoff))
@@ -140,7 +161,7 @@ class TraceLogger(logging.Logger):
             ### hack for additional traceback info for TAL traces
             stack = inspect.stack()
             # search for a python expr evaluation in the TAL interpreter stack trace
-            eval_frame_result = [f for f in stack if f[3] == "evaluate" and "mediatum-tal" in f[1]]
+            eval_frame_result = [f for f in stack if f[3] == "evaluate" and "talextracted" in f[1]]
             if eval_frame_result:
                 eval_frame_locals = eval_frame_result[0][0].f_locals
                 extra["tal_expr"] = tal_expr = eval_frame_locals["expr"]
@@ -166,7 +187,7 @@ class TraceLogger(logging.Logger):
                         # no filename? template was rendered from a string
                         tal_filepath = "<string>"
 
-                    tal_tbline = u'  File "{}", line {}, in {}\n    {}'.format(tal_filepath,
+                    tal_tbline = u'\n  File "{}", line {}, in {}\n    {}'.format(tal_filepath,
                                                                                tal_lineno,
                                                                                tal_macro or "<template>",
                                                                                tal_expr)

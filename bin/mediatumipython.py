@@ -180,6 +180,9 @@ SQLALCHEMY_LOGGING = logging.WARN
 SQLALCHEMY_CONNECTION = core.db.connectstr
 # TODO: changing the connection string should be possible for the postgres connector, too
 
+# change this to True in your IPython notebook after running mediatumipython.py
+IPYTHON_NOTEBOOK = False
+
 # load types for interactive querying
 from contenttypes import Audio, Content, Directory, Collection, Container, Collections, Home, Document, Flash, Image, Imagestream, \
     Project, Video, Data
@@ -598,14 +601,34 @@ def explain(query, analyze=False, pygments_style="native"):
     explained = alchemyext.explain(query, s, analyze)
     if pygments is not None:
         from pygments.lexers import PostgresConsoleLexer
-        from pygments.formatters import Terminal256Formatter
+
+        if IPYTHON_NOTEBOOK:
+            from pygments.formatters import HtmlFormatter
+            formatter = HtmlFormatter
+        else:
+            from pygments.formatters import Terminal256Formatter
+            formatter = Terminal256Formatter
+
         explained = pygments.highlight(
             explained,
             PostgresConsoleLexer(),
-            Terminal256Formatter(style=pygments_style))
+            formatter(style=pygments_style))
 
-    db.statement_history.print_last_statement(show_time=False)
-    print(explained)
+    if IPYTHON_NOTEBOOK:
+        formatted_statement = db.statement_history.format_statement(
+            db.statement_history.last_statement,
+            formatter_cls=HtmlFormatter)
+        from IPython.display import HTML
+        return HTML(
+            "<style>" +
+            pygments.formatters.HtmlFormatter().get_style_defs('.highlight') +
+            "</style>" +
+            formatted_statement +
+            "<br>" +
+            explained)
+    else:
+        db.statement_history.print_last_statement(show_time=False)
+        print(explained)
 
 
 def handle_sqla_exception(self, etype, value, tb, tb_offset=None):

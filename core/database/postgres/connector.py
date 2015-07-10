@@ -9,7 +9,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from . import db_metadata, DeclarativeBase
 import os.path
-from core.database.postgres import MyQuery
+from core.database.postgres import MtQuery
 from core.database.postgres.psycopg2_debug import make_debug_connection_factory
 
 # set this to True or False to override debug config settings
@@ -44,7 +44,7 @@ class PostgresSQLAConnector(object):
     """
 
     def __init__(self):
-        session_factory = sessionmaker(query_cls=MyQuery)
+        session_factory = sessionmaker(query_cls=MtQuery)
         self.Session = scoped_session(session_factory)
         self.metadata = db_metadata
 

@@ -137,7 +137,7 @@ class InfDateAdapter(object):
 psycopg2.extensions.register_adapter(datetime.date, InfDateAdapter)
 
 
-class MyQuery(Query):
+class MtQuery(Query):
 
     def _find_nodeclass(self):
         from core import Node

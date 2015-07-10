@@ -17,7 +17,7 @@ from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from core.node import NodeMixin
-from core.database.postgres import db_metadata, DeclarativeBase, MyQuery
+from core.database.postgres import db_metadata, DeclarativeBase, MtQuery
 from core.database.postgres import rel, bref, C, FK
 from core.database.postgres.alchemyext import LenMixin, view
 from core.database.postgres.attributes import Attributes, AttributesExpressionAdapter
@@ -28,7 +28,7 @@ from ipaddr import IPv4Address
 logg = logging.getLogger(__name__)
 
 
-class NodeAppenderQuery(AppenderMixin, LenMixin, MyQuery):
+class NodeAppenderQuery(AppenderMixin, LenMixin, MtQuery):
 
     """Custom AppenderQuery class with additional methods for node handling
     """

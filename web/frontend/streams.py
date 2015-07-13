@@ -45,7 +45,7 @@ IMGNAME = re.compile("/?(attachment|doc|images|thumbs|thumb2|file|download|archi
 
 
 def incUsage(node):
-    # no statistics logging here at the moment, uneeded
+    # don't record access stats at the moment, we use log analysis for that
     pass
 
 

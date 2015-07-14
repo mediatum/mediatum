@@ -18,38 +18,44 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import logging
-import os
-from mediatumtal import tal
+import os.path
 import core.athana as athana
 import core.config as config
 from core.styles import theme
 from core import db
 from contenttypes import Collections
 
-q = db.query
+from core.plugins import find_plugin_with_theme
 
 logg = logging.getLogger(__name__)
 q = db.query
 
+
 def loadThemes():
 
-    def manageThemes(themepath, type):
-        name = config.get("config.theme", "")
-        if os.path.exists(config.basedir + "/" + themepath + "themes/" + name + "/"):
-            athana.addFileStore("/theme/", themepath + "themes/" + name + "/")
-            athana.addFileStorePath("/css/", themepath + "themes/" + name + "/css/")
-            athana.addFileStorePath("/img/", themepath + "themes/" + name + "/img/")
-            athana.addFileStorePath("/js/", themepath + "themes/" + name + "/js/")
-            theme.update(name, themepath + "themes/" + name + "/", type)
-            logg.info("Loading theme '%s' (%s)", name, type)
+    def manageThemes(theme_name, theme_basepath, theme_type):
+        theme_dir = os.path.join(theme_basepath, "themes", theme_name)
+        athana.addFileStore("/theme/", theme_dir + "/")
+        athana.addFileStorePath("/css/", theme_dir + "/css/")
+        athana.addFileStorePath("/img/", theme_dir + "/img/")
+        athana.addFileStorePath("/js/", theme_dir + "/js/")
+        theme.update(theme_name, theme_dir + "/", theme_type)
+        logg.info("Loading theme '%s' from '%s' (%s)", theme_name, theme_dir, theme_type)
 
-    if config.get("config.theme", "") != "":
-        manageThemes("web/", "intern")  # internal theme
+    theme_name = config.get("config.theme", "")
 
-        for k, v in config.getsubset("plugins").items():  # themes from plugins
-            manageThemes(v, "extern")
-    else:
-        logg.info("Loading default theme")
+    if theme_name:
+        theme_basepath = find_plugin_with_theme(theme_name)
+
+        if theme_basepath is None:
+            logg.warn("theme from config file with name '%s' not found, maybe a plugin is missing?", theme_name)
+        else:
+            manageThemes(theme_name, theme_basepath, "extern")
+            return
+
+    # use fallback standard theme
+    manageThemes("default", "web/", "intern")
+    logg.warn("use standard theme, you should create your own theme :)")
 
 
 def loadServices():
@@ -182,10 +188,10 @@ def initContexts():
     handler = file.addHandler("frameset")
     handler.addPattern("/")
     handler.addPattern("/edit")
-    #file.addHandler("showtree").addPattern("/edit_tree")
+    # file.addHandler("showtree").addPattern("/edit_tree")
     file.addHandler("edit_tree").addPattern("/treedata")
     file.addHandler("error").addPattern("/edit_error")
-    #file.addHandler("buttons").addPattern("/edit_buttons")
+    # file.addHandler("buttons").addPattern("/edit_buttons")
     file.addHandler("content").addPattern("/edit_content")
     file.addHandler("content").addPattern("/edit_content/.*")
     file.addHandler("action").addPattern("/edit_action")
@@ -239,7 +245,6 @@ def initContexts():
         file.addHandler("getContent").addPattern("/.*")
     except IOError:
         logg.exception("no frontend modules found")
-         
 
     #athana.addContext("/flush", ".").addFile("core/webconfig.py").addHandler("flush").addPattern("/py")
 

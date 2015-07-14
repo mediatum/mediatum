@@ -53,6 +53,7 @@ def view(name, metadata, selectable):
     else:
         full_name = name
     t = table(quoted_name(name, None))
+    t.metadata = metadata
     t.fullname = full_name
     t.schema = quoted_name(metadata.schema, None)
 

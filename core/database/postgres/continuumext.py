@@ -1,0 +1,28 @@
+# -*- coding: utf-8 -*-
+"""
+    Extensions for the sqlalchemy-continuum package
+
+    :copyright: (c) 2015 by the mediaTUM authors
+    :license: GPL3, see COPYING for details
+"""
+
+import types
+from sqlalchemy_continuum.utils import parent_class
+
+
+class MtVersionBase(object):
+
+    @classmethod
+    def parent_class(cls):
+        return parent_class(cls)
+
+    def __getattr__(self, key):
+        FORBIDDEN_ATTRS = ("__versioned__", "_sa_instance_state", "_proxy_dicts")
+        if key in FORBIDDEN_ATTRS:
+            raise AttributeError()
+
+        parent_cls = self.parent_class()
+        attr = getattr(parent_cls, key)
+        if isinstance(attr, types.MethodType):
+            return types.MethodType(attr.__func__, self, parent_cls)
+        return attr

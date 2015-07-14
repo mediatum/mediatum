@@ -169,6 +169,8 @@ class PostgresSQLAConnector(object):
         pass
 
     def create_all(self):
+        from sqlalchemy import orm
+        orm.configure_mappers()
         with self.engine.begin() as conn:
             conn.execute("SET search_path TO " + self.metadata.schema)
             self.create_tables(conn)

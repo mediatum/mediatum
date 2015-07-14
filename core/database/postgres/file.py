@@ -13,11 +13,13 @@ from core.file import FileMixin
 from core import config
 
 
-
 class File(DeclarativeBase, FileMixin):
 
     """Represents an item on the filesystem
     """
+    __versioned__ = {
+        "base_classes": (FileMixin, DeclarativeBase)
+    }
 
     def __init__(self, path, filetype, mimetype, node=None, **kwargs):
         # legacy stuff

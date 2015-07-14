@@ -85,11 +85,11 @@ def request_finished_db_session(*args):
     db.session.close()
 
 ### scheduler thread
-import core.schedules
-try:
-    core.schedules.startThread()
-except:
-    logg.exception("Error starting scheduler thread")
+# import core.schedules
+# try:
+#     core.schedules.startThread()
+# except:
+#     logg.exception("Error starting scheduler thread")
 
 ### start main web server, Z.39.50 and FTP, if configured
 if config.get('z3950.activate', '').lower() == 'true':

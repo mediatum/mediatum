@@ -8,7 +8,7 @@ import json
 import os.path
 import datetime
 from pprint import pprint
-from pytest import raises
+from pytest import raises, mark
 
 
 from core import Node
@@ -77,18 +77,21 @@ def test_import_csl(journal_article_mdt):
     check_node(node, record)
 
 
+@mark.slow
 def test_import_doi(journal_article_mdt):
     node = citeproc.import_doi(DOI_ARTICLE3, testing=True)
     expected = load_csl_record_file(DOI_ARTICLE3)
     check_node(node, expected)
 
 
+@mark.slow
 def test_import_doi_utf8(journal_article_mdt):
     node = citeproc.import_doi(DOI_UTF8, testing=True)
     expected = load_csl_record_file(DOI_UTF8)
     check_node(node, expected)
 
 
+@mark.slow
 def test_literal_author_raw_date(journal_article_mdt):
     node = citeproc.import_doi(DOI_LITERAL_AUTHOR_RAW_DATE, testing=True)
     assert node.get("author") == "Cambridge Archaeological Unit"

@@ -178,7 +178,7 @@ class Node(DeclarativeBase, NodeMixin):
         self.type = type
         self.attrs = MutableDict()
         if id:
-            self._id = id
+            self.id = id
         if schema:
             self.schema = schema
         if attrs:

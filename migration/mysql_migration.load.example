@@ -1,9 +1,8 @@
 -- see pgloader reference @ http://pgloader.io/howto/pgloader.1.html 
 
 LOAD database
-    FROM mysql://mediatum:password@127.0.0.1/mediatum
-    INTO postgres://mediatum:password@127.0.0.1/mediatum
-
+    FROM mysql://mediatum:password@172.17.42.1/mediatum
+    INTO postgres://mediatum:password@172.17.42.1/mediatum
 WITH 
     include drop
     , no truncate

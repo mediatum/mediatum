@@ -28,10 +28,12 @@ import configargparse
 import logging
 import os.path
 import subprocess
+logging.getLogger().setLevel(logging.WARN)
 from core.init import basic_init
 from core.database.postgres.connector import read_and_prepare_sql
 from collections import OrderedDict
 from bin.manage import vacuum_analyze_tables
+
 basic_init()
 import core.database.postgres
 
@@ -50,11 +52,21 @@ s = db.session
 MIGRATION_DIR = os.path.join(os.path.dirname(__file__), "../migration")
 
 PGLOADER_BINARY = "pgloader"
+DOCKER_PGLOADER_IMAGE = "dpausp/pgloader"
 
 
 def pgloader(s=None):
-    script_path = os.path.join(MIGRATION_DIR, "mysql_migration.load")
-    subprocess.call([PGLOADER_BINARY, "--verbose", script_path])
+    if args.docker:
+        docker_call = ["docker", "run", "--rm", "-v", "{}:/tmp".format(os.path.abspath(MIGRATION_DIR))]
+        links = []
+        for link in args.link:
+            links.append("--link")
+            links.append(link)
+
+        subprocess.call(docker_call + links + [DOCKER_PGLOADER_IMAGE, "pgloader", "/tmp/mysql_migration.load"])
+    else:
+        script_path = os.path.join(MIGRATION_DIR, "mysql_migration.load")
+        subprocess.call([PGLOADER_BINARY, "--verbose", script_path])
 
 
 def prepare_import_migration(s):
@@ -125,6 +137,8 @@ actions = OrderedDict([
 if __name__ == "__main__":
     parser = configargparse.ArgumentParser("mediaTUM mysql_migrate.py")
     parser.add_argument("--full-transaction", default=False, action="store_true")
+    parser.add_argument("--docker", default=False, action="store_true", help="use the prebuilt docker image for pgloader")
+    parser.add_argument("--link", default=[], action="append", help="docker link to another container like: --link=postgres:postgres")
     parser.add_argument("action", nargs="*", choices=actions.keys())
 
     print()

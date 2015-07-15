@@ -1,0 +1,35 @@
+2015-07-15T09:10:59.036000Z NOTICE Starting pgloader, log system is ready.
+2015-07-15T09:11:19.037000Z NOTICE Starting pgloader, log system is ready.
+2015-07-15T09:11:19.054000Z LOG Main logs in '/tmp/pgloader/pgloader.log'
+2015-07-15T09:11:19.058000Z LOG Data errors in '/tmp/pgloader/'
+2015-07-15T09:11:19.058000Z LOG Parsing commands from file #P"/tmp/mysql_migration.load"
+2015-07-15T09:11:19.259000Z NOTICE CREATE SCHEMA IF NOT EXISTS mediatum_import;
+2015-07-15T09:11:19.259000Z NOTICE DROP then CREATE TABLES
+2015-07-15T09:11:19.459000Z NOTICE COPY access
+2015-07-15T09:11:19.459000Z NOTICE COPY node
+2015-07-15T09:11:24.047000Z NOTICE COPY nodeattribute
+2015-07-15T09:12:11.587000Z ERROR Database error 22021: invalid byte sequence for encoding "UTF8": 0x00
+CONTEXT: COPY nodeattribute, line 24408: "1270951	jpg_comment	\0;CREATOR: gd-jpeg v1.0 (using IJG JPEG v62), quality = 90"
+2015-07-15T09:12:28.406000Z NOTICE COPY nodefile
+2015-07-15T09:12:37.121000Z NOTICE COPY nodemapping
+2015-07-15T09:12:39.818000Z NOTICE Reset sequences
+2015-07-15T09:12:40.018000Z NOTICE Comments
+2015-07-15T09:23:46.038000Z NOTICE Starting pgloader, log system is ready.
+2015-07-15T09:23:46.048000Z LOG Main logs in '/tmp/pgloader/pgloader.log'
+2015-07-15T09:23:46.052000Z LOG Data errors in '/tmp/pgloader/'
+2015-07-15T09:23:46.052000Z LOG Parsing commands from file #P"/tmp/mysql_migration.load"
+2015-07-15T09:31:34.034000Z NOTICE Starting pgloader, log system is ready.
+2015-07-15T09:31:34.050000Z LOG Main logs in '/tmp/pgloader/pgloader.log'
+2015-07-15T09:31:34.053000Z LOG Data errors in '/tmp/pgloader/'
+2015-07-15T09:31:34.053000Z LOG Parsing commands from file #P"/tmp/mysql_migration.load"
+2015-07-15T09:31:34.254000Z NOTICE CREATE SCHEMA IF NOT EXISTS mediatum_import;
+2015-07-15T09:31:34.254000Z NOTICE DROP then CREATE TABLES
+2015-07-15T09:31:34.454000Z NOTICE COPY access
+2015-07-15T09:31:34.454000Z NOTICE COPY node
+2015-07-15T09:31:39.245000Z NOTICE COPY nodeattribute
+2015-07-15T09:32:25.401000Z ERROR Database error 22021: invalid byte sequence for encoding "UTF8": 0x00
+CONTEXT: COPY nodeattribute, line 24408: "1270951	jpg_comment	\0;CREATOR: gd-jpeg v1.0 (using IJG JPEG v62), quality = 90"
+2015-07-15T09:32:42.421000Z NOTICE COPY nodefile
+2015-07-15T09:32:50.946000Z NOTICE COPY nodemapping
+2015-07-15T09:32:53.430000Z NOTICE Reset sequences
+2015-07-15T09:32:53.430000Z NOTICE Comments

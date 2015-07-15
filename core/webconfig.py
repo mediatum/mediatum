@@ -19,6 +19,7 @@
 """
 import logging
 import os.path
+from mediatumtal import tal
 import core.athana as athana
 import core.config as config
 from core.styles import theme

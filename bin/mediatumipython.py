@@ -175,6 +175,7 @@ s = core.db.session
 
 # set this to INFO for SQL statement echo, DEBUG for even more info from SQLAlchemy
 SQLALCHEMY_LOGGING = logging.WARN
+SQL_LOGGING = logging.WARN
 
 # use default connection specified by mediatum config for ipython-sql
 SQLALCHEMY_CONNECTION = core.db.connectstr
@@ -201,6 +202,7 @@ rootlogg.handlers = []
 logging.basicConfig(level=logging.INFO)
 
 logging.getLogger("sqlalchemy.engine").setLevel(SQLALCHEMY_LOGGING)
+logging.getLogger("sqllog").setLevel(SQL_LOGGING)
 
 global last_inserted_node
 last_inserted_node_id = None

@@ -331,6 +331,9 @@ msgstr "download high resolution version"
 msgid "image_high_res_load"
 msgstr "  File being loaded..."
 
+msgid "image_high_res_archive"
+msgstr "Load high resolution from archive"
+
 msgid "doc_fulltext_title"
 msgstr "open fulltext in new window"
 

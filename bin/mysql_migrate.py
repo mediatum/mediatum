@@ -113,6 +113,11 @@ def inherited_permissions(s):
     logg.info("created inherited access rules")
 
 
+def cleanup(s):
+    s.execute("SELECT mediatum.delete_user_system_nodes()")
+    logg.info("deleted old user system nodes")
+
+
 def everything(s):
     pgloader()
     prepare_import_migration(s)
@@ -121,6 +126,7 @@ def everything(s):
     dynusers()
     permissions(s)
     inherited_permissions(s)
+    cleanup(s)
 
 
 actions = OrderedDict([
@@ -131,6 +137,7 @@ actions = OrderedDict([
     ("dynusers", dynusers),
     ("permissions", permissions),
     ("inherited_permissions", inherited_permissions),
+    ("cleanup", cleanup),
     ("everything", everything)
 ])
 

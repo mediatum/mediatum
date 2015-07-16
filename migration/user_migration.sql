@@ -151,3 +151,28 @@ BEGIN
 END;
 $f$;
 
+
+CREATE OR REPLACE FUNCTION delete_user_system_nodes()
+   RETURNS void
+   LANGUAGE plpgsql
+    SET search_path TO :search_path
+       VOLATILE
+    AS
+    $f$
+DECLARE
+    deleted_nodes integer;
+BEGIN
+    SET CONSTRAINTS ALL DEFERRED;
+
+    WITH deleted AS 
+        (DELETE FROM node WHERE type IN ('user', 'users', 'usergroup', 'usergroups', 'externalusers') RETURNING id),
+     
+    deleted_rel AS
+        (DELETE FROM noderelation WHERE nid IN (SELECT id FROM deleted) OR cid IN (SELECT id FROM deleted))
+        
+    SELECT count(id) INTO deleted_nodes FROM deleted;
+        
+    RAISE NOTICE '% user-related nodes deleted', deleted_nodes;       
+
+END;
+$f$;

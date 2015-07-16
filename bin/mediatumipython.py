@@ -137,6 +137,7 @@ import sys
 
 from sqlalchemy import sql, text
 from sqlalchemy.orm.exc import NoResultFound
+import getpass
 
 try:
     import pygments
@@ -165,7 +166,7 @@ init.basic_init()
 # we don't want to raise exceptions for missing node classes
 init.check_undefined_nodeclasses()
 
-from core import Node, File, db
+from core import Node, File, User, db
 from core import AccessRule, AccessRuleset
 
 q = core.db.query
@@ -575,8 +576,50 @@ class MediatumMagics(Magics):
         res = delete_unreachable_nodes(synchronize_session=False)
         s.expire_all()
         print(res, "nodes deleted")
-
-
+        
+    @needs_init("full")
+    @magic_arguments()
+    @argument("login_name", default=None)
+    @argument("password", nargs="?", default=None)
+    @line_magic
+    def password(self, line):
+        args = parse_argstring(self.password, line)
+        
+        if args.password is None:
+            pw = getpass.getpass()
+        else:
+            pw = args.password
+            
+        user = q(User).filter_by(login_name=args.login_name).one()
+        user.change_password(pw)
+        
+    @needs_init("full")
+    @magic_arguments()
+    @argument("login_name", default=None)
+    @argument("password", nargs="?", default=None)
+    @line_magic
+    def check_login(self, line):
+        from core.auth import authenticate_user_credentials
+        args = parse_argstring(self.check_login, line)
+        
+        if args.password is None:
+            pw = getpass.getpass()
+        else:
+            pw = args.password
+            
+        user = authenticate_user_credentials(args.login_name, pw, {})
+        
+        if user is None:
+            user = q(User).filter_by(login_name=args.login_name).scalar()
+            if user is None:
+                print("login failed, no user with login name '{}'!".format(args.login_name))
+            else:
+                print("user with login_name '{}' found, but login failed!".format(args.login_name))
+        else:
+            print("login ok")
+        return user
+            
+            
 ip = get_ipython()  # @UndefinedVariable
 
 

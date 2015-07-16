@@ -167,12 +167,12 @@ def check_undefined_nodeclasses():
             logg.info("auto-generated stub class for node type '%s'", clsname)
 
 
-def basic_init():
+def basic_init(root_loglevel=None):
     add_ustr_builtin()
     import core.config
     core.config.initialize()
     import utils.log
-    utils.log.initialize()
+    utils.log.initialize(root_loglevel)
     log_basic_sys_info()
     check_imports()
     set_locale()
@@ -182,8 +182,8 @@ def basic_init():
     load_types()
 
 
-def full_init():
-    basic_init()
+def full_init(root_loglevel=None):
+    basic_init(root_loglevel)
     register_workflow()
     init_ldap()
     init_archivemanager()

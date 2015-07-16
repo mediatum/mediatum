@@ -244,15 +244,17 @@ logging.captureWarnings(True)
 logg = logging.getLogger(__name__)
 
 
-def initialize():
+def initialize(level=None):
     root_logger = logging.getLogger()
-    levelname = config.get('logging.level', "DEBUG")
-    try:
-        level = getattr(logging, levelname.upper())
-    except:
-        print "unknown loglevel specified in logging config:", levelname
-    root_logger.setLevel(level)
 
+    if level is None:
+        levelname = config.get('logging.level', "DEBUG")
+        try:
+            level = getattr(logging, levelname.upper())
+        except:
+            print "unknown loglevel specified in logging config:", levelname
+
+    root_logger.setLevel(level)
     stream_handler = ConsoleHandler()
     stream_handler.setFormatter(logging.Formatter(ROOT_STREAM_LOGFORMAT))
     root_logger.handlers = []

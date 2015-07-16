@@ -141,6 +141,10 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
         from contenttypes import Directory
         if self.home_dir:
             return self.home_dir.children.filter(Directory.a.system.used_as == "trash").one()
+        
+    def change_password(self, password):
+        from core.auth import create_password_hash
+        self.password_hash, self.salt = create_password_hash(password)
 
     def create_home_dir(self):
         from core import db

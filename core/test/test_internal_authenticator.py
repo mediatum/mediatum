@@ -10,7 +10,6 @@ from mock import MagicMock
 from core.test.asserts import assert_deprecation_warning
 from core import User, db
 from core.auth import InternalAuthenticator, WrongPassword, PasswordChangeNotAllowed, INTERNAL_AUTHENTICATOR_KEY
-from core.test.fixtures import internal_authenticator
 from core.database.postgres.user import AuthenticatorInfo
 
 
@@ -61,3 +60,11 @@ def test_change_user_password_oldpw_wrong(internal_authenticator, internal_user)
     req = MagicMock()
     with raises(WrongPassword):
         internal_authenticator.change_user_password(internal_user, u"WRONGPASSWORD", u"changedpw", req)
+
+
+def test_create_user(internal_authenticator, internal_authenticator_info):
+    name = "created_testuser"
+    password = "password"
+    user = internal_authenticator.create_user(name, password)
+    assert user.login_name == name
+    assert internal_authenticator.authenticate_user_credentials(name, password, {}) is user

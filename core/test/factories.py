@@ -11,8 +11,9 @@ import scrypt
 
 from contenttypes import Directory
 from contenttypes import Document
-from core import Node, User, UserGroup
+from core import Node, User, UserGroup, AuthenticatorInfo
 from core import db
+from core.auth import INTERNAL_AUTHENTICATOR_KEY
 
 
 class SQLAFactory(factory.alchemy.SQLAlchemyModelFactory):
@@ -90,3 +91,12 @@ class DirectoryFactory(NodeFactory):
 
     class Meta:
         model = Directory
+
+
+class InternalAuthenticatorInfoFactory(SQLAFactory):
+
+    class Meta:
+        model = AuthenticatorInfo
+        
+    auth_type=INTERNAL_AUTHENTICATOR_KEY[0]
+    name=INTERNAL_AUTHENTICATOR_KEY[1]

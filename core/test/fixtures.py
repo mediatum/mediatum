@@ -9,7 +9,8 @@ import os
 from pytest import yield_fixture, fixture
 
 from core import File
-from core.test.factories import NodeFactory, DocumentFactory, DirectoryFactory, UserFactory, UserGroupFactory
+from core.test.factories import NodeFactory, DocumentFactory, DirectoryFactory, UserFactory, UserGroupFactory,\
+    InternalAuthenticatorInfoFactory
 from core import db
 from contenttypes.container import Collections, Home
 from core.database.init import init_database_values
@@ -98,8 +99,7 @@ def admin_user(some_user):
 
 @fixture
 def internal_authenticator_info():
-    from core.auth import INTERNAL_AUTHENTICATOR_KEY
-    return AuthenticatorInfo(auth_type=INTERNAL_AUTHENTICATOR_KEY[0], name=INTERNAL_AUTHENTICATOR_KEY[1])
+    return InternalAuthenticatorInfoFactory()
 
 @fixture
 def internal_user(some_user, internal_authenticator_info):

@@ -86,9 +86,7 @@ class InternalAuthenticator(Authenticator):
             else:
                 if user.password_hash == hashlib.md5(password).hexdigest():
                     # rehash password
-                    password_hash, salt = create_password_hash(password)
-                    user.salt = salt
-                    user.password_hash = password_hash
+                    user.change_password(password)
                     logg.info("rehashed password for user '%s'", user.login_name)
                     db.session.commit()
                     return user
@@ -97,14 +95,14 @@ class InternalAuthenticator(Authenticator):
         if not check_user_password(user, old_password):
             raise WrongPassword()
 
-        password_hash, salt = create_password_hash(new_password)
-        user.salt = salt
-        user.password_hash = password_hash
+        user.change_password(new_password)
         db.session.commit()
 
     def create_user(self, login_name, password, **kwargs):
-        password_hash, salt = self._create_password_hash(password)
-        user = User(login_name=login_name, password_hash=password_hash, salt=salt, **kwargs)
+        password_hash, salt = create_password_hash(password)
+        authenticator_id = q(AuthenticatorInfo.id).filter_by(auth_type=InternalAuthenticator.auth_type, name=self.name).scalar()
+        user = User(login_name=login_name, password_hash=password_hash, salt=salt, authenticator_id=authenticator_id, **kwargs)
+        db.session.add(user)
         return user
 
 

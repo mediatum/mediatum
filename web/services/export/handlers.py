@@ -53,7 +53,7 @@ q = db.query
 
 host = "http://" + config.get("host.name")
 
-guestAccess = AccessData(user=users.getUser('Gast'))
+guestAccess = AccessData(user=users.getUser(u'Gast'))
 
 from web.services.cache import Cache
 from web.services.cache import date2string as cache_date2string

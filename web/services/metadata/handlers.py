@@ -35,7 +35,7 @@ logg = logging.getLogger(__name__)
 
 host = "http://" + config.get("host.name")
 
-guestAccess = AccessData(user=users.getUser('Gast'))
+guestAccess = AccessData(user=users.getUser(u'Gast'))
 
 
 FILTERCACHE_NODECOUNT_THRESHOLD = 2000000

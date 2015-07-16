@@ -28,13 +28,15 @@ import configargparse
 import logging
 import os.path
 import subprocess
-logging.getLogger().setLevel(logging.WARN)
+import sys
+sys.path.append(".")
+
 from core.init import basic_init
 from core.database.postgres.connector import read_and_prepare_sql
 from collections import OrderedDict
 from bin.manage import vacuum_analyze_tables
 
-basic_init()
+basic_init(root_loglevel=logging.WARN)
 import core.database.postgres
 
 
@@ -43,7 +45,7 @@ logging.getLogger("migration.acl_migration").trace_level = logging.ERROR
 logging.getLogger("core.database.postgres").trace_level = logging.ERROR
 
 logg = logging.getLogger("mysql_migrate.py")
-logging.getLogger("sqlalchemy.engine").setLevel(logging.WARN)
+logg.setLevel(logging.INFO)
 
 from core import db
 

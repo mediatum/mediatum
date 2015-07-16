@@ -20,14 +20,19 @@ from __future__ import division, absolute_import, print_function
 
 from functools import partial
 import logging
+import sys
+sys.path.append(".")
+
 from core.init import basic_init
 from core.database.postgres import db_metadata
 import configargparse
 from collections import OrderedDict
-basic_init()
+
+basic_init(root_loglevel=logging.WARN)
 
 logg = logging.getLogger("manage.py")
-# logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)
+logg.setLevel(logging.INFO)
+logging.getLogger("database").setLevel(logging.INFO)
 
 from core.database.init import init_database_values
 from core import db
@@ -116,12 +121,11 @@ actions = OrderedDict([
 if __name__ == "__main__":
     parser = configargparse.ArgumentParser("mediaTUM manage.py")
     parser.add_argument("action", nargs="*", choices=actions.keys())
-
-    print()
-    print("-" * 80)
-    print()
-
     args = parser.parse_args()
+
+    print()
+    print("running actions: " + ", ".join(args.action))
+    print("-" * 80)
 
     for action in args.action:
         actions[action](s)

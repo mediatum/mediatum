@@ -10,7 +10,7 @@ import migration.acl_migration
 from migration.test.factories import AccessFactory
 from migration.test.factories import ImportNodeFactory
 from core.database.postgres.permission import AccessRule, AccessRuleset
-from core.test.factories import DirectoryFactory
+from core.test.factories import DirectoryFactory, NodeFactory
 from ipaddr import IPv4Network
 from core.database.postgres.connector import read_and_prepare_sql
 
@@ -44,27 +44,31 @@ def session():
 
 
 @fixture
-def import_node_with_simple_access():
-    node = ImportNodeFactory()
-    node.readaccess = "{ group test_readers }"
-    node.writeaccess = "{ group test_writers }"
-    node.dataaccess = "{ group test_datausers }"
-    return node
+def import_node_with_simple_access(session):
+    node = NodeFactory(id=100)
+    import_node = ImportNodeFactory(
+        id=100,
+        readaccess="{ group test_readers }",
+        writeaccess="{ group test_writers }",
+        dataaccess="{ group test_datausers }")
+    return import_node
 
 
 @fixture
-def import_node_with_complex_access():
-    node = ImportNodeFactory()
-    node.readaccess = "{ NOT ( group test_readers OR group test_readers2 ) }"
-    return node
+def import_node_with_complex_access(session):
+    node = NodeFactory(id=100)
+    import_node = ImportNodeFactory(id=100,
+                                    readaccess="{ NOT ( group test_readers OR group test_readers2 ) }")
+    return import_node
 
 
 @fixture
-def import_node_with_ruleset():
-    node = ImportNodeFactory()
+def import_node_with_ruleset(session):
+    node = NodeFactory(id=100)
+    session.flush()
     acl1 = AccessFactory(rule="NOT ( group test_readers OR group test_readers2 )", name="not_rule")
-    node.readaccess = "not_rule,{ user darfdas }"
-    return node
+    import_node = ImportNodeFactory(id=100, readaccess="not_rule,{ user darfdas }")
+    return import_node
 
 
 @fixture
@@ -72,7 +76,7 @@ def users_and_groups_for_ruleset(session):
     from core import User, UserGroup
     users = [User(login_name="darfdas")]
     session.add_all(users)
-    
+
     groups = [UserGroup(name="test_readers"), UserGroup(name="test_readers2")]
     session.add_all(groups)
     return users, groups
@@ -83,6 +87,7 @@ def two_access_rules():
     rule1 = AccessRule(group_ids=[11, 12], invert_group=True)
     rule2 = AccessRule(group_ids=[13], subnets=[IPv4Network("127.0.0.1/32")])
     return rule1, rule2
+
 
 @fixture
 def two_access_rulesets():

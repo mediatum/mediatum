@@ -21,17 +21,17 @@ acl_migration.OldACLToBoolExprConverter.fail_on_first_error = True
 acl_migration.SymbolicExprToAccessRuleConverter.fail_on_first_error = True
 
 
-def test_load_node_rules_simple_readaccess(import_node_with_simple_access):
+def test_load_node_rules_simple_readaccess(session, import_node_with_simple_access):
     node = import_node_with_simple_access
-    db.session.flush()
+    session.flush()
     nid_to_rulestr, _ = acl_migration.load_node_rules("readaccess")
     assert nid_to_rulestr.keys()[0] == node.id
     assert nid_to_rulestr.values()[0] == node.readaccess
 
 
-def test_load_node_rules_simple_writeaccess(import_node_with_simple_access):
+def test_load_node_rules_simple_writeaccess(session, import_node_with_simple_access):
     node = import_node_with_simple_access
-    db.session.flush()
+    session.flush()
     nid_to_rulestr, _ = acl_migration.load_node_rules("writeaccess")
     assert nid_to_rulestr.keys()[0] == node.id
     assert nid_to_rulestr.values()[0] == node.writeaccess
@@ -40,9 +40,9 @@ def test_load_node_rules_simple_writeaccess(import_node_with_simple_access):
 test_rulestr_replaced = "NOT ( group test_readers OR group test_readers2 ),{ user darfdas }"
 
 
-def test_load_node_rules_ruleset(import_node_with_ruleset):
+def test_load_node_rules_ruleset(session, import_node_with_ruleset):
     node = import_node_with_ruleset
-    db.session.flush()
+    session.flush()
     nid_to_rulestr, nid_to_rulesets = acl_migration.load_node_rules("readaccess")
     assert nid_to_rulestr.keys()[0] == node.id
     assert nid_to_rulestr.values()[0] == test_rulestr_replaced

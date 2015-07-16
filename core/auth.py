@@ -15,7 +15,7 @@ q = db.query
 
 logg = logging.getLogger(__name__)
 
-INTERNAL_AUTHENTICATOR_KEY = ("internal", "default")
+INTERNAL_AUTHENTICATOR_KEY = (u"internal", u"default")
 
 # OrderedDict (auth_type, name): authenticator
 authenticators = OrderedDict()

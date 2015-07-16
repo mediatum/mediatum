@@ -6,7 +6,7 @@
 from itertools import chain
 import logging
 
-from sqlalchemy import Unicode, Text, Boolean, Table, DateTime, UniqueConstraint
+from sqlalchemy import Unicode, Text, Boolean, Table, DateTime, UniqueConstraint, String
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy_utils.types import EmailType
 
@@ -27,7 +27,7 @@ class AuthenticatorInfo(DeclarativeBase):
 
     id = integer_pk()
     name = C(Unicode)
-    auth_type = C(Text)
+    auth_type = C(Unicode)
 
     @property
     def authenticator_key(self):
@@ -83,8 +83,8 @@ class User(DeclarativeBase, TimeStamp, UserMixin):
     organisation = C(Unicode)
     comment = C(Unicode)
     email = C(EmailType)
-    password_hash = C(Unicode)
-    salt = C(Unicode)
+    password_hash = C(String)
+    salt = C(String)
 
     # user activity
     last_login = C(DateTime)

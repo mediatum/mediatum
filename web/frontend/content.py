@@ -28,7 +28,7 @@ from core.acl import AccessData
 from core.styles import getContentStyles, theme
 from core.translation import lang, t
 from contenttypes import Collections, Directory
-from contenttypes.directory import includetemplate, replaceModules
+from contenttypes.container import includetemplate, replaceModules
 from web.frontend import Content
 from utils.strings import ensure_unicode_returned
 from utils.utils import getCollection, Link, getFormatedString

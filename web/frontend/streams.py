@@ -220,7 +220,8 @@ def send_file(req, download=0):
                 file = f
                 break
 
-    if existMetaField(n.getSchema(), 'nodename'):
+    # XXX: temporary fix for getSchema(), hasattr can be removed later when all data nodes have a schema
+    if hasattr(n, "schema") and existMetaField(n.schema, 'nodename'):
         display_file_name = '{}.{}'.format(os.path.splitext(os.path.basename(n.name))[0], os.path.splitext(filename)[-1].strip('.'))
     else:
         display_file_name = filename

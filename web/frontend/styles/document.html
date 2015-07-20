@@ -31,6 +31,7 @@
         <div tal:condition="python:len(attachment)>0" id="object_attachment">
             <a tal:attributes="onclick python:u'javascript:openPopup(\'/attachmentbrowser?id={}&path={}\', \'Attachment\', 400, 400)'.format(node.id, path)" i18n:translate="doc_att_browser" href="#" >TEXT</a>
         </div>
+    </div>
     <div id="object_versions">
 
         <metal:macro use-macro="web/frontend/styles/macros.html/object_versions"/>

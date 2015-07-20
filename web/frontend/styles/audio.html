@@ -25,7 +25,6 @@
             <param name="FlashVars" tal:attributes="value python:u'src=/file/{}/audio.mp3'.format(node.id)" />
             <param name="bgcolor" value="#FFFFFF" />
         </object>
-
     </div>
     <div id="object_image" tal:condition="python:not canseeoriginal">
         <img tal:attributes="src audiothumb" border="0" width="300" />

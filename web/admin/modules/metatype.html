@@ -74,16 +74,17 @@
                         &nbsp;&nbsp;&nbsp;<img tal:condition="python:metadatatype.isActive()" i18n:attributes="title admin_meta_active_title" src="/img/haken.gif"/>
                     </td>
                     <td>
-                        <tal:block tal:repeat="t python:metadatatype.getDatatypes()">
-                            <tal:block tal:repeat="clstype datatypes" i18n:translate="">
-                                <tal:block tal:condition="python: clstype.getId()==t" tal:replace="python:clstype.getLongName()"/>
+                        <tal:block tal:repeat="datatype python:metadatatype.getDatatypes()">
+                            <tal:block i18n:translate="">
+                                <tal:block tal:replace="python:get_classname_for_typestring(datatype)"/>
                             </tal:block>
                         </tal:block>
                     </td>
                     <td>
                         &nbsp;&nbsp;
-                        <img tal:condition="python:metadatatype.getAccess('read')" i18n:attributes="title admin_meta_acl_title" src="/img/archive.png"/>
-                        <img tal:condition="python:metadatatype.getAccess('read')==''" i18n:attributes="title admin_meta_acl_title" src="/img/mark_empty.png"/>
+                        <img 
+                        tal:condition="python:True or metadatatype.getAccess('read')" i18n:attributes="title admin_meta_acl_title" src="/img/archive.png"/>
+                        <img tal:condition="python:True or metadatatype.getAccess('read')==''" i18n:attributes="title admin_meta_acl_title" src="/img/mark_empty.png"/>
                     </td>
                     <td>
                         <input tal:attributes="name python:u'detaillist_{}'.format(metadatatype.getName())" i18n:attributes="title admin_meta_editdetail" type="image" src="/img/rightarrow.png"/>&nbsp;

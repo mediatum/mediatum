@@ -57,11 +57,15 @@ def init_plugins():
         m = import_plugin_module(name, location.strip(os.sep))
         if m is None:
             logg.warn("couldn't load plugin %s!", name)
-
         else:
             plugins[name] = m
 
-        if hasattr(m, 'pofiles'):  # add po file paths
+        # plugins can define an init() method in their package __init__
+        if hasattr(m, "init") and callable(m.init):
+            m.init()
+
+        # add po file paths
+        if hasattr(m, "pofiles"):  
             if len(m.pofiles) > 0:
                 logg.info("loading translation files")
                 for fp in m.pofiles:

@@ -6,6 +6,7 @@
 from warnings import warn
 from utils.date import format_date, parse_date, STANDARD_FORMAT, now
 
+
 class NodeMixin(object):
 
     """Provides methods for simple node handling on top of the SQLAlchemy methods provided by Node.
@@ -15,36 +16,42 @@ class NodeMixin(object):
     @classmethod
     def get_all_subclasses(cls, filter_classnames=[]):
         """Returns all known subclasses of cls"""
-        return [cls.__mapper__.polymorphic_map[n].class_ 
-         for n in cls.__mapper__._acceptable_polymorphic_identities
-         if n not in filter_classnames]    
-        
+        return [cls.__mapper__.polymorphic_map[n].class_
+                for n in cls.__mapper__._acceptable_polymorphic_identities
+                if n not in filter_classnames]
+
     @classmethod
-    def get_class_for_typestring(cls, typestring):    
-        """Returns a class object for a given typestring. 
-        Typestrings are values from the Node.type attribute, always in lowercase. 
+    def get_class_for_typestring(cls, typestring):
+        """Returns a class object for a given typestring.
+        Typestrings are values from the Node.type attribute, always in lowercase.
         This is the "polymorphic identity" of the node subclass in SQLAlchemy.
         """
-        return cls.__mapper__.polymorphic_map[typestring].class_
-    
-    ### TODO: versions
+        mapper = cls.__mapper__.polymorphic_map[typestring]
+        return mapper.class_
+
+    @classmethod
+    def get_classname_for_typestring(cls, typestring):
+        """Returns a class name for a given typestring or empty string, if not found.
+        Typestrings are values from the Node.type attribute, always in lowercase.
+        This is the "polymorphic identity" of the node subclass in SQLAlchemy.
+        """
+        clazz = cls.get_class_for_typestring(typestring)
+        return clazz.__name__
+
+    # TODO: versions
     @property
     def next_nid(self):
         return None
-
 
     @property
     def prev_nid(self):
         return None
 
-
     def isActiveVersion(self):
         return True
 
-
     def getVersionList(self):
         return [self]
-
 
     def getLocalRead(self):
         return ""
@@ -115,7 +122,7 @@ class NodeMixin(object):
     def getContentType(self):
         warn("deprecated, use Node.type instead", DeprecationWarning)
         return self.type
-    
+
     def getActiveVersion(self):
         """TODO: implement me..."""
         return self
@@ -129,8 +136,8 @@ class NodeMixin(object):
             return format_date(parse_date(self.get('creationtime')), '%d.%m.%Y, %H:%M:%S')
         return ''
 
-    ### access stuff
-    
+    # access stuff
+
     def has_access(self, accesstype, req=None):
         return self.req_has_access_to_node_id(self.id, accesstype, req)
 
@@ -143,11 +150,10 @@ class NodeMixin(object):
     def has_data_access(self, req=None):
         return self.req_has_access_to_node_id(self.id, "data", req)
 
-
     def __repr__(self):
         return u"Node<{} '{}'> ({})".format(self.id, self.name, object.__repr__(self)).encode("utf8")
 
-    ### some additional methods from dict
+    # some additional methods from dict
 
     def __contains__(self, key):
         return key in self.attrs\
@@ -191,4 +197,3 @@ class NodeMixin(object):
             return value
         else:
             return self.get(key)
-        

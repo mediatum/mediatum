@@ -187,9 +187,10 @@ def findmodule(type):
 
 @ensure_unicode_returned(name="adminutils.show_content")
 def show_content(req, op):
-    user = users.getUserFromRequest(req)
+    from core.users import user_from_session
+    user = user_from_session(req.session)
 
-    if not user.inGroup(config.get('user.admingroup')):
+    if not user.is_admin:
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/admin/frame.html", {}, macro="errormessage")
     else:

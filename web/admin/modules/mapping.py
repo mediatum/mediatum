@@ -262,7 +262,7 @@ def viewlist(req, id):
 
     v = getAdminStdVars(req)
     v["sortcol"] = pages.OrderColHeader([t(lang(req), "admin_mappingfield_col_1"), t(lang(req), "admin_mappingfield_col_2"), t(
-        lang(req), "admin_mappingfield_col_3")], addparams="&detailof=" + ustr(mapping.id))
+        lang(req), "admin_mappingfield_col_3")], addparams="&detailof=" + unicode(mapping.id))
     v["fields"] = fields
     v["mapping"] = mapping
     v["options"] = []

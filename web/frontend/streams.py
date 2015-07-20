@@ -433,8 +433,9 @@ def get_transfer_url(n):
     filecount = len(build_filelist(n))
     if filecount < 2:
         transfer_filename = n.id + ".pdf"
-        transferurl = "http://" + config.get("host.name") + "/doc/" + n.id + "/" + transfer_filename
+        transferurl = u"http://{}/doc/{}/".format(config.get("host.name"), n.id, transfer_filename)
     else:
         transfer_filename = n.id + "_transfer.zip"
-        transferurl = "http://" + config.get("host.name") + "/file/" + transfer_filename
+        transferurl = u"http://{}/file/{}/".format(config.get("host.name"), n.id, transfer_filename)
+        
     return transferurl

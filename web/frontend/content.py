@@ -79,7 +79,7 @@ class SingleFile:
         return self.node.show_node_text(separator=separator, language=language)
 
     def getLink(self):
-        return '/node?id=' + self.file.id
+        return '/node?id=' + unicode(self.file.id)
 
 SORT_FIELDS = 2
 
@@ -118,23 +118,23 @@ class ContentList(Content):
 
     def link_first(self):
         self.id2pos[self.files[0].id] = 0
-        return "/node?id=" + self.files[0].id
+        return "/node?id=" + unicode(self.files[0].id)
 
     def link_last(self):
         self.id2pos[self.files[self.num - 1].id] = self.num - 1
-        return "/node?id=" + self.files[self.num - 1].id
+        return "/node?id=" + unicode(self.files[self.num - 1].id)
 
     def link_prev(self):
         if self.nr > 0:
             self.id2pos[self.files[self.nr - 1].id] = self.nr - 1
-            return "/node?id=" + self.files[self.nr - 1].id
+            return "/node?id=" + unicode(self.files[self.nr - 1].id)
         else:
             return self.link_first()
 
     def link_next(self):
         if self.nr < self.num - 1:
             self.id2pos[self.files[self.nr + 1].id] = self.nr + 1
-            return "/node?id=" + self.files[self.nr + 1].id
+            return "/node?id=" + unicode(self.files[self.nr + 1].id)
         else:
             return self.link_last()
 
@@ -173,7 +173,7 @@ class ContentList(Content):
         if "style" in req.params:
             newstyle = req.params.get("style")
             if self.content.__class__ != ContentNode:
-                req.session["liststyle-" + self.collection.id] = getContentStyles("smallview", newstyle)
+                req.session["liststyle-" + unicode(self.collection.id)] = getContentStyles("smallview", newstyle)
             else:
                 req.session[
                     "style-" +
@@ -294,7 +294,7 @@ class ContentList(Content):
                 tal_ids += [SingleFile(file, i, self.num, language=language).node.id]
             i += 1
 
-        liststyle = req.session.get("liststyle-" + self.collection.id, "")  # .split(";")[0]# user/session setting for liststyle?
+        liststyle = req.session.get("liststyle-" + unicode(self.collection.id), "")  # .split(";")[0]# user/session setting for liststyle?
         if not liststyle:
             # no liststsyle, use collection default
             liststyle = self.liststyle
@@ -484,9 +484,9 @@ class ContentArea(Content):
                     if cd is q(Collections).one() or cd is q(Root).one():
                         break
                     if isinstance(cd, Directory):
-                        path.append(Link('/?id=' + cd.id + '&dir=' + cd.id, cd.getLabel(language), cd.getLabel(language)))
+                        path.append(Link('/?id={id}&dir={id}'.format(id=cd.id), cd.getLabel(language), cd.getLabel(language)))
                     else:
-                        path.append(Link('/?id=' + cd.id + '&dir=' + cd.id, cd.getLabel(), cd.getLabel()))
+                        path.append(Link('/?id={id}&dir={id}'.format(id=cd.id), cd.getLabel(), cd.getLabel()))
         elif hasattr(self.content, "linkname") and hasattr(self.content, "linktarget"):
             path.append(Link(self.content.linktarget, self.content.linkname, self.content.linkname))
         path.reverse()

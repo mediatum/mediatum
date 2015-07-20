@@ -43,7 +43,7 @@ def getData(req):
                 inum = len(c.content_children)
 
                 label = c.getLabel()
-                title = c.getLabel() + " (" + ustr(c.id) + ")"
+                title = c.getLabel() + " (" + unicode(c.id) + ")"
 
                 cls = "folder"
 

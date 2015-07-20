@@ -492,7 +492,7 @@ class WorkflowStep(Node):
                 date.parse_date(item.get('creationtime')), 'dd.mm.yyyy HH:MM:SS'), "name": item.name})
         c.sort(lambda x, y: cmp(x['name'], y['name']))
         return req.getTAL("workflow/workflow.html", {"children": c, "workflow": self.parents[
-                          0], "step": self, "nodelink": "/mask?id=" + self.id + "&obj=", 'currentlang': lang(req)}, macro="workflow_show")
+                          0], "step": self, "nodelink": "/mask?id={}&obj=".format(self.id), 'currentlang': lang(req)}, macro="workflow_show")
 
     def show_node_image(node):
         return '<img border="0" src="/img/directory.png">'
@@ -501,7 +501,7 @@ class WorkflowStep(Node):
         return ""
 
     def getLink(self):
-        return "/mask?id=" + self.id
+        return "/mask?id=" + unicode(self.id)
 
     def getLabel(node):
         return node.name

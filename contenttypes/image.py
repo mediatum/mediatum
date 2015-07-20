@@ -236,7 +236,7 @@ class Image(Content):
                         tif = f.base_name
 
             if self.get("archive_path") != "":
-                tif = "file/" + ustr(self.id) + "/" + self.get("archive_path")
+                tif = "file/" + unicode(self.id) + "/" + self.get("archive_path")
 
         files, sum_size = filebrowser(self, req)
 
@@ -569,7 +569,7 @@ class Image(Content):
         d["key"] = req.params.get("id", "")
         # we assume that width==origwidth, height==origheight
         d['flash'] = dozoom(self) and zoom_exists
-        d['tileurl'] = "/tile/" + self.id + "/"
+        d['tileurl'] = "/tile/{}/".format(self.id)
         req.writeTAL("contenttypes/image.html", d, macro="imageviewer")
 
     def popup_thumbbig(self, req):

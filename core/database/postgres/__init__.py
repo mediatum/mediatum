@@ -14,7 +14,7 @@ from psycopg2.extensions import adapt, AsIs
 import sqlalchemy as sqla
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.engine import Engine
-from sqlalchemy import Column, ForeignKey, event, Integer, DateTime, func
+from sqlalchemy import Column, ForeignKey, event, Integer, DateTime, func as sqlfunc
 from sqlalchemy.orm import relationship, backref, Query, Mapper
 from sqlalchemy.ext.declarative import declared_attr
 
@@ -148,17 +148,25 @@ class MtQuery(Query):
             if issubclass(d['entity'], Node)
         ]
 
-    def filter_read_access(self, req=None):
-        if req is None:
-            req = request
+    def filter_read_access(self, user=None, ip=None, req=None):
+        
+        if user is None and ip is None:
+            if req is None:
+                req = request
+                
+            from core.users import user_from_session
+            user = user_from_session(req.session)
+            ip = IPv4Address(req.remote_addr)
             
-        from core.users import user_from_session
+        # admin sees everything ;)
+        if user.is_admin:
+            return self
+        
         nodeclass = self._find_nodeclass()
         if not nodeclass:
             return self
         else:
             nodeclass = nodeclass[0]
-        user = user_from_session(req.session)
-        ip = IPv4Address(req.remote_addr)
-        read_access = func.has_read_access_to_node(nodeclass.id, user.group_ids, ip, func.current_date())
+            
+        read_access = func.has_read_access_to_node(nodeclass.id, user.group_ids, ip, sqlfunc.current_date())
         return self.filter(read_access)

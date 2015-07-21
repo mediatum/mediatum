@@ -34,6 +34,7 @@ from utils.utils import Menu, highlight, format_filesize
 from export.exportutils import runTALSnippet, default_context
 from web.services.cache import date2string as cache_date2string
 from core.database.postgres.node import children_rel
+from mock.mock import MagicMock
 
 logg = logging.getLogger(__name__)
 
@@ -162,12 +163,14 @@ class Data(Node):
            :param req: request object
            :return: dict parentInformation
         '''
-        parentInformation = {}
+        parentInformation = MagicMock()
+        return parentInformation
+    
         pid = req.params.get('pid', self.id)
         sid = req.params.get('id', self.id)
 
         if len(self.getChildren()) > 0 and self.type != 'directory' and self.type != 'collection':
-            parentInformation['parent_node_id'] = req.params.get('pid', self.id)
+            parentInformation['parent_node_id'] = pid
             parentInformation['children_list'] = [child for child in self.getChildren() if not child.get('system.next_id') != '']
         else:
             parentInformation['parent_node_id'] = re.split('\D', req.split_uri()[2].split('pid=')[-1])[0]

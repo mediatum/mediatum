@@ -216,6 +216,8 @@ lastnode = root
 global limit_number_of_info_lines
 limit_number_of_info_lines = None
 
+user_guest = q(User).filter_by(login_name=config.get("user.guestuser", "guest")).one()
+
 # IPython magic
 
 from IPython.core.magic import Magics, magics_class, line_magic, needs_local_scope
@@ -672,7 +674,12 @@ def explain(query, analyze=False, pygments_style="native"):
             "<br>" +
             explained)
     else:
-        db.statement_history.print_last_statement(show_time=False)
+        # strip EXPLAIN (ANALYZE)
+        stmt_start = 16 if analyze else 8
+        stmt = db.statement_history.last_statement[stmt_start:]
+        formatted_statement = db.statement_history.format_statement(stmt)
+        print()
+        print(formatted_statement)
         print(explained)
 
 

@@ -33,6 +33,7 @@ from edit_common import *
 from core.translation import lang
 from core.translation import t as translation_t
 from core.transition import httpstatus
+from core.users import user_from_session
 
 from utils.utils import funcname, get_user_id, dec_entry_log
 
@@ -56,16 +57,15 @@ def getEditorIconPath(node, req=None):
     retrieve icon path for editor tree relative to img/
     '''
     if req:
-        name = node.name
-        label = node.getLabel(req)
+        user = user_from_session(req.session)
 
-        if name == 'home' or name.startswith('Arbeitsverzeichnis') or name.startswith(translate('user_directory', request=req)) or label.startswith(translate('user_directory', request=req)):
+        if node is user.home_dir:
             return 'webtree/homeicon.gif'
-        elif name == 'Uploads' or name.startswith(translate('user_upload', request=req)) or label.startswith(translate('user_upload', request=req)):
+        elif node is user.upload_dir:
             return 'webtree/uploadicon.gif'
-        elif name == 'Inkonsistente Daten' or name.startswith(translate('user_faulty', request=req)) or label.startswith(translate('user_faulty', request=req)):
+        elif node is user.faulty_dir:
             return 'webtree/faultyicon.gif'
-        elif node.name == 'Papierkorb' or name.startswith(translate('user_directory', request=req)) or label.startswith(translate('user_directory', request=req)):
+        elif node is user.trash_dir:
             return 'webtree/trashicon.gif'
 
     if hasattr(node, 'treeiconclass'):

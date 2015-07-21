@@ -19,6 +19,8 @@ ipaddr
 decorator
 pypdf
 sympy
+unicodecsv
+httplib2
 git+git://mediatumdev.ub.tum.de/mediatum-babel
 git+git://mediatumdev.ub.tum.de/mediatum-tal@unicode
 git+git://mediatumdev.ub.tum.de/mediatum-fsm

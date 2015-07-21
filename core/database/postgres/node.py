@@ -115,20 +115,28 @@ def _cte_subtree(node):
     return query
 
 
-def _cte_subtree_container(node):
+def _subquery_subtree(node):
+    from core import db
+
+    return (db.query(t_noderelation.c.cid)
+            .filter(t_noderelation.c.nid == node.id)
+            .distinct()
+            .subquery())
+
+
+def _subquery_subtree_container(node):
     from contenttypes.container import Container
     from core import db
 
-    query = db.query(t_noderelation.c.cid).\
-        filter(t_noderelation.c.nid == node.id).\
-        join(Container, Container.id == t_noderelation.c.cid).\
-        distinct().\
-        cte(name="subtree")
+    query = (db.query(t_noderelation.c.cid)
+             .filter(t_noderelation.c.nid == node.id)
+             .join(Container, Container.id == t_noderelation.c.cid)
+             .subquery())
 
     return query
 
 
-# permission check functions for the access types 
+# permission check functions for the access types
 access_funcs = {
     "read": func.has_read_access_to_node,
     "write": func.has_write_access_to_node,
@@ -188,20 +196,22 @@ class Node(DeclarativeBase, NodeMixin):
 
     @property
     def content_children_for_all_subcontainers(self):
+        """Collects all Content nodes in all subcontainers of this node.
+        This excludes content nodes that are children of other content nodes.
+        """
         from contenttypes.data import Content
         from core import db
-        subtree = _cte_subtree_container(self)
+        sq = _subquery_subtree_container(self)
         query = db.query(Content).\
             join(t_noderelation, Node.id == t_noderelation.c.cid).\
-            join(subtree, subtree.c.cid == t_noderelation.c.nid).\
+            filter(t_noderelation.c.nid.in_(sq) | (t_noderelation.c.nid == self.id)).\
             filter(t_noderelation.c.distance == 1)
 
         return query
 
     def all_children_by_query(self, query):
-        subtree = _cte_subtree(self)
-        query = query.\
-            join(subtree, Node.id == subtree.c.cid)
+        sq = _subquery_subtree(self)
+        query = query.filter(Node.id.in_(sq))
         return query
 
     @staticmethod
@@ -213,7 +223,7 @@ class Node(DeclarativeBase, NodeMixin):
             req = request
 
         user = user_from_session(req.session)
-        
+
         ip = IPv4Address(req.remote_addr)
         return Node.has_access_to_node_id(node_id, accesstype, user, ip, date)
 
@@ -221,10 +231,10 @@ class Node(DeclarativeBase, NodeMixin):
     def has_access_to_node_id(node_id, accesstype, user=None, ip=None, date=func.current_date()):
         from core import db
         from core.users import user_from_session
-        
+
         if user.is_admin:
             return True
-        
+
         accessfunc = access_funcs[accesstype]
         group_ids = user.group_ids if user else None
         access = accessfunc(node_id, group_ids, ip, date)

@@ -42,7 +42,7 @@ def getInformation():
 def getContent(req, ids):
     user = users.getUserFromRequest(req)
     publishdir = q(Node).get(ids[0])
-    explicit = q(Node).filter(Node.write_access == user.name).all()
+    explicit = q(Node).filter(Node.write_access == user.login_name).all()
     ret = ""
 
     actionerror = []
@@ -83,7 +83,7 @@ def getContent(req, ids):
                                 changes.append(dest.id)
                             if src.id not in changes:
                                 changes.append(src.id)
-                            logg.info("%s published %s (%s, %s) from src %s (%s, %s) to dest %s (%s, %s)", user.name,
+                            logg.info("%s published %s (%s, %s) from src %s (%s, %s) to dest %s (%s, %s)", user.login_name,
                                       obj.id, obj.name, obj.type,
                                       src.id, src.name, src.type,
                                       dest.id, dest.name, dest.type)

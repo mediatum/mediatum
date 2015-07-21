@@ -40,11 +40,11 @@ def getContent(req, ids):
     language = lang(req)
     node = q(Node).get(ids[0])
     
-    if "sort" in users.getHideMenusForUser(user) or not access.hasWriteAccess(node):
+    if "sort" in user.hidden_edit_functions or not node.has_write_access():
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
-    logg.info("%s sorting subfolders of node %s (%s, %s): %s", user.name, node.id, node.name, node.type, req.params)
+    logg.info("%s sorting subfolders of node %s (%s, %s): %s", user.login_name, node.id, node.name, node.type, req.params)
 
     if "order" in req.params:  # do reorder
         ids = req.params.get('order').split(',')

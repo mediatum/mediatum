@@ -479,7 +479,7 @@ def getContent(req, ids):
     new_schedule = None
     if (not schedule and "submit" in req.params) or "submit_run_now" in req.params:
 
-        new_schedule_name = user.name + \
+        new_schedule_name = user.login_name + \
             "_created_at_" + datetime.now().isoformat()
         new_schedule = Node(new_schedule_name, 'schedule')
 

@@ -122,7 +122,7 @@ def getContent(req, ids):
         schemes = [scheme for scheme in schemes if new_type in scheme.getDatatypes()]
 
         if new_type != node.type or new_schema != node.schema:
-            logg.info("{} changed node schema for node {} '{}' from '{}' to '{}'".format(user.name,
+            logg.info("{} changed node schema for node {} '{}' from '{}' to '{}'".format(user.login_name,
                                                                                          node.id,
                                                                                          node.name,
                                                                                          node.type,

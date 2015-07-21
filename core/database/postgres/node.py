@@ -213,6 +213,7 @@ class Node(DeclarativeBase, NodeMixin):
             req = request
 
         user = user_from_session(req.session)
+        
         ip = IPv4Address(req.remote_addr)
         return Node.has_access_to_node_id(node_id, accesstype, user, ip, date)
 
@@ -220,6 +221,9 @@ class Node(DeclarativeBase, NodeMixin):
     def has_access_to_node_id(node_id, accesstype, user=None, ip=None, date=func.current_date()):
         from core import db
         from core.users import user_from_session
+        
+        if user.is_admin:
+            return True
         
         accessfunc = access_funcs[accesstype]
         group_ids = user.group_ids if user else None

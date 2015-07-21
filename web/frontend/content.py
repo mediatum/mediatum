@@ -318,11 +318,11 @@ class ContentList(Content):
         if sidebar != "":
             return '<div id="portal-column-one">{0}<div id="nodes">{1}</div>{0}</div><div id="portal-column-two">{2}</div>'.format(filesHTML, contentList, sidebar)
         else:
-            return '{0}<div id="nodes">{1}</div>{0}'.format(filesHTML, contentList)
+            return u'{0}<div id="nodes">{1}</div>{0}'.format(filesHTML, contentList)
 
 # paths
-def getPaths(node, access):
-    list = []
+def getPaths(node):
+    res = []
 
     def r(node, path):
         if isinstance(node, Root):
@@ -339,19 +339,19 @@ def getPaths(node, access):
     omit = 0
     if p:
         for node in p:
-            if access.hasReadAccess(node):
+            if node.has_read_access():
                 if node.type in ("directory", "home", "collection") or node.type.startswith("directory"):
                     paths.append(node)
                 if isinstance(node, (Collections, Root)):
                     paths.reverse()
                     if len(paths) > 0 and not omit:
-                        list.append(paths)
+                        res.append(paths)
                     omit = 0
                     paths = []
             else:
                 omit = 1
-    if len(list) > 0:
-        return list
+    if len(res) > 0:
+        return res
     else:
         return []
 
@@ -387,7 +387,7 @@ class ContentNode(Content):
         show_node_big = ensure_unicode_returned(self.node.show_node_big, name="show_node_big of %s" % self.node)
 
         if not self.node.isContainer():
-            plist = getPaths(self.node, AccessData(req))
+            plist = getPaths(self.node)
             paths = tal.getTAL(theme.getTemplate("content_nav.html"), {"paths": plist}, macro="paths", language=lang(req))
         # render style of node for nodebig
         if len(stylebig) > 1:
@@ -423,12 +423,15 @@ def mkContentNode(req):
         return ContentError("Permission denied", 403)
 
     if isinstance(node, Container):
+        # try to find a start page
         if "files" not in req.params and len(filter(None, node.getStartpageDict().values())) > 0:
+            # XXX: would be better to show an error message for missing, but configured start pages
             for f in node.getFiles():
                 if f.type == "content" and f.mimetype == "text/html" and os.path.isfile(
                         f.retrieveFile()) and fileIsNotEmpty(f.retrieveFile()):
                     return ContentNode(node)
-
+        # no startpage found, show nodes
+        
         allowed_nodes = access.filter(list(node.content_children_for_all_subcontainers))
         node.ccount = len(allowed_nodes)
         #ids = access.filter(node.getAllChildren())

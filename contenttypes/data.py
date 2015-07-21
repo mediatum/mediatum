@@ -91,9 +91,9 @@ def make_lookup_key(node, language=languages[0], labels=True):
         flaglabels = 'uselabels'
 
     if language in languages:
-        return "%s_%s_%s" % (node.type, language, flaglabels)
+        return "%s/%s_%s_%s" % (node.type, node.schema, language, flaglabels)
     else:
-        return "%s_%s_%s" % (node.type, languages[0], flaglabels)
+        return "%s/%s_%s_%s" % (node.type, node.schema, languages[0], flaglabels)
 
 
 def get_maskcache_entry(lookup_key):
@@ -201,7 +201,6 @@ class Data(Node):
             if len(styles) >= 1:
                 template = styles[0].getTemplate()
         # hide empty elements}, macro)
-        node = self
 
         return req.getTAL(template,
                           {'node': self,
@@ -374,8 +373,8 @@ class Data(Node):
             res = render_mask_template(self, mfs, words=words, separator=separator)
             maskcache_accesscount[lookup_key] += 1
         else:
-            mask = self.metadatatype.get_mask("nodesmall")
-            for m in self.metadatatype.filter_masks("shortview", language=language):
+            mask = self.metadatatype.get_mask(u"nodesmall")
+            for m in self.metadatatype.filter_masks(u"shortview", language=language):
                 mask = m
 
             if mask:

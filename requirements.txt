@@ -1,5 +1,6 @@
 parcon
-git+https://github.com/zzzeek/sqlalchemy/
+sqlalchemy
+sqlalchemy_utils
 psycopg2
 python-Levenshtein
 pymarc
@@ -21,7 +22,7 @@ pypdf
 sympy
 unicodecsv
 httplib2
-git+git://mediatumdev.ub.tum.de/mediatum-babel
-git+git://mediatumdev.ub.tum.de/mediatum-tal@unicode
-git+git://mediatumdev.ub.tum.de/mediatum-fsm
+#git+git://mediatumdev.ub.tum.de/mediatum-babel
+#git+git://mediatumdev.ub.tum.de/mediatum-tal@unicode
+#git+git://mediatumdev.ub.tum.de/mediatum-fsm
 

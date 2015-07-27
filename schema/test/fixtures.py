@@ -12,7 +12,7 @@ from utils.compat import iteritems, itervalues
 logg = logging.getLogger(__name__)
 
 from .factories import *
-from core.test.fixtures import content_node
+from core.test.fixtures import content_node, session
 
 
 METAFIELDS = [
@@ -60,13 +60,13 @@ def some_mask_with_nested_maskitem(some_mask_with_maskitem):
     return mask
     
     
-@fixture(scope="session")
+@fixture
 def article_metafields():
     metafields = [MetafieldFactory(name=n, attrs__type=t) for n, t in ARTICLE_METAFIELDS]
     return metafields
 
 
-@fixture(scope="session")
+@fixture
 def article_citeproc_mask(article_metafields):
     # create citeproc export mapping
     metafield_to_mappingfield = {}
@@ -98,7 +98,7 @@ def article_citeproc_mask(article_metafields):
 some_mask = article_citeproc_mask
 
 
-@fixture(scope="session")
+@fixture
 def journal_article_mdt(article_citeproc_mask, article_metafields):
     mdt = DocumentMetadatatypeFactory(name="dt-zeitschriftenaufsatz",
                                       attrs__citeprocmapping="journal-article;_default;misc")
@@ -107,7 +107,7 @@ def journal_article_mdt(article_citeproc_mask, article_metafields):
     return mdt
 
 
-@fixture(scope="session")
+@fixture
 def default_mdt(journal_article_mdt):
     return journal_article_mdt
 

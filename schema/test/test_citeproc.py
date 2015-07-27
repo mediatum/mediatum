@@ -78,10 +78,14 @@ def test_import_csl(journal_article_mdt):
 
 
 @mark.slow
-def test_import_doi(journal_article_mdt):
+def test_import_doi(session, journal_article_mdt):
     node = citeproc.import_doi(DOI_ARTICLE3, testing=True)
     expected = load_csl_record_file(DOI_ARTICLE3)
+    # check if database can serialize the contents
+    session.add(node)
+    session.flush()
     check_node(node, expected)
+    import pytest; pytest.set_trace() 
 
 
 @mark.slow

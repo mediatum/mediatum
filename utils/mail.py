@@ -97,7 +97,7 @@ def sendmail(fromemail, email, subject, text, attachments_paths_and_filenames=[]
                     if maintype == 'text':
                         # tested with ansi and utf-8
                         with codecs.open(path, 'r', encoding='utf8') as fp:
-                            msg = MIMEText(fp.read(), _subtype=subtype)
+                            msg = MIMEText(fp.read(), _subtype=subtype, _charset="utf-8")
                     else:
                         with open(path, 'rb') as fp:
                             if maintype == 'image':

@@ -286,6 +286,8 @@ def import_csl(record, target=None, name=None, testing=False):
                     logg.warn("field '%s' is of type number and contains an illegal value: '%s'!"
                               "See http://citationstyles.org/downloads/specification.html#number"
                               .key, value)
+            elif FIELDS[key].fieldtype == "standard" and isinstance(value, list):
+                value = ''.join(value)
             # for number and standard fields
             return value.encode("utf8")
         except:
@@ -302,7 +304,7 @@ def import_csl(record, target=None, name=None, testing=False):
             csl_name = q(Node).get(int(maskitem["mappingfield"])).name
             mfield = q(Node).get(int(maskitem["attribute"]))
             med_name = mfield.name
-        except NoResultFound:
+        except:
             logg.exception("citeproc import name='%s': field error for citeproc mask for type '%s and " +
                 "csl-type '%s' csl_name='%s', mfield='%s', med_name='%s'", name, schema, typ, csl_name, mfield, med_name)
             continue

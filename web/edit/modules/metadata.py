@@ -118,7 +118,7 @@ def getContent(req, ids):
     idstr = ",".join(ids)
     action = req.params.get('action', '').strip()
 
-    logg.info("%s in editor metadata (action=%r): %r", user.name, action, [[n.id, n.name, n.type]for n in nodes])
+    logg.info("%s in editor metadata (action=%r): %r", user.login_name, action, [[n.id, n.name, n.type]for n in nodes])
 
     metadatatype = node.metadatatype
 
@@ -352,11 +352,11 @@ def getContent(req, ids):
                 req.setStatus(httpstatus.HTTP_FORBIDDEN)
                 return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
-        logg.info("%s change metadata %s", access.user.name, idstr)
+        logg.info("%s change metadata %s", access.user.login_name, idstr)
         logg.debug(pf(req.params))
 
         for node in nodes:
-            node.set("updateuser", user.name)
+            node.set("updateuser", user.login_name)
             if node.get('updatetime') < ustr(now()):
                 node.set("updatetime", ustr(format_date()))
 

@@ -145,7 +145,7 @@ def getContent(req, ids):
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
     if "update_stat" in req.params.keys():  # reset stored statistics data
-        logg.info("user %s requests update of of system.statscontent for node %s (%s, %s)", user.name, node.id, node.name, node.type)
+        logg.info("user %s requests update of of system.statscontent for node %s (%s, %s)", user.login_name, node.id, node.name, node.type)
         node.removeAttribute("system.statscontent")
         node.removeAttribute("system.statsdate")
 

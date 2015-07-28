@@ -33,6 +33,7 @@ from edit_common import *
 from core.translation import lang
 from core.translation import t as translation_t
 from core.transition import httpstatus
+from core.users import user_from_session
 
 from utils.utils import funcname, get_user_id, dec_entry_log
 
@@ -56,16 +57,15 @@ def getEditorIconPath(node, req=None):
     retrieve icon path for editor tree relative to img/
     '''
     if req:
-        name = node.name
-        label = node.getLabel(req)
+        user = user_from_session(req.session)
 
-        if name == 'home' or name.startswith('Arbeitsverzeichnis') or name.startswith(translate('user_directory', request=req)) or label.startswith(translate('user_directory', request=req)):
+        if node is user.home_dir:
             return 'webtree/homeicon.gif'
-        elif name == 'Uploads' or name.startswith(translate('user_upload', request=req)) or label.startswith(translate('user_upload', request=req)):
+        elif node is user.upload_dir:
             return 'webtree/uploadicon.gif'
-        elif name == 'Inkonsistente Daten' or name.startswith(translate('user_faulty', request=req)) or label.startswith(translate('user_faulty', request=req)):
+        elif node is user.faulty_dir:
             return 'webtree/faultyicon.gif'
-        elif node.name == 'Papierkorb' or name.startswith(translate('user_directory', request=req)) or label.startswith(translate('user_directory', request=req)):
+        elif node is user.trash_dir:
             return 'webtree/trashicon.gif'
 
     if hasattr(node, 'treeiconclass'):
@@ -85,23 +85,23 @@ def get_editor_icon_path_from_nodeclass(cls):
         return u"webtree/{}.gif".format(cls.__name__)
 
 
-def getIDPaths(nid, access, sep="/", containers_only=True):
+def getIDPaths(nid, sep="/", containers_only=True):
     '''
     return list of sep-separated id lists for paths to node with id nid
     '''
     try:
         node = q(Node).get(nid)
-        if not access.hasReadAccess(node):
+        if not node.has_read_access():
             return []
     except:
         return []
     from web.frontend.content import getPaths
-    paths = getPaths(node, access)
+    paths = getPaths(node)
     res = []
     for path in paths:
         if containers_only:
             pids = [("%s" % p.id)
-                    for p in path if hasattr(p, 'isContainer') and p.isContainer()]
+                    for p in path if isinstance(p, Container)]
         else:
             pids = [("%s" % p.id) for p in path]
         if pids:
@@ -113,9 +113,9 @@ def frameset(req):
     id = req.params.get("id", q(Collections).one().id)
     tab = req.params.get("tab", None)
     language = lang(req)
+    user = user_from_session(req.session)
 
-    access = AccessData(req)
-    if not access.getUser().isEditor():
+    if not user.is_editor:
         req.writeTAL("web/edit/edit.html", {}, macro="error")
         req.writeTAL("web/edit/edit.html",
                      {"id": id, "tab": (tab and "&tab=" + tab) or ""}, macro="edit_notree_permission")
@@ -139,18 +139,17 @@ def frameset(req):
         else:
             n = None
 
-    path = nidpath = ['%s' % p.id for p in nodepath]
+    path = ['%s' % p.id for p in nodepath]
     containerpath = [('%s' % p.id) for p in nodepath if isinstance(p, Container)]
 
-    user = users.getUserFromRequest(req)
-    menu = filterMenu(getEditMenuString(currentdir.type), user)
+    user = user_from_session(req.session)
 
     spc = [Menu("sub_header_frontend", "../", target="_parent")]
     if user.isAdmin():
         spc.append(
             Menu("sub_header_administration", "../admin", target="_parent"))
 
-    if user.isWorkflowEditor():
+    if user.is_workflow_editor:
         spc.append(Menu("sub_header_workflow", "../publish", target="_parent"))
 
     spc.append(Menu("sub_header_logout", "../logout", target="_parent"))
@@ -168,15 +167,21 @@ def frameset(req):
         return (node, "".join(path[2:]))
 
     def _getIDPath(nid, sep="/", containers_only=True):
-        res = getIDPaths(nid, access, sep=sep, containers_only=containers_only)
+        res = getIDPaths(nid, sep=sep, containers_only=containers_only)
         return res
 
-    folders = {'homedir': getPathToFolder(users.getHomeDir(user)),
-               'trashdir': getPathToFolder(users.getSpecialDir(user, 'trash')),
-               'uploaddir': getPathToFolder(users.getSpecialDir(user, 'upload')),
-               'faultydir': getPathToFolder(users.getSpecialDir(user, 'faulty'))}
+    # does the user have a homedir? if not, create one
+    if user.home_dir is None:
+        user.create_home_dir()
+        db.session.commit()
+        logg.info("created new home dir for user #%s (%s)", user.id, user.login_name)
 
-    containertypes = [Container.__mapper__.polymorphic_map[n].class_ for n in Container.__mapper__._acceptable_polymorphic_identities if n not in ("collections", "home", "container", "project")]
+    folders = {'homedir': getPathToFolder(user.home_dir),
+               'trashdir': getPathToFolder(user.trash_dir),
+               'uploaddir': getPathToFolder(user.upload_dir),
+               'faultydir': getPathToFolder(user.faulty_dir)}
+
+    containertypes = Container.get_all_subclasses(filter_classnames=("collections", "home", "container", "project"))
     cmenu_iconpaths = []
 
     for ct in containertypes:
@@ -221,7 +226,7 @@ def getBreadcrumbs(menulist, tab):
 
 
 def filterMenu(menuitems, user):
-    hide = users.getHideMenusForUser(user)
+    hide = user.hidden_edit_functions
     ret = []
     for menu in parseMenuString(menuitems):
         i = []
@@ -235,7 +240,7 @@ def filterMenu(menuitems, user):
 
 
 def handletabs(req, ids, tabs):
-    user = users.getUserFromRequest(req)
+    user = user_from_session(req.session)
     language = lang(req)
 
     n = q(Data).get(ids[0])
@@ -354,17 +359,16 @@ def nodeIsChildOfNode(node1, node2):
 
 @dec_entry_log
 def edit_tree(req):
-    access = AccessData(req)
     language = lang(req)
-    user = users.getUserFromRequest(req)
-    home_dir = users.getHomeDir(user)
+    user = user_from_session(req.session)
+    home_dir = user.home_dir
     match_result = ''
     match_error = False
 
     if req.params.get('key') == 'root':
         nodes = q(Collections).one().container_children.sort_by_orderpos()
     elif req.params.get('key') == 'home':
-        if not user.isAdmin():
+        if not user.is_admin:
             nodes = [home_dir]
         else:
             homenodefilter = req.params.get('homenodefilter', '')
@@ -388,16 +392,9 @@ def edit_tree(req):
 
     data = []
 
-    # wn 2014-03-14
-    # special directories may be handled in a special way by the editor
-    special_dir_ids = {}
-    special_dir_ids[home_dir.id] = 'userhomedir'
-    for dir_type in ['upload', 'faulty', 'trash']:
-        special_dir_ids[users.getSpecialDir(user, dir_type).id] = dir_type
-
     for node in nodes:
 
-        if not access.hasReadAccess(node):
+        if not node.has_read_access():
             continue
 
         label = getTreeLabel(node, lang=language)
@@ -414,7 +411,7 @@ def edit_tree(req):
             nodedata['lazy'] = False
             nodedata['children'] = []
 
-        if not access.hasWriteAccess(node):
+        if not node.has_write_access():
             if req.params.get('key') == 'home':
                 continue
             nodedata['readonly'] = 1
@@ -428,9 +425,9 @@ def edit_tree(req):
 
 
         nodedata['this_node_is_special'] = []
-        if node.id in special_dir_ids:
-            nodedata['this_node_is_special'] = nodedata['this_node_is_special'] + [special_dir_ids[node.id]]
-            if node.id == home_dir.id:
+        if node in (user.trash_dir, user.faulty_dir, user.upload_dir):
+            nodedata['this_node_is_special'] = nodedata['this_node_is_special'] + [node.id]
+            if node is home_dir:
                 nodedata['match_result'] = match_result
 
         data.append(nodedata)
@@ -456,19 +453,18 @@ def getEditMenuString(ntype, default=0):
 @dec_entry_log
 def action(req):
     global editModules
-    access = AccessData(req)
     language = lang(req)
-    user = users.getUserFromRequest(req)
+    user = user_from_session(req.session)
 
-    trashdir = users.getTrashDir(user)
-    uploaddir = users.getUploadDir(user)
-    faultydir = users.getFaultyDir(user)
+    trashdir = user.trash_dir
+    uploaddir = user.upload_dir
+    faultydir = user.faulty_dir
 
     trashdir_parents = trashdir.parents
     action = req.params.get("action", "")
     changednodes = {}
 
-    if not access.user.isEditor():
+    if not user.is_editor:
         req.write("""permission denied""")
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return
@@ -503,7 +499,7 @@ def action(req):
 
     if req.params.get('action') == 'addcontainer':
         node = q(Node).get(srcid)
-        if not access.hasWriteAccess(node):
+        if not node.has_write_access():
             # deliver errorlabel
             req.writeTALstr(
                 '<tal:block i18n:translate="edit_nopermission"/>', {})
@@ -521,8 +517,8 @@ def action(req):
         content_class = Node.get_class_for_typestring(newnode_type)
         newnode = content_class(name=translated_label)
         node.children.append(newnode)
-        newnode.set("creator", user.name)
-        newnode.set("creationtime", ustr(
+        newnode.set("creator", user.login_name)
+        newnode.set("creationtime", unicode(
             time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
         db.session.commit()
         req.params["dest"] = newnode.id
@@ -542,7 +538,7 @@ def action(req):
 
         req.write(json.dumps(fancytree_nodedata))
         logg.info("%s adding new container %s (%s) to %s (%s, %s)",
-                  access.user.name, newnode.id, newnode.type, node.id, node.name, node.type)
+                  user.login_name, newnode.id, newnode.type, node.id, node.name, node.type)
         return
 
     try:
@@ -565,19 +561,19 @@ def action(req):
             # attn: this will not touch files from children of deleted
             # containers
             if len(n.parents) == 1:
-                logg.info("%s going to remove files from disk for node %s (%s, %s)", user.name, n.id, n.name, n.type)
+                logg.info("%s going to remove files from disk for node %s (%s, %s)", user.login_name, n.id, n.name, n.type)
                 for f in n.files:
                     # dangerous ??? check this
                     f_path = f.abspath
                     if os.path.exists(f_path):
-                        logg.info("%s going to remove file %r from disk", user.name, f_path)
+                        logg.info("%s going to remove file %r from disk", user.login_name, f_path)
                         os.remove(f_path)
             trashdir.children.remove(n)
             db.session.commit()
             dest = trashdir
         changednodes[trashdir.id] = 1
         _parent_descr = [(p.name, p.id, p.type) for p in trashdir_parents]
-        logg.info("%s cleared trash folder with id %s, child of %s", user.name, trashdir.id, _parent_descr)
+        logg.info("%s cleared trash folder with id %s, child of %s", user.login_name, trashdir.id, _parent_descr)
         # return
     else:
         for id in idlist:
@@ -588,7 +584,7 @@ def action(req):
                 mysrc = obj.parents[0]
 
             if action == "delete":
-                if access.hasWriteAccess(mysrc) and access.hasWriteAccess(obj):
+                if mysrc.has_write_access() and obj.has_write_access():
                     if mysrc.id != trashdir.id:
                         mysrc.children.remove(obj)
                         changednodes[mysrc.id] = 1
@@ -596,22 +592,22 @@ def action(req):
                         db.session.commit()
                         changednodes[trashdir.id] = 1
                         logg.info("%s moved to trash bin %s (%s, %s) from %s (%s, %s)",
-                                  user.name, obj.id, obj.name, obj.type, mysrc.id, mysrc.name, mysrc.type)
+                                  user.login_name, obj.id, obj.name, obj.type, mysrc.id, mysrc.name, mysrc.type)
                         dest = mysrc
 
                 else:
-                    logg.info("%s has no write access for node %s", user.name, mysrc.id)
+                    logg.info("%s has no write access for node %s", user.login_name, mysrc.id)
                     req.writeTALstr(
                         '<tal:block i18n:translate="edit_nopermission"/>', {})
                 dest = mysrc
 
             elif action in ["move", "copy"]:
 
-                if dest != mysrc and \
-                   access.hasWriteAccess(mysrc) and \
-                   access.hasWriteAccess(dest) and \
-                   access.hasWriteAccess(obj) and \
-                   isDirectory(dest):
+                if dest != (mysrc and
+                   mysrc.has_write_access() and
+                   dest.has_write_access() and
+                   obj.has_write_access() and
+                   isDirectory(dest)):
                     if not nodeIsChildOfNode(dest, obj):
                         if action == "move":
                             mysrc.children.remove(obj)
@@ -622,7 +618,7 @@ def action(req):
 
                         if logg.isEnabledFor(logging.INFO):
                             _what = "%s %s %r (%s, %s) " % (
-                                access.user.name, action, obj.id, obj.name, obj.type)
+                                user.login_name, action, obj.id, obj.name, obj.type)
                             _from = "from %s (%s, %s) " % (
                                 mysrc.id, mysrc.name, mysrc.type)
                             _to = "to %s (%s, %s)" % (
@@ -630,7 +626,7 @@ def action(req):
                             logg.info(_what + _from + _to)
 
                     else:
-                        logg.error("%s could not %s %s from %s to %s", user.name, action, obj.id, mysrc.id, dest.id)
+                        logg.error("%s could not %s %s from %s to %s", user.login_name, action, obj.id, mysrc.id, dest.id)
                 else:
                     return
                 mysrc = None
@@ -684,11 +680,9 @@ def showPaging(req, tab, ids):
 @dec_entry_log
 def content(req):
 
-    user = users.getUserFromRequest(req)
+    user = user_from_session(req.session)
 
-    access = AccessData(req)
-    language = lang(req)
-    if not access.user.isEditor():
+    if not user.is_editor:
         return req.writeTAL("web/edit/edit.html", {}, macro="error")
 
     if 'id' in req.params and len(req.params) == 1:
@@ -697,10 +691,10 @@ def content(req):
 
         if node is not None:
             cmd = "cd (%s %r, %r)" % (nid, node.name, node.type)
-            logg.info("%s: %s", user.name, cmd)
+            logg.info("%s: %s", user.login_name, cmd)
         else:
             cmd = "ERROR-cd to non-existing id=%r" % nid
-            logg.error("%s: %s", user.name, cmd)
+            logg.error("%s: %s", user.login_name, cmd)
 
     if 'action' in req.params and req.params['action'] == 'upload':
         pass
@@ -720,7 +714,7 @@ def content(req):
         req.params["option"] = path[3]
     getEditModules()
 
-    if not access.user.isEditor():
+    if not user.is_editor:
         return req.writeTAL("web/edit/edit.html", {}, macro="error")
 
     # remove all caches for the frontend area- we might make changes there
@@ -738,9 +732,9 @@ def content(req):
     if len(ids) > 0:
         node = q(Node).get(long(ids[0]))
     tabs = "content"
-    if node.type == "root":
+    if isinstance(node, Root):
         tabs = "content"
-    elif node.id == users.getUploadDir(access.getUser()).id:
+    elif node is user.upload_dir:
         tabs = "upload"
     elif hasattr(node, "getDefaultEditTab"):
         tabs = node.getDefaultEditTab()
@@ -748,7 +742,7 @@ def content(req):
 
     current = req.params.get("tab", tabs)
     logg.debug("... %s inside %s.%s: ->  !!! current = %s !!!", get_user_id(req), __name__, funcname(), current)
-    msg = "%s selected editor module is %s" % (user.name, current)
+    msg = "%s selected editor module is %s" % (user.login_name, current)
     jsfunc = req.params.get("func", "")
     if jsfunc:
         msg = msg + (', js-function: %r' % jsfunc)
@@ -866,7 +860,7 @@ def content(req):
             v["ids"] = req.params.get("id", "").split(",")
         v["tab"] = current
         v["operations"] = req.getTAL("web/edit/edit_common.html", {'iscontainer': node.isContainer()}, macro="show_operations")
-        user = users.getUserFromRequest(req)
+        user = user_from_session(req.session)
         v['user'] = user
         v['language'] = lang(req)
         v['t'] = translation_t

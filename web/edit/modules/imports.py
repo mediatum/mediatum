@@ -104,7 +104,7 @@ def import_new(req):
         req.params["error"] = "doi_and_bibtex_given"
 
         logg.info("%s using import module for node %s (%s, %s): Error: %s",
-                  user.name, importdir.id, importdir.name, importdir.type, req.params["error"])
+                  user.login_name, importdir.id, importdir.name, importdir.type, req.params["error"])
 
     elif "file" in req.params.keys():
         file = req.params["file"]
@@ -124,7 +124,7 @@ def import_new(req):
                 req.request["Location"] = req.makeLink("content", {"id":importdir.id, "error":"PostprocessingError"})
                 req.params["error"] = "file_processingerror"
             logg.info("%s used import module for bibtex import for node %r (%r, %r): %r",
-                user.name, importdir.id, importdir.name, importdir.type, req.params)
+                user.login_name, importdir.id, importdir.name, importdir.type, req.params)
             return getContent(req, [importdir.id])
 
     elif req.params["doi"]:
@@ -148,11 +148,11 @@ def import_new(req):
         else:
             req.request["Location"] = req.makeLink("content", {"id":importdir.id})
         logg.info("%s used import module for doi import for node %s (%s, %s): %s", 
-            user.name, importdir.id, importdir.name, importdir.type, req.params)
+            user.login_name, importdir.id, importdir.name, importdir.type, req.params)
     else:
         # error while import, nothing given
         req.params["error"] = "edit_import_nothing"
         logg.info("%s used import module but did not specify import source for node %r (%r, %r): %r", 
-                  user.name, importdir.id, importdir.name, importdir.type, req.params)
+                  user.login_name, importdir.id, importdir.name, importdir.type, req.params)
 
     return getContent(req, [importdir.id])

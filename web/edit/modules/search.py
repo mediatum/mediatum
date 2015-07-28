@@ -90,7 +90,7 @@ def search_results(req,id):
 
     query += ' and schema="'+req.params.get("objtype","*")+'"'
                                 
-    logg.info("%s search for %s", access.user.name, query)
+    logg.info("%s search for %s", access.user.login_name, query)
     nodes = node.search(query)
     req.session["nodelist"] = EditorNodeList(nodes)
 

@@ -159,7 +159,7 @@ def getContent(req, ids):
                         node = content_class(name=filename, schema=filename2scheme[filename])
 
                         basenode.children.append(node)
-                        node.set("creator", user.name)
+                        node.set("creator", user.login_name)
                         node.set("creationtime",  unicode(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
 
                         node.files.append(f)
@@ -169,7 +169,7 @@ def getContent(req, ids):
                         basenode.files.remove(f)
                         db.session.commit()
                         logg.info("%s created new node id=%s (name=%s, type=%s) by uploading file %s, "
-                            "node is child of base node id=%s (name=%s, type=%s)", user.name, node.id, node.name, node.type,
+                            "node is child of base node id=%s (name=%s, type=%s)", user.login_name, node.id, node.name, node.type,
                              filename, basenode.id, basenode.name, basenode.type)
 
             else:
@@ -197,7 +197,7 @@ def getContent(req, ids):
                                     node = content_class(name=filename, schema=req.params.get('value'))
 
                                     basenode.children.append(node)
-                                    node.set("creator", user.name)
+                                    node.set("creator", user.login_name)
                                     node.set("creationtime",  unicode(time.strftime('%Y-%m-%dT%H:%M:%S',
                                                                                     time.localtime(time.time()))))
 
@@ -212,7 +212,7 @@ def getContent(req, ids):
                                     db.session.commit()
 
                                     logg.info("%s created new node id=%s (name=%s, type=%s) by uploading file %s, "
-                                    "node is child of base node id=%s (name=%s, type=%s)", user.name, node.id, node.name, node.type, filename,
+                                    "node is child of base node id=%s (name=%s, type=%s)", user.login_name, node.id, node.name, node.type, filename,
                                     basenode.id, basenode.name, basenode.type)
 
                                     break  # filename may not be unique
@@ -222,7 +222,7 @@ def getContent(req, ids):
                 basenode.files.remove(f)
                 f_path = f.abspath
                 if os.path.exists(f_path):
-                    logg.debug("%s going to remove file %s from disk", user.name, f_path)
+                    logg.debug("%s going to remove file %s from disk", user.login_name, f_path)
                     os.remove(f_path)
 
             mime = getMimeType(filename)
@@ -271,7 +271,7 @@ def getContent(req, ids):
             node = Node(name=u"", type=ctype, schema=schema)
             basenode = q(Node).get(req.params.get('id'))
             basenode.children.append(node)
-            node.set("creator", user.name)
+            node.set("creator", user.login_name)
             node.set("creationtime",  ustr(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time()))))
             db.session.commit()
             req.write(json.dumps({'newid': node.id,
@@ -298,7 +298,7 @@ def getContent(req, ids):
                 res = {'id': req.params.get('id'), 'error': req.params.get('error', ''), 'connect_error_msg': req.params.get('connect_error_msg', '')}
 
                 if new_node:
-                    new_node.set("creator", user.name)
+                    new_node.set("creator", user.login_name)
                     creation_time = ustr(time.strftime('%Y-%m-%dT%H:%M:%S', time.localtime(time.time())))
                     new_node.set("creationtime", creation_time)
 
@@ -308,7 +308,7 @@ def getContent(req, ids):
                     res['newid'] = new_node.id
 
                     logg.info("%s created new node id=%s (name=%s, type=%s) by importing identifier %s, "
-                              "node is child of base node id=%s (name=%s, type=%s)", user.name, new_node.id, new_node.name, new_node.type,
+                              "node is child of base node id=%s (name=%s, type=%s)", user.login_name, new_node.id, new_node.name, new_node.type,
                              identifier, importdir.id, importdir.name, importdir.type)
                 else:  # import failed, no new_node created
                     logg.error("... in %s.%s: import failed, no new_node created for identifier (%s)", __name__, funcname(), identifier)

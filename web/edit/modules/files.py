@@ -174,7 +174,7 @@ def getContent(req, ids):
                 if req.params.get("change_file") in ["yes", "no"] and not create_version_error:
                     file = importFile(uploadfile.filename, uploadfile.tempname) # add new file
                     node.files.append(file)
-                    logg.info("%s changed file of node %s to %s (%s)", user.name, node.id, uploadfile.filename, uploadfile.tempname)
+                    logg.info("%s changed file of node %s to %s (%s)", user.login_name, node.id, uploadfile.filename, uploadfile.tempname)
 
                 attpath = ""
                 for f in node.files:
@@ -230,13 +230,13 @@ def getContent(req, ids):
 
                 node.files.append(File(thumbname, "thumb", "image/jpeg"))
                 node.files.append(File(thumbname + "2", "presentation", "image/jpeg"))
-                logg.info("%s changed thumbnail of node %s", user.name, node.id)
+                logg.info("%s changed thumbnail of node %s", user.login_name, node.id)
 
         elif op == "postprocess":
             if hasattr(node, "event_files_changed"):
                 try:
                     node.event_files_changed()
-                    logg.info("%s postprocesses node %s", user.name, node.id)
+                    logg.info("%s postprocesses node %s", user.login_name, node.id)
                 except:
                     update_error = True    
 

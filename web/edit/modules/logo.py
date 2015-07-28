@@ -91,10 +91,10 @@ def getContent(req, ids):
         if req.params.get('logo') == "/img/empty.gif":
             # remove logo from current node
             node.set("system.logo", "")
-            logg.info("%s cleared logo for node %s (%s, %s)", user.name, node.id, node.name, node.type)
+            logg.info("%s cleared logo for node %s (%s, %s)", user.login_name, node.id, node.name, node.type)
         else:
             node.set("system.logo", req.params.get("logo").split("/")[-1])
-            logg.info("%s set logo for node %s (%s, %s) to %s", user.name, node.id, node.name, node.type, node.get("system.logo"))
+            logg.info("%s set logo for node %s (%s, %s) to %s", user.login_name, node.id, node.name, node.type, node.get("system.logo"))
 
     logofiles = []
     for f in node.files:

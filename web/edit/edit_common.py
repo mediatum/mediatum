@@ -17,20 +17,16 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import re
-import core.users as users
 import logging
 
-from core.acl import AccessData
-from core.translation import translate, getDefaultLanguage, t, lang
-from utils.utils import EncryptionException, funcname
-from utils.fileutils import importFile
-from core.users import getHomeDir, getUploadDir
-from utils.utils import get_user_id, log_func_entry, dec_entry_log
-
-from core import Node
-from core import db
+from core import Node, db
 from core.systemtypes import Root
+from core.translation import t, lang
+from core.users import user_from_session
+from contenttypes import Container
+from utils.fileutils import importFile
+from utils.utils import EncryptionException, dec_entry_log
+
 
 logg = logging.getLogger(__name__)
 q = db.query
@@ -103,9 +99,8 @@ class EditorNodeList:
 @dec_entry_log
 def showdir(req, node, publishwarn="auto", markunpublished=False, sortfield=None):
     if publishwarn == "auto":
-        user = users.getUserFromRequest(req)
-        homedir = getHomeDir(user)
-        homedirs = getAllSubDirs(homedir)
+        user = user_from_session(req.session)
+        homedirs = user.home_dir.all_children_by_query(q(Container))
         publishwarn = node in homedirs
     nodes = node.content_children # XXX: ?? correct
     if sortfield is None:
@@ -135,7 +130,7 @@ def shownodelist(req, nodes, publishwarn=True, markunpublished=False, dir=None):
     script_array = "allobjects = new Array();\n"
     nodelist = []
 
-    user = users.getUserFromRequest(req)
+    user = user_from_session(req.session)
 
     for child in nodes:
         from contenttypes import Content
@@ -146,8 +141,7 @@ def shownodelist(req, nodes, publishwarn=True, markunpublished=False, dir=None):
     chkjavascript = ""
     notpublished = {}
     if publishwarn or markunpublished:
-        homedir = getHomeDir(user)
-        homedirs = getAllSubDirs(homedir)
+        homedirs = user.home_dir.all_children_by_query(q(Container))
         if markunpublished:
             chkjavascript = """<script language="javascript">"""
         for node in nodes:
@@ -170,11 +164,11 @@ def shownodelist(req, nodes, publishwarn=True, markunpublished=False, dir=None):
 
     unpublishedlink = None
     if publishwarn:
-        user = users.getUserFromRequest(req)
+        user = user_from_session(req.session)
         if dir:
             uploaddir = dir
         else:
-            uploaddir = getUploadDir(user)
+            uploaddir = user.upload_dir
         unpublishedlink = "edit_content?tab=publish&id=" + unicode(uploaddir.id)
 
     return req.getTAL("web/edit/edit_common.html", {"notpublished": notpublished,
@@ -195,10 +189,10 @@ def isUnFolded(unfoldedids, id):
 
 
 @dec_entry_log
-def writenode(req, node, unfoldedids, f, indent, key, access, ret=""):
+def writenode(req, node, unfoldedids, f, indent, key, ret=""):
     if node.type not in ["directory", "collection", "root", "home", "collections", "navigation"] and not node.type.startswith("directory"):
         return ret
-    if not access.hasReadAccess(node):
+    if not node.has_read_access():
         return ret
 
     isunfolded = isUnFolded(unfoldedids, node.id)
@@ -228,15 +222,14 @@ def writenode(req, node, unfoldedids, f, indent, key, access, ret=""):
 
     if isunfolded:
         for c in children:
-            ret += writenode(req, c, unfoldedids, f, indent + 1, key, access)
+            ret += writenode(req, c, unfoldedids, f, indent + 1, key)
     return ret
 
 
 @dec_entry_log
 def writetree(req, node, f, key="", openednodes=None, sessionkey="unfoldedids", omitroot=0):
     ret = ""
-    access = AccessData(req)
-
+    
     try:
         unfoldedids = req.session[sessionkey]
         len(unfoldedids)
@@ -267,9 +260,9 @@ def writetree(req, node, f, key="", openednodes=None, sessionkey="unfoldedids", 
 
     if omitroot:
         for c in node.getChildren().sort("name"):
-            ret += writenode(req, c, unfoldedids, f, 0, key, access)
+            ret += writenode(req, c, unfoldedids, f, 0, key)
     else:
-        ret += writenode(req, node, unfoldedids, f, 0, key, access)
+        ret += writenode(req, node, unfoldedids, f, 0, key)
 
     return ret
 
@@ -288,15 +281,15 @@ def send_nodefile_tal(req):
 
     id = req.params.get("id")
     node = q(Node).get(id)
-    access = AccessData(req)
 
-    if not (access.hasAccess(node, 'read') and access.hasAccess(node, 'write') and access.hasAccess(node, 'data') and node.type in ["directory", "collections", "collection"]):
+    if not (node.has_read_access() and node.has_write_access() and node.has_data_access() and isinstance(node, Container)):
         return ""
 
     def fit(imagefile, cn):
         # fits the image into a box with dimensions cn, returning new width and
         # height
         try:
+            import PIL
             sz = PIL.Image.open(imagefile).size
             (x, y) = (sz[0], sz[1])
             if x > cn[0]:
@@ -320,14 +313,13 @@ def send_nodefile_tal(req):
 
 @dec_entry_log
 def upload_for_html(req):
-    user = users.getUserFromRequest(req)
+    user = user_from_session(req.session)
     datatype = req.params.get("datatype", "image")
 
     id = req.params.get("id")
     node = q(Node).get(id)
 
-    access = AccessData(req)
-    if not (access.hasAccess(node, 'read') and access.hasAccess(node, 'write') and access.hasAccess(node, 'data')):
+    if not (node.has_read_access() and node.has_write_access() and node.has_data_access()):
         return 403
 
     for key in req.params.keys():
@@ -347,7 +339,7 @@ def upload_for_html(req):
         del req.params["file"]
         if hasattr(file, "filesize") and file.filesize > 0:
             try:
-                logg.info("%s upload (%s)", user.name, file.filename, file.tempname, user.name)
+                logg.info("%s upload (%s)", user.login_name, file.filename, file.tempname, user.login_name)
                 nodefile = importFile(file.filename, file.tempname)
                 node.files.append(nodefile)
                 db.session.commit()
@@ -368,7 +360,7 @@ def upload_for_html(req):
         del req.params["upload"]
         if hasattr(file, "filesize") and file.filesize > 0:
             try:
-                logg.info("%s upload via ckeditor %s (%s)", user.name , file.filename, file.tempname)
+                logg.info("%s upload via ckeditor %s (%s)", user.login_name , file.filename, file.tempname)
                 nodefile = importFile(file.filename, file.tempname)
                 node.files.append(nodefile)
                 db.session.commit()

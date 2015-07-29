@@ -34,7 +34,7 @@ from utils.utils import Menu, highlight, format_filesize
 from export.exportutils import runTALSnippet, default_context
 from web.services.cache import date2string as cache_date2string
 from core.database.postgres.node import children_rel
-from mock.mock import MagicMock
+from mock import MagicMock
 
 logg = logging.getLogger(__name__)
 

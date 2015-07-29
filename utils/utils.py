@@ -31,7 +31,7 @@ from warnings import warn
 from urlparse import parse_qsl, urlsplit, urlunsplit
 from urllib import quote, urlencode
 
-import xml.parsers.expat
+#import xml.parsers.expat
 from HTMLParser import HTMLParser
 
 from .compat import iteritems

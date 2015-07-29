@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from core import Node
-import xml.parsers.expat as expat
+#import xml.parsers.expat as expat
 import StringIO
 import random
 import logging

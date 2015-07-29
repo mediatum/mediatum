@@ -1,3 +1,6 @@
+#/usr/bin/env nix-shell
+# nix-shell --command zsh
+
 """
  mediatum - a multimedia content repository
 
@@ -96,6 +99,6 @@ if config.get('z3950.activate', '').lower() == 'true':
     z3950port = int(config.get("z3950.port", "2021"))
 else:
     z3950port = None
-    
+
 athana.setThreads(int(config.get("host.threads", "8")))
 athana.run(int(config.get("host.port", "8081")), z3950port)

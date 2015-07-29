@@ -53,6 +53,7 @@ def getContent(req, ids):
             child = q(Node).get(n)
             child.orderpos = ids.index(n)
             children.append(child)
+        db.session.commit()
 
         req.writeTAL('web/edit/modules/subfolder.html', {'nodelist': children, "language": language}, macro="ordered_list")
         return ""
@@ -63,6 +64,7 @@ def getContent(req, ids):
             sorted_children.reverse()
         for position, child in enumerate(sorted_children, start=1):
             child.orderpos = position
+        db.session.commit()
         req.writeTAL('web/edit/modules/subfolder.html', {'nodelist': sorted_children, "language": language}, macro="ordered_list")
         return ""
 

@@ -80,7 +80,7 @@ let
       md5 = "79d059e797c557aed4b40c68dd6c7eae";
     };
     propagatedBuildInputs = with self; [pillow pip setuptools];
-    buildInputs = with self; [];
+    buildInputs = with self; [pkgs.freetype pkgs.gnome.libart_lgpl];
     doCheck = false;
   };
   parcon = self.buildPythonPackage {
@@ -364,7 +364,7 @@ let
       md5 = "cd4e6286fb28e277954c011c3ce05bc4";
     };
     propagatedBuildInputs = with self; [];
-    buildInputs = with self; [];
+    buildInputs = with self; [pkgs.zlib pkgs.libjpeg pkgs.libtiff pkgs.freetype pkgs.lcms2 pkgs.libwebp];
     doCheck = false;
   };
   pyjade = self.buildPythonPackage {

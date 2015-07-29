@@ -1,5 +1,5 @@
-#/usr/bin/env nix-shell
-# nix-shell --command zsh
+#! /usr/bin/env nix-shell
+#! nix-shell -i python
 
 """
  mediatum - a multimedia content repository

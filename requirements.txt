@@ -1,6 +1,6 @@
 parcon
 sqlalchemy
-sqlalchemy_utils
+sqlalchemy-utils
 psycopg2
 python-Levenshtein
 pymarc
@@ -18,12 +18,11 @@ python-logstash
 scrypt
 ipaddr
 decorator
-pypdf
+pyPdf
 sympy
 unicodecsv
 httplib2
 mock==1.1.2
-#git+git://mediatumdev.ub.tum.de/mediatum-babel
-#git+git://mediatumdev.ub.tum.de/mediatum-tal@unicode
-#git+git://mediatumdev.ub.tum.de/mediatum-fsm
-
+mediatumbabel
+mediatumtal
+mediatumfsm

@@ -1,8 +1,8 @@
-{fetchurl, stdenv, self, pkgs}:
+{fetchurl, fetchgit, stdenv, self, pkgs}:
 
 let
   self = pkgs.pythonPackages;
-  
+
   pyaml = self.buildPythonPackage {
     name = "pyaml-15.6.3";
     src = fetchurl {
@@ -188,15 +188,16 @@ let
     doCheck = false;
   };
   mediatumtal = self.buildPythonPackage {
-    name = "mediatumtal-0.1.1";
+    name = "mediatumtal-0.2";
     src = fetchurl {
-      url = "http://localhost:3141/stenzel/dev/+f/fb2/d1ba1cfad6f40/mediatumtal-0.1.1.tar.gz";
-      md5 = "fb2d1ba1cfad6f40cdacf19fc5da093e";
+      url = "http://localhost:3141/stenzel/dev/+f/941/7c004088510e2/mediatumtal-0.2.tar.gz";
+      md5 = "9417c004088510e25e6dd2e4ebd54ee0";
     };
     propagatedBuildInputs = with self; [];
-    buildInputs = with self; [setuptools-git];
+    buildInputs = with self; [];
     doCheck = false;
   };
+
   sqlalchemy = self.buildPythonPackage {
     name = "sqlalchemy-1.0.8";
     src = fetchurl {
@@ -429,11 +430,12 @@ let
     buildInputs = with self; [];
     doCheck = false;
   };
-  mediatum-factory-boy = self.buildPythonPackage {
-    name = "mediatum-factory-boy-2.5.2";
-    src = fetchurl {
-      url = "http://localhost:3141/stenzel/dev/+f/3cf/4a3be3fcb963a/mediatum_factory_boy-2.5.2.tar.gz";
-      md5 = "3cf4a3be3fcb963a2ccff5c1a595e079";
+  factory-boy = self.buildPythonPackage {
+    name = "factory-boy";
+    src = fetchgit {
+      url = https://github.com/dpausp/factory_boy;
+      rev = "8e5a74651008f1eb0f6bf4f03bf96d7e33ce6314";
+      sha256 = "12dced99cb13c05c11448d15137cccef170b923e501eceb3cbe2c2bac8f6096b";
     };
     propagatedBuildInputs = with self; [fake-factory];
     buildInputs = with self; [mock];
@@ -457,6 +459,37 @@ let
       md5 = "5b084f3281d5f8f098d13fac99fdc847";
     };
     propagatedBuildInputs = with self; [readline python.modules.sqlite3];
+    buildInputs = with self; [];
+    doCheck = false;
+  };
+
+  funcsigs = self.buildPythonPackage {
+    name = "funcsigs-0.4";
+    src = fetchurl {
+      url = "http://localhost:3141/root/pypi/+f/fb1/d031f284233e0/funcsigs-0.4.tar.gz";
+      md5 = "fb1d031f284233e09701f6db1281c2a5";
+    };
+    propagatedBuildInputs = with self; [];
+    buildInputs = with self; [];
+    doCheck = false;
+  };
+  mock = self.buildPythonPackage {
+    name = "mock-1.1.2";
+    src = fetchurl {
+      url = "http://localhost:3141/root/pypi/+f/4f3/f256655ab8f39/mock-1.1.2.tar.gz";
+      md5 = "4f3f256655ab8f39a1d364ab868e1677";
+    };
+    propagatedBuildInputs = with self; [pbr six funcsigs];
+    buildInputs = with self; [];
+    doCheck = false;
+  };
+  pbr = self.buildPythonPackage {
+    name = "pbr-1.3.0";
+    src = fetchurl {
+      url = "http://localhost:3141/root/pypi/+f/5e5/4c9e7f083b525/pbr-1.3.0.tar.gz";
+      md5 = "5e54c9e7f083b5259a6e619dfd6525f8";
+    };
+    propagatedBuildInputs = with self; [];
     buildInputs = with self; [];
     doCheck = false;
   };
@@ -490,18 +523,18 @@ in {
       mediatumbabel
       mediatumtal
       mediatumfsm
+      mock
+      pkgs.pythonPackages.ldap
     ];
 
     devel = [
       pytest
-      mediatum-factory-boy
+      factory-boy
       munch
-      pkgs.pythonPackages.mock
-      pkgs.pythonPackages.msgpack
       pytest-capturelog
       ipython
     ];
-    
+
     system = with pkgs; [
       zsh
       git
@@ -509,7 +542,6 @@ in {
       nginx
       graphviz
       imagemagick
-      pythonPackages.ldap
     ];
 
 }

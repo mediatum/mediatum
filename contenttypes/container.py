@@ -170,7 +170,7 @@ class Container(Data, ContainerMixin, ContainerSchemaMixin):
                                 sidebar = includetemplate(self, f.retrieveFile(), {})
                                 sidebar = replaceModules(self, req, sidebar).strip()
         if sidebar != "":
-            sidebar = req.getTAL("contenttypes/directory.html", {"content": sidebar}, macro="addcolumn")
+            sidebar = req.getTAL("contenttypes/container.html", {"content": sidebar}, macro="addcolumn")
         else:
             sidebar = u""
 

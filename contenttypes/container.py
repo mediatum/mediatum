@@ -219,8 +219,10 @@ class Container(Data, ContainerMixin, ContainerSchemaMixin):
         if lang and self.get(u'{}.name'.format(lang)) != "":
             return self.get(u'{}.name'.format(lang))
 
-        if lang == 'de' and self.get('nodename'):
-            return self.attrs['nodename']
+        if lang == 'de':
+            nodename = self.get("nodename")
+            if nodename:
+                return nodename
 
         #removes heinous amount of error logging when building directory tree
         try:

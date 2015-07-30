@@ -5,7 +5,6 @@ Created on 06.06.2013
 @author: stenzel
 '''
 import codecs
-import msgpack
 import sqlalchemy as sqla
 from sqlalchemy import Column, ForeignKey, String, Text, Integer, Index, Table, Boolean, Unicode
 from sqlalchemy.orm import relationship, backref
@@ -109,6 +108,7 @@ class NodeAttribute(ImportBase):
 
     @hybrid_property
     def value(self):
+        import msgpack
         if self._value is None:
             return None
         if self._value.startswith(b"\x11PACK\x12"):
@@ -118,6 +118,7 @@ class NodeAttribute(ImportBase):
 
     @value.setter
     def set_value(self, newvalue):
+        import msgpack
         if isinstance(newvalue, string_types):
             self._value = codecs.encode(newvalue, "utf8")
         else:

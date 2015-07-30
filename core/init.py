@@ -85,24 +85,40 @@ def log_basic_sys_info():
 def check_imports():
     logg.info("testing external imports:")
     external_modules = [
-        "PIL",
-        "requests",
-        "lxml",
-        "werkzeug",
-        "jinja2",
-        "pyjade",
-        "coffeescript",
-        "yaml",
-        "pyaml",
         "babel",
+        "coffeescript",
+        "decorator",
+        "httplib2",
+        "ipaddr",
+        "jinja2",
+        "Levenshtein",
+        "logstash",
+        "lxml",
+        "mediatumbabel",
         "mediatumfsm",
         "mediatumtal",
-        "mediatumbabel"
+        "mock",
+        "parcon",
+        "PIL",
+        "psycopg2",
+        "pyaml",
+        "pydot",
+        "pyjade",
+        "pymarc",
+        "pyPdf",
+        "reportlab",
+        "requests",
+        "scrypt",
+        "sqlalchemy",
+        "sqlalchemy_utils",
+        "unicodecsv",
+        "werkzeug",
+        "yaml",
     ]
 
     for modname in external_modules:
         mod = importlib.import_module(modname)
-        logg.info("import %s: version '%s'", mod, mod.__version__ if hasattr(mod, "__version__") else "unknown")
+        logg.info("import version '%s' of %s", mod.__version__ if hasattr(mod, "__version__") else "unknown", mod)
 
 
 def init_app():

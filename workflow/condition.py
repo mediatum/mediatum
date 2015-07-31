@@ -19,10 +19,9 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from .workflow import WorkflowStep, registerStep
+from .workflow import WorkflowStep, registerStep, getNodeWorkflow
 import core.tree as tree
-from core.translation import t, lang, addLabels
-import core.config as config
+from core.translation import t, addLabels
 
 
 def register():
@@ -33,7 +32,7 @@ def register():
 
 class WorkflowStep_Condition(WorkflowStep):
 
-    def show_workflow_node(self, node, req):
+    def runAction(self, node, op=""):
         condition = self.get("condition")
         gotoFalse = 1
         if condition.startswith("attr:"):
@@ -60,11 +59,15 @@ class WorkflowStep_Condition(WorkflowStep):
         elif condition == "hasfile":  # just test if there is file at all
             if len(node.getFiles()) == 0:
                 gotoFalse = 0
-
         if gotoFalse:
-            return self.forwardAndShow(node, False, req)
+            newstep = getNodeWorkflow(node).getStep(self.getFalseId())
         else:
-            return self.forwardAndShow(node, True, req)
+            newstep = getNodeWorkflow(node).getStep(self.getTrueId())
+
+        # move node to correct next step depending on condition evaluation
+        self.removeChild(node)
+        newstep.addChild(node)
+        newstep.runAction(node, True)  # always run true operation
 
     def metaFields(self, lang=None):
         field = tree.Node("condition", "metafield")

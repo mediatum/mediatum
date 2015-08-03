@@ -30,7 +30,7 @@ def test_get_collections():
     assert_node(n,
                 name="collections",
                 type="collections",
-                schema=None,
+                schema="collection",
                 label="Collections")
 
 
@@ -67,4 +67,4 @@ def test_get_home():
     assert_node(n,
                 name="home",
                 type="home",
-                schema=None)
+                schema="home")

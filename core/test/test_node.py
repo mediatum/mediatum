@@ -200,7 +200,7 @@ def test_parents_sort_by_name(some_node_with_two_parents):
 
 
 def test_children_getIDs(some_node):
-    child_ids = assert_deprecation_warning_allow_multiple(some_node.content_children.getIDs, 2)
+    child_ids = assert_deprecation_warning_allow_multiple(some_node.content_children.getIDs, 5)
     assert len(child_ids) == 1
     assert isinstance(child_ids[0], int)
 

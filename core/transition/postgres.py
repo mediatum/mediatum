@@ -35,6 +35,9 @@ def check_type_arg_with_schema(cls):
             warn("type param is deprecated for " + clsname + " instances", DeprecationWarning)
             if not type.startswith(clsname.lower()):
                 raise ValueError("type must be {} for a {} instance ".format(clsname.lower(), clsname))
+        
+        if schema is None:
+            schema = type
 
         Node.__init__(self, name, type, id, schema, attrs, orderpos)
 

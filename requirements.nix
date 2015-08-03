@@ -393,7 +393,7 @@ let
   pytest-capturelog = self.buildPythonPackage {
     name = "pytest-capturelog-0.7";
     src = fetchurl {
-      url = "https://pypi.python.org/packages/source/p/pytest/pytest-capturelog-0.7.tar.gz";
+      url = "https://pypi.python.org/packages/source/p/pytest-capturelog/pytest-capturelog-0.7.tar.gz";
       md5 = "cfeac23d8ed254deaeb50a8c0aa141e9";
     };
     propagatedBuildInputs = with self; [py];
@@ -494,6 +494,18 @@ let
     doCheck = false;
   };
 
+  configargparse = self.buildPythonPackage {
+    name = "configargparse-0.9.3";
+    src = fetchurl {
+      url = "https://pypi.python.org/packages/source/C/ConfigArgParse/ConfigArgParse-0.9.3.tar.gz";
+      md5 = "69273e8099661cd12985b85d795ab73e";
+    };
+    propagatedBuildInputs = with self; [];
+    buildInputs = with self; [];
+    doCheck = false;
+  };
+
+
 in {
   production = [
       parcon
@@ -525,6 +537,7 @@ in {
       mediatumfsm
       mock
       pkgs.pythonPackages.ldap
+      configargparse
     ];
 
     devel = [

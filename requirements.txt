@@ -1,4 +1,5 @@
 coffeescript
+configargparse
 decorator
 httplib2
 ipaddr

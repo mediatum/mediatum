@@ -3,6 +3,8 @@ configargparse
 decorator
 httplib2
 ipaddr
+ipython
+ipython-sql
 jinja2
 lxml
 mediatumbabel
@@ -13,6 +15,7 @@ parcon
 psycopg2
 pyaml
 pydot
+pygments
 pyjade
 pymarc
 pyPdf

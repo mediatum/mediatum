@@ -505,6 +505,51 @@ let
     doCheck = false;
   };
 
+  sqlparse = self.buildPythonPackage {
+    name = "sqlparse-0.1.16";
+    src = fetchurl {
+      url = "https://pypi.python.org/packages/source/s/sqlparse/sqlparse-0.1.16.tar.gz";
+      md5 = "370962a307ebaaa70a28b6b0ccb53980";
+    };
+    propagatedBuildInputs = with self; [];
+    buildInputs = with self; [];
+    doCheck = false;
+  };
+
+  prettytable = self.buildPythonPackage {
+    name = "prettytable-0.7.2";
+    src = fetchurl {
+      url = "https://pypi.python.org/packages/source/P/PrettyTable/prettytable-0.7.2.tar.bz2";
+      md5 = "760dc900590ac3c46736167e09fa463a";
+    };
+    propagatedBuildInputs = with self; [];
+    buildInputs = with self; [];
+    doCheck = false;
+  };
+
+  ipython-sql = self.buildPythonPackage {
+    name = "ipython-sql-0.3.6";
+    src = fetchurl {
+      url = "https://pypi.python.org/packages/source/i/ipython-sql/ipython-sql-0.3.6.tar.gz";
+      md5 = "d4feb00ac5806d7640b2545a43974766";
+    };
+    propagatedBuildInputs = with self; [prettytable ipython sqlalchemy sqlparse six];
+    buildInputs = with self; [];
+    doCheck = false;
+  };
+
+  pygments = self.buildPythonPackage {
+    name = "pygments-2.0.2";
+    src = fetchurl {
+      url = "https://pypi.python.org/packages/source/P/Pygments/Pygments-2.0.2.tar.gz";
+      md5 = "238587a1370d62405edabd0794b3ec4a";
+    };
+    propagatedBuildInputs = with self; [];
+    buildInputs = with self; [];
+    doCheck = false;
+  };
+
+
 
 in {
   production = [
@@ -538,6 +583,9 @@ in {
       mock
       pkgs.pythonPackages.ldap
       configargparse
+      ipython
+      ipython-sql
+      pygments
     ];
 
     devel = [
@@ -545,7 +593,6 @@ in {
       factory-boy
       munch
       pytest-capturelog
-      ipython
     ];
 
     system = with pkgs; [

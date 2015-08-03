@@ -47,8 +47,8 @@ class m_field(Metatype):
                     label += '<span class="required">*</span> '
 
         if field.getDescription() != "":
-            description = '<div id="div_description"><a href="#" onclick="openPopup(\'/popup_help?id=' + element.id + \
-                '&maskid=' + field.id + '\', \'\', 400, 250)"><img src="/img/tooltip.png" border="0"/></a></div>'
+            description = '<div id="div_description"><a href="#" onclick="openPopup(\'/popup_help?id=' + ustr(element.id) + \
+                '&maskid=' + ustr(field.id) + '\', \'\', 400, 250)"><img src="/img/tooltip.png" border="0"/></a></div>'
 
         if not sub:
             if ustr(element.id) in req.params.get("errorlist", []):

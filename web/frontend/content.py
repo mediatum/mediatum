@@ -431,7 +431,7 @@ def mkContentNode(req):
                         f.retrieveFile()) and fileIsNotEmpty(f.retrieveFile()):
                     return ContentNode(node)
         # no startpage found, show nodes
-        
+
         allowed_nodes = access.filter(list(node.content_children_for_all_subcontainers))
         node.ccount = len(allowed_nodes)
         #ids = access.filter(node.getAllChildren())
@@ -455,7 +455,7 @@ class ContentError(Content):
 
     def getContentStyles(self):
         return []
-    
+
     def status(self):
         return self._status
 

@@ -19,9 +19,12 @@
 """
 import core.acl as acl
 from core.translation import translate, lang
+from warnings import warn
 
 
 def makeList(req, name, rights, readonlyrights, overload=0, type=""):
+    warn("this is broken, acl...", DeprecationWarning)
+    return {}
     rightsmap = {}
     rorightsmap = {}
     for r in rights:

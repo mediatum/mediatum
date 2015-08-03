@@ -550,58 +550,57 @@ let
   };
 
 
-
 in {
   production = [
-      parcon
-      sqlalchemy
-      sqlalchemy-utils
-      psycopg2
-      python-Levenshtein
-      pymarc
-      requests
-      pydot
-      reportlab
-      pyaml
-      pyyaml
-      jinja2
-      werkzeug
-      pyjade
       coffeescript
-      lxml
-      python-logstash
-      scrypt
-      ipaddr
-      decorator
-      pypdf
-      sympy
-      unicodecsv
-      httplib2
-      mediatumbabel
-      mediatumtal
-      mediatumfsm
-      mock
-      pkgs.pythonPackages.ldap
       configargparse
+      decorator
+      httplib2
+      ipaddr
       ipython
       ipython-sql
+      jinja2
+      lxml
+      mediatumbabel
+      mediatumfsm
+      mediatumtal
+      mock
+      parcon
+      pkgs.pythonPackages.ldap
+      psycopg2
+      pyaml
+      pydot
       pygments
+      pyjade
+      pymarc
+      pypdf
+      python-Levenshtein
+      python-logstash
+      pyyaml
+      reportlab
+      requests
+      scrypt
+      sqlalchemy
+      sqlalchemy-utils
+      sympy
+      unicodecsv
+      werkzeug
     ];
 
     devel = [
-      pytest
       factory-boy
       munch
+      pytest
       pytest-capturelog
     ];
 
     system = with pkgs; [
-      zsh
-      git
       ffmpeg
-      nginx
+      git
       graphviz
       imagemagick
+      nginx
+      zsh
     ];
 
 }

@@ -17,12 +17,11 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
-import schema.schema as schema
 import schema.searchmask as searchmask
 import core.users as users
 from core.acl import AccessData
 from core.transition import httpstatus
+import json
 from core import Node
 from core import db
 from core.systemtypes import Searchmasks, Metadatatypes
@@ -73,13 +72,16 @@ def getContent(req, ids):
     schema = req.params.get("schema", None)
     schemafield = req.params.get("schemafield", None)
     selectedfieldid = req.params.get("selectedfield", None)
-
     if schema:
+        if schema.endswith(";"):
+            schema = schema[:-1]
         schema = q(Node).get(schema)
         if not isinstance(schema, Node):
             schema = None
 
     if schemafield:
+        if schemafield.endswith(";"):
+            schemafield = schemafield[:-1]
         schemafield = q(Node).get(schemafield)
         if not isinstance(schemafield, Node):
             schemafield = None
@@ -91,6 +93,9 @@ def getContent(req, ids):
    
     fields = None
     selectedfield = None
+    isnewfield = False
+    createsub = False
+    closefield = False
 
     if searchtype == "own":
         maskname = node.get("searchmaskname")
@@ -104,11 +109,13 @@ def getContent(req, ids):
             assert selectedfield in mask.children
             selectedfield.name = req.params["fieldname"]
             if "createsub" in req.params and schemafield:
+                createsub = True
                 selectedfield.children.append(schemafield)
             if delsubfield:
                 selectedfield.children.remove(q(Node).get(delsubfield))
 
         if req.params.get("isnewfield", "") == "yes":  # create a new field
+            isnewfield = True
             l = mask.children.count()
             mask.children.append(Node("Suchfeld %s" % l, "searchmaskitem"))
 
@@ -121,6 +128,7 @@ def getContent(req, ids):
             selectedfieldid = openfield
 
         elif "close" in req.params:  # fold a field
+            closefield = True
             selectedfieldid = None
 
         if selectedfieldid:
@@ -131,7 +139,6 @@ def getContent(req, ids):
             selectedfield = None
 
         fields = mask.children.all()
-
     db.session.commit()
 
     data = {"idstr": ",".join(ids),
@@ -142,7 +149,8 @@ def getContent(req, ids):
             "selectedfield": selectedfield,
             "newfieldlink": "edit_content?id=%s&tab=searchmask" % node.id,
             "defaultschemaid": None,
-            "defaultfieldid": None}
+            "defaultfieldid": None,
+            "id": req.params.get("id")}
 
     if schema:
         data["defaultschemaid"] = schema.id
@@ -160,5 +168,15 @@ def getContent(req, ids):
             return 0
         return 1
     data["display"] = display
+
+    searchtypechanged = False
+    if req.params.get("searchtypechanged", "") == "true":
+        searchtypechanged = True
+
+    if any([openfield, isnewfield, delfield, delsubfield, createsub, schema, searchtypechanged, closefield]):
+        content = req.getTAL("web/edit/modules/searchmask.html", data, macro="edit_search")
+        s = json.dumps({'content': content})
+        req.write(s)
+        return None
 
     return req.getTAL("web/edit/modules/searchmask.html", data, macro="edit_search")

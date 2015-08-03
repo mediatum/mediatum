@@ -1,3 +1,23 @@
+CREATE FUNCTION op_xor(a boolean, b boolean) 
+    RETURNS boolean
+    LANGUAGE plpgsql 
+    IMMUTABLE STRICT
+    SET search_path TO :search_path
+    AS $$
+BEGIN
+  RETURN ((NOT a) AND b) OR (a AND (NOT b));
+END;
+$$;
+
+
+CREATE OPERATOR # (
+    PROCEDURE = :search_path.op_xor,
+    LEFTARG = boolean,
+    RIGHTARG = boolean,
+    COMMUTATOR = OPERATOR(:search_path.#)
+);
+
+
 CREATE OR REPLACE FUNCTION check_access_rule(rule access_rule, _group_ids integer[], ipaddr inet, _date date) 
     RETURNS boolean
     LANGUAGE plpgsql

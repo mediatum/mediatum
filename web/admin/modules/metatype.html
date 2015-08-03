@@ -66,7 +66,7 @@
                 <tal:block tal:repeat="metadatatype python:metadatatypes[pages.getStart():pages.getEnd()]">
                 <tr tal:define="cssclass python:metadatatypes.index(metadatatype)%2 and 'norm' or 'silver'" tal:attributes="class cssclass">
                     <td tal:content="python:u'{}.'.format(metadatatypes.index(metadatatype)+1)"/>
-                    <td tal:content="python:metadatatype.name"/>
+                    <td tal:content="python:metadatatype.getName()"/>
                     <td tal:content="python:metadatatype.getLongName()"/>
                     <td tal:condition="python:len(metadatatype.getDescription())<=10" tal:content="python:metadatatype.getDescription()"/>
                     <td tal:condition="python:len(metadatatype.getDescription())>10" tal:attributes="title python:metadatatype.getDescription()" tal:content="python:u'{}...'.format(metadatatype.getDescription()[:10])"/>
@@ -74,33 +74,34 @@
                         &nbsp;&nbsp;&nbsp;<img tal:condition="python:metadatatype.isActive()" i18n:attributes="title admin_meta_active_title" src="/img/haken.gif"/>
                     </td>
                     <td>
-                        <tal:block tal:repeat="t python:metadatatype.getDatatypes()">
-                            <tal:block tal:repeat="clstype datatypes" i18n:translate="">
-                                    <tal:block tal:condition="python: clstype.__name__.lower()==t" tal:replace="python:clstype.__name__"/>
+                        <tal:block tal:repeat="datatype python:metadatatype.getDatatypes()">
+                            <tal:block i18n:translate="">
+                                <tal:block tal:replace="python:get_classname_for_typestring(datatype)"/>
                             </tal:block>
                         </tal:block>
                     </td>
                     <td>
                         &nbsp;&nbsp;
-                        <img tal:condition="python:metadatatype.getAccess('read')" i18n:attributes="title admin_meta_acl_title" src="/img/archive.png"/>
-                        <img tal:condition="python:metadatatype.getAccess('read')==''" i18n:attributes="title admin_meta_acl_title" src="/img/mark_empty.png"/>
+                        <img 
+                        tal:condition="python:True or metadatatype.getAccess('read')" i18n:attributes="title admin_meta_acl_title" src="/img/archive.png"/>
+                        <img tal:condition="python:True or metadatatype.getAccess('read')==''" i18n:attributes="title admin_meta_acl_title" src="/img/mark_empty.png"/>
                     </td>
                     <td>
-                        <input tal:attributes="name python:u'detaillist_{}'.format(metadatatype.name)" i18n:attributes="title admin_meta_editdetail" type="image" src="/img/rightarrow.png"/>&nbsp;
-                        <input tal:attributes="name python:u'masks_{}'.format(metadatatype.name)" i18n:attributes="title admin_meta_maskdetail_title" type="image" src="/img/styles.png"/>
+                        <input tal:attributes="name python:u'detaillist_{}'.format(metadatatype.getName())" i18n:attributes="title admin_meta_editdetail" type="image" src="/img/rightarrow.png"/>&nbsp;
+                        <input tal:attributes="name python:u'masks_{}'.format(metadatatype.getName())" i18n:attributes="title admin_meta_maskdetail_title" type="image" src="/img/styles.png"/>
                     </td>
                     <td>
-                        <a tal:attributes="href python:u'./metatype/{}/overview?style=popup'.format(metadatatype.name)" i18n:attributes="title admin_meta_fieldoverview_title" target="_blank">
+                        <a tal:attributes="href python:u'./metatype/{}/overview?style=popup'.format(metadatatype.getName())" i18n:attributes="title admin_meta_fieldoverview_title" target="_blank">
                             <img src="/img/search.gif" border="0"/>
                         </a>
                         
-                        <a tal:attributes="href python:u'/admin/export/metatype/{}'.format(metadatatype.name)" i18n:attributes="title admin_meta_export_title" target="_blank">
+                        <a tal:attributes="href python:u'/admin/export/metatype/{}'.format(metadatatype.getName())" i18n:attributes="title admin_meta_export_title" target="_blank">
                             <img src="/img/export.png" border="0"/>
                         </a>
                     </td>
                     <td>
-                        <input tal:attributes="name python:u'edit_{}'.format(metadatatype.name)" i18n:attributes="title admin_meta_edit_title" type="image" src="/img/edit.png"/>
-                        &nbsp;&nbsp;<input tal:attributes="name python:u'delete_{}'.format(metadatatype.name); onclick python:u'return questionDelName(\'{} ({})\')'.format(metadatatype.getLongName(), metadatatype.name)" i18n:attributes="title admin_meta_delete_title" type="image" src="/img/delete.png"/>
+                        <input tal:attributes="name python:u'edit_{}'.format(metadatatype.getName())" i18n:attributes="title admin_meta_edit_title" type="image" src="/img/edit.png"/>
+                        &nbsp;&nbsp;<input tal:attributes="name python:u'delete_{}'.format(metadatatype.getName()); onclick python:u'return questionDelName(\'{} ({})\')'.format(metadatatype.getLongName(), metadatatype.getName())" i18n:attributes="title admin_meta_delete_title" type="image" src="/img/delete.png"/>
                     </td>
                 </tr>
                 </tal:block>
@@ -147,7 +148,7 @@
     </form>
 </metal:block>
 
-<metal:block metal:define-macro="modify_type" tal:define="id python:metadatatype.name">
+<metal:block metal:define-macro="modify_type" tal:define="id python:metadatatype.getName()">
     <!--[if lt IE 7]>
             <script type="text/javascript">
                 window.attachEvent("onload", buttonfix);
@@ -181,17 +182,17 @@
             <tr>
                 <td><tal:block i18n:translate="admin_meta_id">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
-                    <input tal:attributes="value python:metadatatype.name" type="text" style="width:300px" name="mname" maxlenght=50/>
+                    <input tal:attributes="value python:metadatatype.getName()" type="text" style="width:300px" name="mname" maxlenght=50/>
                     <input tal:attributes="value original_name" type="hidden" name="mname_orig"/>
                 </td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_meta_name">TEXT</tal:block>: <span class="required">*</span></td>
-                <td><input tal:attributes="value python:metadatatype.get('longname')" type="text" style="width:300px" name="mlongname" maxlenght=100/></td>
+                <td><input tal:attributes="value python:metadatatype.getLongName()" type="text" style="width:300px" name="mlongname" maxlenght=100/></td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_meta_description">TEXT</tal:block>:</td>
-                <td><textarea tal:content="python:metadatatype.get('description')" name="description" rows="4" cols="35"/><td>
+                <td><textarea tal:content="python:metadatatype.getDescription()" name="description" rows="4" cols="35"/><td>
             </tr>
             <tr>
                 <td><tal:block i18n:translate="admin_meta_active">TEXT</tal:block>:</td>
@@ -204,7 +205,7 @@
                 <td><tal:block i18n:translate="admin_meta_datatype">TEXT</tal:block>: <span class="required">*</span></td>
                 <td>
                     <select name="mdatatypes" multiple="multiple" style="width:300px" size="5">
-                        <option tal:repeat="datatype datatypes" tal:attributes="value python:datatype.name; selected python:'selected' if datatype.name in metadatatype.getDatatypes() else None" tal:content="python:datatype.name" i18n:translate=""/>
+                        <option tal:repeat="datatype datatypes" tal:attributes="value python:datatype.getName(); selected python:'selected' if datatype.getName() in metadatatype.getDatatypes() else None" tal:content="python:datatype.getName()" i18n:translate=""/>
                     </select>
                 </td>
             </tr>
@@ -341,7 +342,7 @@
             </style>
         </head>
         <body>
-            <h3 i18n:translate="admin_defpopup_header">TEXT '<span tal:content="python:metadatatype.name" i18n:name="name"/>'</h3>
+            <h3 i18n:translate="admin_defpopup_header">TEXT '<span tal:content="python:metadatatype.getName()" i18n:name="name"/>'</h3>
             <a href="#" onclick="window.print()"><img i18n:attributes="title admin_print_title" src="/img/print.png" border="0px"/></a>
             <table class="list" cellspacing="0px">
                 <thead>
@@ -353,7 +354,7 @@
                             <table>
                                 <tr>
                                     <tal:block tal:repeat="fieldoption fieldoptions">
-                                        <td width="20px" align="center"><img tal:attributes="src python:fieldoption.getImagesource(); title python:fieldoption.name" i18n:attributes="title"/></td>
+                                        <td width="20px" align="center"><img tal:attributes="src python:fieldoption.getImagesource(); title python:fieldoption.getName()" i18n:attributes="title"/></td>
                                     </tal:block>
                                 </tr>
                             </table>
@@ -363,7 +364,7 @@
                 </thead>
                 <tbody>
                     <tr tal:repeat="metafield metafields">
-                        <td tal:content="python:metafield.name" class="list"/>
+                        <td tal:content="python:metafield.getName()" class="list"/>
                         <td tal:content="python:metafield.getLabel()" class="list"/>
                         <td tal:content="python:fieldtypes[metafield.getFieldtype()]" i18n:translate="" class="list"/>
                         
@@ -372,7 +373,7 @@
                                 <tr>
                                     <tal:block tal:repeat="fieldoption fieldoptions">
                                         <td tal:define="index python:fieldoptions.index(fieldoption)" width="20px" align="center">
-                                            <img tal:condition="python:flist[index]" tal:attributes="title python:flist[index] and fieldoption.name or ''; src python:flist[index] and '/img/haken.gif' or '/img/mark_empty.gif'" i18n:attributes="title"/>
+                                            <img tal:condition="python:flist[index]" tal:attributes="title python:flist[index] and fieldoption.getName() or ''; src python:flist[index] and '/img/haken.gif' or '/img/mark_empty.gif'" i18n:attributes="title"/>
                                         </td>
                                     </tal:block>
                                 </tr>

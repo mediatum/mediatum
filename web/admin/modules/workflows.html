@@ -43,20 +43,27 @@
                     <td tal:content="python:u'{}.'.format(workflows.index(workflow)+1)"/>
                     <td tal:content="python:workflow.name"/>
                     <td tal:content="python:workflow.get('description')">TEXT</td>
+
                     <td style="text-align:center">
+                        <!--
+                        XXX: what is this actually doing? Do we need this?
                         <img tal:condition="python:workflow.getAccess('read')" i18n:attributes="title admin_wf_acl_title" src="/img/archive.png"/>
                         <img tal:condition="python:workflow.getAccess('read')==''" i18n:attributes="title admin_wf_acl_title" src="/img/mark_empty.png"/>
+                        -->
                     </td>
                     <td style="text-align:center">
+                        <!--
+                        XXX: what is this actually doing? Do we need this?
                         <img tal:condition="python:workflow.getAccess('write')" i18n:attributes="title admin_wf_acl_title" src="/img/archive.png"/>
                         <img tal:condition="python:workflow.getAccess('write')==''" i18n:attributes="title admin_wf_acl_title" src="/img/mark_empty.png"/>
+                        -->
                     </td>
                     <td style="text-align:right;width:50px">
                         <input tal:attributes="name python:u'detaillist_{}'.format(workflow.getId())" i18n:attributes="title admin_wf_nodeedit_title" type="image" src="/img/rightarrow.png"/>
                         &nbsp;
                         &nbsp;
                         <a tal:attributes="href python:u'./workflows/{}/overview?style=popup'.format(workflow.name)" i18n:attributes="title admin_wf_graphic_title" target="_blank"><img src="/img/search.gif" border="0"/></a>
-                                                            
+
                         <a tal:attributes="href python:u'/admin/export/workflows/{}'.format(workflow.getId())" i18n:attributes="title admin_wf_export_title" target="_blank"><img src="/img/export.png" border="0"/></a>
                     </td>
                     <td style="text-align:right;width:50px">
@@ -278,15 +285,19 @@
                         </a>
                     </td>
                     <td style="text-align:center">
+                        <!--
+                        XXX: what is this actually doing? Do we need this?
                         <img tal:condition="python:workflowstep.getAccess('read')" i18n:attributes="title admin_wfstep_acl_title" src="/img/archive.png"/>
                         <img tal:condition="python:workflowstep.getAccess('read')==''" i18n:attributes="title admin_wfstep_acl_title" src="/img/mark_empty.png"/>
+                        -->
                     </td>
                     <td style="text-align:center">
+                        <!--
+                        XXX: what is this actually doing? Do we need this?
                         <img tal:condition="python:workflowstep.getAccess('write')" i18n:attributes="title admin_wf_acl_title" src="/img/archive.png"/>
                         <img tal:condition="python:workflowstep.getAccess('write')==''" i18n:attributes="title admin_wf_acl_title" src="/img/mark_empty.png"/>
+                        -->
                     </td>
-                    
-                    
                      <td>
                         <input tal:attributes="name python:u'editdetail_{}|{}'.format(workflow.getId(), workflowstep.getId())" i18n:attributes="title admin_wfstep_edit" type="image" src="/img/edit.png"/>
                         &nbsp;&nbsp;

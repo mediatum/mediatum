@@ -427,9 +427,7 @@ def view(req):
                             lang(req), "admin_meta_col_5"), t(
                                 lang(req), "admin_meta_col_6")])
     v["metadatatypes"] = mtypes
-    d = Data()
-    v["datatypes"] = d.get_all_datatypes()
-    v["datatypes"].sort(lambda x, y: cmp(t(lang(req), x.__name__), t(lang(req), y.__name__)))
+    v["get_classname_for_typestring"] = Node.get_classname_for_typestring
     v["pages"] = pages
     v["actfilter"] = actfilter
     v["filterattrs"] = [("id", "admin_metatype_filter_id"), ("name", "admin_metatype_filter_name")]
@@ -475,13 +473,15 @@ def MetatypeDetail(req, id, err=0):
     v["citeproctypes"] = citeproc.TYPES
     v["citeprocselected"] = metadatatype.get("citeprocmapping").split(";")
 
-    rule = metadatatype.getAccess("read")
-    if rule:
-        rule = rule.split(",")
-    else:
-        rule = []
-
-    rights = removeEmptyStrings(rule)
+    # XXX: just shut it down...
+#     rule = metadatatype.getAccess("read")
+#     if rule:
+#         rule = rule.split(",")
+#     else:
+#         rule = []
+# 
+#     rights = removeEmptyStrings(rule)
+    rights = []
     v["acl"] = makeList(req, "read", rights, {}, overload=0, type="read")
     v["filtertype"] = req.params.get("filtertype", "")
     v["actpage"] = req.params.get("actpage")

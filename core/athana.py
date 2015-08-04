@@ -67,7 +67,6 @@ def attrEscape(s):
     s = s.replace('"', '&quot;')
     return s
 
-
 # ================ MEDUSA ===============
 
 # python modules
@@ -3345,6 +3344,76 @@ class WebContext:
         return None
 
 
+class WSGIHandler(object):
+
+    def __init__(self, app, context_name, path):
+        self.app = app
+        self.context_name = context_name
+        self.path = path
+
+    def start_response(self, status, response_headers, exc_info=None):
+        self.request.reply_headers.update(dict(response_headers))
+        self.status = status
+        return self.request.write
+
+    def __call__(self, request):
+
+        from io import StringIO
+
+        query = request.query[1:] if request.query is not None else ""
+
+        # SERVER_NAME is unknown, we can only use localhost...
+        environ = {
+            "REQUEST_METHOD": request.method,
+            "SCRIPT_NAME": self.context_name,
+            "PATH_INFO": self.path,
+            "QUERY_STRING": query,
+            "CONTENT_TYPE": request.request_headers.get("content-type", ""),
+            "CONTENT_LENGTH": request.request_headers.get("content-length", ""),
+            "SERVER_NAME": "localhost",
+            "SERVER_PORT": request.channel.server.port,
+            "SERVER_PROTOCOL": "HTTP/" + request.version,
+            "wsgi.version": (1, 0),
+            "wsgi.url_scheme": "http",
+            "wsgi.input": StringIO(u""),
+            "wsgi.errors": StringIO(),
+            "wsgi.multithread": multithreading_enabled,
+            "wsgi.multiprocess": False,
+            "wsgi.run_once": False
+        }
+
+        for k, v in request.request_headers.items():
+            environ["HTTP_" + k.upper()] = v
+
+        self.request = request
+
+        content = self.app(environ, self.start_response)
+        for elem in content:
+            request.write(elem)
+            request.write("\n")
+
+        spl = self.status.split(" ", 1)
+        status_code = int(spl[0])
+        reason = spl[1] if len(spl) == 2 else None
+
+        if(status_code >= 400 and status_code <= 500):
+            request.error(status_code, reason)
+
+        request.setStatus(status_code)
+        request.done()
+
+
+class WSGIContext(object):
+
+    def __init__(self, name, app):
+        self.name = name
+        self.app = app
+
+    def match(self, path):
+        """we don't really "match" here, just for compatibility with Athana's WebContext"""
+        return WSGIHandler(self.app, self.name, path)
+
+
 class FileStore:
 
     def __init__(self, name, root=None):
@@ -3835,9 +3904,15 @@ def _call_handler_func(handler, handler_func, request):
 
 
 def call_handler_func(handler, handler_func, request):
-    if app:
+
+    # WSGI passthrough. WSGIHandler takes care of the rest
+    if isinstance(handler_func, WSGIHandler):
+        handler_func(request)
+
+    elif app:
         with app.request_context(request, request.session):
             _call_handler_func(handler, handler_func, request)
+            pass
     else:
         _call_handler_func(handler, handler_func, request)
 # /COMPAT
@@ -4202,6 +4277,9 @@ def addContext(webpath, localpath):
     contexts += [c]
     return c
 
+def add_wsgi_context(webpath, wsgi_app):
+    c = WSGIContext(webpath, wsgi_app)
+    contexts.append(c)
 
 def setServiceUser(u):
     global service_user

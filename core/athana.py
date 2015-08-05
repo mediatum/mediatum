@@ -3390,7 +3390,6 @@ class WSGIHandler(object):
         content = self.app(environ, self.start_response)
         for elem in content:
             request.write(elem)
-            request.write("\n")
 
         spl = self.status.split(" ", 1)
         status_code = int(spl[0])

@@ -19,6 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
 import os
 import sys
 import codecs
@@ -27,6 +28,7 @@ import codecs
 # using abspath allows importing start.py or variants (wn 2014-11-20)
 basedir = os.path.abspath(__file__).rsplit(os.sep, 2)[0]
 
+logg = logging.getLogger(__name__)
 
 # append our own fallback lib directory
 sys.path.append(os.path.join(basedir, "external"))
@@ -34,6 +36,10 @@ sys.path.append(os.path.join(basedir, "external"))
 settings = None
 # append our own fallback lib directory
 sys.path.append(os.path.join(basedir, "external"))
+
+
+def get_config_filepath():
+    return os.getenv("MEDIATUM_CONFIG", "mediatum.cfg")
 
 
 def get(key, default=None):
@@ -53,8 +59,10 @@ def getsubset(prefix):
 
 def _read_ini_file(basedir, filename):
     lineno = 0
+    filepath = os.path.join(basedir, filename)
     params = {}
-    with codecs.open(os.path.join(basedir, filename), "rb", encoding='utf8') as fi:
+
+    with codecs.open(filepath, "rb", encoding='utf8') as fi:
         module = ""
         for line in fi.readlines():
             lineno = lineno + 1
@@ -89,6 +97,9 @@ def _read_ini_file(basedir, filename):
             else:
                 pass  # path is absolute, don't bother
 
+    # add the filepath from where the config was loaded.
+    # This could differ from get_config_filepath() called at a later time, but that's quite unrealistic ;)
+    params["config.filepath"] = filepath
     return params
 
 
@@ -101,14 +112,12 @@ def mkDir(dir):
 
 
 def initialize(filepath=None):
+    if not filepath:
+        filepath = get_config_filepath()
+
+    logg.info("using config file %s", filepath)
     global settings
-    if filepath:
-        ini_filename = filepath
-    elif os.getenv("MEDIATUM_CONFIG"):
-        ini_filename = os.getenv("MEDIATUM_CONFIG")
-    else:
-        ini_filename = "mediatum.cfg"
-    settings = _read_ini_file(basedir, ini_filename)
+    settings = _read_ini_file(basedir, filepath)
     if not os.path.isdir(settings["paths.datadir"]):
         print "Couldn't find data directory", settings["paths.datadir"]
         sys.exit(1)

@@ -28,7 +28,7 @@ import pyaml
 import yaml
 from flask.app import Flask
 
-logging.basicConfig()
+logging.basicConfig(level=logging.DEBUG)
 logg = logging.getLogger(__name__)
 
 

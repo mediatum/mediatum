@@ -18,6 +18,7 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from werkzeug._compat import wsgi_encoding_dance
 
 #===============================================================
 #
@@ -3356,38 +3357,48 @@ class WSGIHandler(object):
         self.status = status
         return self.request.write
 
-    def __call__(self, request):
-
+    def make_environ(self):
         from io import StringIO
-
+        request = self.request
         query = request.query[1:] if request.query is not None else ""
 
         # SERVER_NAME is unknown, we can only use localhost...
         environ = {
             "REQUEST_METHOD": request.method,
             "SCRIPT_NAME": self.context_name,
-            "PATH_INFO": self.path,
-            "QUERY_STRING": query,
+            "PATH_INFO": wsgi_encoding_dance(self.path),
+            "QUERY_STRING": wsgi_encoding_dance(query),
             "CONTENT_TYPE": request.request_headers.get("content-type", ""),
             "CONTENT_LENGTH": request.request_headers.get("content-length", ""),
+            'REMOTE_ADDR': request.channel.addr[0],
+            'REMOTE_PORT': request.channel.addr[1],
             "SERVER_NAME": "localhost",
             "SERVER_PORT": request.channel.server.port,
             "SERVER_PROTOCOL": "HTTP/" + request.version,
             "wsgi.version": (1, 0),
             "wsgi.url_scheme": "http",
             "wsgi.input": StringIO(u""),
-            "wsgi.errors": StringIO(),
+            "wsgi.errors": sys.stderr,
             "wsgi.multithread": multithreading_enabled,
             "wsgi.multiprocess": False,
             "wsgi.run_once": False
         }
 
-        for k, v in request.request_headers.items():
-            environ["HTTP_" + k.upper()] = v
+        for key, value in request.request_headers.items():
+            key = 'HTTP_' + key.upper().replace('-', '_')
+            if key not in ('HTTP_CONTENT_TYPE', 'HTTP_CONTENT_LENGTH'):
+                environ[key] = value
+
+        return environ
+
+    def __call__(self, request):
+
 
         self.request = request
+        environ = self.make_environ()
 
         content = self.app(environ, self.start_response)
+
         for elem in content:
             request.write(elem)
 

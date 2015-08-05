@@ -4446,6 +4446,43 @@ TODO:
     * temp directory in .cfg file
 """
 
+global _test_running, _test_thread
+_test_running = False
+_test_thread = None
+
+def threaded_testrun(port=8081):
+    ph = AthanaHandler()
+    hs = http_server('', port)
+    hs.install_handler(ph)
+
+    global _test_running, _test_thread
+    _test_running = True
+
+    def athana_test_loop():
+        global ATHANA_STARTED
+        ATHANA_STARTED = True
+
+        while _test_running:
+            asyncore.poll2(timeout=0.005)
+
+        logg.info("left testmode loop")
+        hs.close()
+
+    import threading
+    _test_thread = threading.Thread(target=athana_test_loop)
+    _test_thread.start()
+
+    while not ATHANA_STARTED:
+        time.sleep(0.001)
+
+    logg.info("athana testmode, use athana.stop_testrun()")
+
+
+def stop_testrun():
+    global _test_running
+    _test_running = False
+    _test_thread.join()
+
 
 def setTempDir(path):
     global GLOBAL_TEMP_DIR

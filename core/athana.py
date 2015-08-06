@@ -3397,7 +3397,11 @@ class WSGIHandler(object):
         self.request = request
         environ = self.make_environ()
 
-        content = self.app(environ, self.start_response)
+        try:
+            content = self.app(environ, self.start_response)
+        except:
+            logg.exception("exception in WSGI app:")
+            request.error(500, "WSGI app failed")
 
         for elem in content:
             request.write(elem)
@@ -3405,9 +3409,6 @@ class WSGIHandler(object):
         spl = self.status.split(" ", 1)
         status_code = int(spl[0])
         reason = spl[1] if len(spl) == 2 else None
-
-        if(status_code >= 400 and status_code <= 500):
-            request.error(status_code, reason)
 
         request.setStatus(status_code)
         request.done()

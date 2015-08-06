@@ -1,5 +1,5 @@
 python-Levenshtein
-pymarc
+pymarc   
 requests
 pydot
 reportlab
@@ -17,4 +17,5 @@ mysql-python
 git+git://mediatumdev.ub.tum.de/mediatum-babel
 git+git://mediatumdev.ub.tum.de/mediatum-tal
 git+git://mediatumdev.ub.tum.de/mediatum-fsm
+git+git://mediatumdev.ub.tum.de/thebigpicture@v1-alpha2
 

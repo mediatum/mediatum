@@ -20,30 +20,36 @@
 from mediatumtal import tal
 import core.tree as tree
 from core.metatype import Metatype
+from lib.iptc.IPTC import get_wanted_iptc_tags
 
 
 class m_meta(Metatype):
 
     def getEditorHTML(self, field, value="", width=400, lock=0, language=None, required=None):
         return tal.getTAL("metadata/meta.html", {"lock": lock, "value": value, "width": width,
-                                                 "name": field.getName(), "field": field}, macro="editorfield", language=language)
+                                                 "name": field.getName(), "field": field
+                                                 }, macro="editorfield", language=language)
 
     def getSearchHTML(self, context):
         return tal.getTAL("metadata/meta.html", {"context": context}, macro="searchfield", language=context.language)
 
     def getFormatedValue(self, field, node, language=None, html=1):
-        return (field.getLabel(), node.get(field.getValues()))
+        return field.getLabel(), node.get(field.getValues())
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):
         try:
-            value = field.getValues()
+            value = field.getValues().split("\r\n")
         except:
-            value = ""
+            value = []
+        while len(value) < 2:
+            value.append('')
+
         attr = {}
         if metadatatype:
             for t in metadatatype.getDatatypes():
                 node = tree.Node(type=t)
                 attr.update(node.getTechnAttributes())
+            attr['IPTC'] = get_wanted_iptc_tags()
 
         return tal.getTAL("metadata/meta.html", {"value": value, "t_attrs": attr}, macro="maskeditor", language=language)
 

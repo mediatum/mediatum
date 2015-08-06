@@ -93,7 +93,7 @@ def load_iso_639_2_b_names():
         with codecs.open(abs_path, 'rb', encoding='utf8') as f:
             text = f.read()
         lines = text.splitlines()
-        logg.info("exportutils read file 'ISO-639-2_utf-8.txt': %d lines", len(lines))
+        logg.debug("exportutils read file 'ISO-639-2_utf-8.txt': %d lines", len(lines))
     except:
         lines = []
         logg.warning("exportutils could not load file 'ISO-639-2_utf-8.txt'")

@@ -653,5 +653,5 @@ def register():
         if name != "workflow":
             m = importlib.import_module("workflow." + name)
             if hasattr(m, 'register'):
-                logg.info("registering workflow step '%s'", name)
+                logg.debug("registering workflow step '%s'", name)
                 m.register()

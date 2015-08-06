@@ -1421,9 +1421,9 @@ def _metatype_class(name, cls):
 
 
 def load_metatype_module(prefix_path, pkg_dir):
-    logg.info("loading modules from '%s', prefix path %s", pkg_dir, prefix_path)
+    logg.debug("loading modules from '%s', prefix path %s", pkg_dir, prefix_path)
     if prefix_path not in sys.path:
-        logg.info("%s added to pythonpath", prefix_path)
+        logg.debug("%s added to pythonpath", prefix_path)
         sys.path.append(prefix_path)
     for _, name, _ in pkgutil.iter_modules([os.path.join(prefix_path, pkg_dir)]):
         module = importlib.import_module(pkg_dir.replace("/", ".") + "." + name)

@@ -31,9 +31,10 @@ logg = logging.getLogger(__name__)
 
 
 def set_locale():
-    # locale setting for sorting, default to system locale
+    # locale setting, default to system locale
+    # XXX: do we need this?
     loc = locale.setlocale(locale.LC_COLLATE, '')
-    logg.info("using locale %s for sorting", loc)
+    logg.debug("using locale %s", loc)
 
 
 def load_system_types():
@@ -77,13 +78,11 @@ def tal_setup():
 
 
 def log_basic_sys_info():
-    logg.info("Python Version is %s", sys.version.split("\n")[0])
-    logg.info("Base path is at %s", config.basedir)
-    logg.info("sys.path is:\n%s", pformat(sys.path))
+    logg.info("Python Version is %s, base path ist at %s", sys.version.split("\n")[0], config.basedir)
+    logg.debug("sys.path is\n%s", pformat(sys.path))
 
 
 def check_imports():
-    logg.info("testing external imports:")
     external_modules = [
         "babel",
         "coffeescript",
@@ -118,7 +117,7 @@ def check_imports():
 
     for modname in external_modules:
         mod = importlib.import_module(modname)
-        logg.info("import version '%s' of %s", mod.__version__ if hasattr(mod, "__version__") else "unknown", mod)
+        logg.debug("import version '%s' of %s", mod.__version__ if hasattr(mod, "__version__") else "unknown", mod)
 
 
 def init_app():

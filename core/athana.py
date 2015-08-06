@@ -998,7 +998,7 @@ class http_request(object):
             for f in self.tempfiles:
                 os.unlink(f)
                 unlinked_tempfiles.append(f)
-                logg.info("unlinked tempfile %s", f)
+                logg.debug("unlinked tempfile %s", f)
         return unlinked_tempfiles
 
     def done(self):
@@ -1583,15 +1583,7 @@ class http_server (asyncore.dispatcher):
         self.bytes_out = counter()
         self.bytes_in = counter()
 
-        logg.info(
-            'Athana (%s) started'
-            '\n\n'
-            'The server is running! You can now direct your browser to:\n'
-            '\thttp://%s:%d/'
-            '\n',
-            ATHANA_VERSION,
-            self.server_name,
-            port)
+        logg.info('Athana HTTP Server started at http://%s:%d', self.server_name, port)
     # overriding asyncore.dispatcher methods
 
     # cheap inheritance, used to pass all other attribute
@@ -3291,7 +3283,7 @@ def _load_module(filename):
         path = path + "."
 
     module2 = (path + module)
-    logg.info("Loading module %s", module2)
+    logg.debug("Loading module %s", module2)
 
     m = importlib.import_module(module2)
     global_modules[filename] = m
@@ -3592,7 +3584,7 @@ class AthanaFile:
         del self.fieldname
         del self.param_list
         del self.fi
-        logg.info("closed file %s (%s)", self.filename, self.tempname)
+        logg.debug("closed file %s (%s)", self.filename, self.tempname)
 
     def __str__(self):
         return "file %s (%s), %d bytes, content-type: %s" % (self.filename, self.tempname, self.filesize, self.content_type)
@@ -3696,7 +3688,7 @@ class upload_input_collector:
         if "content-type" in headers:
             content_type = headers["content-type"]
             self.file = AthanaFile(fieldname, self.form, filename, content_type)
-            logg.info("opened file %s (%s)", filename, self.file.tempname)
+            logg.debug("opened file %s (%s)", filename, self.file.tempname)
             self.files.append(self.file)
             self.tempfiles.append(self.file.tempname)
         else:
@@ -4032,7 +4024,7 @@ class AthanaHandler:
                 self.queuelock.release()
             return
         else:
-            logg.info("Request %s matches no pattern (context: %s)", request.path, context.name)
+            logg.debug("Request %s matches no pattern (context: %s)", request.path, context.name)
             return request.error(404, "File %s not found" % request.path)
 
     def callhandler(self, function, req):

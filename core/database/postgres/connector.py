@@ -17,6 +17,7 @@ DEBUG = None
 DEBUG_SHOW_TRACE = None
 
 CONNECTSTR_TEMPLATE = "postgresql+psycopg2://{user}:{passwd}@{dbhost}:{dbport}/{database}"
+CONNECTSTR_TEMPLATE_WITHOUT_PW = "postgresql+psycopg2://{user}:<passwd>@{dbhost}:{dbport}/{database}"
 
 logg = logging.getLogger(__name__)
 
@@ -71,7 +72,7 @@ class PostgresSQLAConnector(object):
         else:
             connect_args = {}
 
-        logg.info("Connecting to %s", self.connectstr)
+        logg.info("Connecting to %s", CONNECTSTR_TEMPLATE_WITHOUT_PW.format(**self.__dict__))
         engine = create_engine(self.connectstr, connect_args=connect_args)
 
         DeclarativeBase.metadata.bind = engine

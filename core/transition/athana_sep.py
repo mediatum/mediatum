@@ -7,10 +7,10 @@ logg = logging.getLogger(__name__)
 
 try:
     from core import athana_http
-    logg.info("athana_http imported (separated athana)")
+    logg.debug("athana_http imported (separated athana)")
     from core import athanaserver
-    logg.info("athanaserver imported (separated athana)")
+    logg.debug("athanaserver imported (separated athana)")
 except ImportError:
     from core import athana as athanaserver
     athana_http = athanaserver
-    logg.info("athana imported (monolithic athana)")
+    logg.debug("athana imported (monolithic athana)")

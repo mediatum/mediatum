@@ -64,7 +64,7 @@ def addHelpPath(path):
 
 
 def initHelp():
-    logg.info("..init help")
+    logg.debug("..init help")
 
     def addHelpItem(i, part, dict):
         for j in range(i):

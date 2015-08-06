@@ -30,13 +30,6 @@ from utils.date import parse_date, now, format_date
 logg = logging.getLogger(__name__)
 
 
-def archive_log(message, type="info"):
-    if type == "info":
-        logg.info(message)
-    else:
-        logg.error(message)
-
-
 class Archive:
 
     def __init__(self):
@@ -63,8 +56,8 @@ class Archive:
     def deleteFromArchive(self, filename):
         None
 
-    def writelog(self, message="", type="info"):
-        archive_log(message, type)
+    def writelog(self, message="", level="info"):
+        logg.log(level, message)
 
     def info(self):
         self.version = "0.1"
@@ -95,7 +88,7 @@ class ArchiveManager:
                 path, manager = splitpath(paths)
                 self.manager[manager] = paths
 
-        logg.info("archivemanager init done %s", len(self.manager))
+        logg.debug("archivemanager init done %s", len(self.manager))
 
     def getManager(self, name=""):
         if name == "":

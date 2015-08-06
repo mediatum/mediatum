@@ -56,7 +56,7 @@ class Metatype(object):
         :param params: dict which contains POST form values
         :param item: field name prepended with language specifier. Is the same as field name for non-multilingual fields.
         """
-        # just fetch the unmodified alue from the params dict
+        # just fetch the unmodified value from the params dict
         return params.get(item)
 
     def getMaskEditorHTML(self, field, metadatatype=None, language=None):

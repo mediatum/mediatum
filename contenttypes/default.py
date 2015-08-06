@@ -419,6 +419,11 @@ class Default(tree.Node):
             else:
                 res = '&lt;smallview mask not defined&gt;'
 
+            if element_type == 'date':
+                comp = res.split(separator)
+                pre = comp[0].split('(')[-1].strip(')')
+
+                print comp, pre
         return res
 
 

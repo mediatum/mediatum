@@ -17,12 +17,12 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import re
 from mediatumtal import tal
 import utils.date as date
 from utils.date import format_date, parse_date, validateDate
 from core.metatype import Metatype
 from schema.schema import dateoption
-
 
 class m_date(Metatype):
 
@@ -65,11 +65,32 @@ class m_date(Metatype):
             except ValueError:
                 return (field.getLabel(), value)
             value = format_date(d, format=field.getValues())
-        return (field.getLabel(), value)
+
+        parse_value = value.split(':')[0].split('T')[0]
+
+        value_list = []
+
+        if re.search(r'[0]{2}\.', parse_value):
+            pass
+        elif re.search(r'\d\d\.', parse_value):
+            value_list.append(re.search(r'\d\d\.', parse_value).group())
+
+        if re.search(r'\.[0]{2}\.', parse_value):
+            pass
+        elif re.search(r'\.\d\d\.', parse_value):
+            value_list.append(re.search(r'\.\d\d\.', parse_value).group().lstrip('.'))
+
+        if re.search(r'[0]{4}', parse_value):
+            pass
+        elif re.search(r'[1-9]\d{3}', parse_value):
+            value_list.append(re.search(r'[1-9]\d{3}', parse_value).group())
+
+        return (field.getLabel(), ''.join(value_list))
 
     def format_request_value_for_db(self, field, params, item, language=None):
         value = params.get(item)
         f = field.getSystemFormat(str(field.getValues()))
+
         if not f:
             return ""
         try:

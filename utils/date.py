@@ -190,15 +190,18 @@ def parse_date(string, format=None):
                 return parse_date(string, format='%Y-%m-%d')
             except:
                 return parse_date(string, format='%d.%m.%YT%H:%M:%S')
+
     i = 0
     pos = 0
     slen = len(string)
     l = len(format)
+
     year, month, day, hour, minute, second = 0, 0, 0, 0, 0, 0
     hasyear = 0
     hasmonth = 0
     hasday = 0
     hastime = 0
+
     while i < l:
         if pos >= slen:
             raise ValueError('Unexpected end of value string: "' + string + '"')
@@ -296,15 +299,17 @@ def parse_date(string, format=None):
         date.has_year = hasyear
         date.has_month = hasmonth
         date.has_day = hasday
-    if not validateDate(date):
-        raise ValueError("invalid date: " + str(date))
     return date
 
 
 def validateDate(d):
+    if d.year or d.month or d.day == 0:
+        return True
+
     if d.has_year:
         if not d.year:
             return False
+
     if d.has_month:
         if d.month > 12 or d.month < 1:
             return False

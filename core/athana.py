@@ -1005,7 +1005,7 @@ class http_request(object):
         "finalize this transaction - send output to the http channel"
 
         self.unlink_tempfiles()
-        
+
         # ----------------------------------------
         # persistent connection management
         # ----------------------------------------
@@ -1549,8 +1549,8 @@ class http_server (asyncore.dispatcher):
 
     channel_class = http_channel
 
-    def __init__(self, ip, port, resolver=None):
-        self.ip = ip
+    def __init__(self, host, port, resolver=None):
+        self.ip = self.host = host
         self.port = port
         asyncore.dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -1558,24 +1558,12 @@ class http_server (asyncore.dispatcher):
         self.handlers = []
 
         self.set_reuse_addr()
-        self.bind((ip, port))
+        self.bind((host, port))
 
         # lower this to 5 if your OS complains
         self.listen(1024)
 
-        host, port = self.socket.getsockname()
-        if not ip:
-            logg.warn('Computing default hostname')
-        try:
-            ip = socket.gethostbyname(socket.gethostname())
-        except:
-            ip = "0.0.0.0"
-        try:
-            self.server_name = socket.gethostbyaddr(ip)[0]
-        except socket.error:
-            logg.warn('Cannot do reverse lookup')
-            self.server_name = ip       # use the IP address as the "hostname"
-
+        self.server_name = host
         self.server_port = port
         self.total_clients = counter()
         self.total_requests = counter()
@@ -3804,7 +3792,7 @@ def make_param_dict_utf8_values(param_list):
         except UnicodeDecodeError as e:
             logg.warn("tried to decode non-UTF8 string: %s", k.encode("string-escape"))
             raise
-        
+
     return ImmutableMultiDict([(decode(k), decode(v)) for k, v in param_list])
 # /COMPAT
 
@@ -3994,7 +3982,7 @@ class AthanaHandler:
             request.form = make_param_dict_utf8_values(form)
         except UnicodeDecodeError:
             return request.error(400)
-        
+
         request.files = ImmutableMultiDict(files)
         request.make_legacy_params_dict()
         # /COMPAT
@@ -4389,11 +4377,11 @@ def runthread(athanathread):
 ATHANA_STARTED = False
 
 
-def run(port=8081, z3950_port=None):
+def run(host="0.0.0.0", port=8081, z3950_port=None):
     global ATHANA_STARTED
     check_date()
     ph = AthanaHandler()
-    hs = http_server('', port)
+    hs = http_server(host, port)
     hs.install_handler(ph)
 
     if len(ftphandlers) > 0:

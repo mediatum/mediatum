@@ -80,7 +80,7 @@ def stackdump_setup():
         signal.signal(signal.SIGQUIT, dumpstacks)
 
 
-def main():
+def main(host=None, http_port=None):
     """Serve mediaTUM from the Athana HTTP Server and start FTP and Z3950, if requested"""
     # init.full_init() must be done as early as possible to init logging etc.
     from core import init
@@ -116,14 +116,20 @@ def main():
         wf.write(datetime.datetime.now().isoformat())
         wf.write("\n")
 
-    athana.run(int(config.get("host.port", "8081")), z3950port)
+    athana.run(host or config.get("host.host", "0.0.0.0"), http_port or int(config.get("host.port", "8081")), z3950port)
 
 
 if __name__ == "__main__":
     parser = configargparse.ArgumentParser("mediaTUM start.py")
 
+    parser.add_argument("-b", "--bind", default=None, help="hostname / IP to bind to, default: see config file")
+
+    parser.add_argument("-p", "--http_port", action="store_true", default=None, help="HTTP port to use, default: see config file")
+
     parser.add_argument("-r", "--reload", action="store_true", default=False,
                         help="reload when code or config file changes, default false")
+
+
 
     parser.add_argument("-s", "--stackdump", action="store_true", default=True,
                         help="write stackdumps to temp dir {} on SIGQUIT, default true".format(SYSTEM_TMP_DIR))
@@ -136,6 +142,8 @@ if __name__ == "__main__":
     if args.reload:
         # don't use this in production!
         extra_files = [config.get_config_filepath()]
-        run_with_reloader(main, extra_files)
+        def main_wrapper():
+            main(args.bind, args.http_port)
+        run_with_reloader(main_wrapper, extra_files)
     else:
-        main()
+        main(args.bind, args.http_port)

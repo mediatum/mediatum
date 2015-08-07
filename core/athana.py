@@ -3358,9 +3358,10 @@ class WSGIHandler(object):
         return self.request.write
 
     def make_environ(self):
-        from io import StringIO
+        from StringIO import StringIO
         request = self.request
         query = request.query[1:] if request.query is not None else ""
+        request_body = StringIO(request._data) if hasattr(request, "_data") else StringIO()
 
         # SERVER_NAME is unknown, we can only use localhost...
         environ = {
@@ -3377,7 +3378,7 @@ class WSGIHandler(object):
             "SERVER_PROTOCOL": "HTTP/" + request.version,
             "wsgi.version": (1, 0),
             "wsgi.url_scheme": "http",
-            "wsgi.input": StringIO(u""),
+            "wsgi.input": request_body,
             "wsgi.errors": sys.stderr,
             "wsgi.multithread": multithreading_enabled,
             "wsgi.multiprocess": False,
@@ -3693,6 +3694,7 @@ class simple_input_collector:
         del self.data
         r = self.request
         del self.request
+        r._data = d
         pairs = []
         data = d.split('&')
         for e in data:
@@ -3715,7 +3717,7 @@ class upload_input_collector:
         self.handler = handler
         self.boundary = boundary
         request.channel.set_terminator(length)
-        self.data = ""
+        self.data = self._all_data = ""
         self.pos = 0
         self.start_marker = "--" + boundary + "\r\n"
         self.end_marker = "--" + boundary + "--"
@@ -3768,6 +3770,7 @@ class upload_input_collector:
     def collect_incoming_data(self, newdata):
         self.pos += len(newdata)
         self.data += newdata
+        self._all_data += newdata
 
         while len(self.data) > 0:
             if self.data.startswith(self.end_marker):
@@ -3820,6 +3823,7 @@ class upload_input_collector:
         d = self.data
         del self.data
         r = self.request
+        r._data = self._all_data
         del self.request
         self.handler.continue_request(r, self.form)
 
@@ -4093,15 +4097,17 @@ class AthanaHandler:
         request.query = query
         request.fragment = fragment
         # COMPAT: new param style like flask
-        form, files = filter_out_files(form)
-        try:
-            request.args = make_param_dict_utf8_values(args)
-            request.form = make_param_dict_utf8_values(form)
-        except UnicodeDecodeError:
-            return request.error(400)
+        # we don't need this for WSGI, args / form parsing is done by the WSGI app
+        if not isinstance(context, WSGIContext):
+            form, files = filter_out_files(form)
+            try:
+                request.args = make_param_dict_utf8_values(args)
+                request.form = make_param_dict_utf8_values(form)
+            except UnicodeDecodeError:
+                return request.error(400)
 
-        request.files = ImmutableMultiDict(files)
-        request.make_legacy_params_dict()
+            request.files = ImmutableMultiDict(files)
+            request.make_legacy_params_dict()
         # /COMPAT
         request.request = request
         request.ip = ip

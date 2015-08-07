@@ -7,20 +7,24 @@
 import logging
 import os.path
 from pytest import fixture, yield_fixture
-from flask import Flask, Response
-from wsgi_intercept import requests_intercept, add_wsgi_intercept
+from flask import Flask, Response, request
 import nap.url
 
 logging.basicConfig(level=logging.DEBUG)
 
 HOST = "localhost"
 PORT = 8080
-
+BASE_URL = "http://{}:{}".format(HOST, PORT)
 STATIC_DIR = os.path.dirname(__file__) + "/test_data"
+
+
+def static_file_path(filename):
+    return os.path.join(STATIC_DIR, filename)
+
 
 @fixture
 def cl():
-    return nap.url.Url("http://{}:{}".format(HOST, PORT))
+    return nap.url.Url(BASE_URL)
 
 
 def add_test_handler(app, func):
@@ -31,12 +35,17 @@ def add_test_handler(app, func):
 def add_test_response(app, response_content):
     return add_test_handler(app, lambda: response_content)
 
+
 def make_app():
     app = Flask("test", static_folder=STATIC_DIR)
     return app
 
+
 @yield_fixture
 def wsgi_intercept_app():
+    """Creates WSGI app that receives input directly from requests via wsgi_intercept.
+    This skips HTTP request to athana and can be used to test the tests"""
+    from wsgi_intercept import requests_intercept, add_wsgi_intercept
     requests_intercept.install()
     app = make_app()
     add_wsgi_intercept(HOST, PORT, lambda: app)
@@ -46,6 +55,7 @@ def wsgi_intercept_app():
 
 @yield_fixture
 def athana_app():
+    """Creates WSGI app and starts athana in its own thread to avoid blocking the main thread"""
     from core.init import add_ustr_builtin
     add_ustr_builtin()
     from core import athana
@@ -59,6 +69,14 @@ def athana_app():
 
 
 app = athana_app
+
+
+def test_wsgi_redirect(app, cl):
+    from flask import redirect
+    add_test_response(app, redirect("/to/hell"))
+    res = cl.get("/test", allow_redirects=False)
+    assert res.status_code == 302
+    assert res.headers["Location"] == BASE_URL + "/to/hell"
 
 
 def test_wsgi_response_text(app, cl):
@@ -95,5 +113,82 @@ def test_wsgi_response_content_type(app, cl):
 def test_wsgi_response_binary(app, cl):
     res = cl.get("/test_data/test.png")
     assert res.status_code == 200
-    with open(os.path.join(STATIC_DIR, "test.png"), "rb") as f:
+    with open(static_file_path("test.png"), "rb") as f:
         assert res.content == f.read()
+
+
+def test_wsgi_get_query_param(app, cl):
+    @app.route("/test")
+    def echo_query_param():
+        #assert request.args["param"] == "value"
+        # we don't want to fail in the server part, just return empty strings on failue
+        return request.args.get("param1", "") + request.args.get("param2", "")
+
+    res = cl.get("/test?param1=test&param2=passed")
+    assert res.text == "testpassed"
+
+
+def test_wsgi_get_url_arg(app, cl):
+
+    @app.route("/test/<param1>/<param2>")
+    def echo_url_args(param1, param2):
+        return param1 + param2
+
+    res = cl.get("/test/test/passed")
+    assert res.text == "testpassed"
+
+
+def test_wsgi_post_form(app, cl):
+
+    @app.route("/test", methods=["POST"])
+    def echo_form_data():
+        # we don't want to fail in the server part, just return empty strings on failue
+        return request.form.get("param1", "") + request.form.get("param2", "")
+
+    form_data = {
+        "param1": "test",
+        "param2": "passed"
+    }
+
+    assert cl.post("/test", data=form_data).text == "testpassed"
+
+
+def test_wsgi_post_form_unicode(app, cl):
+
+    @app.route("/test", methods=["POST"])
+    def echo_form_data():
+        # we don't want to fail in the server part, just return empty strings on failue
+        return request.form.get("param1", "") + request.form.get("param2", "")
+
+    form_data = {
+        "param1": u"test",
+        "param2": u"päßed"
+    }
+
+    assert cl.post("/test", data=form_data).text == u"testpäßed"
+
+
+def test_wsgi_text_upload(app, cl):
+
+    @app.route("/test", methods=["POST"])
+    def echo_text():
+        content = request.files.values()[0].read()
+        return Response(content, mimetype="text/plain")
+
+    res = cl.post("/test", files={"file": ("testfile", "testpassed")})
+    assert res.content == "testpassed"
+
+
+def test_wsgi_binary_upload(app, cl):
+
+    @app.route("/test", methods=["POST"])
+    def echo_png():
+        content = request.files.values()[0].read()
+        return Response(content, mimetype="image/png")
+
+    with open(static_file_path("test.png"), "rb") as fi:
+        content = fi.read()
+        fi.seek(0)
+        res = cl.post("/test", files={"file": fi})
+
+    assert res.content == content

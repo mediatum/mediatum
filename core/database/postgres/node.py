@@ -16,7 +16,7 @@ from sqlalchemy.ext.declarative.api import DeclarativeMeta
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.ext.hybrid import hybrid_property
 
-from core.node import NodeMixin
+from core.node import NodeMixin, NodeVersionMixin
 from core.database.postgres import db_metadata, DeclarativeBase, MtQuery, mediatumfunc, MtVersionBase
 from core.database.postgres import rel, bref, C, FK
 from core.database.postgres.alchemyext import LenMixin, view
@@ -151,7 +151,7 @@ class Node(DeclarativeBase, NodeMixin):
     __metaclass__ = BaseNodeMeta
     __tablename__ = "node"
     __versioned__ = {
-        "base_classes": (NodeMixin, MtVersionBase, DeclarativeBase)
+        "base_classes": (NodeVersionMixin, MtVersionBase, DeclarativeBase)
     }
 
     id = C(Integer, Sequence('node_id_seq', schema=db_metadata.schema, start=100), primary_key=True)

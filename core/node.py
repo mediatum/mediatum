@@ -52,7 +52,8 @@ class NodeMixin(object):
         return True
 
     def getVersionList(self):
-        return [self]
+        warn("use self.versions", DeprecationWarning)
+        return list(self.versions)
 
     def getLocalRead(self):
         return ""
@@ -125,7 +126,7 @@ class NodeMixin(object):
         return self.type
 
     def getActiveVersion(self):
-        """TODO: implement me..."""
+        """nodes are always 'active'"""
         return self
 
     def getUpdatedDate(self, format=None):
@@ -198,3 +199,14 @@ class NodeMixin(object):
             return value
         else:
             return self.get(key)
+
+
+class NodeVersionMixin(NodeMixin):
+    """Override methods from NodeMixin for version objects of nodes
+    """
+
+    def isActiveVersion(self):
+        return self.next is None
+
+    def getActiveVersion(self):
+        return self.version_parent

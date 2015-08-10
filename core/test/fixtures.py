@@ -286,6 +286,16 @@ def some_node_with_two_parents(some_node):
     return some_node
 
 
+@fixture
+def content_node_versioned(content_node):
+    db.session.commit()
+    content_node.orderpos = 42
+    db.session.commit()
+    content_node.orderpos = 23
+    db.session.commit()
+    return content_node
+
+
 @fixture(scope="session")
 def internal_authenticator():
     from core.auth import InternalAuthenticator, INTERNAL_AUTHENTICATOR_KEY

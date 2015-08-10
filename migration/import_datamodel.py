@@ -11,6 +11,12 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.ext.hybrid import hybrid_property
+
+try:
+    import msgpack
+except ImportError:
+    msgpack = None
+
 from utils.compat import string_types
 C = Column
 FK = ForeignKey
@@ -108,20 +114,22 @@ class NodeAttribute(ImportBase):
 
     @hybrid_property
     def value(self):
-        import msgpack
         if self._value is None:
             return None
         if self._value.startswith(b"\x11PACK\x12"):
+            if msgpack is None:
+                raise Exception("python-msgpack is not available, cannot decode complex attribute values!")
             return msgpack.loads(self._value[6:], encoding="utf8")
         else:
             return unicode(self._value, encoding="utf8")
 
     @value.setter
     def set_value(self, newvalue):
-        import msgpack
         if isinstance(newvalue, string_types):
             self._value = codecs.encode(newvalue, "utf8")
         else:
+            if msgpack is None:
+                raise Exception("python-msgpack is not available, cannot decode complex attribute values!")
             dval = msgpack.dumps(newvalue)
             val = b"\x11PACK\x12" + dval
             self._value = val

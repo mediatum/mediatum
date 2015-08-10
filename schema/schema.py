@@ -1482,7 +1482,10 @@ class SchemaMixin(object):
 
     @hybrid_property
     def metadatatype(self):
-        return q(Metadatatype).filter_by(name=self.schema).one()
+        try:
+            return q(Metadatatype).filter_by(name=self.schema).one()
+        except NoResultFound:
+            raise Exception("metadatatype '{}' is missing, needed for node {}".format(self.schema, self))
 
     def getSchema(self):
         warn("deprecated, use Content.schema instead", DeprecationWarning)

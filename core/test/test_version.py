@@ -6,9 +6,11 @@
 
 from __future__ import division, absolute_import, print_function
 
-from core import db
 from contenttypes import Directory
 from pytest import fixture
+from sqlalchemy_continuum import versioning_manager
+from core import db, Node
+from sqlalchemy_continuum.utils import version_class
 
 # XXX: sqlalchemy-continuum overwrites the first version of a node somehow. This doesn't happen if the code is run outside of an unit test.
 # Investigate this...
@@ -73,6 +75,8 @@ def test_use_node_property(content_node):
     vers = content_node.versions[0]
     assert vers.attributes == vers.attrs
 
+# legacy versioning support
+
 
 def test_isActiveVersion_node(content_node):
     assert content_node.isActiveVersion()
@@ -99,3 +103,13 @@ def test_getActiveVersion_version(content_node_versioned):
 
 def test_getVersionList(content_node_versioned):
     assert len(content_node_versioned.getVersionList()) == 2
+
+
+def test_old_node_version_support(content_node_versioned_with_alias_id):
+    """Tests the q(Node).get hack (in MtQuery)"""
+    node = content_node_versioned_with_alias_id
+    q = db.query
+    version = q(Node).get(23)
+    version_cls = version_class(node.__class__)
+    assert isinstance(version, version_cls)
+    assert version.orderpos == 23

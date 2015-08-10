@@ -188,3 +188,19 @@ class MtQuery(Query):
 
         read_access = mediatumfunc.has_read_access_to_node(nodeclass.id, user.group_ids, ip, sqlfunc.current_date())
         return self.filter(read_access)
+
+    def get(self, ident):
+        nodeclass = self._find_nodeclass()
+        if not nodeclass:
+            return Query.get(self, ident)
+        else:
+            nodeclass = nodeclass[0]
+        active_version = Query.get(self, ident)
+        Transaction = versioning_manager.transaction_cls
+        if active_version is None:
+            ver_cls = version_class(nodeclass)
+            return (self.session.query(ver_cls).join(Transaction, ver_cls.transaction_id == Transaction.id)
+                    .join(Transaction.meta_relation)
+                    .filter_by(key=u'alias_id', value=unicode(ident)).scalar())
+
+        return active_version

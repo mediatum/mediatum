@@ -289,10 +289,23 @@ def some_node_with_two_parents(some_node):
 @fixture
 def content_node_versioned(content_node):
     db.session.commit()
-    content_node.orderpos = 42
-    db.session.commit()
     content_node.orderpos = 23
     db.session.commit()
+    content_node.orderpos = 42
+    db.session.commit()
+    return content_node
+
+@fixture
+def content_node_versioned_with_alias_id(session, content_node):
+    from sqlalchemy_continuum import versioning_manager
+    session.commit()
+    content_node.orderpos = 42
+    session.commit()
+    uow = versioning_manager.unit_of_work(session)
+    tx = uow.create_transaction(session)
+    tx.meta = {u"alias_id": 23}
+    content_node.orderpos = 23
+    session.commit()
     return content_node
 
 

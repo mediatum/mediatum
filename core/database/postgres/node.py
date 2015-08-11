@@ -23,6 +23,8 @@ from core.database.postgres.alchemyext import LenMixin, view
 from core.database.postgres.attributes import Attributes, AttributesExpressionAdapter
 from utils.magicobjects import MInt
 from ipaddr import IPv4Address
+from sqlalchemy_continuum import versioning_manager
+from sqlalchemy_continuum.utils import version_class
 
 
 logg = logging.getLogger(__name__)
@@ -250,7 +252,6 @@ class Node(DeclarativeBase, NodeMixin):
         searchtree = parser.parse_string(searchquery)
         return searchtree
 
-
     def _search_query_object(self):
         """Builds the query object that is used as basis for content node searches below this node"""
         from contenttypes import Content
@@ -280,6 +281,13 @@ class Node(DeclarativeBase, NodeMixin):
         query = self._search_query_object()
         return [apply_searchtree_to_query(query, searchtree, l) for l in languages]
 
+    @property
+    def tagged_versions(self):
+        Transaction = versioning_manager.transaction_cls
+        TransactionMeta = versioning_manager.transaction_meta_cls
+        version_cls = version_class(self.__class__)
+        return (self.versions.join(Transaction, version_cls.transaction_id == Transaction.id).join(Transaction.meta_relation).
+                filter(TransactionMeta.key == u"tag"))
 
     __mapper_args__ = {
         'polymorphic_identity': 'node',

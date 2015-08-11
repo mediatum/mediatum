@@ -95,10 +95,10 @@ let
   };
 
   sqlalchemy-utils = self.buildPythonPackage {
-    name = "sqlalchemy-utils-0.30.15";
+    name = "SQLAlchemy-Utils-0.30.16";
     src = fetchurl {
-      url = "https://pypi.python.org/packages/source/S/SQLAlchemy-Utils/SQLAlchemy-Utils-0.30.15.tar.gz";
-      md5 = "719ac730d44e25ff641f2cc8e2a1597d";
+      url = "https://pypi.python.org/packages/source/S/SQLAlchemy-Utils/SQLAlchemy-Utils-0.30.16.tar.gz";
+      md5 = "021d23890e15eb2ef6d6287f782c3f5e";
     };
     propagatedBuildInputs = with self; [six sqlalchemy];
     buildInputs = with self; [];
@@ -618,6 +618,7 @@ in {
       sympy
       unicodecsv
       werkzeug
+      pkgs.perlPackages.ImageExifTool
     ];
 
     devel = [

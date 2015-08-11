@@ -31,13 +31,16 @@ import subprocess
 import sys
 sys.path.append(".")
 
-from core.init import basic_init
+from core.init import basic_init, check_undefined_nodeclasses
 from core.database.postgres.connector import read_and_prepare_sql
 from collections import OrderedDict
 from bin.manage import vacuum_analyze_tables
 
 basic_init(root_loglevel=logging.WARN)
 import core.database.postgres
+
+check_undefined_nodeclasses()
+
 
 
 core.database.postgres.SLOW_QUERY_SECONDS = 1000
@@ -50,6 +53,7 @@ logg.setLevel(logging.INFO)
 from core import db
 
 s = db.session
+q = db.query
 
 MIGRATION_DIR = os.path.join(os.path.dirname(__file__), "../migration")
 
@@ -82,9 +86,17 @@ def migrate_core(s):
     logg.info("finished node + attrs, nodefile and nodemapping migration")
 
 
+def versions(s):
+    from migration import version_migration
+    version_migration.fix_versoning_attributes()
+    version_migration.insert_migrated_version_nodes(version_migration.all_version_nodes())
+    version_migration.finish()
+
+
 def users(s):
     s.execute("SELECT mediatum.migrate_usergroups()")
     s.execute("SELECT mediatum.migrate_internal_users()")
+    s.execute("SELECT mediatum.delete_user_system_nodes()")
     logg.info("finished user migration")
 
 
@@ -116,15 +128,14 @@ def inherited_permissions(s):
 
 
 def cleanup(s):
-    s.execute("SELECT mediatum.delete_user_system_nodes()")
-    logg.info("deleted old user system nodes")
-
+    pass
 
 def everything(s):
     pgloader()
     prepare_import_migration(s)
     migrate_core(s)
     users(s)
+    versions(s)
     dynusers()
     permissions(s)
     inherited_permissions(s)
@@ -136,6 +147,7 @@ actions = OrderedDict([
     ("prepare", prepare_import_migration),
     ("core", migrate_core),
     ("users", users),
+    ("versions", versions),
     ("dynusers", dynusers),
     ("permissions", permissions),
     ("inherited_permissions", inherited_permissions),

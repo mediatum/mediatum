@@ -52,8 +52,9 @@ class NodeMixin(object):
         return True
 
     def getVersionList(self):
-        warn("use self.versions", DeprecationWarning)
-        return list(self.versions)
+
+        warn("use self.tagged_versions", DeprecationWarning)
+        return list(self.tagged_versions)
 
     def getLocalRead(self):
         return ""
@@ -74,7 +75,7 @@ class NodeMixin(object):
 
     def getParents(self):
         warn("deprecated, use Node.parents instead", DeprecationWarning)
-        return self.parents
+        return list(self.parents)
 
     def getFiles(self):
         warn("deprecated, use Node.files instead", DeprecationWarning)

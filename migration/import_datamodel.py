@@ -92,7 +92,9 @@ class Node(ImportBase):
 
     def get(self, key):
         """Get an attribute value"""
-        return self.attributes[key].value
+        attr = self.attributes.get(key)
+        if attr:
+            return attr.value
 
     def delete(self, key):
         """Delete an attribute"""
@@ -112,7 +114,7 @@ class NodeAttribute(ImportBase):
     name = C(Unicode, primary_key=True, index=True)
     _value = C(Unicode, name="value", nullable=True)
 
-    @hybrid_property
+    @property
     def value(self):
         if self._value is None:
             return None
@@ -121,7 +123,7 @@ class NodeAttribute(ImportBase):
                 raise Exception("python-msgpack is not available, cannot decode complex attribute values!")
             return msgpack.loads(self._value[6:], encoding="utf8")
         else:
-            return unicode(self._value, encoding="utf8")
+            return self._value
 
     @value.setter
     def set_value(self, newvalue):
@@ -133,16 +135,6 @@ class NodeAttribute(ImportBase):
             dval = msgpack.dumps(newvalue)
             val = b"\x11PACK\x12" + dval
             self._value = val
-
-    def __init__(self, name=None, value=None, type=None, id=None):
-        if name:
-            self.name = name
-        if value:
-            self.value = value
-        if type:
-            self.type = type
-        if id:
-            self.id = id
 
     def __repr__(self):
         return u"Attribute for Node #{}: {}='{}' at {}".format(self.nid, self.name, self.value, hex(id(self))).encode("utf8")

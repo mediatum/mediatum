@@ -133,6 +133,9 @@ def init_db():
     for cls in core.db.get_model_classes():
         setattr(core, cls.__name__, cls)
 
+def init_fulltext_search():
+    import core
+    core.db.init_fulltext_search()
 
 def init_modules():
     """init modules with own init function"""
@@ -199,6 +202,7 @@ def basic_init(root_loglevel=None, config_filepath=None):
 
 def full_init(root_loglevel=None, config_filepath=None):
     basic_init(root_loglevel, config_filepath)
+    init_fulltext_search()
     register_workflow()
     init_ldap()
     init_archivemanager()

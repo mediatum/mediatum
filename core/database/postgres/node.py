@@ -255,16 +255,16 @@ class Node(DeclarativeBase, NodeMixin):
         base_query = self.all_children_by_query(q(Content))
         return base_query
 
-    def search(self, searchquery, language=None):
+    def search(self, searchquery, languages=None):
         """Creates a search query.
-        :param searchquery: query in search language :
-        :param language: language config string matching Fts.config
+        :param searchquery: query in search language
+        :param language: sequence of language config strings matching Fts.config
         :returns: Node Query
         """
         from core.database.postgres.search import apply_searchtree_to_query
         searchtree = self._parse_searchquery(searchquery)
         query = self._search_query_object()
-        return apply_searchtree_to_query(query, searchtree, [language] if language else None)
+        return apply_searchtree_to_query(query, searchtree, languages)
 
     def search_multilang(self, searchquery, languages=None):
         """Creates search queries for a sequence of languages.
@@ -276,6 +276,7 @@ class Node(DeclarativeBase, NodeMixin):
         searchtree = self._parse_searchquery(searchquery)
         query = self._search_query_object()
         return [apply_searchtree_to_query(query, searchtree, l) for l in languages]
+
 
     __mapper_args__ = {
         'polymorphic_identity': 'node',

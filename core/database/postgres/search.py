@@ -31,12 +31,16 @@ global default_languages
 default_languages = None
 
 
+def fts_config_exists(config_name):
+    stmt = text("SELECT FROM pg_catalog.pg_ts_config WHERE cfgname = :config_name")
+    return db.session.execute(stmt, {"config_name": config_name}).fetchone() is not None
+
+
 def default_languages_from_config():
     default_languages = set()
     langs_from_config = config.get("search.default_languages", "simple").split(",")
-    stmt = text("SELECT FROM pg_catalog.pg_ts_config WHERE cfgname = :lang")
     for lang in langs_from_config:
-        if db.session.execute(stmt, {"lang": lang}).fetchone() is not None:
+        if fts_config_exists(lang):
             default_languages.add(lang)
         else:
             logg.warn("postgres search config '%s' not found, ignored")
@@ -73,6 +77,7 @@ def make_fts_expr_tsvec(languages, target, searchstring, op="|"):
     :param searchstring: string of space-separated words to search
     :param op: operator used to join searchterms separated by space, | or &
     """
+    languages = list(languages)
     prepared_searchstring = _prepare_searchstring(op, searchstring)
     ts_query = sqlfunc.to_tsquery(languages[0], prepared_searchstring)
 
@@ -90,6 +95,7 @@ def make_fts_expr(languages, target, searchstring, op="|"):
     :param searchstring: string of space-separated words to search
     :param op: operator used to join searchterms separated by space, | or &
     """
+    languages = list(languages)
     prepared_searchstring = _prepare_searchstring(op, searchstring)
     tsvec = func.to_tsvector_safe(languages[0], target)
 
@@ -102,6 +108,8 @@ def make_fts_expr(languages, target, searchstring, op="|"):
 def make_config_searchtype_cond(languages, searchtypes):
     # we must repeat the language for all search types, because Postgres is to stupid to find the optimal plan without that ;)
 
+    languages = list(languages)
+    searchtypes = list(searchtypes)
     def make_searchtype_cond_for_language(lang):
         inner_cond = (Fts.config == lang) & (Fts.searchtype == searchtypes[0])
 

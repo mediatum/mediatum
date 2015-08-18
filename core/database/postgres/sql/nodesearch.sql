@@ -1,28 +1,73 @@
--- Table: nodesearch
-
-CREATE OR REPLACE FUNCTION update_nodesearch_tsvec() RETURNS void
+CREATE OR REPLACE FUNCTION insert_node_tsvectors() RETURNS trigger
     LANGUAGE plpgsql
     SET search_path = :search_path
     AS $$
+DECLARE
+    searchconfig regconfig;
+    autoindex_languages text[];
 BEGIN
-    UPDATE nodesearch 
-    SET fulltext_search = to_tsvector(config, fulltext);
-END;
-$$;
+    SELECT array_agg(v)
+    FROM (SELECT jsonb_array_elements_text(value) v FROM setting WHERE key = 'search.autoindex_languages') q
+    INTO autoindex_languages;
 
+    IF autoindex_languages IS NOT NULL THEN
+        FOREACH searchconfig IN ARRAY autoindex_languages LOOP
+            INSERT INTO fts (nid, config, searchtype, tsvec)
+            SELECT NEW.id, searchconfig, 'fulltext', to_tsvector_safe(searchconfig, NEW.fulltext);
 
-CREATE OR REPLACE FUNCTION on_nodesearch_update() RETURNS trigger
-    LANGUAGE plpgsql
-    SET search_path = :search_path
-    AS $$
-BEGIN
-    NEW.fulltext_search = to_tsvector(NEW.config, NEW.fulltext);
+            INSERT INTO fts (nid, config, searchtype, tsvec)
+            SELECT NEW.id, searchconfig, 'attrs', jsonb_object_values_to_tsvector(searchconfig, NEW.attrs);
+        END LOOP;
+    END IF;
 RETURN NEW;
 END;
 $$;
 
--- CREATE TRIGGER tsvectorupdate BEFORE INSERT OR UPDATE
--- ON  FOR EACH ROW EXECUTE PROCEDURE on_nodesearch_update();
+
+CREATE OR REPLACE FUNCTION update_node_tsvectors() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path = :search_path
+    AS $$
+DECLARE
+    searchconfig text;
+    autoindex_languages text[];
+BEGIN
+    SELECT array_agg(v)
+    FROM (SELECT jsonb_array_elements_text(value) v FROM setting WHERE key = 'search.autoindex_languages') q
+    INTO autoindex_languages;
+
+    IF autoindex_languages IS NOT NULL THEN
+        IF OLD.fulltext != NEW.fulltext THEN
+            FOREACH searchconfig IN ARRAY autoindex_languages LOOP
+                -- TODO: replace with proper upsert after 9.5
+                DELETE FROM fts
+                WHERE nid = NEW.id AND config = searchconfig AND searchtype = 'fulltext';
+                INSERT INTO fts (nid, config, searchtype, tsvec)
+                SELECT NEW.id, searchconfig, 'fulltext', to_tsvector_safe(searchconfig::regconfig, NEW.fulltext);
+            END LOOP;
+        END IF;
+
+        IF OLD.attrs != NEW.attrs THEN
+            FOREACH searchconfig IN ARRAY autoindex_languages LOOP
+                -- TODO: replace with proper upsert after 9.5
+                DELETE FROM fts
+                WHERE nid = NEW.id AND config = searchconfig AND searchtype = 'attrs';
+                INSERT INTO fts (nid, config, searchtype, tsvec)
+                SELECT NEW.id, searchconfig, 'attrs', jsonb_object_values_to_tsvector(searchconfig::regconfig, NEW.attrs);
+            END LOOP;
+        END IF;
+    END IF;
+RETURN NEW;
+END;
+$$;
+
+
+CREATE TRIGGER insert_node_tsvectors AFTER INSERT
+ON :search_path.node FOR EACH ROW EXECUTE PROCEDURE insert_node_tsvectors();
+
+
+CREATE TRIGGER update_node_tsvectors AFTER UPDATE
+ON :search_path.node FOR EACH ROW EXECUTE PROCEDURE update_node_tsvectors();
 
 
 CREATE OR REPLACE FUNCTION to_tsvector_safe(config regconfig, text text) RETURNS tsvector
@@ -67,7 +112,7 @@ CREATE OR REPLACE FUNCTION shortest_tsvec(_fulltext_id integer, configs regconfi
     LANGUAGE plpgsql
     SET search_path = :search_path
     AS $$
-DECLARE 
+DECLARE
     tsvec tsvector;
     min_tsvec tsvector;
     config regconfig;
@@ -82,10 +127,10 @@ BEGIN
 
         IF min_tsvec IS NULL OR length(tsvec) < length(min_tsvec) THEN
             min_tsvec = tsvec;
-            min_config = config; 
+            min_config = config;
         END IF;
     END LOOP;
- 
+
 RETURN (_fulltext_id, min_config, min_tsvec);
 END;
 $$;
@@ -95,15 +140,15 @@ CREATE OR REPLACE FUNCTION import_fulltexts() RETURNS void
     LANGUAGE plpgsql
     SET search_path = :search_path
     AS $$
-DECLARE 
+DECLARE
     min_config regconfig;
 BEGIN
     INSERT INTO fulltext (fulltext, nid)
     SELECT fulltext, q.nid
-    FROM mediatum_import.fulltexts imp 
-    JOIN LATERAL (SELECT id AS nid 
+    FROM mediatum_import.fulltexts imp
+    JOIN LATERAL (SELECT id AS nid
             FROM node JOIN nodefile nf ON node.id=nf.nid
-            WHERE filetype='fulltext' 
+            WHERE filetype='fulltext'
             AND path = replace(imp.dir, '.', '/') || '/' || imp.id || '.txt') q ON true;
 RETURN;
 END;

@@ -4,11 +4,13 @@
     :license: GPL3, see COPYING for details
 """
 import logging
+import os.path
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
+
+from core import config
 from . import db_metadata, DeclarativeBase
-import os.path
 from core.database.postgres import MtQuery
 from core.database.postgres.psycopg2_debug import make_debug_connection_factory
 
@@ -62,7 +64,7 @@ class PostgresSQLAConnector(object):
             self.debug = config.get("database.debug", "").lower() == "true"
         else:
             self.debug = DEBUG
-            
+
         if self.debug:
             if DEBUG_SHOW_TRACE is None:
                 show_trace = config.get("database.debug_show_trace", "").lower() == "true"
@@ -171,3 +173,20 @@ class PostgresSQLAConnector(object):
             conn.execute("SET search_path TO " + self.metadata.schema)
             self.drop_functions(conn)
             self.drop_tables(conn)
+
+    def init_fulltext_search(self):
+        from core.database.postgres.setting import Setting
+        from core.database.postgres.search import fts_config_exists
+        s = self.session
+        autoindex_languages_from_config = config.get("search.autoindex_languages", "").split(",")
+        autoindex_languages = []
+
+        for lang in autoindex_languages_from_config:
+            if fts_config_exists(lang):
+                autoindex_languages.append(lang)
+            else:
+                logg.warn("postgres search config '%s' not found, ignored", lang)
+
+        autoindex_languages_setting = Setting(key="search.autoindex_languages", value=autoindex_languages)
+        s.merge(autoindex_languages_setting)
+        s.commit()

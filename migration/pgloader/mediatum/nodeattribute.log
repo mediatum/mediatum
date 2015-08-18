@@ -1,0 +1,20 @@
+Database error 22021: invalid byte sequence for encoding "UTF8": 0x00
+CONTEXT: COPY nodeattribute, line 3433: "1219200	survey_page_answered_time_1218402	\21PACK\22\342\200\236\0\302\25620140617184117\1\302\25620..."
+Database error 22021: invalid byte sequence for encoding "UTF8": 0x00
+CONTEXT: COPY nodeattribute, line 4578: "1219198	survey_page_answered_time_1218402	\21PACK\22\342\200\236\0\302\25620141104162238\1\302\25620..."
+Database error 22021: invalid byte sequence for encoding "UTF8": 0x00
+CONTEXT: COPY nodeattribute, line 21987: "1219179	survey_page_answered_time_1218402	\21PACK\22\342\200\232\0\302\25620140526070253\1\302\25620..."
+Database error 22021: invalid byte sequence for encoding "UTF8": 0x00
+CONTEXT: COPY nodeattribute, line 7: "1219179	survey_answers_1218402	\21PACK\22\302\215\302\244Buch\302\201\302\246answer\302\257das Telef..."
+Database error 22021: invalid byte sequence for encoding "UTF8": 0x00
+CONTEXT: COPY nodeattribute, line 9791: "1237210	survey_page_answered_time_1237198	\21PACK\22\302\201\0\302\25620150709183151"
+Database error 22021: invalid byte sequence for encoding "UTF8": 0x00
+CONTEXT: COPY nodeattribute, line 18325: "1273406	jpg_comment	\303\202\342\204\242\303\202\305\241\0\1\0\37\0\0"
+Database error 22021: invalid byte sequence for encoding "UTF8": 0x00
+CONTEXT: COPY nodeattribute, line 2211: "1270951	jpg_comment	\0;CREATOR: gd-jpeg v1.0 (using IJG JPEG v62), quality = 90"
+Database error 22021: invalid byte sequence for encoding "UTF8": 0x00
+CONTEXT: COPY nodeattribute, line 4985: "1237217	survey_page_answered_time_1237192	\21PACK\22\342\200\232\0\302\25620141230102032\1\302\25620..."
+Database error 22021: invalid byte sequence for encoding "UTF8": 0x00
+CONTEXT: COPY nodeattribute, line 6: "1237218	survey_page_answered_time_1237192	\21PACK\22\342\200\232\0\302\25620141230102312\1\302\25620..."
+Database error 22021: invalid byte sequence for encoding "UTF8": 0x00
+CONTEXT: COPY nodeattribute, line 16401: "1219199	survey_page_answered_time_1218402	\21PACK\22\342\200\236\0\302\25620141013160902\1\302\25620..."

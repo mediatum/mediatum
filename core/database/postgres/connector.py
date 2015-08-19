@@ -187,6 +187,6 @@ class PostgresSQLAConnector(object):
             else:
                 logg.warn("postgres search config '%s' not found, ignored", lang)
 
-        autoindex_languages_setting = Setting(key="search.autoindex_languages", value=autoindex_languages)
+        autoindex_languages_setting = Setting(key=u"search.autoindex_languages", value=autoindex_languages)
         s.merge(autoindex_languages_setting)
         s.commit()

@@ -27,11 +27,11 @@ import pyaml
 from collections import OrderedDict
 sys.path.append(".")
 
-from core.init import basic_init
-from core.database.postgres import db_metadata
+from core import init
+from core.database.postgres import db_metadata, func
 import configargparse
 
-basic_init(root_loglevel=logging.WARN)
+init.basic_init(root_loglevel=logging.WARN)
 
 logg = logging.getLogger("manage.py")
 logg.setLevel(logging.INFO)
@@ -48,6 +48,9 @@ import utils.search
 s = db.session
 q = db.query
 
+
+global search_initialized
+search_initialized = False
 
 # utility functions
 # XXX: could be moved to utils
@@ -165,6 +168,22 @@ def fulltext(args):
             logg.info("nothing imported for node # %s", nid)
 
 
+def searchindex(args):
+    global search_initialized
+    if not search_initialized:
+        init.init_fulltext_search()
+        search_initialized = True
+
+    action = args.action.lower()
+
+    if action == "recreate":
+        logg.info("recreating search indexes from node fulltexts...")
+        s.execute(func.recreate_all_tsvectors_fulltext())
+        logg.info("recreating search indexes from node attributes...")
+        s.execute(func.recreate_all_tsvectors_attrs())
+        logg.info("searchindex recreate finished")
+
+
 def vacuum(args):
     action = args.action.lower() if args.action else None
 
@@ -216,6 +235,10 @@ if __name__ == "__main__":
     fulltext_subparser.add_argument("--overwrite", "-o", action="store_true", help="overwrite existing fulltexts")
     fulltext_subparser.add_argument("nid_or_all", help="node id to load fulltext for or 'all'")
     fulltext_subparser.set_defaults(func=fulltext)
+
+    searchindex_subparser = subparsers.add_parser("searchindex", help="manage full text search indexing")
+    searchindex_subparser.add_argument("action", choices=["recreate"], help="recreate search index from node data")
+    searchindex_subparser.set_defaults(func=searchindex)
 
     sql_subparser = subparsers.add_parser("sql", help="run a single SQL statement (use quotes if needed, for example if your query contains *)")
     sql_subparser.add_argument("--yaml", "-y", action="store_true", help="pretty yaml output")

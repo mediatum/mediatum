@@ -67,7 +67,7 @@ class SearchResult(Content):
         return 0
 
     def getLink(self, collection):
-        return 'node?scoll=' + collection.id
+        return u'node?scoll={}'.format(collection.id)
 
     def getContentStyles(self):
         return []

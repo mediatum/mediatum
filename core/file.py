@@ -3,6 +3,7 @@
     :copyright: (c) 2014 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+import codecs
 import os.path
 from warnings import warn
 
@@ -27,7 +28,7 @@ class FileMixin(object):
             return self.path
         else:
             return os.path.join(config.settings["paths.datadir"], self.path)
-    
+
     @property
     def _path(self):
         warn("use File.path instead", DeprecationWarning)
@@ -46,11 +47,17 @@ class FileMixin(object):
     def hash(self):
         return get_hash(self.path)
 
+    @property
+    def exists(self):
+        return os.path.exists(self.abspath)
+
     def open(self, *args, **kwargs):
         """Opens and returns the referenced file from the file system
         :raises: IOError
         """
-        return open(self.abspath, *args, **kwargs)
+        if not "encoding" in kwargs:
+            kwargs["encoding"] = "utf8"
+        return codecs.open(self.abspath, *args, **kwargs)
 
     def getType(self):
         warn("use File.type instead", DeprecationWarning)

@@ -1,2 +1,0 @@
-Database error 22021: invalid byte sequence for encoding "UTF8": 0x00
-CONTEXT: COPY nodeattribute, line 24408: "1270951	jpg_comment	\0;CREATOR: gd-jpeg v1.0 (using IJG JPEG v62), quality = 90"

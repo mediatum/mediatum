@@ -20,23 +20,34 @@ from __future__ import division, absolute_import, print_function
 
 from functools import partial
 import logging
+from pprint import pformat
 import sys
+import warnings
+import pyaml
+from collections import OrderedDict
 sys.path.append(".")
 
 from core.init import basic_init
 from core.database.postgres import db_metadata
 import configargparse
-from collections import OrderedDict
 
 basic_init(root_loglevel=logging.WARN)
 
 logg = logging.getLogger("manage.py")
 logg.setLevel(logging.INFO)
+logg.trace_level = logging.ERROR
 logging.getLogger("database").setLevel(logging.INFO)
 
 from core.database.init import init_database_values
-from core import db
+from core import db, Node
 
+
+s = db.session
+q = db.query
+
+
+# utility functions
+# XXX: could be moved to utils
 
 def drop_schema(s):
     s.execute("DROP SCHEMA mediatum CASCADE")
@@ -60,11 +71,6 @@ def create_schema(s):
         raise
 
 
-def recreate(s):
-    drop_schema(s)
-    create_schema(s)
-
-
 def reverse_sorted_tables():
     return reversed(db_metadata.sorted_tables)
 
@@ -80,6 +86,13 @@ def truncate_tables(s, table_fullnames=None):
     logg.info("truncated %s", table_fullnames)
 
 
+def get_conn_with_autocommit(s):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        conn = s.connection().execution_options(isolation_level="AUTOCOMMIT")
+    return conn
+
+
 def run_maint_command_for_tables(command, s, table_fullnames=None):
     """Runs a maintenance postgres command on tables that must be run outside a transaction.
     Uses all tables if `table_fullnames` is None.
@@ -87,8 +100,7 @@ def run_maint_command_for_tables(command, s, table_fullnames=None):
     :param table_fullnames: sequence of schema-qualified table names or None.
     """
     # we can't run inside an (implicit) transaction, so we have to use autocommit mode
-    conn = s.connection().execution_options(isolation_level="AUTOCOMMIT")
-
+    conn = get_conn_with_autocommit(s)
     if not table_fullnames:
         table_fullnames = [t.fullname for t in reverse_sorted_tables()]
 
@@ -100,33 +112,92 @@ def run_maint_command_for_tables(command, s, table_fullnames=None):
     logg.info("completed %s", command)
 
 
+reindex_tables = partial(run_maint_command_for_tables, "REINDEX TABLE")
 vacuum_tables = partial(run_maint_command_for_tables, "VACUUM")
 vacuum_analyze_tables = partial(run_maint_command_for_tables, "VACUUM ANALYZE")
-reindex_tables = partial(run_maint_command_for_tables, "REINDEX TABLE")
 
 
-s = db.session
+def run_single_sql(stmt, s):
+    # we can't run inside an (implicit) transaction, so we have to use autocommit mode
+    conn = get_conn_with_autocommit(s)
+    return conn.execute(stmt)
 
-actions = OrderedDict([
-    ("create", create_schema),
-    ("drop", drop_schema),
-    ("recreate", recreate),
-    ("init", init_database_values),
-    ("truncate", truncate_tables),
-    ("vacuum", vacuum_tables),
-    ("analyze", vacuum_analyze_tables),
-    ("reindex", reindex_tables)
-])
+
+# subcommand handlers
+
+
+def schema(args):
+    action = args.action[0]
+    if action == "drop":
+        drop_schema(s)
+    elif action == "create":
+        create_schema(s)
+    elif action == "recreate":
+        drop_schema(s)
+        create_schema(s)
+
+
+def data(args):
+    action = args.action[0]
+    if action == "init":
+        init_database_values(s)
+    elif action == "truncate":
+        truncate_tables(s)
+
+
+def vacuum(args):
+    action = args.action[0].lower() if args.action else None
+
+    if action is None:
+        vacuum_tables(s)
+    elif action == "analyze":
+        vacuum_analyze_tables(s)
+
+
+def result_proxy_to_yaml(resultproxy):
+    rows = resultproxy.fetchall()
+    as_list = [OrderedDict(sorted(r.items(), key=lambda e:e[0])) for r in rows]
+    formatted = pyaml.dumps(as_list)
+    return formatted
+
+
+def sql(args):
+    # multiple args can be given if the user didn't quote the query
+    stmt = " ". join(args.sql)
+    res = run_single_sql(stmt, s)
+    if res.returns_rows:
+        if args.yaml:
+            logg.info("got %s rows", res.rowcount)
+        else:
+            logg.info("result:\n%s", res.fetchall())
+
+        print(result_proxy_to_yaml(res).strip())
+    else:
+        logg.info("finished, no results returned")
+
 
 if __name__ == "__main__":
     parser = configargparse.ArgumentParser("mediaTUM manage.py")
-    parser.add_argument("action", nargs="*", choices=actions.keys())
+    subparsers = parser.add_subparsers(title="subcommands", help="see manage.py <subcommand> --help for more info")
+
+    schema_subparser = subparsers.add_parser("schema", help="create / drop database schema")
+    schema_subparser.add_argument("action", choices=["drop", "create", "recreate"], help="recreate first runs 'drop', then 'create'")
+    schema_subparser.set_defaults(func=schema)
+
+    data_subparser = subparsers.add_parser("data", help="delete database data / load default values")
+    data_subparser.add_argument("action", choices=["truncate", "init"], help="remove all data | load default values into empty database")
+    data_subparser.set_defaults(func=data)
+
+    vacuum_subparser = subparsers.add_parser("vacuum", help="run VACUUM on all tables")
+    vacuum_subparser.add_argument("action", nargs="?", choices=["analyze"])
+    vacuum_subparser.set_defaults(func=vacuum)
+
+    sql_subparser = subparsers.add_parser("sql", help="run a single SQL statement (use quotes if needed, for example if your query contains *)")
+    sql_subparser.add_argument("--yaml", "-y", action="store_true", help="pretty yaml output")
+    sql_subparser.add_argument("sql", nargs="+", help="SQL statement to execute")
+    sql_subparser.set_defaults(func=sql)
+
     args = parser.parse_args()
+    args.func(args)
 
-    print()
-    print("running actions: " + ", ".join(args.action))
-    print("-" * 80)
-
-    for action in args.action:
-        actions[action](s)
-        db.session.commit()
+    s.commit()

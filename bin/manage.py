@@ -35,11 +35,14 @@ basic_init(root_loglevel=logging.WARN)
 
 logg = logging.getLogger("manage.py")
 logg.setLevel(logging.INFO)
-logg.trace_level = logging.ERROR
+
+from utils.log import TraceLogger
+TraceLogger.trace_level = logging.ERROR
 logging.getLogger("database").setLevel(logging.INFO)
 
 from core.database.init import init_database_values
 from core import db, Node
+import utils.search
 
 
 s = db.session
@@ -143,6 +146,25 @@ def data(args):
         truncate_tables(s)
 
 
+def fulltext(args):
+    nid_or_all = args.nid_or_all.lower()
+
+    if nid_or_all == "all":
+        import_count = utils.search.import_fulltexts(args.overwrite)
+        logg.info("loaded fulltexts for %s nodes", import_count)
+    else:
+        nid = int(args.nid_or_all)
+        node = q(Node).get(nid)
+        if node is None:
+            logg.warn("node # %s not found!", nid)
+            return
+        imported = utils.search.import_node_fulltext(node, args.overwrite)
+        if imported:
+            logg.info("loaded fulltext for node # %s", nid)
+        else:
+            logg.info("nothing imported for node # %s", nid)
+
+
 def vacuum(args):
     action = args.action.lower() if args.action else None
 
@@ -189,6 +211,11 @@ if __name__ == "__main__":
     vacuum_subparser = subparsers.add_parser("vacuum", help="run VACUUM on all tables")
     vacuum_subparser.add_argument("action", nargs="?", choices=["analyze"])
     vacuum_subparser.set_defaults(func=vacuum)
+
+    fulltext_subparser = subparsers.add_parser("fulltext", help="import fulltext files into the database")
+    fulltext_subparser.add_argument("--overwrite", "-o", action="store_true", help="overwrite existing fulltexts")
+    fulltext_subparser.add_argument("nid_or_all", help="node id to load fulltext for or 'all'")
+    fulltext_subparser.set_defaults(func=fulltext)
 
     sql_subparser = subparsers.add_parser("sql", help="run a single SQL statement (use quotes if needed, for example if your query contains *)")
     sql_subparser.add_argument("--yaml", "-y", action="store_true", help="pretty yaml output")

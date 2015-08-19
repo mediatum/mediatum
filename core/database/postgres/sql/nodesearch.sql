@@ -1,3 +1,18 @@
+CREATE OR REPLACE FUNCTION get_autoindex_languages() RETURNS text[]
+    LANGUAGE plpgsql
+    SET search_path = :search_path
+    AS $$
+DECLARE
+    autoindex_languages text[];
+BEGIN
+    SELECT array_agg(v)
+    FROM (SELECT jsonb_array_elements_text(value) v FROM setting WHERE key = 'search.autoindex_languages') q
+    INTO autoindex_languages;
+RETURN autoindex_languages;
+END;
+$$;
+
+
 CREATE OR REPLACE FUNCTION insert_node_tsvectors() RETURNS trigger
     LANGUAGE plpgsql
     SET search_path = :search_path
@@ -6,9 +21,7 @@ DECLARE
     searchconfig regconfig;
     autoindex_languages text[];
 BEGIN
-    SELECT array_agg(v)
-    FROM (SELECT jsonb_array_elements_text(value) v FROM setting WHERE key = 'search.autoindex_languages') q
-    INTO autoindex_languages;
+    autoindex_languages = get_autoindex_languages();
 
     IF autoindex_languages IS NOT NULL THEN
         FOREACH searchconfig IN ARRAY autoindex_languages LOOP
@@ -32,9 +45,7 @@ DECLARE
     searchconfig text;
     autoindex_languages text[];
 BEGIN
-    SELECT array_agg(v)
-    FROM (SELECT jsonb_array_elements_text(value) v FROM setting WHERE key = 'search.autoindex_languages') q
-    INTO autoindex_languages;
+    autoindex_languages = get_autoindex_languages();
 
     IF autoindex_languages IS NOT NULL THEN
         IF OLD.fulltext != NEW.fulltext THEN
@@ -136,21 +147,98 @@ END;
 $$;
 
 
-CREATE OR REPLACE FUNCTION import_fulltexts() RETURNS void
+CREATE OR REPLACE FUNCTION import_fulltexts_multicorn() RETURNS void
     LANGUAGE plpgsql
     SET search_path = :search_path
     AS $$
-DECLARE
-    min_config regconfig;
 BEGIN
-    INSERT INTO fulltext (fulltext, nid)
-    SELECT fulltext, q.nid
-    FROM mediatum_import.fulltexts imp
-    JOIN LATERAL (SELECT id AS nid
-            FROM node JOIN nodefile nf ON node.id=nf.nid
-            WHERE filetype='fulltext'
-            AND path = replace(imp.dir, '.', '/') || '/' || imp.id || '.txt') q ON true;
+    DROP TABLE IF EXISTS mediatum_import_fulltexts;
+
+    CREATE TABLE mediatum_import.fulltexts AS
+    SELECT nid, string_agg(fulltext, '\n---\n')
+    FROM mediatum_import.fulltext_files ft, nodefile nf
+    WHERE filetype='fulltext'
+    AND path = replace(ft.dir, '.', '/') || '/' || ft.id || '.txt'
+    GROUP BY nid
+    ;
 RETURN;
 END;
 $$;
 
+
+CREATE OR REPLACE FUNCTION import_fulltexts_into_node_table() RETURNS void
+    LANGUAGE plpgsql
+    SET search_path = :search_path
+    AS $$
+BEGIN
+    ALTER TABLE node DISABLE TRIGGER update_node_tsvectors;
+
+    UPDATE node
+    SET fulltext=q.fulltext
+    FROM (SELECT id, fulltext FROM mediatum_import.fulltexts) q
+    WHERE node.id = q.nid;
+
+    ALTER TABLE node ENABLE TRIGGER update_node_tsvectors;
+RETURN;
+END;
+$$;
+
+
+CREATE OR REPLACE FUNCTION recreate_all_tsvectors_fulltext() RETURNS void
+    LANGUAGE plpgsql
+    SET search_path = :search_path
+    AS $$
+DECLARE
+    searchconfig regconfig;
+    autoindex_languages text[];
+BEGIN
+    autoindex_languages = get_autoindex_languages();
+
+    IF autoindex_languages IS NOT NULL THEN
+        DELETE FROM fts WHERE searchtype = 'fulltext';
+        FOREACH searchconfig IN ARRAY autoindex_languages LOOP
+            -- TODO: replace with proper upsert after 9.5
+            EXECUTE 'DROP INDEX IF EXISTS fts_fulltext_' || searchconfig;
+            INSERT INTO fts (nid, config, searchtype, tsvec)
+            SELECT id, searchconfig, 'fulltext', to_tsvector_safe(searchconfig::regconfig, fulltext)
+            FROM node WHERE fulltext IS NOT NULL;
+
+            -- rebuild the search index
+            EXECUTE 'CREATE INDEX fts_fulltext_' || searchconfig
+                || ' ON fts USING gin(tsvec) WHERE config = ''' || searchconfig || ''''
+                || ' AND searchtype = ''fulltext''';
+        END LOOP;
+    END IF;
+RETURN;
+END;
+$$;
+
+
+CREATE OR REPLACE FUNCTION recreate_all_tsvectors_attrs() RETURNS void
+    LANGUAGE plpgsql
+    SET search_path = :search_path
+    AS $$
+DECLARE
+    searchconfig regconfig;
+    autoindex_languages text[];
+BEGIN
+    autoindex_languages = get_autoindex_languages();
+
+    IF autoindex_languages IS NOT NULL THEN
+        DELETE FROM fts WHERE searchtype = 'attrs';
+        FOREACH searchconfig IN ARRAY autoindex_languages LOOP
+            -- TODO: replace with proper upsert after 9.5
+            EXECUTE 'DROP INDEX IF EXISTS fts_attrs_' || searchconfig;
+            INSERT INTO fts (nid, config, searchtype, tsvec)
+            SELECT id, searchconfig, 'attrs', jsonb_object_values_to_tsvector(searchconfig::regconfig, attrs)
+            FROM node WHERE attrs IS NOT NULL;
+
+            -- rebuild the search index
+            EXECUTE 'CREATE INDEX fts_attrs_' || searchconfig
+                || ' ON fts USING gin(tsvec) WHERE config = ''' || searchconfig || ''''
+                || ' AND searchtype = ''attrs''';
+        END LOOP;
+    END IF;
+RETURN;
+END;
+$$;

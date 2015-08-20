@@ -67,7 +67,14 @@ class Fts(DeclarativeBase):
 
 
 def _prepare_searchstring(op, searchstring):
-    return op.join(searchstring.strip('"').strip().split())
+    terms = searchstring.strip().strip('"').strip().split()
+    def rewrite_prefix_search(t):
+        starpos = t.find(u"*")
+        return t[:starpos] + u":*"
+
+    # postgres needs the form term:* for prefix search, we allow simple stars at the end of the word
+    rewritten_terms = [rewrite_prefix_search(t) if u"*" in t else t for t in terms]
+    return op.join(rewritten_terms)
 
 
 def make_fts_expr_tsvec(languages, target, searchstring, op="|"):

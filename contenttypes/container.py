@@ -213,9 +213,6 @@ class Container(Data, ContainerMixin, SchemaMixin):
 
     def getLabel(self, lang=None):
         #removes exceptions when object has to attr dict
-        if getattr(self, 'attrs') is None:
-            return self.name
-
         if lang and self.get(u'{}.name'.format(lang)) != "":
             return self.get(u'{}.name'.format(lang))
 

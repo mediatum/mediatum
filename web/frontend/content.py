@@ -307,15 +307,15 @@ class ContentList(Content):
         # use template of style and build html content
         contentList = liststyle.renderTemplate(req, {"nav_list": nav_list, "nav_page": nav_page, "act_page": self.page,
                                                      "files": tal_files, "maxresult": len(self.files), "op": "", "language": lang(req)})
-        sidebar = ""  # check for sidebar
-        if self.collection.get("system.sidebar") != "":
+        sidebar = u""  # check for sidebar
+        if self.collection.get(u"system.sidebar") != "":
             for sb in [s for s in self.collection.get("system.sidebar").split(";") if s != ""]:
                 l, fn = sb.split(":")
                 if l == lang(req):
                     for f in [f for f in self.collection.getFiles() if fn.endswith(f.getName())]:
                         sidebar = replaceModules(self, req, includetemplate(self, f.retrieveFile(), {})).strip()
         if sidebar != "":
-            return '<div id="portal-column-one">{0}<div id="nodes">{1}</div>{0}</div><div id="portal-column-two">{2}</div>'.format(filesHTML, contentList, sidebar)
+            return u'<div id="portal-column-one">{0}<div id="nodes">{1}</div>{0}</div><div id="portal-column-two">{2}</div>'.format(filesHTML, contentList, sidebar)
         else:
             return u'{0}<div id="nodes">{1}</div>{0}'.format(filesHTML, contentList)
 

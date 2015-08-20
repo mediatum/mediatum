@@ -238,10 +238,11 @@ def extended_search(req):
     from web.frontend.content import ContentList
 
     collection_id = req.form.get("collection", type=int)
-    if collection_id:
-        collection = q(Collection).get(collection_id)
-    else:
-        # no collection id given -> search starts at collection root
+    collection = q(Collection).get(collection_id) if collection_id else None
+
+    if collection is None:
+        # no collection id given or collection not found -> search starts at collection root
+        # XXX: collection not found should not really happen, but it happens. Investigate later...
         collection = q(Collections).one()
 
     searchquery, readable_query = _extended_searchquery_from_req(req)

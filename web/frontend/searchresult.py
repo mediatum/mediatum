@@ -114,20 +114,20 @@ def simple_search(req):
     for key in req.params:
         if key.startswith("c_"):
             collection_ids.append(key[2:])
-            
+
     # no collection means: all collections
     if collection_ids:
         collection_query = q(Container).filter(Container.id.in_(collection_ids))
     else:
         collection_query = q(Collections).one().container_children
-        
+
     # TODO: access.filter collections
     collections = collection_query.all()
-    
+
     if logg.isEnabledFor(logging.DEBUG):
         logg.debug("simple_search with query '%s' on %s collections: %s", searchquery, len(collections), [c.name for c in collections])
-    
-    def do_search(start_node): 
+
+    def do_search(start_node):
         result = start_node.search('full=' + searchquery).all()
 #             result = access.filter(result)
         if len(result) > 0:
@@ -136,7 +136,7 @@ def simple_search(req):
             cl.linkname = "Suchergebnis"
             cl.linktarget = ""
             return cl
-            
+
     act_node_id = req.form.get("act_node", type=int)
     act_node = q(Node).get(act_node_id) if act_node_id else None
     if act_node is not None and not isinstance(act_node, Collections):
@@ -146,7 +146,7 @@ def simple_search(req):
     else:
         # actual node is collections-node
         res = [cl for cl in (do_search(collection) for collection in collections) if cl is not None]
-        
+
     if logg.isEnabledFor(logging.DEBUG):
         logg.debug("%s result sets found with %s nodes", len(res), len([n for cl in res for n in cl.files]))
 
@@ -197,11 +197,11 @@ def _extended_searchquery_from_req(req):
                 if query_to_key in req.form and field.getFieldtype() == "date":
                     date_from = "0000-00-00T00:00:00"
                     date_to = "0000-00-00T00:00:00"
-                    
+
                     from_value = req.form.get(query_from_key)
                     if from_value:
                         date_from = date.format_date(date.parse_date(from_value, field.getValues()), "%Y-%m-%dT%H:%M:%S")
-                            
+
                     to_value = req.form.get(query_to_key)
                     if to_value:
                         date_to = date.format_date(date.parse_date(to_value, field.getValues()), "%Y-%m-%dT%H:%M:%S")
@@ -223,20 +223,20 @@ def _extended_searchquery_from_req(req):
                                                                 to_value)
                 else:
                     q_str += field.name + "=" + protect(element_query)
-                    
+
                     if field.label:
                         q_user += field.label + " = " + protect(element_query)
                     else:
                         q_user += field.name + " = " + protect(element_query)
 
             q_str += ")"
-    
+
     return q_str, q_user.strip()
 
 
 def extended_search(req):
     from web.frontend.content import ContentList
-        
+
     collection_id = req.form.get("collection", type=int)
     if collection_id:
         collection = q(Collection).get(collection_id)
@@ -247,14 +247,14 @@ def extended_search(req):
     searchquery, readable_query = _extended_searchquery_from_req(req)
 
     logg.debug("extended_search with query '%s' on collection '%s'(%s)", searchquery, collection.name, collection.id)
-        
+
     act_node_id = req.form.get("act_node", type=int)
     act_node = q(Node).get(act_node_id) if act_node_id else None
-    
+
     search_collection = act_node if act_node is not None else collection
-    
+
     result = search_collection.search(searchquery).all()
-    
+
 #         result = access.filter(result)
 #         logg.info(access.user.name + "%s xsearch for '%s', %s results", access.user.name, q_user, len(result))
 
@@ -264,5 +264,5 @@ def extended_search(req):
         cl.linkname = ""
         cl.linktarget = ""
         return cl
-    
+
     return SearchResult([], readable_query)

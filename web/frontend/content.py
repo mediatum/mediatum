@@ -315,11 +315,16 @@ class ContentList(Content):
                     for f in [f for f in self.collection.getFiles() if fn.endswith(f.getName())]:
                         sidebar = replaceModules(self, req, includetemplate(self, f.retrieveFile(), {})).strip()
         if sidebar != "":
-            return u'<div id="portal-column-one">{0}<div id="nodes">{1}</div>{0}</div><div id="portal-column-two">{2}</div>'.format(filesHTML, contentList, sidebar)
+            return u'<div id="portal-column-one">{0}<div id="nodes">{1}</div>{0}</div><div id="portal-column-two">{2}</div>'.format(
+                filesHTML,
+                contentList,
+                sidebar)
         else:
             return u'{0}<div id="nodes">{1}</div>{0}'.format(filesHTML, contentList)
 
 # paths
+
+
 def getPaths(node):
     res = []
 
@@ -567,7 +572,7 @@ class ContentArea(Content):
                                "searchmode": req.params.get("searchmode", ""),
                                "items": items,
                                "id": id,
-                               "nodeprint": "1" if printlink else "0", # XXX: template compat for non-default templates
+                               "nodeprint": "1" if printlink else "0",  # XXX: template compat for non-default templates
                                "printlink": printlink,
                                "area": req.session.get("area", "")},
                               macro="path",

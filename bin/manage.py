@@ -144,7 +144,7 @@ def data(args):
 
 
 def vacuum(args):
-    action = args.action[0].lower() if args.action else None
+    action = args.action.lower() if args.action else None
 
     if action is None:
         vacuum_tables(s)

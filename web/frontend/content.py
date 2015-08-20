@@ -431,14 +431,14 @@ def mkContentNode(req):
 
         if node.show_list_view:
             # no startpage found, list view requested
-        allowed_nodes = list(node.content_children_for_all_subcontainers.filter_read_access())
-        node.ccount = len(allowed_nodes)
-        c = ContentList(allowed_nodes, getCollection(node))
-        c.feedback(req)
-        c.node = node
-        return c
+            allowed_nodes = list(node.content_children_for_all_subcontainers.filter_read_access())
+            node.ccount = len(allowed_nodes)
+            c = ContentList(allowed_nodes, getCollection(node))
+            c.feedback(req)
+            c.node = node
+            return c
 
-        return ContentNode(node)
+    return ContentNode(node)
 
 
 class ContentError(Content):

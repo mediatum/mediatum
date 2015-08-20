@@ -287,7 +287,7 @@ class ContentList(Content):
             if i < self.num:
                 # XXX: remove session-stored Node instances!
                 file = db.refresh(self.files[i])
-                
+
                 self.id2pos[self.files[i].id] = i
                 tal_files += [SingleFile(file, i, self.num, language=language)]
                 tal_ids += [SingleFile(file, i, self.num, language=language).node.id]
@@ -531,16 +531,19 @@ class ContentArea(Content):
         if "raw" in req.params:
             path = ""
         else:
-            node = self.content.node if hasattr(self.content, "node") else None
-            
+            if hasattr(self.content, "node"):
+                node = self.content.node = db.refresh(self.content.node)
+            else:
+                node = None
+
             if node is None:
-                printlink = '/print/0' 
+                printlink = '/print/0'
             else:
                 if isinstance(node, Container) and node.get("system.print") == "1":
                     printlink = '/print/' + unicode(node.id)
-                else: 
+                else:
                     printlink = None
-                    
+
             if printlink and "sortfield0" in req.params:
                 printlink += '?sortfield0=' + req.params.get("sortfield0") + '&sortfield1=' + req.params.get("sortfield1")
 
@@ -555,7 +558,7 @@ class ContentArea(Content):
 
             styles = self.content.getContentStyles()
             items = req.params.get("itemsperpage")
-            
+
             path = tal.getTAL(theme.getTemplate("content_nav.html"),
                               {"params": self.params,
                                "path": breadcrumbs,
@@ -574,7 +577,7 @@ class ContentArea(Content):
 
     def status(self):
         return self.content.status()
-    
+
 
 class CollectionLogo(Content):
 

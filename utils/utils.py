@@ -389,12 +389,12 @@ def isCollection(node):
 
 def getCollection(node):
     from core import db
-    from contenttypes import Collections
+    from contenttypes import Collections, Collection
     q = db.query
     def p(node):
-        if node.type == "collection" or node.type == "collections":
+        if isinstance(node, (Collection, Collections)):
             return node
-        for pp in node.getParents():
+        for pp in node.parents:
             n = p(pp)
             if n:
                 return n

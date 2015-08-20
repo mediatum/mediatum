@@ -76,14 +76,12 @@ def reverse_sorted_tables():
 
 
 def truncate_tables(s, table_fullnames=None):
-
     if not table_fullnames:
         table_fullnames = [t.fullname for t in reverse_sorted_tables()]
 
-    s.execute('TRUNCATE {} RESTART IDENTITY;'.format(
-        ','.join(table_fullnames)))
-
-    logg.info("truncated %s", table_fullnames)
+    table_fullname_str = ",".join(table_fullnames)
+    s.execute('TRUNCATE {} RESTART IDENTITY;'.format(table_fullname_str))
+    logg.info("truncated %s", table_fullname_str)
 
 
 def get_conn_with_autocommit(s):
@@ -127,7 +125,7 @@ def run_single_sql(stmt, s):
 
 
 def schema(args):
-    action = args.action[0]
+    action = args.action.lower()
     if action == "drop":
         drop_schema(s)
     elif action == "create":
@@ -138,7 +136,7 @@ def schema(args):
 
 
 def data(args):
-    action = args.action[0]
+    action = args.action.lower()
     if action == "init":
         init_database_values(s)
     elif action == "truncate":

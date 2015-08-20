@@ -35,7 +35,6 @@ from sqlalchemy.orm.exc import NoResultFound
 from core import Node
 from core.systemtypes import Searchmasks, Root
 from contenttypes.container import Directory
-from core.acl import AccessData
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -550,7 +549,6 @@ class NavigationFrame:
         self.params["show_navbar"] = show_navbar
         self.params["content"] = contentHTML
         self.params["act_node"] = req.params.get("id", req.params.get("dir", ""))
-        self.params["acl"] = AccessData(req)
 
         rootnode = q(Collections).one()
         self.params["header_items"] = rootnode.getCustomItems("header")
@@ -576,7 +574,7 @@ class NavigationFrame:
             # tree
             self.params["tree"] = req.getTAL(
                 theme.getTemplate("frame.html"), {
-                    "collections": self.collection_portlet.getCollections(), "acl": self.params["acl"]}, macro="frame_tree")
+                    "collections": self.collection_portlet.getCollections()}, macro="frame_tree")
 
         req.writeTAL(theme.getTemplate("frame.html"), self.params, macro="frame")
 

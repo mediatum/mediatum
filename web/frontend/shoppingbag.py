@@ -285,8 +285,6 @@ def export_shoppingbag_zip(req):
     import random
     import os
 
-    access = AccessData(req)
-
     items = []
     for key in req.params.keys():
         if key.startswith("select_"):

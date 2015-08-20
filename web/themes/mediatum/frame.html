@@ -93,7 +93,7 @@
 <!-- macro for navigation tree -->
 <div  metal:define-macro="frame_tree" class="portlet">
     <ul id="navigationlist">
-        <tal:block tal:repeat="data collections"><li tal:attributes="class python:data.getClass()" tal:define="label python:data.getText(acl)" tal:condition="python:label!=''">
+        <tal:block tal:repeat="data collections"><li tal:attributes="class python:data.getClass()" tal:define="label python:data.getText()" tal:condition="python:label!=''">
             <div  tal:attributes="style python:data.getStyle(); class python:['linknotselected','linkselected'][data.active];">
                 <a tal:attributes="href python:data.getFoldLink()" tal:content="raw label"/>
                 <a tal:condition="python:data.hassubdir" tal:attributes="href python:data.getLink(); class python:['expanded','collapsed'][data.isFolded()]"> </a>

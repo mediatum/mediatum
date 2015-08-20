@@ -194,6 +194,7 @@ def getContent(req, ids):
     ctx["t"] = t
 
     if action == 'restore':
+        raise NotImplementedError("todo")
         vid = req.params.get('vid', '0')
         node = nodes[0].getActiveVersion()
         if vid != '0' and vid != node.id:
@@ -225,7 +226,7 @@ def getContent(req, ids):
                 nodes = [n]
                 ids = [n.id]
 
-                node_versions = nodes[0].getVersionList()
+                node_versions = nodes[0].tagged_versions
                 update_date, creation_date = get_datelists(nodes)
 
                 _maskform, _fields = get_maskform_and_fields(nodes, mask, req)
@@ -298,7 +299,7 @@ def getContent(req, ids):
                         _next = q(Node).get(n.next_nid)
                         _next.children.append(q(Node).get(n.prev_nid))
 
-                    node_versions = nodes[0].getVersionList()
+                    node_versions = nodes[0].tagged_versions
                     update_date, creation_date = get_datelists(nodes)
 
                     _maskform, _fields = get_maskform_and_fields(nodes, mask, req)
@@ -324,7 +325,7 @@ def getContent(req, ids):
                         parentNode = q(Node).get(pid)
                         parentNode.children.remove(n)
 
-                    node_versions = nodes[0].getVersionList()
+                    node_versions = nodes[0].tagged_versions
                     update_date, creation_date = get_datelists(nodes)
 
                     _maskform, _fields = get_maskform_and_fields(nodes, mask, req)
@@ -388,7 +389,7 @@ def getContent(req, ids):
                 nodes = _nodes
                 nodes = mask.updateNode(nodes, req)
 
-                node_versions = nodes[0].getVersionList()
+                node_versions = nodes[0].tagged_versions
                 update_date, creation_date = get_datelists(nodes)
 
                 _maskform, _fields = get_maskform_and_fields(nodes, mask, req)
@@ -443,7 +444,7 @@ def getContent(req, ids):
         if not hasattr(mask, "i_am_not_a_mask"):
             req.params["errorlist"] = mask.validate(nodes)
 
-    node_versions = nodes[0].getVersionList()
+    node_versions = nodes[0].tagged_versions
     update_date, creation_date = get_datelists(nodes)
 
     data = {}

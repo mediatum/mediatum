@@ -430,8 +430,9 @@ def mkContentNode(req):
                 if f.type == "content" and f.mimetype == "text/html" and os.path.isfile(
                         f.retrieveFile()) and fileIsNotEmpty(f.retrieveFile()):
                     return ContentNode(node)
-        # no startpage found, show nodes
 
+        if node.show_list_view:
+            # no startpage found, list view requested
         allowed_nodes = access.filter(list(node.content_children_for_all_subcontainers))
         node.ccount = len(allowed_nodes)
         #ids = access.filter(node.getAllChildren())
@@ -439,7 +440,7 @@ def mkContentNode(req):
         c.feedback(req)
         c.node = node
         return c
-    else:
+
         return ContentNode(node)
 
 

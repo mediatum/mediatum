@@ -109,6 +109,10 @@ class Container(Data, ContainerMixin, SchemaMixin):
     """(Abstract) Base class for Nodes that contain other Container/Content nodes and are displayed in the navigation area.
     """
 
+    # By default, a Container shows its children as a list.
+    # Subclasses can set this to False if they want to display something else via show_node_big().
+    show_list_view = True
+
     @classmethod
     def getTypeAlias(cls):
         return "directory"

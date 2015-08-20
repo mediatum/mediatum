@@ -16,12 +16,7 @@ logg = logging.getLogger(__name__)
 q = db.query
 
 # fake query to initalize sqlalchemy-continuum
-q(Node).first()
-
-Transaction = versioning_manager.transaction_cls
-TransactionMeta = versioning_manager.transaction_meta_cls
-NodeVersion = version_class(Node)
-NodeFileVersion = version_class(File)
+#q(Node).first()
 
 
 def fix_versoning_attributes():
@@ -41,14 +36,18 @@ def all_version_nodes():
 
 def create_alias_version(current_version_node, old_version_node):
     s = db.session
+    Transaction = versioning_manager.transaction_cls
     tx = Transaction()
     version_id = int(old_version_node["system.version.id"])
     operation_type = Operation.INSERT if version_id == 1 else Operation.UPDATE
+    TransactionMeta = versioning_manager.transaction_meta_cls
     tx.meta_relation["alias_id"] = TransactionMeta(key="alias_id", value=unicode(old_version_node.id))
     tx.meta_relation["tag"] = TransactionMeta(key="tag", value=u"v" + unicode(version_id))
     if "system.version.comment" in old_version_node:
         tx.meta_relation["comment"] = TransactionMeta(key="comment", value=old_version_node["system.version.comment"])
     s.add(tx)
+    NodeVersion = version_class(Node)
+    NodeFileVersion = version_class(File)
     nv = NodeVersion(id=current_version_node.id,
                      name=old_version_node.name,
                      type=old_version_node.type,
@@ -73,12 +72,16 @@ def create_alias_version(current_version_node, old_version_node):
 
 def create_current_version(current_version_node):
     s = db.session
+    Transaction = versioning_manager.transaction_cls
     tx = Transaction()
     version_id = current_version_node["system.version.id"]
     operation_type = Operation.UPDATE
+    TransactionMeta = versioning_manager.transaction_meta_cls
     tx.meta_relation["tag"] = TransactionMeta(key="tag", value=u"v" + unicode(version_id))
     tx.meta_relation["comment"] = TransactionMeta(key="comment", value=current_version_node["system.version.comment"])
     s.add(tx)
+    NodeVersion = version_class(Node)
+    NodeFileVersion = version_class(File)
     nv = NodeVersion(id=current_version_node.id,
                      name=current_version_node.name,
                      type=current_version_node.type,

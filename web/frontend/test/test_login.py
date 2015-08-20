@@ -21,6 +21,7 @@ PASSWORD = "password"
 NEW_PASSWORD = "newsecurepass"
 NEW_PASSWORD_REPEATED = "wrongpass"
 
+
 @fixture
 def check_auth_call(user, req):
     """Checks if the login view passes the right parameters and returns a fake user"""
@@ -31,6 +32,7 @@ def check_auth_call(user, req):
         return user
 
     return _check
+
 
 @fixture
 def auth_success_patch(collections, monkeypatch, check_auth_call):
@@ -47,10 +49,10 @@ def check_pwdchange(user, req, exception):
         assert new_password_repeated == NEW_PASSWORD_REPEATED
         assert user == _user
         assert req == _req
-        
+
         if exception is not None:
             raise exception
-        
+
     return _check
 
 

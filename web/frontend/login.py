@@ -45,7 +45,7 @@ def _handle_login_submit(req):
     login_name = req.form.get("user", config.get("user.guestuser"))
     password = req.form.get("password", "")
 
-    if not login_name.strip() and "user" in req.form:  
+    if not login_name.strip() and "user" in req.form:
         # empty username
         return 1
 
@@ -114,7 +114,7 @@ def logout(req):
 
 
 def pwdchange(req):
-    user = users.user_from_session(req.session)   
+    user = users.user_from_session(req.session)
     error = 0
 
     if "ChangeSubmit" in req.form:
@@ -126,7 +126,7 @@ def pwdchange(req):
             password_old = req.form.get("password_old")
             password_new1 = req.form.get("password_new1")
             password_new2 = req.form.get("password_new2")
-            
+
             try:
                 auth.change_user_password(user, password_old, password_new1, password_new2, req)
             except WrongPassword:

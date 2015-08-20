@@ -53,9 +53,20 @@ def handle_json_request(req):
             f = q(Node).get(searchmaskitem_id).getFirstField()
         if not f:  # All Metadata
             f = g = getMetadataType("text")
-        s = [f.getSearchHTML(Context(g, value=req.params.get("query_field_value"), width=174, name="query" + ustr(req.params.get("fieldno")),
-                                     language=lang(req), collection=q(Collections).get(req.params.get("collection_id")),
-                                     user=users.getUserFromRequest(req), ip=req.ip))]
+        s = [
+            f.getSearchHTML(
+                Context(
+                    g,
+                    value=req.params.get("query_field_value"),
+                    width=174,
+                    name="query" +
+                    ustr(
+                        req.params.get("fieldno")),
+                    language=lang(req),
+                    collection=q(Collections).get(
+                        req.params.get("collection_id")),
+                    user=users.getUserFromRequest(req),
+                    ip=req.ip))]
     req.write(req.params.get("jsoncallback") + "(%s)" % json.dumps(s, indent=4))
     return
 
@@ -109,7 +120,7 @@ def display(req):
         mask = mdt.getMask('head_meta') if mdt is not None else None
         req.params['head_meta'] = mask.getViewHTML([content.actNode()], flags=8) if mask is not None else u''
     except:
-        # XXX: the "common exception cases" here were act_node, mdt, mask == None. This is handled in the try-block now. 
+        # XXX: the "common exception cases" here were act_node, mdt, mask == None. This is handled in the try-block now.
         # Other exceptions should indicate a real failure.
         logg.exception("exception in display, setting head_meta to empty string")
         req.params['head_meta'] = ''
@@ -119,7 +130,7 @@ def display(req):
     contentHTML = content.html(req)
     contentHTML = modify_tex(contentHTML, 'html')
     navframe.write(req, contentHTML)
-    # set status code here... 
+    # set status code here...
     req.setStatus(content.status())
     # ... Don't return a code because Athana overwrites the content if an http error code is returned from a handler.
 

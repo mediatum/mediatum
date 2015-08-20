@@ -87,7 +87,7 @@ def getFrontendModules(modname=""):
                 m = eval("web.frontend.modules." + name)
             except:
                 logg.exception("couldn't load frontend module %s", name)
-                
+
             if modname == name:
                 return getattr(m, name)
             mods[name] = getattr(m, name)
@@ -106,7 +106,7 @@ def getEditorModules():
                 ret.append(mods[k])
         except:
             logg.exception("exception in getEditorModules")
-            
+
     return ret
 
 

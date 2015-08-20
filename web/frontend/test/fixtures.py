@@ -29,4 +29,3 @@ def user():
 def nav_frame():
     """XXX: Very simple mock navigation frame, improve this"""
     return MagicMock(name="navigation_frame")
-

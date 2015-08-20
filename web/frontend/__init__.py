@@ -1,5 +1,6 @@
 from core.transition import httpstatus
 
+
 class Content:
 
     def feedback(self, req):
@@ -10,5 +11,3 @@ class Content:
 
     def status(self):
         return httpstatus.HTTP_OK
-
-

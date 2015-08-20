@@ -256,6 +256,7 @@ class NavTreeEntry:
         return u"/?cunfold={}&dir={}&id={}".format(self.node.id,
                                                    self.node.id,
                                                    self.node.id)
+
     def getLink(self):
         if self.folded:
             return self.getUnfoldLink()

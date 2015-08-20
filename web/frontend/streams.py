@@ -48,6 +48,7 @@ def incUsage(node):
     # no statistics logging here at the moment, uneeded
     pass
 
+
 def splitpath(path):
     m = IMGNAME.match(path)
     if m is None:
@@ -151,9 +152,9 @@ def send_thumbnail2(req):
     # fallback2
     for p in athana.getFileStorePaths("/img/"):
         for test in [
-                    "default_thumb_%s_%s.*" % (n.type, n.schema),
-                    "default_thumb_%s.*" % n.schema,
-                    "default_thumb_%s.*" % n.type]:
+                "default_thumb_%s_%s.*" % (n.type, n.schema),
+                "default_thumb_%s.*" % n.schema,
+                "default_thumb_%s.*" % n.type]:
             # fps = glob.glob(os.path.join(config.basedir, theme.getImagePath(), "img", test))
             fps = glob.glob(os.path.join(config.basedir, p[2:], test))
             if fps:

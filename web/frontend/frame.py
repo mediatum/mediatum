@@ -20,12 +20,12 @@
 import logging
 from collections import OrderedDict
 import time
+from warnings import warn
 
 import core.config as config
 
 from schema.schema import getMetadataType
 from utils.utils import getCollection, getDirectory, Link, isCollection, isDirectory, isParentOf
-from core.acl import AccessData
 from core.translation import lang, t
 from core.metatype import Context
 from core.styles import theme
@@ -33,8 +33,9 @@ from core import db, User, users
 from contenttypes import Collections
 from sqlalchemy.orm.exc import NoResultFound
 from core import Node
-from core.systemtypes import Searchmasks
+from core.systemtypes import Searchmasks, Root
 from contenttypes.container import Directory
+from core.acl import AccessData
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -267,7 +268,9 @@ class NavTreeEntry:
     def getStyle(self):
         return "padding-left: %dpx" % (self.indent * 6)
 
-    def getText(self, accessdata):
+    def getText(self, accessdata=None):
+        if accessdata is not None:
+            warn("accessdata argument is unused, remove it", DeprecationWarning)
         try:
             if isinstance(self.node, Directory):
                 if not hasattr(self.node, "ccount") or self.node.ccount == -1:
@@ -341,7 +344,6 @@ class Collectionlet(Portlet):
             self.hide_empty = self.collection.get("style_hide_empty") == "1"
         except:
             self.hide_empty = False
-        access = AccessData(req)
         # open all parents, so we see that node
         opened = {}
         parents = [self.directory]
@@ -359,10 +361,9 @@ class Collectionlet(Portlet):
         def f(m, node, indent, hide_empty):
             if indent > 15:
                 raise RecursionException
-            if not access.hasReadAccess(node):
+            if not isinstance(node, (Root, Collections)) and not node.has_read_access():
                 return
 
-            count = -1
             m[node.id] = e = NavTreeEntry(self, node, indent, node.type == "directory", hide_empty=hide_empty, lang=self.lang)
             if node.id in opened or e.defaultopen:
                 m[node.id].folded = 0

@@ -24,7 +24,6 @@ from lib.pdf import printview
 
 from schema.schema import VIEW_DATA_ONLY, VIEW_HIDE_EMPTY
 from web.frontend.content import getPaths
-from core.acl import AccessData
 from core.translation import t, lang
 from utils.utils import u, getCollection
 from core.styles import theme
@@ -75,10 +74,9 @@ def show_help(req):
 
 
 def show_attachmentbrowser(req):
-    id = req.params.get("id")
-    node = q(Node).get(id)
-    access = AccessData(req)
-    if not access.hasAccess(node, "data"):
+    nid = req.params.get("id")
+    node = q(Node).get(nid)
+    if not node.has_data_access():
         req.write(t(req, "permission_denied"))
         return
 
@@ -87,10 +85,8 @@ def show_attachmentbrowser(req):
 
 
 def getPrintChildren(req, node, ret):
-    access = AccessData(req)
-
     for c in node.children:
-        if access.hasAccess(c, "read"):
+        if c.has_read_access():
             ret.append(c)
 
         getPrintChildren(req, c, ret)
@@ -142,8 +138,7 @@ def show_printview(req):
         node = q(Node).get(nodeid)
         if node.get("system.print") == "0":
             return 404
-        access = AccessData(req)
-        if not access.hasAccess(node, "read"):
+        if not node.has_read_access():
             req.write(t(req, "permission_denied"))
             return
 
@@ -195,7 +190,7 @@ def show_printview(req):
                         children.append(_c)
                 else:
                     # header
-                    items = getPaths(c, AccessData(req))
+                    items = getPaths(c)
                     p = []
                     for item in items[0]:
                         p.append(item.getName())
@@ -261,12 +256,10 @@ def show_printview(req):
                 children = sorted_children
 
         req.reply_headers['Content-Type'] = "application/pdf"
-        req.write(printview.getPrintView(lang(req), imagepath, metadata, getPaths(
-            node, AccessData(req)), style, children, getCollection(node)))
+        req.write(printview.getPrintView(lang(req), imagepath, metadata, getPaths(node), style, children, getCollection(node)))
+
 
 # use popup method of  metadatatype
-
-
 def popup_metatype(req):
     mtype = getMetadataType(req.path.split("/")[-1])
     if mtype and hasattr(mtype, "getPopup"):

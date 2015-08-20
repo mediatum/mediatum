@@ -24,7 +24,6 @@ import os
 from mediatumtal import tal
 
 from core import db
-from core.acl import AccessData
 from core.styles import getContentStyles, theme
 from core.translation import lang, t
 from contenttypes import Collections, Directory
@@ -414,12 +413,11 @@ def fileIsNotEmpty(file):
 
 
 def mkContentNode(req):
-    access = AccessData(req)
     id = req.params.get("id", get_collections_node().id)
     node = q(Node).get(id)
     if node is None:
         return ContentError("No such node", 404)
-    if not access.hasReadAccess(node):
+    if not node.has_read_access():
         return ContentError("Permission denied", 403)
 
     if isinstance(node, Container):
@@ -433,9 +431,8 @@ def mkContentNode(req):
 
         if node.show_list_view:
             # no startpage found, list view requested
-        allowed_nodes = access.filter(list(node.content_children_for_all_subcontainers))
+        allowed_nodes = list(node.content_children_for_all_subcontainers.filter_read_access())
         node.ccount = len(allowed_nodes)
-        #ids = access.filter(node.getAllChildren())
         c = ContentList(allowed_nodes, getCollection(node))
         c.feedback(req)
         c.node = node
@@ -469,7 +466,7 @@ class ContentArea(Content):
         self.collectionlogo = None
         self.params = ""
 
-    def getPath(self, language=None, access=None):
+    def getPath(self, language=None, check_access=False):
         path = []
         if hasattr(self.content, "node"):
             cd = self.content.node
@@ -479,9 +476,11 @@ class ContentArea(Content):
                 else:
                     path.append(Link('', cd.getLabel(), ''))
                 while True:
-                    parents = cd.getParents()
-                    if access:
-                        parents = access.filter(parents)
+                    parents = cd.parents
+                    if check_access:
+                        parents = list(cd.parents.filter_read_access())
+                    else:
+                        parents = list(cd.parents)
                     if len(parents) == 0:
                         break
                     cd = parents[0]
@@ -549,7 +548,7 @@ class ContentArea(Content):
                 breadcrumbs = []
             else:
                 try:
-                    breadcrumbs = self.getPath(lang(req), access=AccessData(req))
+                    breadcrumbs = self.getPath(lang(req), check_access=True)
                 except AttributeError:
                     logg.exception("exception in html")
                     return req.error(404, "Object cannot be shown")

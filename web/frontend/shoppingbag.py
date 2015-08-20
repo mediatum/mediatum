@@ -22,7 +22,6 @@ import codecs
 from core.transition import httpstatus
 import core.users as users
 from core.translation import lang
-from core.acl import AccessData
 from core.styles import theme
 from schema.schema import VIEW_DATA_ONLY
 from utils.utils import format_filesize
@@ -209,11 +208,9 @@ def show_shoppingbag(req, msg=""):
         except:
             return ""
 
-    access = AccessData(req)
-
     sb = req.session.get("shoppingbag", [])
     sb = [nid for nid in sb if nid.strip()]
-    for node in access.filter(tree.NodeList(sb)):
+    for nid in access.filter(tree.NodeList(sb)):
         if node.getCategoryName() == "image":
             img = True
         if node.getCategoryName() == "document":

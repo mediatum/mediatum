@@ -25,7 +25,6 @@ import core.config as config
 import core.users as users
 import core.xmlnode as xmlnode
 from utils.utils import *
-from core.acl import AccessData
 from core.metatype import Context
 from core.translation import lang
 from web.frontend.frame import getNavigationFrame
@@ -191,9 +190,6 @@ def esc(v):
 
 
 def exportsearch(req, xml=0):  # format 0=pre-formated, 1=xml, 2=plain
-    access = AccessData(req)
-    access = core.acl.getRootAccess()
-
     id = req.params.get("id")
     q = req.params.get("q", "")
     lang = req.params.get("language", "")
@@ -221,10 +217,9 @@ def exportsearch(req, xml=0):  # format 0=pre-formated, 1=xml, 2=plain
         return
 
     if not q:
-        nodes = access.filter(node.search("objtype=document"))
+        nodes = node.search("objtype=document").filter_read_access()
     else:
-        #nodes = access.filter(node.search("objtype=document and "+q));
-        nodes = access.filter(node.search(q))
+        nodes = node.search(q).filter_read_access()
 
     limit = int(req.params.get("limit", 99999))
     sortfield = req.params.get("sort", None)

@@ -30,12 +30,12 @@ from core import Node
 import core.config as config
 import core.athana as athana
 from core.archive import archivemanager
-from core.acl import AccessData
 import utils.utils
 from utils.utils import get_filesize, join_paths, clean_path, getMimeType
 from sqlalchemy.orm.exc import NoResultFound
 from core import Node
 from schema.schema import existMetaField
+from contenttypes import Container, Directory
 
 
 logg = logging.getLogger(__name__)
@@ -85,12 +85,11 @@ def send_image_watermark(req):
 
 
 def send_rawimage(req):
-    access = AccessData(req)
     n = q(Node).get(splitpath(req.path)[0])
 
     if not isinstance(n, Node):
         return 404
-    if not access.hasAccess(n, "data") and n.type != "directory":
+    if not isinstance(n, Directory) and not n.has_data_access():
         return 403
     for f in n.files:
         if f.filetype == "original":
@@ -100,14 +99,13 @@ def send_rawimage(req):
 
 
 def send_rawfile(req, n=None):
-    access = AccessData(req)
     if not n:
         id, filename = splitpath(req.path)
         n = q(Node).get(id)
         if not isinstance(n, Node):
             return 404
 
-    if not access.hasAccess(n, "data") and n.type not in ["directory", "collections", "collection"]:
+    if not isinstance(n, Container) and not n.has_data_access():
         return 403
     for f in n.files:
         if f.filetype == "original":
@@ -165,11 +163,10 @@ def send_thumbnail2(req):
 
 
 def send_doc(req):
-    access = AccessData(req)
     n = q(Node).get(splitpath(req.path)[0])
     if not isinstance(n, Node):
         return 404
-    if not access.hasAccess(n, "data") and n.type != "directory":
+    if not isinstance(n, Directory) and not n.has_data_access():
         return 403
     for f in n.files:
         if f.type in ["doc", "document"]:
@@ -179,7 +176,6 @@ def send_doc(req):
 
 
 def send_file(req, download=0):
-    access = AccessData(req)
     id, filename = splitpath(req.path)
     if id.endswith("_transfer.zip"):
         id = id[:-13]
@@ -187,7 +183,7 @@ def send_file(req, download=0):
     n = q(Node).get(id)
     if not isinstance(n, Node):
         return 404
-    if not access.hasAccess(n, "data") and n.type not in ["directory", "collections", "collection"]:
+    if not isinstance(n, Container) and not n.has_data_access():
         return 403
     file = None
 
@@ -241,12 +237,11 @@ def send_file_as_download(req):
 
 
 def send_attachment(req):
-    access = AccessData(req)
-    id, filename = splitpath(req.path)
-    node = q(Node).get(id)
+    nid, filename = splitpath(req.path)
+    node = q(Node).get(nid)
     if not isinstance(node, Node):
         return 404
-    if not access.hasAccess(node, "data") and n.type != "directory":
+    if not isinstance(Directory) and not node.has_data_access():
         return 403
     # filename is attachment.zip
     for file in node.files:
@@ -291,12 +286,11 @@ def sendZipFile(req, path):
 # send single attachment file to user
 #
 def send_attfile(req):
-    access = AccessData(req)
     f = req.path[9:].split('/')
     node = q(Node).get(f[0])
     if not isinstance(node, Node):
         return 404
-    if not access.hasAccess(node, "data") and node.type != "directory":
+    if not isinstance(Directory) and not node.has_data_access():
         return 403
     if len([file for file in node.files if file.abspath in ["/".join(f[1:]), "/".join(f[1:-1])]]) == 0:  # check filepath
         return 403
@@ -434,5 +428,5 @@ def get_transfer_url(n):
     else:
         transfer_filename = n.id + "_transfer.zip"
         transferurl = u"http://{}/file/{}/".format(config.get("host.name"), n.id, transfer_filename)
-        
+
     return transferurl

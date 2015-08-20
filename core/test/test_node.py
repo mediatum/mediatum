@@ -203,8 +203,8 @@ def test_children_getIDs(some_node):
     child_ids = assert_deprecation_warning_allow_multiple(some_node.content_children.getIDs, 5)
     assert len(child_ids) == 1
     assert isinstance(child_ids[0], int)
-
-
+    
+    
 ### attribute mutation on persistent nodes
 
 def test_attribute_overwrite_all(some_node):
@@ -264,3 +264,4 @@ def test_data_get_class_for_typestring():
     from contenttypes import Data
     data_cls = Node.get_class_for_typestring("data")
     assert data_cls is Data
+

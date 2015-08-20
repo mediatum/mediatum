@@ -699,15 +699,25 @@ class Metadatatype(Node):
 @check_type_arg
 class Metafield(Node):
 
-    def getLabel(self):
+    @property
+    def label(self):
         return self.get("label")
 
-    def setLabel(self, value):
-        self.set("label", value)
+    @label.setter
+    def set_label(self):
+        self.set("label")
 
-    def getSchemaNode(node):
-        for p in node.getParents():
-            if p.type == "metadatatype":
+    def getLabel(self):
+        warn("use Metafield.label instead", DeprecationWarning)
+        return self.label
+
+    def setLabel(self, value):
+        warn("use Metafield.label instead", DeprecationWarning)
+        self.label = value
+
+    def getSchemaNode(self):
+        for p in self.parents:
+            if isinstance(p, Metadatatype):
                 return p
         return None
 

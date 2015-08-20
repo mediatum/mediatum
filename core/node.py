@@ -5,6 +5,7 @@
 """
 from warnings import warn
 from utils.date import format_date, parse_date, STANDARD_FORMAT, now
+from sqlalchemy.orm import object_session
 
 
 class NodeMixin(object):

@@ -9,7 +9,7 @@ from warnings import warn
 
 import pyaml
 from sqlalchemy import (Table, Sequence, Integer, Unicode, Text, sql, text, func, select)
-from sqlalchemy.orm import deferred
+from sqlalchemy.orm import deferred, object_session
 from sqlalchemy.orm.dynamic import AppenderQuery, AppenderMixin
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative.api import DeclarativeMeta
@@ -239,6 +239,44 @@ class Node(DeclarativeBase, NodeMixin):
         group_ids = user.group_ids if user else None
         access = accessfunc(node_id, group_ids, ip, date)
         return db.session.execute(select([access])).scalar()
+
+    def _parse_searchquery(self, searchquery):
+        """Parses `searchquery` and transforms it into the search tree."""
+        from core.search import parser
+        q = object_session(self).query
+        searchtree = parser.parse_string(searchquery)
+        return searchtree
+
+
+    def _search_query_object(self):
+        """Builds the query object that is used as basis for content node searches below this node"""
+        from contenttypes import Content
+        q = object_session(self).query
+        base_query = self.all_children_by_query(q(Content))
+        return base_query
+
+    def search(self, searchquery, languages=None):
+        """Creates a search query.
+        :param searchquery: query in search language
+        :param language: sequence of language config strings matching Fts.config
+        :returns: Node Query
+        """
+        from core.database.postgres.search import apply_searchtree_to_query
+        searchtree = self._parse_searchquery(searchquery)
+        query = self._search_query_object()
+        return apply_searchtree_to_query(query, searchtree, languages)
+
+    def search_multilang(self, searchquery, languages=None):
+        """Creates search queries for a sequence of languages.
+        :param searchquery: query in search language :
+        :param languages: language config strings matching Fts.config
+        :returns list of Node Query
+        """
+        from core.database.postgres.search import apply_searchtree_to_query
+        searchtree = self._parse_searchquery(searchquery)
+        query = self._search_query_object()
+        return [apply_searchtree_to_query(query, searchtree, l) for l in languages]
+
 
     __mapper_args__ = {
         'polymorphic_identity': 'node',

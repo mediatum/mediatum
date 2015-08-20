@@ -307,19 +307,24 @@ class ContentList(Content):
         # use template of style and build html content
         contentList = liststyle.renderTemplate(req, {"nav_list": nav_list, "nav_page": nav_page, "act_page": self.page,
                                                      "files": tal_files, "maxresult": len(self.files), "op": "", "language": lang(req)})
-        sidebar = ""  # check for sidebar
-        if self.collection.get("system.sidebar") != "":
+        sidebar = u""  # check for sidebar
+        if self.collection.get(u"system.sidebar") != "":
             for sb in [s for s in self.collection.get("system.sidebar").split(";") if s != ""]:
                 l, fn = sb.split(":")
                 if l == lang(req):
                     for f in [f for f in self.collection.getFiles() if fn.endswith(f.getName())]:
                         sidebar = replaceModules(self, req, includetemplate(self, f.retrieveFile(), {})).strip()
         if sidebar != "":
-            return '<div id="portal-column-one">{0}<div id="nodes">{1}</div>{0}</div><div id="portal-column-two">{2}</div>'.format(filesHTML, contentList, sidebar)
+            return u'<div id="portal-column-one">{0}<div id="nodes">{1}</div>{0}</div><div id="portal-column-two">{2}</div>'.format(
+                filesHTML,
+                contentList,
+                sidebar)
         else:
             return u'{0}<div id="nodes">{1}</div>{0}'.format(filesHTML, contentList)
 
 # paths
+
+
 def getPaths(node):
     res = []
 
@@ -431,14 +436,14 @@ def mkContentNode(req):
 
         if node.show_list_view:
             # no startpage found, list view requested
-        allowed_nodes = list(node.content_children_for_all_subcontainers.filter_read_access())
-        node.ccount = len(allowed_nodes)
-        c = ContentList(allowed_nodes, getCollection(node))
-        c.feedback(req)
-        c.node = node
-        return c
+            allowed_nodes = list(node.content_children_for_all_subcontainers.filter_read_access())
+            node.ccount = len(allowed_nodes)
+            c = ContentList(allowed_nodes, getCollection(node))
+            c.feedback(req)
+            c.node = node
+            return c
 
-        return ContentNode(node)
+    return ContentNode(node)
 
 
 class ContentError(Content):
@@ -567,7 +572,7 @@ class ContentArea(Content):
                                "searchmode": req.params.get("searchmode", ""),
                                "items": items,
                                "id": id,
-                               "nodeprint": "1" if printlink else "0", # XXX: template compat for non-default templates
+                               "nodeprint": "1" if printlink else "0",  # XXX: template compat for non-default templates
                                "printlink": printlink,
                                "area": req.session.get("area", "")},
                               macro="path",

@@ -111,7 +111,7 @@ class Searchlet(Portlet):
         self.initialize()
 
     def insideCollection(self):
-        return self.collection and self.collection.id != q(Collections).one()
+        return self.collection and not isinstance(self.collection, Collections)
 
     def initialize(self):
         types = {}
@@ -150,9 +150,10 @@ class Searchlet(Portlet):
             if name == "full" or not name:
                 f = None
             else:
-                try:
-                    f = tree.getNode(name).getFirstField()
-                except tree.NoSuchNodeError:
+                node = q(Node).get(name)
+                if node is not None:
+                    f = node.getFirstField()
+                else:
                     f = None
 
             if "query" + ustr(i) in req.params or "query" + ustr(i) + "-from" in req.params:
@@ -207,7 +208,7 @@ class Searchlet(Portlet):
         try:
             f = None
             if self.names[i] and self.names[i] != "full":
-                f = tree.getNode(self.names[i]).getFirstField()
+                f = q(Node).get(self.names[i]).getFirstField()
             g = None
             if f is None:  # All Metadata
                 # quick&dirty
@@ -274,7 +275,12 @@ class NavTreeEntry:
         try:
             if isinstance(self.node, Directory):
                 if not hasattr(self.node, "ccount") or self.node.ccount == -1:
-                    self.node.ccount = self.node.children.count()
+#                     self.node.ccount = self.node.children.count()
+                    if self.node.children.first():
+                        self.node.ccount = 1
+                    else: 
+                        self.node.ccount = 0
+                        
                 self.count = self.node.ccount
 
                 if self.hide_empty and self.count == 0:
@@ -354,7 +360,7 @@ class Collectionlet(Portlet):
                 raise RecursionException
             p = parents.pop()
             opened[p.id] = 1
-            parents += p.getParents()
+            parents.extend(p.parents)
 
         m = {}
 

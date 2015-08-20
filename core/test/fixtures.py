@@ -14,7 +14,7 @@ from core.test.factories import NodeFactory, DocumentFactory, DirectoryFactory, 
 from core import db
 from contenttypes.container import Collections, Home
 from core.database.init import init_database_values
-from core.init import load_system_types, load_types
+from core.init import load_system_types, load_types, init_fulltext_search
 from core.database.postgres.user import AuthenticatorInfo, create_special_user_dirs
 logg = logging.getLogger(__name__)
 
@@ -28,6 +28,7 @@ def database():
     db.create_all()
     load_system_types()
     load_types()
+    init_fulltext_search()
     return db
 
 
@@ -36,12 +37,12 @@ def session():
     """Yields default session which is closed after the test.
     Inner actions are wrapped in a transaction that always rolls back.
     """
-    s = db.session 
+    s = db.session
     s.begin(subtransactions=True)
     yield s
     s.rollback()
     s.close()
-    
+
 
 @fixture
 def default_data():

@@ -19,12 +19,16 @@
 """
 import utils.date as date
 import logging
-from core.acl import AccessData
+from core import Node, db
 from core.translation import lang, translate
 from utils.utils import getAllCollections, u
 from core.styles import theme
 from web.frontend import Content
 from utils.strings import ensure_unicode_returned
+from contenttypes.container import Collections, Collection, Container
+from schema.searchmask import SearchMaskItem
+
+q = db.query
 
 
 logg = logging.getLogger(__name__)
@@ -48,7 +52,7 @@ class SearchResult(Content):
 
     def feedback(self, req):
         if "scoll" in req.params:
-            id = req.params["scoll"]
+            id = req.args.get("scoll", type=int)
             for nr in range(len(self.resultlist)):
                 if self.resultlist[nr].collection.id == id:
                     self.active = nr
@@ -63,7 +67,7 @@ class SearchResult(Content):
         return 0
 
     def getLink(self, collection):
-        return 'node?scoll=' + collection.id
+        return u'node?scoll={}'.format(collection.id)
 
     def getContentStyles(self):
         return []
@@ -102,168 +106,161 @@ def protect(s):
 
 
 def simple_search(req):
-    raise NotImplementedError("doesn't work with unicode, won't fix!")
-
     from web.frontend.content import ContentList
-    res = []
-    words = []
-    collections = []
-    collection_ids = {}
-
-    access = AccessData(req)
-    q = u(req.params.get("query", ""))
-    q = req.args.get("query")
+    searchquery = req.form.get("query")
 
     # test whether this query is restricted to a number of collections
-    for key, value in req.params.items():
+    collection_ids = []
+    for key in req.params:
         if key.startswith("c_"):
-            collection_ids[key[2:]] = 1
+            collection_ids.append(key[2:])
+
     # no collection means: all collections
-    if len(collection_ids) == 0 or 1 in collection_ids.keys():
-        for collection in access.filter(tree.getRoot("collections").getChildren()):
-            collection_ids[collection.id] = 1
+    if collection_ids:
+        collection_query = q(Container).filter(Container.id.in_(collection_ids))
+    else:
+        collection_query = q(Collections).one().container_children
 
-    # now retrieve all results in all collections
-    for collection in getAllCollections():
-        if collection.id in collection_ids:
-            collections.append(collection)
+    collections = collection_query.all()
 
-    num = 0
-    logg.info("%s search for '%s', %s results", access.user.name, q, num)
-    try:
-        if req.params.get("act_node", None) and tree.getNode(req.params.get("act_node")).getContentType() != "collections":
-            # actual node is a collection or directory
-            result = tree.getNode(req.params.get("act_node")).search('full=' + q)
-            result = access.filter(result)
-            num += len(result)
-            if len(result) > 0:
-                cl = ContentList(result, collection, words)
-                cl.feedback(req)
-                cl.linkname = "Suchergebnis"
-                cl.linktarget = ""
-                res.append(cl)
-        else:
-            # actual node is collections-node
-            for collection in collections:
-                result = collection.search('full=' + q)
-                result = access.filter(result)
-                num += len(result)
+    if logg.isEnabledFor(logging.DEBUG):
+        logg.debug("simple_search with query '%s' on %s collections: %s", searchquery, len(collections), [c.name for c in collections])
 
-                if len(result) > 0:
-                    cl = ContentList(result, collection, words)
-                    cl.feedback(req)
-                    cl.linkname = "Suchergebnis"
-                    cl.linktarget = ""
-                    res.append(cl)
+    def do_search(start_node):
+        result = start_node.search('full=' + searchquery).filter_read_access().all()
+        if len(result) > 0:
+            cl = ContentList(result, start_node, [])
+            cl.feedback(req)
+            cl.linkname = "Suchergebnis"
+            cl.linktarget = ""
+            return cl
 
-        if len(res) == 1:
-            return res[0]
-        else:
-            return SearchResult(res, q, collections)
-    except:
-        return SearchResult(None, q, collections)
+    act_node_id = req.form.get("act_node", type=int)
+    act_node = q(Node).get(act_node_id) if act_node_id else None
+    if act_node is not None and not isinstance(act_node, Collections):
+        # actual node is a collection or directory
+        single_result = do_search(act_node)
+        res = [single_result] if single_result else []
+    else:
+        # actual node is collections-node
+        res = [cl for cl in (do_search(collection) for collection in collections) if cl is not None]
 
-# method handles all parts of the extended search
+    if logg.isEnabledFor(logging.DEBUG):
+        logg.debug("%s result sets found with %s nodes", len(res), len([n for cl in res for n in cl.files]))
+
+    if len(res) == 1:
+        return res[0]
+    else:
+        return SearchResult(res, searchquery, collections)
 
 
-def extended_search(req):
-    from web.frontend.content import ContentList
-    max = 3
-    if req.params.get("searchmode") == "extendedsuper":
-        max = 10
-    sfields = []
-    access = AccessData(req)
-    metatype = None
+def _extended_searchquery_from_req(req):
+    max_fields = 3
+    if req.form.get("searchmode") == "extendedsuper":
+        max_fields = 10
 
-    collectionid = req.params.get("collection", tree.getRoot().id)
-    try:
-        collection = tree.getNode(collectionid)
-    except:
-        for coll in tree.getRoot("collections").getChildren():
-            collection = tree.getNode(coll.id)
-            break
-
-    q_str = ''
-    q_user = ''
+    q_str = u''
+    q_user = u''
     first2 = 1
-    for i in range(1, max + 1):
-        f = u(req.params.get("field" + ustr(i), "").strip())
-        q = u(req.params.get("query" + ustr(i), "").strip())
+    for i in range(1, max_fields + 1):
+        query_key = "query" + unicode(i)
+        # for range queries
+        query_to_key = "query" + unicode(i) + "-to"
+        query_from_key = "query" + unicode(i) + "-from"
+        field_id_or_name = req.form.get("field" + unicode(i), "").strip()
+        element_query = req.form.get(query_key, "").strip()
 
-        if not q and "query" + ustr(i) + "-from" not in req.params:
+        if not element_query and query_from_key not in req.form:
+            # no query found, do nothing
             continue
 
         if not first2:
             q_str += " and "
-            q_user += " %s " % (translate("search_and", request=req))
+            q_user += translate("search_and", request=req) + " "
 
         first2 = 0
 
-        if not f.isdigit():
-            q = u(req.params.get("query" + ustr(i), "").strip())
-            q_str += f + '=' + protect(q)
-            q_user += f + '=' + protect(q)
+        if not field_id_or_name.isdigit():
+            q_str += field_id_or_name + '=' + protect(element_query)
+            q_user += field_id_or_name + '=' + protect(element_query)
         else:
-            masknode = tree.getNode(f)
-            assert masknode.type == "searchmaskitem"
+            searchmaskitem = q(SearchMaskItem).get(field_id_or_name)
             first = 1
             q_str += "("
-            for metatype in masknode.getChildren():
+            for field in searchmaskitem.children:
                 if not first:
                     q_str += " or "
                     q_user += " %s " % (translate("search_or", request=req))
                 first = 0
-                if "query" + ustr(i) + "-from" in req.params and metatype.getFieldtype() == "date":
+                if query_to_key in req.form and field.getFieldtype() == "date":
                     date_from = "0000-00-00T00:00:00"
                     date_to = "0000-00-00T00:00:00"
-                    fld = metatype
-                    if ustr(req.params["query" + ustr(i) + "-from"]) != "":
-                        date_from = date.format_date(
-                            date.parse_date(ustr(req.params["query" + ustr(i) + "-from"]), fld.getValues()), "%Y-%m-%dT%H:%M:%S")
-                    if ustr(req.params["query" + ustr(i) + "-to"]) != "":
-                        date_to = date.format_date(
-                            date.parse_date(ustr(req.params["query" + ustr(i) + "-to"]), fld.getValues()), "%Y-%m-%dT%H:%M:%S")
 
-                    if date_from == "0000-00-00T00:00:00" and date_to != date_from:  # from value
-                        q_str += metatype.getName() + ' <= ' + date_to
-                        q_user += "%s &le; \"%s\"" % (metatype.getName(), ustr(req.params["query" + ustr(i) + "-to"]))
+                    from_value = req.form.get(query_from_key)
+                    if from_value:
+                        date_from = date.format_date(date.parse_date(from_value, field.getValues()), "%Y-%m-%dT%H:%M:%S")
 
-                    elif date_to == "0000-00-00T00:00:00" and date_to != date_from:  # to value
-                        q_str += metatype.getName() + ' >= ' + date_from
-                        q_user += "%s &ge; \"%s\"" % (metatype.getName(), ustr(req.params["query" + ustr(i) + "-from"]))
+                    to_value = req.form.get(query_to_key)
+                    if to_value:
+                        date_to = date.format_date(date.parse_date(to_value, field.getValues()), "%Y-%m-%dT%H:%M:%S")
+
+                    if date_from == "0000-00-00T00:00:00" and date_to != date_from:
+                        q_str += field.name + ' <= ' + date_to
+                        q_user += "%s &le; \"%s\"" % (field.name, to_value)
+
+                    elif date_to == "0000-00-00T00:00:00" and date_to != date_from:
+                        q_str += field.name + ' >= ' + date_from
+                        q_user += "%s &ge; \"%s\"" % (field.name, from_value)
                     else:
-                        #q_str += '('+metatype.getName()+' >= '+date_from+' and '+metatype.getName()+' <= '+date_to+')'
-                        q_str += '(' + metatype.getName() + ' = ' + date_from + ')'
+                        q_str += u'({} >= {} and {} <= {})'.format(field.name, date_from, field.name, date_to)
 
-                        q_user += "(%s %s \"%s\" %s \"%s\")" % (metatype.getName(),
-                                                                translate("search_between",
-                                                                          request=req),
-                                                                ustr(req.params["query" + ustr(i) + "-from"]),
-                                                                translate("search_and",
-                                                                          request=req),
-                                                                ustr(req.params["query" + ustr(i) + "-to"]))
+                        q_user += "(%s %s \"%s\" %s \"%s\")" % (field.name,
+                                                                translate("search_between", request=req),
+                                                                from_value,
+                                                                translate("search_and", request=req),
+                                                                to_value)
                 else:
-                    q = u(req.params.get("query" + ustr(i), "").strip())
-                    q_str += metatype.getName() + '=' + protect(q)
-                    if metatype.getLabel() != "":
-                        q_user += "%s = %s" % (metatype.getLabel(), protect(q))
+                    q_str += field.name + "=" + protect(element_query)
+
+                    if field.label:
+                        q_user += field.label + " = " + protect(element_query)
                     else:
-                        q_user += "%s = %s" % (metatype.getName(), protect(q))
+                        q_user += field.name + " = " + protect(element_query)
 
             q_str += ")"
-    try:
-        if req.params.get("act_node", "") and req.params.get("act_node") != ustr(collection.id):
-            result = tree.getNode(req.params.get("act_node")).search(q_str)
-        else:
-            result = collection.search(q_str)
-        result = access.filter(result)
-        logg.info(access.user.name + "%s xsearch for '%s', %s results", access.user.name, q_user, len(result))
-        if len(result) > 0:
-            cl = ContentList(result, collection, q_user.strip())
-            cl.feedback(req)
-            cl.linkname = ""
-            cl.linktarget = ""
-            return cl
-        return SearchResult([], q_user.strip())
-    except:
-        return SearchResult(None, q_user.strip())
+
+    return q_str, q_user.strip()
+
+
+def extended_search(req):
+    from web.frontend.content import ContentList
+
+    collection_id = req.form.get("collection", type=int)
+    collection = q(Collection).get(collection_id) if collection_id else None
+
+    if collection is None:
+        # no collection id given or collection not found -> search starts at collection root
+        # XXX: collection not found should not really happen, but it happens. Investigate later...
+        collection = q(Collections).one()
+
+    searchquery, readable_query = _extended_searchquery_from_req(req)
+
+    logg.debug("extended_search with query '%s' on collection '%s'(%s)", searchquery, collection.name, collection.id)
+
+    act_node_id = req.form.get("act_node", type=int)
+    act_node = q(Node).get(act_node_id) if act_node_id else None
+
+    search_collection = act_node if act_node is not None else collection
+
+    result = search_collection.search(searchquery).filter_read_access().all()
+
+    logg.debug("xsearch for '%s', %s results", len(result))
+
+    if len(result) > 0:
+        cl = ContentList(result, collection, readable_query)
+        cl.feedback(req)
+        cl.linkname = ""
+        cl.linktarget = ""
+        return cl
+
+    return SearchResult([], readable_query)

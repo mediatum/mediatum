@@ -216,10 +216,9 @@ class Container(Data, ContainerMixin, SchemaMixin):
         if lang and self.get(u'{}.name'.format(lang)) != "":
             return self.get(u'{}.name'.format(lang))
 
-        if lang == 'de':
-            nodename = self.get("nodename")
-            if nodename:
-                return nodename
+        # XXX: strange hack, is there another way?
+        if lang == 'de' and self.name:
+            return self.name
 
         #removes heinous amount of error logging when building directory tree
         try:
@@ -304,10 +303,10 @@ class Container(Data, ContainerMixin, SchemaMixin):
 
     def event_files_changed(self):
         logg.debug("Postprocessing node %s", self.id)
-        
-    
 
-        
+
+
+
 # concrete Container classes
 
 @check_type_arg_with_schema
@@ -316,7 +315,7 @@ class Directory(Container):
     @classmethod
     def treeiconclass(cls):
         return "directory"
-    
+
 
 @check_type_arg_with_schema
 class Collection(Container):
@@ -324,16 +323,16 @@ class Collection(Container):
     @classmethod
     def treeiconclass(cls):
         return "collection"
-        
+
     def metaFields(self, lang=None):
         metafields = Container.metaFields(self, lang=lang)
         field = Metafield(u"style_hide_empty")
-        
+
         field.set("label", t(lang, "hide empty directories"))
         field.set("type", u"check")
         metafields.append(field)
         return metafields
-    
+
 
 @check_type_arg_with_schema
 class Collections(Container):

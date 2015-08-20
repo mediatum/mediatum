@@ -18,7 +18,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from utils.utils import formatLongText
-from utils.strings import ensure_unicode, ensure_unicode_returned
+from utils.strings import ensure_unicode
 
 from schema.schema import getMetaFieldTypeNames, getMetaFieldTypes, getMetadataType, VIEW_DATA_ONLY, VIEW_SUB_ELEMENT, VIEW_HIDE_EMPTY, VIEW_DATA_EXPORT, dateoption
 from core.translation import lang, translate
@@ -107,7 +107,7 @@ class m_field(Metatype):
 
     """ create view format """
 
-    @ensure_unicode_returned
+
     def getViewHTML(self, field, nodes, flags, language=None, template_from_caller=None, mask=None):
         element = field.getField()
         if not element:

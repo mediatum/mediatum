@@ -121,15 +121,13 @@ def simple_search(req):
     else:
         collection_query = q(Collections).one().container_children
 
-    # TODO: access.filter collections
     collections = collection_query.all()
 
     if logg.isEnabledFor(logging.DEBUG):
         logg.debug("simple_search with query '%s' on %s collections: %s", searchquery, len(collections), [c.name for c in collections])
 
     def do_search(start_node):
-        result = start_node.search('full=' + searchquery).all()
-#             result = access.filter(result)
+        result = start_node.search('full=' + searchquery).filter_read_access().all()
         if len(result) > 0:
             cl = ContentList(result, start_node, [])
             cl.feedback(req)
@@ -254,10 +252,9 @@ def extended_search(req):
 
     search_collection = act_node if act_node is not None else collection
 
-    result = search_collection.search(searchquery).all()
+    result = search_collection.search(searchquery).filter_read_access().all()
 
-#         result = access.filter(result)
-#         logg.info(access.user.name + "%s xsearch for '%s', %s results", access.user.name, q_user, len(result))
+    logg.debug("xsearch for '%s', %s results", len(result))
 
     if len(result) > 0:
         cl = ContentList(result, collection, readable_query)

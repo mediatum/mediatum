@@ -26,3 +26,12 @@ class MtVersionBase(object):
         if isinstance(attr, types.MethodType):
             return types.MethodType(attr.__func__, self, parent_cls)
         return attr
+
+    @property
+    def tag(self):
+        return self.transaction.meta.get(u"tag")
+
+    @tag.setter
+    def tag(self, tag):
+        self.transaction.meta[u"tag"] = tag
+

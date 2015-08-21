@@ -101,8 +101,12 @@ def test_getActiveVersion_version(content_node_versioned):
     assert node.versions[1].getActiveVersion() == node
 
 
+def test_versions(content_node_versioned):
+    assert content_node_versioned.versions.count() == 2
+
+
 def test_getVersionList(content_node_versioned):
-    assert len(content_node_versioned.getVersionList()) == 2
+    assert len(content_node_versioned.getVersionList()) == 1
 
 
 def test_old_node_version_support(content_node_versioned_with_alias_id):
@@ -113,3 +117,10 @@ def test_old_node_version_support(content_node_versioned_with_alias_id):
     version_cls = version_class(node.__class__)
     assert isinstance(version, version_cls)
     assert version.orderpos == 23
+
+
+def test_tag(content_node_versioned):
+    node = content_node_versioned
+    node.tag = "v5"
+    assert node.tag == "v5"
+

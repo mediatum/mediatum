@@ -293,6 +293,7 @@ def content_node_versioned(content_node):
     db.session.commit()
     content_node.orderpos = 42
     db.session.commit()
+    content_node.versions.first().tag = "test"
     return content_node
 
 @fixture

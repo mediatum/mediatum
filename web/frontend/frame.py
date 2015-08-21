@@ -331,6 +331,9 @@ class Collectionlet(Portlet):
     def feedback(self, req):
         Portlet.feedback(self, req)
         self.lang = lang(req)
+        # XXX: node refreshing, better save node ids
+        self.collection = db.refresh(self.collection)
+        self.directory = db.refresh(self.directory)
         if "dir" in req.params or "id" in req.params:
             id = req.params.get("id", req.params.get("dir"))
             node = q(Node).get(id)

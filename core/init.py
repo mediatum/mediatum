@@ -128,7 +128,6 @@ def init_app():
 
 def init_db():
     import core.database  # init DB connector
-    core.db.connect()
     # assign model classes for selected DB connector to the core package
     for cls in core.db.get_model_classes():
         setattr(core, cls.__name__, cls)
@@ -196,6 +195,7 @@ def basic_init(root_loglevel=None, config_filepath=None):
     set_locale()
     init_app()
     init_db()
+    core.db.connect()
     load_system_types()
     load_types()
 

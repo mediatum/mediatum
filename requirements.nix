@@ -549,6 +549,26 @@ let
     doCheck = false;
   };
 
+  redis = self.buildPythonPackage {
+    name = "redis-2.10.3";
+    src = fetchurl {
+      url = "https://pypi.python.org/packages/source/r/redis/redis-2.10.3.tar.gz";
+      md5 = "7619221ad0cbd124a5687458ea3f5289";
+    };
+    propagatedBuildInputs = with self; [];
+    buildInputs = with self; [];
+    doCheck = false;
+  };
+  redis-collections = self.buildPythonPackage {
+    name = "redis-collections-0.1.7";
+    src = fetchurl {
+      url = "https://pypi.python.org/packages/source/r/redis-collections/redis-collections-0.1.7.tar.gz";
+      md5 = "67aa817d9a2f1f63b3b3251062762e7d";
+    };
+    propagatedBuildInputs = with self; [redis];
+    buildInputs = with self; [];
+    doCheck = false;
+  };
 
 in {
   production = [
@@ -592,6 +612,8 @@ in {
       munch
       pytest
       pytest-capturelog
+      redis-collections
+      pkgs.redis
     ];
 
     system = with pkgs; [

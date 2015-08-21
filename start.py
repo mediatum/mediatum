@@ -80,7 +80,7 @@ def stackdump_setup():
         signal.signal(signal.SIGQUIT, dumpstacks)
 
 
-def main(host=None, http_port=None):
+def main(host=None, http_port=None, redis_sessions=False):
     """Serve mediaTUM from the Athana HTTP Server and start FTP and Z3950, if requested"""
     # init.full_init() must be done as early as possible to init logging etc.
     from core import init
@@ -110,6 +110,7 @@ def main(host=None, http_port=None):
         z3950port = None
 
     athana.setThreads(int(config.get("host.threads", "8")))
+    athana.USE_PERSISTENT_SESSIONS = redis_sessions
 
     import datetime
     with open("/tmp/mediatum.started", "w") as wf:
@@ -129,10 +130,14 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--reload", action="store_true", default=False,
                         help="reload when code or config file changes, default false")
 
-
-
     parser.add_argument("-s", "--stackdump", action="store_true", default=True,
                         help="write stackdumps to temp dir {} on SIGQUIT, default true".format(SYSTEM_TMP_DIR))
+
+    parser.add_argument(
+        "--redis-sessions",
+        action="store_true",
+        default=False,
+        help="EXPERIMENTAL: save sessions to redis, making them persistent, requires redis-collections and a redis server on localhost!")
 
     args = parser.parse_args()
 
@@ -142,8 +147,9 @@ if __name__ == "__main__":
     if args.reload:
         # don't use this in production!
         extra_files = [config.get_config_filepath()]
+
         def main_wrapper():
             main(args.bind, args.http_port)
         run_with_reloader(main_wrapper, extra_files)
     else:
-        main(args.bind, args.http_port)
+        main(args.bind, args.http_port, args.redis_sessions)

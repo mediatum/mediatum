@@ -3744,6 +3744,28 @@ class upload_input_collector:
         self.handler.continue_request(r, self.form)
 
 
+# XXX: hack for better testing, do not use this in production...
+USE_PERSISTENT_SESSIONS = False
+
+
+try:
+    import redis_collections
+except ImportError:
+    pass
+else:
+    class RedisSession(redis_collections.Dict):
+
+        def __init__(self, key):
+            super(RedisSession, self).__init__(key=key)
+
+        @property
+        def id(self):
+            return self.key
+
+        def use(self):
+            pass
+
+
 class Session(dict):
 
     def __init__(self, id):
@@ -3936,18 +3958,25 @@ class AthanaHandler:
         elif use_cookies and "PSESSION" in cookies:
             sessionid = cookies["PSESSION"]
 
-        if sessionid is not None:
-            if sessionid in self.sessions:
-                session = self.sessions[sessionid]
-                session.use()
+        if USE_PERSISTENT_SESSIONS:
+            if sessionid is None:
+                sessionid = self.create_session_id()
+                logg.debug("Creating new session %s", sessionid)
+
+            session = RedisSession(sessionid)
+        else:
+            if sessionid is not None:
+                if sessionid in self.sessions:
+                    session = self.sessions[sessionid]
+                    session.use()
+                else:
+                    session = Session(sessionid)
+                    self.sessions[sessionid] = session
             else:
+                sessionid = self.create_session_id()
+                logg.debug("Creating new session %s", sessionid)
                 session = Session(sessionid)
                 self.sessions[sessionid] = session
-        else:
-            sessionid = self.create_session_id()
-            logg.debug("Creating new session %s", sessionid)
-            session = Session(sessionid)
-            self.sessions[sessionid] = session
 
         request['Content-Type'] = 'text/html; encoding=utf-8; charset=utf-8'
 

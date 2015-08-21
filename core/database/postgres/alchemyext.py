@@ -191,6 +191,10 @@ def create_tables(objs):
     return created
 
 
+def reverse_sorted_tables():
+    return reversed(db_metadata.sorted_tables)
+
+
 def recreate_tables(objs, cascade=False):
     """DROP (CASCADE) and CREATE tables. `objs` can be a sequence of table names, tables or Declarative models """
     dropped = drop_tables(objs, cascade)
@@ -202,7 +206,6 @@ def recreate_tables(objs, cascade=False):
 def truncate_tables(table_fullnames=None):
     from core import db
     s = db.session
-
     if not table_fullnames:
         table_fullnames = [t.fullname for t in reverse_sorted_tables()]
 

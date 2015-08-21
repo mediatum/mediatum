@@ -296,6 +296,7 @@ def content_node_versioned(content_node):
     content_node.versions.first().tag = "test"
     return content_node
 
+
 @fixture
 def content_node_versioned_with_alias_id(session, content_node):
     from sqlalchemy_continuum import versioning_manager

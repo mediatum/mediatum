@@ -3,17 +3,28 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
-
-from __future__ import division, absolute_import, print_function
-
-from contenttypes import Directory
-from pytest import fixture
-from sqlalchemy_continuum import versioning_manager
-from core import db, Node
+from pytest import yield_fixture
 from sqlalchemy_continuum.utils import version_class
 
-# XXX: sqlalchemy-continuum overwrites the first version of a node somehow. This doesn't happen if the code is run outside of an unit test.
-# Investigate this...
+from core import db, Node
+from core.database.postgres.alchemyext import truncate_tables
+from contenttypes import Directory
+
+
+@yield_fixture
+def session(session_unnested):
+    """XXX: sqlalchemy-continuum goes crazy if run with the normal session fixture.
+    This here works but leaves rows in the database that must removed in the teardown function for this module.
+    """
+    yield session_unnested
+
+
+def teardown_module(module):
+    """Clean up the database mess ;)"""
+    db.enable_session_for_test()
+    truncate_tables()
+    db.session.commit()
+    db.disable_session_for_test()
 
 
 def test_plain(content_node):
@@ -37,8 +48,8 @@ def test_change_attr(content_node):
     s.commit()
     node["attr"] = "test_changed"
     s.commit()
-    assert node.versions.count() == 2
-    assert node.versions[0].get("attr") == "test"
+    assert node.versions.count() == 3
+    assert node.versions[1].get("attr") == "test"
 
 
 def test_delete_attr(content_node):
@@ -48,8 +59,8 @@ def test_delete_attr(content_node):
     s.commit()
     del node["attr"]
     s.commit()
-    assert node.versions.count() == 1
-    assert "attr" not in node.versions[0]
+    assert node.versions.count() == 2
+    assert "attr" not in node.versions[1]
 
 
 def test_revert_attrs(content_node):
@@ -60,11 +71,11 @@ def test_revert_attrs(content_node):
     s.commit()
     node["attr"] = "test_changed"
     s.commit()
-    assert node.versions.count() == 2
-    assert node.versions[1]["attr"] == "test_changed"
+    assert node.versions.count() == 3
+    assert node.versions[2]["attr"] == "test_changed"
     node.versions[0].revert()
     s.commit()
-    assert node["attr"] == "test"
+    assert "attr" not in node
 
 
 def test_call_nodeclass_method(content_node):
@@ -93,7 +104,7 @@ def test_isActiveVersion_older_version(content_node_versioned):
 
 def test_isActiveVersion_current_version(content_node_versioned):
     node = content_node_versioned
-    assert node.versions[1].isActiveVersion() == True
+    assert node.versions[2].isActiveVersion() == True
 
 
 def test_getActiveVersion_version(content_node_versioned):
@@ -102,7 +113,7 @@ def test_getActiveVersion_version(content_node_versioned):
 
 
 def test_versions(content_node_versioned):
-    assert content_node_versioned.versions.count() == 2
+    assert content_node_versioned.versions.count() == 3
 
 
 def test_getVersionList(content_node_versioned):
@@ -123,4 +134,3 @@ def test_tag(content_node_versioned):
     node = content_node_versioned
     node.tag = "v5"
     assert node.tag == "v5"
-

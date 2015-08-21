@@ -35,7 +35,7 @@ def check_auth_call(user, req):
 
 
 @fixture
-def auth_success_patch(collections, monkeypatch, check_auth_call):
+def auth_success_patch(collections, monkeypatch, check_auth_call, session):
     import core.auth
     from core import db
     db.session.add(collections)
@@ -90,7 +90,7 @@ def test_logout(logout_patch, req):
     assert "user" not in req.session
 
 
-def test_pwdchange(pwdchange_patch, req):
+def test_pwdchange(pwdchange_patch, req, session, collections):
     req.form["ChangeSubmit"] = True
     req.form["user"] = LOGIN_NAME
     req.form["password_old"] = PASSWORD

@@ -15,36 +15,24 @@ from ipaddr import IPv4Network
 from core.database.postgres.connector import read_and_prepare_sql
 
 
-@fixture(scope="session", autouse=True)
-def import_database():
-    """Drop/create schema and load models"""
+@fixture(scope="session")
+def database(database):
+    """Drop/create mediatum_import schema"""
     from core import db
-    db.session.execute("DROP SCHEMA IF EXISTS mediatum_import CASCADE")
-    db.session.execute("CREATE SCHEMA mediatum_import")
-    sql_dir = os.path.join(os.path.dirname(__file__), "..")
-    db.session.execute(read_and_prepare_sql("acl_migration.sql", sql_dir=sql_dir))
-    db.session.commit()
+    with db.engine.begin() as conn:
+        conn.execute = conn.execute
+        conn.execute("DROP SCHEMA IF EXISTS mediatum_import CASCADE")
+        conn.execute("CREATE SCHEMA mediatum_import")
+        sql_dir = os.path.join(os.path.dirname(__file__), "..")
+        conn.execute(read_and_prepare_sql("acl_migration.sql", sql_dir=sql_dir))
+
     from migration.import_datamodel import ImportBase
     ImportBase.metadata.bind = db.engine
     ImportBase.metadata.create_all()
     return db
 
-
-@yield_fixture(autouse="True", scope="function")
-def session():
-    """Yields default session which is closed after the test.
-    Inner actions are wrapped in a transaction that always rolls back.
-    """
-    from core import db
-    s = db.session
-    transaction = s.connection().begin()
-    yield s
-    transaction.rollback()
-    s.close()
-
-
 @fixture
-def import_node_with_simple_access(session):
+def import_node_with_simple_access():
     node = NodeFactory(id=100)
     import_node = ImportNodeFactory(
         id=100,
@@ -55,7 +43,7 @@ def import_node_with_simple_access(session):
 
 
 @fixture
-def import_node_with_complex_access(session):
+def import_node_with_complex_access():
     node = NodeFactory(id=100)
     import_node = ImportNodeFactory(id=100,
                                     readaccess="{ NOT ( group test_readers OR group test_readers2 ) }")

@@ -8,44 +8,68 @@ import os
 
 from pytest import yield_fixture, fixture
 
-from core import File
 from core.test.factories import NodeFactory, DocumentFactory, DirectoryFactory, UserFactory, UserGroupFactory,\
-    InternalAuthenticatorInfoFactory
+    InternalAuthenticatorInfoFactory, FileFactory, CollectionFactory, HomeFactory, CollectionsFactory
 from core import db
 from contenttypes.container import Collections, Home
 from core.database.init import init_database_values
-from core.init import load_system_types, load_types, init_fulltext_search
+from core.init import load_system_types, load_types, init_fulltext_search, init_db
 from core.database.postgres.user import AuthenticatorInfo, create_special_user_dirs
 logg = logging.getLogger(__name__)
 
 
-@fixture(scope="session", autouse=True)
+def autouse_session():
+    """Call this to autouse the session fixture"""
+    @yield_fixture(autouse=True)
+    def session(session):
+        yield session
+
+    return session
+
+
+@fixture(scope="session")
 def database():
     """Connect to the DB, drop/create schema and load models"""
-    db.session.execute("DROP SCHEMA IF EXISTS mediatum CASCADE")
-    db.session.execute("CREATE schema mediatum")
-    db.session.commit()
+    db.enable_session_for_test()
+    db.connect()
+    s = db.session
+    s.execute("DROP SCHEMA IF EXISTS mediatum CASCADE")
+    s.execute("CREATE schema mediatum")
+    s.commit()
     db.create_all()
     load_system_types()
     load_types()
     init_fulltext_search()
+    db.disable_session_for_test()
     return db
 
 
-@yield_fixture(autouse="True")
-def session():
+@yield_fixture
+def session(database):
     """Yields default session which is closed after the test.
     Inner actions are wrapped in a transaction that always rolls back.
+    Enables db.session. Without this fixture, session operations are not possible.
+    Tip: use session = autouse_session() in conftest.py if you need the session for all tests in a package.
     """
+    db = database
+    db.enable_session_for_test()
+    conn = db.engine.connect()
+    tx = conn.begin()
+    db.Session.configure(bind=conn)
     s = db.session
-    s.begin(subtransactions=True)
     yield s
-    s.rollback()
     s.close()
+    tx.rollback()
+    # just a quick test if the rollback removed all pending nodes created in the test
+    from core import Node
+    assert db.session.query(Node).count() == 0
+    conn.close()
+    db.Session.remove()
+    db.disable_session_for_test()
 
 
 @fixture
-def default_data():
+def default_data(session):
     """Initial data needed for normal mediaTUM operations
     """
     init_database_values(db.session)
@@ -59,16 +83,16 @@ def default_data():
 
 
 @fixture
-def collections():
-    return Collections("collections")
+def collections(session):
+    return CollectionsFactory(name="collections")
 
 @fixture
-def home_root():
-    return Home("home")
+def home_root(session):
+    return HomeFactory()
 
 
 @fixture
-def some_user():
+def some_user(session):
     return UserFactory()
 
 @fixture
@@ -99,7 +123,7 @@ def admin_user(some_user):
     return some_user
 
 @fixture
-def internal_authenticator_info():
+def internal_authenticator_info(session):
     return InternalAuthenticatorInfoFactory()
 
 @fixture
@@ -111,24 +135,25 @@ def internal_user(some_user, internal_authenticator_info):
 
 
 @fixture
-def some_group():
+def some_group(session):
     return UserGroupFactory()
 
 
 @fixture
-def some_file():
+def some_file(session):
     """Create a File model without creating a real file"""
-    return File(path=u"testfilename", filetype=u"testfiletype", mimetype=u"testmimetype")
+    return FileFactory(path=u"testfilename", filetype=u"testfiletype", mimetype=u"testmimetype")
 
 
 @fixture
-def some_file_in_subdir():
+def some_file_in_subdir(session):
     """Create a File model with a dir in the path without creating a real file"""
-    return File(path=u"test/filename", filetype=u"testfiletype", mimetype=u"testmimetype")
+    return FileFactory(path=u"test/filename", filetype=u"testfiletype", mimetype=u"testmimetype")
 
 
 @yield_fixture
 def some_file_real(some_file):
+    from core import File
     """Create a File model and the associated file on the filesystem.
     File is deleted after the test
     """
@@ -139,27 +164,27 @@ def some_file_real(some_file):
 
 
 @fixture
-def content_node():
+def content_node(session):
     return DocumentFactory(name=u"content", orderpos=1, attrs=dict(sortattr=6))
 
 
 @fixture
-def other_content_node():
+def other_content_node(session):
     return DocumentFactory(name=u"a_content", orderpos=2, attrs=dict(sortattr=5))
 
 
 @fixture
-def other_content_node_2():
+def other_content_node_2(session):
     return DocumentFactory(name=u"b_content", orderpos=2)
 
 
 @fixture
-def container_node():
+def container_node(session):
     return DirectoryFactory(name=u"container", orderpos=3, attrs=dict(sortattr=8))
 
 
 @fixture
-def other_container_node():
+def other_container_node(session):
     return DirectoryFactory(name=u"a_container", orderpos=4, attrs=dict(sortattr=7))
 
 

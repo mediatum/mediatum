@@ -1,9 +1,6 @@
-import logging
-from core.test.setup import setup_basic  
+from pytest import yield_fixture
 
-logging.basicConfig(level=logging.WARN)
 
-# WARNING: setup_basic() must be called before importing fixtures!
-setup_basic()
-
-from core.test.fixtures import *
+@yield_fixture(autouse=True)
+def session(session):
+    yield session

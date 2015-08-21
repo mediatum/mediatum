@@ -41,6 +41,10 @@ def read_and_prepare_sql(sql_filepath, sql_dir=None, filter_notices=True, filter
         return sql
 
 
+def disabled_scoped_session(*args, **kwargs):
+    raise Exception("Test mode, database session disabled. Use the core.test.fixtures.session fixture!")
+
+
 class PostgresSQLAConnector(object):
 
     """Basic db object used by the application
@@ -190,3 +194,13 @@ class PostgresSQLAConnector(object):
         autoindex_languages_setting = Setting(key=u"search.autoindex_languages", value=autoindex_languages)
         s.merge(autoindex_languages_setting)
         s.commit()
+
+    def disable_session_for_test(self):
+        """Disables db.Session, preventing all session operations using db.session. Used for unit tests."""
+        self._Session = self.Session
+        self.Session = disabled_scoped_session
+
+    def enable_session_for_test(self):
+        """Reenables db.Session after disabling it with disable_session_for_test(),
+        allowing session operations using db.session. Used for unit tests."""
+        self.Session = self._Session

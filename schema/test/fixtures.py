@@ -12,7 +12,7 @@ from utils.compat import iteritems, itervalues
 logg = logging.getLogger(__name__)
 
 from .factories import *
-from core.test.fixtures import content_node, session
+from core.test.fixtures import content_node
 
 
 METAFIELDS = [
@@ -27,13 +27,13 @@ METAFIELDS = [
 ARTICLE_METAFIELDS = METAFIELDS + []
 
 @fixture
-def some_metafield():
+def some_metafield(session):
     """Doesn't make much sense, but ok for hierarchy / getter testing"""
     metafield = MetafieldFactory()
     return metafield
-    
+
 @fixture
-def some_maskitem():
+def some_maskitem(session):
     """Doesn't make much sense, but ok for hierarchy / getter testing"""
     metafield = MetafieldFactory()
     maskitem = FieldMaskitemFactory()
@@ -48,7 +48,7 @@ def some_mask_with_maskitem(some_maskitem):
     mask.maskitems.append(some_maskitem)
     return mask
 
-    
+
 @fixture
 def some_mask_with_nested_maskitem(some_mask_with_maskitem):
     """Doesn't make much sense, but ok for hierarchy / getter testing"""
@@ -58,10 +58,10 @@ def some_mask_with_nested_maskitem(some_mask_with_maskitem):
     nested_maskitem.children.append(metafield)
     mask.maskitems[0].children.append(nested_maskitem)
     return mask
-    
-    
+
+
 @fixture
-def article_metafields():
+def article_metafields(session):
     metafields = [MetafieldFactory(name=n, attrs__type=t) for n, t in ARTICLE_METAFIELDS]
     return metafields
 
@@ -73,18 +73,18 @@ def article_citeproc_mask(article_metafields):
     for metafield in article_metafields:
         mappingfield = MappingFieldFactory(name=metafield.name)
         metafield_to_mappingfield[metafield] = mappingfield
-        
+
     exportmapping = CiteprocMappingFactory()
     exportmapping.children.extend(itervalues(metafield_to_mappingfield))
-    
+
     # we need the actual node ids later in this fixture, which are only assigned after a flush
     from core import db; db.session.flush()
-    
+
     # create mask
     maskitems = []
     for metafield in article_metafields:
         mappingfield = metafield_to_mappingfield[metafield]
-        maskitem = FieldMaskitemFactory(name=metafield.name, 
+        maskitem = FieldMaskitemFactory(name=metafield.name,
                                         attrs__mappingfield=mappingfield.id,
                                         attrs__attribute=metafield.id)
         maskitem.children.append(metafield)
@@ -126,4 +126,4 @@ def some_mdt_with_masks():
 def content_node_with_mdt(some_mdt_with_masks, content_node):
     content_node.schema = some_mdt_with_masks.name
     return content_node
-    
+

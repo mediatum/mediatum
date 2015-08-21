@@ -9,11 +9,11 @@ import factory.alchemy
 from factory.fuzzy import *
 import scrypt
 
-from contenttypes import Directory
-from contenttypes import Document
-from core import Node, User, UserGroup, AuthenticatorInfo
+from contenttypes import Directory, Collection, Document, Collections, Home
+from core import Node, User, UserGroup, AuthenticatorInfo, File
 from core import db
 from core.auth import INTERNAL_AUTHENTICATOR_KEY
+from core.systemtypes import Root
 
 
 class SQLAFactory(factory.alchemy.SQLAlchemyModelFactory):
@@ -49,7 +49,7 @@ class UserFactory(SQLAFactory):
 
     salt = "salt" * 8
     password_hash = b64encode(scrypt.hash("test", salt))
-    
+
     class Meta:
         model = User
 
@@ -87,16 +87,32 @@ class DocumentFactory(NodeFactory):
     schema = u"testschema"
 
 
-class DirectoryFactory(NodeFactory):
+def make_simple_nodeclass_factory(nodecls):
+    class NodeClassFactory(NodeFactory):
+        class Meta:
+            model = nodecls
 
-    class Meta:
-        model = Directory
+    return NodeClassFactory
 
+DirectoryFactory = make_simple_nodeclass_factory(Directory)
+CollectionFactory = make_simple_nodeclass_factory(Collection)
+CollectionsFactory = make_simple_nodeclass_factory(Collections)
+HomeFactory = make_simple_nodeclass_factory(Home)
 
 class InternalAuthenticatorInfoFactory(SQLAFactory):
 
     class Meta:
         model = AuthenticatorInfo
-        
+
     auth_type=INTERNAL_AUTHENTICATOR_KEY[0]
     name=INTERNAL_AUTHENTICATOR_KEY[1]
+
+
+class FileFactory(SQLAFactory):
+
+    class Meta:
+        model = File
+
+    path = FuzzyText(length=20, chars=string.lowercase)
+    mimetype = FuzzyText(length=6, chars=string.lowercase)
+    filetype = FuzzyText(length=6, chars=string.lowercase)

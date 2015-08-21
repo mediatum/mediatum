@@ -7,12 +7,12 @@ from pytest import fixture
 
 from core import db
 from core.test.asserts import assert_node
-from core.test.fixtures import default_data
 q = db.query
 
 
-# we need this fixture for all tests, so make it implicit
-default_data = fixture(autouse=True)(default_data)
+@fixture(autouse=True)
+def default_data(default_data):
+    return default_data
 
 
 def test_get_root():

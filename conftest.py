@@ -4,19 +4,31 @@
     :license: GPL3, see COPYING for details
 """
 
-from __future__ import division, absolute_import, print_function
+import logging
+logging.basicConfig(level=logging.DEBUG)
+import warnings
+from pytest import skip
 
-
-
-
-import pytest
 
 def pytest_addoption(parser):
     parser.addoption('--slow', action='store_true', default=False,
-                      help='Also run slow tests')
+                     help='Also run slow tests')
+
 
 def pytest_runtest_setup(item):
     """Skip tests if they are marked as slow and --slow is not given"""
     if getattr(item.obj, 'slow', None) and not item.config.getvalue('slow'):
-        pytest.skip('slow tests not requested')
-        
+        skip('slow tests not requested')
+
+
+from core import config
+from core.init import add_ustr_builtin, init_db
+config.initialize("test_mediatum.cfg")
+add_ustr_builtin()
+init_db()
+from core import db
+db.disable_session_for_test()
+warnings.simplefilter("always")
+
+# global fixtures, do not import them again!
+from core.test.fixtures import *

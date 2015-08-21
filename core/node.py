@@ -39,13 +39,14 @@ class NodeMixin(object):
         clazz = cls.get_class_for_typestring(typestring)
         return clazz.__name__
 
-    # TODO: versions
     @property
     def next_nid(self):
+        warn("next_nid does not make sense anymore, returning None!")
         return None
 
     @property
     def prev_nid(self):
+        warn("prev_nid does not make sense anymore, returning None!")
         return None
 
     def isActiveVersion(self):

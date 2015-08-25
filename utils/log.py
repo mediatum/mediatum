@@ -132,9 +132,13 @@ class TraceLogger(logging.Logger):
             def skip_line(line):
                 for skip in self.skip_trace_lines:
                     if callable(skip):
-                        return skip(line)
-                    else:
-                        return skip in line
+                        if skip(line):
+                            return True
+
+                    elif skip in line:
+                        return True
+
+                return False
 
             lines_without_skipped = [l for l in lines_cut if not skip_line(l)]
             num_skipped_lines = len(lines_cut) - len(lines_without_skipped)

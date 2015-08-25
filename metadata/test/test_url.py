@@ -5,8 +5,6 @@ Created on 06.08.2013
 '''
 from __future__ import division, absolute_import
 import os.path
-import logging
-logging.basicConfig(level=logging.DEBUG)
 from mock import MagicMock
 import pytest
 

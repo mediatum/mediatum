@@ -41,9 +41,6 @@ legacy_methods = [
 def legacy_getter(request):
     return request.param
 
-logging.basicConfig(level=logging.DEBUG)
-logg = logging.getLogger()
-
 
 def test_attributes(some_node):
     assert some_node.attributes["testattr"] == "testvalue"

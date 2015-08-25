@@ -5,9 +5,20 @@
 """
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
 import warnings
 from pytest import skip
+from utils.log import TraceLogger, ConsoleHandler, ROOT_STREAM_LOGFORMAT
+
+
+root_logger = logging.getLogger()
+stream_handler = ConsoleHandler()
+stream_handler.setFormatter(logging.Formatter(ROOT_STREAM_LOGFORMAT))
+root_logger.handlers = []
+root_logger.addHandler(stream_handler)
+TraceLogger.skip_trace_lines += ("pytest", )
+# TraceLogger.stop_trace_at = tuple()
+logging.setLoggerClass(TraceLogger)
+logging.captureWarnings(True)
 
 
 def pytest_addoption(parser):

@@ -15,6 +15,8 @@ from contenttypes.container import Collections, Home
 from core.database.init import init_database_values
 from core.init import load_system_types, load_types, init_fulltext_search, init_db
 from core.database.postgres.user import AuthenticatorInfo, create_special_user_dirs
+from sqlalchemy import event
+from core.database.postgres.alchemyext import truncate_tables
 logg = logging.getLogger(__name__)
 
 
@@ -47,7 +49,9 @@ def database():
 @yield_fixture
 def session(database):
     """Yields default session which is closed after the test.
-    Inner actions are wrapped in a transaction that always rolls back.
+    A SAVEPOINT is created before running the test that always rolls back.
+    The savepoint is restarted automatically if the test code does a rollback.
+    (see http://docs.sqlalchemy.org/en/rel_1_0/orm/session_transaction.html#joining-a-session-into-an-external-transaction-such-as-for-test-suites)
     Enables db.session. Without this fixture, session operations are not possible.
     Tip: use session = autouse_session() in conftest.py if you need the session for all tests in a package.
     """
@@ -57,6 +61,14 @@ def session(database):
     tx = conn.begin()
     db.Session.configure(bind=conn)
     s = db.session
+    s.begin_nested()
+
+    @event.listens_for(s, "after_transaction_end")
+    def restart_savepoint(session, transaction):
+        if transaction.nested and not transaction._parent.nested:
+            session.expire_all()
+            session.begin_nested()
+    # run the isolated test...
     yield s
     s.close()
     tx.rollback()
@@ -64,6 +76,46 @@ def session(database):
     from core import Node
     assert db.session.query(Node).count() == 0
     conn.close()
+    db.Session.remove()
+    db.disable_session_for_test()
+
+
+@yield_fixture
+def session_truncate(database):
+    """
+    Alternative version of session() that truncates all tables after the test instead of using nested transactions.
+    This is much slower than session().
+    It's better to use the session fixture, but this is needed for some tests that have problems with nested transactions
+    (sqlalchemy-continuum, for example).
+    Enables db.session. Without this or the session fixture, session operations are not possible.
+    """
+    db = database
+    db.enable_session_for_test()
+    db.Session.configure(bind=db.engine)
+    s = db.session
+    yield s
+    s.rollback()
+    truncate_tables()
+    s.commit()
+    db.Session.remove()
+    db.disable_session_for_test()
+
+
+@yield_fixture
+def session_unnested(database):
+    """
+    Alternative version of session() that does not wrap the session in a transaction.
+    WARNING: objects can remain in the database and later tests may fail!
+    It's better to use the session fixture, but this is needed for some tests that have problems with nested transactions
+    (sqlalchemy-continuum, for example).
+    Enables db.session. Without this or the session fixture, session operations are not possible.
+    """
+    db = database
+    db.enable_session_for_test()
+    db.Session.configure(bind=db.engine)
+    s = db.session
+    yield s
+    s.rollback()
     db.Session.remove()
     db.disable_session_for_test()
 
@@ -86,6 +138,7 @@ def default_data(session):
 def collections(session):
     return CollectionsFactory(name="collections")
 
+
 @fixture
 def home_root(session):
     return HomeFactory()
@@ -94,6 +147,7 @@ def home_root(session):
 @fixture
 def some_user(session):
     return UserFactory()
+
 
 @fixture
 def user_with_home_dir(some_user, home_root):
@@ -104,11 +158,13 @@ def user_with_home_dir(some_user, home_root):
     some_user.home_dir = home
     return some_user
 
+
 @fixture
 def editor_user(some_user):
     editor_group = UserGroupFactory(is_editor_group=True, is_workflow_editor_group=False, is_admin_group=False)
     some_user.groups.append(editor_group)
     return some_user
+
 
 @fixture
 def workflow_editor_user(some_user):
@@ -116,15 +172,18 @@ def workflow_editor_user(some_user):
     some_user.groups.append(workflow_editor_group)
     return some_user
 
+
 @fixture
 def admin_user(some_user):
     admin_group = UserGroupFactory(is_editor_group=False, is_workflow_editor_group=False, is_admin_group=True)
     some_user.groups.append(admin_group)
     return some_user
 
+
 @fixture
 def internal_authenticator_info(session):
     return InternalAuthenticatorInfoFactory()
+
 
 @fixture
 def internal_user(some_user, internal_authenticator_info):

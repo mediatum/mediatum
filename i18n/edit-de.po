@@ -389,6 +389,3 @@ msgstr "Anzahl der Matches (evtl. + 1, falls eigenes Arbeitsverzeichnis nicht ma
 
 msgid "edit_tree_filterbutton_tooltip"
 msgstr "Filter auf alle Arbeitsverzeichnisse anwenden"
-
-msgid "write_information_back"
-msgstr "Informationen synchronisieren"

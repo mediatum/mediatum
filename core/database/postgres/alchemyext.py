@@ -196,3 +196,16 @@ def recreate_tables(objs, cascade=False):
     created = create_tables(objs)
 
     return dropped, created
+
+
+def truncate_tables(table_fullnames=None):
+    from core import db
+    s = db.session
+
+    if not table_fullnames:
+        table_fullnames = [t.fullname for t in reverse_sorted_tables()]
+
+    table_fullname_str = ",".join(table_fullnames)
+    s.execute('TRUNCATE {} RESTART IDENTITY;'.format(table_fullname_str))
+    logg.info("truncated %s", table_fullname_str)
+

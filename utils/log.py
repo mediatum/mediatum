@@ -46,9 +46,9 @@ class ConsoleHandler(logging.StreamHandler):
     It is more sensible to log to sys.stdout by default with only error
     (logging.ERROR and above) messages going to sys.stderr. This is how
     ConsoleHandler behaves.
-    
-    from: http://code.activestate.com/recipes/576819-logging-to-console-without-surprises/ 
-    
+
+    from: http://code.activestate.com/recipes/576819-logging-to-console-without-surprises/
+
     added: copy trace attribute to exc_text for TraceLogger support
     """
 
@@ -59,7 +59,7 @@ class ConsoleHandler(logging.StreamHandler):
     def emit(self, record):
         if hasattr(record, "trace"):
             record.exc_text = record.trace
-            
+
         if record.levelno >= logging.ERROR:
             self.__emit(record, sys.stderr)
         else:
@@ -71,31 +71,30 @@ class ConsoleHandler(logging.StreamHandler):
 
 
 class TraceLogger(logging.Logger):
-        
+
     """Adds an optional traceback for some messages.
-        
-    A traceback is added if the logging level is at least `trace_level` 
-    or requested in the logging call (if `trace` is a true value). 
+
+    A traceback is added if the logging level is at least `trace_level`
+    or requested in the logging call (if `trace` is a true value).
     """
-    
+
     # All log messages above the given `level` will have an additional field with a stack trace up to the logging call
-    trace_level = logging.WARN 
-    
+    trace_level = logging.WARN
+
     # omit stack trace lines before these token have been found
     start_trace_at = (", in call_and_close", )
-    
+
     # omit stack trace lines after these token have been found
     stop_trace_at = ("/sqlalchemy/", )
-    
+
     # skip lines in the strack trace
     # the tuple may contain strings or callables which are called with a single line as argument, returning bool
     skip_trace_lines = (lambda l: "tal" in l and not ("TAL" in l or "evaluate" in l), )
 
-    
     def _log(self, level, msg, args, exc_info=None, extra=None, trace=None):
         """Adds an optional traceback for some messages and calls Logger._log.
-        A traceback is added if the logging level is at least `trace_level` or requested in the logging call. 
-        
+        A traceback is added if the logging level is at least `trace_level` or requested in the logging call.
+
         :param trace: Always add a trace if trace is true
         """
         if trace or (level >= self.trace_level and not exc_info):
@@ -103,8 +102,7 @@ class TraceLogger(logging.Logger):
                 extra = {}
             f = inspect.currentframe()
             tblines = traceback.format_stack(f)
-            
-            
+
             def find_start_lineno():
                 # nice hack to shorten long and ugly stack traces ;)
                 # TODO: support callables
@@ -114,7 +112,7 @@ class TraceLogger(logging.Logger):
                             return start_lineno + 1, text
                 else:
                     return 0, None
-                
+
             def find_end_lineno():
                 for end_lineno, line in enumerate(tblines):
                     for text in self.stop_trace_at:
@@ -126,39 +124,38 @@ class TraceLogger(logging.Logger):
                         return -3, None
                     else:
                         return -2, None
-                
-                
+
             start_lineno, start_cutoff = find_start_lineno()
             end_lineno, end_cutoff = find_end_lineno()
             lines_cut = tblines[start_lineno:end_lineno]
-            
+
             def skip_line(line):
                 for skip in self.skip_trace_lines:
                     if callable(skip):
                         return skip(line)
                     else:
                         return skip in line
-                
+
             lines_without_skipped = [l for l in lines_cut if not skip_line(l)]
             num_skipped_lines = len(lines_cut) - len(lines_without_skipped)
-            
+
             # now, let's start building our customized strack trace
             final_tracelines = []
-            
-            if start_cutoff: 
+
+            if start_cutoff:
                 final_tracelines.append("[... omitting lines up to '{}']\n".format(start_cutoff))
-                
+
             final_tracelines.extend(lines_without_skipped)
-            
+
             if num_skipped_lines:
                 final_tracelines.append("[filtered {} lines]".format(num_skipped_lines))
-            
-            if end_cutoff: 
+
+            if end_cutoff:
                 final_tracelines.append("[omitting lines starting at '{}' ...]".format(end_cutoff))
-                
+
             extra["trace"] = "".join(final_tracelines)
-            
-            ### hack for additional traceback info for TAL traces
+
+            # hack for additional traceback info for TAL traces
             stack = inspect.stack()
             # search for a python expr evaluation in the TAL interpreter stack trace
             eval_frame_result = [f for f in stack if f[3] == "evaluate" and "talextracted" in f[1]]
@@ -179,7 +176,7 @@ class TraceLogger(logging.Logger):
                     tal_call_locals = tal_frame_result[0][0].f_locals
                     extra["tal_filename"] = tal_filename = tal_call_locals["file"]
                     extra["tal_macro"] = tal_macro = tal_call_locals["macro"]
-                    # format a line that looks like a traceback line 
+                    # format a line that looks like a traceback line
                     # this produces a clickable link in Pycharm or Eclipse, for example ;)
                     if tal_filename:
                         tal_filepath = os.path.join(config.basedir, tal_filename)
@@ -188,13 +185,13 @@ class TraceLogger(logging.Logger):
                         tal_filepath = "<string>"
 
                     tal_tbline = u'\n  File "{}", line {}, in {}\n    {}'.format(tal_filepath,
-                                                                               tal_lineno,
-                                                                               tal_macro or "<template>",
-                                                                               tal_expr)
+                                                                                 tal_lineno,
+                                                                                 tal_macro or "<template>",
+                                                                                 tal_expr)
                     extra["trace"] += tal_tbline
-                
+
         logging.Logger._log(self, level, msg, args, exc_info=exc_info, extra=extra)
-        
+
     def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None):
         record = LogRecord(name, level, fn, lno, msg, args, exc_info, func)
         if exc_info:
@@ -212,31 +209,31 @@ class TraceLogger(logging.Logger):
                         extra["exc_" + name] = val
                     else:
                         extra[name] = val
-        
+
             if issubclass(ex_type, UnicodeError):
                 obj = extra["object"]
-                
+
                 if isinstance(obj, str):
                     # escape string that caused this exception
                     start = extra["start"]
                     end = extra["end"]
                     snippet_start = start - 1000 if start > 1000 else start
                     snippet_end = end + 1000
-                    
-                    error_part = obj[start:end+1].encode("string_escape")
-                    extra["object"] = obj[snippet_start:start-1] + "[ERROR]" + error_part + "[/ERROR]" + obj[end+1:snippet_end]
+
+                    error_part = obj[start:end + 1].encode("string_escape")
+                    extra["object"] = obj[snippet_start:start - 1] + "[ERROR]" + error_part + "[/ERROR]" + obj[end + 1:snippet_end]
                 else:
                     extra["object"] = obj[:2000]
-        
+
         if extra is not None:
             for key in extra:
                 if (key in ["message", "asctime"]) or (key in record.__dict__):
                     raise KeyError("Attempt to overwrite %r in LogRecord" % key)
                 record.__dict__[key] = extra[key]
-        
+
         return record
 
-### init
+# init
 logging.setLoggerClass(TraceLogger)
 logging.captureWarnings(True)
 
@@ -259,15 +256,14 @@ def initialize(level=None):
     stream_handler.setFormatter(logging.Formatter(ROOT_STREAM_LOGFORMAT))
     root_logger.handlers = []
     root_logger.addHandler(stream_handler)
-    
-    
+
     logstash_handler = logstash.TCPLogstashHandler("localhost", 5959, version=1, message_type="mediatum")
     root_logger.addHandler(logstash_handler)
     filepath = config.get('logging.file', None)
-        
+
     if filepath:
         dlogfiles['mediatum'] = {'path': filepath, 'filename': filepath}
-        file_handler = logging.FileHandler(filepath) 
+        file_handler = logging.FileHandler(filepath)
         file_handler.setFormatter(logging.Formatter(ROOT_FILE_LOGFORMAT))
         root_logger.addHandler(file_handler)
         logg.info('logging everything to %s', filepath)

@@ -6,7 +6,7 @@
 from pytest import yield_fixture
 from sqlalchemy_continuum.utils import version_class
 
-from core import db, Node
+from core import db, Node, File
 from core.database.postgres.alchemyext import truncate_tables
 from contenttypes import Directory
 
@@ -33,11 +33,80 @@ def test_plain(content_node):
 
 
 def test_add_child(container_node):
-    d = Directory("dir")
-    container_node.children.append(d)
-    db.session.flush()
-    # we want to know if the new child relation is also present in the nodemapping_version table
+    node = container_node
+    d = Directory("d")
+    # Note: sqlalchemy-continuum creates versions only if the node itself changes. Adding a relationship doesn't create a new version!
+    db.session.commit()
+    node.children.append(d)
+    # set attr to force a new version
+    node["changed"] = "new_child"
+    db.session.commit()
+    assert container_node.versions[0].children.count() == 0
+    assert container_node.versions[1].children.count() == 1
+
+
+def test_remove_child(container_node):
+    node = container_node
+    d = Directory("d")
+    node.children.append(d)
+    db.session.commit()
+    node.children = []
+    node["changed"] = "removed_child"
+    db.session.commit()
     assert container_node.versions[0].children.count() == 1
+    assert container_node.versions[1].children.count() == 0
+
+
+def test_add_file(container_node):
+    node = container_node
+    db.session.commit()
+    d = File(path="test", filetype="test", mimetype="test")
+    node.files.append(d)
+    node["changed"] = "new_file"
+    db.session.commit()
+    assert node.versions[0].files.count() == 0
+    assert node.versions[1].files.count() == 1
+
+
+def test_remove_file(container_node):
+    node = container_node
+    d = File(path="test", filetype="test", mimetype="test")
+    node.files.append(d)
+    db.session.commit()
+    node.files = []
+    node["changed"] = "removed_file"
+    db.session.commit()
+    assert node.versions[0].files.count() == 1
+    assert node.versions[1].files.count() == 0
+
+
+def test_replace_file(container_node):
+    from core import File
+    node = container_node
+    db.session.commit()
+    d = File(path="test", filetype="test", mimetype="test")
+    node.files.append(d)
+    node["testattr"] = "test"
+    db.session.commit()
+    d = File(path="replaced", filetype="test", mimetype="test")
+    node.files = [d]
+    node["testattr"] = "replaced"
+    db.session.commit()
+    assert node.versions[1].files.one().path == "test"
+    assert node.versions[2].files.one().path == "replaced"
+
+
+def test_change_file(container_node):
+    from core import File
+    node = container_node
+    d = File(path="test", filetype="test", mimetype="test")
+    node.files.append(d)
+    db.session.commit()
+    d.path = "changed"
+    db.session.commit()
+    # Changing the current file affects only the current node's File, not the node version's File.
+    assert node.versions[0].files.one().path == "test"
+    assert node.files.one().path == "changed"
 
 
 def test_change_attr(content_node):

@@ -33,11 +33,10 @@ def some_metafield(session):
     return metafield
 
 @fixture
-def some_maskitem(session):
+def some_maskitem(some_metafield):
     """Doesn't make much sense, but ok for hierarchy / getter testing"""
-    metafield = MetafieldFactory()
     maskitem = FieldMaskitemFactory()
-    maskitem.children.append(metafield)
+    maskitem.children.append(some_metafield)
     return maskitem
 
 

@@ -1328,10 +1328,11 @@ class Maskitem(Node):
         return MetafieldExpr()
 
     @metafield.setter
-    def set_metafield(self, metafield):
-        self._metafields.remove(self.metafield)
-        if metafield is not None:
-            self._metafields.append(metafield)
+    def metafield(self, metafield):
+        if metafield is None:
+            raise ValueError("setting metafield to None is not allowed!")
+
+        self._metafields = [metafield]
 
     def getLabel(self):
         return self.getName()

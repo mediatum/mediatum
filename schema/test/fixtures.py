@@ -16,12 +16,12 @@ from core.test.fixtures import content_node
 
 
 METAFIELDS = [
-    ("DOI", "text"),
-    ("author", "ilist"),
-    ("page", "text"),
-    ("title", "text"),
-    ("publisher", "text"),
-    ("issued", "date"),
+    (u"DOI", u"text"),
+    (u"author", u"ilist"),
+    (u"page", u"text"),
+    (u"title", u"text"),
+    (u"publisher", u"text"),
+    (u"issued", u"date"),
 ]
 
 ARTICLE_METAFIELDS = METAFIELDS + []
@@ -91,7 +91,7 @@ def article_citeproc_mask(article_metafields):
         maskitems.append(maskitem)
     mask = CiteprocMaskFactory()
     mask.maskitems.extend(maskitems)
-    mask["exportmapping"] = exportmapping.id
+    mask[u"exportmapping"] = exportmapping.id
     return mask
 
 
@@ -100,8 +100,8 @@ some_mask = article_citeproc_mask
 
 @fixture
 def journal_article_mdt(article_citeproc_mask, article_metafields):
-    mdt = DocumentMetadatatypeFactory(name="dt-zeitschriftenaufsatz",
-                                      attrs__citeprocmapping="journal-article;_default;misc")
+    mdt = DocumentMetadatatypeFactory(name=u"dt-zeitschriftenaufsatz",
+                                      attrs__citeprocmapping=u"journal-article;_default;misc")
     mdt.children.extend(article_metafields)
     mdt.children.append(article_citeproc_mask)
     return mdt
@@ -116,9 +116,9 @@ def default_mdt(journal_article_mdt):
 def some_mdt_with_masks():
     mdt = DocumentMetadatatypeFactory()
     mdt.masks.append(MaskFactory())
-    mdt.masks.append(MaskFactory(name="mask_de", attrs__language="de"))
-    mdt.masks.append(MaskFactory(name="mask_en", attrs__language="en"))
-    mdt.masks.append(MaskFactory(name="mask_en_2", attrs__language="en", attrs__masktype="testmasktype"))
+    mdt.masks.append(MaskFactory(name=u"mask_de", attrs__language=u"de"))
+    mdt.masks.append(MaskFactory(name=u"mask_en", attrs__language=u"en"))
+    mdt.masks.append(MaskFactory(name=u"mask_en_2", attrs__language=u"en", attrs__masktype=u"testmasktype"))
     return mdt
 
 

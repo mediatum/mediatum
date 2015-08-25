@@ -10,8 +10,8 @@ import datetime
 from pprint import pprint
 from pytest import raises, mark
 
-
-from core import Node
+from core import Node, db
+from utils.compat import iteritems
 from .. import citeproc
 from ..citeproc import get_citeproc_json, DOINotFound, FIELDS, CSLField
 
@@ -32,18 +32,21 @@ def load_csl_record_file(doi):
     return json.load(open(fp))
 
 
-def check_node(node, expected):
+def check_node(node, expected, **check_attrs):
     assert isinstance(node, Node)
     print("expected node content:")
     pprint(expected)
     print("actual node attributes:")
     pprint(node.attributes)
-    assert node.name == expected["DOI"]
-    if expected:
-        doi = node.get("doi") or node.get("DOI")
-        assert doi == expected["DOI"]
-        publisher = node.get("publisher")
-        assert publisher == expected["publisher"]
+    # every doi-imported node must fulfill this
+    assert node.name == expected[u"DOI"]
+    doi = node.get(u"doi") or node.get(u"DOI")
+    assert doi == expected[u"DOI"]
+    # additional attribute value checks
+    for attr, expected in iteritems(check_attrs):
+        value = node.get(attr)
+        if value:
+            assert value == expected
 
 
 def _get_path(doi, typ):
@@ -62,6 +65,23 @@ def test_get_citeproc_json_fail():
         get_citeproc_json("invalid")
 
 
+
+def test_convert_raw_date():
+    year = 2023
+    date_value = {u"raw": unicode(year)}
+    dat = citeproc.convert_csl_date(date_value)
+    assert dat == datetime.date(year=year, month=1, day=1).isoformat()
+
+
+def test_convert_date_parts():
+    year = 2003
+    month = 5
+    day = 27
+    date_value = {u"date-parts": [[year, month, day]]}
+    dat = citeproc.convert_csl_date(date_value)
+    assert dat == datetime.date(year=year, month=month, day=day).isoformat()
+
+
 def test_fields():
     standard_field = FIELDS["abstract"]
     assert isinstance(standard_field, CSLField)
@@ -72,31 +92,31 @@ def test_fields():
 
 
 def test_import_csl(journal_article_mdt):
+    """Test importing a local CSL file"""
     record = load_csl_record_file(DOI_ARTICLE)
     node = citeproc.import_csl(record, testing=True)
-    check_node(node, record)
-
-
-@mark.slow
-def test_import_doi(session, journal_article_mdt):
-    node = citeproc.import_doi(DOI_ARTICLE3, testing=True)
-    expected = load_csl_record_file(DOI_ARTICLE3)
     # check if database can serialize the contents
-    session.add(node)
-    session.flush()
-    check_node(node, expected)
-    import pytest; pytest.set_trace() 
+    db.session.add(node)
+    db.session.flush()
+    check_node(node, record,
+               issued=datetime.date(year=2013, month=7, day=21).isoformat())
+
+
+def test_import_csl_utf8(journal_article_mdt):
+    """Test importing a local CSL file with non-ASCII characters"""
+    record = load_csl_record_file(DOI_UTF8)
+    node = citeproc.import_csl(record, testing=True)
+    check_node(node, record,
+               author=u"Weisemöller, Ingo;Schürr, Andy")
 
 
 @mark.slow
-def test_import_doi_utf8(journal_article_mdt):
+def test_import_doi(journal_article_mdt):
+    """Note: this contacts the real citeproc server. Marked as slow because of that."""
     node = citeproc.import_doi(DOI_UTF8, testing=True)
     expected = load_csl_record_file(DOI_UTF8)
+    # check if database can serialize the contents
+    db.session.add(node)
+    db.session.flush()
     check_node(node, expected)
 
-
-@mark.slow
-def test_literal_author_raw_date(journal_article_mdt):
-    node = citeproc.import_doi(DOI_LITERAL_AUTHOR_RAW_DATE, testing=True)
-    assert node.get("author") == "Cambridge Archaeological Unit"
-    assert node.get("issued") == datetime.date(year=2012, day=1, month=1)

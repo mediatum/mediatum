@@ -92,6 +92,7 @@ class PostgresSQLAConnector(object):
         from core.database.postgres.shoppingbag import ShoppingBag
         from core.database.postgres.permission import AccessRule, AccessRuleset, NodeToAccessRule, NodeToAccessRuleset
         from core.database.postgres.setting import Setting
+        from core.database.postgres.search import Fts
         return (
             File,
             Node,
@@ -103,7 +104,8 @@ class PostgresSQLAConnector(object):
             AccessRuleset,
             NodeToAccessRule,
             NodeToAccessRuleset,
-            Setting)
+            Setting,
+            Fts)
 
     def make_session(self):
         """Create a session.

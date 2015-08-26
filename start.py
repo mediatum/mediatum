@@ -110,6 +110,7 @@ def main(host=None, http_port=None, redis_sessions=False):
         z3950port = None
 
     athana.setThreads(int(config.get("host.threads", "8")))
+    print("WARNING: using experimental persistent redis session support, only for testing!!!")
     athana.USE_PERSISTENT_SESSIONS = redis_sessions
 
     import datetime
@@ -149,7 +150,7 @@ if __name__ == "__main__":
         extra_files = [config.get_config_filepath()]
 
         def main_wrapper():
-            main(args.bind, args.http_port)
+            main(args.bind, args.http_port, args.redis_sessions)
         run_with_reloader(main_wrapper, extra_files)
     else:
         main(args.bind, args.http_port, args.redis_sessions)

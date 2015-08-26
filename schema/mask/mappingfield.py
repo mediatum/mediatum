@@ -26,7 +26,10 @@ from utils.utils import esc, desc, modify_tex
 from utils.date import parse_date, format_date
 from schema.schema import getMetadataType
 import export.exportutils as exportutils
+from core import Node
+from core import db
 
+q = db.query
 
 class MappingReplacement():
 
@@ -75,7 +78,7 @@ class m_mappingfield(Metatype):
 
         ns = ""
         if field.get("fieldtype") == "mapping":
-            field = tree.getNode(field.get("mappingfield"))
+            field = q(Node).get(field.get("mappingfield"))
             ns = field.getMapping().getNamespace()
             if ns != "":
                 ns += ":"
@@ -158,7 +161,7 @@ class m_mappingfield(Metatype):
 
             elif var.startswith("value|nodename"):
                 try:
-                    s2 = tree.getNode(node.get(attrnode.getName())).getName()
+                    s2 = q(Node).get(node.get(attrnode.getName())).getName()
                 except:
                     s2 = node.getName()
                 s = s.replace("[" + var + "]", s2)
@@ -176,7 +179,7 @@ class m_mappingfield(Metatype):
             elif var == "ns":
                 ns = ""
                 for mapping in attrnode.get("exportmapping").split(";"):
-                    n = tree.getNode(mapping)
+                    n = q(Node).get(mapping)
                     if n.getNamespace() != "" and n.getNamespaceUrl() != "":
                         ns += 'xmlns:' + n.getNamespace() + '="' + n.getNamespaceUrl() + '" '
                 s = s.replace("[" + var + "]", ns)
@@ -212,19 +215,18 @@ class m_mappingfield(Metatype):
             ret += mask.getMappingHeader() + "\r\n"
 
         for field in fields:
-            try:
-                attrnode = tree.getNode(field.get("attribute"))
-            except:
+            attrnode = q(Node).get(field.get("attribute"))
+            if attrnode is None:
                 continue
 
             if field.get("fieldtype") == "mapping":  # mapping to mapping definition
-                mapping = tree.getNode(mask.get("exportmapping").split(";")[0])
+                mapping = q(Node).get(mask.get("exportmapping").split(";")[0])
                 separator = mapping.get("separator")
 
                 ns = mapping.getNamespace()
                 if ns != "":
                     ns += ":"
-                fld = tree.getNode(field.get("mappingfield"))
+                fld = q(Node).get(field.get("mappingfield"))
                 format = fld.getExportFormat()
                 field_value = ns + fld.getName()
                 default = fld.getDefault().strip()

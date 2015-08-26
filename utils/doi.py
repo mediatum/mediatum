@@ -177,9 +177,7 @@ def post_file(file_type, file_location):
                       'r',
                       encoding='UTF-8').read()
     h = httplib2.Http()
-    response, content = h.request(endpoint,
-                                  'POST',
-                                  body=msg.encode('utf-8'),
-                                  headers={'Content-Type': 'text/plain;charset=UTF-8',
-                                           'Authorization': 'Basic ' + auth})
+
+    response, content = h.request(endpoint, 'POST', body=msg.encode('utf-8'), headers=header)
+
     return response.status, content.encode('utf-8')

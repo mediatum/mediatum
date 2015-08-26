@@ -98,12 +98,15 @@ def getContent(req, ids):
                     node.set('system.identifierstate', u'2')
                     db.session.commit()
 
+                    # TODO: required anymore?
+                    '''
                     # add nobody rule if not set
                     if node.getAccess('write') is None:
                         node.setAccess('write', access_nobody)
                     else:
                         if access_nobody not in node.getAccess('write'):
                             node.setAccess('write', ','.join([node.getAccess('write'), access_nobody]))
+                    '''
 
                 try:
                     mailtext = req.getTAL('web/edit/modules/identifier.html', v, macro='generate_identifier_usr_mail_2')
@@ -158,6 +161,8 @@ def getContent(req, ids):
                         node.set('system.identifierstate', u'1')
                         db.session.commit()
 
+                        # TODO: required anymore?
+                        '''
                         # add nobody rule
                         print node.getAccess('write')
                         if node.getAccess('write') is None:
@@ -165,6 +170,7 @@ def getContent(req, ids):
                         else:
                             if access_nobody not in node.getAccess('write'):
                                 node.setAccess('write', ','.join([node.getAccess('write'), access_nobody]))
+                        '''
 
                     except mail.SocketError:
                         logg.exception('failed to send identifier request mail')

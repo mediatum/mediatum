@@ -147,15 +147,20 @@ def getContentStyles(type, name="", contenttype=""):
         for k, v in config.getsubset("plugins").items():
             path, module = splitpath(v)
 
-            if os.path.exists(os.path.join(config.basedir, v)):
-                for root, dirs, files in os.walk(os.path.join(config.basedir, v)):
+            plugin_path = os.path.join(config.basedir, v)
+
+            if os.path.exists(plugin_path):
+                for root, dirs, files in os.walk(plugin_path):
                     for n in [f for f in files if f.endswith(".cfg")]:
                         c = readStyleConfig(root + "/" + n)
                         styles[c.getID()] = c
                     break
 
-            if os.path.exists(os.path.join(config.basedir, v + "themes/" + theme.getName() + "/styles")):
-                for root, dirs, files in os.walk(os.path.join(config.basedir, v + "themes/" + theme.getName() + "/styles")):
+            # now check theme path
+            theme_path = os.path.join(plugin_path, "themes", theme.getName(), "styles")
+
+            if os.path.exists(theme_path):
+                for root, dirs, files in os.walk(theme_path):
                     for n in [f for f in files if f.endswith(".cfg")]:
                         c = readStyleConfig(root + "/" + n)
                         styles[c.getID()] = c

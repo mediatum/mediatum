@@ -106,10 +106,9 @@ class InternalAuthenticator(Authenticator):
         return user
 
 
-def register_authenticator(authenticator, name=""):
-    """authenticators can have a name to distinquish between instances of the same auth_type
-    """
-    key = (authenticator.auth_type, name)
+def register_authenticator(authenticator):
+    # authenticators can have a name to distinquish between instances of the same auth_type
+    key = (authenticator.auth_type, authenticator.name)
     # re-sort authenticators according to configured order
     auth_order = config.get("auth.authenticator_order", ("internal", ""))
     existing_authenticators = authenticators
@@ -121,7 +120,7 @@ def register_authenticator(authenticator, name=""):
         else:
             authenticators[order_key] = existing_authenticators[order_key]
 
-    logg.info("registered authenticator auth_type %s, name %s", authenticator.auth_type, name)
+    logg.info("registered authenticator auth_type %s, name %s", authenticator.auth_type, authenticator.name)
 
 
 def authenticate_user_credentials(login, password, request):

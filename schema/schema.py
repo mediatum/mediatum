@@ -1077,24 +1077,26 @@ class Mask(Node):
         return nodes
 
     def getMappingHeader(self):
+        from .mapping import Mapping
         if self.getMasktype() == "export":
             if len(self.get("exportheader")) > 0:
                 return self.get("exportheader")
             elif len(self.get("exportmapping").split(";")) > 1:
                 return self.getExportHeader()
             else:
-                c = tree.getNode(self.get("exportmapping"))
+                c = q(Mapping).get(self.get("exportmapping"))
                 return c.getHeader()
         return ""
 
     def getMappingFooter(self):
+        from .mapping import Mapping
         if self.getMasktype() == "export":
             if len(self.get("exportfooter")) > 0:
                 return self.get("exportfooter")
             elif len(self.get("exportmapping").split(";")) > 1:
                 return self.getExportFooter()
             else:
-                c = tree.getNode(self.get("exportmapping"))
+                c = q(Mapping).get(self.get("exportmapping"))
                 return c.getFooter()
         return ""
 

@@ -63,11 +63,11 @@ def getExternalAuthentificators():
 
 
 def user_from_session(session):
-    user = session.get("user")
-    if user is None:
+    user_id = session.get("user_id")
+    if user_id is None:
         user = q(User).filter_by(login_name=config.get("user.guestuser")).one()
     else:
-        user = q(User).get(user.id)
+        user = q(User).get(user_id)
     return user
 
 

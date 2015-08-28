@@ -420,6 +420,7 @@ def fileIsNotEmpty(file):
 def mkContentNode(req):
     id = req.params.get("id", get_collections_node().id)
     node = q(Node).get(id)
+
     if node is None:
         return ContentError("No such node", 404)
     if not node.has_read_access():
@@ -443,7 +444,9 @@ def mkContentNode(req):
             c.node = node
             return c
 
-    return ContentNode(node)
+    version_id = req.args.get("v")
+    version = node.get_tagged_version(unicode(version_id))
+    return ContentNode(version) if version is not None else ContentNode(node)
 
 
 class ContentError(Content):

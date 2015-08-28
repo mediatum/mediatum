@@ -1279,10 +1279,10 @@ msgid "image_view_big"
 msgstr "Bild-Ansicht"
 
 msgid "document_view_new_version_exist"
-msgstr "Es ist eine ${a_open}neuere Version${a_close} des gewünschten Dokuments verfügbar."
+msgstr "Es ist eine neuere Version des gewünschten Dokuments verfügbar."
 
 msgid "document_view_version_deleted"
-msgstr "Die gewünschte Version des Dokuments wurde gelöscht.<br />Das Dokument wird in der ${a_open}neuesten Version${a_close} angezeigt."
+msgstr "Die gewünschte Version des Dokuments wurde gelöscht.<br />Das Dokument wird in der neuesten Version angezeigt."
 
 msgid "document_view_from"
 msgstr "von"

@@ -289,6 +289,9 @@ class Node(DeclarativeBase, NodeMixin):
         return (self.versions.join(Transaction, version_cls.transaction_id == Transaction.id).join(Transaction.meta_relation).
                 filter(TransactionMeta.key == u"tag"))
 
+    def get_tagged_version(self, tag):
+        return self.tagged_versions.filter_by(value=tag).scalar()
+
     __mapper_args__ = {
         'polymorphic_identity': 'node',
         'polymorphic_on': type

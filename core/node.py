@@ -212,3 +212,7 @@ class NodeVersionMixin(NodeMixin):
 
     def getActiveVersion(self):
         return self.version_parent
+
+    @property
+    def versions(self):
+        return self.version_parent.versions

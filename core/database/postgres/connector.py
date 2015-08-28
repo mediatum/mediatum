@@ -13,6 +13,7 @@ from core import config
 from . import db_metadata, DeclarativeBase
 from core.database.postgres import MtQuery
 from core.database.postgres.psycopg2_debug import make_debug_connection_factory
+from sqlalchemy_continuum.utils import version_class
 
 # set this to True or False to override debug config settings
 DEBUG = None
@@ -141,7 +142,12 @@ class PostgresSQLAConnector(object):
         XXX: must be removed later
         """
         from .node import Node
-        return self.session.query(Node).get(node.id)
+        NodeVersion = version_class(Node)
+        if isinstance(node, NodeVersion):
+            return self.session.query(NodeVersion).get((node.id, node.transaction.id))
+        else:
+            return self.session.query(Node).get(node.id)
+
 
     def create_tables(self, conn):
         # Fts is imported nowhere else, make it known to SQLAlchemy by importing it here

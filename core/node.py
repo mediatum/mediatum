@@ -77,7 +77,7 @@ class NodeMixin(object):
 
     def getFiles(self):
         warn("deprecated, use Node.files instead", DeprecationWarning)
-        return self.files
+        return list(self.files)
 
     def get(self, key, default=""):
         return self.attrs.get(key, default)

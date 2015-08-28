@@ -168,5 +168,5 @@ class MtQuery(Query):
         else:
             nodeclass = nodeclass[0]
 
-        read_access = mediatumfunc.has_read_access_to_node(nodeclass.id, user.group_ids, ip, func.current_date())
+        read_access = mediatumfunc.has_read_access_to_node(nodeclass.id, user.group_ids, ip, sqlfunc.current_date())
         return self.filter(read_access)

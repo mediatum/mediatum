@@ -19,6 +19,8 @@
 """
 import logging
 
+from sqlalchemy import func
+
 import core.users as users
 
 import core.acl as acl

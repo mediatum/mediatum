@@ -1493,7 +1493,7 @@ class SchemaMixin(object):
         warn("use Default.metadatatype.filter_masks instead", DeprecationWarning)
         self.metadatatype.filter_masks(type, language).all()
 
-    @hybrid_property
+    @property
     def metadatatype(self):
         try:
             return q(Metadatatype).filter_by(name=self.schema).one()

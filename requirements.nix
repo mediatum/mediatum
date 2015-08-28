@@ -188,10 +188,10 @@ let
     doCheck = false;
   };
   mediatumtal = self.buildPythonPackage {
-    name = "mediatumtal-0.2";
+    name = "mediatumtal-0.3.1";
     src = fetchurl {
-      url = https://pypi.python.org/packages/source/m/mediatumtal/mediatumtal-0.2.tar.gz;
-      md5 = "f1d01862e6d93e85174a1c85e7ef8c6e";
+      url = https://pypi.python.org/packages/source/m/mediatumtal/mediatumtal-0.3.1.tar.gz;
+      md5 = "6c6e65a1c8c7abe09c14299b0b78cd66";
     };
     propagatedBuildInputs = with self; [];
     buildInputs = with self; [];

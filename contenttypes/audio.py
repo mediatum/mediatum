@@ -164,7 +164,7 @@ class Audio(Content):
         obj['path'] = req and req.params.get("path", "") or ""
         obj['audiothumb'] = u'/thumb2/{}'.format(node.id)
         if node.has_object():
-            obj['canseeoriginal'] = access.hasAccess(node, "data")
+            obj['canseeoriginal'] = node.has_data_access()
             obj['audiolink'] = u'/file/{}/{}'.format(node.id, node.getName())
             obj['audiodownload'] = u'/download/{}/{}'.format(node.id, node.getName())
         else:

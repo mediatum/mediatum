@@ -77,7 +77,7 @@ class Document(Content):
             obj['bibtex'] = True
 
         if node.has_object():
-            obj['canseeoriginal'] = access.hasAccess(node, "data")
+            obj['canseeoriginal'] = node.has_data_access()
             if node.get('system.origname') == "1":
                 obj['documentlink'] = u'/doc/{}/{}'.format(node.id, node.name)
                 obj['documentdownload'] = u'/download/{}/{}'.format(node.id, node.name)
@@ -230,8 +230,7 @@ class Document(Content):
 
     """ popup window for actual nodetype """
     def popup_fullsize(self, req):
-        access = AccessData(req)
-        if not access.hasAccess(self, "data") or not access.hasAccess(self, "read"):
+        if not self.has_data_access() or not self.has_read_access():
             req.write(t(req, "permission_denied"))
             return
 

@@ -114,7 +114,7 @@ class Video(Content):
             obj['metadata'] = []
         obj['node'] = node
         obj['path'] = req.params.get("path", "")
-        obj['canseeoriginal'] = access.hasAccess(node, "data")
+        obj['canseeoriginal'] = node.has_data_access()
 
         obj['parentInformation'] = self.getParentInformation(req)
 
@@ -263,7 +263,7 @@ class Video(Content):
             int(self.get('vid-height') or 0) + 53
 
         access = AccessData(req)
-        if not access.hasAccess(self, "data") or not access.hasAccess(self, "read"):
+        if not self.has_data_access() or not self.has_read_access():
             req.write(t(req, "permission_denied"))
             return
 

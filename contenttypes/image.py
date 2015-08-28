@@ -227,7 +227,7 @@ class Image(Content):
             tifs = []
 
         access = acl.AccessData(req)
-        if access.hasAccess(self, "data"):
+        if self.has_data_access():
             for f in self.files:
                 if f.type == "original":
                     if self.get('system.origname') == "1":
@@ -253,7 +253,7 @@ class Image(Content):
         obj['tif'] = tif
         obj['zoom'] = dozoom(node)
         obj['tileurl'] = u"/tile/{}/".format(node.id)
-        obj['canseeoriginal'] = access.hasAccess(node, "data")
+        obj['canseeoriginal'] = node.has_data_access()
         obj['originallink'] = u"getArchivedItem('{}/{}')".format(node.id, tif)
         obj['archive'] = node.get('archive_type')
 
@@ -430,13 +430,13 @@ class Image(Content):
                             # skip unknown iptc tags
                             if 'IPTC_' in k:
                                 continue
-                            
+
                             if any(tag in k for tag in unwanted_attrs):
                                 continue
-                            
+
                             if isinstance(tags[k], list):
                                 tags[k] = ', '.join(tags[k])
-                                
+
                             if tags[k] != "":
                                 self.set("iptc_" + k.replace(" ", "_"),
                                          utf8_decode_escape(ustr(tags[k])))
@@ -553,7 +553,7 @@ class Image(Content):
         access = AccessData(req)
         d = {}
         svg = 0
-        if (not access.hasAccess(self, "data") and not dozoom(self)) or not access.hasAccess(self, "read"):
+        if (not self.has_data_access() and not dozoom(self)) or not self.has_read_access():
             req.write(t(req, "permission_denied"))
             return
         zoom_exists = 0
@@ -575,7 +575,7 @@ class Image(Content):
     def popup_thumbbig(self, req):
         access = AccessData(req)
 
-        if (not access.hasAccess(self, "data") and not dozoom(self)) or not access.hasAccess(self, "read"):
+        if (not self.has_data_access() and not dozoom(self)) or not self.has_read_access():
             req.write(t(req, "permission_denied"))
             return
 

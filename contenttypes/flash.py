@@ -86,7 +86,7 @@ class Flash(Content):
     """ popup window for actual nodetype """
     def popup_fullsize(self, req):
         access = AccessData(req)
-        if not access.hasAccess(self, "data") or not access.hasAccess(self, "read"):
+        if not self.has_data_access() or not self.has_read_access():
             req.write(t(req, "permission_denied"))
             return
 

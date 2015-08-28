@@ -25,6 +25,9 @@ class MtVersionBase(object):
         attr = getattr(parent_cls, key)
         if isinstance(attr, types.MethodType):
             return types.MethodType(attr.__func__, self, parent_cls)
+        elif isinstance(attr, property):
+            return attr.fget(self)
+
         return attr
 
     @property
@@ -34,4 +37,3 @@ class MtVersionBase(object):
     @tag.setter
     def tag(self, tag):
         self.transaction.meta[u"tag"] = tag
-

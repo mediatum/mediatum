@@ -3,7 +3,7 @@
     :copyright: (c) 2015 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
-from pytest import yield_fixture
+from pytest import yield_fixture, raises
 from sqlalchemy_continuum.utils import version_class
 
 from core import db, Node, File
@@ -154,6 +154,14 @@ def test_call_nodeclass_method(content_node):
 def test_use_node_property(content_node):
     vers = content_node.versions[0]
     assert vers.attributes == vers.attrs
+
+
+def test_use_content_property(content_node):
+    vers = content_node.versions[0]
+    # XXX: maybe find a better test subject than metadatatype which doesn't fail ;)
+    with raises(Exception) as e:
+        vers.metadatatype
+    assert "testschema" in e.value.message
 
 # legacy versioning support
 

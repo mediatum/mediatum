@@ -82,6 +82,27 @@ def get_maskform_and_fields(nodes, mask, req):
     return _maskform, _fields
 
 
+class SystemMask:
+
+    def __init__(self, name, description, fields):
+        self.name, self.description, self.fields = name, description, fields
+
+    def getName(self):
+        return self.name
+
+    def getDescription(self):
+        return self.description
+
+    def getDefaultMask(self):
+        return False
+
+    def metaFields(self, lang=None):
+        return self.fields
+
+    def i_am_not_a_mask():
+        pass
+
+
 @dec_entry_log
 def getContent(req, ids):
     ret = ""
@@ -131,25 +152,6 @@ def getContent(req, ids):
 
     if hasattr(node, "metaFields"):
 
-        class SystemMask:
-
-            def __init__(self, name, description, fields):
-                self.name, self.description, self.fields = name, description, fields
-
-            def getName(self):
-                return self.name
-
-            def getDescription(self):
-                return self.description
-
-            def getDefaultMask(self):
-                return False
-
-            def metaFields(self, lang=None):
-                return self.fields
-
-            def i_am_not_a_mask():
-                pass
         masklist = [SystemMask(
             "settings", t(req, "settings"), node.metaFields(lang(req)))] + masklist
 
@@ -196,154 +198,10 @@ def getContent(req, ids):
     ctx["t"] = t
 
     if action == 'restore':
-        raise NotImplementedError("todo")
-        vid = req.params.get('vid', '0')
-        node = nodes[0].getActiveVersion()
-        if vid != '0' and vid != node.id:
-            n = q(Node).get(vid)
-            # Not active version
-            if n.next_nid != '0':
-
-                next = q(Node).get(n.next_nid)
-                if next.prev_nid != '0':
-                    next.children.remove(q(Node).get(next.prev_nid))
-                next.setPrevID(n.prev_nid)
-
-                if n.prev_nid != '0':
-                    prev = q(Node).get(n.prev_nid)
-                    prev.setNextID(n.next_nid)
-                    n.children.remove(prev)
-                    next.children.append(prev)
-                node.setNextID(n.id)
-
-                n.setPrevID(node.id)
-                n.setNextID('0')
-
-                for pid in db.getParents(node.id):
-                    parentNode = q(Node).get(pid)
-                    parentNode.children.append(n)
-                    parentNode.children.remove(node)
-                n.children.append(node)
-
-                nodes = [n]
-                ids = [n.id]
-
-                node_versions = nodes[0].tagged_versions
-                update_date, creation_date = get_datelists(nodes)
-
-                _maskform, _fields = get_maskform_and_fields(nodes, mask, req)
-
-                data = {'url': u'?id={}&tab=metadata'.format(n.id),
-                        'pid': None,
-                        'flag_nodename_changed': flag_nodename_changed,
-                        "versions": node_versions,
-                        "creation_date": creation_date,
-                        "update_date": update_date,
-                        "maskform": _maskform,
-                        "fields": _fields}
-
-                data.update(ctx)
-
-                return req.getTAL("web/edit/modules/metadata.html", data, macro="redirect")
+        raise NotImplementedError("restore version not implemented, later...")
 
     if action == 'delete':
-        vid = req.params.get('vid', '0')
-        if (vid != '0'):
-            node = nodes[0].getActiveVersion()
-            n = q(Node).get(vid)
-
-            if (vid != node.id):
-                n.set("deleted", "true")
-                for pid in db.getParents(n.id):
-                    parentNode = q(Node).get(pid)
-                    parentNode.children.remove(n)
-                for cid in db.getChildren(n.id):
-                    n.children.remove(q(Node).get(cid))
-                if n.next_nid != '0' and n.prev_nid != '0':
-                    _next = q(Node).get(n.next_nid)
-                    _next.children.append(q(Node).get(n.prev_nid))
-
-                if n.next_nid != '0':
-                    _next = q(Node).get(n.next_nid)
-                    if n.prev_nid != '0':
-                        _next.setPrevID(n.prev_nid)
-
-                if n.prev_nid != '0':
-                    _prev = q(Node).get(n.prev_nid)
-                    if n.next_nid != '0':
-                        _prev.setNextID(n.next_nid)
-            else:
-                pids = db.getParents(n.id)
-
-                # Active version
-                prev = None
-                if n.prev_nid != '0':
-                    prev = q(Node).get(n.prev_nid)
-                    while prev.prev_nid != None and prev.prev_nid != '0' and prev.get("deleted") == "true":
-                        prev = q(Node).get(prev.prev_nid)
-
-                if prev != None and prev.get("deleted") != "true":
-                    prev.setNextID('0')
-                    for pid in pids:
-                        parentNode = q(Node).get(pid)
-                        parentNode.children.append(prev)
-                    nodes = [prev]
-                    ids = [prev.id]
-                    n.set("deleted", "true")
-                    for pid in pids:
-                        parentNode = q(Node).get(pid)
-                        parentNode.children.remove(n)
-
-                    for cid in db.getChildren(n.id):
-                        n.children.remove(q(Node).get(cid))
-
-                    if n.next_nid != '0' and n.prev_nid != '0':
-                        _next = q(Node).get(n.next_nid)
-                        _next.children.append(q(Node).get(n.prev_nid))
-
-                    node_versions = nodes[0].tagged_versions
-                    update_date, creation_date = get_datelists(nodes)
-
-                    _maskform, _fields = get_maskform_and_fields(nodes, mask, req)
-
-                    data = {'url': '?id=' + prev.id + '&tab=metadata',
-                            'pid': None,
-                            'flag_nodename_changed': flag_nodename_changed,
-                            "versions": node_versions,
-                            "creation_date": creation_date,
-                            "update_date": update_date,
-                            "maskform": _maskform,
-                            "fields": _fields}
-
-                    data.update(ctx)
-
-                    return req.getTAL("web/edit/modules/metadata.html", data, macro="redirect")
-                else:
-                    # Version 0
-                    # Move node to trash
-                    trashdir = users.getTrashDir(user)
-                    trashdir.children.append(n)
-                    for pid in pids:
-                        parentNode = q(Node).get(pid)
-                        parentNode.children.remove(n)
-
-                    node_versions = nodes[0].tagged_versions
-                    update_date, creation_date = get_datelists(nodes)
-
-                    _maskform, _fields = get_maskform_and_fields(nodes, mask, req)
-
-                    data = {'url': '?id=' + pids[0] + '&tab=content',
-                            'pid': pids[0],
-                            'flag_nodename_changed': flag_nodename_changed,
-                            "versions": node_versions,
-                            "creation_date": creation_date,
-                            "update_date": update_date,
-                            "maskform": _maskform,
-                            "fields": _fields}
-
-                    data.update(ctx)
-
-                    return req.getTAL("web/edit/modules/metadata.html", data, macro="redirect")
+        raise NotImplementedError("delete version not implemented, later...")
 
     if "edit_metadata" in req.params:
         # check and save items

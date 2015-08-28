@@ -17,6 +17,8 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from sqlalchemy_continuum import versioning_manager
+
 from core.acl import AccessData
 
 import core.users as users
@@ -356,38 +358,15 @@ def getContent(req, ids):
         logg.info("%s change metadata %s", access.user.login_name, idstr)
         logg.debug(pf(req.params))
 
-        for node in nodes:
-            node.set("updateuser", user.login_name)
-            if node.get('updatetime') < ustr(now()):
-                node.set("updatetime", ustr(format_date()))
-
         if not hasattr(mask, "i_am_not_a_mask"):
             if req.params.get('generate_new_version'):
                 # Create new node version
-                _ids = []
-                _nodes = []
+                comment = '(' + t(req, "document_new_version_comment") + ')\n' + req.params.get('version_comment', '')
+
                 for node in nodes:
-                        #todo: versioning needs to be implemented
-                        n = node.createNewVersion(user)
-                        n.set("system.version.comment", '(' + t(req, "document_new_version_comment") +
-                              ')\n' + req.params.get('version_comment', ''))
-
-                        # add all existing attributes to the new version node
-                        for attr, value in node.attrs.items():
-                            # do not overwrite existing attributes
-                            # do not copy system attributes
-                            if n.get(attr) != "" or attr.startswith("system."):
-                                pass
-                            else:
-                                n.set(attr, value)
-
-                        _nodes.append(n)
-                        _ids.append(n.id)
-
-                ids = _ids
-                idstr = ",".join(ids)
-                nodes = _nodes
-                nodes = mask.updateNode(nodes, req)
+                    with node.new_tagged_version(comment=comment):
+                        node.set("updateuser", user.login_name)
+                        mask.update_node(node, req)
 
                 node_versions = nodes[0].tagged_versions
                 update_date, creation_date = get_datelists(nodes)
@@ -407,14 +386,20 @@ def getContent(req, ids):
                 ret += req.getTAL("web/edit/modules/metadata.html", data, macro="redirect")
 
             else:
-                if nodes:
-                    old_nodename = nodes[0].name
-                nodes = mask.updateNode(nodes, req)
-                if nodes:
-                    new_nodename = nodes[0].name
-                    if old_nodename != new_nodename and hasattr(nodes[0], 'isContainer') and nodes[0].isContainer():
-                        # for updates of node label in editor tree
-                        flag_nodename_changed = ustr(node.id)
+                # XXX: why check here?
+                # if nodes:
+                old_nodename = nodes[0].name
+
+                for node in nodes:
+                    node.set("updateuser", user.login_name)
+                    mask.updateNode(nodes, req)
+
+                # XXX: why check here?
+                # if nodes:
+                new_nodename = nodes[0].name
+                if old_nodename != new_nodename and isinstance(nodes[0], Container):
+                    # for updates of node label in editor tree
+                    flag_nodename_changed = ustr(node.id)
 
         else:
             for field in mask.metaFields():

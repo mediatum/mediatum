@@ -45,7 +45,7 @@ class TimeStamp(object):
 
     @declared_attr
     def created_at(cls):
-        return C(DateTime, default=sqla.func.now())
+        return C(DateTime, default=sqlfunc.now())
 
 
 def integer_pk(**kwargs):
@@ -62,7 +62,7 @@ def integer_fk(*args, **kwargs):
 
 
 db_metadata = sqla.MetaData(schema=DB_SCHEMA_NAME)
-func = getattr(sqla.func, DB_SCHEMA_NAME)
+mediatumfunc = getattr(sqlfunc, DB_SCHEMA_NAME)
 DeclarativeBase = declarative_base(metadata=db_metadata)
 
 # some pretty printing for SQLAlchemy objects ;)
@@ -167,6 +167,6 @@ class MtQuery(Query):
             return self
         else:
             nodeclass = nodeclass[0]
-            
-        read_access = func.has_read_access_to_node(nodeclass.id, user.group_ids, ip, sqlfunc.current_date())
+
+        read_access = mediatumfunc.has_read_access_to_node(nodeclass.id, user.group_ids, ip, func.current_date())
         return self.filter(read_access)

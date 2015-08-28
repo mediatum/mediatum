@@ -28,7 +28,7 @@ from collections import OrderedDict
 sys.path.append(".")
 
 from core import init
-from core.database.postgres import db_metadata, func
+from core.database.postgres import db_metadata, mediatumfunc
 import configargparse
 
 init.basic_init(root_loglevel=logging.WARN)
@@ -178,9 +178,9 @@ def searchindex(args):
 
     if action == "recreate":
         logg.info("recreating search indexes from node fulltexts...")
-        s.execute(func.recreate_all_tsvectors_fulltext())
+        s.execute(mediatumfunc.recreate_all_tsvectors_fulltext())
         logg.info("recreating search indexes from node attributes...")
-        s.execute(func.recreate_all_tsvectors_attrs())
+        s.execute(mediatumfunc.recreate_all_tsvectors_attrs())
         logg.info("searchindex recreate finished")
 
 

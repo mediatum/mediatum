@@ -6,10 +6,10 @@
     :license: GPL3, see COPYING for details
 """
 import logging
-from sqlalchemy import func as sqlfunc, Text, text
+from sqlalchemy import func, Text, text
 from core import config, db
 from core.search.representation import AttributeMatch, FullMatch, SchemaMatch, FulltextMatch, AttributeCompare, TypeMatch, And, Or, Not
-from core.database.postgres import func, DeclarativeBase, integer_pk, integer_fk, C
+from core.database.postgres import mediatumfunc, DeclarativeBase, integer_pk, integer_fk, C
 from sqlalchemy.dialects.postgresql.base import TSVECTOR
 from core.database.postgres.node import Node
 
@@ -86,10 +86,10 @@ def make_fts_expr_tsvec(languages, target, searchstring, op="|"):
     """
     languages = list(languages)
     prepared_searchstring = _prepare_searchstring(op, searchstring)
-    ts_query = sqlfunc.to_tsquery(languages[0], prepared_searchstring)
+    ts_query = func.to_tsquery(languages[0], prepared_searchstring)
 
     for language in languages[1:]:
-        ts_query = ts_query.op("||")(sqlfunc.to_tsquery(language, prepared_searchstring))
+        ts_query = ts_query.op("||")(func.to_tsquery(language, prepared_searchstring))
 
     return target.op("@@")(ts_query)
 
@@ -104,10 +104,10 @@ def make_fts_expr(languages, target, searchstring, op="|"):
     """
     languages = list(languages)
     prepared_searchstring = _prepare_searchstring(op, searchstring)
-    tsvec = func.to_tsvector_safe(languages[0], target)
+    tsvec = mediatumfunc.to_tsvector_safe(languages[0], target)
 
     for language in languages[1:]:
-        tsvec = tsvec.op("||")(func.to_tsvector_safe(language, prepared_searchstring))
+        tsvec = tsvec.op("||")(mediatumfunc.to_tsvector_safe(language, prepared_searchstring))
 
     return make_fts_expr_tsvec(languages, target, searchstring, op)
 

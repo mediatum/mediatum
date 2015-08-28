@@ -6,7 +6,7 @@
 from sqlalchemy import Integer, Unicode, Boolean, Text, sql
 from sqlalchemy.dialects.postgresql import ARRAY, CIDR
 
-from core.database.postgres import DeclarativeBase, C, rel, integer_pk, TimeStamp, func, FK, dynamic_rel
+from core.database.postgres import DeclarativeBase, C, rel, integer_pk, TimeStamp, mediatumfunc, FK, dynamic_rel
 from core.database.postgres.node import Node
 from core.database.postgres.alchemyext import Daterange, map_function_to_mapped_class
 from sqlalchemy.orm import column_property, object_session
@@ -23,7 +23,7 @@ class AccessRule(DeclarativeBase):
     subnets = C(ARRAY(CIDR), index=True)
     dateranges = C(ARRAY(Daterange), index=True)
 
-    group_names = column_property(func.group_ids_to_names(sql.text("group_ids")))
+    group_names = column_property(mediatumfunc.group_ids_to_names(sql.text("group_ids")))
 
 
 class NodeToAccessRule(DeclarativeBase):
@@ -73,7 +73,7 @@ Node.access_rule_assocs = dynamic_rel(NodeToAccessRule, backref="node", cascade=
 Node.access_ruleset_assocs = dynamic_rel(NodeToAccessRuleset, backref="node", cascade="all, delete-orphan", passive_deletes=True)
 
 
-EffectiveNodeToAccessRuleset = map_function_to_mapped_class(func.effective_access_rulesets, NodeToAccessRuleset, "node_id")
+EffectiveNodeToAccessRuleset = map_function_to_mapped_class(mediatumfunc.effective_access_rulesets, NodeToAccessRuleset, "node_id")
 
 
 def _effective_access_ruleset_assocs(self):

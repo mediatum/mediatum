@@ -12,9 +12,10 @@ from ipaddr import IPv4Network
 from psycopg2.extras import DateRange
 from sympy import Symbol
 from sympy.logic import boolalg, Not, And, Or
-from sqlalchemy import sql, func
+from sqlalchemy import sql
 
 from core import db, User, UserGroup
+from core.database.postgres import mediatumfunc
 from core.database.postgres.permission import AccessRule, NodeToAccessRule, AccessRulesetToRule, AccessRuleset, NodeToAccessRuleset
 from migration import oldaclparser
 from migration.oldaclparser import ACLAndCondition, ACLDateAfterClause, ACLDateBeforeClause, ACLOrCondition, ACLNotCondition,\
@@ -33,7 +34,7 @@ def prepare_acl_rulestring(rulestr):
 
 def load_node_rules(ruletype):
     db.session.execute("SET search_path TO mediatum_import")
-    expanded_accessrule = func.to_json(func.expand_acl_rule(sql.text(ruletype)))
+    expanded_accessrule = mediatumfunc.to_json(mediatumfunc.expand_acl_rule(sql.text(ruletype)))
     stmt = sql.select(["id", expanded_accessrule], from_obj="node").where(sql.text(
         "{} != ''"
         " AND name NOT LIKE 'Arbeitsverzeichnis (%'"
@@ -102,7 +103,7 @@ def convert_node_symbolic_rules_to_access_rules(nid_to_symbolic_rule, symbol_to_
 
 
 def expand_rulestr(rulestr):
-    expanded_accessrule = func.to_json(func.expand_acl_rule(rulestr))
+    expanded_accessrule = mediatumfunc.to_json(mediatumfunc.expand_acl_rule(rulestr))
     res = db.session.execute(sql.select([expanded_accessrule])).scalar()
     return res["expanded_rule"], res["rulesets"]
 

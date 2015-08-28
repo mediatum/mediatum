@@ -5,7 +5,7 @@
 """
 from core import AccessRule, AccessRuleset, NodeToAccessRule, NodeToAccessRuleset
 from core import db
-from core.database.postgres import func
+from core.database.postgres import mediatumfunc
 
 
 def test_access_rules_query(some_node):
@@ -39,7 +39,7 @@ def test_access_rule_inheritance_read(some_node_with_two_parents):
     node.parents[0].access_rule_assocs.append(NodeToAccessRule(rule=rr2, ruletype="read"))
     node.parents[1].access_rule_assocs.append(NodeToAccessRule(rule=rr3, ruletype="read"))
     s.flush()
-    f = func.update_inherited_access_rules_for_node(node.id)
+    f = mediatumfunc.update_inherited_access_rules_for_node(node.id)
     s.execute(f)
     assert node.access_rule_assocs.count() == 3
 
@@ -54,5 +54,5 @@ def test_access_rule_inheritance_write(some_node_with_two_parents):
     node.parents[0].access_rule_assocs.append(NodeToAccessRule(rule=rw2, ruletype="write"))
     node.parents[1].access_rule_assocs.append(NodeToAccessRule(rule=rw3, ruletype="write"))
     s.flush()
-    s.execute(func.update_inherited_access_rules_for_node(node.id))
+    s.execute(mediatumfunc.update_inherited_access_rules_for_node(node.id))
     assert node.access_rule_assocs.count() == 3

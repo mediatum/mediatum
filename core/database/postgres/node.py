@@ -8,7 +8,7 @@ from json import dumps
 from warnings import warn
 
 import pyaml
-from sqlalchemy import (Table, Sequence, Integer, Unicode, Text, sql, text, select)
+from sqlalchemy import (Table, Sequence, Integer, Unicode, Text, sql, text, select, func)
 from sqlalchemy.orm import deferred, object_session
 from sqlalchemy.orm.dynamic import AppenderQuery, AppenderMixin
 from sqlalchemy.dialects.postgresql import JSONB
@@ -17,7 +17,7 @@ from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from core.node import NodeMixin
-from core.database.postgres import db_metadata, DeclarativeBase, MtQuery, func
+from core.database.postgres import db_metadata, DeclarativeBase, MtQuery, mediatumfunc
 from core.database.postgres import rel, bref, C, FK
 from core.database.postgres.alchemyext import LenMixin, view
 from core.database.postgres.attributes import Attributes, AttributesExpressionAdapter
@@ -138,9 +138,9 @@ def _subquery_subtree_container(node):
 
 # permission check functions for the access types
 access_funcs = {
-    "read": func.has_read_access_to_node,
-    "write": func.has_write_access_to_node,
-    "data": func.has_data_access_to_node
+    "read": mediatumfunc.has_read_access_to_node,
+    "write": mediatumfunc.has_write_access_to_node,
+    "data": mediatumfunc.has_data_access_to_node
 }
 
 

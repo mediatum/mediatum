@@ -67,7 +67,7 @@ def test_getParents(some_node):
 
 
 def test_getFiles(some_node):
-    assert some_node.getFiles().count() == 1
+    assert len(some_node.getFiles()) == 1
     assert some_node.files[0].path == "testfilename"
 
 
@@ -200,8 +200,8 @@ def test_children_getIDs(some_node):
     child_ids = assert_deprecation_warning_allow_multiple(some_node.content_children.getIDs, 5)
     assert len(child_ids) == 1
     assert isinstance(child_ids[0], int)
-    
-    
+
+
 ### attribute mutation on persistent nodes
 
 def test_attribute_overwrite_all(some_node):
@@ -231,7 +231,7 @@ def test_all_children_content_type(parent_node):
     some_node = parent_node.children[0]
     assert some_node.content_children[0] in all_content_children
     assert some_node.container_children[0].content_children[0] in all_content_children
-    # this is a content node below another content node. 
+    # this is a content node below another content node.
     # It's only found by all_children_by_query(), not by content_children_for_all_subcontainers.
     assert some_node.content_children[0].content_children[0] in all_content_children
 
@@ -249,14 +249,14 @@ def test_content_children_for_all_subcontainers_subquery(some_node):
     sub = some_node.content_children_for_all_subcontainers.subquery()
     qy = q(sub).select_from(sub).order_by(sub.c.name).limit(10)
     assert qy
-    
-    
+
+
 def test_add_collection(collections):
     q = db.query
     c = Collection("testcollection")
     collections.container_children.append(c)
-    
-    
+
+
 def test_data_get_class_for_typestring():
     from contenttypes import Data
     data_cls = Node.get_class_for_typestring("data")

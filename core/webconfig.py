@@ -19,6 +19,7 @@
 """
 import logging
 import os.path
+import urllib
 from mediatumtal import tal
 import core.athana as athana
 import core.config as config
@@ -108,6 +109,17 @@ def loadServices():
         logg.info("web services not activated")
 
 
+def tal_add_template_globals():
+
+    def node_url(nid, version=0, **kwargs):
+        params = {"id": nid}
+        if version:
+            params["v"] = version
+        params.update(kwargs)
+        return "?" + urllib.urlencode(params)
+
+    tal.add_template_globals(node_url=node_url)
+
 def initContexts():
     athana.setBase(".")
     athana.setTempDir(config.get("paths.tempdir", "/tmp/"))
@@ -117,6 +129,7 @@ def initContexts():
     tal.set_base(".")
     tal.add_macro_resolver(resolve_filename)
     tal.add_translator(translate)
+    tal_add_template_globals()
 
     context = athana.addContext("/", ".")
     # === public area ===

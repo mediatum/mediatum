@@ -193,8 +193,8 @@ def test_versions(content_node_versioned):
     assert content_node_versioned.versions.count() == 3
 
 
-def test_getVersionList(content_node_versioned):
-    assert len(content_node_versioned.getVersionList()) == 1
+def test_getVersionList(content_node_versioned_tagged):
+    assert len(content_node_versioned_tagged.getVersionList()) == 1
 
 
 def test_old_node_version_support(content_node_versioned_with_alias_id):
@@ -209,5 +209,53 @@ def test_old_node_version_support(content_node_versioned_with_alias_id):
 
 def test_tag(content_node_versioned):
     node = content_node_versioned
-    node.tag = "v5"
-    assert node.tag == "v5"
+    node.tag = u"5"
+    assert node.tag == u"5"
+
+
+def test_create_new_tagged_version(content_node_versioned):
+    node = content_node_versioned
+
+    with node.new_tagged_version(tag=u"tag", comment=u"comment") as tx:
+        node.orderpos = 100
+
+    assert node.versions.count() == 4
+    assert tx.meta[u"tag"] == u"tag"
+    assert tx.meta[u"comment"] == u"comment"
+
+    new_version = node.versions[-1]
+    assert new_version.changeset == {u"orderpos": [42, 100]}
+
+
+def test_create_new_tagged_version_initial_version_tag(content_node_versioned):
+    node = content_node_versioned
+
+    with node.new_tagged_version():
+        node.orderpos = 100
+
+    new_version = node.versions[-1]
+    assert new_version.tag == u"2"
+
+
+def test_create_new_tagged_version_next_version_tag(content_node_versioned_tagged):
+    node = content_node_versioned_tagged
+
+    with node.new_tagged_version():
+        node.orderpos = 100
+
+    new_version = node.versions[-1]
+    assert new_version.tag == u"3"
+
+
+def test_create_new_tagged_version_dirty(content_node_versioned):
+    node = content_node_versioned
+
+    db.session.add(node.__class__())
+
+    with raises(Exception) as einfo:
+        with node.new_tagged_version():
+            node.orderpos = 100
+
+    assert "Refusing" in einfo.value.message
+
+    

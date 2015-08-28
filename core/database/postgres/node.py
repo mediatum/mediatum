@@ -292,6 +292,56 @@ class Node(DeclarativeBase, NodeMixin):
     def get_tagged_version(self, tag):
         return self.tagged_versions.filter_by(value=tag).scalar()
 
+    def new_tagged_version(self, tag=None, comment=None):
+        """Returns a context manager that manages the creation of a new tagged node version.
+
+        :param tag: a unicode tag assigned to the transaction belonging to the new version.
+            If none is given, assume that we want to add a new numbered version. 
+            The tag will be the incremented version number of the last numbered version.
+            If no numbered version is present, assign 1 to the last version and 2 to the new version.
+
+        :param comment: optional comment for the transaction
+        """
+        node = self
+
+        class VersionContextManager(object):
+
+            def __enter__(self):
+                self.session = s = object_session(node)
+                if s.new or s.dirty:
+                    raise Exception("Refusing to create a new tagged node version. Session must be clean!")
+
+                uow = versioning_manager.unit_of_work(s)
+                tx = uow.create_transaction(s)
+
+                if tag:
+                    tx.meta["tag"] = tag
+                else:
+                    NodeVersion = version_class(node.__class__)
+                    last_tagged_version = node.tagged_versions.order_by(NodeVersion.transaction_id.desc()).scalar()
+                    if last_tagged_version is not None:
+                        last_version_tag = last_tagged_version.tag
+                        next_version = int(last_tagged_version.tag) + 1
+                    else:
+                        node.versions[-1].tag = u"1"
+                        next_version = 2
+
+                    tx.meta["tag"] = unicode(next_version)
+
+                if comment:
+                    tx.meta["comment"] = comment
+
+                return tx
+
+            def __exit__(self, exc_type, exc_value, traceback):
+                if exc_type:
+                    self.session.rollback()
+                else:
+                    self.session.commit()
+
+        return VersionContextManager()
+
+
     __mapper_args__ = {
         'polymorphic_identity': 'node',
         'polymorphic_on': type

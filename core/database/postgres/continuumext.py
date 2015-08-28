@@ -37,3 +37,11 @@ class MtVersionBase(object):
     @tag.setter
     def tag(self, tag):
         self.transaction.meta[u"tag"] = tag
+
+    @property
+    def comment(self):
+        return self.transaction.meta.get(u"comment")
+
+    @comment.setter
+    def comment(self, comment):
+        self.transaction.meta[u"comment"] = comment

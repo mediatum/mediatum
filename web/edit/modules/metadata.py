@@ -103,6 +103,7 @@ class SystemMask:
         pass
 
 
+
 @dec_entry_log
 def getContent(req, ids):
     ret = ""
@@ -197,91 +198,104 @@ def getContent(req, ids):
     ctx["language"] = lang(req)
     ctx["t"] = t
 
+
     if action == 'restore':
         raise NotImplementedError("restore version not implemented, later...")
 
     if action == 'delete':
         raise NotImplementedError("delete version not implemented, later...")
 
-    if "edit_metadata" in req.params:
-        # check and save items
-        userdir = users.getHomeDir(users.getUserFromRequest(req))
 
-        for node in nodes:
-            if not access.hasWriteAccess(node) or node.id == userdir.id:
-                print "error 3"
-                req.setStatus(httpstatus.HTTP_FORBIDDEN)
-                return req.getTAL("web/edit/edit.html", {}, macro="access_error")
+#### _handle_edit_metadata #####
 
-        logg.info("%s change metadata %s", access.user.login_name, idstr)
-        logg.debug(pf(req.params))
 
-        if not hasattr(mask, "i_am_not_a_mask"):
-            if req.params.get('generate_new_version'):
-                # Create new node version
-                comment = '(' + t(req, "document_new_version_comment") + ')\n' + req.params.get('version_comment', '')
+def _handle_edit_metadata(req, ids):
+    # check and save items
+    userdir = users.getHomeDir(users.getUserFromRequest(req))
 
-                for node in nodes:
-                    with node.new_tagged_version(comment=comment):
-                        node.set("updateuser", user.login_name)
-                        mask.update_node(node, req)
+    for node in nodes:
+        if not access.hasWriteAccess(node) or node.id == userdir.id:
+            print "error 3"
+            req.setStatus(httpstatus.HTTP_FORBIDDEN)
+            return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
-                node_versions = nodes[0].tagged_versions
-                update_date, creation_date = get_datelists(nodes)
+    logg.info("%s change metadata %s", access.user.login_name, idstr)
+    logg.debug(pf(req.params))
 
-                _maskform, _fields = get_maskform_and_fields(nodes, mask, req)
+    if not hasattr(mask, "i_am_not_a_mask"):
+        if req.params.get('generate_new_version'):
+            # Create new node version
+            comment = '(' + t(req, "document_new_version_comment") + ')\n' + req.params.get('version_comment', '')
 
-                data = {'url': '?id=' + nodes[0].id + '&tab=metadata',
-                        'pid': None,
-                        "versions": node_versions,
-                        "creation_date": creation_date,
-                        "update_date": update_date,
-                        "maskform": _maskform,
-                        "fields": _fields}
-
-                data.update(ctx)
-
-                ret += req.getTAL("web/edit/modules/metadata.html", data, macro="redirect")
-
-            else:
-                # XXX: why check here?
-                # if nodes:
-                old_nodename = nodes[0].name
-
-                for node in nodes:
+            for node in nodes:
+                with node.new_tagged_version(comment=comment):
                     node.set("updateuser", user.login_name)
-                    mask.updateNode(nodes, req)
+                    mask.update_node(node, req)
 
-                # XXX: why check here?
-                # if nodes:
-                new_nodename = nodes[0].name
-                if old_nodename != new_nodename and isinstance(nodes[0], Container):
-                    # for updates of node label in editor tree
-                    flag_nodename_changed = ustr(node.id)
+            node_versions = nodes[0].tagged_versions
+            update_date, creation_date = get_datelists(nodes)
+
+            _maskform, _fields = get_maskform_and_fields(nodes, mask, req)
+
+            data = {'url': '?id=' + nodes[0].id + '&tab=metadata',
+                    'pid': None,
+                    "versions": node_versions,
+                    "creation_date": creation_date,
+                    "update_date": update_date,
+                    "maskform": _maskform,
+                    "fields": _fields}
+
+            data.update(ctx)
+
+            ret += req.getTAL("web/edit/modules/metadata.html", data, macro="redirect")
 
         else:
-            for field in mask.metaFields():
-                logg.debug("in %s.%s: (hasattr(mask,'i_am_not_a_mask')) field: %s, field.id: %s, field.name: %s, mask: %s, maskname: %s",
-                    __name__, funcname(), field, field.id, field.name, mask, maskname)
-                field_name = field.name
-                if field_name == 'nodename' and maskname == 'settings':
-                    if '__nodename' in req.params:
-                        field_name = '__nodename'  # no multilang here !
-                    elif getDefaultLanguage() + '__nodename' in req.params:
-                        # no multilang here !
-                        field_name = getDefaultLanguage() + '__nodename'
-                    value = req.params.get(field_name, None)
-                    if value:
-                        if value != node.name:
-                            flag_nodename_changed = ustr(node.id)
-                        for node in nodes:
-                            node.setName(value)
+            # XXX: why check here?
+            # if nodes:
+            old_nodename = nodes[0].name
+
+            for node in nodes:
+                node.set("updateuser", user.login_name)
+                mask.updateNode(nodes, req)
+
+            # XXX: why check here?
+            # if nodes:
+            new_nodename = nodes[0].name
+            if old_nodename != new_nodename and isinstance(nodes[0], Container):
+                # for updates of node label in editor tree
+                flag_nodename_changed = ustr(node.id)
+
+    else:
+        for field in mask.metaFields():
+            logg.debug("in %s.%s: (hasattr(mask,'i_am_not_a_mask')) field: %s, field.id: %s, field.name: %s, mask: %s, maskname: %s",
+                __name__, funcname(), field, field.id, field.name, mask, maskname)
+            field_name = field.name
+            if field_name == 'nodename' and maskname == 'settings':
+                if '__nodename' in req.params:
+                    field_name = '__nodename'  # no multilang here !
+                elif getDefaultLanguage() + '__nodename' in req.params:
+                    # no multilang here !
+                    field_name = getDefaultLanguage() + '__nodename'
                 value = req.params.get(field_name, None)
-                if value is not None:
+                if value:
+                    if value != node.name:
+                        flag_nodename_changed = ustr(node.id)
                     for node in nodes:
-                        node.set(field.name, value)
-                else:
-                    node.set(field.getName(), "")
+                        node.setName(value)
+            value = req.params.get(field_name, None)
+            if value is not None:
+                for node in nodes:
+                    node.set(field.name, value)
+            else:
+                node.set(field.getName(), "")
+
+
+#### / _handle_edit_metadata #####
+
+
+    if "edit_metadata" in req.params:
+        _handle_edit_metadata(req, ids)
+
 
     if "edit_metadata" in req.params or node.get("faulty") == "true":
         if not hasattr(mask, "i_am_not_a_mask"):

@@ -34,6 +34,7 @@ from core import Node
 from core import db
 from contenttypes import Home, Collections
 from core.systemtypes import Root
+from core.users import user_from_session
 
 q = db.query
 logg = logging.getLogger(__name__)
@@ -114,7 +115,6 @@ def getContent(req, ids):
         req.setStatus(httpstatus.HTTP_FORBIDDEN)
         return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
-    access = AccessData(req)
     metatypes = []
     nodes = []
     masklist = []
@@ -128,8 +128,7 @@ def getContent(req, ids):
 
     for id in ids:
         node = q(Node).get(id)
-        if not access.hasWriteAccess(node):
-            print "error 2"
+        if not node.has_write_access():
             req.setStatus(httpstatus.HTTP_FORBIDDEN)
             return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
@@ -148,7 +147,7 @@ def getContent(req, ids):
 
     if metadatatype:
         for m in metadatatype.filter_masks(masktype='edit'):
-            if access.hasReadAccess(m):
+            if m.has_read_access():
                 masklist.append(m)
 
     if hasattr(node, "metaFields"):
@@ -187,7 +186,6 @@ def getContent(req, ids):
     # context default for TAL interpreter
     ctx = {}
     ctx["user"] = user
-    ctx["access"] = access
     ctx["metatypes"] = metatypes
     ctx["idstr"] = idstr
     ctx["node"] = nodes[0]  # ?
@@ -211,15 +209,15 @@ def getContent(req, ids):
 
 def _handle_edit_metadata(req, ids):
     # check and save items
-    userdir = users.getHomeDir(users.getUserFromRequest(req))
+    user = user_from_session(req.session)
+    userdir = user.home_dir
 
     for node in nodes:
-        if not access.hasWriteAccess(node) or node.id == userdir.id:
-            print "error 3"
+        if not node.has_write_access() or node is userdir:
             req.setStatus(httpstatus.HTTP_FORBIDDEN)
             return req.getTAL("web/edit/edit.html", {}, macro="access_error")
 
-    logg.info("%s change metadata %s", access.user.login_name, idstr)
+    logg.debug("%s change metadata %s", user.login_name, idstr)
     logg.debug(pf(req.params))
 
     if not hasattr(mask, "i_am_not_a_mask"):

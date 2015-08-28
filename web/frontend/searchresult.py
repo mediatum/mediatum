@@ -21,7 +21,6 @@ import utils.date as date
 import logging
 from core import Node, db
 from core.translation import lang, translate
-from utils.utils import getAllCollections, u
 from core.styles import theme
 from web.frontend import Content
 from utils.strings import ensure_unicode_returned

@@ -405,18 +405,6 @@ def getCollection(node):
     return collection
 
 
-def getAllCollections():
-    l = []
-
-    def f(l, node):
-        for c in node.getChildren():
-            if isCollection(c):
-                l += [c]
-                f(l, c)
-    f(l, q(Collections).one())
-    return l
-
-
 def isDirectory(node):
     if node.type == "directory" or node.isContainer():
         return 1
@@ -618,7 +606,7 @@ def splitname(fullname):
 #
 
 class HTMLTextCutter(HTMLParser):
-    
+
     """cutting text content of html snippet after cutoff
     """
 

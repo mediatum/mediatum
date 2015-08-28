@@ -54,18 +54,6 @@ def _get_path(doi, typ):
     return os.path.join(BASEDIR, filename)
 
 
-def test_get_citeproc_json_article():
-    expected = load_csl_record_file(DOI_ARTICLE)
-    res = get_citeproc_json(DOI_ARTICLE)
-    assert expected == res
-
-
-def test_get_citeproc_json_fail():
-    with raises(DOINotFound):
-        get_citeproc_json("invalid")
-
-
-
 def test_convert_raw_date():
     year = 2023
     date_value = {u"raw": unicode(year)}
@@ -111,6 +99,19 @@ def test_import_csl_utf8(journal_article_mdt):
 
 
 @mark.slow
+def test_get_citeproc_json_article():
+    expected = load_csl_record_file(DOI_ARTICLE)
+    res = get_citeproc_json(DOI_ARTICLE)
+    assert expected == res
+
+
+@mark.slow
+def test_get_citeproc_json_fail():
+    with raises(DOINotFound):
+        get_citeproc_json("invalid")
+
+
+@mark.slow
 def test_import_doi(journal_article_mdt):
     """Note: this contacts the real citeproc server. Marked as slow because of that."""
     node = citeproc.import_doi(DOI_UTF8, testing=True)
@@ -119,4 +120,3 @@ def test_import_doi(journal_article_mdt):
     db.session.add(node)
     db.session.flush()
     check_node(node, expected)
-

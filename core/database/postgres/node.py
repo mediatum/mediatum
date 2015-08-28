@@ -8,7 +8,7 @@ from json import dumps
 from warnings import warn
 
 import pyaml
-from sqlalchemy import (Table, Sequence, Integer, Unicode, Text, sql, text, func, select)
+from sqlalchemy import (Table, Sequence, Integer, Unicode, Text, sql, text, select)
 from sqlalchemy.orm import deferred, object_session
 from sqlalchemy.orm.dynamic import AppenderQuery, AppenderMixin
 from sqlalchemy.dialects.postgresql import JSONB
@@ -17,7 +17,7 @@ from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from core.node import NodeMixin
-from core.database.postgres import db_metadata, DeclarativeBase, MtQuery
+from core.database.postgres import db_metadata, DeclarativeBase, MtQuery, func
 from core.database.postgres import rel, bref, C, FK
 from core.database.postgres.alchemyext import LenMixin, view
 from core.database.postgres.attributes import Attributes, AttributesExpressionAdapter

@@ -110,11 +110,6 @@ def loadTypesFromDB():
     return list(q(Metadatatype).order_by("name"))
 
 
-def getNumberNodes(name):
-    # XXX: ?!?
-    return 1
-    return len(tree.getRoot("metadatatypes").search("objtype=%s*" % (name)))
-
 #
 # check if metatype with given name is still existing in db
 #
@@ -629,9 +624,6 @@ class Metadatatype(Node):
 
     def getNumFields(self):
         return len(self.getMetaFields())
-
-    def getNumNodes(self):
-        return getNumberNodes(self.name)
 
     def getMetaFields(self, type=None):
         fields = []

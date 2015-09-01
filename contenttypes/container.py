@@ -166,14 +166,14 @@ class Container(Data, ContainerMixin, SchemaMixin):
         pages = self.getStartpageDict()
         if self.get("system.sidebar") != "":
             for sb in self.get("system.sidebar").split(";"):
-                if sb != "":
+                if sb:
                     l, fn = sb.split(":")
                     if l == lang(req):
                         for f in self.getFiles():
                             if fn.endswith(f.getName()):
                                 sidebar = includetemplate(self, f.retrieveFile(), {})
                                 sidebar = replaceModules(self, req, sidebar).strip()
-        if sidebar != "":
+        if sidebar:
             sidebar = req.getTAL("contenttypes/container.html", {"content": sidebar}, macro="addcolumn")
         else:
             sidebar = u""
@@ -184,8 +184,8 @@ class Container(Data, ContainerMixin, SchemaMixin):
             if os.path.isfile(fpath):
                 with codecs.open(fpath, "r", encoding='utf8') as c:
                     content = c.read()
-                if sidebar != "":
-                    return '<div id="portal-column-one">{}</div>{}'.format(content,
+                if sidebar:
+                    return u'<div id="portal-column-one">{}</div>{}'.format(content,
                                                                            sidebar)
                 return content
 
@@ -196,13 +196,12 @@ class Container(Data, ContainerMixin, SchemaMixin):
                 content = includetemplate(self, long_path, {'${next}': link})
                 content = replaceModules(self, req, content)
             if content:
-                if sidebar != "":
-                    return '<div id="portal-column-one">{}</div>{}'.format(content,
+                if sidebar:
+                    return u'<div id="portal-column-one">{}</div>{}'.format(content,
                                                                            sidebar)
                 return content
 
-        return u'{}{}'.format(content,
-                          sidebar)
+        return u'{}{}'.format(content, sidebar)
 
     """ format node image with standard template """
     def show_node_image(self, language=None):

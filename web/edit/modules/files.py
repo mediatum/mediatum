@@ -45,14 +45,12 @@ def _handle_change(node, req):
     if not uploadfile:
         return
 
-    create_version_error = False
     # Create new version when change file
     if (req.params.get('generate_new_version') and not hasattr(node, "metaFields")):
         if (req.params.get('version_comment', '').strip()==''
             or req.params.get('version_comment', '').strip()=='&nbsp;'):
-            create_version_error = True
             req.setStatus(httpstatus.HTTP_INTERNAL_SERVER_ERROR)
-            ret += req.getTAL("web/edit/modules/files.html", {}, macro="version_error")
+            return req.getTAL("web/edit/modules/files.html", {}, macro="version_error")
         else:
             current = node
             #todo: versioning needs to be implemented
@@ -64,18 +62,18 @@ def _handle_change(node, req):
                 else:
                     node.set(attr, value)
             req.setStatus(httpstatus.HTTP_MOVED_TEMPORARILY)
-            ret += req.getTAL("web/edit/modules/metadata.html", {'url':'?id='+node.id+'&tab=files', 'pid':None}, macro="redirect")
+            return req.getTAL("web/edit/modules/metadata.html", {'url':'?id='+node.id+'&tab=files', 'pid':None}, macro="redirect")
 
-    if req.params.get("change_file")=="yes" and not create_version_error: # remove old files
+    if req.params.get("change_file")=="yes": # remove old files
         for f in node.files:
             if f.filetype in node.getSysFiles():
                 node.files.remove(f)
         node.set("system.version.comment", '('+t(req, "edit_files_new_version_exchanging_comment")+')\n'+req.params.get('version_comment', ''))
 
-    if req.params.get("change_file")=="no" and not create_version_error:
+    if req.params.get("change_file")=="no":
         node.set("system.version.comment", '('+t(req, "edit_files_new_version_adding_comment")+')\n'+req.params.get('version_comment', ''))
 
-    if req.params.get("change_file") in ["yes", "no"] and not create_version_error:
+    if req.params.get("change_file") in ["yes", "no"]:
         file = importFile(uploadfile.filename, uploadfile.tempname) # add new file
         node.files.append(file)
         logg.info("%s changed file of node %s to %s (%s)", user.login_name, node.id, uploadfile.filename, uploadfile.tempname)
@@ -86,7 +84,7 @@ def _handle_change(node, req):
             attpath = f.base_name
             break
 
-    if req.params.get("change_file")=="attdir" and not create_version_error: # add attachmentdir
+    if req.params.get("change_file")=="attdir": # add attachmentdir
         dirname = req.params.get("inputname")
 
         if attpath=="": # add attachment directory
@@ -99,7 +97,7 @@ def _handle_change(node, req):
         node.set("system.version.comment", '('+t(req, "edit_files_new_version_attachment_directory_comment")+')\n'+req.params.get('version_comment', ''))
 
 
-    if req.params.get("change_file")=="attfile" and not create_version_error: # add file as attachment
+    if req.params.get("change_file")=="attfile": # add file as attachment
         if attpath=="":
             # no attachment directory existing
             file = importFile(uploadfile.filename, uploadfile.tempname) # add new file

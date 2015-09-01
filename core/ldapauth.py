@@ -43,7 +43,7 @@ LDAP_PROXYUSER_PASSWORD = config.get("ldap.proxyuser_password")
 LDAP_USER_URL = config.get("ldap.user_url")
 LDAP_USER_LOGIN = config.get("ldap.user_login")
 LDAP_ATTRIBUTES = config.get("ldap.attributes").encode("utf8").split(",") + [LDAP_USER_LOGIN.encode("utf8")]
-LDAP_USER_GROUP = config.get("ldap.user_group")
+LDAP_USER_GROUP_ATTRS = [a.strip() for a in config.get("ldap.user_group").split(",")]
 
 LDAP_USER_ATTRIBUTES = {
     "lastname": config.get("ldap.user_lastname"),
@@ -110,57 +110,59 @@ def get_user_data(data):
             for attribute_name, ldap_fieldname in iteritems(LDAP_USER_ATTRIBUTES)}
 
 
-def get_ldap_groups(data):
-    # TODO: handle multiple attributes
-    group_desc_list = data.get(LDAP_USER_GROUP)
-    if not group_desc_list:
-        return set()
+def get_ldap_group_names(data):
+    all_groups = set()
 
-    if "," in group_desc_list[0]:
-        return set([group_dn.split(",")[0][3:] for group_dn in group_desc_list])
-    else:
-        return set(group_desc_list)
+    for group_attr in LDAP_USER_GROUP_ATTRS:
+        group_desc_list = data.get(group_attr)
+
+        if group_desc_list is not None:
+            if "," in group_desc_list[0]:
+                groups = set([group_dn.split(u",")[0][3:] for group_dn in group_desc_list])
+            else:
+                groups = set(group_desc_list)
+
+            all_groups.update(groups)
+
+    return all_groups
+
+
+def update_groups_from_ldap(user, data):
+
+    ldap_group_names = get_ldap_group_names(data)
+
+    # add group from LDAP if we have a mediaTUM usergroup with that name
+    # groups must be deleted manually if a user is no longer member of a group!
+    groups = q(UserGroup).filter(UserGroup.name.in_(ldap_group_names)).all()
+    user.groups.extend(groups)
+    return groups
 
 
 def add_ldap_user(data, uname, authenticator_info):
+    """Creates LDAP user and adds it to the session if there's at least one group associated with that user.
+    :returns: User or None if user was not added."""
     s = db.session
     user_data = get_user_data(data)
     user = User(can_change_password=False, can_edit_shoppingbag=True, active=True, authenticator_info=authenticator_info, **user_data)
-    s.add(user)
 
     if not user.display_name:
         if user.lastname and user.firstname:
             user.display_name = u"{} {}".format(user.lastname, user.firstname)
 
-    ldap_groups = get_ldap_groups(data)
+    added_groups = update_groups_from_ldap(user, data)
+    if added_groups:
+        s.add(user)
+        logg.info("created ldap user: %s", uname)
+        return user
 
-    for group_name in ldap_groups:
-        group = q(UserGroup).filter_by(name=group_name).scalar()
-        if group is not None:
-            user.groups.append(group)
-
-    s.commit()
-    logg.info("created ldap user: %s", uname)
-    return user
+    # no groups found? Don't add user, return None
+    logg.info("not creating LDAP user for login '%s' because there's no matching group for this user", user.login_name)
 
 
 def update_ldap_user(data, user):
     user_data = get_user_data(data)
     user.update(**user_data)
-
-    ldap_groups = get_ldap_groups(data)
-
-    # check current groups if the are still in the list of group given by LDAP and remove missing ones
-    for group in user.groups:
-        # XXX: add 'automatic' attribute to user_to_usergroup table
-        if group.name not in ldap_groups and True:
-            user.groups.remove(group)
-
-    # add missing groups from LDAP if they are defined in our database
-    for group_name in ldap_groups:
-        group = q(UserGroup).filter_by(name=group_name).scalar()
-        if group is not None:
-            user.groups.append(group)
+    update_groups_from_ldap(user, data)
 
 
 class LDAPAuthenticator(Authenticator):
@@ -206,15 +208,14 @@ class LDAPAuthenticator(Authenticator):
             if user is not None:
                 # we already have an user object, update data
                 update_ldap_user(login_result_data[0][1], user)
+                db.session.commit()
                 return user
             else:
-                # check if newly to be created ldap user would be added to groups in function add_ldap_user
-                # refuse login if user would not be added to groups (such a user would not have any benefit from been logged in)
                 data = login_result_data[0][1]
-                for group_dn in data.get(config.get("ldap.user_group"), []):
-                    group_name = group_dn.split(",")[0][3:]
-                    group = q(UserGroup).filter_by(name=group_name).scalar() if group_name else None
-                    if group is not None:
-                        authenticator_info = q(AuthenticatorInfo).filter_by(name=self.name, auth_type=LDAPAuthenticator.auth_type).scalar()
-                        user = add_ldap_user(login_result_data[0][1], login, authenticator_info)
-                        return user
+                authenticator_info = q(AuthenticatorInfo).filter_by(name=self.name, auth_type=LDAPAuthenticator.auth_type).scalar()
+                user = add_ldap_user(login_result_data[0][1], login, authenticator_info)
+
+                # refuse login if no user was created (if no matching group was found)
+                if user is not None:
+                    db.session.commit()
+                    return user

@@ -476,7 +476,7 @@ class ContentArea(Content):
         if hasattr(self.content, "node"):
             cd = self.content.node
             if cd is not None:
-                if isinstance(cd, Directory):
+                if isinstance(cd, Container):
                     path.append(Link('', cd.getLabel(language), ''))
                 else:
                     path.append(Link('', cd.getLabel(), ''))
@@ -491,7 +491,7 @@ class ContentArea(Content):
                     cd = parents[0]
                     if cd is q(Collections).one() or cd is q(Root).one():
                         break
-                    if isinstance(cd, Directory):
+                    if isinstance(cd, Container):
                         path.append(Link('/?id={id}&dir={id}'.format(id=cd.id), cd.getLabel(language), cd.getLabel(language)))
                     else:
                         path.append(Link('/?id={id}&dir={id}'.format(id=cd.id), cd.getLabel(), cd.getLabel()))

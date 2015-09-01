@@ -39,6 +39,78 @@ from core.systemtypes import Root
 q = db.query
 logg = logging.getLogger(__name__)
 
+def _handle_change(node, req):
+    uploadfile = req.params.get("updatefile")
+
+    if not uploadfile:
+        return
+
+    create_version_error = False
+    # Create new version when change file
+    if (req.params.get('generate_new_version') and not hasattr(node, "metaFields")):
+        if (req.params.get('version_comment', '').strip()==''
+            or req.params.get('version_comment', '').strip()=='&nbsp;'):
+            create_version_error = True
+            req.setStatus(httpstatus.HTTP_INTERNAL_SERVER_ERROR)
+            ret += req.getTAL("web/edit/modules/files.html", {}, macro="version_error")
+        else:
+            current = node
+            #todo: versioning needs to be implemented
+            node = node.createNewVersion(user)
+
+            for attr, value in current.items():
+                if node.get(attr)!="": # do not overwrite attributes
+                    pass
+                else:
+                    node.set(attr, value)
+            req.setStatus(httpstatus.HTTP_MOVED_TEMPORARILY)
+            ret += req.getTAL("web/edit/modules/metadata.html", {'url':'?id='+node.id+'&tab=files', 'pid':None}, macro="redirect")
+
+    if req.params.get("change_file")=="yes" and not create_version_error: # remove old files
+        for f in node.files:
+            if f.filetype in node.getSysFiles():
+                node.files.remove(f)
+        node.set("system.version.comment", '('+t(req, "edit_files_new_version_exchanging_comment")+')\n'+req.params.get('version_comment', ''))
+
+    if req.params.get("change_file")=="no" and not create_version_error:
+        node.set("system.version.comment", '('+t(req, "edit_files_new_version_adding_comment")+')\n'+req.params.get('version_comment', ''))
+
+    if req.params.get("change_file") in ["yes", "no"] and not create_version_error:
+        file = importFile(uploadfile.filename, uploadfile.tempname) # add new file
+        node.files.append(file)
+        logg.info("%s changed file of node %s to %s (%s)", user.login_name, node.id, uploadfile.filename, uploadfile.tempname)
+
+    attpath = ""
+    for f in node.files:
+        if f.mimetype=="inode/directory":
+            attpath = f.base_name
+            break
+
+    if req.params.get("change_file")=="attdir" and not create_version_error: # add attachmentdir
+        dirname = req.params.get("inputname")
+
+        if attpath=="": # add attachment directory
+            attpath = req.params.get("inputname")
+            if not os.path.exists(getImportDir() + "/" + attpath):
+                os.mkdir(getImportDir() + "/" + attpath)
+                node.files.append(File(getImportDir() + "/" + attpath, "attachment", "inode/directory"))
+
+            file = importFileIntoDir(getImportDir() + "/" + attpath, uploadfile.tempname) # add new file
+        node.set("system.version.comment", '('+t(req, "edit_files_new_version_attachment_directory_comment")+')\n'+req.params.get('version_comment', ''))
+
+
+    if req.params.get("change_file")=="attfile" and not create_version_error: # add file as attachment
+        if attpath=="":
+            # no attachment directory existing
+            file = importFile(uploadfile.filename, uploadfile.tempname) # add new file
+            file.mimetype = "inode/file"
+            file.type = "attachment"
+            node.files.append(file)
+        else:
+            # import attachment file into existing attachment directory
+            file = importFileIntoDir(getImportDir() + "/" + attpath, uploadfile.tempname) # add new file
+        node.set("system.version.comment", '('+t(req, "edit_files_new_version_attachment_comment")+')\n'+req.params.get('version_comment', ''))
+
 
 def getContent(req, ids):
     ret = ""
@@ -138,76 +210,7 @@ def getContent(req, ids):
                     break
 
         elif op=="change":
-            uploadfile = req.params.get("updatefile")
-
-            if uploadfile:
-                create_version_error = False
-                # Create new version when change file
-                if (req.params.get('generate_new_version') and not hasattr(node, "metaFields")):
-                    if (req.params.get('version_comment', '').strip()==''
-                        or req.params.get('version_comment', '').strip()=='&nbsp;'):
-                        create_version_error = True
-                        req.setStatus(httpstatus.HTTP_INTERNAL_SERVER_ERROR)
-                        ret += req.getTAL("web/edit/modules/files.html", {}, macro="version_error")
-                    else:
-                        current = node
-                        #todo: versioning needs to be implemented
-                        node = node.createNewVersion(user)
-
-                        for attr, value in current.items():
-                            if node.get(attr)!="": # do not overwrite attributes
-                                pass
-                            else:
-                                node.set(attr, value)
-                        req.setStatus(httpstatus.HTTP_MOVED_TEMPORARILY)
-                        ret += req.getTAL("web/edit/modules/metadata.html", {'url':'?id='+node.id+'&tab=files', 'pid':None}, macro="redirect")
-
-                if req.params.get("change_file")=="yes" and not create_version_error: # remove old files
-                    for f in node.files:
-                        if f.filetype in node.getSysFiles():
-                            node.files.remove(f)
-                    node.set("system.version.comment", '('+t(req, "edit_files_new_version_exchanging_comment")+')\n'+req.params.get('version_comment', ''))
-
-                if req.params.get("change_file")=="no" and not create_version_error:
-                    node.set("system.version.comment", '('+t(req, "edit_files_new_version_adding_comment")+')\n'+req.params.get('version_comment', ''))
-
-                if req.params.get("change_file") in ["yes", "no"] and not create_version_error:
-                    file = importFile(uploadfile.filename, uploadfile.tempname) # add new file
-                    node.files.append(file)
-                    logg.info("%s changed file of node %s to %s (%s)", user.login_name, node.id, uploadfile.filename, uploadfile.tempname)
-
-                attpath = ""
-                for f in node.files:
-                    if f.mimetype=="inode/directory":
-                        attpath = f.base_name
-                        break
-
-                if req.params.get("change_file")=="attdir" and not create_version_error: # add attachmentdir
-                    dirname = req.params.get("inputname")
-
-                    if attpath=="": # add attachment directory
-                        attpath = req.params.get("inputname")
-                        if not os.path.exists(getImportDir() + "/" + attpath):
-                            os.mkdir(getImportDir() + "/" + attpath)
-                            node.files.append(File(getImportDir() + "/" + attpath, "attachment", "inode/directory"))
-
-                        file = importFileIntoDir(getImportDir() + "/" + attpath, uploadfile.tempname) # add new file
-                    node.set("system.version.comment", '('+t(req, "edit_files_new_version_attachment_directory_comment")+')\n'+req.params.get('version_comment', ''))
-                    pass
-
-
-                if req.params.get("change_file")=="attfile" and not create_version_error: # add file as attachment
-                    if attpath=="":
-                        # no attachment directory existing
-                        file = importFile(uploadfile.filename, uploadfile.tempname) # add new file
-                        file.mimetype = "inode/file"
-                        file.type = "attachment"
-                        node.files.append(file)
-                    else:
-                        # import attachment file into existing attachment directory
-                        file = importFileIntoDir(getImportDir() + "/" + attpath, uploadfile.tempname) # add new file
-                    node.set("system.version.comment", '('+t(req, "edit_files_new_version_attachment_comment")+')\n'+req.params.get('version_comment', ''))
-                    pass
+            _handle_change(node, req)
 
         elif op == "addthumb":  # create new thumbanil from uploaded file
             uploadfile = req.params.get("updatefile")

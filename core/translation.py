@@ -168,5 +168,15 @@ def t(target, key):
         return translate(key, request=target)
 
 
+# XXX: cache the default language, we assume that the config doesn't change at runtime
+global default_language
+default_language = None
+
+
 def getDefaultLanguage():
-    return config.get("i18n.languages").split(",")[0].strip()
+    global default_language
+
+    if default_language is None:
+        default_language = config.get("i18n.languages").split(",")[0].strip()
+
+    return default_language

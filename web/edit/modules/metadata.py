@@ -116,26 +116,6 @@ def _handle_edit_metadata(req, ids, mask, maskname, nodes):
                 with node.new_tagged_version(comment=comment):
                     node.set("updateuser", user.login_name)
                     mask.update_node(node, req)
-
-            # XXX: should not be neccessary anymore, new versions keep their id
-
-#             node_versions = nodes[0].tagged_versions
-#             update_date, creation_date = get_datelists(nodes)
-#
-#             _maskform, _fields = get_maskform_and_fields(nodes, mask, req)
-
-#             data = {'url': '?id=' + nodes[0].id + '&tab=metadata',
-#                     'pid': None,
-#                     "versions": node_versions,
-#                     "creation_date": creation_date,
-#                     "update_date": update_date,
-#                     "maskform": _maskform,
-#                     "fields": _fields}
-#
-#             data.update(ctx)
-#
-#             ret += req.getTAL("web/edit/modules/metadata.html", data, macro="redirect")
-
         else:
             # XXX: why check here?
             # if nodes:

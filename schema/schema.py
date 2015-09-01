@@ -850,7 +850,7 @@ def getMaskTypes(key="."):
             return MaskType()
 
 
-def update_multilang_field(node, field, params):
+def update_multilang_field(node, field, mdt, req):
     """TODO: extracted from updateNode(), rework multilang...
     if multilingual textfields were used, their names are
     saved in form en__Name, de__Name, de-AU__Name, en-US__Name etc.
@@ -860,34 +860,34 @@ def update_multilang_field(node, field, params):
         if langPos != -1 and item[langPos + 2:] == field.name:
             # cut the language identifier (en__, fr__, etc)
             if (req.params.get(ustr(field.id) + '_show_multilang', '') == 'multi'
-                    and hasattr(t, "language_update")):
+                    and hasattr(mdt, "language_update")):
                 value_old = node.get(field.name)
                 value_new = req.params.get(item)
-                value = t.language_update(value_old, value_new, item[:langPos])
-                node.attrs[field.name] = value
+                value = mdt.language_update(value_old, value_new, item[:langPos])
+                node[field.name] = value
             elif req.params.get(ustr(field.id) + '_show_multilang', '') == 'single':
                 if item[0:langPos] == translation.lang(req):
                     new_value = req.params.get(item)
-                    node.attrs[field.name] = new_value
+                    node[field.name] = new_value
             elif (req.params.get(ustr(field.id) + '_show_multilang', '') == 'multi'
-                  and not hasattr(t, "language_update")):
-                value = t.format_request_value_for_db(field, req.params, item)
+                  and not hasattr(mdt, "language_update")):
+                value = mdt.format_request_value_for_db(field, req.params, item)
                 oldValue = node.get(field.name)
-                position = oldValue.find(item[:langPos] + t.joiner)
+                position = oldValue.find(item[:langPos] + mdt.joiner)
                 if position != -1:
                     # there is already a value for this language
-                    newValue = (oldValue[:position + langPos + len(t.joiner)]
+                    newValue = (oldValue[:position + langPos + len(mdt.joiner)]
                                 + value
-                                + oldValue[oldValue.find(t.joiner,
-                                                         position + langPos + len(t.joiner)):])
-                    node.attrs[field.name] = newValue
+                                + oldValue[oldValue.find(mdt.joiner,
+                                                         position + langPos + len(mdt.joiner)):])
+                    node[field.name] = newValue
                 else:  # there is no value for this language yet
-                    if oldValue.find(t.joiner) == -1:
+                    if oldValue.find(mdt.joiner) == -1:
                         # there are no values at all yet
-                        node.attrs[field.name] = item[:langPos] + t.joiner + value + t.joiner
+                        node[field.name] = item[:langPos] + mdt.joiner + value + mdt.joiner
                     else:
                         # there are some values for other languages, but not for the current
-                                    node.attrs[field.name] = oldValue + item[:langPos] + t.joiner + value + t.joiner
+                                    node[field.name] = oldValue + item[:langPos] + mdt.joiner + value + mdt.joiner
 
 
 @check_type_arg
@@ -1054,13 +1054,13 @@ class Mask(Node):
 
                 if field.name in req.params.keys():
                     value = t.format_request_value_for_db(field, req.params, field.name)
-                    node.attrs[field.name] = value
+                    node[field.name] = value
 
                 elif field.type == "check":
-                    node.attrs[field.name] = 0
+                    node[field.name] = 0
 
                 else:
-                    update_multilang_field(node, field, params)
+                    update_multilang_field(node, field, t, req)
 
                 if hasattr(t, "event_metafield_changed"):
                     t.event_metafield_changed(node, field)

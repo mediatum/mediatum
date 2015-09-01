@@ -49,7 +49,7 @@ def _finish_change(node, change_file, user, uploadfile, req):
                 node.files.remove(f)
 
     if change_file in ["yes", "no"]:
-        importFile(uploadfile.filename, uploadfile.tempname)  # add new file
+        file = importFile(uploadfile.filename, uploadfile.tempname)  # add new file
         node.files.append(file)
         logg.info("%s changed file of node %s to %s (%s)", user.login_name, node.id, uploadfile.filename, uploadfile.tempname)
 
@@ -108,8 +108,8 @@ def _handle_change(node, req):
             version_comment_full = u'({})\n{}'.format(t(req, translation_msg_id), version_comment)
 
             with node.new_tagged_version(comment=version_comment_full):
-                node.set("updateuser", user.login_name)
                 _finish_change(node, change_file, user, uploadfile, req)
+                node.set("updateuser", user.login_name)
 
             req.setStatus(httpstatus.HTTP_MOVED_TEMPORARILY)
             return req.getTAL("web/edit/modules/metadata.html", {'url': '?id={}&tab=files'.format(node.id), 'pid': None}, macro="redirect")

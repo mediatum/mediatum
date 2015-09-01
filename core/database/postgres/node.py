@@ -3,6 +3,7 @@
     :copyright: (c) 2014 by the mediaTUM authors
     :license: GPL3, see COPYING for details
 """
+import datetime
 import logging
 from json import dumps
 from warnings import warn
@@ -331,6 +332,9 @@ class Node(DeclarativeBase, NodeMixin):
                 if comment:
                     tx.meta["comment"] = comment
 
+                # XXX: Actually, we could use the transaction time instead of writing an update time.
+                # But this is the old way, keep it because the application expects it.
+                node["updatetime"] = datetime.datetime.now().isoformat()
                 return tx
 
             def __exit__(self, exc_type, exc_value, traceback):

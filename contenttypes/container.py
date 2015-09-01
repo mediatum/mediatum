@@ -28,7 +28,7 @@ from core import Node
 from contenttypes.data import Data
 
 from core.database.helpers import ContainerMixin
-from core.translation import t, lang
+from core.translation import t, lang, getDefaultLanguage
 from utils.utils import CustomItem
 from core.transition.postgres import check_type_arg, check_type_arg_with_schema
 from schema.schema import Metafield, SchemaMixin
@@ -214,22 +214,23 @@ class Container(Data, ContainerMixin, SchemaMixin):
     def getSysFiles(self):
         return ["statistic", "image"]
 
-    def getLabel(self, lang=None):
-        #removes exceptions when object has to attr dict
-        if lang and self.get(u'{}.name'.format(lang)) != "":
+    def getLabel(self, lang=getDefaultLanguage()):
+
+        # try language-specific name first
+        lang_value = self.get(u'{}.name'.format(lang))
+        if lang_value:
             return self.get(u'{}.name'.format(lang))
 
-        # XXX: strange hack, is there another way?
-        if lang == 'de' and self.name:
+        # always return the name if the requested lang matches the default language
+        if self.name and lang == getDefaultLanguage():
             return self.name
 
-        #removes heinous amount of error logging when building directory tree
-        try:
-            label = self.get("label")
-        except AttributeError:
-            label = ''
+        label = self.get(u"label")
+
+        # still no label found, use name
         if not label:
             label = self.name
+
         return label
 
     """ list with technical attributes for type directory """

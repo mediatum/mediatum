@@ -39,48 +39,12 @@ from core.systemtypes import Root
 q = db.query
 logg = logging.getLogger(__name__)
 
-def _handle_change(node, req):
-    uploadfile = req.params.get("updatefile")
-
-    if not uploadfile:
-        return
-    change_file = req.params.get("change_file")
-
-    # Create new version when change file
-    if (req.params.get('generate_new_version') and not hasattr(node, "metaFields")):
-        version_comment = req.params.get('version_comment', '').strip()
-        if not version_comment or version_comment == '&nbsp;':
-            # comment must be given, abort
-            req.setStatus(httpstatus.HTTP_INTERNAL_SERVER_ERROR)
-            return req.getTAL("web/edit/modules/files.html", {}, macro="version_error")
-        else:
-            if change_file == "yes":
-                version_comment_full = u'({})\n{}'.format(t(req, "edit_files_new_version_exchanging_comment"), version_comment)
-            elif change_file == "no":
-                version_comment_full = u'({})\n{}'.format(t(req, "edit_files_new_version_adding_comment"), version_comment)
-            elif change_file == "attdir":
-                version_comment_full = u'({})\n{}'.format(t(req, "edit_files_new_version_attachment_directory_comment"), version_comment)
-            elif change_file == "attfile":
-                version_comment_full = u'({})\n{}'.format(t(req, "edit_files_new_version_attachment_comment"), version_comment)
-
-            current = node
-            #todo: versioning needs to be implemented
-            node = node.createNewVersion(user)
-            node["system.version.comment"] = version_comment_full
-
-            for attr, value in current.items():
-                if node.get(attr)!="": # do not overwrite attributes
-                    pass
-                else:
-                    node.set(attr, value)
-            req.setStatus(httpstatus.HTTP_MOVED_TEMPORARILY)
-            return req.getTAL("web/edit/modules/metadata.html", {'url':'?id='+node.id+'&tab=files', 'pid':None}, macro="redirect")
-
+def _finish_change(node, change_file, user, uploadfile, req):
     if change_file == "yes": # remove old files
         for f in node.files:
             if f.filetype in node.getSysFiles():
                 node.files.remove(f)
-
+    
     if change_file in ["yes", "no"]:
         file = importFile(uploadfile.filename, uploadfile.tempname) # add new file
         node.files.append(file)
@@ -114,6 +78,41 @@ def _handle_change(node, req):
         else:
             # import attachment file into existing attachment directory
             file = importFileIntoDir(getImportDir() + "/" + attpath, uploadfile.tempname) # add new file
+
+
+def _handle_change(node, req):
+    uploadfile = req.params.get("updatefile")
+
+    if not uploadfile:
+        return
+    change_file = req.params.get("change_file")
+
+    if (req.params.get('generate_new_version') and not hasattr(node, "metaFields")):
+        # Create new version when changing files
+        version_comment = req.params.get('version_comment', '').strip()
+        if not version_comment or version_comment == '&nbsp;':
+            # comment must be given, abort
+            req.setStatus(httpstatus.HTTP_INTERNAL_SERVER_ERROR)
+            return req.getTAL("web/edit/modules/files.html", {}, macro="version_error")
+        else:
+            if change_file == "yes":
+                version_comment_full = u'({})\n{}'.format(t(req, "edit_files_new_version_exchanging_comment"), version_comment)
+            elif change_file == "no":
+                version_comment_full = u'({})\n{}'.format(t(req, "edit_files_new_version_adding_comment"), version_comment)
+            elif change_file == "attdir":
+                version_comment_full = u'({})\n{}'.format(t(req, "edit_files_new_version_attachment_directory_comment"), version_comment)
+            elif change_file == "attfile":
+                version_comment_full = u'({})\n{}'.format(t(req, "edit_files_new_version_attachment_comment"), version_comment)
+
+            with node.new_tagged_version(comment=version_comment_full):
+                node.set("updateuser", user.login_name)
+                _finish_change(node, change_file, user, uploadfile, req)
+
+            req.setStatus(httpstatus.HTTP_MOVED_TEMPORARILY)
+            return req.getTAL("web/edit/modules/metadata.html", {'url':'?id='+node.id+'&tab=files', 'pid':None}, macro="redirect")
+    else:
+        # no new version
+        _finish_change(node, change_file, user, uploadfile, req)
 
 
 def getContent(req, ids):

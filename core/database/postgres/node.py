@@ -296,7 +296,7 @@ class Node(DeclarativeBase, NodeMixin):
         """Returns a context manager that manages the creation of a new tagged node version.
 
         :param tag: a unicode tag assigned to the transaction belonging to the new version.
-            If none is given, assume that we want to add a new numbered version. 
+            If none is given, assume that we want to add a new numbered version.
             The tag will be the incremented version number of the last numbered version.
             If no numbered version is present, assign 1 to the last version and 2 to the new version.
 
@@ -318,9 +318,9 @@ class Node(DeclarativeBase, NodeMixin):
                     tx.meta["tag"] = tag
                 else:
                     NodeVersion = version_class(node.__class__)
-                    last_tagged_version = node.tagged_versions.order_by(NodeVersion.transaction_id.desc()).scalar()
+                    # in case you were wondering: order_by(None) resets the default order_by
+                    last_tagged_version = node.tagged_versions.order_by(None).order_by(NodeVersion.transaction_id.desc()).first()
                     if last_tagged_version is not None:
-                        last_version_tag = last_tagged_version.tag
                         next_version = int(last_tagged_version.tag) + 1
                     else:
                         node.versions[-1].tag = u"1"

@@ -35,16 +35,18 @@ from core import db
 from core import File
 from contenttypes import Home, Collections
 from core.systemtypes import Root
+from core.users import user_from_session
 
 q = db.query
 logg = logging.getLogger(__name__)
 
 def _finish_change(node, change_file, user, uploadfile, req):
+
     if change_file == "yes": # remove old files
         for f in node.files:
             if f.filetype in node.getSysFiles():
                 node.files.remove(f)
-    
+
     if change_file in ["yes", "no"]:
         file = importFile(uploadfile.filename, uploadfile.tempname) # add new file
         node.files.append(file)
@@ -86,6 +88,7 @@ def _handle_change(node, req):
     if not uploadfile:
         return
     change_file = req.params.get("change_file")
+    user = user_from_session(req.session)
 
     if (req.params.get('generate_new_version') and not hasattr(node, "metaFields")):
         # Create new version when changing files
@@ -96,20 +99,22 @@ def _handle_change(node, req):
             return req.getTAL("web/edit/modules/files.html", {}, macro="version_error")
         else:
             if change_file == "yes":
-                version_comment_full = u'({})\n{}'.format(t(req, "edit_files_new_version_exchanging_comment"), version_comment)
+                translation_msg_id = "edit_files_new_version_exchanging_comment"
             elif change_file == "no":
-                version_comment_full = u'({})\n{}'.format(t(req, "edit_files_new_version_adding_comment"), version_comment)
+                translation_msg_id = "edit_files_new_version_adding_comment"
             elif change_file == "attdir":
-                version_comment_full = u'({})\n{}'.format(t(req, "edit_files_new_version_attachment_directory_comment"), version_comment)
+                translation_msg_id = "edit_files_new_version_attachment_directory_comment"
             elif change_file == "attfile":
-                version_comment_full = u'({})\n{}'.format(t(req, "edit_files_new_version_attachment_comment"), version_comment)
+                translation_msg_id = "edit_files_new_version_attachment_comment"
+
+            version_comment_full = u'({})\n{}'.format(t(req, translation_msg_id), version_comment)
 
             with node.new_tagged_version(comment=version_comment_full):
                 node.set("updateuser", user.login_name)
                 _finish_change(node, change_file, user, uploadfile, req)
 
             req.setStatus(httpstatus.HTTP_MOVED_TEMPORARILY)
-            return req.getTAL("web/edit/modules/metadata.html", {'url':'?id='+node.id+'&tab=files', 'pid':None}, macro="redirect")
+            return req.getTAL("web/edit/modules/metadata.html", {'url':'?id={}&tab=files'.format(node.id), 'pid':None}, macro="redirect")
     else:
         # no new version
         _finish_change(node, change_file, user, uploadfile, req)
@@ -122,7 +127,7 @@ def getContent(req, ids):
     update_error = False
     access = acl.AccessData(req)
 
-    logg.debug("%s|web.edit.modules.files.getContend|req.fullpath=%s|req.path=%s|req.params=%s|ids=%s", 
+    logg.debug("%s|web.edit.modules.files.getContend|req.fullpath=%s|req.path=%s|req.params=%s|ids=%s",
                get_user_id(req), req.fullpath, req.path, req.params, ids)
 
     if not access.hasWriteAccess(node) or "files" in users.getHideMenusForUser(user):
@@ -151,7 +156,7 @@ def getContent(req, ids):
             except: # node not found
                 logg.exception("exception in getContent, node not found? ignore")
                 pass
-            
+
             req.writeTAL("web/edit/modules/files.html", {'children': node.children, 'node': node}, macro="edit_files_children_list")
 
         if req.params.get('data') == 'reorder':
@@ -244,7 +249,7 @@ def getContent(req, ids):
                     node.event_files_changed()
                     logg.info("%s postprocesses node %s", user.login_name, node.id)
                 except:
-                    update_error = True    
+                    update_error = True
 
     db.session.commit()
 

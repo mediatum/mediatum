@@ -7,6 +7,7 @@ from pytest import fixture
 
 from core import db
 from core.test.asserts import assert_node
+from core.permission import get_or_add_everybody_rule
 q = db.query
 
 
@@ -32,6 +33,10 @@ def test_get_collections():
                 type="collections",
                 schema="collection",
                 label="Collections")
+
+    # collections is public by default, so it must have the everybody rule
+    everybody_rule = get_or_add_everybody_rule()
+    assert n.access_rule_assocs[0].rule is everybody_rule
 
 
 def test_get_metadatatypes():

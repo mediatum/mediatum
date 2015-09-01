@@ -19,11 +19,12 @@
 import logging
 
 from core import config
-from core import User, UserGroup, AuthenticatorInfo
+from core import User, UserGroup, AuthenticatorInfo, AccessRule
 from core.systemtypes import *
 from contenttypes import Collections, Home
 from workflow.workflow import Workflows
 from core.auth import INTERNAL_AUTHENTICATOR_KEY, create_password_hash
+from core.database.postgres.permission import NodeToAccessRule
 
 
 logg = logging.getLogger(u"database")
@@ -34,6 +35,10 @@ def init_database_values(s):
     :type s: Session
     """
 
+    # every database must have an everybody rule
+    everybody_rule = AccessRule()
+    s.add(everybody_rule)
+
     # node tree setup
     root = Root(u"root", u"root", 1)
     metadatatypes = Metadatatypes(u"metadatatypes", u"metadatatypes", 3)
@@ -41,9 +46,11 @@ def init_database_values(s):
     mappings = Mappings(u"mappings", u"mappings", 9)
     collections = Collections(u"collections", u"collections", schema=u"collection", id=10)
     collections.attrs[u"label"] = u"Collections"
+    collections.access_rule_assocs.append(NodeToAccessRule(ruletype=u"read", rule=everybody_rule))
     home = Home(u"home", u"home", 11)
     searchmasks = Searchmasks(u"searchmasks", u"searchmasks", 15)
     schedules = Schedules(u"schedules", u"schedules", 16)
+
 
     root.children.extend([metadatatypes, workflows, mappings, collections, home, searchmasks, schedules])
 

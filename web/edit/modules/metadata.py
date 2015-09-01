@@ -123,7 +123,9 @@ def _handle_edit_metadata(req, ids, mask, maskname, nodes):
 
             for node in nodes:
                 node.set("updateuser", user.login_name)
-                mask.updateNode(nodes, req)
+                mask.update_node(node, req)
+
+            db.session.commit()
 
             # XXX: why check here?
             # if nodes:
@@ -233,6 +235,7 @@ def getContent(req, ids):
 
     for n in nodes:
         n.set("edit.lastmask", maskname)
+    db.session.commit()
 
     if not mask:
         return req.getTAL("web/edit/modules/metadata.html", {}, macro="no_mask")

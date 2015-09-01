@@ -37,7 +37,7 @@
 
     <script tal:content="python:u'var flag_nodename_changed = {};'.format(flag_nodename_changed)">TEXT</script>
     <script tal:content="python:u'var new_nodename = decodeURIComponent(escape(\'{}\'));'.format(nodes[0].name)">TEXT</script>
-    
+
     <div id="navigation_content" style="border-top:0px!important">
 
         <tal:block metal:use-macro="web/edit/edit.html/itemlist"/>
@@ -94,7 +94,7 @@
                 <br/>
                 <br/>
 
-        <tal:block tal:condition="python:not hasattr(node, 'metaFields') and access.hasWriteAccess(node)">
+        <tal:block tal:condition="python:not hasattr(node, 'metaFields') and node.has_write_access()">
         <div class="editorrow">
             <div class="label"><tal:block i18n:translate="edit_meta_version_information"/></div>
             <div id="div_description">&nbsp;</div>
@@ -153,7 +153,7 @@
                         <th><tal:block i18n:translate="edit_meta_updateduser"/></th>
                     </tr>
                     <tal:block tal:repeat="v versions">
-                    <tr tal:attributes="class v.isActiveVersion() and 'row active' or 'row' ">
+                    <tr tal:attributes="class python:(v.isActiveVersion() and 'row active' or 'row') ">
                       <td><a href="/" tal:attributes="href python:u'?id={}&amp;v={}&amp;tab=metadata'.format(v.id, v.tag)" tal:content="python:u'V' + v.tag">Version</a></td>
                         <td>
                         <div tal:content="python:v.getUpdatedDate()"></div>

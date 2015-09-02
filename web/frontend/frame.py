@@ -475,11 +475,12 @@ def getSessionSetting(req, name, default):
 
 class UserLinks:
 
-    def __init__(self, user, area=""):
+    def __init__(self, user, area="", host=""):
         self.user = user
         self.id = None
         self.language = ""
         self.area = area
+        self.host = host
 
     def feedback(self, req):
         if "id" in req.params:
@@ -487,11 +488,12 @@ class UserLinks:
         self.language = lang(req)
 
     def getLinks(self):
-        l = [Link("http://" + config.get("host.name") + "/logout", t(self.language, "sub_header_logout_title"),
+        l = [Link("/logout", t(self.language, "sub_header_logout_title"),
                   t(self.language, "sub_header_logout"), icon="/img/logout.gif")]
         if config.get("user.guestuser") == self.user.login_name:
             if config.get("config.ssh") == "yes":
-                l = [Link("https://" + config.get("host.name") + "/login", t(self.language, "sub_header_login_title"),
+                host = config.get("host.name") or self.host
+                l = [Link("https://" + host + "/login", t(self.language, "sub_header_login_title"),
                           t(self.language, "sub_header_login"), icon="/img/login.gif")]
             else:
                 l = [Link("/login", t(self.language, "sub_header_login_title"),
@@ -531,7 +533,8 @@ class NavigationFrame:
     def feedback(self, req):
         user = users.getUserFromRequest(req)
 
-        userlinks = UserLinks(user, area=req.session.get("area"))
+        host = req.get_header("HOST")
+        userlinks = UserLinks(user, area=req.session.get("area"), host=host)
         userlinks.feedback(req)
 
         # tabs

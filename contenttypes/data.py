@@ -42,7 +42,7 @@ languages = [l.strip() for l in config.get("i18n.languages").split(",") if l.str
 
 # for TAL templates from mask cache
 context = default_context.copy()
-context['host'] = "http://" + config.get("host.name")
+context['host'] = "http://" + config.get("host.name", "")
 
 DEFAULT_MASKCACHE = 'deep'  # 'deep' | 'shallow' | None
 # remark 2013-09-18 wn: only deep cache compatible with multilingual text/memo/htmlmemo fields
